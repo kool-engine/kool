@@ -1,0 +1,48 @@
+group 'de.fabmax'
+version '0.0.1'
+
+buildscript {
+    ext.kotlin_version = '1.0.6'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin2js'
+apply plugin: 'idea'
+
+compileKotlin2Js {
+    kotlinOptions.outputFile = "out/kool.js"
+}
+
+sourceSets {
+    main.kotlin.srcDirs += "src/main/kotlin"
+    main.kotlin.srcDirs += buildDir.toString() + "/lib"
+}
+
+idea {
+    module {
+        generatedSourceDirs += new File(buildDir, "lib")
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-js-library:$kotlin_version"
+}
+
+tasks.create(name: 'copyLib', type: Copy) {
+    def libDir = new File(buildDir, "/lib")
+    delete libDir
+    from(file('../kool-core/src/main/kotlin'))
+    into(libDir)
+}
+
+assemble.dependsOn copyLib

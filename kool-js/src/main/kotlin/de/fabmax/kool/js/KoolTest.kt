@@ -1,0 +1,20 @@
+package de.fabmax.kool.js
+
+import de.fabmax.kool.demo.simpleShapesDemo
+import de.fabmax.kool.demo.textureDemo
+import de.fabmax.kool.platform.Platform
+import de.fabmax.kool.platform.PlatformImpl
+import de.fabmax.kool.platform.js.JsContext
+
+/**
+ * @author fabmax
+ */
+fun main(args: Array<String>) {
+    PlatformImpl.init()
+
+    val props = JsContext.InitProps()
+    val ctx = Platform.createContext(props)
+
+    simpleShapesDemo(ctx)
+    //textureDemo(ctx)
+}

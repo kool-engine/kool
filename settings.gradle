@@ -1,0 +1,5 @@
+rootProject.name = 'kool'
+include 'kool-core'
+include 'kool-desktop'
+include 'kool-js'
+
