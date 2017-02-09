@@ -1,4 +1,4 @@
-#KOGLE - Kotlin OpenGL Engine
+#KOOL - Kotlin OpenGL Engine
 
 A simple OpenGL based graphics engine, which works with Desktop Java as well as
 in browsers with Javascript/WebGL
