@@ -26,11 +26,12 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
         }
     }
 
+    internal val canvas: HTMLCanvasElement
     internal val gl: WebGLRenderingContext
     internal val supportsUint32Indices: Boolean
 
     init {
-        val canvas: HTMLCanvasElement = document.getElementById(props.canvasName) as HTMLCanvasElement
+        canvas = document.getElementById(props.canvasName) as HTMLCanvasElement
         var webGlCtx = canvas.getContext("webgl")
         if (webGlCtx == null) {
             webGlCtx = canvas.getContext("experimental-webgl")
@@ -42,9 +43,8 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
         gl = webGlCtx as WebGLRenderingContext
         supportsUint32Indices = gl.getExtension("OES_element_index_uint") != null
 
-        // fixme: don't use hardcoded viewport size
-        viewportWidth = 800
-        viewportHeight = 600
+        viewportWidth = canvas.width
+        viewportHeight = canvas.height
 
         canvas.onmousemove = { ev ->
             ev as MouseEvent
@@ -86,6 +86,19 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
     override fun run() {
         //webGlRender()
         js("setInterval(_.de.fabmax.kool.platform.js.JsContext.Companion.webGlRender, 15);")
+    }
+
+    override fun render() {
+        // update viewport size
+        viewportWidth = canvas.clientWidth
+        viewportHeight = canvas.clientHeight
+        if (viewportWidth != canvas.width || viewportHeight!= canvas.height) {
+            // resize canvas to viewport
+            canvas.width = viewportWidth
+            canvas.height = viewportHeight
+        }
+
+        super.render()
     }
 
     override fun destroy() {

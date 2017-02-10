@@ -50,7 +50,7 @@ abstract class RenderContext {
 
     abstract fun destroy()
 
-    protected fun onNewFrame() {
+    protected open fun onNewFrame() {
         val now = Platform.currentTimeMillis()
         if (startTimeMillis == 0L) {
             startTimeMillis = now
@@ -80,7 +80,7 @@ abstract class RenderContext {
         GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
     }
 
-    protected fun render() {
+    protected open fun render() {
         onNewFrame()
 
         scene.onRender(this)

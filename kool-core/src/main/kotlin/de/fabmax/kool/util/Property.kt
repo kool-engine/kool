@@ -6,8 +6,10 @@ package de.fabmax.kool.util
 class Property<T>(value: T) {
     var value: T = value
         set(value) {
-            field = value
-            valueChanged = true
+            if (value != field) {
+                field = value
+                valueChanged = true
+            }
         }
 
     val clear: T

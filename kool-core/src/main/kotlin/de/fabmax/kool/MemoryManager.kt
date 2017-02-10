@@ -15,7 +15,7 @@ class MemoryManager internal constructor() {
         }
         resMap.put(resource, memory)
 
-        println("${resource.type} allocated: $memory bytes")
+        //println("${resource.type} allocated: $memory bytes")
     }
 
     internal fun deleted(resource: GlResource) {
