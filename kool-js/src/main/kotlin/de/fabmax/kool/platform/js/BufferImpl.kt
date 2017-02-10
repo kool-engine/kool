@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform.js
 
-import de.fabmax.kool.KogleException
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.platform.*
 import org.khronos.webgl.*
 
@@ -16,7 +16,7 @@ abstract class GenericBuffer<out B: ArrayBufferView, T>(capacity: Int, create: (
         get() = field
         set(value) {
             if (value < 0 || value > capacity) {
-                throw KogleException("Limit is out of bounds: $value (capacity: $capacity)")
+                throw KoolException("Limit is out of bounds: $value (capacity: $capacity)")
             }
             field = value
             if (position > value) {

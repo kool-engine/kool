@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KogleException
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.platform.Float32Buffer
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.Uint32Buffer
@@ -134,7 +134,7 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
 
     operator fun get(i: Int): Item {
         if (i < 0 || i >= data.capacity) {
-            throw KogleException("Vertex index out of bounds: $i")
+            throw KoolException("Vertex index out of bounds: $i")
         }
         return Item(i)
     }

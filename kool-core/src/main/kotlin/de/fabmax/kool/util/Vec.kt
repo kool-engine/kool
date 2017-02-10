@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KogleException
+import de.fabmax.kool.KoolException
 
 /**
  * @author fabmax
@@ -25,7 +25,7 @@ open class Vec2f(x: Float, y: Float) {
         return when (i) {
             0 -> x
             1 -> y
-            else -> throw KogleException("Invalid index: " + i)
+            else -> throw KoolException("Invalid index: " + i)
         }
     }
 
@@ -67,7 +67,7 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
         when (i) {
             0 -> x = v
             1 -> y = v
-            else -> throw KogleException("Invalid index: " + i)
+            else -> throw KoolException("Invalid index: " + i)
         }
     }
 }
@@ -88,7 +88,7 @@ open class Vec3f(x: Float, y: Float, z: Float) {
             0 -> x
             1 -> y
             2 -> z
-            else -> throw KogleException("Invalid index: " + i)
+            else -> throw KoolException("Invalid index: " + i)
         }
     }
 
@@ -224,7 +224,7 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
             0 -> x = v
             1 -> y = v
             2 -> z = v
-            else -> throw KogleException("Invalid index: " + i)
+            else -> throw KoolException("Invalid index: " + i)
         }
     }
 }
@@ -248,7 +248,7 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
             1 -> y
             2 -> z
             3 -> w
-            else -> throw KogleException("Invalid index: " + i)
+            else -> throw KoolException("Invalid index: " + i)
         }
     }
 
@@ -302,7 +302,7 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
             1 -> y = v
             2 -> z = v
             3 -> w = v
-            else -> throw KogleException("Invalid index: " + i)
+            else -> throw KoolException("Invalid index: " + i)
         }
     }
 }

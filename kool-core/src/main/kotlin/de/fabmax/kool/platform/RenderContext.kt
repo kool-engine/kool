@@ -10,6 +10,8 @@ import de.fabmax.kool.util.Property
  */
 abstract class RenderContext {
 
+    val inputHandler = InputHandler()
+
     val memoryMgr = MemoryManager()
     val shaderMgr = ShaderManager()
     val textureMgr = TextureManager()

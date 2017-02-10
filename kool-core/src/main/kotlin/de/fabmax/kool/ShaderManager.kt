@@ -58,7 +58,7 @@ class ShaderManager internal constructor() {
                 // compilation failed
                 val log = vertShader.getInfoLog(ctx)
                 vertShader.delete(ctx)
-                throw KogleException("Vertex shader compilation failed: " + log)
+                throw KoolException("Vertex shader compilation failed: " + log)
             }
 
             // create fragment shader
@@ -68,7 +68,7 @@ class ShaderManager internal constructor() {
                 // compilation failed
                 val log = fragShader.getInfoLog(ctx)
                 fragShader.delete(ctx)
-                throw KogleException("Fragment shader compilation failed: " + log)
+                throw KoolException("Fragment shader compilation failed: " + log)
             }
 
             // link shader
@@ -83,7 +83,7 @@ class ShaderManager internal constructor() {
                 // linkage failed
                 val log = prog.getInfoLog(ctx)
                 prog.delete(ctx)
-                throw KogleException("Shader linkage failed: " + log)
+                throw KoolException("Shader linkage failed: " + log)
             }
 
             // keep resource for resource sharing of equal shaders
