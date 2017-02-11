@@ -219,6 +219,25 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
         return this
     }
 
+    fun rotate(angleDeg: Float, axis: Vec3f): MutableVec3f {
+        return rotate(angleDeg, axis.x, axis.y, axis.z)
+    }
+
+    fun rotate(angleDeg: Float, axisX: Float, axisY: Float, axisZ: Float): MutableVec3f {
+        val rad = toRad(angleDeg).toDouble()
+        val c = Math.cos(rad).toFloat()
+        val c1 = 1f - c
+        val s = Math.sin(rad).toFloat()
+
+        val tx = x * (axisX * axisX * c1 + c) + y * (axisX * axisY * c1 - axisZ * s) + z * (axisX * axisZ * c1 + axisY * s)
+        val ty = x * (axisY * axisX * c1 + axisZ * s) + y * (axisY * axisY * c1 + c) + z * (axisY * axisZ * c1 - axisX * s)
+        val tz = x * (axisX * axisZ * c1 - axisY * s) + y * (axisY * axisZ * c1 + axisX * s) + z * (axisZ * axisZ * c1 + c)
+        x = tx
+        y = ty
+        z = tz
+        return this
+    }
+
     operator fun set(i: Int, v: Float) {
         when (i) {
             0 -> x = v

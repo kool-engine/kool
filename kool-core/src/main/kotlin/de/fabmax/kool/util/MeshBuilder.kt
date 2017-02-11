@@ -45,6 +45,7 @@ open class MeshBuilder(val mesh: Mesh) {
 
     private val circleProps = CircleProps()
     private val cubeProps = CubeProps()
+    private val cylinderProps = CylinderProps()
     private val rectProps = RectProps()
     private val sphereProps = SphereProps()
 
@@ -95,6 +96,8 @@ open class MeshBuilder(val mesh: Mesh) {
         this.block()
         this.color = c
     }
+
+    fun translate(t: Vec3f) = transform.translate(t.x, t.y, t.z)
 
     fun translate(x: Float, y: Float, z: Float) = transform.translate(x, y, z)
 
@@ -151,7 +154,6 @@ open class MeshBuilder(val mesh: Mesh) {
                 mesh.addTriIndices(i0, i1, idx)
                 i1 = idx
             }
-
         }
     }
 
@@ -292,6 +294,59 @@ open class MeshBuilder(val mesh: Mesh) {
             mesh.addTriIndices(i0, i2, i3)
         }
     }
+
+    fun cylinder(props: CylinderProps.() -> Unit) {
+        cylinderProps.defaults().props()
+        cylinder(cylinderProps)
+    }
+
+    fun cylinder(props: CylinderProps) {
+        props.fixNegativeSize()
+
+        // bottom
+        withTransform {
+            translate(props.origin)
+            rotate(90f, Vec3f.X_AXIS)
+            circle {
+                steps = props.steps
+                radius = props.bottomRadius
+            }
+        }
+        // top
+        withTransform {
+            translate(props.origin.x, props.origin.y + props.height, props.origin.z)
+            rotate(-90f, Vec3f.X_AXIS)
+            circle {
+                steps = props.steps
+                radius = props.topRadius
+            }
+        }
+
+        val dr = props.bottomRadius - props.topRadius
+        val nrmAng = 90f - toDeg(Math.acos(dr / Math.sqrt(dr.toDouble() * dr + props.height * props.height)).toFloat())
+        var i0 = 0
+        var i1 = 0
+        for (i in 0..props.steps) {
+            val c = Math.cos(i * Math.PI * 2 / props.steps).toFloat()
+            val s = Math.sin(i * Math.PI * 2 / props.steps).toFloat()
+
+            val px2 = props.origin.x + props.bottomRadius * c
+            val pz2 = props.origin.z + props.bottomRadius * s
+            val px3 = props.origin.x + props.topRadius * c
+            val pz3 = props.origin.z + props.topRadius * s
+
+            tmpNrm.set(c, 0f, s).rotate(nrmAng, s, 0f, c)
+            val i2 = vertex(tmpPos.set(px2, props.origin.y, pz2), tmpNrm)
+            val i3 = vertex(tmpPos.set(px3, props.origin.y + props.height, pz3), tmpNrm)
+
+            if (i > 0) {
+                mesh.addTriIndices(i0, i1, i2)
+                mesh.addTriIndices(i1, i3, i2)
+            }
+            i0 = i2
+            i1 = i3
+        }
+    }
 }
 
 open class CircleProps {
@@ -373,5 +428,29 @@ class CubeProps : RectProps() {
         backColor = null
 
         return this
+    }
+}
+
+open class CylinderProps {
+    var bottomRadius = 1f
+    var topRadius = 1f
+    var steps = 20
+    var height = 1f
+    val origin = MutableVec3f()
+
+    fun defaults(): CylinderProps {
+        bottomRadius = 1f
+        topRadius = 1f
+        steps = 20
+        height = 1f
+        origin.set(Vec3f.ZERO)
+        return this
+    }
+
+    fun fixNegativeSize() {
+        if (height < 0) {
+            origin.y += height
+            height = -height
+        }
     }
 }

@@ -23,9 +23,9 @@ class SphericalInputTransform(name: String? = null) : TransformGroup(name) {
     private var stiffness = 0f
     private var damping = 0f
 
-    private val animRotV = AnimatedVal()
-    private val animRotH = AnimatedVal()
-    private val animZoom = AnimatedVal()
+    private val animRotV = AnimatedVal(0f)
+    private val animRotH = AnimatedVal(0f)
+    private val animZoom = AnimatedVal(1f)
 
     var verticalAxis = Vec3f.Y_AXIS
     var horizontalAxis = Vec3f.X_AXIS
@@ -50,6 +50,20 @@ class SphericalInputTransform(name: String? = null) : TransformGroup(name) {
         smoothness = 0.1f
     }
 
+    fun animateRotation(vertical: Float, horizontal: Float) {
+        animRotV.desired = vertical
+        animRotH.desired = horizontal
+        verticalRotation = vertical
+        horizontalRotation = horizontal
+    }
+
+    fun setRotation(vertical: Float, horizontal: Float) {
+        animRotV.set(vertical)
+        animRotH.set(horizontal)
+        verticalRotation = vertical
+        horizontalRotation = horizontal
+    }
+
     override fun render(ctx: RenderContext) {
         val pointer = ctx.inputHandler.primaryPointer
         if (pointer.isValid) {
@@ -61,7 +75,7 @@ class SphericalInputTransform(name: String? = null) : TransformGroup(name) {
             if (pointer.isValid && pointer.isLeftButtonDown) {
                 verticalRotation -= pointer.deltaX.toFloat() / 3
                 horizontalRotation -= pointer.deltaY.toFloat() / 3
-                horizontalRotation = clamp(horizontalRotation, -85f, 85f)
+                horizontalRotation = clamp(horizontalRotation, -90f, 90f)
             }
 
             animRotV.desired = verticalRotation
@@ -78,10 +92,15 @@ class SphericalInputTransform(name: String? = null) : TransformGroup(name) {
         super.render(ctx)
     }
 
-    private inner class AnimatedVal {
-        var desired = 0f
-        var actual = 0f
+    private inner class AnimatedVal(value: Float) {
+        var desired = value
+        var actual = value
         var speed = 0f
+
+        fun set(value: Float) {
+            desired = value
+            actual = value
+        }
 
         fun animate(deltaT: Float): Float {
             if (isZero(smoothness) || deltaT > 0.2f) {

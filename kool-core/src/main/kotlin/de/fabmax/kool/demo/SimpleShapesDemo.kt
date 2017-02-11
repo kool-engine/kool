@@ -14,13 +14,6 @@ import de.fabmax.kool.util.colorMesh
 fun simpleShapesDemo(ctx: RenderContext) {
     ctx.scene.root = group {
 
-        +sphericalInputTransform("camRig") {
-//            animation = { ctx ->
-//                rotate(45f * ctx.deltaT, Vec3f.Y_AXIS)
-//            }
-            +ctx.scene.camera
-        }
-
         +transformGroup("left") {
             animation = { ctx ->
                 setIdentity()
@@ -57,22 +50,32 @@ fun simpleShapesDemo(ctx: RenderContext) {
             }
         }
 
-        +colorMesh {
-            scale(2f, 2f, 2f)
-            translate(-.5f, -.5f, -5f)
-
-            cube {
-                frontColor = Color.RED
-                rightColor = Color.GREEN
-                backColor = Color.BLUE
-                leftColor = Color.YELLOW
-                topColor = Color.MAGENTA
-                bottomColor = Color.CYAN
+        +transformGroup("back") {
+            animation = { ctx ->
+                setIdentity()
+                translate(0f, 0f, -5f)
+                val s = 1f + Math.sin(ctx.time * 3).toFloat() * 0.5f
+                scale(s, s, s)
             }
+
+            +colorMesh {
+                color = Color.LIME
+                cylinder {
+                    origin.set(0f, -1.5f, 0f)
+                    height = 3f
+                    topRadius = .5f
+                    bottomRadius = 1f
+                }
+            }
+
+        }
+
+        +sphericalInputTransform("camRig") {
+            +ctx.scene.camera
+            setRotation(0f, -30f)
         }
     }
 
     ctx.clearColor = Color(0.05f, 0.15f, 0.25f, 1f)
-    ctx.scene.camera.position.set(0f, 5f, 15f)
     ctx.run()
 }

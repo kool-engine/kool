@@ -39,7 +39,7 @@ abstract class Node(val name: String? = null) {
      * Transforms vec in-place from local to global coordinates.
      */
     open fun toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        parent?.toGlobalCoords(vec)
+        parent?.toGlobalCoords(vec, w)
         return vec
     }
 

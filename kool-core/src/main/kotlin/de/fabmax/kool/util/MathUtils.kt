@@ -4,6 +4,14 @@ package de.fabmax.kool.util
  * @author fabmax
  */
 
+fun toDeg(rad: Float): Float {
+    return rad / Math.PI.toFloat() * 180f
+}
+
+fun toRad(rad: Float): Float {
+    return rad / 180f * Math.PI.toFloat()
+}
+
 fun clamp(value: Int, min: Int = 0, max: Int = 1): Int {
     if (value < min) {
         return min
