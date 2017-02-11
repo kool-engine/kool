@@ -11,9 +11,7 @@ import de.fabmax.kool.platform.js.JsContext
  */
 fun main(args: Array<String>) {
     PlatformImpl.init()
-
-    val props = JsContext.InitProps()
-    val ctx = Platform.createContext(props)
+    val ctx = Platform.createContext(JsContext.InitProps())
 
     simpleShapesDemo(ctx)
     //textureDemo(ctx)

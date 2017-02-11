@@ -1445,37 +1445,32 @@ var kool = function (Kotlin) {
             })
           }),
           demo: Kotlin.definePackage(null, /** @lends _.de.fabmax.kool.demo */ {
-            f: function (closure$ctx) {
-              return function () {
-                this.unaryPlus_uv0sin$(closure$ctx.scene.camera);
-              };
-            },
-            f_0: function (ctx) {
+            f: function (ctx) {
               this.setIdentity();
               this.translate_y2kzbl$(-5.0, Math.sin(ctx.time * 5), 0.0);
               this.rotate_ag3lbb$(ctx.time * 19, _.de.fabmax.kool.util.Vec3f.Companion.X_AXIS);
             },
-            f_1: function () {
+            f_0: function () {
               this.color.set_d7aj7k$(new _.de.fabmax.kool.util.Color((this.normal.x + 1) / 2, (this.normal.y + 1) / 2, (this.normal.z + 1) / 2, 1.0));
             },
-            f_2: function () {
+            f_1: function () {
               this.radius = 1.5;
             },
+            f_2: function () {
+              this.vertexModFun = _.de.fabmax.kool.demo.f_0;
+              this.sphere_s9x6gh$(_.de.fabmax.kool.demo.f_1);
+            },
             f_3: function () {
-              this.vertexModFun = _.de.fabmax.kool.demo.f_1;
-              this.sphere_s9x6gh$(_.de.fabmax.kool.demo.f_2);
+              this.animation = _.de.fabmax.kool.demo.f;
+              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$('sphere', _.de.fabmax.kool.demo.f_2));
             },
-            f_4: function () {
-              this.animation = _.de.fabmax.kool.demo.f_0;
-              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$('sphere', _.de.fabmax.kool.demo.f_3));
-            },
-            f_5: function (ctx) {
+            f_4: function (ctx) {
               this.setIdentity();
               this.translate_y2kzbl$(5.0, 0.0, 0.0);
               this.rotate_ag3lbb$(ctx.time * 90, _.de.fabmax.kool.util.Vec3f.Companion.Y_AXIS);
               this.rotate_ag3lbb$(ctx.time * 19, _.de.fabmax.kool.util.Vec3f.Companion.X_AXIS);
             },
-            f_6: function () {
+            f_5: function () {
               this.frontColor = _.de.fabmax.kool.util.Color.Companion.RED;
               this.rightColor = _.de.fabmax.kool.util.Color.Companion.GREEN;
               this.backColor = _.de.fabmax.kool.util.Color.Companion.BLUE;
@@ -1483,57 +1478,69 @@ var kool = function (Kotlin) {
               this.topColor = _.de.fabmax.kool.util.Color.Companion.MAGENTA;
               this.bottomColor = _.de.fabmax.kool.util.Color.Companion.CYAN;
             },
-            f_7: function () {
+            f_6: function () {
               this.scale_y2kzbl$(2.0, 2.0, 2.0);
               this.translate_y2kzbl$(-0.5, -0.5, -0.5);
-              this.cube_9hfdbr$(_.de.fabmax.kool.demo.f_6);
+              this.cube_9hfdbr$(_.de.fabmax.kool.demo.f_5);
             },
-            f_8: function () {
-              this.animation = _.de.fabmax.kool.demo.f_5;
-              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$('cube', _.de.fabmax.kool.demo.f_7));
+            f_7: function () {
+              this.animation = _.de.fabmax.kool.demo.f_4;
+              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$('cube', _.de.fabmax.kool.demo.f_6));
+            },
+            f_8: function (ctx) {
+              this.setIdentity();
+              this.translate_y2kzbl$(0.0, 0.0, -5.0);
+              var s = 1.0 + Math.sin(ctx.time * 3) * 0.5;
+              this.scale_y2kzbl$(s, s, s);
             },
             f_9: function () {
-              this.frontColor = _.de.fabmax.kool.util.Color.Companion.RED;
-              this.rightColor = _.de.fabmax.kool.util.Color.Companion.GREEN;
-              this.backColor = _.de.fabmax.kool.util.Color.Companion.BLUE;
-              this.leftColor = _.de.fabmax.kool.util.Color.Companion.YELLOW;
-              this.topColor = _.de.fabmax.kool.util.Color.Companion.MAGENTA;
-              this.bottomColor = _.de.fabmax.kool.util.Color.Companion.CYAN;
+              this.origin.set_y2kzbl$(0.0, -1.5, 0.0);
+              this.height = 3.0;
+              this.topRadius = 0.5;
+              this.bottomRadius = 1.0;
             },
             f_10: function () {
-              this.scale_y2kzbl$(2.0, 2.0, 2.0);
-              this.translate_y2kzbl$(-0.5, -0.5, -5.0);
-              this.cube_9hfdbr$(_.de.fabmax.kool.demo.f_9);
+              this.color = _.de.fabmax.kool.util.Color.Companion.LIME;
+              this.cylinder_7jdbew$(_.de.fabmax.kool.demo.f_9);
+            },
+            f_11: function () {
+              this.animation = _.de.fabmax.kool.demo.f_8;
+              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_10));
+            },
+            f_12: function (closure$ctx) {
+              return function () {
+                this.unaryPlus_uv0sin$(closure$ctx.scene.camera);
+                this.setRotation_dleff0$(0.0, -30.0);
+              };
             },
             simpleShapesDemo_qk1xvd$f: function (closure$ctx) {
               return function () {
-                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.sphericalInputTransform_n6upd5$('camRig', _.de.fabmax.kool.demo.f(closure$ctx)));
-                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.transformGroup_2byx8j$('left', _.de.fabmax.kool.demo.f_4));
-                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.transformGroup_2byx8j$('right', _.de.fabmax.kool.demo.f_8));
-                this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_10));
+                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.transformGroup_2byx8j$('left', _.de.fabmax.kool.demo.f_3));
+                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.transformGroup_2byx8j$('right', _.de.fabmax.kool.demo.f_7));
+                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.transformGroup_2byx8j$('back', _.de.fabmax.kool.demo.f_11));
+                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.sphericalInputTransform_n6upd5$('camRig', _.de.fabmax.kool.demo.f_12(closure$ctx)));
               };
             },
             simpleShapesDemo_qk1xvd$: function (ctx) {
               ctx.scene.root = _.de.fabmax.kool.scene.group_30wlp3$(void 0, _.de.fabmax.kool.demo.simpleShapesDemo_qk1xvd$f(ctx));
               ctx.clearColor = new _.de.fabmax.kool.util.Color(0.05000000074505806, 0.15000000596046448, 0.25, 1.0);
-              ctx.scene.camera.position.set_y2kzbl$(0.0, 5.0, 15.0);
               ctx.run();
             },
-            f_11: function () {
+            f_13: function () {
               this.width = 4.0;
               this.height = 4.0;
             },
-            f_12: function (closure$i) {
+            f_14: function (closure$i) {
               return function () {
                 var tmp$0;
                 this.translate_y2kzbl$(-2.0 + closure$i * 5, -2.0, 0.0);
-                this.rect_ud8hiy$(_.de.fabmax.kool.demo.f_11);
+                this.rect_ud8hiy$(_.de.fabmax.kool.demo.f_13);
                 (tmp$0 = this.shader) != null ? (tmp$0.texture = new _.de.fabmax.kool.SharedAssetTexture('test.png')) : null;
               };
             },
             textureDemo_qk1xvd$f: function () {
               for (var i = -1; i <= 1; i++) {
-                this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.textureMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_12(i)));
+                this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.textureMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_14(i)));
               }
             },
             textureDemo_qk1xvd$: function (ctx) {
@@ -2694,7 +2701,7 @@ var kool = function (Kotlin) {
                 var tmp$0;
                 if (w === void 0)
                   w = 1.0;
-                (tmp$0 = this.parent) != null ? tmp$0.toGlobalCoords_64rgyf$(vec) : null;
+                (tmp$0 = this.parent) != null ? tmp$0.toGlobalCoords_64rgyf$(vec, w) : null;
                 return vec;
               },
               toLocalCoords_64rgyf$: function (vec, w) {
@@ -2737,9 +2744,9 @@ var kool = function (Kotlin) {
               SphericalInputTransform.baseInitializer.call(this, name);
               this.stiffness_0 = 0.0;
               this.damping_0 = 0.0;
-              this.animRotV_0 = new _.de.fabmax.kool.scene.SphericalInputTransform.AnimatedVal(this);
-              this.animRotH_0 = new _.de.fabmax.kool.scene.SphericalInputTransform.AnimatedVal(this);
-              this.animZoom_0 = new _.de.fabmax.kool.scene.SphericalInputTransform.AnimatedVal(this);
+              this.animRotV_0 = new _.de.fabmax.kool.scene.SphericalInputTransform.AnimatedVal(this, 0.0);
+              this.animRotH_0 = new _.de.fabmax.kool.scene.SphericalInputTransform.AnimatedVal(this, 0.0);
+              this.animZoom_0 = new _.de.fabmax.kool.scene.SphericalInputTransform.AnimatedVal(this, 1.0);
               this.verticalAxis = _.de.fabmax.kool.util.Vec3f.Companion.Y_AXIS;
               this.horizontalAxis = _.de.fabmax.kool.util.Vec3f.Companion.X_AXIS;
               this.verticalRotation = 0.0;
@@ -2762,6 +2769,18 @@ var kool = function (Kotlin) {
                   }
                 }
               },
+              animateRotation_dleff0$: function (vertical, horizontal) {
+                this.animRotV_0.desired = vertical;
+                this.animRotH_0.desired = horizontal;
+                this.verticalRotation = vertical;
+                this.horizontalRotation = horizontal;
+              },
+              setRotation_dleff0$: function (vertical, horizontal) {
+                this.animRotV_0.set_mx4ult$(vertical);
+                this.animRotH_0.set_mx4ult$(horizontal);
+                this.verticalRotation = vertical;
+                this.horizontalRotation = horizontal;
+              },
               render_qk1xvd$: function (ctx) {
                 var pointer = ctx.inputHandler.primaryPointer;
                 if (pointer.isValid) {
@@ -2772,7 +2791,7 @@ var kool = function (Kotlin) {
                   if (pointer.isValid && pointer.isLeftButtonDown) {
                     this.verticalRotation -= pointer.deltaX / 3;
                     this.horizontalRotation -= pointer.deltaY / 3;
-                    this.horizontalRotation = _.de.fabmax.kool.util.clamp_y2kzbl$(this.horizontalRotation, -85.0, 85.0);
+                    this.horizontalRotation = _.de.fabmax.kool.util.clamp_y2kzbl$(this.horizontalRotation, -90.0, 90.0);
                   }
                   this.animRotV_0.desired = this.verticalRotation;
                   this.animRotH_0.desired = this.horizontalRotation;
@@ -2786,12 +2805,16 @@ var kool = function (Kotlin) {
                 _.de.fabmax.kool.scene.TransformGroup.prototype.render_qk1xvd$.call(this, ctx);
               }
             }, /** @lends _.de.fabmax.kool.scene.SphericalInputTransform */ {
-              AnimatedVal: Kotlin.createClass(null, function AnimatedVal($outer) {
+              AnimatedVal: Kotlin.createClass(null, function AnimatedVal($outer, value) {
                 this.$outer = $outer;
-                this.desired = 0.0;
-                this.actual = 0.0;
+                this.desired = value;
+                this.actual = value;
                 this.speed = 0.0;
               }, /** @lends _.de.fabmax.kool.scene.SphericalInputTransform.AnimatedVal.prototype */ {
+                set_mx4ult$: function (value) {
+                  this.desired = value;
+                  this.actual = value;
+                },
                 animate_mx4ult$: function (deltaT) {
                   if (_.de.fabmax.kool.util.isZero_mx4ult$(this.$outer.smoothness) || deltaT > 0.20000000298023224) {
                     this.actual = this.desired;
@@ -4352,6 +4375,12 @@ var kool = function (Kotlin) {
                 _.de.fabmax.kool.util.Mat4fStack.Companion;
               }
             }),
+            toDeg_mx4ult$: function (rad) {
+              return rad / Math.PI * 180.0;
+            },
+            toRad_mx4ult$: function (rad) {
+              return rad / 180.0 * Math.PI;
+            },
             clamp_qt1dr2$: function (value, min, max) {
               if (min === void 0)
                 min = 0;
@@ -4895,6 +4924,7 @@ var kool = function (Kotlin) {
               this.tmpNrm_w0m2r5$_0 = _.de.fabmax.kool.util.MutableVec3f_init();
               this.circleProps_w0m2r5$_0 = new _.de.fabmax.kool.util.CircleProps();
               this.cubeProps_w0m2r5$_0 = new _.de.fabmax.kool.util.CubeProps();
+              this.cylinderProps_w0m2r5$_0 = new _.de.fabmax.kool.util.CylinderProps();
               this.rectProps_w0m2r5$_0 = new _.de.fabmax.kool.util.RectProps();
               this.sphereProps_w0m2r5$_0 = new _.de.fabmax.kool.util.SphereProps();
               this.shader = _.de.fabmax.kool.shading.basicShader_9yb6un$(_.de.fabmax.kool.util.MeshBuilder.MeshBuilder$f(this));
@@ -4916,6 +4946,9 @@ var kool = function (Kotlin) {
                 }
                 block.call(this);
                 this.color = c;
+              },
+              translate_cx11x8$: function (t) {
+                return this.transform.translate_y2kzbl$(t.x, t.y, t.z);
               },
               translate_y2kzbl$: function (x, y, z) {
                 return this.transform.translate_y2kzbl$(x, y, z);
@@ -5048,6 +5081,38 @@ var kool = function (Kotlin) {
                 this.withColor_fs365k$(props.leftColor, _.de.fabmax.kool.util.MeshBuilder.cube_lhbb6w$f_2(props));
                 this.withColor_fs365k$(props.topColor, _.de.fabmax.kool.util.MeshBuilder.cube_lhbb6w$f_3(props));
                 this.withColor_fs365k$(props.bottomColor, _.de.fabmax.kool.util.MeshBuilder.cube_lhbb6w$f_4(props));
+              },
+              cylinder_7jdbew$: function (props) {
+                props.call(this.cylinderProps_w0m2r5$_0.defaults());
+                this.cylinder_tnt2h$(this.cylinderProps_w0m2r5$_0);
+              },
+              cylinder_tnt2h$: function (props) {
+                var tmp$0;
+                props.fixNegativeSize();
+                this.withTransform_mngb98$(_.de.fabmax.kool.util.MeshBuilder.cylinder_tnt2h$f(props));
+                this.withTransform_mngb98$(_.de.fabmax.kool.util.MeshBuilder.cylinder_tnt2h$f_0(props));
+                var dr = props.bottomRadius - props.topRadius;
+                var nrmAng = 90.0 - _.de.fabmax.kool.util.toDeg_mx4ult$(Math.acos(dr / Math.sqrt(dr * dr + props.height * props.height)));
+                var i0 = 0;
+                var i1 = 0;
+                tmp$0 = props.steps;
+                for (var i = 0; i <= tmp$0; i++) {
+                  var c = Math.cos(i * Math.PI * 2 / props.steps);
+                  var s = Math.sin(i * Math.PI * 2 / props.steps);
+                  var px2 = props.origin.x + props.bottomRadius * c;
+                  var pz2 = props.origin.z + props.bottomRadius * s;
+                  var px3 = props.origin.x + props.topRadius * c;
+                  var pz3 = props.origin.z + props.topRadius * s;
+                  this.tmpNrm_w0m2r5$_0.set_y2kzbl$(c, 0.0, s).rotate_7b5o5w$(nrmAng, s, 0.0, c);
+                  var i2 = this.vertex_hd42uj$(this.tmpPos_w0m2r5$_0.set_y2kzbl$(px2, props.origin.y, pz2), this.tmpNrm_w0m2r5$_0);
+                  var i3 = this.vertex_hd42uj$(this.tmpPos_w0m2r5$_0.set_y2kzbl$(px3, props.origin.y + props.height, pz3), this.tmpNrm_w0m2r5$_0);
+                  if (i > 0) {
+                    this.mesh.addTriIndices_qt1dr2$(i0, i1, i2);
+                    this.mesh.addTriIndices_qt1dr2$(i1, i3, i2);
+                  }
+                  i0 = i2;
+                  i1 = i3;
+                }
               }
             }, /** @lends _.de.fabmax.kool.util.MeshBuilder */ {
               vertex_hd42uj$f: function (closure$pos, closure$nrm, closure$uv, this$MeshBuilder) {
@@ -5123,6 +5188,32 @@ var kool = function (Kotlin) {
                   var i3 = this.vertex_hd42uj$(this.tmpPos_w0m2r5$_0.set_y2kzbl$(closure$props.origin.x, closure$props.origin.y, closure$props.origin.z + closure$props.depth), _.de.fabmax.kool.util.Vec3f.Companion.NEG_Y_AXIS);
                   this.mesh.addTriIndices_qt1dr2$(i0, i1, i2);
                   this.mesh.addTriIndices_qt1dr2$(i0, i2, i3);
+                };
+              },
+              f: function (closure$props) {
+                return function () {
+                  this.steps = closure$props.steps;
+                  this.radius = closure$props.bottomRadius;
+                };
+              },
+              cylinder_tnt2h$f: function (closure$props) {
+                return function () {
+                  this.translate_cx11x8$(closure$props.origin);
+                  this.rotate_ag3lbb$(90.0, _.de.fabmax.kool.util.Vec3f.Companion.X_AXIS);
+                  this.circle_edvpwy$(_.de.fabmax.kool.util.MeshBuilder.f(closure$props));
+                };
+              },
+              f_0: function (closure$props) {
+                return function () {
+                  this.steps = closure$props.steps;
+                  this.radius = closure$props.topRadius;
+                };
+              },
+              cylinder_tnt2h$f_0: function (closure$props) {
+                return function () {
+                  this.translate_y2kzbl$(closure$props.origin.x, closure$props.origin.y + closure$props.height, closure$props.origin.z);
+                  this.rotate_ag3lbb$(-90.0, _.de.fabmax.kool.util.Vec3f.Companion.X_AXIS);
+                  this.circle_edvpwy$(_.de.fabmax.kool.util.MeshBuilder.f_0(closure$props));
                 };
               },
               MeshBuilder$f: function (this$MeshBuilder) {
@@ -5222,6 +5313,28 @@ var kool = function (Kotlin) {
                 this.frontColor = null;
                 this.backColor = null;
                 return this;
+              }
+            }),
+            CylinderProps: Kotlin.createClass(null, function CylinderProps() {
+              this.bottomRadius = 1.0;
+              this.topRadius = 1.0;
+              this.steps = 20;
+              this.height = 1.0;
+              this.origin = _.de.fabmax.kool.util.MutableVec3f_init();
+            }, /** @lends _.de.fabmax.kool.util.CylinderProps.prototype */ {
+              defaults: function () {
+                this.bottomRadius = 1.0;
+                this.topRadius = 1.0;
+                this.steps = 20;
+                this.height = 1.0;
+                this.origin.set_cx11x8$(_.de.fabmax.kool.util.Vec3f.Companion.ZERO);
+                return this;
+              },
+              fixNegativeSize: function () {
+                if (this.height < 0) {
+                  this.origin.y = this.origin.y + this.height;
+                  this.height = -this.height;
+                }
               }
             }),
             Property: Kotlin.createClass(null, function Property(value) {
@@ -5535,6 +5648,22 @@ var kool = function (Kotlin) {
               },
               norm: function () {
                 this.scale_mx4ult$(1.0 / this.length());
+                return this;
+              },
+              rotate_ag3lbb$: function (angleDeg, axis) {
+                return this.rotate_7b5o5w$(angleDeg, axis.x, axis.y, axis.z);
+              },
+              rotate_7b5o5w$: function (angleDeg, axisX, axisY, axisZ) {
+                var rad = _.de.fabmax.kool.util.toRad_mx4ult$(angleDeg);
+                var c = Math.cos(rad);
+                var c1 = 1.0 - c;
+                var s = Math.sin(rad);
+                var tx = this.x * (axisX * axisX * c1 + c) + this.y * (axisX * axisY * c1 - axisZ * s) + this.z * (axisX * axisZ * c1 + axisY * s);
+                var ty = this.x * (axisY * axisX * c1 + axisZ * s) + this.y * (axisY * axisY * c1 + c) + this.z * (axisY * axisZ * c1 - axisX * s);
+                var tz = this.x * (axisX * axisZ * c1 - axisY * s) + this.y * (axisY * axisZ * c1 + axisX * s) + this.z * (axisZ * axisZ * c1 + c);
+                this.x = tx;
+                this.y = ty;
+                this.z = tz;
                 return this;
               },
               set_24o109$: function (i, v) {

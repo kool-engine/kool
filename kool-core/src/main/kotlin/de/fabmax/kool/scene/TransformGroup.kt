@@ -20,9 +20,9 @@ open class TransformGroup(name: String? = null) : Group(name) {
     protected val invTransform = Mat4f()
     protected var transformDirty = true
 
-    var animation: (TransformGroup.(RenderContext) -> Unit)? = null
+    open var animation: (TransformGroup.(RenderContext) -> Unit)? = null
 
-    private fun checkInverse() {
+    protected fun checkInverse() {
         if (transformDirty) {
             transform.invert(invTransform)
             transformDirty = false
@@ -30,17 +30,17 @@ open class TransformGroup(name: String? = null) : Group(name) {
     }
 
     override fun render(ctx: RenderContext) {
-        val anim = animation
-        if (anim != null) {
-            this.anim(ctx)
-        }
+        animation?.invoke(this, ctx)
 
+        // apply transformation
         ctx.mvpState.modelMatrix.push()
         ctx.mvpState.modelMatrix.mul(transform)
         ctx.mvpState.update(ctx)
 
+        // draw all child nodes
         super.render(ctx)
 
+        // clear transformation
         ctx.mvpState.modelMatrix.pop()
         ctx.mvpState.update(ctx)
     }

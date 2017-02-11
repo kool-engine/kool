@@ -11,9 +11,7 @@ import de.fabmax.kool.platform.lwjgl3.Lwjgl3Context
  */
 fun main(args: Array<String>) {
     PlatformImpl.init()
-
-    val props = Lwjgl3Context.InitProps()
-    val ctx = Platform.createContext(props)
+    val ctx = Platform.createContext(Lwjgl3Context.InitProps())
 
     simpleShapesDemo(ctx)
     //textureDemo(ctx)

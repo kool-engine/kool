@@ -9,25 +9,46 @@ import de.fabmax.kool.util.Vec3f
 import de.fabmax.kool.util.colorMesh
 
 /**
+ * A simple demo scene with mouse-controlled camera and a few animated shapes.
+ *
  * @author fabmax
  */
 fun simpleShapesDemo(ctx: RenderContext) {
+    // Create scene contents
     ctx.scene.root = group {
+        // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
+        +sphericalInputTransform {
+            // Set some initial rotation so that we look down on the scene
+            setRotation(20f, -30f)
+            // Add camera to the transform group
+            +ctx.scene.camera
+        }
 
-        +transformGroup("left") {
+        // Add a TransformGroup with a bouncing sphere
+        +transformGroup {
+            // Animation function is called on every frame
             animation = { ctx ->
+                // Clear transformation
                 setIdentity()
+                // Shift content 5 units left and let it bounce along Y-Axis
                 translate(-5f, Math.sin(ctx.time * 5).toFloat(), 0f)
+                // Slowly rotate the sphere, so we can see all the colors
                 rotate(ctx.time.toFloat() * 19, Vec3f.X_AXIS)
             }
 
-            +colorMesh("sphere") {
+            // Add a sphere mesh
+            +colorMesh {
+                // vertexModFun is called for every generated vertex, overwrite the vertex color depending on the
+                // normal orientation, this will make the sphere nicely colorful
                 vertexModFun = { color.set(Color((normal.x + 1) / 2, (normal.y + 1) / 2, (normal.z + 1) / 2, 1f)) }
+                // Generate the sphere mesh with a sphere radius of 1.5 units
                 sphere { radius = 1.5f }
             }
         }
 
-        +transformGroup("right") {
+        // Add a TransformGroup with a rotating cube
+        +transformGroup {
+            // Similar to above, but this time content is shifted to the right
             animation = { ctx ->
                 setIdentity()
                 translate(5f, 0f, 0f)
@@ -35,10 +56,14 @@ fun simpleShapesDemo(ctx: RenderContext) {
                 rotate(ctx.time.toFloat() * 19, Vec3f.X_AXIS)
             }
 
-            +colorMesh("cube") {
+            // Add a cube mesh
+            +colorMesh {
+                // Make the generated mesh twice as large
                 scale(2f, 2f, 2f)
+                // Shift cube origin to center instead of lower, left, back corner
                 translate(-.5f, -.5f, -.5f)
 
+                // Generate cube mesh with every face set to a different color
                 cube {
                     frontColor = Color.RED
                     rightColor = Color.GREEN
@@ -50,7 +75,9 @@ fun simpleShapesDemo(ctx: RenderContext) {
             }
         }
 
+        // Add another TransformGroup with a size-changing cylinder
         +transformGroup("back") {
+            // Content is shifted to the back and scaled depending on time
             animation = { ctx ->
                 setIdentity()
                 translate(0f, 0f, -5f)
@@ -58,6 +85,7 @@ fun simpleShapesDemo(ctx: RenderContext) {
                 scale(s, s, s)
             }
 
+            // Add the cylinder mesh
             +colorMesh {
                 color = Color.LIME
                 cylinder {
@@ -69,13 +97,10 @@ fun simpleShapesDemo(ctx: RenderContext) {
             }
 
         }
-
-        +sphericalInputTransform("camRig") {
-            +ctx.scene.camera
-            setRotation(0f, -30f)
-        }
     }
 
+    // Set background color
     ctx.clearColor = Color(0.05f, 0.15f, 0.25f, 1f)
+    // Finally run the whole thing
     ctx.run()
 }
