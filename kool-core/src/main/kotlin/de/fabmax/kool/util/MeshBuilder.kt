@@ -3,8 +3,10 @@ package de.fabmax.kool.util
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.shading.*
 
-fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, block: MeshBuilder.() -> Unit): Mesh {
-    val mesh = Mesh(withNormals, withColors, withTexCoords)
+fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
+         block: MeshBuilder.() -> Unit): Mesh {
+
+    val mesh = Mesh(withNormals, withColors, withTexCoords, name)
     val builder = MeshBuilder(mesh)
 
     mesh.batchUpdate = true
@@ -18,12 +20,12 @@ fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, bloc
 
 }
 
-fun textureMesh(block: MeshBuilder.() -> Unit): Mesh {
-    return mesh(true, false, true, block)
+fun textureMesh(name: String? = null, block: MeshBuilder.() -> Unit): Mesh {
+    return mesh(true, false, true, name, block)
 }
 
-fun colorMesh(block: MeshBuilder.() -> Unit): Mesh {
-    return mesh(true, true, false, block)
+fun colorMesh(name: String? = null, block: MeshBuilder.() -> Unit): Mesh {
+    return mesh(true, true, false, name, block)
 }
 
 /**

@@ -4,6 +4,7 @@ import de.fabmax.kool.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Property
+import kotlin.properties.Delegates
 
 /**
  * @author fabmax
@@ -25,20 +26,14 @@ abstract class RenderContext {
 
     var scene: Scene = Scene()
 
-    private val viewportWidthProp = Property(0)
-    var viewportWidth: Int
-        get() = viewportWidthProp.value
-        protected set(value) { viewportWidthProp.value = value }
+    private var viewportWidthProp = Property(0)
+    var viewportWidth by viewportWidthProp
 
     private val viewportHeightProp = Property(0)
-    var viewportHeight: Int
-        get() = viewportHeightProp.value
-        protected set(value) { viewportHeightProp.value = value }
+    var viewportHeight by viewportHeightProp
 
     private val clearColorProp = Property(Color.DARK_CYAN)
-    var clearColor: Color
-        get() = clearColorProp.value
-        set(value) { clearColorProp.value = value }
+    var clearColor by clearColorProp
 
     var clearMask = GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT
 
@@ -59,6 +54,7 @@ abstract class RenderContext {
         deltaT = (t - time).toFloat()
         time = t
 
+        inputHandler.onNewFrame()
         //boundBuffers.clear()
         //bindShader(null)
         //binTexture(null)

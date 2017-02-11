@@ -22,16 +22,23 @@ class InputHandler internal constructor() {
         val PRIMARY_POINTER = 0
     }
 
+    private val tmpPointers = Array(MAX_POINTERS, ::Pointer)
     private val pointers = Array(MAX_POINTERS, ::Pointer)
 
     /**
-     * Returns the primary pointer. For mouse-input that's the mouse cursor, for touch-input it's the first finger
-     * that touched the screen. Keep in mind that the returned [Pointer] might be invalid (i.e. [Pointer.valid] is
+     * The primary pointer. For mouse-input that's the mouse cursor, for touch-input it's the first finger
+     * that touched the screen. Keep in mind that the returned [Pointer] might be invalid (i.e. [Pointer.isValid] is
      * false) if the cursor exited the GL surface or if no finger touches the screen. Invalid pointers will keep
      * the last state that was set.
      */
-    fun getPrimaryPointer(): Pointer {
-        return pointers[PRIMARY_POINTER]
+    val primaryPointer = pointers[PRIMARY_POINTER]
+
+    internal fun onNewFrame() {
+        synchronized(tmpPointers) {
+            for (i in pointers.indices) {
+                pointers[i].updateFrom(tmpPointers[i])
+            }
+        }
     }
 
     /**
@@ -40,10 +47,12 @@ class InputHandler internal constructor() {
      */
     fun updatePointerPos(pointer: Int, x: Double, y: Double) {
         if (pointer >= 0 && pointer < MAX_POINTERS) {
-            val ptr = pointers[pointer]
-            ptr.valid = true
-            ptr.x = x
-            ptr.y = y
+            synchronized(tmpPointers) {
+                val ptr = tmpPointers[pointer]
+                ptr.isValid = true
+                ptr.x = x
+                ptr.y = y
+            }
         }
     }
 
@@ -52,14 +61,27 @@ class InputHandler internal constructor() {
      */
     fun updatePointerButtonState(pointer: Int, button: Int, down: Boolean) {
         if (pointer >= 0 && pointer < MAX_POINTERS) {
-            val ptr = pointers[pointer]
-            ptr.valid = true
-            if (down) {
-                ptr.buttonMask = ptr.buttonMask or (1 shl button)
-                //println("pressed: $button, mask = ${ptr.buttonMask}")
-            } else {
-                ptr.buttonMask = ptr.buttonMask and (1 shl button).inv()
-                //println("released: $button, mask = ${ptr.buttonMask}")
+            synchronized(tmpPointers) {
+                val ptr = tmpPointers[pointer]
+                ptr.isValid = true
+                if (down) {
+                    ptr.buttonMask = ptr.buttonMask or (1 shl button)
+                } else {
+                    ptr.buttonMask = ptr.buttonMask and (1 shl button).inv()
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates the button state of all buttons of the specified pointer.
+     */
+    fun updatePointerButtonStates(pointer: Int, mask: Int) {
+        if (pointer >= 0 && pointer < MAX_POINTERS) {
+            synchronized(tmpPointers) {
+                val ptr = tmpPointers[pointer]
+                ptr.isValid = true
+                ptr.buttonMask = mask
             }
         }
     }
@@ -69,45 +91,42 @@ class InputHandler internal constructor() {
      */
     fun updatePointerScrollPos(pointer: Int, ticks: Double) {
         if (pointer >= 0 && pointer < MAX_POINTERS) {
-            pointers[pointer].scrollPos += ticks
-            println("scrollPos: ${pointers[pointer].scrollPos}")
+            synchronized(tmpPointers) {
+                val ptr = tmpPointers[pointer]
+                ptr.isValid = true
+                ptr.scrollPos += ticks
+            }
         }
     }
 
     /**
-     * Updates the valid state of the specified pointer. A pointer gets invalid if the cursor leaves the GL surface.
+     * Updates the isValid state of the specified pointer. A pointer gets invalid if the cursor leaves the GL surface.
      */
     fun updatePointerValid(pointer: Int, valid: Boolean) {
         if (pointer >= 0 && pointer < MAX_POINTERS) {
-            pointers[pointer].valid = valid
-            //println("valid: $valid")
-        }
-    }
-
-    /**
-     * Updates the button state of all buttons of the specified pointer.
-     */
-    fun updatePointerButtonStates(pointer: Int, mask: Int) {
-        if (pointer >= 0 && pointer < MAX_POINTERS) {
-            val ptr = pointers[pointer]
-            ptr.valid = true
-            //if (mask != ptr.buttonMask) {
-            //    println("button state changed: ${ptr.buttonMask} -> $mask")
-            //}
-            ptr.buttonMask = mask
+            synchronized(tmpPointers) {
+                tmpPointers[pointer].isValid = valid
+            }
         }
     }
 
     class Pointer(val id: Int) {
         var x = 0.0
             internal set
+        var deltaX = 0.0
+            internal set
         var y = 0.0
+            internal set
+        var deltaY = 0.0
             internal set
         var scrollPos = 0.0
             internal set
+        var deltaScroll = 0.0
+            internal set
+
         var buttonMask = 0
             internal set
-        var valid = false
+        var isValid = false
             internal set
 
         val isLeftButtonDown: Boolean
@@ -120,5 +139,16 @@ class InputHandler internal constructor() {
             get() = (buttonMask and BACK_BUTTON_MASK) != 0
         val isForwardButtonDown: Boolean
             get() = (buttonMask and FORWARD_BUTTON_MASK) != 0
+
+        internal fun updateFrom(ptr: Pointer) {
+            deltaX = ptr.x - x
+            deltaY = ptr.y - y
+            deltaScroll = ptr.scrollPos - scrollPos
+            x = ptr.x
+            y = ptr.y
+            scrollPos = ptr.scrollPos
+            buttonMask = ptr.buttonMask
+            isValid = ptr.isValid
+        }
     }
 }

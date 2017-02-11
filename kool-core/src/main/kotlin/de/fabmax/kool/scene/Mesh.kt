@@ -12,7 +12,8 @@ import de.fabmax.kool.util.*
  *
  * @author fabmax
  */
-open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords: Boolean) : Node() {
+open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords: Boolean, name: String? = null) :
+        Node(name) {
 
     protected val data = IndexedVertexList(hasNormals, hasColors, hasTexCoords)
 
@@ -93,6 +94,10 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
     }
 
     override fun render(ctx: RenderContext) {
+        if (!isVisible) {
+            return
+        }
+
         checkBuffers(ctx)
 
         if (positionBinder == null) {
