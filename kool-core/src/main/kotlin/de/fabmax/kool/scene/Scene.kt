@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.Camera
+import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.platform.RenderContext
 
 /**

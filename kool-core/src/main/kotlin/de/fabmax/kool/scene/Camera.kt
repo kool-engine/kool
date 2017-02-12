@@ -1,4 +1,4 @@
-package de.fabmax.kool
+package de.fabmax.kool.scene
 
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.MatrixMath
@@ -8,17 +8,21 @@ import de.fabmax.kool.util.Vec3f
 /**
  * @author fabmax
  */
-class Camera {
+class Camera(name: String = "camera") : Node(name) {
 
     val position = MutableVec3f(0f, 0f, 10f)
-    val lookAt = MutableVec3f(Vec3f.ZERO)
-    val up = MutableVec3f(Vec3f.Y_AXIS)
+    val lookAt = MutableVec3f(Vec3f.Companion.ZERO)
+    val up = MutableVec3f(Vec3f.Companion.Y_AXIS)
 
     var fovy = 60.0f
-    var clipNear = 0.1f
-    var clipFar = 100.0f
+    var clipNear = 0.2f
+    var clipFar = 200.0f
     var aspectRatio = 1.0f
         private set
+
+    private val tmpPos = MutableVec3f()
+    private val tmpLookAt = MutableVec3f()
+    private val tmpUp = MutableVec3f()
 
     fun updateCamera(ctx: RenderContext) {
         aspectRatio = ctx.viewportWidth.toFloat() / ctx.viewportHeight.toFloat()
@@ -29,7 +33,10 @@ class Camera {
     }
 
     fun updateViewMatrix(ctx: RenderContext) {
-        ctx.mvpState.viewMatrix.setLookAt(position, lookAt, up)
+        toGlobalCoords(tmpPos.set(position))
+        toGlobalCoords(tmpLookAt.set(lookAt))
+        toGlobalCoords(tmpUp.set(up), 0f)
+        ctx.mvpState.viewMatrix.setLookAt(tmpPos, tmpLookAt, tmpUp)
     }
 
     fun updateProjectionMatrix(ctx: RenderContext) {

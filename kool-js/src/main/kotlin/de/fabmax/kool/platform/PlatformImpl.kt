@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.KogleException
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.Texture2d
 import de.fabmax.kool.TextureResource
 import de.fabmax.kool.platform.js.*
@@ -25,7 +25,7 @@ class PlatformImpl private constructor() : Platform() {
 
         internal var jsContext: JsContext? = null
         internal val gl: WebGLRenderingContext
-            get() = jsContext?.gl ?: throw KogleException("Platform.createContext() not called")
+            get() = jsContext?.gl ?: throw KoolException("Platform.createContext() not called")
 
         private val offscreenCanvas = document.createElement("canvas") as HTMLCanvasElement
         internal val offscreenCanvasCtx: CanvasRenderingContext2D
@@ -44,7 +44,7 @@ class PlatformImpl private constructor() : Platform() {
     override val supportsMultiContext = false
 
     override val supportsUint32Indices: Boolean
-        get() = jsContext?.supportsUint32Indices ?: throw KogleException("Platform.createContext() not called")
+        get() = jsContext?.supportsUint32Indices ?: throw KoolException("Platform.createContext() not called")
 
     override fun createContext(props: RenderContext.InitProps): RenderContext{
         var ctx = jsContext

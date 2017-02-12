@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KogleException
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.platform.Float32Buffer
 import de.fabmax.kool.platform.Platform
 
@@ -169,7 +169,7 @@ class Mat4fStack(val stackSize: Int = Mat4fStack.DEFAULT_STACK_SIZE) : Mat4f() {
 
     fun push() {
         if (stackIndex >= stackSize) {
-            throw KogleException("Matrix stack overflow")
+            throw KoolException("Matrix stack overflow")
         }
         for (i in 0 .. 15) {
             matrix[offset + 16 + i] = matrix[offset + i]
@@ -179,7 +179,7 @@ class Mat4fStack(val stackSize: Int = Mat4fStack.DEFAULT_STACK_SIZE) : Mat4f() {
 
     fun pop() {
         if (stackIndex <= 0) {
-            throw KogleException("Matrix stack underflow")
+            throw KoolException("Matrix stack underflow")
         }
         stackIndex--
     }

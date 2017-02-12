@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.lwjgl3
 
+import de.fabmax.kool.InputHandler
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.platform.use
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
@@ -18,15 +19,15 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
     val window: Long
 
     init {
-        // Setup an error callback. The default implementation will print the error message in System.err.
+        // setup an error callback
         GLFWErrorCallback.createPrint(System.err).set()
 
-        // Initialize GLFW. Most GLFW functions will not work before doing this.
+        // initialize GLFW
         if (!glfwInit()) {
             throw IllegalStateException("Unable to initialize GLFW")
         }
 
-        // Configure GLFW
+        // configure GLFW
         glfwDefaultWindowHints()
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
@@ -38,10 +39,10 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
             throw RuntimeException("Failed to create the GLFW window")
         }
 
-        // Get the resolution of the primary monitor
+        // get the resolution of the primary monitor
         val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor())
 
-        // Center the window
+        // center the window
         glfwSetWindowPos(window, (vidmode.width() - props.width) / 2, (vidmode.height() - props.height) / 2)
 
         glfwSetFramebufferSizeCallback(window) { wnd, w, h ->
@@ -49,7 +50,21 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
             viewportHeight = h
         }
 
-        // Get the thread stack and push a new frame
+        // install mouse callbacks
+        glfwSetMouseButtonCallback(window) { wnd, btn, act, mods ->
+            inputHandler.updatePointerButtonState(InputHandler.PRIMARY_POINTER, btn, act == GLFW_PRESS)
+        }
+        glfwSetCursorPosCallback(window) { wnd, x, y ->
+            inputHandler.updatePointerPos(InputHandler.PRIMARY_POINTER, x, y)
+        }
+        glfwSetCursorEnterCallback(window) { wnd, entered ->
+            inputHandler.updatePointerValid(InputHandler.PRIMARY_POINTER, entered)
+        }
+        glfwSetScrollCallback(window) { wnd, xOff, yOff ->
+            inputHandler.updatePointerScrollPos(InputHandler.PRIMARY_POINTER, yOff)
+        }
+
+        // get the thread stack and push a new frame
         MemoryStack.stackPush().use { stack ->
             val pWidth = stack.mallocInt(1)
             val pHeight = stack.mallocInt(1)
@@ -61,11 +76,11 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
     }
 
     override fun run() {
-        // Make the OpenGL context current
+        // make the OpenGL context current
         glfwMakeContextCurrent(window)
-        // Enable v-sync
+        // enable v-sync
         glfwSwapInterval(1)
-        // Make the window visible
+        // make the window visible
         glfwShowWindow(window)
 
         // This line is critical for LWJGL's interoperation with GLFW's OpenGL context, or any context that is managed
@@ -73,7 +88,7 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         // instance and makes the OpenGL bindings available for use.
         GL.createCapabilities()
 
-        // Run the rendering loop until the user has attempted to close the window
+        // run the rendering loop until the user has attempted to close the window
         while (!glfwWindowShouldClose(window)) {
             // render engine content
             render()
@@ -85,11 +100,11 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
     }
 
     override fun destroy() {
-        // Free the window callbacks and destroy the window
+        // free the window callbacks and destroy the window
         glfwFreeCallbacks(window)
         glfwDestroyWindow(window)
 
-        // Terminate GLFW and free the error callback
+        // terminate GLFW and free the error callback
         glfwTerminate()
         glfwSetErrorCallback(null).free()
     }
