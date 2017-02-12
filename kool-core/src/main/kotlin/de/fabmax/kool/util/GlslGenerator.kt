@@ -279,6 +279,16 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
             text.append("vec4 ").append(VARYING_NAME_COLOR).append(" = ").append(UNIFORM_STATIC_COLOR).append(";\n")
         }
 
+        if (shaderProps.colorModel != ColorModel.TEXTURE_COLOR) {
+            // pre-multiply alpha! Why? Because that's the right way...
+            // https://limnu.com/webgl-blending-youre-probably-wrong/
+            // http://www.realtimerendering.com/blog/gpus-prefer-premultiplication/
+
+            // pre-multiplication is done for all color models except texture color,
+            // because textures already are pre-multiplied
+            text.append(VARYING_NAME_COLOR).append(".rgb *= ").append(VARYING_NAME_COLOR).append(".a;")
+        }
+
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
             if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
                 // normalize input vectors
