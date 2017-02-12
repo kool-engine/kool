@@ -91,6 +91,13 @@ class PlatformImpl private constructor() : Platform() {
                     pixel[3] = 255
                 }
 
+                // pre-multiply alpha
+                if (pixel[3] < 255) {
+                    pixel[0] = Math.round(pixel[0] * pixel[3] / 255f)
+                    pixel[1] = Math.round(pixel[1] * pixel[3] / 255f)
+                    pixel[2] = Math.round(pixel[2] * pixel[3] / 255f)
+                }
+
                 buffer.put(pixel[0].toByte()).put(pixel[1].toByte()).put(pixel[2].toByte())
                 if (alpha) {
                     buffer.put(pixel[3].toByte())
