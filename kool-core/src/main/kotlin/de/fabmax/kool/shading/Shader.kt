@@ -14,7 +14,7 @@ import de.fabmax.kool.scene.Mesh
 abstract class Shader(source: Source) : GlObject<ProgramResource>() {
 
     var source = source
-        internal set
+        protected set
 
     data class Source(val vertexSrc: String, val fragmentSrc: String)
 

@@ -22,7 +22,41 @@ abstract class ShaderGenerator {
         val UNIFORM_STATIC_COLOR = "uStaticColor"
         val UNIFORM_ALPHA = "uAlpha"
         val UNIFORM_SATURATION = "uSaturation"
+
+        val ATTRIBUTE_NAME_POSITION = "aVertexPosition_modelspace"
+        val ATTRIBUTE_NAME_NORMAL = "aVertexNormal_modelspace"
+        val ATTRIBUTE_NAME_TEX_COORD = "aVertexTexCoord"
+        val ATTRIBUTE_NAME_COLOR = "aVertexColor"
+
+        val VARYING_NAME_TEX_COORD = "vTexCoord"
+        val VARYING_NAME_EYE_DIRECTION = "vEyeDirection_cameraspace"
+        val VARYING_NAME_LIGHT_DIRECTION = "vLightDirection_cameraspace"
+        val VARYING_NAME_NORMAL = "vNormal_cameraspace"
+        val VARYING_NAME_COLOR = "vFragmentColor"
+        val VARYING_NAME_DIFFUSE_LIGHT_COLOR = "vDiffuseLightColor"
+        val VARYING_NAME_SPECULAR_LIGHT_COLOR = "vSpecularLightColor"
+        val VARYING_NAME_POSITION_WORLDSPACE = "vPositionWorldspace"
+
+        val LOCAL_NAME_FRAG_COLOR = "fragColor"
+        val LOCAL_NAME_TEX_COLOR = "texColor"
+        val LOCAL_NAME_VERTEX_COLOR = "vertColor"
+        val LOCAL_NAME_STATIC_COLOR = "staticColor"
     }
+
+    interface GlslInjector {
+        fun vsStart(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun vsAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun vsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
+
+        fun fsStart(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun fsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
+
+        fun fsBeforeSampling(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) { }
+    }
+
+    val injectors: MutableList<GlslInjector> = mutableListOf()
 
     val uniformMvpMatrix: UniformMatrix4 = UniformMatrix4(UNIFORM_MVP_MATRIX)
     val uniformModelMatrix: UniformMatrix4 = UniformMatrix4(UNIFORM_MODEL_MATRIX)

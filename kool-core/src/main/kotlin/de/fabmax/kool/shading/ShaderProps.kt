@@ -19,8 +19,19 @@ enum class FogModel {
 
 class ShaderProps(init: ShaderProps.() -> Unit = {}) {
     var lightModel = LightModel.PHONG_LIGHTING
-    var colorModel = ColorModel.VERTEX_COLOR
+    var colorModel = ColorModel.STATIC_COLOR
+        set(value) {
+            when (value) {
+                ColorModel.VERTEX_COLOR -> { isVertexColor = true; isTextureColor = false; isStaticColor = false }
+                ColorModel.TEXTURE_COLOR -> { isVertexColor = false; isTextureColor = true; isStaticColor = false }
+                ColorModel.STATIC_COLOR -> { isVertexColor = false; isTextureColor = false; isStaticColor = true }
+            }
+        }
     var fogModel = FogModel.FOG_OFF
+
+    var isVertexColor = false
+    var isTextureColor = false
+    var isStaticColor = true
 
     var isAlpha = false
     var isSaturation = false

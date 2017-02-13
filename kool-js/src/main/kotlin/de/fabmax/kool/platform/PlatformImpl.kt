@@ -52,11 +52,13 @@ class PlatformImpl private constructor() : Platform() {
     }
 
     override fun createDefaultShaderGenerator(): ShaderGenerator {
-        return GlslGenerator(object: GlslGenerator.Customization {
-            override fun fragmentShaderStart(shaderProps: ShaderProps, text: StringBuilder) {
+        val generator = GlslGenerator()
+        generator.injectors += object: ShaderGenerator.GlslInjector {
+            override fun fsStart(shaderProps: ShaderProps, text: StringBuilder) {
                 text.append("precision highp float;")
             }
-        })
+        }
+        return generator
     }
 
     override fun getGlImpl(): GL.Impl {

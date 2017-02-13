@@ -62,7 +62,7 @@ open class BasicShader(props: ShaderProps, private val generator: ShaderGenerato
         // set meaningful uniform default values
         shininess = 20.0f
         specularIntensity = 0.75f
-        staticColor.set(Color.RED)
+        staticColor.set(Color.BLACK)
         alpha = 1.0f
         saturation = 1.0f
         fogRange = 250.0f

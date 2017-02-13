@@ -1,8 +1,6 @@
 package de.fabmax.kool.js
 
-import de.fabmax.kool.demo.simpleShapesDemo
 import de.fabmax.kool.demo.textDemo
-import de.fabmax.kool.demo.textureDemo
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.js.JsContext

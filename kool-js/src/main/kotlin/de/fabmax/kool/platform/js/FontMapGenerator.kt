@@ -44,35 +44,23 @@ class FontMapGenerator {
             style += "italic "
         }
 
-        val t = Platform.currentTimeMillis()
         val metrics = makeMap(chars, font.family, font.size, style)
 
         val props = TextureResource.Props(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
         val data = canvasCtx.getImageData(0.0, 0.0, MAXIMUM_TEX_WIDTH.toDouble(), MAXIMUM_TEX_HEIGHT.toDouble())
 
         // alpha texture
-//        val buffer = Platform.createUint8Buffer(MAXIMUM_TEX_WIDTH * MAXIMUM_TEX_HEIGHT)
-//        for (i in 0..buffer.capacity-1) {
-//            buffer.put(data.data[i*4+3])
-//        }
-//        val map = CharMap(BufferedTexture2d(buffer, MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT, GL.ALPHA, props), metrics)
-
-        // rgba texture
-        val buffer = Platform.createUint8Buffer(MAXIMUM_TEX_WIDTH * MAXIMUM_TEX_HEIGHT * 4)
+        val buffer = Platform.createUint8Buffer(MAXIMUM_TEX_WIDTH * MAXIMUM_TEX_HEIGHT)
         for (i in 0..buffer.capacity-1) {
-            buffer.put(data.data[i])
+            buffer.put(data.data[i*4+3])
         }
-        val map = CharMap(BufferedTexture2d(buffer, MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT, GL.RGBA, props), metrics)
-
-        println("generated font tex: ${font.family} $style ${font.size}px, took ${Platform.currentTimeMillis() - t}ms")
-
-        return map
+        return CharMap(BufferedTexture2d(buffer, MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT, GL.ALPHA, props), metrics)
     }
 
     private fun makeMap(chars: String, family: String, size: Float, style: String): Map<Char, CharMetrics> {
         canvasCtx.font = "$style${size}px \"$family\""
         canvasCtx.fillStyle = "#ffffff"
-        canvasCtx.strokeStyle = "#ff0000"
+//        canvasCtx.strokeStyle = "#ff0000"
 
         val padding = 3.0
         // line height above baseline

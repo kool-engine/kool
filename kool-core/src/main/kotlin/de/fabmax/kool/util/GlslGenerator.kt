@@ -6,33 +6,7 @@ import de.fabmax.kool.shading.*
 /**
  * @author fabmax
  */
-open class GlslGenerator(private val customization: Customization? = null) : ShaderGenerator() {
-
-    companion object {
-        val ATTRIBUTE_NAME_POSITION = "aVertexPosition_modelspace"
-        val ATTRIBUTE_NAME_NORMAL = "aVertexNormal_modelspace"
-        val ATTRIBUTE_NAME_TEX_COORD = "aVertexTexCoord"
-        val ATTRIBUTE_NAME_COLOR = "aVertexColor"
-
-        val VARYING_NAME_TEX_COORD = "vTexCoord"
-        val VARYING_NAME_EYE_DIRECTION = "vEyeDirection_cameraspace"
-        val VARYING_NAME_LIGHT_DIRECTION = "vLightDirection_cameraspace"
-        val VARYING_NAME_NORMAL = "vNormal_cameraspace"
-        val VARYING_NAME_COLOR = "vFragmentColor"
-        val VARYING_NAME_DIFFUSE_LIGHT_COLOR = "vDiffuseLightColor"
-        val VARYING_NAME_SPECULAR_LIGHT_COLOR = "vSpecularLightColor"
-        val VARYING_NAME_POSITION_WORLDSPACE = "vPositionWorldspace"
-    }
-
-    interface Customization {
-        fun vertexShaderStart(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun vertexShaderAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun vertexShaderEnd(shaderProps: ShaderProps, text: StringBuilder) { }
-
-        fun fragmentShaderStart(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun fragmentShaderAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun fragmentShaderEnd(shaderProps: ShaderProps, text: StringBuilder) { }
-    }
+open class GlslGenerator : ShaderGenerator() {
 
     override fun onLoad(shader: BasicShader) {
         shader.enableAttribute(Shader.Attribute.POSITIONS, ATTRIBUTE_NAME_POSITION)
@@ -67,11 +41,11 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
     private fun generateVertShader(shaderProps: ShaderProps): String {
         val text = StringBuilder("// Generated vertex shader code\n")
 
-        customization?.vertexShaderStart(shaderProps, text)
+        injectors.forEach { it.vsStart(shaderProps, text) }
         generateVertInputCode(shaderProps, text)
-        customization?.vertexShaderAfterInput(shaderProps, text)
+        injectors.forEach { it.vsAfterInput(shaderProps, text) }
         generateVertBodyCode(shaderProps, text)
-        customization?.vertexShaderEnd(shaderProps, text)
+        injectors.forEach { it.vsEnd(shaderProps, text) }
 
         return text.toString()
     }
@@ -79,11 +53,11 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
     private fun generateFragShader(shaderProps: ShaderProps): String {
         val text = StringBuilder("// Generated fragment shader code\n")
 
-        customization?.fragmentShaderStart(shaderProps, text)
+        injectors.forEach { it.fsStart(shaderProps, text) }
         generateFragInputCode(shaderProps, text)
-        customization?.fragmentShaderAfterInput(shaderProps, text)
+        injectors.forEach { it.fsAfterInput(shaderProps, text) }
         generateFragBodyCode(shaderProps, text)
-        customization?.fragmentShaderEnd(shaderProps, text)
+        injectors.forEach { it.fsEnd(shaderProps, text) }
 
         return text.toString()
     }
@@ -117,12 +91,13 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
         }
 
         // add color dependent attributes
-        if (shaderProps.colorModel == ColorModel.TEXTURE_COLOR) {
+        if (shaderProps.isTextureColor) {
             // texture color
             text.append("attribute vec2 ").append(ATTRIBUTE_NAME_TEX_COORD).append(";\n")
             text.append("varying vec2 ").append(VARYING_NAME_TEX_COORD).append(";\n")
 
-        } else if (shaderProps.colorModel == ColorModel.VERTEX_COLOR) {
+        }
+        if (shaderProps.isVertexColor) {
             // vertex color
             text.append("attribute vec4 ").append(ATTRIBUTE_NAME_COLOR).append(";\n")
             text.append("varying vec4 ").append(VARYING_NAME_COLOR).append(";\n")
@@ -148,12 +123,13 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
                     .append(" * vec4(").append(ATTRIBUTE_NAME_POSITION).append(", 1.0)).xyz;\n")
         }
 
-        if (shaderProps.colorModel == ColorModel.TEXTURE_COLOR) {
+        if (shaderProps.isTextureColor) {
             // interpolate vertex texture coordinate for usage in fragment shader
             // vTexCoord = aVertexTexCoord;
             text.append(VARYING_NAME_TEX_COORD).append(" = ").append(ATTRIBUTE_NAME_TEX_COORD).append(";\n")
 
-        } else if (shaderProps.colorModel == ColorModel.VERTEX_COLOR) {
+        }
+        if (shaderProps.isVertexColor) {
             // interpolate vertex color for usage in fragment shader
             // vFragmentColor = aVertexColor;
             text.append(VARYING_NAME_COLOR).append(" = ").append(ATTRIBUTE_NAME_COLOR).append(";\n")
@@ -216,12 +192,6 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
     }
 
     private fun generateFragInputCode(shaderProps: ShaderProps, text: StringBuilder) {
-        /*if (shaderProps.isHighPrecision) {
-            text.append("precision highp float;")
-        } else {
-            text.append("precision mediump float;")
-        }*/
-
         text.append("uniform mat4 ").append(UNIFORM_MODEL_MATRIX).append(";\n")
         text.append("uniform mat4 ").append(UNIFORM_VIEW_MATRIX).append(";\n")
         if (shaderProps.isAlpha) {
@@ -245,14 +215,16 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
         }
 
         // add color dependent uniforms and varyings
-        if (shaderProps.colorModel == ColorModel.TEXTURE_COLOR) {
+        if (shaderProps.isTextureColor) {
             // texture color
             text.append("uniform sampler2D ").append(UNIFORM_TEXTURE_0).append(";\n")
             text.append("varying vec2 ").append(VARYING_NAME_TEX_COORD).append(";\n")
-        } else if (shaderProps.colorModel == ColorModel.VERTEX_COLOR) {
+        }
+        if (shaderProps.isVertexColor) {
             // vertex color
             text.append("varying vec4 ").append(VARYING_NAME_COLOR).append(";\n")
-        } else {
+        }
+        if (shaderProps.isStaticColor) {
             // static color
             text.append("uniform vec4 ").append(UNIFORM_STATIC_COLOR).append(";\n")
         }
@@ -268,26 +240,29 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
 
     private fun generateFragBodyCode(shaderProps: ShaderProps, text: StringBuilder) {
         text.append("\nvoid main() {\n")
+        text.append("vec4 ").append(LOCAL_NAME_FRAG_COLOR).append(" = vec4(0.0);\n")
 
-        if (shaderProps.colorModel == ColorModel.TEXTURE_COLOR) {
-            // get base fragment color from texture, use varying color name as var name to make it
-            // compatible with vertex color color model
+        injectors.forEach { it.fsBeforeSampling(shaderProps, text) }
+
+        if (shaderProps.isTextureColor) {
+            // get base fragment color from texture
             // vec4 fragmentColor = texture2D(uTextureSampler, vTexCoord);
-            text.append("vec4 ").append(VARYING_NAME_COLOR).append(" = texture2D(")
+            text.append("vec4 ").append(LOCAL_NAME_TEX_COLOR).append(" = texture2D(")
                     .append(UNIFORM_TEXTURE_0).append(", ").append(VARYING_NAME_TEX_COORD).append(");\n")
-        } else if (shaderProps.colorModel == ColorModel.STATIC_COLOR) {
-            text.append("vec4 ").append(VARYING_NAME_COLOR).append(" = ").append(UNIFORM_STATIC_COLOR).append(";\n")
+            text.append(LOCAL_NAME_FRAG_COLOR).append(" = ").append(LOCAL_NAME_TEX_COLOR).append(";\n")
+        }
+        if (shaderProps.isVertexColor) {
+            text.append("vec4 ").append(LOCAL_NAME_VERTEX_COLOR).append(" = ").append(VARYING_NAME_COLOR).append(";\n")
+            text.append(LOCAL_NAME_VERTEX_COLOR).append(".rgb *= ").append(LOCAL_NAME_VERTEX_COLOR).append(".a;\n")
+            text.append(LOCAL_NAME_FRAG_COLOR).append(" = ").append(LOCAL_NAME_VERTEX_COLOR).append(";\n")
+        }
+        if (shaderProps.isStaticColor) {
+            text.append("vec4 ").append(LOCAL_NAME_STATIC_COLOR).append(" = ").append(UNIFORM_STATIC_COLOR).append(";\n")
+            text.append(LOCAL_NAME_STATIC_COLOR).append(".rgb *= ").append(LOCAL_NAME_STATIC_COLOR).append(".a;\n")
+            text.append(LOCAL_NAME_FRAG_COLOR).append(" = ").append(LOCAL_NAME_STATIC_COLOR).append(";\n")
         }
 
-        if (shaderProps.colorModel != ColorModel.TEXTURE_COLOR) {
-            // pre-multiply alpha! Why? Because that's the right way...
-            // https://limnu.com/webgl-blending-youre-probably-wrong/
-            // http://www.realtimerendering.com/blog/gpus-prefer-premultiplication/
-
-            // pre-multiplication is done for all color models except texture color,
-            // because textures already are pre-multiplied
-            text.append(VARYING_NAME_COLOR).append(".rgb *= ").append(VARYING_NAME_COLOR).append(".a;")
-        }
+        injectors.forEach { it.fsAfterSampling(shaderProps, text) }
 
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
             if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
@@ -304,37 +279,37 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
                 text.append("float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n")
 
                 // vec4 materialAmbientColor = vFragmentColor * vec4(0.4, 0.4, 0.4, 1.0);
-                text.append("vec4 materialAmbientColor = ").append(VARYING_NAME_COLOR)
+                text.append("vec4 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR)
                         .append(" * vec4(0.4, 0.4, 0.4, 1.0);\n")
 
                 // vec4 materialDiffuseColor = vFragmentColor * vec4(uLightColor, 1.0) * cosTheta;
-                text.append("vec4 materialDiffuseColor = ").append(VARYING_NAME_COLOR)
+                text.append("vec4 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
                         .append(" * vec4(").append(UNIFORM_LIGHT_COLOR).append(", 1.0) * (cosTheta + 0.2);\n")
 
-                // vec4 materialSpecularColor = vec4(uLightColor * uSpecular, 1.0) * pow(cosAlpha, uShininess);
+                // vec4 materialSpecularColor = vec4(uLightColor * uSpecular, 0.0) * pow(cosAlpha, uShininess);
                 text.append("vec4 materialSpecularColor = vec4(").append(UNIFORM_LIGHT_COLOR)
                         .append(" * ").append(UNIFORM_SPECULAR_INTENSITY).append(", 0.0) * pow(cosAlpha, ")
-                        .append(UNIFORM_SHININESS).append(");\n")
+                        .append(UNIFORM_SHININESS).append(") * clamp(").append(LOCAL_NAME_FRAG_COLOR).append(".a * 2.0, 0.0, 1.0);\n")
 
             } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
                 // vec4 materialAmbientColor = vFragmentColor * vec4(0.4, 0.4, 0.4, 1.0);
-                text.append("vec4 materialAmbientColor = ").append(VARYING_NAME_COLOR)
+                text.append("vec4 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR)
                         .append(" * vec4(0.4, 0.4, 0.4, 1.0);\n")
 
-                // vec4 materialDiffuseColor = fragmentColor * vDiffuseLightColor;
-                text.append("vec4 materialDiffuseColor = ").append(VARYING_NAME_COLOR)
+                // vec4 materialDiffuseColor = vFragmentColor * vDiffuseLightColor;
+                text.append("vec4 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
                         .append(" * ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
 
                 // vec4 materialSpecularColor = vSpecularLightColor;
-                text.append("vec4 materialSpecularColor = ").append(VARYING_NAME_COLOR)
-                        .append(" * ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(";\n")
+                text.append("vec4 materialSpecularColor = ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(";\n")
+                        .append(" * clamp(").append(LOCAL_NAME_FRAG_COLOR).append(".a * 2.0, 0.0, 1.0);\n")
             }
 
             // compute output color
             text.append("gl_FragColor = materialAmbientColor + materialDiffuseColor + materialSpecularColor;\n")
 
         } else {
-            text.append("gl_FragColor = ").append(VARYING_NAME_COLOR).append(";\n")
+            text.append("gl_FragColor = ").append(LOCAL_NAME_FRAG_COLOR).append(";\n")
         }
 
         // add fog code
@@ -347,7 +322,7 @@ open class GlslGenerator(private val customization: Customization? = null) : Sha
         }
 
         if (shaderProps.isAlpha) {
-            text.append("gl_FragColor.a = gl_FragColor.a * ").append(UNIFORM_ALPHA).append(";\n")
+            text.append("gl_FragColor *= ").append(UNIFORM_ALPHA).append(";\n")
         }
         if (shaderProps.isSaturation) {
             text.append("float avgColor = (gl_FragColor.r + gl_FragColor.g + gl_FragColor.b) * 0.333;\n")

@@ -73,7 +73,7 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
             ev as WheelEvent
             // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse scroll
             // wheel tick
-            var ticks = ev.deltaY / 3.0
+            var ticks = -ev.deltaY / 3.0
             if (ev.deltaMode == 0) {
                 // scroll delta is specified in pixels...
                 ticks /= 30

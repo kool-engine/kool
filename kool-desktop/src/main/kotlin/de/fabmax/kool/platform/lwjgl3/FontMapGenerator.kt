@@ -43,19 +43,15 @@ class FontMapGenerator {
             style += java.awt.Font.ITALIC
         }
         g.font = java.awt.Font(font.family, style, Math.round(font.size))
+        g.color = Color.BLACK
 
-        val t = Platform.currentTimeMillis()
         val metrics = makeMap(chars, font.size, g)
 
         val props = TextureResource.Props(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
 
-        // rgba texture
-        val buffer = bufferedImageToBuffer(canvas)
-        val map = CharMap(BufferedTexture2d(buffer, MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT, GL.RGBA, props), metrics)
-
-        println("generated font tex: ${font.family} $style ${font.size}px, took ${Platform.currentTimeMillis() - t}ms")
-
-        return map
+        val format = GL.ALPHA
+        val buffer = bufferedImageToBuffer(canvas, format)
+        return CharMap(BufferedTexture2d(buffer, MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT, format, props), metrics)
     }
 
     private fun makeMap(chars: String, size: Float, g: Graphics2D): Map<Char, CharMetrics> {
@@ -83,12 +79,6 @@ class FontMapGenerator {
                 }
             }
 
-//            g.color = Color.RED
-//            g.drawLine(x + padding, y + hbb, x + padding + charW, y + hbb)
-//            g.drawLine(x + padding + charW, y + hbb, x + padding + charW, y - hab + 1)
-//            g.drawLine(x + padding + charW, y - hab + 1, x + padding, y - hab + 1)
-//            g.drawLine(x + padding, y - hab + 1, x + padding, y + hbb)
-
             val metrics = CharMetrics()
             metrics.width = charW.toFloat() //(charW + padding * 2).toFloat()
             metrics.height = height.toFloat()
@@ -101,7 +91,6 @@ class FontMapGenerator {
                     (y.toFloat() - hab.toFloat() + metrics.height) / MAXIMUM_TEX_HEIGHT)
             map.put(c, metrics)
 
-            g.color = Color.WHITE
             g.drawString("$c", x + padding, y)
             x += paddedWidth
         }

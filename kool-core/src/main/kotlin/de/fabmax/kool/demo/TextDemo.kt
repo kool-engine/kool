@@ -5,6 +5,7 @@ import de.fabmax.kool.scene.group
 import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.fontShader
 import de.fabmax.kool.util.textureMesh
 
 /**
@@ -12,14 +13,13 @@ import de.fabmax.kool.util.textureMesh
  */
 fun textDemo(ctx: RenderContext) {
     val font = Font("Segoe UI", 48.0f)
-    val str = "Hello j World!"
+    val str = "Hello World!"
 
     ctx.scene.root = group {
         +sphericalInputTransform { +ctx.scene.camera }
 
         +textureMesh {
-            shader?.texture = font.charMap.fontTexture
-
+            shader = fontShader(font, Color.LIME) { }
             translate(-1f, -.25f, 0f)
 
             for (c in str) {
@@ -37,8 +37,6 @@ fun textDemo(ctx: RenderContext) {
 
                 translate(metrics.advance / 100, 0f, 0f)
             }
-            //shader?.texture = SharedAssetTexture("test.png")
-
         }
     }
 
