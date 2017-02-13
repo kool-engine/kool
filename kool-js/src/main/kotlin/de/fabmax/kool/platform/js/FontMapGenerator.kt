@@ -33,8 +33,7 @@ class FontMapGenerator {
 
     fun createCharMap(font: Font, chars: String): CharMap {
         // clear canvas
-        canvasCtx.fillStyle = "transparent"
-        canvasCtx.fillRect(0.0, 0.0, MAXIMUM_TEX_WIDTH.toDouble(), MAXIMUM_TEX_HEIGHT.toDouble())
+        canvasCtx.clearRect(0.0, 0.0, MAXIMUM_TEX_WIDTH.toDouble(), MAXIMUM_TEX_HEIGHT.toDouble())
 
         var style = ""
         if (font.style and Font.BOLD != 0) {

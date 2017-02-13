@@ -3,7 +3,6 @@ package de.fabmax.kool.platform.lwjgl3
 import de.fabmax.kool.BufferedTexture2d
 import de.fabmax.kool.TextureResource
 import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.bufferedImageToBuffer
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.CharMetrics
@@ -32,8 +31,8 @@ class FontMapGenerator {
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 
         // clear canvas
-        g.color = clearColor
-        g.fillRect(0, 0, MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT)
+        g.background = clearColor
+        g.clearRect(0, 0, MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT)
 
         var style = java.awt.Font.PLAIN
         if (font.style and Font.BOLD != 0) {

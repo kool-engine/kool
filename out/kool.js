@@ -11,7 +11,7 @@ var kool = function (Kotlin) {
             main_kand9s$: function (args) {
               _.de.fabmax.kool.platform.PlatformImpl.Companion.init();
               var ctx = _.de.fabmax.kool.platform.Platform.Companion.createContext_ihrqo7$(new _.de.fabmax.kool.platform.js.JsContext.InitProps());
-              _.de.fabmax.kool.demo.textDemo_qk1xvd$(ctx);
+              _.de.fabmax.kool.demo.simpleShapesDemo_qk1xvd$(ctx);
             }
           }),
           platform: Kotlin.definePackage(null, /** @lends _.de.fabmax.kool.platform */ {
@@ -194,8 +194,7 @@ var kool = function (Kotlin) {
               }, /** @lends _.de.fabmax.kool.platform.js.FontMapGenerator.prototype */ {
                 createCharMap_34dg9o$: function (font, chars) {
                   var tmp$0;
-                  this.canvasCtx_0.fillStyle = 'transparent';
-                  this.canvasCtx_0.fillRect(0.0, 0.0, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT);
+                  this.canvasCtx_0.clearRect(0.0, 0.0, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT);
                   var style = '';
                   if ((font.style & _.de.fabmax.kool.util.Font.Companion.BOLD) !== 0) {
                     style = 'bold ';
@@ -203,24 +202,20 @@ var kool = function (Kotlin) {
                   if ((font.style & _.de.fabmax.kool.util.Font.Companion.ITALIC) !== 0) {
                     style += 'italic ';
                   }
-                  var t = _.de.fabmax.kool.platform.Platform.Companion.currentTimeMillis();
                   var metrics = this.makeMap_0(chars, font.family, font.size, style);
                   var props = new _.de.fabmax.kool.TextureResource.Props(_.de.fabmax.kool.platform.GL.Companion.LINEAR, _.de.fabmax.kool.platform.GL.Companion.LINEAR, _.de.fabmax.kool.platform.GL.Companion.CLAMP_TO_EDGE, _.de.fabmax.kool.platform.GL.Companion.CLAMP_TO_EDGE);
                   var data = this.canvasCtx_0.getImageData(0.0, 0.0, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT);
-                  var buffer = _.de.fabmax.kool.platform.Platform.Companion.createUint8Buffer_za3lpa$(_.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH * _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT * 4);
+                  var buffer = _.de.fabmax.kool.platform.Platform.Companion.createUint8Buffer_za3lpa$(_.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH * _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT);
                   tmp$0 = buffer.capacity - 1;
                   for (var i = 0; i <= tmp$0; i++) {
-                    buffer.put_za3rmp$(data.data[i]);
+                    buffer.put_za3rmp$(data.data[i * 4 + 3]);
                   }
-                  var map = new _.de.fabmax.kool.util.CharMap(new _.de.fabmax.kool.BufferedTexture2d(buffer, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT, _.de.fabmax.kool.platform.GL.Companion.RGBA, props), metrics);
-                  Kotlin.println('generated font tex: ' + font.family + ' ' + style + ' ' + font.size + 'px, took ' + _.de.fabmax.kool.platform.Platform.Companion.currentTimeMillis().subtract(t) + 'ms');
-                  return map;
+                  return new _.de.fabmax.kool.util.CharMap(new _.de.fabmax.kool.BufferedTexture2d(buffer, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT, _.de.fabmax.kool.platform.GL.Companion.ALPHA, props), metrics);
                 },
                 makeMap_0: function (chars, family, size, style) {
                   var tmp$0;
                   this.canvasCtx_0.font = style + size + 'px ' + '"' + family + '"';
                   this.canvasCtx_0.fillStyle = '#ffffff';
-                  this.canvasCtx_0.strokeStyle = '#ff0000';
                   var padding = 3.0;
                   var hab = Math.round(size * 1.1);
                   var hbb = Math.round(size * 0.5);
@@ -357,7 +352,7 @@ var kool = function (Kotlin) {
                   return function (ev) {
                     var tmp$0;
                     Kotlin.isType(tmp$0 = ev, WheelEvent) ? tmp$0 : Kotlin.throwCCE();
-                    var ticks = ev.deltaY / 3.0;
+                    var ticks = -ev.deltaY / 3.0;
                     if (ev.deltaMode === 0) {
                       ticks /= 30;
                     }
@@ -665,7 +660,9 @@ var kool = function (Kotlin) {
                 return ctx;
               },
               createDefaultShaderGenerator: function () {
-                return new _.de.fabmax.kool.util.GlslGenerator(new _.de.fabmax.kool.platform.PlatformImpl.createDefaultShaderGenerator$f());
+                var generator = new _.de.fabmax.kool.util.GlslGenerator();
+                Kotlin.kotlin.collections.plusAssign_4kvzvw$(generator.injectors, new _.de.fabmax.kool.platform.PlatformImpl.createDefaultShaderGenerator$f());
+                return generator;
               },
               getGlImpl: function () {
                 return _.de.fabmax.kool.platform.js.WebGlImpl.Companion.instance;
@@ -716,10 +713,10 @@ var kool = function (Kotlin) {
                 _.de.fabmax.kool.platform.PlatformImpl.Companion;
               },
               createDefaultShaderGenerator$f: Kotlin.createClass(function () {
-                return [_.de.fabmax.kool.util.GlslGenerator.Customization];
+                return [_.de.fabmax.kool.platform.ShaderGenerator.GlslInjector];
               }, function () {
               }, /** @lends _.de.fabmax.kool.platform.PlatformImpl.createDefaultShaderGenerator$f.prototype */ {
-                fragmentShaderStart_ktj0m0$: function (shaderProps, text_0) {
+                fsStart_ktj0m0$: function (shaderProps, text_0) {
                   text_0.append('precision highp float;');
                 }
               }, /** @lends _.de.fabmax.kool.platform.PlatformImpl.createDefaultShaderGenerator$f */ {
@@ -1476,6 +1473,7 @@ var kool = function (Kotlin) {
               })
             }),
             ShaderGenerator: Kotlin.createClass(null, function ShaderGenerator() {
+              this.injectors = Kotlin.kotlin.collections.mutableListOf_9mqe4v$([]);
               this.uniformMvpMatrix = new _.de.fabmax.kool.shading.UniformMatrix4(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MVP_MATRIX);
               this.uniformModelMatrix = new _.de.fabmax.kool.shading.UniformMatrix4(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX);
               this.uniformViewMatrix = new _.de.fabmax.kool.shading.UniformMatrix4(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX);
@@ -1524,10 +1522,44 @@ var kool = function (Kotlin) {
                 _.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_STATIC_COLOR = 'uStaticColor';
                 _.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_ALPHA = 'uAlpha';
                 _.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SATURATION = 'uSaturation';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_POSITION = 'aVertexPosition_modelspace';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_NORMAL = 'aVertexNormal_modelspace';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD = 'aVertexTexCoord';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_COLOR = 'aVertexColor';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_TEX_COORD = 'vTexCoord';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_EYE_DIRECTION = 'vEyeDirection_cameraspace';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION = 'vLightDirection_cameraspace';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_NORMAL = 'vNormal_cameraspace';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_COLOR = 'vFragmentColor';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR = 'vDiffuseLightColor';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR = 'vSpecularLightColor';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE = 'vPositionWorldspace';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR = 'fragColor';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_TEX_COLOR = 'texColor';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_VERTEX_COLOR = 'vertColor';
+                _.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_STATIC_COLOR = 'staticColor';
               }),
               object_initializer$: function () {
                 _.de.fabmax.kool.platform.ShaderGenerator.Companion;
-              }
+              },
+              GlslInjector: Kotlin.createTrait(null, /** @lends _.de.fabmax.kool.platform.ShaderGenerator.GlslInjector.prototype */ {
+                vsStart_ktj0m0$: function (shaderProps, text_0) {
+                },
+                vsAfterInput_ktj0m0$: function (shaderProps, text_0) {
+                },
+                vsEnd_ktj0m0$: function (shaderProps, text_0) {
+                },
+                fsStart_ktj0m0$: function (shaderProps, text_0) {
+                },
+                fsAfterInput_ktj0m0$: function (shaderProps, text_0) {
+                },
+                fsEnd_ktj0m0$: function (shaderProps, text_0) {
+                },
+                fsBeforeSampling_ktj0m0$: function (shaderProps, text_0) {
+                },
+                fsAfterSampling_ktj0m0$: function (shaderProps, text_0) {
+                }
+              })
             })
           }),
           demo: Kotlin.definePackage(null, /** @lends _.de.fabmax.kool.demo */ {
@@ -1547,6 +1579,7 @@ var kool = function (Kotlin) {
             },
             f_2: function () {
               this.radius = 1.5;
+              this.steps = 50;
             },
             f_3: function () {
               this.vertexModFun = _.de.fabmax.kool.demo.f_1;
@@ -1582,22 +1615,26 @@ var kool = function (Kotlin) {
             f_9: function (ctx) {
               this.setIdentity();
               this.translate_y2kzbl$(0.0, 0.0, -5.0);
-              var s = 1.0 + Math.sin(ctx.time * 3) * 0.5;
+              var s = 1.0 + Math.sin(ctx.time * 3) * 0.25;
               this.scale_y2kzbl$(s, s, s);
             },
-            f_10: function () {
-              this.origin.set_y2kzbl$(0.0, -1.5, 0.0);
-              this.height = 3.0;
-              this.topRadius = 0.5;
-              this.bottomRadius = 1.0;
+            f_10: function (closure$textFont) {
+              return function () {
+                this.text = 'kool Text!';
+                this.font = closure$textFont;
+                this.position.set_y2kzbl$(-this.font.stringWidth_61zpoe$(this.text) / 2.0, 0.0, 0.0);
+                this.scale = 0.029999999329447746;
+              };
             },
-            f_11: function () {
-              this.color = _.de.fabmax.kool.util.Color.Companion.LIME;
-              this.cylinder_7jdbew$(_.de.fabmax.kool.demo.f_10);
+            f_11: function (closure$textFont) {
+              return function () {
+                this.text_2vp9zl$(_.de.fabmax.kool.demo.f_10(closure$textFont));
+              };
             },
             f_12: function () {
               this.animation = _.de.fabmax.kool.demo.f_9;
-              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_11));
+              var textFont = new _.de.fabmax.kool.util.Font('Segoe UI', 48.0);
+              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.textMesh_njt968$(textFont, _.de.fabmax.kool.util.Color.Companion.LIME, void 0, _.de.fabmax.kool.demo.f_11(textFont)));
             },
             simpleShapesDemo_qk1xvd$f: function (closure$ctx) {
               return function () {
@@ -1612,63 +1649,21 @@ var kool = function (Kotlin) {
               ctx.clearColor = new _.de.fabmax.kool.util.Color(0.05000000074505806, 0.15000000596046448, 0.25, 1.0);
               ctx.run();
             },
-            f_13: function (closure$ctx) {
-              return function () {
-                this.unaryPlus_uv0sin$(closure$ctx.scene.camera);
-              };
-            },
-            f_14: function (closure$metrics) {
-              return function () {
-                this.width = closure$metrics.width / 100;
-                this.height = closure$metrics.height / 100;
-                this.texCoordUpperLeft.set_cx11y3$(closure$metrics.uvMin);
-                this.texCoordUpperRight.set_dleff0$(closure$metrics.uvMax.x, closure$metrics.uvMin.y);
-                this.texCoordLowerLeft.set_dleff0$(closure$metrics.uvMin.x, closure$metrics.uvMax.y);
-                this.texCoordLowerRight.set_cx11y3$(closure$metrics.uvMax);
-              };
-            },
-            f_15: function (closure$font, closure$str) {
-              return function () {
-                var tmp$0, tmp$1, tmp$2;
-                (tmp$0 = this.shader) != null ? (tmp$0.texture = closure$font.charMap.fontTexture) : null;
-                this.translate_y2kzbl$(-1.0, -0.25, 0.0);
-                tmp$1 = Kotlin.kotlin.text.iterator_gw00vq$(closure$str);
-                while (tmp$1.hasNext()) {
-                  var c = tmp$1.next();
-                  var metrics = (tmp$2 = closure$font.charMap.get_za3rmp$(c)) != null ? tmp$2 : Kotlin.throwNPE();
-                  this.rect_ud8hiy$(_.de.fabmax.kool.demo.f_14(metrics));
-                  this.translate_y2kzbl$(metrics.advance / 100, 0.0, 0.0);
-                }
-              };
-            },
-            textDemo_qk1xvd$f: function (closure$ctx, closure$font, closure$str) {
-              return function () {
-                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.sphericalInputTransform_n6upd5$(void 0, _.de.fabmax.kool.demo.f_13(closure$ctx)));
-                this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.textureMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_15(closure$font, closure$str)));
-              };
-            },
-            textDemo_qk1xvd$: function (ctx) {
-              var font = new _.de.fabmax.kool.util.Font('Segoe UI', 48.0);
-              var str = 'Hello j World!';
-              ctx.scene.root = _.de.fabmax.kool.scene.group_30wlp3$(void 0, _.de.fabmax.kool.demo.textDemo_qk1xvd$f(ctx, font, str));
-              ctx.clearColor = new _.de.fabmax.kool.util.Color(0.05000000074505806, 0.15000000596046448, 0.25, 1.0);
-              ctx.run();
-            },
-            f_16: function () {
+            f_13: function () {
               this.width = 4.0;
               this.height = 4.0;
             },
-            f_17: function (closure$i) {
+            f_14: function (closure$i) {
               return function () {
                 var tmp$0;
                 this.translate_y2kzbl$(-2.0 + closure$i * 5, -2.0, 0.0);
-                this.rect_ud8hiy$(_.de.fabmax.kool.demo.f_16);
+                this.rect_ud8hiy$(_.de.fabmax.kool.demo.f_13);
                 (tmp$0 = this.shader) != null ? (tmp$0.texture = new _.de.fabmax.kool.SharedAssetTexture('test.png')) : null;
               };
             },
             textureDemo_qk1xvd$f: function () {
               for (var i = -1; i <= 1; i++) {
-                this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.textureMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_17(i)));
+                this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.textureMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_14(i)));
               }
             },
             textureDemo_qk1xvd$: function (ctx) {
@@ -3062,7 +3057,7 @@ var kool = function (Kotlin) {
               this.generator_x3ny4s$_0 = generator;
               this.shininess = 20.0;
               this.specularIntensity = 0.75;
-              this.staticColor.set_cx11wd$(_.de.fabmax.kool.util.Color.Companion.RED);
+              this.staticColor.set_cx11wd$(_.de.fabmax.kool.util.Color.Companion.BLACK);
               this.alpha = 1.0;
               this.saturation = 1.0;
               this.fogRange = 250.0;
@@ -3403,12 +3398,38 @@ var kool = function (Kotlin) {
               if (init === void 0)
                 init = _.de.fabmax.kool.shading.ShaderProps.ShaderProps$f;
               this.lightModel = _.de.fabmax.kool.shading.LightModel.PHONG_LIGHTING;
-              this.colorModel = _.de.fabmax.kool.shading.ColorModel.VERTEX_COLOR;
+              this.colorModel_7gl5ss$_0 = _.de.fabmax.kool.shading.ColorModel.STATIC_COLOR;
               this.fogModel = _.de.fabmax.kool.shading.FogModel.FOG_OFF;
+              this.isVertexColor = false;
+              this.isTextureColor = false;
+              this.isStaticColor = true;
               this.isAlpha = false;
               this.isSaturation = false;
               init.call(this);
-            }, null, /** @lends _.de.fabmax.kool.shading.ShaderProps */ {
+            }, /** @lends _.de.fabmax.kool.shading.ShaderProps.prototype */ {
+              colorModel: {
+                get: function () {
+                  return this.colorModel_7gl5ss$_0;
+                },
+                set: function (value) {
+                  if (Kotlin.equals(value, _.de.fabmax.kool.shading.ColorModel.VERTEX_COLOR)) {
+                    this.isVertexColor = true;
+                    this.isTextureColor = false;
+                    this.isStaticColor = false;
+                  }
+                   else if (Kotlin.equals(value, _.de.fabmax.kool.shading.ColorModel.TEXTURE_COLOR)) {
+                    this.isVertexColor = false;
+                    this.isTextureColor = true;
+                    this.isStaticColor = false;
+                  }
+                   else if (Kotlin.equals(value, _.de.fabmax.kool.shading.ColorModel.STATIC_COLOR)) {
+                    this.isVertexColor = false;
+                    this.isTextureColor = false;
+                    this.isStaticColor = true;
+                  }
+                }
+              }
+            }, /** @lends _.de.fabmax.kool.shading.ShaderProps */ {
               ShaderProps$f: function () {
               }
             }),
@@ -3757,7 +3778,29 @@ var kool = function (Kotlin) {
               this.size = size;
               this.style = style;
               this.charMap = _.de.fabmax.kool.platform.Platform.Companion.createCharMap_34dg9o$(this, _.de.fabmax.kool.util.Font.Companion.STD_CHARS_0);
-            }, null, /** @lends _.de.fabmax.kool.util.Font */ {
+              this.lineSpace = this.size * 1.2000000476837158;
+            }, /** @lends _.de.fabmax.kool.util.Font.prototype */ {
+              stringWidth_61zpoe$: function (string) {
+                var tmp$0, tmp$1, tmp$2, tmp$3, tmp$4, tmp$5;
+                var width = 0.0;
+                var maxWidth = 0.0;
+                tmp$0 = Kotlin.kotlin.text.get_indices_gw00vq$(string);
+                tmp$1 = tmp$0.first;
+                tmp$2 = tmp$0.last;
+                tmp$3 = tmp$0.step;
+                for (var i = tmp$1; i <= tmp$2; i += tmp$3) {
+                  var c = string.charAt(i);
+                  width += (tmp$5 = (tmp$4 = this.charMap.get_za3rmp$(c)) != null ? tmp$4.advance : null) != null ? tmp$5 : 0.0;
+                  if (width > maxWidth) {
+                    maxWidth = width;
+                  }
+                  if (c === '\n') {
+                    width = 0.0;
+                  }
+                }
+                return maxWidth;
+              }
+            }, /** @lends _.de.fabmax.kool.util.Font */ {
               Companion: Kotlin.createObject(null, function Companion() {
                 _.de.fabmax.kool.util.Font.Companion.PLAIN = 0;
                 _.de.fabmax.kool.util.Font.Companion.BOLD = 1;
@@ -3768,11 +3811,40 @@ var kool = function (Kotlin) {
                 }
                 str += '\xE4\xC4\xF6\xD6\xFC\xDC\xDF';
                 _.de.fabmax.kool.util.Font.Companion.STD_CHARS_0 = str;
+                _.de.fabmax.kool.util.Font.Companion.DEFAULT_FONT = new _.de.fabmax.kool.util.Font('sans-serif', 12.0, _.de.fabmax.kool.util.Font.Companion.PLAIN);
               }),
               object_initializer$: function () {
                 _.de.fabmax.kool.util.Font.Companion;
               }
             }),
+            fontShader_ii4so9$f: function () {
+            },
+            fontShader$f: Kotlin.createClass(function () {
+              return [_.de.fabmax.kool.platform.ShaderGenerator.GlslInjector];
+            }, function () {
+            }, /** @lends _.de.fabmax.kool.util.fontShader$f.prototype */ {
+              fsAfterSampling_ktj0m0$: function (shaderProps, text_0) {
+                text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' = vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_STATIC_COLOR).append('.rgb * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_TEX_COLOR).append('.a, ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_TEX_COLOR).append('.a);\n');
+              }
+            }, /** @lends _.de.fabmax.kool.util.fontShader$f */ {
+            }),
+            fontShader_ii4so9$: function (font, color, propsInit) {
+              var tmp$0;
+              if (color === void 0)
+                color = _.de.fabmax.kool.util.Color.Companion.WHITE;
+              if (propsInit === void 0)
+                propsInit = _.de.fabmax.kool.util.fontShader_ii4so9$f;
+              var props = new _.de.fabmax.kool.shading.ShaderProps();
+              propsInit.call(props);
+              props.isStaticColor = true;
+              props.isTextureColor = true;
+              var generator = _.de.fabmax.kool.platform.Platform.Companion.createDefaultShaderGenerator();
+              Kotlin.kotlin.collections.plusAssign_4kvzvw$(generator.injectors, new _.de.fabmax.kool.util.fontShader$f());
+              var shader = new _.de.fabmax.kool.shading.BasicShader(props, generator);
+              shader.texture = (tmp$0 = font != null ? font.charMap : null) != null ? tmp$0.fontTexture : null;
+              shader.staticColor.set_cx11wd$(color);
+              return shader;
+            },
             CharMetrics: Kotlin.createClass(null, function CharMetrics() {
               this.width = 0.0;
               this.height = 0.0;
@@ -3823,17 +3895,14 @@ var kool = function (Kotlin) {
             }),
             GlslGenerator: Kotlin.createClass(function () {
               return [_.de.fabmax.kool.platform.ShaderGenerator];
-            }, function GlslGenerator(customization) {
-              if (customization === void 0)
-                customization = null;
+            }, function GlslGenerator() {
               GlslGenerator.baseInitializer.call(this);
-              this.customization_uvu2u0$_0 = customization;
             }, /** @lends _.de.fabmax.kool.util.GlslGenerator.prototype */ {
               onLoad_spwa6e$: function (shader) {
-                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.POSITIONS, _.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_POSITION);
-                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.NORMALS, _.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_NORMAL);
-                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.TEXTURE_COORDS, _.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD);
-                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.COLORS, _.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_COLOR);
+                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.POSITIONS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_POSITION);
+                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.NORMALS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_NORMAL);
+                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.TEXTURE_COORDS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD);
+                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.COLORS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_COLOR);
                 this.setUniformLocation_t4z91s$(shader, this.uniformMvpMatrix);
                 this.setUniformLocation_t4z91s$(shader, this.uniformModelMatrix);
                 this.setUniformLocation_t4z91s$(shader, this.uniformViewMatrix);
@@ -3856,84 +3925,112 @@ var kool = function (Kotlin) {
                 return new _.de.fabmax.kool.shading.Shader.Source(this.generateVertShader_spqb9i$_0(shaderProps), this.generateFragShader_spqb9i$_0(shaderProps));
               },
               generateVertShader_spqb9i$_0: function (shaderProps) {
-                var tmp$0, tmp$1, tmp$2;
                 var text_0 = new Kotlin.StringBuilder('// Generated vertex shader code\n');
-                (tmp$0 = this.customization_uvu2u0$_0) != null ? tmp$0.vertexShaderStart_ktj0m0$(shaderProps, text_0) : null;
+                var tmp$0;
+                tmp$0 = this.injectors.iterator();
+                while (tmp$0.hasNext()) {
+                  var element = tmp$0.next();
+                  element.vsStart_ktj0m0$(shaderProps, text_0);
+                }
                 this.generateVertInputCode_y4evk$_0(shaderProps, text_0);
-                (tmp$1 = this.customization_uvu2u0$_0) != null ? tmp$1.vertexShaderAfterInput_ktj0m0$(shaderProps, text_0) : null;
+                var tmp$1;
+                tmp$1 = this.injectors.iterator();
+                while (tmp$1.hasNext()) {
+                  var element_0 = tmp$1.next();
+                  element_0.vsAfterInput_ktj0m0$(shaderProps, text_0);
+                }
                 this.generateVertBodyCode_y4evk$_0(shaderProps, text_0);
-                (tmp$2 = this.customization_uvu2u0$_0) != null ? tmp$2.vertexShaderEnd_ktj0m0$(shaderProps, text_0) : null;
+                var tmp$2;
+                tmp$2 = this.injectors.iterator();
+                while (tmp$2.hasNext()) {
+                  var element_1 = tmp$2.next();
+                  element_1.vsEnd_ktj0m0$(shaderProps, text_0);
+                }
                 return text_0.toString();
               },
               generateFragShader_spqb9i$_0: function (shaderProps) {
-                var tmp$0, tmp$1, tmp$2;
                 var text_0 = new Kotlin.StringBuilder('// Generated fragment shader code\n');
-                (tmp$0 = this.customization_uvu2u0$_0) != null ? tmp$0.fragmentShaderStart_ktj0m0$(shaderProps, text_0) : null;
+                var tmp$0;
+                tmp$0 = this.injectors.iterator();
+                while (tmp$0.hasNext()) {
+                  var element = tmp$0.next();
+                  element.fsStart_ktj0m0$(shaderProps, text_0);
+                }
                 this.generateFragInputCode_y4evk$_0(shaderProps, text_0);
-                (tmp$1 = this.customization_uvu2u0$_0) != null ? tmp$1.fragmentShaderAfterInput_ktj0m0$(shaderProps, text_0) : null;
+                var tmp$1;
+                tmp$1 = this.injectors.iterator();
+                while (tmp$1.hasNext()) {
+                  var element_0 = tmp$1.next();
+                  element_0.fsAfterInput_ktj0m0$(shaderProps, text_0);
+                }
                 this.generateFragBodyCode_y4evk$_0(shaderProps, text_0);
-                (tmp$2 = this.customization_uvu2u0$_0) != null ? tmp$2.fragmentShaderEnd_ktj0m0$(shaderProps, text_0) : null;
+                var tmp$2;
+                tmp$2 = this.injectors.iterator();
+                while (tmp$2.hasNext()) {
+                  var element_1 = tmp$2.next();
+                  element_1.fsEnd_ktj0m0$(shaderProps, text_0);
+                }
                 return text_0.toString();
               },
               generateVertInputCode_y4evk$_0: function (shaderProps, text_0) {
-                text_0.append('attribute vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(';\n');
+                text_0.append('attribute vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(';\n');
                 text_0.append('uniform mat4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MVP_MATRIX).append(';\n');
                 text_0.append('uniform mat4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(';\n');
                 text_0.append('uniform mat4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(';\n');
                 if (shaderProps.lightModel !== _.de.fabmax.kool.shading.LightModel.NO_LIGHTING) {
-                  text_0.append('attribute vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_NORMAL).append(';\n');
+                  text_0.append('attribute vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_NORMAL).append(';\n');
                   text_0.append('uniform vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_DIRECTION).append(';\n');
                   if (shaderProps.lightModel === _.de.fabmax.kool.shading.LightModel.PHONG_LIGHTING) {
-                    text_0.append('varying vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_EYE_DIRECTION).append(';\n');
-                    text_0.append('varying vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION).append(';\n');
-                    text_0.append('varying vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_NORMAL).append(';\n');
+                    text_0.append('varying vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_EYE_DIRECTION).append(';\n');
+                    text_0.append('varying vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION).append(';\n');
+                    text_0.append('varying vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_NORMAL).append(';\n');
                   }
                    else {
                     text_0.append('uniform vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(';\n');
                     text_0.append('uniform float ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SHININESS).append(';\n');
                     text_0.append('uniform float ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SPECULAR_INTENSITY).append(';\n');
-                    text_0.append('varying vec4 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(';\n');
-                    text_0.append('varying vec4 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR).append(';\n');
+                    text_0.append('varying vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(';\n');
+                    text_0.append('varying vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR).append(';\n');
                   }
                 }
-                if (shaderProps.colorModel === _.de.fabmax.kool.shading.ColorModel.TEXTURE_COLOR) {
-                  text_0.append('attribute vec2 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD).append(';\n');
-                  text_0.append('varying vec2 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_TEX_COORD).append(';\n');
+                if (shaderProps.isTextureColor) {
+                  text_0.append('attribute vec2 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD).append(';\n');
+                  text_0.append('varying vec2 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_TEX_COORD).append(';\n');
                 }
-                 else if (shaderProps.colorModel === _.de.fabmax.kool.shading.ColorModel.VERTEX_COLOR) {
-                  text_0.append('attribute vec4 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_COLOR).append(';\n');
-                  text_0.append('varying vec4 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(';\n');
+                if (shaderProps.isVertexColor) {
+                  text_0.append('attribute vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_COLOR).append(';\n');
+                  text_0.append('varying vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_COLOR).append(';\n');
                 }
                 if (shaderProps.fogModel !== _.de.fabmax.kool.shading.FogModel.FOG_OFF) {
-                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE).append(';\n');
+                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE).append(';\n');
                 }
               },
               generateVertBodyCode_y4evk$_0: function (shaderProps, text_0) {
                 text_0.append('\nvoid main() {\n');
-                text_0.append('gl_Position = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MVP_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(', 1.0);\n');
+                text_0.append('gl_Position = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MVP_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(', 1.0);\n');
                 if (shaderProps.fogModel !== _.de.fabmax.kool.shading.FogModel.FOG_OFF) {
-                  text_0.append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE).append(' = (').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(', 1.0)).xyz;\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE).append(' = (').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(', 1.0)).xyz;\n');
                 }
-                if (shaderProps.colorModel === _.de.fabmax.kool.shading.ColorModel.TEXTURE_COLOR) {
-                  text_0.append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_TEX_COORD).append(' = ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD).append(';\n');
+                if (shaderProps.isTextureColor) {
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_TEX_COORD).append(' = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD).append(';\n');
                 }
-                 else if (shaderProps.colorModel === _.de.fabmax.kool.shading.ColorModel.VERTEX_COLOR) {
-                  text_0.append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(' = ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_COLOR).append(';\n');
+                if (shaderProps.isVertexColor) {
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_COLOR).append(' = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_COLOR).append(';\n');
                 }
                 if (shaderProps.lightModel === _.de.fabmax.kool.shading.LightModel.PHONG_LIGHTING) {
-                  text_0.append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_EYE_DIRECTION).append(' = -(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(', 1.0)).xyz;\n');
-                  text_0.append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION).append(' = (').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_DIRECTION).append(', 0.0)).xyz;\n');
-                  text_0.append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_NORMAL).append(' = (').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_NORMAL).append(', 0.0)).xyz;\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_EYE_DIRECTION).append(' = -(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(', 1.0)).xyz;\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION).append(' = (').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_DIRECTION).append(', 0.0)).xyz;\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_NORMAL).append(' = (').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_NORMAL).append(', 0.0)).xyz;\n');
                 }
                  else if (shaderProps.lightModel === _.de.fabmax.kool.shading.LightModel.GOURAUD_LIGHTING) {
-                  text_0.append('vec3 e = normalize(-(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(', 1.0)).xyz);\n');
+                  text_0.append('vec3 e = normalize(-(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_POSITION).append(', 1.0)).xyz);\n');
                   text_0.append('vec3 l = normalize((').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_DIRECTION).append(', 0.0)).xyz);\n');
-                  text_0.append('vec3 n = normalize((').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_NORMAL).append(', 0.0)).xyz);\n');
+                  text_0.append('vec3 n = normalize((').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_VIEW_MATRIX).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_MODEL_MATRIX).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_NORMAL).append(', 0.0)).xyz);\n');
                   text_0.append('float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n');
                   text_0.append('vec3 r = reflect(-l, n);\n');
                   text_0.append('float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n');
-                  text_0.append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(' = vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(', 1.0) * cosTheta;\n');
-                  text_0.append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR).append(' = vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SPECULAR_INTENSITY).append(', 0.0) * pow(cosAlpha, ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SHININESS).append(');\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(' = vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(', 1.0) * cosTheta;\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR).append(' = vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SPECULAR_INTENSITY).append(', 0.0) * pow(cosAlpha, ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SHININESS).append(');\n');
                 }
                 text_0.append('}\n');
               },
@@ -3950,70 +4047,88 @@ var kool = function (Kotlin) {
                   text_0.append('uniform vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(';\n');
                   text_0.append('uniform float ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SHININESS).append(';\n');
                   text_0.append('uniform float ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SPECULAR_INTENSITY).append(';\n');
-                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_EYE_DIRECTION).append(';\n');
-                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION).append(';\n');
-                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_NORMAL).append(';\n');
+                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_EYE_DIRECTION).append(';\n');
+                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION).append(';\n');
+                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_NORMAL).append(';\n');
                 }
                  else if (shaderProps.lightModel === _.de.fabmax.kool.shading.LightModel.GOURAUD_LIGHTING) {
-                  text_0.append('varying vec4 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(';\n');
-                  text_0.append('varying vec4 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR).append(';\n');
+                  text_0.append('varying vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(';\n');
+                  text_0.append('varying vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR).append(';\n');
                 }
-                if (shaderProps.colorModel === _.de.fabmax.kool.shading.ColorModel.TEXTURE_COLOR) {
+                if (shaderProps.isTextureColor) {
                   text_0.append('uniform sampler2D ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_TEXTURE_0).append(';\n');
-                  text_0.append('varying vec2 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_TEX_COORD).append(';\n');
+                  text_0.append('varying vec2 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_TEX_COORD).append(';\n');
                 }
-                 else if (shaderProps.colorModel === _.de.fabmax.kool.shading.ColorModel.VERTEX_COLOR) {
-                  text_0.append('varying vec4 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(';\n');
+                if (shaderProps.isVertexColor) {
+                  text_0.append('varying vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_COLOR).append(';\n');
                 }
-                 else {
+                if (shaderProps.isStaticColor) {
                   text_0.append('uniform vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_STATIC_COLOR).append(';\n');
                 }
                 if (shaderProps.fogModel !== _.de.fabmax.kool.shading.FogModel.FOG_OFF) {
                   text_0.append('uniform vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_CAMERA_POSITION).append(';\n');
                   text_0.append('uniform vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_FOG_COLOR).append(';\n');
                   text_0.append('uniform float ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_FOG_RANGE).append(';\n');
-                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE).append(';\n');
+                  text_0.append('varying vec3 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE).append(';\n');
                 }
               },
               generateFragBodyCode_y4evk$_0: function (shaderProps, text_0) {
                 text_0.append('\nvoid main() {\n');
-                if (shaderProps.colorModel === _.de.fabmax.kool.shading.ColorModel.TEXTURE_COLOR) {
-                  text_0.append('vec4 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(' = texture2D(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_TEXTURE_0).append(', ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_TEX_COORD).append(');\n');
+                text_0.append('vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' = vec4(0.0);\n');
+                var tmp$0;
+                tmp$0 = this.injectors.iterator();
+                while (tmp$0.hasNext()) {
+                  var element = tmp$0.next();
+                  element.fsBeforeSampling_ktj0m0$(shaderProps, text_0);
                 }
-                 else if (shaderProps.colorModel === _.de.fabmax.kool.shading.ColorModel.STATIC_COLOR) {
-                  text_0.append('vec4 ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(' = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_STATIC_COLOR).append(';\n');
+                if (shaderProps.isTextureColor) {
+                  text_0.append('vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_TEX_COLOR).append(' = texture2D(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_TEXTURE_0).append(', ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_TEX_COORD).append(');\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_TEX_COLOR).append(';\n');
                 }
-                if (shaderProps.colorModel !== _.de.fabmax.kool.shading.ColorModel.TEXTURE_COLOR) {
-                  text_0.append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append('.rgb *= ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append('.a;');
+                if (shaderProps.isVertexColor) {
+                  text_0.append('vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_VERTEX_COLOR).append(' = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_COLOR).append(';\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_VERTEX_COLOR).append('.rgb *= ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_VERTEX_COLOR).append('.a;\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_VERTEX_COLOR).append(';\n');
+                }
+                if (shaderProps.isStaticColor) {
+                  text_0.append('vec4 ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_STATIC_COLOR).append(' = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_STATIC_COLOR).append(';\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_STATIC_COLOR).append('.rgb *= ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_STATIC_COLOR).append('.a;\n');
+                  text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_STATIC_COLOR).append(';\n');
+                }
+                var tmp$1;
+                tmp$1 = this.injectors.iterator();
+                while (tmp$1.hasNext()) {
+                  var element_0 = tmp$1.next();
+                  element_0.fsAfterSampling_ktj0m0$(shaderProps, text_0);
                 }
                 if (shaderProps.lightModel !== _.de.fabmax.kool.shading.LightModel.NO_LIGHTING) {
                   if (shaderProps.lightModel === _.de.fabmax.kool.shading.LightModel.PHONG_LIGHTING) {
-                    text_0.append('vec3 e = normalize(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_EYE_DIRECTION).append(');\n');
-                    text_0.append('vec3 l = normalize(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION).append(');\n');
-                    text_0.append('vec3 n = normalize(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_NORMAL).append(');\n');
+                    text_0.append('vec3 e = normalize(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_EYE_DIRECTION).append(');\n');
+                    text_0.append('vec3 l = normalize(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION).append(');\n');
+                    text_0.append('vec3 n = normalize(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_NORMAL).append(');\n');
                     text_0.append('float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n');
                     text_0.append('vec3 r = reflect(-l, n);\n');
                     text_0.append('float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n');
-                    text_0.append('vec4 materialAmbientColor = ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(' * vec4(0.4, 0.4, 0.4, 1.0);\n');
-                    text_0.append('vec4 materialDiffuseColor = ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(', 1.0) * (cosTheta + 0.2);\n');
-                    text_0.append('vec4 materialSpecularColor = vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SPECULAR_INTENSITY).append(', 0.0) * pow(cosAlpha, ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SHININESS).append(') * clamp(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append('.a * 2.0, 0.0, 1.0);\n');
+                    text_0.append('vec4 materialAmbientColor = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' * vec4(0.4, 0.4, 0.4, 1.0);\n');
+                    text_0.append('vec4 materialDiffuseColor = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' * vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(', 1.0) * (cosTheta + 0.2);\n');
+                    text_0.append('vec4 materialSpecularColor = vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_LIGHT_COLOR).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SPECULAR_INTENSITY).append(', 0.0) * pow(cosAlpha, ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_SHININESS).append(') * clamp(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append('.a * 2.0, 0.0, 1.0);\n');
                   }
                    else if (shaderProps.lightModel === _.de.fabmax.kool.shading.LightModel.GOURAUD_LIGHTING) {
-                    text_0.append('vec4 materialAmbientColor = ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(' * vec4(0.4, 0.4, 0.4, 1.0);\n');
-                    text_0.append('vec4 materialDiffuseColor = ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(' * ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(';\n');
-                    text_0.append('vec4 materialSpecularColor = ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR).append(';\n').append(' * clamp(').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append('.a * 2.0, 0.0, 1.0);\n');
+                    text_0.append('vec4 materialAmbientColor = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' * vec4(0.4, 0.4, 0.4, 1.0);\n');
+                    text_0.append('vec4 materialDiffuseColor = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(';\n');
+                    text_0.append('vec4 materialSpecularColor = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR).append(';\n').append(' * clamp(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append('.a * 2.0, 0.0, 1.0);\n');
                   }
                   text_0.append('gl_FragColor = materialAmbientColor + materialDiffuseColor + materialSpecularColor;\n');
                 }
                  else {
-                  text_0.append('gl_FragColor = ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR).append(';\n');
+                  text_0.append('gl_FragColor = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(';\n');
                 }
                 if (shaderProps.fogModel !== _.de.fabmax.kool.shading.FogModel.FOG_OFF) {
-                  text_0.append('float d = 1.0 - clamp(length(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_CAMERA_POSITION).append(' - ').append(_.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE).append(') / ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_FOG_RANGE).append(', 0.0, 1.0);\n');
+                  text_0.append('float d = 1.0 - clamp(length(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_CAMERA_POSITION).append(' - ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE).append(') / ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_FOG_RANGE).append(', 0.0, 1.0);\n');
                   text_0.append('gl_FragColor.rgb = mix(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_FOG_COLOR).append('.rgb, gl_FragColor.rgb, d * d * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_FOG_COLOR).append('.a);\n');
                 }
                 if (shaderProps.isAlpha) {
-                  text_0.append('gl_FragColor.a = gl_FragColor.a * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_ALPHA).append(';\n');
+                  text_0.append('gl_FragColor *= ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.UNIFORM_ALPHA).append(';\n');
                 }
                 if (shaderProps.isSaturation) {
                   text_0.append('float avgColor = (gl_FragColor.r + gl_FragColor.g + gl_FragColor.b) * 0.333;\n');
@@ -4022,37 +4137,6 @@ var kool = function (Kotlin) {
                 text_0.append('}\n');
               }
             }, /** @lends _.de.fabmax.kool.util.GlslGenerator */ {
-              Companion: Kotlin.createObject(null, function Companion() {
-                _.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_POSITION = 'aVertexPosition_modelspace';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_NORMAL = 'aVertexNormal_modelspace';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD = 'aVertexTexCoord';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.ATTRIBUTE_NAME_COLOR = 'aVertexColor';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_TEX_COORD = 'vTexCoord';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_EYE_DIRECTION = 'vEyeDirection_cameraspace';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_LIGHT_DIRECTION = 'vLightDirection_cameraspace';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_NORMAL = 'vNormal_cameraspace';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_COLOR = 'vFragmentColor';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_DIFFUSE_LIGHT_COLOR = 'vDiffuseLightColor';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_SPECULAR_LIGHT_COLOR = 'vSpecularLightColor';
-                _.de.fabmax.kool.util.GlslGenerator.Companion.VARYING_NAME_POSITION_WORLDSPACE = 'vPositionWorldspace';
-              }),
-              object_initializer$: function () {
-                _.de.fabmax.kool.util.GlslGenerator.Companion;
-              },
-              Customization: Kotlin.createTrait(null, /** @lends _.de.fabmax.kool.util.GlslGenerator.Customization.prototype */ {
-                vertexShaderStart_ktj0m0$: function (shaderProps, text_0) {
-                },
-                vertexShaderAfterInput_ktj0m0$: function (shaderProps, text_0) {
-                },
-                vertexShaderEnd_ktj0m0$: function (shaderProps, text_0) {
-                },
-                fragmentShaderStart_ktj0m0$: function (shaderProps, text_0) {
-                },
-                fragmentShaderAfterInput_ktj0m0$: function (shaderProps, text_0) {
-                },
-                fragmentShaderEnd_ktj0m0$: function (shaderProps, text_0) {
-                }
-              })
             }),
             IndexedVertexList: Kotlin.createClass(null, function IndexedVertexList(hasNormals, hasColors, hasTexCoords) {
               this.hasNormals = hasNormals;
@@ -4628,6 +4712,12 @@ var kool = function (Kotlin) {
                 return value;
               }
             },
+            isEqual_dleff0$: function (a, b) {
+              return _.de.fabmax.kool.util.isZero_mx4ult$(a - b);
+            },
+            isEqual_lu1900$: function (a, b) {
+              return _.de.fabmax.kool.util.isZero_14dthe$(a - b);
+            },
             isZero_mx4ult$: function (value) {
               return Math.abs(value) < 1.0E-5;
             },
@@ -5093,28 +5183,35 @@ var kool = function (Kotlin) {
               }
             }, /** @lends _.de.fabmax.kool.util.MatrixMath */ {
             }),
-            mesh_3sqmh1$: function (withNormals, withColors, withTexCoords, name, block) {
+            mesh_3sqmh1$: function (withNormals, withColors, withTexCoords, name, generator) {
               if (name === void 0)
                 name = null;
               var mesh = new _.de.fabmax.kool.scene.Mesh(withNormals, withColors, withTexCoords, name);
               var builder = new _.de.fabmax.kool.util.MeshBuilder(mesh);
               mesh.batchUpdate = true;
-              block.call(builder);
+              generator.call(builder);
               if (builder.shader != null) {
                 mesh.shader = builder.shader;
               }
               mesh.batchUpdate = false;
               return mesh;
             },
-            textureMesh_gac8tm$: function (name, block) {
+            colorMesh_gac8tm$: function (name, generator) {
               if (name === void 0)
                 name = null;
-              return _.de.fabmax.kool.util.mesh_3sqmh1$(true, false, true, name, block);
+              return _.de.fabmax.kool.util.mesh_3sqmh1$(true, true, false, name, generator);
             },
-            colorMesh_gac8tm$: function (name, block) {
+            textMesh_njt968$: function (font, color, name, generator) {
               if (name === void 0)
                 name = null;
-              return _.de.fabmax.kool.util.mesh_3sqmh1$(true, true, false, name, block);
+              var text_0 = _.de.fabmax.kool.util.textureMesh_gac8tm$(name, generator);
+              text_0.shader = _.de.fabmax.kool.util.fontShader_ii4so9$(font, color);
+              return text_0;
+            },
+            textureMesh_gac8tm$: function (name, generator) {
+              if (name === void 0)
+                name = null;
+              return _.de.fabmax.kool.util.mesh_3sqmh1$(true, false, true, name, generator);
             },
             MeshBuilder: Kotlin.createClass(null, function MeshBuilder(mesh) {
               this.mesh = mesh;
@@ -5129,6 +5226,7 @@ var kool = function (Kotlin) {
               this.cylinderProps_w0m2r5$_0 = new _.de.fabmax.kool.util.CylinderProps();
               this.rectProps_w0m2r5$_0 = new _.de.fabmax.kool.util.RectProps();
               this.sphereProps_w0m2r5$_0 = new _.de.fabmax.kool.util.SphereProps();
+              this.textProps_w0m2r5$_0 = new _.de.fabmax.kool.util.TextProps();
               this.shader = _.de.fabmax.kool.shading.basicShader_9yb6un$(_.de.fabmax.kool.util.MeshBuilder.MeshBuilder$f(this));
             }, /** @lends _.de.fabmax.kool.util.MeshBuilder.prototype */ {
               vertex_hd42uj$: function (pos, nrm, uv) {
@@ -5315,6 +5413,13 @@ var kool = function (Kotlin) {
                   i0 = i2;
                   i1 = i3;
                 }
+              },
+              text_2vp9zl$: function (props) {
+                props.call(this.textProps_w0m2r5$_0.defaults());
+                this.text_lis6zk$(this.textProps_w0m2r5$_0);
+              },
+              text_lis6zk$: function (props) {
+                this.withTransform_mngb98$(_.de.fabmax.kool.util.MeshBuilder.text_lis6zk$f(props));
               }
             }, /** @lends _.de.fabmax.kool.util.MeshBuilder */ {
               vertex_hd42uj$f: function (closure$pos, closure$nrm, closure$uv, this$MeshBuilder) {
@@ -5416,6 +5521,40 @@ var kool = function (Kotlin) {
                   this.translate_y2kzbl$(closure$props.origin.x, closure$props.origin.y + closure$props.height, closure$props.origin.z);
                   this.rotate_ag3lbb$(-90.0, _.de.fabmax.kool.util.Vec3f.Companion.X_AXIS);
                   this.circle_edvpwy$(_.de.fabmax.kool.util.MeshBuilder.f_0(closure$props));
+                };
+              },
+              f_1: function (closure$metrics) {
+                return function () {
+                  this.width = closure$metrics.width;
+                  this.height = closure$metrics.height;
+                  this.texCoordUpperLeft.set_cx11y3$(closure$metrics.uvMin);
+                  this.texCoordUpperRight.set_dleff0$(closure$metrics.uvMax.x, closure$metrics.uvMin.y);
+                  this.texCoordLowerLeft.set_dleff0$(closure$metrics.uvMin.x, closure$metrics.uvMax.y);
+                  this.texCoordLowerRight.set_cx11y3$(closure$metrics.uvMax);
+                };
+              },
+              text_lis6zk$f: function (closure$props) {
+                return function () {
+                  var tmp$0;
+                  this.scale_y2kzbl$(closure$props.scale, closure$props.scale, closure$props.scale);
+                  this.translate_cx11x8$(closure$props.position);
+                  var advanced = 0.0;
+                  tmp$0 = Kotlin.kotlin.text.iterator_gw00vq$(closure$props.text);
+                  while (tmp$0.hasNext()) {
+                    var c = tmp$0.next();
+                    if (c === '\n') {
+                      this.translate_y2kzbl$(-advanced, -closure$props.font.lineSpace, 0.0);
+                      advanced = 0.0;
+                    }
+                    var metrics = closure$props.font.charMap.get_za3rmp$(c);
+                    if (metrics != null) {
+                      advanced -= metrics.xOffset;
+                      this.translate_y2kzbl$(-metrics.xOffset, metrics.yBaseline - metrics.height, 0.0);
+                      this.rect_ud8hiy$(_.de.fabmax.kool.util.MeshBuilder.f_1(metrics));
+                      this.translate_y2kzbl$(metrics.width, metrics.height - metrics.yBaseline, 0.0);
+                      advanced += metrics.width;
+                    }
+                  }
                 };
               },
               MeshBuilder$f: function (this$MeshBuilder) {
@@ -5537,6 +5676,22 @@ var kool = function (Kotlin) {
                   this.origin.y = this.origin.y + this.height;
                   this.height = -this.height;
                 }
+              }
+            }),
+            TextProps: Kotlin.createClass(null, function TextProps() {
+              this.text = '';
+              this.font = _.de.fabmax.kool.util.Font.Companion.DEFAULT_FONT;
+              this.color = _.de.fabmax.kool.util.Color.Companion.BLACK;
+              this.position = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.scale = 1.0;
+            }, /** @lends _.de.fabmax.kool.util.TextProps.prototype */ {
+              defaults: function () {
+                this.text = '';
+                this.font = _.de.fabmax.kool.util.Font.Companion.DEFAULT_FONT;
+                this.color = _.de.fabmax.kool.util.Color.Companion.BLACK;
+                this.position.set_cx11x8$(_.de.fabmax.kool.util.Vec3f.Companion.ZERO);
+                this.scale = 1.0;
+                return this;
               }
             }),
             Property: Kotlin.createClass(null, function Property(value) {

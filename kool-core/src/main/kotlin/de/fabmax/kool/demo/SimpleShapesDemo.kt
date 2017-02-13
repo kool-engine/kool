@@ -4,9 +4,7 @@ import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.group
 import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.scene.transformGroup
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Vec3f
-import de.fabmax.kool.util.colorMesh
+import de.fabmax.kool.util.*
 
 /**
  * A simple demo scene with mouse-controlled camera and a few animated shapes.
@@ -42,7 +40,11 @@ fun simpleShapesDemo(ctx: RenderContext) {
                 // normal orientation, this will make the sphere nicely colorful
                 vertexModFun = { color.set(Color((normal.x + 1) / 2, (normal.y + 1) / 2, (normal.z + 1) / 2, 1f)) }
                 // Generate the sphere mesh with a sphere radius of 1.5 units
-                sphere { radius = 1.5f }
+                sphere {
+                    radius = 1.5f
+                    // Make it really smooth
+                    steps = 50
+                }
             }
         }
 
@@ -75,27 +77,31 @@ fun simpleShapesDemo(ctx: RenderContext) {
             }
         }
 
-        // Add another TransformGroup with a size-changing cylinder
+        // Add another TransformGroup with a size-changing text string
         +transformGroup("back") {
             // Content is shifted to the back and scaled depending on time
             animation = { ctx ->
                 setIdentity()
                 translate(0f, 0f, -5f)
-                val s = 1f + Math.sin(ctx.time * 3).toFloat() * 0.5f
+                val s = 1f + Math.sin(ctx.time * 3).toFloat() * 0.25f
                 scale(s, s, s)
             }
 
-            // Add the cylinder mesh
-            +colorMesh {
-                color = Color.LIME
-                cylinder {
-                    origin.set(0f, -1.5f, 0f)
-                    height = 3f
-                    topRadius = .5f
-                    bottomRadius = 1f
+            // Add the text, you can use any font you like
+            val textFont = Font("Segoe UI", 48.0f)
+            +textMesh(textFont, Color.LIME) {
+                text {
+                    // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
+                    text = "kool Text!"
+                    font = textFont
+                    // Make the text centered
+                    position.set(-font.stringWidth(text) / 2f, 0f, 0f)
+                    // generated text mesh size is based on the font size, without scaling, a single character would
+                    // be 48 units tall, hence we have to scale it down a lot. This could also be done by calling
+                    // scale(0.03f, 0.03f, 0.03f) on the outer level, but let's take the shortcut
+                    scale = 0.03f
                 }
             }
-
         }
     }
 

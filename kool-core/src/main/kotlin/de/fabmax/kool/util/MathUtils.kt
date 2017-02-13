@@ -42,6 +42,14 @@ fun clamp(value: Double, min: Double = 0.0, max: Double = 1.0): Double {
     }
 }
 
+fun isEqual(a: Float, b: Float): Boolean {
+    return isZero(a - b)
+}
+
+fun isEqual(a: Double, b: Double): Boolean {
+    return isZero(a - b)
+}
+
 fun isZero(value: Float): Boolean {
     // with js math library abs(Float) gives an error...
     return Math.abs(value.toDouble()) < 1e-5

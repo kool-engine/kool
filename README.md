@@ -8,6 +8,13 @@ For now this is nothing more than a simple experiment. However, if you are curio
 you can clone this repo and open index.html in the ./out directory in your favourite
 browser.
 
+What's working:
+- Mesh building functions for several primitive 3D shapes
+- Shading with different light (phong / gouraud) and color models (vertex, texture or fixed)
+- Transform groups and simple animation
+- Mouse controlled camera
+- *Text rendering using arbitrary fonts*. For now character set is fixed but theoretically it has unicode support
+
 Below is the code for the demo scene
 
 ##Example:
@@ -50,7 +57,11 @@ fun main(args: Array<String>) {
                 // normal orientation, this will make the sphere nicely colorful
                 vertexModFun = { color.set(Color((normal.x + 1) / 2, (normal.y + 1) / 2, (normal.z + 1) / 2, 1f)) }
                 // Generate the sphere mesh with a sphere radius of 1.5 units
-                sphere { radius = 1.5f }
+                sphere {
+                    radius = 1.5f
+                    // Make it really smooth
+                    steps = 50 
+                }
             }
         }
 
@@ -89,21 +100,25 @@ fun main(args: Array<String>) {
             animation = { ctx ->
                 setIdentity()
                 translate(0f, 0f, -5f)
-                val s = 1f + Math.sin(ctx.time * 3).toFloat() * 0.5f
+                val s = 1f + Math.sin(ctx.time * 3).toFloat() * 0.25f
                 scale(s, s, s)
             }
 
-            // Add the cylinder mesh
-            +colorMesh {
-                color = Color.LIME
-                cylinder {
-                    origin.set(0f, -1.5f, 0f)
-                    height = 3f
-                    topRadius = .5f
-                    bottomRadius = 1f
+            // Add the text, you can use any font you like
+            val textFont = Font("Segoe UI", 48.0f)
+            +textMesh(textFont, Color.LIME) {
+                text {
+                    // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
+                    text = "kool Text!"
+                    font = textFont
+                    // Make the text centered
+                    position.set(-font.stringWidth(text) / 2f, 0f, 0f)
+                    // generated text mesh size is based on the font size, without scaling, a single character would
+                    // be 48 units tall, hence we have to scale it down a lot. This could also be done by calling
+                    // scale(0.03f, 0.03f, 0.03f) on the outer level, but let's take the shortcut
+                    scale = 0.03f
                 }
             }
-
         }
     }
 

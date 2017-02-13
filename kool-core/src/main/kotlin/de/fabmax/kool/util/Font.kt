@@ -16,6 +16,8 @@ class Font(val family: String, val size: Float, val style: Int = Font.PLAIN) {
         val BOLD = 1
         val ITALIC = 2
 
+        val DEFAULT_FONT: Font
+
         // todo: For now char maps are created with a hardcoded set of characters (ASCII + a few german ones)
         // todo: theoretically arbitrary unicode characters are supported
         private val STD_CHARS: String
@@ -26,13 +28,34 @@ class Font(val family: String, val size: Float, val style: Int = Font.PLAIN) {
             }
             str += "äÄöÖüÜß"
             STD_CHARS = str
+
+            DEFAULT_FONT = Font("sans-serif", 12f, PLAIN)
         }
     }
 
     val charMap: CharMap = Platform.createCharMap(this, STD_CHARS)
+
+    var lineSpace = size * 1.2f
+
+    fun stringWidth(string: String): Float {
+        var width = 0f
+        var maxWidth = 0f
+
+        for (i in string.indices) {
+            val c = string[i]
+            width += charMap[c]?.advance ?: 0f
+            if (width > maxWidth) {
+                maxWidth = width
+            }
+            if (c == '\n') {
+                width = 0f
+            }
+        }
+        return maxWidth
+    }
 }
 
-fun fontShader(font: Font?, color: Color = Color.WHITE, propsInit: ShaderProps.() -> Unit): BasicShader {
+fun fontShader(font: Font?, color: Color = Color.WHITE, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
     val props = ShaderProps()
     props.propsInit()
     // static color and texture color are required to render fonts

@@ -4,13 +4,13 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.shading.*
 
 fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
-         block: MeshBuilder.() -> Unit): Mesh {
+         generator: MeshBuilder.() -> Unit): Mesh {
 
     val mesh = Mesh(withNormals, withColors, withTexCoords, name)
     val builder = MeshBuilder(mesh)
 
     mesh.batchUpdate = true
-    builder.block()
+    builder.generator()
     if (builder.shader != null) {
         mesh.shader = builder.shader
     }
@@ -20,12 +20,18 @@ fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name
 
 }
 
-fun textureMesh(name: String? = null, block: MeshBuilder.() -> Unit): Mesh {
-    return mesh(true, false, true, name, block)
+fun colorMesh(name: String? = null, generator: MeshBuilder.() -> Unit): Mesh {
+    return mesh(true, true, false, name, generator)
 }
 
-fun colorMesh(name: String? = null, block: MeshBuilder.() -> Unit): Mesh {
-    return mesh(true, true, false, name, block)
+fun textMesh(font: Font, color: Color, name: String? = null, generator: MeshBuilder.() -> Unit): Mesh {
+    val text = textureMesh(name, generator)
+    text.shader = fontShader(font, color)
+    return text
+}
+
+fun textureMesh(name: String? = null, generator: MeshBuilder.() -> Unit): Mesh {
+    return mesh(true, false, true, name, generator)
 }
 
 /**
@@ -48,6 +54,7 @@ open class MeshBuilder(val mesh: Mesh) {
     private val cylinderProps = CylinderProps()
     private val rectProps = RectProps()
     private val sphereProps = SphereProps()
+    private val textProps = TextProps()
 
     init {
         shader = basicShader {
@@ -347,6 +354,43 @@ open class MeshBuilder(val mesh: Mesh) {
             i1 = i3
         }
     }
+
+    fun text(props: TextProps.() -> Unit) {
+        textProps.defaults().props()
+        text(textProps)
+    }
+
+    fun text(props: TextProps) {
+        withTransform {
+            scale(props.scale, props.scale, props.scale)
+            translate(props.position)
+
+            var advanced = 0f
+            for (c in props.text) {
+                if (c == '\n') {
+                    translate(-advanced, -props.font.lineSpace, 0f)
+                    advanced = 0f
+                }
+
+                val metrics = props.font.charMap[c]
+                if (metrics != null) {
+                    advanced -= metrics.xOffset
+                    translate(-metrics.xOffset, metrics.yBaseline - metrics.height, 0f)
+                    rect {
+                        width = metrics.width
+                        height = metrics.height
+
+                        texCoordUpperLeft.set(metrics.uvMin)
+                        texCoordUpperRight.set(metrics.uvMax.x, metrics.uvMin.y)
+                        texCoordLowerLeft.set(metrics.uvMin.x, metrics.uvMax.y)
+                        texCoordLowerRight.set(metrics.uvMax)
+                    }
+                    translate(metrics.width, metrics.height - metrics.yBaseline, 0f)
+                    advanced += metrics.width
+                }
+            }
+        }
+    }
 }
 
 open class CircleProps {
@@ -431,7 +475,7 @@ class CubeProps : RectProps() {
     }
 }
 
-open class CylinderProps {
+class CylinderProps {
     var bottomRadius = 1f
     var topRadius = 1f
     var steps = 20
@@ -452,5 +496,22 @@ open class CylinderProps {
             origin.y += height
             height = -height
         }
+    }
+}
+
+class TextProps {
+    var text = ""
+    var font = Font.DEFAULT_FONT
+    var color = Color.BLACK
+    val position = MutableVec3f()
+    var scale = 1f
+
+    fun defaults(): TextProps {
+        text = ""
+        font = Font.DEFAULT_FONT
+        color = Color.BLACK
+        position.set(Vec3f.ZERO)
+        scale = 1f
+        return this
     }
 }

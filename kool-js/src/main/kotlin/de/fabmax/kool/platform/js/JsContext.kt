@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.js
 
 import de.fabmax.kool.InputHandler
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.RenderContext
