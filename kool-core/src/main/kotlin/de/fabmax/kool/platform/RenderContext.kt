@@ -73,7 +73,10 @@ abstract class RenderContext {
         GL.enable(GL.DEPTH_TEST)
         GL.enable(GL.CULL_FACE)
         GL.enable(GL.BLEND)
-        GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
+        // straight alpha
+        //GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
+        // pre-multiplied alpha
+        GL.blendFunc(GL.ONE, GL.ONE_MINUS_SRC_ALPHA)
     }
 
     protected open fun render() {
