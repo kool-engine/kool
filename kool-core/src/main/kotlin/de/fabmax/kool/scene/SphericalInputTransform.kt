@@ -18,7 +18,7 @@ fun sphericalInputTransform(name: String? = null, block: SphericalInputTransform
     return sit
 }
 
-class SphericalInputTransform(name: String? = null) : TransformGroup(name) {
+open class SphericalInputTransform(name: String? = null) : TransformGroup(name) {
 
     private var stiffness = 0f
     private var damping = 0f
@@ -32,8 +32,8 @@ class SphericalInputTransform(name: String? = null) : TransformGroup(name) {
 
     var verticalRotation = 0f
     var horizontalRotation = 0f
-
     var zoom = 1f
+
     var minZoom = 0.1f
     var maxZoom = 10f
 
@@ -48,13 +48,6 @@ class SphericalInputTransform(name: String? = null) : TransformGroup(name) {
 
     init {
         smoothness = 0.1f
-    }
-
-    fun animateRotation(vertical: Float, horizontal: Float) {
-        animRotV.desired = vertical
-        animRotH.desired = horizontal
-        verticalRotation = vertical
-        horizontalRotation = horizontal
     }
 
     fun setRotation(vertical: Float, horizontal: Float) {

@@ -4,6 +4,8 @@ import de.fabmax.kool.BufferedTexture2d
 import de.fabmax.kool.Texture2d
 import de.fabmax.kool.TextureResource
 import de.fabmax.kool.platform.lwjgl3.*
+import de.fabmax.kool.util.CharMap
+import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.GlslGenerator
 import java.awt.Transparency
 import java.awt.image.BufferedImage
@@ -22,6 +24,8 @@ class PlatformImpl private constructor() : Platform() {
             Platform.initPlatform(PlatformImpl())
         }
     }
+
+    internal val fontGenerator = FontMapGenerator()
 
     override val supportsMultiContext = true
 
@@ -66,39 +70,49 @@ class PlatformImpl private constructor() : Platform() {
     override fun loadTexture(path: String, props: TextureResource.Props): BufferedTexture2d {
         val image = ImageIO.read(File(path))
         val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
-        val stride = if (alpha) 4 else 3
-        val width = image.width
-        val height = image.height
-        val raster = image.data
-        val pixel = IntArray(4)
-        val indexed = image.type == BufferedImage.TYPE_BYTE_BINARY || image.type == BufferedImage.TYPE_BYTE_INDEXED
-        val model = image.colorModel
+        val buffer = bufferedImageToBuffer(image)
+        return BufferedTexture2d(buffer, image.width, image.height, if (alpha) GL.RGBA else GL.RGB, props)
+    }
 
-        val buffer = createUint8Buffer(width * height * stride)
-        for (y in 0..height-1) {
-            for (x in 0..width-1) {
-                raster.getPixel(x, y, pixel)
+    override fun createCharMap(font: Font, chars: String): CharMap {
+        return fontGenerator.createCharMap(font, chars)
+    }
+}
 
-                if (indexed) {
-                    if (alpha) {
-                        pixel[3] = model.getAlpha(pixel[0])
-                    }
-                    pixel[2] = model.getBlue(pixel[0])
-                    pixel[1] = model.getGreen(pixel[0])
-                    pixel[0] = model.getRed(pixel[0])
-                }
-                if (!alpha) {
-                    pixel[3] = 255
-                }
+internal fun bufferedImageToBuffer(image: BufferedImage): Uint8Buffer {
+    val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
+    val stride = if (alpha) 4 else 3
+    val width = image.width
+    val height = image.height
+    val raster = image.data
+    val pixel = IntArray(4)
+    val indexed = image.type == BufferedImage.TYPE_BYTE_BINARY || image.type == BufferedImage.TYPE_BYTE_INDEXED
+    val model = image.colorModel
 
-                buffer.put(pixel[0].toByte()).put(pixel[1].toByte()).put(pixel[2].toByte())
+    val buffer = Platform.createUint8Buffer(width * height * stride)
+    for (y in 0..height-1) {
+        for (x in 0..width-1) {
+            raster.getPixel(x, y, pixel)
+
+            if (indexed) {
                 if (alpha) {
-                    buffer.put(pixel[3].toByte())
+                    pixel[3] = model.getAlpha(pixel[0])
                 }
+                pixel[2] = model.getBlue(pixel[0])
+                pixel[1] = model.getGreen(pixel[0])
+                pixel[0] = model.getRed(pixel[0])
+            }
+            if (!alpha) {
+                pixel[3] = 255
+            }
+
+            buffer.put(pixel[0].toByte()).put(pixel[1].toByte()).put(pixel[2].toByte())
+            if (alpha) {
+                buffer.put(pixel[3].toByte())
             }
         }
-        return BufferedTexture2d(buffer, width, height, if (alpha) GL.RGBA else GL.RGB, props)
     }
+    return buffer
 }
 
 /**

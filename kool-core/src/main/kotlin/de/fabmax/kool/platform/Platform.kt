@@ -2,6 +2,8 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.Texture2d
 import de.fabmax.kool.TextureResource
+import de.fabmax.kool.util.CharMap
+import de.fabmax.kool.util.Font
 
 /**
  * @author fabmax
@@ -58,6 +60,10 @@ abstract class Platform {
         fun loadTexture(path: String, props: TextureResource.Props = TextureResource.DEFAULT_PROPERTIES): Texture2d {
             return instance.loadTexture(path, props)
         }
+
+        fun createCharMap(font: Font, chars: String): CharMap {
+            return instance.createCharMap(font, chars)
+        }
     }
 
     abstract val supportsMultiContext: Boolean
@@ -82,7 +88,10 @@ abstract class Platform {
 
     abstract fun loadTexture(path: String, props: TextureResource.Props): Texture2d
 
+    abstract fun createCharMap(font: Font, chars: String): CharMap
+
     private class NoopPlatform : Platform() {
+
         override val supportsMultiContext: Boolean
             get() = throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
 
@@ -123,6 +132,10 @@ abstract class Platform {
 
         override fun loadTexture(path: String, props: TextureResource.Props): Texture2d {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
+        }
+
+        override fun createCharMap(font: Font, chars: String): CharMap {
+            throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
     }
 }

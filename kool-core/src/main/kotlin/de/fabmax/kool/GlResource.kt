@@ -209,6 +209,6 @@ class TextureResource private constructor(glRef: Any, val target: Int, val props
     }
 
     data class Props(val minFilter: Int, val magFilter: Int, val xWrapping: Int, val yWrapping: Int) {
-        constructor() : this(GL.LINEAR_MIPMAP_LINEAR, GL.LINEAR, GL.REPEAT, GL.REPEAT)
+        constructor() : this(GL.LINEAR_MIPMAP_LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
     }
 }
