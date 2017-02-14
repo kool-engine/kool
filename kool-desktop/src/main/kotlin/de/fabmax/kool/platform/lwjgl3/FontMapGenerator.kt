@@ -16,14 +16,9 @@ import java.awt.image.BufferedImage
  * @author fabmax
  */
 
-class FontMapGenerator {
+class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 
-    companion object {
-        val MAXIMUM_TEX_WIDTH = 1024
-        val MAXIMUM_TEX_HEIGHT = 1024
-    }
-
-    private val canvas = BufferedImage(MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT, BufferedImage.TYPE_INT_ARGB)
+    private val canvas = BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB)
     private val clearColor = Color(0, 0, 0, 0)
 
     fun createCharMap(font: Font, chars: String): CharMap {
@@ -32,7 +27,7 @@ class FontMapGenerator {
 
         // clear canvas
         g.background = clearColor
-        g.clearRect(0, 0, MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT)
+        g.clearRect(0, 0, maxWidth, maxHeight)
 
         var style = java.awt.Font.PLAIN
         if (font.style and Font.BOLD != 0) {
@@ -44,16 +39,19 @@ class FontMapGenerator {
         g.font = java.awt.Font(font.family, style, Math.round(font.size))
         g.color = Color.BLACK
 
-        val metrics = makeMap(chars, font.size, g)
+        val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
+        val texHeight = makeMap(chars, font.size, g, metrics)
 
         val props = TextureResource.Props(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
 
+        println("tex size: $maxWidth x $texHeight")
+
         val format = GL.ALPHA
-        val buffer = bufferedImageToBuffer(canvas, format)
-        return CharMap(BufferedTexture2d(buffer, MAXIMUM_TEX_WIDTH, MAXIMUM_TEX_HEIGHT, format, props), metrics)
+        val buffer = bufferedImageToBuffer(canvas, format, maxWidth, texHeight)
+        return CharMap(BufferedTexture2d(buffer, maxWidth, texHeight, format, props), metrics)
     }
 
-    private fun makeMap(chars: String, size: Float, g: Graphics2D): Map<Char, CharMetrics> {
+    private fun makeMap(chars: String, size: Float, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {
         val padding = 3
         // line height above baseline
         val hab = Math.round(size * 1.1f)
@@ -63,17 +61,15 @@ class FontMapGenerator {
         val height = Math.round(size * 1.6f)
         val fm = g.fontMetrics
 
-        val map: MutableMap<Char, CharMetrics> = mutableMapOf()
-
         var x = 0
         var y = hab
         for (c in chars) {
             val charW = fm.charWidth(c)
             val paddedWidth = charW + padding * 2
-            if (x + paddedWidth > MAXIMUM_TEX_WIDTH) {
+            if (x + paddedWidth > maxWidth) {
                 x = 0
                 y += height + 10
-                if (y + hbb > MAXIMUM_TEX_HEIGHT) {
+                if (y + hbb > maxHeight) {
                     break
                 }
             }
@@ -85,16 +81,32 @@ class FontMapGenerator {
             metrics.yBaseline = hab.toFloat()
             metrics.advance = charW.toFloat()
 
-            metrics.uvMin.set((x + padding).toFloat() / MAXIMUM_TEX_WIDTH, (y.toFloat() - hab.toFloat()) / MAXIMUM_TEX_HEIGHT)
-            metrics.uvMax.set((x + padding + metrics.width) / MAXIMUM_TEX_WIDTH,
-                    (y.toFloat() - hab.toFloat() + metrics.height) / MAXIMUM_TEX_HEIGHT)
+            metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())
+            metrics.uvMax.set((x + padding + metrics.width), (y - hab).toFloat() + metrics.height)
             map.put(c, metrics)
 
             g.drawString("$c", x + padding, y)
             x += paddedWidth
         }
 
-        return map
+        val texW = maxWidth
+        val texH = nextPow2(y + hbb)
+
+        for (cm in map.values) {
+            cm.uvMin.x /= texW
+            cm.uvMin.y /= texH
+            cm.uvMax.x /= texW
+            cm.uvMax.y /= texH
+        }
+
+        return texH
     }
 
+    private fun nextPow2(value: Int): Int {
+        var pow2 = 16
+        while (pow2 < value && pow2 < maxHeight) {
+            pow2 = pow2 shl 1
+        }
+        return pow2
+    }
 }

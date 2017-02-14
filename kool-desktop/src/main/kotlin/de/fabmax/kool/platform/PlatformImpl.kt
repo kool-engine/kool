@@ -24,9 +24,12 @@ class PlatformImpl private constructor() : Platform() {
         fun init() {
             Platform.initPlatform(PlatformImpl())
         }
+
+        val MAX_GENERATED_TEX_WIDTH = 2048
+        val MAX_GENERATED_TEX_HEIGHT = 2048
     }
 
-    internal val fontGenerator = FontMapGenerator()
+    internal val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     override val supportsMultiContext = true
 
@@ -72,7 +75,7 @@ class PlatformImpl private constructor() : Platform() {
         val image = ImageIO.read(File(path))
         val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
         val format = if (alpha) GL.RGBA else GL.RGB
-        val buffer = bufferedImageToBuffer(image, format)
+        val buffer = bufferedImageToBuffer(image, format, 0, 0)
         return BufferedTexture2d(buffer, image.width, image.height, format, props)
     }
 
@@ -81,10 +84,10 @@ class PlatformImpl private constructor() : Platform() {
     }
 }
 
-internal fun bufferedImageToBuffer(image: BufferedImage, format: Int): Uint8Buffer {
+internal fun bufferedImageToBuffer(image: BufferedImage, format: Int, width: Int, height: Int): Uint8Buffer {
     val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
-    val width = image.width
-    val height = image.height
+    val w = if (width == 0) { image.width } else { width }
+    val h = if (height == 0) { image.height} else { height }
     val raster = image.data
     val pixel = IntArray(4)
     val indexed = image.type == BufferedImage.TYPE_BYTE_BINARY || image.type == BufferedImage.TYPE_BYTE_INDEXED
@@ -96,9 +99,9 @@ internal fun bufferedImageToBuffer(image: BufferedImage, format: Int): Uint8Buff
         else -> throw KoolException("Invalid output format $format")
     }
 
-    val buffer = Platform.createUint8Buffer(width * height * stride)
-    for (y in 0..height-1) {
-        for (x in 0..width-1) {
+    val buffer = Platform.createUint8Buffer(w * h * stride)
+    for (y in 0..h-1) {
+        for (x in 0..w-1) {
             raster.getPixel(x, y, pixel)
 
             if (indexed) {
@@ -114,7 +117,7 @@ internal fun bufferedImageToBuffer(image: BufferedImage, format: Int): Uint8Buff
             }
 
             // pre-multiply alpha
-            if (pixel[3] < 255) {
+            if (format == GL.RGBA && pixel[3] < 255) {
                 pixel[0] = Math.round(pixel[0] * pixel[3] / 255f)
                 pixel[1] = Math.round(pixel[1] * pixel[3] / 255f)
                 pixel[2] = Math.round(pixel[2] * pixel[3] / 255f)

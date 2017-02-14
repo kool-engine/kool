@@ -42,8 +42,6 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
 
         gl = webGlCtx as WebGLRenderingContext
         supportsUint32Indices = gl.getExtension("OES_element_index_uint") != null
-        // use texture-storage with pre-multiplied alpha
-        gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, GL.TRUE)
 
         viewportWidth = canvas.width
         viewportHeight = canvas.height

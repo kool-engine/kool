@@ -29,9 +29,12 @@ class PlatformImpl private constructor() : Platform() {
         fun init() {
             Platform.initPlatform(PlatformImpl())
         }
+
+        val MAX_GENERATED_TEX_WIDTH = 1024
+        val MAX_GENERATED_TEX_HEIGHT = 1024
     }
 
-    internal val fontGenerator = FontMapGenerator()
+    internal val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     override val supportsMultiContext = false
 

@@ -88,8 +88,9 @@ fun simpleShapesDemo(ctx: RenderContext) {
             }
 
             // Add the text, you can use any font you like
-            val textFont = Font("Segoe UI", 48.0f)
-            +textMesh(textFont, Color.LIME) {
+            val textFont = Font("Segoe UI", 72.0f)
+            +textMesh(textFont) {
+                color = Color.LIME
                 text {
                     // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
                     text = "kool Text!"
@@ -99,7 +100,7 @@ fun simpleShapesDemo(ctx: RenderContext) {
                     // generated text mesh size is based on the font size, without scaling, a single character would
                     // be 48 units tall, hence we have to scale it down a lot. This could also be done by calling
                     // scale(0.03f, 0.03f, 0.03f) on the outer level, but let's take the shortcut
-                    scale = 0.03f
+                    scale = 0.02f
                 }
             }
         }

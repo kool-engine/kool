@@ -239,7 +239,10 @@ class WebGlImpl private constructor() : GL.Impl {
     }
 
     fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, pixels: Any?) {
+        // pre-multiply alpha for image object
+        PlatformImpl.gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, GL.TRUE)
         PlatformImpl.gl.texImage2D(target, level, internalformat, format, type, pixels as HTMLImageElement?)
+        PlatformImpl.gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, GL.FALSE)
     }
 
     override fun texParameteri(target: Int, pname: Int, param: Int) {

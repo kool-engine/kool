@@ -55,11 +55,11 @@ class Font(val family: String, val size: Float, val style: Int = Font.PLAIN) {
     }
 }
 
-fun fontShader(font: Font?, color: Color = Color.WHITE, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
+fun fontShader(font: Font?, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
     val props = ShaderProps()
     props.propsInit()
-    // static color and texture color are required to render fonts
-    props.isStaticColor = true
+    // vertex color and texture color are required to render fonts
+    props.isVertexColor = true
     props.isTextureColor = true
     val generator = Platform.createDefaultShaderGenerator()
 
@@ -67,16 +67,14 @@ fun fontShader(font: Font?, color: Color = Color.WHITE, propsInit: ShaderProps.(
     // static color rgb has to be pre-multiplied with texture alpha
     generator.injectors += object: ShaderGenerator.GlslInjector {
         override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append(ShaderGenerator.LOCAL_NAME_FRAG_COLOR).append(" = vec4(")
-                    .append(ShaderGenerator.LOCAL_NAME_STATIC_COLOR).append(".rgb * ")
-                    .append(ShaderGenerator.LOCAL_NAME_TEX_COLOR).append(".a, ")
-                    .append(ShaderGenerator.LOCAL_NAME_TEX_COLOR).append(".a);\n")
+            text.append(ShaderGenerator.LOCAL_NAME_FRAG_COLOR).append(" = ")
+                    .append(ShaderGenerator.LOCAL_NAME_VERTEX_COLOR).append(" * ")
+                    .append(ShaderGenerator.LOCAL_NAME_TEX_COLOR).append(".a;\n")
         }
     }
 
     val shader = BasicShader(props, generator)
     shader.texture = font?.charMap?.fontTexture
-    shader.staticColor.set(color)
     return shader
 }
 
