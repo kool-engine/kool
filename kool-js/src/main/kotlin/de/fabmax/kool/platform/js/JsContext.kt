@@ -49,8 +49,9 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
         canvas.onmousemove = { ev ->
             ev as MouseEvent
             val bounds = canvas.getBoundingClientRect()
-            inputHandler.updatePointerPos(InputHandler.PRIMARY_POINTER,
-                    ev.clientX - bounds.left, ev.clientY - bounds.top)
+            val x = (ev.clientX - bounds.left).toFloat()
+            val y = (ev.clientY - bounds.top).toFloat()
+            inputHandler.updatePointerPos(InputHandler.PRIMARY_POINTER, x, y)
         }
         canvas.onmousedown = { ev ->
             ev as MouseEvent
@@ -70,10 +71,10 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
             ev as WheelEvent
             // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse scroll
             // wheel tick
-            var ticks = -ev.deltaY / 3.0
+            var ticks = -ev.deltaY.toFloat() / 3f
             if (ev.deltaMode == 0) {
                 // scroll delta is specified in pixels...
-                ticks /= 30
+                ticks /= 30f
             }
             inputHandler.updatePointerScrollPos(InputHandler.PRIMARY_POINTER, ticks)
             // mark wheel event as handled to prevent scrolling the page

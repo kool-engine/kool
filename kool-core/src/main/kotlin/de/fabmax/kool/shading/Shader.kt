@@ -72,7 +72,7 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
      * @param attribName    The attribute name to look for
      * @return the attribute location or -1 if the attribute was not found.
      */
-    open fun findAttributeLocation(attribName: String): Int {
+    open fun findAttributeLocation(attribName: String, ctx: RenderContext): Int {
         val ref: ProgramResource? = res
         if (ref != null) {
             return GL.getAttribLocation(ref, attribName)
@@ -90,9 +90,9 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
      * @param attribName    name of the attribute in shader code
      * @return whether the attribute was enabled (i.e. attribName was found)
      */
-    open fun enableAttribute(attribute: Attribute, attribName: String): Boolean {
-        val location = findAttributeLocation(attribName)
-        enableAttribute(attribute, location)
+    open fun enableAttribute(attribute: Attribute, attribName: String, ctx: RenderContext): Boolean {
+        val location = findAttributeLocation(attribName, ctx)
+        enableAttribute(attribute, location, ctx)
         return location >= 0
     }
 
@@ -103,7 +103,7 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
      * @param attribute    the attribute to enable
      * @param location     attribute location in shader code, if specified with layout (location=...)
      */
-    open fun enableAttribute(attribute: Attribute, location: Int) {
+    open fun enableAttribute(attribute: Attribute, location: Int, ctx: RenderContext) {
         when (attribute) {
             Attribute.POSITIONS -> attributePositions = location
             Attribute.NORMALS -> attributeNormals = location
@@ -118,7 +118,7 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
      * @param uniformName    The uniform name to look for
      * @return the uniform location or -1 if the attribute was not found.
      */
-    open fun findUniformLocation(uniformName: String): Any? {
+    open fun findUniformLocation(uniformName: String, ctx: RenderContext): Any? {
         val ref: ProgramResource? = res
         if (ref != null) {
             return GL.getUniformLocation(ref, uniformName)

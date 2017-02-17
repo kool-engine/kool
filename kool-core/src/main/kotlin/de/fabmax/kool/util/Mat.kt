@@ -43,15 +43,16 @@ open class Mat4f {
         return result
     }
 
-    fun rotateEuler(xDeg: Float, yDeg: Float, zDeg: Float): Mat4f {
-        MatrixMath.rotateEulerM(matrix, offset, xDeg, yDeg, zDeg)
-        return this
-    }
-
-    fun rotateEuler(result: Mat4f, xDeg: Float, yDeg: Float, zDeg: Float): Mat4f {
-        MatrixMath.rotateEulerM(result.matrix, result.offset, matrix, offset, xDeg, yDeg, zDeg)
-        return result
-    }
+    // fixme: MatrixMath.rotateEulerM seems to be broken...
+//    fun rotateEuler(xDeg: Float, yDeg: Float, zDeg: Float): Mat4f {
+//        MatrixMath.rotateEulerM(matrix, offset, xDeg, yDeg, zDeg)
+//        return this
+//    }
+//
+//    fun rotateEuler(result: Mat4f, xDeg: Float, yDeg: Float, zDeg: Float): Mat4f {
+//        MatrixMath.rotateEulerM(result.matrix, result.offset, matrix, offset, xDeg, yDeg, zDeg)
+//        return result
+//    }
 
     fun scale(sx: Float, sy: Float, sz: Float): Mat4f {
         MatrixMath.scaleM(matrix, offset, sx, sy, sz)
@@ -92,6 +93,22 @@ open class Mat4f {
         result.x = vec.x * this[0, 0] + vec.y * this[1, 0] + vec.z * this[2, 0] + w * this[3, 0]
         result.y = vec.x * this[0, 1] + vec.y * this[1, 1] + vec.z * this[2, 1] + w * this[3, 1]
         result.z = vec.x * this[0, 2] + vec.y * this[1, 2] + vec.z * this[2, 2] + w * this[3, 2]
+        return result
+    }
+
+    fun transform(vec: MutableVec4f): MutableVec4f {
+        val x = vec.x * this[0, 0] + vec.y * this[1, 0] + vec.z * this[2, 0] + vec.w * this[3, 0]
+        val y = vec.x * this[0, 1] + vec.y * this[1, 1] + vec.z * this[2, 1] + vec.w * this[3, 1]
+        val z = vec.x * this[0, 2] + vec.y * this[1, 2] + vec.z * this[2, 2] + vec.w * this[3, 2]
+        val w = vec.x * this[0, 3] + vec.y * this[1, 3] + vec.z * this[2, 3] + vec.w * this[3, 3]
+        return vec.set(x, y, z, w)
+    }
+
+    fun transform(result: MutableVec4f, vec: Vec4f): MutableVec4f {
+        result.x = vec.x * this[0, 0] + vec.y * this[1, 0] + vec.z * this[2, 0] + vec.w * this[3, 0]
+        result.y = vec.x * this[0, 1] + vec.y * this[1, 1] + vec.z * this[2, 1] + vec.w * this[3, 1]
+        result.z = vec.x * this[0, 2] + vec.y * this[1, 2] + vec.z * this[2, 2] + vec.w * this[3, 2]
+        result.w = vec.x * this[0, 3] + vec.y * this[1, 3] + vec.z * this[2, 3] + vec.w * this[3, 3]
         return result
     }
 

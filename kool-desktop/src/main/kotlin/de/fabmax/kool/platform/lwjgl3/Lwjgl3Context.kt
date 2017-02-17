@@ -55,13 +55,13 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
             inputHandler.updatePointerButtonState(InputHandler.PRIMARY_POINTER, btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(window) { wnd, x, y ->
-            inputHandler.updatePointerPos(InputHandler.PRIMARY_POINTER, x, y)
+            inputHandler.updatePointerPos(InputHandler.PRIMARY_POINTER, x.toFloat(), y.toFloat())
         }
         glfwSetCursorEnterCallback(window) { wnd, entered ->
             inputHandler.updatePointerValid(InputHandler.PRIMARY_POINTER, entered)
         }
         glfwSetScrollCallback(window) { wnd, xOff, yOff ->
-            inputHandler.updatePointerScrollPos(InputHandler.PRIMARY_POINTER, yOff)
+            inputHandler.updatePointerScrollPos(InputHandler.PRIMARY_POINTER, yOff.toFloat())
         }
 
         // get the thread stack and push a new frame

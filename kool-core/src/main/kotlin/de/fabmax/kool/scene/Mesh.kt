@@ -39,7 +39,7 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
         var idx = 0
         synchronized(data) {
             syncBuffers = true
-            idx = data.addVertex(init)
+            idx = data.addVertex(bounds, init)
         }
         // return must be outside of synchronized block for successful javascript transpiling
         return idx
@@ -50,6 +50,7 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
         synchronized(data) {
             syncBuffers = true
             idx = data.addVertex(position, normal, color, texCoord)
+            bounds.add(position)
         }
         // return must be outside of synchronized block for successful javascript transpiling
         return idx
@@ -81,6 +82,7 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
     fun clear() {
         synchronized(data) {
             data.clear()
+            bounds.clear()
             syncBuffers = true
         }
     }
@@ -97,6 +99,7 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
         if (!isVisible) {
             return
         }
+        super.render(ctx)
 
         checkBuffers(ctx)
 
@@ -115,6 +118,15 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
             // draw mesh
             drawElements(ctx)
             boundShader.unbindMesh(ctx)
+        }
+    }
+
+    override fun rayTest(test: RayTest) {
+        // todo: for now only bounds are tested, optional test on actual geometry would be nice
+        val distSqr = bounds.computeHitDistanceSqr(test.origin, test.direction) / test.direction.sqrLength()
+        if (distSqr < test.hitDistanceSqr) {
+            test.hitDistanceSqr = distSqr
+            test.hitNode = this
         }
     }
 

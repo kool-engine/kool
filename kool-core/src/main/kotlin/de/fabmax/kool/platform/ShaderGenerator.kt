@@ -92,7 +92,7 @@ abstract class ShaderGenerator {
         return generateSource(shaderProps)
     }
 
-    abstract fun onLoad(shader: BasicShader)
+    abstract fun onLoad(shader: BasicShader, ctx: RenderContext)
 
     protected abstract fun generateSource(shaderProps: ShaderProps): Shader.Source
 

@@ -1,7 +1,9 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MutableVec3f
+import de.fabmax.kool.util.RayTest
 
 /**
  * A scene node. This is the base class for all scene objects.
@@ -9,6 +11,15 @@ import de.fabmax.kool.util.MutableVec3f
  * @author fabmax
  */
 abstract class Node(val name: String? = null) {
+
+    var onRender: (Node.(RenderContext) -> Unit)? = null
+
+    /**
+     * Axis-aligned bounds of this node, implementations should set and refresh their bounds on every frame
+     * if applicable.
+     */
+    val bounds = BoundingBox()
+
     /**
      * Parent node is set when this node is added to a [TransformGroup]
      */
@@ -26,7 +37,9 @@ abstract class Node(val name: String? = null) {
      *
      * @param ctx    the graphics engine context
      */
-    open fun render(ctx: RenderContext) { }
+    open fun render(ctx: RenderContext) {
+        onRender?.invoke(this, ctx)
+    }
 
     /**
      * Frees all resources occupied by this Node.
@@ -36,7 +49,7 @@ abstract class Node(val name: String? = null) {
     open fun delete(ctx: RenderContext) { }
 
     /**
-     * Transforms vec in-place from local to global coordinates.
+     * Transforms [vec] in-place from local to global coordinates.
      */
     open fun toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
         parent?.toGlobalCoords(vec, w)
@@ -44,7 +57,7 @@ abstract class Node(val name: String? = null) {
     }
 
     /**
-     * Transforms vec in-place from global to local coordinates.
+     * Transforms [vec] in-place from global to local coordinates.
      */
     open fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
         parent?.toLocalCoords(vec)
@@ -52,9 +65,15 @@ abstract class Node(val name: String? = null) {
     }
 
     /**
+     * Performs a hit test with the given [RayTest]. Implementations should override this method and test
+     * if their contents are hit by the ray.
+     */
+    open fun rayTest(test: RayTest) { }
+
+    /**
      * Searches for a node with the specified name. Returns null if no such node is found.
      */
-    open fun findByName(name: String): Node? {
+    open operator fun get(name: String): Node? {
         if (name == this.name) {
             return this
         }

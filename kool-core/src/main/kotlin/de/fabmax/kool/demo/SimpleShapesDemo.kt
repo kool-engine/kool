@@ -35,7 +35,7 @@ fun simpleShapesDemo(ctx: RenderContext) {
             }
 
             // Add a sphere mesh
-            +colorMesh {
+            +colorMesh("Sphere") {
                 // vertexModFun is called for every generated vertex, overwrite the vertex color depending on the
                 // normal orientation, this will make the sphere nicely colorful
                 vertexModFun = { color.set(Color((normal.x + 1) / 2, (normal.y + 1) / 2, (normal.z + 1) / 2, 1f)) }
@@ -59,7 +59,7 @@ fun simpleShapesDemo(ctx: RenderContext) {
             }
 
             // Add a cube mesh
-            +colorMesh {
+            +colorMesh("Cube") {
                 // Make the generated mesh twice as large
                 scale(2f, 2f, 2f)
                 // Shift cube origin to center instead of lower, left, back corner
@@ -78,18 +78,18 @@ fun simpleShapesDemo(ctx: RenderContext) {
         }
 
         // Add another TransformGroup with a size-changing text string
-        +transformGroup("back") {
+        +transformGroup {
             // Content is shifted to the back and scaled depending on time
             animation = { ctx ->
                 setIdentity()
                 translate(0f, 0f, -5f)
-                val s = 1f + Math.sin(ctx.time * 3).toFloat() * 0.25f
-                scale(s, s, s)
+//                val s = 1f + Math.sin(ctx.time * 3).toFloat() * 0.25f
+//                scale(s, s, s)
             }
 
             // Add the text, you can use any font you like
             val textFont = Font("Segoe UI", 72.0f)
-            +textMesh(textFont) {
+            +textMesh(textFont, "Text") {
                 color = Color.LIME
                 text {
                     // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
@@ -99,7 +99,7 @@ fun simpleShapesDemo(ctx: RenderContext) {
                     position.set(-font.stringWidth(text) / 2f, 0f, 0f)
                     // generated text mesh size is based on the font size, without scaling, a single character would
                     // be 48 units tall, hence we have to scale it down a lot. This could also be done by calling
-                    // scale(0.03f, 0.03f, 0.03f) on the outer level, but let's take the shortcut
+                    // scale(0.03f, 0.03f, 0.03f) on an outer level, but let's take the shortcut
                     scale = 0.02f
                 }
             }

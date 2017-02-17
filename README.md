@@ -95,7 +95,7 @@ fun main(args: Array<String>) {
         }
 
         // Add another TransformGroup with a size-changing cylinder
-        +transformGroup("back") {
+        +transformGroup {
             // Content is shifted to the back and scaled depending on time
             animation = { ctx ->
                 setIdentity()
@@ -105,8 +105,9 @@ fun main(args: Array<String>) {
             }
 
             // Add the text, you can use any font you like
-            val textFont = Font("Segoe UI", 48.0f)
-            +textMesh(textFont, Color.LIME) {
+            val textFont = Font("Segoe UI", 72.0f)
+            +textMesh(textFont) {
+                color = Color.LIME
                 text {
                     // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
                     text = "kool Text!"

@@ -1,5 +1,6 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.platform.ShaderGenerator
 import de.fabmax.kool.shading.*
 
@@ -8,30 +9,30 @@ import de.fabmax.kool.shading.*
  */
 open class GlslGenerator : ShaderGenerator() {
 
-    override fun onLoad(shader: BasicShader) {
-        shader.enableAttribute(Shader.Attribute.POSITIONS, ATTRIBUTE_NAME_POSITION)
-        shader.enableAttribute(Shader.Attribute.NORMALS, ATTRIBUTE_NAME_NORMAL)
-        shader.enableAttribute(Shader.Attribute.TEXTURE_COORDS, ATTRIBUTE_NAME_TEX_COORD)
-        shader.enableAttribute(Shader.Attribute.COLORS, ATTRIBUTE_NAME_COLOR)
+    override fun onLoad(shader: BasicShader, ctx: RenderContext) {
+        shader.enableAttribute(Shader.Attribute.POSITIONS, ATTRIBUTE_NAME_POSITION, ctx)
+        shader.enableAttribute(Shader.Attribute.NORMALS, ATTRIBUTE_NAME_NORMAL, ctx)
+        shader.enableAttribute(Shader.Attribute.TEXTURE_COORDS, ATTRIBUTE_NAME_TEX_COORD, ctx)
+        shader.enableAttribute(Shader.Attribute.COLORS, ATTRIBUTE_NAME_COLOR, ctx)
 
-        setUniformLocation(shader, uniformMvpMatrix)
-        setUniformLocation(shader, uniformModelMatrix)
-        setUniformLocation(shader, uniformViewMatrix)
-        setUniformLocation(shader, uniformLightDirection)
-        setUniformLocation(shader, uniformLightColor)
-        setUniformLocation(shader, uniformShininess)
-        setUniformLocation(shader, uniformSpecularIntensity)
-        setUniformLocation(shader, uniformCameraPosition)
-        setUniformLocation(shader, uniformFogColor)
-        setUniformLocation(shader, uniformFogRange)
-        setUniformLocation(shader, uniformTexture)
-        setUniformLocation(shader, uniformStaticColor)
-        setUniformLocation(shader, uniformAlpha)
-        setUniformLocation(shader, uniformSaturation)
+        setUniformLocation(shader, uniformMvpMatrix, ctx)
+        setUniformLocation(shader, uniformModelMatrix, ctx)
+        setUniformLocation(shader, uniformViewMatrix, ctx)
+        setUniformLocation(shader, uniformLightDirection, ctx)
+        setUniformLocation(shader, uniformLightColor, ctx)
+        setUniformLocation(shader, uniformShininess, ctx)
+        setUniformLocation(shader, uniformSpecularIntensity, ctx)
+        setUniformLocation(shader, uniformCameraPosition, ctx)
+        setUniformLocation(shader, uniformFogColor, ctx)
+        setUniformLocation(shader, uniformFogRange, ctx)
+        setUniformLocation(shader, uniformTexture, ctx)
+        setUniformLocation(shader, uniformStaticColor, ctx)
+        setUniformLocation(shader, uniformAlpha, ctx)
+        setUniformLocation(shader, uniformSaturation, ctx)
     }
 
-    protected fun setUniformLocation(shader: BasicShader, uniform: Uniform<*>) {
-        uniform.location = shader.findUniformLocation(uniform.name)
+    protected fun setUniformLocation(shader: BasicShader, uniform: Uniform<*>, ctx: RenderContext) {
+        uniform.location = shader.findUniformLocation(uniform.name, ctx)
     }
 
     override fun generateSource(shaderProps: ShaderProps): Shader.Source {

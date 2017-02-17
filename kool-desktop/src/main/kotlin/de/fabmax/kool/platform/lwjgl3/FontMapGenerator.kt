@@ -43,9 +43,6 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         val texHeight = makeMap(chars, font.size, g, metrics)
 
         val props = TextureResource.Props(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
-
-        println("tex size: $maxWidth x $texHeight")
-
         val format = GL.ALPHA
         val buffer = bufferedImageToBuffer(canvas, format, maxWidth, texHeight)
         return CharMap(BufferedTexture2d(buffer, maxWidth, texHeight, format, props), metrics)

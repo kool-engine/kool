@@ -33,6 +33,10 @@ class InputHandler internal constructor() {
      */
     val primaryPointer = pointers[PRIMARY_POINTER]
 
+    fun getPointer(idx: Int): Pointer {
+        return pointers[idx]
+    }
+
     internal fun onNewFrame() {
         synchronized(tmpPointers) {
             for (i in pointers.indices) {
@@ -45,7 +49,7 @@ class InputHandler internal constructor() {
      * Updates the position of the specified pointer (mouse or finger on touch devices). Position is given
      * in screen coordinates.
      */
-    fun updatePointerPos(pointer: Int, x: Double, y: Double) {
+    fun updatePointerPos(pointer: Int, x: Float, y: Float) {
         if (pointer >= 0 && pointer < MAX_POINTERS) {
             synchronized(tmpPointers) {
                 val ptr = tmpPointers[pointer]
@@ -89,7 +93,7 @@ class InputHandler internal constructor() {
     /**
      * Updates the scroll position of the specified pointer.
      */
-    fun updatePointerScrollPos(pointer: Int, ticks: Double) {
+    fun updatePointerScrollPos(pointer: Int, ticks: Float) {
         if (pointer >= 0 && pointer < MAX_POINTERS) {
             synchronized(tmpPointers) {
                 val ptr = tmpPointers[pointer]
@@ -111,17 +115,17 @@ class InputHandler internal constructor() {
     }
 
     class Pointer(val id: Int) {
-        var x = 0.0
+        var x = 0f
             internal set
-        var deltaX = 0.0
+        var deltaX = 0f
             internal set
-        var y = 0.0
+        var y = 0f
             internal set
-        var deltaY = 0.0
+        var deltaY = 0f
             internal set
-        var scrollPos = 0.0
+        var scrollPos = 0f
             internal set
-        var deltaScroll = 0.0
+        var deltaScroll = 0f
             internal set
 
         var buttonMask = 0

@@ -1,9 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.util.Mat4f
-import de.fabmax.kool.util.MutableVec3f
-import de.fabmax.kool.util.Vec3f
+import de.fabmax.kool.util.*
 
 /**
  * @author fabmax
@@ -18,9 +16,11 @@ fun transformGroup(name: String? = null, block: TransformGroup.() -> Unit): Tran
 open class TransformGroup(name: String? = null) : Group(name) {
     protected val transform = Mat4f()
     protected val invTransform = Mat4f()
-    protected var transformDirty = true
+    protected var transformDirty = false
 
     open var animation: (TransformGroup.(RenderContext) -> Unit)? = null
+
+    private val tmpTransformVec = MutableVec3f()
 
     protected fun checkInverse() {
         if (transformDirty) {
@@ -30,6 +30,10 @@ open class TransformGroup(name: String? = null) : Group(name) {
     }
 
     override fun render(ctx: RenderContext) {
+        if (!isVisible) {
+            return
+        }
+
         animation?.invoke(this, ctx)
 
         // apply transformation
@@ -39,6 +43,20 @@ open class TransformGroup(name: String? = null) : Group(name) {
 
         // draw all child nodes
         super.render(ctx)
+
+        // transform updated bounding box
+        if (!bounds.isEmpty) {
+            tmpBounds.clear()
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.max.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.min.y, bounds.max.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.min.z), 1f))
+            tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.max.z), 1f))
+            bounds.set(tmpBounds)
+        }
 
         // clear transformation
         ctx.mvpState.modelMatrix.pop()
@@ -56,6 +74,19 @@ open class TransformGroup(name: String? = null) : Group(name) {
         return invTransform.transform(vec, w)
     }
 
+    override fun rayTest(test: RayTest) {
+        // transform ray to local coordinates
+        checkInverse()
+        invTransform.transform(test.origin, 1f)
+        invTransform.transform(test.direction, 0f)
+
+        super.rayTest(test)
+
+        // transform ray back to previous coordinates
+        transform.transform(test.origin, 1f)
+        transform.transform(test.direction, 0f)
+    }
+
     fun translate(tx: Float, ty: Float, tz: Float): TransformGroup {
         transform.translate(tx, ty, tz)
         transformDirty = true
@@ -70,11 +101,11 @@ open class TransformGroup(name: String? = null) : Group(name) {
         return this
     }
 
-    fun rotateEuler(xDeg: Float, yDeg: Float, zDeg: Float): TransformGroup {
-        transform.rotateEuler(xDeg, yDeg, zDeg)
-        transformDirty = true
-        return this
-    }
+//    fun rotateEuler(xDeg: Float, yDeg: Float, zDeg: Float): TransformGroup {
+//        transform.rotateEuler(xDeg, yDeg, zDeg)
+//        transformDirty = true
+//        return this
+//    }
 
     fun scale(sx: Float, sy: Float, sz: Float): TransformGroup {
         transform.scale(sx, sy, sz)
@@ -96,7 +127,8 @@ open class TransformGroup(name: String? = null) : Group(name) {
 
     fun setIdentity(): TransformGroup {
         transform.setIdentity()
-        transformDirty = true
+        invTransform.setIdentity()
+        transformDirty = false
         return this
     }
 }

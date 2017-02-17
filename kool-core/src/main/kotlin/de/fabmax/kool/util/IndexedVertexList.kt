@@ -82,7 +82,7 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
         indices = newIdxs
     }
 
-    fun addVertex(init: Item.() -> Unit): Int {
+    fun addVertex(updateBounds: BoundingBox? = null, init: Item.() -> Unit): Int {
         if (data.remaining < vertexSize) {
             increaseDataSize()
         }
@@ -92,6 +92,9 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
         addItem.index = elements++
         size += vertexSize
         addItem.init()
+
+        updateBounds?.add(addItem.position)
+
         return elements - 1
     }
 

@@ -71,7 +71,7 @@ open class BasicShader(props: ShaderProps, private val generator: ShaderGenerato
 
     override fun onLoad(ctx: RenderContext) {
         super.onLoad(ctx)
-        generator.onLoad(this)
+        generator.onLoad(this, ctx)
     }
 
     override fun onBind(ctx: RenderContext) {

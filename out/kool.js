@@ -185,16 +185,18 @@ var kool = function (Kotlin) {
                   };
                 }
               }),
-              FontMapGenerator: Kotlin.createClass(null, function FontMapGenerator() {
+              FontMapGenerator: Kotlin.createClass(null, function FontMapGenerator(maxWidth, maxHeight) {
+                this.maxWidth = maxWidth;
+                this.maxHeight = maxHeight;
                 var tmp$0, tmp$1;
                 this.canvas_0 = Kotlin.isType(tmp$0 = document.createElement('canvas'), HTMLCanvasElement) ? tmp$0 : Kotlin.throwCCE();
-                this.canvas_0.width = _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH;
-                this.canvas_0.height = _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT;
+                this.canvas_0.width = this.maxWidth;
+                this.canvas_0.height = this.maxHeight;
                 this.canvasCtx_0 = Kotlin.isType(tmp$1 = this.canvas_0.getContext('2d'), CanvasRenderingContext2D) ? tmp$1 : Kotlin.throwCCE();
               }, /** @lends _.de.fabmax.kool.platform.js.FontMapGenerator.prototype */ {
                 createCharMap_34dg9o$: function (font, chars) {
                   var tmp$0;
-                  this.canvasCtx_0.clearRect(0.0, 0.0, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT);
+                  this.canvasCtx_0.clearRect(0.0, 0.0, this.maxWidth, this.maxHeight);
                   var style = '';
                   if ((font.style & _.de.fabmax.kool.util.Font.Companion.BOLD) !== 0) {
                     style = 'bold ';
@@ -202,25 +204,25 @@ var kool = function (Kotlin) {
                   if ((font.style & _.de.fabmax.kool.util.Font.Companion.ITALIC) !== 0) {
                     style += 'italic ';
                   }
-                  var metrics = this.makeMap_0(chars, font.family, font.size, style);
+                  var metrics = Kotlin.kotlin.collections.mutableMapOf_eoa9s7$([]);
+                  var texHeight = this.makeMap_0(chars, font.family, font.size, style, metrics);
                   var props = new _.de.fabmax.kool.TextureResource.Props(_.de.fabmax.kool.platform.GL.Companion.LINEAR, _.de.fabmax.kool.platform.GL.Companion.LINEAR, _.de.fabmax.kool.platform.GL.Companion.CLAMP_TO_EDGE, _.de.fabmax.kool.platform.GL.Companion.CLAMP_TO_EDGE);
-                  var data = this.canvasCtx_0.getImageData(0.0, 0.0, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT);
-                  var buffer = _.de.fabmax.kool.platform.Platform.Companion.createUint8Buffer_za3lpa$(_.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH * _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT);
+                  var data = this.canvasCtx_0.getImageData(0.0, 0.0, this.maxWidth, texHeight);
+                  var buffer = _.de.fabmax.kool.platform.Platform.Companion.createUint8Buffer_za3lpa$(this.maxWidth * texHeight);
                   tmp$0 = buffer.capacity - 1;
                   for (var i = 0; i <= tmp$0; i++) {
                     buffer.put_za3rmp$(data.data[i * 4 + 3]);
                   }
-                  return new _.de.fabmax.kool.util.CharMap(new _.de.fabmax.kool.BufferedTexture2d(buffer, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT, _.de.fabmax.kool.platform.GL.Companion.ALPHA, props), metrics);
+                  return new _.de.fabmax.kool.util.CharMap(new _.de.fabmax.kool.BufferedTexture2d(buffer, this.maxWidth, texHeight, _.de.fabmax.kool.platform.GL.Companion.ALPHA, props), metrics);
                 },
-                makeMap_0: function (chars, family, size, style) {
-                  var tmp$0;
+                makeMap_0: function (chars, family, size, style, map) {
+                  var tmp$0, tmp$1;
                   this.canvasCtx_0.font = style + size + 'px ' + '"' + family + '"';
                   this.canvasCtx_0.fillStyle = '#ffffff';
                   var padding = 3.0;
                   var hab = Math.round(size * 1.1);
                   var hbb = Math.round(size * 0.5);
                   var height = Math.round(size * 1.6);
-                  var map = Kotlin.kotlin.collections.mutableMapOf_eoa9s7$([]);
                   var x = 0.0;
                   var y = hab;
                   tmp$0 = Kotlin.kotlin.text.iterator_gw00vq$(chars);
@@ -229,10 +231,10 @@ var kool = function (Kotlin) {
                     var txt = c.toString();
                     var charW = this.canvasCtx_0.measureText(txt).width;
                     var paddedWidth = Math.round(charW + padding * 2);
-                    if (x + paddedWidth > _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH) {
+                    if (x + paddedWidth > this.maxWidth) {
                       x = 0.0;
                       y += height + 10;
-                      if (y + hbb > _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT) {
+                      if (y + hbb > this.maxHeight) {
                         break;
                       }
                     }
@@ -242,21 +244,30 @@ var kool = function (Kotlin) {
                     metrics.xOffset = 0.0;
                     metrics.yBaseline = hab;
                     metrics.advance = charW;
-                    metrics.uvMin.set_dleff0$((x + padding) / _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, (y - hab) / _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT);
-                    metrics.uvMax.set_dleff0$((x + padding + metrics.width) / _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH, (y - hab + metrics.height) / _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT);
+                    metrics.uvMin.set_dleff0$(x + padding, y - hab);
+                    metrics.uvMax.set_dleff0$(x + padding + metrics.width, y - hab + metrics.height);
                     map.put_wn2jw4$(c, metrics);
                     this.canvasCtx_0.fillText(txt, x + padding, y);
                     x += paddedWidth;
                   }
-                  return map;
-                }
-              }, /** @lends _.de.fabmax.kool.platform.js.FontMapGenerator */ {
-                Companion: Kotlin.createObject(null, function Companion() {
-                  _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_WIDTH = 1024;
-                  _.de.fabmax.kool.platform.js.FontMapGenerator.Companion.MAXIMUM_TEX_HEIGHT = 1024;
-                }),
-                object_initializer$: function () {
-                  _.de.fabmax.kool.platform.js.FontMapGenerator.Companion;
+                  var texW = this.maxWidth;
+                  var texH = this.nextPow2_0(y + hbb);
+                  tmp$1 = map.values.iterator();
+                  while (tmp$1.hasNext()) {
+                    var cm = tmp$1.next();
+                    cm.uvMin.x = cm.uvMin.x / texW;
+                    cm.uvMin.y = cm.uvMin.y / texH;
+                    cm.uvMax.x = cm.uvMax.x / texW;
+                    cm.uvMax.y = cm.uvMax.y / texH;
+                  }
+                  return texH;
+                },
+                nextPow2_0: function (value) {
+                  var pow2 = 16;
+                  while (pow2 < value && pow2 < this.maxHeight) {
+                    pow2 = pow2 << 1;
+                  }
+                  return pow2;
                 }
               }),
               JsContext: Kotlin.createClass(function () {
@@ -274,7 +285,6 @@ var kool = function (Kotlin) {
                 }
                 this.gl_0 = Kotlin.isType(tmp$1 = webGlCtx, WebGLRenderingContext) ? tmp$1 : Kotlin.throwCCE();
                 this.supportsUint32Indices_0 = this.gl_0.getExtension('OES_element_index_uint') != null;
-                this.gl_0.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, _.de.fabmax.kool.platform.GL.Companion.TRUE);
                 this.viewportWidth = this.canvas_0.width;
                 this.viewportHeight = this.canvas_0.height;
                 this.canvas_0.onmousemove = _.de.fabmax.kool.platform.js.JsContext.JsContext$f(this);
@@ -321,7 +331,9 @@ var kool = function (Kotlin) {
                     var tmp$0;
                     Kotlin.isType(tmp$0 = ev, MouseEvent) ? tmp$0 : Kotlin.throwCCE();
                     var bounds = this$JsContext.canvas_0.getBoundingClientRect();
-                    this$JsContext.inputHandler.updatePointerPos_w4xg1m$(_.de.fabmax.kool.InputHandler.Companion.PRIMARY_POINTER, ev.clientX - bounds.left, ev.clientY - bounds.top);
+                    var x = ev.clientX - bounds.left;
+                    var y = ev.clientY - bounds.top;
+                    this$JsContext.inputHandler.updatePointerPos_nhq4am$(_.de.fabmax.kool.InputHandler.Companion.PRIMARY_POINTER, x, y);
                   };
                 },
                 JsContext$f_0: function (this$JsContext) {
@@ -354,9 +366,9 @@ var kool = function (Kotlin) {
                     Kotlin.isType(tmp$0 = ev, WheelEvent) ? tmp$0 : Kotlin.throwCCE();
                     var ticks = -ev.deltaY / 3.0;
                     if (ev.deltaMode === 0) {
-                      ticks /= 30;
+                      ticks /= 30.0;
                     }
-                    this$JsContext.inputHandler.updatePointerScrollPos_5wr77w$(_.de.fabmax.kool.InputHandler.Companion.PRIMARY_POINTER, ticks);
+                    this$JsContext.inputHandler.updatePointerScrollPos_24o109$(_.de.fabmax.kool.InputHandler.Companion.PRIMARY_POINTER, ticks);
                     return false;
                   };
                 }
@@ -573,7 +585,9 @@ var kool = function (Kotlin) {
                 },
                 texImage2D_mbbdyh$: function (target, level, internalformat, format, type, pixels) {
                   var tmp$0;
+                  _.de.fabmax.kool.platform.PlatformImpl.Companion.gl_0.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, _.de.fabmax.kool.platform.GL.Companion.TRUE);
                   _.de.fabmax.kool.platform.PlatformImpl.Companion.gl_0.texImage2D(target, level, internalformat, format, type, (tmp$0 = pixels) == null || Kotlin.isType(tmp$0, HTMLImageElement) ? tmp$0 : Kotlin.throwCCE());
+                  _.de.fabmax.kool.platform.PlatformImpl.Companion.gl_0.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, _.de.fabmax.kool.platform.GL.Companion.FALSE);
                 },
                 texParameteri_qt1dr2$: function (target, pname, param) {
                   _.de.fabmax.kool.platform.PlatformImpl.Companion.gl_0.texParameteri(target, pname, param);
@@ -628,7 +642,7 @@ var kool = function (Kotlin) {
               return [_.de.fabmax.kool.platform.Platform];
             }, function PlatformImpl() {
               PlatformImpl.baseInitializer.call(this);
-              this.fontGenerator_0 = new _.de.fabmax.kool.platform.js.FontMapGenerator();
+              this.fontGenerator_0 = new _.de.fabmax.kool.platform.js.FontMapGenerator(_.de.fabmax.kool.platform.PlatformImpl.Companion.MAX_GENERATED_TEX_WIDTH, _.de.fabmax.kool.platform.PlatformImpl.Companion.MAX_GENERATED_TEX_HEIGHT);
               this.supportsMultiContext_izw80b$_0 = false;
             }, /** @lends _.de.fabmax.kool.platform.PlatformImpl.prototype */ {
               supportsMultiContext: {
@@ -694,6 +708,8 @@ var kool = function (Kotlin) {
             }, /** @lends _.de.fabmax.kool.platform.PlatformImpl */ {
               Companion: Kotlin.createObject(null, function Companion() {
                 _.de.fabmax.kool.platform.PlatformImpl.Companion.jsContext_0 = null;
+                _.de.fabmax.kool.platform.PlatformImpl.Companion.MAX_GENERATED_TEX_WIDTH = 1024;
+                _.de.fabmax.kool.platform.PlatformImpl.Companion.MAX_GENERATED_TEX_HEIGHT = 1024;
               }, /** @lends _.de.fabmax.kool.platform.PlatformImpl.Companion.prototype */ {
                 gl_0: {
                   get: function () {
@@ -1587,7 +1603,7 @@ var kool = function (Kotlin) {
             },
             f_4: function () {
               this.animation = _.de.fabmax.kool.demo.f_0;
-              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_3));
+              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$('Sphere', _.de.fabmax.kool.demo.f_3));
             },
             f_5: function (ctx) {
               this.setIdentity();
@@ -1610,38 +1626,37 @@ var kool = function (Kotlin) {
             },
             f_8: function () {
               this.animation = _.de.fabmax.kool.demo.f_5;
-              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$(void 0, _.de.fabmax.kool.demo.f_7));
+              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.colorMesh_gac8tm$('Cube', _.de.fabmax.kool.demo.f_7));
             },
             f_9: function (ctx) {
               this.setIdentity();
               this.translate_y2kzbl$(0.0, 0.0, -5.0);
-              var s = 1.0 + Math.sin(ctx.time * 3) * 0.25;
-              this.scale_y2kzbl$(s, s, s);
             },
             f_10: function (closure$textFont) {
               return function () {
                 this.text = 'kool Text!';
                 this.font = closure$textFont;
                 this.position.set_y2kzbl$(-this.font.stringWidth_61zpoe$(this.text) / 2.0, 0.0, 0.0);
-                this.scale = 0.029999999329447746;
+                this.scale = 0.019999999552965164;
               };
             },
             f_11: function (closure$textFont) {
               return function () {
+                this.color = _.de.fabmax.kool.util.Color.Companion.LIME;
                 this.text_2vp9zl$(_.de.fabmax.kool.demo.f_10(closure$textFont));
               };
             },
             f_12: function () {
               this.animation = _.de.fabmax.kool.demo.f_9;
-              var textFont = new _.de.fabmax.kool.util.Font('Segoe UI', 48.0);
-              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.textMesh_njt968$(textFont, _.de.fabmax.kool.util.Color.Companion.LIME, void 0, _.de.fabmax.kool.demo.f_11(textFont)));
+              var textFont = new _.de.fabmax.kool.util.Font('Segoe UI', 72.0);
+              this.unaryPlus_uv0sin$(_.de.fabmax.kool.util.textMesh_y8ifd0$(textFont, 'Text', _.de.fabmax.kool.demo.f_11(textFont)));
             },
             simpleShapesDemo_qk1xvd$f: function (closure$ctx) {
               return function () {
                 this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.sphericalInputTransform_n6upd5$(void 0, _.de.fabmax.kool.demo.f(closure$ctx)));
                 this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.transformGroup_2byx8j$(void 0, _.de.fabmax.kool.demo.f_4));
                 this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.transformGroup_2byx8j$(void 0, _.de.fabmax.kool.demo.f_8));
-                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.transformGroup_2byx8j$('back', _.de.fabmax.kool.demo.f_12));
+                this.unaryPlus_uv0sin$(_.de.fabmax.kool.scene.transformGroup_2byx8j$(void 0, _.de.fabmax.kool.demo.f_12));
               };
             },
             simpleShapesDemo_qk1xvd$: function (ctx) {
@@ -1992,6 +2007,9 @@ var kool = function (Kotlin) {
             this.pointers_0 = Kotlin.arrayFromFun(_.de.fabmax.kool.InputHandler.Companion.MAX_POINTERS, Kotlin.getCallableRefForConstructor(_.de.fabmax.kool.InputHandler.Pointer));
             this.primaryPointer = this.pointers_0[_.de.fabmax.kool.InputHandler.Companion.PRIMARY_POINTER];
           }, /** @lends _.de.fabmax.kool.InputHandler.prototype */ {
+            getPointer_za3lpa$: function (idx) {
+              return this.pointers_0[idx];
+            },
             onNewFrame_0: function () {
               var tmp$0, tmp$1, tmp$2, tmp$3;
               tmp$0 = Kotlin.kotlin.collections.get_indices_eg9ybj$(this.pointers_0);
@@ -2002,7 +2020,7 @@ var kool = function (Kotlin) {
                 this.pointers_0[i].updateFrom_0(this.tmpPointers_0[i]);
               }
             },
-            updatePointerPos_w4xg1m$: function (pointer, x, y) {
+            updatePointerPos_nhq4am$: function (pointer, x, y) {
               if (pointer >= 0 && pointer < _.de.fabmax.kool.InputHandler.Companion.MAX_POINTERS) {
                 var ptr = this.tmpPointers_0[pointer];
                 ptr.isValid = true;
@@ -2029,7 +2047,7 @@ var kool = function (Kotlin) {
                 ptr.buttonMask = mask;
               }
             },
-            updatePointerScrollPos_5wr77w$: function (pointer, ticks) {
+            updatePointerScrollPos_24o109$: function (pointer, ticks) {
               if (pointer >= 0 && pointer < _.de.fabmax.kool.InputHandler.Companion.MAX_POINTERS) {
                 var ptr = this.tmpPointers_0[pointer];
                 ptr.isValid = true;
@@ -2583,6 +2601,9 @@ var kool = function (Kotlin) {
               this.tmpPos_0 = _.de.fabmax.kool.util.MutableVec3f_init();
               this.tmpLookAt_0 = _.de.fabmax.kool.util.MutableVec3f_init();
               this.tmpUp_0 = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.invMvp_0 = new _.de.fabmax.kool.util.Mat4f();
+              this.tmpVec3_0 = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.tmpVec4_0 = _.de.fabmax.kool.util.MutableVec4f_init();
             }, /** @lends _.de.fabmax.kool.scene.Camera.prototype */ {
               aspectRatio: {
                 get: function () {
@@ -2596,6 +2617,8 @@ var kool = function (Kotlin) {
                 this.aspectRatio = ctx.viewportWidth / ctx.viewportHeight;
                 this.updateViewMatrix_qk1xvd$(ctx);
                 this.updateProjectionMatrix_qk1xvd$(ctx);
+                ctx.mvpState.projMatrix.mul_y010fm$(this.invMvp_0, ctx.mvpState.viewMatrix);
+                this.invMvp_0.invert();
                 ctx.mvpState.update_qk1xvd$(ctx);
               },
               updateViewMatrix_qk1xvd$: function (ctx) {
@@ -2606,6 +2629,28 @@ var kool = function (Kotlin) {
               },
               updateProjectionMatrix_qk1xvd$: function (ctx) {
                 ctx.mvpState.projMatrix.setPerspective_7b5o5w$(this.fovy, this.aspectRatio, this.clipNear, this.clipFar);
+              },
+              initRayTes_lo6vye$: function (rayTest, ctx, ptrIdx) {
+                if (ptrIdx === void 0)
+                  ptrIdx = _.de.fabmax.kool.InputHandler.Companion.PRIMARY_POINTER;
+                var ptr = ctx.inputHandler.getPointer_za3lpa$(ptrIdx);
+                var y = ctx.viewportHeight - ptr.y;
+                var valid = ptr.isValid;
+                rayTest.clear();
+                valid = (valid && this.unProject_0(this.tmpVec3_0.set_y2kzbl$(ptr.x, y, 0.0), ctx.viewportWidth, ctx.viewportHeight, rayTest.origin));
+                valid = (valid && this.unProject_0(this.tmpVec3_0.set_y2kzbl$(ptr.x, y, 1.0), ctx.viewportWidth, ctx.viewportHeight, rayTest.direction));
+                if (valid) {
+                  rayTest.direction.subtract_cx11x8$(rayTest.origin);
+                  rayTest.direction.norm();
+                }
+                return valid;
+              },
+              unProject_0: function (win, viewW, viewH, result) {
+                this.tmpVec4_0.set_7b5o5w$(2.0 * win.x / viewW - 1.0, 2.0 * win.y / viewH - 1.0, 2.0 * win.z - 1.0, 1.0);
+                this.invMvp_0.transform_aq7j5p$(this.tmpVec4_0);
+                var s = 1.0 / this.tmpVec4_0.w;
+                result.set_y2kzbl$(this.tmpVec4_0.x * s, this.tmpVec4_0.y * s, this.tmpVec4_0.z * s);
+                return true;
               }
             }),
             group_30wlp3$: function (name, block) {
@@ -2622,16 +2667,24 @@ var kool = function (Kotlin) {
                 name = null;
               Group.baseInitializer.call(this, name);
               this.children = Kotlin.kotlin.collections.mutableListOf_9mqe4v$([]);
+              this.tmpBounds = new _.de.fabmax.kool.util.BoundingBox();
             }, /** @lends _.de.fabmax.kool.scene.Group.prototype */ {
               render_qk1xvd$: function (ctx) {
                 var tmp$0, tmp$1, tmp$2, tmp$3;
+                if (!this.isVisible) {
+                  return;
+                }
+                _.de.fabmax.kool.scene.Node.prototype.render_qk1xvd$.call(this, ctx);
+                this.tmpBounds.clear();
                 tmp$0 = Kotlin.kotlin.collections.get_indices_mwto7b$(this.children);
                 tmp$1 = tmp$0.first;
                 tmp$2 = tmp$0.last;
                 tmp$3 = tmp$0.step;
                 for (var i = tmp$1; i <= tmp$2; i += tmp$3) {
                   this.children.get_za3lpa$(i).render_qk1xvd$(ctx);
+                  this.tmpBounds.add_ea4od8$(this.children.get_za3lpa$(i).bounds);
                 }
+                this.bounds.set_ea4od8$(this.tmpBounds);
               },
               delete_qk1xvd$: function (ctx) {
                 var tmp$0, tmp$1, tmp$2, tmp$3;
@@ -2643,7 +2696,7 @@ var kool = function (Kotlin) {
                   this.children.get_za3lpa$(i).delete_qk1xvd$(ctx);
                 }
               },
-              findByName_61zpoe$: function (name) {
+              get_61zpoe$: function (name) {
                 var tmp$0, tmp$1, tmp$2, tmp$3;
                 if (Kotlin.equals(name, this.name)) {
                   return this;
@@ -2653,16 +2706,31 @@ var kool = function (Kotlin) {
                 tmp$2 = tmp$0.last;
                 tmp$3 = tmp$0.step;
                 for (var i = tmp$1; i <= tmp$2; i += tmp$3) {
-                  var nd = this.children.get_za3lpa$(i).findByName_61zpoe$(name);
-                  if (nd != null) {
-                    return nd;
+                  var node = this.children.get_za3lpa$(i).get_61zpoe$(name);
+                  if (node != null) {
+                    return node;
                   }
                 }
                 return null;
               },
+              rayTest_rhmb21$: function (test) {
+                var tmp$0, tmp$1, tmp$2, tmp$3;
+                var dirSqrLen = test.direction.sqrLength();
+                tmp$0 = Kotlin.kotlin.collections.get_indices_mwto7b$(this.children);
+                tmp$1 = tmp$0.first;
+                tmp$2 = tmp$0.last;
+                tmp$3 = tmp$0.step;
+                for (var i = tmp$1; i <= tmp$2; i += tmp$3) {
+                  var child = this.children.get_za3lpa$(i);
+                  if (child.bounds.computeHitDistanceSqr_winjqc$(test.origin, test.direction) / dirSqrLen < test.hitDistanceSqr) {
+                    child.rayTest_rhmb21$(test);
+                  }
+                }
+              },
               addNode_f1kmr1$: function (node) {
                 this.children.add_za3rmp$(node);
                 node.parent = this;
+                this.bounds.add_ea4od8$(node.bounds);
               },
               removeNode_f1kmr1$: function (node) {
                 if (this.children.remove_za3rmp$(node)) {
@@ -2717,7 +2785,7 @@ var kool = function (Kotlin) {
               addVertex_570ote$: function (init) {
                 var idx = {v: 0};
                 this.syncBuffers = true;
-                idx.v = this.data.addVertex_570ote$(init);
+                idx.v = this.data.addVertex_z89y7a$(this.bounds, init);
                 return idx.v;
               },
               addVertex_f9a7mx$: function (position, normal, color, texCoord) {
@@ -2733,6 +2801,7 @@ var kool = function (Kotlin) {
                 var closure$texCoord = texCoord;
                 this.syncBuffers = true;
                 idx.v = this.data.addVertex_f9a7mx$(position, closure$normal, closure$color, closure$texCoord);
+                this.bounds.add_cx11x8$(position);
                 return idx.v;
               },
               addIndex_za3lpa$: function (idx) {
@@ -2751,6 +2820,7 @@ var kool = function (Kotlin) {
               },
               clear: function () {
                 this.data.clear();
+                this.bounds.clear();
                 this.syncBuffers = true;
               },
               delete_qk1xvd$: function (ctx) {
@@ -2762,6 +2832,7 @@ var kool = function (Kotlin) {
                 if (!this.isVisible) {
                   return;
                 }
+                _.de.fabmax.kool.scene.Node.prototype.render_qk1xvd$.call(this, ctx);
                 this.checkBuffers_n9i84b$_0(ctx);
                 if (this.positionBinder == null) {
                   throw new Kotlin.IllegalStateException('Vertex positions attribute binder is null');
@@ -2772,6 +2843,13 @@ var kool = function (Kotlin) {
                   boundShader.bindMesh_ovcwxf$(this, ctx);
                   this.drawElements_qk1xvd$(ctx);
                   boundShader.unbindMesh_qk1xvd$(ctx);
+                }
+              },
+              rayTest_rhmb21$: function (test) {
+                var distSqr = this.bounds.computeHitDistanceSqr_winjqc$(test.origin, test.direction) / test.direction.sqrLength();
+                if (distSqr < test.hitDistanceSqr) {
+                  test.hitDistanceSqr = distSqr;
+                  test.hitNode = this;
                 }
               },
               drawElements_qk1xvd$: function (ctx) {
@@ -2813,10 +2891,14 @@ var kool = function (Kotlin) {
               if (name === void 0)
                 name = null;
               this.name = name;
+              this.onRender = null;
+              this.bounds = new _.de.fabmax.kool.util.BoundingBox();
               this.parent = null;
               this.isVisible = true;
             }, /** @lends _.de.fabmax.kool.scene.Node.prototype */ {
               render_qk1xvd$: function (ctx) {
+                var tmp$0;
+                (tmp$0 = this.onRender) != null ? tmp$0.call(this, ctx) : null;
               },
               delete_qk1xvd$: function (ctx) {
               },
@@ -2834,7 +2916,9 @@ var kool = function (Kotlin) {
                 (tmp$0 = this.parent) != null ? tmp$0.toLocalCoords_64rgyf$(vec) : null;
                 return vec;
               },
-              findByName_61zpoe$: function (name) {
+              rayTest_rhmb21$: function (test) {
+              },
+              get_61zpoe$: function (name) {
                 if (Kotlin.equals(name, this.name)) {
                   return this;
                 }
@@ -2845,11 +2929,20 @@ var kool = function (Kotlin) {
               this.camera = new _.de.fabmax.kool.scene.Camera();
               this.light = new _.de.fabmax.kool.scene.Light();
               this.root = null;
+              this.isPickingEnabled = true;
+              this.rayTest_0 = new _.de.fabmax.kool.util.RayTest();
             }, /** @lends _.de.fabmax.kool.scene.Scene.prototype */ {
               onRender_qk1xvd$: function (ctx) {
-                var tmp$0;
+                var tmp$0, tmp$1, tmp$2;
                 this.camera.updateCamera_qk1xvd$(ctx);
                 (tmp$0 = this.root) != null ? tmp$0.render_qk1xvd$(ctx) : null;
+                if (this.isPickingEnabled && this.camera.initRayTes_lo6vye$(this.rayTest_0, ctx)) {
+                  (tmp$1 = this.root) != null ? tmp$1.rayTest_rhmb21$(this.rayTest_0) : null;
+                  if (this.rayTest_0.isHit) {
+                    this.rayTest_0.computeHitPosition();
+                    Kotlin.println('hit: ' + Kotlin.toString((tmp$2 = this.rayTest_0.hitNode) != null ? tmp$2.name : null) + ', d=' + Math.sqrt(this.rayTest_0.hitDistanceSqr) + ', p=' + this.rayTest_0.hitPosition);
+                  }
+                }
               }
             }),
             sphericalInputTransform_n6upd5$: function (name, block) {
@@ -2901,7 +2994,7 @@ var kool = function (Kotlin) {
               render_qk1xvd$: function (ctx) {
                 var pointer = ctx.inputHandler.primaryPointer;
                 if (pointer.isValid) {
-                  if (!_.de.fabmax.kool.util.isZero_14dthe$(pointer.deltaScroll)) {
+                  if (!_.de.fabmax.kool.util.isZero_mx4ult$(pointer.deltaScroll)) {
                     this.zoom *= 1.0 + pointer.deltaScroll / 10.0;
                     this.zoom = _.de.fabmax.kool.util.clamp_y2kzbl$(this.zoom, this.minZoom, this.maxZoom);
                   }
@@ -2964,8 +3057,9 @@ var kool = function (Kotlin) {
               TransformGroup.baseInitializer.call(this, name);
               this.transform = new _.de.fabmax.kool.util.Mat4f();
               this.invTransform = new _.de.fabmax.kool.util.Mat4f();
-              this.transformDirty = true;
+              this.transformDirty = false;
               this.animation_s8s9p8$_0 = null;
+              this.tmpTransformVec_s8s9p8$_0 = _.de.fabmax.kool.util.MutableVec3f_init();
             }, /** @lends _.de.fabmax.kool.scene.TransformGroup.prototype */ {
               animation: {
                 get: function () {
@@ -2983,11 +3077,26 @@ var kool = function (Kotlin) {
               },
               render_qk1xvd$: function (ctx) {
                 var tmp$0;
+                if (!this.isVisible) {
+                  return;
+                }
                 (tmp$0 = this.animation) != null ? tmp$0.call(this, ctx) : null;
                 ctx.mvpState.modelMatrix.push();
                 ctx.mvpState.modelMatrix.mul_d21ekx$(this.transform);
                 ctx.mvpState.update_qk1xvd$(ctx);
                 _.de.fabmax.kool.scene.Group.prototype.render_qk1xvd$.call(this, ctx);
+                if (!this.bounds.isEmpty) {
+                  this.tmpBounds.clear();
+                  this.tmpBounds.add_cx11x8$(this.transform.transform_64rgyf$(this.tmpTransformVec_s8s9p8$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.min.y, this.bounds.min.z), 1.0));
+                  this.tmpBounds.add_cx11x8$(this.transform.transform_64rgyf$(this.tmpTransformVec_s8s9p8$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.min.y, this.bounds.max.z), 1.0));
+                  this.tmpBounds.add_cx11x8$(this.transform.transform_64rgyf$(this.tmpTransformVec_s8s9p8$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.max.y, this.bounds.min.z), 1.0));
+                  this.tmpBounds.add_cx11x8$(this.transform.transform_64rgyf$(this.tmpTransformVec_s8s9p8$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.max.y, this.bounds.max.z), 1.0));
+                  this.tmpBounds.add_cx11x8$(this.transform.transform_64rgyf$(this.tmpTransformVec_s8s9p8$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.min.y, this.bounds.min.z), 1.0));
+                  this.tmpBounds.add_cx11x8$(this.transform.transform_64rgyf$(this.tmpTransformVec_s8s9p8$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.min.y, this.bounds.max.z), 1.0));
+                  this.tmpBounds.add_cx11x8$(this.transform.transform_64rgyf$(this.tmpTransformVec_s8s9p8$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.max.y, this.bounds.min.z), 1.0));
+                  this.tmpBounds.add_cx11x8$(this.transform.transform_64rgyf$(this.tmpTransformVec_s8s9p8$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.max.y, this.bounds.max.z), 1.0));
+                  this.bounds.set_ea4od8$(this.tmpBounds);
+                }
                 ctx.mvpState.modelMatrix.pop();
                 ctx.mvpState.update_qk1xvd$(ctx);
               },
@@ -3004,6 +3113,14 @@ var kool = function (Kotlin) {
                 _.de.fabmax.kool.scene.Group.prototype.toLocalCoords_64rgyf$.call(this, vec, w);
                 return this.invTransform.transform_64rgyf$(vec, w);
               },
+              rayTest_rhmb21$: function (test) {
+                this.checkInverse();
+                this.invTransform.transform_64rgyf$(test.origin, 1.0);
+                this.invTransform.transform_64rgyf$(test.direction, 0.0);
+                _.de.fabmax.kool.scene.Group.prototype.rayTest_rhmb21$.call(this, test);
+                this.transform.transform_64rgyf$(test.origin, 1.0);
+                this.transform.transform_64rgyf$(test.direction, 0.0);
+              },
               translate_y2kzbl$: function (tx, ty, tz) {
                 this.transform.translate_y2kzbl$(tx, ty, tz);
                 this.transformDirty = true;
@@ -3014,11 +3131,6 @@ var kool = function (Kotlin) {
               },
               rotate_7b5o5w$: function (angleDeg, axX, axY, axZ) {
                 this.transform.rotate_7b5o5w$(angleDeg, axX, axY, axZ);
-                this.transformDirty = true;
-                return this;
-              },
-              rotateEuler_y2kzbl$: function (xDeg, yDeg, zDeg) {
-                this.transform.rotateEuler_y2kzbl$(xDeg, yDeg, zDeg);
                 this.transformDirty = true;
                 return this;
               },
@@ -3039,7 +3151,8 @@ var kool = function (Kotlin) {
               },
               setIdentity: function () {
                 this.transform.setIdentity();
-                this.transformDirty = true;
+                this.invTransform.setIdentity();
+                this.transformDirty = false;
                 return this;
               }
             })
@@ -3153,7 +3266,7 @@ var kool = function (Kotlin) {
               },
               onLoad_qk1xvd$: function (ctx) {
                 _.de.fabmax.kool.shading.Shader.prototype.onLoad_qk1xvd$.call(this, ctx);
-                this.generator_x3ny4s$_0.onLoad_spwa6e$(this);
+                this.generator_x3ny4s$_0.onLoad_4ydly7$(this, ctx);
               },
               onBind_qk1xvd$: function (ctx) {
                 this.onMatrixUpdate_qk1xvd$(ctx);
@@ -3206,7 +3319,7 @@ var kool = function (Kotlin) {
               onLoad_qk1xvd$: function (ctx) {
                 this.res = ctx.shaderMgr.compile_0(this.source, ctx);
               },
-              findAttributeLocation_61zpoe$: function (attribName) {
+              findAttributeLocation_vfqc6f$: function (attribName, ctx) {
                 var ref = this.res;
                 if (ref != null) {
                   return _.de.fabmax.kool.platform.GL.Companion.getAttribLocation_dlxpy3$(ref, attribName);
@@ -3215,12 +3328,12 @@ var kool = function (Kotlin) {
                   return -1;
                 }
               },
-              enableAttribute_91bdg2$: function (attribute, attribName) {
-                var location = this.findAttributeLocation_61zpoe$(attribName);
-                this.enableAttribute_iixlpu$(attribute, location);
+              enableAttribute_8df7rn$: function (attribute, attribName, ctx) {
+                var location = this.findAttributeLocation_vfqc6f$(attribName, ctx);
+                this.enableAttribute_kc4quh$(attribute, location, ctx);
                 return location >= 0;
               },
-              enableAttribute_iixlpu$: function (attribute, location) {
+              enableAttribute_kc4quh$: function (attribute, location, ctx) {
                 if (Kotlin.equals(attribute, _.de.fabmax.kool.shading.Shader.Attribute.POSITIONS))
                   this.attributePositions = location;
                 else if (Kotlin.equals(attribute, _.de.fabmax.kool.shading.Shader.Attribute.NORMALS))
@@ -3230,7 +3343,7 @@ var kool = function (Kotlin) {
                 else if (Kotlin.equals(attribute, _.de.fabmax.kool.shading.Shader.Attribute.COLORS))
                   this.attributeColors = location;
               },
-              findUniformLocation_61zpoe$: function (uniformName) {
+              findUniformLocation_vfqc6f$: function (uniformName, ctx) {
                 var ref = this.res;
                 if (ref != null) {
                   return _.de.fabmax.kool.platform.GL.Companion.getUniformLocation_dlxpy3$(ref, uniformName);
@@ -3609,6 +3722,171 @@ var kool = function (Kotlin) {
             })
           }),
           util: Kotlin.definePackage(null, /** @lends _.de.fabmax.kool.util */ {
+            BoundingBox: Kotlin.createClass(null, function BoundingBox() {
+              this.mutMin_0 = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.mutMax_0 = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.mutSize_0 = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.mutCenter_0 = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.isEmpty_gjcnhm$_0 = true;
+              this.min = this.mutMin_0;
+              this.max = this.mutMax_0;
+              this.size = this.mutSize_0;
+              this.center = this.mutCenter_0;
+            }, /** @lends _.de.fabmax.kool.util.BoundingBox.prototype */ {
+              isEmpty: {
+                get: function () {
+                  return this.isEmpty_gjcnhm$_0;
+                },
+                set: function (isEmpty_0) {
+                  this.isEmpty_gjcnhm$_0 = isEmpty_0;
+                }
+              },
+              updateSizeCenter_0: function () {
+                this.mutMax_0.subtract_s0th1g$(this.mutSize_0, this.mutMin_0);
+                this.size.scale_64rgyf$(this.mutCenter_0, 0.5).add_cx11x8$(this.min);
+              },
+              addPoint_0: function (point) {
+                if (this.isEmpty) {
+                  this.mutMin_0.set_cx11x8$(point);
+                  this.mutMax_0.set_cx11x8$(point);
+                  this.isEmpty = false;
+                }
+                 else {
+                  if (point.x < this.min.x) {
+                    this.mutMin_0.x = point.x;
+                  }
+                  if (point.y < this.min.y) {
+                    this.mutMin_0.y = point.y;
+                  }
+                  if (point.z < this.min.z) {
+                    this.mutMin_0.z = point.z;
+                  }
+                  if (point.x > this.max.x) {
+                    this.mutMax_0.x = point.x;
+                  }
+                  if (point.y > this.max.y) {
+                    this.mutMax_0.y = point.y;
+                  }
+                  if (point.z > this.max.z) {
+                    this.mutMax_0.z = point.z;
+                  }
+                }
+              },
+              clear: function () {
+                this.isEmpty = true;
+                this.mutMin_0.set_cx11x8$(_.de.fabmax.kool.util.Vec3f.Companion.ZERO);
+                this.mutMax_0.set_cx11x8$(_.de.fabmax.kool.util.Vec3f.Companion.ZERO);
+                this.updateSizeCenter_0();
+              },
+              add_cx11x8$: function (point) {
+                this.addPoint_0(point);
+                this.updateSizeCenter_0();
+              },
+              add_qu9bqq$: function (points) {
+                var tmp$0, tmp$1, tmp$2, tmp$3;
+                tmp$0 = Kotlin.kotlin.collections.get_indices_mwto7b$(points);
+                tmp$1 = tmp$0.first;
+                tmp$2 = tmp$0.last;
+                tmp$3 = tmp$0.step;
+                for (var i = tmp$1; i <= tmp$2; i += tmp$3) {
+                  this.addPoint_0(points.get_za3lpa$(i));
+                }
+                this.updateSizeCenter_0();
+              },
+              add_ea4od8$: function (aabb) {
+                if (!aabb.isEmpty) {
+                  this.addPoint_0(aabb.min);
+                  this.addPoint_0(aabb.max);
+                  this.updateSizeCenter_0();
+                }
+              },
+              set_ea4od8$: function (other) {
+                this.mutMin_0.set_cx11x8$(other.min);
+                this.mutMax_0.set_cx11x8$(other.max);
+                this.mutSize_0.set_cx11x8$(other.size);
+                this.mutCenter_0.set_cx11x8$(other.center);
+                this.isEmpty = other.isEmpty;
+              },
+              isIncluding_cx11x8$: function (point) {
+                return point.x >= this.min.x && point.x <= this.max.x && point.y >= this.min.y && point.y <= this.max.y && point.z >= this.min.z && point.z <= this.max.z;
+              },
+              computeHitDistanceSqr_winjqc$: function (origin, direction) {
+                var tmin;
+                var tmax;
+                var tymin;
+                var tymax;
+                var tzmin;
+                var tzmax;
+                if (this.isEmpty) {
+                  return Kotlin.kotlin.js.internal.FloatCompanionObject.POSITIVE_INFINITY;
+                }
+                if (this.isIncluding_cx11x8$(origin)) {
+                  return 0.0;
+                }
+                var div = 1.0 / direction.x;
+                if (div >= 0.0) {
+                  tmin = (this.min.x - origin.x) * div;
+                  tmax = (this.max.x - origin.x) * div;
+                }
+                 else {
+                  tmin = (this.max.x - origin.x) * div;
+                  tmax = (this.min.x - origin.x) * div;
+                }
+                div = 1.0 / direction.y;
+                if (div >= 0.0) {
+                  tymin = (this.min.y - origin.y) * div;
+                  tymax = (this.max.y - origin.y) * div;
+                }
+                 else {
+                  tymin = (this.max.y - origin.y) * div;
+                  tymax = (this.min.y - origin.y) * div;
+                }
+                if (tmin > tymax || tymin > tmax) {
+                  return Kotlin.kotlin.js.internal.FloatCompanionObject.POSITIVE_INFINITY;
+                }
+                if (tymin > tmin) {
+                  tmin = tymin;
+                }
+                if (tymax < tmax) {
+                  tmax = tymax;
+                }
+                div = 1.0 / direction.z;
+                if (div >= 0.0) {
+                  tzmin = (this.min.z - origin.z) * div;
+                  tzmax = (this.max.z - origin.z) * div;
+                }
+                 else {
+                  tzmin = (this.max.z - origin.z) * div;
+                  tzmax = (this.min.z - origin.z) * div;
+                }
+                if (tmin > tzmax || tzmin > tmax) {
+                  return Kotlin.kotlin.js.internal.FloatCompanionObject.POSITIVE_INFINITY;
+                }
+                if (tzmin > tmin) {
+                  tmin = tzmin;
+                }
+                if (tmin > 0) {
+                  var comp = direction.x * tmin;
+                  var dist = comp * comp;
+                  comp = direction.y * tmin;
+                  dist += comp * comp;
+                  comp = direction.z * tmin;
+                  dist += comp * comp;
+                  return dist;
+                }
+                 else {
+                  return Kotlin.kotlin.js.internal.FloatCompanionObject.POSITIVE_INFINITY;
+                }
+              },
+              toString: function () {
+                if (this.isEmpty) {
+                  return '[empty]';
+                }
+                 else {
+                  return '[center=' + this.center + ', size=' + this.size + ']';
+                }
+              }
+            }),
             Color: Kotlin.createClass(function () {
               return [_.de.fabmax.kool.util.Vec4f];
             }, function Color(r, g, b, a) {
@@ -3817,32 +4095,29 @@ var kool = function (Kotlin) {
                 _.de.fabmax.kool.util.Font.Companion;
               }
             }),
-            fontShader_ii4so9$f: function () {
+            fontShader_2vrze3$f: function () {
             },
             fontShader$f: Kotlin.createClass(function () {
               return [_.de.fabmax.kool.platform.ShaderGenerator.GlslInjector];
             }, function () {
             }, /** @lends _.de.fabmax.kool.util.fontShader$f.prototype */ {
               fsAfterSampling_ktj0m0$: function (shaderProps, text_0) {
-                text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' = vec4(').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_STATIC_COLOR).append('.rgb * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_TEX_COLOR).append('.a, ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_TEX_COLOR).append('.a);\n');
+                text_0.append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_FRAG_COLOR).append(' = ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_VERTEX_COLOR).append(' * ').append(_.de.fabmax.kool.platform.ShaderGenerator.Companion.LOCAL_NAME_TEX_COLOR).append('.a;\n');
               }
             }, /** @lends _.de.fabmax.kool.util.fontShader$f */ {
             }),
-            fontShader_ii4so9$: function (font, color, propsInit) {
+            fontShader_2vrze3$: function (font, propsInit) {
               var tmp$0;
-              if (color === void 0)
-                color = _.de.fabmax.kool.util.Color.Companion.WHITE;
               if (propsInit === void 0)
-                propsInit = _.de.fabmax.kool.util.fontShader_ii4so9$f;
+                propsInit = _.de.fabmax.kool.util.fontShader_2vrze3$f;
               var props = new _.de.fabmax.kool.shading.ShaderProps();
               propsInit.call(props);
-              props.isStaticColor = true;
+              props.isVertexColor = true;
               props.isTextureColor = true;
               var generator = _.de.fabmax.kool.platform.Platform.Companion.createDefaultShaderGenerator();
               Kotlin.kotlin.collections.plusAssign_4kvzvw$(generator.injectors, new _.de.fabmax.kool.util.fontShader$f());
               var shader = new _.de.fabmax.kool.shading.BasicShader(props, generator);
               shader.texture = (tmp$0 = font != null ? font.charMap : null) != null ? tmp$0.fontTexture : null;
-              shader.staticColor.set_cx11wd$(color);
               return shader;
             },
             CharMetrics: Kotlin.createClass(null, function CharMetrics() {
@@ -3898,28 +4173,28 @@ var kool = function (Kotlin) {
             }, function GlslGenerator() {
               GlslGenerator.baseInitializer.call(this);
             }, /** @lends _.de.fabmax.kool.util.GlslGenerator.prototype */ {
-              onLoad_spwa6e$: function (shader) {
-                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.POSITIONS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_POSITION);
-                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.NORMALS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_NORMAL);
-                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.TEXTURE_COORDS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD);
-                shader.enableAttribute_91bdg2$(_.de.fabmax.kool.shading.Shader.Attribute.COLORS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_COLOR);
-                this.setUniformLocation_t4z91s$(shader, this.uniformMvpMatrix);
-                this.setUniformLocation_t4z91s$(shader, this.uniformModelMatrix);
-                this.setUniformLocation_t4z91s$(shader, this.uniformViewMatrix);
-                this.setUniformLocation_t4z91s$(shader, this.uniformLightDirection);
-                this.setUniformLocation_t4z91s$(shader, this.uniformLightColor);
-                this.setUniformLocation_t4z91s$(shader, this.uniformShininess);
-                this.setUniformLocation_t4z91s$(shader, this.uniformSpecularIntensity);
-                this.setUniformLocation_t4z91s$(shader, this.uniformCameraPosition);
-                this.setUniformLocation_t4z91s$(shader, this.uniformFogColor);
-                this.setUniformLocation_t4z91s$(shader, this.uniformFogRange);
-                this.setUniformLocation_t4z91s$(shader, this.uniformTexture);
-                this.setUniformLocation_t4z91s$(shader, this.uniformStaticColor);
-                this.setUniformLocation_t4z91s$(shader, this.uniformAlpha);
-                this.setUniformLocation_t4z91s$(shader, this.uniformSaturation);
+              onLoad_4ydly7$: function (shader, ctx) {
+                shader.enableAttribute_8df7rn$(_.de.fabmax.kool.shading.Shader.Attribute.POSITIONS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_POSITION, ctx);
+                shader.enableAttribute_8df7rn$(_.de.fabmax.kool.shading.Shader.Attribute.NORMALS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_NORMAL, ctx);
+                shader.enableAttribute_8df7rn$(_.de.fabmax.kool.shading.Shader.Attribute.TEXTURE_COORDS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_TEX_COORD, ctx);
+                shader.enableAttribute_8df7rn$(_.de.fabmax.kool.shading.Shader.Attribute.COLORS, _.de.fabmax.kool.platform.ShaderGenerator.Companion.ATTRIBUTE_NAME_COLOR, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformMvpMatrix, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformModelMatrix, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformViewMatrix, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformLightDirection, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformLightColor, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformShininess, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformSpecularIntensity, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformCameraPosition, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformFogColor, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformFogRange, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformTexture, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformStaticColor, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformAlpha, ctx);
+                this.setUniformLocation_tj4tth$(shader, this.uniformSaturation, ctx);
               },
-              setUniformLocation_t4z91s$: function (shader, uniform) {
-                uniform.location = shader.findUniformLocation_61zpoe$(uniform.name);
+              setUniformLocation_tj4tth$: function (shader, uniform, ctx) {
+                uniform.location = shader.findUniformLocation_vfqc6f$(uniform.name, ctx);
               },
               generateSource_9em3xa$: function (shaderProps) {
                 return new _.de.fabmax.kool.shading.Shader.Source(this.generateVertShader_spqb9i$_0(shaderProps), this.generateFragShader_spqb9i$_0(shaderProps));
@@ -4225,8 +4500,10 @@ var kool = function (Kotlin) {
                 newIdxs.position = this.indices.position;
                 this.indices = newIdxs;
               },
-              addVertex_570ote$: function (init) {
+              addVertex_z89y7a$: function (updateBounds, init) {
                 var tmp$0;
+                if (updateBounds === void 0)
+                  updateBounds = null;
                 if (this.data.remaining < this.vertexSize) {
                   this.increaseDataSize_0();
                 }
@@ -4237,6 +4514,7 @@ var kool = function (Kotlin) {
                 this.addItem_0.index = this.elements++;
                 this.size += this.vertexSize;
                 init.call(this.addItem_0);
+                updateBounds != null ? updateBounds.add_cx11x8$(this.addItem_0.position) : null;
                 return this.elements - 1;
               },
               addVertex_f9a7mx$: function (position, normal, color, texCoord) {
@@ -4246,7 +4524,7 @@ var kool = function (Kotlin) {
                   color = null;
                 if (texCoord === void 0)
                   texCoord = null;
-                return this.addVertex_570ote$(_.de.fabmax.kool.util.IndexedVertexList.addVertex_f9a7mx$f(position, normal, color, texCoord));
+                return this.addVertex_z89y7a$(void 0, _.de.fabmax.kool.util.IndexedVertexList.addVertex_f9a7mx$f(position, normal, color, texCoord));
               },
               addIndex_za3lpa$: function (idx) {
                 if (this.indices.remaining === 0) {
@@ -4523,14 +4801,6 @@ var kool = function (Kotlin) {
                 _.de.fabmax.kool.util.MatrixMath.rotateM_96b1ik$(result.matrix, result.offset, this.matrix, this.offset, angleDeg, axX, axY, axZ);
                 return result;
               },
-              rotateEuler_y2kzbl$: function (xDeg, yDeg, zDeg) {
-                _.de.fabmax.kool.util.MatrixMath.rotateEulerM_h6lr6x$(this.matrix, this.offset, xDeg, yDeg, zDeg);
-                return this;
-              },
-              rotateEuler_qmeyd0$: function (result, xDeg, yDeg, zDeg) {
-                _.de.fabmax.kool.util.MatrixMath.rotateEulerM_uypkq7$(result.matrix, result.offset, this.matrix, this.offset, xDeg, yDeg, zDeg);
-                return result;
-              },
               scale_y2kzbl$: function (sx, sy, sz) {
                 _.de.fabmax.kool.util.MatrixMath.scaleM_h6lr6x$(this.matrix, this.offset, sx, sy, sz);
                 return this;
@@ -4567,6 +4837,20 @@ var kool = function (Kotlin) {
                 result.x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(1, 0) + vec.z * this.get_vux9f0$(2, 0) + w * this.get_vux9f0$(3, 0);
                 result.y = vec.x * this.get_vux9f0$(0, 1) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(2, 1) + w * this.get_vux9f0$(3, 1);
                 result.z = vec.x * this.get_vux9f0$(0, 2) + vec.y * this.get_vux9f0$(1, 2) + vec.z * this.get_vux9f0$(2, 2) + w * this.get_vux9f0$(3, 2);
+                return result;
+              },
+              transform_aq7j5p$: function (vec) {
+                var x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(1, 0) + vec.z * this.get_vux9f0$(2, 0) + vec.w * this.get_vux9f0$(3, 0);
+                var y = vec.x * this.get_vux9f0$(0, 1) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(2, 1) + vec.w * this.get_vux9f0$(3, 1);
+                var z = vec.x * this.get_vux9f0$(0, 2) + vec.y * this.get_vux9f0$(1, 2) + vec.z * this.get_vux9f0$(2, 2) + vec.w * this.get_vux9f0$(3, 2);
+                var w = vec.x * this.get_vux9f0$(0, 3) + vec.y * this.get_vux9f0$(1, 3) + vec.z * this.get_vux9f0$(2, 3) + vec.w * this.get_vux9f0$(3, 3);
+                return vec.set_7b5o5w$(x, y, z, w);
+              },
+              transform_w8hczq$: function (result, vec) {
+                result.x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(1, 0) + vec.z * this.get_vux9f0$(2, 0) + vec.w * this.get_vux9f0$(3, 0);
+                result.y = vec.x * this.get_vux9f0$(0, 1) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(2, 1) + vec.w * this.get_vux9f0$(3, 1);
+                result.z = vec.x * this.get_vux9f0$(0, 2) + vec.y * this.get_vux9f0$(1, 2) + vec.z * this.get_vux9f0$(2, 2) + vec.w * this.get_vux9f0$(3, 2);
+                result.w = vec.x * this.get_vux9f0$(0, 3) + vec.y * this.get_vux9f0$(1, 3) + vec.z * this.get_vux9f0$(2, 3) + vec.w * this.get_vux9f0$(3, 3);
                 return result;
               },
               mul_d21ekx$: function (other) {
@@ -5201,11 +5485,11 @@ var kool = function (Kotlin) {
                 name = null;
               return _.de.fabmax.kool.util.mesh_3sqmh1$(true, true, false, name, generator);
             },
-            textMesh_njt968$: function (font, color, name, generator) {
+            textMesh_y8ifd0$: function (font, name, generator) {
               if (name === void 0)
                 name = null;
-              var text_0 = _.de.fabmax.kool.util.textureMesh_gac8tm$(name, generator);
-              text_0.shader = _.de.fabmax.kool.util.fontShader_ii4so9$(font, color);
+              var text_0 = _.de.fabmax.kool.util.mesh_3sqmh1$(true, true, true, name, generator);
+              text_0.shader = _.de.fabmax.kool.util.fontShader_2vrze3$(font);
               return text_0;
             },
             textureMesh_gac8tm$: function (name, generator) {
@@ -5258,9 +5542,6 @@ var kool = function (Kotlin) {
               },
               rotate_7b5o5w$: function (angleDeg, axX, axY, axZ) {
                 return this.transform.rotate_7b5o5w$(angleDeg, axX, axY, axZ);
-              },
-              rotateEuler_y2kzbl$: function (xDeg, yDeg, zDeg) {
-                return this.transform.rotateEuler_y2kzbl$(xDeg, yDeg, zDeg);
               },
               scale_y2kzbl$: function (x, y, z) {
                 return this.transform.scale_y2kzbl$(x, y, z);
@@ -5523,8 +5804,9 @@ var kool = function (Kotlin) {
                   this.circle_edvpwy$(_.de.fabmax.kool.util.MeshBuilder.f_0(closure$props));
                 };
               },
-              f_1: function (closure$metrics) {
+              f_1: function (closure$advanced, closure$metrics) {
                 return function () {
+                  this.origin.set_y2kzbl$(closure$advanced.v - closure$metrics.xOffset, closure$metrics.yBaseline - closure$metrics.height, 0.0);
                   this.width = closure$metrics.width;
                   this.height = closure$metrics.height;
                   this.texCoordUpperLeft.set_cx11y3$(closure$metrics.uvMin);
@@ -5536,23 +5818,22 @@ var kool = function (Kotlin) {
               text_lis6zk$f: function (closure$props) {
                 return function () {
                   var tmp$0;
-                  this.scale_y2kzbl$(closure$props.scale, closure$props.scale, closure$props.scale);
+                  if (!_.de.fabmax.kool.util.isEqual_dleff0$(closure$props.scale, 1.0)) {
+                    this.scale_y2kzbl$(closure$props.scale, closure$props.scale, closure$props.scale);
+                  }
                   this.translate_cx11x8$(closure$props.position);
-                  var advanced = 0.0;
+                  var advanced = {v: 0.0};
                   tmp$0 = Kotlin.kotlin.text.iterator_gw00vq$(closure$props.text);
                   while (tmp$0.hasNext()) {
                     var c = tmp$0.next();
                     if (c === '\n') {
-                      this.translate_y2kzbl$(-advanced, -closure$props.font.lineSpace, 0.0);
-                      advanced = 0.0;
+                      this.translate_y2kzbl$(0.0, -closure$props.font.lineSpace, 0.0);
+                      advanced.v = 0.0;
                     }
                     var metrics = closure$props.font.charMap.get_za3rmp$(c);
                     if (metrics != null) {
-                      advanced -= metrics.xOffset;
-                      this.translate_y2kzbl$(-metrics.xOffset, metrics.yBaseline - metrics.height, 0.0);
-                      this.rect_ud8hiy$(_.de.fabmax.kool.util.MeshBuilder.f_1(metrics));
-                      this.translate_y2kzbl$(metrics.width, metrics.height - metrics.yBaseline, 0.0);
-                      advanced += metrics.width;
+                      this.rect_ud8hiy$(_.de.fabmax.kool.util.MeshBuilder.f_1(advanced, metrics));
+                      advanced.v += metrics.advance;
                     }
                   }
                 };
@@ -5681,14 +5962,12 @@ var kool = function (Kotlin) {
             TextProps: Kotlin.createClass(null, function TextProps() {
               this.text = '';
               this.font = _.de.fabmax.kool.util.Font.Companion.DEFAULT_FONT;
-              this.color = _.de.fabmax.kool.util.Color.Companion.BLACK;
               this.position = _.de.fabmax.kool.util.MutableVec3f_init();
               this.scale = 1.0;
             }, /** @lends _.de.fabmax.kool.util.TextProps.prototype */ {
               defaults: function () {
                 this.text = '';
                 this.font = _.de.fabmax.kool.util.Font.Companion.DEFAULT_FONT;
-                this.color = _.de.fabmax.kool.util.Color.Companion.BLACK;
                 this.position.set_cx11x8$(_.de.fabmax.kool.util.Vec3f.Companion.ZERO);
                 this.scale = 1.0;
                 return this;
@@ -5719,6 +5998,29 @@ var kool = function (Kotlin) {
                 if (!Kotlin.equals(value, this.value_0)) {
                   this.value_0 = value;
                   this.valueChanged = true;
+                }
+              }
+            }),
+            RayTest: Kotlin.createClass(null, function RayTest() {
+              this.origin = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.direction = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.hitPosition = _.de.fabmax.kool.util.MutableVec3f_init();
+              this.hitNode = null;
+              this.hitDistanceSqr = Kotlin.kotlin.js.internal.FloatCompanionObject.POSITIVE_INFINITY;
+            }, /** @lends _.de.fabmax.kool.util.RayTest.prototype */ {
+              isHit: {
+                get: function () {
+                  return this.hitDistanceSqr < Kotlin.kotlin.js.internal.FloatCompanionObject.POSITIVE_INFINITY;
+                }
+              },
+              clear: function () {
+                this.hitPosition.set_cx11x8$(_.de.fabmax.kool.util.Vec3f.Companion.ZERO);
+                this.hitNode = null;
+                this.hitDistanceSqr = Kotlin.kotlin.js.internal.FloatCompanionObject.POSITIVE_INFINITY;
+              },
+              computeHitPosition: function () {
+                if (this.isHit) {
+                  this.hitPosition.set_cx11x8$(this.direction).scale_mx4ult$(Math.sqrt(this.hitDistanceSqr)).add_cx11x8$(this.origin);
                 }
               }
             }),

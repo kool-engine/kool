@@ -1,6 +1,8 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.RayTest
 
 /**
  * @author fabmax
@@ -14,11 +16,20 @@ fun group(name: String? = null, block: Group.() -> Unit): Group {
 
 open class Group(name: String? = null) : Node(name) {
     protected val children: MutableList<Node> = mutableListOf()
+    protected val tmpBounds = BoundingBox()
 
     override fun render(ctx: RenderContext) {
+        if (!isVisible) {
+            return
+        }
+        super.render(ctx)
+
+        tmpBounds.clear()
         for (i in children.indices) {
             children[i].render(ctx)
+            tmpBounds.add(children[i].bounds)
         }
+        bounds.set(tmpBounds)
     }
 
     override fun delete(ctx: RenderContext) {
@@ -27,22 +38,34 @@ open class Group(name: String? = null) : Node(name) {
         }
     }
 
-    override fun findByName(name: String): Node? {
+    override operator fun get(name: String): Node? {
         if (name == this.name) {
             return this
         }
         for (i in children.indices) {
-            val nd = children[i].findByName(name)
-            if (nd != null) {
-                return nd
+            val node = children[i][name]
+            if (node != null) {
+                return node
             }
         }
         return null
     }
 
+    override fun rayTest(test: RayTest) {
+        val dirSqrLen = test.direction.sqrLength()
+
+        for (i in children.indices) {
+            val child = children[i]
+            if (child.bounds.computeHitDistanceSqr(test.origin, test.direction) / dirSqrLen < test.hitDistanceSqr) {
+                child.rayTest(test)
+            }
+        }
+    }
+
     fun addNode(node: Node) {
         children.add(node)
         node.parent = this
+        bounds.add(node.bounds)
     }
 
     fun removeNode(node: Node): Boolean {
