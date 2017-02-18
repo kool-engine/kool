@@ -165,7 +165,7 @@ class BoundingBox {
             dist += comp * comp
             comp = direction.z * tmin
             dist += comp * comp
-            return dist
+            return dist / direction.sqrLength()
         } else {
             // no intersection
             return Float.POSITIVE_INFINITY

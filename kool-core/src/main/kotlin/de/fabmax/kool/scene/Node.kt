@@ -13,6 +13,8 @@ import de.fabmax.kool.util.RayTest
 abstract class Node(val name: String? = null) {
 
     var onRender: (Node.(RenderContext) -> Unit)? = null
+    var onHoverEnter: (Node.(RenderContext) -> Unit)? = null
+    var onHoverExit: (Node.(RenderContext) -> Unit)? = null
 
     /**
      * Axis-aligned bounds of this node, implementations should set and refresh their bounds on every frame
@@ -27,9 +29,14 @@ abstract class Node(val name: String? = null) {
 
     /**
      * Determines the visibility of this node. If visible is false this node will be skipped on
-     * rendering.
+     * rendering. Implementations must consider this flag in order to get the expected behaviour.
      */
     var isVisible = true
+
+    /**
+     * Determines whether this node is considered for ray-picking tests.
+     */
+    var isPickable = true
 
     /**
      * Renders this node using the specified graphics engine context. Implementations should consider the [isVisible]

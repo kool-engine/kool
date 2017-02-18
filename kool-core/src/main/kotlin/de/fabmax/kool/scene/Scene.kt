@@ -14,17 +14,36 @@ class Scene {
 
     var isPickingEnabled = true
     private val rayTest = RayTest()
+    private var hoverNode: Node? = null
 
     fun onRender(ctx: RenderContext) {
         camera.updateCamera(ctx)
+
+        handleInput(ctx)
+
         root?.render(ctx)
+    }
+
+    private fun handleInput(ctx: RenderContext) {
+        var hovered: Node? = null
+        val prevHovered = hoverNode
 
         if (isPickingEnabled && camera.initRayTes(rayTest, ctx)) {
             root?.rayTest(rayTest)
             if (rayTest.isHit) {
                 rayTest.computeHitPosition()
-                println("hit: ${rayTest.hitNode?.name}, d=${Math.sqrt(rayTest.hitDistanceSqr.toDouble())}, p=${rayTest.hitPosition}")
+                hovered = rayTest.hitNode
             }
+        }
+
+        if (prevHovered != hovered) {
+            if (prevHovered != null) {
+                prevHovered.onHoverExit?.invoke(prevHovered, ctx)
+            }
+            if (hovered != null) {
+                hovered.onHoverEnter?.invoke(hovered, ctx)
+            }
+            hoverNode = hovered
         }
     }
 

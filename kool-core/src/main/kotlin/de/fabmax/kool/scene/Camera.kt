@@ -54,12 +54,16 @@ class Camera(name: String = "camera") : Node(name) {
 
     fun initRayTes(rayTest: RayTest, ctx: RenderContext, ptrIdx: Int = InputHandler.PRIMARY_POINTER): Boolean {
         val ptr = ctx.inputHandler.getPointer(ptrIdx)
-        val y = ctx.viewportHeight - ptr.y
-        var valid = ptr.isValid
+        return initRayTes(rayTest, ctx, ptr.x, ptr.y) && ptr.isValid
+    }
+
+    fun initRayTes(rayTest: RayTest, ctx: RenderContext, screenX: Float, screenY: Float): Boolean {
+        val y = ctx.viewportHeight - screenY
+        var valid = true
 
         rayTest.clear()
-        valid = valid && unProject(tmpVec3.set(ptr.x, y, 0f), ctx.viewportWidth, ctx.viewportHeight, rayTest.origin)
-        valid = valid && unProject(tmpVec3.set(ptr.x, y, 1f), ctx.viewportWidth, ctx.viewportHeight, rayTest.direction)
+        valid = valid && unProject(tmpVec3.set(screenX, y, 0f), ctx.viewportWidth, ctx.viewportHeight, rayTest.origin)
+        valid = valid && unProject(tmpVec3.set(screenX, y, 1f), ctx.viewportWidth, ctx.viewportHeight, rayTest.direction)
 
         if (valid) {
             rayTest.direction.subtract(rayTest.origin)

@@ -52,11 +52,10 @@ open class Group(name: String? = null) : Node(name) {
     }
 
     override fun rayTest(test: RayTest) {
-        val dirSqrLen = test.direction.sqrLength()
-
         for (i in children.indices) {
             val child = children[i]
-            if (child.bounds.computeHitDistanceSqr(test.origin, test.direction) / dirSqrLen < test.hitDistanceSqr) {
+            if (child.isPickable &&
+                    child.bounds.computeHitDistanceSqr(test.origin, test.direction) < test.hitDistanceSqr) {
                 child.rayTest(test)
             }
         }
