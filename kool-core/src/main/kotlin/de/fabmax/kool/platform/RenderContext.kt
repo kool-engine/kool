@@ -4,7 +4,6 @@ import de.fabmax.kool.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Property
-import kotlin.properties.Delegates
 
 /**
  * @author fabmax
@@ -18,7 +17,7 @@ abstract class RenderContext {
     val textureMgr = TextureManager()
     val mvpState = MvpState()
 
-    protected var startTimeMillis = 0L
+    private var startTimeMillis = 0L
     var time: Double = 0.0
         protected set
     var deltaT: Float = 0.0f
@@ -45,19 +44,22 @@ abstract class RenderContext {
 
     abstract fun destroy()
 
-    protected open fun onNewFrame() {
+    protected fun render() {
         val now = Platform.currentTimeMillis()
         if (startTimeMillis == 0L) {
             startTimeMillis = now
         }
         val t = (now - startTimeMillis).toDouble() / 1000.0
-        deltaT = (t - time).toFloat()
-        time = t
+        val dt = (t - time).toFloat()
+
+        render(dt)
+    }
+
+    protected open fun render(dt: Float) {
+        time += dt
+        deltaT = dt
 
         inputHandler.onNewFrame()
-        //boundBuffers.clear()
-        //bindShader(null)
-        //binTexture(null)
 
         if (viewportWidthProp.valueChanged || viewportHeightProp.valueChanged) {
             GL.viewport(0, 0, viewportWidthProp.clear, viewportHeightProp.clear)
@@ -70,17 +72,12 @@ abstract class RenderContext {
         if (clearMask != 0) {
             GL.clear(clearMask)
         }
+
         GL.enable(GL.DEPTH_TEST)
         GL.enable(GL.CULL_FACE)
         GL.enable(GL.BLEND)
-        // straight alpha
-        //GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA)
-        // pre-multiplied alpha
+        // use blending with pre-multiplied alpha
         GL.blendFunc(GL.ONE, GL.ONE_MINUS_SRC_ALPHA)
-    }
-
-    protected open fun render() {
-        onNewFrame()
 
         scene.onRender(this)
     }

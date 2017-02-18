@@ -1,14 +1,13 @@
 package de.fabmax.kool.platform.js
 
 import de.fabmax.kool.InputHandler
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.RenderContext
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.events.WheelEvent
 import kotlin.browser.document
+import kotlin.browser.window
 
 /**
  * @author fabmax
@@ -16,19 +15,11 @@ import kotlin.browser.document
 @Suppress("UnsafeCastFromDynamic")
 class JsContext internal constructor(props: InitProps) : RenderContext() {
 
-    companion object {
-        /**
-         * Javascript callback function: Renders a single frame
-         */
-        fun webGlRender() {
-            PlatformImpl.jsContext!!.render()
-            PlatformImpl.gl.finish()
-        }
-    }
-
     internal val canvas: HTMLCanvasElement
     internal val gl: WebGLRenderingContext
     internal val supportsUint32Indices: Boolean
+
+    private var animationMillis = 0.0
 
     init {
         canvas = document.getElementById(props.canvasName) as HTMLCanvasElement
@@ -84,12 +75,11 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
 
     }
 
-    override fun run() {
-        //webGlRender()
-        js("setInterval(_.de.fabmax.kool.platform.js.JsContext.Companion.webGlRender, 15);")
-    }
+    private fun renderFrame(time: Double) {
+        // determine delta time
+        val dt = (time - animationMillis) / 1000.0
+        animationMillis = time
 
-    override fun render() {
         // update viewport size
         viewportWidth = canvas.clientWidth
         viewportHeight = canvas.clientHeight
@@ -99,7 +89,16 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
             canvas.height = viewportHeight
         }
 
-        super.render()
+        // render frame
+        render(dt.toFloat())
+        gl.finish()
+
+        // request next frame
+        window.requestAnimationFrame{ t -> renderFrame(t) }
+    }
+
+    override fun run() {
+        window.requestAnimationFrame{ t -> renderFrame(t) }
     }
 
     override fun destroy() {
