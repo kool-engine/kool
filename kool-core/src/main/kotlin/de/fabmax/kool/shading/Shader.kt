@@ -47,7 +47,7 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
      * @param ctx    the graphics engine context
      */
     open fun onLoad(ctx: RenderContext) {
-        res = ctx.shaderMgr.compile(source, ctx)
+        res = ctx.shaderMgr.createShader(source, ctx)
     }
 
     /**

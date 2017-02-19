@@ -1,6 +1,6 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.Texture2d
+import de.fabmax.kool.Texture
 import de.fabmax.kool.platform.Float32Buffer
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
@@ -27,17 +27,15 @@ abstract class Uniform<T>(val name: String, value: T) {
     protected abstract fun doBind(ctx: RenderContext)
 }
 
-class UniformTexture2D(name: String) : Uniform<Texture2d?>(name, null) {
+class UniformTexture2D(name: String) : Uniform<Texture?>(name, null) {
     override val type = "sampler2D"
-    var texUnit: Int = 0
-    override var value: Texture2d? = null
+    override var value: Texture? = null
         public set      // explicit public is needed to overwrite protected set from super
 
     override fun doBind(ctx: RenderContext) {
         val tex = value
         if (tex != null) {
-            ctx.textureMgr.bindTexture2d(value, texUnit, ctx)
-            GL.uniform1i(location, texUnit)
+            GL.uniform1i(location, ctx.textureMgr.bindTexture(tex, ctx))
         }
     }
 }

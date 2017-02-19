@@ -61,6 +61,9 @@ abstract class RenderContext {
 
         inputHandler.onNewFrame()
 
+        // force re-binding shader, otherwise delayed loaded resources (e.g. textures) might not be loaded at all
+        shaderMgr.bindShader(null, this)
+
         if (viewportWidthProp.valueChanged || viewportHeightProp.valueChanged) {
             GL.viewport(0, 0, viewportWidthProp.clear, viewportHeightProp.clear)
         }

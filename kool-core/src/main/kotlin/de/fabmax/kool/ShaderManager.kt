@@ -3,19 +3,14 @@ package de.fabmax.kool
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.shading.Shader
-import java.util.*
 
 /**
  * @author fabmax
  */
-class ShaderManager internal constructor() {
+class ShaderManager internal constructor() : SharedResManager<Shader.Source, ProgramResource>() {
 
     var boundShader: Shader? = null
         private set
-
-    private val shaderProgramMap: MutableMap<Shader.Source, ShaderReferenceCounter> = mutableMapOf()
-
-    private data class ShaderReferenceCounter(val prog: ProgramResource, var referenceCount: Int)
 
     fun bindShader(shader: Shader?, ctx: RenderContext) {
         if (shader != null) {
@@ -37,61 +32,57 @@ class ShaderManager internal constructor() {
         }
     }
 
+    internal fun createShader(source: Shader.Source, ctx: RenderContext): ProgramResource {
+        return createResource(source, ctx)
+    }
+
     internal fun deleteShader(shader: Shader, ctx: RenderContext) {
-        val ref = shaderProgramMap[shader.source]
-        if (ref != null) {
-            if (--ref.referenceCount == 0) {
-                ref.prog.delete(ctx)
-                shaderProgramMap.remove(shader.source)
-            }
+        val res = shader.res
+        if (res != null) {
+            deleteResource(shader.source, res, ctx)
         }
     }
 
-    internal fun compile(source: Shader.Source, ctx: RenderContext): ProgramResource {
-        var res = shaderProgramMap[source]
-
-        if (res == null) {
-            // create vertex shader
-            val vertShader = ShaderResource.createVertexShader(ctx)
-            vertShader.shaderSource(source.vertexSrc, ctx)
-            if (!vertShader.compile(ctx)) {
-                // compilation failed
-                val log = vertShader.getInfoLog(ctx)
-                vertShader.delete(ctx)
-                throw KoolException("Vertex shader compilation failed: " + log)
-            }
-
-            // create fragment shader
-            val fragShader = ShaderResource.createFragmentShader(ctx)
-            fragShader.shaderSource(source.fragmentSrc, ctx)
-            if (!fragShader.compile(ctx)) {
-                // compilation failed
-                val log = fragShader.getInfoLog(ctx)
-                fragShader.delete(ctx)
-                throw KoolException("Fragment shader compilation failed: " + log)
-            }
-
-            // link shader
-            val prog = ProgramResource.create(ctx)
-            prog.attachShader(vertShader, ctx)
-            prog.attachShader(fragShader, ctx)
-            val success = prog.link(ctx)
-            // after linkage fragment and vertex shader are no longer needed
+    override fun createResource(key: Shader.Source, ctx: RenderContext): ProgramResource {
+        // create vertex shader
+        val vertShader = ShaderResource.createVertexShader(ctx)
+        vertShader.shaderSource(key.vertexSrc, ctx)
+        if (!vertShader.compile(ctx)) {
+            // compilation failed
+            val log = vertShader.getInfoLog(ctx)
             vertShader.delete(ctx)
-            fragShader.delete(ctx)
-            if (!success) {
-                // linkage failed
-                val log = prog.getInfoLog(ctx)
-                prog.delete(ctx)
-                throw KoolException("Shader linkage failed: " + log)
-            }
-
-            // keep resource for resource sharing of equal shaders
-            res = ShaderReferenceCounter(prog, 0)
-            shaderProgramMap[source] = res
+            throw KoolException("Vertex shader compilation failed: " + log)
         }
 
-        res.referenceCount++
-        return res.prog
+        // create fragment shader
+        val fragShader = ShaderResource.createFragmentShader(ctx)
+        fragShader.shaderSource(key.fragmentSrc, ctx)
+        if (!fragShader.compile(ctx)) {
+            // compilation failed
+            val log = fragShader.getInfoLog(ctx)
+            fragShader.delete(ctx)
+            throw KoolException("Fragment shader compilation failed: " + log)
+        }
+
+        // link shader
+        val prog = ProgramResource.create(ctx)
+        prog.attachShader(vertShader, ctx)
+        prog.attachShader(fragShader, ctx)
+        val success = prog.link(ctx)
+        // after linkage fragment and vertex shader are no longer needed
+        vertShader.delete(ctx)
+        fragShader.delete(ctx)
+        if (!success) {
+            // linkage failed
+            val log = prog.getInfoLog(ctx)
+            prog.delete(ctx)
+            throw KoolException("Shader linkage failed: " + log)
+        }
+
+        return prog
+    }
+
+    override fun deleteResource(key: Shader.Source, res: ProgramResource, ctx: RenderContext) {
+        res.delete(ctx)
     }
 }

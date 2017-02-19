@@ -1,6 +1,6 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.Texture2d
+import de.fabmax.kool.Texture
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.ShaderGenerator
@@ -39,7 +39,7 @@ open class BasicShader(props: ShaderProps, private val generator: ShaderGenerato
     var staticColor: MutableVec4f
         get() = generator.uniformStaticColor.value
         set(value) { generator.uniformStaticColor.value.set(value) }
-    var texture: Texture2d?
+    var texture: Texture?
         get() = generator.uniformTexture.value
         set(value) { generator.uniformTexture.value = value }
 

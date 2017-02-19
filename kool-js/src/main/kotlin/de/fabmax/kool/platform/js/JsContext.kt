@@ -94,11 +94,11 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
         gl.finish()
 
         // request next frame
-        window.requestAnimationFrame{ t -> renderFrame(t) }
+        window.requestAnimationFrame { t -> renderFrame(t) }
     }
 
     override fun run() {
-        window.requestAnimationFrame{ t -> renderFrame(t) }
+        window.requestAnimationFrame { t -> renderFrame(t) }
     }
 
     override fun destroy() {

@@ -10,7 +10,7 @@ you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.ht
 What's working:
 - Ray picking on scene objects
 - Mouse hover events for scene objects
-- Simple Animations 
+- Simple animations 
 - Text rendering using arbitrary fonts. For now character set is fixed but theoretically it has unicode support
 - Mouse controlled camera
 - Simple scene graph
@@ -41,7 +41,7 @@ fun main(args: Array<String>) {
             +ctx.scene.camera
         }
 
-        // Add a TransformGroup with a bouncing sphere
+        // Add a TransformGroup with a bouncing textured sphere
         +transformGroup {
             // Create an Animator to animate the sphere Y position between -1 and 1
             val animator = CosAnimator(InterpolatedFloat(-1f, 1f))
@@ -54,20 +54,19 @@ fun main(args: Array<String>) {
                 // Shift content 5 units left and let it bounce along Y-Axis
                 translate(-5f, animator.tick(ctx), 0f)
                 // Slowly rotate the sphere, so we can see all the colors
-                rotate(ctx.time.toFloat() * 19, Vec3f.X_AXIS)
+                rotate(ctx.time.toFloat() * 19, Vec3f.Y_AXIS)
             }
 
             // Add a sphere mesh
-            +colorMesh {
-                // vertexModFun is called for every generated vertex, overwrite the vertex color depending on the
-                // normal orientation, this will make the sphere nicely colorful
-                vertexModFun = { color.set(Color((normal.x + 1) / 2, (normal.y + 1) / 2, (normal.z + 1) / 2, 1f)) }
+            +textureMesh {
                 // Generate the sphere mesh with a sphere radius of 1.5 units
                 sphere {
                     radius = 1.5f
                     // Make it really smooth
                     steps = 50
                 }
+                // load texture from assets
+                shader?.texture = assetTexture("world.jpg")
             }
         }
 
@@ -96,7 +95,7 @@ fun main(args: Array<String>) {
                 val speedAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
                 // By setting an initial negative speed, the animation is updated exactly once and then pauses
                 speedAnimator.speed = -1f
-                speedAnimator.duration = 0.2f
+                speedAnimator.duration = 0.5f
                 speedAnimator.value.onUpdate = { v ->
                     // Update rotation animation speed and color intensity
                     cubeAnimator.speed = v
@@ -160,7 +159,7 @@ fun main(args: Array<String>) {
             }
 
             // Add the text, you can use any font you like
-            val textFont = Font("Segoe UI", 72.0f)
+            val textFont = Font("sans-serif", 72.0f)
             +textMesh(textFont, "Text") {
                 color = Color.LIME
                 text {

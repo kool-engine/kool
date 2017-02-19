@@ -184,16 +184,19 @@ class ShaderResource private constructor(glRef: Any, ctx: RenderContext) :
     }
 }
 
-class TextureResource private constructor(glRef: Any, val target: Int, val props: Props, ctx: RenderContext) :
+class TextureResource private constructor(glRef: Any, val target: Int, val props: TextureProps, ctx: RenderContext) :
         GlResource(glRef, Type.TEXTURE) {
 
     companion object {
-        val DEFAULT_PROPERTIES = Props()
-
-        fun create(target: Int, props: Props, ctx: RenderContext): TextureResource {
+        fun create(target: Int, props: TextureProps, ctx: RenderContext): TextureResource {
             return TextureResource(GL.createTexture(), target, props, ctx)
         }
     }
+
+    var isLoaded = false
+
+    var texUnit = -1
+        internal set
 
     init {
         GL.bindTexture(GL.TEXTURE_2D, this)
@@ -206,9 +209,5 @@ class TextureResource private constructor(glRef: Any, val target: Int, val props
     override fun delete(ctx: RenderContext) {
         GL.deleteTexture(this)
         super.delete(ctx)
-    }
-
-    data class Props(val minFilter: Int, val magFilter: Int, val xWrapping: Int, val yWrapping: Int) {
-        constructor() : this(GL.LINEAR_MIPMAP_LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
     }
 }

@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.BufferedTexture2d
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.Texture2d
-import de.fabmax.kool.TextureResource
+import de.fabmax.kool.*
 import de.fabmax.kool.platform.lwjgl3.*
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
@@ -71,12 +68,12 @@ class PlatformImpl private constructor() : Platform() {
         return System.currentTimeMillis()
     }
 
-    override fun loadTexture(path: String, props: TextureResource.Props): BufferedTexture2d {
-        val image = ImageIO.read(File(path))
+    override fun loadTextureAsset(assetPath: String): BufferedTextureData {
+        val image = ImageIO.read(File(assetPath))
         val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
         val format = if (alpha) GL.RGBA else GL.RGB
         val buffer = bufferedImageToBuffer(image, format, 0, 0)
-        return BufferedTexture2d(buffer, image.width, image.height, format, props)
+        return BufferedTextureData(buffer, image.width, image.height, format)
     }
 
     override fun createCharMap(font: Font, chars: String): CharMap {

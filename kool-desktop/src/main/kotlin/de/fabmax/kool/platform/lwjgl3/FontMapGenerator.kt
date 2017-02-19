@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform.lwjgl3
 
-import de.fabmax.kool.BufferedTexture2d
-import de.fabmax.kool.TextureResource
+import de.fabmax.kool.BufferedTextureData
+import de.fabmax.kool.TextureProps
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.bufferedImageToBuffer
 import de.fabmax.kool.util.CharMap
@@ -42,10 +42,9 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
         val texHeight = makeMap(chars, font.size, g, metrics)
 
-        val props = TextureResource.Props(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
         val format = GL.ALPHA
         val buffer = bufferedImageToBuffer(canvas, format, maxWidth, texHeight)
-        return CharMap(BufferedTexture2d(buffer, maxWidth, texHeight, format, props), metrics)
+        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, format), metrics)
     }
 
     private fun makeMap(chars: String, size: Float, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {

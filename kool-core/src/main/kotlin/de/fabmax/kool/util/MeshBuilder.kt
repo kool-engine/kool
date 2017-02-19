@@ -175,15 +175,22 @@ open class MeshBuilder(val mesh: Mesh) {
         var rowIndices = IntArray(steps * 2 + 1)
 
         // bottom cap
-        var iCenter = vertex(tmpPos.set(props.center.x, props.center.y-props.radius, props.center.z), Vec3f.NEG_Y_AXIS)
-        var r = Math.sin(Math.PI / steps).toFloat() * props.radius
-        var y = -Math.cos(Math.PI / steps).toFloat() * props.radius
+        var theta = Math.PI * (steps - 1) / steps
+        var r = Math.sin(theta).toFloat() * props.radius
+        var y = Math.cos(theta).toFloat() * props.radius
         for (i in 0..(steps * 2)) {
-            val x = Math.cos(Math.PI * i / steps).toFloat() * r
-            val z = Math.sin(Math.PI * i / steps).toFloat() * r
-            rowIndices[i] = vertex(tmpPos.set(x, y, z), tmpNrm.set(x, y, z).scale(1f / props.radius))
+            val phi = Math.PI * i / steps
+            val x = Math.cos(-phi).toFloat() * r
+            val z = Math.sin(-phi).toFloat() * r
+
+            var uv = props.texCoordGenerator(theta.toFloat(), phi.toFloat())
+            rowIndices[i] = vertex(tmpPos.set(x, y, z), tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
+
             if (i > 0) {
-                mesh.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
+                uv = props.texCoordGenerator(Math.PI.toFloat(), phi.toFloat())
+                tmpPos.set(props.center.x, props.center.y-props.radius, props.center.z)
+                val iCenter = vertex(tmpPos, Vec3f.NEG_Y_AXIS, uv)
+                mesh.addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
             }
         }
 
@@ -193,24 +200,28 @@ open class MeshBuilder(val mesh: Mesh) {
             prevIndices = rowIndices
             rowIndices = tmp
 
-            r = Math.sin(Math.PI * row / steps).toFloat() * props.radius
-            y = -Math.cos(Math.PI * row / steps).toFloat() * props.radius
+            theta = Math.PI * (steps - row) / steps
+            r = Math.sin(theta).toFloat() * props.radius
+            y = Math.cos(theta).toFloat() * props.radius
             for (i in 0..(steps * 2)) {
-                val x = Math.cos(Math.PI * i / steps).toFloat() * r
-                val z = Math.sin(Math.PI * i / steps).toFloat() * r
-                rowIndices[i] = vertex(tmpPos.set(x, y, z), tmpNrm.set(x, y, z).scale(1f / props.radius))
+                val phi = Math.PI * i / steps
+                val x = Math.cos(-phi).toFloat() * r
+                val z = Math.sin(-phi).toFloat() * r
+                val uv = props.texCoordGenerator(theta.toFloat(), phi.toFloat())
+                rowIndices[i] = vertex(tmpPos.set(x, y, z), tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
 
                 if (i > 0) {
-                    mesh.addTriIndices(prevIndices[i - 1], rowIndices[i - 1], rowIndices[i])
-                    mesh.addTriIndices(prevIndices[i - 1], rowIndices[i], prevIndices[i])
+                    mesh.addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
+                    mesh.addTriIndices(prevIndices[i - 1], prevIndices[i], rowIndices[i])
                 }
             }
         }
 
         // top cap
-        iCenter = vertex(tmpPos.set(props.center.x, props.center.y + props.radius, props.center.z), Vec3f.Y_AXIS)
         for (i in 1..(steps * 2)) {
-            mesh.addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
+            val uv = props.texCoordGenerator(0f, (Math.PI * i / steps).toFloat())
+            val iCenter = vertex(tmpPos.set(props.center.x, props.center.y + props.radius, props.center.z), Vec3f.Y_AXIS, uv)
+            mesh.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
         }
     }
 
@@ -407,8 +418,17 @@ open class CircleProps {
 }
 
 class SphereProps : CircleProps() {
+    private val uv = MutableVec2f()
+
+    var texCoordGenerator: (Float, Float) -> Vec2f = { t, p -> defaultTexCoordGenerator(t, p) }
+
+    private fun defaultTexCoordGenerator(theta: Float, phi: Float): Vec2f {
+        return uv.set(phi / (Math.PI.toFloat() * 2f), theta / Math.PI.toFloat())
+    }
+
     override fun defaults(): SphereProps {
         super.defaults()
+        texCoordGenerator = { t, p -> defaultTexCoordGenerator(t, p) }
         return this
     }
 }

@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform.js
 
-import de.fabmax.kool.BufferedTexture2d
-import de.fabmax.kool.TextureResource
+import de.fabmax.kool.BufferedTextureData
+import de.fabmax.kool.TextureProps
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.util.CharMap
@@ -41,7 +41,6 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
         val texHeight = makeMap(chars, font.family, font.size, style, metrics)
 
-        val props = TextureResource.Props(GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
         val data = canvasCtx.getImageData(0.0, 0.0, maxWidth.toDouble(), texHeight.toDouble())
 
         // alpha texture
@@ -49,7 +48,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         for (i in 0..buffer.capacity-1) {
             buffer.put(data.data[i*4+3])
         }
-        return CharMap(BufferedTexture2d(buffer, maxWidth, texHeight, GL.ALPHA, props), metrics)
+        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, GL.ALPHA), metrics)
     }
 
     private fun makeMap(chars: String, family: String, size: Float, style: String, map: MutableMap<Char, CharMetrics>): Int {

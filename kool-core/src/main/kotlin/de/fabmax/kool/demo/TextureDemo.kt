@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.SharedAssetTexture
+import de.fabmax.kool.assetTexture
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.transformGroup
 import de.fabmax.kool.util.Color
@@ -19,7 +19,7 @@ fun textureDemo(ctx: RenderContext) {
                     width = 4f
                     height = 4f
                 }
-                shader?.texture = SharedAssetTexture("test.png")
+                shader?.texture = assetTexture("test.png")
             }
         }
     }

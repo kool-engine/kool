@@ -1,18 +1,15 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.Texture2d
-import de.fabmax.kool.TextureResource
+import de.fabmax.kool.Texture
+import de.fabmax.kool.TextureData
 import de.fabmax.kool.platform.js.*
 import de.fabmax.kool.shading.ShaderProps
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.GlslGenerator
 import org.khronos.webgl.WebGLRenderingContext
-import org.w3c.dom.CanvasRenderingContext2D
-import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLImageElement
-import kotlin.browser.document
 
 /**
  * Javascript / WebGL platform implementation
@@ -88,9 +85,9 @@ class PlatformImpl private constructor() : Platform() {
         return Date().getTime().toLong()
     }
 
-    override fun loadTexture(path: String, props: TextureResource.Props): Texture2d {
+    override fun loadTextureAsset(path: String): TextureData {
         val img = js("new Image();")
-        val data = ImageTexture2d(img, props)
+        val data = ImageTextureData(img)
         img.src = path
         return data
     }
@@ -100,19 +97,14 @@ class PlatformImpl private constructor() : Platform() {
     }
 }
 
-class ImageTexture2d(val image: HTMLImageElement, props: TextureResource.Props) : Texture2d(props) {
+class ImageTextureData(val image: HTMLImageElement) : TextureData() {
     override var isAvailable: Boolean
         get() = image.complete
         set(value) {}
 
-    override fun loadData(target: Int, level: Int, ctx: RenderContext) {
-        val av = isAvailable
-        PlatformImpl.gl.texImage2D(target, level, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, image)
-        if (!av) {
-            println("loadData() called although not available!")
-        }
-
+    override fun onLoad(texture: Texture, ctx: RenderContext) {
+        PlatformImpl.gl.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, image)
         val size = image.width * image.height * 4
-        ctx.memoryMgr.memoryAllocated(res!!, size)
+        ctx.memoryMgr.memoryAllocated(texture.res!!, size)
     }
 }

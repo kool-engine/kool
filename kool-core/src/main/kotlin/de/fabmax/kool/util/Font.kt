@@ -1,6 +1,9 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.Texture2d
+import de.fabmax.kool.Texture
+import de.fabmax.kool.TextureData
+import de.fabmax.kool.TextureProps
+import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.ShaderGenerator
 import de.fabmax.kool.shading.BasicShader
@@ -19,7 +22,7 @@ class Font(val family: String, val size: Float, val style: Int = Font.PLAIN) {
         val DEFAULT_FONT: Font
 
         // todo: For now char maps are created with a hardcoded set of characters (ASCII + a few german ones)
-        // todo: theoretically arbitrary unicode characters are supported
+        // theoretically arbitrary unicode characters are supported
         private val STD_CHARS: String
         init {
             var str = ""
@@ -34,6 +37,9 @@ class Font(val family: String, val size: Float, val style: Int = Font.PLAIN) {
     }
 
     val charMap: CharMap = Platform.createCharMap(this, STD_CHARS)
+    val texture = Texture(TextureProps(toString(), GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)) {
+        charMap.textureData
+    }
 
     var lineSpace = size * 1.2f
 
@@ -52,6 +58,10 @@ class Font(val family: String, val size: Float, val style: Int = Font.PLAIN) {
             }
         }
         return maxWidth
+    }
+
+    override fun toString(): String {
+        return "$family-${size}px-$style"
     }
 }
 
@@ -74,7 +84,7 @@ fun fontShader(font: Font?, propsInit: ShaderProps.() -> Unit = { }): BasicShade
     }
 
     val shader = BasicShader(props, generator)
-    shader.texture = font?.charMap?.fontTexture
+    shader.texture = font?.texture
     return shader
 }
 
@@ -89,4 +99,4 @@ class CharMetrics {
     val uvMax = MutableVec2f()
 }
 
-class CharMap(val fontTexture: Texture2d, private val map: Map<Char, CharMetrics>) : Map<Char, CharMetrics> by map
+class CharMap(val textureData: TextureData, private val map: Map<Char, CharMetrics>) : Map<Char, CharMetrics> by map

@@ -1,6 +1,8 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.Texture2d
+import de.fabmax.kool.Texture
+import de.fabmax.kool.TextureData
+import de.fabmax.kool.TextureProps
 import de.fabmax.kool.TextureResource
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
@@ -57,8 +59,8 @@ abstract class Platform {
             return instance.currentTimeMillis()
         }
 
-        fun loadTexture(path: String, props: TextureResource.Props = TextureResource.DEFAULT_PROPERTIES): Texture2d {
-            return instance.loadTexture(path, props)
+        fun loadTextureAsset(assetPath: String): TextureData {
+            return instance.loadTextureAsset(assetPath)
         }
 
         fun createCharMap(font: Font, chars: String): CharMap {
@@ -86,7 +88,7 @@ abstract class Platform {
 
     abstract fun currentTimeMillis(): Long
 
-    abstract fun loadTexture(path: String, props: TextureResource.Props): Texture2d
+    abstract fun loadTextureAsset(assetPath: String): TextureData
 
     abstract fun createCharMap(font: Font, chars: String): CharMap
 
@@ -130,7 +132,7 @@ abstract class Platform {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 
-        override fun loadTexture(path: String, props: TextureResource.Props): Texture2d {
+        override fun loadTextureAsset(assetPath: String): TextureData {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 
