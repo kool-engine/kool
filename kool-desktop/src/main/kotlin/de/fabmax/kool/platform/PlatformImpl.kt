@@ -8,6 +8,7 @@ import de.fabmax.kool.util.GlslGenerator
 import java.awt.Transparency
 import java.awt.image.BufferedImage
 import java.io.File
+import java.io.IOException
 import javax.imageio.ImageIO
 
 /**
@@ -69,11 +70,15 @@ class PlatformImpl private constructor() : Platform() {
     }
 
     override fun loadTextureAsset(assetPath: String): BufferedTextureData {
-        val image = ImageIO.read(File(assetPath))
-        val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
-        val format = if (alpha) GL.RGBA else GL.RGB
-        val buffer = bufferedImageToBuffer(image, format, 0, 0)
-        return BufferedTextureData(buffer, image.width, image.height, format)
+        try {
+            val image = ImageIO.read(File(assetPath))
+            val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
+            val format = if (alpha) GL.RGBA else GL.RGB
+            val buffer = bufferedImageToBuffer(image, format, 0, 0)
+            return BufferedTextureData(buffer, image.width, image.height, format)
+        } catch (e: IOException) {
+            throw KoolException("Failed to load texture asset: \"$assetPath\"")
+        }
     }
 
     override fun createCharMap(font: Font, chars: String): CharMap {

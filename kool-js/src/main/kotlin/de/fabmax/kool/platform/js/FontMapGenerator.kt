@@ -52,7 +52,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
     }
 
     private fun makeMap(chars: String, family: String, size: Float, style: String, map: MutableMap<Char, CharMetrics>): Int {
-        canvasCtx.font = "$style${size}px \"$family\""
+        canvasCtx.font = "$style${size}px $family"
         canvasCtx.fillStyle = "#ffffff"
 
         val padding = 3.0
