@@ -96,7 +96,7 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
     }
 
     override fun render(ctx: RenderContext) {
-        if (!isVisible) {
+        if (!isVisible || !ctx.scene.camera.isVisible(this)) {
             return
         }
         super.render(ctx)
@@ -123,7 +123,7 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
 
     override fun rayTest(test: RayTest) {
         // todo: for now only bounds are tested, optional test on actual geometry would be nice
-        val distSqr = bounds.computeHitDistanceSqr(test.origin, test.direction)
+        val distSqr = bounds.computeHitDistanceSqr(test.ray)
         if (distSqr < test.hitDistanceSqr) {
             test.hitDistanceSqr = distSqr
             test.hitNode = this

@@ -85,10 +85,10 @@ class PlatformImpl private constructor() : Platform() {
         return Date().getTime().toLong()
     }
 
-    override fun loadTextureAsset(path: String): TextureData {
+    override fun loadTextureAsset(assetPath: String): TextureData {
         val img = js("new Image();")
         val data = ImageTextureData(img)
-        img.src = path
+        img.src = assetPath
         return data
     }
 
@@ -103,6 +103,7 @@ class ImageTextureData(val image: HTMLImageElement) : TextureData() {
         set(value) {}
 
     override fun onLoad(texture: Texture, ctx: RenderContext) {
+        // fixme: is there a way to find out if the image has an alpha channel and set the GL format accordingly?
         PlatformImpl.gl.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, image)
         val size = image.width * image.height * 4
         ctx.memoryMgr.memoryAllocated(texture.res!!, size)

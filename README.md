@@ -4,14 +4,15 @@ A simple OpenGL based graphics engine, which works with Desktop Java as well as
 in browsers with Javascript/WebGL (and also on Android once I add the platform
 bindings)
 
-For now this is nothing more than a simple experiment. However, if you are curious
+For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
 
 What's working:
+- Lazy and delayed texture loading
 - Ray picking on scene objects
 - Mouse hover events for scene objects
 - Simple animations 
-- Text rendering using arbitrary fonts. For now character set is fixed but theoretically it has unicode support
+- Text rendering using arbitrary fonts. For now character set is fixed but *theoretically* it has unicode support :)
 - Mouse controlled camera
 - Simple scene graph
 - Mesh building functions for several primitive 3D shapes

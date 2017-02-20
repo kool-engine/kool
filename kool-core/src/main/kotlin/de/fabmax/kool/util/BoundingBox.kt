@@ -90,12 +90,11 @@ class BoundingBox {
      * The method returns the squared distance because it's faster to compute. If the exact distance is needed
      * the square root of the result has to be taken.
      *
-     * @param origin       Origin of the ray
-     * @param direction    Direction of the ray
+     * @param ray    The ray to test
      * @return squared distance between origin and the hit point on the BoundingBox surface or
      * [Float.POSITIVE_INFINITY] if the ray does not intersects the BoundingBox
      */
-    fun computeHitDistanceSqr(origin: Vec3f, direction: Vec3f): Float {
+    fun computeHitDistanceSqr(ray: Ray): Float {
         var tmin: Float
         var tmax: Float
         val tymin: Float
@@ -106,27 +105,27 @@ class BoundingBox {
         if (isEmpty) {
             return Float.POSITIVE_INFINITY
         }
-        if (isIncluding(origin)) {
+        if (isIncluding(ray.origin)) {
             return 0f
         }
 
-        var div = 1.0f / direction.x
+        var div = 1.0f / ray.direction.x
         if (div >= 0.0f) {
-            tmin = (min.x - origin.x) * div
-            tmax = (max.x - origin.x) * div
+            tmin = (min.x - ray.origin.x) * div
+            tmax = (max.x - ray.origin.x) * div
         } else {
-            tmin = (max.x - origin.x) * div
-            tmax = (min.x - origin.x) * div
+            tmin = (max.x - ray.origin.x) * div
+            tmax = (min.x - ray.origin.x) * div
         }
 
 
-        div = 1.0f / direction.y
+        div = 1.0f / ray.direction.y
         if (div >= 0.0f) {
-            tymin = (min.y - origin.y) * div
-            tymax = (max.y - origin.y) * div
+            tymin = (min.y - ray.origin.y) * div
+            tymax = (max.y - ray.origin.y) * div
         } else {
-            tymin = (max.y - origin.y) * div
-            tymax = (min.y - origin.y) * div
+            tymin = (max.y - ray.origin.y) * div
+            tymax = (min.y - ray.origin.y) * div
         }
 
         if (tmin > tymax || tymin > tmax) {
@@ -140,13 +139,13 @@ class BoundingBox {
             tmax = tymax
         }
 
-        div = 1.0f / direction.z
+        div = 1.0f / ray.direction.z
         if (div >= 0.0f) {
-            tzmin = (min.z - origin.z) * div
-            tzmax = (max.z - origin.z) * div
+            tzmin = (min.z - ray.origin.z) * div
+            tzmax = (max.z - ray.origin.z) * div
         } else {
-            tzmin = (max.z - origin.z) * div
-            tzmax = (min.z - origin.z) * div
+            tzmin = (max.z - ray.origin.z) * div
+            tzmax = (min.z - ray.origin.z) * div
         }
 
         if (tmin > tzmax || tzmin > tmax) {
@@ -159,13 +158,13 @@ class BoundingBox {
 
         if (tmin > 0) {
             // hit! calculate square distance between ray origin and hit point
-            var comp = direction.x * tmin
+            var comp = ray.direction.x * tmin
             var dist = comp * comp
-            comp = direction.y * tmin
+            comp = ray.direction.y * tmin
             dist += comp * comp
-            comp = direction.z * tmin
+            comp = ray.direction.z * tmin
             dist += comp * comp
-            return dist / direction.sqrLength()
+            return dist / ray.direction.sqrLength()
         } else {
             // no intersection
             return Float.POSITIVE_INFINITY

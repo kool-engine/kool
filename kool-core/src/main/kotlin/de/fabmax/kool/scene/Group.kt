@@ -55,7 +55,7 @@ open class Group(name: String? = null) : Node(name) {
         for (i in children.indices) {
             val child = children[i]
             if (child.isPickable &&
-                    child.bounds.computeHitDistanceSqr(test.origin, test.direction) < test.hitDistanceSqr) {
+                    child.bounds.computeHitDistanceSqr(test.ray) < test.hitDistanceSqr) {
                 child.rayTest(test)
             }
         }

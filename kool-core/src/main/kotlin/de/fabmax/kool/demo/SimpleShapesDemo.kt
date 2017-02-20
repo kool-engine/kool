@@ -42,8 +42,8 @@ fun simpleShapesDemo(ctx: RenderContext) {
                 rotate(ctx.time.toFloat() * 19, Vec3f.Y_AXIS)
             }
 
-            // Add a sphere mesh
-            +textureMesh {
+            // Add a sphere mesh, node name is optional but nice for debugging
+            +textureMesh("Sphere") {
                 // Generate the sphere mesh with a sphere radius of 1.5 units
                 sphere {
                     radius = 1.5f
@@ -74,7 +74,7 @@ fun simpleShapesDemo(ctx: RenderContext) {
             }
 
             // Add the color cube mesh
-            +colorMesh {
+            +colorMesh("Cube") {
                 // Create an animator which is triggered by the mouse hover events
                 // The animator controls the rotation speed and color intensity of the cube
                 val speedAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
@@ -145,7 +145,7 @@ fun simpleShapesDemo(ctx: RenderContext) {
 
             // Add the text, you can use any font you like
             val textFont = Font("sans-serif", 72.0f)
-            +textMesh(textFont, "Text") {
+            +textMesh(textFont) {
                 color = Color.LIME
                 text {
                     // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered

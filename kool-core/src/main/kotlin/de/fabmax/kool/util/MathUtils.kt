@@ -58,3 +58,11 @@ fun isZero(value: Float): Boolean {
 fun isZero(value: Double): Boolean {
     return Math.abs(value) < 1e-10
 }
+
+fun sign(f: Float): Int {
+    return if (f < 0) -1 else 1
+}
+
+fun sign(d: Double): Int {
+    return if (d < 0) -1 else 1
+}

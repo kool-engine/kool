@@ -61,13 +61,13 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name) 
         val pointer = ctx.inputHandler.primaryPointer
         if (pointer.isValid) {
             if (!isZero(pointer.deltaScroll)) {
-                zoom *= 1f + pointer.deltaScroll.toFloat() / 10f
+                zoom *= 1f + pointer.deltaScroll / 10f
                 zoom = clamp(zoom, minZoom, maxZoom)
             }
 
             if (pointer.isValid && pointer.isLeftButtonDown) {
-                verticalRotation -= pointer.deltaX.toFloat() / 3
-                horizontalRotation -= pointer.deltaY.toFloat() / 3
+                verticalRotation -= pointer.deltaX / 3
+                horizontalRotation -= pointer.deltaY / 3
                 horizontalRotation = clamp(horizontalRotation, -90f, 90f)
             }
 

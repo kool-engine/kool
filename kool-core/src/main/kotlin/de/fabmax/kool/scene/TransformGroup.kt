@@ -77,14 +77,14 @@ open class TransformGroup(name: String? = null) : Group(name) {
     override fun rayTest(test: RayTest) {
         // transform ray to local coordinates
         checkInverse()
-        invTransform.transform(test.origin, 1f)
-        invTransform.transform(test.direction, 0f)
+        invTransform.transform(test.ray.origin, 1f)
+        invTransform.transform(test.ray.direction, 0f)
 
         super.rayTest(test)
 
         // transform ray back to previous coordinates
-        transform.transform(test.origin, 1f)
-        transform.transform(test.direction, 0f)
+        transform.transform(test.ray.origin, 1f)
+        transform.transform(test.ray.direction, 0f)
     }
 
     fun translate(tx: Float, ty: Float, tz: Float): TransformGroup {

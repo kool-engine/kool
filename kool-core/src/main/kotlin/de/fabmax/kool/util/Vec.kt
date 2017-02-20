@@ -133,6 +133,10 @@ open class Vec3f(x: Float, y: Float, z: Float) {
         return result
     }
 
+    fun dot(other: Vec3f): Float {
+        return x * other.x + y * other.y + z * other.z
+    }
+
     fun cross(result: MutableVec3f, other: Vec3f): MutableVec3f {
         result.x = y * other.z - z * other.y
         result.y = z * other.x - x * other.z
