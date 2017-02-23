@@ -17,7 +17,7 @@ enum class FogModel {
     FOG_ON
 }
 
-class ShaderProps(init: ShaderProps.() -> Unit = {}) {
+class ShaderProps {
     var lightModel = LightModel.PHONG_LIGHTING
     var colorModel = ColorModel.STATIC_COLOR
         set(value) {
@@ -35,8 +35,4 @@ class ShaderProps(init: ShaderProps.() -> Unit = {}) {
 
     var isAlpha = false
     var isSaturation = false
-
-    init {
-        this.init()
-    }
 }

@@ -17,7 +17,7 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
             if (!shader.isValid) {
                 shader.onLoad(ctx)
             }
-            if (shader != boundShader) {
+            if (!shader.isBound(ctx)) {
                 if (shader.res?.glRef != boundShader?.res?.glRef) {
                     GL.useProgram(shader.res)
                 }

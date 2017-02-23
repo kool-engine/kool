@@ -8,6 +8,8 @@ For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
 
 What's working:
+- Meshes with shared geometry
+- Instantiatable models (no model loading yet)
 - Lazy and delayed texture loading
 - Ray picking on scene objects
 - Mouse hover events for scene objects
@@ -58,16 +60,19 @@ fun main(args: Array<String>) {
                 rotate(ctx.time.toFloat() * 19, Vec3f.Y_AXIS)
             }
 
-            // Add a sphere mesh
-            +textureMesh {
-                // Generate the sphere mesh with a sphere radius of 1.5 units
-                sphere {
-                    radius = 1.5f
-                    // Make it really smooth
-                    steps = 50
+            // Add a sphere mesh, node name is optional but nice for debugging
+            +textureMesh("Sphere") {
+                // The generator function is called to initially generate the mesh geometry
+                generator = {
+                    // Generate the sphere mesh with a sphere radius of 1.5 units
+                    sphere {
+                        radius = 1.5f
+                        // Make it really smooth
+                        steps = 50
+                    }
                 }
                 // load texture from assets
-                shader?.texture = assetTexture("world.jpg")
+                (shader as BasicShader).texture = assetTexture("world.jpg")
             }
         }
 
@@ -90,7 +95,7 @@ fun main(args: Array<String>) {
             }
 
             // Add the color cube mesh
-            +colorMesh {
+            +colorMesh("Cube") {
                 // Create an animator which is triggered by the mouse hover events
                 // The animator controls the rotation speed and color intensity of the cube
                 val speedAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
@@ -100,7 +105,7 @@ fun main(args: Array<String>) {
                 speedAnimator.value.onUpdate = { v ->
                     // Update rotation animation speed and color intensity
                     cubeAnimator.speed = v
-                    shader?.saturation = v
+                    (shader as BasicShader).saturation = v
                 }
 
                 // Customize the shader to include the saturation property
@@ -111,34 +116,37 @@ fun main(args: Array<String>) {
                     isSaturation = true
                 }
 
-                // Make the generated mesh twice as large
-                scale(2f, 2f, 2f)
-                // Shift cube origin to center instead of lower, left, back corner
-                translate(-.5f, -.5f, -.5f)
+                // The generator function is called to initially generate the mesh geometry
+                generator = {
+                    // Make the generated mesh twice as large
+                    scale(2f, 2f, 2f)
+                    // Shift cube origin to center instead of lower, left, back corner
+                    translate(-.5f, -.5f, -.5f)
 
-                // Generate cube mesh with every face set to a different color
-                cube {
-                    frontColor = Color.RED
-                    rightColor = Color.GREEN
-                    backColor = Color.BLUE
-                    leftColor = Color.YELLOW
-                    topColor = Color.MAGENTA
-                    bottomColor = Color.CYAN
+                    // Generate cube mesh with every face set to a different color
+                    cube {
+                        frontColor = Color.RED
+                        rightColor = Color.GREEN
+                        backColor = Color.BLUE
+                        leftColor = Color.YELLOW
+                        topColor = Color.MAGENTA
+                        bottomColor = Color.CYAN
+                    }
                 }
 
                 // Update the speed animator on every frame
-                mesh.onRender = { ctx ->
+                onRender = { ctx ->
                     speedAnimator.tick(ctx)
                 }
                 // By setting a positive speed the speed animator is started and animates it's value to 1. That value
                 // is applied as animation speed of the rotation animation and as color intensity
                 // --> The cube starts spinning and colors fade in.
-                mesh.onHoverEnter = {
+                onHoverEnter = {
                     speedAnimator.speed = 1f
                 }
                 // By setting a positive speed the speed animator is started and animates it's value to 0.
                 // --> The cube stops spinning and colors fade out.
-                mesh.onHoverExit = {
+                onHoverExit = {
                     speedAnimator.speed = -1f
                 }
             }
@@ -161,18 +169,20 @@ fun main(args: Array<String>) {
 
             // Add the text, you can use any font you like
             val textFont = Font("sans-serif", 72.0f)
-            +textMesh(textFont, "Text") {
-                color = Color.LIME
-                text {
-                    // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
-                    text = "kool Text!"
-                    font = textFont
-                    // Make the text centered
-                    position.set(-font.stringWidth(text) / 2f, 0f, 0f)
-                    // generated text mesh size is based on the font size, without scaling, a single character would
-                    // be 48 units tall, hence we have to scale it down a lot. This could also be done by calling
-                    // scale(0.03f, 0.03f, 0.03f) on an outer level, but let's take the shortcut
-                    scale = 0.02f
+            +textMesh(textFont) {
+                generator = {
+                    color = Color.LIME
+                    text {
+                        // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
+                        text = "kool Text!"
+                        font = textFont
+                        // Make the text centered
+                        position.set(-font.stringWidth(text) / 2f, 0f, 0f)
+                        // generated text mesh size is based on the font size, without scaling, a single character would
+                        // be 48 units tall, hence we have to scale it down a lot. This could also be done by calling
+                        // scale(0.03f, 0.03f, 0.03f) on an outer level, but let's take the shortcut
+                        scale = 0.02f
+                    }
                 }
             }
         }

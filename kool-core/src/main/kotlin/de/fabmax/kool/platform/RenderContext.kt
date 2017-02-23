@@ -31,7 +31,7 @@ abstract class RenderContext {
     private val viewportHeightProp = Property(0)
     var viewportHeight by viewportHeightProp
 
-    private val clearColorProp = Property(Color.DARK_CYAN)
+    private val clearColorProp = Property(Color(0.05f, 0.15f, 0.25f, 1f))
     var clearColor by clearColorProp
 
     var clearMask = GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT

@@ -8,7 +8,7 @@ import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.*
 
 fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
-         generate: Mesh.() -> Unit): Mesh {
+         block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(MeshData(withNormals, withColors, withTexCoords), name)
 
     mesh.shader = basicShader {
@@ -27,7 +27,7 @@ fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name
         }
     }
 
-    mesh.generate()
+    mesh.block()
 
     // todo: Optionally generate geometry lazily
     mesh.generateGeometry()
@@ -57,26 +57,22 @@ fun textureMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
  */
 open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
-    var generator: (MeshBuilder.() -> Unit)? = null
+    var generator: (MeshBuilder.() -> Unit)?
+        get() = meshData.generator
+        set(value) { meshData.generator = value }
 
     var shader: Shader? = null
     var primitiveType = GL.TRIANGLES
+
+    override val bounds: BoundingBox
+        get() = meshData.bounds
 
     init {
         meshData.incrementReferenceCount()
     }
 
-    override val bounds: BoundingBox
-        get() = meshData.bounds
-
     open fun generateGeometry() {
-        val gen = generator
-        if (gen != null) {
-            meshData.batchUpdate = true
-            val builder = MeshBuilder(meshData)
-            builder.gen()
-            meshData.batchUpdate = false
-        }
+        meshData.generateGeometry()
     }
 
     /**
@@ -128,6 +124,8 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
     val data = IndexedVertexList(hasNormals, hasColors, hasTexCoords)
     val bounds = BoundingBox()
 
+    var generator: (MeshBuilder.() -> Unit)? = null
+
     private var referenceCount = 0
 
     var usage = GL.STATIC_DRAW
@@ -155,6 +153,17 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
         private set
     var colorBinder: VboBinder? = null
         private set
+
+    fun generateGeometry() {
+        val gen = generator
+        if (gen != null) {
+            batchUpdate = true
+            clear()
+            val builder = MeshBuilder(this)
+            builder.gen()
+            batchUpdate = false
+        }
+    }
 
     fun addVertex(init: IndexedVertexList.Item.() -> Unit): Int {
         var idx = 0

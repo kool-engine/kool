@@ -10,7 +10,7 @@ import de.fabmax.kool.util.MutableVec4f
 
 
 fun basicShader(propsInit: ShaderProps.() -> Unit): BasicShader {
-    return BasicShader(ShaderProps(propsInit))
+    return BasicShader(ShaderProps().apply(propsInit))
 }
 
 /**
