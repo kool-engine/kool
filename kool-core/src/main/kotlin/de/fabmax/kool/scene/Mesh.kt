@@ -2,25 +2,144 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.BufferResource
 import de.fabmax.kool.platform.GL
+import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.shading.Shader
-import de.fabmax.kool.shading.VboBinder
+import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.*
+
+fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
+         generate: Mesh.() -> Unit): Mesh {
+    val mesh = Mesh(MeshData(withNormals, withColors, withTexCoords), name)
+
+    mesh.shader = basicShader {
+        if (withNormals) {
+            lightModel = LightModel.PHONG_LIGHTING
+        } else {
+            lightModel = LightModel.NO_LIGHTING
+        }
+
+        if (withTexCoords) {
+            colorModel = ColorModel.TEXTURE_COLOR
+        } else if (withColors) {
+            colorModel = ColorModel.VERTEX_COLOR
+        } else {
+            colorModel = ColorModel.STATIC_COLOR
+        }
+    }
+
+    mesh.generate()
+
+    // todo: Optionally generate geometry lazily
+    mesh.generateGeometry()
+
+    return mesh
+
+}
+
+fun colorMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
+    return mesh(true, true, false, name, generate)
+}
+
+fun textMesh(font: Font, name: String? = null, generate: Mesh.() -> Unit): Mesh {
+    val text = mesh(true, true, true, name, generate)
+    text.shader = fontShader(font)
+    return text
+}
+
+fun textureMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
+    return mesh(true, false, true, name, generate)
+}
 
 /**
  * Abstract base class for renderable geometry (triangles, lines, points, etc.).
  *
  * @author fabmax
  */
-open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords: Boolean, name: String? = null) :
-        Node(name) {
+open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
-    protected val data = IndexedVertexList(hasNormals, hasColors, hasTexCoords)
+    var generator: (MeshBuilder.() -> Unit)? = null
 
-    protected var dataBuf: BufferResource? = null
-    protected var idxBuf: BufferResource? = null
-    protected var idxCount = 0
-    protected var syncBuffers = false
+    var shader: Shader? = null
+    var primitiveType = GL.TRIANGLES
+
+    init {
+        meshData.incrementReferenceCount()
+    }
+
+    override val bounds: BoundingBox
+        get() = meshData.bounds
+
+    open fun generateGeometry() {
+        val gen = generator
+        if (gen != null) {
+            meshData.batchUpdate = true
+            val builder = MeshBuilder(meshData)
+            builder.gen()
+            meshData.batchUpdate = false
+        }
+    }
+
+    /**
+     * Deletes all buffers associated with this mesh.
+     */
+    override fun delete(ctx: RenderContext) {
+        meshData.delete(ctx)
+        shader?.delete(ctx)
+    }
+
+    override fun render(ctx: RenderContext) {
+        if (!isVisible || !ctx.scene.camera.isVisible(this)) {
+            return
+        }
+        super.render(ctx)
+
+        meshData.checkBuffers(ctx)
+
+        if (meshData.positionBinder == null) {
+            throw IllegalStateException("Vertex positions attribute binder is null")
+        }
+
+        // bind shader for this mesh
+        ctx.shaderMgr.bindShader(shader, ctx)
+
+        // setup shader for mesh rendering, the active shader is not necessarily mMeshShader
+        val boundShader = ctx.shaderMgr.boundShader
+        if (boundShader != null) {
+            // bind this mesh as input to the used shader
+            boundShader.bindMesh(this, ctx)
+            // draw mesh
+            meshData.indexBuffer?.bind(ctx)
+            GL.drawElements(primitiveType, meshData.indexSize, GL.UNSIGNED_INT, 0)
+            boundShader.unbindMesh(ctx)
+        }
+    }
+
+    override fun rayTest(test: RayTest) {
+        // todo: for now only bounds are tested, optional test on actual geometry would be nice
+        val distSqr = bounds.computeHitDistanceSqr(test.ray)
+        if (distSqr < test.hitDistanceSqr) {
+            test.hitDistanceSqr = distSqr
+            test.hitNode = this
+        }
+    }
+}
+
+class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords: Boolean) {
+    val data = IndexedVertexList(hasNormals, hasColors, hasTexCoords)
+    val bounds = BoundingBox()
+
+    private var referenceCount = 0
+
+    var usage = GL.STATIC_DRAW
+
+    var dataBuffer: BufferResource? = null
+        private set
+    var indexBuffer: BufferResource? = null
+        private set
+    var indexSize = 0
+        private set
+
+    private var syncBuffers = false
     var batchUpdate = false
         set(value) {
             synchronized(data) {
@@ -29,11 +148,13 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
         }
 
     var positionBinder: VboBinder? = null
+        private set
     var normalBinder: VboBinder? = null
+        private set
     var texCoordBinder: VboBinder? = null
+        private set
     var colorBinder: VboBinder? = null
-
-    var shader: Shader? = null
+        private set
 
     fun addVertex(init: IndexedVertexList.Item.() -> Unit): Int {
         var idx = 0
@@ -87,72 +208,50 @@ open class Mesh(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoord
         }
     }
 
+    fun incrementReferenceCount() {
+        referenceCount++
+    }
+
     /**
-     * Deletes all buffers associated with this mesh.
+     * Deletes all index and data buffer of this mesh.
      */
-    override fun delete(ctx: RenderContext) {
-        idxBuf?.delete(ctx)
-        dataBuf?.delete(ctx)
-    }
-
-    override fun render(ctx: RenderContext) {
-        if (!isVisible || !ctx.scene.camera.isVisible(this)) {
-            return
-        }
-        super.render(ctx)
-
-        checkBuffers(ctx)
-
-        if (positionBinder == null) {
-            throw IllegalStateException("Vertex positions attribute binder is null")
-        }
-
-        // bind shader for this mesh
-        ctx.shaderMgr.bindShader(shader, ctx)
-
-        // setup shader for mesh rendering, the active shader is not necessarily mMeshShader
-        val boundShader = ctx.shaderMgr.boundShader
-        if (boundShader != null) {
-            // bind this mesh as input to the used shader
-            boundShader.bindMesh(this, ctx)
-            // draw mesh
-            drawElements(ctx)
-            boundShader.unbindMesh(ctx)
+    fun delete(ctx: RenderContext) {
+        if (--referenceCount == 0) {
+            indexBuffer?.delete(ctx)
+            dataBuffer?.delete(ctx)
+            indexBuffer = null
+            dataBuffer = null
         }
     }
 
-    override fun rayTest(test: RayTest) {
-        // todo: for now only bounds are tested, optional test on actual geometry would be nice
-        val distSqr = bounds.computeHitDistanceSqr(test.ray)
-        if (distSqr < test.hitDistanceSqr) {
-            test.hitDistanceSqr = distSqr
-            test.hitNode = this
+    fun checkBuffers(ctx: RenderContext) {
+        if (indexBuffer == null) {
+            indexBuffer = BufferResource.create(GL.ELEMENT_ARRAY_BUFFER, ctx)
         }
-    }
-
-    protected fun drawElements(ctx: RenderContext) {
-        idxBuf?.bind(ctx)
-        GL.drawElements(GL.TRIANGLES, idxCount, GL.UNSIGNED_INT, 0)
-    }
-
-    private fun checkBuffers(ctx: RenderContext) {
-        if (idxBuf == null) {
-            idxBuf = BufferResource.create(GL.ELEMENT_ARRAY_BUFFER, ctx)
-        }
-        if (dataBuf == null) {
-            dataBuf = BufferResource.create(GL.ARRAY_BUFFER, ctx)
-            positionBinder = VboBinder(dataBuf!!, 3, data.strideBytes)
-            if (hasNormals) { normalBinder = VboBinder(dataBuf!!, 3, data.strideBytes, data.normalOffset) }
-            if (hasColors) { colorBinder = VboBinder(dataBuf!!, 4, data.strideBytes, data.colorOffset) }
-            if (hasTexCoords) { texCoordBinder = VboBinder(dataBuf!!, 2, data.strideBytes, data.texCoordOffset) }
+        if (dataBuffer == null) {
+            dataBuffer = BufferResource.create(GL.ARRAY_BUFFER, ctx)
+            positionBinder = VboBinder(dataBuffer!!, 3, data.strideBytes)
+            if (hasNormals) { normalBinder = VboBinder(dataBuffer!!, 3, data.strideBytes, data.normalOffset) }
+            if (hasColors) { colorBinder = VboBinder(dataBuffer!!, 4, data.strideBytes, data.colorOffset) }
+            if (hasTexCoords) { texCoordBinder = VboBinder(dataBuffer!!, 2, data.strideBytes, data.texCoordOffset) }
         }
 
         if (syncBuffers && !batchUpdate) {
             synchronized(data) {
                 if (!batchUpdate) {
-                    idxCount = data.indices.position
-                    idxBuf?.setData(data.indices, GL.STATIC_DRAW, ctx)
-                    dataBuf?.setData(data.data, GL.STATIC_DRAW, ctx)
+                    indexSize = data.indices.position
+
+                    if (!Platform.supportsUint32Indices) {
+                        // convert index buffer to uint16
+                        val uint16Buffer = Platform.createUint16Buffer(indexSize)
+                        for (i in 0..(data.indices.position - 1)) {
+                            uint16Buffer.put(data.indices[i].toShort())
+                        }
+                        indexBuffer?.setData(uint16Buffer, usage, ctx)
+                    } else {
+                        indexBuffer?.setData(data.indices, usage, ctx)
+                    }
+                    dataBuffer?.setData(data.data, usage, ctx)
                     syncBuffers = false
                 }
             }

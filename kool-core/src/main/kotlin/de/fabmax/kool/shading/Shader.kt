@@ -136,25 +136,25 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
      */
     open fun bindMesh(mesh: Mesh, ctx: RenderContext) {
         if (attributePositions != -1) {
-            val binder = mesh.positionBinder ?:
+            val binder = mesh.meshData.positionBinder ?:
                     throw NullPointerException("Mesh must supply an attribute binder for vertex positions")
             GL.enableVertexAttribArray(attributePositions)
             binder.bindAttribute(attributePositions, ctx)
         }
         if (attributeNormals != -1) {
-            val binder = mesh.normalBinder ?:
+            val binder = mesh.meshData.normalBinder ?:
                     throw NullPointerException("Mesh must supply an attribute binder for vertex normals")
             GL.enableVertexAttribArray(attributeNormals)
             binder.bindAttribute(attributeNormals, ctx)
         }
         if (attributeTexCoords != -1) {
-            val binder = mesh.texCoordBinder ?:
+            val binder = mesh.meshData.texCoordBinder ?:
                     throw NullPointerException("Mesh must supply an attribute binder for vertex texture coordinates")
             GL.enableVertexAttribArray(attributeTexCoords)
             binder.bindAttribute(attributeTexCoords, ctx)
         }
         if (attributeColors != -1) {
-            val binder = mesh.colorBinder ?:
+            val binder = mesh.meshData.colorBinder ?:
                     throw NullPointerException("Mesh must supply an attribute binder for vertex colors")
             GL.enableVertexAttribArray(attributeColors)
             binder.bindAttribute(attributeColors, ctx)

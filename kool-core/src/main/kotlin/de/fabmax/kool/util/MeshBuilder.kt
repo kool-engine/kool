@@ -1,50 +1,18 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
-
-fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
-         generator: MeshBuilder.() -> Unit): Mesh {
-
-    val mesh = Mesh(withNormals, withColors, withTexCoords, name)
-    val builder = MeshBuilder(mesh)
-
-    mesh.batchUpdate = true
-    builder.generator()
-    if (builder.shader != null) {
-        mesh.shader = builder.shader
-    }
-    mesh.batchUpdate = false
-
-    return mesh
-
-}
-
-fun colorMesh(name: String? = null, generator: MeshBuilder.() -> Unit): Mesh {
-    return mesh(true, true, false, name, generator)
-}
-
-fun textMesh(font: Font, name: String? = null, generator: MeshBuilder.() -> Unit): Mesh {
-    val text = mesh(true, true, true, name, generator)
-    text.shader = fontShader(font)
-    return text
-}
-
-fun textureMesh(name: String? = null, generator: MeshBuilder.() -> Unit): Mesh {
-    return mesh(true, false, true, name, generator)
-}
 
 /**
  * @author fabmax
  */
-open class MeshBuilder(val mesh: Mesh) {
+open class MeshBuilder(val meshData: MeshData) {
 
     val transform = Mat4fStack()
 
     var color = Color.BLACK
     var vertexModFun: (IndexedVertexList.Item.() -> Unit)? = null
-
-    var shader: BasicShader? = null
 
     private val tmpPos = MutableVec3f()
     private val tmpNrm = MutableVec3f()
@@ -56,33 +24,15 @@ open class MeshBuilder(val mesh: Mesh) {
     private val sphereProps = SphereProps()
     private val textProps = TextProps()
 
-    init {
-        shader = basicShader {
-            if (mesh.hasNormals) {
-                lightModel = LightModel.PHONG_LIGHTING
-            } else {
-                lightModel = LightModel.NO_LIGHTING
-            }
-
-            if (mesh.hasTexCoords) {
-                colorModel = ColorModel.TEXTURE_COLOR
-            } else if (mesh.hasColors) {
-                colorModel = ColorModel.VERTEX_COLOR
-            } else {
-                colorModel = ColorModel.STATIC_COLOR
-            }
-        }
-    }
-
     protected open fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO): Int {
-        return mesh.addVertex {
+        return meshData.addVertex {
             position.set(pos)
             normal.set(nrm)
             texCoord.set(uv)
             color.set(this@MeshBuilder.color)
             vertexModFun?.invoke(this)
             transform.transform(position)
-            if (mesh.hasNormals) {
+            if (meshData.hasNormals) {
                 transform.transform(normal, 0f)
                 normal.norm()
             }
@@ -158,7 +108,7 @@ open class MeshBuilder(val mesh: Mesh) {
             } else if(i == 1) {
                 i1 = idx
             } else {
-                mesh.addTriIndices(i0, i1, idx)
+                meshData.addTriIndices(i0, i1, idx)
                 i1 = idx
             }
         }
@@ -190,7 +140,7 @@ open class MeshBuilder(val mesh: Mesh) {
                 uv = props.texCoordGenerator(Math.PI.toFloat(), phi.toFloat())
                 tmpPos.set(props.center.x, props.center.y-props.radius, props.center.z)
                 val iCenter = vertex(tmpPos, Vec3f.NEG_Y_AXIS, uv)
-                mesh.addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
+                meshData.addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
             }
         }
 
@@ -211,8 +161,8 @@ open class MeshBuilder(val mesh: Mesh) {
                 rowIndices[i] = vertex(tmpPos.set(x, y, z), tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
 
                 if (i > 0) {
-                    mesh.addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
-                    mesh.addTriIndices(prevIndices[i - 1], prevIndices[i], rowIndices[i])
+                    meshData.addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
+                    meshData.addTriIndices(prevIndices[i - 1], prevIndices[i], rowIndices[i])
                 }
             }
         }
@@ -221,7 +171,7 @@ open class MeshBuilder(val mesh: Mesh) {
         for (i in 1..(steps * 2)) {
             val uv = props.texCoordGenerator(0f, (Math.PI * i / steps).toFloat())
             val iCenter = vertex(tmpPos.set(props.center.x, props.center.y + props.radius, props.center.z), Vec3f.Y_AXIS, uv)
-            mesh.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
+            meshData.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
         }
     }
 
@@ -240,8 +190,46 @@ open class MeshBuilder(val mesh: Mesh) {
                 Vec3f.Z_AXIS, props.texCoordUpperRight)
         val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z),
                 Vec3f.Z_AXIS, props.texCoordUpperLeft)
-        mesh.addTriIndices(i0, i1, i2)
-        mesh.addTriIndices(i0, i2, i3)
+        meshData.addTriIndices(i0, i1, i2)
+        meshData.addTriIndices(i0, i2, i3)
+    }
+
+    fun line(pt1: Vec2f, pt2: Vec2f, width: Float) {
+        line(pt1.x, pt1.y, pt2.x, pt2.y, width)
+    }
+
+    fun line(x1: Float, y1: Float, x2: Float, y2: Float, width: Float) {
+        var dx = x2 - x1
+        var dy = y2 - y1
+        var len = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
+
+        val addX = width * .25f * dx / len
+        val addY = width * .25f * dy / len
+        dx += addX + addX
+        dy += addY + addY
+        len += width
+
+        val dxu = dx / len * width / 2
+        val dyu = dy / len * width / 2
+
+        val qx0 = x1 - addX + dyu
+        val qy0 = y1 - addY - dxu
+
+        val qx1 = x2 + addX + dyu
+        val qy1 = y2 + addY - dxu
+
+        val qx2 = x2 + addX - dyu
+        val qy2 = y2 + addY + dxu
+
+        val qx3 = x1 - addX - dyu
+        val qy3 = y1 - addY + dxu
+
+        val i0 = vertex(tmpPos.set(qx0, qy0, 0f), Vec3f.Z_AXIS)
+        val i1 = vertex(tmpPos.set(qx1, qy1, 0f), Vec3f.Z_AXIS)
+        val i2 = vertex(tmpPos.set(qx2, qy2, 0f), Vec3f.Z_AXIS)
+        val i3 = vertex(tmpPos.set(qx3, qy3, 0f), Vec3f.Z_AXIS)
+        meshData.addTriIndices(i0, i1, i2)
+        meshData.addTriIndices(i0, i2, i3)
     }
 
     fun cube(props: CubeProps.() -> Unit) {
@@ -258,8 +246,8 @@ open class MeshBuilder(val mesh: Mesh) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z + props.depth), Vec3f.Z_AXIS)
             val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.Z_AXIS)
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.Z_AXIS)
-            mesh.addTriIndices(i0, i1, i2)
-            mesh.addTriIndices(i0, i2, i3)
+            meshData.addTriIndices(i0, i1, i2)
+            meshData.addTriIndices(i0, i2, i3)
         }
 
         // right
@@ -268,8 +256,8 @@ open class MeshBuilder(val mesh: Mesh) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z), Vec3f.X_AXIS)
             val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.X_AXIS)
             val i3 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z + props.depth), Vec3f.X_AXIS)
-            mesh.addTriIndices(i0, i1, i2)
-            mesh.addTriIndices(i0, i2, i3)
+            meshData.addTriIndices(i0, i1, i2)
+            meshData.addTriIndices(i0, i2, i3)
         }
 
         // back
@@ -278,8 +266,8 @@ open class MeshBuilder(val mesh: Mesh) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z), Vec3f.NEG_Z_AXIS)
             val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS)
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS)
-            mesh.addTriIndices(i0, i1, i2)
-            mesh.addTriIndices(i0, i2, i3)
+            meshData.addTriIndices(i0, i1, i2)
+            meshData.addTriIndices(i0, i2, i3)
         }
 
         // left
@@ -288,8 +276,8 @@ open class MeshBuilder(val mesh: Mesh) {
             val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.NEG_X_AXIS)
             val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z), Vec3f.NEG_X_AXIS)
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_X_AXIS)
-            mesh.addTriIndices(i0, i1, i2)
-            mesh.addTriIndices(i0, i2, i3)
+            meshData.addTriIndices(i0, i1, i2)
+            meshData.addTriIndices(i0, i2, i3)
         }
 
         // top
@@ -298,8 +286,8 @@ open class MeshBuilder(val mesh: Mesh) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.Y_AXIS)
             val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z), Vec3f.Y_AXIS)
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z), Vec3f.Y_AXIS)
-            mesh.addTriIndices(i0, i1, i2)
-            mesh.addTriIndices(i0, i2, i3)
+            meshData.addTriIndices(i0, i1, i2)
+            meshData.addTriIndices(i0, i2, i3)
         }
 
         // bottom
@@ -308,8 +296,8 @@ open class MeshBuilder(val mesh: Mesh) {
             val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS)
             val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z + props.depth), Vec3f.NEG_Y_AXIS)
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.depth), Vec3f.NEG_Y_AXIS)
-            mesh.addTriIndices(i0, i1, i2)
-            mesh.addTriIndices(i0, i2, i3)
+            meshData.addTriIndices(i0, i1, i2)
+            meshData.addTriIndices(i0, i2, i3)
         }
     }
 
@@ -358,8 +346,8 @@ open class MeshBuilder(val mesh: Mesh) {
             val i3 = vertex(tmpPos.set(px3, props.origin.y + props.height, pz3), tmpNrm)
 
             if (i > 0) {
-                mesh.addTriIndices(i0, i1, i2)
-                mesh.addTriIndices(i1, i3, i2)
+                meshData.addTriIndices(i0, i1, i2)
+                meshData.addTriIndices(i1, i3, i2)
             }
             i0 = i2
             i1 = i3

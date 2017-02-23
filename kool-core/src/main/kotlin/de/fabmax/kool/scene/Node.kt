@@ -20,7 +20,7 @@ abstract class Node(val name: String? = null) {
      * Axis-aligned bounds of this node, implementations should set and refresh their bounds on every frame
      * if applicable.
      */
-    val bounds = BoundingBox()
+    open val bounds = BoundingBox()
 
     /**
      * Parent node is set when this node is added to a [TransformGroup]
