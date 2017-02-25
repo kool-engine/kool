@@ -21,7 +21,7 @@ abstract class SharedResManager<K, R> {
     }
 
     protected fun removeReference(key: K, ctx: RenderContext) {
-        var res = resources[key]
+        val res = resources[key]
         if (res != null) {
             if (--res.refCount == 0) {
                 deleteResource(key, res.resource, ctx)

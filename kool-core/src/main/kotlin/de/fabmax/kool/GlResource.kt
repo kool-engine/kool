@@ -120,6 +120,10 @@ class ProgramResource private constructor(glRef: Any, ctx: RenderContext) :
         }
     }
 
+    init {
+        ctx.memoryMgr.memoryAllocated(this, 1)
+    }
+
     override fun delete(ctx: RenderContext) {
         GL.deleteProgram(this)
         super.delete(ctx)
@@ -163,6 +167,10 @@ class ShaderResource private constructor(glRef: Any, ctx: RenderContext) :
         fun createVertexShader(ctx: RenderContext): ShaderResource {
             return ShaderResource(GL.createShader(GL.VERTEX_SHADER), ctx)
         }
+    }
+
+    init {
+        ctx.memoryMgr.memoryAllocated(this, 1)
     }
 
     override fun delete(ctx: RenderContext) {

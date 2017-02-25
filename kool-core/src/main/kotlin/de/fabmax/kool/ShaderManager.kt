@@ -33,17 +33,19 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
     }
 
     internal fun createShader(source: Shader.Source, ctx: RenderContext): ProgramResource {
-        return createResource(source, ctx)
+        return addReference(source, ctx)
     }
 
     internal fun deleteShader(shader: Shader, ctx: RenderContext) {
         val res = shader.res
         if (res != null) {
-            deleteResource(shader.source, res, ctx)
+            removeReference(shader.source, ctx)
         }
     }
 
     override fun createResource(key: Shader.Source, ctx: RenderContext): ProgramResource {
+        println("creating shader, ${key.hashCode()}")
+
         // create vertex shader
         val vertShader = ShaderResource.createVertexShader(ctx)
         vertShader.shaderSource(key.vertexSrc, ctx)

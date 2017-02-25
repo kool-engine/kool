@@ -32,13 +32,13 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
     }
 
     internal fun createTexture(props: TextureProps, ctx: RenderContext): TextureResource {
-        return createResource(props, ctx)
+        return addReference(props, ctx)
     }
 
     internal fun deleteTexture(texture: Texture, ctx: RenderContext) {
         val res = texture.res
         if (res != null) {
-            deleteResource(texture.props, res, ctx)
+            removeReference(texture.props, ctx)
         }
     }
 
