@@ -36,25 +36,25 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         if (font.style and Font.ITALIC != 0) {
             style += java.awt.Font.ITALIC
         }
-        g.font = java.awt.Font(font.family, style, Math.round(font.size))
+        g.font = java.awt.Font(font.family, style, Math.round(font.sizePts))
         g.color = Color.BLACK
 
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
-        val texHeight = makeMap(chars, font.size, g, metrics)
+        val texHeight = makeMap(chars, font, g, metrics)
 
         val format = GL.ALPHA
         val buffer = bufferedImageToBuffer(canvas, format, maxWidth, texHeight)
         return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, format), metrics)
     }
 
-    private fun makeMap(chars: String, size: Float, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(chars: String, font: Font, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {
         val padding = 3
         // line height above baseline
-        val hab = Math.round(size * 1.1f)
+        val hab = Math.round(font.sizePts * 1.1f)
         // line height below baseline
-        val hbb = Math.round(size * 0.5f)
+        val hbb = Math.round(font.sizePts * 0.5f)
         // overall line height
-        val height = Math.round(size * 1.6f)
+        val height = Math.round(font.sizePts * 1.6f)
         val fm = g.fontMetrics
 
         var x = 0
@@ -70,15 +70,17 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
                 }
             }
 
+            val widthPx = charW.toFloat()
+            val heightPx = height.toFloat()
             val metrics = CharMetrics()
-            metrics.width = charW.toFloat() //(charW + padding * 2).toFloat()
-            metrics.height = height.toFloat()
-            metrics.xOffset = 0f //padding.toFloat()
-            metrics.yBaseline = hab.toFloat()
-            metrics.advance = charW.toFloat()
+            metrics.width = widthPx * font.sizeUnits / font.sizePts
+            metrics.height = heightPx * font.sizeUnits / font.sizePts
+            metrics.xOffset = 0f
+            metrics.yBaseline = hab.toFloat() * font.sizeUnits / font.sizePts
+            metrics.advance = metrics.width
 
             metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())
-            metrics.uvMax.set((x + padding + metrics.width), (y - hab).toFloat() + metrics.height)
+            metrics.uvMax.set((x + padding + widthPx), (y - hab).toFloat() + heightPx)
             map.put(c, metrics)
 
             g.drawString("$c", x + padding, y)

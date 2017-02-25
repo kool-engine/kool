@@ -44,8 +44,6 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
     }
 
     override fun createResource(key: Shader.Source, ctx: RenderContext): ProgramResource {
-        println("creating shader, ${key.hashCode()}")
-
         // create vertex shader
         val vertShader = ShaderResource.createVertexShader(ctx)
         vertShader.shaderSource(key.vertexSrc, ctx)

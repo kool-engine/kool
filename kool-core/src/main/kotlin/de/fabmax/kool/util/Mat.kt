@@ -140,6 +140,11 @@ open class Mat4f {
         return this
     }
 
+    fun setOrthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float): Mat4f {
+        MatrixMath.setOrthoM(matrix, offset, left, right, bottom, top, near, far)
+        return this
+    }
+
     fun setPerspective(fovy: Float, aspect: Float, near: Float, far: Float): Mat4f {
         MatrixMath.setPerspectiveM(matrix, offset, fovy, aspect, near, far)
         return this

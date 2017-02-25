@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.js
 
 import de.fabmax.kool.BufferedTextureData
-import de.fabmax.kool.TextureProps
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.util.CharMap
@@ -39,7 +38,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         }
 
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
-        val texHeight = makeMap(chars, font.family, font.size, style, metrics)
+        val texHeight = makeMap(chars, font, style, metrics)
 
         val data = canvasCtx.getImageData(0.0, 0.0, maxWidth.toDouble(), texHeight.toDouble())
 
@@ -51,17 +50,17 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, GL.ALPHA), metrics)
     }
 
-    private fun makeMap(chars: String, family: String, size: Float, style: String, map: MutableMap<Char, CharMetrics>): Int {
-        canvasCtx.font = "$style${size}px $family"
+    private fun makeMap(chars: String, font: Font, style: String, map: MutableMap<Char, CharMetrics>): Int {
+        canvasCtx.font = "$style${font.sizePts}px ${font.family}"
         canvasCtx.fillStyle = "#ffffff"
 
         val padding = 3.0
         // line height above baseline
-        val hab = Math.round(size * 1.1).toDouble()
+        val hab = Math.round(font.sizePts * 1.1).toDouble()
         // line height below baseline
-        val hbb = Math.round(size * 0.5).toDouble()
+        val hbb = Math.round(font.sizePts * 0.5).toDouble()
         // overall line height
-        val height = Math.round(size * 1.6).toDouble()
+        val height = Math.round(font.sizePts * 1.6).toDouble()
 
         var x = 0.0
         var y = hab
@@ -86,15 +85,17 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 //            canvasCtx.lineTo(x + padding - 0.5, y + hbb - 0.5)
 //            canvasCtx.stroke()
 
+            val widthPx = charW.toFloat()
+            val heightPx = height.toFloat()
             val metrics = CharMetrics()
-            metrics.width = charW.toFloat() //(charW + padding * 2).toFloat()
-            metrics.height = height.toFloat()
-            metrics.xOffset = 0f //padding.toFloat()
-            metrics.yBaseline = hab.toFloat()
-            metrics.advance = charW.toFloat()
+            metrics.width = widthPx * font.sizeUnits / font.sizePts
+            metrics.height = heightPx * font.sizeUnits / font.sizePts
+            metrics.xOffset = 0f
+            metrics.yBaseline = hab.toFloat() * font.sizeUnits / font.sizePts
+            metrics.advance = metrics.width
 
             metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())
-            metrics.uvMax.set((x + padding + metrics.width).toFloat(), (y - hab).toFloat() + metrics.height)
+            metrics.uvMax.set((x + padding + widthPx).toFloat(), (y - hab).toFloat() + heightPx)
             map.put(c, metrics)
 
             canvasCtx.fillText(txt, x + padding, y)

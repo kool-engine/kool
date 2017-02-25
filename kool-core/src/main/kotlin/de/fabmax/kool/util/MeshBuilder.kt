@@ -352,16 +352,14 @@ open class MeshBuilder(val meshData: MeshData) {
         }
     }
 
-    fun text(props: TextProps.() -> Unit) {
+    fun text(font: Font, props: TextProps.() -> Unit) {
         textProps.defaults().props()
+        textProps.font = font
         text(textProps)
     }
 
     fun text(props: TextProps) {
         withTransform {
-            if (!isEqual(props.scale, 1f)) {
-                scale(props.scale, props.scale, props.scale)
-            }
             translate(props.position)
 
             var advanced = 0f
@@ -509,13 +507,11 @@ class TextProps {
     var text = ""
     var font = Font.DEFAULT_FONT
     val position = MutableVec3f()
-    var scale = 1f
 
     fun defaults(): TextProps {
         text = ""
         font = Font.DEFAULT_FONT
         position.set(Vec3f.ZERO)
-        scale = 1f
         return this
     }
 }

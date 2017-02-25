@@ -157,8 +157,6 @@ class MonitorSpec(val monitor: Long) {
         heightPx = vidmode.height()
 
         dpi = widthPx.toFloat() / (widthMm / 25.4f)
-
-        println("($posX, $posY): $widthPx x $heightPx [$widthMm x $heightMm] $dpi dpi")
     }
 
     fun isOnMonitor(x: Int, y: Int): Boolean = (x >= posX && x < posX + widthPx && y >= posY && y < posY + heightPx)

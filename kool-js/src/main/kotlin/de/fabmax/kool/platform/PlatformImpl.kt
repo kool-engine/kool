@@ -35,7 +35,6 @@ class PlatformImpl private constructor() : Platform() {
                 dpi = 96f
             } else {
                 dpi = (measure as HTMLDivElement).offsetWidth.toFloat()
-                println("dpi: $dpi")
             }
         }
 

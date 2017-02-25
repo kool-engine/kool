@@ -8,7 +8,7 @@ import de.fabmax.kool.util.RayTest
  */
 class Scene {
 
-    var camera = Camera()
+    var camera: Camera = PerspectiveCamera()
     var light = Light()
     var root: Node? = null
 

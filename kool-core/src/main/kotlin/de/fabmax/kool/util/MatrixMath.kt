@@ -355,24 +355,17 @@ object MatrixMath {
 
     /**
      * Computes an orthographic projection matrix.
-
+     *
      * @param m returns the result
-     * *
      * @param mOffset
-     * *
      * @param left
-     * *
      * @param right
-     * *
      * @param bottom
-     * *
      * @param top
-     * *
      * @param near
-     * *
      * @param far
      */
-    fun orthoM(m: FloatArray, mOffset: Int,
+    fun setOrthoM(m: FloatArray, mOffset: Int,
                left: Float, right: Float, bottom: Float, top: Float,
                near: Float, far: Float) {
         if (left == right) {

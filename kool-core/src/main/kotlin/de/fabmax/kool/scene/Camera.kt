@@ -8,17 +8,14 @@ import de.fabmax.kool.util.*
 /**
  * @author fabmax
  */
-class Camera(name: String = "camera") : Node(name) {
+abstract class Camera(name: String = "camera") : Node(name) {
 
     val position = MutableVec3f(0f, 0f, 10f)
     val lookAt = MutableVec3f(Vec3f.Companion.ZERO)
     val up = MutableVec3f(Vec3f.Companion.Y_AXIS)
 
-    var fovy = 60.0f
-    var clipNear = 0.2f
-    var clipFar = 200.0f
     var aspectRatio = 1.0f
-        private set
+        protected set
 
     // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     private val tmpPos = MutableVec3f()
@@ -51,9 +48,7 @@ class Camera(name: String = "camera") : Node(name) {
         viewRay.setFromLookAt(tmpPos, tmpLookAt)
     }
 
-    fun updateProjectionMatrix(ctx: RenderContext) {
-        ctx.mvpState.projMatrix.setPerspective(fovy, aspectRatio, clipNear, clipFar)
-    }
+    abstract fun updateProjectionMatrix(ctx: RenderContext)
 
     fun initRayTes(rayTest: RayTest, ctx: RenderContext, ptrIdx: Int = InputHandler.PRIMARY_POINTER): Boolean {
         val ptr = ctx.inputHandler.getPointer(ptrIdx)
@@ -145,5 +140,53 @@ class Camera(name: String = "camera") : Node(name) {
         val s = 1f / tmpVec4.w
         result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)
         return true
+    }
+}
+
+class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
+    var left = -10.0f
+    var right = 10.0f
+    var bottom = -10.0f
+    var top = 10.0f
+    var near = 0.0f
+    var far = 100.0f
+
+    var clipToViewport = false
+    var keepAspectRatio = true
+
+    fun setCentered(height: Float, near: Float, far: Float) {
+        top = height * 0.5f
+        bottom = -top
+        right = aspectRatio * top
+        left = -right
+        this.near = near
+        this.far = far
+    }
+
+    override fun updateProjectionMatrix(ctx: RenderContext) {
+        if (clipToViewport) {
+            left = 0f
+            right = ctx.viewportWidth * 25.4f / ctx.screenDpi
+            bottom = 0f
+            top = ctx.viewportHeight * 25.4f / ctx.screenDpi
+
+        } else if (keepAspectRatio) {
+            val h = top - bottom
+            val w = aspectRatio * h
+            val xCenter = left + (right - left) * 0.5f
+            left = xCenter - w * 0.5f
+            right = xCenter + w * 0.5f
+        }
+        ctx.mvpState.projMatrix.setOrthographic(left, right, bottom, top, near, far)
+    }
+}
+
+class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
+    var fovy = 60.0f
+    var clipNear = 0.2f
+    var clipFar = 200.0f
+
+    override fun updateProjectionMatrix(ctx: RenderContext) {
+        ctx.mvpState.projMatrix.setPerspective(fovy, aspectRatio, clipNear, clipFar)
     }
 }

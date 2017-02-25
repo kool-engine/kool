@@ -53,16 +53,14 @@ fun modelDemo(ctx: RenderContext) {
             }
 
             addSubModel(Model("text").apply {
-                val textFont = Font("sans-serif", 72.0f)
+                val textFont = Font("sans-serif", 72f, 0.75f)
                 shaderFab = { fontShader(textFont) }
                 addTextGeometry {
                     meshData.generator = {
                         color = Color.LIME
-                        text {
+                        text(textFont) {
                             // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
                             text = "Shared Model"
-                            font = textFont
-                            scale = 0.01f
                         }
                     }
                 }
