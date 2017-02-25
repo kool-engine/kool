@@ -9,7 +9,9 @@ import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.GlslGenerator
 import org.khronos.webgl.WebGLRenderingContext
+import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLImageElement
+import kotlin.browser.document
 
 /**
  * Javascript / WebGL platform implementation
@@ -22,6 +24,20 @@ class PlatformImpl private constructor() : Platform() {
         internal var jsContext: JsContext? = null
         internal val gl: WebGLRenderingContext
             get() = jsContext?.gl ?: throw KoolException("Platform.createContext() not called")
+        internal val dpi: Float
+
+        init {
+            val measure = document.getElementById("dpiMeasure")
+            if (measure == null) {
+                println("dpiMeasure element not found, falling back to 96 dpi")
+                println("Add this hidden div to your html:")
+                println("<div id=\"dpiMeasure\" style=\"height: 1in; width: 1in; left: 100%; position: fixed; top: 100%;\"></div>")
+                dpi = 96f
+            } else {
+                dpi = (measure as HTMLDivElement).offsetWidth.toFloat()
+                println("dpi: $dpi")
+            }
+        }
 
         fun init() {
             Platform.initPlatform(PlatformImpl())

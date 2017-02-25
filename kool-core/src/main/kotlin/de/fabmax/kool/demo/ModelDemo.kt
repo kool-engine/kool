@@ -71,7 +71,7 @@ fun modelDemo(ctx: RenderContext) {
 
         for (i in -1..1) {
             val inst = model.copyInstance()
-            inst.translate(3f*i, -2f, 0f)
+            inst.translate(3f*i, -3f, 0f)
             (inst["text"] as TransformGroup).apply {
                 translate(.25f, 2f + i, 0f)
                 rotate(90f, Vec3f.Z_AXIS)

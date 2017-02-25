@@ -1,11 +1,14 @@
 package de.fabmax.kool.platform.lwjgl3
 
 import de.fabmax.kool.InputHandler
+import de.fabmax.kool.platform.MonitorSpec
+import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.platform.use
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
+import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.opengl.GL
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
@@ -19,14 +22,6 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
     val window: Long
 
     init {
-        // setup an error callback
-        GLFWErrorCallback.createPrint(System.err).set()
-
-        // initialize GLFW
-        if (!glfwInit()) {
-            throw IllegalStateException("Unable to initialize GLFW")
-        }
-
         // configure GLFW
         glfwDefaultWindowHints()
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
@@ -43,7 +38,11 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         val vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor())
 
         // center the window
-        glfwSetWindowPos(window, (vidmode.width() - props.width) / 2, (vidmode.height() - props.height) / 2)
+        val primary = PlatformImpl.primaryMonitor
+        val wndPosX = primary.posX + (primary.widthPx - props.width) / 2
+        val wndPosY = primary.posY + (primary.heightPx - props.height) / 2
+        glfwSetWindowPos(window, wndPosX, wndPosY)
+        screenDpi = primary.dpi
 
         glfwSetFramebufferSizeCallback(window) { wnd, w, h ->
             viewportWidth = w
@@ -63,6 +62,9 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         glfwSetScrollCallback(window) { wnd, xOff, yOff ->
             inputHandler.updatePointerScrollPos(InputHandler.PRIMARY_POINTER, yOff.toFloat())
         }
+        glfwSetWindowPosCallback(window) { wnd, x, y ->
+            screenDpi = PlatformImpl.getResolutionAt(x, y)
+        }
 
         // get the thread stack and push a new frame
         MemoryStack.stackPush().use { stack ->
@@ -72,7 +74,6 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
             viewportWidth = pWidth[0]
             viewportHeight = pHeight[0]
         } // the stack frame is popped automatically
-
     }
 
     override fun run() {

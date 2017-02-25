@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.js
 
 import de.fabmax.kool.InputHandler
+import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.RenderContext
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLCanvasElement
@@ -30,12 +31,13 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
                 js("alert(\"Unable to initialize WebGL. Your browser may not support it.\")")
             }
         }
+        screenDpi = PlatformImpl.dpi
 
         gl = webGlCtx as WebGLRenderingContext
         supportsUint32Indices = gl.getExtension("OES_element_index_uint") != null
 
-        viewportWidth = canvas.width
-        viewportHeight = canvas.height
+        viewportWidth = canvas.clientWidth
+        viewportHeight = canvas.clientHeight
 
         canvas.onmousemove = { ev ->
             ev as MouseEvent

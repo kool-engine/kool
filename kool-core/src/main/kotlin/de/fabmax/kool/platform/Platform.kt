@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
-import de.fabmax.kool.TextureProps
-import de.fabmax.kool.TextureResource
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
 

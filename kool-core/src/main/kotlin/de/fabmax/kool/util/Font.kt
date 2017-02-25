@@ -77,6 +77,7 @@ fun fontShader(font: Font?, propsInit: ShaderProps.() -> Unit = { }): BasicShade
     // static color rgb has to be pre-multiplied with texture alpha
     generator.injectors += object: ShaderGenerator.GlslInjector {
         override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
+            text.append("if (").append(ShaderGenerator.LOCAL_NAME_TEX_COLOR).append(".a == 0.0) { discard; }")
             text.append(ShaderGenerator.LOCAL_NAME_FRAG_COLOR).append(" = ")
                     .append(ShaderGenerator.LOCAL_NAME_VERTEX_COLOR).append(" * ")
                     .append(ShaderGenerator.LOCAL_NAME_TEX_COLOR).append(".a;\n")
