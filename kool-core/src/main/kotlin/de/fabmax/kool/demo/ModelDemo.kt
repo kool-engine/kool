@@ -37,17 +37,10 @@ fun modelDemo(ctx: RenderContext) {
             }}
             addColorGeometry {
                 meshData.generator = {
-                    // Shift cube origin to center instead of lower, left, back corner
-                    translate(-.5f, -.5f, -.5f)
-
-                    // Generate cube mesh with every face set to a different color
+                    // Generate centered cube mesh with every face set to a different color
                     cube {
-                        frontColor = Color.RED
-                        rightColor = Color.GREEN
-                        backColor = Color.BLUE
-                        leftColor = Color.YELLOW
-                        topColor = Color.MAGENTA
-                        bottomColor = Color.CYAN
+                        colorCube()
+                        centerOrigin()
                     }
                 }
             }

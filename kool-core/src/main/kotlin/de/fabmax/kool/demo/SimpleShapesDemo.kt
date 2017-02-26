@@ -101,17 +101,13 @@ fun simpleShapesDemo(ctx: RenderContext) {
                 generator = {
                     // Make the generated mesh twice as large
                     scale(2f, 2f, 2f)
-                    // Shift cube origin to center instead of lower, left, back corner
-                    translate(-.5f, -.5f, -.5f)
 
                     // Generate cube mesh with every face set to a different color
                     cube {
-                        frontColor = Color.RED
-                        rightColor = Color.GREEN
-                        backColor = Color.BLUE
-                        leftColor = Color.YELLOW
-                        topColor = Color.MAGENTA
-                        bottomColor = Color.CYAN
+                        // make it colorful
+                        colorCube()
+                        // set origin of cube to the center instead of lower left back corner
+                        centerOrigin()
                     }
                 }
 
