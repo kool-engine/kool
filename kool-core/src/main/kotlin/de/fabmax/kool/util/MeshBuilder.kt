@@ -355,18 +355,19 @@ open class MeshBuilder(val meshData: MeshData) {
     }
 
     fun text(font: Font, props: TextProps.() -> Unit) {
-        textProps.defaults().props()
+        textProps.defaults()
         textProps.font = font
+        textProps.props()
         text(textProps)
     }
 
     fun text(props: TextProps) {
         withTransform {
             translate(props.origin)
-            if (props.dpi != 96f) {
-                val s = props.dpi / 96f
-                scale(s, s, s)
-            }
+//            if (props.dpi != 96f) {
+//                val s = props.dpi / 96f
+//                scale(s, s, s)
+//            }
 
             var advanced = 0f
             for (c in props.text) {
@@ -485,6 +486,21 @@ class CubeProps : RectProps() {
         }
     }
 
+    fun centerOrigin() {
+        origin.x -= width / 2f
+        origin.y -= height / 2f
+        origin.z -= depth / 2f
+    }
+
+    fun colorCube() {
+        frontColor = Color.RED
+        rightColor = Color.GREEN
+        backColor = Color.BLUE
+        leftColor = Color.YELLOW
+        topColor = Color.MAGENTA
+        bottomColor = Color.CYAN
+    }
+
     override fun defaults(): CubeProps {
         super.defaults()
         depth = 1f
@@ -527,13 +543,11 @@ class CylinderProps {
 class TextProps {
     var text = ""
     var font = Font.DEFAULT_FONT
-    var dpi = 96f
     val origin = MutableVec3f()
 
     fun defaults(): TextProps {
         text = ""
         font = Font.DEFAULT_FONT
-        dpi = 96f
         origin.set(Vec3f.ZERO)
         return this
     }

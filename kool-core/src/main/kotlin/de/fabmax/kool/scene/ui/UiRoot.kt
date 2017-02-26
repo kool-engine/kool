@@ -33,7 +33,7 @@ class UiRoot(name: String = "UiRoot") : UiLayout(name) {
 
     private var isResizeNeeded = true
     private var contentScale = 1f
-    var isFillViewport = true
+    var isFillViewport = false
 
     fun setGlobalSize(width: Float, height: Float, depth: Float) {
         isFillViewport = false
@@ -43,7 +43,7 @@ class UiRoot(name: String = "UiRoot") : UiLayout(name) {
     }
 
     fun scaleContentTo(scaledContentHeight: SizeSpec, dpi: Float) {
-        contentScale = 1f / scaledContentHeight.toUnits(globalHeight, dpi)
+        contentScale = 1f / (scaledContentHeight.toUnits(globalHeight, dpi) / globalHeight)
         scale(contentScale, contentScale, contentScale)
     }
 
@@ -56,7 +56,9 @@ class UiRoot(name: String = "UiRoot") : UiLayout(name) {
         if (isResizeNeeded) {
             isResizeNeeded = false
             contentBounds.set(0f, 0f, 0f,
-                    globalWidth * contentScale, globalHeight * contentScale, globalDepth * contentScale)
+                    globalWidth / contentScale, globalHeight / contentScale, globalDepth / contentScale)
+
+            println("contentSize: ${contentBounds.size}")
             onLayout(contentBounds, ctx)
         }
 

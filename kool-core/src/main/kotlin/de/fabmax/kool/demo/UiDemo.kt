@@ -2,10 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.scene.ui.UiPanel
-import de.fabmax.kool.scene.ui.UiRoot
-import de.fabmax.kool.scene.ui.pc
-import de.fabmax.kool.scene.ui.un
+import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.uiFont
 
 /**
@@ -17,23 +14,33 @@ fun uiDemo(ctx: RenderContext) {
     ctx.scene.camera = OrthographicCamera().apply {
         clipToViewport = true
     }
+
 //    ctx.scene.camera = PerspectiveCamera().apply {
-//        position.set(0f, 0f, 200f)
-//        clipNear = 1f
-//        clipFar = 1000f
+//        position.set(0f, 0f, 15f)
 //    }
 
     // Create scene contents
     ctx.scene.root = group {
         +sphericalInputTransform { +ctx.scene.camera }
 
+        +colorMesh {
+            generator = {
+                cube {
+                    colorCube()
+                    centerOrigin()
+                }
+            }
+        }
+
         +UiRoot().apply {
             isFillViewport = true
-            //translate(-50f, -50f, 0f)
+            //translate(-globalWidth /2, -globalHeight/2, 0f)
+            //scaleContentTo(mm(100f), 96f)
+
             +UiPanel("panel").apply {
                 font = uiFont("Segoe UI", 32f, ctx.screenDpi)
-                layoutSpec.setOrigin(pc(25f), pc(25f), un(0f))
-                layoutSpec.setSize(pc(50f), pc(50f), un(0f))
+                layoutSpec.setOrigin(pc(25f), pc(0f), un(0f))
+                layoutSpec.setSize(pc(50f), pc(100f), un(0f))
             }
         }
 

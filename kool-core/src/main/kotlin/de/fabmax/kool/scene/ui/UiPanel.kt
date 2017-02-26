@@ -85,7 +85,7 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
                 }
 
                 color = Color.BLACK
-                translate(pcR(50f, height), pcR(50f, height), 0f)
+                translate(pcR(50f, width), pcR(50f, height), 0f)
                 text(font) {
                     text = "Hello World"
                     origin.x = -font.textWidth(text) * 0.5f
