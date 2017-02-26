@@ -13,9 +13,10 @@ import de.fabmax.kool.shading.ShaderProps
  * @author fabmax
  */
 
-fun uiFont(family: String, sizeDips: Float, dpi: Float, style: Int = Font.PLAIN): Font {
-    println("font size in pts: " + (sizeDips * dpi / 96f))
-    return Font(family, sizeDips * dpi / 96, sizeDips / 96 * 25.4f, style)
+fun uiFont(family: String, sizeDp: Float, dpi: Float, style: Int = Font.PLAIN): Font {
+    val pts = (sizeDp * dpi / 96f)
+    println("font size in pts: $pts")
+    return Font(family, pts, pts, style)
 }
 
 class Font(val family: String, val sizePts: Float, val sizeUnits: Float, val style: Int = Font.PLAIN) {
@@ -37,7 +38,7 @@ class Font(val family: String, val sizePts: Float, val sizeUnits: Float, val sty
             str += "äÄöÖüÜß"
             STD_CHARS = str
 
-            DEFAULT_FONT = Font("sans-serif", 3f, 96f, PLAIN)
+            DEFAULT_FONT = uiFont("sans-serif", 12f, 96f, PLAIN)
         }
     }
 
@@ -48,7 +49,7 @@ class Font(val family: String, val sizePts: Float, val sizeUnits: Float, val sty
 
     var lineSpace = sizeUnits * 1.2f
 
-    fun stringWidth(string: String): Float {
+    fun textWidth(string: String): Float {
         var width = 0f
         var maxWidth = 0f
 

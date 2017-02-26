@@ -149,7 +149,7 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     var bottom = -10.0f
     var top = 10.0f
     var near = 0.0f
-    var far = 100.0f
+    var far = 1000.0f
 
     var clipToViewport = false
     var keepAspectRatio = true
@@ -166,9 +166,9 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     override fun updateProjectionMatrix(ctx: RenderContext) {
         if (clipToViewport) {
             left = 0f
-            right = ctx.viewportWidth * 25.4f / ctx.screenDpi
+            right = ctx.viewportWidth.toFloat()
             bottom = 0f
-            top = ctx.viewportHeight * 25.4f / ctx.screenDpi
+            top = ctx.viewportHeight.toFloat()
 
         } else if (keepAspectRatio) {
             val h = top - bottom

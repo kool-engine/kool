@@ -29,7 +29,8 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         // clear canvas
         canvasCtx.clearRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
 
-        var style = ""
+        // in canvas fonts seem to be pretty heavy by default, use lighter to compensate that
+        var style = "lighter "
         if (font.style and Font.BOLD != 0) {
             style = "bold "
         }
@@ -62,11 +63,17 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         // overall line height
         val height = Math.round(font.sizePts * 1.6).toDouble()
 
-        var x = 0.0
+        // first pixel is opaque
+        canvasCtx.beginPath()
+        canvasCtx.moveTo(0.5, 0.0)
+        canvasCtx.lineTo(0.5, 1.0)
+        canvasCtx.stroke()
+
+        var x = 1.0
         var y = hab
         for (c in chars) {
             val txt = "$c"
-            val charW = canvasCtx.measureText(txt).width
+            val charW = Math.round(canvasCtx.measureText(txt).width)
             val paddedWidth = Math.round(charW + padding * 2)
             if (x + paddedWidth > maxWidth) {
                 x = 0.0

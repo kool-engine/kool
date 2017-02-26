@@ -20,14 +20,14 @@ fun main(args: Array<String>) {
 
 //    val frame = JFrame()
 //    val label = JLabel("Hello World")
-//    label.font = Font("sans-serif", Font.PLAIN, 18)
+//    label.font = Font("Segoe UI", Font.PLAIN, 31)
 //    frame.contentPane.add(BorderLayout.CENTER, label)
 //    frame.setSize(300, 300)
 //    frame.isVisible = true
 //    frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 
 
-    //simpleShapesDemo(ctx)
+    simpleShapesDemo(ctx)
     //modelDemo(ctx)
-    uiDemo(ctx)
+    //uiDemo(ctx)
 }

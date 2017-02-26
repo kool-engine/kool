@@ -16,16 +16,17 @@ fun transformGroup(name: String? = null, block: TransformGroup.() -> Unit): Tran
 open class TransformGroup(name: String? = null) : Group(name) {
     protected val transform = Mat4f()
     protected val invTransform = Mat4f()
-    protected var transformDirty = false
+    protected var isIdentity = false
+    protected var isDirty = false
 
     open var animation: (TransformGroup.(RenderContext) -> Unit)? = null
 
     private val tmpTransformVec = MutableVec3f()
 
     protected fun checkInverse() {
-        if (transformDirty) {
+        if (isDirty) {
             transform.invert(invTransform)
-            transformDirty = false
+            isDirty = false
         }
     }
 
@@ -37,9 +38,12 @@ open class TransformGroup(name: String? = null) : Group(name) {
         animation?.invoke(this, ctx)
 
         // apply transformation
-        ctx.mvpState.modelMatrix.push()
-        ctx.mvpState.modelMatrix.mul(transform)
-        ctx.mvpState.update(ctx)
+        val wasIdentity = isIdentity
+        if (!wasIdentity) {
+            ctx.mvpState.modelMatrix.push()
+            ctx.mvpState.modelMatrix.mul(transform)
+            ctx.mvpState.update(ctx)
+        }
 
         // draw all child nodes
         super.render(ctx)
@@ -59,8 +63,10 @@ open class TransformGroup(name: String? = null) : Group(name) {
         }
 
         // clear transformation
-        ctx.mvpState.modelMatrix.pop()
-        ctx.mvpState.update(ctx)
+        if (!wasIdentity) {
+            ctx.mvpState.modelMatrix.pop()
+            ctx.mvpState.update(ctx)
+        }
     }
 
     override fun toGlobalCoords(vec: MutableVec3f, w: Float): MutableVec3f {
@@ -87,9 +93,14 @@ open class TransformGroup(name: String? = null) : Group(name) {
         transform.transform(test.ray.direction, 0f)
     }
 
+    fun translate(t: Vec3f): TransformGroup {
+        return translate(t.x, t.y, t.z)
+    }
+
     fun translate(tx: Float, ty: Float, tz: Float): TransformGroup {
         transform.translate(tx, ty, tz)
-        transformDirty = true
+        isDirty = true
+        isIdentity = false
         return this
     }
 
@@ -97,38 +108,44 @@ open class TransformGroup(name: String? = null) : Group(name) {
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): TransformGroup {
         transform.rotate(angleDeg, axX, axY, axZ)
-        transformDirty = true
+        isDirty = true
+        isIdentity = false
         return this
     }
 
 //    fun rotateEuler(xDeg: Float, yDeg: Float, zDeg: Float): TransformGroup {
 //        transform.rotateEuler(xDeg, yDeg, zDeg)
-//        transformDirty = true
+//        isDirty = true
+//        isIdentity = false
 //        return this
 //    }
 
     fun scale(sx: Float, sy: Float, sz: Float): TransformGroup {
         transform.scale(sx, sy, sz)
-        transformDirty = true
+        isDirty = true
+        isIdentity = false
         return this
     }
 
     fun mul(mat: Mat4f): TransformGroup {
         transform.mul(mat)
-        transformDirty = true
+        isDirty = true
+        isIdentity = false
         return this
     }
 
     fun set(mat: Mat4f): TransformGroup {
         transform.set(mat)
-        transformDirty = true
+        isDirty = true
+        isIdentity = false
         return this
     }
 
     fun setIdentity(): TransformGroup {
         transform.setIdentity()
         invTransform.setIdentity()
-        transformDirty = false
+        isDirty = false
+        isIdentity = true
         return this
     }
 }

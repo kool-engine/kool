@@ -21,7 +21,7 @@ class BoundingBox {
     val size: Vec3f = mutSize
     val center: Vec3f = mutCenter
 
-    private fun updateSizeCenter() {
+    private fun updateSizeAndCenter() {
         // size = max - min
         mutMax.subtract(mutSize, mutMin)
         // center = min + size * 0.5
@@ -43,30 +43,34 @@ class BoundingBox {
         }
     }
 
+    fun isEqual(other: BoundingBox): Boolean {
+        return isEmpty == other.isEmpty && min.isEqual(other.min) && max.isEqual(other.max)
+    }
+
     fun clear() {
         isEmpty = true
         mutMin.set(Vec3f.ZERO)
         mutMax.set(Vec3f.ZERO)
-        updateSizeCenter()
+        updateSizeAndCenter()
     }
 
     fun add(point: Vec3f) {
         addPoint(point)
-        updateSizeCenter()
+        updateSizeAndCenter()
     }
 
     fun add(points: List<Vec3f>) {
         for (i in points.indices) {
             addPoint(points[i])
         }
-        updateSizeCenter()
+        updateSizeAndCenter()
     }
 
     fun add(aabb: BoundingBox) {
         if (!aabb.isEmpty) {
             addPoint(aabb.min)
             addPoint(aabb.max)
-            updateSizeCenter()
+            updateSizeAndCenter()
         }
     }
 
@@ -76,6 +80,20 @@ class BoundingBox {
         mutSize.set(other.size)
         mutCenter.set(other.center)
         isEmpty = other.isEmpty
+    }
+
+    fun set(min: Vec3f, max: Vec3f) {
+        isEmpty = false
+        mutMin.set(min)
+        mutMax.set(max)
+        updateSizeAndCenter()
+    }
+
+    fun set(minX: Float, minY: Float, minZ: Float, maxX: Float, maxY: Float, maxZ: Float) {
+        isEmpty = false
+        mutMin.set(minX, minY, minZ)
+        mutMax.set(maxX, maxY, maxZ)
+        updateSizeAndCenter()
     }
 
     fun isIncluding(point: Vec3f): Boolean {

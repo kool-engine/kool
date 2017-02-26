@@ -78,6 +78,7 @@ abstract class RenderContext {
         }
 
         GL.enable(GL.DEPTH_TEST)
+        GL.depthFunc(GL.LEQUAL)
         GL.enable(GL.CULL_FACE)
         GL.enable(GL.BLEND)
         // use blending with pre-multiplied alpha

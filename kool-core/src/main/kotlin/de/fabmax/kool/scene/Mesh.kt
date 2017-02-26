@@ -42,7 +42,7 @@ fun colorMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
 
 fun textMesh(font: Font, name: String? = null, generate: Mesh.() -> Unit): Mesh {
     val text = mesh(true, true, true, name, generate)
-    text.shader = fontShader(font)
+    text.shader = fontShader(font) { lightModel = LightModel.NO_LIGHTING }
     return text
 }
 

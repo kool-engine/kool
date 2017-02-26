@@ -57,7 +57,10 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         val height = Math.round(font.sizePts * 1.6f)
         val fm = g.fontMetrics
 
-        var x = 0
+        // first pixel is opaque
+        g.drawLine(0, 0, 0, 1)
+
+        var x = 1
         var y = hab
         for (c in chars) {
             val charW = fm.charWidth(c)

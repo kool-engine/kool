@@ -19,7 +19,8 @@
 </head>
 <body>
     <!-- Hidden div is needed to get the physical screen resolution, i.e. how many pixels fit into 1 inch -->
-    <div id="dpiMeasure" style="height: 1in; width: 1in; left: 100%; position: fixed; top: 100%;"></div>
+    <!-- Apparently this always results in 96 dpi anyway... :/ -->
+    <div id="dpiMeasure" style="height: 1in; width: 1in; position: fixed; left: 100%; top: 100%;"></div>
 
     <canvas id="glCanvas">
         Your browser doesn't appear to support the

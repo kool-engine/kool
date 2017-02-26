@@ -52,6 +52,8 @@ open class MeshBuilder(val meshData: MeshData) {
         this.color = c
     }
 
+    fun identity() = transform.setIdentity()
+
     fun translate(t: Vec3f) = transform.translate(t.x, t.y, t.z)
 
     fun translate(x: Float, y: Float, z: Float) = transform.translate(x, y, z)
@@ -360,7 +362,11 @@ open class MeshBuilder(val meshData: MeshData) {
 
     fun text(props: TextProps) {
         withTransform {
-            translate(props.position)
+            translate(props.origin)
+            if (props.dpi != 96f) {
+                val s = props.dpi / 96f
+                scale(s, s, s)
+            }
 
             var advanced = 0f
             for (c in props.text) {
@@ -422,10 +428,10 @@ open class RectProps {
     var height = 1f
     val origin = MutableVec3f()
 
-    val texCoordUpperLeft = MutableVec2f(0f, 0f)
-    val texCoordUpperRight = MutableVec2f(1f, 0f)
-    val texCoordLowerLeft = MutableVec2f(0f, 1f)
-    val texCoordLowerRight = MutableVec2f(1f, 1f)
+    val texCoordUpperLeft = MutableVec2f()
+    val texCoordUpperRight = MutableVec2f()
+    val texCoordLowerLeft = MutableVec2f()
+    val texCoordLowerRight = MutableVec2f()
 
     open fun fixNegativeSize() {
         if (width < 0) {
@@ -438,10 +444,25 @@ open class RectProps {
         }
     }
 
+    fun zeroTexCoords() {
+        texCoordUpperLeft.set(Vec2f.ZERO)
+        texCoordUpperRight.set(Vec2f.ZERO)
+        texCoordLowerLeft.set(Vec2f.ZERO)
+        texCoordLowerRight.set(Vec2f.ZERO)
+    }
+
+    fun fullTexCoords() {
+        texCoordUpperLeft.set(0f, 0f)
+        texCoordUpperRight.set(1f, 0f)
+        texCoordLowerLeft.set(0f, 1f)
+        texCoordLowerRight.set(1f, 1f)
+    }
+
     open fun defaults(): RectProps {
         width = 1f
         height = 1f
         origin.set(Vec3f.ZERO)
+        zeroTexCoords()
         return this
     }
 }
@@ -506,12 +527,14 @@ class CylinderProps {
 class TextProps {
     var text = ""
     var font = Font.DEFAULT_FONT
-    val position = MutableVec3f()
+    var dpi = 96f
+    val origin = MutableVec3f()
 
     fun defaults(): TextProps {
         text = ""
         font = Font.DEFAULT_FONT
-        position.set(Vec3f.ZERO)
+        dpi = 96f
+        origin.set(Vec3f.ZERO)
         return this
     }
 }

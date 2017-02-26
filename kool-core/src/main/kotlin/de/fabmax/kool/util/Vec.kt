@@ -29,6 +29,10 @@ open class Vec2f(x: Float, y: Float) {
         }
     }
 
+    fun isEqual(other: Vec2f): Boolean {
+        return isEqual(x, other.x) && isEqual(y, other.y)
+    }
+
     companion object {
         val ZERO = Vec2f(0f)
     }
@@ -90,6 +94,10 @@ open class Vec3f(x: Float, y: Float, z: Float) {
             2 -> z
             else -> throw KoolException("Invalid index: " + i)
         }
+    }
+
+    fun isEqual(other: Vec3f): Boolean {
+        return isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z)
     }
 
     operator fun times(other: Vec3f): Float {
@@ -273,6 +281,10 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
             3 -> w
             else -> throw KoolException("Invalid index: " + i)
         }
+    }
+
+    fun isEqual(other: Vec4f): Boolean {
+        return isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z) && isEqual(w, other.w)
     }
 
     companion object {

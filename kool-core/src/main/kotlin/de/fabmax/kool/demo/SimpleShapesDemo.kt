@@ -157,7 +157,7 @@ fun simpleShapesDemo(ctx: RenderContext) {
                         // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
                         text = "kool Text!"
                         // Make the text centered
-                        position.set(-font.stringWidth(text) / 2f, 0f, 0f)
+                        origin.set(-font.textWidth(text) / 2f, 0f, 0f)
                     }
                 }
             }
