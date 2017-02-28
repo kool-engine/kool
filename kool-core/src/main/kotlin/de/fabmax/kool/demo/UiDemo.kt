@@ -11,73 +11,39 @@ import de.fabmax.kool.util.uiFont
 
 fun uiDemo(ctx: RenderContext) {
 
-    ctx.scene.camera = OrthographicCamera().apply {
-        clipToViewport = true
-    }
-
-//    ctx.scene.camera = PerspectiveCamera().apply {
-//        position.set(0f, 0f, 15f)
+//    ctx.scene.camera = OrthographicCamera().apply {
+//        clipToViewport = true
 //    }
+
+    ctx.scene.camera = PerspectiveCamera().apply {
+        position.set(0f, 0f, 15f)
+    }
 
     // Create scene contents
     ctx.scene.root = group {
         +sphericalInputTransform { +ctx.scene.camera }
 
-        +colorMesh {
-            generator = {
-                cube {
-                    colorCube()
-                    centerOrigin()
-                }
-            }
-        }
-
         +UiRoot().apply {
-            isFillViewport = true
-            //translate(-globalWidth /2, -globalHeight/2, 0f)
-            //scaleContentTo(mm(100f), 96f)
+            //isFillViewport = true
+            translate(-globalWidth /2, -globalHeight/2, 0f)
+            scaleContentTo(dp(400f), 96f)
 
             +UiPanel("panel").apply {
                 font = uiFont("Segoe UI", 32f, ctx.screenDpi)
                 layoutSpec.setOrigin(pc(25f), pc(0f), un(0f))
                 layoutSpec.setSize(pc(50f), pc(100f), un(0f))
+
+                onHoverEnter = { ptr, rt, ctx ->
+                    println("panel hover enter ${rt.hitPositionLocal}")
+                }
+//                onHover = { ptr, rt, ctx ->
+//                    println("panel hovered ${rt.hitPositionLocal}")
+//                }
+                onHoverExit = { ptr, rt, ctx ->
+                    println("panel hover exit")
+                }
             }
         }
-
-//        +textureMesh {
-//            generator = {
-//                rect {
-//                    origin.set(-25f, 0f, 0f)
-//                    width = 10.24f * 10
-//                    height = 0.64f * 10
-//                }
-//            }
-//            (shader as BasicShader).texture = font.texture
-//        }
-
-//        +textMesh(font) {
-//            generator = {
-//                color = Color.BLACK
-//                translate(rpx(10f), rpx(100f), 0f)
-//                text(font) {
-//                    text = "Hello World! ${ctx.viewportWidth} x ${ctx.viewportHeight}"
-//                }
-//            }
-//        }
     }
     ctx.run()
-}
-
-class FullPixelRound(val scale: Float) {
-    private val scaleRecip = 1f / scale
-
-    companion object {
-        fun mm(screenDpi: Float): FullPixelRound {
-            return FullPixelRound(screenDpi / 25.4f)
-        }
-    }
-
-    operator fun invoke(units: Float): Float {
-        return Math.round(units * scale) * scaleRecip
-    }
 }

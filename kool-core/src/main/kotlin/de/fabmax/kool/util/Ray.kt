@@ -30,6 +30,7 @@ class RayTest {
     val ray = Ray()
 
     val hitPosition = MutableVec3f()
+    val hitPositionLocal = MutableVec3f()
     var hitNode: Node? = null
     var hitDistanceSqr = Float.POSITIVE_INFINITY
     val isHit: Boolean
@@ -37,6 +38,7 @@ class RayTest {
 
     fun clear() {
         hitPosition.set(Vec3f.ZERO)
+        hitPositionLocal.set(Vec3f.ZERO)
         hitNode = null
         hitDistanceSqr = Float.POSITIVE_INFINITY
     }

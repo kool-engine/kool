@@ -27,8 +27,9 @@ class Scene {
     private fun handleInput(ctx: RenderContext) {
         var hovered: Node? = null
         val prevHovered = hoverNode
+        val ptr = ctx.inputHandler.primaryPointer
 
-        if (isPickingEnabled && camera.initRayTes(rayTest, ctx)) {
+        if (isPickingEnabled && camera.initRayTes(rayTest, ptr, ctx)) {
             root?.rayTest(rayTest)
             if (rayTest.isHit) {
                 rayTest.computeHitPosition()
@@ -38,12 +39,15 @@ class Scene {
 
         if (prevHovered != hovered) {
             if (prevHovered != null) {
-                prevHovered.onHoverExit?.invoke(prevHovered, ctx)
+                prevHovered.onHoverExit?.invoke(prevHovered, ptr, rayTest, ctx)
             }
             if (hovered != null) {
-                hovered.onHoverEnter?.invoke(hovered, ctx)
+                hovered.onHoverEnter?.invoke(hovered, ptr, rayTest, ctx)
             }
             hoverNode = hovered
+        }
+        if (hovered != null && prevHovered == hovered) {
+            hovered.onHover?.invoke(hovered, ptr, rayTest, ctx)
         }
     }
 

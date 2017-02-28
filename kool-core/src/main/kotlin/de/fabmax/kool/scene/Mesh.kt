@@ -116,6 +116,9 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         if (distSqr < test.hitDistanceSqr) {
             test.hitDistanceSqr = distSqr
             test.hitNode = this
+            test.hitPositionLocal.set(test.ray.direction)
+                    .scale(Math.sqrt(distSqr.toDouble()).toFloat())
+                    .add(test.ray.origin)
         }
     }
 }

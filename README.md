@@ -120,17 +120,13 @@ fun main(args: Array<String>) {
                 generator = {
                     // Make the generated mesh twice as large
                     scale(2f, 2f, 2f)
-                    // Shift cube origin to center instead of lower, left, back corner
-                    translate(-.5f, -.5f, -.5f)
 
                     // Generate cube mesh with every face set to a different color
                     cube {
-                        frontColor = Color.RED
-                        rightColor = Color.GREEN
-                        backColor = Color.BLUE
-                        leftColor = Color.YELLOW
-                        topColor = Color.MAGENTA
-                        bottomColor = Color.CYAN
+                        // make it colorful
+                        colorCube()
+                        // set origin of cube to the center instead of lower left back corner
+                        centerOrigin()
                     }
                 }
 
@@ -141,12 +137,12 @@ fun main(args: Array<String>) {
                 // By setting a positive speed the speed animator is started and animates it's value to 1. That value
                 // is applied as animation speed of the rotation animation and as color intensity
                 // --> The cube starts spinning and colors fade in.
-                onHoverEnter = {
+                onHoverEnter = { ptr, rt, ctx ->
                     speedAnimator.speed = 1f
                 }
                 // By setting a positive speed the speed animator is started and animates it's value to 0.
                 // --> The cube stops spinning and colors fade out.
-                onHoverExit = {
+                onHoverExit = { ptr, rt, ctx ->
                     speedAnimator.speed = -1f
                 }
             }
@@ -166,22 +162,18 @@ fun main(args: Array<String>) {
                 translate(0f, 0f, -5f)
                 scale(s, s, s)
             }
-
-            // Add the text, you can use any font you like
-            val textFont = Font("sans-serif", 72.0f)
-            +textMesh(textFont) {
+            
+            // Add the text, you can use any font you like. We us a font size of 72pts and characters will be 1.5
+            // units tall
+            val font = Font("sans-serif", 72f, 1.5f)
+            +textMesh(font) {
                 generator = {
                     color = Color.LIME
-                    text {
-                        // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
+                    text(font) {
+                        // Set the text to render, for now only characters defined in [Font.STD_CHARS] can be rendered
                         text = "kool Text!"
-                        font = textFont
                         // Make the text centered
-                        position.set(-font.stringWidth(text) / 2f, 0f, 0f)
-                        // generated text mesh size is based on the font size, without scaling, a single character would
-                        // be 48 units tall, hence we have to scale it down a lot. This could also be done by calling
-                        // scale(0.03f, 0.03f, 0.03f) on an outer level, but let's take the shortcut
-                        scale = 0.02f
+                        origin.set(-font.textWidth(text) / 2f, 0f, 0f)
                     }
                 }
             }

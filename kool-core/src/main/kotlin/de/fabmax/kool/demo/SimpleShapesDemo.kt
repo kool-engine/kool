@@ -118,12 +118,12 @@ fun simpleShapesDemo(ctx: RenderContext) {
                 // By setting a positive speed the speed animator is started and animates it's value to 1. That value
                 // is applied as animation speed of the rotation animation and as color intensity
                 // --> The cube starts spinning and colors fade in.
-                onHoverEnter = {
+                onHoverEnter = { ptr, rt, ctx ->
                     speedAnimator.speed = 1f
                 }
                 // By setting a positive speed the speed animator is started and animates it's value to 0.
                 // --> The cube stops spinning and colors fade out.
-                onHoverExit = {
+                onHoverExit = { ptr, rt, ctx ->
                     speedAnimator.speed = -1f
                 }
             }
@@ -144,13 +144,14 @@ fun simpleShapesDemo(ctx: RenderContext) {
                 scale(s, s, s)
             }
 
-            // Add the text, you can use any font you like
+            // Add the text, you can use any font you like. We us a font size of 72pts and characters will be 1.5
+            // units tall
             val font = Font("sans-serif", 72f, 1.5f)
             +textMesh(font) {
                 generator = {
                     color = Color.LIME
                     text(font) {
-                        // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
+                        // Set the text to render, for now only characters defined in [Font.STD_CHARS] can be rendered
                         text = "kool Text!"
                         // Make the text centered
                         origin.set(-font.textWidth(text) / 2f, 0f, 0f)

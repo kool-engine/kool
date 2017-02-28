@@ -50,12 +50,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     abstract fun updateProjectionMatrix(ctx: RenderContext)
 
-    fun initRayTes(rayTest: RayTest, ctx: RenderContext, ptrIdx: Int = InputHandler.PRIMARY_POINTER): Boolean {
-        val ptr = ctx.inputHandler.getPointer(ptrIdx)
-        return initRayTes(rayTest, ctx, ptr.x, ptr.y) && ptr.isValid
+    fun initRayTes(rayTest: RayTest, ptr: InputHandler.Pointer, ctx: RenderContext): Boolean {
+        return initRayTes(rayTest, ptr.x, ptr.y, ctx) && ptr.isValid
     }
 
-    fun initRayTes(rayTest: RayTest, ctx: RenderContext, screenX: Float, screenY: Float): Boolean {
+    fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, ctx: RenderContext): Boolean {
         val w = ctx.viewportWidth
         val h = ctx.viewportHeight
         val y = ctx.viewportHeight - screenY

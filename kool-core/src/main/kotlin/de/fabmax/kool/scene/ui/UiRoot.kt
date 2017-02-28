@@ -3,6 +3,7 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.RayTest
 
 /**
  * @author fabmax
@@ -58,7 +59,6 @@ class UiRoot(name: String = "UiRoot") : UiLayout(name) {
             contentBounds.set(0f, 0f, 0f,
                     globalWidth / contentScale, globalHeight / contentScale, globalDepth / contentScale)
 
-            println("contentSize: ${contentBounds.size}")
             onLayout(contentBounds, ctx)
         }
 

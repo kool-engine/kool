@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.InputHandler
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MutableVec3f
@@ -13,8 +14,10 @@ import de.fabmax.kool.util.RayTest
 abstract class Node(val name: String? = null) {
 
     var onRender: (Node.(RenderContext) -> Unit)? = null
-    var onHoverEnter: (Node.(RenderContext) -> Unit)? = null
-    var onHoverExit: (Node.(RenderContext) -> Unit)? = null
+
+    var onHoverEnter: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
+    var onHover: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
+    var onHoverExit: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
 
     /**
      * Axis-aligned bounds of this node, implementations should set and refresh their bounds on every frame

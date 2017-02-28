@@ -70,27 +70,35 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
         }
         contentMeshData.clear()
 
+        contentMeshBuilder.identity()
+        contentMeshBuilder.translate(contentBounds.min)
         drawBackground(contentMeshBuilder, ctx)
     }
 
     protected open fun drawBackground(builder: MeshBuilder, ctx: RenderContext) {
         builder.run {
-            withTransform {
-                translate(contentBounds.min)
-
-                color = backgroundColor
-                rect {
-                    width = this@UiPanel.width
-                    height = this@UiPanel.height
-                }
-
-                color = Color.BLACK
-                translate(pcR(50f, width), pcR(50f, height), 0f)
-                text(font) {
-                    text = "Hello World"
-                    origin.x = -font.textWidth(text) * 0.5f
-                }
+            color = backgroundColor
+            rect {
+                width = this@UiPanel.width
+                height = this@UiPanel.height
             }
+
+            color = Color.BLACK
+            translate(pcR(50f, width), pcR(50f, height), 0f)
+            text(font) {
+                text = "Hello World"
+                origin.x = -font.textWidth(text) * 0.5f
+            }
+        }
+    }
+
+    override fun rayTest(test: RayTest) {
+        val hitNode = test.hitNode
+        super.rayTest(test)
+        if (hitNode != test.hitNode) {
+            // an element of this panel was hit!
+            test.hitNode = this
+            test.hitPositionLocal.subtract(bounds.min)
         }
     }
 }
