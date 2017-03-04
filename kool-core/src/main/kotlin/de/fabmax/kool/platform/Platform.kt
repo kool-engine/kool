@@ -36,6 +36,10 @@ abstract class Platform {
             return instance.getGlImpl()
         }
 
+        fun getMathImpl(): Math.Impl {
+            return instance.getMathImpl()
+        }
+
         fun createUint8Buffer(capacity: Int): Uint8Buffer {
             return instance.createUint8Buffer(capacity)
         }
@@ -75,6 +79,8 @@ abstract class Platform {
 
     abstract fun getGlImpl(): GL.Impl
 
+    abstract fun getMathImpl(): Math.Impl
+
     abstract fun createUint8Buffer(capacity: Int): Uint8Buffer
 
     abstract fun createUint16Buffer(capacity: Int): Uint16Buffer
@@ -102,6 +108,10 @@ abstract class Platform {
         }
 
         override fun getGlImpl(): GL.Impl {
+            throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
+        }
+
+        override fun getMathImpl(): Math.Impl {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 

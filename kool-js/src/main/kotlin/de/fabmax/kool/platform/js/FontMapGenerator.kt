@@ -6,9 +6,11 @@ import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.CharMetrics
 import de.fabmax.kool.util.Font
+import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.browser.document
+import kotlin.js.Math
 
 /**
  * @author fabmax

@@ -12,6 +12,7 @@ import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLImageElement
 import kotlin.browser.document
+import kotlin.js.Date
 
 /**
  * Javascript / WebGL platform implementation
@@ -35,7 +36,6 @@ class PlatformImpl private constructor() : Platform() {
                 dpi = 96f
             } else {
                 dpi = (measure as HTMLDivElement).offsetWidth.toFloat()
-                println("dpi: $dpi")
             }
         }
 
@@ -81,6 +81,10 @@ class PlatformImpl private constructor() : Platform() {
         return WebGlImpl.instance
     }
 
+    override fun getMathImpl(): Math.Impl {
+        return JsMath()
+    }
+
     override fun createUint8Buffer(capacity: Int): Uint8Buffer {
         return Uint8BufferImpl(capacity)
     }
@@ -111,6 +115,36 @@ class PlatformImpl private constructor() : Platform() {
     override fun createCharMap(font: Font, chars: String): CharMap {
         return fontGenerator.createCharMap(font, chars)
     }
+
+    private class JsMath : Math.Impl {
+        override val PI = kotlin.js.Math.PI
+
+        override fun random() = kotlin.js.Math.random()
+        override fun abs(value: Double) = kotlin.js.Math.abs(value)
+        override fun acos(value: Double) = kotlin.js.Math.acos(value)
+        override fun asin(value: Double) = kotlin.js.Math.asin(value)
+        override fun atan(value: Double) = kotlin.js.Math.atan(value)
+        override fun atan2(y: Double, x: Double) = kotlin.js.Math.atan2(y, x)
+        override fun cos(value: Double) = kotlin.js.Math.cos(value)
+        override fun sin(value: Double) = kotlin.js.Math.sin(value)
+        override fun exp(value: Double) = kotlin.js.Math.exp(value)
+        override fun max(a: Int, b: Int) = kotlin.js.Math.max(a, b)
+        override fun max(a: Float, b: Float) = kotlin.js.Math.max(a, b)
+        override fun max(a: Double, b: Double) = kotlin.js.Math.max(a, b)
+        override fun min(a: Int, b: Int) = kotlin.js.Math.max(a, b)
+        override fun min(a: Float, b: Float) = kotlin.js.Math.min(a, b)
+        override fun min(a: Double, b: Double) = kotlin.js.Math.min(a, b)
+        override fun sqrt(value: Double) = kotlin.js.Math.sqrt(value)
+        override fun tan(value: Double) = kotlin.js.Math.tan(value)
+        override fun log(value: Double) = kotlin.js.Math.log(value)
+        override fun pow(base: Double, exp: Double) = kotlin.js.Math.pow(base, exp)
+        override fun round(value: Double): Int = kotlin.js.Math.round(value)
+        override fun round(value: Float): Int = kotlin.js.Math.round(value)
+        override fun floor(value: Double): Int = kotlin.js.Math.floor(value)
+        override fun floor(value: Float): Int = kotlin.js.Math.floor(value.toDouble())
+        override fun ceil(value: Double): Int = kotlin.js.Math.ceil(value)
+        override fun ceil(value: Float): Int = kotlin.js.Math.ceil(value.toDouble())
+    }
 }
 
 class ImageTextureData(val image: HTMLImageElement) : TextureData() {
@@ -124,4 +158,4 @@ class ImageTextureData(val image: HTMLImageElement) : TextureData() {
         val size = image.width * image.height * 4
         ctx.memoryMgr.memoryAllocated(texture.res!!, size)
     }
-}
+    }

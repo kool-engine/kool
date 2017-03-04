@@ -2,6 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.BufferResource
 import de.fabmax.kool.platform.GL
+import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.shading.*

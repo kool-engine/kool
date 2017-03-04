@@ -16,6 +16,8 @@
 
 package de.fabmax.kool.util
 
+import de.fabmax.kool.platform.Math
+
 /**
  * Matrix math utilities. These methods operate on OpenGL ES format
  * matrices and vectors stored in float arrays.

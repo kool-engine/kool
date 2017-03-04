@@ -2,7 +2,7 @@ group 'de.fabmax'
 version '0.0.1'
 
 buildscript {
-    ext.kotlin_version = '1.0.6'
+    ext.kotlin_version = '1.1.0'
 
     repositories {
         mavenCentral()
@@ -16,7 +16,7 @@ apply plugin: 'kotlin2js'
 apply plugin: 'idea'
 
 compileKotlin2Js {
-    kotlinOptions.outputFile = "out/kool.js"
+    kotlinOptions.outputFile = "${projectDir}/web/kool.js"
 }
 
 sourceSets {
@@ -35,7 +35,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-js-library:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
 }
 
 tasks.create(name: 'copyLib', type: Copy) {
@@ -46,3 +46,18 @@ tasks.create(name: 'copyLib', type: Copy) {
 }
 
 assemble.dependsOn copyLib
+
+build.doLast {
+    configurations.compile.each { File file ->
+        copy {
+            includeEmptyDirs = false
+
+            from zipTree(file.absolutePath)
+            into "${projectDir}/web"
+            include { fileTreeElement ->
+                def path = fileTreeElement.path
+                path.endsWith(".js") && (path.startsWith("META-INF/resources/") || !path.startsWith("META-INF/"))
+            }
+        }
+    }
+}

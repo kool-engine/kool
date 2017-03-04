@@ -15,7 +15,6 @@ import de.fabmax.kool.shading.ShaderProps
 
 fun uiFont(family: String, sizeDp: Float, dpi: Float, style: Int = Font.PLAIN): Font {
     val pts = (sizeDp * dpi / 96f)
-    println("font size in pts: $pts")
     return Font(family, pts, pts, style)
 }
 

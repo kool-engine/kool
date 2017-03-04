@@ -1,5 +1,6 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.platform.Math
 import de.fabmax.kool.scene.MeshData
 
 /**

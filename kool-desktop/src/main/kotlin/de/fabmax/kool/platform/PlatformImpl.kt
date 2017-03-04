@@ -20,7 +20,6 @@ import javax.imageio.ImageIO
  * @author fabmax
  */
 class PlatformImpl private constructor() : Platform() {
-
     companion object {
         private val monitors: MutableList<MonitorSpec> = mutableListOf()
         val primaryMonitor: MonitorSpec
@@ -93,6 +92,9 @@ class PlatformImpl private constructor() : Platform() {
     override fun getGlImpl(): GL.Impl {
         return Lwjgl3Impl.instance
     }
+    override fun getMathImpl(): Math.Impl {
+        return JavaMath()
+    }
 
     override fun createUint8Buffer(capacity: Int): Uint8Buffer {
         return Uint8BufferImpl(capacity)
@@ -128,6 +130,36 @@ class PlatformImpl private constructor() : Platform() {
 
     override fun createCharMap(font: Font, chars: String): CharMap {
         return fontGenerator.createCharMap(font, chars)
+    }
+
+    private class JavaMath : Math.Impl {
+        override val PI = java.lang.Math.PI
+
+        override fun random() = java.lang.Math.random()
+        override fun abs(value: Double) = java.lang.Math.abs(value)
+        override fun acos(value: Double) = java.lang.Math.acos(value)
+        override fun asin(value: Double) = java.lang.Math.asin(value)
+        override fun atan(value: Double) = java.lang.Math.atan(value)
+        override fun atan2(y: Double, x: Double) = java.lang.Math.atan2(y, x)
+        override fun cos(value: Double) = java.lang.Math.cos(value)
+        override fun sin(value: Double) = java.lang.Math.sin(value)
+        override fun exp(value: Double) = java.lang.Math.exp(value)
+        override fun max(a: Int, b: Int) = java.lang.Math.max(a, b)
+        override fun max(a: Float, b: Float) = java.lang.Math.max(a, b)
+        override fun max(a: Double, b: Double) = java.lang.Math.max(a, b)
+        override fun min(a: Int, b: Int) = java.lang.Math.max(a, b)
+        override fun min(a: Float, b: Float) = java.lang.Math.min(a, b)
+        override fun min(a: Double, b: Double) = java.lang.Math.min(a, b)
+        override fun sqrt(value: Double) = java.lang.Math.sqrt(value)
+        override fun tan(value: Double) = java.lang.Math.tan(value)
+        override fun log(value: Double) = java.lang.Math.log(value)
+        override fun pow(base: Double, exp: Double) = java.lang.Math.pow(base, exp)
+        override fun round(value: Double): Int = java.lang.Math.round(value).toInt()
+        override fun round(value: Float): Int = java.lang.Math.round(value).toInt()
+        override fun floor(value: Double): Int = java.lang.Math.floor(value).toInt()
+        override fun floor(value: Float): Int = java.lang.Math.floor(value.toDouble()).toInt()
+        override fun ceil(value: Double): Int = java.lang.Math.ceil(value).toInt()
+        override fun ceil(value: Float): Int = java.lang.Math.ceil(value.toDouble()).toInt()
     }
 }
 

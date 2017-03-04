@@ -1,5 +1,7 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.platform.Math
+
 /**
  * @author fabmax
  */

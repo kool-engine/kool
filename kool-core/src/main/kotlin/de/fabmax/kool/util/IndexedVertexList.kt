@@ -2,6 +2,7 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.platform.Float32Buffer
+import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.Uint32Buffer
 

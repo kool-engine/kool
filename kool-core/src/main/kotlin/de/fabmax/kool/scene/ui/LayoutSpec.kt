@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene.ui
 
+import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.RenderContext
 
 /**
