@@ -136,7 +136,6 @@ class BoundingBox {
             tmax = (min.x - ray.origin.x) * div
         }
 
-
         div = 1.0f / ray.direction.y
         if (div >= 0.0f) {
             tymin = (min.y - ray.origin.y) * div

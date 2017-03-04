@@ -28,19 +28,24 @@ fun uiDemo(ctx: RenderContext) {
             translate(-globalWidth /2, -globalHeight/2, 0f)
             scaleContentTo(dp(400f), 96f)
 
-            +UiPanel("panel").apply {
-                font = uiFont("Segoe UI", 32f, ctx.screenDpi)
-                layoutSpec.setOrigin(pc(25f), pc(0f), un(0f))
-                layoutSpec.setSize(pc(50f), pc(100f), un(0f))
+            for (i in 1..3) {
+                +UiPanel("panel").apply {
+                    font = uiFont("Segoe UI", 32f, ctx.screenDpi)
+                    layoutSpec.setOrigin(pc(25f), pc(i * -25f), un(0f))
+                    layoutSpec.setSize(pc(50f), pc(20f), un(0f))
+                    panelText = "Button " + i
 
-                onHoverEnter = { ptr, rt, ctx ->
-                    println("panel hover enter ${rt.hitPositionLocal}")
-                }
-//                onHover = { ptr, rt, ctx ->
-//                    println("panel hovered ${rt.hitPositionLocal}")
-//                }
-                onHoverExit = { ptr, rt, ctx ->
-                    println("panel hover exit")
+                    onHoverEnter = { ptr, rt, ctx ->
+                        println("$panelText hover enter ${rt.hitPositionLocal}")
+                    }
+                    onHoverExit = { ptr, rt, ctx ->
+                        println("$panelText hover exit")
+                    }
+                    onHover = { ptr, rt, ctx ->
+                        if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
+                            println("$panelText clicked")
+                        }
+                    }
                 }
             }
         }

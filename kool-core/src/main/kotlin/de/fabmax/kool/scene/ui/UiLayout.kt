@@ -48,12 +48,17 @@ open class UiLayout(name: String? = null) : TransformGroup(name), UiNode {
     }
 
     protected open fun computeChildLayoutBounds(result: BoundingBox, child: UiNode, ctx: RenderContext) {
-        val x = child.layoutSpec.x.toUnits(contentBounds.size.x, ctx.screenDpi)
-        val y = child.layoutSpec.y.toUnits(contentBounds.size.y, ctx.screenDpi)
-        val z = child.layoutSpec.z.toUnits(contentBounds.size.z, ctx.screenDpi)
+        var x = child.layoutSpec.x.toUnits(contentBounds.size.x, ctx.screenDpi)
+        var y = child.layoutSpec.y.toUnits(contentBounds.size.y, ctx.screenDpi)
+        var z = child.layoutSpec.z.toUnits(contentBounds.size.z, ctx.screenDpi)
         val w = child.layoutSpec.width.toUnits(contentBounds.size.x, ctx.screenDpi)
         val h = child.layoutSpec.height.toUnits(contentBounds.size.y, ctx.screenDpi)
         val d = child.layoutSpec.depth.toUnits(contentBounds.size.z, ctx.screenDpi)
+
+        if (x < 0) { x += width }
+        if (y < 0) { y += height }
+        if (z < 0) { z += depth }
+
         result.set(x, y, z, x + w, y + h, z + d)
     }
 }

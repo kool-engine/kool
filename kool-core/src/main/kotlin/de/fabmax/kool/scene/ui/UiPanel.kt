@@ -25,6 +25,8 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
     protected val contentMeshData = MeshData(true, true, true)
     protected val contentMeshBuilder = MeshBuilder(contentMeshData)
 
+    var panelText = ""
+
     var font = Font.DEFAULT_FONT
         set(value) {
             field = value
@@ -86,8 +88,9 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
             color = Color.BLACK
             translate(pcR(50f, width), pcR(50f, height), 0f)
             text(font) {
-                text = "Hello World"
+                text = panelText
                 origin.x = -font.textWidth(text) * 0.5f
+                origin.y = -font.sizeUnits * 0.35f
             }
         }
     }

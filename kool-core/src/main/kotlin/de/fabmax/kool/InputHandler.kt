@@ -41,6 +41,7 @@ class InputHandler internal constructor() {
         synchronized(tmpPointers) {
             for (i in pointers.indices) {
                 pointers[i].updateFrom(tmpPointers[i])
+                tmpPointers[i].buttonEventMask = 0
             }
         }
     }
@@ -129,6 +130,11 @@ class InputHandler internal constructor() {
             internal set
 
         var buttonMask = 0
+            internal set(value) {
+                buttonEventMask = buttonEventMask or (field xor value)
+                field = value
+            }
+        var buttonEventMask = 0
             internal set
         var isValid = false
             internal set
@@ -144,6 +150,17 @@ class InputHandler internal constructor() {
         val isForwardButtonDown: Boolean
             get() = (buttonMask and FORWARD_BUTTON_MASK) != 0
 
+        val isLeftButtonEvent: Boolean
+            get() = (buttonEventMask and LEFT_BUTTON_MASK) != 0
+        val isRightButtonEvent: Boolean
+            get() = (buttonEventMask and RIGHT_BUTTON_MASK) != 0
+        val isMiddleButtonEvent: Boolean
+            get() = (buttonEventMask and MIDDLE_BUTTON_MASK) != 0
+        val isBackButtonEvent: Boolean
+            get() = (buttonEventMask and BACK_BUTTON_MASK) != 0
+        val isForwardButtonEvent: Boolean
+            get() = (buttonEventMask and FORWARD_BUTTON_MASK) != 0
+
         internal fun updateFrom(ptr: Pointer) {
             deltaX = ptr.x - x
             deltaY = ptr.y - y
@@ -152,6 +169,7 @@ class InputHandler internal constructor() {
             y = ptr.y
             scrollPos = ptr.scrollPos
             buttonMask = ptr.buttonMask
+            buttonEventMask = ptr.buttonEventMask
             isValid = ptr.isValid
         }
     }
