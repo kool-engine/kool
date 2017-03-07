@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.BufferResource
+import de.fabmax.kool.gl.BufferResource
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.Platform
@@ -141,7 +141,7 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
     var indexSize = 0
         private set
 
-    private var syncBuffers = false
+    var syncBuffers = false
     var batchUpdate = false
         set(value) {
             synchronized(data) {

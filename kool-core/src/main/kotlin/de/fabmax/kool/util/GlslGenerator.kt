@@ -285,7 +285,7 @@ open class GlslGenerator : ShaderGenerator() {
 
                 // vec4 materialDiffuseColor = vFragmentColor * vec4(uLightColor, 1.0) * cosTheta;
                 text.append("vec4 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
-                        .append(" * vec4(").append(UNIFORM_LIGHT_COLOR).append(", 1.0) * (cosTheta + 0.2);\n")
+                        .append(" * vec4(").append(UNIFORM_LIGHT_COLOR).append(", 1.0) * cosTheta;\n")
 
                 // vec4 materialSpecularColor = vec4(uLightColor * uSpecular, 0.0) * pow(cosAlpha, uShininess);
                 text.append("vec4 materialSpecularColor = vec4(").append(UNIFORM_LIGHT_COLOR)

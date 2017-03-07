@@ -1,6 +1,6 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.BufferResource
+import de.fabmax.kool.gl.BufferResource
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.platform.GL
 

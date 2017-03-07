@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.lwjgl3
 
 import de.fabmax.kool.*
+import de.fabmax.kool.gl.*
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.platform.GL
 import org.lwjgl.opengl.*
@@ -73,6 +74,10 @@ class Lwjgl3Impl private constructor() : GL.Impl {
 
     override fun compileShader(shader: ShaderResource) {
         GL20.glCompileShader(shader.glRef as Int)
+    }
+
+    override fun copyTexImage2D(target: Int, level: Int, internalformat: Int, x: Int, y: Int, width: Int, height: Int, border: Int) {
+        GL11.glCopyTexImage2D(target, level, internalformat, x, y, width, height, border)
     }
 
     override fun createBuffer(): Any {

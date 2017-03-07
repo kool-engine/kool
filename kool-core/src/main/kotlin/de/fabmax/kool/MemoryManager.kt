@@ -1,5 +1,7 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.gl.GlResource
+
 /**
  * @author fabmax
  */

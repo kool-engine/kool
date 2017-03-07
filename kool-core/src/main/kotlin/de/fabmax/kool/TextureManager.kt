@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.gl.TextureResource
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 

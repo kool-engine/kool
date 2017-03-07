@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.gl.BufferResource
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Property

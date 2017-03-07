@@ -1,4 +1,4 @@
-package de.fabmax.kool
+package de.fabmax.kool.gl
 
 import de.fabmax.kool.platform.RenderContext
 

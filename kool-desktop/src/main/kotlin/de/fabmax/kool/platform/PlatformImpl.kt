@@ -133,8 +133,6 @@ class PlatformImpl private constructor() : Platform() {
     }
 
     private class JavaMath : Math.Impl {
-        override val PI = java.lang.Math.PI
-
         override fun random() = java.lang.Math.random()
         override fun abs(value: Double) = java.lang.Math.abs(value)
         override fun acos(value: Double) = java.lang.Math.acos(value)
@@ -147,7 +145,7 @@ class PlatformImpl private constructor() : Platform() {
         override fun max(a: Int, b: Int) = java.lang.Math.max(a, b)
         override fun max(a: Float, b: Float) = java.lang.Math.max(a, b)
         override fun max(a: Double, b: Double) = java.lang.Math.max(a, b)
-        override fun min(a: Int, b: Int) = java.lang.Math.max(a, b)
+        override fun min(a: Int, b: Int) = java.lang.Math.min(a, b)
         override fun min(a: Float, b: Float) = java.lang.Math.min(a, b)
         override fun min(a: Double, b: Double) = java.lang.Math.min(a, b)
         override fun sqrt(value: Double) = java.lang.Math.sqrt(value)

@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene.ui
 
+import de.fabmax.kool.assetTexture
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Group
@@ -8,6 +9,7 @@ import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
+import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.*
 
 /**
@@ -24,6 +26,9 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
     protected val contentMesh: Mesh
     protected val contentMeshData = MeshData(true, true, true)
     protected val contentMeshBuilder = MeshBuilder(contentMeshData)
+
+    //val bgHelper = DistortedBackgroundHelper(5)
+    val meshItem = contentMeshData.data[0]
 
     var panelText = ""
 
@@ -46,6 +51,7 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
             lightModel = LightModel.PHONG_LIGHTING
             colorModel = ColorModel.VERTEX_COLOR
         }
+        //contentMesh.shader = bgHelper.blurShader()
         addNode(contentMesh)
     }
 
@@ -60,6 +66,13 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
         if (isUpdateNeeded) {
             update(ctx)
         }
+//        bgHelper.prepareBackgroundTex(contentMesh, ctx)
+//        for (i in 0..(contentMeshData.data.size-1)) {
+//            meshItem.index = i
+//            bgHelper.computeTexCoords(meshItem.texCoord, meshItem.position, contentMesh, ctx)
+//        }
+//        contentMeshData.syncBuffers = true
+
         super.render(ctx)
     }
 
@@ -69,6 +82,7 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
         val shader = contentMesh.shader
         if (shader != null && shader is BasicShader) {
             shader.texture = font.texture
+            //shader.texture = bgHelper.backgroundTex
         }
         contentMeshData.clear()
 

@@ -1,5 +1,7 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.gl.ProgramResource
+import de.fabmax.kool.gl.ShaderResource
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.shading.Shader

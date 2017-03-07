@@ -7,10 +7,12 @@ package de.fabmax.kool.platform
  */
 class Math private constructor() {
     companion object {
-        private val impl = Platform.getMathImpl()
+        val impl = Platform.getMathImpl()
 
-        val PI: Double
-            get() = impl.PI
+        const val PI = 3.1415926535897932
+        const val E = 2.7182818284590452
+        const val DEG_2_RAD = PI / 180.0
+        const val RAD_2_DEG = 180.0 / PI
 
         fun random(): Double = impl.random()
         fun abs(value: Double): Double = impl.abs(value)
@@ -40,7 +42,6 @@ class Math private constructor() {
     }
 
     interface Impl {
-        val PI: Double
         fun random(): Double
         fun abs(value: Double): Double
         fun acos(value: Double): Double

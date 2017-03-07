@@ -55,14 +55,12 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 
     fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, ctx: RenderContext): Boolean {
-        val w = ctx.viewportWidth
-        val h = ctx.viewportHeight
         val y = ctx.viewportHeight - screenY
         var valid = true
 
         rayTest.clear()
-        valid = valid && unProject(tmpPos.set(screenX, y, 0f), w, h, rayTest.ray.origin)
-        valid = valid && unProject(tmpPos.set(screenX, y, 1f), w, h, rayTest.ray.direction)
+        valid = valid && unProjectScreen(rayTest.ray.origin, tmpPos.set(screenX, y, 0f), ctx)
+        valid = valid && unProjectScreen(rayTest.ray.direction, tmpPos.set(screenX, y, 1f), ctx)
 
         if (valid) {
             rayTest.ray.direction.subtract(rayTest.ray.origin)
@@ -76,7 +74,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         tmpPos.set(node.bounds.center)
         node.toGlobalCoords(tmpPos)
 
-        project(tmpPos, tmpUp)
+        project(tmpUp, tmpPos)
         if (isInFrustum(tmpUp)) {
             // center of bounding box is inside the view frustum -> it's visible
             return true
@@ -113,7 +111,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 
     fun isVisible(point: Vec3f): Boolean {
-        project(point, tmpPos)
+        project(tmpPos, point)
         return isInFrustum(tmpPos)
     }
 
@@ -123,7 +121,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
                 camSpace.z > -1 && camSpace.z < 1
     }
 
-    private fun project(world: Vec3f, result: MutableVec3f): Boolean {
+    fun project(result: MutableVec3f, world: Vec3f): Boolean {
         tmpVec4.set(world.x, world.y, world.z, 1f)
         mvp.transform(tmpVec4)
         if (isZero(tmpVec4.w)) {
@@ -133,8 +131,19 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return true
     }
 
-    private fun unProject(win: Vec3f, viewW: Int, viewH: Int, result: MutableVec3f): Boolean {
-        tmpVec4.set(2f * win.x / viewW - 1f, 2f * win.y / viewH - 1f, 2f * win.z - 1f, 1f)
+    fun projectScreen(result: MutableVec3f, world: Vec3f, ctx: RenderContext): Boolean {
+        if (!project(result, world)) {
+            return false
+        }
+        result.x = (1 + result.x) * 0.5f * ctx.viewportWidth
+        result.y = (0.5f - result.y * 0.5f) * ctx.viewportHeight
+        result.z = (1 + result.z) * 0.5f
+        return true
+    }
+
+    fun unProjectScreen(result: MutableVec3f, screen: Vec3f, ctx: RenderContext): Boolean {
+        tmpVec4.set(2f * screen.x / ctx.viewportWidth - 1f, 2f * screen.y / ctx.viewportHeight - 1f,
+                2f * screen.z - 1f, 1f)
         invMvp.transform(tmpVec4)
         val s = 1f / tmpVec4.w
         result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)

@@ -1,5 +1,7 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.gl.GlObject
+import de.fabmax.kool.gl.TextureResource
 import de.fabmax.kool.platform.*
 
 /**
@@ -23,7 +25,7 @@ abstract class TextureData {
     open var isAvailable = false
         protected set
 
-    fun loadData(texture: Texture, ctx: RenderContext) {
+    internal fun loadData(texture: Texture, ctx: RenderContext) {
         onLoad(texture, ctx)
         texture.res!!.isLoaded = true
         if (texture.props.minFilter == GL.LINEAR_MIPMAP_LINEAR) {

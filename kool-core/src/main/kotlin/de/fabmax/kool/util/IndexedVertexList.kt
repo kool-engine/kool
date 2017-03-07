@@ -23,16 +23,18 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
     val colorOffset: Int
     val texCoordOffset: Int
 
-    var elements = 0
-        private set
     var size = 0
+        private set
+    val lastIndex
+        get() = size - 1
+    var dataSize = 0
         private set
     var data: Float32Buffer
         private set
     var indices = Platform.createUint32Buffer(INITIAL_SIZE)
         private set
 
-    private val addItem: Item
+    private val tmpItem: Item
 
     init {
         var cnt = 3
@@ -62,7 +64,7 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
         strideBytes = vertexSize * 4
 
         data = Platform.createFloat32Buffer(cnt * INITIAL_SIZE)
-        addItem = Item(0)
+        tmpItem = Item(0)
     }
 
     private fun increaseDataSize() {
@@ -90,13 +92,13 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
         for (i in 1..vertexSize) {
             data += 0f
         }
-        addItem.index = elements++
-        size += vertexSize
-        addItem.init()
+        tmpItem.index = size++
+        dataSize += vertexSize
+        tmpItem.init()
 
-        updateBounds?.add(addItem.position)
+        updateBounds?.add(tmpItem.position)
 
-        return elements - 1
+        return size - 1
     }
 
     fun addVertex(position: Vec3f, normal: Vec3f? = null, color: Color? = null, texCoord: Vec2f? = null): Int {
@@ -128,8 +130,8 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
     }
 
     fun clear() {
+        dataSize = 0
         size = 0
-        elements = 0
         data.position = 0
         data.limit = data.capacity
         indices.position = 0
@@ -137,7 +139,7 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
     }
 
     operator fun get(i: Int): Item {
-        if (i < 0 || i >= data.capacity) {
+        if (i < 0 || i >= data.capacity / vertexSize) {
             throw KoolException("Vertex index out of bounds: $i")
         }
         return Item(i)
