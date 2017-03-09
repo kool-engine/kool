@@ -45,22 +45,12 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
         contentMeshData.usage = GL.DYNAMIC_DRAW
         contentMesh = Mesh(contentMeshData)
 
-//        contentMesh.shader = fontShader(Font.DEFAULT_FONT) {
-//            lightModel = LightModel.PHONG_LIGHTING
-//            colorModel = ColorModel.VERTEX_COLOR
-//        }
-
 //        contentMesh.shader = basicShader {
 //            lightModel = LightModel.PHONG_LIGHTING
-//            colorModel = ColorModel.STATIC_COLOR
-//        }.apply { staticColor.set(Color.RED) }
+//            colorModel = ColorModel.TEXTURE_COLOR
+//        }.apply { texture = bgHelper.blurredBgTex }
 
-        contentMesh.shader = basicShader {
-            lightModel = LightModel.PHONG_LIGHTING
-            colorModel = ColorModel.TEXTURE_COLOR
-        }.apply { texture = bgHelper.blurredBgTex }
-
-//        contentMesh.shader = bgHelper.blurShader()
+        contentMesh.shader = blurShader(bgHelper)
         addNode(contentMesh)
     }
 

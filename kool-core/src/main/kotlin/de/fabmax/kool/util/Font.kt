@@ -76,7 +76,7 @@ fun fontShader(font: Font?, propsInit: ShaderProps.() -> Unit = { }): BasicShade
     // vertex color and texture color are required to render fonts
     props.isVertexColor = true
     props.isTextureColor = true
-    val generator = Platform.createDefaultShaderGenerator()
+    val generator = GlslGenerator()
 
     // inject shader code to take color from static color and alpha from texture
     // static color rgb has to be pre-multiplied with texture alpha

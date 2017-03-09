@@ -73,6 +73,8 @@ open class GlslGenerator {
     val uniformFogRange: Uniform1f = Uniform1f(UNIFORM_FOG_RANGE)
     val uniformFogColor: Uniform4f = Uniform4f(UNIFORM_FOG_COLOR)
 
+    val customUnitforms: MutableMap<String, Uniform<*>> = mutableMapOf()
+
     fun onLoad(shader: BasicShader, ctx: RenderContext) {
         shader.enableAttribute(Shader.Attribute.POSITIONS, ATTRIBUTE_NAME_POSITION, ctx)
         shader.enableAttribute(Shader.Attribute.NORMALS, ATTRIBUTE_NAME_NORMAL, ctx)
@@ -93,6 +95,10 @@ open class GlslGenerator {
         shader.setUniformLocation(uniformStaticColor, ctx)
         shader.setUniformLocation(uniformAlpha, ctx)
         shader.setUniformLocation(uniformSaturation, ctx)
+
+        for (uniform in customUnitforms.values) {
+            shader.setUniformLocation(uniform, ctx)
+        }
     }
 
     fun generate(shaderProps: ShaderProps): Shader.Source {

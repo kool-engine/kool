@@ -33,7 +33,12 @@ class BlurredBackgroundHelper(val texSize: Int = 256) {
     private val fb1Tex = colorAttachmentTex(texSize, texSize, GL.LINEAR, GL.LINEAR)
     val blurredBgTex = colorAttachmentTex(texSize, texSize, GL.LINEAR, GL.LINEAR)
 
-    var numPasses = 2
+    val capturedScrX: Int get() = copyTexData.x
+    val capturedScrY: Int get() = copyTexData.y
+    val capturedScrW: Int get() = copyTexData.width
+    val capturedScrH: Int get() = copyTexData.height
+
+    var numPasses = 3
 
     init {
         val id = Math.random()
@@ -95,6 +100,7 @@ class BlurredBackgroundHelper(val texSize: Int = 256) {
         val maxScrX = Math.min(texBounds.max.x.toInt(), ctx.viewportWidth)
         val minScrY = Math.max(ctx.viewportHeight - texBounds.max.y.toInt(), 0)
         val maxScrY = Math.min(ctx.viewportHeight - texBounds.min.y.toInt(), ctx.viewportHeight)
+
         val sizeX = maxScrX - minScrX
         val sizeY = maxScrY - minScrY
         if (maxScrX > 0 && minScrX < ctx.viewportWidth && sizeX > 0 &&
@@ -246,5 +252,77 @@ class BlurredBackgroundHelper(val texSize: Int = 256) {
         override fun onMatrixUpdate(ctx: RenderContext) {
             // not needed
         }
+    }
+}
+
+fun blurShader(helper: BlurredBackgroundHelper, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
+    val props = ShaderProps()
+    props.propsInit()
+    // vertex color and texture color are required to render fonts
+    props.isVertexColor = true
+    props.isTextureColor = true
+    val generator = GlslGenerator()
+
+    generator.customUnitforms.put("uTexX", Uniform1f("uTexX"))
+    generator.customUnitforms.put("uTexY", Uniform1f("uTexY"))
+    generator.customUnitforms.put("uTexW", Uniform1f("uTexW"))
+    generator.customUnitforms.put("uTexH", Uniform1f("uTexH"))
+
+    generator.injectors += object: GlslGenerator.GlslInjector {
+        override fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder) {
+            text.append("uniform float uTexX;\n")
+            text.append("uniform float uTexY;\n")
+            text.append("uniform float uTexW;\n")
+            text.append("uniform float uTexH;\n")
+        }
+
+        override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
+            // sample texture based on fragCoord, not texCoord varying
+            // todo: Hopefully the unnecessary texture sampling is optimized away by the shader compiler
+            // todo: however it would be nice to not do that in the first place
+
+            text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexX) / uTexW, ")
+                    .append("1.0 - (gl_FragCoord.y - uTexY) / uTexH);\n")
+                    .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" = texture2D(")
+                    .append(GlslGenerator.UNIFORM_TEXTURE_0).append(", blurSamplePos) * 0.7;\n");
+            //result.x = (tmpRes.x - copyTexData.x) / copyTexData.width
+            //result.y = (tmpRes.y + copyTexData.y - ctx.viewportHeight) / copyTexData.height + 1f
+
+//            text.append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" = texture2D(")
+//                      .append(GlslGenerator.UNIFORM_TEXTURE_0).append(", ").append(GlslGenerator.VARYING_NAME_TEX_COORD).append(");\n");
+
+            // mix texture color and vertex color
+            text.append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" += ")
+                    .append(GlslGenerator.LOCAL_NAME_VERTEX_COLOR).append(" * 0.3;\n")
+        }
+    }
+
+    return BlurShader(helper, props, generator)
+}
+
+class BlurShader internal constructor(
+                private val helper: BlurredBackgroundHelper, props: ShaderProps, generator: GlslGenerator
+        ) : BasicShader(props, generator) {
+
+    private val uTexX: Uniform1f = generator.customUnitforms["uTexX"] as Uniform1f
+    private val uTexY: Uniform1f = generator.customUnitforms["uTexY"] as Uniform1f
+    private val uTexW: Uniform1f = generator.customUnitforms["uTexW"] as Uniform1f
+    private val uTexH: Uniform1f = generator.customUnitforms["uTexH"] as Uniform1f
+
+    init {
+        texture = helper.blurredBgTex
+    }
+
+    override fun onBind(ctx: RenderContext) {
+        super.onBind(ctx)
+        uTexX.value = helper.capturedScrX.toFloat()
+        uTexY.value = helper.capturedScrY.toFloat()
+        uTexW.value = helper.capturedScrW.toFloat()
+        uTexH.value = helper.capturedScrH.toFloat()
+
+        uTexX.bind(ctx)
+        uTexY.bind(ctx)
+        uTexW.bind(ctx)
+        uTexH.bind(ctx)
     }
 }

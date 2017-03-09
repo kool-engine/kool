@@ -29,10 +29,6 @@ abstract class Platform {
             return instance.createContext(props)
         }
 
-        fun createDefaultShaderGenerator(): GlslGenerator {
-            return instance.createDefaultShaderGenerator()
-        }
-
         fun getGlImpl(): GL.Impl {
             return instance.getGlImpl()
         }
@@ -68,10 +64,6 @@ abstract class Platform {
         fun createCharMap(font: Font, chars: String): CharMap {
             return instance.createCharMap(font, chars)
         }
-    }
-
-    open fun createDefaultShaderGenerator(): GlslGenerator {
-        return GlslGenerator()
     }
 
     abstract val supportsMultiContext: Boolean
