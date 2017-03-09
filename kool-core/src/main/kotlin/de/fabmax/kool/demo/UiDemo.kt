@@ -41,8 +41,8 @@ fun uiDemo(ctx: RenderContext) {
             for (i in 1..1) {
                 +UiPanel("button $i").apply {
                     font = uiFont("Segoe UI", 32f, ctx.screenDpi)
-                    layoutSpec.setOrigin(pc(25f), pc(i * -25f), un(0f))
-                    layoutSpec.setSize(pc(50f), pc(20f), un(0f))
+                    layoutSpec.setOrigin(dp(150f), dp(150f), un(0f))
+                    layoutSpec.setSize(dp(100f), dp(100f), un(0f))
                     panelText = "Button " + i
 
                     onHoverEnter = { ptr, rt, ctx ->

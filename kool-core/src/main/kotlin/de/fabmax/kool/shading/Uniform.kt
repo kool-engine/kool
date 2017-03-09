@@ -4,6 +4,7 @@ import de.fabmax.kool.Texture
 import de.fabmax.kool.platform.Float32Buffer
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.util.MutableVec2f
 import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.MutableVec4f
 
@@ -57,6 +58,14 @@ class Uniform1f(name: String) : Uniform<Float>(name, 0f) {
 
     override fun doBind(ctx: RenderContext) {
         GL.uniform1f(location, value)
+    }
+}
+
+class Uniform2f(name: String) : Uniform<MutableVec2f>(name, MutableVec2f()) {
+    override val type = "vec2"
+
+    override fun doBind(ctx: RenderContext) {
+        GL.uniform2f(location, value.x, value.y)
     }
 }
 

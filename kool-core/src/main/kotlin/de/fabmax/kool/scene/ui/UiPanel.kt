@@ -26,9 +26,9 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
     protected val contentMesh: Mesh
     protected val contentMeshData = MeshData(true, true, true)
     protected val contentMeshBuilder = MeshBuilder(contentMeshData)
+    protected val contentMeshItem = contentMeshData.data[0]
 
-    //val bgHelper = DistortedBackgroundHelper(5)
-    val meshItem = contentMeshData.data[0]
+    val bgHelper = BlurredBackgroundHelper()
 
     var panelText = ""
 
@@ -47,11 +47,23 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
     init {
         contentMeshData.usage = GL.DYNAMIC_DRAW
         contentMesh = Mesh(contentMeshData)
-        contentMesh.shader = fontShader(Font.DEFAULT_FONT) {
+
+//        contentMesh.shader = fontShader(Font.DEFAULT_FONT) {
+//            lightModel = LightModel.PHONG_LIGHTING
+//            colorModel = ColorModel.VERTEX_COLOR
+//        }
+
+//        contentMesh.shader = basicShader {
+//            lightModel = LightModel.PHONG_LIGHTING
+//            colorModel = ColorModel.STATIC_COLOR
+//        }.apply { staticColor.set(Color.RED) }
+
+        contentMesh.shader = basicShader {
             lightModel = LightModel.PHONG_LIGHTING
-            colorModel = ColorModel.VERTEX_COLOR
-        }
-        //contentMesh.shader = bgHelper.blurShader()
+            colorModel = ColorModel.TEXTURE_COLOR
+        }.apply { texture = bgHelper.blurredBgTex }
+
+//        contentMesh.shader = bgHelper.blurShader()
         addNode(contentMesh)
     }
 
@@ -66,12 +78,12 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
         if (isUpdateNeeded) {
             update(ctx)
         }
-//        bgHelper.prepareBackgroundTex(contentMesh, ctx)
-//        for (i in 0..(contentMeshData.data.size-1)) {
-//            meshItem.index = i
-//            bgHelper.computeTexCoords(meshItem.texCoord, meshItem.position, contentMesh, ctx)
-//        }
-//        contentMeshData.syncBuffers = true
+        bgHelper.updateDistortionTexture(contentMesh, ctx)
+        for (i in 0..(contentMeshData.data.size-1)) {
+            contentMeshItem.index = i
+            bgHelper.computeTexCoords(contentMeshItem.texCoord, contentMeshItem.position, contentMesh, ctx)
+        }
+        contentMeshData.isSyncRequired = true
 
         super.render(ctx)
     }
@@ -79,11 +91,6 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
     protected open fun update(ctx: RenderContext) {
         isUpdateNeeded = false
 
-        val shader = contentMesh.shader
-        if (shader != null && shader is BasicShader) {
-            shader.texture = font.texture
-            //shader.texture = bgHelper.backgroundTex
-        }
         contentMeshData.clear()
 
         contentMeshBuilder.identity()
@@ -97,15 +104,16 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
             rect {
                 width = this@UiPanel.width
                 height = this@UiPanel.height
+                fullTexCoords()
             }
 
-            color = Color.BLACK
+            /*color = Color.BLACK
             translate(pcR(50f, width), pcR(50f, height), 0f)
             text(font) {
                 text = panelText
                 origin.x = -font.textWidth(text) * 0.5f
                 origin.y = -font.sizeUnits * 0.35f
-            }
+            }*/
         }
     }
 

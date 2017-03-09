@@ -141,8 +141,8 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
     var indexSize = 0
         private set
 
-    var syncBuffers = false
-    var batchUpdate = false
+    var isSyncRequired = false
+    var isBatchUpdate = false
         set(value) {
             synchronized(data) {
                 field = value
@@ -161,18 +161,18 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
     fun generateGeometry() {
         val gen = generator
         if (gen != null) {
-            batchUpdate = true
+            isBatchUpdate = true
             clear()
             val builder = MeshBuilder(this)
             builder.gen()
-            batchUpdate = false
+            isBatchUpdate = false
         }
     }
 
     fun addVertex(init: IndexedVertexList.Item.() -> Unit): Int {
         var idx = 0
         synchronized(data) {
-            syncBuffers = true
+            isSyncRequired = true
             idx = data.addVertex(bounds, init)
         }
         // return must be outside of synchronized block for successful javascript transpiling
@@ -182,7 +182,7 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
     fun addVertex(position: Vec3f, normal: Vec3f? = null, color: Color? = null, texCoord: Vec2f? = null): Int {
         var idx = 0
         synchronized(data) {
-            syncBuffers = true
+            isSyncRequired = true
             idx = data.addVertex(position, normal, color, texCoord)
             bounds.add(position)
         }
@@ -193,7 +193,7 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
     fun addIndex(idx: Int) {
         synchronized(data) {
             data.addIndex(idx)
-            syncBuffers = true
+            isSyncRequired = true
         }
     }
 
@@ -202,14 +202,14 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
             data.addIndex(i0)
             data.addIndex(i1)
             data.addIndex(i2)
-            syncBuffers = true
+            isSyncRequired = true
         }
     }
 
     fun addIndices(vararg indices: Int) {
         synchronized(data) {
             data.addIndices(indices)
-            syncBuffers = true
+            isSyncRequired = true
         }
     }
 
@@ -217,7 +217,7 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
         synchronized(data) {
             data.clear()
             bounds.clear()
-            syncBuffers = true
+            isSyncRequired = true
         }
     }
 
@@ -249,9 +249,9 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
             if (hasTexCoords) { texCoordBinder = VboBinder(dataBuffer!!, 2, data.strideBytes, data.texCoordOffset) }
         }
 
-        if (syncBuffers && !batchUpdate) {
+        if (isSyncRequired && !isBatchUpdate) {
             synchronized(data) {
-                if (!batchUpdate) {
+                if (!isBatchUpdate) {
                     indexSize = data.indices.position
 
                     if (!Platform.supportsUint32Indices) {
@@ -265,7 +265,7 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
                         indexBuffer?.setData(data.indices, usage, ctx)
                     }
                     dataBuffer?.setData(data.data, usage, ctx)
-                    syncBuffers = false
+                    isSyncRequired = false
                 }
             }
         }

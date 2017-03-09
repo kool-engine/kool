@@ -25,6 +25,11 @@ abstract class TextureData {
     open var isAvailable = false
         protected set
 
+    var width = 0
+        protected set
+    var height = 0
+        protected set
+
     internal fun loadData(texture: Texture, ctx: RenderContext) {
         onLoad(texture, ctx)
         texture.res!!.isLoaded = true
@@ -36,9 +41,11 @@ abstract class TextureData {
     abstract fun onLoad(texture: Texture, ctx: RenderContext)
 }
 
-class BufferedTextureData(val buffer: Uint8Buffer, val width: Int, val height: Int, val format: Int) : TextureData() {
+class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val format: Int) : TextureData() {
     init {
-        isAvailable = true
+        this.isAvailable = true
+        this.width = width
+        this.height = height
     }
 
     override fun onLoad(texture: Texture, ctx: RenderContext) {
@@ -56,6 +63,11 @@ class BufferedTextureData(val buffer: Uint8Buffer, val width: Int, val height: I
 class Texture(val props: TextureProps, val generator: Texture.() -> TextureData) :
         GlObject<TextureResource>() {
 
+    var width = 0
+        private set
+    var height = 0
+        private set
+
     internal fun onCreate(ctx: RenderContext) {
         res = ctx.textureMgr.createTexture(props, ctx)
     }
@@ -67,6 +79,15 @@ class Texture(val props: TextureProps, val generator: Texture.() -> TextureData)
             ctx.textureMgr.deleteTexture(this, ctx)
             res = null
         }
+    }
+
+    internal fun loadData(texData: TextureData, ctx: RenderContext) {
+        if (!texData.isAvailable) {
+            throw KoolException("Texture data is not available")
+        }
+        width = texData.width
+        height = texData.height
+        texData.loadData(this, ctx)
     }
 }
 

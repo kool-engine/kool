@@ -7,7 +7,7 @@ class BufferResource private constructor(glRef: Any, val target: Int, ctx: Rende
 
     companion object {
         fun create(target: Int, ctx: RenderContext): BufferResource {
-            return BufferResource(GL.Companion.createBuffer(), target, ctx)
+            return BufferResource(GL.createBuffer(), target, ctx)
         }
     }
 

@@ -55,6 +55,18 @@ class MvpState internal constructor() {
         mvpMatrix.setIdentity()
     }
 
+    fun pushMatrices() {
+        projMatrix.push()
+        viewMatrix.push()
+        modelMatrix.push()
+    }
+
+    fun popMatrices() {
+        projMatrix.pop()
+        viewMatrix.pop()
+        modelMatrix.pop()
+    }
+
     /**
      * Computes the MVP matrix from the individual model-, view- and projection matrices. This
      * method must be called after an update of any of these matrices.

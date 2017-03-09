@@ -20,6 +20,14 @@ class Lwjgl3Impl private constructor() : GL.Impl {
         return true
     }
 
+    override fun glslFragHeader(): String {
+        return "#version 330\n"
+    }
+
+    override fun glslVertHeader(): String {
+        return "#version 330\n"
+    }
+
     override fun activeTexture(texture: Int) {
         GL13.glActiveTexture(texture)
     }

@@ -113,6 +113,18 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
     }
 
     /**
+     * Sets the location of the given uniform. Returns true if location was set or false if the uniform was
+     * not found
+     *
+     * @param uniform    The uniform to set
+     * @return true if location was successfully set
+     */
+    open fun setUniformLocation(uniform: Uniform<*>, ctx: RenderContext): Boolean {
+        uniform.location = findUniformLocation(uniform.name, ctx)
+        return uniform.location != null
+    }
+
+    /**
      * Looks for the specified uniform and returns its location or -1 if the uniform was not found.
      *
      * @param uniformName    The uniform name to look for

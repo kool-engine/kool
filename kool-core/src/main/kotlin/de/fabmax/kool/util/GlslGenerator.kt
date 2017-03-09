@@ -1,5 +1,6 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.platform.ShaderGenerator
 import de.fabmax.kool.shading.*
@@ -15,24 +16,20 @@ open class GlslGenerator : ShaderGenerator() {
         shader.enableAttribute(Shader.Attribute.TEXTURE_COORDS, ATTRIBUTE_NAME_TEX_COORD, ctx)
         shader.enableAttribute(Shader.Attribute.COLORS, ATTRIBUTE_NAME_COLOR, ctx)
 
-        setUniformLocation(shader, uniformMvpMatrix, ctx)
-        setUniformLocation(shader, uniformModelMatrix, ctx)
-        setUniformLocation(shader, uniformViewMatrix, ctx)
-        setUniformLocation(shader, uniformLightDirection, ctx)
-        setUniformLocation(shader, uniformLightColor, ctx)
-        setUniformLocation(shader, uniformShininess, ctx)
-        setUniformLocation(shader, uniformSpecularIntensity, ctx)
-        setUniformLocation(shader, uniformCameraPosition, ctx)
-        setUniformLocation(shader, uniformFogColor, ctx)
-        setUniformLocation(shader, uniformFogRange, ctx)
-        setUniformLocation(shader, uniformTexture, ctx)
-        setUniformLocation(shader, uniformStaticColor, ctx)
-        setUniformLocation(shader, uniformAlpha, ctx)
-        setUniformLocation(shader, uniformSaturation, ctx)
-    }
-
-    protected fun setUniformLocation(shader: BasicShader, uniform: Uniform<*>, ctx: RenderContext) {
-        uniform.location = shader.findUniformLocation(uniform.name, ctx)
+        shader.setUniformLocation(uniformMvpMatrix, ctx)
+        shader.setUniformLocation(uniformModelMatrix, ctx)
+        shader.setUniformLocation(uniformViewMatrix, ctx)
+        shader.setUniformLocation(uniformLightDirection, ctx)
+        shader.setUniformLocation(uniformLightColor, ctx)
+        shader.setUniformLocation(uniformShininess, ctx)
+        shader.setUniformLocation(uniformSpecularIntensity, ctx)
+        shader.setUniformLocation(uniformCameraPosition, ctx)
+        shader.setUniformLocation(uniformFogColor, ctx)
+        shader.setUniformLocation(uniformFogRange, ctx)
+        shader.setUniformLocation(uniformTexture, ctx)
+        shader.setUniformLocation(uniformStaticColor, ctx)
+        shader.setUniformLocation(uniformAlpha, ctx)
+        shader.setUniformLocation(uniformSaturation, ctx)
     }
 
     override fun generateSource(shaderProps: ShaderProps): Shader.Source {
@@ -41,6 +38,8 @@ open class GlslGenerator : ShaderGenerator() {
 
     private fun generateVertShader(shaderProps: ShaderProps): String {
         val text = StringBuilder("// Generated vertex shader code\n")
+
+        text.append(GL.glslVertHeader())
 
         injectors.forEach { it.vsStart(shaderProps, text) }
         generateVertInputCode(shaderProps, text)
@@ -53,6 +52,8 @@ open class GlslGenerator : ShaderGenerator() {
 
     private fun generateFragShader(shaderProps: ShaderProps): String {
         val text = StringBuilder("// Generated fragment shader code\n")
+
+        text.append(GL.glslFragHeader())
 
         injectors.forEach { it.fsStart(shaderProps, text) }
         generateFragInputCode(shaderProps, text)
@@ -193,6 +194,7 @@ open class GlslGenerator : ShaderGenerator() {
     }
 
     private fun generateFragInputCode(shaderProps: ShaderProps, text: StringBuilder) {
+        text.append("precision highp float;\n")
         text.append("uniform mat4 ").append(UNIFORM_MODEL_MATRIX).append(";\n")
         text.append("uniform mat4 ").append(UNIFORM_VIEW_MATRIX).append(";\n")
         if (shaderProps.isAlpha) {

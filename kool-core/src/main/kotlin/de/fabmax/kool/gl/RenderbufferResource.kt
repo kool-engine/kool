@@ -7,7 +7,7 @@ class RenderbufferResource private constructor(glRef: Any, ctx: RenderContext) :
         GlResource(glRef, Type.RENDERBUFFER) {
     companion object {
         fun create(ctx: RenderContext): RenderbufferResource {
-            return RenderbufferResource(GL.Companion.createRenderbuffer(), ctx)
+            return RenderbufferResource(GL.createRenderbuffer(), ctx)
         }
     }
 

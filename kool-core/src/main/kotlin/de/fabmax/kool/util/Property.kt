@@ -5,7 +5,10 @@ import kotlin.reflect.KProperty
 /**
  * @author fabmax
  */
-class Property<T>(private var value: T) {
+class Property<T>(value: T) {
+
+    var value: T = value
+        private set
 
     val clear: T
         get() {
@@ -25,5 +28,14 @@ class Property<T>(private var value: T) {
             this.value = value
             valueChanged = true
         }
+    }
+
+    fun copy(other: Property<T>, maintainChangeFlag: Boolean) {
+        if (maintainChangeFlag) {
+            valueChanged = other.valueChanged
+        } else {
+            valueChanged = value != other.value
+        }
+        value = other.value
     }
 }

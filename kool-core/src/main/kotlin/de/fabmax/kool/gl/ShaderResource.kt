@@ -7,11 +7,11 @@ class ShaderResource private constructor(glRef: Any, ctx: RenderContext) :
         GlResource(glRef, Type.SHADER) {
     companion object {
         fun createFragmentShader(ctx: RenderContext): ShaderResource {
-            return ShaderResource(GL.Companion.createShader(GL.Companion.FRAGMENT_SHADER), ctx)
+            return ShaderResource(GL.createShader(GL.Companion.FRAGMENT_SHADER), ctx)
         }
 
         fun createVertexShader(ctx: RenderContext): ShaderResource {
-            return ShaderResource(GL.Companion.createShader(GL.Companion.VERTEX_SHADER), ctx)
+            return ShaderResource(GL.createShader(GL.Companion.VERTEX_SHADER), ctx)
         }
     }
 

@@ -16,6 +16,14 @@ class GL private constructor() {
             return impl.isAvailable()
         }
 
+        fun glslFragHeader(): String {
+            return impl.glslFragHeader()
+        }
+
+        fun glslVertHeader(): String {
+            return impl.glslFragHeader()
+        }
+
         fun activeTexture(texture: Int) {
             impl.activeTexture(texture)
         }
@@ -573,6 +581,8 @@ class GL private constructor() {
 
     interface Impl {
         fun isAvailable(): Boolean
+        fun glslFragHeader(): String
+        fun glslVertHeader(): String
 
         fun activeTexture(texture: Int)
         fun attachShader(program: ProgramResource, shader: ShaderResource)

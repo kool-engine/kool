@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform.js
 
-import de.fabmax.kool.*
+import de.fabmax.kool.gl.*
 import de.fabmax.kool.platform.*
 import org.khronos.webgl.*
 import org.w3c.dom.HTMLImageElement
@@ -9,13 +9,20 @@ import org.w3c.dom.HTMLImageElement
  * @author fabmax
  */
 class WebGlImpl private constructor() : GL.Impl {
-
     companion object {
         val instance = WebGlImpl()
     }
 
     override fun isAvailable(): Boolean {
         return true
+    }
+
+    override fun glslFragHeader(): String {
+        return "#version 100\n"
+    }
+
+    override fun glslVertHeader(): String {
+        return "#version 100\n"
     }
 
     override fun activeTexture(texture: Int) {
@@ -72,6 +79,10 @@ class WebGlImpl private constructor() : GL.Impl {
 
     override fun compileShader(shader: ShaderResource) {
         PlatformImpl.gl.compileShader(shader.glRef as WebGLShader)
+    }
+
+    override fun copyTexImage2D(target: Int, level: Int, internalformat: Int, x: Int, y: Int, width: Int, height: Int, border: Int) {
+        PlatformImpl.gl.copyTexImage2D(target, level, internalformat, x, y, width, height, border)
     }
 
     override fun createBuffer(): Any {

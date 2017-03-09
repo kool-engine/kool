@@ -28,7 +28,11 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
             nextTexUnit()
             bindToActiveTexUnit(texture.res)
         }
-        loadTexture(texture, ctx)
+        // upload texture data to GPU if that hasn't happened yet
+        if (!texRes.isLoaded) {
+            loadTexture(texture, ctx)
+        }
+
         return texRes.texUnit
     }
 
@@ -60,25 +64,24 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         boundTextures[activeTexUnit] = texRes
     }
 
-    private fun loadTexture(texture: Texture, ctx: RenderContext): Boolean {
+    private fun loadTexture(texture: Texture, ctx: RenderContext) {
         val res = texture.res ?: throw KoolException("Can't load a texture that wasn't created")
-        if (res.isLoaded) {
-            return true
-        }
 
+        // check if texture is already loading
         var data = loadingTextures[texture.props.id]
         if (data == null) {
+            // initiate loading of texture data
             data = texture.generator(texture)
             loadingTextures[texture.props.id] = data
         }
+        // texture data is available (depending on the texture source that might not be the case immediately)
         if (data.isAvailable) {
             if (res.texUnit != activeTexUnit) {
                 activateTexUnit(texture.res!!.texUnit)
             }
-            data.loadData(texture, ctx)
+            texture.loadData(data, ctx)
             loadingTextures.remove(texture.props.id)
         }
-        return res.isLoaded
     }
 
     override fun createResource(key: TextureProps, ctx: RenderContext): TextureResource {

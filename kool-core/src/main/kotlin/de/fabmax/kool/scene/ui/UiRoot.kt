@@ -62,9 +62,12 @@ class UiRoot(name: String = "UiRoot") : UiLayout(name) {
             onLayout(contentBounds, ctx)
         }
 
-        GL.depthMask(false)
+        ctx.pushAttributes()
+        ctx.isDepthMask = false
+        ctx.applyAttributes()
+
         super.render(ctx)
-        GL.depthMask(true)
+        ctx.popAttributes()
     }
 
     override fun applyBounds(bounds: BoundingBox, ctx: RenderContext) {

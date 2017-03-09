@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.platform.lwjgl3.*
+import de.fabmax.kool.shading.ShaderProps
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.GlslGenerator

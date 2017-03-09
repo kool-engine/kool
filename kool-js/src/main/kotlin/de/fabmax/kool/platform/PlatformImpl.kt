@@ -68,13 +68,7 @@ class PlatformImpl private constructor() : Platform() {
     }
 
     override fun createDefaultShaderGenerator(): ShaderGenerator {
-        val generator = GlslGenerator()
-        generator.injectors += object: ShaderGenerator.GlslInjector {
-            override fun fsStart(shaderProps: ShaderProps, text: StringBuilder) {
-                text.append("precision highp float;")
-            }
-        }
-        return generator
+        return GlslGenerator()
     }
 
     override fun getGlImpl(): GL.Impl {
@@ -150,10 +144,15 @@ class ImageTextureData(val image: HTMLImageElement) : TextureData() {
         get() = image.complete
         set(value) {}
 
+    init {
+        width = image.clientWidth
+        height = image.clientHeight
+    }
+
     override fun onLoad(texture: Texture, ctx: RenderContext) {
         // fixme: is there a way to find out if the image has an alpha channel and set the GL format accordingly?
         PlatformImpl.gl.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, image)
         val size = image.width * image.height * 4
         ctx.memoryMgr.memoryAllocated(texture.res!!, size)
     }
-    }
+}
