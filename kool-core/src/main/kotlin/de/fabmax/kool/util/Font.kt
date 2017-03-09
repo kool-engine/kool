@@ -5,8 +5,8 @@ import de.fabmax.kool.TextureData
 import de.fabmax.kool.TextureProps
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.Platform
-import de.fabmax.kool.platform.ShaderGenerator
 import de.fabmax.kool.shading.BasicShader
+import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.shading.ShaderProps
 
 /**
@@ -80,12 +80,12 @@ fun fontShader(font: Font?, propsInit: ShaderProps.() -> Unit = { }): BasicShade
 
     // inject shader code to take color from static color and alpha from texture
     // static color rgb has to be pre-multiplied with texture alpha
-    generator.injectors += object: ShaderGenerator.GlslInjector {
+    generator.injectors += object: GlslGenerator.GlslInjector {
         override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append("if (").append(ShaderGenerator.LOCAL_NAME_TEX_COLOR).append(".a == 0.0) { discard; }")
-            text.append(ShaderGenerator.LOCAL_NAME_FRAG_COLOR).append(" = ")
-                    .append(ShaderGenerator.LOCAL_NAME_VERTEX_COLOR).append(" * ")
-                    .append(ShaderGenerator.LOCAL_NAME_TEX_COLOR).append(".a;\n")
+            text.append("if (").append(GlslGenerator.LOCAL_NAME_TEX_COLOR).append(".a == 0.0) { discard; }")
+            text.append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" = ")
+                    .append(GlslGenerator.LOCAL_NAME_VERTEX_COLOR).append(" * ")
+                    .append(GlslGenerator.LOCAL_NAME_TEX_COLOR).append(".a;\n")
         }
     }
 

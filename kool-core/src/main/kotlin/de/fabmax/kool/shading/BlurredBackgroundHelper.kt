@@ -1,4 +1,4 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.shading
 
 import de.fabmax.kool.*
 import de.fabmax.kool.gl.FramebufferResource
@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.shading.*
+import de.fabmax.kool.util.*
 
 /**
  * @author fabmax
@@ -198,7 +199,7 @@ class BlurredBackgroundHelper(val texSize: Int = 256) {
         }
     }
 
-    private class BlurShaderTap9() : Shader(Shader.Source(
+    private class BlurShaderTap9() : Shader(Source(
             GL.glslVertHeader() +
                     "attribute vec3 aVertexPosition;\n" +
                     "attribute vec2 aVertexTexCoord;\n" +
@@ -229,8 +230,8 @@ class BlurredBackgroundHelper(val texSize: Int = 256) {
 
         override fun onLoad(ctx: RenderContext) {
             super.onLoad(ctx)
-            enableAttribute(Shader.Attribute.POSITIONS, "aVertexPosition", ctx)
-            enableAttribute(Shader.Attribute.TEXTURE_COORDS, "aVertexTexCoord", ctx)
+            enableAttribute(Attribute.POSITIONS, "aVertexPosition", ctx)
+            enableAttribute(Attribute.TEXTURE_COORDS, "aVertexTexCoord", ctx)
             setUniformLocation(uTexture, ctx)
             setUniformLocation(uTexSize, ctx)
             setUniformLocation(uDirection, ctx)

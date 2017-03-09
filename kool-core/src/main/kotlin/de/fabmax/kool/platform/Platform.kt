@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.TextureData
+import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
 
@@ -28,7 +29,7 @@ abstract class Platform {
             return instance.createContext(props)
         }
 
-        fun createDefaultShaderGenerator(): ShaderGenerator {
+        fun createDefaultShaderGenerator(): GlslGenerator {
             return instance.createDefaultShaderGenerator()
         }
 
@@ -69,13 +70,15 @@ abstract class Platform {
         }
     }
 
+    open fun createDefaultShaderGenerator(): GlslGenerator {
+        return GlslGenerator()
+    }
+
     abstract val supportsMultiContext: Boolean
 
     abstract val supportsUint32Indices: Boolean
 
     abstract fun createContext(props: RenderContext.InitProps): RenderContext
-
-    abstract fun createDefaultShaderGenerator(): ShaderGenerator
 
     abstract fun getGlImpl(): GL.Impl
 
@@ -102,10 +105,6 @@ abstract class Platform {
 
         override val supportsUint32Indices: Boolean
             get() = throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
-
-        override fun createDefaultShaderGenerator(): ShaderGenerator {
-            throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
-        }
 
         override fun getGlImpl(): GL.Impl {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")

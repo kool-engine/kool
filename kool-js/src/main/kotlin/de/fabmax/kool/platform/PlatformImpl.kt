@@ -4,10 +4,8 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.platform.js.*
-import de.fabmax.kool.shading.ShaderProps
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.GlslGenerator
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLImageElement
@@ -65,10 +63,6 @@ class PlatformImpl private constructor() : Platform() {
             }
         }
         return ctx
-    }
-
-    override fun createDefaultShaderGenerator(): ShaderGenerator {
-        return GlslGenerator()
     }
 
     override fun getGlImpl(): GL.Impl {

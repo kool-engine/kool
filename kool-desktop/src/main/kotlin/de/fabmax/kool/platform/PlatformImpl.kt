@@ -5,7 +5,7 @@ import de.fabmax.kool.platform.lwjgl3.*
 import de.fabmax.kool.shading.ShaderProps
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.GlslGenerator
+import de.fabmax.kool.shading.GlslGenerator
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWVidMode
@@ -84,10 +84,6 @@ class PlatformImpl private constructor() : Platform() {
         } else {
             throw IllegalArgumentException("Props must be of Lwjgl3Context.InitProps")
         }
-    }
-
-    override fun createDefaultShaderGenerator(): ShaderGenerator {
-        return GlslGenerator()
     }
 
     override fun getGlImpl(): GL.Impl {
