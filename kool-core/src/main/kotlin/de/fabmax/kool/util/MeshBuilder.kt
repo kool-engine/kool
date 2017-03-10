@@ -330,7 +330,8 @@ open class MeshBuilder(val meshData: MeshData) {
         }
 
         val dr = props.bottomRadius - props.topRadius
-        val nrmAng = 90f - toDeg(Math.acos(dr / Math.sqrt(dr.toDouble() * dr + props.height * props.height)).toFloat())
+        val nrmAng = 90f -
+                Math.toDeg(Math.acos(dr / Math.sqrt(dr.toDouble() * dr + props.height * props.height)).toFloat())
         var i0 = 0
         var i1 = 0
         for (i in 0..props.steps) {

@@ -2,6 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputHandler
 import de.fabmax.kool.MvpState
+import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.*
 
@@ -101,9 +102,9 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
         // if we get here extent point and center point are not visible, however they might be on opposing sides
         // of the view frustum, tmpUp and tmpLookAt store their coordinates in camera space, compare signs
-        if (sign(tmpUp.x) != sign(tmpLookAt.x) ||
-                sign(tmpUp.y) != sign(tmpLookAt.y) ||
-                sign(tmpUp.z) != sign(tmpLookAt.z)) {
+        if (Math.sign(tmpUp.x) != Math.sign(tmpLookAt.x) ||
+                Math.sign(tmpUp.y) != Math.sign(tmpLookAt.y) ||
+                Math.sign(tmpUp.z) != Math.sign(tmpLookAt.z)) {
             return true
         }
         // If we get here center and extent point are on the same side of the frustum and node is hopefully not visible
@@ -124,7 +125,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     fun project(result: MutableVec3f, world: Vec3f): Boolean {
         tmpVec4.set(world.x, world.y, world.z, 1f)
         mvp.transform(tmpVec4)
-        if (isZero(tmpVec4.w)) {
+        if (Math.isZero(tmpVec4.w)) {
             return false
         }
         result.set(tmpVec4.x, tmpVec4.y, tmpVec4.z).scale(1f / tmpVec4.w)

@@ -3,8 +3,6 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.Vec3f
-import de.fabmax.kool.util.clamp
-import de.fabmax.kool.util.isZero
 
 /**
  * A special kind of transform group which translates mouse input into a spherical transform. This is mainly useful
@@ -41,7 +39,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name) 
     var smoothness: Float = 0f
         set(value) {
             field = value
-            if (!isZero(value)) {
+            if (!Math.isZero(value)) {
                 stiffness = 10.0f / value
                 damping = 2f * Math.sqrt(stiffness.toDouble()).toFloat()
             }
@@ -61,15 +59,15 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name) 
     override fun render(ctx: RenderContext) {
         val pointer = ctx.inputHandler.primaryPointer
         if (pointer.isValid) {
-            if (!isZero(pointer.deltaScroll)) {
+            if (!Math.isZero(pointer.deltaScroll)) {
                 zoom *= 1f + pointer.deltaScroll / 10f
-                zoom = clamp(zoom, minZoom, maxZoom)
+                zoom = Math.clamp(zoom, minZoom, maxZoom)
             }
 
             if (pointer.isValid && pointer.isLeftButtonDown) {
                 verticalRotation -= pointer.deltaX / 3
                 horizontalRotation -= pointer.deltaY / 3
-                horizontalRotation = clamp(horizontalRotation, -90f, 90f)
+                horizontalRotation = Math.clamp(horizontalRotation, -90f, 90f)
             }
 
             animRotV.desired = verticalRotation
@@ -97,7 +95,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name) 
         }
 
         fun animate(deltaT: Float): Float {
-            if (isZero(smoothness) || deltaT > 0.2f) {
+            if (Math.isZero(smoothness) || deltaT > 0.2f) {
                 // don't care about smoothing on low frame rates
                 actual = desired
                 return actual

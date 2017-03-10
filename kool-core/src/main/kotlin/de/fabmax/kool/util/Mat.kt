@@ -2,12 +2,14 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.platform.Float32Buffer
+import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.Platform
 
 /**
  * @author fabmax
  */
 
+@Suppress("NOTHING_TO_INLINE")
 open class Mat4f {
 
     var matrix = FloatArray(16)
@@ -20,66 +22,198 @@ open class Mat4f {
     }
 
     fun translate(tx: Float, ty: Float, tz: Float): Mat4f {
-        MatrixMath.translateM(matrix, offset, tx, ty, tz)
+        for (i in 0..3) {
+            val mi = offset + i
+            matrix[12 + mi] += matrix[mi] * tx + matrix[4 + mi] * ty + matrix[8 + mi] * tz
+        }
         return this
     }
 
     fun translate(result: Mat4f, tx: Float, ty: Float, tz: Float): Mat4f {
-        MatrixMath.translateM(result.matrix, result.offset, matrix, offset, tx, ty, tz)
+        for (i in 0..11) {
+            result.matrix[result.offset + i] = matrix[offset + i]
+        }
+        for (i in 0..3) {
+            val mi = offset + i
+            result.matrix[result.offset + 12 + i] =
+                    matrix[mi] * tx + matrix[4 + mi] * ty + matrix[8 + mi] * tz + matrix[12 + mi]
+        }
         return result
     }
 
     fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat4f {
-        MatrixMath.rotateM(matrix, offset, angleDeg, axX, axY, axZ)
+        synchronized(tmpMatLock) {
+            tmpMatA.setRotate(angleDeg, axX, axY, axZ)
+            set(mul(tmpMatB, tmpMatA))
+        }
         return this
     }
 
     fun rotate(result: Mat4f, angleDeg: Float, axis: Vec3f) = rotate(result, angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(result: Mat4f, angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat4f {
-        MatrixMath.rotateM(result.matrix, result.offset, matrix, offset, angleDeg, axX, axY, axZ)
+        synchronized(tmpMatLock) {
+            tmpMatA.setRotate(angleDeg, axX, axY, axZ)
+            mul(result, tmpMatA)
+        }
         return result
     }
 
-    // fixme: MatrixMath.rotateEulerM seems to be broken...
-//    fun rotateEuler(xDeg: Float, yDeg: Float, zDeg: Float): Mat4f {
-//        MatrixMath.rotateEulerM(matrix, offset, xDeg, yDeg, zDeg)
-//        return this
-//    }
-//
-//    fun rotateEuler(result: Mat4f, xDeg: Float, yDeg: Float, zDeg: Float): Mat4f {
-//        MatrixMath.rotateEulerM(result.matrix, result.offset, matrix, offset, xDeg, yDeg, zDeg)
-//        return result
-//    }
-
     fun scale(sx: Float, sy: Float, sz: Float): Mat4f {
-        MatrixMath.scaleM(matrix, offset, sx, sy, sz)
+        for (i in 0..3) {
+            val mi = offset + i
+            matrix[mi] *= sx
+            matrix[4 + mi] *= sy
+            matrix[8 + mi] *= sz
+        }
         return this
     }
 
     fun scale(result: Mat4f, sx: Float, sy: Float, sz: Float): Mat4f {
-        MatrixMath.scaleM(result.matrix, result.offset, matrix, offset, sx, sy, sz)
+        for (i in 0..3) {
+            val smi = result.offset + i
+            val mi = offset + i
+            result.matrix[smi] = matrix[mi] * sx
+            result.matrix[4 + smi] = matrix[4 + mi] * sy
+            result.matrix[8 + smi] = matrix[8 + mi] * sz
+            result.matrix[12 + smi] = matrix[12 + mi]
+        }
         return result
     }
 
     fun transpose(): Mat4f {
-        MatrixMath.transposeM(matrix, offset)
+        synchronized(tmpMatLock) {
+            set(transpose(tmpMatA))
+        }
         return this
     }
 
     fun transpose(result: Mat4f): Mat4f {
-        MatrixMath.transposeM(result.matrix, result.offset, matrix, offset)
+        for (i in 0..3) {
+            val mBase = i * 4 + offset
+            result.matrix[i + result.offset] = matrix[mBase]
+            result.matrix[i + 4 + result.offset] = matrix[mBase + 1]
+            result.matrix[i + 8 + result.offset] = matrix[mBase + 2]
+            result.matrix[i + 12 + result.offset] = matrix[mBase + 3]
+        }
         return result
     }
 
     fun invert(): Boolean {
-        return MatrixMath.invertM(matrix, offset)
+        var success = false
+        synchronized(tmpMatLock) {
+            success = invert(tmpMatA)
+            if (success) {
+                set(tmpMatA)
+            }
+        }
+        return success
     }
 
     fun invert(result: Mat4f): Boolean {
-        return MatrixMath.invertM(result.matrix, result.offset, matrix, offset)
+        // Invert a 4 x 4 matrix using Cramer's Rule
+
+        // transpose matrix
+        val src0 = matrix[offset + 0]
+        val src4 = matrix[offset + 1]
+        val src8 = matrix[offset + 2]
+        val src12 = matrix[offset + 3]
+
+        val src1 = matrix[offset + 4]
+        val src5 = matrix[offset + 5]
+        val src9 = matrix[offset + 6]
+        val src13 = matrix[offset + 7]
+
+        val src2 = matrix[offset + 8]
+        val src6 = matrix[offset + 9]
+        val src10 = matrix[offset + 10]
+        val src14 = matrix[offset + 11]
+
+        val src3 = matrix[offset + 12]
+        val src7 = matrix[offset + 13]
+        val src11 = matrix[offset + 14]
+        val src15 = matrix[offset + 15]
+
+        // calculate pairs for first 8 elements (cofactors)
+        val atmp0 = src10 * src15
+        val atmp1 = src11 * src14
+        val atmp2 = src9 * src15
+        val atmp3 = src11 * src13
+        val atmp4 = src9 * src14
+        val atmp5 = src10 * src13
+        val atmp6 = src8 * src15
+        val atmp7 = src11 * src12
+        val atmp8 = src8 * src14
+        val atmp9 = src10 * src12
+        val atmp10 = src8 * src13
+        val atmp11 = src9 * src12
+
+        // calculate first 8 elements (cofactors)
+        val dst0 = atmp0 * src5 + atmp3 * src6 + atmp4 * src7 - (atmp1 * src5 + atmp2 * src6 + atmp5 * src7)
+        val dst1 = atmp1 * src4 + atmp6 * src6 + atmp9 * src7 - (atmp0 * src4 + atmp7 * src6 + atmp8 * src7)
+        val dst2 = atmp2 * src4 + atmp7 * src5 + atmp10 * src7 - (atmp3 * src4 + atmp6 * src5 + atmp11 * src7)
+        val dst3 = atmp5 * src4 + atmp8 * src5 + atmp11 * src6 - (atmp4 * src4 + atmp9 * src5 + atmp10 * src6)
+        val dst4 = atmp1 * src1 + atmp2 * src2 + atmp5 * src3 - (atmp0 * src1 + atmp3 * src2 + atmp4 * src3)
+        val dst5 = atmp0 * src0 + atmp7 * src2 + atmp8 * src3 - (atmp1 * src0 + atmp6 * src2 + atmp9 * src3)
+        val dst6 = atmp3 * src0 + atmp6 * src1 + atmp11 * src3 - (atmp2 * src0 + atmp7 * src1 + atmp10 * src3)
+        val dst7 = atmp4 * src0 + atmp9 * src1 + atmp10 * src2 - (atmp5 * src0 + atmp8 * src1 + atmp11 * src2)
+
+        // calculate pairs for second 8 elements (cofactors)
+        val btmp0 = src2 * src7
+        val btmp1 = src3 * src6
+        val btmp2 = src1 * src7
+        val btmp3 = src3 * src5
+        val btmp4 = src1 * src6
+        val btmp5 = src2 * src5
+        val btmp6 = src0 * src7
+        val btmp7 = src3 * src4
+        val btmp8 = src0 * src6
+        val btmp9 = src2 * src4
+        val btmp10 = src0 * src5
+        val btmp11 = src1 * src4
+
+        // calculate second 8 elements (cofactors)
+        val dst8 = btmp0 * src13 + btmp3 * src14 + btmp4 * src15 - (btmp1 * src13 + btmp2 * src14 + btmp5 * src15)
+        val dst9 = btmp1 * src12 + btmp6 * src14 + btmp9 * src15 - (btmp0 * src12 + btmp7 * src14 + btmp8 * src15)
+        val dst10 = btmp2 * src12 + btmp7 * src13 + btmp10 * src15 - (btmp3 * src12 + btmp6 * src13 + btmp11 * src15)
+        val dst11 = btmp5 * src12 + btmp8 * src13 + btmp11 * src14 - (btmp4 * src12 + btmp9 * src13 + btmp10 * src14)
+        val dst12 = btmp2 * src10 + btmp5 * src11 + btmp1 * src9 - (btmp4 * src11 + btmp0 * src9 + btmp3 * src10)
+        val dst13 = btmp8 * src11 + btmp0 * src8 + btmp7 * src10 - (btmp6 * src10 + btmp9 * src11 + btmp1 * src8)
+        val dst14 = btmp6 * src9 + btmp11 * src11 + btmp3 * src8 - (btmp10 * src11 + btmp2 * src8 + btmp7 * src9)
+        val dst15 = btmp10 * src10 + btmp4 * src8 + btmp9 * src9 - (btmp8 * src9 + btmp11 * src10 + btmp5 * src8)
+
+        // calculate determinant
+        val det = src0 * dst0 + src1 * dst1 + src2 * dst2 + src3 * dst3
+
+        if (det == 0.0f) {
+            return false
+        }
+
+        // calculate matrix inverse
+        val invdet = 1.0f / det
+        result.matrix[result.offset] = dst0 * invdet
+        result.matrix[1 + result.offset] = dst1 * invdet
+        result.matrix[2 + result.offset] = dst2 * invdet
+        result.matrix[3 + result.offset] = dst3 * invdet
+
+        result.matrix[4 + result.offset] = dst4 * invdet
+        result.matrix[5 + result.offset] = dst5 * invdet
+        result.matrix[6 + result.offset] = dst6 * invdet
+        result.matrix[7 + result.offset] = dst7 * invdet
+
+        result.matrix[8 + result.offset] = dst8 * invdet
+        result.matrix[9 + result.offset] = dst9 * invdet
+        result.matrix[10 + result.offset] = dst10 * invdet
+        result.matrix[11 + result.offset] = dst11 * invdet
+
+        result.matrix[12 + result.offset] = dst12 * invdet
+        result.matrix[13 + result.offset] = dst13 * invdet
+        result.matrix[14 + result.offset] = dst14 * invdet
+        result.matrix[15 + result.offset] = dst15 * invdet
+
+        return true
     }
 
     fun transform(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
@@ -113,12 +247,23 @@ open class Mat4f {
     }
 
     fun mul(other: Mat4f): Mat4f {
-        MatrixMath.multiplyMM(matrix, offset, other.matrix, other.offset)
+        synchronized(tmpMatLock) {
+            mul(tmpMatA, other)
+            set(tmpMatA)
+        }
         return this
     }
 
     fun mul(result: Mat4f, other: Mat4f): Mat4f {
-        MatrixMath.multiplyMM(result.matrix, result.offset, matrix, offset, other.matrix, other.offset)
+        for (i in 0..3) {
+            for (j in 0..3) {
+                var x = 0f
+                for (k in 0..3) {
+                    x += matrix[offset + j + k * 4] * other.matrix[other.offset + i * 4 + k]
+                }
+                result.matrix[result.offset + i * 4 + j] = x
+            }
+        }
         return result
     }
 
@@ -130,39 +275,219 @@ open class Mat4f {
     }
 
     fun setIdentity(): Mat4f {
-        MatrixMath.setIdentityM(matrix, offset)
+        for (i in 1..15) {
+            matrix[offset + i] = 0f
+        }
+        for (i in 0..15 step 5) {
+            matrix[offset + i] = 1f
+        }
+        return this
+    }
+
+    fun setRotate(rotA: Float, axX: Float, axY: Float, axZ: Float): Mat4f {
+        val a = Math.toRad(rotA)
+        var x = axX
+        var y = axY
+        var z = axZ
+        matrix[offset + 3] = 0f
+        matrix[offset + 7] = 0f
+        matrix[offset + 11] = 0f
+        matrix[offset + 12] = 0f
+        matrix[offset + 13] = 0f
+        matrix[offset + 14] = 0f
+        matrix[offset + 15] = 1f
+        val s = Math.sin(a.toDouble()).toFloat()
+        val c = Math.cos(a.toDouble()).toFloat()
+        if (1.0f == x && 0.0f == y && 0.0f == z) {
+            matrix[offset + 5] = c
+            matrix[offset + 10] = c
+            matrix[offset + 6] = s
+            matrix[offset + 9] = -s
+            matrix[offset + 1] = 0f
+            matrix[offset + 2] = 0f
+            matrix[offset + 4] = 0f
+            matrix[offset + 8] = 0f
+            matrix[offset + 0] = 1f
+        } else if (0.0f == x && 1.0f == y && 0.0f == z) {
+            matrix[offset + 0] = c
+            matrix[offset + 10] = c
+            matrix[offset + 8] = s
+            matrix[offset + 2] = -s
+            matrix[offset + 1] = 0f
+            matrix[offset + 4] = 0f
+            matrix[offset + 6] = 0f
+            matrix[offset + 9] = 0f
+            matrix[offset + 5] = 1f
+        } else if (0.0f == x && 0.0f == y && 1.0f == z) {
+            matrix[offset + 0] = c
+            matrix[offset + 5] = c
+            matrix[offset + 1] = s
+            matrix[offset + 4] = -s
+            matrix[offset + 2] = 0f
+            matrix[offset + 6] = 0f
+            matrix[offset + 8] = 0f
+            matrix[offset + 9] = 0f
+            matrix[offset + 10] = 1f
+        } else {
+            val len = Math.sqrt((x*x + y*y + z*z).toDouble()).toFloat()
+            if (!Math.isEqual(len, 1f)) {
+                val recipLen = 1.0f / len
+                x *= recipLen
+                y *= recipLen
+                z *= recipLen
+            }
+            val nc = 1.0f - c
+            val xy = x * y
+            val yz = y * z
+            val zx = z * x
+            val xs = x * s
+            val ys = y * s
+            val zs = z * s
+            matrix[offset + 0] = x * x * nc + c
+            matrix[offset + 4] = xy * nc - zs
+            matrix[offset + 8] = zx * nc + ys
+            matrix[offset + 1] = xy * nc + zs
+            matrix[offset + 5] = y * y * nc + c
+            matrix[offset + 9] = yz * nc - xs
+            matrix[offset + 2] = zx * nc - ys
+            matrix[offset + 6] = yz * nc + xs
+            matrix[offset + 10] = z * z * nc + c
+        }
         return this
     }
 
     fun setLookAt(position: Vec3f, lookAt: Vec3f, up: Vec3f): Mat4f {
-        MatrixMath.setLookAtM(matrix, offset, position.x, position.y, position.z, lookAt.x, lookAt.y, lookAt.z,
-                up.x, up.y, up.z)
-        return this
+        // See the OpenGL GLUT documentation for gluLookAt for a description
+        // of the algorithm. We implement it in a straightforward way:
+        var fx = lookAt.x - position.x
+        var fy = lookAt.y - position.y
+        var fz = lookAt.z - position.z
+
+        // Normalize f
+        val rlf = 1.0f / Math.sqrt((fx*fx + fy*fy + fz*fz).toDouble()).toFloat()
+        fx *= rlf
+        fy *= rlf
+        fz *= rlf
+
+        // compute s = f x up (x means "cross product")
+        var sx = fy * up.z - fz * up.y
+        var sy = fz * up.x - fx * up.z
+        var sz = fx * up.y - fy * up.x
+
+        // and normalize s
+        val rls = 1.0f / Math.sqrt((sx*sx + sy*sy + sz*sz).toDouble()).toFloat()
+        sx *= rls
+        sy *= rls
+        sz *= rls
+
+        // compute u = s x f
+        val ux = sy * fz - sz * fy
+        val uy = sz * fx - sx * fz
+        val uz = sx * fy - sy * fx
+
+        matrix[offset + 0] = sx
+        matrix[offset + 1] = ux
+        matrix[offset + 2] = -fx
+        matrix[offset + 3] = 0.0f
+
+        matrix[offset + 4] = sy
+        matrix[offset + 5] = uy
+        matrix[offset + 6] = -fy
+        matrix[offset + 7] = 0.0f
+
+        matrix[offset + 8] = sz
+        matrix[offset + 9] = uz
+        matrix[offset + 10] = -fz
+        matrix[offset + 11] = 0.0f
+
+        matrix[offset + 12] = 0.0f
+        matrix[offset + 13] = 0.0f
+        matrix[offset + 14] = 0.0f
+        matrix[offset + 15] = 1.0f
+
+        return translate(-position.x, -position.y, -position.z)
     }
 
     fun setOrthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float): Mat4f {
-        MatrixMath.setOrthoM(matrix, offset, left, right, bottom, top, near, far)
+        if (left == right) {
+            throw IllegalArgumentException("left == right")
+        }
+        if (bottom == top) {
+            throw IllegalArgumentException("bottom == top")
+        }
+        if (near == far) {
+            throw IllegalArgumentException("near == far")
+        }
+
+        val width = 1.0f / (right - left)
+        val height = 1.0f / (top - bottom)
+        val depth = 1.0f / (far - near)
+        val x = 2.0f * width
+        val y = 2.0f * height
+        val z = -2.0f * depth
+        val tx = -(right + left) * width
+        val ty = -(top + bottom) * height
+        val tz = -(far + near) * depth
+        matrix[offset + 0] = x
+        matrix[offset + 5] = y
+        matrix[offset + 10] = z
+        matrix[offset + 12] = tx
+        matrix[offset + 13] = ty
+        matrix[offset + 14] = tz
+        matrix[offset + 15] = 1.0f
+        matrix[offset + 1] = 0.0f
+        matrix[offset + 2] = 0.0f
+        matrix[offset + 3] = 0.0f
+        matrix[offset + 4] = 0.0f
+        matrix[offset + 6] = 0.0f
+        matrix[offset + 7] = 0.0f
+        matrix[offset + 8] = 0.0f
+        matrix[offset + 9] = 0.0f
+        matrix[offset + 11] = 0.0f
+
         return this
     }
 
     fun setPerspective(fovy: Float, aspect: Float, near: Float, far: Float): Mat4f {
-        MatrixMath.setPerspectiveM(matrix, offset, fovy, aspect, near, far)
+        val f = 1.0f / Math.tan(fovy * (Math.PI / 360.0)).toFloat()
+        val rangeReciprocal = 1.0f / (near - far)
+
+        matrix[offset + 0] = f / aspect
+        matrix[offset + 1] = 0.0f
+        matrix[offset + 2] = 0.0f
+        matrix[offset + 3] = 0.0f
+
+        matrix[offset + 4] = 0.0f
+        matrix[offset + 5] = f
+        matrix[offset + 6] = 0.0f
+        matrix[offset + 7] = 0.0f
+
+        matrix[offset + 8] = 0.0f
+        matrix[offset + 9] = 0.0f
+        matrix[offset + 10] = (far + near) * rangeReciprocal
+        matrix[offset + 11] = -1.0f
+
+        matrix[offset + 12] = 0.0f
+        matrix[offset + 13] = 0.0f
+        matrix[offset + 14] = 2.0f * far * near * rangeReciprocal
+        matrix[offset + 15] = 0.0f
+
         return this
     }
 
-    operator fun get(i: Int): Float {
+    inline operator fun get(i: Int): Float {
         return matrix[offset + i]
     }
 
-    operator fun get(col: Int, row: Int): Float {
+    inline operator fun get(col: Int, row: Int): Float {
         return matrix[offset + col * 4 + row]
     }
 
-    operator fun set(i: Int, value: Float) {
+    inline operator fun set(i: Int, value: Float) {
         matrix[offset + i] = value
     }
 
-    operator fun set(col: Int, row: Int, value: Float) {
+    inline operator fun set(col: Int, row: Int, value: Float) {
         matrix[offset + col * 4 + row] = value
     }
 
@@ -170,6 +495,12 @@ open class Mat4f {
         buffer.put(matrix, offset, 16)
         buffer.flip()
         return buffer
+    }
+
+    companion object {
+        private val tmpMatLock = Any()
+        private val tmpMatA = Mat4f()
+        private val tmpMatB = Mat4f()
     }
 }
 

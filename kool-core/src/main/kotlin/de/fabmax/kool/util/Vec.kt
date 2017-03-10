@@ -31,7 +31,7 @@ open class Vec2f(x: Float, y: Float) {
     }
 
     fun isEqual(other: Vec2f): Boolean {
-        return isEqual(x, other.x) && isEqual(y, other.y)
+        return Math.isEqual(x, other.x) && Math.isEqual(y, other.y)
     }
 
     companion object {
@@ -98,7 +98,7 @@ open class Vec3f(x: Float, y: Float, z: Float) {
     }
 
     fun isEqual(other: Vec3f): Boolean {
-        return isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z)
+        return Math.isEqual(x, other.x) && Math.isEqual(y, other.y) && Math.isEqual(z, other.z)
     }
 
     operator fun times(other: Vec3f): Float {
@@ -237,7 +237,7 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
     }
 
     fun rotate(angleDeg: Float, axisX: Float, axisY: Float, axisZ: Float): MutableVec3f {
-        val rad = toRad(angleDeg).toDouble()
+        val rad = Math.toRad(angleDeg).toDouble()
         val c = Math.cos(rad).toFloat()
         val c1 = 1f - c
         val s = Math.sin(rad).toFloat()
@@ -285,7 +285,8 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
     }
 
     fun isEqual(other: Vec4f): Boolean {
-        return isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z) && isEqual(w, other.w)
+        return Math.isEqual(x, other.x) && Math.isEqual(y, other.y) &&
+                Math.isEqual(z, other.z) && Math.isEqual(w, other.w)
     }
 
     companion object {
