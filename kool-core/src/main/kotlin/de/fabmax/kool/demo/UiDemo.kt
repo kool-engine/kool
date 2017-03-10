@@ -36,7 +36,7 @@ fun uiDemo(ctx: RenderContext) {
         +UiRoot().apply {
             //isFillViewport = true
             translate(-globalWidth /2, -globalHeight/2, 0f)
-            scaleContentTo(dp(400f), 96f)
+            scaleContentTo(dp(400f), ctx.screenDpi)
 
             for (i in 1..1) {
                 +UiPanel("button $i").apply {

@@ -75,6 +75,10 @@ open class GlslGenerator {
 
     val customUnitforms: MutableMap<String, Uniform<*>> = mutableMapOf()
 
+    fun addCustomUniform(uniform: Uniform<*>) {
+        customUnitforms.put(uniform.name, uniform);
+    }
+
     fun onLoad(shader: BasicShader, ctx: RenderContext) {
         shader.enableAttribute(Shader.Attribute.POSITIONS, ATTRIBUTE_NAME_POSITION, ctx)
         shader.enableAttribute(Shader.Attribute.NORMALS, ATTRIBUTE_NAME_NORMAL, ctx)
@@ -192,6 +196,10 @@ open class GlslGenerator {
         // if fog is enabled, fragment shader needs to know the world position
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
             text.append("varying vec3 ").append(VARYING_NAME_POSITION_WORLDSPACE).append(";\n")
+        }
+
+        for (uniform in customUnitforms.values) {
+            text.append("uniform ${uniform.type} ${uniform.name};\n");
         }
     }
 
@@ -322,6 +330,10 @@ open class GlslGenerator {
             text.append("uniform vec4 ").append(UNIFORM_FOG_COLOR).append(";\n")
             text.append("uniform float ").append(UNIFORM_FOG_RANGE).append(";\n")
             text.append("varying vec3 ").append(VARYING_NAME_POSITION_WORLDSPACE).append(";\n")
+        }
+
+        for (uniform in customUnitforms.values) {
+            text.append("uniform ${uniform.type} ${uniform.name};\n");
         }
     }
 

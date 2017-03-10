@@ -44,13 +44,11 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
     init {
         contentMeshData.usage = GL.DYNAMIC_DRAW
         contentMesh = Mesh(contentMeshData)
-
-//        contentMesh.shader = basicShader {
-//            lightModel = LightModel.PHONG_LIGHTING
-//            colorModel = ColorModel.TEXTURE_COLOR
-//        }.apply { texture = bgHelper.blurredBgTex }
-
-        contentMesh.shader = blurShader(bgHelper)
+        contentMesh.shader = blurShader(bgHelper) {
+            colorModel = ColorModel.VERTEX_COLOR
+        }.apply {
+            colorMix = 0.7f
+        }
         addNode(contentMesh)
     }
 
@@ -66,11 +64,6 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
             update(ctx)
         }
         bgHelper.updateDistortionTexture(contentMesh, ctx)
-        for (i in 0..(contentMeshData.data.size-1)) {
-            contentMeshItem.index = i
-            bgHelper.computeTexCoords(contentMeshItem.texCoord, contentMeshItem.position, contentMesh, ctx)
-        }
-        contentMeshData.isSyncRequired = true
 
         super.render(ctx)
     }
@@ -79,7 +72,6 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
         isUpdateNeeded = false
 
         contentMeshData.clear()
-
         contentMeshBuilder.identity()
         contentMeshBuilder.translate(contentBounds.min)
         drawBackground(contentMeshBuilder, ctx)

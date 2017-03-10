@@ -27,6 +27,8 @@ abstract class RenderContext {
         protected set
     var deltaT: Float = 0.0f
         protected set
+    var frameIdx = 0
+        private set
 
     var scene: Scene = Scene()
 
@@ -64,6 +66,7 @@ abstract class RenderContext {
     }
 
     protected open fun render(dt: Float) {
+        frameIdx++
         time += dt
         deltaT = dt
 
