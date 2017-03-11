@@ -33,7 +33,7 @@ abstract class RenderContext {
     var scene: Scene = Scene()
 
     private val attribs = Attribs()
-    private val attribsStack = Array<Attribs>(16, { Attribs() })
+    private val attribsStack = Array(16, { Attribs() })
     private var attribsStackIdx = 0
 
     var viewportWidth by attribs.viewportWidth

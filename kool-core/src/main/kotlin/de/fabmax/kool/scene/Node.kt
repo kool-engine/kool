@@ -13,11 +13,11 @@ import de.fabmax.kool.util.RayTest
  */
 abstract class Node(val name: String? = null) {
 
-    var onRender: (Node.(RenderContext) -> Unit)? = null
+    open var onRender: (Node.(RenderContext) -> Unit)? = null
 
-    var onHoverEnter: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
-    var onHover: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
-    var onHoverExit: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
+    open var onHoverEnter: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
+    open var onHover: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
+    open var onHoverExit: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
 
     /**
      * Axis-aligned bounds of this node, implementations should set and refresh their bounds on every frame
@@ -28,18 +28,18 @@ abstract class Node(val name: String? = null) {
     /**
      * Parent node is set when this node is added to a [TransformGroup]
      */
-    var parent: Node? = null
+    open var parent: Node? = null
 
     /**
      * Determines the visibility of this node. If visible is false this node will be skipped on
      * rendering. Implementations must consider this flag in order to get the expected behaviour.
      */
-    var isVisible = true
+    open var isVisible = true
 
     /**
      * Determines whether this node is considered for ray-picking tests.
      */
-    var isPickable = true
+    open var isPickable = true
 
     /**
      * Renders this node using the specified graphics engine context. Implementations should consider the [isVisible]

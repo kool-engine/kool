@@ -5,7 +5,6 @@ package de.fabmax.kool.platform
  *
  * @author fabmax
  */
-@Suppress("NOTHING_TO_INLINE")
 class Math private constructor() {
     companion object {
         val impl = Platform.getMathImpl()
@@ -15,13 +14,17 @@ class Math private constructor() {
         const val DEG_2_RAD = PI / 180.0
         const val RAD_2_DEG = 180.0 / PI
 
-        inline fun toDeg(rad: Float): Float {
-            return rad * RAD_2_DEG.toFloat()
-        }
+        fun toDeg(rad: Float) = rad * RAD_2_DEG.toFloat()
+        fun toRad(deg: Float) = deg * DEG_2_RAD.toFloat()
 
-        inline fun toRad(deg: Float): Float {
-            return deg * DEG_2_RAD.toFloat()
-        }
+        fun isEqual(a: Float, b: Float) = isZero(a - b)
+        fun isEqual(a: Double, b: Double) = isZero(a - b)
+
+        fun isZero(value: Float) = abs(value.toDouble()) < 1e-5
+        fun isZero(value: Double) = abs(value) < 1e-10
+
+        fun sign(f: Float) = if (f < 0) -1 else 1
+        fun sign(d: Double) = if (d < 0) -1 else 1
 
         fun clamp(value: Int, min: Int = 0, max: Int = 1): Int {
             if (value < min) {
@@ -51,30 +54,6 @@ class Math private constructor() {
             } else {
                 return value
             }
-        }
-
-        fun isEqual(a: Float, b: Float): Boolean {
-            return isZero(a - b)
-        }
-
-        fun isEqual(a: Double, b: Double): Boolean {
-            return isZero(a - b)
-        }
-
-        fun isZero(value: Float): Boolean {
-            return abs(value.toDouble()) < 1e-5
-        }
-
-        fun isZero(value: Double): Boolean {
-            return abs(value) < 1e-10
-        }
-
-        fun sign(f: Float): Int {
-            return if (f < 0) -1 else 1
-        }
-
-        fun sign(d: Double): Int {
-            return if (d < 0) -1 else 1
         }
 
         fun random(): Double = impl.random()

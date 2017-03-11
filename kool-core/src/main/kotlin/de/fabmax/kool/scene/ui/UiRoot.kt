@@ -8,7 +8,9 @@ import de.fabmax.kool.util.RayTest
 /**
  * @author fabmax
  */
-class UiRoot(name: String = "UiRoot") : UiLayout(name) {
+class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : UiLayout(name) {
+
+    override var root: UiRoot? = this
 
     var globalWidth = 10f
         set(value) {
@@ -43,8 +45,8 @@ class UiRoot(name: String = "UiRoot") : UiLayout(name) {
         this.globalDepth = depth
     }
 
-    fun scaleContentTo(scaledContentHeight: SizeSpec, dpi: Float) {
-        contentScale = 1f / (scaledContentHeight.toUnits(globalHeight, dpi) / globalHeight)
+    fun scaleContentTo(scaledContentHeight: SizeSpec) {
+        contentScale = 1f / (scaledContentHeight.toUnits(globalHeight, uiDpi) / globalHeight)
         scale(contentScale, contentScale, contentScale)
     }
 
@@ -65,6 +67,8 @@ class UiRoot(name: String = "UiRoot") : UiLayout(name) {
         ctx.pushAttributes()
         ctx.isDepthMask = false
         ctx.applyAttributes()
+
+        ctx.screenDpi
 
         super.render(ctx)
         ctx.popAttributes()

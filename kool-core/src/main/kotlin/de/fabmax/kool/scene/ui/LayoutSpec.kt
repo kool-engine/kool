@@ -44,22 +44,14 @@ fun mm(value: Float) = SizeSpec(value, Unit.MM)
 fun pc(value: Float) = SizeSpec(value, Unit.PC)
 
 fun pc(pc: Float, size: Float) = size * pc / 100f
-fun dp(dp: Float, ctx: RenderContext) = dp * ctx.screenDpi / 96f
 fun dp(dp: Float, dpi: Float) = dp * dpi / 96f
-fun mm(mm: Float, ctx: RenderContext) = mm * ctx.screenDpi / 25.4f
 fun mm(mm: Float, dpi: Float) = mm * dpi / 25.4f
 
 fun pcR(pc: Float, size: Float) = Math.round(size * pc / 100f).toFloat()
-fun dpR(dp: Float, ctx: RenderContext) = Math.round(dp * ctx.screenDpi / 96f).toFloat()
 fun dpR(dp: Float, dpi: Float) = Math.round(dp * dpi / 96f).toFloat()
-fun mmR(mm: Float, ctx: RenderContext) = Math.round(mm * ctx.screenDpi / 25.4f).toFloat()
 fun mmR(mm: Float, dpi: Float) = Math.round(mm * dpi / 25.4f).toFloat()
 
 data class SizeSpec(val value: Float, val unit: Unit) {
-    fun toUnits(size: Float, ctx: RenderContext): Float {
-        return toUnits(size, ctx.screenDpi)
-    }
-
     fun toUnits(size: Float, dpi: Float): Float {
         return when(unit) {
             Unit.UN -> value

@@ -14,8 +14,7 @@ import de.fabmax.kool.util.*
  * @author fabmax
  */
 class BlurredBackgroundHelper(
-        val texSize: Int = 256,
-        val distMethod: BlurMethod = BlurredBackgroundHelper.BlurMethod.BLUR_13_TAP) {
+        val texSize: Int = 256, blurMethod: BlurMethod = BlurredBackgroundHelper.BlurMethod.BLUR_13_TAP) {
 
     enum class BlurMethod {
         BLUR_9_TAP,
@@ -44,7 +43,7 @@ class BlurredBackgroundHelper(
     val capturedScrW: Int get() = copyTexData.width
     val capturedScrH: Int get() = copyTexData.height
 
-    var numPasses = 3
+    var numPasses = 2
 
     init {
         val id = Math.random()
@@ -76,7 +75,7 @@ class BlurredBackgroundHelper(
             }
         }
 
-        blurX = when(distMethod) {
+        blurX = when(blurMethod) {
             BlurMethod.BLUR_9_TAP -> BlurShader9Tap()
             BlurMethod.BLUR_13_TAP -> BlurShader13Tap()
         }.apply {
@@ -84,7 +83,7 @@ class BlurredBackgroundHelper(
             uDirection.value.set(1f / texSize, 0f)
         }
 
-        blurY = when(distMethod) {
+        blurY = when(blurMethod) {
             BlurMethod.BLUR_9_TAP -> BlurShader9Tap()
             BlurMethod.BLUR_13_TAP -> BlurShader13Tap()
         }.apply {

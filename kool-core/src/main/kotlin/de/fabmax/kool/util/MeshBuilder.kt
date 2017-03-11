@@ -366,10 +366,6 @@ open class MeshBuilder(val meshData: MeshData) {
     fun text(props: TextProps) {
         withTransform {
             translate(props.origin)
-//            if (props.dpi != 96f) {
-//                val s = props.dpi / 96f
-//                scale(s, s, s)
-//            }
 
             var advanced = 0f
             for (c in props.text) {

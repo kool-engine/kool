@@ -6,6 +6,7 @@ import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.*
 
@@ -17,6 +18,19 @@ open class UiPanel(name: String? = null) : Group(name), UiNode {
 
     override var layoutSpec = LayoutSpec()
     override val contentBounds = BoundingBox()
+
+    override var root: UiRoot? = null
+    override var parent: Node?
+        get() = super.parent
+        set(value) {
+            super.parent = value
+            if (value == null) {
+                root = null
+            } else if (value is UiNode) {
+                root = value.root
+                children.filter { it is UiNode }.forEach { (it as UiNode).root = root }
+            }
+        }
 
     protected var isUpdateNeeded = true
 

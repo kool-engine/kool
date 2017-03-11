@@ -20,6 +20,8 @@ interface UiNode {
     val depth: Float
         get() = contentBounds.size.z
 
+    var root: UiRoot?
+
     fun onLayout(bounds: BoundingBox, ctx: RenderContext)
 
 }
