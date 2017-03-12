@@ -6,6 +6,7 @@ import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.CharMetrics
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontProps
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
@@ -27,21 +28,20 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D
     }
 
-    fun createCharMap(font: Font, chars: String): CharMap {
+    fun createCharMap(fontProps: FontProps): CharMap {
         // clear canvas
         canvasCtx.clearRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
 
-        // in canvas fonts seem to be pretty heavy by default, use lighter to compensate that
-        var style = "lighter "
-        if (font.style and Font.BOLD != 0) {
+        var style = ""
+        if (fontProps.style and Font.BOLD != 0) {
             style = "bold "
         }
-        if (font.style and Font.ITALIC != 0) {
+        if (fontProps.style and Font.ITALIC != 0) {
             style += "italic "
         }
 
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
-        val texHeight = makeMap(chars, font, style, metrics)
+        val texHeight = makeMap(fontProps, style, metrics)
 
         val data = canvasCtx.getImageData(0.0, 0.0, maxWidth.toDouble(), texHeight.toDouble())
 
@@ -53,17 +53,17 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, GL.ALPHA), metrics)
     }
 
-    private fun makeMap(chars: String, font: Font, style: String, map: MutableMap<Char, CharMetrics>): Int {
-        canvasCtx.font = "$style${font.sizePts}px ${font.family}"
+    private fun makeMap(fontProps: FontProps, style: String, map: MutableMap<Char, CharMetrics>): Int {
+        canvasCtx.font = "$style${fontProps.sizePts}px ${fontProps.family}"
         canvasCtx.fillStyle = "#ffffff"
 
         val padding = 3.0
         // line height above baseline
-        val hab = Math.round(font.sizePts * 1.1).toDouble()
+        val hab = Math.round(fontProps.sizePts * 1.1).toDouble()
         // line height below baseline
-        val hbb = Math.round(font.sizePts * 0.5).toDouble()
+        val hbb = Math.round(fontProps.sizePts * 0.5).toDouble()
         // overall line height
-        val height = Math.round(font.sizePts * 1.6).toDouble()
+        val height = Math.round(fontProps.sizePts * 1.6).toDouble()
 
         // first pixel is opaque
         canvasCtx.beginPath()
@@ -73,7 +73,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 
         var x = 1.0
         var y = hab
-        for (c in chars) {
+        for (c in fontProps.chars) {
             val txt = "$c"
             val charW = Math.round(canvasCtx.measureText(txt).width)
             val paddedWidth = Math.round(charW + padding * 2)
@@ -97,10 +97,10 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
             val widthPx = charW.toFloat()
             val heightPx = height.toFloat()
             val metrics = CharMetrics()
-            metrics.width = widthPx * font.sizeUnits / font.sizePts
-            metrics.height = heightPx * font.sizeUnits / font.sizePts
+            metrics.width = widthPx * fontProps.sizeUnits / fontProps.sizePts
+            metrics.height = heightPx * fontProps.sizeUnits / fontProps.sizePts
             metrics.xOffset = 0f
-            metrics.yBaseline = hab.toFloat() * font.sizeUnits / font.sizePts
+            metrics.yBaseline = hab.toFloat() * fontProps.sizeUnits / fontProps.sizePts
             metrics.advance = metrics.width
 
             metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())

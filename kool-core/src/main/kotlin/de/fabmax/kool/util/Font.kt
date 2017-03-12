@@ -13,64 +13,12 @@ import de.fabmax.kool.shading.ShaderProps
  * @author fabmax
  */
 
-fun uiFont(family: String, sizeDp: Float, dpi: Float, style: Int = Font.PLAIN): Font {
+fun uiFont(family: String, sizeDp: Float, dpi: Float, style: Int = Font.PLAIN, chars: String = Font.STD_CHARS): Font {
     val pts = (sizeDp * dpi / 96f)
-    return Font(family, pts, pts, style)
+    return Font(FontProps(family, pts, style, pts, chars))
 }
 
-class Font(val family: String, val sizePts: Float, val sizeUnits: Float, val style: Int = Font.PLAIN) {
-    companion object {
-        val PLAIN = 0
-        val BOLD = 1
-        val ITALIC = 2
-
-        val DEFAULT_FONT: Font
-
-        // todo: For now char maps are created with a hardcoded set of characters (ASCII + a few german ones)
-        // theoretically arbitrary unicode characters are supported
-        private val STD_CHARS: String
-        init {
-            var str = ""
-            for (i in 32..126) {
-                str += i.toChar()
-            }
-            str += "äÄöÖüÜß"
-            STD_CHARS = str
-
-            DEFAULT_FONT = uiFont("sans-serif", 12f, 96f, PLAIN)
-        }
-    }
-
-    val charMap: CharMap = Platform.createCharMap(this, STD_CHARS)
-    val texture = Texture(TextureProps(toString(), GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)) {
-        charMap.textureData
-    }
-
-    var lineSpace = sizeUnits * 1.2f
-
-    fun textWidth(string: String): Float {
-        var width = 0f
-        var maxWidth = 0f
-
-        for (i in string.indices) {
-            val c = string[i]
-            width += charMap[c]?.advance ?: 0f
-            if (width > maxWidth) {
-                maxWidth = width
-            }
-            if (c == '\n') {
-                width = 0f
-            }
-        }
-        return maxWidth
-    }
-
-    override fun toString(): String {
-        return "$family-${sizePts}pt/${sizeUnits}units-$style"
-    }
-}
-
-fun fontShader(font: Font?, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
+fun fontShader(font: Font, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
     val props = ShaderProps()
     props.propsInit()
     // vertex color and texture color are required to render fonts
@@ -90,8 +38,74 @@ fun fontShader(font: Font?, propsInit: ShaderProps.() -> Unit = { }): BasicShade
     }
 
     val shader = BasicShader(props, generator)
-    shader.texture = font?.texture
+    shader.texture = font
     return shader
+}
+
+data class FontProps(
+        val family: String,
+        val sizePts: Float,
+        val style: Int = Font.PLAIN,
+        val sizeUnits: Float = sizePts,
+        var chars: String = Font.STD_CHARS)
+
+class Font(val fontProps: FontProps) :
+        Texture(TextureProps(fontProps.toString(), GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE), {
+            getCharMap(fontProps).textureData }) {
+
+    companion object {
+        val PLAIN = 0
+        val BOLD = 1
+        val ITALIC = 2
+
+        val DEFAULT_FONT: Font
+        val STD_CHARS: String
+
+        val SYSTEM_FONT = "-apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+
+        private val charMaps: MutableMap<FontProps, CharMap> = mutableMapOf()
+
+        init {
+            var str = ""
+            for (i in 32..126) {
+                str += i.toChar()
+            }
+            str += "äÄöÖüÜß"
+            STD_CHARS = str
+
+            DEFAULT_FONT = uiFont("sans-serif", 12f, 96f, PLAIN)
+        }
+
+        private fun getCharMap(fontProps: FontProps): CharMap {
+            var map = charMaps[fontProps]
+            if (map == null) {
+                map = Platform.createCharMap(fontProps)
+                charMaps[fontProps] = map
+            }
+            return map
+        }
+    }
+
+    val charMap: CharMap = getCharMap(fontProps)
+
+    val lineSpace = fontProps.sizeUnits * 1.2f
+
+    fun textWidth(string: String): Float {
+        var width = 0f
+        var maxWidth = 0f
+
+        for (i in string.indices) {
+            val c = string[i]
+            width += charMap[c]?.advance ?: 0f
+            if (width > maxWidth) {
+                maxWidth = width
+            }
+            if (c == '\n') {
+                width = 0f
+            }
+        }
+        return maxWidth
+    }
 }
 
 class CharMetrics {

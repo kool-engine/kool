@@ -60,7 +60,7 @@ class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val 
     }
 }
 
-class Texture(val props: TextureProps, val generator: Texture.() -> TextureData) :
+open class Texture(val props: TextureProps, val generator: Texture.() -> TextureData) :
         GlObject<TextureResource>() {
 
     var width = 0

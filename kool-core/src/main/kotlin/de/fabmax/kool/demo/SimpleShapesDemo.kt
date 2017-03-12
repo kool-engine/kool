@@ -146,7 +146,7 @@ fun simpleShapesDemo(ctx: RenderContext) {
 
             // Add the text, you can use any font you like. We us a font size of 72pts and characters will be 1.5
             // units tall
-            val font = Font("sans-serif", 72f, 1.5f)
+            val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN, 1.5f))
             +textMesh(font) {
                 generator = {
                     color = Color.LIME

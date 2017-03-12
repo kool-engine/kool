@@ -6,6 +6,7 @@ import de.fabmax.kool.TextureData
 import de.fabmax.kool.platform.js.*
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontProps
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLImageElement
@@ -100,8 +101,8 @@ class PlatformImpl private constructor() : Platform() {
         return data
     }
 
-    override fun createCharMap(font: Font, chars: String): CharMap {
-        return fontGenerator.createCharMap(font, chars)
+    override fun createCharMap(fontProps: FontProps): CharMap {
+        return fontGenerator.createCharMap(fontProps)
     }
 
     private class JsMath : Math.Impl {

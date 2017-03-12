@@ -3,6 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.uiFont
 
 /**
@@ -40,7 +41,7 @@ fun uiDemo(ctx: RenderContext) {
 
             for (i in 1..1) {
                 +UiPanel("button $i").apply {
-                    font = uiFont("Segoe UI", 32f, uiDpi)
+                    font = uiFont(Font.SYSTEM_FONT, 32f, uiDpi)
                     layoutSpec.setOrigin(dp(150f), dp(150f), un(0f))
                     layoutSpec.setSize(dp(100f), dp(100f), un(0f))
                     panelText = "Button " + i

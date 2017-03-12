@@ -4,6 +4,7 @@ import de.fabmax.kool.TextureData
 import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontProps
 
 /**
  * @author fabmax
@@ -61,8 +62,8 @@ abstract class Platform {
             return instance.loadTextureAsset(assetPath)
         }
 
-        fun createCharMap(font: Font, chars: String): CharMap {
-            return instance.createCharMap(font, chars)
+        fun createCharMap(fontProps: FontProps): CharMap {
+            return instance.createCharMap(fontProps)
         }
     }
 
@@ -88,7 +89,7 @@ abstract class Platform {
 
     abstract fun loadTextureAsset(assetPath: String): TextureData
 
-    abstract fun createCharMap(font: Font, chars: String): CharMap
+    abstract fun createCharMap(fontProps: FontProps): CharMap
 
     private class NoopPlatform : Platform() {
 
@@ -134,7 +135,7 @@ abstract class Platform {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 
-        override fun createCharMap(font: Font, chars: String): CharMap {
+        override fun createCharMap(fontProps: FontProps): CharMap {
             throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
     }

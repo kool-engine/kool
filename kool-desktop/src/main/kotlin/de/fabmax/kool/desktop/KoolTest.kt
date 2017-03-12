@@ -27,7 +27,8 @@ fun main(args: Array<String>) {
 //    frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
 
 
-    //simpleShapesDemo(ctx)
+    simpleShapesDemo(ctx)
     //modelDemo(ctx)
-    uiDemo(ctx)
+    //uiDemo(ctx)
+
 }

@@ -1,16 +1,16 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.*
+import de.fabmax.kool.BufferedTextureData
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.platform.lwjgl3.*
-import de.fabmax.kool.shading.ShaderProps
 import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.shading.GlslGenerator
+import de.fabmax.kool.util.FontProps
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWVidMode
 import java.awt.Transparency
 import java.awt.image.BufferedImage
+import java.io.Closeable
 import java.io.File
 import java.io.IOException
 import javax.imageio.ImageIO
@@ -125,8 +125,8 @@ class PlatformImpl private constructor() : Platform() {
         }
     }
 
-    override fun createCharMap(font: Font, chars: String): CharMap {
-        return fontGenerator.createCharMap(font, chars)
+    override fun createCharMap(fontProps: FontProps): CharMap {
+        return fontGenerator.createCharMap(fontProps)
     }
 
     private class JavaMath : Math.Impl {
@@ -150,7 +150,7 @@ class PlatformImpl private constructor() : Platform() {
         override fun log(value: Double) = java.lang.Math.log(value)
         override fun pow(base: Double, exp: Double) = java.lang.Math.pow(base, exp)
         override fun round(value: Double): Int = java.lang.Math.round(value).toInt()
-        override fun round(value: Float): Int = java.lang.Math.round(value).toInt()
+        override fun round(value: Float): Int = java.lang.Math.round(value)
         override fun floor(value: Double): Int = java.lang.Math.floor(value).toInt()
         override fun floor(value: Float): Int = java.lang.Math.floor(value.toDouble()).toInt()
         override fun ceil(value: Double): Int = java.lang.Math.ceil(value).toInt()
@@ -272,13 +272,7 @@ inline fun <T : AutoCloseable, R> T.use(block: (T) -> R): R {
         try {
             this.close()
         } catch (closeException: Exception) {
-            // eat the closeException as we are already throwing the original cause
-            // and we don't want to mask the real exception
-
-            // TODO on Java 7 we should call
-            // e.addSuppressed(closeException)
-            // to work like try-with-resources
-            // http://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html#suppressed-exceptions
+            e.addSuppressed(closeException)
         }
         throw e
     } finally {

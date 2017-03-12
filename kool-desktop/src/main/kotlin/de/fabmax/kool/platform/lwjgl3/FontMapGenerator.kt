@@ -1,14 +1,15 @@
 package de.fabmax.kool.platform.lwjgl3
 
 import de.fabmax.kool.BufferedTextureData
-import de.fabmax.kool.TextureProps
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.bufferedImageToBuffer
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.CharMetrics
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontProps
 import java.awt.Color
 import java.awt.Graphics2D
+import java.awt.GraphicsEnvironment
 import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 
@@ -21,7 +22,18 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
     private val canvas = BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB)
     private val clearColor = Color(0, 0, 0, 0)
 
-    fun createCharMap(font: Font, chars: String): CharMap {
+    private val availableFamilies: Set<String>
+
+    init {
+        val families: MutableSet<String> = mutableSetOf()
+        val ge = GraphicsEnvironment.getLocalGraphicsEnvironment()
+        for (family in ge.availableFontFamilyNames) {
+            families.add(family)
+        }
+        availableFamilies = families
+    }
+
+    fun createCharMap(fontProps: FontProps): CharMap {
         val g = canvas.graphics as Graphics2D
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 
@@ -30,31 +42,46 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         g.clearRect(0, 0, maxWidth, maxHeight)
 
         var style = java.awt.Font.PLAIN
-        if (font.style and Font.BOLD != 0) {
+        if (fontProps.style and Font.BOLD != 0) {
             style = java.awt.Font.BOLD
         }
-        if (font.style and Font.ITALIC != 0) {
+        if (fontProps.style and Font.ITALIC != 0) {
             style += java.awt.Font.ITALIC
         }
-        g.font = java.awt.Font(font.family, style, Math.round(font.sizePts))
+
+        var family = java.awt.Font.SANS_SERIF
+        val fams = fontProps.family.split(",")
+        for (fam in fams) {
+            val f = fam.trim().replace("\"", "")
+            if (f == "sans-serif") {
+                family = java.awt.Font.SANS_SERIF
+            } else if (f == "monospaced") {
+                family = java.awt.Font.MONOSPACED
+            } else if (f in availableFamilies) {
+                family = f
+                break
+            }
+        }
+
+        g.font = java.awt.Font(family, style, Math.round(fontProps.sizePts))
         g.color = Color.BLACK
 
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
-        val texHeight = makeMap(chars, font, g, metrics)
+        val texHeight = makeMap(fontProps, g, metrics)
 
         val format = GL.ALPHA
         val buffer = bufferedImageToBuffer(canvas, format, maxWidth, texHeight)
         return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, format), metrics)
     }
 
-    private fun makeMap(chars: String, font: Font, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {
+    private fun makeMap(fontProps: FontProps, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {
         val padding = 3
         // line height above baseline
-        val hab = Math.round(font.sizePts * 1.1f)
+        val hab = Math.round(fontProps.sizePts * 1.1f)
         // line height below baseline
-        val hbb = Math.round(font.sizePts * 0.5f)
+        val hbb = Math.round(fontProps.sizePts * 0.5f)
         // overall line height
-        val height = Math.round(font.sizePts * 1.6f)
+        val height = Math.round(fontProps.sizePts * 1.6f)
         val fm = g.fontMetrics
 
         // first pixel is opaque
@@ -62,7 +89,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 
         var x = 1
         var y = hab
-        for (c in chars) {
+        for (c in fontProps.chars) {
             val charW = fm.charWidth(c)
             val paddedWidth = charW + padding * 2
             if (x + paddedWidth > maxWidth) {
@@ -76,10 +103,10 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
             val widthPx = charW.toFloat()
             val heightPx = height.toFloat()
             val metrics = CharMetrics()
-            metrics.width = widthPx * font.sizeUnits / font.sizePts
-            metrics.height = heightPx * font.sizeUnits / font.sizePts
+            metrics.width = widthPx * fontProps.sizeUnits / fontProps.sizePts
+            metrics.height = heightPx * fontProps.sizeUnits / fontProps.sizePts
             metrics.xOffset = 0f
-            metrics.yBaseline = hab.toFloat() * font.sizeUnits / font.sizePts
+            metrics.yBaseline = hab.toFloat() * fontProps.sizeUnits / fontProps.sizePts
             metrics.advance = metrics.width
 
             metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())

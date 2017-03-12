@@ -1,13 +1,14 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.assetTexture
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.shading.*
+import de.fabmax.kool.shading.BlurredBackgroundHelper
+import de.fabmax.kool.shading.ColorModel
+import de.fabmax.kool.shading.blurShader
 import de.fabmax.kool.util.*
 
 /**

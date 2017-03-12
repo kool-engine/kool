@@ -9,10 +9,7 @@ import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.ShaderProps
 import de.fabmax.kool.shading.basicShader
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.Vec3f
-import de.fabmax.kool.util.fontShader
+import de.fabmax.kool.util.*
 
 /**
  * @author fabmax
@@ -46,12 +43,12 @@ fun modelDemo(ctx: RenderContext) {
             }
 
             addSubModel(Model("text").apply {
-                val textFont = Font("sans-serif", 72f, 0.75f)
-                shaderFab = { fontShader(textFont) }
+                val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN, 0.75f))
+                shaderFab = { fontShader(font) }
                 addTextGeometry {
                     meshData.generator = {
                         color = Color.LIME
-                        text(textFont) {
+                        text(font) {
                             // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
                             text = "Shared Model"
                         }
