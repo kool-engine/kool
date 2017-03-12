@@ -79,9 +79,9 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     /**
      * Deletes all buffers associated with this mesh.
      */
-    override fun delete(ctx: RenderContext) {
-        meshData.delete(ctx)
-        shader?.delete(ctx)
+    override fun dispose(ctx: RenderContext) {
+        meshData.dispose(ctx)
+        shader?.dispose(ctx)
     }
 
     override fun render(ctx: RenderContext) {
@@ -228,7 +228,7 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
     /**
      * Deletes all index and data buffer of this mesh.
      */
-    fun delete(ctx: RenderContext) {
+    fun dispose(ctx: RenderContext) {
         if (--referenceCount == 0) {
             indexBuffer?.delete(ctx)
             dataBuffer?.delete(ctx)

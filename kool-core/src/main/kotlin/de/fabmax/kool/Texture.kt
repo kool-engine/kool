@@ -72,7 +72,7 @@ open class Texture(val props: TextureProps, val generator: Texture.() -> Texture
         res = ctx.textureMgr.createTexture(props, ctx)
     }
 
-    override fun delete(ctx: RenderContext) {
+    override fun dispose(ctx: RenderContext) {
         // do not call super, as this will immediately delete the texture on the GPU. However, texture resource is
         // shared and might be used by other Texture objects...
         if (isValid) {

@@ -32,9 +32,9 @@ open class Group(name: String? = null) : Node(name) {
         bounds.set(tmpBounds)
     }
 
-    override fun delete(ctx: RenderContext) {
+    override fun dispose(ctx: RenderContext) {
         for (i in children.indices) {
-            children[i].delete(ctx)
+            children[i].dispose(ctx)
         }
     }
 
@@ -61,9 +61,14 @@ open class Group(name: String? = null) : Node(name) {
         }
     }
 
-    fun addNode(node: Node) {
-        children.add(node)
+    fun addNode(node: Node, index: Int = -1) {
+        if (index >= 0) {
+            children.add(index, node)
+        } else {
+            children.add(node)
+        }
         node.parent = this
+        bounds.add(node.bounds)
         bounds.add(node.bounds)
     }
 

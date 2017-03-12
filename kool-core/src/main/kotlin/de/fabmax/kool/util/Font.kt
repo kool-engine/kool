@@ -18,7 +18,7 @@ fun uiFont(family: String, sizeDp: Float, dpi: Float, style: Int = Font.PLAIN, c
     return Font(FontProps(family, pts, style, pts, chars))
 }
 
-fun fontShader(font: Font, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
+fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
     val props = ShaderProps()
     props.propsInit()
     // vertex color and texture color are required to render fonts
@@ -73,7 +73,7 @@ class Font(val fontProps: FontProps) :
             str += "äÄöÖüÜß"
             STD_CHARS = str
 
-            DEFAULT_FONT = uiFont("sans-serif", 12f, 96f, PLAIN)
+            DEFAULT_FONT = Font(FontProps(SYSTEM_FONT, 12f))
         }
 
         private fun getCharMap(fontProps: FontProps): CharMap {

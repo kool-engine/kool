@@ -92,8 +92,7 @@ class BlurredBackgroundHelper(
         }
     }
 
-    fun updateDistortionTexture(node: Node, ctx: RenderContext) {
-        val bounds = node.bounds
+    fun updateDistortionTexture(node: Node, ctx: RenderContext, bounds: BoundingBox = node.bounds) {
         val cam = ctx.scene.camera
 
         texBounds.clear()
@@ -308,7 +307,7 @@ class BlurredBackgroundHelper(
     ))
 }
 
-fun blurShader(helper: BlurredBackgroundHelper, propsInit: ShaderProps.() -> Unit = { }): BlurShader {
+fun blurShader(propsInit: ShaderProps.() -> Unit = { }): BlurShader {
     val props = ShaderProps()
     props.propsInit()
     val generator = GlslGenerator()
@@ -330,12 +329,11 @@ fun blurShader(helper: BlurredBackgroundHelper, propsInit: ShaderProps.() -> Uni
         }
     }
 
-    return BlurShader(helper, props, generator)
+    return BlurShader(props, generator)
 }
 
-class BlurShader internal constructor(
-                private val helper: BlurredBackgroundHelper, props: ShaderProps, generator: GlslGenerator
-        ) : BasicShader(props, generator) {
+class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerator) :
+        BasicShader(props, generator) {
 
     private val uBlurTex = generator.customUnitforms["uBlurTexture"] as UniformTexture2D
     private val uColorMix = generator.customUnitforms["uColorMix"] as Uniform1f
@@ -344,21 +342,29 @@ class BlurShader internal constructor(
     private val uTexW = generator.customUnitforms["uTexW"] as Uniform1f
     private val uTexH = generator.customUnitforms["uTexH"] as Uniform1f
 
+    var blurHelper: BlurredBackgroundHelper? = null
+        set(value) {
+            field = value
+            uBlurTex.value = value?.blurredBgTex
+        }
+
     var colorMix: Float
         get() = uColorMix.value
         set(value) { uColorMix.value = value }
 
     init {
-        uBlurTex.value = helper.blurredBgTex
         colorMix = 1f
     }
 
     override fun onBind(ctx: RenderContext) {
         super.onBind(ctx)
-        uTexX.value = helper.capturedScrX.toFloat()
-        uTexY.value = helper.capturedScrY.toFloat()
-        uTexW.value = helper.capturedScrW.toFloat()
-        uTexH.value = helper.capturedScrH.toFloat()
+        val helper = blurHelper
+        if (helper != null) {
+            uTexX.value = helper.capturedScrX.toFloat()
+            uTexY.value = helper.capturedScrY.toFloat()
+            uTexW.value = helper.capturedScrW.toFloat()
+            uTexH.value = helper.capturedScrH.toFloat()
+        }
 
         uBlurTex.bind(ctx)
         uColorMix.bind(ctx)

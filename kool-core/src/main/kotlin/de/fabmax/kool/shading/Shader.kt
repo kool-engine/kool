@@ -190,7 +190,7 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
      *
      * @param ctx    the graphics engine context
      */
-    override fun delete(ctx: RenderContext) {
+    override fun dispose(ctx: RenderContext) {
         // do not call super, as this will immediately delete the shader program on the GPU. However, Shader program is
         // a shared resource and might be used by other shaders. Therefore deletion on the GPU is handled by the
         // ShaderManager:

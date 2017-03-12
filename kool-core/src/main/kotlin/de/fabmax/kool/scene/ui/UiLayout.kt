@@ -10,7 +10,7 @@ import de.fabmax.kool.util.Vec3f
  * @author fabmax
  */
 
-open class UiLayout(name: String? = null) : TransformGroup(name), UiNode {
+open class UiLayout(name: String) : TransformGroup(name), UiNode {
 
     override var layoutSpec = LayoutSpec()
     override val contentBounds = BoundingBox()

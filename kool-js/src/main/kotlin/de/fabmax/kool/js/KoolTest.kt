@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
     PlatformImpl.init()
     val ctx = Platform.createContext(JsContext.InitProps())
 
-    simpleShapesDemo(ctx)
+    //simpleShapesDemo(ctx)
     //modelDemo(ctx)
-    //uiDemo(ctx)
+    uiDemo(ctx)
 }

@@ -53,6 +53,8 @@ open class MeshBuilder(val meshData: MeshData) {
         this.color = c
     }
 
+    fun clear() = meshData.clear()
+
     fun identity() = transform.setIdentity()
 
     fun translate(t: Vec3f) = transform.translate(t.x, t.y, t.z)

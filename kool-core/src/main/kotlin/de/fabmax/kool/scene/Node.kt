@@ -56,7 +56,7 @@ abstract class Node(val name: String? = null) {
      *
      * @param ctx    the graphics engine context
      */
-    open fun delete(ctx: RenderContext) { }
+    open fun dispose(ctx: RenderContext) { }
 
     /**
      * Transforms [vec] in-place from local to global coordinates.

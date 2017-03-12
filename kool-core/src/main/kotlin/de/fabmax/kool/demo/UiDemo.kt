@@ -3,7 +3,11 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.shading.ColorModel
+import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.Vec3f
 import de.fabmax.kool.util.uiFont
 
 /**
@@ -24,37 +28,50 @@ fun uiDemo(ctx: RenderContext) {
     ctx.scene.root = group {
         +sphericalInputTransform { +ctx.scene.camera }
 
-        +colorMesh {
-            generator = {
-                translate(0f, 0f, -3f)
-                cube {
-                    centerOrigin()
-                    colorCube()
+        +transformGroup {
+            onRender = { ctx ->
+                setIdentity()
+                translate(0f, 0f, -7f)
+                rotate((ctx.time * 60).toFloat(), Vec3f.X_AXIS)
+                rotate((ctx.time * 17).toFloat(), Vec3f.Y_AXIS)
+            }
+            +colorMesh {
+                generator = {
+                    scale(5f, 5f, 5f)
+                    cube {
+                        centerOrigin()
+                        colorCube()
+                    }
                 }
             }
         }
 
-        +UiRoot().apply {
-            //isFillViewport = true
+        +UiRoot(300f).apply {
             translate(-globalWidth /2, -globalHeight/2, 0f)
             scaleContentTo(dp(400f))
 
-            for (i in 1..1) {
-                +UiPanel("button $i").apply {
+            for (i in 1..3) {
+                +Button("button $i").apply {
+                    layoutSpec.setOrigin(dp(50f), pc(-30f * i), un(0f))
+                    layoutSpec.setSize(dp(300f), pc(20f), un(0f))
+
+                    background = BlurredBackground(this).apply {
+                        backgroundColor = Color.BLACK
+                    }
+
                     font = uiFont(Font.SYSTEM_FONT, 32f, uiDpi)
-                    layoutSpec.setOrigin(dp(150f), dp(150f), un(0f))
-                    layoutSpec.setSize(dp(100f), dp(100f), un(0f))
-                    panelText = "Button " + i
+                    textColor = Color.WHITE
+                    text = "Button " + i
 
                     onHoverEnter = { ptr, rt, ctx ->
-                        println("$panelText hover enter ${rt.hitPositionLocal}")
+                        println("$text hover enter ${rt.hitPositionLocal}")
                     }
                     onHoverExit = { ptr, rt, ctx ->
-                        println("$panelText hover exit")
+                        println("$text hover exit")
                     }
                     onHover = { ptr, rt, ctx ->
                         if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
-                            println("$panelText clicked")
+                            println("$text clicked")
                         }
                     }
                 }

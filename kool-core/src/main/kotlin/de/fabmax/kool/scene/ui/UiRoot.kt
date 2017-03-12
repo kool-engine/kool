@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.shading.BlurredBackgroundHelper
 import de.fabmax.kool.util.BoundingBox
 
 /**
@@ -32,9 +33,20 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : UiLayout(name) {
             }
         }
 
+    var isFillViewport = false
+
+    private var blurHelper: BlurredBackgroundHelper? = null
+
     private var isResizeNeeded = true
     private var contentScale = 1f
-    var isFillViewport = false
+
+    fun getBlurHelper(): BlurredBackgroundHelper {
+        val helper = blurHelper ?: BlurredBackgroundHelper()
+        if (blurHelper == null) {
+            blurHelper = helper
+        }
+        return helper
+    }
 
     fun setGlobalSize(width: Float, height: Float, depth: Float) {
         isFillViewport = false
@@ -62,12 +74,11 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : UiLayout(name) {
             onLayout(contentBounds, ctx)
         }
 
+        blurHelper?.updateDistortionTexture(this, ctx, contentBounds)
+
         ctx.pushAttributes()
         ctx.isDepthMask = false
         ctx.applyAttributes()
-
-        ctx.screenDpi
-
         super.render(ctx)
         ctx.popAttributes()
     }

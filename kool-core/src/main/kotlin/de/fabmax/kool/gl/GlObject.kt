@@ -12,7 +12,7 @@ abstract class GlObject<T: GlResource> {
     open val isValid: Boolean
         get() = res != null
 
-    open fun delete(ctx: RenderContext) {
+    open fun dispose(ctx: RenderContext) {
         res?.delete(ctx)
         res = null
     }
