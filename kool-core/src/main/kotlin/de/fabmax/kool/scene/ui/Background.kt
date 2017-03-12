@@ -29,7 +29,7 @@ open class SimpleBackground(component: UiComponent, bgShader: Shader = basicShad
         shader = bgShader
     }
 
-    var backgroundColor = Color.WHITE
+    var backgroundColor = Color.BLACK
         set(value) {
             field = value
             val shader = mesh.shader
@@ -39,7 +39,8 @@ open class SimpleBackground(component: UiComponent, bgShader: Shader = basicShad
         }
 
     init {
-        backgroundColor = Color.WHITE
+        // set background color to update color property of shader
+        backgroundColor = Color.BLACK
     }
 
     override fun drawBackground(ctx: RenderContext) {

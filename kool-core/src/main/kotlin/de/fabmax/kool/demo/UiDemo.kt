@@ -3,8 +3,6 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.Vec3f
@@ -29,7 +27,7 @@ fun uiDemo(ctx: RenderContext) {
         +sphericalInputTransform { +ctx.scene.camera }
 
         +transformGroup {
-            onRender = { ctx ->
+            onRender += { ctx ->
                 setIdentity()
                 translate(0f, 0f, -7f)
                 rotate((ctx.time * 60).toFloat(), Vec3f.X_AXIS)
@@ -56,20 +54,20 @@ fun uiDemo(ctx: RenderContext) {
                     layoutSpec.setSize(dp(300f), pc(20f), un(0f))
 
                     background = BlurredBackground(this).apply {
-                        backgroundColor = Color.BLACK
+                        backgroundColor = Color(0.4f, 0.5f, 0.6f)
                     }
 
                     font = uiFont(Font.SYSTEM_FONT, 32f, uiDpi)
                     textColor = Color.WHITE
                     text = "Button " + i
 
-                    onHoverEnter = { ptr, rt, ctx ->
+                    onHoverEnter += { ptr, rt, ctx ->
                         println("$text hover enter ${rt.hitPositionLocal}")
                     }
-                    onHoverExit = { ptr, rt, ctx ->
+                    onHoverExit += { ptr, rt, ctx ->
                         println("$text hover exit")
                     }
-                    onHover = { ptr, rt, ctx ->
+                    onHover += { ptr, rt, ctx ->
                         if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
                             println("$text clicked")
                         }

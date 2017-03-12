@@ -5,9 +5,7 @@ import de.fabmax.kool.TextureData
 import de.fabmax.kool.TextureProps
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.Platform
-import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.GlslGenerator
-import de.fabmax.kool.shading.ShaderProps
+import de.fabmax.kool.shading.*
 
 /**
  * @author fabmax
@@ -50,8 +48,9 @@ data class FontProps(
         var chars: String = Font.STD_CHARS)
 
 class Font(val fontProps: FontProps) :
-        Texture(TextureProps(fontProps.toString(), GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE), {
-            getCharMap(fontProps).textureData }) {
+        Texture(TextureProps(fontProps.toString(),
+                GL.LINEAR_MIPMAP_LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE),
+                { getCharMap(fontProps).textureData }) {
 
     companion object {
         val PLAIN = 0

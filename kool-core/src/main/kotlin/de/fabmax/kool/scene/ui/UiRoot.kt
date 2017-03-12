@@ -78,6 +78,7 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : UiLayout(name) {
 
         ctx.pushAttributes()
         ctx.isDepthMask = false
+        ctx.isCullFace = false
         ctx.applyAttributes()
         super.render(ctx)
         ctx.popAttributes()

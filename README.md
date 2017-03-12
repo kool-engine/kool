@@ -131,18 +131,18 @@ fun main(args: Array<String>) {
                 }
 
                 // Update the speed animator on every frame
-                onRender = { ctx ->
+                onRender += { ctx ->
                     speedAnimator.tick(ctx)
                 }
                 // By setting a positive speed the speed animator is started and animates it's value to 1. That value
                 // is applied as animation speed of the rotation animation and as color intensity
                 // --> The cube starts spinning and colors fade in.
-                onHoverEnter = { ptr, rt, ctx ->
+                onHoverEnter += { ptr, rt, ctx ->
                     speedAnimator.speed = 1f
                 }
                 // By setting a positive speed the speed animator is started and animates it's value to 0.
                 // --> The cube stops spinning and colors fade out.
-                onHoverExit = { ptr, rt, ctx ->
+                onHoverExit += { ptr, rt, ctx ->
                     speedAnimator.speed = -1f
                 }
             }
@@ -162,10 +162,10 @@ fun main(args: Array<String>) {
                 translate(0f, 0f, -5f)
                 scale(s, s, s)
             }
-            
+
             // Add the text, you can use any font you like. We us a font size of 72pts and characters will be 1.5
             // units tall
-            val font = Font("sans-serif", 72f, 1.5f)
+            val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN, 1.5f))
             +textMesh(font) {
                 generator = {
                     color = Color.LIME

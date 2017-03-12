@@ -112,18 +112,18 @@ fun simpleShapesDemo(ctx: RenderContext) {
                 }
 
                 // Update the speed animator on every frame
-                onRender = { ctx ->
+                onRender += { ctx ->
                     speedAnimator.tick(ctx)
                 }
                 // By setting a positive speed the speed animator is started and animates it's value to 1. That value
                 // is applied as animation speed of the rotation animation and as color intensity
                 // --> The cube starts spinning and colors fade in.
-                onHoverEnter = { ptr, rt, ctx ->
+                onHoverEnter += { ptr, rt, ctx ->
                     speedAnimator.speed = 1f
                 }
                 // By setting a positive speed the speed animator is started and animates it's value to 0.
                 // --> The cube stops spinning and colors fade out.
-                onHoverExit = { ptr, rt, ctx ->
+                onHoverExit += { ptr, rt, ctx ->
                     speedAnimator.speed = -1f
                 }
             }

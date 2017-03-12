@@ -4,7 +4,7 @@ package de.fabmax.kool.util
  * @author fabmax
  */
 
-open class Color(r: Float, g: Float, b: Float, a: Float) : Vec4f(r, g, b, a) {
+open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a) {
 
     open var r: Float
         get() = x
@@ -81,6 +81,13 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
     constructor() : this(0f, 0f, 0f, 1f)
 
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)
+
+    fun add(other: Color, weight: Float) {
+        r += other.r * weight
+        g += other.g * weight
+        b += other.b * weight
+        a += other.a * weight
+    }
 
     fun set(r: Float, g: Float, b: Float, a: Float): MutableColor {
         this.r = r

@@ -13,11 +13,11 @@ import de.fabmax.kool.util.RayTest
  */
 abstract class Node(val name: String? = null) {
 
-    open var onRender: (Node.(RenderContext) -> Unit)? = null
+    var onRender: List<Node.(RenderContext) -> Unit> = mutableListOf()
 
-    open var onHoverEnter: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
-    open var onHover: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
-    open var onHoverExit: (Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit)? = null
+    var onHoverEnter: List<Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    var onHover: List<Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    var onHoverExit: List<Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
 
     /**
      * Axis-aligned bounds of this node, implementations should set and refresh their bounds on every frame
@@ -48,7 +48,11 @@ abstract class Node(val name: String? = null) {
      * @param ctx    the graphics engine context
      */
     open fun render(ctx: RenderContext) {
-        onRender?.invoke(this, ctx)
+        if (!onRender.isEmpty()) {
+            for (i in onRender.indices) {
+                onRender[i](ctx)
+            }
+        }
     }
 
     /**

@@ -68,6 +68,12 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
         return this
     }
 
+    fun scale(factor : Float): MutableVec2f {
+        x *= factor
+        y *= factor
+        return this
+    }
+
     operator fun set(i: Int, v: Float) {
         when (i) {
             0 -> x = v
@@ -316,6 +322,38 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
     constructor() : this(0f, 0f, 0f, 0f)
 
     constructor(other: Vec4f) : this(other.x, other.y, other.z, other.w)
+
+    fun add(other: Vec4f): MutableVec4f {
+        x += other.x
+        y += other.y
+        z += other.z
+        w += other.w
+        return this
+    }
+
+    operator fun plusAssign(other: Vec4f) {
+        add(other)
+    }
+
+    fun subtract(other: Vec4f): MutableVec4f {
+        x -= other.x
+        y -= other.y
+        z -= other.z
+        w -= other.w
+        return this
+    }
+
+    operator fun minusAssign(other: Vec4f) {
+        subtract(other)
+    }
+
+    fun scale(factor : Float): MutableVec4f {
+        x *= factor
+        y *= factor
+        z *= factor
+        w *= factor
+        return this
+    }
 
     fun set(x: Float, y: Float, z: Float, w: Float): MutableVec4f {
         this.x = x

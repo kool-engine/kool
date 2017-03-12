@@ -175,8 +175,8 @@ open class GlslGenerator {
                 text.append("uniform vec3 ").append(UNIFORM_LIGHT_COLOR).append(";\n")
                 text.append("uniform float ").append(UNIFORM_SHININESS).append(";\n")
                 text.append("uniform float ").append(UNIFORM_SPECULAR_INTENSITY).append(";\n")
-                text.append("varying vec4 ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
-                text.append("varying vec4 ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(";\n")
+                text.append("varying vec3 ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
+                text.append("varying vec3 ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(";\n")
             }
         }
 
@@ -273,14 +273,13 @@ open class GlslGenerator {
             text.append("float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n")
 
             // interpolate light colors for usage in fragment shader
-            // vDiffuseLightColor = vec4(uLightColor, 1.0) * cosTheta;
-            text.append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(" = vec4(")
-                    .append(UNIFORM_LIGHT_COLOR).append(", 1.0) * cosTheta;\n")
-            // vSpecularLightColor = vec4(uLightColor * specularIntensity, 1.0) * pow(cosAlpha, uShininess);
-            text.append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(" = vec4(")
+            // vDiffuseLightColor = uLightColor * cosTheta;
+            text.append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(" = ")
+                    .append(UNIFORM_LIGHT_COLOR).append(" * cosTheta;\n")
+            // vSpecularLightColor = uLightColor * specularIntensity * pow(cosAlpha, uShininess);
+            text.append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(" = ")
                     .append(UNIFORM_LIGHT_COLOR).append(" * ").append(UNIFORM_SPECULAR_INTENSITY)
-                    .append(", 0.0) * pow(cosAlpha, ").append(UNIFORM_SHININESS)
-                    .append(");\n")
+                    .append(" * pow(cosAlpha, ").append(UNIFORM_SHININESS).append(");\n")
         }
         text.append("}\n")
     }
@@ -305,8 +304,8 @@ open class GlslGenerator {
             text.append("varying vec3 ").append(VARYING_NAME_LIGHT_DIRECTION).append(";\n")
             text.append("varying vec3 ").append(VARYING_NAME_NORMAL).append(";\n")
         } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
-            text.append("varying vec4 ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
-            text.append("varying vec4 ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(";\n")
+            text.append("varying vec3 ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
+            text.append("varying vec3 ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(";\n")
         }
 
         // add color dependent uniforms and varyings
@@ -345,17 +344,18 @@ open class GlslGenerator {
 
         if (shaderProps.isTextureColor) {
             // get base fragment color from texture
-            // vec4 fragmentColor = texture2D(uTextureSampler, vTexCoord);
             text.append("vec4 ").append(LOCAL_NAME_TEX_COLOR).append(" = texture2D(")
                     .append(UNIFORM_TEXTURE_0).append(", ").append(VARYING_NAME_TEX_COORD).append(");\n")
             text.append(LOCAL_NAME_FRAG_COLOR).append(" = ").append(LOCAL_NAME_TEX_COLOR).append(";\n")
         }
         if (shaderProps.isVertexColor) {
+            // get base fragment color from vertex attribute
             text.append("vec4 ").append(LOCAL_NAME_VERTEX_COLOR).append(" = ").append(VARYING_NAME_COLOR).append(";\n")
             text.append(LOCAL_NAME_VERTEX_COLOR).append(".rgb *= ").append(LOCAL_NAME_VERTEX_COLOR).append(".a;\n")
             text.append(LOCAL_NAME_FRAG_COLOR).append(" = ").append(LOCAL_NAME_VERTEX_COLOR).append(";\n")
         }
         if (shaderProps.isStaticColor) {
+            // get base fragment color from static color uniform
             text.append("vec4 ").append(LOCAL_NAME_STATIC_COLOR).append(" = ").append(UNIFORM_STATIC_COLOR).append(";\n")
             text.append(LOCAL_NAME_STATIC_COLOR).append(".rgb *= ").append(LOCAL_NAME_STATIC_COLOR).append(".a;\n")
             text.append(LOCAL_NAME_FRAG_COLOR).append(" = ").append(LOCAL_NAME_STATIC_COLOR).append(";\n")
@@ -377,35 +377,35 @@ open class GlslGenerator {
                 // cosine of the angle between the eye vector and the reflect vector
                 text.append("float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n")
 
-                // vec4 materialAmbientColor = vFragmentColor * vec4(0.4, 0.4, 0.4, 1.0);
-                text.append("vec4 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR)
-                        .append(" * vec4(0.4, 0.4, 0.4, 1.0);\n")
+                // vec3 materialAmbientColor = vFragmentColor.rgb * vec3(0.4);
+                text.append("vec3 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR).append(".rgb * vec3(0.4);\n")
 
-                // vec4 materialDiffuseColor = vFragmentColor * vec4(uLightColor, 1.0) * cosTheta;
-                text.append("vec4 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
-                        .append(" * vec4(").append(UNIFORM_LIGHT_COLOR).append(", 1.0) * cosTheta;\n")
+                // vec3 materialDiffuseColor = vFragmentColor.rgb * uLightColor * cosTheta;
+                text.append("vec3 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
+                        .append(".rgb * ").append(UNIFORM_LIGHT_COLOR).append(" * cosTheta;\n")
 
-                // vec4 materialSpecularColor = vec4(uLightColor * uSpecular, 0.0) * pow(cosAlpha, uShininess);
-                text.append("vec4 materialSpecularColor = vec4(").append(UNIFORM_LIGHT_COLOR)
-                        .append(" * ").append(UNIFORM_SPECULAR_INTENSITY).append(", 0.0) * pow(cosAlpha, ")
-                        .append(UNIFORM_SHININESS).append(") * clamp(").append(LOCAL_NAME_FRAG_COLOR).append(".a * 2.0, 0.0, 1.0);\n")
+                // vec4 materialSpecularColor = vec4(uLightColor * uSpecular, 0.0) * pow(cosAlpha, uShininess) * alpha;
+                text.append("vec3 materialSpecularColor = ").append(UNIFORM_LIGHT_COLOR)
+                        .append(" * ").append(UNIFORM_SPECULAR_INTENSITY).append(" * pow(cosAlpha, ")
+                        .append(UNIFORM_SHININESS).append(") * ").append(LOCAL_NAME_FRAG_COLOR).append(".a;\n")
 
             } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
-                // vec4 materialAmbientColor = vFragmentColor * vec4(0.4, 0.4, 0.4, 1.0);
-                text.append("vec4 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR)
-                        .append(" * vec4(0.4, 0.4, 0.4, 1.0);\n")
+                // vec3 materialAmbientColor = vFragmentColor.rgb * vec3(0.4);
+                text.append("vec3 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR)
+                        .append(".rgb * vec3(0.4);\n")
 
-                // vec4 materialDiffuseColor = vFragmentColor * vDiffuseLightColor;
-                text.append("vec4 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
-                        .append(" * ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
+                // vec3 materialDiffuseColor = vFragmentColor.rgb * vDiffuseLightColor;
+                text.append("vec3 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
+                        .append(".rgb * ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
 
                 // vec4 materialSpecularColor = vSpecularLightColor;
-                text.append("vec4 materialSpecularColor = ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(";\n")
-                        .append(" * clamp(").append(LOCAL_NAME_FRAG_COLOR).append(".a * 2.0, 0.0, 1.0);\n")
+                text.append("vec3 materialSpecularColor = ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR)
+                        .append(" * ").append(LOCAL_NAME_FRAG_COLOR).append(".a;\n")
             }
 
             // compute output color
-            text.append("gl_FragColor = materialAmbientColor + materialDiffuseColor + materialSpecularColor;\n")
+            text.append("gl_FragColor = vec4(materialAmbientColor + materialDiffuseColor + materialSpecularColor, ")
+                    .append(LOCAL_NAME_FRAG_COLOR).append(".a);\n")
 
         } else {
             text.append("gl_FragColor = ").append(LOCAL_NAME_FRAG_COLOR).append(";\n")

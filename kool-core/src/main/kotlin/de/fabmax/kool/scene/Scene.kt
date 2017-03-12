@@ -39,15 +39,21 @@ class Scene {
 
         if (prevHovered != hovered) {
             if (prevHovered != null) {
-                prevHovered.onHoverExit?.invoke(prevHovered, ptr, rayTest, ctx)
+                for (i in prevHovered.onHoverExit.indices) {
+                    prevHovered.onHoverExit[i](prevHovered, ptr, rayTest, ctx)
+                }
             }
             if (hovered != null) {
-                hovered.onHoverEnter?.invoke(hovered, ptr, rayTest, ctx)
+                for (i in hovered.onHoverEnter.indices) {
+                    hovered.onHoverEnter[i](hovered, ptr, rayTest, ctx)
+                }
             }
             hoverNode = hovered
         }
         if (hovered != null && prevHovered == hovered) {
-            hovered.onHover?.invoke(hovered, ptr, rayTest, ctx)
+            for (i in hovered.onHover.indices) {
+                hovered.onHover[i](hovered, ptr, rayTest, ctx)
+            }
         }
     }
 
