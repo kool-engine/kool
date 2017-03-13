@@ -10,7 +10,7 @@ import de.fabmax.kool.util.Vec3f
  * @author fabmax
  */
 
-open class UiLayout(name: String) : TransformGroup(name), UiNode {
+open class UiContainer(name: String) : TransformGroup(name), UiNode {
 
     override var layoutSpec = LayoutSpec()
     override val contentBounds = BoundingBox()
@@ -30,7 +30,12 @@ open class UiLayout(name: String) : TransformGroup(name), UiNode {
 
     protected var isLayoutNeeded = true
 
-    private val childBounds = BoundingBox()
+    protected val backgroundComponent = LayoutBgComponent()
+    protected var backgroundAdded = false
+    val background
+        get() = backgroundComponent.background
+
+    private val tmpChildBounds = BoundingBox()
 
     fun requestLayout() {
         isLayoutNeeded = true
@@ -38,20 +43,34 @@ open class UiLayout(name: String) : TransformGroup(name), UiNode {
 
     override fun render(ctx: RenderContext) {
         if (isLayoutNeeded) {
-            onLayout(contentBounds, ctx)
+            doLayout(contentBounds, ctx)
         }
         super.render(ctx)
     }
 
-    override fun onLayout(bounds: BoundingBox, ctx: RenderContext) {
+    override fun doLayout(bounds: BoundingBox, ctx: RenderContext) {
         isLayoutNeeded = false
         applyBounds(bounds, ctx)
+
+        if (!backgroundAdded) {
+            backgroundAdded = true
+            addNode(backgroundComponent, 0)
+        }
 
         for (i in children.indices) {
             val child = children[i]
             if (child is UiNode) {
-                computeChildLayoutBounds(childBounds, child, ctx)
-                child.onLayout(childBounds, ctx)
+                computeChildLayoutBounds(tmpChildBounds, child, ctx)
+                child.doLayout(tmpChildBounds, ctx)
+            }
+        }
+    }
+
+    override fun applyTheme(theme: UiTheme, ctx: RenderContext) {
+        for (i in children.indices) {
+            val child = children[i]
+            if (child is UiNode) {
+                child.applyTheme(theme, ctx)
             }
         }
     }
@@ -76,5 +95,15 @@ open class UiLayout(name: String) : TransformGroup(name), UiNode {
         if (z < 0) { z += depth }
 
         result.set(x, y, z, x + w, y + h, z + d)
+    }
+
+    protected inner class LayoutBgComponent : UiComponent("$name-bg") {
+        init {
+            layoutSpec.setSize(pc(100f), pc(100f), pc(100f))
+        }
+
+        override fun createThemeBackground(ctx: RenderContext): Background? {
+            return root?.theme?.containerBackground?.invoke(this)
+        }
     }
 }

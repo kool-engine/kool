@@ -378,7 +378,7 @@ open class GlslGenerator {
                 text.append("float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n")
 
                 // vec3 materialAmbientColor = vFragmentColor.rgb * vec3(0.4);
-                text.append("vec3 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR).append(".rgb * vec3(0.4);\n")
+                text.append("vec3 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR).append(".rgb * vec3(0.42);\n")
 
                 // vec3 materialDiffuseColor = vFragmentColor.rgb * uLightColor * cosTheta;
                 text.append("vec3 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
@@ -392,7 +392,7 @@ open class GlslGenerator {
             } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
                 // vec3 materialAmbientColor = vFragmentColor.rgb * vec3(0.4);
                 text.append("vec3 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR)
-                        .append(".rgb * vec3(0.4);\n")
+                        .append(".rgb * vec3(0.42);\n")
 
                 // vec3 materialDiffuseColor = vFragmentColor.rgb * vDiffuseLightColor;
                 text.append("vec3 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)

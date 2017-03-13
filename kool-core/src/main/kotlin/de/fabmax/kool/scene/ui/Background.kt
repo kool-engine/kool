@@ -14,7 +14,7 @@ import de.fabmax.kool.util.RayTest
  */
 abstract class Background(val component: UiComponent) : Node() {
 
-    abstract fun drawBackground(ctx: RenderContext)
+    abstract fun update(ctx: RenderContext)
 
 }
 
@@ -29,7 +29,7 @@ open class SimpleBackground(component: UiComponent, bgShader: Shader = basicShad
         shader = bgShader
     }
 
-    var backgroundColor = Color.BLACK
+    var color = Color.BLACK
         set(value) {
             field = value
             val shader = mesh.shader
@@ -40,18 +40,16 @@ open class SimpleBackground(component: UiComponent, bgShader: Shader = basicShad
 
     init {
         // set background color to update color property of shader
-        backgroundColor = Color.BLACK
+        color = Color.BLACK
     }
 
-    override fun drawBackground(ctx: RenderContext) {
+    override fun update(ctx: RenderContext) {
         component.setupBuilder(meshBuilder)
-        meshBuilder.run {
-            color = backgroundColor
-            rect {
-                width = component.width
-                height = component.height
-                fullTexCoords()
-            }
+        meshBuilder.color = color
+        meshBuilder.rect {
+            width = component.width
+            height = component.height
+            fullTexCoords()
         }
         bounds.clear()
         bounds.add(mesh.bounds)

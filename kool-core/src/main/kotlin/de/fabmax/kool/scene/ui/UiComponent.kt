@@ -31,20 +31,9 @@ open class UiComponent(name: String) : Group(name), UiNode {
         }
 
     protected var isUpdateNeeded = true
+    protected var isThemeApplied = false
 
-    var background: Background? = null
-        set(value) {
-            val prev = field
-            if (prev != null) {
-                this -= prev
-                // fixme: possible resource leak: prev.dispose(ctx), but we don't have ctx here...
-            }
-            if (value != null) {
-                // add background at index 0 (draw it before any other content)
-                addNode(value, 0)
-            }
-            field = value
-        }
+    val background: ThemeOrCustomProp<Background?> = ThemeOrCustomProp(null)
 
     fun setupBuilder(builder: MeshBuilder) {
         builder.clear()
@@ -52,23 +41,55 @@ open class UiComponent(name: String) : Group(name), UiNode {
         builder.translate(contentBounds.min)
     }
 
-    override fun onLayout(bounds: BoundingBox, ctx: RenderContext) {
+    override fun render(ctx: RenderContext) {
+        if (!isThemeApplied) {
+            isThemeApplied = true
+            val root = root
+            if (root != null) {
+                applyTheme(root.theme, ctx)
+            }
+        }
+
+        if (isUpdateNeeded) {
+            isUpdateNeeded = false
+            update(ctx)
+        }
+
+        super.render(ctx)
+    }
+
+    protected open fun update(ctx: RenderContext) {
+        if (!background.isThemeSet) {
+            background.setTheme(createThemeBackground(ctx))
+        }
+        if (background.needsUpdate()) {
+            val prev = background.prop
+            if (prev != null) {
+                prev.dispose(ctx)
+                this -= prev
+            }
+            val prop = background.updateProp()
+            if (prop != null) {
+                this.addNode(prop, 0)
+            }
+        }
+        background.prop?.update(ctx)
+    }
+
+    override fun doLayout(bounds: BoundingBox, ctx: RenderContext) {
         if (!contentBounds.isEqual(bounds)) {
             contentBounds.set(bounds)
             isUpdateNeeded = true
         }
     }
 
-    override fun render(ctx: RenderContext) {
-        if (isUpdateNeeded) {
-            update(ctx)
-        }
-        super.render(ctx)
+    override fun applyTheme(theme: UiTheme, ctx: RenderContext) {
+        background.setTheme(createThemeBackground(ctx))
+        isUpdateNeeded = true
     }
 
-    protected open fun update(ctx: RenderContext) {
-        isUpdateNeeded = false
-        background?.drawBackground(ctx)
+    protected open fun createThemeBackground(ctx: RenderContext): Background? {
+        return root?.theme?.componentBackground?.invoke(this)
     }
 
     override fun rayTest(test: RayTest) {

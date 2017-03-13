@@ -5,7 +5,9 @@ import de.fabmax.kool.TextureData
 import de.fabmax.kool.TextureProps
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.Platform
-import de.fabmax.kool.shading.*
+import de.fabmax.kool.shading.BasicShader
+import de.fabmax.kool.shading.GlslGenerator
+import de.fabmax.kool.shading.ShaderProps
 
 /**
  * @author fabmax
@@ -104,6 +106,10 @@ class Font(val fontProps: FontProps) :
             }
         }
         return maxWidth
+    }
+
+    override fun toString(): String {
+        return "Font(${fontProps.family}, ${fontProps.sizePts}pts, ${fontProps.style})"
     }
 }
 

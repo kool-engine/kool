@@ -22,6 +22,8 @@ interface UiNode {
 
     var root: UiRoot?
 
-    fun onLayout(bounds: BoundingBox, ctx: RenderContext)
+    fun doLayout(bounds: BoundingBox, ctx: RenderContext)
+
+    fun applyTheme(theme: UiTheme, ctx: RenderContext)
 
 }

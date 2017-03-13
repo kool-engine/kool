@@ -16,12 +16,12 @@ open class MeshBuilder(val meshData: MeshData) {
     private val tmpPos = MutableVec3f()
     private val tmpNrm = MutableVec3f()
 
-    private val circleProps = CircleProps()
-    private val cubeProps = CubeProps()
-    private val cylinderProps = CylinderProps()
-    private val rectProps = RectProps()
-    private val sphereProps = SphereProps()
-    private val textProps = TextProps()
+    val circleProps = CircleProps()
+    val cubeProps = CubeProps()
+    val cylinderProps = CylinderProps()
+    val rectProps = RectProps()
+    val sphereProps = SphereProps()
+    val textProps = TextProps()
 
     protected open fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO): Int {
         return meshData.addVertex {
@@ -93,7 +93,7 @@ open class MeshBuilder(val meshData: MeshData) {
         transform[3, 2] = origin.z
     }
 
-    fun circle(props: CircleProps.() -> Unit) {
+    inline fun circle(props: CircleProps.() -> Unit) {
         circleProps.defaults().props()
         circle(circleProps)
     }
@@ -117,7 +117,7 @@ open class MeshBuilder(val meshData: MeshData) {
         }
     }
 
-    fun sphere(props: SphereProps.() -> Unit) {
+    inline fun sphere(props: SphereProps.() -> Unit) {
         sphereProps.defaults().props()
         sphere(sphereProps)
     }
@@ -178,7 +178,7 @@ open class MeshBuilder(val meshData: MeshData) {
         }
     }
 
-    fun rect(props: RectProps.() -> Unit) {
+    inline fun rect(props: RectProps.() -> Unit) {
         rectProps.defaults().props()
         rect(rectProps)
     }
@@ -235,7 +235,7 @@ open class MeshBuilder(val meshData: MeshData) {
         meshData.addTriIndices(i0, i2, i3)
     }
 
-    fun cube(props: CubeProps.() -> Unit) {
+    inline fun cube(props: CubeProps.() -> Unit) {
         cubeProps.defaults().props()
         cube(cubeProps)
     }
@@ -304,7 +304,7 @@ open class MeshBuilder(val meshData: MeshData) {
         }
     }
 
-    fun cylinder(props: CylinderProps.() -> Unit) {
+    inline fun cylinder(props: CylinderProps.() -> Unit) {
         cylinderProps.defaults().props()
         cylinder(cylinderProps)
     }
@@ -358,7 +358,7 @@ open class MeshBuilder(val meshData: MeshData) {
         }
     }
 
-    fun text(font: Font, props: TextProps.() -> Unit) {
+    inline fun text(font: Font, props: TextProps.() -> Unit) {
         textProps.defaults()
         textProps.font = font
         textProps.props()

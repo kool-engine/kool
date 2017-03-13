@@ -18,12 +18,14 @@ class MemoryManager internal constructor() {
     }
 
     internal fun memoryAllocated(resource: GlResource, memory: Int) {
-        allocationMap[resource.type]!!.put(resource, memory)
+        val prevAlloc = allocationMap[resource.type]!!.put(resource, memory) ?: 0
 
-        val newTotal = totalMem[resource.type]!! + memory
-        totalMem.put(resource.type, newTotal)
+        if (prevAlloc != memory) {
+            val newTotal = totalMem[resource.type]!! + memory - prevAlloc
+            totalMem.put(resource.type, newTotal)
 
-//        println("${resource.type} allocated: $memory (total: $newTotal)")
+            //println("${resource.type} allocated: ${memory-prevAlloc} (total: $newTotal)")
+        }
     }
 
     internal fun deleted(resource: GlResource) {
@@ -33,7 +35,7 @@ class MemoryManager internal constructor() {
             val newTotal = totalMem[resource.type]!! - memory
             totalMem.put(resource.type, newTotal)
 
-//            println("${resource.type} deleted: $memory  (total: $newTotal)")
+            //println("${resource.type} deleted: $memory  (total: $newTotal)")
         }
     }
 

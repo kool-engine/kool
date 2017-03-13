@@ -11,33 +11,15 @@ import de.fabmax.kool.util.*
  */
 open class Button(name: String) : UiComponent(name) {
 
-    protected val meshData = MeshData(true, true, true)
-    protected val meshBuilder = MeshBuilder(meshData)
-    protected val mesh = Mesh(meshData)
-
     var text = ""
         set(value) {
             field = value
             isUpdateNeeded = true
         }
 
-    var font = Font.DEFAULT_FONT
-        set(value) {
-            field = value
-            isUpdateNeeded = true
-        }
-
-    var textColor = Color.WHITE
-        set(value) {
-            field = value
-            isUpdateNeeded = true
-        }
-
-    var textColorHovered = Color.LIME
-        set(value) {
-            field = value
-            isUpdateNeeded = true
-        }
+    val font = ThemeOrCustomProp(Font.DEFAULT_FONT)
+    val textColor = ThemeOrCustomProp(Color.WHITE)
+    val textColorHovered = ThemeOrCustomProp(Color.WHITE)
 
     var isHovered = false
         protected set
@@ -47,8 +29,12 @@ open class Button(name: String) : UiComponent(name) {
     protected var colorWeightHovered = 0f
     protected var mixColor = MutableColor()
 
+    protected val meshData = MeshData(true, true, true)
+    protected val meshBuilder = MeshBuilder(meshData)
+    protected val mesh = Mesh(meshData)
+    protected var meshAdded = false
+
     init {
-        this += mesh
         mesh.shader = fontShader()
 
         hoverAnimator.speed = 0f
@@ -60,7 +46,7 @@ open class Button(name: String) : UiComponent(name) {
 
         onHoverEnter += { ptr, rt, ctx ->
             isHovered = true
-            hoverAnimator.duration = 0.2f
+            hoverAnimator.duration = 0.1f
             hoverAnimator.speed = 1f
         }
 
@@ -76,23 +62,43 @@ open class Button(name: String) : UiComponent(name) {
     override fun update(ctx: RenderContext) {
         super.update(ctx)
 
+        if (!meshAdded) {
+            meshAdded = true
+            this += mesh
+        }
+
+        textColor.updateProp()
+        textColorHovered.updateProp()
+        if (font.needsUpdate()) {
+            font.prop?.dispose(ctx)
+            font.updateProp()
+        }
+
         val shader = mesh.shader
         if (shader is BasicShader) {
-            shader.texture = font
+            shader.texture = font.propOrDefault
         }
 
         mixColor.set(0f, 0f, 0f, 0f)
-        mixColor.add(textColor, colorWeightStd)
-        mixColor.add(textColorHovered, colorWeightHovered)
+        mixColor.add(textColor.propOrDefault, colorWeightStd)
+        mixColor.add(textColorHovered.propOrDefault, colorWeightHovered)
 
-        val txtWidth = font.textWidth(text)
+        val txtWidth = font.propOrDefault.textWidth(text)
         setupBuilder(meshBuilder)
         meshBuilder.run {
             color = mixColor
-            text(font) {
+            text(font.propOrDefault) {
                 origin.set((width - txtWidth) / 2f, (height - font.fontProps.sizeUnits * 0.7f) / 2f, 0f)
                 text = this@Button.text
             }
         }
+    }
+
+    override fun applyTheme(theme: UiTheme, ctx: RenderContext) {
+        super.applyTheme(theme, ctx)
+
+        font.setTheme(theme.standardFont(root?.uiDpi ?: 96f))
+        textColor.setTheme(theme.foregroundColor)
+        textColorHovered.setTheme(theme.accentColor)
     }
 }

@@ -3,10 +3,10 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.Vec3f
-import de.fabmax.kool.util.uiFont
+import de.fabmax.kool.shading.ColorModel
+import de.fabmax.kool.shading.LightModel
+import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.util.*
 
 /**
  * @author fabmax
@@ -18,6 +18,7 @@ fun uiDemo(ctx: RenderContext) {
 //        clipToViewport = true
 //    }
 
+    ctx.clearColor = color("00323F")
     ctx.scene.camera = PerspectiveCamera().apply {
         position.set(0f, 0f, 15f)
     }
@@ -45,6 +46,8 @@ fun uiDemo(ctx: RenderContext) {
         }
 
         +UiRoot(300f).apply {
+            theme = UiTheme.DARK
+
             translate(-globalWidth /2, -globalHeight/2, 0f)
             scaleContentTo(dp(400f))
 
@@ -53,12 +56,8 @@ fun uiDemo(ctx: RenderContext) {
                     layoutSpec.setOrigin(dp(50f), pc(-30f * i), un(0f))
                     layoutSpec.setSize(dp(300f), pc(20f), un(0f))
 
-                    background = BlurredBackground(this).apply {
-                        backgroundColor = Color(0.4f, 0.5f, 0.6f)
-                    }
-
-                    font = uiFont(Font.SYSTEM_FONT, 32f, uiDpi)
-                    textColor = Color.WHITE
+                    //font = uiFont(Font.SYSTEM_FONT, 24f, uiDpi)
+                    //textColor = Color.WHITE
                     text = "Button " + i
 
                     onHoverEnter += { ptr, rt, ctx ->
@@ -70,6 +69,11 @@ fun uiDemo(ctx: RenderContext) {
                     onHover += { ptr, rt, ctx ->
                         if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
                             println("$text clicked")
+                            if (i == 1) {
+                                theme = UiTheme.DARK
+                            } else if (i == 2) {
+                                theme = UiTheme.LIGHT
+                            }
                         }
                     }
                 }
