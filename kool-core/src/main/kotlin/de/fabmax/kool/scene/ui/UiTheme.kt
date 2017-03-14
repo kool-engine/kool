@@ -102,6 +102,9 @@ class ThemeOrCustomProp<T>(val defaultVal: T) {
     val propOrDefault
         get() = prop ?: defaultVal
 
+    val isUpdate: Boolean
+        get() = (isCustom && prop != customVal) || (isThemeSet && prop != themeVal)
+
     fun setTheme(themeVal: T) {
         this.themeVal = themeVal
         isThemeSet = true
@@ -117,14 +120,12 @@ class ThemeOrCustomProp<T>(val defaultVal: T) {
         isCustom = false
     }
 
-    fun updateProp(): T? {
+    fun apply(): T {
         if (isCustom) {
             prop = customVal
         } else if (isThemeSet) {
             prop = themeVal
         }
-        return prop
+        return propOrDefault
     }
-
-    fun needsUpdate(): Boolean = (isCustom && prop != customVal) || (isThemeSet && prop != themeVal)
 }

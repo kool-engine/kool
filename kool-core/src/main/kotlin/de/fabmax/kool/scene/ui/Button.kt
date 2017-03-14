@@ -116,13 +116,10 @@ open class Button(name: String) : UiComponent(name) {
     }
 
     protected open fun updateButtonUi(ctx: RenderContext) {
-        textColor.updateProp()
-        textColorHovered.updateProp()
-        if (font.needsUpdate()) {
+        if (font.isUpdate) {
             font.prop?.dispose(ctx)
-            font.updateProp()
         }
-        val font = font.propOrDefault
+        val font = font.apply()
 
         val shader = mesh.shader
         if (shader is BasicShader) {
@@ -130,11 +127,10 @@ open class Button(name: String) : UiComponent(name) {
         }
 
         fgColor.clear()
-        fgColor.add(textColor.propOrDefault, colorWeightStd)
-        fgColor.add(textColorHovered.propOrDefault, colorWeightHovered)
+        fgColor.add(textColor.apply(), colorWeightStd)
+        fgColor.add(textColorHovered.apply(), colorWeightHovered)
 
         val txtWidth = font.textWidth(text)
-        val txtHeight = font.fontProps.sizeUnits * 0.7f
         setupBuilder(meshBuilder)
         meshBuilder.color = fgColor
         meshBuilder.text(font) {
@@ -144,8 +140,8 @@ open class Button(name: String) : UiComponent(name) {
                 Alignment.END -> width - txtWidth - padding.right.toUnits(width, dpi)
             }
             val y = when (textAlignment.yAlignment) {
-                Alignment.START -> height - padding.top.toUnits(width, dpi) - txtHeight
-                Alignment.CENTER -> (height - txtHeight) / 2f
+                Alignment.START -> height - padding.top.toUnits(width, dpi) - font.normHeight
+                Alignment.CENTER -> (height - font.normHeight) / 2f
                 Alignment.END -> padding.bottom.toUnits(width, dpi)
             }
             origin.set(x, y, 0f)

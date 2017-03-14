@@ -91,6 +91,7 @@ class Font(val fontProps: FontProps) :
     val charMap: CharMap = getCharMap(fontProps)
 
     val lineSpace = fontProps.sizeUnits * 1.2f
+    val normHeight = fontProps.sizeUnits * 0.7f
 
     fun textWidth(string: String): Float {
         var width = 0f

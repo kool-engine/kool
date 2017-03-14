@@ -66,13 +66,13 @@ open class UiComponent(name: String) : Group(name), UiNode {
         if (!background.isThemeSet) {
             background.setTheme(createThemeBackground(ctx))
         }
-        if (background.needsUpdate()) {
+        if (background.isUpdate) {
             val prev = background.prop
             if (prev != null) {
                 prev.dispose(ctx)
                 this -= prev
             }
-            val prop = background.updateProp()
+            val prop = background.apply()
             if (prop != null) {
                 this.addNode(prop, 0)
             }

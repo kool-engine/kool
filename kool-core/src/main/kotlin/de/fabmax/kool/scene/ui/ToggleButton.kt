@@ -46,7 +46,7 @@ class ToggleButton(name: String, initState: Boolean = false): Button(name) {
 
         val paddingR = padding.right.toUnits(width, dpi)
         val trackW = dp(24f)
-        val trackH = dp(4f)
+        val trackH = dp(6f)
         val r = dp(10f)
         val x = width - paddingR - trackW - r
         val y = (height - trackH) / 2f
@@ -56,6 +56,8 @@ class ToggleButton(name: String, initState: Boolean = false): Button(name) {
             origin.set(x, y, 0f)
             width = trackW
             height = trackH
+            cornerRadius = trackH / 2f
+            cornerSteps = 4
         }
 
         val anim = knobAnimator.value.value
@@ -67,6 +69,7 @@ class ToggleButton(name: String, initState: Boolean = false): Button(name) {
         meshBuilder.circle {
             center.set(x + trackW * anim, y + trackH / 2f, 0f)
             radius = r
+            steps = 30
         }
     }
 

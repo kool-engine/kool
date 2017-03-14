@@ -63,7 +63,7 @@ fun uiDemo(ctx: RenderContext) {
             scaleContentTo(dps(400f))
 
             +ToggleButton("toggle-button").apply {
-                layoutSpec.setOrigin(dps(50f), pcs(100f), uns(0f))
+                layoutSpec.setOrigin(dps(50f), pcs(-30f), uns(0f))
                 layoutSpec.setSize(dps(300f), pcs(20f), uns(0f))
 
                 text = "Toggle Button"
@@ -71,7 +71,7 @@ fun uiDemo(ctx: RenderContext) {
 
             for (i in 1..3) {
                 +Button("button $i").apply {
-                    layoutSpec.setOrigin(dps(50f), pcs(-30f * i), uns(0f))
+                    layoutSpec.setOrigin(dps(50f), pcs(-30f * (i+1)), uns(0f))
                     layoutSpec.setSize(dps(300f), pcs(20f), uns(0f))
 
                     //font = uiFont(Font.SYSTEM_FONT, 24f, uiDpi)

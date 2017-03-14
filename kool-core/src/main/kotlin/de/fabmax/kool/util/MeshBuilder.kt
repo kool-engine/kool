@@ -15,6 +15,7 @@ open class MeshBuilder(val meshData: MeshData) {
 
     private val tmpPos = MutableVec3f()
     private val tmpNrm = MutableVec3f()
+    private val tmpUv = MutableVec2f()
 
     val circleProps = CircleProps()
     val cubeProps = CubeProps()
@@ -38,13 +39,13 @@ open class MeshBuilder(val meshData: MeshData) {
         }
     }
 
-    fun withTransform(block: MeshBuilder.() -> Unit) {
+    inline fun withTransform(block: MeshBuilder.() -> Unit) {
         transform.push()
         this.block()
         transform.pop()
     }
 
-    fun withColor(color: Color?, block: MeshBuilder.() -> Unit) {
+    inline fun withColor(color: Color?, block: MeshBuilder.() -> Unit) {
         val c = this.color
         if (color != null) {
             this.color = color
@@ -99,21 +100,21 @@ open class MeshBuilder(val meshData: MeshData) {
     }
 
     fun circle(props: CircleProps) {
-        var i0 = 0
         var i1 = 0
+        val iCenter = vertex(props.center, Vec3f.Z_AXIS, props.uvCenter)
         for (i in 0..props.steps) {
-            val px = props.center.x + props.radius * Math.cos(i * Math.PI * 2 / props.steps).toFloat()
-            val py = props.center.y + props.radius * Math.sin(i * Math.PI * 2 / props.steps).toFloat()
-            val idx = vertex(tmpPos.set(px, py, props.center.z), Vec3f.Z_AXIS)
+            val ang = Math.toRad(props.startDeg + props.sweepDeg * i / props.steps).toDouble()
+            val cos = Math.cos(ang).toFloat()
+            val sin = Math.sin(ang).toFloat()
+            val px = props.center.x + props.radius * cos
+            val py = props.center.y + props.radius * sin
+            tmpUv.set(cos, -sin).scale(props.uvRadius).add(props.uvCenter)
+            val idx = vertex(tmpPos.set(px, py, props.center.z), Vec3f.Z_AXIS, tmpUv)
 
-            if (i == 0) {
-                i0 = idx
-            } else if(i == 1) {
-                i1 = idx
-            } else {
-                meshData.addTriIndices(i0, i1, idx)
-                i1 = idx
+            if (i > 0) {
+                meshData.addTriIndices(iCenter, i1, idx)
             }
+            i1 = idx
         }
     }
 
@@ -185,16 +186,97 @@ open class MeshBuilder(val meshData: MeshData) {
 
     fun rect(props: RectProps) {
         props.fixNegativeSize()
-        val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z),
-                Vec3f.Z_AXIS, props.texCoordLowerLeft)
-        val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z),
-                Vec3f.Z_AXIS, props.texCoordLowerRight)
-        val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z),
-                Vec3f.Z_AXIS, props.texCoordUpperRight)
-        val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z),
-                Vec3f.Z_AXIS, props.texCoordUpperLeft)
-        meshData.addTriIndices(i0, i1, i2)
-        meshData.addTriIndices(i0, i2, i3)
+
+        if (props.cornerRadius == 0f) {
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z),
+                    Vec3f.Z_AXIS, props.texCoordLowerLeft)
+            val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z),
+                    Vec3f.Z_AXIS, props.texCoordLowerRight)
+            val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z),
+                    Vec3f.Z_AXIS, props.texCoordUpperRight)
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z),
+                    Vec3f.Z_AXIS, props.texCoordUpperLeft)
+            meshData.addTriIndices(i0, i1, i2)
+            meshData.addTriIndices(i0, i2, i3)
+
+        } else {
+            val x = props.origin.x
+            val y = props.origin.y
+            val z = props.origin.z
+            val w = props.width
+            val h = props.height
+            val xI = x + props.cornerRadius
+            val yI = y + props.cornerRadius
+            val wI = w - props.cornerRadius * 2
+            val hI = h - props.cornerRadius * 2
+            val nrm = Vec3f.Z_AXIS
+
+            // compute tex coord insets, this only works for axis aligned tex coords...
+            val uI = (props.texCoordUpperRight.x - props.texCoordUpperLeft.x) * props.cornerRadius / w
+            val vI = (props.texCoordUpperRight.y - props.texCoordLowerRight.y) * props.cornerRadius / h
+
+            if (hI > 0) {
+                val i0 = vertex(tmpPos.set(x, yI, z), nrm, tmpUv.set(0f, vI).add(props.texCoordLowerLeft))
+                val i1 = vertex(tmpPos.set(x + w, yI, z), nrm, tmpUv.set(0f, vI).add(props.texCoordLowerRight))
+                val i2 = vertex(tmpPos.set(x + w, yI + hI, z), nrm, tmpUv.set(0f, -vI).add(props.texCoordUpperRight))
+                val i3 = vertex(tmpPos.set(x, yI + hI, z), nrm, tmpUv.set(0f, -vI).add(props.texCoordUpperLeft))
+                meshData.addTriIndices(i0, i1, i2)
+                meshData.addTriIndices(i0, i2, i3)
+            }
+
+            if (wI > 0) {
+                var i0 = vertex(tmpPos.set(xI, y, z), nrm, tmpUv.set(uI, 0f).add(props.texCoordLowerLeft))
+                var i1 = vertex(tmpPos.set(xI + wI, y, z), nrm, tmpUv.set(-uI, 0f).add(props.texCoordLowerRight))
+                var i2 = vertex(tmpPos.set(xI + wI, yI, z), nrm, tmpUv.set(-uI, vI).add(props.texCoordLowerRight))
+                var i3 = vertex(tmpPos.set(xI, yI, z), nrm, tmpUv.set(uI, vI).add(props.texCoordLowerLeft))
+                meshData.addTriIndices(i0, i1, i2)
+                meshData.addTriIndices(i0, i2, i3)
+
+                i0 = vertex(tmpPos.set(xI, yI + hI, z), nrm, tmpUv.set(uI, -vI).add(props.texCoordUpperLeft))
+                i1 = vertex(tmpPos.set(xI + wI, yI + hI, z), nrm, tmpUv.set(-uI, -vI).add(props.texCoordUpperRight))
+                i2 = vertex(tmpPos.set(xI + wI, y + h, z), nrm, tmpUv.set(-uI, 0f).add(props.texCoordUpperRight))
+                i3 = vertex(tmpPos.set(xI, y + h, z), nrm, tmpUv.set(uI, 0f).add(props.texCoordUpperLeft))
+                meshData.addTriIndices(i0, i1, i2)
+                meshData.addTriIndices(i0, i2, i3)
+            }
+
+            circle {
+                center.set(xI + wI, yI + hI, z)
+                startDeg = 0f
+                sweepDeg = 90f
+                radius = props.cornerRadius
+                steps = props.cornerSteps
+                uvCenter.set(-uI, -vI).add(props.texCoordUpperRight)
+                uvRadius = uI
+            }
+            circle {
+                center.set(xI, yI + hI, z)
+                startDeg = 90f
+                sweepDeg = 90f
+                radius = props.cornerRadius
+                steps = props.cornerSteps
+                uvCenter.set(uI, -vI).add(props.texCoordUpperLeft)
+                uvRadius = uI
+            }
+            circle {
+                center.set(xI, yI, z)
+                startDeg = 180f
+                sweepDeg = 90f
+                radius = props.cornerRadius
+                steps = props.cornerSteps
+                uvCenter.set(uI, vI).add(props.texCoordLowerLeft)
+                uvRadius = uI
+            }
+            circle {
+                center.set(xI + wI, yI, z)
+                startDeg = 270f
+                sweepDeg = 90f
+                radius = props.cornerRadius
+                steps = props.cornerSteps
+                uvCenter.set(-uI, vI).add(props.texCoordLowerRight)
+                uvRadius = uI
+            }
+        }
     }
 
     fun line(pt1: Vec2f, pt2: Vec2f, width: Float) {
@@ -395,20 +477,42 @@ open class MeshBuilder(val meshData: MeshData) {
     }
 }
 
-open class CircleProps {
+class CircleProps {
+    var radius = 1f
+    var steps = 20
+    val center = MutableVec3f()
+    var startDeg = 0f
+    var sweepDeg = 360f
+
+    val uvCenter = MutableVec2f()
+    var uvRadius = 0f
+
+    fun defaults(): CircleProps {
+        radius = 1f
+        steps = 20
+        center.set(Vec3f.ZERO)
+        startDeg = 0f
+        sweepDeg = 360f
+        zeroTexCoords()
+        return this
+    }
+
+    fun zeroTexCoords() {
+        uvCenter.set(Vec2f.ZERO)
+        uvRadius = 0f
+    }
+
+    fun fullTexCoords() {
+        uvCenter.set(0.5f, 0.5f)
+        uvRadius = 0.5f
+    }
+}
+
+class SphereProps {
     var radius = 1f
     var steps = 20
     val center = MutableVec3f()
 
-    open fun defaults(): CircleProps {
-        radius = 1f
-        steps = 20
-        center.set(Vec3f.ZERO)
-        return this
-    }
-}
-
-class SphereProps : CircleProps() {
     private val uv = MutableVec2f()
 
     var texCoordGenerator: (Float, Float) -> Vec2f = { t, p -> defaultTexCoordGenerator(t, p) }
@@ -417,16 +521,20 @@ class SphereProps : CircleProps() {
         return uv.set(phi / (Math.PI.toFloat() * 2f), theta / Math.PI.toFloat())
     }
 
-    override fun defaults(): SphereProps {
-        super.defaults()
+    fun defaults(): SphereProps {
+        radius = 1f
+        steps = 20
+        center.set(Vec3f.ZERO)
         texCoordGenerator = { t, p -> defaultTexCoordGenerator(t, p) }
         return this
     }
 }
 
-open class RectProps {
+class RectProps {
     var width = 1f
     var height = 1f
+    var cornerRadius = 0f
+    var cornerSteps = 8
     val origin = MutableVec3f()
 
     val texCoordUpperLeft = MutableVec2f()
@@ -434,7 +542,7 @@ open class RectProps {
     val texCoordLowerLeft = MutableVec2f()
     val texCoordLowerRight = MutableVec2f()
 
-    open fun fixNegativeSize() {
+    fun fixNegativeSize() {
         if (width < 0) {
             origin.x += width
             width = -width
@@ -459,17 +567,22 @@ open class RectProps {
         texCoordLowerRight.set(1f, 1f)
     }
 
-    open fun defaults(): RectProps {
+    fun defaults(): RectProps {
         width = 1f
         height = 1f
+        cornerRadius = 0f
+        cornerSteps = 8
         origin.set(Vec3f.ZERO)
         zeroTexCoords()
         return this
     }
 }
 
-class CubeProps : RectProps() {
+class CubeProps {
+    var width = 1f
+    var height = 1f
     var depth = 1f
+    val origin = MutableVec3f()
 
     var topColor: Color? = null
     var bottomColor: Color? = null
@@ -478,8 +591,15 @@ class CubeProps : RectProps() {
     var frontColor: Color? = null
     var backColor: Color? = null
 
-    override fun fixNegativeSize() {
-        super.fixNegativeSize()
+    fun fixNegativeSize() {
+        if (width < 0) {
+            origin.x += width
+            width = -width
+        }
+        if (height < 0) {
+            origin.y += height
+            height = -height
+        }
         if (depth < 0) {
             origin.z += depth
             depth = -depth
@@ -501,9 +621,11 @@ class CubeProps : RectProps() {
         bottomColor = Color.CYAN
     }
 
-    override fun defaults(): CubeProps {
-        super.defaults()
+    fun defaults(): CubeProps {
+        width = 1f
+        height = 1f
         depth = 1f
+        origin.set(Vec3f.ZERO)
 
         topColor = null
         bottomColor = null

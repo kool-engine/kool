@@ -7,10 +7,21 @@ import de.fabmax.kool.platform.Math
  * @author fabmax
  */
 
+fun add(a: Vec2f, b: Vec2f): MutableVec2f = a.add(MutableVec2f(), b)
 fun add(a: Vec3f, b: Vec3f): MutableVec3f = a.add(MutableVec3f(), b)
+fun add(a: Vec4f, b: Vec4f): MutableVec4f = a.add(MutableVec4f(), b)
+
+fun subtract(a: Vec2f, b: Vec2f): MutableVec2f = a.subtract(MutableVec2f(), b)
 fun subtract(a: Vec3f, b: Vec3f): MutableVec3f = a.subtract(MutableVec3f(), b)
+fun subtract(a: Vec4f, b: Vec4f): MutableVec4f = a.subtract(MutableVec4f(), b)
+
+fun scale(a: Vec2f, fac: Float): MutableVec2f = a.scale(MutableVec2f(), fac)
 fun scale(a: Vec3f, fac: Float): MutableVec3f = a.scale(MutableVec3f(), fac)
+fun scale(a: Vec4f, fac: Float): MutableVec4f = a.scale(MutableVec4f(), fac)
+
+fun norm(a: Vec2f): MutableVec2f = a.norm(MutableVec2f())
 fun norm(a: Vec3f): MutableVec3f = a.norm(MutableVec3f())
+
 fun cross(a: Vec3f, b: Vec3f): MutableVec3f = a.cross(MutableVec3f(), b)
 
 open class Vec2f(x: Float, y: Float) {
@@ -28,6 +39,39 @@ open class Vec2f(x: Float, y: Float) {
             1 -> y
             else -> throw KoolException("Invalid index: " + i)
         }
+    }
+
+    fun add(result: MutableVec2f, other: Vec2f): MutableVec2f {
+        result.x += other.x
+        result.y += other.y
+        return result
+    }
+
+    fun subtract(result: MutableVec2f, other: Vec2f): MutableVec2f {
+        result.x -= other.x
+        result.y -= other.y
+        return result
+    }
+
+    fun scale(result: MutableVec2f, factor: Float): MutableVec2f {
+        result.x = x * factor
+        result.y = y * factor
+        return result
+    }
+
+    fun norm(result: MutableVec2f): MutableVec2f {
+        val lenReciproc = 1f / length()
+        result.x = x * lenReciproc
+        result.y = y * lenReciproc
+        return result
+    }
+
+    fun sqrLength(): Float {
+        return x*x + y*y
+    }
+
+    fun length(): Float {
+        return Math.sqrt(sqrLength().toDouble()).toFloat()
     }
 
     fun isEqual(other: Vec2f): Boolean {
@@ -55,6 +99,22 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
     constructor() : this(0f, 0f)
 
     constructor(other: Vec2f) : this(other.x, other.y)
+
+    fun add(other: Vec2f): MutableVec2f {
+        x += other.x
+        y += other.y
+        return this
+    }
+
+    operator fun plusAssign(other: Vec2f) { add(other) }
+
+    fun subtract(other: Vec2f): MutableVec2f {
+        x -= other.x
+        y -= other.y
+        return this
+    }
+
+    operator fun minusAssign(other: Vec2f) { subtract(other) }
 
     fun set(x: Float, y: Float): MutableVec2f  {
         this.x = x
@@ -288,6 +348,30 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
             3 -> w
             else -> throw KoolException("Invalid index: " + i)
         }
+    }
+
+    fun add(result: MutableVec4f, other: Vec4f): MutableVec4f {
+        result.x = x + other.x
+        result.y = y + other.y
+        result.z = z + other.z
+        result.w = w + other.w
+        return result
+    }
+
+    fun subtract(result: MutableVec4f, other: Vec4f): MutableVec4f {
+        result.x = x - other.x
+        result.y = y - other.y
+        result.z = z - other.z
+        result.w = w - other.w
+        return result
+    }
+
+    fun scale(result: MutableVec4f, factor: Float): MutableVec4f {
+        result.x = x * factor
+        result.y = y * factor
+        result.z = z * factor
+        result.w = w * factor
+        return result
     }
 
     fun isEqual(other: Vec4f): Boolean {
