@@ -57,7 +57,8 @@ abstract class RenderContext {
     protected fun render() {
         val now = Platform.currentTimeMillis()
         if (startTimeMillis == 0L) {
-            startTimeMillis = now
+            // avoid deltaT being zero...
+            startTimeMillis = now - 1
         }
         val t = (now - startTimeMillis).toDouble() / 1000.0
         val dt = (t - time).toFloat()

@@ -29,7 +29,7 @@ open class UiTheme {
 
     var containerBackground: ((UiComponent) -> Background?) = { null }
 
-    var componentBackground: ((UiComponent) -> Background?) = { BlurredBackground(it, blurShader()).apply {
+    var componentBackground: ((UiComponent) -> Background?) = { BlurredBackground(it).apply {
         blurShader.colorMix = 0.7f
         color = backgroundColor
     }}
@@ -41,20 +41,17 @@ open class UiTheme {
             backgroundColor(color("001419"))
             foregroundColor(Color.WHITE)
             accentColor(Color.LIME)
-            componentBackground = { BlurredBackground(it, blurShader()).apply {
+            componentBackground = { BlurredBackground(it).apply {
                 blurShader.colorMix = 0.5f
                 color = backgroundColor
             }}
-//            componentBackground = { SimpleBackground(it).apply {
-//                color = backgroundColor
-//            }}
         }
 
         val LIGHT = theme(DEFAULT) {
             backgroundColor(Color.WHITE)
-            foregroundColor(color("001419"))
-            accentColor(color("E91E63"))
-            componentBackground = { BlurredBackground(it, blurShader()).apply {
+            foregroundColor(color("3E2723"))
+            accentColor(color("BF360C"))
+            componentBackground = { BlurredBackground(it).apply {
                 blurShader.colorMix = 0.5f
                 color = backgroundColor
             }}

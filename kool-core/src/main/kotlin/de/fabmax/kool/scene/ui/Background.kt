@@ -18,8 +18,10 @@ abstract class Background(val component: UiComponent) : Node() {
 
 }
 
-open class SimpleBackground(component: UiComponent, bgShader: Shader = basicShader {
+open class SimpleBackground(component: UiComponent, val bgShader: BasicShader = basicShader {
+    lightModel = LightModel.PHONG_LIGHTING
     colorModel = ColorModel.STATIC_COLOR
+    isAlpha = true
 }) : Background(component) {
 
     protected val meshData = MeshData(true, true, true)
@@ -57,6 +59,7 @@ open class SimpleBackground(component: UiComponent, bgShader: Shader = basicShad
 
     override fun render(ctx: RenderContext) {
         super.render(ctx)
+        bgShader.alpha = component.alpha
         mesh.render(ctx)
     }
 
@@ -72,7 +75,9 @@ open class SimpleBackground(component: UiComponent, bgShader: Shader = basicShad
 }
 
 open class BlurredBackground(component: UiComponent, val blurShader: BlurShader = blurShader {
+    lightModel = LightModel.PHONG_LIGHTING
     colorModel = ColorModel.STATIC_COLOR
+    isAlpha = true
 }) : SimpleBackground(component, blurShader) {
 
     init {

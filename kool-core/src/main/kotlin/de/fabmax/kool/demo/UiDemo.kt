@@ -48,31 +48,55 @@ fun uiDemo(ctx: RenderContext) {
         +UiRoot(300f).apply {
             theme = UiTheme.DARK
 
+            val alphaAnimator = LinearAnimator(InterpolatedFloat(0.5f, 1f)).apply {
+                speed = 1f
+                duration = 1f
+                value.onUpdate = { v ->
+                    alpha = v
+                }
+            }
+            onRender += { ctx ->
+                alphaAnimator.tick(ctx)
+            }
+
             translate(-globalWidth /2, -globalHeight/2, 0f)
-            scaleContentTo(dp(400f))
+            scaleContentTo(dps(400f))
+
+            +ToggleButton("toggle-button").apply {
+                layoutSpec.setOrigin(dps(50f), pcs(100f), uns(0f))
+                layoutSpec.setSize(dps(300f), pcs(20f), uns(0f))
+
+                text = "Toggle Button"
+            }
 
             for (i in 1..3) {
                 +Button("button $i").apply {
-                    layoutSpec.setOrigin(dp(50f), pc(-30f * i), un(0f))
-                    layoutSpec.setSize(dp(300f), pc(20f), un(0f))
+                    layoutSpec.setOrigin(dps(50f), pcs(-30f * i), uns(0f))
+                    layoutSpec.setSize(dps(300f), pcs(20f), uns(0f))
 
                     //font = uiFont(Font.SYSTEM_FONT, 24f, uiDpi)
                     //textColor = Color.WHITE
                     text = "Button " + i
 
-                    onHoverEnter += { ptr, rt, ctx ->
-                        println("$text hover enter ${rt.hitPositionLocal}")
-                    }
-                    onHoverExit += { ptr, rt, ctx ->
-                        println("$text hover exit")
-                    }
-                    onHover += { ptr, rt, ctx ->
-                        if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
-                            println("$text clicked")
-                            if (i == 1) {
-                                theme = UiTheme.DARK
-                            } else if (i == 2) {
-                                theme = UiTheme.LIGHT
+//                    if (i == 1) {
+//                        textAlignment = Gravity(Alignment.START, Alignment.START)
+//                    } else if (i == 2) {
+//                        textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
+//                    } else if (i == 3) {
+//                        textAlignment = Gravity(Alignment.END, Alignment.END)
+//                    }
+
+                    onClick += { _,_,_ ->
+                        println("$text clicked")
+                        if (i == 1) {
+                            theme = UiTheme.LIGHT
+                        } else if (i == 2) {
+                            theme = UiTheme.DARK
+                        } else if (i == 3) {
+                            alphaAnimator.speed = if (alphaAnimator.progress > 0.5f) {
+                                -1f
+                            } else {
+                                1f
                             }
                         }
                     }

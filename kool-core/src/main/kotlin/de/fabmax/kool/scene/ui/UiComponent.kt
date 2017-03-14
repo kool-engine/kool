@@ -29,6 +29,10 @@ open class UiComponent(name: String) : Group(name), UiNode {
                 children.filter { it is UiNode }.forEach { (it as UiNode).root = root }
             }
         }
+    val dpi: Float
+        get() = root?.uiDpi ?: 96f
+
+    override var alpha = 1f
 
     protected var isUpdateNeeded = true
     protected var isThemeApplied = false

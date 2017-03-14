@@ -21,7 +21,7 @@ abstract class Animator<V, out T: InterpolatedValue<V>>(val value: T) {
     open fun tick(ctx: RenderContext): V {
         if (!Math.isZero(speed)) {
             progress += ctx.deltaT * speed / duration
-            if (progress >= 1f) {
+            if (progress >= 1f && speed > 0) {
                 when (repeating) {
                     ONCE -> {
                         // animation is done
@@ -39,7 +39,7 @@ abstract class Animator<V, out T: InterpolatedValue<V>>(val value: T) {
                     }
 
                 }
-            } else if (progress <= 0f) {
+            } else if (progress <= 0f && speed < 0) {
                 when (repeating) {
                     ONCE -> {
                         // animation is done
@@ -59,6 +59,7 @@ abstract class Animator<V, out T: InterpolatedValue<V>>(val value: T) {
                 }
             }
 
+            progress = Math.clamp(progress, 0f, 1f)
             value.interpolate(interpolate(progress))
         }
         return value.value

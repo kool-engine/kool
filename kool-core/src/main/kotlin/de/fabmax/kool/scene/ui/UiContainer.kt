@@ -28,6 +28,17 @@ open class UiContainer(name: String) : TransformGroup(name), UiNode {
             }
         }
 
+    override var alpha = 1f
+        set(value) {
+            field = value
+            for (i in children.indices) {
+                val child = children[i]
+                if (child is UiNode) {
+                    child.alpha = value
+                }
+            }
+        }
+
     protected var isLayoutNeeded = true
 
     protected val backgroundComponent = LayoutBgComponent()
@@ -99,7 +110,7 @@ open class UiContainer(name: String) : TransformGroup(name), UiNode {
 
     protected inner class LayoutBgComponent : UiComponent("$name-bg") {
         init {
-            layoutSpec.setSize(pc(100f), pc(100f), pc(100f))
+            layoutSpec.setSize(pcs(100f), pcs(100f), pcs(100f))
         }
 
         override fun createThemeBackground(ctx: RenderContext): Background? {

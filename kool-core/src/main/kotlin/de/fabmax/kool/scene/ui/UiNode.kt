@@ -11,8 +11,9 @@ interface UiNode {
 
     var layoutSpec: LayoutSpec
 
-    val contentBounds: BoundingBox
+    var alpha: Float
 
+    val contentBounds: BoundingBox
     val width: Float
         get() = contentBounds.size.x
     val height: Float

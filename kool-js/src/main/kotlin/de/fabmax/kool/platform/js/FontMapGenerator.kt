@@ -32,7 +32,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         // clear canvas
         canvasCtx.clearRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
 
-        var style = ""
+        var style = "lighter "
         if (fontProps.style and Font.BOLD != 0) {
             style = "bold "
         }
