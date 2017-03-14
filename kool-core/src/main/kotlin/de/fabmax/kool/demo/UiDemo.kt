@@ -48,58 +48,42 @@ fun uiDemo(ctx: RenderContext) {
         +UiRoot(300f).apply {
             theme = UiTheme.DARK
 
-            val alphaAnimator = LinearAnimator(InterpolatedFloat(0.5f, 1f)).apply {
-                speed = 1f
-                duration = 1f
-                value.onUpdate = { v ->
-                    alpha = v
-                }
-            }
-            onRender += { ctx ->
-                alphaAnimator.tick(ctx)
-            }
-
             translate(-globalWidth /2, -globalHeight/2, 0f)
             scaleContentTo(dps(400f))
 
             +ToggleButton("toggle-button").apply {
-                layoutSpec.setOrigin(dps(50f), pcs(-30f), uns(0f))
-                layoutSpec.setSize(dps(300f), pcs(20f), uns(0f))
+                layoutSpec.setOrigin(dps(50f), pcs(-15f), uns(0f))
+                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
 
                 text = "Toggle Button"
             }
 
-            for (i in 1..3) {
-                +Button("button $i").apply {
-                    layoutSpec.setOrigin(dps(50f), pcs(-30f * (i+1)), uns(0f))
-                    layoutSpec.setSize(dps(300f), pcs(20f), uns(0f))
+            +Slider("slider", 0.4f, 1f, 1f).apply {
+                layoutSpec.setOrigin(dps(50f), pcs(-35f), uns(0f))
+                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
 
-                    //font = uiFont(Font.SYSTEM_FONT, 24f, uiDpi)
-                    //textColor = Color.WHITE
-                    text = "Button " + i
+                onValueChanged += { value ->
+                    root?.alpha = value
+                }
+            }
 
-//                    if (i == 1) {
-//                        textAlignment = Gravity(Alignment.START, Alignment.START)
-//                    } else if (i == 2) {
-//                        textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-//                    } else if (i == 3) {
-//                        textAlignment = Gravity(Alignment.END, Alignment.END)
-//                    }
+            +Button("darkTheme").apply {
+                layoutSpec.setOrigin(dps(50f), pcs(-55f), uns(0f))
+                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
+                text = "Dark Theme"
 
-                    onClick += { _,_,_ ->
-                        println("$text clicked")
-                        if (i == 1) {
-                            theme = UiTheme.LIGHT
-                        } else if (i == 2) {
-                            theme = UiTheme.DARK
-                        } else if (i == 3) {
-                            alphaAnimator.speed = if (alphaAnimator.progress > 0.5f) {
-                                -1f
-                            } else {
-                                1f
-                            }
-                        }
-                    }
+                onClick += { _,_,_ ->
+                    theme = UiTheme.DARK
+                }
+            }
+
+            +Button("lightTheme").apply {
+                layoutSpec.setOrigin(dps(50f), pcs(-75f), uns(0f))
+                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
+                text = "Light Theme"
+
+                onClick += { _,_,_ ->
+                    theme = UiTheme.LIGHT
                 }
             }
         }

@@ -4,26 +4,38 @@ package de.fabmax.kool
  * @author fabmax
  */
 
-class InputHandler internal constructor() {
+class InputManager internal constructor() {
 
     companion object {
-        val LEFT_BUTTON = 0
-        val LEFT_BUTTON_MASK = 1
-        val RIGHT_BUTTON = 1
-        val RIGHT_BUTTON_MASK = 2
-        val MIDDLE_BUTTON = 2
-        val MIDDLE_BUTTON_MASK = 4
-        val BACK_BUTTON = 3
-        val BACK_BUTTON_MASK = 8
-        val FORWARD_BUTTON = 4
-        val FORWARD_BUTTON_MASK = 16
+        const val LEFT_BUTTON = 0
+        const val LEFT_BUTTON_MASK = 1
+        const val RIGHT_BUTTON = 1
+        const val RIGHT_BUTTON_MASK = 2
+        const val MIDDLE_BUTTON = 2
+        const val MIDDLE_BUTTON_MASK = 4
+        const val BACK_BUTTON = 3
+        const val BACK_BUTTON_MASK = 8
+        const val FORWARD_BUTTON = 4
+        const val FORWARD_BUTTON_MASK = 16
 
-        val MAX_POINTERS = 10
-        val PRIMARY_POINTER = 0
+        const val MAX_POINTERS = 10
+        const val PRIMARY_POINTER = 0
+    }
+
+    interface DragHandler {
+        companion object {
+            const val HANDLED = 1
+            const val REMOVE_HANDLER = 2
+        }
+
+        fun handleDrag(dragPtrs: List<Pointer>): Int
     }
 
     private val tmpPointers = Array(MAX_POINTERS, ::Pointer)
     private val pointers = Array(MAX_POINTERS, ::Pointer)
+
+    private val dragPtrs: MutableList<Pointer> = mutableListOf()
+    private val dragHandlers: MutableList<DragHandler> = mutableListOf()
 
     /**
      * The primary pointer. For mouse-input that's the mouse cursor, for touch-input it's the first finger
@@ -35,6 +47,38 @@ class InputHandler internal constructor() {
 
     fun getPointer(idx: Int): Pointer {
         return pointers[idx]
+    }
+
+    fun registerDragHandler(handler: DragHandler) {
+        if (handler !in dragHandlers) {
+            dragHandlers += handler
+        }
+    }
+
+    fun removeDraghandler(handler: DragHandler) {
+        dragHandlers -= handler
+    }
+
+    fun handleDrag() {
+        dragPtrs.clear()
+        for (i in pointers.indices) {
+            val ptr = pointers[i]
+            if ((ptr.isValid || ptr.wasValid) &&
+                    (ptr.buttonMask != 0 || ptr.buttonEventMask != 0 || ptr.deltaScroll != 0f)) {
+                dragPtrs.add(pointers[i])
+            }
+        }
+        var handlerIdx = dragHandlers.lastIndex
+        while (handlerIdx >= 0) {
+            val result = dragHandlers[handlerIdx].handleDrag(dragPtrs)
+            if (result and DragHandler.REMOVE_HANDLER != 0) {
+                dragHandlers.removeAt(handlerIdx)
+            }
+            if (result and DragHandler.HANDLED != 0) {
+                break
+            }
+            handlerIdx--
+        }
     }
 
     internal fun onNewFrame() {
@@ -118,16 +162,14 @@ class InputHandler internal constructor() {
     class Pointer(val id: Int) {
         var x = 0f
             internal set
-        var deltaX = 0f
-            internal set
         var y = 0f
-            internal set
-        var deltaY = 0f
             internal set
         var scrollPos = 0f
             internal set
+
+        var deltaX = 0f
+        var deltaY = 0f
         var deltaScroll = 0f
-            internal set
 
         var buttonMask = 0
             internal set(value) {
@@ -135,6 +177,8 @@ class InputHandler internal constructor() {
                 field = value
             }
         var buttonEventMask = 0
+            internal set
+        var wasValid = false
             internal set
         var isValid = false
             internal set
@@ -170,6 +214,7 @@ class InputHandler internal constructor() {
             scrollPos = ptr.scrollPos
             buttonMask = ptr.buttonMask
             buttonEventMask = ptr.buttonEventMask
+            wasValid = isValid
             isValid = ptr.isValid
         }
     }

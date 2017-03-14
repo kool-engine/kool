@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform.lwjgl3
 
-import de.fabmax.kool.InputHandler
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.RenderContext
@@ -51,16 +51,16 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
 
         // install mouse callbacks
         glfwSetMouseButtonCallback(window) { wnd, btn, act, mods ->
-            inputHandler.updatePointerButtonState(InputHandler.PRIMARY_POINTER, btn, act == GLFW_PRESS)
+            inputMgr.updatePointerButtonState(InputManager.PRIMARY_POINTER, btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(window) { wnd, x, y ->
-            inputHandler.updatePointerPos(InputHandler.PRIMARY_POINTER, x.toFloat(), y.toFloat())
+            inputMgr.updatePointerPos(InputManager.PRIMARY_POINTER, x.toFloat(), y.toFloat())
         }
         glfwSetCursorEnterCallback(window) { wnd, entered ->
-            inputHandler.updatePointerValid(InputHandler.PRIMARY_POINTER, entered)
+            inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, entered)
         }
         glfwSetScrollCallback(window) { wnd, xOff, yOff ->
-            inputHandler.updatePointerScrollPos(InputHandler.PRIMARY_POINTER, yOff.toFloat())
+            inputMgr.updatePointerScrollPos(InputManager.PRIMARY_POINTER, yOff.toFloat())
         }
         glfwSetWindowPosCallback(window) { wnd, x, y ->
             screenDpi = PlatformImpl.getResolutionAt(x, y)

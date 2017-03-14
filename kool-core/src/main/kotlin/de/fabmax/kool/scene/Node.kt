@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.InputHandler
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MutableVec3f
@@ -15,9 +15,9 @@ abstract class Node(val name: String? = null) {
 
     var onRender: List<Node.(RenderContext) -> Unit> = mutableListOf()
 
-    var onHoverEnter: List<Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
-    var onHover: List<Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
-    var onHoverExit: List<Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    var onHoverEnter: List<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    var onHover: List<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    var onHoverExit: List<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
 
     /**
      * Axis-aligned bounds of this node, implementations should set and refresh their bounds on every frame

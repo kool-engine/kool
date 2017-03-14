@@ -38,17 +38,17 @@ class ToggleButton(name: String, initState: Boolean = false): Button(name) {
 
         knobAnimator.speed = 0f
         knobAnimator.duration = 0.15f
-        knobAnimator.value.onUpdate = { isUiUpdateNeeded = true }
+        knobAnimator.value.onUpdate = { isFgUpdateNeeded = true }
     }
 
-    override fun updateButtonUi(ctx: RenderContext) {
-        super.updateButtonUi(ctx)
+    override fun updateForeground(ctx: RenderContext) {
+        super.updateForeground(ctx)
 
         val paddingR = padding.right.toUnits(width, dpi)
         val trackW = dp(24f)
         val trackH = dp(6f)
-        val r = dp(10f)
-        val x = width - paddingR - trackW - r
+        val knobR = dp(10f)
+        val x = width - paddingR - trackW - knobR
         val y = (height - trackH) / 2f
 
         meshBuilder.color = trackColor
@@ -68,7 +68,7 @@ class ToggleButton(name: String, initState: Boolean = false): Button(name) {
         meshBuilder.color = knobColor
         meshBuilder.circle {
             center.set(x + trackW * anim, y + trackH / 2f, 0f)
-            radius = r
+            radius = knobR
             steps = 30
         }
     }

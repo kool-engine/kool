@@ -13,7 +13,7 @@ abstract class RenderContext {
 
     var screenDpi = 96f
 
-    val inputHandler = InputHandler()
+    val inputMgr = InputManager()
     val memoryMgr = MemoryManager()
     val shaderMgr = ShaderManager()
     val textureMgr = TextureManager()
@@ -71,7 +71,7 @@ abstract class RenderContext {
         time += dt
         deltaT = dt
 
-        inputHandler.onNewFrame()
+        inputMgr.onNewFrame()
 
         // force re-binding shader, otherwise delayed loaded resources (e.g. textures) might not be loaded at all
         shaderMgr.bindShader(null, this)

@@ -14,6 +14,8 @@ import de.fabmax.kool.util.RayTest
  */
 abstract class Background(val component: UiComponent) : Node() {
 
+    abstract fun applyComponentAlpha()
+
     abstract fun update(ctx: RenderContext)
 
 }
@@ -57,9 +59,12 @@ open class SimpleBackground(component: UiComponent, val bgShader: BasicShader = 
         bounds.add(mesh.bounds)
     }
 
+    override fun applyComponentAlpha() {
+        bgShader.alpha = component.alpha
+    }
+
     override fun render(ctx: RenderContext) {
         super.render(ctx)
-        bgShader.alpha = component.alpha
         mesh.render(ctx)
     }
 

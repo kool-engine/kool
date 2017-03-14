@@ -20,7 +20,6 @@ fun uiFont(family: String, sizeDp: Float, dpi: Float, style: Int = Font.PLAIN, c
 
 fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
     val props = ShaderProps()
-    props.isAlpha = true
     props.propsInit()
     // vertex color and texture color are required to render fonts
     props.isVertexColor = true

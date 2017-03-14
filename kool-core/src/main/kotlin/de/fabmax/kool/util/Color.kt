@@ -82,15 +82,17 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
 
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)
 
-    fun add(other: Color, weight: Float) {
+    fun add(other: Color, weight: Float): MutableColor {
         r += other.r * weight
         g += other.g * weight
         b += other.b * weight
         a += other.a * weight
+        return this
     }
 
-    fun clear() {
+    fun clear(): MutableColor {
         set(0f, 0f, 0f, 0f)
+        return this
     }
 
     fun set(r: Float, g: Float, b: Float, a: Float): MutableColor {

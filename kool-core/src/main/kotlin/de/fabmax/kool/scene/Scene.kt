@@ -27,7 +27,7 @@ class Scene {
     private fun handleInput(ctx: RenderContext) {
         var hovered: Node? = null
         val prevHovered = hoverNode
-        val ptr = ctx.inputHandler.primaryPointer
+        val ptr = ctx.inputMgr.primaryPointer
 
         if (isPickingEnabled && camera.initRayTes(rayTest, ptr, ctx)) {
             root?.rayTest(rayTest)
@@ -55,6 +55,8 @@ class Scene {
                 hovered.onHover[i](hovered, ptr, rayTest, ctx)
             }
         }
+
+        ctx.inputMgr.handleDrag()
     }
 
 }

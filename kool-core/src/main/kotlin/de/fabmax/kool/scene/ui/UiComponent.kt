@@ -17,6 +17,14 @@ open class UiComponent(name: String) : Group(name), UiNode {
     override var layoutSpec = LayoutSpec()
     override val contentBounds = BoundingBox()
 
+    var padding = Margin(dps(16f), dps(16f), dps(16f), dps(16f))
+        set(value) {
+            if (value != field) {
+                field = value
+                isFgUpdateNeeded = true
+            }
+        }
+
     override var root: UiRoot? = null
     override var parent: Node?
         get() = super.parent
@@ -34,7 +42,8 @@ open class UiComponent(name: String) : Group(name), UiNode {
 
     override var alpha = 1f
 
-    protected var isUpdateNeeded = true
+    protected var isBgUpdateNeeded = true
+    protected var isFgUpdateNeeded = false
     protected var isThemeApplied = false
 
     val background: ThemeOrCustomProp<Background?> = ThemeOrCustomProp(null)
@@ -43,6 +52,10 @@ open class UiComponent(name: String) : Group(name), UiNode {
         builder.clear()
         builder.identity()
         builder.translate(contentBounds.min)
+    }
+
+    protected open fun applyComponentAlpha() {
+        background.prop?.applyComponentAlpha()
     }
 
     override fun render(ctx: RenderContext) {
@@ -54,15 +67,24 @@ open class UiComponent(name: String) : Group(name), UiNode {
             }
         }
 
-        if (isUpdateNeeded) {
-            isUpdateNeeded = false
-            update(ctx)
+        if (isBgUpdateNeeded) {
+            updateBackground(ctx)
+        }
+        if (isFgUpdateNeeded) {
+            updateForeground(ctx)
         }
 
+        applyComponentAlpha()
         super.render(ctx)
     }
 
-    protected open fun update(ctx: RenderContext) {
+    protected open fun updateForeground(ctx: RenderContext) {
+        isFgUpdateNeeded = false
+    }
+
+    protected open fun updateBackground(ctx: RenderContext) {
+        isBgUpdateNeeded = false
+
         if (!background.isThemeSet) {
             background.setTheme(createThemeBackground(ctx))
         }
@@ -83,13 +105,15 @@ open class UiComponent(name: String) : Group(name), UiNode {
     override fun doLayout(bounds: BoundingBox, ctx: RenderContext) {
         if (!contentBounds.isEqual(bounds)) {
             contentBounds.set(bounds)
-            isUpdateNeeded = true
+            isBgUpdateNeeded = true
+            isFgUpdateNeeded = true
         }
     }
 
     override fun applyTheme(theme: UiTheme, ctx: RenderContext) {
         background.setTheme(createThemeBackground(ctx))
-        isUpdateNeeded = true
+        isBgUpdateNeeded = true
+        isFgUpdateNeeded = true
     }
 
     protected open fun createThemeBackground(ctx: RenderContext): Background? {

@@ -1,159 +1,84 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.InputHandler
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.util.*
-import kotlin.Unit
 
 /**
  * @author fabmax
  */
-open class Button(name: String) : UiComponent(name) {
+open class Button(name: String) : Label(name) {
 
-    var text = ""
-        set(value) {
-            if (value != field) {
-                field = value
-                isUiUpdateNeeded = true
-            }
-        }
+    var onClick: List<Button.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
 
-    var textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-        set(value) {
-            if (value != field) {
-                field = value
-                isUiUpdateNeeded = true
-            }
-        }
-
-    var padding = Margin(dps(16f), dps(16f), dps(16f), dps(16f))
-        set(value) {
-            if (value != field) {
-                field = value
-                isUiUpdateNeeded = true
-            }
-        }
-
-    var onClick: List<Node.(InputHandler.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
-
-    val font = ThemeOrCustomProp(Font.DEFAULT_FONT)
-    val textColor = ThemeOrCustomProp(Color.WHITE)
     val textColorHovered = ThemeOrCustomProp(Color.WHITE)
 
+    var isPressed = false
+        protected set
     var isHovered = false
         protected set
 
     protected var hoverAnimator = LinearAnimator(InterpolatedFloat(0f, 1f))
     protected var colorWeightStd = 1f
     protected var colorWeightHovered = 0f
-    protected var fgColor = MutableColor()
 
-    protected val meshData = MeshData(true, true, true)
-    protected val meshBuilder = MeshBuilder(meshData)
-    protected val mesh = Mesh(meshData)
-    protected var meshAdded = false
-
-    protected var isUiUpdateNeeded = false
+    protected var ptrDownPos = MutableVec2f()
 
     init {
-        mesh.shader = fontShader()
-
         hoverAnimator.speed = 0f
         hoverAnimator.value.onUpdate = { v ->
             colorWeightHovered = v
             colorWeightStd = 1f - v
-            isUiUpdateNeeded = true
+            isFgUpdateNeeded = true
         }
+        onRender += { ctx -> hoverAnimator.tick(ctx) }
 
-        onHoverEnter += { ptr, rt, ctx ->
+        onHoverEnter += { _,_,_ ->
             isHovered = true
             hoverAnimator.duration = 0.1f
             hoverAnimator.speed = 1f
         }
 
-        onHoverExit += { ptr, rt, ctx ->
+        onHoverExit += { _,_,_ ->
+            isPressed = false
             isHovered = false
             hoverAnimator.duration = 0.2f
             hoverAnimator.speed = -1f
         }
 
         onHover += { ptr, rt, ctx ->
-            if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
-                for (i in onClick.indices) {
-                    onClick[i](ptr, rt, ctx)
+            if (ptr.isLeftButtonEvent) {
+                if (ptr.isLeftButtonDown) {
+                    // button is pressed, issue click event when it is released again
+                    ptrDownPos.set(rt.hitPositionLocal.x, rt.hitPositionLocal.y)
+                    isPressed = true
+                } else if (isPressed) {
+                    // button was pressed and pointer is up, issue click event
+                    isPressed = false
+
+                    // check that pointer didn't move to much
+                    ptrDownPos.x -= rt.hitPositionLocal.x
+                    ptrDownPos.y -= rt.hitPositionLocal.y
+                    if (ptrDownPos.length() < this@Button.dp(3f)) {
+                        for (i in onClick.indices) {
+                            onClick[i](ptr, rt, ctx)
+                        }
+                    }
                 }
             }
         }
     }
 
-    override fun render(ctx: RenderContext) {
-        hoverAnimator.tick(ctx)
+    override fun updateForeground(ctx: RenderContext) {
+        foregroundColor.clear()
+        foregroundColor.add(textColor.apply(), colorWeightStd)
+        foregroundColor.add(textColorHovered.apply(), colorWeightHovered)
 
-        val shader = mesh.shader
-        if (shader is BasicShader) {
-            shader.alpha = alpha
-        }
-
-        if (isUiUpdateNeeded) {
-            isUiUpdateNeeded = false
-            updateButtonUi(ctx)
-        }
-
-        super.render(ctx)
-    }
-
-    override fun update(ctx: RenderContext) {
-        if (!meshAdded) {
-            meshAdded = true
-            this += mesh
-        }
-        updateButtonUi(ctx)
-        super.update(ctx)
-    }
-
-    protected open fun updateButtonUi(ctx: RenderContext) {
-        if (font.isUpdate) {
-            font.prop?.dispose(ctx)
-        }
-        val font = font.apply()
-
-        val shader = mesh.shader
-        if (shader is BasicShader) {
-            shader.texture = font
-        }
-
-        fgColor.clear()
-        fgColor.add(textColor.apply(), colorWeightStd)
-        fgColor.add(textColorHovered.apply(), colorWeightHovered)
-
-        val txtWidth = font.textWidth(text)
-        setupBuilder(meshBuilder)
-        meshBuilder.color = fgColor
-        meshBuilder.text(font) {
-            val x = when (textAlignment.xAlignment) {
-                Alignment.START -> padding.left.toUnits(width, dpi)
-                Alignment.CENTER -> (width - txtWidth) / 2f
-                Alignment.END -> width - txtWidth - padding.right.toUnits(width, dpi)
-            }
-            val y = when (textAlignment.yAlignment) {
-                Alignment.START -> height - padding.top.toUnits(width, dpi) - font.normHeight
-                Alignment.CENTER -> (height - font.normHeight) / 2f
-                Alignment.END -> padding.bottom.toUnits(width, dpi)
-            }
-            origin.set(x, y, 0f)
-            text = this@Button.text
-        }
+        super.updateForeground(ctx)
     }
 
     override fun applyTheme(theme: UiTheme, ctx: RenderContext) {
         super.applyTheme(theme, ctx)
-
-        font.setTheme(theme.standardFont(root?.uiDpi ?: 96f))
-        textColor.setTheme(theme.foregroundColor)
         textColorHovered.setTheme(theme.accentColor)
     }
 }

@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.Vec3f
@@ -17,7 +18,7 @@ fun sphericalInputTransform(name: String? = null, block: SphericalInputTransform
     return sit
 }
 
-open class SphericalInputTransform(name: String? = null) : TransformGroup(name) {
+open class SphericalInputTransform(name: String? = null) : TransformGroup(name), InputManager.DragHandler {
 
     private var stiffness = 0f
     private var damping = 0f
@@ -35,6 +36,10 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name) 
 
     var minZoom = 0.1f
     var maxZoom = 10f
+
+    private var deltaX = 0f
+    private var deltaY = 0f
+    private var deltaScroll = 0f
 
     var smoothness: Float = 0f
         set(value) {
@@ -57,23 +62,23 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name) 
     }
 
     override fun render(ctx: RenderContext) {
-        val pointer = ctx.inputHandler.primaryPointer
-        if (pointer.isValid) {
-            if (!Math.isZero(pointer.deltaScroll)) {
-                zoom *= 1f + pointer.deltaScroll / 10f
-                zoom = Math.clamp(zoom, minZoom, maxZoom)
-            }
+        // register drag handler (safe to call every frame, input manager checks if handler is already registered)
+        ctx.inputMgr.registerDragHandler(this)
 
-            if (pointer.isValid && pointer.isLeftButtonDown) {
-                verticalRotation -= pointer.deltaX / 3
-                horizontalRotation -= pointer.deltaY / 3
-                horizontalRotation = Math.clamp(horizontalRotation, -90f, 90f)
-            }
-
-            animRotV.desired = verticalRotation
-            animRotH.desired = horizontalRotation
-            animZoom.desired = zoom
+        if (!Math.isZero(deltaScroll)) {
+            zoom *= 1f + deltaScroll / 10f
+            zoom = Math.clamp(zoom, minZoom, maxZoom)
         }
+
+        if (!Math.isZero(deltaX) || !Math.isZero(deltaY)) {
+            verticalRotation -= deltaX / 3
+            horizontalRotation -= deltaY / 3
+            horizontalRotation = Math.clamp(horizontalRotation, -90f, 90f)
+        }
+
+        animRotV.desired = verticalRotation
+        animRotH.desired = horizontalRotation
+        animZoom.desired = zoom
 
         val z = animZoom.animate(ctx.deltaT)
         setIdentity()
@@ -82,6 +87,21 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name) 
         rotate(animRotH.animate(ctx.deltaT), horizontalAxis)
 
         super.render(ctx)
+    }
+
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>): Int {
+        if (dragPtrs.size == 1 && dragPtrs[0].isValid &&
+                (dragPtrs[0].isLeftButtonDown || dragPtrs[0].deltaScroll != 0f)) {
+            deltaX = dragPtrs[0].deltaX
+            deltaY = dragPtrs[0].deltaY
+            deltaScroll = dragPtrs[0].deltaScroll
+        } else {
+            deltaX = 0f
+            deltaY = 0f
+            deltaScroll = 0f
+        }
+        // let other drag handlers do their job
+        return 0
     }
 
     private inner class AnimatedVal(value: Float) {

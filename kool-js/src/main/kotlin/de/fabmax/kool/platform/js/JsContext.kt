@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform.js
 
-import de.fabmax.kool.InputHandler
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.RenderContext
 import org.khronos.webgl.WebGLRenderingContext
@@ -44,22 +44,18 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
             val bounds = canvas.getBoundingClientRect()
             val x = (ev.clientX - bounds.left).toFloat()
             val y = (ev.clientY - bounds.top).toFloat()
-            inputHandler.updatePointerPos(InputHandler.PRIMARY_POINTER, x, y)
+            inputMgr.updatePointerPos(InputManager.PRIMARY_POINTER, x, y)
         }
         canvas.onmousedown = { ev ->
             ev as MouseEvent
-            inputHandler.updatePointerButtonStates(InputHandler.PRIMARY_POINTER, ev.buttons.toInt())
+            inputMgr.updatePointerButtonStates(InputManager.PRIMARY_POINTER, ev.buttons.toInt())
         }
         canvas.onmouseup = { ev ->
             ev as MouseEvent
-            inputHandler.updatePointerButtonStates(InputHandler.PRIMARY_POINTER, ev.buttons.toInt())
+            inputMgr.updatePointerButtonStates(InputManager.PRIMARY_POINTER, ev.buttons.toInt())
         }
-        canvas.onmouseenter = { ev ->
-            inputHandler.updatePointerValid(InputHandler.PRIMARY_POINTER, true)
-        }
-        canvas.onmouseleave = { ev ->
-            inputHandler.updatePointerValid(InputHandler.PRIMARY_POINTER, false)
-        }
+        canvas.onmouseenter = { inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, true) }
+        canvas.onmouseleave = { inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, false) }
         canvas.onwheel = { ev ->
             ev as WheelEvent
             // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse scroll
@@ -69,7 +65,7 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
                 // scroll delta is specified in pixels...
                 ticks /= 30f
             }
-            inputHandler.updatePointerScrollPos(InputHandler.PRIMARY_POINTER, ticks)
+            inputMgr.updatePointerScrollPos(InputManager.PRIMARY_POINTER, ticks)
             // mark wheel event as handled to prevent scrolling the page
             // unfortunately Kotlin event handler signature returns Unit, but this does the trick...
             js("return false;")

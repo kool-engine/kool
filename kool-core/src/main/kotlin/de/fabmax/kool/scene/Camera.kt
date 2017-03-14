@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.InputHandler
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.MvpState
 import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.RenderContext
@@ -51,7 +51,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     abstract fun updateProjectionMatrix(ctx: RenderContext)
 
-    fun initRayTes(rayTest: RayTest, ptr: InputHandler.Pointer, ctx: RenderContext): Boolean {
+    fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, ctx: RenderContext): Boolean {
         return initRayTes(rayTest, ptr.x, ptr.y, ctx) && ptr.isValid
     }
 
