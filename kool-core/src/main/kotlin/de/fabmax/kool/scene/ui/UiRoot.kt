@@ -1,35 +1,34 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.shading.BlurredBackgroundHelper
-import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.RayTest
 
 /**
  * @author fabmax
  */
-class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : UiContainer(name) {
-
-    override var root: UiRoot? = this
+class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : Node(name) {
 
     var globalWidth = 10f
         set(value) {
             if (value != field) {
                 field = value
-                requestLayout()
+                isLayoutNeeded = true
             }
         }
     var globalHeight = 10f
         set(value) {
             if (value != field) {
                 field = value
-                requestLayout()
+                isLayoutNeeded = true
             }
         }
     var globalDepth = 10f
         set(value) {
             if (value != field) {
                 field = value
-                requestLayout()
+                isLayoutNeeded = true
             }
         }
 
@@ -37,7 +36,7 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : UiContainer(name
         set(value) {
             if (value != field) {
                 field = value
-                requestLayout()
+                isLayoutNeeded = true
             }
         }
 
@@ -45,16 +44,18 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : UiContainer(name
         set(value) {
             if (value != field) {
                 field = value
-                isApplyThemeNeeded = true
+                content.requestThemeUpdate()
             }
         }
 
+    val content = UiContainer("$name-content", this)
+
     private var blurHelper: BlurredBackgroundHelper? = null
 
-    private var isApplyThemeNeeded = false
+    private var isLayoutNeeded = true
     private var contentScale = 1f
 
-    fun getBlurHelper(): BlurredBackgroundHelper {
+    fun createBlurHelper(): BlurredBackgroundHelper {
         val helper = blurHelper ?: BlurredBackgroundHelper()
         if (blurHelper == null) {
             blurHelper = helper
@@ -71,7 +72,8 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : UiContainer(name
 
     fun scaleContentTo(scaledContentHeight: SizeSpec) {
         contentScale = 1f / (scaledContentHeight.toUnits(globalHeight, uiDpi) / globalHeight)
-        scale(contentScale, contentScale, contentScale)
+        content.scale(contentScale, contentScale, contentScale)
+        isLayoutNeeded = true
     }
 
     override fun render(ctx: RenderContext) {
@@ -82,31 +84,33 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : UiContainer(name
         }
 
         if (isLayoutNeeded) {
-            contentBounds.set(0f, 0f, 0f,
+            isLayoutNeeded = false
+            content.contentBounds.set(0f, 0f, 0f,
                     globalWidth / contentScale, globalHeight / contentScale, globalDepth / contentScale)
+            content.requestLayout()
         }
 
-        if (isApplyThemeNeeded) {
-            isApplyThemeNeeded = false
-            applyTheme(theme, ctx)
-        }
-        blurHelper?.updateDistortionTexture(this, ctx, contentBounds)
+        blurHelper?.updateDistortionTexture(this, ctx, content.bounds)
 
         ctx.pushAttributes()
         ctx.isDepthMask = false
         ctx.isCullFace = false
         ctx.applyAttributes()
+
         super.render(ctx)
+        content.render(ctx)
+        bounds.set(content.bounds)
+
         ctx.popAttributes()
     }
 
-    override fun applyTheme(theme: UiTheme, ctx: RenderContext) {
-        this.theme = theme
-        super.applyTheme(theme, ctx)
+    override fun dispose(ctx: RenderContext) {
+        super.dispose(ctx)
+        content.dispose(ctx)
     }
 
-    override fun applyBounds(bounds: BoundingBox, ctx: RenderContext) {
-        // Normal layouts set their transform matrix according to given bounds, for the root node this would mess up
-        // the UI position in global space so don't do anything
+    override fun rayTest(test: RayTest) {
+        super.rayTest(test)
+        content.rayTest(test)
     }
 }

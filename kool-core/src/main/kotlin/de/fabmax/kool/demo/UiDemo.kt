@@ -48,42 +48,52 @@ fun uiDemo(ctx: RenderContext) {
         +UiRoot(300f).apply {
             theme = UiTheme.DARK
 
-            translate(-globalWidth /2, -globalHeight/2, 0f)
-            scaleContentTo(dps(400f))
+            content.apply {
+                translate(-globalWidth /2, -globalHeight/2, 0f)
+                scaleContentTo(dps(400f))
 
-            +ToggleButton("toggle-button").apply {
-                layoutSpec.setOrigin(dps(50f), pcs(-15f), uns(0f))
-                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
+                +ToggleButton("toggle-button", root).apply {
+                    layoutSpec.setOrigin(dps(50f), pcs(-15f), uns(0f))
+                    layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
 
-                text = "Toggle Button"
-            }
-
-            +Slider("slider", 0.4f, 1f, 1f).apply {
-                layoutSpec.setOrigin(dps(50f), pcs(-35f), uns(0f))
-                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
-
-                onValueChanged += { value ->
-                    root?.alpha = value
+                    text = "Toggle Button"
                 }
-            }
 
-            +Button("darkTheme").apply {
-                layoutSpec.setOrigin(dps(50f), pcs(-55f), uns(0f))
-                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
-                text = "Dark Theme"
+                +Label("label", root).apply {
+                    layoutSpec.setOrigin(dps(50f), pcs(-35f), uns(0f))
+                    layoutSpec.setSize(dps(80f), pcs(15f), uns(0f))
 
-                onClick += { _,_,_ ->
-                    theme = UiTheme.DARK
+                    text = "Slider"
                 }
-            }
 
-            +Button("lightTheme").apply {
-                layoutSpec.setOrigin(dps(50f), pcs(-75f), uns(0f))
-                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
-                text = "Light Theme"
+                +Slider("slider", 0.4f, 1f, 1f, root).apply {
+                    layoutSpec.setOrigin(dps(130f), pcs(-35f), uns(0f))
+                    layoutSpec.setSize(dps(220f), pcs(15f), uns(0f))
+                    padding.left = uns(0f)
 
-                onClick += { _,_,_ ->
-                    theme = UiTheme.LIGHT
+                    onValueChanged += { value ->
+                        root.content.alpha = value
+                    }
+                }
+
+                +TextField("text-field", root).apply {
+                    layoutSpec.setOrigin(dps(50f), pcs(-55f), uns(0f))
+                    layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
+                    text = "a"
+                }
+
+                +Button("toggle-theme", root).apply {
+                    layoutSpec.setOrigin(dps(50f), pcs(-75f), uns(0f))
+                    layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
+                    text = "Toggle Theme"
+
+                    onClick += { _,_,_ ->
+                        if (theme == UiTheme.DARK) {
+                            theme = UiTheme.LIGHT
+                        } else {
+                            theme = UiTheme.DARK
+                        }
+                    }
                 }
             }
         }

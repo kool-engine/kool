@@ -22,6 +22,10 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         get() = w
         protected set(value) { w = value }
 
+    fun withAlpha(alpha: Float): MutableColor {
+        return MutableColor(r, g, b, alpha)
+    }
+
     companion object {
         val BLACK = Color(0.00f, 0.00f, 0.00f, 1.00f)
         val DARK_GRAY = Color(0.25f, 0.25f, 0.25f, 1.00f)

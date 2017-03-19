@@ -71,7 +71,7 @@ data class SizeSpec(val value: Float, val unit: SizeUnit) {
     }
 }
 
-data class Margin(val top: SizeSpec, val bottom: SizeSpec, val left: SizeSpec, val right: SizeSpec)
+data class Margin(var top: SizeSpec, var bottom: SizeSpec, var left: SizeSpec, var right: SizeSpec)
 
 data class Gravity(val xAlignment: Alignment, val yAlignment: Alignment)
 

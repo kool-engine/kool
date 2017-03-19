@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene.ui
 
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.*
 
@@ -7,53 +8,77 @@ import de.fabmax.kool.util.*
  * @author fabmax
  */
 
-class ToggleButton(name: String, initState: Boolean = false): Button(name) {
+class ToggleButton(name: String, root: UiRoot, initState: Boolean = false): Button(name, root) {
 
-    private val knobAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
-
-    private val knobColor = MutableColor()
     var knobColorOn = Color.WHITE
     var knobColorOff = Color.LIGHT_GRAY
     var trackColor = Color.GRAY
 
     var enabled = initState
-        set(value) {
-            if (value != field) {
-                field = value
-                if (value) {
-                    // animate knob from left to right
-                    knobAnimator.speed = 1f
-                } else {
-                    // animate knob from right to left
-                    knobAnimator.speed = -1f
-                }
-            }
-        }
+        private set
 
     init {
         textAlignment = Gravity(Alignment.START, Alignment.CENTER)
+    }
 
-        onClick += { _,_,_ -> enabled = !enabled }
-        onRender += { ctx -> knobAnimator.tick(ctx) }
+    override fun fireOnClick(ptr: InputManager.Pointer, rt: RayTest, ctx: RenderContext) {
+        enabled = !enabled
+        super.fireOnClick(ptr, rt, ctx)
+    }
+
+    override fun setThemeProps() {
+        super.setThemeProps()
+        knobColorOn = root.theme.accentColor
+    }
+
+    override fun createThemeUi(ctx: RenderContext): ComponentUi {
+        return root.theme.toggleButtonUi(this)
+    }
+}
+
+open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(tb, baseUi) {
+
+    protected val knobAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
+    protected val knobColor = MutableColor()
+
+    protected val clickListener: Button.(InputManager.Pointer, RayTest, RenderContext) -> Unit = { _,_,_ ->
+        if (tb.enabled) {
+            // animate knob from left to right
+            knobAnimator.speed = 1f
+        } else {
+            // animate knob from right to left
+            knobAnimator.speed = -1f
+        }
+    }
+
+    override fun createUi(ctx: RenderContext) {
+        super.createUi(ctx)
 
         knobAnimator.speed = 0f
         knobAnimator.duration = 0.15f
-        knobAnimator.value.onUpdate = { isFgUpdateNeeded = true }
+        knobAnimator.value.onUpdate = { tb.requestUiUpdate() }
+
+        tb.onClick += clickListener
     }
 
-    override fun updateForeground(ctx: RenderContext) {
-        super.updateForeground(ctx)
+    override fun removeUi(ctx: RenderContext) {
+        super.removeUi(ctx)
+        tb.onClick -= clickListener
+    }
 
-        val paddingR = padding.right.toUnits(width, dpi)
-        val trackW = dp(24f)
-        val trackH = dp(6f)
-        val knobR = dp(10f)
-        val x = width - paddingR - trackW - knobR
-        val y = (height - trackH) / 2f
+    override fun updateUi(ctx: RenderContext) {
+        super.updateUi(ctx)
 
-        meshBuilder.color = trackColor
+        val paddingR = tb.padding.right.toUnits(tb.width, tb.dpi)
+        val trackW = tb.dp(24f)
+        val trackH = tb.dp(6f)
+        val knobR = tb.dp(10f)
+        val x = tb.width - paddingR - trackW - knobR
+        val y = (tb.height - trackH) / 2f
+
+        meshBuilder.color = tb.trackColor
         meshBuilder.rect {
-            origin.set(x, y, 0f)
+            origin.set(x, y, tb.dp(4f))
             width = trackW
             height = trackH
             cornerRadius = trackH / 2f
@@ -63,18 +88,18 @@ class ToggleButton(name: String, initState: Boolean = false): Button(name) {
         val anim = knobAnimator.value.value
 
         knobColor.clear()
-        knobColor.add(knobColorOff, 1f - anim)
-        knobColor.add(knobColorOn, anim)
+        knobColor.add(tb.knobColorOff, 1f - anim)
+        knobColor.add(tb.knobColorOn, anim)
         meshBuilder.color = knobColor
         meshBuilder.circle {
-            center.set(x + trackW * anim, y + trackH / 2f, 0f)
+            center.set(x + trackW * anim, y + trackH / 2f, tb.dp(6f))
             radius = knobR
             steps = 30
         }
     }
 
-    override fun applyTheme(theme: UiTheme, ctx: RenderContext) {
-        super.applyTheme(theme, ctx)
-        knobColorOn = theme.accentColor
+    override fun onRender(ctx: RenderContext) {
+        super.onRender(ctx)
+        knobAnimator.tick(ctx)
     }
 }

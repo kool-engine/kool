@@ -90,6 +90,11 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         var x = 1
         var y = hab
         for (c in fontProps.chars) {
+            // super-ugly special treatment for 'j' which has a negative x-offset for most fonts
+            if (c == 'j') {
+                x += Math.round(fontProps.sizePts * 0.1f)
+            }
+
             val charW = fm.charWidth(c)
             val paddedWidth = charW + padding * 2
             if (x + paddedWidth > maxWidth) {

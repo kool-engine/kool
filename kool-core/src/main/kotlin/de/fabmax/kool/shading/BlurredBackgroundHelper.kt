@@ -96,14 +96,14 @@ class BlurredBackgroundHelper(
         val cam = ctx.scene.camera
 
         texBounds.clear()
-        addToScreenBounds(cam, node, bounds.min.x, bounds.min.y, bounds.min.z, ctx)
-        addToScreenBounds(cam, node, bounds.min.x, bounds.min.y, bounds.max.z, ctx)
-        addToScreenBounds(cam, node, bounds.min.x, bounds.max.y, bounds.min.z, ctx)
-        addToScreenBounds(cam, node, bounds.min.x, bounds.max.y, bounds.max.z, ctx)
-        addToScreenBounds(cam, node, bounds.max.x, bounds.min.y, bounds.min.z, ctx)
-        addToScreenBounds(cam, node, bounds.max.x, bounds.min.y, bounds.max.z, ctx)
-        addToScreenBounds(cam, node, bounds.max.x, bounds.max.y, bounds.min.z, ctx)
-        addToScreenBounds(cam, node, bounds.max.x, bounds.max.y, bounds.max.z, ctx)
+        addToTexBounds(cam, node, bounds.min.x, bounds.min.y, bounds.min.z, ctx)
+        addToTexBounds(cam, node, bounds.min.x, bounds.min.y, bounds.max.z, ctx)
+        addToTexBounds(cam, node, bounds.min.x, bounds.max.y, bounds.min.z, ctx)
+        addToTexBounds(cam, node, bounds.min.x, bounds.max.y, bounds.max.z, ctx)
+        addToTexBounds(cam, node, bounds.max.x, bounds.min.y, bounds.min.z, ctx)
+        addToTexBounds(cam, node, bounds.max.x, bounds.min.y, bounds.max.z, ctx)
+        addToTexBounds(cam, node, bounds.max.x, bounds.max.y, bounds.min.z, ctx)
+        addToTexBounds(cam, node, bounds.max.x, bounds.max.y, bounds.max.z, ctx)
 
         var minScrX = Math.max(texBounds.min.x.toInt(), 0)
         val maxScrX = Math.min(texBounds.max.x.toInt(), ctx.viewportWidth - 1)
@@ -198,7 +198,7 @@ class BlurredBackgroundHelper(
         result.y = (tmpRes.y + copyTexData.y - ctx.viewportHeight) / copyTexData.height + 1f
     }
 
-    private fun addToScreenBounds(cam: Camera, node: Node, x: Float, y: Float, z: Float, ctx: RenderContext) {
+    private fun addToTexBounds(cam: Camera, node: Node, x: Float, y: Float, z: Float, ctx: RenderContext) {
         tmpVec.set(x, y, z)
         node.toGlobalCoords(tmpVec)
         cam.projectScreen(tmpRes, tmpVec, ctx)
@@ -324,8 +324,8 @@ fun blurShader(propsInit: ShaderProps.() -> Unit = { }): BlurShader {
             text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexX) / uTexW, ")
                     .append("1.0 - (gl_FragCoord.y - uTexY) / uTexH);\n")
                     .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" = texture2D(")
-                    .append("uBlurTexture, blurSamplePos) * uColorMix + ")
-                    .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" * (1.0 - uColorMix);\n")
+                    .append("uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ")
+                    .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" * uColorMix;\n")
         }
     }
 
@@ -353,7 +353,7 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
         set(value) { uColorMix.value = value }
 
     init {
-        colorMix = 1f
+        colorMix = 0f
     }
 
     override fun onBind(ctx: RenderContext) {

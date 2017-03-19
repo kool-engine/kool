@@ -1,8 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.RayTest
@@ -12,121 +11,102 @@ import de.fabmax.kool.util.RayTest
  *
  * @author fabmax
  */
-open class UiComponent(name: String) : Group(name), UiNode {
+open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
 
-    override var layoutSpec = LayoutSpec()
-    override val contentBounds = BoundingBox()
+    val contentBounds = BoundingBox()
+    val width: Float get() = contentBounds.size.x
+    val height: Float get() = contentBounds.size.y
+    val depth: Float get() = contentBounds.size.z
 
+    var layoutSpec = LayoutSpec()
     var padding = Margin(dps(16f), dps(16f), dps(16f), dps(16f))
         set(value) {
             if (value != field) {
                 field = value
-                isFgUpdateNeeded = true
+                isUiUpdate = true
             }
         }
 
-    override var root: UiRoot? = null
-    override var parent: Node?
-        get() = super.parent
+    val ui: ThemeOrCustomProp<ComponentUi> = ThemeOrCustomProp(BlankComponentUi())
+
+    var alpha = 1f
         set(value) {
-            super.parent = value
-            if (value == null) {
-                root = null
-            } else if (value is UiNode) {
-                root = value.root
-                children.filter { it is UiNode }.forEach { (it as UiNode).root = root }
-            }
+            field = value
+            updateComponentAlpha()
         }
+
     val dpi: Float
-        get() = root?.uiDpi ?: 96f
+        get() = root.uiDpi
 
-    override var alpha = 1f
+    private var isThemeUpdate = true
+    private var isUiUpdate = true
 
-    protected var isBgUpdateNeeded = true
-    protected var isFgUpdateNeeded = false
-    protected var isThemeApplied = false
-
-    val background: ThemeOrCustomProp<Background?> = ThemeOrCustomProp(null)
-
-    fun setupBuilder(builder: MeshBuilder) {
+    open fun setupBuilder(builder: MeshBuilder) {
         builder.clear()
         builder.identity()
         builder.translate(contentBounds.min)
     }
 
-    protected open fun applyComponentAlpha() {
-        background.prop?.applyComponentAlpha()
+    open fun requestThemeUpdate() {
+        isThemeUpdate = true
+    }
+
+    open fun requestUiUpdate() {
+        isUiUpdate = true
+    }
+
+    protected open fun updateComponentAlpha() {
+        ui.prop.updateComponentAlpha()
+    }
+
+    protected open fun updateUi(ctx: RenderContext) {
+        ui.prop.updateUi(ctx)
+    }
+
+    protected open fun updateTheme(ctx: RenderContext) {
+        ui.prop.removeUi(ctx)
+        ui.setTheme(createThemeUi(ctx)).apply()
+        setThemeProps()
+        ui.prop.createUi(ctx)
+        requestUiUpdate()
+    }
+
+    protected open fun setThemeProps() {
+        // no props to set
+    }
+
+    protected open fun createThemeUi(ctx: RenderContext): ComponentUi {
+        return root.theme.componentUi(this)
     }
 
     override fun render(ctx: RenderContext) {
-        if (!isThemeApplied) {
-            isThemeApplied = true
-            val root = root
-            if (root != null) {
-                applyTheme(root.theme, ctx)
-            }
+        if (isThemeUpdate) {
+            isThemeUpdate = false
+            updateTheme(ctx)
+        }
+        if (isUiUpdate) {
+            isUiUpdate = false
+            updateUi(ctx)
         }
 
-        if (isBgUpdateNeeded) {
-            updateBackground(ctx)
-        }
-        if (isFgUpdateNeeded) {
-            updateForeground(ctx)
-        }
-
-        applyComponentAlpha()
+        ui.prop.onRender(ctx)
         super.render(ctx)
     }
 
-    protected open fun updateForeground(ctx: RenderContext) {
-        isFgUpdateNeeded = false
-    }
-
-    protected open fun updateBackground(ctx: RenderContext) {
-        isBgUpdateNeeded = false
-
-        if (!background.isThemeSet) {
-            background.setTheme(createThemeBackground(ctx))
-        }
-        if (background.isUpdate) {
-            val prev = background.prop
-            if (prev != null) {
-                prev.dispose(ctx)
-                this -= prev
-            }
-            val prop = background.apply()
-            if (prop != null) {
-                this.addNode(prop, 0)
-            }
-        }
-        background.prop?.update(ctx)
-    }
-
-    override fun doLayout(bounds: BoundingBox, ctx: RenderContext) {
+    open fun doLayout(bounds: BoundingBox, ctx: RenderContext) {
         if (!contentBounds.isEqual(bounds)) {
             contentBounds.set(bounds)
-            isBgUpdateNeeded = true
-            isFgUpdateNeeded = true
+            requestUiUpdate()
         }
-    }
-
-    override fun applyTheme(theme: UiTheme, ctx: RenderContext) {
-        background.setTheme(createThemeBackground(ctx))
-        isBgUpdateNeeded = true
-        isFgUpdateNeeded = true
-    }
-
-    protected open fun createThemeBackground(ctx: RenderContext): Background? {
-        return root?.theme?.componentBackground?.invoke(this)
     }
 
     override fun rayTest(test: RayTest) {
         val hitNode = test.hitNode
         super.rayTest(test)
-        if (hitNode != test.hitNode) {
-            // an element of this component was hit!
+        if (hitNode != test.hitNode && test.hitNode !is UiComponent) {
+            // an element of this component (and not a sub-component in case this is a container) was hit!
             test.hitNode = this
-            test.hitPositionLocal.subtract(bounds.min)
+            test.hitPositionLocal.subtract(contentBounds.min)
         }
     }
 }

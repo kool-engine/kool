@@ -1,8 +1,6 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.shading.blurShader
 import de.fabmax.kool.util.*
-import kotlin.Unit
 
 /**
  * @author fabmax
@@ -27,34 +25,28 @@ open class UiTheme {
         return uiFont(titleFont.family, titleFont.sizePts, dpi, titleFont.style, titleFont.chars)
     }
 
-    var containerBackground: ((UiComponent) -> Background?) = { null }
+    var componentUi: ((UiComponent) -> ComponentUi) = ::BlurredComponentUi
+    var containerUi: ((UiContainer) -> ComponentUi) = { BlankComponentUi() }
 
-    var componentBackground: ((UiComponent) -> Background?) = { BlurredBackground(it).apply {
-        blurShader.colorMix = 0.7f
-        color = backgroundColor
-    }}
+    var buttonUi: ((Button) -> ButtonUi) = { c -> ButtonUi(c, componentUi(c)) }
+    var labelUi: ((Label) -> LabelUi) = { c -> LabelUi(c, componentUi(c)) }
+    var sliderUi: ((Slider) -> SliderUi) = { c -> SliderUi(c, componentUi(c)) }
+    var textFieldUi: ((TextField) -> TextFieldUi) = { c -> TextFieldUi(c, componentUi(c)) }
+    var toggleButtonUi: ((ToggleButton) -> ToggleButtonUi) = { c -> ToggleButtonUi(c, componentUi(c)) }
 
     companion object {
         val DEFAULT = UiTheme()
 
         val DARK = theme(DEFAULT) {
-            backgroundColor(color("001419"))
+            backgroundColor(color("00141980"))
             foregroundColor(Color.WHITE)
             accentColor(Color.LIME)
-            componentBackground = { BlurredBackground(it).apply {
-                blurShader.colorMix = 0.5f
-                color = backgroundColor
-            }}
         }
 
         val LIGHT = theme(DEFAULT) {
-            backgroundColor(Color.WHITE)
+            backgroundColor(Color.WHITE.withAlpha(0.6f))
             foregroundColor(color("3E2723"))
             accentColor(color("BF360C"))
-            componentBackground = { BlurredBackground(it).apply {
-                blurShader.colorMix = 0.5f
-                color = backgroundColor
-            }}
         }
     }
 }
@@ -73,8 +65,8 @@ class ThemeBuilder(base: UiTheme?) : UiTheme() {
             accentColor = base.backgroundColor
             standardFont = base.standardFont
             titleFont = base.titleFont
-            containerBackground = base.containerBackground
-            componentBackground = base.componentBackground
+            componentUi = base.componentUi
+            containerUi = base.containerUi
         }
     }
 
@@ -83,40 +75,38 @@ class ThemeBuilder(base: UiTheme?) : UiTheme() {
     fun accentColor(fgColor: Color) { accentColor = fgColor }
     fun standardFont(props: FontProps) { standardFont = props }
     fun titleFont(props: FontProps) { titleFont = props }
-    fun containerBackground(fab: (UiComponent) -> Background?) { containerBackground = fab }
-    fun componentBackground(fab: (UiComponent) -> Background?) { componentBackground = fab }
+    fun componentUi(fab: (UiComponent) -> ComponentUi) { componentUi = fab }
+    fun containerUi(fab: (UiContainer) -> ComponentUi) { containerUi = fab }
 }
 
-class ThemeOrCustomProp<T>(val defaultVal: T) {
-    var prop: T? = null
+class ThemeOrCustomProp<T>(initVal: T) {
+    var prop: T = initVal
         private set
-    var themeVal: T? = null
+    var themeVal: T = initVal
         private set
     var isThemeSet = false
         private set
-    var customVal: T? = null
+    var customVal: T = initVal
         private set
     var isCustom = false
         private set
 
-    val propOrDefault
-        get() = prop ?: defaultVal
-
     val isUpdate: Boolean
         get() = (isCustom && prop != customVal) || (isThemeSet && prop != themeVal)
 
-    fun setTheme(themeVal: T) {
+    fun setTheme(themeVal: T): ThemeOrCustomProp<T> {
         this.themeVal = themeVal
         isThemeSet = true
+        return this
     }
 
-    fun setCustom(customVal: T) {
+    fun setCustom(customVal: T): ThemeOrCustomProp<T> {
         this.customVal = customVal
         isCustom = true
+        return this
     }
 
     fun clearCustom() {
-        customVal = null
         isCustom = false
     }
 
@@ -126,6 +116,6 @@ class ThemeOrCustomProp<T>(val defaultVal: T) {
         } else if (isThemeSet) {
             prop = themeVal
         }
-        return propOrDefault
+        return prop
     }
 }

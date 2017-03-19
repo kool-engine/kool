@@ -49,7 +49,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
         super.render(ctx)
 
         // transform updated bounding box
-        if (!bounds.isEmpty) {
+        if (!bounds.isEmpty && !wasIdentity) {
             tmpBounds.clear()
             tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.min.z), 1f))
             tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.max.z), 1f))
@@ -70,27 +70,37 @@ open class TransformGroup(name: String? = null) : Group(name) {
     }
 
     override fun toGlobalCoords(vec: MutableVec3f, w: Float): MutableVec3f {
-        transform.transform(vec, w)
+        if (!isIdentity) {
+            transform.transform(vec, w)
+        }
         return super.toGlobalCoords(vec, w)
     }
 
     override fun toLocalCoords(vec: MutableVec3f, w: Float): MutableVec3f {
-        checkInverse()
         super.toLocalCoords(vec, w)
-        return invTransform.transform(vec, w)
+        if (!isIdentity) {
+            checkInverse()
+            return invTransform.transform(vec, w)
+        } else {
+            return vec
+        }
     }
 
     override fun rayTest(test: RayTest) {
-        // transform ray to local coordinates
-        checkInverse()
-        invTransform.transform(test.ray.origin, 1f)
-        invTransform.transform(test.ray.direction, 0f)
+        if (!isIdentity) {
+            // transform ray to local coordinates
+            checkInverse()
+            invTransform.transform(test.ray.origin, 1f)
+            invTransform.transform(test.ray.direction, 0f)
+        }
 
         super.rayTest(test)
 
-        // transform ray back to previous coordinates
-        transform.transform(test.ray.origin, 1f)
-        transform.transform(test.ray.direction, 0f)
+        if (!isIdentity) {
+            // transform ray back to previous coordinates
+            transform.transform(test.ray.origin, 1f)
+            transform.transform(test.ray.direction, 0f)
+        }
     }
 
     fun translate(t: Vec3f): TransformGroup {

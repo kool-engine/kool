@@ -6,22 +6,6 @@ package de.fabmax.kool
 
 class InputManager internal constructor() {
 
-    companion object {
-        const val LEFT_BUTTON = 0
-        const val LEFT_BUTTON_MASK = 1
-        const val RIGHT_BUTTON = 1
-        const val RIGHT_BUTTON_MASK = 2
-        const val MIDDLE_BUTTON = 2
-        const val MIDDLE_BUTTON_MASK = 4
-        const val BACK_BUTTON = 3
-        const val BACK_BUTTON_MASK = 8
-        const val FORWARD_BUTTON = 4
-        const val FORWARD_BUTTON_MASK = 16
-
-        const val MAX_POINTERS = 10
-        const val PRIMARY_POINTER = 0
-    }
-
     interface DragHandler {
         companion object {
             const val HANDLED = 1
@@ -30,6 +14,11 @@ class InputManager internal constructor() {
 
         fun handleDrag(dragPtrs: List<Pointer>): Int
     }
+
+    private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
+    val keyEvents: MutableList<KeyEvent> = mutableListOf()
+    private val queuedTypedChars: MutableList<Char> = mutableListOf()
+    val typedChars: MutableList<Char> = mutableListOf()
 
     private val tmpPointers = Array(MAX_POINTERS, ::Pointer)
     private val pointers = Array(MAX_POINTERS, ::Pointer)
@@ -45,6 +34,25 @@ class InputManager internal constructor() {
      */
     val primaryPointer = pointers[PRIMARY_POINTER]
 
+    internal fun onNewFrame() {
+        synchronized(tmpPointers) {
+            for (i in pointers.indices) {
+                pointers[i].updateFrom(tmpPointers[i])
+                tmpPointers[i].buttonEventMask = 0
+            }
+        }
+        synchronized(queuedKeyEvents) {
+            keyEvents.clear()
+            keyEvents.addAll(queuedKeyEvents)
+            queuedKeyEvents.clear()
+        }
+        synchronized(queuedTypedChars) {
+            typedChars.clear()
+            typedChars.addAll(queuedTypedChars)
+            queuedTypedChars.clear()
+        }
+    }
+
     fun getPointer(idx: Int): Pointer {
         return pointers[idx]
     }
@@ -55,7 +63,7 @@ class InputManager internal constructor() {
         }
     }
 
-    fun removeDraghandler(handler: DragHandler) {
+    fun removeDragHandler(handler: DragHandler) {
         dragHandlers -= handler
     }
 
@@ -81,12 +89,23 @@ class InputManager internal constructor() {
         }
     }
 
-    internal fun onNewFrame() {
-        synchronized(tmpPointers) {
-            for (i in pointers.indices) {
-                pointers[i].updateFrom(tmpPointers[i])
-                tmpPointers[i].buttonEventMask = 0
-            }
+    fun keyEvent(keyCode: Int, modifiers: Int, event: Int) {
+        val ev = KeyEvent()
+        ev.keyCode = keyCode
+        ev.event = event
+        ev.modifiers = modifiers
+
+        println("key event: $keyCode ev=$event mods=$modifiers")
+
+        synchronized(queuedKeyEvents) {
+            queuedKeyEvents.add(ev)
+        }
+    }
+
+    fun charTyped(char: Char) {
+        println("char typed $char")
+        synchronized(queuedTypedChars) {
+            queuedTypedChars.add(char)
         }
     }
 
@@ -95,7 +114,7 @@ class InputManager internal constructor() {
      * in screen coordinates.
      */
     fun updatePointerPos(pointer: Int, x: Float, y: Float) {
-        if (pointer >= 0 && pointer < MAX_POINTERS) {
+        if (pointer in 0..(MAX_POINTERS - 1)) {
             synchronized(tmpPointers) {
                 val ptr = tmpPointers[pointer]
                 ptr.isValid = true
@@ -109,7 +128,7 @@ class InputManager internal constructor() {
      * Updates the button state of a single button of the specified pointer.
      */
     fun updatePointerButtonState(pointer: Int, button: Int, down: Boolean) {
-        if (pointer >= 0 && pointer < MAX_POINTERS) {
+        if (pointer in 0..(MAX_POINTERS - 1)) {
             synchronized(tmpPointers) {
                 val ptr = tmpPointers[pointer]
                 ptr.isValid = true
@@ -126,7 +145,7 @@ class InputManager internal constructor() {
      * Updates the button state of all buttons of the specified pointer.
      */
     fun updatePointerButtonStates(pointer: Int, mask: Int) {
-        if (pointer >= 0 && pointer < MAX_POINTERS) {
+        if (pointer in 0..(MAX_POINTERS - 1)) {
             synchronized(tmpPointers) {
                 val ptr = tmpPointers[pointer]
                 ptr.isValid = true
@@ -139,7 +158,7 @@ class InputManager internal constructor() {
      * Updates the scroll position of the specified pointer.
      */
     fun updatePointerScrollPos(pointer: Int, ticks: Float) {
-        if (pointer >= 0 && pointer < MAX_POINTERS) {
+        if (pointer in 0..(MAX_POINTERS - 1)) {
             synchronized(tmpPointers) {
                 val ptr = tmpPointers[pointer]
                 ptr.isValid = true
@@ -152,7 +171,7 @@ class InputManager internal constructor() {
      * Updates the isValid state of the specified pointer. A pointer gets invalid if the cursor leaves the GL surface.
      */
     fun updatePointerValid(pointer: Int, valid: Boolean) {
-        if (pointer >= 0 && pointer < MAX_POINTERS) {
+        if (pointer in 0..(MAX_POINTERS - 1)) {
             synchronized(tmpPointers) {
                 tmpPointers[pointer].isValid = valid
             }
@@ -183,27 +202,17 @@ class InputManager internal constructor() {
         var isValid = false
             internal set
 
-        val isLeftButtonDown: Boolean
-            get() = (buttonMask and LEFT_BUTTON_MASK) != 0
-        val isRightButtonDown: Boolean
-            get() = (buttonMask and RIGHT_BUTTON_MASK) != 0
-        val isMiddleButtonDown: Boolean
-            get() = (buttonMask and MIDDLE_BUTTON_MASK) != 0
-        val isBackButtonDown: Boolean
-            get() = (buttonMask and BACK_BUTTON_MASK) != 0
-        val isForwardButtonDown: Boolean
-            get() = (buttonMask and FORWARD_BUTTON_MASK) != 0
+        val isLeftButtonDown: Boolean get() = (buttonMask and LEFT_BUTTON_MASK) != 0
+        val isRightButtonDown: Boolean get() = (buttonMask and RIGHT_BUTTON_MASK) != 0
+        val isMiddleButtonDown: Boolean get() = (buttonMask and MIDDLE_BUTTON_MASK) != 0
+        val isBackButtonDown: Boolean get() = (buttonMask and BACK_BUTTON_MASK) != 0
+        val isForwardButtonDown: Boolean get() = (buttonMask and FORWARD_BUTTON_MASK) != 0
 
-        val isLeftButtonEvent: Boolean
-            get() = (buttonEventMask and LEFT_BUTTON_MASK) != 0
-        val isRightButtonEvent: Boolean
-            get() = (buttonEventMask and RIGHT_BUTTON_MASK) != 0
-        val isMiddleButtonEvent: Boolean
-            get() = (buttonEventMask and MIDDLE_BUTTON_MASK) != 0
-        val isBackButtonEvent: Boolean
-            get() = (buttonEventMask and BACK_BUTTON_MASK) != 0
-        val isForwardButtonEvent: Boolean
-            get() = (buttonEventMask and FORWARD_BUTTON_MASK) != 0
+        val isLeftButtonEvent: Boolean get() = (buttonEventMask and LEFT_BUTTON_MASK) != 0
+        val isRightButtonEvent: Boolean get() = (buttonEventMask and RIGHT_BUTTON_MASK) != 0
+        val isMiddleButtonEvent: Boolean get() = (buttonEventMask and MIDDLE_BUTTON_MASK) != 0
+        val isBackButtonEvent: Boolean get() = (buttonEventMask and BACK_BUTTON_MASK) != 0
+        val isForwardButtonEvent: Boolean get() = (buttonEventMask and FORWARD_BUTTON_MASK) != 0
 
         internal fun updateFrom(ptr: Pointer) {
             deltaX = ptr.x - x
@@ -218,4 +227,89 @@ class InputManager internal constructor() {
             isValid = ptr.isValid
         }
     }
+
+    class KeyEvent {
+        var keyCode = 0
+            internal set
+        var modifiers = 0
+            internal set
+        var event = 0
+            internal set
+
+        val isPressed: Boolean get() = (event and (KEV_EV_DOWN or KEV_EV_REPEATED_DOWN)) != 0
+        val isRepeated: Boolean get() = (event and KEV_EV_REPEATED_DOWN) != 0
+        val isReleased: Boolean get() = (event and KEV_EV_UP) != 0
+
+        val isShiftDown: Boolean get() = (modifiers and KEV_MOD_SHIFT) != 0
+        val isCtrlDown: Boolean get() = (modifiers and KEV_MOD_CTRL) != 0
+        val isAltDown: Boolean get() = (modifiers and KEV_MOD_ALT) != 0
+        val isSuperDown: Boolean get() = (modifiers and KEV_MOD_SUPER) != 0
+    }
+
+    companion object {
+        const val LEFT_BUTTON = 0
+        const val LEFT_BUTTON_MASK = 1
+        const val RIGHT_BUTTON = 1
+        const val RIGHT_BUTTON_MASK = 2
+        const val MIDDLE_BUTTON = 2
+        const val MIDDLE_BUTTON_MASK = 4
+        const val BACK_BUTTON = 3
+        const val BACK_BUTTON_MASK = 8
+        const val FORWARD_BUTTON = 4
+        const val FORWARD_BUTTON_MASK = 16
+
+        const val MAX_POINTERS = 10
+        const val PRIMARY_POINTER = 0
+
+        const val KEV_EV_UP = 0
+        const val KEV_EV_DOWN = 1
+        const val KEV_EV_REPEATED_DOWN = 2
+
+        const val KEV_MOD_SHIFT = 1
+        const val KEV_MOD_CTRL = 2
+        const val KEV_MOD_ALT = 4
+        const val KEV_MOD_SUPER = 8
+
+        const val KEY_CTRL_LEFT = -1
+        const val KEY_CTRL_RIGHT = -2
+        const val KEY_SHIFT_LEFT = -3
+        const val KEY_SHIFT_RIGHT = -4
+        const val KEY_ALT_LEFT = -5
+        const val KEY_ALT_RIGHT = -6
+        const val KEY_SUPER_LEFT = -7
+        const val KEY_SUPER_RIGHT = -8
+        const val KEY_ESC = -9
+        const val KEY_MENU = -10
+        const val KEY_ENTER = -11
+        const val KEY_NP_ENTER = -12
+        const val KEY_NP_DIV = -13
+        const val KEY_NP_MUL = -14
+        const val KEY_NP_PLUS = -15
+        const val KEY_NP_MINUS = -16
+        const val KEY_BACKSPACE = -17
+        const val KEY_TAB = -18
+        const val KEY_DEL = -19
+        const val KEY_INSERT = -20
+        const val KEY_HOME = -21
+        const val KEY_END = -22
+        const val KEY_PAGE_UP = -23
+        const val KEY_PAGE_DOWN = -24
+        const val KEY_CURSOR_LEFT = -25
+        const val KEY_CURSOR_RIGHT = -26
+        const val KEY_CURSOR_UP = -27
+        const val KEY_CURSOR_DOWN = -28
+        const val KEY_F1 = -29
+        const val KEY_F2 = -30
+        const val KEY_F3 = -31
+        const val KEY_F4 = -32
+        const val KEY_F5 = -33
+        const val KEY_F6 = -34
+        const val KEY_F7 = -35
+        const val KEY_F8 = -36
+        const val KEY_F9 = -37
+        const val KEY_F10 = -38
+        const val KEY_F11 = -39
+        const val KEY_F12 = -40
+    }
+
 }

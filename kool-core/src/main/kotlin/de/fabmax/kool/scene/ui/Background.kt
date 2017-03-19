@@ -14,7 +14,7 @@ import de.fabmax.kool.util.RayTest
  */
 abstract class Background(val component: UiComponent) : Node() {
 
-    abstract fun applyComponentAlpha()
+    abstract fun updateComponentAlpha()
 
     abstract fun update(ctx: RenderContext)
 
@@ -59,7 +59,7 @@ open class SimpleBackground(component: UiComponent, val bgShader: BasicShader = 
         bounds.add(mesh.bounds)
     }
 
-    override fun applyComponentAlpha() {
+    override fun updateComponentAlpha() {
         bgShader.alpha = component.alpha
     }
 
@@ -85,13 +85,9 @@ open class BlurredBackground(component: UiComponent, val blurShader: BlurShader 
     isAlpha = true
 }) : SimpleBackground(component, blurShader) {
 
-    init {
-        blurShader.colorMix = 0.7f
-    }
-
     override fun render(ctx: RenderContext) {
         if (blurShader.blurHelper == null) {
-            blurShader.blurHelper = component.root?.getBlurHelper()
+            blurShader.blurHelper = component.root.createBlurHelper()
         }
         super.render(ctx)
     }
