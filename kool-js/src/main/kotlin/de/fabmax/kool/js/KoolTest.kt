@@ -1,5 +1,6 @@
 package de.fabmax.kool.js
 
+import de.fabmax.kool.demo.pointDemo
 import de.fabmax.kool.demo.uiDemo
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.PlatformImpl
@@ -14,6 +15,6 @@ fun main(args: Array<String>) {
 
     //simpleShapesDemo(ctx)
     //modelDemo(ctx)
-    uiDemo(ctx)
-    //pointDemo(ctx)
+    //uiDemo(ctx)
+    pointDemo(ctx)
 }

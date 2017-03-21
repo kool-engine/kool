@@ -1,15 +1,14 @@
 package de.fabmax.kool.platform.lwjgl3
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.platform.use
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
-import org.lwjgl.glfw.GLFWErrorCallback
-import org.lwjgl.glfw.GLFWVidMode
 import org.lwjgl.opengl.GL
+import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL20
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 
@@ -108,6 +107,9 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         // externally. LWJGL detects the context that is current in the current thread, creates the GLCapabilities
         // instance and makes the OpenGL bindings available for use.
         GL.createCapabilities()
+
+        // This is required to be able to set gl_PointSize in vertex shaders (to get same behaviour as in GLES)
+        GL11.glEnable(GL20.GL_VERTEX_PROGRAM_POINT_SIZE)
 
         // run the rendering loop until the user has attempted to close the window
         while (!glfwWindowShouldClose(window)) {

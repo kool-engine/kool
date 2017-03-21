@@ -48,7 +48,7 @@ class PlatformImpl private constructor() : Platform() {
         }
 
         fun init() {
-            if (instance !is PlatformImpl) {
+            if (!isInited) {
                 initPlatform(PlatformImpl())
             }
         }

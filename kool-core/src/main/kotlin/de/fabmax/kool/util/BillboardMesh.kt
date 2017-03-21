@@ -23,13 +23,14 @@ class BillboardMesh(data: MeshData = MeshData(false, true, true), name: String =
         get() = (shader as BillboardShader).billboardSize
         set(value) { (shader as BillboardShader).billboardSize = value }
 
-    fun addPoint(position: Vec3f, color: Color) {
+    fun addQuad(centerPosition: Vec3f, color: Color) {
         builder.color = color
         builder.rect {
-            origin.set(position)
+            fullTexCoords()
+            origin.set(centerPosition)
+            // all vertices of the quad have the same position, actual coords are computed in vertex shader
             width = 0f
             height = 0f
-            fullTexCoords()
         }
     }
 

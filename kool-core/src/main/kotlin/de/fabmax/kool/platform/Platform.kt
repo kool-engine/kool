@@ -15,8 +15,9 @@ abstract class Platform {
     companion object {
         // initialize platform implementation
         // once multiple platforms are supported the correct one can be determined at runtime here
-        @JvmStatic
-        protected var instance: Platform = NoopPlatform()
+        private var instance: Platform = NoopPlatform()
+        var isInited = false
+            private set
 
         val supportsMultiContext: Boolean
             get() = instance.supportsMultiContext
@@ -24,7 +25,10 @@ abstract class Platform {
             get() = instance.supportsUint32Indices
 
         fun initPlatform(platform: Platform) {
-            instance = platform
+            if (!isInited) {
+                instance = platform
+                isInited = true
+            }
         }
 
         fun createContext(props: RenderContext.InitProps): RenderContext {

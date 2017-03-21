@@ -5,7 +5,6 @@ import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.platform.js.*
 import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLDivElement
@@ -39,7 +38,7 @@ class PlatformImpl private constructor() : Platform() {
         }
 
         fun init() {
-            if (instance !is PlatformImpl) {
+            if (!isInited) {
                 initPlatform(PlatformImpl())
             }
         }
