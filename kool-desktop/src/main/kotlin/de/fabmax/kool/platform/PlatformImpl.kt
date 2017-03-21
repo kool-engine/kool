@@ -48,7 +48,14 @@ class PlatformImpl private constructor() : Platform() {
         }
 
         fun init() {
-            Platform.initPlatform(PlatformImpl())
+            if (instance !is PlatformImpl) {
+                initPlatform(PlatformImpl())
+            }
+        }
+
+        fun initContext(props: Lwjgl3Context.InitProps = Lwjgl3Context.InitProps()): RenderContext {
+            init()
+            return createContext(props)
         }
 
         fun getMonitorSpecAt(x: Int, y: Int): MonitorSpec {

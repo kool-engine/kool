@@ -15,7 +15,8 @@ abstract class Platform {
     companion object {
         // initialize platform implementation
         // once multiple platforms are supported the correct one can be determined at runtime here
-        private var instance: Platform = NoopPlatform()
+        @JvmStatic
+        protected var instance: Platform = NoopPlatform()
 
         val supportsMultiContext: Boolean
             get() = instance.supportsMultiContext

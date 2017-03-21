@@ -8,6 +8,7 @@ For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
 
 What's working:
+- Some simple UI stuff: (Toggle-)Buttons, Sliders, Labels
 - Meshes with shared geometry
 - Instantiatable models (no model loading yet)
 - Lazy and delayed texture loading
@@ -28,11 +29,8 @@ fun main(args: Array<String>) {
     // Initialize platform
     PlatformImpl.init()
     
-    // Create a context
-    val ctx = Platform.createContext(Lwjgl3Context.InitProps())
-    
-    // Or for javascript:
-    // val ctx = Platform.createContext(JsContext.InitProps())
+    // Create the engine context
+    val ctx = PlatformImpl.initContext()
     
     // Create scene contents
     ctx.scene.root = group {

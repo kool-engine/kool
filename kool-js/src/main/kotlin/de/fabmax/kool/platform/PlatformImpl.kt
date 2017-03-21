@@ -39,7 +39,14 @@ class PlatformImpl private constructor() : Platform() {
         }
 
         fun init() {
-            Platform.initPlatform(PlatformImpl())
+            if (instance !is PlatformImpl) {
+                initPlatform(PlatformImpl())
+            }
+        }
+
+        fun initContext(props: JsContext.InitProps = JsContext.InitProps()): RenderContext {
+            init()
+            return createContext(props)
         }
 
         val MAX_GENERATED_TEX_WIDTH = 1024

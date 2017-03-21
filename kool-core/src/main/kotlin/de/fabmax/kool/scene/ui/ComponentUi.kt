@@ -52,12 +52,16 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
     }
 
     override fun createUi(ctx: RenderContext) {
-        println("${component.name} ui created")
         color.setTheme(component.root.theme.backgroundColor).apply()
         shader = createShader(ctx)
         shader?.staticColor?.set(color.prop)
         mesh.shader = shader
         component += mesh
+    }
+
+    override fun removeUi(ctx: RenderContext) {
+        component -= mesh
+        mesh.dispose(ctx)
     }
 
     override fun updateUi(ctx: RenderContext) {
@@ -71,12 +75,6 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
             height = component.height
             fullTexCoords()
         }
-    }
-
-    override fun removeUi(ctx: RenderContext) {
-        println("${component.name} ui removed")
-        component -= mesh
-        mesh.dispose(ctx)
     }
 
     protected open fun createShader(ctx: RenderContext): BasicShader {
