@@ -46,14 +46,15 @@ open class GlslGenerator {
     interface GlslInjector {
         fun vsStart(shaderProps: ShaderProps, text: StringBuilder) { }
         fun vsAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun vsBeforeProj(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) { }
         fun vsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
 
         fun fsStart(shaderProps: ShaderProps, text: StringBuilder) { }
         fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun fsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
-
         fun fsBeforeSampling(shaderProps: ShaderProps, text: StringBuilder) { }
         fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun fsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
     }
 
     val injectors: MutableList<GlslInjector> = mutableListOf()
@@ -206,10 +207,14 @@ open class GlslGenerator {
     private fun generateVertBodyCode(shaderProps: ShaderProps, text: StringBuilder) {
         text.append("\nvoid main() {\n")
 
+        injectors.forEach { it.vsBeforeProj(shaderProps, text) }
+
         // output position of the vertex in clip space: MVP * position
         // gl_Position = uMvpMatrix * vec4(aVertexPosition_modelspace, 1.0);
         text.append("gl_Position = ").append(UNIFORM_MVP_MATRIX).append(" * vec4(")
                 .append(ATTRIBUTE_NAME_POSITION).append(", 1.0);\n")
+
+        injectors.forEach { it.vsAfterProj(shaderProps, text) }
 
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
             // vPositionWorldspace = (uModelMatrix * vec4(aVertexPosition_modelspace, 1.0)).xyz;
