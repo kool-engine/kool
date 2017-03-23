@@ -20,6 +20,11 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
 
     val window: Long
 
+    override var windowWidth = 0
+        private set
+    override var windowHeight = 0
+        private set
+
     init {
         // configure GLFW
         glfwDefaultWindowHints()
@@ -42,8 +47,8 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
 
         // install window callbacks
         glfwSetFramebufferSizeCallback(window) { _, w, h ->
-            viewportWidth = w
-            viewportHeight = h
+            windowWidth = w
+            windowHeight = h
         }
         glfwSetWindowPosCallback(window) { _, x, y ->
             screenDpi = PlatformImpl.getResolutionAt(x, y)
@@ -90,8 +95,8 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
             val pWidth = stack.mallocInt(1)
             val pHeight = stack.mallocInt(1)
             glfwGetFramebufferSize(window, pWidth, pHeight)
-            viewportWidth = pWidth[0]
-            viewportHeight = pHeight[0]
+            windowWidth = pWidth[0]
+            windowHeight = pHeight[0]
         } // the stack frame is popped automatically
     }
 

@@ -13,11 +13,11 @@ import de.fabmax.kool.util.RayTest
  */
 abstract class Node(val name: String? = null) {
 
-    var onRender: List<Node.(RenderContext) -> Unit> = mutableListOf()
+    val onRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
 
-    var onHoverEnter: List<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
-    var onHover: List<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
-    var onHoverExit: List<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    val onHoverEnter: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    val onHover: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    val onHoverExit: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
 
     /**
      * Axis-aligned bounds of this node, implementations should set and refresh their bounds on every frame
@@ -40,6 +40,14 @@ abstract class Node(val name: String? = null) {
      * Determines whether this node is considered for ray-picking tests.
      */
     open var isPickable = true
+
+    /**
+     * Returns the context's active scene, which hopefully is the scene this Node is rendered in. This is pretty
+     * hacky and hopefully will be improved.
+     */
+    protected fun getScene(ctx: RenderContext): Scene {
+        return ctx.activeScene!!
+    }
 
     /**
      * Renders this node using the specified graphics engine context. Implementations should consider the [isVisible]

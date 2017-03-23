@@ -1,5 +1,7 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.platform.RenderContext
+
 /**
  * @author fabmax
  */
@@ -21,10 +23,7 @@ class InputManager internal constructor() {
     val typedChars: MutableList<Char> = mutableListOf()
 
     private val tmpPointers = Array(MAX_POINTERS, ::Pointer)
-    private val pointers = Array(MAX_POINTERS, ::Pointer)
-
-    private val dragPtrs: MutableList<Pointer> = mutableListOf()
-    private val dragHandlers: MutableList<DragHandler> = mutableListOf()
+    val pointers = Array(MAX_POINTERS, ::Pointer)
 
     /**
      * The primary pointer. For mouse-input that's the mouse cursor, for touch-input it's the first finger
@@ -50,42 +49,6 @@ class InputManager internal constructor() {
             typedChars.clear()
             typedChars.addAll(queuedTypedChars)
             queuedTypedChars.clear()
-        }
-    }
-
-    fun getPointer(idx: Int): Pointer {
-        return pointers[idx]
-    }
-
-    fun registerDragHandler(handler: DragHandler) {
-        if (handler !in dragHandlers) {
-            dragHandlers += handler
-        }
-    }
-
-    fun removeDragHandler(handler: DragHandler) {
-        dragHandlers -= handler
-    }
-
-    fun handleDrag() {
-        dragPtrs.clear()
-        for (i in pointers.indices) {
-            val ptr = pointers[i]
-            if ((ptr.isValid || ptr.wasValid) &&
-                    (ptr.buttonMask != 0 || ptr.buttonEventMask != 0 || ptr.deltaScroll != 0f)) {
-                dragPtrs.add(pointers[i])
-            }
-        }
-        var handlerIdx = dragHandlers.lastIndex
-        while (handlerIdx >= 0) {
-            val result = dragHandlers[handlerIdx].handleDrag(dragPtrs)
-            if (result and DragHandler.REMOVE_HANDLER != 0) {
-                dragHandlers.removeAt(handlerIdx)
-            }
-            if (result and DragHandler.HANDLED != 0) {
-                break
-            }
-            handlerIdx--
         }
     }
 
@@ -225,6 +188,13 @@ class InputManager internal constructor() {
             buttonEventMask = ptr.buttonEventMask
             wasValid = isValid
             isValid = ptr.isValid
+        }
+
+        fun isInViewport(ctx: RenderContext): Boolean {
+            // y-axis of viewport is inverted to window coordinates
+            val ptrY = ctx.windowHeight - y
+            return (isValid || wasValid) && x >= ctx.viewportX && ptrY >= ctx.viewportY &&
+                    x < ctx.viewportX + ctx.viewportWidth && ptrY < ctx.viewportY + ctx.viewportHeight
         }
     }
 

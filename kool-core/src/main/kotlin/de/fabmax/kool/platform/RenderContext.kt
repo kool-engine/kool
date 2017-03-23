@@ -30,12 +30,20 @@ abstract class RenderContext {
     var frameIdx = 0
         private set
 
-    var scene: Scene = Scene()
+    //var scene: Scene = Scene()
+    val scenes: MutableList<Scene> = mutableListOf()
+    var activeScene: Scene? = null
+        private set
 
     private val attribs = Attribs()
     private val attribsStack = Array(16, { Attribs() })
     private var attribsStackIdx = 0
 
+    abstract val windowWidth: Int
+    abstract val windowHeight: Int
+
+    var viewportX by attribs.viewportX
+    var viewportY by attribs.viewportY
     var viewportWidth by attribs.viewportWidth
     var viewportHeight by attribs.viewportHeight
     var clearColor by attribs.clearColor
@@ -43,8 +51,6 @@ abstract class RenderContext {
     var isDepthMask by attribs.isDepthMask
     var isCullFace by attribs.isCullFace
     var isBlend by attribs.isBlend
-
-    var clearMask = GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT
 
     internal val boundBuffers: MutableMap<Int, BufferResource?> = mutableMapOf()
 
@@ -76,12 +82,15 @@ abstract class RenderContext {
         // force re-binding shader, otherwise delayed loaded resources (e.g. textures) might not be loaded at all
         shaderMgr.bindShader(null, this)
 
+        // by default the viewport covers the full window
+        viewportWidth = windowWidth
+        viewportHeight = windowHeight
         applyAttributes()
-        if (clearMask != 0) {
-            GL.clear(clearMask)
-        }
 
-        scene.onRender(this)
+        for (i in scenes.indices) {
+            activeScene = scenes[i]
+            scenes[i].render(this)
+        }
     }
 
     fun pushAttributes() {
@@ -106,6 +115,8 @@ abstract class RenderContext {
     }
 
     private class Attribs {
+        val viewportX = Property(0)
+        val viewportY = Property(0)
         val viewportWidth = Property(0)
         val viewportHeight = Property(0)
         val clearColor = Property(Color(0.05f, 0.15f, 0.25f, 1f))
@@ -116,8 +127,9 @@ abstract class RenderContext {
         val isBlend = Property(true)
 
         fun apply() {
-            if (viewportWidth.valueChanged || viewportHeight.valueChanged) {
-                GL.viewport(0, 0, viewportWidth.clear, viewportHeight.clear)
+            if (viewportX.valueChanged || viewportY.valueChanged ||
+                    viewportWidth.valueChanged || viewportHeight.valueChanged) {
+                GL.viewport(viewportX.clear, viewportY.clear, viewportWidth.clear, viewportHeight.clear)
             }
             if (clearColor.valueChanged) {
                 val color = clearColor.clear
@@ -162,6 +174,8 @@ abstract class RenderContext {
         }
 
         fun set(other: Attribs) {
+            viewportX.copy(other.viewportX, false)
+            viewportY.copy(other.viewportY, false)
             viewportWidth.copy(other.viewportWidth, false)
             viewportHeight.copy(other.viewportHeight, false)
             clearColor.copy(other.clearColor, false)

@@ -7,6 +7,10 @@ import de.fabmax.kool.platform.Math
  * @author fabmax
  */
 
+fun isEqual(a: Vec2f, b: Vec2f) = Math.isEqual(a.x, b.x) && Math.isEqual(a.y, b.y)
+fun isEqual(a: Vec3f, b: Vec3f) = Math.isEqual(a.x, b.x) && Math.isEqual(a.y, b.y) && Math.isEqual(a.z, b.z)
+fun isEqual(a: Vec4f, b: Vec4f) = Math.isEqual(a.x, b.x) && Math.isEqual(a.y, b.y) && Math.isEqual(a.z, b.z) && Math.isEqual(a.w, b.w)
+
 fun add(a: Vec2f, b: Vec2f): MutableVec2f = a.add(MutableVec2f(), b)
 fun add(a: Vec3f, b: Vec3f): MutableVec3f = a.add(MutableVec3f(), b)
 fun add(a: Vec4f, b: Vec4f): MutableVec4f = a.add(MutableVec4f(), b)

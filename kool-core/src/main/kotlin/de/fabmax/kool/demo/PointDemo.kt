@@ -3,10 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.scene.group
-import de.fabmax.kool.scene.sphericalInputTransform
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.*
 
@@ -15,17 +12,24 @@ import de.fabmax.kool.util.*
  */
 
 fun pointDemo(ctx: RenderContext) {
-    //val pointMesh = pointMesh()
-    val pointMesh = bilboardPointMesh()
-    val data = pointMesh.meshData
+    ctx.scenes += pointScene()
+    // Set background color
+    ctx.clearColor = color("00323F")
+    // Finally run the whole thing
+    ctx.run()
+}
 
+fun pointScene(): Scene {
+    val pointMesh = pointMesh()
+    //val pointMesh = billboardPointMesh()
+    val data = pointMesh.meshData
     val ptVertCnt = if (pointMesh is BillboardMesh) 4 else 1
 
     var frameCnt = 30
     var highlight = false
 
     // Create scene contents
-    ctx.scene.root = group {
+    val scene = scene {
         onRender += {
             // change color of middle sphere every 30 frames
             // iterating over all vertices is super slow, but anyway...
@@ -44,14 +48,10 @@ fun pointDemo(ctx: RenderContext) {
         }
 
         // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
-        +sphericalInputTransform { +ctx.scene.camera }
+        +sphericalInputTransform { +camera }
         +pointMesh
     }
-
-    // Set background color
-    ctx.clearColor = color("00323F")
-    // Finally run the whole thing
-    ctx.run()
+    return scene
 }
 
 fun pointMesh(): Mesh {
@@ -89,9 +89,8 @@ fun pointMesh(): Mesh {
     return pointMesh
 }
 
-fun bilboardPointMesh(): BillboardMesh {
+fun billboardPointMesh(): BillboardMesh {
     val pointMesh = BillboardMesh()
-    val data = pointMesh.meshData
     pointMesh.billboardSize = 3f
 
     // create 5 point spheres, 10000 points each

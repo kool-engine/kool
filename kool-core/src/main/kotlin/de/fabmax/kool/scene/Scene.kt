@@ -1,27 +1,62 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.InputManager
+import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.RayTest
 
 /**
  * @author fabmax
  */
-class Scene {
+
+inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
+    return Scene(name).apply(block)
+}
+
+class Scene(name: String? = null) : Group(name) {
+
+    val preRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
+    val postRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
 
     var camera: Camera = PerspectiveCamera()
     var light = Light()
-    var root: Node? = null
+
+    var clearMask = GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT
 
     var isPickingEnabled = true
     private val rayTest = RayTest()
     private var hoverNode: Node? = null
 
-    fun onRender(ctx: RenderContext) {
+    private val dragPtrs: MutableList<InputManager.Pointer> = mutableListOf()
+    private val dragHandlers: MutableList<InputManager.DragHandler> = mutableListOf()
+
+    override fun render(ctx: RenderContext) {
+        for (i in preRender.indices) {
+            preRender[i](ctx)
+        }
+
         camera.updateCamera(ctx)
 
         handleInput(ctx)
 
-        root?.render(ctx)
+        if (clearMask != 0) {
+            GL.clear(clearMask)
+        }
+        super.render(ctx)
+
+        for (i in postRender.indices) {
+            postRender[i](ctx)
+        }
+    }
+
+    fun registerDragHandler(handler: InputManager.DragHandler) {
+        if (handler !in dragHandlers) {
+            dragHandlers += handler
+        }
+    }
+
+    fun removeDragHandler(handler: InputManager.DragHandler) {
+        dragHandlers -= handler
     }
 
     private fun handleInput(ctx: RenderContext) {
@@ -29,8 +64,8 @@ class Scene {
         val prevHovered = hoverNode
         val ptr = ctx.inputMgr.primaryPointer
 
-        if (isPickingEnabled && camera.initRayTes(rayTest, ptr, ctx)) {
-            root?.rayTest(rayTest)
+        if (isPickingEnabled && ptr.isInViewport(ctx) && camera.initRayTes(rayTest, ptr, ctx)) {
+            rayTest(rayTest)
             if (rayTest.isHit) {
                 rayTest.computeHitPosition()
                 hovered = rayTest.hitNode
@@ -56,7 +91,30 @@ class Scene {
             }
         }
 
-        ctx.inputMgr.handleDrag()
+        handleDrag(ctx)
+    }
+
+    private fun handleDrag(ctx: RenderContext) {
+        dragPtrs.clear()
+        for (i in ctx.inputMgr.pointers.indices) {
+            val ptr = ctx.inputMgr.pointers[i]
+            if (ptr.isInViewport(ctx) &&
+                    (ptr.buttonMask != 0 || ptr.buttonEventMask != 0 || ptr.deltaScroll != 0f)) {
+                dragPtrs.add(ctx.inputMgr.pointers[i])
+            }
+        }
+
+        var handlerIdx = dragHandlers.lastIndex
+        while (handlerIdx >= 0) {
+            val result = dragHandlers[handlerIdx].handleDrag(dragPtrs)
+            if (result and InputManager.DragHandler.REMOVE_HANDLER != 0) {
+                dragHandlers.removeAt(handlerIdx)
+            }
+            if (result and InputManager.DragHandler.HANDLED != 0) {
+                break
+            }
+            handlerIdx--
+        }
     }
 
 }

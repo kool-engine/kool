@@ -65,7 +65,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
 
             if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown && isOverKnob(prevHit.x, prevHit.y)) {
                 // register drag handler to handle knob movement
-                ctx.inputMgr.registerDragHandler(this@Slider)
+                getScene(ctx).registerDragHandler(this@Slider)
             }
         }
         onHoverExit += { _,_,_ ->

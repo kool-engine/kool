@@ -17,6 +17,11 @@ import kotlin.browser.window
 @Suppress("UnsafeCastFromDynamic")
 class JsContext internal constructor(props: InitProps) : RenderContext() {
 
+    override var windowWidth = 0
+        private set
+    override var windowHeight = 0
+        private set
+
     internal val canvas: HTMLCanvasElement
     internal val gl: WebGLRenderingContext
     internal val supportsUint32Indices: Boolean
@@ -37,8 +42,8 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
         gl = webGlCtx as WebGLRenderingContext
         supportsUint32Indices = gl.getExtension("OES_element_index_uint") != null
 
-        viewportWidth = canvas.clientWidth
-        viewportHeight = canvas.clientHeight
+        windowWidth = canvas.clientWidth
+        windowHeight = canvas.clientHeight
 
         canvas.onmousemove = { ev ->
             ev as MouseEvent
@@ -134,12 +139,12 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
         animationMillis = time
 
         // update viewport size
-        viewportWidth = canvas.clientWidth
-        viewportHeight = canvas.clientHeight
-        if (viewportWidth != canvas.width || viewportHeight!= canvas.height) {
+        windowWidth = canvas.clientWidth
+        windowHeight = canvas.clientHeight
+        if (windowWidth != canvas.width || windowHeight!= canvas.height) {
             // resize canvas to viewport
-            canvas.width = viewportWidth
-            canvas.height = viewportHeight
+            canvas.width = windowWidth
+            canvas.height = windowHeight
         }
 
         // render frame

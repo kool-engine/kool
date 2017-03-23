@@ -1,7 +1,6 @@
 package de.fabmax.kool.shading
 
 import de.fabmax.kool.Texture
-import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableVec3f
@@ -80,11 +79,13 @@ open class BasicShader(props: ShaderProps, private val generator: GlslGenerator 
         cameraPosition.set(0f, 0f, 0f)
         generator.uniformCameraPosition.bind(ctx)
 
-        val light = ctx.scene.light
-        lightDirection.set(light.direction)
-        generator.uniformLightDirection.bind(ctx)
-        lightColor.set(light.color.r, light.color.g, light.color.b)
-        generator.uniformLightColor.bind(ctx)
+        val light = ctx.activeScene?.light
+        if (light != null) {
+            lightDirection.set(light.direction)
+            generator.uniformLightDirection.bind(ctx)
+            lightColor.set(light.color.r, light.color.g, light.color.b)
+            generator.uniformLightColor.bind(ctx)
+        }
 
         // fixme: if (isGlobalFog) fogColor.set(global)
         generator.uniformFogColor.bind(ctx)

@@ -93,7 +93,7 @@ class BlurredBackgroundHelper(
     }
 
     fun updateDistortionTexture(node: Node, ctx: RenderContext, bounds: BoundingBox = node.bounds) {
-        val cam = ctx.scene.camera
+        val cam = ctx.activeScene!!.camera
 
         texBounds.clear()
         addToTexBounds(cam, node, bounds.min.x, bounds.min.y, bounds.min.z, ctx)
@@ -106,26 +106,26 @@ class BlurredBackgroundHelper(
         addToTexBounds(cam, node, bounds.max.x, bounds.max.y, bounds.max.z, ctx)
 
         var minScrX = Math.max(texBounds.min.x.toInt(), 0)
-        val maxScrX = Math.min(texBounds.max.x.toInt(), ctx.viewportWidth - 1)
-        var minScrY = Math.max(ctx.viewportHeight - texBounds.max.y.toInt(), 0)
-        val maxScrY = Math.min(ctx.viewportHeight - texBounds.min.y.toInt(), ctx.viewportHeight - 1)
+        val maxScrX = Math.min(texBounds.max.x.toInt(), ctx.windowWidth - 1)
+        var minScrY = Math.max(ctx.windowHeight - texBounds.max.y.toInt(), 0)
+        val maxScrY = Math.min(ctx.windowHeight - texBounds.min.y.toInt(), ctx.windowHeight - 1)
 
         var sizeX = maxScrX - minScrX
         var sizeY = maxScrY - minScrY
-        if (maxScrX > 0 && minScrX < ctx.viewportWidth && sizeX > 0 &&
-                maxScrY > 0 && minScrY < ctx.viewportHeight && sizeY > 0 &&
+        if (maxScrX > 0 && minScrX < ctx.windowWidth && sizeX > 0 &&
+                maxScrY > 0 && minScrY < ctx.windowHeight && sizeY > 0 &&
                 texBounds.min.z < 1 && texBounds.max.z > 0) {
 
             // captured texture needs to be square for equal blur effect in x and y direction
             if (sizeX > sizeY) {
-                sizeY = Math.min(sizeX, ctx.viewportHeight - 1)
-                if (minScrY + sizeY >= ctx.viewportHeight) {
-                    minScrY = ctx.viewportHeight - sizeY - 1
+                sizeY = Math.min(sizeX, ctx.windowHeight - 1)
+                if (minScrY + sizeY >= ctx.windowHeight) {
+                    minScrY = ctx.windowHeight - sizeY - 1
                 }
             } else if (sizeY > sizeX) {
-                sizeX = Math.min(sizeY, ctx.viewportWidth - 1)
-                if (minScrX + sizeX >= ctx.viewportWidth) {
-                    minScrX = ctx.viewportWidth - sizeX - 1
+                sizeX = Math.min(sizeY, ctx.windowWidth - 1)
+                if (minScrX + sizeX >= ctx.windowWidth) {
+                    minScrX = ctx.windowWidth - sizeX - 1
                 }
             }
 
@@ -136,6 +136,9 @@ class BlurredBackgroundHelper(
             copyTexData.setCopyHeight(sizeY)
 
             doBlurring(ctx)
+        } else {
+            println("invalid size: $minScrX $minScrY -> $maxScrX $maxScrY")
+            println("texbounds min: ${texBounds.min} -> ${texBounds.max}")
         }
     }
 
@@ -188,16 +191,6 @@ class BlurredBackgroundHelper(
         fb.unbind(ctx)
     }
 
-    fun computeTexCoords(result: MutableVec2f, point: Vec3f, node: Node, ctx: RenderContext) {
-        val cam = ctx.scene.camera
-
-        tmpVec.set(point)
-        node.toGlobalCoords(tmpVec)
-        cam.projectScreen(tmpRes, tmpVec, ctx)
-        result.x = (tmpRes.x - copyTexData.x) / copyTexData.width
-        result.y = (tmpRes.y + copyTexData.y - ctx.viewportHeight) / copyTexData.height + 1f
-    }
-
     private fun addToTexBounds(cam: Camera, node: Node, x: Float, y: Float, z: Float, ctx: RenderContext) {
         tmpVec.set(x, y, z)
         node.toGlobalCoords(tmpVec)
@@ -223,6 +216,7 @@ class BlurredBackgroundHelper(
 
         override fun onLoad(texture: Texture, ctx: RenderContext) {
             val res = texture.res ?: throw KoolException("Texture wasn't created")
+            //println("$x $y $width $height")
             GL.copyTexImage2D(res.target, 0, GL.RGBA, x, y, width, height, 0)
         }
     }
@@ -314,15 +308,13 @@ fun blurShader(propsInit: ShaderProps.() -> Unit = { }): BlurShader {
 
     generator.addCustomUniform(UniformTexture2D("uBlurTexture"))
     generator.addCustomUniform(Uniform1f("uColorMix"))
-    generator.addCustomUniform(Uniform1f("uTexX"))
-    generator.addCustomUniform(Uniform1f("uTexY"))
-    generator.addCustomUniform(Uniform1f("uTexW"))
-    generator.addCustomUniform(Uniform1f("uTexH"))
+    generator.addCustomUniform(Uniform2f("uTexPos"))
+    generator.addCustomUniform(Uniform2f("uTexSz"))
 
     generator.injectors += object: GlslGenerator.GlslInjector {
         override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexX) / uTexW, ")
-                    .append("1.0 - (gl_FragCoord.y - uTexY) / uTexH);\n")
+            text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ")
+                    .append("1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n")
                     .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" = texture2D(")
                     .append("uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ")
                     .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" * uColorMix;\n")
@@ -337,10 +329,8 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
 
     private val uBlurTex = generator.customUnitforms["uBlurTexture"] as UniformTexture2D
     private val uColorMix = generator.customUnitforms["uColorMix"] as Uniform1f
-    private val uTexX = generator.customUnitforms["uTexX"] as Uniform1f
-    private val uTexY = generator.customUnitforms["uTexY"] as Uniform1f
-    private val uTexW = generator.customUnitforms["uTexW"] as Uniform1f
-    private val uTexH = generator.customUnitforms["uTexH"] as Uniform1f
+    private val uTexPos = generator.customUnitforms["uTexPos"] as Uniform2f
+    private val uTexSz = generator.customUnitforms["uTexSz"] as Uniform2f
 
     var blurHelper: BlurredBackgroundHelper? = null
         set(value) {
@@ -360,17 +350,13 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
         super.onBind(ctx)
         val helper = blurHelper
         if (helper != null) {
-            uTexX.value = helper.capturedScrX.toFloat()
-            uTexY.value = helper.capturedScrY.toFloat()
-            uTexW.value = helper.capturedScrW.toFloat()
-            uTexH.value = helper.capturedScrH.toFloat()
+            uTexPos.value.set(helper.capturedScrX.toFloat(), helper.capturedScrY.toFloat())
+            uTexSz.value.set(helper.capturedScrW.toFloat(), helper.capturedScrH.toFloat())
         }
 
         uBlurTex.bind(ctx)
         uColorMix.bind(ctx)
-        uTexX.bind(ctx)
-        uTexY.bind(ctx)
-        uTexW.bind(ctx)
-        uTexH.bind(ctx)
+        uTexPos.bind(ctx)
+        uTexSz.bind(ctx)
     }
 }

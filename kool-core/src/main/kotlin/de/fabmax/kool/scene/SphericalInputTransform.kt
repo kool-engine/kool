@@ -40,6 +40,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     var minZoom = 0.1f
     var maxZoom = 10f
 
+    private var isDragging = false
     private val deltaPos = MutableVec2f()
     private var deltaScroll = 0f
 
@@ -65,7 +66,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
     override fun render(ctx: RenderContext) {
         // register drag handler (safe to call every frame, input manager checks if handler is already registered)
-        ctx.inputMgr.registerDragHandler(this)
+        getScene(ctx).registerDragHandler(this)
 
         if (!Math.isZero(deltaScroll)) {
             zoom *= 1f + deltaScroll / 10f
@@ -95,12 +96,17 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>): Int {
         if (dragPtrs.size == 1 && dragPtrs[0].isValid) {
-            if (dragPtrs[0].isLeftButtonDown) {
+            if (dragPtrs[0].isLeftButtonEvent) {
+                isDragging = dragPtrs[0].isLeftButtonDown
+            }
+            if (isDragging && dragPtrs[0].isLeftButtonDown) {
                 deltaPos.set(dragPtrs[0].deltaX, dragPtrs[0].deltaY)
             }
             if (dragPtrs[0].deltaScroll != 0f) {
                 deltaScroll = dragPtrs[0].deltaScroll
             }
+        } else {
+            isDragging = false
         }
         // let other drag handlers do their job
         return 0

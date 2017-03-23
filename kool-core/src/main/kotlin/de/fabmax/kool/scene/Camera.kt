@@ -52,16 +52,14 @@ abstract class Camera(name: String = "camera") : Node(name) {
     abstract fun updateProjectionMatrix(ctx: RenderContext)
 
     fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, ctx: RenderContext): Boolean {
-        return initRayTes(rayTest, ptr.x, ptr.y, ctx) && ptr.isValid
+        return ptr.isValid && initRayTes(rayTest, ptr.x, ptr.y, ctx)
     }
 
     fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, ctx: RenderContext): Boolean {
-        val y = ctx.viewportHeight - screenY
-        var valid = true
-
         rayTest.clear()
-        valid = valid && unProjectScreen(rayTest.ray.origin, tmpPos.set(screenX, y, 0f), ctx)
-        valid = valid && unProjectScreen(rayTest.ray.direction, tmpPos.set(screenX, y, 1f), ctx)
+
+        var valid = unProjectScreen(rayTest.ray.origin, tmpPos.set(screenX, screenY, 0f), ctx)
+        valid = valid && unProjectScreen(rayTest.ray.direction, tmpPos.set(screenX, screenY, 1f), ctx)
 
         if (valid) {
             rayTest.ray.direction.subtract(rayTest.ray.origin)
@@ -136,15 +134,16 @@ abstract class Camera(name: String = "camera") : Node(name) {
         if (!project(result, world)) {
             return false
         }
-        result.x = (1 + result.x) * 0.5f * ctx.viewportWidth
-        result.y = (0.5f - result.y * 0.5f) * ctx.viewportHeight
+        result.x = (1 + result.x) * 0.5f * ctx.viewportWidth + ctx.viewportX
+        result.y = ctx.windowHeight - ((1 + result.y) * 0.5f * ctx.viewportHeight + ctx.viewportY)
         result.z = (1 + result.z) * 0.5f
         return true
     }
 
     fun unProjectScreen(result: MutableVec3f, screen: Vec3f, ctx: RenderContext): Boolean {
-        tmpVec4.set(2f * screen.x / ctx.viewportWidth - 1f, 2f * screen.y / ctx.viewportHeight - 1f,
-                2f * screen.z - 1f, 1f)
+        val x = screen.x - ctx.viewportX
+        val y = (ctx.windowHeight - screen.y) - ctx.viewportY
+        tmpVec4.set(2f * x / ctx.viewportWidth - 1f, 2f * y / ctx.viewportHeight - 1f, 2f * screen.z - 1f, 1f)
         invMvp.transform(tmpVec4)
         val s = 1f / tmpVec4.w
         result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)
