@@ -27,20 +27,17 @@ Below is the code for the demo scene
 ## Example:
 ```kotlin
 fun main(args: Array<String>) {
-    // Initialize platform
-    PlatformImpl.init()
-    
-    // Create the engine context
+    // Initialize platform and kool context
     val ctx = PlatformImpl.initContext()
     
     // Create scene contents
-    ctx.scene.root = group {
+    ctx.scenes += scene {
         // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
         +sphericalInputTransform {
             // Set some initial rotation so that we look down on the scene
             setRotation(20f, -30f)
             // Add camera to the transform group
-            +ctx.scene.camera
+            +camera
         }
 
         // Add a TransformGroup with a bouncing textured sphere
