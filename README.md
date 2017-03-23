@@ -1,4 +1,4 @@
-#Kotlin + OpenGL = kool
+# Kotlin + OpenGL = kool
 
 A simple OpenGL based graphics engine, which works with Desktop Java as well as
 in browsers with Javascript/WebGL (and also on Android once I add the platform
@@ -8,6 +8,7 @@ For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
 
 What's working:
+- Multi-scene / multi-viewport support
 - Some simple UI stuff: (Toggle-)Buttons, Sliders, Labels
 - Meshes with shared geometry
 - Instantiatable models (no model loading yet)
@@ -23,7 +24,7 @@ What's working:
 
 Below is the code for the demo scene
 
-##Example:
+## Example:
 ```kotlin
 fun main(args: Array<String>) {
     // Initialize platform
