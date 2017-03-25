@@ -53,6 +53,14 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             }
         }
 
+    override var scene: Scene?
+        get() = super.scene
+        set(value) {
+            super.scene?.removeDragHandler(this)
+            super.scene = value
+            super.scene?.registerDragHandler(this)
+        }
+
     init {
         smoothness = 0.1f
     }
@@ -65,9 +73,6 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     }
 
     override fun render(ctx: RenderContext) {
-        // register drag handler (safe to call every frame, input manager checks if handler is already registered)
-        getScene(ctx).registerDragHandler(this)
-
         if (!Math.isZero(deltaScroll)) {
             zoom *= 1f + deltaScroll / 10f
             zoom = Math.clamp(zoom, minZoom, maxZoom)

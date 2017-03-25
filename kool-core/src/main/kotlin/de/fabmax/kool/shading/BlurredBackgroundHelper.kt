@@ -91,7 +91,7 @@ class BlurredBackgroundHelper(
     }
 
     fun updateDistortionTexture(node: Node, ctx: RenderContext, bounds: BoundingBox = node.bounds) {
-        val cam = ctx.activeScene!!.camera
+        val cam = node.scene?.camera ?: return
 
         texBounds.clear()
         addToTexBounds(cam, node, bounds.min.x, bounds.min.y, bounds.min.z, ctx)
@@ -134,9 +134,6 @@ class BlurredBackgroundHelper(
             copyTexData.setCopyHeight(sizeY)
 
             doBlurring(ctx)
-        } else {
-            println("invalid size: $minScrX $minScrY -> $maxScrX $maxScrY")
-            println("texbounds min: ${texBounds.min} -> ${texBounds.max}")
         }
     }
 

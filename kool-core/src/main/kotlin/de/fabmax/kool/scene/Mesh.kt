@@ -85,7 +85,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     }
 
     override fun render(ctx: RenderContext) {
-        if (!isVisible || !getScene(ctx).camera.isVisible(this)) {
+        if (!isVisible || !(scene?.camera?.isVisible(this) ?: true)) {
             return
         }
         super.render(ctx)

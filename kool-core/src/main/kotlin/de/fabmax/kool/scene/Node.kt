@@ -26,9 +26,15 @@ abstract class Node(val name: String? = null) {
     open val bounds = BoundingBox()
 
     /**
-     * Parent node is set when this node is added to a [TransformGroup]
+     * Parent node is set when this node is added to a [Group]
      */
     open var parent: Node? = null
+        set(value) {
+            field = value
+            scene = findParentOfType()
+        }
+
+    open var scene: Scene? = null
 
     /**
      * Determines the visibility of this node. If visible is false this node will be skipped on
@@ -40,14 +46,6 @@ abstract class Node(val name: String? = null) {
      * Determines whether this node is considered for ray-picking tests.
      */
     open var isPickable = true
-
-    /**
-     * Returns the context's active scene, which hopefully is the scene this Node is rendered in. This is pretty
-     * hacky and hopefully will be improved.
-     */
-    protected fun getScene(ctx: RenderContext): Scene {
-        return ctx.activeScene!!
-    }
 
     /**
      * Renders this node using the specified graphics engine context. Implementations should consider the [isVisible]
@@ -100,5 +98,13 @@ abstract class Node(val name: String? = null) {
             return this
         }
         return null
+    }
+
+    inline fun <reified T> findParentOfType(): T? {
+        var p = parent
+        while (p != null && p !is T) {
+            p = p.parent
+        }
+        return p as T
     }
 }

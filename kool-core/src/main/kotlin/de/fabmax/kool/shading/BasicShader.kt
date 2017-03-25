@@ -2,6 +2,8 @@ package de.fabmax.kool.shading
 
 import de.fabmax.kool.Texture
 import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.MutableVec4f
@@ -56,6 +58,8 @@ open class BasicShader(props: ShaderProps, private val generator: GlslGenerator 
         get() = generator.uniformFogRange.value
         set(value) { generator.uniformFogRange.value = value }
 
+    private var scene: Scene? = null
+
     init {
         // set meaningful uniform default values
         shininess = 20.0f
@@ -75,17 +79,7 @@ open class BasicShader(props: ShaderProps, private val generator: GlslGenerator 
     override fun onBind(ctx: RenderContext) {
         onMatrixUpdate(ctx)
 
-        // fixme: get camera position
-        cameraPosition.set(0f, 0f, 0f)
-        generator.uniformCameraPosition.bind(ctx)
-
-        val light = ctx.activeScene?.light
-        if (light != null) {
-            lightDirection.set(light.direction)
-            generator.uniformLightDirection.bind(ctx)
-            lightColor.set(light.color.r, light.color.g, light.color.b)
-            generator.uniformLightColor.bind(ctx)
-        }
+        scene = null
 
         // fixme: if (isGlobalFog) fogColor.set(global)
         generator.uniformFogColor.bind(ctx)
@@ -100,6 +94,24 @@ open class BasicShader(props: ShaderProps, private val generator: GlslGenerator 
         generator.uniformSpecularIntensity.bind(ctx)
         generator.uniformStaticColor.bind(ctx)
         generator.uniformTexture.bind(ctx)
+    }
+
+    override fun bindMesh(mesh: Mesh, ctx: RenderContext) {
+        if (scene != mesh.scene) {
+            scene = mesh.scene
+            if (scene != null) {
+                cameraPosition.set(scene!!.camera.position)
+                generator.uniformCameraPosition.bind(ctx)
+
+                val light = scene!!.light
+                lightDirection.set(light.direction)
+                generator.uniformLightDirection.bind(ctx)
+                lightColor.set(light.color.r, light.color.g, light.color.b)
+                generator.uniformLightColor.bind(ctx)
+            }
+        }
+
+        super.bindMesh(mesh, ctx)
     }
 
     override fun onMatrixUpdate(ctx: RenderContext) {

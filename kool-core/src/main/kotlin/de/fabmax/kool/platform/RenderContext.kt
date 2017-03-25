@@ -32,8 +32,6 @@ abstract class RenderContext {
 
     //var scene: Scene = Scene()
     val scenes: MutableList<Scene> = mutableListOf()
-    var activeScene: Scene? = null
-        private set
 
     private val attribs = Attribs()
     private val attribsStack = Array(16, { Attribs() })
@@ -88,7 +86,6 @@ abstract class RenderContext {
         applyAttributes()
 
         for (i in scenes.indices) {
-            activeScene = scenes[i]
             scenes[i].render(this)
         }
     }

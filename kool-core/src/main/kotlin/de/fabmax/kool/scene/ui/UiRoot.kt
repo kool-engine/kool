@@ -2,6 +2,7 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.shading.BlurredBackgroundHelper
 import de.fabmax.kool.util.RayTest
 
@@ -54,6 +55,17 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : Node(name) {
 
     private var isLayoutNeeded = true
     private var contentScale = 1f
+
+    override var scene: Scene?
+        get() = super.scene
+        set(value) {
+            super.scene = value
+            content.scene = value
+        }
+
+    init {
+        content.parent = this
+    }
 
     fun createBlurHelper(): BlurredBackgroundHelper {
         val helper = blurHelper ?: BlurredBackgroundHelper()

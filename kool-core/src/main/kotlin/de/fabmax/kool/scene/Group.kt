@@ -18,6 +18,15 @@ open class Group(name: String? = null) : Node(name) {
     protected val children: MutableList<Node> = mutableListOf()
     protected val tmpBounds = BoundingBox()
 
+    override var scene: Scene?
+        get() = super.scene
+        set(value) {
+            super.scene = value
+            for (i in children.indices) {
+                children[i].scene = value
+            }
+        }
+
     override fun render(ctx: RenderContext) {
         if (!isVisible) {
             return
