@@ -71,18 +71,18 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         // install keyboard callbacks
         glfwSetKeyCallback(window) { _, key, _, action, mods ->
             val event = when (action) {
-                GLFW_PRESS -> InputManager.KEV_EV_DOWN
-                GLFW_REPEAT -> InputManager.KEV_EV_REPEATED_DOWN
-                GLFW_RELEASE -> InputManager.KEV_EV_UP
+                GLFW_PRESS -> InputManager.KEY_EV_DOWN
+                GLFW_REPEAT -> InputManager.KEY_EV_DOWN or InputManager.KEY_EV_REPEATED
+                GLFW_RELEASE -> InputManager.KEY_EV_UP
                 else -> -1
             }
             if (event != -1) {
                 val keyCode = KEY_CODE_MAP[key] ?: key
                 var keyMod = 0
-                if (mods and GLFW_MOD_ALT != 0) { keyMod = keyMod or InputManager.KEV_MOD_ALT }
-                if (mods and GLFW_MOD_CONTROL != 0) { keyMod = keyMod or InputManager.KEV_MOD_CTRL }
-                if (mods and GLFW_MOD_SHIFT != 0) { keyMod = keyMod or InputManager.KEV_MOD_SHIFT }
-                if (mods and GLFW_MOD_SUPER != 0) { keyMod = keyMod or InputManager.KEV_MOD_SUPER }
+                if (mods and GLFW_MOD_ALT != 0) { keyMod = keyMod or InputManager.KEY_MOD_ALT }
+                if (mods and GLFW_MOD_CONTROL != 0) { keyMod = keyMod or InputManager.KEY_MOD_CTRL }
+                if (mods and GLFW_MOD_SHIFT != 0) { keyMod = keyMod or InputManager.KEY_MOD_SHIFT }
+                if (mods and GLFW_MOD_SUPER != 0) { keyMod = keyMod or InputManager.KEY_MOD_SUPER }
                 inputMgr.keyEvent(keyCode, keyMod, event)
             }
         }

@@ -19,8 +19,6 @@ class InputManager internal constructor() {
 
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
     val keyEvents: MutableList<KeyEvent> = mutableListOf()
-    private val queuedTypedChars: MutableList<Char> = mutableListOf()
-    val typedChars: MutableList<Char> = mutableListOf()
 
     private val tmpPointers = Array(MAX_POINTERS, ::Pointer)
     val pointers = Array(MAX_POINTERS, ::Pointer)
@@ -45,11 +43,6 @@ class InputManager internal constructor() {
             keyEvents.addAll(queuedKeyEvents)
             queuedKeyEvents.clear()
         }
-        synchronized(queuedTypedChars) {
-            typedChars.clear()
-            typedChars.addAll(queuedTypedChars)
-            queuedTypedChars.clear()
-        }
     }
 
     fun keyEvent(keyCode: Int, modifiers: Int, event: Int) {
@@ -58,17 +51,22 @@ class InputManager internal constructor() {
         ev.event = event
         ev.modifiers = modifiers
 
-        println("key event: $keyCode ev=$event mods=$modifiers")
+        //println("key event: $keyCode ev=$event mods=$modifiers")
 
         synchronized(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
         }
     }
 
-    fun charTyped(char: Char) {
-        println("char typed $char")
-        synchronized(queuedTypedChars) {
-            queuedTypedChars.add(char)
+    fun charTyped(typedChar: Char) {
+        val ev = KeyEvent()
+        ev.event = KEY_EV_CHAR_TYPED
+        ev.typedChar = typedChar
+
+        //println("char type: $typedChar")
+
+        synchronized(queuedKeyEvents) {
+            queuedKeyEvents.add(ev)
         }
     }
 
@@ -205,15 +203,18 @@ class InputManager internal constructor() {
             internal set
         var event = 0
             internal set
+        var typedChar: Char = 0.toChar()
+            internal set
 
-        val isPressed: Boolean get() = (event and (KEV_EV_DOWN or KEV_EV_REPEATED_DOWN)) != 0
-        val isRepeated: Boolean get() = (event and KEV_EV_REPEATED_DOWN) != 0
-        val isReleased: Boolean get() = (event and KEV_EV_UP) != 0
+        val isPressed: Boolean get() = (event and KEY_EV_DOWN) != 0
+        val isRepeated: Boolean get() = (event and KEY_EV_REPEATED) != 0
+        val isReleased: Boolean get() = (event and KEY_EV_UP) != 0
+        val isCharTyped: Boolean get() = (event and KEY_EV_CHAR_TYPED) != 0
 
-        val isShiftDown: Boolean get() = (modifiers and KEV_MOD_SHIFT) != 0
-        val isCtrlDown: Boolean get() = (modifiers and KEV_MOD_CTRL) != 0
-        val isAltDown: Boolean get() = (modifiers and KEV_MOD_ALT) != 0
-        val isSuperDown: Boolean get() = (modifiers and KEV_MOD_SUPER) != 0
+        val isShiftDown: Boolean get() = (modifiers and KEY_MOD_SHIFT) != 0
+        val isCtrlDown: Boolean get() = (modifiers and KEY_MOD_CTRL) != 0
+        val isAltDown: Boolean get() = (modifiers and KEY_MOD_ALT) != 0
+        val isSuperDown: Boolean get() = (modifiers and KEY_MOD_SUPER) != 0
     }
 
     companion object {
@@ -231,14 +232,15 @@ class InputManager internal constructor() {
         const val MAX_POINTERS = 10
         const val PRIMARY_POINTER = 0
 
-        const val KEV_EV_UP = 0
-        const val KEV_EV_DOWN = 1
-        const val KEV_EV_REPEATED_DOWN = 2
+        const val KEY_EV_UP = 1
+        const val KEY_EV_DOWN = 2
+        const val KEY_EV_REPEATED = 4
+        const val KEY_EV_CHAR_TYPED = 8
 
-        const val KEV_MOD_SHIFT = 1
-        const val KEV_MOD_CTRL = 2
-        const val KEV_MOD_ALT = 4
-        const val KEV_MOD_SUPER = 8
+        const val KEY_MOD_SHIFT = 1
+        const val KEY_MOD_CTRL = 2
+        const val KEY_MOD_ALT = 4
+        const val KEY_MOD_SUPER = 8
 
         const val KEY_CTRL_LEFT = -1
         const val KEY_CTRL_RIGHT = -2

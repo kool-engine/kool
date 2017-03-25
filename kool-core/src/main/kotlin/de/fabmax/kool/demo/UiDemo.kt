@@ -78,7 +78,6 @@ fun uiScene(): Scene = scene("UI Demo") {
             +TextField("text-field", root).apply {
                 layoutSpec.setOrigin(dps(50f), pcs(-55f), uns(0f))
                 layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
-                text = "a"
             }
 
             +Button("toggle-theme", root).apply {

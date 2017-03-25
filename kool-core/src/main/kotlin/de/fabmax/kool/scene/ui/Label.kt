@@ -52,6 +52,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
     protected val mesh = Mesh(meshData)
     protected var meshAdded = false
 
+    protected var font = label.font.prop
     protected var textColor = MutableColor()
 
     protected var textStartX = 0f
@@ -81,8 +82,9 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
 
         if (label.font.isUpdate) {
             label.font.prop.dispose(ctx)
+            font = label.font.apply()
         }
-        val font = label.font.apply()
+
         val shader = mesh.shader
         if (shader is BasicShader) {
             shader.texture = font
@@ -101,8 +103,6 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
     }
 
     protected open fun computeTextMetrics() {
-        val font = label.font.prop
-
         textWidth = font.textWidth(label.text)
 
         textStartX = when (label.textAlignment.xAlignment) {
@@ -119,10 +119,6 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
     }
 
     protected open fun renderText(ctx: RenderContext) {
-        val font = label.font.apply()
-        val txtWidth = font.textWidth(label.text)
-
-
         meshBuilder.color = textColor
         meshBuilder.text(font) {
             origin.set(textStartX, textBaseline, label.dp(4f))

@@ -154,8 +154,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
             meshBuilder.color = slider.trackColorHighlighted.apply()
             meshBuilder.rect {
                 origin.set(x, y, slider.dp(4f))
-                width = slider.knobPosition.x - x + trackH
-                height = trackH
+                size.set(slider.knobPosition.x - x + trackH, trackH)
                 cornerRadius = trackH / 2f
                 cornerSteps = 4
             }
@@ -164,8 +163,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
             meshBuilder.color = slider.trackColor
             meshBuilder.rect {
                 origin.set(slider.knobPosition.x - trackH, y, slider.dp(4f))
-                width = slider.trackWidth - slider.knobPosition.x + x + trackH
-                height = trackH
+                size.set(slider.trackWidth - slider.knobPosition.x + x + trackH, trackH)
                 cornerRadius = trackH / 2f
                 cornerSteps = 4
             }

@@ -86,12 +86,15 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
                 val code = translateKeyCode(ev.code)
                 if (code != 0) {
                     var mods = 0
-                    if (ev.altKey) { mods = mods or InputManager.KEV_MOD_ALT }
-                    if (ev.ctrlKey) { mods = mods or InputManager.KEV_MOD_CTRL }
-                    if (ev.shiftKey) { mods = mods or InputManager.KEV_MOD_SHIFT }
-                    if (ev.metaKey) { mods = mods or InputManager.KEV_MOD_SUPER }
+                    if (ev.altKey) { mods = mods or InputManager.KEY_MOD_ALT }
+                    if (ev.ctrlKey) { mods = mods or InputManager.KEY_MOD_CTRL }
+                    if (ev.shiftKey) { mods = mods or InputManager.KEY_MOD_SHIFT }
+                    if (ev.metaKey) { mods = mods or InputManager.KEY_MOD_SUPER }
 
-                    val event = if (ev.repeat) { InputManager.KEV_EV_REPEATED_DOWN } else { InputManager.KEV_EV_DOWN }
+                    var event = InputManager.KEY_EV_DOWN
+                    if (ev.repeat) {
+                        event = event or InputManager.KEY_EV_REPEATED
+                    }
                     inputMgr.keyEvent(code, mods, event)
                 }
                 if (ev.key.length == 1) {
@@ -105,12 +108,12 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
                 val code = translateKeyCode(ev.code)
                 if (code != 0) {
                     var mods = 0
-                    if (ev.altKey) { mods = mods or InputManager.KEV_MOD_ALT }
-                    if (ev.ctrlKey) { mods = mods or InputManager.KEV_MOD_CTRL }
-                    if (ev.shiftKey) { mods = mods or InputManager.KEV_MOD_SHIFT }
-                    if (ev.metaKey) { mods = mods or InputManager.KEV_MOD_SUPER }
+                    if (ev.altKey) { mods = mods or InputManager.KEY_MOD_ALT }
+                    if (ev.ctrlKey) { mods = mods or InputManager.KEY_MOD_CTRL }
+                    if (ev.shiftKey) { mods = mods or InputManager.KEY_MOD_SHIFT }
+                    if (ev.metaKey) { mods = mods or InputManager.KEY_MOD_SUPER }
 
-                    inputMgr.keyEvent(code, mods, InputManager.KEV_EV_UP)
+                    inputMgr.keyEvent(code, mods, InputManager.KEY_EV_UP)
                 }
             }
 //        } else {

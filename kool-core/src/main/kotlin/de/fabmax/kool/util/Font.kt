@@ -98,7 +98,7 @@ class Font(val fontProps: FontProps) :
 
         for (i in string.indices) {
             val c = string[i]
-            width += charMap[c]?.advance ?: 0f
+            width += charWidth(c)
             if (width > maxWidth) {
                 maxWidth = width
             }
@@ -107,6 +107,10 @@ class Font(val fontProps: FontProps) :
             }
         }
         return maxWidth
+    }
+
+    fun charWidth(char: Char): Float {
+        return charMap[char]?.advance ?: 0f
     }
 
     override fun toString(): String {

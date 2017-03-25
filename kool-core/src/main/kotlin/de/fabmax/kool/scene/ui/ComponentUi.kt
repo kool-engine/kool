@@ -71,8 +71,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
         component.setupBuilder(meshBuilder)
         meshBuilder.color = color.prop
         meshBuilder.rect {
-            width = component.width
-            height = component.height
+            size.set(component.width, component.height)
             fullTexCoords()
         }
     }

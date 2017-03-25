@@ -93,7 +93,7 @@ abstract class InterpolatedValue<T>(initial: T) {
     protected abstract fun updateValue(interpolationPos: Float)
 }
 
-class InterpolatedFloat(val from: Float, val to: Float) : InterpolatedValue<Float>(from) {
+class InterpolatedFloat(var from: Float, var to: Float) : InterpolatedValue<Float>(from) {
     override fun updateValue(interpolationPos: Float) {
         value = from + (to - from) * interpolationPos
     }

@@ -54,8 +54,7 @@ class BlurredBackgroundHelper(
         texMesh = textureMesh {
             generator = {
                 rect {
-                    width = 2f
-                    height = 2f
+                    size.set(2f, 2f)
                     origin.set(-1f, -1f, 0f)
                     fullTexCoords()
                 }
@@ -64,8 +63,7 @@ class BlurredBackgroundHelper(
         texMeshFlipped = textureMesh {
             generator = {
                 rect {
-                    width = 2f
-                    height = 2f
+                    size.set(2f, 2f)
                     origin.set(-1f, -1f, 0f)
                     texCoordUpperLeft.set(0f, 1f)
                     texCoordUpperRight.set(1f, 1f)

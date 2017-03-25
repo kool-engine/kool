@@ -79,8 +79,7 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         meshBuilder.color = tb.trackColor
         meshBuilder.rect {
             origin.set(x, y, tb.dp(4f))
-            width = trackW
-            height = trackH
+            size.set(trackW, trackH)
             cornerRadius = trackH / 2f
             cornerSteps = 4
         }

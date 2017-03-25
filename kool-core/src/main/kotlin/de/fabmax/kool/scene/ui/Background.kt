@@ -51,8 +51,7 @@ open class SimpleBackground(component: UiComponent, val bgShader: BasicShader = 
         component.setupBuilder(meshBuilder)
         meshBuilder.color = color
         meshBuilder.rect {
-            width = component.width
-            height = component.height
+            size.set(component.width, component.height)
             fullTexCoords()
         }
         bounds.clear()

@@ -190,11 +190,11 @@ open class MeshBuilder(val meshData: MeshData) {
         if (props.cornerRadius == 0f) {
             val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z),
                     Vec3f.Z_AXIS, props.texCoordLowerLeft)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z),
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z),
                     Vec3f.Z_AXIS, props.texCoordLowerRight)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z),
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z),
                     Vec3f.Z_AXIS, props.texCoordUpperRight)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z),
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z),
                     Vec3f.Z_AXIS, props.texCoordUpperLeft)
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
@@ -203,8 +203,8 @@ open class MeshBuilder(val meshData: MeshData) {
             val x = props.origin.x
             val y = props.origin.y
             val z = props.origin.z
-            val w = props.width
-            val h = props.height
+            val w = props.size.x
+            val h = props.size.y
             val xI = x + props.cornerRadius
             val yI = y + props.cornerRadius
             val wI = w - props.cornerRadius * 2
@@ -327,29 +327,29 @@ open class MeshBuilder(val meshData: MeshData) {
 
         // front
         withColor(props.frontColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.depth), Vec3f.Z_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z + props.depth), Vec3f.Z_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.Z_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.Z_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }
 
         // right
         withColor(props.rightColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z), Vec3f.X_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z), Vec3f.X_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.X_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z + props.depth), Vec3f.X_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.X_AXIS)
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.X_AXIS)
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.X_AXIS)
+            val i3 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.X_AXIS)
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }
 
         // back
         withColor(props.backColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z), Vec3f.NEG_Z_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z), Vec3f.NEG_Z_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS)
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS)
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS)
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS)
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
@@ -357,9 +357,9 @@ open class MeshBuilder(val meshData: MeshData) {
 
         // left
         withColor(props.leftColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.depth), Vec3f.NEG_X_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.NEG_X_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z), Vec3f.NEG_X_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.y), Vec3f.NEG_X_AXIS)
+            val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS)
+            val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_X_AXIS)
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_X_AXIS)
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
@@ -367,10 +367,10 @@ open class MeshBuilder(val meshData: MeshData) {
 
         // top
         withColor(props.topColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.Y_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z + props.depth), Vec3f.Y_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y + props.height, props.origin.z), Vec3f.Y_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.height, props.origin.z), Vec3f.Y_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS)
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS)
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS)
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS)
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }
@@ -378,9 +378,9 @@ open class MeshBuilder(val meshData: MeshData) {
         // bottom
         withColor(props.bottomColor) {
             val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.width, props.origin.y, props.origin.z + props.depth), Vec3f.NEG_Y_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.depth), Vec3f.NEG_Y_AXIS)
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS)
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS)
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS)
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }
@@ -462,8 +462,7 @@ open class MeshBuilder(val meshData: MeshData) {
                 if (metrics != null) {
                     rect {
                         origin.set(advanced - metrics.xOffset, metrics.yBaseline - metrics.height, 0f)
-                        width = metrics.width
-                        height = metrics.height
+                        size.set(metrics.width, metrics.height)
 
                         texCoordUpperLeft.set(metrics.uvMin)
                         texCoordUpperRight.set(metrics.uvMax.x, metrics.uvMin.y)
@@ -531,11 +530,17 @@ class SphereProps {
 }
 
 class RectProps {
-    var width = 1f
-    var height = 1f
     var cornerRadius = 0f
     var cornerSteps = 8
     val origin = MutableVec3f()
+    val size = MutableVec2f()
+
+    var width: Float
+        get() = size.x
+        set(value) { size.x = value }
+    var height: Float
+        get() = size.y
+        set(value) { size.y = value }
 
     val texCoordUpperLeft = MutableVec2f()
     val texCoordUpperRight = MutableVec2f()
@@ -543,13 +548,13 @@ class RectProps {
     val texCoordLowerRight = MutableVec2f()
 
     fun fixNegativeSize() {
-        if (width < 0) {
-            origin.x += width
-            width = -width
+        if (size.x < 0) {
+            origin.x += size.x
+            size.x = -size.x
         }
-        if (height < 0) {
-            origin.y += height
-            height = -height
+        if (size.y < 0) {
+            origin.y += size.y
+            size.y = -size.y
         }
     }
 
@@ -568,21 +573,28 @@ class RectProps {
     }
 
     fun defaults(): RectProps {
-        width = 1f
-        height = 1f
         cornerRadius = 0f
         cornerSteps = 8
         origin.set(Vec3f.ZERO)
+        size.set(1f, 1f)
         zeroTexCoords()
         return this
     }
 }
 
 class CubeProps {
-    var width = 1f
-    var height = 1f
-    var depth = 1f
     val origin = MutableVec3f()
+    val size = MutableVec3f()
+
+    var width: Float
+        get() = size.x
+        set(value) { size.x = value }
+    var height: Float
+        get() = size.y
+        set(value) { size.y = value }
+    var depth: Float
+        get() = size.z
+        set(value) { size.z = value }
 
     var topColor: Color? = null
     var bottomColor: Color? = null
@@ -592,24 +604,24 @@ class CubeProps {
     var backColor: Color? = null
 
     fun fixNegativeSize() {
-        if (width < 0) {
-            origin.x += width
-            width = -width
+        if (size.x < 0) {
+            origin.x += size.x
+            size.x = -size.x
         }
-        if (height < 0) {
-            origin.y += height
-            height = -height
+        if (size.y < 0) {
+            origin.y += size.y
+            size.y = -size.y
         }
-        if (depth < 0) {
-            origin.z += depth
-            depth = -depth
+        if (size.z < 0) {
+            origin.z += size.z
+            size.z = -size.z
         }
     }
 
     fun centerOrigin() {
-        origin.x -= width / 2f
-        origin.y -= height / 2f
-        origin.z -= depth / 2f
+        origin.x -= size.x / 2f
+        origin.y -= size.y / 2f
+        origin.z -= size.z / 2f
     }
 
     fun colorCube() {
@@ -622,9 +634,9 @@ class CubeProps {
     }
 
     fun defaults(): CubeProps {
-        width = 1f
-        height = 1f
-        depth = 1f
+        size.x = 1f
+        size.y = 1f
+        size.z = 1f
         origin.set(Vec3f.ZERO)
 
         topColor = null

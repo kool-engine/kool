@@ -29,8 +29,7 @@ class BillboardMesh(data: MeshData = MeshData(false, true, true), name: String =
             fullTexCoords()
             origin.set(centerPosition)
             // all vertices of the quad have the same position, actual coords are computed in vertex shader
-            width = 0f
-            height = 0f
+            size.set(Vec2f.ZERO)
         }
     }
 
