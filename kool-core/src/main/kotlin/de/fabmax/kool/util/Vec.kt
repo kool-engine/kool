@@ -30,12 +30,15 @@ fun cross(a: Vec3f, b: Vec3f): MutableVec3f = a.cross(MutableVec3f(), b)
 
 open class Vec2f(x: Float, y: Float) {
 
-    constructor(f: Float) : this(f, f)
+    // backing fields for properties are declared individual, otherwise overriding the properties and using
+    // the super field in mutable sub-class is super-slow in javascript
+    protected var xField = x
+    protected var yField = y
 
-    open var x = x
-        protected set
-    open var y = y
-        protected set
+    open val x get() = xField
+    open val y get() = yField
+
+    constructor(f: Float) : this(f, f)
 
     operator fun get(i: Int): Float {
         return when (i) {
@@ -93,12 +96,12 @@ open class Vec2f(x: Float, y: Float) {
 
 open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
 
-    override var x: Float
-        get() = super.x
-        public set(value) { super.x = value }
-    override var y: Float
-        get() = super.y
-        public set(value) { super.y = value }
+    override var x
+        get() = xField
+        set(value) { xField = value }
+    override var y
+        get() = yField
+        set(value) { yField = value }
 
     constructor() : this(0f, 0f)
 
@@ -149,14 +152,17 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
 
 open class Vec3f(x: Float, y: Float, z: Float) {
 
-    constructor(f: Float) : this(f, f, f)
+    // backing fields for properties are declared individual, otherwise overriding the properties and using
+    // the super field in mutable sub-class is super-slow in javascript
+    protected var xField = x
+    protected var yField = y
+    protected var zField = z
 
-    open var x = x
-        protected set
-    open var y = y
-        protected set
-    open var z = z
-        protected set
+    open val x get() = xField
+    open val y get() = yField
+    open val z get() = zField
+
+    constructor(f: Float) : this(f, f, f)
 
     operator fun get(i: Int): Float {
         return when (i) {
@@ -241,15 +247,15 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
 open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
 
-    override var x: Float
-        get() = super.x
-        public set(value) { super.x = value }
-    override var y: Float
-        get() = super.y
-        public set(value) { super.y = value }
-    override var z: Float
-        get() = super.z
-        public set(value) { super.z = value }
+    override var x
+        get() = xField
+        set(value) { xField = value }
+    override var y
+        get() = yField
+        set(value) { yField = value }
+    override var z
+        get() = zField
+        set(value) { zField = value }
 
     constructor() : this(0f, 0f, 0f)
 
@@ -333,16 +339,19 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
 
 open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
-    constructor(f: Float) : this(f, f, f, f)
+    // backing fields for properties are declared individual, otherwise overriding the properties and using
+    // the super field in mutable sub-class is super-slow in javascript
+    protected var xField = x
+    protected var yField = y
+    protected var zField = z
+    protected var wField = w
 
-    open var x = x
-        protected set
-    open var y = y
-        protected set
-    open var z = z
-        protected set
-    open var w = w
-        protected set
+    open val x get() = xField
+    open val y get() = yField
+    open val z get() = zField
+    open val w get() = wField
+
+    constructor(f: Float) : this(f, f, f, f)
 
     operator fun get(i: Int): Float {
         return when (i) {
@@ -394,18 +403,18 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
 open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z, w) {
 
-    override var x: Float
-        get() = super.x
-        public set(value) { super.x = value }
-    override var y: Float
-        get() = super.y
-        public set(value) { super.y = value }
-    override var z: Float
-        get() = super.z
-        public set(value) { super.z = value }
-    override var w: Float
-        get() = super.w
-        public set(value) { super.w = value }
+    override var x
+        get() = xField
+        set(value) { xField = value }
+    override var y
+        get() = yField
+        set(value) { yField = value }
+    override var z
+        get() = zField
+        set(value) { zField = value }
+    override var w
+        get() = wField
+        set(value) { wField = value }
 
     constructor() : this(0f, 0f, 0f, 0f)
 

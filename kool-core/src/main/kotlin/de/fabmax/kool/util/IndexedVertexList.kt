@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.platform.Float32Buffer
 import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.Platform
-import de.fabmax.kool.platform.Uint32Buffer
 
 /**
  * @author fabmax
@@ -85,7 +84,7 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
         indices = newIdxs
     }
 
-    fun addVertex(updateBounds: BoundingBox? = null, init: Item.() -> Unit): Int {
+    fun addVertex(updateBounds: BoundingBox? = null, block: Item.() -> Unit): Int {
         if (data.remaining < vertexSize) {
             increaseDataSize()
         }
@@ -94,7 +93,7 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
         }
         tmpItem.index = size++
         dataSize += vertexSize
-        tmpItem.init()
+        tmpItem.block()
 
         updateBounds?.add(tmpItem.position)
 
@@ -205,6 +204,14 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
         }
 
         inner class ColorView(val componentOffset: Int) : MutableColor() {
+            override var r: Float
+                get() {
+                    if (componentOffset < 0) { return 0f }
+                    else { return data[offset + componentOffset] }
+                }
+                set(value) {
+                    if (componentOffset >= 0) { data[offset + componentOffset] = value }
+                }
             override var x: Float
                 get() {
                     if (componentOffset < 0) { return 0f }
@@ -213,13 +220,31 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
                 set(value) {
                     if (componentOffset >= 0) { data[offset + componentOffset] = value }
                 }
-            override var y: Float
+
+            override var g: Float
                 get() {
                     if (componentOffset < 0) { return 0f }
                     else { return data[offset + componentOffset + 1] }
                 }
                 set(value) {
                     if (componentOffset >= 0) { data[offset + componentOffset + 1] = value }
+                }
+            override var y: Float
+                get() {
+                    if (componentOffset < 0) { return 0f }
+                    else { return data[offset + componentOffset] }
+                }
+                set(value) {
+                    if (componentOffset >= 0) { data[offset + componentOffset] = value }
+                }
+
+            override var b: Float
+                get() {
+                    if (componentOffset < 0) { return 0f }
+                    else { return data[offset + componentOffset + 2] }
+                }
+                set(value) {
+                    if (componentOffset >= 0) { data[offset + componentOffset + 2] = value }
                 }
             override var z: Float
                 get() {
@@ -228,6 +253,15 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
                 }
                 set(value) {
                     if (componentOffset >= 0) { data[offset + componentOffset + 2] = value }
+                }
+
+            override var a: Float
+                get() {
+                    if (componentOffset < 0) { return 0f }
+                    else { return data[offset + componentOffset + 3] }
+                }
+                set(value) {
+                    if (componentOffset >= 0) { data[offset + componentOffset + 3] = value }
                 }
             override var w: Float
                 get() {

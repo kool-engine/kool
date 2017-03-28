@@ -35,15 +35,13 @@ open class UiTheme {
     var toggleButtonUi: ((ToggleButton) -> ToggleButtonUi) = { c -> ToggleButtonUi(c, componentUi(c)) }
 
     companion object {
-        val DEFAULT = UiTheme()
-
-        val DARK = theme(DEFAULT) {
+        val DARK = theme {
             backgroundColor(color("00141980"))
             foregroundColor(Color.WHITE)
             accentColor(Color.LIME)
         }
 
-        val LIGHT = theme(DEFAULT) {
+        val LIGHT = theme {
             backgroundColor(Color.WHITE.withAlpha(0.6f))
             foregroundColor(color("3E2723"))
             accentColor(color("BF360C"))

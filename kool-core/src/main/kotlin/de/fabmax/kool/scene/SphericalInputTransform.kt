@@ -53,6 +53,11 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             }
         }
 
+    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
+        super.onSceneChanged(oldScene, newScene)
+        oldScene?.removeDragHandler(this)
+        newScene?.registerDragHandler(this)
+    }
     override var scene: Scene?
         get() = super.scene
         set(value) {

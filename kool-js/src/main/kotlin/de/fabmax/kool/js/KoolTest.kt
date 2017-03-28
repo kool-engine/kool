@@ -6,13 +6,13 @@ import de.fabmax.kool.demo.uiDemo
 import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.js.JsContext
+import de.fabmax.kool.util.MutableVec3f
 
 /**
  * @author fabmax
  */
 fun main(args: Array<String>) {
-    PlatformImpl.init()
-    val ctx = Platform.createContext(JsContext.InitProps())
+    val ctx = PlatformImpl.initContext()
 
     //simpleShapesDemo(ctx)
     //modelDemo(ctx)

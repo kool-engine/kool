@@ -127,3 +127,32 @@ open class BasicShader(props: ShaderProps, private val generator: GlslGenerator 
     }
 
 }
+
+fun basicPointShader(propsInit: ShaderProps.() -> Unit): BasicPointShader {
+    val generator = GlslGenerator()
+    generator.addCustomUniform(Uniform1f("uPointSz"))
+    generator.injectors += object : GlslGenerator.GlslInjector {
+        override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) {
+            text.append("gl_PointSize = uPointSz;\n")
+        }
+    }
+    return BasicPointShader(ShaderProps().apply(propsInit), generator)
+}
+
+open class BasicPointShader internal constructor(props: ShaderProps, generator: GlslGenerator) :
+        BasicShader(props, generator) {
+
+    private val uPointSz = generator.customUnitforms["uPointSz"] as Uniform1f
+    var pointSize: Float
+        get() = uPointSz.value
+        set(value) { uPointSz.value = value }
+
+    init {
+        pointSize = 1f
+    }
+
+    override fun onBind(ctx: RenderContext) {
+        super.onBind(ctx)
+        uPointSz.bind(ctx)
+    }
+}

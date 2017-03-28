@@ -12,14 +12,12 @@ import de.fabmax.kool.util.color
 
 fun uiDemo(ctx: RenderContext) {
     ctx.scenes += uiScene()
-//    ctx.scene.camera = OrthographicCamera().apply {
-//        clipToViewport = true
+
+//    ctx.scenes += de.fabmax.kool.scene.ui.uiScene(ctx.screenDpi) {
+//        content.uiDemoContent(this)
 //    }
 
     ctx.clearColor = color("00323F")
-//    ctx.scene.camera = PerspectiveCamera().apply {
-//        position.set(0f, 0f, 15f)
-//    }
     ctx.run()
 }
 
@@ -44,54 +42,56 @@ fun uiScene(): Scene = scene("UI Demo") {
         }
     }
 
-    +UiRoot(300f).apply {
-        theme = UiTheme.DARK
+    +embeddedUi(dps(400f)) {
+        globalWidth = 10f
+        globalHeight = 10f
 
-        content.apply {
-            translate(-globalWidth /2, -globalHeight/2, 0f)
-            scaleContentTo(dps(400f))
+        content.uiDemoContent(this)
+    }
+}
 
-            +ToggleButton("toggle-button", root).apply {
-                layoutSpec.setOrigin(dps(50f), pcs(-15f), uns(0f))
-                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
+fun UiContainer.uiDemoContent(uiRoot: UiRoot) {
+    translate(-uiRoot.globalWidth /2, -uiRoot.globalHeight/2, 0f)
 
-                text = "Toggle Button"
-            }
+    +ToggleButton("toggle-button", root).apply {
+        layoutSpec.setOrigin(pcs(15f), pcs(-25f), uns(0f))
+        layoutSpec.setSize(pcs(70f), pcs(15f), uns(0f))
 
-            +Label("label", root).apply {
-                layoutSpec.setOrigin(dps(50f), pcs(-35f), uns(0f))
-                layoutSpec.setSize(dps(80f), pcs(15f), uns(0f))
+        text = "Toggle Button"
+    }
 
-                text = "Slider"
-            }
+    +Label("label", root).apply {
+        layoutSpec.setOrigin(pcs(15f), pcs(-45f), uns(0f))
+        layoutSpec.setSize(pcs(20f), pcs(15f), uns(0f))
 
-            +Slider("slider", 0.4f, 1f, 1f, root).apply {
-                layoutSpec.setOrigin(dps(130f), pcs(-35f), uns(0f))
-                layoutSpec.setSize(dps(220f), pcs(15f), uns(0f))
-                padding.left = uns(0f)
+        text = "Slider"
+    }
 
-                onValueChanged += { value ->
-                    root.content.alpha = value
-                }
-            }
+    +Slider("slider", 0.4f, 1f, 1f, root).apply {
+        layoutSpec.setOrigin(pcs(35f), pcs(-45f), uns(0f))
+        layoutSpec.setSize(pcs(50f), pcs(15f), uns(0f))
+        padding.left = uns(0f)
 
-            +TextField("text-field", root).apply {
-                layoutSpec.setOrigin(dps(50f), pcs(-55f), uns(0f))
-                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
-            }
+        onValueChanged += { value ->
+            root.content.alpha = value
+        }
+    }
 
-            +Button("toggle-theme", root).apply {
-                layoutSpec.setOrigin(dps(50f), pcs(-75f), uns(0f))
-                layoutSpec.setSize(dps(300f), pcs(15f), uns(0f))
-                text = "Toggle Theme"
+    +TextField("text-field", root).apply {
+        layoutSpec.setOrigin(pcs(15f), pcs(-65f), uns(0f))
+        layoutSpec.setSize(pcs(70f), pcs(15f), uns(0f))
+    }
 
-                onClick += { _,_,_ ->
-                    if (theme == UiTheme.DARK) {
-                        theme = UiTheme.LIGHT
-                    } else {
-                        theme = UiTheme.DARK
-                    }
-                }
+    +Button("toggle-theme", root).apply {
+        layoutSpec.setOrigin(pcs(15f), pcs(-85f), uns(0f))
+        layoutSpec.setSize(pcs(70f), pcs(15f), uns(0f))
+        text = "Toggle Theme"
+
+        onClick += { _,_,_ ->
+            if (uiRoot.theme == UiTheme.DARK) {
+                uiRoot.theme = UiTheme.LIGHT
+            } else {
+                uiRoot.theme = UiTheme.DARK
             }
         }
     }

@@ -1,10 +1,11 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.Math
 import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.scene.*
-import de.fabmax.kool.shading.*
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.scene
+import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.util.*
 
 /**
@@ -20,8 +21,8 @@ fun pointDemo(ctx: RenderContext) {
 }
 
 fun pointScene(): Scene {
-    val pointMesh = pointMesh()
-    //val pointMesh = billboardPointMesh()
+    val pointMesh = makePointMesh()
+    //val pointMesh = makeBillboardPointMesh()
     val data = pointMesh.meshData
     val ptVertCnt = if (pointMesh is BillboardMesh) 4 else 1
 
@@ -54,42 +55,28 @@ fun pointScene(): Scene {
     return scene
 }
 
-fun pointMesh(): Mesh {
-    val data = MeshData(false, true, false)
-    val pointMesh = Mesh(data)
-    pointMesh.primitiveType = GL.POINTS
+fun makePointMesh(): Mesh {
+    return pointMesh {
+        pointSize = 3f
 
-    val shaderProps = ShaderProps().apply {
-        colorModel = ColorModel.VERTEX_COLOR
-        lightModel = LightModel.NO_LIGHTING
-    }
-    val generator = GlslGenerator()
-    generator.injectors += object : GlslGenerator.GlslInjector {
-        override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append("gl_PointSize = 3.0;\n")
-        }
-    }
-    pointMesh.shader = BasicShader(shaderProps, generator)
+        for (ox in -20..20 step 10) {
+            for (p in 1..100) {
+                for (t in 1..100) {
+                    val x = ox + Math.cos(Math.PI * 2 * p / 100) * Math.sin(Math.PI * t / 100) * 4
+                    val z = Math.sin(Math.PI * 2 * p / 100) * Math.sin(Math.PI * t / 100) * 4
+                    val y = Math.cos(Math.PI * t / 100) * 4
 
-    for (ox in -20..20 step 10) {
-        for (p in 1..100) {
-            for (t in 1..100) {
-                val x = ox + Math.cos(Math.PI * 2 * p / 100) * Math.sin(Math.PI * t / 100) * 4
-                val z = Math.sin(Math.PI * 2 * p / 100) * Math.sin(Math.PI * t / 100) * 4
-                val y = Math.cos(Math.PI * t / 100) * 4
-
-                data.addIndex(data.addVertex {
-                    position.set(x.toFloat(), y.toFloat(), z.toFloat())
-                    color.set(Color.RED)
-                })
+                    addPoint {
+                        position.set(x.toFloat(), y.toFloat(), z.toFloat())
+                        color.set(Color.RED)
+                    }
+                }
             }
         }
     }
-
-    return pointMesh
 }
 
-fun billboardPointMesh(): BillboardMesh {
+fun makeBillboardPointMesh(): BillboardMesh {
     val pointMesh = BillboardMesh()
     pointMesh.billboardSize = 3f
 

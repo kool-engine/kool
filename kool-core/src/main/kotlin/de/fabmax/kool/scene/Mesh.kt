@@ -169,11 +169,11 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
         }
     }
 
-    fun addVertex(init: IndexedVertexList.Item.() -> Unit): Int {
+    fun addVertex(block: IndexedVertexList.Item.() -> Unit): Int {
         var idx = 0
         synchronized(data) {
             isSyncRequired = true
-            idx = data.addVertex(bounds, init)
+            idx = data.addVertex(bounds, block)
         }
         // return must be outside of synchronized block for successful javascript transpiling
         return idx

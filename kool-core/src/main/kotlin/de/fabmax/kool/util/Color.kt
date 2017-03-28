@@ -6,21 +6,10 @@ package de.fabmax.kool.util
 
 open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a) {
 
-    open var r: Float
-        get() = x
-        protected set(value) { x = value }
-
-    open var g: Float
-        get() = y
-        protected set(value) { y = value }
-
-    open var b: Float
-        get() = z
-        protected set(value) { z = value }
-
-    open var a: Float
-        get() = w
-        protected set(value) { w = value }
+    open val r get() = xField
+    open val g get() = yField
+    open val b get() = zField
+    open val a get() = wField
 
     fun withAlpha(alpha: Float): MutableColor {
         return MutableColor(r, g, b, alpha)
@@ -66,21 +55,19 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
 }
 
 open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b, a) {
-    override var r: Float
-        get() = super.r
-        public set(value) { super.r = value }
 
-    override var g: Float
-        get() = super.g
-        public set(value) { super.g = value }
-
-    override var b: Float
-        get() = super.b
-        public set(value) { super.b = value }
-
-    override var a: Float
-        get() = super.a
-        public set(value) { super.a = value }
+    override var r
+        get() = xField
+        set(value) { xField = value }
+    override var g
+        get() = yField
+        set(value) { yField = value }
+    override var b
+        get() = zField
+        set(value) { zField = value }
+    override var a
+        get() = wField
+        set(value) { wField = value }
 
     constructor() : this(0f, 0f, 0f, 1f)
 
@@ -107,7 +94,7 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
         return this
     }
 
-    fun set(other: Color): MutableColor {
+    open fun set(other: Color): MutableColor {
         r = other.r
         g = other.g
         b = other.b

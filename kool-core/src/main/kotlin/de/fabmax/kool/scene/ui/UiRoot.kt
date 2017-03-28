@@ -2,30 +2,54 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.scene
 import de.fabmax.kool.shading.BlurredBackgroundHelper
 import de.fabmax.kool.util.RayTest
+
+fun embeddedUi(contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
+    val ui = UiRoot(dpi)
+    ui.contentHeight = contentHeight
+    ui.block()
+    return ui
+}
+
+fun uiScene(dpi: Float = 96f, overlay: Boolean = true, block: UiRoot.() -> Unit): Scene {
+    return scene {
+        camera = OrthographicCamera().apply { clipToViewport = true }
+
+        if (overlay) {
+            clearMask = 0
+        }
+
+        +embeddedUi(null, dpi) {
+            isFillViewport = true
+            this.block()
+        }
+    }
+}
 
 /**
  * @author fabmax
  */
-class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : Node(name) {
+class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
 
-    var globalWidth = 10f
+    var globalWidth = 1f
         set(value) {
             if (value != field) {
                 field = value
                 isLayoutNeeded = true
             }
         }
-    var globalHeight = 10f
+    var globalHeight = 1f
         set(value) {
             if (value != field) {
                 field = value
                 isLayoutNeeded = true
             }
         }
-    var globalDepth = 10f
+    var globalDepth = 1f
         set(value) {
             if (value != field) {
                 field = value
@@ -41,7 +65,7 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : Node(name) {
             }
         }
 
-    var theme = UiTheme.DEFAULT
+    var theme = UiTheme.DARK
         set(value) {
             if (value != field) {
                 field = value
@@ -50,21 +74,23 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : Node(name) {
         }
 
     val content = UiContainer("$name-content", this)
+    var contentHeight: SizeSpec? = null
+        set(value) {
+            field = value
+            isLayoutNeeded = true
+        }
 
     private var blurHelper: BlurredBackgroundHelper? = null
 
     private var isLayoutNeeded = true
-    private var contentScale = 1f
-
-    override var scene: Scene?
-        get() = super.scene
-        set(value) {
-            super.scene = value
-            content.scene = value
-        }
 
     init {
         content.parent = this
+    }
+
+    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
+        super.onSceneChanged(oldScene, newScene)
+        content.scene = newScene
     }
 
     fun createBlurHelper(): BlurredBackgroundHelper {
@@ -82,12 +108,6 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : Node(name) {
         this.globalDepth = depth
     }
 
-    fun scaleContentTo(scaledContentHeight: SizeSpec) {
-        contentScale = 1f / (scaledContentHeight.toUnits(globalHeight, uiDpi) / globalHeight)
-        content.scale(contentScale, contentScale, contentScale)
-        isLayoutNeeded = true
-    }
-
     override fun render(ctx: RenderContext) {
         if (isFillViewport &&
                 (globalWidth != ctx.viewportWidth.toFloat() || globalHeight != ctx.viewportHeight.toFloat())) {
@@ -97,6 +117,14 @@ class UiRoot(val uiDpi: Float = 96f, name: String = "UiRoot") : Node(name) {
 
         if (isLayoutNeeded) {
             isLayoutNeeded = false
+
+            var contentScale = 1f
+            val ch = contentHeight
+            if (ch != null) {
+                contentScale = 1f / (ch.toUnits(globalHeight, uiDpi) / globalHeight)
+                content.scale(contentScale, contentScale, contentScale)
+            }
+
             content.contentBounds.set(0f, 0f, 0f,
                     globalWidth / contentScale, globalHeight / contentScale, globalDepth / contentScale)
             content.requestLayout()

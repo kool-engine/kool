@@ -30,11 +30,20 @@ abstract class Node(val name: String? = null) {
      */
     open var parent: Node? = null
         set(value) {
-            field = value
-            scene = findParentOfType()
+            if (value !== field) {
+                onParentChanged(field, value)
+                field = value
+                scene = findParentOfType()
+            }
         }
 
     open var scene: Scene? = null
+        set(value) {
+            if (value !== field) {
+                onSceneChanged(field, value)
+                field = value
+            }
+        }
 
     /**
      * Determines the visibility of this node. If visible is false this node will be skipped on
@@ -107,4 +116,18 @@ abstract class Node(val name: String? = null) {
         }
         return p as T
     }
+
+    /**
+     * Called when the scene of this node is changed. Sub-classes can override this method in order to be notified
+     * when this node's scene has changed. Overriding this method is better than overriding the property directly
+     * because setting a overriden super-class property is super-slow in javascript.
+     */
+    protected open fun onSceneChanged(oldScene: Scene?, newScene: Scene?) { }
+
+    /**
+     * Called when the parent of this node is changed. Sub-classes can override this method in order to be notified
+     * when this node's parent has changed. Overriding this method is better than overriding the property directly
+     * because setting a overriden super-class property is super-slow in javascript.
+     */
+    protected open fun onParentChanged(oldParent: Node?, newParent: Node?) { }
 }

@@ -9,7 +9,7 @@ you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.ht
 
 What's working:
 - Multi-scene / multi-viewport support
-- Some simple UI stuff: (Toggle-)Buttons, Sliders, Labels
+- Some simple UI stuff: Text-Fields, (Toggle-)Buttons, Sliders, Labels
 - Meshes with shared geometry
 - Instantiatable models (no model loading yet)
 - Lazy and delayed texture loading
