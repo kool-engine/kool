@@ -1,11 +1,9 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.platform.Math
+import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.scene
-import de.fabmax.kool.scene.sphericalInputTransform
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 
 /**
@@ -21,77 +19,105 @@ fun pointDemo(ctx: RenderContext) {
 }
 
 fun pointScene(): Scene {
-    val pointMesh = makePointMesh()
-    //val pointMesh = makeBillboardPointMesh()
+    val (pointMesh, tree) = makePointMesh()
+    //val (pointMesh, tree) = makeBillboardPointMesh()
+
+    val trav = InRadiusTraverser<MeshPoint>(Vec3f.ZERO, 1f)
     val data = pointMesh.meshData
     val ptVertCnt = if (pointMesh is BillboardMesh) 4 else 1
 
     var frameCnt = 30
-    var highlight = false
 
     // Create scene contents
     val scene = scene {
         onRender += {
-            // change color of middle sphere every 30 frames
-            // iterating over all vertices is super slow, but anyway...
+            // change color of a few points every 30 frames
             if (--frameCnt == 0) {
                 frameCnt = 30
-                highlight = !highlight
-                val color = if (highlight) Color.WHITE else Color.RED
 
-                val vert = data.data[20000 * ptVertCnt]
-                for (i in 1..(10000*ptVertCnt)) {
-                    vert.color.set(color)
-                    vert.index++
+                val vert = data.data[0]
+                for (point in trav.result) {
+                    for (i in 0..ptVertCnt-1) {
+                        vert.index = point.index + i
+                        vert.color.set(Color.DARK_GRAY)
+                    }
                 }
+
+                trav.center.set((Math.random() - 0.5).toFloat() * 2f,
+                        (Math.random() - 0.5).toFloat() * 2f, (Math.random() - 0.5).toFloat() * 2f)
+                val t = Platform.currentTimeMillis()
+                tree.traverse(trav)
+                println("In-radius search in ${Platform.currentTimeMillis() - t} ms, got ${trav.result.size} points")
+
+                val color = Color.fromHsv(Math.random().toFloat() * 360f, 1f, 1f, 1f)
+                for (point in trav.result) {
+                    for (i in 0..ptVertCnt-1) {
+                        vert.index = point.index + i
+                        vert.color.set(color)
+                    }
+                }
+
                 data.isSyncRequired = true
             }
         }
 
         // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
-        +sphericalInputTransform { +camera }
-        +pointMesh
+        +sphericalInputTransform {
+            +camera
+            setRotation(0f, -30f)
+        }
+
+        +transformGroup {
+            onRender += {
+                rotate(it.deltaT * 45, Vec3f.Y_AXIS)
+            }
+            +pointMesh
+        }
     }
     return scene
 }
 
-fun makePointMesh(): Mesh {
-    return pointMesh {
+fun makePointMesh(): Pair<Mesh, KdTree<MeshPoint>> {
+    val points: MutableList<MeshPoint> = mutableListOf()
+    val mesh = pointMesh {
         pointSize = 3f
 
-        for (ox in -20..20 step 10) {
-            for (p in 1..100) {
-                for (t in 1..100) {
-                    val x = ox + Math.cos(Math.PI * 2 * p / 100) * Math.sin(Math.PI * t / 100) * 4
-                    val z = Math.sin(Math.PI * 2 * p / 100) * Math.sin(Math.PI * t / 100) * 4
-                    val y = Math.cos(Math.PI * t / 100) * 4
+        for (i in 1..100_000) {
+            val x = (Math.random().toFloat() - 0.5f) * 5
+            val z = (Math.random().toFloat() - 0.5f) * 5
+            val y = (Math.random().toFloat() - 0.5f) * 5
 
-                    addPoint {
-                        position.set(x.toFloat(), y.toFloat(), z.toFloat())
-                        color.set(Color.RED)
-                    }
-                }
+            val idx = addPoint {
+                position.set(x, y, z)
+                color.set(Color.DARK_GRAY)
             }
+            points.add(MeshPoint(x, y, z, idx))
         }
     }
+    val t = Platform.currentTimeMillis()
+    val tree = pointTree(points)
+    println("Constructed k-d-Tree with ${points.size} points in ${Platform.currentTimeMillis() - t} ms")
+    return Pair(mesh, tree)
 }
 
-fun makeBillboardPointMesh(): BillboardMesh {
-    val pointMesh = BillboardMesh()
-    pointMesh.billboardSize = 3f
+fun makeBillboardPointMesh(): Pair<BillboardMesh, KdTree<MeshPoint>> {
+    val mesh = BillboardMesh()
+    mesh.billboardSize = 3f
 
-    // create 5 point spheres, 10000 points each
-    for (ox in -20..20 step 10) {
-        for (p in 1..100) {
-            for (t in 1..100) {
-                val x = ox + Math.cos(Math.PI * 2 * p / 100) * Math.sin(Math.PI * t / 100) * 4
-                val z = Math.sin(Math.PI * 2 * p / 100) * Math.sin(Math.PI * t / 100) * 4
-                val y = Math.cos(Math.PI * t / 100) * 4
+    val points: MutableList<MeshPoint> = mutableListOf()
+    for (i in 1..100_000) {
+        val x = (Math.random().toFloat() - 0.5f) * 5
+        val z = (Math.random().toFloat() - 0.5f) * 5
+        val y = (Math.random().toFloat() - 0.5f) * 5
 
-                pointMesh.addQuad(Vec3f(x.toFloat(), y.toFloat(), z.toFloat()), Color.RED)
-            }
-        }
+        mesh.addQuad(Vec3f(x, y, z), Color.DARK_GRAY)
+        points.add(MeshPoint(x, y, z, (i-1)*4))
     }
 
-    return pointMesh
+    val t = Platform.currentTimeMillis()
+    val tree = pointTree(points)
+    println("Constructed k-d-Tree with ${points.size} points in ${Platform.currentTimeMillis() - t} ms")
+    return Pair(mesh, tree)
 }
+
+class MeshPoint(x: Float, y: Float, z: Float, val index: Int): Vec3f(x, y, z)

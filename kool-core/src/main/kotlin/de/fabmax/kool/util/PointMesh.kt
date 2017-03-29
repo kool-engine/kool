@@ -30,11 +30,15 @@ class PointMesh(data: MeshData = MeshData(false, true, false), name: String? = n
         get() = (shader as BasicPointShader).pointSize
         set(value) { (shader as BasicPointShader).pointSize = value }
 
-    fun addPoint(block: IndexedVertexList.Item.() -> Unit) {
-        meshData.addIndex(meshData.addVertex(block))
+    fun addPoint(block: IndexedVertexList.Item.() -> Unit): Int {
+        val idx =  meshData.addVertex(block)
+        meshData.addIndex(idx)
+        return idx
     }
 
-    fun addPoint(position: Vec3f, color: Color) {
-        meshData.addIndex(meshData.addVertex(position, null, color, null))
+    fun addPoint(position: Vec3f, color: Color): Int {
+        val idx =  meshData.addVertex(position, null, color, null)
+        meshData.addIndex(idx)
+        return idx
     }
 }

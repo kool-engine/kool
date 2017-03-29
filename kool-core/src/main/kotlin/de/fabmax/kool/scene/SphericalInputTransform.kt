@@ -58,13 +58,6 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         oldScene?.removeDragHandler(this)
         newScene?.registerDragHandler(this)
     }
-    override var scene: Scene?
-        get() = super.scene
-        set(value) {
-            super.scene?.removeDragHandler(this)
-            super.scene = value
-            super.scene?.registerDragHandler(this)
-        }
 
     init {
         smoothness = 0.1f

@@ -1,5 +1,7 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.platform.Math
+
 
 /**
  * A simple axis-aligned bounding box
@@ -21,11 +23,19 @@ class BoundingBox {
     val size: Vec3f = mutSize
     val center: Vec3f = mutCenter
 
+    var batchUpdate = false
+        set(value) {
+            field = value
+            updateSizeAndCenter()
+        }
+
     private fun updateSizeAndCenter() {
-        // size = max - min
-        mutMax.subtract(mutSize, mutMin)
-        // center = min + size * 0.5
-        size.scale(mutCenter, 0.5f).add(min)
+        if (!batchUpdate) {
+            // size = max - min
+            mutMax.subtract(mutSize, mutMin)
+            // center = min + size * 0.5
+            size.scale(mutCenter, 0.5f).add(min)
+        }
     }
 
     private fun addPoint(point: Vec3f) {
@@ -60,7 +70,11 @@ class BoundingBox {
     }
 
     fun add(points: List<Vec3f>) {
-        for (i in points.indices) {
+        add(points, points.indices)
+    }
+
+    fun add(points: List<Vec3f>, range: IntRange) {
+        for (i in range) {
             addPoint(points[i])
         }
         updateSizeAndCenter()
@@ -103,6 +117,66 @@ class BoundingBox {
     }
 
     /**
+     * Computes the distance between the given point and this BoundingBox. It this BoundingBox includes
+     * the point, 0 is returned.
+     */
+    fun pointDistance(pt: Vec3f): Float {
+        return Math.sqrt(pointDistanceSqr(pt).toDouble()).toFloat()
+    }
+
+    /**
+     * Computes the squared distance between the given point and this BoundingBox. It this BoundingBox includes
+     * the point, 0 is returned.
+     */
+    fun pointDistanceSqr(pt: Vec3f): Float {
+        if (isIncluding(pt)) {
+            return 0f
+        }
+
+        var x = 0.0f
+        var y = 0.0f
+        var z = 0.0f
+
+        var tmp = pt.x - min.x
+        if (tmp < 0) {
+            // px < minX
+            x = tmp
+        } else {
+            tmp = max.x - pt.x
+            if (tmp < 0) {
+                // px > maxX
+                x = tmp
+            }
+        }
+
+        tmp = pt.y - min.y
+        if (tmp < 0) {
+            // py < minY
+            y = tmp
+        } else {
+            tmp = max.y - pt.y
+            if (tmp < 0) {
+                // py > maxY
+                y = tmp
+            }
+        }
+
+        tmp = pt.z - min.z
+        if (tmp < 0) {
+            // pz < minZ
+            z = tmp
+        } else {
+            tmp = max.z - pt.z
+            if (tmp < 0) {
+                // pz > maxZ
+                z = tmp
+            }
+        }
+
+        return x*x + y*y + z*z
+    }
+
+    /**
      * Computes the squared hit distance for the given ray. If the ray does not intersect this BoundingBox
      * [Float.POSITIVE_INFINITY] is returned. If the ray origin is inside this BoundingBox 0 is returned.
      * The method returns the squared distance because it's faster to compute. If the exact distance is needed
@@ -112,7 +186,7 @@ class BoundingBox {
      * @return squared distance between origin and the hit point on the BoundingBox surface or
      * [Float.POSITIVE_INFINITY] if the ray does not intersects the BoundingBox
      */
-    fun computeHitDistanceSqr(ray: Ray): Float {
+    fun hitDistanceSqr(ray: Ray): Float {
         var tmin: Float
         var tmax: Float
         val tymin: Float

@@ -73,6 +73,16 @@ open class Vec2f(x: Float, y: Float) {
         return result
     }
 
+    fun sqrDistance(other: Vec3f): Float {
+        val dx = x - other.x
+        val dy = y - other.y
+        return dx*dx + dy*dy
+    }
+
+    fun distance(other: Vec3f): Float {
+        return Math.sqrt(sqrDistance(other).toDouble()).toFloat()
+    }
+
     fun sqrLength(): Float {
         return x*x + y*y
     }
@@ -179,6 +189,17 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     operator fun times(other: Vec3f): Float {
         return x * other.x + y * other.y + z * other.z
+    }
+
+    fun sqrDistance(other: Vec3f): Float {
+        val dx = x - other.x
+        val dy = y - other.y
+        val dz = z - other.z
+        return dx*dx + dy*dy + dz*dz
+    }
+
+    fun distance(other: Vec3f): Float {
+        return Math.sqrt(sqrDistance(other).toDouble()).toFloat()
     }
 
     fun sqrLength(): Float {

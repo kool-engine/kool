@@ -113,7 +113,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
     override fun rayTest(test: RayTest) {
         // todo: for now only bounds are tested, optional test on actual geometry would be nice
-        val distSqr = bounds.computeHitDistanceSqr(test.ray)
+        val distSqr = bounds.hitDistanceSqr(test.ray)
         if (distSqr < test.hitDistanceSqr) {
             test.hitDistanceSqr = distSqr
             test.hitNode = this
