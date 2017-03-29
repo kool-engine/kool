@@ -13,7 +13,7 @@ fun <T: Vec3f> pointTree(items: List<T>, bucketSz: Int = 20): KdTree<T> {
 interface KdTreeTraverser<T> {
     fun onStart(tree: KdTree<T>) { }
 
-    fun preferredNode(tree: KdTree<T>, left: KdTree<T>.Node, right: KdTree<T>.Node): Int {
+    fun traversalOrder(tree: KdTree<T>, left: KdTree<T>.Node, right: KdTree<T>.Node): Int {
         return KdTree.TRAV_NO_PREFERENCE
     }
 
@@ -145,7 +145,7 @@ class KdTree<T>(items: List<T>,
                     traverser.traverseLeaf(this@KdTree, this)
 
                 } else {
-                    val pref = traverser.preferredNode(this@KdTree, left!!, right!!)
+                    val pref = traverser.traversalOrder(this@KdTree, left!!, right!!)
                     when (pref) {
                         TRAV_LEFT_ONLY -> left.traverse(traverser)
                         TRAV_RIGHT_ONLY -> right.traverse(traverser)
