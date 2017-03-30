@@ -8,13 +8,22 @@ import de.fabmax.kool.gl.GlResource
 class MemoryManager internal constructor() {
 
     private val allocationMap: MutableMap<GlResource.Type, MutableMap<GlResource, Int>> = mutableMapOf()
-    private val totalMem: MutableMap<GlResource.Type, Long> = mutableMapOf()
+    private val totalMem: MutableMap<GlResource.Type, Double> = mutableMapOf()
+
+    val numTextures: Int get() = allocationMap[GlResource.Type.TEXTURE]!!.size
+    val numShaders: Int get() = allocationMap[GlResource.Type.PROGRAM]!!.size
+    val numBuffers: Int get() = allocationMap[GlResource.Type.BUFFER]!!.size
 
     init {
         for (type in GlResource.Type.values()) {
             allocationMap.put(type, mutableMapOf())
-            totalMem.put(type, 0L)
+            totalMem.put(type, 0.0)
         }
+    }
+
+    fun getTotalMemory(type: GlResource.Type): Double {
+        // total memory is stored as double because Long is slow in javascript
+        return totalMem[type]!!
     }
 
     internal fun memoryAllocated(resource: GlResource, memory: Int) {

@@ -37,10 +37,11 @@ enum class SizeUnit {
     PC
 }
 
-fun uns(value: Float) = SizeSpec(value, SizeUnit.UN)
-fun dps(value: Float) = SizeSpec(value, SizeUnit.DP)
-fun mms(value: Float) = SizeSpec(value, SizeUnit.MM)
-fun pcs(value: Float) = SizeSpec(value, SizeUnit.PC)
+fun zero() = SizeSpec(0f, SizeUnit.UN)
+fun uns(value: Float, roundToUnit: Boolean = false) = SizeSpec(value, SizeUnit.UN, roundToUnit)
+fun dps(value: Float, roundToUnit: Boolean = false) = SizeSpec(value, SizeUnit.DP, roundToUnit)
+fun mms(value: Float, roundToUnit: Boolean = false) = SizeSpec(value, SizeUnit.MM, roundToUnit)
+fun pcs(value: Float, roundToUnit: Boolean = false) = SizeSpec(value, SizeUnit.PC, roundToUnit)
 
 fun pc(pc: Float, size: Float) = size * pc / 100f
 fun dp(dp: Float, dpi: Float) = dp * dpi / 96f
@@ -60,13 +61,22 @@ fun UiComponent.pcHR(pc: Float) = pcR(pc, this.height)
 fun UiComponent.dpR(pc: Float) = dpR(pc, this.dpi)
 fun UiComponent.mmR(pc: Float) = mmR(pc, this.dpi)
 
-data class SizeSpec(val value: Float, val unit: SizeUnit) {
+data class SizeSpec(val value: Float, val unit: SizeUnit, val roundToUnit: Boolean = false) {
     fun toUnits(size: Float, dpi: Float): Float {
-        return when(unit) {
-            SizeUnit.UN -> value
-            SizeUnit.DP -> dp(value, dpi)
-            SizeUnit.MM -> mm(value, dpi)
-            SizeUnit.PC -> pc(value, size)
+        if (roundToUnit) {
+            return when (unit) {
+                SizeUnit.UN -> Math.round(value).toFloat()
+                SizeUnit.DP -> dpR(value, dpi)
+                SizeUnit.MM -> mmR(value, dpi)
+                SizeUnit.PC -> pcR(value, size)
+            }
+        } else {
+            return when (unit) {
+                SizeUnit.UN -> value
+                SizeUnit.DP -> dp(value, dpi)
+                SizeUnit.MM -> mm(value, dpi)
+                SizeUnit.PC -> pc(value, size)
+            }
         }
     }
 }

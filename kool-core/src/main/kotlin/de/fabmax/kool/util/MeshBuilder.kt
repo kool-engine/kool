@@ -288,11 +288,11 @@ open class MeshBuilder(val meshData: MeshData) {
         var dy = y2 - y1
         var len = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
 
-        val addX = width * .25f * dx / len
-        val addY = width * .25f * dy / len
+        val addX = width * 0.25f * dx / len
+        val addY = width * 0.25f * dy / len
         dx += addX + addX
         dy += addY + addY
-        len += width
+        len += width * 0.5f
 
         val dxu = dx / len * width / 2
         val dyu = dy / len * width / 2

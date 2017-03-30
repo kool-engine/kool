@@ -32,7 +32,7 @@ class ToggleButton(name: String, root: UiRoot, initState: Boolean = false): Butt
     }
 
     override fun createThemeUi(ctx: RenderContext): ComponentUi {
-        return root.theme.toggleButtonUi(this)
+        return root.theme.newToggleButtonUi(this)
     }
 }
 

@@ -23,11 +23,13 @@ abstract class RenderContext {
     private val idLock = Any()
 
     private var startTimeMillis = 0L
-    var time: Double = 0.0
+    var time = 0.0
         protected set
-    var deltaT: Float = 0.0f
+    var deltaT = 0f
         protected set
     var frameIdx = 0
+        private set
+    var fps = 60f
         private set
 
     //var scene: Scene = Scene()
@@ -72,6 +74,7 @@ abstract class RenderContext {
 
     protected open fun render(dt: Float) {
         frameIdx++
+        fps = fps * 0.9f + 1f / dt * 0.1f
         time += dt
         deltaT = dt
 

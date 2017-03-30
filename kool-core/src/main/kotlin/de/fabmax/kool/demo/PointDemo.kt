@@ -12,6 +12,8 @@ import de.fabmax.kool.util.*
 
 fun pointDemo(ctx: RenderContext) {
     ctx.scenes += pointScene()
+    ctx.scenes += debugOverlay(ctx)
+
     // Set background color
     ctx.clearColor = color("00323F")
     // Finally run the whole thing

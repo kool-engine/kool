@@ -49,7 +49,7 @@ class TextField(name: String, root: UiRoot) : Label(name, root) {
     }
 
     override fun createThemeUi(ctx: RenderContext): ComponentUi {
-        return root.theme.textFieldUi(this)
+        return root.theme.newTextFieldUi(this)
     }
 }
 

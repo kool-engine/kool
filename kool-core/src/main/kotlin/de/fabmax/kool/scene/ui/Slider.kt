@@ -103,7 +103,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
     }
 
     override fun createThemeUi(ctx: RenderContext): ComponentUi {
-        return root.theme.sliderUi(this)
+        return root.theme.newSliderUi(this)
     }
 }
 

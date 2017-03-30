@@ -13,26 +13,38 @@ open class UiTheme {
     var accentColor = Color.LIME
         protected set
 
-    var standardFont = FontProps(Font.SYSTEM_FONT, 24f)
+    fun standardFont(dpi: Float): Font =
+            uiFont(standardFontProps.family, standardFontProps.sizePts, dpi, standardFontProps.style, standardFontProps.chars)
+    var standardFontProps = FontProps(Font.SYSTEM_FONT, 24f)
         protected set
-    fun standardFont(dpi: Float): Font {
-        return uiFont(standardFont.family, standardFont.sizePts, dpi, standardFont.style, standardFont.chars)
-    }
 
-    var titleFont = FontProps(Font.SYSTEM_FONT, 24f, Font.BOLD)
+    fun titleFont(dpi: Float): Font =
+            uiFont(titleFontProps.family, titleFontProps.sizePts, dpi, titleFontProps.style, titleFontProps.chars)
+    var titleFontProps = FontProps(Font.SYSTEM_FONT, 24f, Font.BOLD)
         protected set
-    fun titleFont(dpi: Float): Font {
-        return uiFont(titleFont.family, titleFont.sizePts, dpi, titleFont.style, titleFont.chars)
-    }
 
+    fun newComponentUi(c: UiComponent): ComponentUi = componentUi(c)
     var componentUi: ((UiComponent) -> ComponentUi) = ::BlurredComponentUi
+        protected set
+    fun newContainerUi(c: UiContainer): ComponentUi = containerUi(c)
     var containerUi: ((UiContainer) -> ComponentUi) = { BlankComponentUi() }
+        protected set
 
-    var buttonUi: ((Button) -> ButtonUi) = { c -> ButtonUi(c, componentUi(c)) }
-    var labelUi: ((Label) -> LabelUi) = { c -> LabelUi(c, componentUi(c)) }
-    var sliderUi: ((Slider) -> SliderUi) = { c -> SliderUi(c, componentUi(c)) }
-    var textFieldUi: ((TextField) -> TextFieldUi) = { c -> TextFieldUi(c, componentUi(c)) }
-    var toggleButtonUi: ((ToggleButton) -> ToggleButtonUi) = { c -> ToggleButtonUi(c, componentUi(c)) }
+    fun newButtonUi(c: Button): ButtonUi = buttonUi(c, newComponentUi(c))
+    var buttonUi: ((Button, ComponentUi) -> ButtonUi) = ::ButtonUi
+        protected set
+    fun newLabelUi(c: Label): LabelUi = labelUi(c, newComponentUi(c))
+    var labelUi: ((Label, ComponentUi) -> LabelUi) = ::LabelUi
+        protected set
+    fun newSliderUi(c: Slider): SliderUi = sliderUi(c, newComponentUi(c))
+    var sliderUi: ((Slider, ComponentUi) -> SliderUi) = ::SliderUi
+        protected set
+    fun newTextFieldUi(c: TextField): TextFieldUi = textFieldUi(c, newComponentUi(c))
+    var textFieldUi: ((TextField, ComponentUi) -> TextFieldUi) = ::TextFieldUi
+        protected set
+    fun newToggleButtonUi(c: ToggleButton): ToggleButtonUi = toggleButtonUi(c, newComponentUi(c))
+    var toggleButtonUi: ((ToggleButton, ComponentUi) -> ToggleButtonUi) = ::ToggleButtonUi
+        protected set
 
     companion object {
         val DARK = theme {
@@ -41,10 +53,18 @@ open class UiTheme {
             accentColor(Color.LIME)
         }
 
+        val DARK_SIMPLE = theme(DARK) {
+            componentUi(::SimpleComponentUi)
+        }
+
         val LIGHT = theme {
             backgroundColor(Color.WHITE.withAlpha(0.6f))
             foregroundColor(color("3E2723"))
             accentColor(color("BF360C"))
+        }
+
+        val LIGHT_SIMPLE = theme(LIGHT) {
+            componentUi(::SimpleComponentUi)
         }
     }
 }
@@ -59,22 +79,32 @@ class ThemeBuilder(base: UiTheme?) : UiTheme() {
     init {
         if (base != null) {
             backgroundColor = base.backgroundColor
-            foregroundColor = base.backgroundColor
-            accentColor = base.backgroundColor
-            standardFont = base.standardFont
-            titleFont = base.titleFont
+            foregroundColor = base.foregroundColor
+            accentColor = base.accentColor
+            standardFontProps = base.standardFontProps
+            titleFontProps = base.titleFontProps
             componentUi = base.componentUi
             containerUi = base.containerUi
+            buttonUi = base.buttonUi
+            labelUi = base.labelUi
+            sliderUi = base.sliderUi
+            textFieldUi = base.textFieldUi
+            toggleButtonUi = base.toggleButtonUi
         }
     }
 
     fun backgroundColor(bgColor: Color) { backgroundColor = bgColor }
     fun foregroundColor(fgColor: Color) { foregroundColor = fgColor }
     fun accentColor(fgColor: Color) { accentColor = fgColor }
-    fun standardFont(props: FontProps) { standardFont = props }
-    fun titleFont(props: FontProps) { titleFont = props }
+    fun standardFont(props: FontProps) { standardFontProps = props }
+    fun titleFont(props: FontProps) { titleFontProps = props }
     fun componentUi(fab: (UiComponent) -> ComponentUi) { componentUi = fab }
     fun containerUi(fab: (UiContainer) -> ComponentUi) { containerUi = fab }
+    fun buttonUi(fab: (Button, ComponentUi) -> ButtonUi) { buttonUi = fab}
+    fun labelUi(fab: (Label, ComponentUi) -> LabelUi) { labelUi = fab}
+    fun sliderUi(fab: (Slider, ComponentUi) -> SliderUi) { sliderUi = fab}
+    fun textFieldUi(fab: (TextField, ComponentUi) -> TextFieldUi) { textFieldUi = fab}
+    fun toggleButtonUi(fab: (ToggleButton, ComponentUi) -> ToggleButtonUi) { toggleButtonUi = fab}
 }
 
 class ThemeOrCustomProp<T>(initVal: T) {

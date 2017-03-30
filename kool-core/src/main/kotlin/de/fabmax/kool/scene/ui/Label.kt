@@ -41,7 +41,7 @@ open class Label(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 
     override fun createThemeUi(ctx: RenderContext): ComponentUi {
-        return root.theme.labelUi(this)
+        return root.theme.newLabelUi(this)
     }
 }
 

@@ -66,7 +66,7 @@ open class Button(name: String, root: UiRoot) : Label(name, root) {
     }
 
     override fun createThemeUi(ctx: RenderContext): ComponentUi {
-        return root.theme.buttonUi(this)
+        return root.theme.newButtonUi(this)
     }
 }
 

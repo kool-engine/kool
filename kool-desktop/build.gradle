@@ -4,7 +4,7 @@ version '0.0.1'
 import org.gradle.internal.os.OperatingSystem
 
 buildscript {
-    ext.kotlin_version = '1.1.0'
+    ext.kotlin_version = '1.1.1'
     ext.lwjglVersion = '3.1.1'
 
     switch (OperatingSystem.current()) {

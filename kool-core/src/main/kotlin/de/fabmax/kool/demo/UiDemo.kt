@@ -5,6 +5,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Vec3f
 import de.fabmax.kool.util.color
+import de.fabmax.kool.util.debugOverlay
 
 /**
  * @author fabmax
@@ -12,10 +13,7 @@ import de.fabmax.kool.util.color
 
 fun uiDemo(ctx: RenderContext) {
     ctx.scenes += uiScene()
-
-//    ctx.scenes += de.fabmax.kool.scene.ui.uiScene(ctx.screenDpi) {
-//        content.uiDemoContent(this)
-//    }
+    ctx.scenes += debugOverlay(ctx)
 
     ctx.clearColor = color("00323F")
     ctx.run()
