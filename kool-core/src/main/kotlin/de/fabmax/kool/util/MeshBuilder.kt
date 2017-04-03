@@ -138,7 +138,8 @@ open class MeshBuilder(val meshData: MeshData) {
             val z = Math.sin(-phi).toFloat() * r
 
             var uv = props.texCoordGenerator(theta.toFloat(), phi.toFloat())
-            rowIndices[i] = vertex(tmpPos.set(x, y, z), tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
+            rowIndices[i] = vertex(tmpPos.set(x, y, z).add(props.center),
+                    tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
 
             if (i > 0) {
                 uv = props.texCoordGenerator(Math.PI.toFloat(), phi.toFloat())
@@ -162,7 +163,8 @@ open class MeshBuilder(val meshData: MeshData) {
                 val x = Math.cos(-phi).toFloat() * r
                 val z = Math.sin(-phi).toFloat() * r
                 val uv = props.texCoordGenerator(theta.toFloat(), phi.toFloat())
-                rowIndices[i] = vertex(tmpPos.set(x, y, z), tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
+                rowIndices[i] = vertex(tmpPos.set(x, y, z).add(props.center),
+                        tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
 
                 if (i > 0) {
                     meshData.addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
@@ -174,7 +176,8 @@ open class MeshBuilder(val meshData: MeshData) {
         // top cap
         for (i in 1..(steps * 2)) {
             val uv = props.texCoordGenerator(0f, (Math.PI * i / steps).toFloat())
-            val iCenter = vertex(tmpPos.set(props.center.x, props.center.y + props.radius, props.center.z), Vec3f.Y_AXIS, uv)
+            val iCenter = vertex(tmpPos.set(props.center.x, props.center.y + props.radius, props.center.z),
+                    Vec3f.Y_AXIS, uv)
             meshData.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
         }
     }

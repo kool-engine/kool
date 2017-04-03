@@ -28,6 +28,28 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val mvp = Mat4f()
     private val invMvp = Mat4f()
 
+    fun getGlobalPos(result: MutableVec3f): MutableVec3f {
+        toGlobalCoords(result.set(position))
+        return result
+    }
+
+    fun getGlobalLookAt(result: MutableVec3f): MutableVec3f {
+        toGlobalCoords(result.set(lookAt))
+        return result
+    }
+
+    fun getGlobalLookDirection(result: MutableVec3f): MutableVec3f {
+        toGlobalCoords(tmpPos.set(position))
+        toGlobalCoords(tmpLookAt.set(lookAt))
+        result.set(tmpLookAt).subtract(tmpPos)
+        return result
+    }
+
+    fun getGlobalUp(result: MutableVec3f): MutableVec3f {
+        toGlobalCoords(result.set(up), 0f)
+        return result
+    }
+
     fun updateCamera(ctx: RenderContext) {
         aspectRatio = ctx.viewportWidth.toFloat() / ctx.viewportHeight.toFloat()
 
@@ -41,9 +63,9 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 
     fun updateViewMatrix(ctx: RenderContext) {
-        toGlobalCoords(tmpPos.set(position))
-        toGlobalCoords(tmpLookAt.set(lookAt))
-        toGlobalCoords(tmpUp.set(up), 0f)
+        getGlobalPos(tmpPos)
+        getGlobalLookAt(tmpLookAt)
+        getGlobalUp(tmpUp)
 
         ctx.mvpState.viewMatrix.setLookAt(tmpPos, tmpLookAt, tmpUp)
         viewRay.setFromLookAt(tmpPos, tmpLookAt)
@@ -51,22 +73,29 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     abstract fun updateProjectionMatrix(ctx: RenderContext)
 
+    fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, ctx: RenderContext): Boolean {
+        return ptr.isValid && computePickRay(pickRay, ptr.x, ptr.y, ctx)
+    }
+
+    fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, ctx: RenderContext): Boolean {
+        var valid = unProjectScreen(pickRay.origin, tmpPos.set(screenX, screenY, 0f), ctx)
+        valid = valid && unProjectScreen(pickRay.direction, tmpPos.set(screenX, screenY, 1f), ctx)
+
+        if (valid) {
+            pickRay.direction.subtract(pickRay.origin)
+            pickRay.direction.norm()
+        }
+
+        return valid
+    }
+
     fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, ctx: RenderContext): Boolean {
         return ptr.isValid && initRayTes(rayTest, ptr.x, ptr.y, ctx)
     }
 
     fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, ctx: RenderContext): Boolean {
         rayTest.clear()
-
-        var valid = unProjectScreen(rayTest.ray.origin, tmpPos.set(screenX, screenY, 0f), ctx)
-        valid = valid && unProjectScreen(rayTest.ray.direction, tmpPos.set(screenX, screenY, 1f), ctx)
-
-        if (valid) {
-            rayTest.ray.direction.subtract(rayTest.ray.origin)
-            rayTest.ray.direction.norm()
-        }
-
-        return valid
+        return computePickRay(rayTest.ray, screenX, screenY, ctx)
     }
 
     fun isVisible(node: Node): Boolean {
