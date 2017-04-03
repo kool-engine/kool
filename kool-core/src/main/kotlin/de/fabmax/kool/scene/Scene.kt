@@ -30,6 +30,10 @@ class Scene(name: String? = null) : Group(name) {
     private val dragPtrs: MutableList<InputManager.Pointer> = mutableListOf()
     private val dragHandlers: MutableList<InputManager.DragHandler> = mutableListOf()
 
+    init {
+        scene = this
+    }
+
     override fun render(ctx: RenderContext) {
         for (i in preRender.indices) {
             preRender[i](ctx)
