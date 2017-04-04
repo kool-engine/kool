@@ -67,6 +67,10 @@ fun pointScene(): Scene {
         +sphericalInputTransform {
             +camera
             setRotation(0f, -30f)
+            minZoom = 5f
+            maxZoom = 25f
+            // panning / camera translation is limited to a certain area
+            translationBounds = BoundingBox(Vec3f(-10f, -10f, -10f), Vec3f(10f, 10f, 10f))
         }
 
         +transformGroup {

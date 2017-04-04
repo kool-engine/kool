@@ -14,7 +14,7 @@ class InputManager internal constructor() {
             const val REMOVE_HANDLER = 2
         }
 
-        fun handleDrag(dragPtrs: List<Pointer>): Int
+        fun handleDrag(dragPtrs: List<Pointer>, ctx: RenderContext): Int
     }
 
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()

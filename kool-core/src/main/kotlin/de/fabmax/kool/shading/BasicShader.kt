@@ -100,7 +100,7 @@ open class BasicShader(props: ShaderProps, private val generator: GlslGenerator 
         if (scene != mesh.scene) {
             scene = mesh.scene
             if (scene != null) {
-                cameraPosition.set(scene!!.camera.position)
+                cameraPosition.set(scene!!.camera.globalPos)
                 generator.uniformCameraPosition.bind(ctx)
 
                 val light = scene!!.light

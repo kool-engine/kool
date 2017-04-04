@@ -20,13 +20,6 @@ fun sphericalInputTransform(name: String? = null, block: SphericalInputTransform
 
 open class SphericalInputTransform(name: String? = null) : TransformGroup(name), InputManager.DragHandler {
 
-    private var stiffness = 0f
-    private var damping = 0f
-
-    private val animRotV = AnimatedVal(0f)
-    private val animRotH = AnimatedVal(0f)
-    private val animZoom = AnimatedVal(1f)
-
     var leftDragMethod = DragMethod.ROTATE
     var middleDragMethod = DragMethod.NONE
     var rightDragMethod = DragMethod.PAN
@@ -34,28 +27,37 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     var verticalAxis = Vec3f.Y_AXIS
     var horizontalAxis = Vec3f.X_AXIS
 
+    val translation = MutableVec3f()
     var verticalRotation = 0f
     var horizontalRotation = 0f
-    var zoom = 1f
-    val translation = MutableVec3f()
+    var zoom = 10f
+        set(value) { field = Math.clamp(value, minZoom, maxZoom) }
 
-    var minZoom = 0.1f
-    var maxZoom = 10f
+    var minZoom = 1f
+    var maxZoom = 100f
+    var translationBounds: BoundingBox? = null
 
-    //var panMethod: PanBase = CameraOrthogonalPan()
     var panMethod: PanBase = yPlanePan()
 
-    private val panPlane = Plane()
+    private var stiffness = 0f
+    private var damping = 0f
 
+    private val animRotV = AnimatedVal(0f)
+    private val animRotH = AnimatedVal(0f)
+    private val animZoom = AnimatedVal(zoom)
+
+    private var prevButtonMask = 0
     private var dragMethod = DragMethod.NONE
     private var dragStart = false
-
-    private val pointerHitStart = MutableVec3f()
-    private val pointerHit = MutableVec3f()
-    private val tmpVec = MutableVec3f()
-
     private val deltaPos = MutableVec2f()
     private var deltaScroll = 0f
+
+    private val ptrPos = MutableVec2f()
+    private val panPlane = Plane()
+    private val pointerHitStart = MutableVec3f()
+    private val pointerHit = MutableVec3f()
+    private val tmpVec1 = MutableVec3f()
+    private val tmpVec2 = MutableVec3f()
 
     var smoothness: Float = 0f
         set(value) {
@@ -90,8 +92,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     }
 
     override fun render(ctx: RenderContext) {
-        val scene = this.scene
-        if (scene != null && panMethod.computePanPoint(pointerHit, scene, ctx.inputMgr.primaryPointer, ctx)) {
+        val scene = this.scene ?: return
+
+        if (panMethod.computePanPoint(pointerHit, scene, ptrPos, ctx)) {
             if (dragStart) {
                 dragStart = false
                 pointerHitStart.set(pointerHit)
@@ -100,20 +103,23 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
                 stopSmoothMotion()
 
             } else if (dragMethod == DragMethod.PAN) {
-                val scale = Math.clamp(1 - smoothness, 0.1f, 1f)
-                tmpVec.set(pointerHitStart).subtract(pointerHit).scale(scale)
-                val tLen = tmpVec.length()
+                val s = Math.clamp(1 - smoothness, 0.1f, 1f)
+                tmpVec1.set(pointerHitStart).subtract(pointerHit).scale(s)
+
+                // limit panning speed
+                val tLen = tmpVec1.length()
                 if (tLen > scene.camera.globalRange * 0.5f) {
-                    // limit panning speed
-                    tmpVec.scale(scene.camera.globalRange * 0.5f / tLen)
+                    tmpVec1.scale(scene.camera.globalRange * 0.5f / tLen)
                 }
-                translation.add(tmpVec)
+
+                translation.add(tmpVec1)
             }
+        } else {
+            pointerHit.set(scene.camera.globalLookAt)
         }
 
         if (!Math.isZero(deltaScroll)) {
             zoom *= 1f + deltaScroll / 10f
-            zoom = Math.clamp(zoom, minZoom, maxZoom)
             deltaScroll = 0f
         }
 
@@ -128,7 +134,18 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         animRotH.desired = horizontalRotation
         animZoom.desired = zoom
 
+        val oldZ = animZoom.actual
         val z = animZoom.animate(ctx.deltaT)
+        if (!Math.isEqual(oldZ, z)) {
+            // tmpVec1 = zoomed pos on pointer ray
+            scene.camera.globalPos.subtract(tmpVec1, pointerHit).scale(z / oldZ).add(pointerHit)
+            // tmpVec2 = zoomed pos on view center ray
+            scene.camera.globalPos.subtract(tmpVec2, scene.camera.globalLookAt).scale(z / oldZ)
+                    .add(scene.camera.globalLookAt)
+            translation.add(tmpVec1).subtract(tmpVec2)
+        }
+
+        translationBounds?.clampToBounds(translation)
 
         setIdentity()
         translate(translation)
@@ -150,9 +167,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         zoom = animZoom.actual
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>): Int {
-        if (dragPtrs.size == 1 && dragPtrs[0].isValid) {
-            if (dragPtrs[0].buttonEventMask != 0) {
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: RenderContext): Int {
+        if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(ctx)) {
+            if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
                 if (dragPtrs[0].isLeftButtonDown) {
                     dragMethod = leftDragMethod
                 } else if (dragPtrs[0].isRightButtonDown) {
@@ -165,13 +182,14 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
                 dragStart = dragMethod != DragMethod.NONE
             }
 
+            prevButtonMask = dragPtrs[0].buttonMask
+            ptrPos.set(dragPtrs[0].x, dragPtrs[0].y)
             deltaPos.set(dragPtrs[0].deltaX, dragPtrs[0].deltaY)
             deltaScroll = dragPtrs[0].deltaScroll
 
         } else {
             deltaPos.set(Vec2f.ZERO)
             deltaScroll = 0f
-            dragMethod = DragMethod.NONE
         }
         // let other drag handlers do their job
         return 0
@@ -220,7 +238,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
 abstract class PanBase {
     abstract fun computePanPoint(result: MutableVec3f,
-                                 scene: Scene, ptr: InputManager.Pointer, ctx: RenderContext): Boolean
+                                 scene: Scene, ptrPos: Vec2f, ctx: RenderContext): Boolean
 }
 
 class CameraOrthogonalPan : PanBase() {
@@ -228,10 +246,10 @@ class CameraOrthogonalPan : PanBase() {
     private val pointerRay = Ray()
 
     override fun computePanPoint(result: MutableVec3f,
-                                   scene: Scene, ptr: InputManager.Pointer, ctx: RenderContext): Boolean {
-        scene.camera.getGlobalLookAt(panPlane.p)
-        scene.camera.getGlobalLookDirection(panPlane.n)
-        return scene.camera.computePickRay(pointerRay, ctx.inputMgr.primaryPointer, ctx) &&
+                                   scene: Scene, ptrPos: Vec2f, ctx: RenderContext): Boolean {
+        panPlane.p.set(scene.camera.globalLookAt)
+        panPlane.n.set(scene.camera.globalLookDir)
+        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, ctx) &&
                 panPlane.intersectionPoint(result, pointerRay)
     }
 }
@@ -240,10 +258,14 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
     val panPlane = Plane()
     private val pointerRay = Ray()
 
+    init {
+        panPlane.n.set(planeNormal)
+    }
+
     override fun computePanPoint(result: MutableVec3f,
-                                 scene: Scene, ptr: InputManager.Pointer, ctx: RenderContext): Boolean {
-        scene.camera.getGlobalLookAt(panPlane.p)
-        return scene.camera.computePickRay(pointerRay, ctx.inputMgr.primaryPointer, ctx) &&
+                                 scene: Scene, ptrPos: Vec2f, ctx: RenderContext): Boolean {
+        panPlane.p.set(scene.camera.globalLookAt)
+        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, ctx) &&
                 panPlane.intersectionPoint(result, pointerRay)
     }
 }

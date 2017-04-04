@@ -8,7 +8,7 @@ import de.fabmax.kool.platform.Math
  *
  * @author fabmax
  */
-class BoundingBox {
+class BoundingBox() {
 
     private val mutMin = MutableVec3f()
     private val mutMax = MutableVec3f()
@@ -28,6 +28,11 @@ class BoundingBox {
             field = value
             updateSizeAndCenter()
         }
+
+    constructor(min: Vec3f, max: Vec3f): this() {
+        mutMin.set(min)
+        mutMax.set(max)
+    }
 
     private fun updateSizeAndCenter() {
         if (!batchUpdate) {
@@ -114,6 +119,12 @@ class BoundingBox {
         return point.x >= min.x && point.x <= max.x &&
                 point.y >= min.y && point.y <= max.y &&
                 point.z >= min.z && point.z <= max.z
+    }
+
+    fun clampToBounds(point: MutableVec3f) {
+        point.x = Math.clamp(point.x, min.x, max.x)
+        point.y = Math.clamp(point.y, min.y, max.y)
+        point.z = Math.clamp(point.z, min.z, max.z)
     }
 
     /**

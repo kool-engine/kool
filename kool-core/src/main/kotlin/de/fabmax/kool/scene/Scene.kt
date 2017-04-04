@@ -110,7 +110,7 @@ class Scene(name: String? = null) : Group(name) {
 
         var handlerIdx = dragHandlers.lastIndex
         while (handlerIdx >= 0) {
-            val result = dragHandlers[handlerIdx].handleDrag(dragPtrs)
+            val result = dragHandlers[handlerIdx].handleDrag(dragPtrs, ctx)
             if (result and InputManager.DragHandler.REMOVE_HANDLER != 0) {
                 dragHandlers.removeAt(handlerIdx)
             }

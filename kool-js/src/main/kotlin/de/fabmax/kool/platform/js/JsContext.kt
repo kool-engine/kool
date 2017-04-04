@@ -60,6 +60,10 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
             ev as MouseEvent
             inputMgr.updatePointerButtonStates(InputManager.PRIMARY_POINTER, ev.buttons.toInt())
         }
+
+        // suppress context menu
+        canvas.oncontextmenu = { _ -> js("return false;") }
+
         canvas.onmouseenter = { inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, true) }
         canvas.onmouseleave = { inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, false) }
         canvas.onwheel = { ev ->

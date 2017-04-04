@@ -32,12 +32,13 @@ abstract class RenderContext {
     var fps = 60f
         private set
 
-    //var scene: Scene = Scene()
     val scenes: MutableList<Scene> = mutableListOf()
 
     private val attribs = Attribs()
     private val attribsStack = Array(16, { Attribs() })
     private var attribsStackIdx = 0
+
+    private val frameTimes = FloatArray(25, { 0.017f })
 
     abstract val windowWidth: Int
     abstract val windowHeight: Int
@@ -74,9 +75,13 @@ abstract class RenderContext {
 
     protected open fun render(dt: Float) {
         frameIdx++
-        fps = fps * 0.9f + 1f / dt * 0.1f
         time += dt
         deltaT = dt
+
+        frameTimes[frameIdx % frameTimes.size] = dt
+        var sum = 0f
+        for (i in frameTimes.indices) { sum += frameTimes[i] }
+        fps = (frameTimes.size / sum) * 0.1f + fps * 0.9f
 
         inputMgr.onNewFrame()
 

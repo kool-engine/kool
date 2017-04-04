@@ -66,7 +66,6 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
             if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown && isOverKnob(prevHit.x, prevHit.y)) {
                 // register drag handler to handle knob movement
                 scene?.registerDragHandler(this@Slider)
-                println(scene)
             }
         }
         onHoverExit += { _,_,_ ->
@@ -80,7 +79,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
         return dx*dx + dy*dy < knobSize * knobSize
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>): Int {
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: RenderContext): Int {
         if (dragPtrs.size == 1 && dragPtrs[0].isValid && dragPtrs[0].isLeftButtonDown) {
             // drag event is handled, no other drag handler should do something
             // we use the delta computed in local coordinates in the onHover handler instead of the native pointer
