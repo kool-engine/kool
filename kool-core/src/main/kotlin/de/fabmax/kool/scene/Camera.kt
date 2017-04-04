@@ -18,6 +18,9 @@ abstract class Camera(name: String = "camera") : Node(name) {
     var aspectRatio = 1.0f
         protected set
 
+    var globalRange = 0f
+        protected set
+
     // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     private val tmpPos = MutableVec3f()
     private val tmpLookAt = MutableVec3f()
@@ -29,25 +32,21 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val invMvp = Mat4f()
 
     fun getGlobalPos(result: MutableVec3f): MutableVec3f {
-        toGlobalCoords(result.set(position))
-        return result
+        return toGlobalCoords(result.set(position))
     }
 
     fun getGlobalLookAt(result: MutableVec3f): MutableVec3f {
-        toGlobalCoords(result.set(lookAt))
-        return result
+        return toGlobalCoords(result.set(lookAt))
     }
 
     fun getGlobalLookDirection(result: MutableVec3f): MutableVec3f {
         toGlobalCoords(tmpPos.set(position))
         toGlobalCoords(tmpLookAt.set(lookAt))
-        result.set(tmpLookAt).subtract(tmpPos)
-        return result
+        return result.set(tmpLookAt).subtract(tmpPos).norm()
     }
 
     fun getGlobalUp(result: MutableVec3f): MutableVec3f {
-        toGlobalCoords(result.set(up), 0f)
-        return result
+        return toGlobalCoords(result.set(up), 0f)
     }
 
     fun updateCamera(ctx: RenderContext) {
@@ -66,6 +65,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
         getGlobalPos(tmpPos)
         getGlobalLookAt(tmpLookAt)
         getGlobalUp(tmpUp)
+
+        globalRange = tmpPos.distance(tmpLookAt)
 
         ctx.mvpState.viewMatrix.setLookAt(tmpPos, tmpLookAt, tmpUp)
         viewRay.setFromLookAt(tmpPos, tmpLookAt)
