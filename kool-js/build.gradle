@@ -2,6 +2,7 @@ apply plugin: 'kotlin2js'
 apply plugin: 'idea'
 
 compileKotlin2Js {
+    kotlinOptions.outputFile = "${buildDir}/web/kool.js"
     kotlinOptions.metaInfo = true
 }
 
