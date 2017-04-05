@@ -1,10 +1,6 @@
-group 'de.fabmax'
-version '0.0.1'
-
 import org.gradle.internal.os.OperatingSystem
 
 buildscript {
-    ext.kotlin_version = '1.1.1'
     ext.lwjglVersion = '3.1.1'
 
     switch (OperatingSystem.current()) {
@@ -18,13 +14,6 @@ buildscript {
             ext.lwjglNatives = "natives-macos"
             break
     }
-
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
 }
 
 apply plugin: 'kotlin'
@@ -33,53 +22,17 @@ sourceSets {
     main.kotlin.srcDirs += "src/main/kotlin"
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile project(":kool-core")
 
     compile "org.lwjgl:lwjgl:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-bgfx:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-egl:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-jawt:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-lmdb:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-nanovg:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-nfd:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-nuklear:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-openal:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-opencl:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-opengles:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-ovr:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-par:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-sse:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-stb:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-vulkan:${lwjglVersion}"
-    //compile "org.lwjgl:lwjgl-xxhash:${lwjglVersion}"
 
     runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-bgfx:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-lmdb:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-nanovg:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-nfd:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-nuklear:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-openal:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-opengles:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-ovr:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-par:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-sse:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-tinyfd:${lwjglVersion}:${lwjglNatives}"
-    //runtime "org.lwjgl:lwjgl-xxhash:${lwjglVersion}:${lwjglNatives}"
 }
