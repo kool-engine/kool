@@ -16,7 +16,7 @@ apply plugin: 'kotlin2js'
 apply plugin: 'idea'
 
 compileKotlin2Js {
-    kotlinOptions.metaInfo = true
+    kotlinOptions.outputFile = "${projectDir}/web/kooldemo.js"
 }
 
 sourceSets {
@@ -36,13 +36,29 @@ repositories {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
+    compile project(":kool-js")
 }
 
 tasks.create(name: 'copyLib', type: Copy) {
     def libDir = new File(buildDir, "/lib")
     delete libDir
-    from(file('../kool-core/src/main/kotlin'))
+    from(file('../kool-demo/src/main/kotlin'))
     into(libDir)
 }
 
 compileKotlin2Js.dependsOn copyLib
+
+build.doLast {
+    configurations.compile.each { File file ->
+        copy {
+            includeEmptyDirs = false
+
+            from zipTree(file.absolutePath)
+            into "${projectDir}/web"
+            include { fileTreeElement ->
+                def path = fileTreeElement.path
+                path.endsWith(".js") && (path.startsWith("META-INF/resources/") || !path.startsWith("META-INF/"))
+            }
+        }
+    }
+}

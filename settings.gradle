@@ -3,3 +3,7 @@ include 'kool-core'
 include 'kool-desktop'
 include 'kool-js'
 
+include 'kool-demo'
+include 'kool-demo-desktop'
+include 'kool-demo-web'
+

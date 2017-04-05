@@ -22,7 +22,7 @@ What's working:
 - Mesh building functions for several primitive 3D shapes
 - Shading with different light (Phong / Gouraud) and color models (vertex, texture or fixed)
 
-Below is the code for the demo scene
+Below is the code for a demo scene
 
 ## Example:
 ```kotlin
@@ -36,6 +36,10 @@ fun main(args: Array<String>) {
         +sphericalInputTransform {
             // Set some initial rotation so that we look down on the scene
             setRotation(20f, -30f)
+            // camera pans in y-plane (y is up-axis, camera can move along x and z axis)
+            panMethod = yPlanePan()
+            // panning / camera translation is limited to a certain area
+            translationBounds = BoundingBox(Vec3f(-50f), Vec3f(50f))
             // Add camera to the transform group
             +camera
         }

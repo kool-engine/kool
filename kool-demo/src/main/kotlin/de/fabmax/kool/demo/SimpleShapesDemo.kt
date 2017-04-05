@@ -33,7 +33,7 @@ fun simpleShapesScene(): Scene = scene("simpleShapes") {
         // camera pans in y-plane (y is up-axis, camera can move along x and z axis)
         panMethod = yPlanePan()
         // panning / camera translation is limited to a certain area
-        translationBounds = BoundingBox(Vec3f(-10f, -10f, -10f), Vec3f(10f, 10f, 10f))
+        translationBounds = BoundingBox(Vec3f(-50f), Vec3f(50f))
         // Add camera to the transform group
         +camera
     }
@@ -44,7 +44,7 @@ fun simpleShapesScene(): Scene = scene("simpleShapes") {
         val animator = CosAnimator(InterpolatedFloat(-1f, 1f))
         animator.repeating = Animator.REPEAT_TOGGLE_DIR
 
-        // Animation function is called on every frame, animator.tick is called to update the animated value
+        // Animation function is called on every frame
         animation = { ctx ->
             // Clear transformation
             setIdentity()
