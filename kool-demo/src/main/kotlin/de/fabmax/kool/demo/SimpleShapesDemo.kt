@@ -29,7 +29,7 @@ fun simpleShapesScene(): Scene = scene("simpleShapes") {
     // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
     +sphericalInputTransform {
         // Set some initial rotation so that we look down on the scene
-        setRotation(20f, -30f)
+        setMouseRotation(20f, -30f)
         // camera pans in y-plane (y is up-axis, camera can move along x and z axis)
         panMethod = yPlanePan()
         // panning / camera translation is limited to a certain area

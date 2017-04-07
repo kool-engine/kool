@@ -66,7 +66,7 @@ fun pointScene(): Scene {
         // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
         +sphericalInputTransform {
             +camera
-            setRotation(0f, -30f)
+            setMouseRotation(0f, -30f)
             minZoom = 5f
             maxZoom = 25f
             // panning / camera translation is limited to a certain area
