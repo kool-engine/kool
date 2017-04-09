@@ -22,7 +22,6 @@ class Scene(name: String? = null) : Group(name) {
     var light = Light()
 
     var clearMask = GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT
-
     var isPickingEnabled = true
     private val rayTest = RayTest()
     private var hoverNode: Node? = null
@@ -35,6 +34,10 @@ class Scene(name: String? = null) : Group(name) {
     }
 
     override fun render(ctx: RenderContext) {
+        if (!isVisible) {
+            return
+        }
+
         for (i in preRender.indices) {
             preRender[i](ctx)
         }

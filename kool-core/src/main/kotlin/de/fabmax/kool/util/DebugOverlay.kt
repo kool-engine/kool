@@ -18,21 +18,28 @@ import de.fabmax.kool.shading.basicShader
 
 fun debugOverlay(ctx: RenderContext): Scene {
     val dbgOverlay = uiScene(ctx.screenDpi) {
-        theme = theme(UiTheme.DARK_SIMPLE) {
+        theme = theme(UiTheme.DARK) {
+            componentUi({ BlankComponentUi() })
+            containerUi(::BlurredComponentUi)
             standardFont(FontProps(Font.SYSTEM_FONT, 12f))
         }
-        content.apply {
+        content.ui.setCustom(BlankComponentUi())
+
+        +container("dbgPanel") {
+            layoutSpec.setOrigin(dps(-120f, true), dps(-132f, true), zero())
+            layoutSpec.setSize(dps(120f, true), dps(132f, true), zero())
+
             +DeltaTGraph(this@uiScene).apply {
                 layoutSpec.setOrigin(dps(-120f, true), dps(-40f, true), zero())
                 layoutSpec.setSize(dps(120f, true), dps(40f, true), zero())
             }
-            +Label("lblFps", this@uiScene).apply {
+
+            +label("lblFps") {
                 layoutSpec.setOrigin(dps(-120f, true), dps(-40f, true), zero())
                 layoutSpec.setSize(dps(120f, true), dps(40f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                 text = ""
-                ui.setCustom(LabelUi(this, BlankComponentUi()))
                 font.setCustom(UiTheme.DARK_SIMPLE.standardFont(ctx.screenDpi))
                 textColor.setCustom(root.theme.accentColor)
 
@@ -40,9 +47,10 @@ fun debugOverlay(ctx: RenderContext): Scene {
                     text = "${ctx.fps.toInt()}.${(ctx.fps * 10f).toInt() % 10} fps"
                 }
             }
-            +Label("lblVpSize", this@uiScene).apply {
+
+            +label("lblVpSize") {
                 layoutSpec.setOrigin(dps(-120f, true), dps(-60f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(20f, true), zero())
+                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -56,9 +64,10 @@ fun debugOverlay(ctx: RenderContext): Scene {
                     }
                 }
             }
-            +Label("lblUpTime", this@uiScene).apply {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-80f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(20f, true), zero())
+
+            +label("lblUpTime") {
+                layoutSpec.setOrigin(dps(-120f, true), dps(-78f, true), zero())
+                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                 text = "Up: 00:00.00"
@@ -86,9 +95,10 @@ fun debugOverlay(ctx: RenderContext): Scene {
                     }
                 }
             }
-            +Label("lblNumTextures", this@uiScene).apply {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-100f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(20f, true), zero())
+
+            +label("lblNumTextures") {
+                layoutSpec.setOrigin(dps(-120f, true), dps(-96f, true), zero())
+                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -107,9 +117,10 @@ fun debugOverlay(ctx: RenderContext): Scene {
                     }
                 }
             }
-            +Label("lblNumBuffers", this@uiScene).apply {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-120f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(20f, true), zero())
+
+            +label("lblNumBuffers") {
+                layoutSpec.setOrigin(dps(-120f, true), dps(-114f, true), zero())
+                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -128,9 +139,10 @@ fun debugOverlay(ctx: RenderContext): Scene {
                     }
                 }
             }
-            +Label("lblNumShaders", this@uiScene).apply {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-140f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(20f, true), zero())
+
+            +label("lblNumShaders") {
+                layoutSpec.setOrigin(dps(-120f, true), dps(-132f, true), zero())
+                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -187,10 +199,11 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         graphIdx = (graphIdx + 4) % (WIDTH * 4)
         graphItem.index = graphIdx
         val y0 = graphItem.position.y
+        val h = Math.min(ctx.deltaT * 250, height)
         graphItem.index++
-        graphItem.position.y = y0 + ctx.deltaT * 250
+        graphItem.position.y = y0 + h
         graphItem.index++
-        graphItem.position.y = y0 + ctx.deltaT * 250
+        graphItem.position.y = y0 + h
 
         setCurrentBarColor(Color.MAGENTA)
         graphData.isSyncRequired = true

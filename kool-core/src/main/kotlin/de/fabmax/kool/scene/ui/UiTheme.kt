@@ -15,12 +15,12 @@ open class UiTheme {
 
     fun standardFont(dpi: Float): Font =
             uiFont(standardFontProps.family, standardFontProps.sizePts, dpi, standardFontProps.style, standardFontProps.chars)
-    var standardFontProps = FontProps(Font.SYSTEM_FONT, 24f)
+    var standardFontProps = FontProps(Font.SYSTEM_FONT, 20f)
         protected set
 
     fun titleFont(dpi: Float): Font =
             uiFont(titleFontProps.family, titleFontProps.sizePts, dpi, titleFontProps.style, titleFontProps.chars)
-    var titleFontProps = FontProps(Font.SYSTEM_FONT, 24f, Font.BOLD)
+    var titleFontProps = FontProps(Font.SYSTEM_FONT, 28f)
         protected set
 
     fun newComponentUi(c: UiComponent): ComponentUi = componentUi(c)

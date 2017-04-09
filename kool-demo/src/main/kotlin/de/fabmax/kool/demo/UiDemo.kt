@@ -12,14 +12,14 @@ import de.fabmax.kool.util.debugOverlay
  */
 
 fun uiDemo(ctx: RenderContext) {
-    ctx.scenes += uiScene()
+    ctx.scenes += uiDemoScene()
     ctx.scenes += debugOverlay(ctx)
 
     ctx.clearColor = color("00323F")
     ctx.run()
 }
 
-fun uiScene(): Scene = scene("UI Demo") {
+fun uiDemoScene(): Scene = scene("UI Demo") {
     +sphericalInputTransform { +camera }
 
     +transformGroup {

@@ -2,7 +2,9 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.Vec3f
+import de.fabmax.kool.util.isEqual
 
 /**
  * @author fabmax
@@ -10,6 +12,7 @@ import de.fabmax.kool.util.Vec3f
 
 open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
 
+    val posInParent = MutableVec3f()
     private var isLayoutNeeded = true
     private val tmpChildBounds = BoundingBox()
 
@@ -46,19 +49,12 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 
     override fun doLayout(bounds: BoundingBox, ctx: RenderContext) {
-        super.doLayout(bounds, ctx)
-
+        applyBounds(bounds, ctx)
         for (i in children.indices) {
             val child = children[i]
             if (child is UiComponent) {
                 computeChildLayoutBounds(tmpChildBounds, child, ctx)
-
-                if (child is UiContainer) {
-                    child.applyBounds(bounds, ctx)
-                    child.doLayout(child.bounds, ctx)
-                } else {
-                    child.doLayout(tmpChildBounds, ctx)
-                }
+                child.doLayout(tmpChildBounds, ctx)
             }
         }
     }
@@ -68,8 +64,12 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 
     protected open fun applyBounds(bounds: BoundingBox, ctx: RenderContext) {
-        setIdentity().translate(bounds.min)
-        contentBounds.set(Vec3f.ZERO, bounds.size)
+        if (!isEqual(bounds.size, contentBounds.size) || !isEqual(bounds.min, contentBounds.min)) {
+            posInParent.set(bounds.min)
+            setIdentity().translate(bounds.min)
+            contentBounds.set(Vec3f.ZERO, bounds.size)
+            requestUiUpdate()
+        }
     }
 
     protected open fun computeChildLayoutBounds(result: BoundingBox, child: UiComponent, ctx: RenderContext) {

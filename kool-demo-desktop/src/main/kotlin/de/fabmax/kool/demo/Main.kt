@@ -5,4 +5,6 @@ import de.fabmax.kool.platform.PlatformImpl
 /**
  * @author fabmax
  */
-fun main(args: Array<String>) = startDemo(PlatformImpl.initContext())
+fun main(args: Array<String>) {
+    Demo(PlatformImpl.initContext())
+}

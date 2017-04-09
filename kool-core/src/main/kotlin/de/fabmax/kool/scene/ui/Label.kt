@@ -70,7 +70,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
     override fun createUi(ctx: RenderContext) {
         baseUi.createUi(ctx)
         mesh.shader = fontShader {
-            lightModel = LightModel.PHONG_LIGHTING
+            lightModel = label.root.shaderLightModel
             colorModel = ColorModel.VERTEX_COLOR
             isAlpha = true
         }
@@ -96,8 +96,8 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         renderText(ctx)
     }
 
-    override fun removeUi(ctx: RenderContext) {
-        baseUi.removeUi(ctx)
+    override fun disposeUi(ctx: RenderContext) {
+        baseUi.disposeUi(ctx)
         label -= mesh
         mesh.dispose(ctx)
     }

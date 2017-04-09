@@ -9,7 +9,7 @@ import de.fabmax.kool.util.Color
 
 fun multiSceneDemo(ctx: RenderContext) {
     val leftScene = simpleShapesScene()
-    val rightScene = uiScene()
+    val rightScene = uiDemoScene()
 
     leftScene.preRender += { ctx ->
         val width = (ctx.viewportWidth * 0.5).toInt()

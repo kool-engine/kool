@@ -19,6 +19,8 @@ abstract class RenderContext {
     val textureMgr = TextureManager()
     val mvpState = MvpState()
 
+    val onRender: MutableList<(RenderContext) -> Unit> = mutableListOf()
+
     private var nextId = 1L
     private val idLock = Any()
 
@@ -92,6 +94,10 @@ abstract class RenderContext {
         viewportWidth = windowWidth
         viewportHeight = windowHeight
         applyAttributes()
+
+        for (i in onRender.indices) {
+            onRender[i](this)
+        }
 
         for (i in scenes.indices) {
             scenes[i].render(this)

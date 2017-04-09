@@ -14,7 +14,7 @@ class ToggleButton(name: String, root: UiRoot, initState: Boolean = false): Butt
     var knobColorOff = Color.LIGHT_GRAY
     var trackColor = Color.GRAY
 
-    var enabled = initState
+    var isEnabled = initState
         private set
 
     init {
@@ -22,7 +22,7 @@ class ToggleButton(name: String, root: UiRoot, initState: Boolean = false): Butt
     }
 
     override fun fireOnClick(ptr: InputManager.Pointer, rt: RayTest, ctx: RenderContext) {
-        enabled = !enabled
+        isEnabled = !isEnabled
         super.fireOnClick(ptr, rt, ctx)
     }
 
@@ -42,7 +42,7 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
     protected val knobColor = MutableColor()
 
     protected val clickListener: Button.(InputManager.Pointer, RayTest, RenderContext) -> Unit = { _,_,_ ->
-        if (tb.enabled) {
+        if (tb.isEnabled) {
             // animate knob from left to right
             knobAnimator.speed = 1f
         } else {
@@ -61,8 +61,8 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         tb.onClick += clickListener
     }
 
-    override fun removeUi(ctx: RenderContext) {
-        super.removeUi(ctx)
+    override fun disposeUi(ctx: RenderContext) {
+        super.disposeUi(ctx)
         tb.onClick -= clickListener
     }
 

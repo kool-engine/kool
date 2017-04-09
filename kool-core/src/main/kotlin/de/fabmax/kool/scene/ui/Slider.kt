@@ -131,8 +131,8 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
         slider += mesh
     }
 
-    override fun removeUi(ctx: RenderContext) {
-        baseUi.removeUi(ctx)
+    override fun disposeUi(ctx: RenderContext) {
+        baseUi.disposeUi(ctx)
 
         mesh.dispose(ctx)
         slider -= mesh

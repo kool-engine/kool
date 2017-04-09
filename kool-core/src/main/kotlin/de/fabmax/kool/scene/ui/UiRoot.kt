@@ -6,6 +6,7 @@ import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.shading.BlurredBackgroundHelper
+import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.util.RayTest
 
 fun embeddedUi(contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
@@ -72,6 +73,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
                 content.requestThemeUpdate()
             }
         }
+    var shaderLightModel = LightModel.NO_LIGHTING
 
     val content = UiContainer("$name-content", this)
     var contentHeight: SizeSpec? = null
@@ -86,6 +88,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
 
     init {
         content.parent = this
+        content.layoutSpec.setSize(pcs(100f), pcs(100f), pcs(100f))
     }
 
     override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
@@ -153,4 +156,24 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         super.rayTest(test)
         content.rayTest(test)
     }
+
+    operator fun Node.unaryPlus() {
+        content.addNode(this)
+    }
+
+    fun component(name: String, block: UiComponent.() -> Unit) = UiComponent(name, this).apply(block)
+
+    fun container(name: String, block: UiContainer.() -> Unit) = UiContainer(name, this).apply(block)
+
+    fun button(name: String, block: Button.() -> Unit) = Button(name, this).apply(block)
+
+    fun label(name: String, block: Label.() -> Unit) = Label(name, this).apply(block)
+
+    fun slider(name: String, block: Slider.() -> Unit) = slider(name, 0f, 100f, 50f, block)
+    fun slider(name: String, min: Float, max: Float, value: Float, block: Slider.() -> Unit) =
+            Slider(name, min, max, value, this).apply(block)
+
+    fun textField(name: String, block: TextField.() -> Unit) = TextField(name, this).apply(block)
+
+    fun toggleButton(name: String, block: ToggleButton.() -> Unit) = ToggleButton(name, this).apply(block)
 }

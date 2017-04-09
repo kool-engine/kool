@@ -14,6 +14,9 @@ import de.fabmax.kool.util.RayTest
 open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
 
     val contentBounds = BoundingBox()
+    val posX: Float get() = contentBounds.min.x
+    val posY: Float get() = contentBounds.min.y
+    val posZ: Float get() = contentBounds.min.z
     val width: Float get() = contentBounds.size.x
     val height: Float get() = contentBounds.size.y
     val depth: Float get() = contentBounds.size.z
@@ -21,7 +24,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     var layoutSpec = LayoutSpec()
     var padding = Margin(dps(16f), dps(16f), dps(16f), dps(16f))
         set(value) {
-            if (value != field) {
+            if (field != value) {
                 field = value
                 isUiUpdate = true
             }
@@ -31,8 +34,10 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
 
     var alpha = 1f
         set(value) {
-            field = value
-            updateComponentAlpha()
+            if (field != value) {
+                field = value
+                updateComponentAlpha()
+            }
         }
 
     val dpi: Float
@@ -64,7 +69,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     }
 
     protected open fun updateTheme(ctx: RenderContext) {
-        ui.prop.removeUi(ctx)
+        ui.prop.disposeUi(ctx)
         ui.setTheme(createThemeUi(ctx)).apply()
         setThemeProps()
         ui.prop.createUi(ctx)
@@ -89,8 +94,10 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
             updateUi(ctx)
         }
 
-        ui.prop.onRender(ctx)
-        super.render(ctx)
+        if (alpha != 0f) {
+            ui.prop.onRender(ctx)
+            super.render(ctx)
+        }
     }
 
     open fun doLayout(bounds: BoundingBox, ctx: RenderContext) {
