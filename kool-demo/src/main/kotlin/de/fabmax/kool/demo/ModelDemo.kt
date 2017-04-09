@@ -20,7 +20,7 @@ fun modelScene(): Scene = scene {
     // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
     +sphericalInputTransform {
         // Set some initial rotation so that we look down on the scene
-        setRotation(20f, -30f)
+        setMouseRotation(20f, -30f)
         // Add camera to the transform group
         +camera
     }

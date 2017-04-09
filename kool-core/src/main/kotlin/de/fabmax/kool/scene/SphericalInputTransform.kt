@@ -59,6 +59,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     private val tmpVec1 = MutableVec3f()
     private val tmpVec2 = MutableVec3f()
 
+    private val mouseTransform = Mat4f()
+    private val mouseTransformInv = Mat4f()
+
     var smoothness: Float = 0f
         set(value) {
             field = value
@@ -80,14 +83,14 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         panPlane.n.set(Vec3f.Y_AXIS)
     }
 
-    fun setRotation(vertical: Float, horizontal: Float) {
+    fun setMouseRotation(vertical: Float, horizontal: Float) {
         animRotV.set(vertical)
         animRotH.set(horizontal)
         verticalRotation = vertical
         horizontalRotation = horizontal
     }
 
-    fun setTranslation(x: Float, y: Float, z: Float) {
+    fun setMouseTranslation(x: Float, y: Float, z: Float) {
         translation.set(x, y, z)
     }
 
@@ -147,12 +150,15 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
         translationBounds?.clampToBounds(translation)
 
-        setIdentity()
-        translate(translation)
-        scale(z, z, z)
-        rotate(animRotV.animate(ctx.deltaT), verticalAxis)
-        rotate(animRotH.animate(ctx.deltaT), horizontalAxis)
+        mouseTransform.invert(mouseTransformInv)
+        mul(mouseTransformInv)
 
+        mouseTransform.setIdentity()
+        mouseTransform.translate(translation.x, translation.y, translation.z)
+        mouseTransform.scale(z, z, z)
+        mouseTransform.rotate(animRotV.animate(ctx.deltaT), verticalAxis)
+        mouseTransform.rotate(animRotH.animate(ctx.deltaT), horizontalAxis)
+        mul(mouseTransform)
 
         super.render(ctx)
     }
