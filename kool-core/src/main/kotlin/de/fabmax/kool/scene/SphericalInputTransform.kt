@@ -140,12 +140,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         val oldZ = animZoom.actual
         val z = animZoom.animate(ctx.deltaT)
         if (!Math.isEqual(oldZ, z)) {
-            // tmpVec1 = zoomed pos on pointer ray
-            scene.camera.globalPos.subtract(tmpVec1, pointerHit).scale(z / oldZ).add(pointerHit)
-            // tmpVec2 = zoomed pos on view center ray
-            scene.camera.globalPos.subtract(tmpVec2, scene.camera.globalLookAt).scale(z / oldZ)
-                    .add(scene.camera.globalLookAt)
-            translation.add(tmpVec1).subtract(tmpVec2)
+            computeZoomTranslationPerspective(scene, oldZ, z)
         }
 
         translationBounds?.clampToBounds(translation)
@@ -161,6 +156,19 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         mul(mouseTransform)
 
         super.render(ctx)
+    }
+
+    /**
+     * Computes the required camera translation so that the camera zooms to the point under the pointer (only works
+     * with perspective cameras)
+     */
+    protected open fun computeZoomTranslationPerspective(scene: Scene, oldZoom: Float, newZoom: Float) {
+        // tmpVec1 = zoomed pos on pointer ray
+        scene.camera.globalPos.subtract(tmpVec1, pointerHit).scale(newZoom / oldZoom).add(pointerHit)
+        // tmpVec2 = zoomed pos on view center ray
+        scene.camera.globalPos.subtract(tmpVec2, scene.camera.globalLookAt).scale(newZoom / oldZoom)
+                .add(scene.camera.globalLookAt)
+        translation.add(tmpVec1).subtract(tmpVec2)
     }
 
     private fun stopSmoothMotion() {
