@@ -246,7 +246,7 @@ open class Vec3f(x: Float, y: Float, z: Float) {
     fun cross(result: MutableVec3f, other: Vec3f): MutableVec3f {
         result.x = y * other.z - z * other.y
         result.y = z * other.x - x * other.z
-        result.z = x * other.x - y * other.x
+        result.z = x * other.y - y * other.x
         return result
     }
 
