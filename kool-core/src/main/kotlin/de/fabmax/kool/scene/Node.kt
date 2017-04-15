@@ -57,6 +57,12 @@ abstract class Node(val name: String? = null) {
     open var isPickable = true
 
     /**
+     * Determines whether this node is checked for visibility during rendering. If true the node is only rendered
+     * if it is within the camera frustum.
+     */
+    open var isFrustumChecked = false
+
+    /**
      * Renders this node using the specified graphics engine context. Implementations should consider the [isVisible]
      * flag and return without drawing anything if it is false.
      *
@@ -107,6 +113,15 @@ abstract class Node(val name: String? = null) {
             return this
         }
         return null
+    }
+
+    protected open fun checkIsVisible(ctx: RenderContext): Boolean {
+        if (!isVisible) {
+            return false
+        } else if (isFrustumChecked && !(scene?.camera?.isVisible(this) ?: true)) {
+            return false
+        }
+        return true
     }
 
     inline fun <reified T> findParentOfType(): T? {

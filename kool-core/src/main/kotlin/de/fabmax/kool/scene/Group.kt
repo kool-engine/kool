@@ -26,7 +26,7 @@ open class Group(name: String? = null) : Node(name) {
     }
 
     override fun render(ctx: RenderContext) {
-        if (!isVisible) {
+        if (!checkIsVisible(ctx)) {
             return
         }
         super.render(ctx)
