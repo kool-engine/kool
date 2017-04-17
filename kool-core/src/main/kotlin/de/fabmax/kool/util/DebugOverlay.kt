@@ -20,7 +20,7 @@ fun debugOverlay(ctx: RenderContext): Scene {
     val dbgOverlay = uiScene(ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
             componentUi({ BlankComponentUi() })
-            containerUi(::BlurredComponentUi)
+            containerUi(::SimpleComponentUi)
             standardFont(FontProps(Font.SYSTEM_FONT, 12f))
         }
         content.ui.setCustom(BlankComponentUi())

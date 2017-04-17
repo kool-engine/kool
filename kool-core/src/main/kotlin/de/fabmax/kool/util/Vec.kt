@@ -40,6 +40,8 @@ open class Vec2f(x: Float, y: Float) {
 
     constructor(f: Float) : this(f, f)
 
+    constructor(v: Vec2f) : this(v.x, v.y)
+
     operator fun get(i: Int): Float {
         return when (i) {
             0 -> x
@@ -115,7 +117,7 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
 
     constructor() : this(0f, 0f)
 
-    constructor(other: Vec2f) : this(other.x, other.y)
+    constructor(v: Vec2f) : this(v.x, v.y)
 
     fun add(other: Vec2f): MutableVec2f {
         x += other.x
@@ -173,6 +175,8 @@ open class Vec3f(x: Float, y: Float, z: Float) {
     open val z get() = zField
 
     constructor(f: Float) : this(f, f, f)
+
+    constructor(v: Vec3f) : this(v.x, v.y, v.z)
 
     operator fun get(i: Int): Float {
         return when (i) {
@@ -246,7 +250,7 @@ open class Vec3f(x: Float, y: Float, z: Float) {
     fun cross(result: MutableVec3f, other: Vec3f): MutableVec3f {
         result.x = y * other.z - z * other.y
         result.y = z * other.x - x * other.z
-        result.z = x * other.x - y * other.x
+        result.z = x * other.y - y * other.x
         return result
     }
 
@@ -280,7 +284,7 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
 
     constructor() : this(0f, 0f, 0f)
 
-    constructor(other: Vec3f) : this(other.x, other.y, other.z)
+    constructor(v: Vec3f) : this(v.x, v.y, v.z)
 
     fun set(x: Float, y: Float, z: Float): MutableVec3f {
         this.x = x
@@ -373,6 +377,8 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
     open val w get() = wField
 
     constructor(f: Float) : this(f, f, f, f)
+
+    constructor(v: Vec4f) : this(v.x, v.y, v.z, v.w)
 
     operator fun get(i: Int): Float {
         return when (i) {

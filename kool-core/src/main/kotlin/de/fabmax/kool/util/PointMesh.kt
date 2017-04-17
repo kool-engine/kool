@@ -14,7 +14,7 @@ import de.fabmax.kool.shading.basicPointShader
  */
 
 fun pointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
-    return PointMesh().apply(block)
+    return PointMesh(name = name).apply(block)
 }
 
 class PointMesh(data: MeshData = MeshData(false, true, false), name: String? = null) : Mesh(data, name) {

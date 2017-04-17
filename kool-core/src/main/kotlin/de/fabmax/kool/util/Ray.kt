@@ -11,6 +11,11 @@ class Ray {
     val origin = MutableVec3f()
     val direction = MutableVec3f()
 
+    fun set(other: Ray) {
+        origin.set(other.origin)
+        direction.set(other.direction)
+    }
+
     fun setFromLookAt(origin: Vec3f, lookAt: Vec3f) {
         this.origin.set(origin)
         direction.set(lookAt).subtract(origin).norm()

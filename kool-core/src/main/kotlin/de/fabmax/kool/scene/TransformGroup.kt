@@ -30,6 +30,11 @@ open class TransformGroup(name: String? = null) : Group(name) {
         }
     }
 
+    protected fun setDirty() {
+        isDirty = true
+        isIdentity = false
+    }
+
     override fun render(ctx: RenderContext) {
         if (!isVisible) {
             return
@@ -109,8 +114,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
 
     fun translate(tx: Float, ty: Float, tz: Float): TransformGroup {
         transform.translate(tx, ty, tz)
-        isDirty = true
-        isIdentity = false
+        setDirty()
         return this
     }
 
@@ -118,8 +122,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): TransformGroup {
         transform.rotate(angleDeg, axX, axY, axZ)
-        isDirty = true
-        isIdentity = false
+        setDirty()
         return this
     }
 
@@ -132,22 +135,19 @@ open class TransformGroup(name: String? = null) : Group(name) {
 
     fun scale(sx: Float, sy: Float, sz: Float): TransformGroup {
         transform.scale(sx, sy, sz)
-        isDirty = true
-        isIdentity = false
+        setDirty()
         return this
     }
 
     fun mul(mat: Mat4f): TransformGroup {
         transform.mul(mat)
-        isDirty = true
-        isIdentity = false
+        setDirty()
         return this
     }
 
     fun set(mat: Mat4f): TransformGroup {
         transform.set(mat)
-        isDirty = true
-        isIdentity = false
+        setDirty()
         return this
     }
 

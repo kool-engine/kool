@@ -65,9 +65,9 @@ class KdTree<T>(items: List<T>,
                 bucketSz: Int = 20) {
 
     val items: List<T> get() = mutItems
+    val root: Node
 
     private val mutItems: MutableList<T> = mutableListOf()
-    private val root: Node
 
     private val cmpX: (T, T) -> Int = { a, b -> a.getX().compareTo(b.getX()) }
     private val cmpY: (T, T) -> Int = { a, b -> a.getY().compareTo(b.getY()) }
@@ -79,11 +79,12 @@ class KdTree<T>(items: List<T>,
         const val TRAV_LEFT_ONLY = 2
         const val TRAV_RIGHT_FIRST = 3
         const val TRAV_RIGHT_ONLY = 4
+        const val TRAV_NONE = 5
     }
 
     init {
         this.mutItems.addAll(items)
-        root = Node(this.mutItems.indices, bucketSz)
+        root = Node(this.mutItems.indices, 0, bucketSz)
     }
 
     fun traverse(traverser: KdTreeTraverser<T>) {
@@ -96,7 +97,7 @@ class KdTree<T>(items: List<T>,
         root.inRadius(result, center, radius*radius)
     }
 
-    inner class Node(val indices: IntRange, bucketSz: Int) {
+    inner class Node(val indices: IntRange, val depth: Int, bucketSz: Int) {
 
         val isLeaf: Boolean
         val left: Node?
@@ -134,8 +135,8 @@ class KdTree<T>(items: List<T>,
                 }
                 val k = indices.first + (indices.last - indices.first) / 2
                 partition(indices.first, indices.last, k, cmp)
-                left = Node(indices.first..k, bucketSz)
-                right = Node((k+1)..indices.last, bucketSz)
+                left = Node(indices.first..k, depth + 1, bucketSz)
+                right = Node((k+1)..indices.last, depth + 1, bucketSz)
             }
         }
 
@@ -147,13 +148,14 @@ class KdTree<T>(items: List<T>,
                 } else {
                     val pref = traverser.traversalOrder(this@KdTree, left!!, right!!)
                     when (pref) {
+                        TRAV_NONE -> return
                         TRAV_LEFT_ONLY -> left.traverse(traverser)
                         TRAV_RIGHT_ONLY -> right.traverse(traverser)
                         TRAV_RIGHT_FIRST -> {
                             right.traverse(traverser)
                             left.traverse(traverser)
                         }
-                        else -> {
+                        else -> {   // TRAV_LEFT_FIRST, TRAV_NO_PREFERENCE
                             left.traverse(traverser)
                             right.traverse(traverser)
                         }

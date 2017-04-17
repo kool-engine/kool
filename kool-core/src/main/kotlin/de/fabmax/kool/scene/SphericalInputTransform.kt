@@ -209,12 +209,10 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         return 0
     }
 
-    companion object {
-        enum class DragMethod {
-            NONE,
-            ROTATE,
-            PAN
-        }
+    enum class DragMethod {
+        NONE,
+        ROTATE,
+        PAN
     }
 
     private inner class AnimatedVal(value: Float) {

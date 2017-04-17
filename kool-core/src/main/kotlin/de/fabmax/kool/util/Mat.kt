@@ -20,6 +20,8 @@ open class Mat4f {
         setIdentity()
     }
 
+    fun translate(t: Vec3f): Mat4f = translate(t.x, t.y, t.z)
+
     fun translate(tx: Float, ty: Float, tz: Float): Mat4f {
         for (i in 0..3) {
             val mi = offset + i

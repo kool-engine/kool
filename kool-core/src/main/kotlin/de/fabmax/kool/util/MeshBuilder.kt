@@ -24,7 +24,7 @@ open class MeshBuilder(val meshData: MeshData) {
     val sphereProps = SphereProps()
     val textProps = TextProps()
 
-    protected open fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO): Int {
+    open fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO): Int {
         return meshData.addVertex {
             position.set(pos)
             normal.set(nrm)
@@ -54,7 +54,10 @@ open class MeshBuilder(val meshData: MeshData) {
         this.color = c
     }
 
-    fun clear() = meshData.clear()
+    fun clear() {
+        meshData.clear()
+        identity()
+    }
 
     fun identity() = transform.setIdentity()
 
@@ -360,7 +363,7 @@ open class MeshBuilder(val meshData: MeshData) {
 
         // left
         withColor(props.leftColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.y), Vec3f.NEG_X_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS)
             val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS)
             val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_X_AXIS)
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_X_AXIS)

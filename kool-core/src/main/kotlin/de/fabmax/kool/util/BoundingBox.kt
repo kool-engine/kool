@@ -277,7 +277,7 @@ class BoundingBox() {
         if (isEmpty) {
             return "[empty]"
         } else {
-            return "[center=$center, size=$size]"
+            return "[min=$min, max=$max]"
         }
     }
 }
