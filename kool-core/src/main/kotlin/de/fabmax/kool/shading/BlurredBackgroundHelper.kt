@@ -137,6 +137,18 @@ class BlurredBackgroundHelper(
         }
     }
 
+    fun dispose(ctx: RenderContext) {
+        blurFb1?.delete(ctx)
+        blurFb2?.delete(ctx)
+        copyTex.dispose(ctx)
+        fb1Tex.dispose(ctx)
+        blurredBgTex.dispose(ctx)
+        texMesh.dispose(ctx)
+        texMeshFlipped.dispose(ctx)
+        blurX.dispose(ctx)
+        blurY.dispose(ctx)
+    }
+
     private fun doBlurring(ctx: RenderContext) {
         ctx.textureMgr.bindTexture(copyTex, ctx)
         ctx.textureMgr.bindTexture(fb1Tex, ctx)

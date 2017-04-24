@@ -5,7 +5,7 @@ import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 
 class TextureResource private constructor(glRef: Any, val target: Int, val props: TextureProps, ctx: RenderContext) :
-        GlResource(glRef, Type.TEXTURE) {
+        GlResource(glRef, Type.TEXTURE, ctx) {
 
     companion object {
         fun create(target: Int, props: TextureProps, ctx: RenderContext): TextureResource {

@@ -15,7 +15,7 @@ fun colorAttachmentTex(width: Int, height: Int, minFilter: Int, magFilter: Int):
 }
 
 class FramebufferResource private constructor(glRef: Any, val colorAttachment: Texture, ctx: RenderContext) :
-        GlResource(glRef, Type.FRAMEBUFFER) {
+        GlResource(glRef, Type.FRAMEBUFFER, ctx) {
     companion object {
         fun create(width: Int, height: Int, ctx: RenderContext): FramebufferResource {
             val id = ctx.generateUniqueId()

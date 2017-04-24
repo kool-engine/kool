@@ -4,7 +4,7 @@ import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 
 class ShaderResource private constructor(glRef: Any, ctx: RenderContext) :
-        GlResource(glRef, Type.SHADER) {
+        GlResource(glRef, Type.SHADER, ctx) {
     companion object {
         fun createFragmentShader(ctx: RenderContext): ShaderResource {
             return ShaderResource(GL.createShader(GL.Companion.FRAGMENT_SHADER), ctx)

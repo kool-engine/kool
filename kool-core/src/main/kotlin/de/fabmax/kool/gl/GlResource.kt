@@ -5,7 +5,7 @@ import de.fabmax.kool.platform.*
 /**
  * @author fabmax
  */
-abstract class GlResource constructor(glRef: Any, val type: Type) {
+abstract class GlResource constructor(glRef: Any, val type: Type, ctx: RenderContext) {
     enum class Type {
         BUFFER,
         FRAMEBUFFER,
@@ -20,6 +20,11 @@ abstract class GlResource constructor(glRef: Any, val type: Type) {
 
     val isValid: Boolean
         get() = glRef != null
+
+    init {
+        @Suppress("LeakingThis")
+        ctx.memoryMgr.memoryAllocated(this, 0)
+    }
 
     open fun delete(ctx: RenderContext) {
         ctx.memoryMgr.deleted(this)

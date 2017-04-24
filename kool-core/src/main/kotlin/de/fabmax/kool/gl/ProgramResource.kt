@@ -3,7 +3,7 @@ package de.fabmax.kool.gl
 import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 
-class ProgramResource private constructor(glRef: Any, ctx: RenderContext) : GlResource(glRef, Type.PROGRAM) {
+class ProgramResource private constructor(glRef: Any, ctx: RenderContext) : GlResource(glRef, Type.PROGRAM, ctx) {
     companion object {
         fun create(ctx: RenderContext): ProgramResource {
             return ProgramResource(GL.createProgram(), ctx)

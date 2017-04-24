@@ -14,7 +14,7 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
     }
 
     private var activeTexUnit = 0
-    private val boundTextures = Array<TextureResource?>(TEXTURE_UNITS, { i -> null })
+    private val boundTextures = Array<TextureResource?>(TEXTURE_UNITS, { null })
     private val loadingTextures: MutableMap<String, TextureData> = mutableMapOf()
 
     fun bindTexture(texture: Texture, ctx: RenderContext): Int {

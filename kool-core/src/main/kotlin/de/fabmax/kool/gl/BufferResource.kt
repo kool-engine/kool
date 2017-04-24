@@ -3,7 +3,7 @@ package de.fabmax.kool.gl
 import de.fabmax.kool.platform.*
 
 class BufferResource private constructor(glRef: Any, val target: Int, ctx: RenderContext) :
-        GlResource(glRef, Type.BUFFER) {
+        GlResource(glRef, Type.BUFFER, ctx) {
 
     companion object {
         fun create(target: Int, ctx: RenderContext): BufferResource {
