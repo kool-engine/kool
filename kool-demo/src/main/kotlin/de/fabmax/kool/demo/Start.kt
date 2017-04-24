@@ -89,6 +89,14 @@ class Demo(ctx: RenderContext) {
 
                 onClick += { _,_,_ -> newScene = pointScene() }
             }
+            +button("synthieDemo") {
+                layoutSpec.setOrigin(zero(), dps(-210f, true), zero())
+                layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
+                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
+                text = "Synthie Demo"
+
+                onClick += { _,_,_ -> newScene = synthieScene() }
+            }
             +toggleButton("showDbg") {
                 layoutSpec.setOrigin(zero(), dps(10f, true), zero())
                 layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())

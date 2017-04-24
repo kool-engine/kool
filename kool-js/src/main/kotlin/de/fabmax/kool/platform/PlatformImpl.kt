@@ -20,6 +20,8 @@ import kotlin.js.Date
 class PlatformImpl private constructor() : Platform() {
 
     companion object {
+        private val mathImpl = JsMath()
+
         internal var jsContext: JsContext? = null
         internal val gl: WebGLRenderingContext
             get() = jsContext?.gl ?: throw KoolException("Platform.createContext() not called")
@@ -52,6 +54,9 @@ class PlatformImpl private constructor() : Platform() {
         val MAX_GENERATED_TEX_HEIGHT = 1024
     }
 
+    internal val audioCtx = js("new (window.AudioContext || window.webkitAudioContext)();")
+    private var audioImpl = AudioImpl(this)
+
     internal val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     override val supportsMultiContext = false
@@ -72,12 +77,16 @@ class PlatformImpl private constructor() : Platform() {
         return ctx
     }
 
+    override fun getAudioImpl(): Audio {
+        return audioImpl
+    }
+
     override fun getGlImpl(): GL.Impl {
         return WebGlImpl.instance
     }
 
     override fun getMathImpl(): Math.Impl {
-        return JsMath()
+        return mathImpl
     }
 
     override fun createUint8Buffer(capacity: Int): Uint8Buffer {

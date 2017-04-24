@@ -10,16 +10,6 @@ import de.fabmax.kool.util.*
  * @author fabmax
  */
 
-fun pointDemo(ctx: RenderContext) {
-    ctx.scenes += pointScene()
-    ctx.scenes += debugOverlay(ctx)
-
-    // Set background color
-    ctx.clearColor = color("00323F")
-    // Finally run the whole thing
-    ctx.run()
-}
-
 fun pointScene(): Scene {
     val (pointMesh, tree) = makePointMesh()
     //val (pointMesh, tree) = makeBillboardPointMesh()

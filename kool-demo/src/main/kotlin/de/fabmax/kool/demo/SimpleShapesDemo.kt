@@ -14,16 +14,6 @@ import de.fabmax.kool.util.*
  *
  * @author fabmax
  */
-fun simpleShapesDemo(ctx: RenderContext) {
-    // build the demo scene
-    ctx.scenes += simpleShapesScene()
-    // show some stats
-    ctx.scenes += debugOverlay(ctx)
-    // Set background color
-    ctx.clearColor = Color(0.05f, 0.15f, 0.25f, 1f)
-    // Finally run the whole thing
-    ctx.run()
-}
 
 fun simpleShapesScene(): Scene = scene("simpleShapes") {
     // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)

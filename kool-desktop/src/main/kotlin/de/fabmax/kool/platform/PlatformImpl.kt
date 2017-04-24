@@ -22,6 +22,9 @@ import javax.imageio.ImageIO
  */
 class PlatformImpl private constructor() : Platform() {
     companion object {
+        private val mathImpl = JavaMath()
+        private val audioImpl = AudioImpl()
+
         private val monitors: MutableList<MonitorSpec> = mutableListOf()
         val primaryMonitor: MonitorSpec
 
@@ -93,11 +96,16 @@ class PlatformImpl private constructor() : Platform() {
         }
     }
 
+    override fun getAudioImpl(): Audio {
+        return audioImpl
+    }
+
     override fun getGlImpl(): GL.Impl {
         return Lwjgl3Impl.instance
     }
+
     override fun getMathImpl(): Math.Impl {
-        return JavaMath()
+        return mathImpl
     }
 
     override fun createUint8Buffer(capacity: Int): Uint8Buffer {

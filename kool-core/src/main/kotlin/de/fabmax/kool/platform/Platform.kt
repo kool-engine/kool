@@ -43,6 +43,10 @@ abstract class Platform {
             return instance.getMathImpl()
         }
 
+        fun getAudioImpl(): Audio {
+            return instance.getAudioImpl()
+        }
+
         fun createUint8Buffer(capacity: Int): Uint8Buffer {
             return instance.createUint8Buffer(capacity)
         }
@@ -78,6 +82,8 @@ abstract class Platform {
 
     abstract fun createContext(props: RenderContext.InitProps): RenderContext
 
+    abstract fun getAudioImpl(): Audio
+
     abstract fun getGlImpl(): GL.Impl
 
     abstract fun getMathImpl(): Math.Impl
@@ -105,6 +111,10 @@ abstract class Platform {
             get() = throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
 
         override fun getGlImpl(): GL.Impl {
+            throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
+        }
+
+        override fun getAudioImpl(): Audio {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 

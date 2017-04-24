@@ -11,11 +11,6 @@ import de.fabmax.kool.util.*
  * @author fabmax
  */
 
-fun modelDemo(ctx: RenderContext) {
-    ctx.scenes += modelScene()
-    ctx.run()
-}
-
 fun modelScene(): Scene = scene {
     // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
     +sphericalInputTransform {
