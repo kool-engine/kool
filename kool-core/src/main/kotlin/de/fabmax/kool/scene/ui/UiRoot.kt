@@ -150,6 +150,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
     override fun dispose(ctx: RenderContext) {
         super.dispose(ctx)
         content.dispose(ctx)
+        blurHelper?.dispose(ctx)
     }
 
     override fun rayTest(test: RayTest) {

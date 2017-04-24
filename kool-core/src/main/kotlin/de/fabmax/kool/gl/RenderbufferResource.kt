@@ -4,7 +4,7 @@ import de.fabmax.kool.platform.GL
 import de.fabmax.kool.platform.RenderContext
 
 class RenderbufferResource private constructor(glRef: Any, ctx: RenderContext) :
-        GlResource(glRef, Type.RENDERBUFFER) {
+        GlResource(glRef, Type.RENDERBUFFER, ctx) {
     companion object {
         fun create(ctx: RenderContext): RenderbufferResource {
             return RenderbufferResource(GL.createRenderbuffer(), ctx)

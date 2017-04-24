@@ -126,6 +126,10 @@ open class BasicShader(props: ShaderProps, private val generator: GlslGenerator 
         generator.uniformModelMatrix.bind(ctx)
     }
 
+    override fun dispose(ctx: RenderContext) {
+        super.dispose(ctx)
+        texture?.dispose(ctx)
+    }
 }
 
 fun basicPointShader(propsInit: ShaderProps.() -> Unit): BasicPointShader {
