@@ -35,6 +35,9 @@ class BlurredBackgroundHelper(
     private var blurFb1: FramebufferResource? = null
     private var blurFb2: FramebufferResource? = null
 
+    var isForceUpdateTex = false
+    internal var isInUse = true
+
     private val fb1Tex = colorAttachmentTex(texSize, texSize, GL.LINEAR, GL.LINEAR)
     val blurredBgTex = colorAttachmentTex(texSize, texSize, GL.LINEAR, GL.LINEAR)
 
@@ -91,6 +94,14 @@ class BlurredBackgroundHelper(
     }
 
     fun updateDistortionTexture(node: Node, ctx: RenderContext, bounds: BoundingBox = node.bounds) {
+        // Only update the distortion texture if it is really used. This saves considerable performance if it is used
+        // as background of a hidden UI.
+        // The isInUse flag is set by BlurShaders which use this texture
+        if (!isInUse || isForceUpdateTex) {
+            return
+        }
+        isInUse = false
+
         val cam = node.scene?.camera ?: return
 
         texBounds.clear()
@@ -357,6 +368,7 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
         super.onBind(ctx)
         val helper = blurHelper
         if (helper != null) {
+            helper.isInUse = true
             uTexPos.value.set(helper.capturedScrX.toFloat(), helper.capturedScrY.toFloat())
             uTexSz.value.set(helper.capturedScrW.toFloat(), helper.capturedScrH.toFloat())
         }
