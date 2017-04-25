@@ -104,6 +104,7 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
                 if (ev.key.length == 1) {
                     inputMgr.charTyped(ev.key[0])
                 }
+                js("return false;")
             }
             document.onkeyup = { ev ->
                 ev as KeyboardEvent
@@ -119,6 +120,7 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
 
                     inputMgr.keyEvent(code, mods, InputManager.KEY_EV_UP)
                 }
+                js("return false;")
             }
 //        } else {
 //            canvas.onkeydown = { ev ->
