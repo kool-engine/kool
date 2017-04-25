@@ -5,6 +5,7 @@ import de.fabmax.kool.platform.PlatformImpl
 import de.fabmax.kool.platform.RenderContext
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 import org.w3c.dom.events.WheelEvent
@@ -62,7 +63,7 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
         }
 
         // suppress context menu
-        canvas.oncontextmenu = { _ -> js("return false;") }
+        canvas.oncontextmenu = Event::preventDefault
 
         canvas.onmouseenter = { inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, true) }
         canvas.onmouseleave = { inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, false) }
@@ -76,60 +77,53 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
                 ticks /= 30f
             }
             inputMgr.updatePointerScrollPos(InputManager.PRIMARY_POINTER, ticks)
-            // mark wheel event as handled to prevent scrolling the page
-            // unfortunately Kotlin event handler signature returns Unit, but this does the trick...
-            js("return false;")
+            ev.preventDefault()
         }
+
+        document.onkeydown = { ev -> handleKeyDown(ev as KeyboardEvent) }
+        document.onkeyup = { ev -> handleKeyUp(ev as KeyboardEvent) }
 
 //        if (canvas.tabIndex <= 0) {
 //            println("No canvas tabIndex set! Falling back to document key events, this doesn't work with multi context")
-            document.onkeydown = { ev ->
-                ev as KeyboardEvent
-                //println("js down: ${ev.key}")
-
-                val code = translateKeyCode(ev.code)
-                if (code != 0) {
-                    var mods = 0
-                    if (ev.altKey) { mods = mods or InputManager.KEY_MOD_ALT }
-                    if (ev.ctrlKey) { mods = mods or InputManager.KEY_MOD_CTRL }
-                    if (ev.shiftKey) { mods = mods or InputManager.KEY_MOD_SHIFT }
-                    if (ev.metaKey) { mods = mods or InputManager.KEY_MOD_SUPER }
-
-                    var event = InputManager.KEY_EV_DOWN
-                    if (ev.repeat) {
-                        event = event or InputManager.KEY_EV_REPEATED
-                    }
-                    inputMgr.keyEvent(code, mods, event)
-                }
-                if (ev.key.length == 1) {
-                    inputMgr.charTyped(ev.key[0])
-                }
-            }
-            document.onkeyup = { ev ->
-                ev as KeyboardEvent
-                //println("js up: ${ev.key}")
-
-                val code = translateKeyCode(ev.code)
-                if (code != 0) {
-                    var mods = 0
-                    if (ev.altKey) { mods = mods or InputManager.KEY_MOD_ALT }
-                    if (ev.ctrlKey) { mods = mods or InputManager.KEY_MOD_CTRL }
-                    if (ev.shiftKey) { mods = mods or InputManager.KEY_MOD_SHIFT }
-                    if (ev.metaKey) { mods = mods or InputManager.KEY_MOD_SUPER }
-
-                    inputMgr.keyEvent(code, mods, InputManager.KEY_EV_UP)
-                }
-            }
 //        } else {
-//            canvas.onkeydown = { ev ->
-//                ev as KeyboardEvent
-//                println("key down: key=${ev.key} code=${ev.code} repeat=${ev.repeat}")
-//            }
-//            canvas.onkeyup = { ev ->
-//                ev as KeyboardEvent
-//                println("key up: key=${ev.key} code=${ev.code} repeat=${ev.repeat}")
-//            }
+//            canvas.onkeydown = { ev -> handleKeyDown(ev as KeyboardEvent) }
+//            canvas.onkeyup = { ev -> handleKeyUp(ev as KeyboardEvent) }
 //        }
+    }
+
+    private fun handleKeyUp(ev: KeyboardEvent) {
+        val code = translateKeyCode(ev.code)
+        if (code != 0) {
+            var mods = 0
+            if (ev.altKey) { mods = mods or InputManager.KEY_MOD_ALT }
+            if (ev.ctrlKey) { mods = mods or InputManager.KEY_MOD_CTRL }
+            if (ev.shiftKey) { mods = mods or InputManager.KEY_MOD_SHIFT }
+            if (ev.metaKey) { mods = mods or InputManager.KEY_MOD_SUPER }
+
+            var event = InputManager.KEY_EV_DOWN
+            if (ev.repeat) {
+                event = event or InputManager.KEY_EV_REPEATED
+            }
+            inputMgr.keyEvent(code, mods, event)
+        }
+        if (ev.key.length == 1) {
+            inputMgr.charTyped(ev.key[0])
+        }
+        ev.preventDefault()
+    }
+
+    private fun handleKeyDown(ev: KeyboardEvent) {
+        val code = translateKeyCode(ev.code)
+        if (code != 0) {
+            var mods = 0
+            if (ev.altKey) { mods = mods or InputManager.KEY_MOD_ALT }
+            if (ev.ctrlKey) { mods = mods or InputManager.KEY_MOD_CTRL }
+            if (ev.shiftKey) { mods = mods or InputManager.KEY_MOD_SHIFT }
+            if (ev.metaKey) { mods = mods or InputManager.KEY_MOD_SUPER }
+
+            inputMgr.keyEvent(code, mods, InputManager.KEY_EV_UP)
+        }
+        ev.preventDefault()
     }
 
     private fun translateKeyCode(code: String): Int {
