@@ -1,5 +1,7 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.platform.js.Float32BufferImpl
+
 /**
  * @author fabmax
  */
@@ -26,9 +28,11 @@ internal class AudioImpl(private val platform: PlatformImpl) : Audio() {
 
         private val source: dynamic
         private val scriptNode: dynamic
+        private var analyserNode: dynamic
+        private var powerSpectrum: Float32BufferImpl = Platform.createFloat32Buffer(1) as Float32BufferImpl
 
         init {
-            scriptNode = platform.audioCtx.createScriptProcessor(8192, 1, 1)
+            scriptNode = platform.audioCtx.createScriptProcessor(4096, 1, 1)
             val buffer = platform.audioCtx.createBuffer(1, scriptNode.bufferSize, sampleRate)
             var n = 0
 
@@ -39,6 +43,8 @@ internal class AudioImpl(private val platform: PlatformImpl) : Audio() {
                     data[i] = generatorFun(n++ / sampleRate.toDouble())
                 }
             }
+
+            analyserNode = null
 
             source = platform.audioCtx.createBufferSource()
             source.buffer = buffer
@@ -55,5 +61,26 @@ internal class AudioImpl(private val platform: PlatformImpl) : Audio() {
             source.stop()
         }
 
+        override fun enableFftComputation(nSamples: Int) {
+            if (nSamples <= 0) {
+                analyserNode?.disconnect()
+                analyserNode = null
+            } else {
+                if (analyserNode == null) {
+                    analyserNode = platform.audioCtx.createAnalyser()
+                    analyserNode.minDecibels = -90
+                    analyserNode.maxDecibels = 0
+                    analyserNode.smoothingTimeConstant = 0.5
+                    scriptNode.connect(analyserNode)
+                }
+                analyserNode.fftSize = nSamples
+                powerSpectrum = Platform.createFloat32Buffer(analyserNode.frequencyBinCount) as Float32BufferImpl
+            }
+        }
+
+        override fun getPowerSpectrum(): Float32Buffer {
+            analyserNode.getFloatFrequencyData(powerSpectrum.buffer)
+            return powerSpectrum
+        }
     }
 }

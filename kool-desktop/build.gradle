@@ -24,12 +24,14 @@ sourceSets {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile project(":kool-core")
+    compile 'com.github.wendykierp:JTransforms:3.1'
 
     compile "org.lwjgl:lwjgl:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
+
+    compile project(":kool-core")
 
     runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"

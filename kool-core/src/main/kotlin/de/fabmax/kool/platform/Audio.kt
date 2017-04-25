@@ -22,4 +22,7 @@ abstract class AudioGenerator {
 
     abstract fun stop()
 
+    abstract fun enableFftComputation(nSamples: Int)
+
+    abstract fun getPowerSpectrum(): Float32Buffer
 }

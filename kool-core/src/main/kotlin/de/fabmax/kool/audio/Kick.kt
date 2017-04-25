@@ -31,6 +31,6 @@ class Kick(val bpm: Float) : SampleNode() {
         private const val PERC_C1 = 54f
 
         private const val CLICK_AMPL = 0.054f
-        private const val PERC_AMPL = 4f
+        private const val PERC_AMPL = 3f
     }
 }

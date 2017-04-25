@@ -12,7 +12,7 @@ import de.fabmax.kool.util.*
 class Demo(ctx: RenderContext) {
 
     private val dbgOverlay = debugOverlay(ctx)
-    private var newScene: Scene? = simpleShapesScene()
+    private var newScene: Scene? = synthieScene()
     private var currentScene: Scene? = null
 
     init {

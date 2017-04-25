@@ -15,7 +15,7 @@ fun lineMesh(name: String? = null, block: LineMesh.() -> Unit): LineMesh {
     return LineMesh(name = name).apply(block)
 }
 
-class LineMesh(data: MeshData = MeshData(false, true, false), name: String? = null) : Mesh(data, name) {
+open class LineMesh(data: MeshData = MeshData(false, true, false), name: String? = null) : Mesh(data, name) {
     init {
         primitiveType = GL.LINES
         shader = basicShader {
