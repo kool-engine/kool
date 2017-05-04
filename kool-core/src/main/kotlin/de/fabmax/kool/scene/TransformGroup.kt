@@ -53,6 +53,9 @@ open class TransformGroup(name: String? = null) : Group(name) {
         // draw all child nodes
         super.render(ctx)
 
+        // isRendered flag is ignored because this group's bounds aren't valid before children are rendered
+        // therefore the frustum check is not reliable
+
         // transform updated bounding box
         if (!bounds.isEmpty && !wasIdentity) {
             tmpBounds.clear()

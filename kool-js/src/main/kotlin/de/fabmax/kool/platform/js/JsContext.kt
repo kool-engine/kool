@@ -16,7 +16,7 @@ import kotlin.browser.window
  * @author fabmax
  */
 @Suppress("UnsafeCastFromDynamic")
-class JsContext internal constructor(props: InitProps) : RenderContext() {
+class JsContext internal constructor(val props: InitProps) : RenderContext() {
 
     override var windowWidth = 0
         private set
@@ -109,7 +109,10 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
         if (ev.key.length == 1) {
             inputMgr.charTyped(ev.key[0])
         }
-        ev.preventDefault()
+
+        if (!props.excludedKeyCodes.contains(ev.code)) {
+            ev.preventDefault()
+        }
     }
 
     private fun handleKeyDown(ev: KeyboardEvent) {
@@ -123,7 +126,10 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
 
             inputMgr.keyEvent(code, mods, InputManager.KEY_EV_UP)
         }
-        ev.preventDefault()
+
+        if (!props.excludedKeyCodes.contains(ev.code)) {
+            ev.preventDefault()
+        }
     }
 
     private fun translateKeyCode(code: String): Int {
@@ -166,6 +172,7 @@ class JsContext internal constructor(props: InitProps) : RenderContext() {
 
     class InitProps : RenderContext.InitProps() {
         var canvasName = "glCanvas"
+        val excludedKeyCodes: MutableSet<String> = mutableSetOf("F5")
     }
 
     companion object {

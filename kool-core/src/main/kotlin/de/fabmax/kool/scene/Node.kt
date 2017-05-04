@@ -5,6 +5,7 @@ import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.RayTest
+import de.fabmax.kool.util.Vec3f
 
 /**
  * A scene node. This is the base class for all scene objects.
@@ -20,10 +21,24 @@ abstract class Node(val name: String? = null) {
     val onHoverExit: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
 
     /**
-     * Axis-aligned bounds of this node, implementations should set and refresh their bounds on every frame
-     * if applicable.
+     * Axis-aligned bounds of this node in local coordinates.
+     * Implementations should set and refresh their bounds on every frame if applicable.
      */
     open val bounds = BoundingBox()
+
+    /**
+     * Center point of this node's bounds in global coordinates.
+     */
+    open val globalCenter: Vec3f get() = globalCenterMut
+
+    /**
+     * Radius of this node's bounding sphere in global coordinates.
+     */
+    open var globalRadius = 0f
+        protected set
+
+    private val globalCenterMut = MutableVec3f()
+    private val globalExtentMut = MutableVec3f()
 
     /**
      * Parent node is set when this node is added to a [Group]
@@ -47,7 +62,7 @@ abstract class Node(val name: String? = null) {
 
     /**
      * Determines the visibility of this node. If visible is false this node will be skipped on
-     * rendering. Implementations must consider this flag in order to get the expected behaviour.
+     * rendering.
      */
     open var isVisible = true
 
@@ -60,7 +75,14 @@ abstract class Node(val name: String? = null) {
      * Determines whether this node is checked for visibility during rendering. If true the node is only rendered
      * if it is within the camera frustum.
      */
-    open var isFrustumChecked = false
+    open var isFrustumChecked = true
+
+    /**
+     * Flag indicating if this node should be rendered. The flag is updated in the [render] method based on
+     * the [isVisible] flag and [isFrustumChecked]. I.e. it is false if this node is either explicitly hidden or outside
+     * of the camera frustum and frustum checking is enabled.
+     */
+    protected var isRendered = true
 
     /**
      * Renders this node using the specified graphics engine context. Implementations should consider the [isVisible]
@@ -69,9 +91,20 @@ abstract class Node(val name: String? = null) {
      * @param ctx    the graphics engine context
      */
     open fun render(ctx: RenderContext) {
-        if (!onRender.isEmpty()) {
-            for (i in onRender.indices) {
-                onRender[i](ctx)
+        // update global center and radius
+        globalCenterMut.set(bounds.center)
+        globalExtentMut.set(bounds.max)
+        ctx.mvpState.modelMatrix.transform(globalCenterMut)
+        ctx.mvpState.modelMatrix.transform(globalExtentMut)
+        globalRadius = globalCenter.distance(globalExtentMut)
+
+        isRendered = checkIsVisible()
+
+        if (isRendered) {
+            if (!onRender.isEmpty()) {
+                for (i in onRender.indices) {
+                    onRender[i](ctx)
+                }
             }
         }
     }
@@ -115,11 +148,11 @@ abstract class Node(val name: String? = null) {
         return null
     }
 
-    protected open fun checkIsVisible(ctx: RenderContext): Boolean {
+    private fun checkIsVisible(): Boolean {
         if (!isVisible) {
             return false
-        } else if (isFrustumChecked && !(scene?.camera?.isVisible(this) ?: true)) {
-            return false
+        } else if (isFrustumChecked && !bounds.isEmpty) {
+            return scene?.camera?.isInFrustum(this) ?: true
         }
         return true
     }
