@@ -16,4 +16,9 @@ open class Oscillator(val shape: Wave, var frequency: Float = 440f) : SampleNode
     override fun clock(t: Double) {
         sample = shape[t * frequency + phaseShift]
     }
+
+    fun clockAndPlay(t: Double, freq: Float): Float {
+        frequency = freq
+        return super.clockAndPlay(t)
+    }
 }

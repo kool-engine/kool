@@ -6,8 +6,8 @@ import de.fabmax.kool.platform.Math
  * @author fabmax
  */
 class Kick(val bpm: Float) : SampleNode() {
-    private val osc1 = Oscillator(Wave.SINE).apply { frequency = 49f }
-    private val osc2 = Oscillator(Wave.SAW).apply { frequency = 49f / 5f }
+    private val osc1 = Oscillator(Wave.SINE).apply { frequency = 60f }
+    private val osc2 = Oscillator(Wave.SAW).apply { frequency = 50f / 5f }
 
     private val lowPass = LowPassFilter(240f, this)
 
@@ -30,7 +30,7 @@ class Kick(val bpm: Float) : SampleNode() {
 
         private const val PERC_C1 = 54f
 
-        private const val CLICK_AMPL = 0.054f
-        private const val PERC_AMPL = 3f
+        private const val CLICK_AMPL = 0.05f
+        private const val PERC_AMPL = 2.5f
     }
 }

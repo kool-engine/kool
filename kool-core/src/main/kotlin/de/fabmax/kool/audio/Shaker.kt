@@ -10,7 +10,7 @@ class Shaker(val bpm: Float) : SampleNode() {
     private val highPass = HighPassFilter(1.5f, this)
 
     override fun clock(t: Double) {
-        val noise = Math.random().toFloat() * 2f - 1f
+        val noise = SynthieUtils.noise()
         val pc2 = (t % (60f / bpm) / 8).toFloat()
         var pc1 = 230f
         if ((t + 0.5) % 0.5 > 0.25) {
