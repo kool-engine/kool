@@ -85,10 +85,11 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     }
 
     override fun render(ctx: RenderContext) {
-        if (!checkIsVisible(ctx)) {
+        super.render(ctx)
+        if (!isRendered) {
+            // mesh is not visible (either hidden or outside frustum)
             return
         }
-        super.render(ctx)
 
         meshData.checkBuffers(ctx)
 

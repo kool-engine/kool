@@ -49,6 +49,9 @@ class Demo(ctx: RenderContext) {
             layoutSpec.setOrigin(zero(), zero(), zero())
             layoutSpec.setSize(dps(250f, true), pcs(100f, true), zero())
 
+            // menu starts hidden
+            alpha = 0f
+
             +label("title") {
                 layoutSpec.setOrigin(zero(), dps(-50f, true), zero())
                 layoutSpec.setSize(pcs(100f, true), dps(40f, true), zero())

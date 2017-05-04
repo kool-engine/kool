@@ -73,6 +73,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         ui.setTheme(createThemeUi(ctx)).apply()
         setThemeProps()
         ui.prop.createUi(ctx)
+        ui.prop.updateComponentAlpha()
         requestUiUpdate()
     }
 

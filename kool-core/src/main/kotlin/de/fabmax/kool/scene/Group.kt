@@ -18,6 +18,12 @@ open class Group(name: String? = null) : Node(name) {
     protected val children: MutableList<Node> = mutableListOf()
     protected val tmpBounds = BoundingBox()
 
+    // frustum check is disabled for groups because it relies on the node's bounding box, however group bounds depend
+    // on children bounds and are therefore not known before render
+    override var isFrustumChecked: Boolean
+        get() = false
+        set(value) {}
+
     override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
         super.onSceneChanged(oldScene, newScene)
         for (i in children.indices) {
@@ -26,10 +32,14 @@ open class Group(name: String? = null) : Node(name) {
     }
 
     override fun render(ctx: RenderContext) {
-        if (!checkIsVisible(ctx)) {
+        if (!isVisible) {
+            // group is hidden
             return
         }
         super.render(ctx)
+
+        // isRendered flag is ignored because this group's bounds aren't valid before children are rendered
+        // therefore the frustum check is not reliable
 
         tmpBounds.clear()
         for (i in children.indices) {
