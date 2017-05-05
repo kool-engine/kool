@@ -10,7 +10,7 @@ import de.fabmax.kool.util.*
  */
 open class Button(name: String, root: UiRoot) : Label(name, root) {
 
-    var onClick: List<Button.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    val onClick: MutableList<Button.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
 
     val textColorHovered = ThemeOrCustomProp(Color.WHITE)
 
