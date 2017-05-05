@@ -8,17 +8,30 @@ import de.fabmax.kool.util.*
  * @author fabmax
  */
 
-class ToggleButton(name: String, root: UiRoot, initState: Boolean = false): Button(name, root) {
+open class ToggleButton(name: String, root: UiRoot, initState: Boolean = false): Button(name, root) {
+
+    val onStateChange: MutableList<ToggleButton.() -> Unit> = mutableListOf()
 
     var knobColorOn = Color.WHITE
     var knobColorOff = Color.LIGHT_GRAY
     var trackColor = Color.GRAY
 
     var isEnabled = initState
-        private set
+        set(value) {
+            if (value != field) {
+                field = value
+                fireStateChanged()
+            }
+        }
 
     init {
         textAlignment = Gravity(Alignment.START, Alignment.CENTER)
+    }
+
+    protected fun fireStateChanged() {
+        for (i in onStateChange.indices) {
+            onStateChange[i]()
+        }
     }
 
     override fun fireOnClick(ptr: InputManager.Pointer, rt: RayTest, ctx: RenderContext) {
@@ -41,8 +54,8 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
     protected val knobAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
     protected val knobColor = MutableColor()
 
-    protected val clickListener: Button.(InputManager.Pointer, RayTest, RenderContext) -> Unit = { _,_,_ ->
-        if (tb.isEnabled) {
+    protected val stateChangedListener: ToggleButton.() -> Unit = {
+        if (isEnabled) {
             // animate knob from left to right
             knobAnimator.speed = 1f
         } else {
@@ -58,12 +71,12 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         knobAnimator.duration = 0.15f
         knobAnimator.value.onUpdate = { tb.requestUiUpdate() }
 
-        tb.onClick += clickListener
+        tb.onStateChange += stateChangedListener
     }
 
     override fun disposeUi(ctx: RenderContext) {
         super.disposeUi(ctx)
-        tb.onClick -= clickListener
+        tb.onStateChange -= stateChangedListener
     }
 
     override fun updateUi(ctx: RenderContext) {
