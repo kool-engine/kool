@@ -9,26 +9,44 @@ import de.fabmax.kool.platform.Math
 abstract class SampleNode {
 
     var gain = 1f
+    var t = 0.0
+        protected set
+
     protected var sample = 0f
 
-    abstract fun clock(t: Double)
-
-    open fun play(): Float {
-        return sample * gain
+    fun current(): Float {
+        return sample
     }
 
-    fun clockAndPlay(t: Double): Float {
-        clock(t)
-        return play()
+    fun next(dt: Float): Float {
+        t += dt
+        sample = generate(dt) * gain
+        return sample
     }
+
+    protected abstract fun generate(dt: Float): Float
 
     companion object {
-        fun perc(sample: Float, decay: Float, f: Float): Float {
-            return sample * Math.max(0f, 0.889f - (f * decay) / ((f * decay) + 1))
+        private val NOTE_TABLE = Array(15, { oct ->
+            FloatArray(100, { n -> Math.pow(2.0, (n-20 - 33.0 + 12.0 * (oct-5)) / 12.0).toFloat() * 440f })
+        })
+
+        fun clip(value: Float, clip: Float): Float {
+            return Math.clamp(value, -clip, clip)
         }
 
-        fun percB(sample: Float, decay: Float, f: Float): Float {
-            return sample * Math.max(0f, 0.95f - (f * decay) / ((f * decay) + 1))
+        fun noise(amplitude: Float = 1f): Float {
+            return (Math.random().toFloat() * 2f - 1f) * amplitude
+        }
+
+        fun note(note: Int, octave: Int): Float {
+            val o = Math.clamp(octave, -5, 9) + 5
+            val n = Math.clamp(note, -20, 79) + 20
+            return NOTE_TABLE[o][n]
+        }
+
+        fun perc(sample: Float, decay: Float, f: Float, c: Float = 0.889f): Float {
+            return sample * Math.max(0f, c - (f * decay) / ((f * decay) + 1))
         }
     }
 }

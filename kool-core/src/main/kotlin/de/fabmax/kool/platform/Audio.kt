@@ -8,10 +8,10 @@ abstract class Audio {
 
     /**
      * Creates a new [AudioGenerator] which plays audio from the given sample generator function. The generator
-     * function is provided with the current playback time in seconds and is expected to compute one audio sample at a
-     * time. The returned sample should be in the range -1f .. 1f.
+     * function is provided with the current time step in seconds (i.e. 1 / sample-rate) and is expected to compute one
+     * audio sample at a time. The returned sample should be in the range -1f .. 1f.
      */
-    abstract fun newAudioGenerator(generatorFun: AudioGenerator.(Double) -> Float): AudioGenerator
+    abstract fun newAudioGenerator(generatorFun: AudioGenerator.(Float) -> Float): AudioGenerator
 
 }
 

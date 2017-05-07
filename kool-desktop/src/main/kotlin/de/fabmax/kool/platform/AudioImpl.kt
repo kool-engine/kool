@@ -18,11 +18,11 @@ internal class AudioImpl : Audio() {
         CommonUtils.setThreadsBeginN_1D_FFT_4Threads(16384*2)
     }
 
-    override fun newAudioGenerator(generatorFun: AudioGenerator.(Double) -> Float): AudioGenerator {
+    override fun newAudioGenerator(generatorFun: AudioGenerator.(Float) -> Float): AudioGenerator {
         return AudioGeneratorImpl(generatorFun)
     }
 
-    private class AudioGeneratorImpl(generatorFun: AudioGenerator.(Double) -> Float) : AudioGenerator() {
+    private class AudioGeneratorImpl(generatorFun: AudioGenerator.(Float) -> Float) : AudioGenerator() {
         private val pauseLock = java.lang.Object()
         private val generatorThread: Thread
         private var isStopRequested = false
@@ -54,15 +54,15 @@ internal class AudioImpl : Audio() {
                 var sampleIdx = 0L
 
                 var startTime = System.currentTimeMillis()
+                val dt = 1f / sampleRate
 
                 while (!isStopRequested) {
                     samples.rewind()
                     for (i in 0..numSamples-1) {
-                        val t = (sampleIdx++ / sampleRate.toDouble())
-                        val f = generatorFun(t)
+                        val f = generatorFun(dt)
                         samples.put((f * 32767).toShort())
-
                         fftHelper?.putSample(f)
+                        sampleIdx++
                     }
 
                     val data = buf.array()

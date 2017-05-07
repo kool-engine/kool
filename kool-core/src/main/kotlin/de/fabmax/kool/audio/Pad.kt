@@ -14,21 +14,19 @@ class Pad : SampleNode() {
     private val osc4 = Oscillator(Wave.SQUARE).apply { gain = 3.0f }
 
     private val highPass = HighPassFilter(0.5f, this)
-    private val nicePass = NiceFilter(48000f, this)
+    private val nicePass = NiceFilter(this)
 
     private val chords = arrayOf(
             intArrayOf( 7, 12, 17, 10),
             intArrayOf(10, 15, 19, 24)
     )
 
-    override fun clock(t: Double) {
-        val p = chords[(t / 4).toInt() % chords.size]
+    override fun generate(dt: Float): Float {
+        val n = chords[(t / 4).toInt() % chords.size]
+        val osc = osc1.next(dt, note(n[0], 1)) + osc2.next(dt, note(n[1], 2)) +
+                  osc3.next(dt, note(n[2], 1)) + osc4.next(dt, note(n[3], 0)) + noise(0.7f)
 
-        val osc = osc1.clockAndPlay(t, SynthieUtils.note(p[0], 1)) + osc2.clockAndPlay(t, SynthieUtils.note(p[1], 2)) +
-                  osc3.clockAndPlay(t, SynthieUtils.note(p[2], 1)) + osc4.clockAndPlay(t, SynthieUtils.note(p[3], 0)) +
-                  SynthieUtils.noise(0.7f)
-
-        val nice = nicePass.filter(lfo2.clockAndPlay(t) + 1100, 0.05f, osc / 33f)
-        sample = ((lfo1.clockAndPlay(t) + 0.5f) * highPass.filter(nice)) * 0.3f
+        val s = nicePass.filter(lfo2.next(dt) + 1100, 0.05f, osc / 33f, dt)
+        return ((lfo1.next(dt) + 0.5f) * highPass.filter(s)) * 0.15f
     }
 }

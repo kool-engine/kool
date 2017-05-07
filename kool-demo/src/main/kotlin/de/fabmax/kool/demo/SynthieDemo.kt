@@ -26,6 +26,7 @@ private class SynthieScene: Scene() {
     private val kick = Kick(120f)
     private val snare = Snare(60f)
     private val pad = Pad()
+    private val melody = Melody()
     private val audioGen: AudioGenerator
 
     private val toneA = Oscillator(Wave.SINE, 440f)
@@ -44,12 +45,13 @@ private class SynthieScene: Scene() {
         toneA.gain = 0.05f
         toneC.gain = 0.01f
 
-        audioGen = Platform.getAudioImpl().newAudioGenerator { t -> nextSample(t) }
+        audioGen = Platform.getAudioImpl().newAudioGenerator { dt -> nextSample(dt) }
         audioGen.enableFftComputation(1024)
     }
 
-    private fun nextSample(t: Double): Float {
-        val sample = pad.clockAndPlay(t) + shaker.clockAndPlay(t) + kick.clockAndPlay(t)
+    private fun nextSample(dt: Float): Float {
+        //val sample = pad.next(dt) + shaker.next(dt) + kick.next(dt) + melody.next(dt)
+        val sample = kick.next(dt) + shaker.next(dt) + pad.next(dt) + melody.next(dt)
         waveform.updateSample(sample)
         return sample
     }
@@ -61,6 +63,7 @@ private class SynthieScene: Scene() {
 
     private inner class Heightmap(val width: Int, val length: Int) : TransformGroup() {
         val quads = colorMesh {
+            isFrustumChecked = false
             meshData.usage = GL.DYNAMIC_DRAW
             generator = {
                 // Set y-axis as surface normal for all quad vertices
@@ -71,7 +74,9 @@ private class SynthieScene: Scene() {
                 // create width * length degenerated quads
                 for (z in 1..length) {
                     for (x in 1..width) {
-                        rect { size.set(0f, 0f) }
+                        rect {
+                            size.set(0f, 0f)
+                        }
                     }
                 }
             }

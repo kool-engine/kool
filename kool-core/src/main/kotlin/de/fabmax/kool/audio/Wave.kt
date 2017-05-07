@@ -15,8 +15,8 @@ class Wave(val tableSize: Int, generator: (Float) -> Float) {
         }
     }
 
-    operator fun get(index: Double): Float {
-        return table[((index % 1.0) * tableSize).toInt()]
+    operator fun get(index: Float): Float {
+        return table[(index * tableSize).toInt() % tableSize]
     }
 
     companion object {

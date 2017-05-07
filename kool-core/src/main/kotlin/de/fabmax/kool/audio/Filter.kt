@@ -7,8 +7,8 @@ import de.fabmax.kool.platform.Math
  */
 
 class LowPassFilter(var coeff: Float, var input: SampleNode) : SampleNode() {
-    override fun clock(t: Double) {
-        filter(input.play())
+    override fun generate(dt: Float): Float {
+        return filter(input.next(dt))
     }
 
     fun filter(input: Float): Float {
@@ -18,8 +18,8 @@ class LowPassFilter(var coeff: Float, var input: SampleNode) : SampleNode() {
 }
 
 class HighPassFilter(var coeff: Float, var input: SampleNode) : SampleNode() {
-    override fun clock(t: Double) {
-        filter(input.play())
+    override fun generate(dt: Float): Float {
+        return filter(input.next(dt))
     }
 
     fun filter(input: Float): Float {
@@ -28,7 +28,7 @@ class HighPassFilter(var coeff: Float, var input: SampleNode) : SampleNode() {
     }
 }
 
-class NiceFilter(var sampleRate: Float, var input: SampleNode) : SampleNode() {
+class NiceFilter(var input: SampleNode) : SampleNode() {
 
     var cutoff = 1000f
     var res = 0.05f
@@ -42,18 +42,18 @@ class NiceFilter(var sampleRate: Float, var input: SampleNode) : SampleNode() {
     private var oldy2 = 0f
     private var oldy3 = 0f
 
-    override fun clock(t: Double) {
-        filter(input.play())
+    override fun generate(dt: Float): Float {
+        return filter(input.current(), dt)
     }
 
-    fun filter(cutoff: Float, res: Float, input: Float): Float {
+    fun filter(cutoff: Float, res: Float, input: Float, dt: Float): Float {
         this.cutoff = cutoff
         this.res = res
-        return filter(input)
+        return filter(input, dt)
     }
 
-    fun filter(input: Float): Float {
-        val cut = 2 * cutoff / sampleRate
+    fun filter(input: Float, dt: Float): Float {
+        val cut = 2 * cutoff * dt
         val p = cut * (C1 - C2 * cut)
         val k = 2 * Math.sin(cut * Math.PI * 0.5f).toFloat() - 1
         val t1 = (1 - p) * C3

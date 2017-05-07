@@ -8,17 +8,23 @@ import de.fabmax.kool.platform.Math
 
 open class Oscillator(val shape: Wave, var frequency: Float = 440f) : SampleNode() {
 
+    protected var pos = 0f
+
     var phaseShift = 0f
         set(value) {
             field = Math.clamp(value, 0f, 1f)
         }
 
-    override fun clock(t: Double) {
-        sample = shape[t * frequency + phaseShift]
+    override fun generate(dt: Float): Float {
+        pos += dt * frequency
+        if (pos > 1) {
+            pos -= 1
+        }
+        return shape[pos + phaseShift]
     }
 
-    fun clockAndPlay(t: Double, freq: Float): Float {
+    fun next(dt: Float, freq: Float): Float {
         frequency = freq
-        return super.clockAndPlay(t)
+        return next(dt)
     }
 }

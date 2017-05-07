@@ -7,11 +7,11 @@ import de.fabmax.kool.platform.js.Float32BufferImpl
  */
 
 internal class AudioImpl(private val platform: PlatformImpl) : Audio() {
-    override fun newAudioGenerator(generatorFun: AudioGenerator.(Double) -> Float): AudioGenerator {
+    override fun newAudioGenerator(generatorFun: AudioGenerator.(Float) -> Float): AudioGenerator {
         return AudioGeneratorImpl(generatorFun)
     }
 
-    private inner class AudioGeneratorImpl(generatorFun: AudioGenerator.(Double) -> Float) : AudioGenerator() {
+    private inner class AudioGeneratorImpl(generatorFun: AudioGenerator.(Float) -> Float) : AudioGenerator() {
         override val sampleRate: Float = platform.audioCtx.sampleRate
 
         override var isPaused: Boolean = false
@@ -30,17 +30,17 @@ internal class AudioImpl(private val platform: PlatformImpl) : Audio() {
         private val scriptNode: dynamic
         private var analyserNode: dynamic
         private var powerSpectrum: Float32BufferImpl = Platform.createFloat32Buffer(1) as Float32BufferImpl
+        private val dt = 1f / sampleRate
 
         init {
             scriptNode = platform.audioCtx.createScriptProcessor(4096, 1, 1)
             val buffer = platform.audioCtx.createBuffer(1, scriptNode.bufferSize, sampleRate)
-            var n = 0
 
             scriptNode.onaudioprocess = { ev: dynamic ->
                 val outputBuffer = ev.outputBuffer
                 val data = outputBuffer.getChannelData(0)
                 for (i in 0..outputBuffer.length - 1) {
-                    data[i] = generatorFun(n++ / sampleRate.toDouble())
+                    data[i] = generatorFun(dt)
                 }
             }
 
