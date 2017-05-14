@@ -138,9 +138,9 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
     }
 
     class InitProps(init: InitProps.() -> Unit = {}) : RenderContext.InitProps() {
-        var width = 800
-        var height = 600
-        var title = "Lwjgl3"
+        var width = 1024
+        var height = 768
+        var title = "Kool"
         var monitor = 0L
         var share = 0L
 

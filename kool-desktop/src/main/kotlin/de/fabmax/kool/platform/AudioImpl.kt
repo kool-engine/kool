@@ -59,7 +59,9 @@ internal class AudioImpl : Audio() {
                 while (!isStopRequested) {
                     samples.rewind()
                     for (i in 0..numSamples-1) {
-                        val f = generatorFun(dt)
+                        var f = generatorFun(dt)
+                        if (f > 1f) { f = 1f }
+                        if (f < -1f) { f = -1f }
                         samples.put((f * 32767).toShort())
                         fftHelper?.putSample(f)
                         sampleIdx++

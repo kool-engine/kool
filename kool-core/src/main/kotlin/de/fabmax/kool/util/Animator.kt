@@ -98,3 +98,13 @@ class InterpolatedFloat(var from: Float, var to: Float) : InterpolatedValue<Floa
         value = from + (to - from) * interpolationPos
     }
 }
+
+class InterpolatedColor(var from: MutableColor, var to: MutableColor) : InterpolatedValue<MutableColor>(MutableColor()) {
+    init {
+        value.set(from)
+    }
+
+    override fun updateValue(interpolationPos: Float) {
+        value.set(to).subtract(from).scale(interpolationPos).add(from)
+    }
+}

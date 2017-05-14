@@ -13,7 +13,7 @@ class Melody : SampleNode() {
     private val osc3 = Oscillator(Wave.SINE).apply { gain = 0.8f }
     private val osc4 = Oscillator(Wave.SQUARE).apply { gain = 1.2f }
 
-    private val nicePass = NiceFilter(this)
+    private val moodFilter = MoodFilter(this)
 
     private val chords = arrayOf(
             7, 7, 7, 12, 10, 10, 10, 15,
@@ -25,6 +25,6 @@ class Melody : SampleNode() {
     override fun generate(dt: Float): Float {
         val f = note(chords[(t * 4).toInt() % chords.size], 0)
         val osc = osc1.next(dt, f) + osc2.next(dt, f / 2f) + osc3.next(dt, f / 2f) + osc4.next(dt, f * 3f)
-        return nicePass.filter(lfo1.next(dt) + 1050, lfo2.next(dt), perc(osc, 48f, t.toFloat() % 0.125f), dt) * 0.25f
+        return moodFilter.filter(lfo1.next(dt) + 1050, lfo2.next(dt), perc(osc, 48f, t.toFloat() % 0.125f), dt) * 0.25f
     }
 }

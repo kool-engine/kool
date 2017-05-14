@@ -71,8 +71,11 @@ open class Group(name: String? = null) : Node(name) {
     override fun rayTest(test: RayTest) {
         for (i in children.indices) {
             val child = children[i]
-            if (child.isPickable && child.bounds.hitDistanceSqr(test.ray) < test.hitDistanceSqr) {
-                child.rayTest(test)
+            if (child.isPickable) {
+                val d = child.bounds.hitDistanceSqr(test.ray)
+                if (d < Float.POSITIVE_INFINITY && d <= test.hitDistanceSqr) {
+                    child.rayTest(test)
+                }
             }
         }
     }

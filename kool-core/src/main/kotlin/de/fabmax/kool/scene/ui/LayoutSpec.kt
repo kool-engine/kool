@@ -52,6 +52,7 @@ fun UiComponent.pcH(pc: Float) = pc(pc, this.height)
 fun UiComponent.dp(pc: Float) = dp(pc, this.dpi)
 fun UiComponent.mm(pc: Float) = mm(pc, this.dpi)
 
+// _R variants of size functions round to units (can prevent blurry text in UIs)
 fun pcR(pc: Float, size: Float) = Math.round(size * pc / 100f).toFloat()
 fun dpR(dp: Float, dpi: Float) = Math.round(dp * dpi / 96f).toFloat()
 fun mmR(mm: Float, dpi: Float) = Math.round(mm * dpi / 25.4f).toFloat()
@@ -61,22 +62,60 @@ fun UiComponent.pcHR(pc: Float) = pcR(pc, this.height)
 fun UiComponent.dpR(pc: Float) = dpR(pc, this.dpi)
 fun UiComponent.mmR(pc: Float) = mmR(pc, this.dpi)
 
-data class SizeSpec(val value: Float, val unit: SizeUnit, val roundToUnit: Boolean = false) {
-    fun toUnits(size: Float, dpi: Float): Float {
-        if (roundToUnit) {
-            return when (unit) {
+open class SizeSpec(val value: Float, val unit: SizeUnit, val roundToUnit: Boolean = false) {
+    open fun toUnits(size: Float, dpi: Float): Float {
+        return if (roundToUnit) {
+            when (unit) {
                 SizeUnit.UN -> Math.round(value).toFloat()
                 SizeUnit.DP -> dpR(value, dpi)
                 SizeUnit.MM -> mmR(value, dpi)
                 SizeUnit.PC -> pcR(value, size)
             }
         } else {
-            return when (unit) {
+            when (unit) {
                 SizeUnit.UN -> value
                 SizeUnit.DP -> dp(value, dpi)
                 SizeUnit.MM -> mm(value, dpi)
                 SizeUnit.PC -> pc(value, size)
             }
+        }
+    }
+
+    operator fun plus(size: SizeSpec): SizeSpec {
+        return CombSizeSpec(this, size, true)
+    }
+
+    operator fun minus(size: SizeSpec): SizeSpec {
+        return CombSizeSpec(this, size, false)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is SizeSpec) return false
+
+        if (value != other.value) return false
+        if (unit != other.unit) return false
+        if (roundToUnit != other.roundToUnit) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = value.hashCode()
+        result = 31 * result + unit.hashCode()
+        result = 31 * result + roundToUnit.hashCode()
+        return result
+    }
+}
+
+private class CombSizeSpec(val left: SizeSpec, val right: SizeSpec, val add: Boolean) : SizeSpec(0f, SizeUnit.UN) {
+    override fun toUnits(size: Float, dpi: Float): Float {
+        val leftUns = left.toUnits(size, dpi)
+        val rightUns = right.toUnits(size, dpi)
+        if (add) {
+            return leftUns + rightUns
+        } else {
+            return leftUns - rightUns
         }
     }
 }

@@ -28,7 +28,7 @@ class HighPassFilter(var coeff: Float, var input: SampleNode) : SampleNode() {
     }
 }
 
-class NiceFilter(var input: SampleNode) : SampleNode() {
+class MoodFilter(var input: SampleNode) : SampleNode() {
 
     var cutoff = 1000f
     var res = 0.05f

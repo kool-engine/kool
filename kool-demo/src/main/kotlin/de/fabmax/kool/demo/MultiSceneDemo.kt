@@ -1,13 +1,12 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.util.Color
+import de.fabmax.kool.scene.Scene
 
 /**
  * @author fabmax
  */
 
-fun multiSceneDemo(ctx: RenderContext) {
+fun multiScene(): List<Scene> {
     val leftScene = simpleShapesScene()
     val rightScene = uiDemoScene()
 
@@ -21,6 +20,7 @@ fun multiSceneDemo(ctx: RenderContext) {
         ctx.popAttributes()
     }
 
+    // right scene must not clear the screen (otherwise, left scene is cleared as well)
     rightScene.clearMask = 0
     rightScene.preRender += { ctx ->
         val width = (ctx.viewportWidth * 0.5).toInt()
@@ -33,8 +33,5 @@ fun multiSceneDemo(ctx: RenderContext) {
         ctx.popAttributes()
     }
 
-    ctx.scenes += leftScene
-    ctx.scenes += rightScene
-
-    ctx.run()
+    return listOf(leftScene, rightScene)
 }

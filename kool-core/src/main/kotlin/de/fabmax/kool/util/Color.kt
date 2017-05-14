@@ -73,11 +73,35 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
 
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)
 
+    fun add(other: Color): MutableColor {
+        r += other.r
+        g += other.g
+        b += other.b
+        a += other.a
+        return this
+    }
+
     fun add(other: Color, weight: Float): MutableColor {
         r += other.r * weight
         g += other.g * weight
         b += other.b * weight
         a += other.a * weight
+        return this
+    }
+
+    fun subtract(other: Vec4f): MutableColor {
+        r -= other.x
+        g -= other.y
+        b -= other.z
+        a -= other.w
+        return this
+    }
+
+    fun scale(factor : Float): MutableColor {
+        r *= factor
+        g *= factor
+        b *= factor
+        a *= factor
         return this
     }
 

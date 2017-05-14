@@ -14,7 +14,7 @@ class Pad : SampleNode() {
     private val osc4 = Oscillator(Wave.SQUARE).apply { gain = 3.0f }
 
     private val highPass = HighPassFilter(0.5f, this)
-    private val nicePass = NiceFilter(this)
+    private val moodFilter = MoodFilter(this)
 
     private val chords = arrayOf(
             intArrayOf( 7, 12, 17, 10),
@@ -26,7 +26,7 @@ class Pad : SampleNode() {
         val osc = osc1.next(dt, note(n[0], 1)) + osc2.next(dt, note(n[1], 2)) +
                   osc3.next(dt, note(n[2], 1)) + osc4.next(dt, note(n[3], 0)) + noise(0.7f)
 
-        val s = nicePass.filter(lfo2.next(dt) + 1100, 0.05f, osc / 33f, dt)
+        val s = moodFilter.filter(lfo2.next(dt) + 1100, 0.05f, osc / 33f, dt)
         return ((lfo1.next(dt) + 0.5f) * highPass.filter(s)) * 0.15f
     }
 }

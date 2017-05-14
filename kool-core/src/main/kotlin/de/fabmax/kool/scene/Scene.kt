@@ -98,7 +98,9 @@ open class Scene(name: String? = null) : Group(name) {
             }
         }
 
-        handleDrag(ctx)
+        if (isPickingEnabled) {
+            handleDrag(ctx)
+        }
     }
 
     private fun handleDrag(ctx: RenderContext) {

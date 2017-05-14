@@ -9,11 +9,11 @@ import de.fabmax.kool.util.*
  * @author fabmax
  */
 
-class Demo(ctx: RenderContext) {
+class Demo(ctx: RenderContext, startScene: String? = null) {
 
     private val dbgOverlay = debugOverlay(ctx)
-    private var newScene: Scene? = synthieScene()
-    private var currentScene: Scene? = null
+    private val newScenes: MutableList<Scene> = mutableListOf()
+    private val currentScenes: MutableList<Scene> = mutableListOf()
 
     init {
         ctx.scenes += demoOverlay(ctx)
@@ -22,19 +22,31 @@ class Demo(ctx: RenderContext) {
 
         dbgOverlay.isVisible = false
 
+        when (startScene) {
+            "simpleDemo" -> newScenes.add(simpleShapesScene())
+            "multiDemo" -> newScenes.addAll(multiScene())
+            "pointDemo" -> newScenes.add(pointScene())
+            "synthieDemo" -> newScenes.addAll(synthieScene(ctx))
+            else -> newScenes.add(simpleShapesScene())
+        }
+
         ctx.run()
     }
 
     fun onRender(ctx: RenderContext) {
-        if (newScene != null) {
-            if (currentScene != null) {
-                ctx.scenes -= currentScene!!
-                currentScene!!.dispose(ctx)
+        if (!newScenes.isEmpty()) {
+            currentScenes.forEach { s ->
+                ctx.scenes -= s
+                s.dispose(ctx)
             }
-            // new scenes has to be inserted as first element, so overlays are rendered after it
-            ctx.scenes.add(0, newScene!!)
-            currentScene = newScene
-            newScene = null
+            currentScenes.clear()
+
+            // new scenes have to be inserted in front, so that demo menu is rendered after it
+            newScenes.forEachIndexed { i, s ->
+                ctx.scenes.add(i, s)
+                currentScenes.add(s)
+            }
+            newScenes.clear()
         }
     }
 
@@ -74,15 +86,15 @@ class Demo(ctx: RenderContext) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = "Simple Demo"
 
-                onClick += { _,_,_ -> newScene = simpleShapesScene() }
+                onClick += { _,_,_ -> newScenes.add(simpleShapesScene()) }
             }
-            +button("uiDemo") {
+            +button("multiDemo") {
                 layoutSpec.setOrigin(zero(), dps(-140f, true), zero())
                 layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = "UI Demo"
+                text = "Split Viewport Demo"
 
-                onClick += { _,_,_ -> newScene = uiDemoScene() }
+                onClick += { _,_,_ -> newScenes.addAll(multiScene()) }
             }
             +button("pointDemo") {
                 layoutSpec.setOrigin(zero(), dps(-175f, true), zero())
@@ -90,7 +102,7 @@ class Demo(ctx: RenderContext) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = "Point Cloud Demo"
 
-                onClick += { _,_,_ -> newScene = pointScene() }
+                onClick += { _,_,_ -> newScenes.add(pointScene()) }
             }
             +button("synthieDemo") {
                 layoutSpec.setOrigin(zero(), dps(-210f, true), zero())
@@ -98,7 +110,7 @@ class Demo(ctx: RenderContext) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = "Synthie Demo"
 
-                onClick += { _,_,_ -> newScene = synthieScene() }
+                onClick += { _,_,_ -> newScenes.addAll(synthieScene(ctx)) }
             }
             +toggleButton("showDbg") {
                 layoutSpec.setOrigin(zero(), dps(10f, true), zero())

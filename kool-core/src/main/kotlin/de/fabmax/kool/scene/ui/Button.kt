@@ -46,7 +46,7 @@ open class Button(name: String, root: UiRoot) : Label(name, root) {
                     // check that pointer didn't move to much
                     ptrDownPos.x -= rt.hitPositionLocal.x
                     ptrDownPos.y -= rt.hitPositionLocal.y
-                    if (ptrDownPos.length() < this@Button.dp(3f)) {
+                    if (ptrDownPos.length() < this@Button.dp(5f)) {
                         fireOnClick(ptr, rt, ctx)
                     }
                 }
