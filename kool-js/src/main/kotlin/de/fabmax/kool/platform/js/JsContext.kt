@@ -216,7 +216,8 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
                 "F9" to InputManager.KEY_F9,
                 "F10" to InputManager.KEY_F10,
                 "F11" to InputManager.KEY_F11,
-                "F12" to InputManager.KEY_F12
+                "F12" to InputManager.KEY_F12,
+                "Space" to ' '.toInt()
         )
     }
 }
