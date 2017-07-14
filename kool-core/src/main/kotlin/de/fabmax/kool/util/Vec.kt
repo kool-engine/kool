@@ -7,13 +7,13 @@ import de.fabmax.kool.platform.Math
  * @author fabmax
  */
 
-fun add(a: Vec2f, b: Vec2f): MutableVec2f = a.add_(b, MutableVec2f())
-fun add(a: Vec3f, b: Vec3f): MutableVec3f = a.add_(b, MutableVec3f())
-fun add(a: Vec4f, b: Vec4f): MutableVec4f = a.add_(b, MutableVec4f())
+fun add(a: Vec2f, b: Vec2f): MutableVec2f = a.add(b, MutableVec2f())
+fun add(a: Vec3f, b: Vec3f): MutableVec3f = a.add(b, MutableVec3f())
+fun add(a: Vec4f, b: Vec4f): MutableVec4f = a.add(b, MutableVec4f())
 
-fun subtract(a: Vec2f, b: Vec2f): MutableVec2f = a.subtract_(b, MutableVec2f())
-fun subtract(a: Vec3f, b: Vec3f): MutableVec3f = a.subtract_(b, MutableVec3f())
-fun subtract(a: Vec4f, b: Vec4f): MutableVec4f = a.subtract_(b, MutableVec4f())
+fun subtract(a: Vec2f, b: Vec2f): MutableVec2f = a.subtract(b, MutableVec2f())
+fun subtract(a: Vec3f, b: Vec3f): MutableVec3f = a.subtract(b, MutableVec3f())
+fun subtract(a: Vec4f, b: Vec4f): MutableVec4f = a.subtract(b, MutableVec4f())
 
 fun scale(a: Vec2f, fac: Float): MutableVec2f = a.scale(fac, MutableVec2f())
 fun scale(a: Vec3f, fac: Float): MutableVec3f = a.scale(fac, MutableVec3f())
@@ -22,7 +22,7 @@ fun scale(a: Vec4f, fac: Float): MutableVec4f = a.scale(fac, MutableVec4f())
 fun norm(a: Vec2f): MutableVec2f = a.norm(MutableVec2f())
 fun norm(a: Vec3f): MutableVec3f = a.norm(MutableVec3f())
 
-fun cross(a: Vec3f, b: Vec3f): MutableVec3f = a.cross_(b, MutableVec3f())
+fun cross(a: Vec3f, b: Vec3f): MutableVec3f = a.cross(b, MutableVec3f())
 
 open class Vec2f(x: Float, y: Float) {
 
@@ -38,7 +38,7 @@ open class Vec2f(x: Float, y: Float) {
 
     constructor(v: Vec2f) : this(v.x, v.y)
 
-    fun add_(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).add(other)
+    fun add(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).add(other)
 
     fun distance(other: Vec3f): Float = Math.sqrt(sqrDistance(other).toDouble()).toFloat()
 
@@ -62,7 +62,7 @@ open class Vec2f(x: Float, y: Float) {
 
     fun sqrLength(): Float = x*x + y*y
 
-    fun subtract_(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).subtract(other)
+    fun subtract(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).subtract(other)
 
     operator fun get(i: Int): Float {
         return when (i) {
@@ -174,9 +174,9 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     constructor(v: Vec3f) : this(v.x, v.y, v.z)
 
-    fun add_(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).add(other)
+    fun add(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).add(other)
 
-    fun cross_(other: Vec3f, result: MutableVec3f): MutableVec3f {
+    fun cross(other: Vec3f, result: MutableVec3f): MutableVec3f {
         result.x = y * other.z - z * other.y
         result.y = z * other.x - x * other.z
         result.z = x * other.y - y * other.x
@@ -211,7 +211,7 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     fun sqrLength(): Float = x*x + y*y + z*z
 
-    fun subtract_(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).subtract(other)
+    fun subtract(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).subtract(other)
 
     operator fun get(i: Int): Float {
         return when (i) {
@@ -343,14 +343,14 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
     constructor(v: Vec4f) : this(v.x, v.y, v.z, v.w)
 
-    fun add_(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).add(other)
+    fun add(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).add(other)
 
     fun isEqual(other: Vec4f): Boolean =
         Math.isEqual(x, other.x) && Math.isEqual(y, other.y) && Math.isEqual(z, other.z) && Math.isEqual(w, other.w)
 
     fun scale(factor: Float, result: MutableVec4f): MutableVec4f = result.set(this).scale(factor)
 
-    fun subtract_(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).subtract(other)
+    fun subtract(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).subtract(other)
 
     operator fun get(i: Int): Float {
         return when (i) {

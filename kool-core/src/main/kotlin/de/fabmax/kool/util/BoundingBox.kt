@@ -37,7 +37,7 @@ class BoundingBox() {
     private fun updateSizeAndCenter() {
         if (!batchUpdate) {
             // size = max - min
-            mutMax.subtract_(mutMin, mutSize)
+            mutMax.subtract(mutMin, mutSize)
             // center = min + size * 0.5
             size.scale(0.5f, mutCenter).add(min)
         }

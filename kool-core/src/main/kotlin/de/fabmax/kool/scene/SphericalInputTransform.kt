@@ -164,9 +164,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
      */
     protected open fun computeZoomTranslationPerspective(scene: Scene, oldZoom: Float, newZoom: Float) {
         // tmpVec1 = zoomed pos on pointer ray
-        scene.camera.globalPos.subtract_(pointerHit, tmpVec1).scale(newZoom / oldZoom).add(pointerHit)
+        scene.camera.globalPos.subtract(pointerHit, tmpVec1).scale(newZoom / oldZoom).add(pointerHit)
         // tmpVec2 = zoomed pos on view center ray
-        scene.camera.globalPos.subtract_(scene.camera.globalLookAt, tmpVec2).scale(newZoom / oldZoom)
+        scene.camera.globalPos.subtract(scene.camera.globalLookAt, tmpVec2).scale(newZoom / oldZoom)
                 .add(scene.camera.globalLookAt)
         translation.add(tmpVec1).subtract(tmpVec2)
     }

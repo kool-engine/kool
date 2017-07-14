@@ -44,7 +44,7 @@ open class Mat4f {
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat4f {
         synchronized(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
-            set(mul_(tmpMatA, tmpMatB))
+            set(mul(tmpMatA, tmpMatB))
         }
         return this
     }
@@ -54,7 +54,7 @@ open class Mat4f {
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float, result: Mat4f): Mat4f {
         synchronized(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
-            mul_(tmpMatA, result)
+            mul(tmpMatA, result)
         }
         return result
     }
@@ -238,7 +238,7 @@ open class Mat4f {
         return vec.set(x, y, z, w)
     }
 
-    fun transform_(vec: Vec4f, result: MutableVec4f): MutableVec4f {
+    fun transform(vec: Vec4f, result: MutableVec4f): MutableVec4f {
         result.x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + vec.w * this[0, 3]
         result.y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + vec.w * this[1, 3]
         result.z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + vec.w * this[2, 3]
@@ -248,13 +248,13 @@ open class Mat4f {
 
     fun mul(other: Mat4f): Mat4f {
         synchronized(tmpMatLock) {
-            mul_(other, tmpMatA)
+            mul(other, tmpMatA)
             set(tmpMatA)
         }
         return this
     }
 
-    fun mul_(other: Mat4f, result: Mat4f): Mat4f {
+    fun mul(other: Mat4f, result: Mat4f): Mat4f {
         for (i in 0..3) {
             for (j in 0..3) {
                 var x = 0f
