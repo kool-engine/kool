@@ -117,11 +117,11 @@ private fun synthieMenu(content: SynthieScene, ctx: RenderContext): Scene = uiSc
             }
         }
 
-        onHoverEnter += { ptr, rt, ctx ->
+        onHoverEnter += { _, _, _ ->
             // disable mouse interaction on content scene while pointer is over menu
             content.isPickingEnabled = false
         }
-        onHoverExit += { ptr, rt, ctx ->
+        onHoverExit += { _, rt, _->
             if (!rt.isHit) {
                 // enable mouse interaction on content scene when pointer leaves menu (and nothing else in this scene
                 // is hit instead)
@@ -198,11 +198,11 @@ private class SequenceButton(val col: Int, val row: Int, val melody: Melody, roo
         colorAnimator.duration = 0.3f
         colorAnimator.speed = -1f
 
-        onHover += { ptr, rt, ctx -> onHover(ptr, rt, ctx) }
+        onHover += { ptr, _, _ -> onHover(ptr) }
         onHoverExit += { _,_,_ -> wasHovered = false }
     }
 
-    private fun onHover(ptr: InputManager.Pointer, rt: RayTest, ctx: RenderContext) {
+    private fun onHover(ptr: InputManager.Pointer) {
         if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown) {
             // button was explicitly clicked -> toggle state
             if (melody.sequence[col] == row) {

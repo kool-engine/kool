@@ -4,7 +4,6 @@ import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.Vec3f
-import de.fabmax.kool.util.isEqual
 
 /**
  * @author fabmax
@@ -64,7 +63,7 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 
     protected open fun applyBounds(bounds: BoundingBox, ctx: RenderContext) {
-        if (!isEqual(bounds.size, contentBounds.size) || !isEqual(bounds.min, contentBounds.min)) {
+        if (!bounds.size.isEqual(contentBounds.size) || !bounds.min.isEqual(contentBounds.min)) {
             posInParent.set(bounds.min)
             setIdentity().translate(bounds.min)
             contentBounds.set(Vec3f.ZERO, bounds.size)

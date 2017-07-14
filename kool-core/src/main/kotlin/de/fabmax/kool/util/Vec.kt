@@ -7,26 +7,22 @@ import de.fabmax.kool.platform.Math
  * @author fabmax
  */
 
-fun isEqual(a: Vec2f, b: Vec2f) = Math.isEqual(a.x, b.x) && Math.isEqual(a.y, b.y)
-fun isEqual(a: Vec3f, b: Vec3f) = Math.isEqual(a.x, b.x) && Math.isEqual(a.y, b.y) && Math.isEqual(a.z, b.z)
-fun isEqual(a: Vec4f, b: Vec4f) = Math.isEqual(a.x, b.x) && Math.isEqual(a.y, b.y) && Math.isEqual(a.z, b.z) && Math.isEqual(a.w, b.w)
+fun add(a: Vec2f, b: Vec2f): MutableVec2f = a.add_(b, MutableVec2f())
+fun add(a: Vec3f, b: Vec3f): MutableVec3f = a.add_(b, MutableVec3f())
+fun add(a: Vec4f, b: Vec4f): MutableVec4f = a.add_(b, MutableVec4f())
 
-fun add(a: Vec2f, b: Vec2f): MutableVec2f = a.add(MutableVec2f(), b)
-fun add(a: Vec3f, b: Vec3f): MutableVec3f = a.add(MutableVec3f(), b)
-fun add(a: Vec4f, b: Vec4f): MutableVec4f = a.add(MutableVec4f(), b)
+fun subtract(a: Vec2f, b: Vec2f): MutableVec2f = a.subtract_(b, MutableVec2f())
+fun subtract(a: Vec3f, b: Vec3f): MutableVec3f = a.subtract_(b, MutableVec3f())
+fun subtract(a: Vec4f, b: Vec4f): MutableVec4f = a.subtract_(b, MutableVec4f())
 
-fun subtract(a: Vec2f, b: Vec2f): MutableVec2f = a.subtract(MutableVec2f(), b)
-fun subtract(a: Vec3f, b: Vec3f): MutableVec3f = a.subtract(MutableVec3f(), b)
-fun subtract(a: Vec4f, b: Vec4f): MutableVec4f = a.subtract(MutableVec4f(), b)
-
-fun scale(a: Vec2f, fac: Float): MutableVec2f = a.scale(MutableVec2f(), fac)
-fun scale(a: Vec3f, fac: Float): MutableVec3f = a.scale(MutableVec3f(), fac)
-fun scale(a: Vec4f, fac: Float): MutableVec4f = a.scale(MutableVec4f(), fac)
+fun scale(a: Vec2f, fac: Float): MutableVec2f = a.scale(fac, MutableVec2f())
+fun scale(a: Vec3f, fac: Float): MutableVec3f = a.scale(fac, MutableVec3f())
+fun scale(a: Vec4f, fac: Float): MutableVec4f = a.scale(fac, MutableVec4f())
 
 fun norm(a: Vec2f): MutableVec2f = a.norm(MutableVec2f())
 fun norm(a: Vec3f): MutableVec3f = a.norm(MutableVec3f())
 
-fun cross(a: Vec3f, b: Vec3f): MutableVec3f = a.cross(MutableVec3f(), b)
+fun cross(a: Vec3f, b: Vec3f): MutableVec3f = a.cross_(b, MutableVec3f())
 
 open class Vec2f(x: Float, y: Float) {
 
@@ -42,6 +38,32 @@ open class Vec2f(x: Float, y: Float) {
 
     constructor(v: Vec2f) : this(v.x, v.y)
 
+    fun add_(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).add(other)
+
+    fun distance(other: Vec3f): Float = Math.sqrt(sqrDistance(other).toDouble()).toFloat()
+
+    fun dot(other: Vec2f): Float = x * other.x + y * other.y
+
+    fun isEqual(other: Vec2f): Boolean = Math.isEqual(x, other.x) && Math.isEqual(y, other.y)
+
+    fun length(): Float = Math.sqrt(sqrLength().toDouble()).toFloat()
+
+    fun norm(result: MutableVec2f): MutableVec2f = result.set(this).norm()
+
+    fun rotate(angleDeg: Float, result: MutableVec2f): MutableVec2f = result.set(this).rotate(angleDeg)
+
+    fun scale(factor: Float, result: MutableVec2f): MutableVec2f = result.set(this).scale(factor)
+
+    fun sqrDistance(other: Vec3f): Float {
+        val dx = x - other.x
+        val dy = y - other.y
+        return dx*dx + dy*dy
+    }
+
+    fun sqrLength(): Float = x*x + y*y
+
+    fun subtract_(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).subtract(other)
+
     operator fun get(i: Int): Float {
         return when (i) {
             0 -> x
@@ -50,59 +72,16 @@ open class Vec2f(x: Float, y: Float) {
         }
     }
 
-    fun add(result: MutableVec2f, other: Vec2f): MutableVec2f {
-        result.x += other.x
-        result.y += other.y
-        return result
-    }
+    operator fun times(other: Vec2f): Float = dot(other)
 
-    fun subtract(result: MutableVec2f, other: Vec2f): MutableVec2f {
-        result.x -= other.x
-        result.y -= other.y
-        return result
-    }
-
-    fun scale(result: MutableVec2f, factor: Float): MutableVec2f {
-        result.x = x * factor
-        result.y = y * factor
-        return result
-    }
-
-    fun norm(result: MutableVec2f): MutableVec2f {
-        val lenReciproc = 1f / length()
-        result.x = x * lenReciproc
-        result.y = y * lenReciproc
-        return result
-    }
-
-    fun sqrDistance(other: Vec3f): Float {
-        val dx = x - other.x
-        val dy = y - other.y
-        return dx*dx + dy*dy
-    }
-
-    fun distance(other: Vec3f): Float {
-        return Math.sqrt(sqrDistance(other).toDouble()).toFloat()
-    }
-
-    fun sqrLength(): Float {
-        return x*x + y*y
-    }
-
-    fun length(): Float {
-        return Math.sqrt(sqrLength().toDouble()).toFloat()
-    }
-
-    fun isEqual(other: Vec2f): Boolean {
-        return Math.isEqual(x, other.x) && Math.isEqual(y, other.y)
-    }
+    override fun toString(): String = "($x, $y)"
 
     companion object {
         val ZERO = Vec2f(0f)
-    }
-
-    override fun toString(): String {
-        return "($x, $y)"
+        val X_AXIS = Vec2f(1f, 0f)
+        val Y_AXIS = Vec2f(0f, 1f)
+        val NEG_X_AXIS = Vec2f(-1f, 0f)
+        val NEG_Y_AXIS = Vec2f(0f, -1f)
     }
 }
 
@@ -125,15 +104,24 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
         return this
     }
 
-    operator fun plusAssign(other: Vec2f) { add(other) }
+    fun norm(): MutableVec2f = scale(1f / length())
 
-    fun subtract(other: Vec2f): MutableVec2f {
-        x -= other.x
-        y -= other.y
+    fun rotate(angleDeg: Float): MutableVec2f {
+        val rad = Math.toRad(angleDeg)
+        val cos = Math.cos(rad)
+        val sin = Math.sin(rad)
+        val rx = x * cos - y * sin
+        val ry = x * sin + y * cos
+        x = rx
+        y = ry
         return this
     }
 
-    operator fun minusAssign(other: Vec2f) { subtract(other) }
+    fun scale(factor : Float): MutableVec2f {
+        x *= factor
+        y *= factor
+        return this
+    }
 
     fun set(x: Float, y: Float): MutableVec2f  {
         this.x = x
@@ -147,11 +135,17 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
         return this
     }
 
-    fun scale(factor : Float): MutableVec2f {
-        x *= factor
-        y *= factor
+    fun subtract(other: Vec2f): MutableVec2f {
+        x -= other.x
+        y -= other.y
         return this
     }
+
+    operator fun divAssign(div : Float) { scale(1f / div) }
+
+    operator fun minusAssign(other: Vec2f) { subtract(other) }
+
+    operator fun plusAssign(other: Vec2f) { add(other) }
 
     operator fun set(i: Int, v: Float) {
         when (i) {
@@ -160,6 +154,8 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
             else -> throw KoolException("Invalid index: " + i)
         }
     }
+
+    operator fun timesAssign(factor : Float) { scale(factor) }
 }
 
 open class Vec3f(x: Float, y: Float, z: Float) {
@@ -178,6 +174,45 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     constructor(v: Vec3f) : this(v.x, v.y, v.z)
 
+    fun add_(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).add(other)
+
+    fun cross_(other: Vec3f, result: MutableVec3f): MutableVec3f {
+        result.x = y * other.z - z * other.y
+        result.y = z * other.x - x * other.z
+        result.z = x * other.y - y * other.x
+        return result
+    }
+
+    fun distance(other: Vec3f): Float = Math.sqrt(sqrDistance(other).toDouble()).toFloat()
+
+    fun dot(other: Vec3f): Float = x * other.x + y * other.y + z * other.z
+
+    fun isEqual(other: Vec3f): Boolean =
+            Math.isEqual(x, other.x) && Math.isEqual(y, other.y) && Math.isEqual(z, other.z)
+
+    fun length(): Float = Math.sqrt(sqrLength().toDouble()).toFloat()
+
+    fun norm(result: MutableVec3f): MutableVec3f = result.set(this).norm()
+
+    fun rotate(angleDeg: Float, axisX: Float, axisY: Float, axisZ: Float, result: MutableVec3f): MutableVec3f =
+        result.set(this).rotate(angleDeg, axisX, axisY, axisZ)
+
+    fun rotate(angleDeg: Float, axis: Vec3f, result: MutableVec3f): MutableVec3f =
+        result.set(this).rotate(angleDeg, axis.x, axis.y, axis.z)
+
+    fun scale(factor: Float, result: MutableVec3f): MutableVec3f = result.set(this).scale(factor)
+
+    fun sqrDistance(other: Vec3f): Float {
+        val dx = x - other.x
+        val dy = y - other.y
+        val dz = z - other.z
+        return dx*dx + dy*dy + dz*dz
+    }
+
+    fun sqrLength(): Float = x*x + y*y + z*z
+
+    fun subtract_(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).subtract(other)
+
     operator fun get(i: Int): Float {
         return when (i) {
             0 -> x
@@ -187,86 +222,18 @@ open class Vec3f(x: Float, y: Float, z: Float) {
         }
     }
 
-    fun isEqual(other: Vec3f): Boolean {
-        return Math.isEqual(x, other.x) && Math.isEqual(y, other.y) && Math.isEqual(z, other.z)
-    }
+    operator fun times(other: Vec3f): Float = dot(other)
 
-    operator fun times(other: Vec3f): Float {
-        return x * other.x + y * other.y + z * other.z
-    }
-
-    fun sqrDistance(other: Vec3f): Float {
-        val dx = x - other.x
-        val dy = y - other.y
-        val dz = z - other.z
-        return dx*dx + dy*dy + dz*dz
-    }
-
-    fun distance(other: Vec3f): Float {
-        return Math.sqrt(sqrDistance(other).toDouble()).toFloat()
-    }
-
-    fun sqrLength(): Float {
-        return x*x + y*y + z*z
-    }
-
-    fun length(): Float {
-        return Math.sqrt(sqrLength().toDouble()).toFloat()
-    }
-
-    fun add(result: MutableVec3f, other: Vec3f): MutableVec3f {
-        result.x = x + other.x
-        result.y = y + other.y
-        result.z = z + other.z
-        return result
-    }
-
-    fun subtract(result: MutableVec3f, other: Vec3f): MutableVec3f {
-        result.x = x - other.x
-        result.y = y - other.y
-        result.z = z - other.z
-        return result
-    }
-
-    fun scale(result: MutableVec3f, factor: Float): MutableVec3f {
-        result.x = x * factor
-        result.y = y * factor
-        result.z = z * factor
-        return result
-    }
-
-    fun norm(result: MutableVec3f): MutableVec3f {
-        val lenReciproc = 1f / length()
-        result.x = x * lenReciproc
-        result.y = y * lenReciproc
-        result.z = z * lenReciproc
-        return result
-    }
-
-    fun dot(other: Vec3f): Float {
-        return x * other.x + y * other.y + z * other.z
-    }
-
-    fun cross(result: MutableVec3f, other: Vec3f): MutableVec3f {
-        result.x = y * other.z - z * other.y
-        result.y = z * other.x - x * other.z
-        result.z = x * other.y - y * other.x
-        return result
-    }
+    override fun toString(): String = "($x, $y, $z)"
 
     companion object {
+        val ZERO = Vec3f(0f)
         val X_AXIS = Vec3f(1f, 0f, 0f)
         val Y_AXIS = Vec3f(0f, 1f, 0f)
         val Z_AXIS = Vec3f(0f, 0f, 1f)
         val NEG_X_AXIS = Vec3f(-1f, 0f, 0f)
         val NEG_Y_AXIS = Vec3f(0f, -1f, 0f)
         val NEG_Z_AXIS = Vec3f(0f, 0f, -1f)
-
-        val ZERO = Vec3f(0f)
-    }
-
-    override fun toString(): String {
-        return "($x, $y, $z)"
     }
 }
 
@@ -286,6 +253,39 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
 
     constructor(v: Vec3f) : this(v.x, v.y, v.z)
 
+    fun add(other: Vec3f): MutableVec3f {
+        x += other.x
+        y += other.y
+        z += other.z
+        return this
+    }
+
+    fun norm(): MutableVec3f = scale(1f / length())
+
+    fun rotate(angleDeg: Float, axisX: Float, axisY: Float, axisZ: Float): MutableVec3f {
+        val rad = Math.toRad(angleDeg)
+        val c = Math.cos(rad)
+        val c1 = 1f - c
+        val s = Math.sin(rad)
+
+        val rx = x * (axisX * axisX * c1 + c) + y * (axisX * axisY * c1 - axisZ * s) + z * (axisX * axisZ * c1 + axisY * s)
+        val ry = x * (axisY * axisX * c1 + axisZ * s) + y * (axisY * axisY * c1 + c) + z * (axisY * axisZ * c1 - axisX * s)
+        val rz = x * (axisX * axisZ * c1 - axisY * s) + y * (axisY * axisZ * c1 + axisX * s) + z * (axisZ * axisZ * c1 + c)
+        x = rx
+        y = ry
+        z = rz
+        return this
+    }
+
+    fun rotate(angleDeg: Float, axis: Vec3f): MutableVec3f = rotate(angleDeg, axis.x, axis.y, axis.z)
+
+    fun scale(factor : Float): MutableVec3f {
+        x *= factor
+        y *= factor
+        z *= factor
+        return this
+    }
+
     fun set(x: Float, y: Float, z: Float): MutableVec3f {
         this.x = x
         this.y = y
@@ -300,15 +300,6 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
         return this
     }
 
-    fun add(other: Vec3f): MutableVec3f {
-        x += other.x
-        y += other.y
-        z += other.z
-        return this
-    }
-
-    operator fun plusAssign(other: Vec3f) { add(other) }
-
     fun subtract(other: Vec3f): MutableVec3f {
         x -= other.x
         y -= other.y
@@ -316,41 +307,11 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
         return this
     }
 
-    operator fun minusAssign(other: Vec3f) { subtract(other) }
-
-    fun scale(factor : Float): MutableVec3f {
-        x *= factor
-        y *= factor
-        z *= factor
-        return this
-    }
-
-    operator fun timesAssign(factor : Float) { scale(factor) }
     operator fun divAssign(div : Float) { scale(1f / div) }
 
-    fun norm(): MutableVec3f {
-        scale(1f / length())
-        return this
-    }
+    operator fun minusAssign(other: Vec3f) { subtract(other) }
 
-    fun rotate(angleDeg: Float, axis: Vec3f): MutableVec3f {
-        return rotate(angleDeg, axis.x, axis.y, axis.z)
-    }
-
-    fun rotate(angleDeg: Float, axisX: Float, axisY: Float, axisZ: Float): MutableVec3f {
-        val rad = Math.toRad(angleDeg).toDouble()
-        val c = Math.cos(rad).toFloat()
-        val c1 = 1f - c
-        val s = Math.sin(rad).toFloat()
-
-        val tx = x * (axisX * axisX * c1 + c) + y * (axisX * axisY * c1 - axisZ * s) + z * (axisX * axisZ * c1 + axisY * s)
-        val ty = x * (axisY * axisX * c1 + axisZ * s) + y * (axisY * axisY * c1 + c) + z * (axisY * axisZ * c1 - axisX * s)
-        val tz = x * (axisX * axisZ * c1 - axisY * s) + y * (axisY * axisZ * c1 + axisX * s) + z * (axisZ * axisZ * c1 + c)
-        x = tx
-        y = ty
-        z = tz
-        return this
-    }
+    operator fun plusAssign(other: Vec3f) { add(other) }
 
     operator fun set(i: Int, v: Float) {
         when (i) {
@@ -360,6 +321,8 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
             else -> throw KoolException("Invalid index: " + i)
         }
     }
+
+    operator fun timesAssign(factor : Float) { scale(factor) }
 }
 
 open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
@@ -380,6 +343,15 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
     constructor(v: Vec4f) : this(v.x, v.y, v.z, v.w)
 
+    fun add_(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).add(other)
+
+    fun isEqual(other: Vec4f): Boolean =
+        Math.isEqual(x, other.x) && Math.isEqual(y, other.y) && Math.isEqual(z, other.z) && Math.isEqual(w, other.w)
+
+    fun scale(factor: Float, result: MutableVec4f): MutableVec4f = result.set(this).scale(factor)
+
+    fun subtract_(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).subtract(other)
+
     operator fun get(i: Int): Float {
         return when (i) {
             0 -> x
@@ -390,41 +362,18 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
         }
     }
 
-    fun add(result: MutableVec4f, other: Vec4f): MutableVec4f {
-        result.x = x + other.x
-        result.y = y + other.y
-        result.z = z + other.z
-        result.w = w + other.w
-        return result
-    }
-
-    fun subtract(result: MutableVec4f, other: Vec4f): MutableVec4f {
-        result.x = x - other.x
-        result.y = y - other.y
-        result.z = z - other.z
-        result.w = w - other.w
-        return result
-    }
-
-    fun scale(result: MutableVec4f, factor: Float): MutableVec4f {
-        result.x = x * factor
-        result.y = y * factor
-        result.z = z * factor
-        result.w = w * factor
-        return result
-    }
-
-    fun isEqual(other: Vec4f): Boolean {
-        return Math.isEqual(x, other.x) && Math.isEqual(y, other.y) &&
-                Math.isEqual(z, other.z) && Math.isEqual(w, other.w)
-    }
+    override fun toString(): String = "($x, $y, $z, $w)"
 
     companion object {
         val ZERO = Vec4f(0f)
-    }
-
-    override fun toString(): String {
-        return "($x, $y, $z, $w)"
+        val X_AXIS = Vec4f(1f, 0f, 0f, 0f)
+        val Y_AXIS = Vec4f(0f, 1f, 0f, 0f)
+        val Z_AXIS = Vec4f(0f, 0f, 1f, 0f)
+        val W_AXIS = Vec4f(0f, 0f, 0f, 1f)
+        val NEG_X_AXIS = Vec4f(-1f, 0f, 0f, 0f)
+        val NEG_Y_AXIS = Vec4f(0f, -1f, 0f, 0f)
+        val NEG_Z_AXIS = Vec4f(0f, 0f, -1f, 0f)
+        val NEG_W_AXIS = Vec4f(0f, 0f,  0f, -1f)
     }
 }
 
@@ -455,22 +404,6 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
         return this
     }
 
-    operator fun plusAssign(other: Vec4f) {
-        add(other)
-    }
-
-    fun subtract(other: Vec4f): MutableVec4f {
-        x -= other.x
-        y -= other.y
-        z -= other.z
-        w -= other.w
-        return this
-    }
-
-    operator fun minusAssign(other: Vec4f) {
-        subtract(other)
-    }
-
     fun scale(factor : Float): MutableVec4f {
         x *= factor
         y *= factor
@@ -494,6 +427,18 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
         w = other.w
         return this
     }
+
+    fun subtract(other: Vec4f): MutableVec4f {
+        x -= other.x
+        y -= other.y
+        z -= other.z
+        w -= other.w
+        return this
+    }
+
+    operator fun plusAssign(other: Vec4f) { add(other) }
+
+    operator fun minusAssign(other: Vec4f) { subtract(other) }
 
     operator fun set(i: Int, v: Float) {
         when (i) {

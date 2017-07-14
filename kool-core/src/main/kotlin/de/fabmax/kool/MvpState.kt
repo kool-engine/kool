@@ -73,7 +73,7 @@ class MvpState internal constructor() {
      */
     fun update(ctx: RenderContext) {
         // Combine projection, model and view matrices
-        projMatrix.mul(mvpMatrix, viewMatrix.mul(tempMatrix, modelMatrix))
+        projMatrix.mul_(viewMatrix.mul_(modelMatrix, tempMatrix), mvpMatrix)
 
         // notify current shader about matrix update
         ctx.shaderMgr.boundShader?.onMatrixUpdate(ctx)

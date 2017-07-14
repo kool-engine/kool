@@ -118,7 +118,7 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
         return this
     }
 
-    open fun set(other: Color): MutableColor {
+    fun set(other: Color): MutableColor {
         r = other.r
         g = other.g
         b = other.b

@@ -8,7 +8,6 @@ import de.fabmax.kool.platform.Math
  * @author fabmax
  */
 
-@Suppress("NOTHING_TO_INLINE")
 open class Mat4f {
 
     var matrix = FloatArray(16)
@@ -20,8 +19,6 @@ open class Mat4f {
         setIdentity()
     }
 
-    fun translate(t: Vec3f): Mat4f = translate(t.x, t.y, t.z)
-
     fun translate(tx: Float, ty: Float, tz: Float): Mat4f {
         for (i in 0..3) {
             val mi = offset + i
@@ -30,7 +27,9 @@ open class Mat4f {
         return this
     }
 
-    fun translate(result: Mat4f, tx: Float, ty: Float, tz: Float): Mat4f {
+    fun translate(t: Vec3f): Mat4f = translate(t.x, t.y, t.z)
+
+    fun translate(tx: Float, ty: Float, tz: Float, result: Mat4f): Mat4f {
         for (i in 0..11) {
             result.matrix[result.offset + i] = matrix[offset + i]
         }
@@ -42,25 +41,25 @@ open class Mat4f {
         return result
     }
 
-    fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
-
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat4f {
         synchronized(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
-            set(mul(tmpMatB, tmpMatA))
+            set(mul_(tmpMatA, tmpMatB))
         }
         return this
     }
 
-    fun rotate(result: Mat4f, angleDeg: Float, axis: Vec3f) = rotate(result, angleDeg, axis.x, axis.y, axis.z)
+    fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
-    fun rotate(result: Mat4f, angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat4f {
+    fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float, result: Mat4f): Mat4f {
         synchronized(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
-            mul(result, tmpMatA)
+            mul_(tmpMatA, result)
         }
         return result
     }
+
+    fun rotate(angleDeg: Float, axis: Vec3f, result: Mat4f) = rotate(angleDeg, axis.x, axis.y, axis.z, result)
 
     fun scale(sx: Float, sy: Float, sz: Float): Mat4f {
         for (i in 0..3) {
@@ -72,7 +71,7 @@ open class Mat4f {
         return this
     }
 
-    fun scale(result: Mat4f, sx: Float, sy: Float, sz: Float): Mat4f {
+    fun scale(sx: Float, sy: Float, sz: Float, result: Mat4f): Mat4f {
         for (i in 0..3) {
             val smi = result.offset + i
             val mi = offset + i
@@ -218,44 +217,44 @@ open class Mat4f {
     }
 
     fun transform(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        val x = vec.x * this[0, 0] + vec.y * this[1, 0] + vec.z * this[2, 0] + w * this[3, 0]
-        val y = vec.x * this[0, 1] + vec.y * this[1, 1] + vec.z * this[2, 1] + w * this[3, 1]
-        val z = vec.x * this[0, 2] + vec.y * this[1, 2] + vec.z * this[2, 2] + w * this[3, 2]
+        val x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + w * this[0, 3]
+        val y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + w * this[1, 3]
+        val z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + w * this[2, 3]
         return vec.set(x, y, z)
     }
 
-    fun transform(result: MutableVec3f, vec: Vec3f, w: Float = 1f): MutableVec3f {
-        result.x = vec.x * this[0, 0] + vec.y * this[1, 0] + vec.z * this[2, 0] + w * this[3, 0]
-        result.y = vec.x * this[0, 1] + vec.y * this[1, 1] + vec.z * this[2, 1] + w * this[3, 1]
-        result.z = vec.x * this[0, 2] + vec.y * this[1, 2] + vec.z * this[2, 2] + w * this[3, 2]
+    fun transform(vec: Vec3f, w: Float = 1f, result: MutableVec3f): MutableVec3f {
+        result.x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + w * this[0, 3]
+        result.y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + w * this[1, 3]
+        result.z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + w * this[2, 3]
         return result
     }
 
     fun transform(vec: MutableVec4f): MutableVec4f {
-        val x = vec.x * this[0, 0] + vec.y * this[1, 0] + vec.z * this[2, 0] + vec.w * this[3, 0]
-        val y = vec.x * this[0, 1] + vec.y * this[1, 1] + vec.z * this[2, 1] + vec.w * this[3, 1]
-        val z = vec.x * this[0, 2] + vec.y * this[1, 2] + vec.z * this[2, 2] + vec.w * this[3, 2]
-        val w = vec.x * this[0, 3] + vec.y * this[1, 3] + vec.z * this[2, 3] + vec.w * this[3, 3]
+        val x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + vec.w * this[0, 3]
+        val y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + vec.w * this[1, 3]
+        val z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + vec.w * this[2, 3]
+        val w = vec.x * this[3, 0] + vec.y * this[3, 1] + vec.z * this[3, 2] + vec.w * this[3, 3]
         return vec.set(x, y, z, w)
     }
 
-    fun transform(result: MutableVec4f, vec: Vec4f): MutableVec4f {
-        result.x = vec.x * this[0, 0] + vec.y * this[1, 0] + vec.z * this[2, 0] + vec.w * this[3, 0]
-        result.y = vec.x * this[0, 1] + vec.y * this[1, 1] + vec.z * this[2, 1] + vec.w * this[3, 1]
-        result.z = vec.x * this[0, 2] + vec.y * this[1, 2] + vec.z * this[2, 2] + vec.w * this[3, 2]
-        result.w = vec.x * this[0, 3] + vec.y * this[1, 3] + vec.z * this[2, 3] + vec.w * this[3, 3]
+    fun transform_(vec: Vec4f, result: MutableVec4f): MutableVec4f {
+        result.x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + vec.w * this[0, 3]
+        result.y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + vec.w * this[1, 3]
+        result.z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + vec.w * this[2, 3]
+        result.w = vec.x * this[3, 0] + vec.y * this[3, 1] + vec.z * this[3, 2] + vec.w * this[3, 3]
         return result
     }
 
     fun mul(other: Mat4f): Mat4f {
         synchronized(tmpMatLock) {
-            mul(tmpMatA, other)
+            mul_(other, tmpMatA)
             set(tmpMatA)
         }
         return this
     }
 
-    fun mul(result: Mat4f, other: Mat4f): Mat4f {
+    fun mul_(other: Mat4f, result: Mat4f): Mat4f {
         for (i in 0..3) {
             for (j in 0..3) {
                 var x = 0f
@@ -476,19 +475,15 @@ open class Mat4f {
         return this
     }
 
-    inline operator fun get(i: Int): Float {
-        return matrix[offset + i]
-    }
+    operator fun get(i: Int): Float = matrix[offset + i]
 
-    inline operator fun get(col: Int, row: Int): Float {
-        return matrix[offset + col * 4 + row]
-    }
+    operator fun get(row: Int, col: Int): Float = matrix[offset + col * 4 + row]
 
-    inline operator fun set(i: Int, value: Float) {
+    operator fun set(i: Int, value: Float) {
         matrix[offset + i] = value
     }
 
-    inline operator fun set(col: Int, row: Int, value: Float) {
+    operator fun set(row: Int, col: Int, value: Float) {
         matrix[offset + col * 4 + row] = value
     }
 

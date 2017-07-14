@@ -44,7 +44,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         updateViewMatrix(ctx)
         updateProjectionMatrix(ctx)
 
-        ctx.mvpState.projMatrix.mul(mvp, ctx.mvpState.viewMatrix)
+        ctx.mvpState.projMatrix.mul_(ctx.mvpState.viewMatrix, mvp)
         mvp.invert(invMvp)
 
         ctx.mvpState.update(ctx)
@@ -59,7 +59,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         globalRange = globalLookDirMut.length()
         globalLookDirMut.scale(1f / globalRange)
 
-        globalLookDirMut.cross(globalRightMut, globalUpMut)
+        globalLookDirMut.cross_(globalUpMut, globalRightMut)
 
         ctx.mvpState.viewMatrix.setLookAt(globalPosMut, globalLookAtMut, globalUpMut)
     }

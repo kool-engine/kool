@@ -43,8 +43,8 @@ fun debugOverlay(ctx: RenderContext): Scene {
                 font.setCustom(UiTheme.DARK_SIMPLE.standardFont(ctx.screenDpi))
                 textColor.setCustom(root.theme.accentColor)
 
-                onRender += { ctx ->
-                    text = "${ctx.fps.toInt()}.${(ctx.fps * 10f).toInt() % 10} fps"
+                onRender += { c ->
+                    text = "${c.fps.toInt()}.${(c.fps * 10f).toInt() % 10} fps"
                 }
             }
 
@@ -56,11 +56,11 @@ fun debugOverlay(ctx: RenderContext): Scene {
 
                 var lastWndW = -1
                 var lastWndH = -1
-                onRender += { ctx ->
-                    if (ctx.windowWidth != lastWndW || ctx.windowHeight != lastWndH) {
-                        lastWndW = ctx.windowWidth
-                        lastWndH = ctx.windowHeight
-                        text = "Viewport: ${ctx.windowWidth}x${ctx.windowHeight}"
+                onRender += { c ->
+                    if (c.windowWidth != lastWndW || c.windowHeight != lastWndH) {
+                        lastWndW = c.windowWidth
+                        lastWndH = c.windowHeight
+                        text = "Viewport: ${c.windowWidth}x${c.windowHeight}"
                     }
                 }
             }
@@ -73,21 +73,21 @@ fun debugOverlay(ctx: RenderContext): Scene {
                 text = "Up: 00:00.00"
 
                 var updateT = 1f
-                onRender += { ctx ->
-                    updateT -= ctx.deltaT
+                onRender += { c ->
+                    updateT -= c.deltaT
                     if (updateT < 0) {
                         updateT += 1f
 
                         // still no javascript compatible string formatting in kotlin 1.1... :(
-                        var hh = "" + (ctx.time / 3600.0).toInt()
+                        var hh = "" + (c.time / 3600.0).toInt()
                         if (hh.length == 1) {
                             hh = "0" + hh
                         }
-                        var mm = "" + (ctx.time % 3600.0 / 60.0).toInt()
+                        var mm = "" + (c.time % 3600.0 / 60.0).toInt()
                         if (mm.length == 1) {
                             mm = "0" + mm
                         }
-                        var ss = "" + (ctx.time % 60.0).toInt()
+                        var ss = "" + (c.time % 60.0).toInt()
                         if (ss.length == 1) {
                             ss = "0" + ss
                         }
@@ -104,9 +104,9 @@ fun debugOverlay(ctx: RenderContext): Scene {
 
                 var last = -1
                 var lastMem = -1.0
-                onRender += { ctx ->
-                    val num = ctx.memoryMgr.numTextures
-                    val mem = ctx.memoryMgr.getTotalMemory(GlResource.Type.TEXTURE)
+                onRender += { c ->
+                    val num = c.memoryMgr.numTextures
+                    val mem = c.memoryMgr.getTotalMemory(GlResource.Type.TEXTURE)
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
@@ -126,9 +126,9 @@ fun debugOverlay(ctx: RenderContext): Scene {
 
                 var last = -1
                 var lastMem = -1.0
-                onRender += { ctx ->
-                    val num = ctx.memoryMgr.numBuffers
-                    val mem = ctx.memoryMgr.getTotalMemory(GlResource.Type.BUFFER)
+                onRender += { c ->
+                    val num = c.memoryMgr.numBuffers
+                    val mem = c.memoryMgr.getTotalMemory(GlResource.Type.BUFFER)
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
@@ -147,8 +147,8 @@ fun debugOverlay(ctx: RenderContext): Scene {
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
                 var last = -1
-                onRender += { ctx ->
-                    val num = ctx.memoryMgr.numShaders
+                onRender += { c ->
+                    val num = c.memoryMgr.numShaders
                     if (num != last) {
                         last = num
                         text = "$num Shaders"

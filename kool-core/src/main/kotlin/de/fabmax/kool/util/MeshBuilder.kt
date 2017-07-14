@@ -81,20 +81,20 @@ open class MeshBuilder(val meshData: MeshData) {
 
         transform.setIdentity()
         transform[0, 0] = right.x
-        transform[0, 1] = right.y
-        transform[0, 2] = right.z
+        transform[1, 0] = right.y
+        transform[2, 0] = right.z
 
-        transform[1, 0] = up.x
+        transform[0, 1] = up.x
         transform[1, 1] = up.y
-        transform[1, 2] = up.z
+        transform[2, 1] = up.z
 
-        transform[2, 0] = topV.x
-        transform[2, 1] = topV.y
+        transform[0, 2] = topV.x
+        transform[1, 2] = topV.y
         transform[2, 2] = topV.z
 
-        transform[3, 0] = origin.x
-        transform[3, 1] = origin.y
-        transform[3, 2] = origin.z
+        transform[0, 3] = origin.x
+        transform[1, 3] = origin.y
+        transform[2, 3] = origin.z
     }
 
     inline fun circle(props: CircleProps.() -> Unit) {
