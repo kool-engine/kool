@@ -20,8 +20,6 @@ import kotlin.js.Date
 class PlatformImpl private constructor() : Platform() {
 
     companion object {
-        private val mathImpl = JsMath()
-
         internal var jsContext: JsContext? = null
         internal val gl: WebGLRenderingContext
             get() = jsContext?.gl ?: throw KoolException("Platform.createContext() not called")
@@ -50,21 +48,20 @@ class PlatformImpl private constructor() : Platform() {
             return createContext(props)
         }
 
-        val MAX_GENERATED_TEX_WIDTH = 1024
-        val MAX_GENERATED_TEX_HEIGHT = 1024
+        const val MAX_GENERATED_TEX_WIDTH = 1024
+        const val MAX_GENERATED_TEX_HEIGHT = 1024
     }
 
-    internal val audioCtx = js("new (window.AudioContext || window.webkitAudioContext)();")
-    private var audioImpl = AudioImpl(this)
-
-    internal val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
+    private val mathImpl = JsMath()
+    private var audioImpl: AudioImpl? = null
+    private var fontGenerator: FontMapGenerator? = null
 
     override val supportsMultiContext = false
 
     override val supportsUint32Indices: Boolean
         get() = jsContext?.supportsUint32Indices ?: throw KoolException("Platform.createContext() not called")
 
-    override fun createContext(props: RenderContext.InitProps): RenderContext{
+    override fun createContext(props: RenderContext.InitProps): RenderContext {
         var ctx = jsContext
         if (ctx == null) {
             if (props is JsContext.InitProps) {
@@ -78,7 +75,10 @@ class PlatformImpl private constructor() : Platform() {
     }
 
     override fun getAudioImpl(): Audio {
-        return audioImpl
+        if (audioImpl == null) {
+            audioImpl = AudioImpl(this)
+        }
+        return audioImpl!!
     }
 
     override fun getGlImpl(): GL.Impl {
@@ -117,7 +117,10 @@ class PlatformImpl private constructor() : Platform() {
     }
 
     override fun createCharMap(fontProps: FontProps): CharMap {
-        return fontGenerator.createCharMap(fontProps)
+        if (fontGenerator == null) {
+            fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
+        }
+        return fontGenerator!!.createCharMap(fontProps)
     }
 
     private class JsMath : Math.Impl {

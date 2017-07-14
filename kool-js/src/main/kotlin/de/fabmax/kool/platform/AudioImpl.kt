@@ -7,12 +7,14 @@ import de.fabmax.kool.platform.js.Float32BufferImpl
  */
 
 internal class AudioImpl(private val platform: PlatformImpl) : Audio() {
+    private val audioCtx = js("new (window.AudioContext || window.webkitAudioContext)();")
+
     override fun newAudioGenerator(generatorFun: AudioGenerator.(Float) -> Float): AudioGenerator {
         return AudioGeneratorImpl(generatorFun)
     }
 
     private inner class AudioGeneratorImpl(generatorFun: AudioGenerator.(Float) -> Float) : AudioGenerator() {
-        override val sampleRate: Float = platform.audioCtx.sampleRate
+        override val sampleRate: Float = audioCtx.sampleRate
 
         override var isPaused: Boolean = false
             set(value) {
@@ -33,8 +35,8 @@ internal class AudioImpl(private val platform: PlatformImpl) : Audio() {
         private val dt = 1f / sampleRate
 
         init {
-            scriptNode = platform.audioCtx.createScriptProcessor(4096, 1, 1)
-            val buffer = platform.audioCtx.createBuffer(1, scriptNode.bufferSize, sampleRate)
+            scriptNode = audioCtx.createScriptProcessor(4096, 1, 1)
+            val buffer = audioCtx.createBuffer(1, scriptNode.bufferSize, sampleRate)
 
             scriptNode.onaudioprocess = { ev: dynamic ->
                 val outputBuffer = ev.outputBuffer
@@ -46,11 +48,11 @@ internal class AudioImpl(private val platform: PlatformImpl) : Audio() {
 
             analyserNode = null
 
-            source = platform.audioCtx.createBufferSource()
+            source = audioCtx.createBufferSource()
             source.buffer = buffer
             source.loop = true
             source.connect(scriptNode)
-            scriptNode.connect(platform.audioCtx.destination)
+            scriptNode.connect(audioCtx.destination)
             source.start()
         }
 
@@ -67,7 +69,7 @@ internal class AudioImpl(private val platform: PlatformImpl) : Audio() {
                 analyserNode = null
             } else {
                 if (analyserNode == null) {
-                    analyserNode = platform.audioCtx.createAnalyser()
+                    analyserNode = audioCtx.createAnalyser()
                     analyserNode.minDecibels = -90
                     analyserNode.maxDecibels = 0
                     analyserNode.smoothingTimeConstant = 0.5
