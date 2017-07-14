@@ -57,6 +57,11 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         }
         content.ui.setCustom(BlankComponentUi())
 
+        val menuButton = toggleButton("menuButton") {
+            layoutSpec.setOrigin(dps(10f, true), dps(-50f, true), dps(4f))
+            layoutSpec.setSize(dps(40f, true), dps(40f, true), zero())
+        }
+
         val menu = container("menu") {
             layoutSpec.setOrigin(zero(), zero(), zero())
             layoutSpec.setSize(dps(250f, true), pcs(100f, true), zero())
@@ -86,7 +91,10 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = "Simple Demo"
 
-                onClick += { _,_,_ -> newScenes.add(simpleShapesScene()) }
+                onClick += { _,_,_ ->
+                    newScenes.add(simpleShapesScene())
+                    menuButton.isEnabled = false
+                }
             }
             +button("multiDemo") {
                 layoutSpec.setOrigin(zero(), dps(-140f, true), zero())
@@ -94,7 +102,10 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = "Split Viewport Demo"
 
-                onClick += { _,_,_ -> newScenes.addAll(multiScene()) }
+                onClick += { _,_,_ ->
+                    newScenes.addAll(multiScene())
+                    menuButton.isEnabled = false
+                }
             }
             +button("pointDemo") {
                 layoutSpec.setOrigin(zero(), dps(-175f, true), zero())
@@ -102,7 +113,10 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = "Point Cloud Demo"
 
-                onClick += { _,_,_ -> newScenes.add(pointScene()) }
+                onClick += { _,_,_ ->
+                    newScenes.add(pointScene())
+                    menuButton.isEnabled = false
+                }
             }
             +button("synthieDemo") {
                 layoutSpec.setOrigin(zero(), dps(-210f, true), zero())
@@ -110,7 +124,10 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = "Synthie Demo"
 
-                onClick += { _,_,_ -> newScenes.addAll(synthieScene(ctx)) }
+                onClick += { _,_,_ ->
+                    newScenes.addAll(synthieScene(ctx))
+                    menuButton.isEnabled = false
+                }
             }
             +toggleButton("showDbg") {
                 layoutSpec.setOrigin(zero(), dps(10f, true), zero())
@@ -122,12 +139,8 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         }
         +menu
 
-        +toggleButton("menuButton") {
-            layoutSpec.setOrigin(dps(10f, true), dps(-50f, true), dps(4f))
-            layoutSpec.setSize(dps(40f, true), dps(40f, true), zero())
-
-            ui.setCustom(MenuButtonUi(this, menu))
-        }
+        menuButton.ui.setCustom(MenuButtonUi(menuButton, menu))
+        +menuButton
     }
 }
 
@@ -148,7 +161,7 @@ class MenuButtonUi(tb: ToggleButton, val menu: UiContainer) : ToggleButtonUi(tb,
             menu.translate(menu.posInParent.x + tb.dp(-40f) * (1f - v), menu.posInParent.y, menu.posInParent.z)
             menu.alpha = v
         }
-        tb.onClick += { _,_,_ ->
+        tb.onStateChange += { ->
             menuAnimator.speed = if (tb.isEnabled) 1f else -1f
         }
     }
