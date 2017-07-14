@@ -5,7 +5,7 @@ in browsers with Javascript/WebGL (and also on Android once I add the platform
 bindings)
 
 For now this is just an experiment. However, if you are curious
-you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
+you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html?demo=synthieDemo).
 
 What's working:
 - Synthie music (see new [Synthie Demo](https://fabmax.lima-city.de/kool/index.html?demo=synthieDemo), quite CPU intense...)
