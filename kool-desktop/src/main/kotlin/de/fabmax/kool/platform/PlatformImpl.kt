@@ -10,7 +10,6 @@ import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWVidMode
 import java.awt.Transparency
 import java.awt.image.BufferedImage
-import java.io.Closeable
 import java.io.File
 import java.io.IOException
 import javax.imageio.ImageIO
@@ -100,11 +99,11 @@ class PlatformImpl private constructor() : Platform() {
         return audioImpl
     }
 
-    override fun getGlImpl(): GL.Impl {
+    override fun getGlImpl(): GL.Api {
         return Lwjgl3Impl.instance
     }
 
-    override fun getMathImpl(): Math.Impl {
+    override fun getMathImpl(): Math.Api {
         return mathImpl
     }
 
@@ -144,7 +143,7 @@ class PlatformImpl private constructor() : Platform() {
         return fontGenerator.createCharMap(fontProps)
     }
 
-    private class JavaMath : Math.Impl {
+    private class JavaMath : Math.Api {
         override fun random() = java.lang.Math.random()
         override fun abs(value: Double) = java.lang.Math.abs(value)
         override fun acos(value: Double) = java.lang.Math.acos(value)
@@ -152,7 +151,9 @@ class PlatformImpl private constructor() : Platform() {
         override fun atan(value: Double) = java.lang.Math.atan(value)
         override fun atan2(y: Double, x: Double) = java.lang.Math.atan2(y, x)
         override fun cos(value: Double) = java.lang.Math.cos(value)
+        override fun cosh(value: Double) = java.lang.Math.cosh(value)
         override fun sin(value: Double) = java.lang.Math.sin(value)
+        override fun sinh(value: Double) = java.lang.Math.sinh(value)
         override fun exp(value: Double) = java.lang.Math.exp(value)
         override fun max(a: Int, b: Int) = java.lang.Math.max(a, b)
         override fun max(a: Float, b: Float) = java.lang.Math.max(a, b)
@@ -162,6 +163,7 @@ class PlatformImpl private constructor() : Platform() {
         override fun min(a: Double, b: Double) = java.lang.Math.min(a, b)
         override fun sqrt(value: Double) = java.lang.Math.sqrt(value)
         override fun tan(value: Double) = java.lang.Math.tan(value)
+        override fun tanh(value: Double) = java.lang.Math.tanh(value)
         override fun log(value: Double) = java.lang.Math.log(value)
         override fun pow(base: Double, exp: Double) = java.lang.Math.pow(base, exp)
         override fun round(value: Double): Int = java.lang.Math.round(value).toInt()

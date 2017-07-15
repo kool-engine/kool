@@ -69,14 +69,20 @@ class Math private constructor() {
         fun atan2(y: Float, x: Float): Float = impl.atan2(y, x)
         fun cos(value: Double): Double = impl.cos(value)
         fun cos(value: Float): Float = impl.cos(value)
+        fun cosh(value: Double): Double = impl.cosh(value)
+        fun cosh(value: Float): Float = impl.cosh(value)
         fun sin(value: Double): Double = impl.sin(value)
         fun sin(value: Float): Float = impl.sin(value)
+        fun sinh(value: Double): Double = impl.sinh(value)
+        fun sinh(value: Float): Float = impl.sinh(value)
         fun exp(value: Double): Double = impl.exp(value)
         fun exp(value: Float): Float = impl.exp(value)
         fun sqrt(value: Double): Double = impl.sqrt(value)
         fun sqrt(value: Float): Float = impl.sqrt(value)
         fun tan(value: Double): Double = impl.tan(value)
         fun tan(value: Float): Float = impl.tan(value)
+        fun tanh(value: Double): Double = impl.tanh(value)
+        fun tanh(value: Float): Float = impl.tanh(value)
         fun log(value: Double): Double = impl.log(value)
         fun log(value: Float): Float = impl.log(value)
         fun pow(base: Double, exp: Double): Double = impl.pow(base, exp)
@@ -95,7 +101,7 @@ class Math private constructor() {
         fun ceil(value: Float): Int = impl.ceil(value)
     }
 
-    interface Impl {
+    interface Api {
         fun random(): Double
         fun abs(value: Double): Double
         fun abs(value: Float): Float = abs(value.toDouble()).toFloat()
@@ -109,14 +115,20 @@ class Math private constructor() {
         fun atan2(y: Float, x: Float): Float = atan2(y.toDouble(), x.toDouble()).toFloat()
         fun cos(value: Double): Double
         fun cos(value: Float): Float = cos(value.toDouble()).toFloat()
+        fun cosh(value: Double): Double
+        fun cosh(value: Float): Float = cosh(value.toDouble()).toFloat()
         fun sin(value: Double): Double
         fun sin(value: Float): Float = sin(value.toDouble()).toFloat()
+        fun sinh(value: Double): Double
+        fun sinh(value: Float): Float = sinh(value.toDouble()).toFloat()
         fun exp(value: Double): Double
         fun exp(value: Float): Float = exp(value.toDouble()).toFloat()
         fun sqrt(value: Double): Double
         fun sqrt(value: Float): Float = sqrt(value.toDouble()).toFloat()
         fun tan(value: Double): Double
         fun tan(value: Float): Float = tan(value.toDouble()).toFloat()
+        fun tanh(value: Double): Double
+        fun tanh(value: Float): Float = tanh(value.toDouble()).toFloat()
         fun log(value: Double): Double
         fun log(value: Float): Float = log(value.toDouble()).toFloat()
         fun pow(base: Double, exp: Double): Double

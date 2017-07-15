@@ -122,7 +122,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         }
 
         if (!Math.isZero(deltaScroll)) {
-            zoom *= 1f + deltaScroll / 10f
+            zoom *= 1f - deltaScroll / 10f
             deltaScroll = 0f
         }
 

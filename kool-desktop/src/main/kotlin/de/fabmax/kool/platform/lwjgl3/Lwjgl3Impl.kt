@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.lwjgl3
 
-import de.fabmax.kool.*
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.platform.GL
@@ -10,7 +9,7 @@ import org.lwjgl.opengl.*
 /**
  * @author fabmax
  */
-class Lwjgl3Impl private constructor() : GL.Impl {
+class Lwjgl3Impl private constructor() : GL.Api {
 
     companion object {
         val instance = Lwjgl3Impl()

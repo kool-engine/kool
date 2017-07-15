@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.demo.globe.globeScene
 import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
@@ -27,6 +28,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
             "multiDemo" -> newScenes.addAll(multiScene())
             "pointDemo" -> newScenes.add(pointScene())
             "synthieDemo" -> newScenes.addAll(synthieScene(ctx))
+            "globeDemo" -> newScenes.add(globeScene())
             else -> newScenes.add(simpleShapesScene())
         }
 
@@ -126,6 +128,17 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
 
                 onClick += { _,_,_ ->
                     newScenes.addAll(synthieScene(ctx))
+                    menuButton.isEnabled = false
+                }
+            }
+            +button("globeDemo") {
+                layoutSpec.setOrigin(zero(), dps(-245f, true), zero())
+                layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
+                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
+                text = "Globe Demo"
+
+                onClick += { _,_,_ ->
+                    newScenes.add(globeScene())
                     menuButton.isEnabled = false
                 }
             }

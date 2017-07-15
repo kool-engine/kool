@@ -1,9 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.TextureData
-import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
 
 /**
@@ -35,11 +33,11 @@ abstract class Platform {
             return instance.createContext(props)
         }
 
-        fun getGlImpl(): GL.Impl {
+        fun getGlImpl(): GL.Api {
             return instance.getGlImpl()
         }
 
-        fun getMathImpl(): Math.Impl {
+        fun getMathImpl(): Math.Api {
             return instance.getMathImpl()
         }
 
@@ -84,9 +82,9 @@ abstract class Platform {
 
     abstract fun getAudioImpl(): Audio
 
-    abstract fun getGlImpl(): GL.Impl
+    abstract fun getGlImpl(): GL.Api
 
-    abstract fun getMathImpl(): Math.Impl
+    abstract fun getMathImpl(): Math.Api
 
     abstract fun createUint8Buffer(capacity: Int): Uint8Buffer
 
@@ -110,7 +108,7 @@ abstract class Platform {
         override val supportsUint32Indices: Boolean
             get() = throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
 
-        override fun getGlImpl(): GL.Impl {
+        override fun getGlImpl(): GL.Api {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 
@@ -118,7 +116,7 @@ abstract class Platform {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 
-        override fun getMathImpl(): Math.Impl {
+        override fun getMathImpl(): Math.Api {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 
