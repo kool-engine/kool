@@ -8,7 +8,7 @@ import org.w3c.dom.HTMLImageElement
 /**
  * @author fabmax
  */
-class WebGlImpl private constructor() : GL.Impl {
+class WebGlImpl private constructor() : GL.Api {
     companion object {
         val instance = WebGlImpl()
     }

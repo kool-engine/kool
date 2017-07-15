@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.*
 import de.fabmax.kool.gl.*
 
 @Suppress("unused")
@@ -579,7 +578,7 @@ class GL private constructor() {
         const val INVALID_FRAMEBUFFER_OPERATION = 0x0506
     }
 
-    interface Impl {
+    interface Api {
         fun isAvailable(): Boolean
         fun glslFragHeader(): String
         fun glslVertHeader(): String

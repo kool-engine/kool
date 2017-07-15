@@ -81,11 +81,11 @@ class PlatformImpl private constructor() : Platform() {
         return audioImpl!!
     }
 
-    override fun getGlImpl(): GL.Impl {
+    override fun getGlImpl(): GL.Api {
         return WebGlImpl.instance
     }
 
-    override fun getMathImpl(): Math.Impl {
+    override fun getMathImpl(): Math.Api {
         return mathImpl
     }
 
@@ -123,7 +123,7 @@ class PlatformImpl private constructor() : Platform() {
         return fontGenerator!!.createCharMap(fontProps)
     }
 
-    private class JsMath : Math.Impl {
+    private class JsMath : Math.Api {
         override fun random() = kotlin.js.Math.random()
         override fun abs(value: Double) = kotlin.js.Math.abs(value)
         override fun acos(value: Double) = kotlin.js.Math.acos(value)
@@ -131,7 +131,9 @@ class PlatformImpl private constructor() : Platform() {
         override fun atan(value: Double) = kotlin.js.Math.atan(value)
         override fun atan2(y: Double, x: Double) = kotlin.js.Math.atan2(x, y)
         override fun cos(value: Double) = kotlin.js.Math.cos(value)
+        override fun cosh(value: Double) = js("Math.cosh(value)")
         override fun sin(value: Double) = kotlin.js.Math.sin(value)
+        override fun sinh(value: Double) = js("Math.sinh(value)")
         override fun exp(value: Double) = kotlin.js.Math.exp(value)
         override fun max(a: Int, b: Int) = kotlin.js.Math.max(a, b)
         override fun max(a: Float, b: Float) = kotlin.js.Math.max(a, b)
@@ -141,6 +143,7 @@ class PlatformImpl private constructor() : Platform() {
         override fun min(a: Double, b: Double) = kotlin.js.Math.min(a, b)
         override fun sqrt(value: Double) = kotlin.js.Math.sqrt(value)
         override fun tan(value: Double) = kotlin.js.Math.tan(value)
+        override fun tanh(value: Double) = js("Math.tanh(value)")
         override fun log(value: Double) = kotlin.js.Math.log(value)
         override fun pow(base: Double, exp: Double) = kotlin.js.Math.pow(base, exp)
         override fun round(value: Double): Int = kotlin.js.Math.round(value)
