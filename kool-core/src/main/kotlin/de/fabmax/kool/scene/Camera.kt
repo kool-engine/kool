@@ -71,8 +71,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 
     fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, ctx: RenderContext): Boolean {
-        var valid = unProjectScreen(pickRay.origin, tmpVec3.set(screenX, screenY, 0f), ctx)
-        valid = valid && unProjectScreen(pickRay.direction, tmpVec3.set(screenX, screenY, 1f), ctx)
+        var valid = unProjectScreen(tmpVec3.set(screenX, screenY, 0f), ctx, pickRay.origin)
+        valid = valid && unProjectScreen(tmpVec3.set(screenX, screenY, 1f), ctx, pickRay.direction)
 
         if (valid) {
             pickRay.direction.subtract(pickRay.origin)
@@ -93,7 +93,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     abstract fun isInFrustum(node: Node): Boolean
 
-    fun project(result: MutableVec3f, world: Vec3f): Boolean {
+    fun project_(world: Vec3f, result: MutableVec3f): Boolean {
         tmpVec4.set(world.x, world.y, world.z, 1f)
         mvp.transform(tmpVec4)
         if (Math.isZero(tmpVec4.w)) {
@@ -103,8 +103,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return true
     }
 
-    fun projectScreen(result: MutableVec3f, world: Vec3f, ctx: RenderContext): Boolean {
-        if (!project(result, world)) {
+    fun projectScreen(world: Vec3f, ctx: RenderContext, result: MutableVec3f): Boolean {
+        if (!project_(world, result)) {
             return false
         }
         result.x = (1 + result.x) * 0.5f * ctx.viewportWidth + ctx.viewportX
@@ -113,7 +113,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return true
     }
 
-    fun unProjectScreen(result: MutableVec3f, screen: Vec3f, ctx: RenderContext): Boolean {
+    fun unProjectScreen(screen: Vec3f, ctx: RenderContext, result: MutableVec3f): Boolean {
         val x = screen.x - ctx.viewportX
         val y = (ctx.windowHeight - screen.y) - ctx.viewportY
         tmpVec4.set(2f * x / ctx.viewportWidth - 1f, 2f * y / ctx.viewportHeight - 1f, 2f * screen.z - 1f, 1f)
@@ -161,7 +161,9 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
             left = xCenter - w * 0.5f
             right = xCenter + w * 0.5f
         }
-        ctx.mvpState.projMatrix.setOrthographic(left, right, bottom, top, near, far)
+        if (left != right && bottom != top && near != far) {
+            ctx.mvpState.projMatrix.setOrthographic(left, right, bottom, top, near, far)
+        }
     }
 
     /**

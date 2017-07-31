@@ -23,9 +23,12 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     var leftDragMethod = DragMethod.ROTATE
     var middleDragMethod = DragMethod.NONE
     var rightDragMethod = DragMethod.PAN
+    var zoomMethod = ZoomMethod.ZOOM_TRANSLATE
 
     var verticalAxis = Vec3f.Y_AXIS
     var horizontalAxis = Vec3f.X_AXIS
+    var minHorizontalRot = -90f
+    var maxHorizontalRot = 90f
 
     val translation = MutableVec3f()
     var verticalRotation = 0f
@@ -39,12 +42,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
     var panMethod: PanBase = yPlanePan()
 
-    private var stiffness = 0f
-    private var damping = 0f
-
-    private val animRotV = AnimatedVal(0f)
-    private val animRotH = AnimatedVal(0f)
-    private val animZoom = AnimatedVal(zoom)
+    val vertRotAnimator = AnimatedVal(0f)
+    val horiRotAnimator = AnimatedVal(0f)
+    val zoomAnimator = AnimatedVal(zoom)
 
     private var prevButtonMask = 0
     private var dragMethod = DragMethod.NONE
@@ -71,11 +71,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             }
         }
 
-    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
-        super.onSceneChanged(oldScene, newScene)
-        oldScene?.removeDragHandler(this)
-        newScene?.registerDragHandler(this)
-    }
+    private var stiffness = 0f
+    private var damping = 0f
+
 
     init {
         smoothness = 0.5f
@@ -84,14 +82,32 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     }
 
     fun setMouseRotation(vertical: Float, horizontal: Float) {
-        animRotV.set(vertical)
-        animRotH.set(horizontal)
+        vertRotAnimator.set(vertical)
+        horiRotAnimator.set(horizontal)
         verticalRotation = vertical
         horizontalRotation = horizontal
     }
 
     fun setMouseTranslation(x: Float, y: Float, z: Float) {
         translation.set(x, y, z)
+    }
+
+    fun updateTransform() {
+        translationBounds?.clampToBounds(translation)
+
+        mouseTransform.invert(mouseTransformInv)
+        mul(mouseTransformInv)
+
+        val z = zoomAnimator.actual
+        val vr = vertRotAnimator.actual
+        val hr = horiRotAnimator.actual
+        mouseTransform.setIdentity()
+        mouseTransform.translate(translation.x, translation.y, translation.z)
+        mouseTransform.scale(z, z, z)
+        mouseTransform.rotate(vr, verticalAxis)
+        mouseTransform.rotate(hr, horizontalAxis)
+        mul(mouseTransform)
+
     }
 
     override fun render(ctx: RenderContext) {
@@ -129,31 +145,23 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         if (dragMethod == DragMethod.ROTATE) {
             verticalRotation -= deltaPos.x / 3
             horizontalRotation -= deltaPos.y / 3
-            horizontalRotation = Math.clamp(horizontalRotation, -90f, 90f)
+            horizontalRotation = Math.clamp(horizontalRotation, minHorizontalRot, maxHorizontalRot)
             deltaPos.set(Vec2f.ZERO)
         }
 
-        animRotV.desired = verticalRotation
-        animRotH.desired = horizontalRotation
-        animZoom.desired = zoom
+        vertRotAnimator.desired = verticalRotation
+        horiRotAnimator.desired = horizontalRotation
+        zoomAnimator.desired = zoom
 
-        val oldZ = animZoom.actual
-        val z = animZoom.animate(ctx.deltaT)
-        if (!Math.isEqual(oldZ, z)) {
+        val oldZ = zoomAnimator.actual
+        val z = zoomAnimator.animate(ctx.deltaT)
+        if (!Math.isEqual(oldZ, z) && zoomMethod == ZoomMethod.ZOOM_TRANSLATE) {
             computeZoomTranslationPerspective(scene, oldZ, z)
         }
 
-        translationBounds?.clampToBounds(translation)
-
-        mouseTransform.invert(mouseTransformInv)
-        mul(mouseTransformInv)
-
-        mouseTransform.setIdentity()
-        mouseTransform.translate(translation.x, translation.y, translation.z)
-        mouseTransform.scale(z, z, z)
-        mouseTransform.rotate(animRotV.animate(ctx.deltaT), verticalAxis)
-        mouseTransform.rotate(animRotH.animate(ctx.deltaT), horizontalAxis)
-        mul(mouseTransform)
+        vertRotAnimator.animate(ctx.deltaT)
+        horiRotAnimator.animate(ctx.deltaT)
+        updateTransform()
 
         super.render(ctx)
     }
@@ -172,13 +180,19 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     }
 
     private fun stopSmoothMotion() {
-        animRotV.set(animRotV.actual)
-        animRotH.set(animRotH.actual)
-        animZoom.set(animZoom.actual)
+        vertRotAnimator.set(vertRotAnimator.actual)
+        horiRotAnimator.set(horiRotAnimator.actual)
+        zoomAnimator.set(zoomAnimator.actual)
 
-        verticalRotation = animRotV.actual
-        horizontalRotation = animRotH.actual
-        zoom = animZoom.actual
+        verticalRotation = vertRotAnimator.actual
+        horizontalRotation = horiRotAnimator.actual
+        zoom = zoomAnimator.actual
+    }
+
+    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
+        super.onSceneChanged(oldScene, newScene)
+        oldScene?.removeDragHandler(this)
+        newScene?.registerDragHandler(this)
     }
 
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: RenderContext): Int {
@@ -215,7 +229,12 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         PAN
     }
 
-    private inner class AnimatedVal(value: Float) {
+    enum class ZoomMethod {
+        ZOOM_CENTER,
+        ZOOM_TRANSLATE
+    }
+
+    inner class AnimatedVal(value: Float) {
         var desired = value
         var actual = value
         var speed = 0f

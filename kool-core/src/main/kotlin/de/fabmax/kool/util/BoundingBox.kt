@@ -32,6 +32,7 @@ class BoundingBox() {
     constructor(min: Vec3f, max: Vec3f): this() {
         mutMin.set(min)
         mutMax.set(max)
+        updateSizeAndCenter()
     }
 
     private fun updateSizeAndCenter() {

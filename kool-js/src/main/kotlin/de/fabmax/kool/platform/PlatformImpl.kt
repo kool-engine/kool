@@ -112,9 +112,12 @@ class PlatformImpl private constructor() : Platform() {
     override fun loadTextureAsset(assetPath: String): TextureData {
         val img = js("new Image();")
         val data = ImageTextureData(img)
+        img.crossOrigin = ""
         img.src = assetPath
         return data
     }
+
+    override fun loadTextureAssetHttp(url: String, cachePath: String?): TextureData = loadTextureAsset(url)
 
     override fun createCharMap(fontProps: FontProps): CharMap {
         if (fontGenerator == null) {
@@ -129,7 +132,7 @@ class PlatformImpl private constructor() : Platform() {
         override fun acos(value: Double) = kotlin.js.Math.acos(value)
         override fun asin(value: Double) = kotlin.js.Math.asin(value)
         override fun atan(value: Double) = kotlin.js.Math.atan(value)
-        override fun atan2(y: Double, x: Double) = kotlin.js.Math.atan2(x, y)
+        override fun atan2(y: Double, x: Double) = kotlin.js.Math.atan2(y, x)
         override fun cos(value: Double) = kotlin.js.Math.cos(value)
         override fun cosh(value: Double) = js("Math.cosh(value)")
         override fun sin(value: Double) = kotlin.js.Math.sin(value)
@@ -160,15 +163,12 @@ class ImageTextureData(val image: HTMLImageElement) : TextureData() {
         get() = image.complete
         set(value) {}
 
-    init {
-        width = image.clientWidth
-        height = image.clientHeight
-    }
-
     override fun onLoad(texture: Texture, ctx: RenderContext) {
         // fixme: is there a way to find out if the image has an alpha channel and set the GL format accordingly?
         PlatformImpl.gl.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA, GL.UNSIGNED_BYTE, image)
-        val size = image.width * image.height * 4
+        width = image.width
+        height = image.height
+        val size = width * height * 4
         ctx.memoryMgr.memoryAllocated(texture.res!!, size)
     }
 }

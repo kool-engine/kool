@@ -98,7 +98,7 @@ abstract class Node(val name: String? = null) {
         ctx.mvpState.modelMatrix.transform(globalExtentMut)
         globalRadius = globalCenter.distance(globalExtentMut)
 
-        isRendered = checkIsVisible()
+        isRendered = checkIsVisible(ctx)
 
         if (isRendered) {
             if (!onRender.isEmpty()) {
@@ -148,7 +148,11 @@ abstract class Node(val name: String? = null) {
         return null
     }
 
-    private fun checkIsVisible(): Boolean {
+    /**
+     * Called during [render]: Checks if this node is currently visible. If not rendering is skipped. Default
+     * implementation considers [isVisible] flag and performs a camera frustum check if [isFrustumChecked] is true.
+     */
+    protected open fun checkIsVisible(ctx: RenderContext): Boolean {
         if (!isVisible) {
             return false
         } else if (isFrustumChecked && !bounds.isEmpty) {

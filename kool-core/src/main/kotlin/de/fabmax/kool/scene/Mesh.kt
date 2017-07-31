@@ -58,12 +58,12 @@ fun textureMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
  */
 open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
-    var generator: (MeshBuilder.() -> Unit)?
+    open var generator: (MeshBuilder.() -> Unit)?
         get() = meshData.generator
         set(value) { meshData.generator = value }
 
-    var shader: Shader? = null
-    var primitiveType = GL.TRIANGLES
+    open var shader: Shader? = null
+    open var primitiveType = GL.TRIANGLES
 
     override val bounds: BoundingBox
         get() = meshData.bounds

@@ -6,6 +6,7 @@ import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.platform.use
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.opengl.EXTTextureFilterAnisotropic
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL20
@@ -24,6 +25,11 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         private set
     override var windowHeight = 0
         private set
+
+    override var anisotropicTexFilterInfo = AnisotropicTexFilterInfo(0f, 0)
+        private set
+
+    val supportedExtensions = mutableSetOf<String>()
 
     init {
         // configure GLFW
@@ -112,6 +118,13 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         // externally. LWJGL detects the context that is current in the current thread, creates the GLCapabilities
         // instance and makes the OpenGL bindings available for use.
         GL.createCapabilities()
+
+        // check for anisotropic texture filtering support
+        supportedExtensions.addAll(GL11.glGetString(GL11.GL_EXTENSIONS).split(" "))
+        if (supportedExtensions.contains("GL_EXT_texture_filter_anisotropic")) {
+            val max = GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)
+            anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT)
+        }
 
         // This is required to be able to set gl_PointSize in vertex shaders (to get same behaviour as in GLES)
         GL11.glEnable(GL20.GL_VERTEX_PROGRAM_POINT_SIZE)

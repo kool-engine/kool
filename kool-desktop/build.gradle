@@ -24,6 +24,7 @@ sourceSets {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.16"
     compile 'com.github.wendykierp:JTransforms:3.1'
 
     compile "org.lwjgl:lwjgl:${lwjglVersion}"
@@ -37,4 +38,10 @@ dependencies {
     runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }

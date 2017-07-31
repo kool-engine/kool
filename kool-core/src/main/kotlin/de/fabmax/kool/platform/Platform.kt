@@ -69,6 +69,10 @@ abstract class Platform {
             return instance.loadTextureAsset(assetPath)
         }
 
+        fun loadTextureAssetHttp(url: String, cachePath: String? = null): TextureData {
+            return instance.loadTextureAssetHttp(url, cachePath)
+        }
+
         fun createCharMap(fontProps: FontProps): CharMap {
             return instance.createCharMap(fontProps)
         }
@@ -97,6 +101,8 @@ abstract class Platform {
     abstract fun currentTimeMillis(): Long
 
     abstract fun loadTextureAsset(assetPath: String): TextureData
+
+    abstract fun loadTextureAssetHttp(url: String, cachePath: String? = null): TextureData
 
     abstract fun createCharMap(fontProps: FontProps): CharMap
 
@@ -145,6 +151,10 @@ abstract class Platform {
         }
 
         override fun loadTextureAsset(assetPath: String): TextureData {
+            throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
+        }
+
+        override fun loadTextureAssetHttp(url: String, cachePath: String?): TextureData {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 
