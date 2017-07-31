@@ -1,4 +1,4 @@
-package de.fabmax.kool.demo.globe
+package de.fabmax.kool.demo.earth
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.httpTexture
@@ -12,9 +12,9 @@ import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.*
 
 /**
- * Mouse controlled transform group for globe rotation / translation
+ * Mouse controlled transform group for earth rotation / translation
  */
-class Globe(name: String? = null) : TransformGroup(name), InputManager.DragHandler {
+class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandler {
 
     var tileRes = 256
     var meterPerPxLvl0 = 156e3f
@@ -51,7 +51,7 @@ class Globe(name: String? = null) : TransformGroup(name), InputManager.DragHandl
 
     init {
         for (i in MIN_ZOOM_LEVEL..MAX_ZOOM_LEVEL) {
-            val zoomGroup = Group("${name ?: "globe"}-zoom-$i")
+            val zoomGroup = Group("${name ?: "earth"}-zoom-$i")
             zoomGroups += zoomGroup
             +zoomGroup
         }
@@ -95,7 +95,7 @@ class Globe(name: String? = null) : TransformGroup(name), InputManager.DragHandl
 
             val newCenter = TileName.forLatLng(Math.toDeg(lat), Math.toDeg(lon), centerZoom)
             if (newCenter != center && (tiles.size < 300 || !isMoving)) {
-                println("$newCenter ${tiles.size}")
+                //println("$newCenter ${tiles.size}")
                 center = newCenter
                 rebuildMesh(ctx)
             }
@@ -387,7 +387,7 @@ class Globe(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     }
 }
 
-class TileMesh(val globe: Globe, val tx: Int, val ty: Int, val tz: Int) :
+class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int) :
         Mesh(MeshData(true, false, true), "$tz/$tx/$ty") {
 
     val key = tileKey(tx, ty, tz)
@@ -425,8 +425,8 @@ class TileMesh(val globe: Globe, val tx: Int, val ty: Int, val tz: Int) :
 
                 val tys = (ty+1) * steps - row
                 val lat = Math.PI * 0.5 - Math.atan(Math.sinh(Math.PI - tys * tysFac))
-                val r = Math.sin(lat) * Globe.EARTH_R
-                val y = Math.cos(lat) * Globe.EARTH_R
+                val r = Math.sin(lat) * Earth.EARTH_R
+                val y = Math.cos(lat) * Earth.EARTH_R
                 for (i in 0..steps) {
                     val phi = lonW + (lonE - lonW) * i / steps
                     val x = Math.sin(phi) * r
@@ -483,13 +483,13 @@ class TileMesh(val globe: Globe, val tx: Int, val ty: Int, val tz: Int) :
             if (tileShader.alpha >= targetAlpha) {
                 tileShader.alpha = targetAlpha
                 isLoaded = true
-                globe.tileLoaded(this)
+                earth.tileLoaded(this)
             }
         } else if (isFadingOut && tileShader.alpha > 0f) {
             tileShader.alpha -= ctx.deltaT * 2
             if (tileShader.alpha <= 0f) {
                 tileShader.alpha = 0f
-                globe.tileFadedOut(this)
+                earth.tileFadedOut(this)
             }
         }
     }

@@ -5,9 +5,10 @@ in browsers with Javascript/WebGL (and also on Android once I add the platform
 bindings)
 
 For now this is just an experiment. However, if you are curious
-you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html?demo=synthieDemo).
+you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
 
 What's working:
+- New [OSM Earth Demo](https://fabmax.lima-city.de/kool/index.html?demo=earthDemo)
 - Synthie music (see new [Synthie Demo](https://fabmax.lima-city.de/kool/index.html?demo=synthieDemo), quite CPU intense...)
 - Multi-scene / multi-viewport support
 - Some simple UI stuff: Text-Fields, (Toggle-)Buttons, Sliders, Labels

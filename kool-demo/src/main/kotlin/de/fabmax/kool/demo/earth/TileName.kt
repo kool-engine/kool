@@ -1,4 +1,4 @@
-package de.fabmax.kool.demo.globe
+package de.fabmax.kool.demo.earth
 
 import de.fabmax.kool.platform.Math
 

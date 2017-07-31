@@ -1,10 +1,10 @@
-package de.fabmax.kool.demo.globe
+package de.fabmax.kool.demo.earth
 
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Vec3f
 
 /**
- * Globe demo: Show an OSM map on a sphere.
+ * Earth demo: Show an OSM map on a sphere.
  */
 
 fun earthScene(): Scene = scene {
@@ -33,7 +33,7 @@ fun earthScene(): Scene = scene {
         +camera
     }
 
-    +Globe().apply {
-        translate(0f, 0f, -Globe.EARTH_R.toFloat())
+    +Earth().apply {
+        translate(0f, 0f, -Earth.EARTH_R.toFloat())
     }
 }
