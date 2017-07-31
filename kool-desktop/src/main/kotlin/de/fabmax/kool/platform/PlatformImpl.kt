@@ -1,10 +1,13 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.BufferedTextureData
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.Texture
+import de.fabmax.kool.TextureData
 import de.fabmax.kool.platform.lwjgl3.*
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.launch
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWVidMode
@@ -20,6 +23,7 @@ import javax.imageio.ImageIO
  * @author fabmax
  */
 class PlatformImpl private constructor() : Platform() {
+
     companion object {
         private val mathImpl = JavaMath()
         private val audioImpl = AudioImpl()
@@ -127,16 +131,12 @@ class PlatformImpl private constructor() : Platform() {
         return System.currentTimeMillis()
     }
 
-    override fun loadTextureAsset(assetPath: String): BufferedTextureData {
-        try {
-            val image = ImageIO.read(File(assetPath))
-            val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
-            val format = if (alpha) GL.RGBA else GL.RGB
-            val buffer = bufferedImageToBuffer(image, format, 0, 0)
-            return BufferedTextureData(buffer, image.width, image.height, format)
-        } catch (e: IOException) {
-            throw KoolException("Failed to load texture asset: \"$assetPath\"")
-        }
+    override fun loadTextureAsset(assetPath: String): TextureData {
+        return ImageTextureData(assetPath)
+    }
+
+    override fun loadTextureAssetHttp(url: String, cachePath: String?): TextureData {
+        return ImageTextureData(url, true, cachePath)
     }
 
     override fun createCharMap(fontProps: FontProps): CharMap {
@@ -145,7 +145,9 @@ class PlatformImpl private constructor() : Platform() {
 
     private class JavaMath : Math.Api {
         override fun random() = java.lang.Math.random()
+        override fun abs(value: Float) = java.lang.Math.abs(value)
         override fun abs(value: Double) = java.lang.Math.abs(value)
+        override fun abs(value: Int) = java.lang.Math.abs(value)
         override fun acos(value: Double) = java.lang.Math.acos(value)
         override fun asin(value: Double) = java.lang.Math.asin(value)
         override fun atan(value: Double) = java.lang.Math.atan(value)
@@ -274,6 +276,53 @@ internal fun bufferedImageToBuffer(image: BufferedImage, format: Int, width: Int
         }
     }
     return buffer
+}
+
+class ImageTextureData(val assetPath: String, http: Boolean = false, cachePath: String? = null) : TextureData() {
+    private var buffer: Uint8Buffer? = null
+    private var format = 0
+
+    init {
+        launch(CommonPool) {
+            //Thread.sleep(250L)
+            try {
+                val file = if (http) {
+                    HttpCache.loadHttpResource(assetPath, cachePath)
+                } else {
+                    File(assetPath)
+                }
+
+                val image = ImageIO.read(file)
+                val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
+                format = if (alpha) GL.RGBA else GL.RGB
+                width = image.width
+                height = image.height
+                buffer = bufferedImageToBuffer(image, format, 0, 0)
+                isAvailable = true
+            } catch (e: IOException) {
+                throw KoolException("Failed to load texture asset: \"$assetPath\"")
+            }
+        }
+    }
+
+    override fun onLoad(texture: Texture, ctx: RenderContext) {
+        val res = texture.res ?: throw KoolException("Texture wasn't created")
+        val limit = buffer!!.limit
+        val pos = buffer!!.position
+        buffer!!.flip()
+
+//        val intFormat = if (format == GL.RGBA) {
+//            GL13.GL_COMPRESSED_RGBA
+//        } else {
+//            GL13.GL_COMPRESSED_RGB
+//        }
+        val intFormat = format
+
+        GL.texImage2D(res.target, 0, intFormat, width, height, 0, format, GL.UNSIGNED_BYTE, buffer)
+        buffer!!.limit = limit
+        buffer!!.position = pos
+        ctx.memoryMgr.memoryAllocated(res, buffer!!.position)
+    }
 }
 
 /**

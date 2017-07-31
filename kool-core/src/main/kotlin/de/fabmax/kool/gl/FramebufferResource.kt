@@ -10,7 +10,7 @@ import de.fabmax.kool.platform.RenderContext
 fun colorAttachmentTex(width: Int, height: Int, minFilter: Int, magFilter: Int): Texture {
     val id = Math.random()
     val texProps = TextureProps("framebuffer-colorAttachment-$id",
-            minFilter, magFilter, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
+            minFilter, magFilter, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, 0)
     return Texture(texProps, { FbTexData(width, height) })
 }
 
@@ -20,7 +20,7 @@ class FramebufferResource private constructor(glRef: Any, val colorAttachment: T
         fun create(width: Int, height: Int, ctx: RenderContext): FramebufferResource {
             val id = ctx.generateUniqueId()
             val texProps = TextureProps("framebuffer-colorAttachment-$id",
-                    GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
+                    GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, 0)
             return create(Texture(texProps, { FbTexData(width, height) }), ctx)
         }
 

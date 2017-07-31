@@ -1,14 +1,21 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.*
+import de.fabmax.kool.KoolException
+import de.fabmax.kool.Texture
+import de.fabmax.kool.TextureData
+import de.fabmax.kool.TextureProps
 import de.fabmax.kool.gl.FramebufferResource
 import de.fabmax.kool.gl.colorAttachmentTex
-import de.fabmax.kool.platform.*
+import de.fabmax.kool.platform.GL
+import de.fabmax.kool.platform.Math
+import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.textureMesh
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MutableVec3f
 
 /**
  * @author fabmax
@@ -51,7 +58,7 @@ class BlurredBackgroundHelper(
     init {
         val id = Math.random()
         val texProps = TextureProps("DistortedBackground-$id",
-                GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
+                GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, 0)
         copyTex = Texture(texProps, { copyTexData })
 
         texMesh = textureMesh {
@@ -212,7 +219,7 @@ class BlurredBackgroundHelper(
     private fun addToTexBounds(cam: Camera, node: Node, x: Float, y: Float, z: Float, ctx: RenderContext) {
         tmpVec.set(x, y, z)
         node.toGlobalCoords(tmpVec)
-        cam.projectScreen(tmpRes, tmpVec, ctx)
+        cam.projectScreen(tmpVec, ctx, tmpRes)
         texBounds.add(tmpRes)
     }
 

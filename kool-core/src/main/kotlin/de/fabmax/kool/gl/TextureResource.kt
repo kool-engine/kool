@@ -24,6 +24,10 @@ class TextureResource private constructor(glRef: Any, val target: Int, val props
         GL.texParameteri(target, GL.TEXTURE_MAG_FILTER, props.magFilter)
         GL.texParameteri(target, GL.TEXTURE_WRAP_S, props.xWrapping)
         GL.texParameteri(target, GL.TEXTURE_WRAP_T, props.yWrapping)
+
+        if (props.anisotropy > 1 && ctx.anisotropicTexFilterInfo.isSupported) {
+            GL.texParameteri(target, ctx.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, props.anisotropy)
+        }
     }
 
     override fun delete(ctx: RenderContext) {

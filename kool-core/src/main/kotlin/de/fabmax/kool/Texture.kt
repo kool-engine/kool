@@ -2,22 +2,48 @@ package de.fabmax.kool
 
 import de.fabmax.kool.gl.GlObject
 import de.fabmax.kool.gl.TextureResource
-import de.fabmax.kool.platform.*
+import de.fabmax.kool.platform.GL
+import de.fabmax.kool.platform.Platform
+import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.platform.Uint8Buffer
 
 /**
  * @author fabmax
  */
 
 fun defaultProps(id: String): TextureProps {
-    return TextureProps(id, GL.LINEAR_MIPMAP_LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE)
+    return TextureProps(id, GL.LINEAR, GL.CLAMP_TO_EDGE)
 }
 
-data class TextureProps(val id: String, val minFilter: Int, val magFilter: Int, val xWrapping: Int, val yWrapping: Int) {
+data class TextureProps(
+        val id: String,
+        val minFilter: Int,
+        val magFilter: Int,
+        val xWrapping: Int,
+        val yWrapping: Int,
+        val anisotropy: Int) {
+
+    constructor(id: String, filter: Int, wrapping: Int) :
+            this(id, minFilter(filter), magFilter(filter), wrapping, wrapping, 16)
+
+    constructor(id: String, filter: Int, wrapping: Int, anisotropy: Int) :
+            this(id, minFilter(filter), magFilter(filter), wrapping, wrapping, anisotropy)
+
     companion object {
         val DEFAULT_MIN = GL.LINEAR_MIPMAP_LINEAR
         val DEFAULT_MAG = GL.LINEAR
         val DEFAULT_X_WRAP = GL.CLAMP_TO_EDGE
         val DEFAULT_Y_WRAP = GL.CLAMP_TO_EDGE
+
+        private fun magFilter(filter: Int) = when (filter) {
+            GL.NEAREST -> GL.NEAREST
+            else -> DEFAULT_MAG
+        }
+
+        private fun minFilter(filter: Int) = when (filter) {
+            GL.NEAREST -> GL.NEAREST
+            else -> DEFAULT_MIN
+        }
     }
 }
 
@@ -92,13 +118,21 @@ open class Texture(val props: TextureProps, val generator: Texture.() -> Texture
 }
 
 fun assetTexture(assetPath: String): Texture {
-    return Texture(defaultProps(assetPath)) {
+    return assetTexture(defaultProps(assetPath))
+}
+
+fun assetTexture(props: TextureProps): Texture {
+    return Texture(props) {
         Platform.loadTextureAsset(props.id)
     }
 }
 
-fun assetTexture(assetPath: String, minFilter: Int, magFilter: Int, xWrapping: Int, yWrapping: Int): Texture {
-    return Texture(TextureProps(assetPath, minFilter, magFilter, xWrapping, yWrapping)) {
-        Platform.loadTextureAsset(props.id)
+fun httpTexture(assetPath: String, cachePath: String? = null): Texture {
+    return httpTexture(defaultProps(assetPath), cachePath)
+}
+
+fun httpTexture(props: TextureProps, cachePath: String? = null): Texture {
+    return Texture(props) {
+        Platform.loadTextureAssetHttp(props.id, cachePath)
     }
 }

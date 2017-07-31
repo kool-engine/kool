@@ -80,7 +80,7 @@ open class Group(name: String? = null) : Node(name) {
         }
     }
 
-    fun addNode(node: Node, index: Int = -1) {
+    open fun addNode(node: Node, index: Int = -1) {
         if (index >= 0) {
             children.add(index, node)
         } else {
@@ -91,7 +91,7 @@ open class Group(name: String? = null) : Node(name) {
         bounds.add(node.bounds)
     }
 
-    fun removeNode(node: Node): Boolean {
+    open fun removeNode(node: Node): Boolean {
         if (children.remove(node)) {
             node.parent = null
             return true

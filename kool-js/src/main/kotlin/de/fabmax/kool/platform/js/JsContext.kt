@@ -23,6 +23,9 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
     override var windowHeight = 0
         private set
 
+    override var anisotropicTexFilterInfo = AnisotropicTexFilterInfo(0f, 0)
+        private set
+
     internal val canvas: HTMLCanvasElement
     internal val gl: WebGLRenderingContext
     internal val supportsUint32Indices: Boolean
@@ -42,6 +45,14 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
 
         gl = webGlCtx as WebGLRenderingContext
         supportsUint32Indices = gl.getExtension("OES_element_index_uint") != null
+
+        val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:
+                gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
+                gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
+        if (extAnisotropic != null) {
+            val max = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Float
+            anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT)
+        }
 
         windowWidth = canvas.clientWidth
         windowHeight = canvas.clientHeight

@@ -487,6 +487,27 @@ open class Mat4f {
         matrix[offset + col * 4 + row] = value
     }
 
+    fun setColVec(col: Int, vec: Vec3f, w: Float) {
+        this[0, col] = vec.x
+        this[1, col] = vec.y
+        this[2, col] = vec.z
+        this[3, col] = w
+    }
+
+    fun setColVec(col: Int, value: Vec4f) {
+        this[0, col] = value.x
+        this[1, col] = value.y
+        this[2, col] = value.z
+        this[3, col] = value.w
+    }
+
+    fun getColVec(col: Int, result: MutableVec4f) {
+        result.x = this[0, col]
+        result.y = this[1, col]
+        result.z = this[2, col]
+        result.w = this[3, col]
+    }
+
     fun toBuffer(buffer: Float32Buffer): Float32Buffer {
         buffer.put(matrix, offset, 16)
         buffer.flip()

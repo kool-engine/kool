@@ -26,7 +26,7 @@ class MemoryManager internal constructor() {
         return totalMem[type]!!
     }
 
-    internal fun memoryAllocated(resource: GlResource, memory: Int) {
+    fun memoryAllocated(resource: GlResource, memory: Int) {
         val prevAlloc = allocationMap[resource.type]!!.put(resource, memory) ?: 0
 
         if (prevAlloc != memory) {
@@ -37,7 +37,7 @@ class MemoryManager internal constructor() {
         }
     }
 
-    internal fun deleted(resource: GlResource) {
+    fun deleted(resource: GlResource) {
         val memory = allocationMap[resource.type]?.remove(resource)
 
         if (memory != null) {

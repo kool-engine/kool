@@ -14,8 +14,12 @@ class Math private constructor() {
         const val DEG_2_RAD = PI / 180.0
         const val RAD_2_DEG = 180.0 / PI
 
+        const val LOG_2 = 0.6931471805599453
+
         fun toDeg(rad: Float) = rad * RAD_2_DEG.toFloat()
         fun toRad(deg: Float) = deg * DEG_2_RAD.toFloat()
+        fun toDeg(rad: Double) = rad * RAD_2_DEG
+        fun toRad(deg: Double) = deg * DEG_2_RAD
 
         fun isEqual(a: Float, b: Float) = isZero(a - b)
         fun isEqual(a: Double, b: Double) = isZero(a - b)
@@ -56,9 +60,13 @@ class Math private constructor() {
             }
         }
 
+        fun log2(value: Float): Float = log(value) / LOG_2.toFloat()
+        fun log2(value: Double): Double = log(value) / LOG_2
+
         fun random(): Double = impl.random()
         fun abs(value: Double): Double = impl.abs(value)
         fun abs(value: Float): Float = impl.abs(value)
+        fun abs(value: Int): Int = impl.abs(value)
         fun acos(value: Double): Double = impl.acos(value)
         fun acos(value: Float): Float = impl.acos(value)
         fun asin(value: Double): Double = impl.asin(value)
@@ -105,6 +113,7 @@ class Math private constructor() {
         fun random(): Double
         fun abs(value: Double): Double
         fun abs(value: Float): Float = abs(value.toDouble()).toFloat()
+        fun abs(value: Int): Int = abs(value.toDouble()).toInt()
         fun acos(value: Double): Double
         fun acos(value: Float): Float = acos(value.toDouble()).toFloat()
         fun asin(value: Double): Double
