@@ -19,6 +19,14 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     var tileRes = 256
     var meterPerPxLvl0 = 156e3f
 
+    var centerLat = 0.0
+        private set
+    var centerLon = 0.0
+        private set
+    var cameraHeight = 0.0
+        private set
+    var attribution = "© OpenStreetMap"
+
     private val zoomGroups = mutableListOf<Group>()
 
     private val tiles = mutableMapOf<Long, TileMesh>()
@@ -67,18 +75,21 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     override fun render(ctx: RenderContext) {
         val cam = scene?.camera
         if (cam != null && cam is PerspectiveCamera) {
+            toGlobalCoords(tmpVec.set(Vec3f.ZERO))
+            tmpVec.subtract(cam.globalPos)
+            cameraHeight = tmpVec.length().toDouble() - EARTH_R
+
             // determine lat/lng of camera center
-            //camPosition.set(cam.globalPos)
-            val height = cam.globalPos.length()
-            camPosition.set(Vec3f.Z_AXIS).scale(height)
+            val camDist = cam.globalPos.length()
+            camPosition.set(Vec3f.Z_AXIS).scale(camDist)
             toLocalCoords(camPosition)
             camPosition.norm(camDirection)
 
-            cam.clipNear = height * 0.05f
-            cam.clipFar = height * 10f
+            cam.clipNear = camDist * 0.05f
+            cam.clipFar = camDist * 10f
 
-            val dh = if (height > prevCamHeight) { prevCamHeight / height } else { height / prevCamHeight }
-            prevCamHeight = height
+            val dh = if (camDist > prevCamHeight) { prevCamHeight / camDist } else { camDist / prevCamHeight }
+            prevCamHeight = camDist
 
             val lat = Math.clamp(Math.PI * 0.5 - Math.acos(camDirection.y.toDouble()), -RAD_85, RAD_85)
             val lon = Math.atan2(camDirection.x.toDouble(), camDirection.z.toDouble())
@@ -86,6 +97,8 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
             val isMoving = dh < 0.99f || Math.abs(lat - prevLat) > 1e-5 || Math.abs(lon - prevLon) > 1e-5
             prevLat = lat
             prevLon = lon
+            centerLat = Math.toDeg(lat)
+            centerLon = Math.toDeg(lon)
 
             // determine best zoom level
             camDirection.scale(EARTH_R.toFloat())
@@ -97,7 +110,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
             if (newCenter != center && (tiles.size < 300 || !isMoving)) {
                 //println("$newCenter ${tiles.size}")
                 center = newCenter
-                rebuildMesh(ctx)
+                rebuildMesh()
             }
         }
 
@@ -135,13 +148,12 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
             Math.clamp(Math.round(0.2f + Math.log2(meterPerPxLvl0 / meterPerPx * Math.cos(lat))),
                     MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
 
-    private fun rebuildMesh(ctx: RenderContext) {
+    private fun rebuildMesh() {
         removableTiles.putAll(tiles)
 
         val rng = 5
 
         var zoom = center.zoom
-        var size = 1 shl zoom
         var xStart = (center.x - rng + 1) and 1.inv()
         var xEnd = ((center.x + rng + 1) and 1.inv()) - 1
         var yStart = (center.y - rng + 1) and 1.inv()
@@ -152,7 +164,6 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
         for (i in 1..4) {
             zoom--
             if (zoom >= MIN_ZOOM_LEVEL) {
-                size = size shr 1
                 val xStShf = xStart shr 1
                 val xEdShf = (xEnd + 1) shr 1
                 val yStShf = yStart shr 1
@@ -199,7 +210,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     }
 
     private fun addMeshes(xRng: IntRange, yRng: IntRange, zoom: Int) {
-        if (xRng.last - xRng.first > 2 || yRng.last - yRng.first > 2) {
+        if (xRng.last - xRng.first > 2 && yRng.last - yRng.first > 2) {
             addMeshesCircular(xRng, yRng, zoom)
         } else {
             addMeshesRectRange(xRng, yRng, zoom)
@@ -209,60 +220,47 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     private fun addMeshesRectRange(xRng: IntRange, yRng: IntRange, zoom: Int) {
         for (x in xRng) {
             for (y in yRng) {
-                val key = TileMesh.tileKey(x, y, zoom)
-                val existing = tiles[key]
-                if (existing != null) {
-                    removableTiles.remove(key)
-                    existing.isFadingOut = false
-                    if (!existing.isLoaded) {
-                        loadingTiles += key
-                    }
-                } else {
-                    val mesh = TileMesh(this, x, y, zoom)
-                    tiles[key] = mesh
-                    getZoomGroup(zoom) += mesh
-                    loadingTiles += key
-                }
+                addTile(x, y, zoom, xRng, yRng)
             }
         }
     }
 
     private fun addMeshesCircular(xRng: IntRange, yRng: IntRange, zoom: Int) {
-        fun addTile(x: Int, y: Int) {
-            if (x in xRng && y in yRng) {
-                val key = TileMesh.tileKey(x, y, zoom)
-                val existing = tiles[key]
-                if (existing != null) {
-                    removableTiles.remove(key)
-                    existing.isFadingOut = false
-                    if (!existing.isLoaded) {
-                        loadingTiles += key
-                    }
-                } else {
-                    val mesh = TileMesh(this, x, y, zoom)
-                    tiles[key] = mesh
-                    getZoomGroup(zoom) += mesh
-                    loadingTiles += key
-                }
-            }
-        }
-
         val cx = xRng.first + (xRng.last - xRng.first) / 2
         val cy = yRng.first + (yRng.last - yRng.first) / 2
         val r = Math.max(Math.max(cx - xRng.first, xRng.last - cx), Math.max(cy - yRng.first, yRng.last - cy))
 
         for (i in 0..r) {
             for (x in cx - i..cx + i) {
-                addTile(x, cy - i)
+                addTile(x, cy - i, zoom, xRng, yRng)
                 if (i > 0) {
-                    addTile(x, cy + i)
+                    addTile(x, cy + i, zoom, xRng, yRng)
                 }
             }
             if (i > 0) {
                 for (y in cy - i + 1..cy + i - 1) {
-                    addTile(cx - i, y)
-                    addTile(cx + i, y)
+                    addTile(cx - i, y, zoom, xRng, yRng)
+                    addTile(cx + i, y, zoom, xRng, yRng)
                 }
+            }
+        }
+    }
+
+    private fun addTile(x: Int, y: Int, zoom: Int, xRng: IntRange, yRng: IntRange) {
+        if (x in xRng && y in yRng) {
+            val key = TileMesh.tileKey(x, y, zoom)
+            val existing = tiles[key]
+            if (existing != null) {
+                removableTiles.remove(key)
+                existing.isFadingOut = false
+                if (!existing.isLoaded) {
+                    loadingTiles += key
+                }
+            } else {
+                val mesh = TileMesh(this, x, y, zoom)
+                tiles[key] = mesh
+                getZoomGroup(zoom) += mesh
+                loadingTiles += key
             }
         }
     }

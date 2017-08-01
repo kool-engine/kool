@@ -99,6 +99,8 @@ open class Group(name: String? = null) : Node(name) {
         return false
     }
 
+    open fun containsNode(node: Node): Boolean = children.contains(node)
+
     operator fun plusAssign(node: Node) {
         addNode(node)
     }

@@ -12,7 +12,7 @@ import de.fabmax.kool.util.*
 
 class Demo(ctx: RenderContext, startScene: String? = null) {
 
-    private val dbgOverlay = debugOverlay(ctx)
+    private val dbgOverlay = debugOverlay(ctx, true)
     private val newScenes: MutableList<Scene> = mutableListOf()
     private val currentScenes: MutableList<Scene> = mutableListOf()
 
@@ -28,7 +28,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
             "multiDemo" -> newScenes.addAll(multiScene())
             "pointDemo" -> newScenes.add(pointScene())
             "synthieDemo" -> newScenes.addAll(synthieScene(ctx))
-            "earthDemo" -> newScenes.add(earthScene())
+            "earthDemo" -> newScenes.addAll(earthScene())
             else -> newScenes.add(simpleShapesScene())
         }
 
@@ -138,7 +138,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
                 text = "Earth Demo"
 
                 onClick += { _,_,_ ->
-                    newScenes.add(earthScene())
+                    newScenes.addAll(earthScene())
                     menuButton.isEnabled = false
                 }
             }

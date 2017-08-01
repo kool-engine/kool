@@ -16,7 +16,7 @@ import de.fabmax.kool.shading.basicShader
  * @author fabmax
  */
 
-fun debugOverlay(ctx: RenderContext): Scene {
+fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
     val dbgOverlay = uiScene(ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
             componentUi({ BlankComponentUi() })
@@ -26,7 +26,11 @@ fun debugOverlay(ctx: RenderContext): Scene {
         content.ui.setCustom(BlankComponentUi())
 
         +container("dbgPanel") {
-            layoutSpec.setOrigin(dps(-120f, true), dps(-132f, true), zero())
+            if (alignBottom) {
+                layoutSpec.setOrigin(dps(-120f, true), dps(0f, true), zero())
+            } else {
+                layoutSpec.setOrigin(dps(-120f, true), dps(-132f, true), zero())
+            }
             layoutSpec.setSize(dps(120f, true), dps(132f, true), zero())
 
             +DeltaTGraph(this@uiScene).apply {

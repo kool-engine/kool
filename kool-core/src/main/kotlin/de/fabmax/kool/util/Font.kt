@@ -68,7 +68,7 @@ class Font(val fontProps: FontProps) :
             for (i in 32..126) {
                 str += i.toChar()
             }
-            str += "äÄöÖüÜß"
+            str += "äÄöÖüÜß°©"
             STD_CHARS = str
 
             DEFAULT_FONT = Font(FontProps(SYSTEM_FONT, 12f))

@@ -158,9 +158,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         content.rayTest(test)
     }
 
-    operator fun Node.unaryPlus() {
-        content.addNode(this)
-    }
+    operator fun Node.unaryPlus() = content.addNode(this)
 
     fun component(name: String, block: UiComponent.() -> Unit) = UiComponent(name, this).apply(block)
 
