@@ -52,6 +52,7 @@ abstract class RenderContext {
     var viewportWidth by attribs.viewportWidth
     var viewportHeight by attribs.viewportHeight
     var clearColor by attribs.clearColor
+    var depthFunc by attribs.depthFunc
     var isDepthTest by attribs.isDepthTest
     var isDepthMask by attribs.isDepthMask
     var isCullFace by attribs.isCullFace

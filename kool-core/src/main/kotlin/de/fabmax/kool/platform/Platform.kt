@@ -73,6 +73,10 @@ abstract class Platform {
             return instance.loadTextureAssetHttp(url, cachePath)
         }
 
+        fun openUrl(url: String) {
+            instance.openUrl(url)
+        }
+
         fun createCharMap(fontProps: FontProps): CharMap {
             return instance.createCharMap(fontProps)
         }
@@ -103,6 +107,8 @@ abstract class Platform {
     abstract fun loadTextureAsset(assetPath: String): TextureData
 
     abstract fun loadTextureAssetHttp(url: String, cachePath: String? = null): TextureData
+
+    abstract fun openUrl(url: String)
 
     abstract fun createCharMap(fontProps: FontProps): CharMap
 
@@ -158,8 +164,12 @@ abstract class Platform {
             throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
 
+        override fun openUrl(url: String) {
+            throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
+        }
+
         override fun createCharMap(fontProps: FontProps): CharMap {
-            throw UnsupportedOperationException("not implemented") //To change body of created functions use File | Settings | File Templates.
+            throw UnsupportedOperationException("No platform set, call PlatformImpl.init() first")
         }
     }
 }

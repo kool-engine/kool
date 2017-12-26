@@ -22,7 +22,6 @@ fun getParams(): Map<String, String> {
                 val key = js("decodeURIComponent(keyEnc)").toString()
                 val value = js("decodeURIComponent(valEnc)").toString()
                 params.put(key, value)
-                println(key + " = " + value)
             }
         }
     }

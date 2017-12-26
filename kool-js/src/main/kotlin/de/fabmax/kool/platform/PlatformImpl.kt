@@ -10,6 +10,7 @@ import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLImageElement
 import kotlin.browser.document
+import kotlin.browser.window
 import kotlin.js.Date
 
 /**
@@ -118,6 +119,10 @@ class PlatformImpl private constructor() : Platform() {
     }
 
     override fun loadTextureAssetHttp(url: String, cachePath: String?): TextureData = loadTextureAsset(url)
+
+    override fun openUrl(url: String) {
+        window.open(url)
+    }
 
     override fun createCharMap(fontProps: FontProps): CharMap {
         if (fontGenerator == null) {

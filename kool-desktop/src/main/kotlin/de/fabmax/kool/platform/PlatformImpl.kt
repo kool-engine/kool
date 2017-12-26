@@ -11,10 +11,12 @@ import kotlinx.coroutines.experimental.launch
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWVidMode
+import java.awt.Desktop
 import java.awt.Transparency
 import java.awt.image.BufferedImage
 import java.io.File
 import java.io.IOException
+import java.net.URI
 import javax.imageio.ImageIO
 
 /**
@@ -137,6 +139,10 @@ class PlatformImpl private constructor() : Platform() {
 
     override fun loadTextureAssetHttp(url: String, cachePath: String?): TextureData {
         return ImageTextureData(url, true, cachePath)
+    }
+
+    override fun openUrl(url: String) {
+        Desktop.getDesktop().browse(URI(url))
     }
 
     override fun createCharMap(fontProps: FontProps): CharMap {
