@@ -1,4 +1,4 @@
-apply plugin: 'kotlin'
+apply plugin: 'kotlin-platform-jvm'
 
 sourceSets {
     main.kotlin.srcDirs += "src/main/kotlin"
@@ -6,7 +6,13 @@ sourceSets {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile project(":kool-core")
     compile project(":kool-desktop")
-    compile project(":kool-demo")
+
+    expectedBy project(":kool-demo")
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }

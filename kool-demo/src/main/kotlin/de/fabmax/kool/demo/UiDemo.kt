@@ -1,11 +1,8 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Vec3f
-import de.fabmax.kool.util.color
-import de.fabmax.kool.util.debugOverlay
 
 /**
  * @author fabmax

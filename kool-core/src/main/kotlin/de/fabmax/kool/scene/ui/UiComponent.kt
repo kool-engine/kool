@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MeshBuilder

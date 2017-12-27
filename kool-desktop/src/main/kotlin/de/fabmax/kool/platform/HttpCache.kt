@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.KoolException
 import java.io.*
 import java.net.URL
 import java.nio.file.Files
@@ -24,9 +25,7 @@ class HttpCache private constructor(val cacheDir: String) {
                 checkCacheSize()
             }
         } catch (e: Exception) {
-            println("Failed loading cache index, rebuilding")
             rebuildIndex()
-            println("Done rebuilding")
         }
 
         Runtime.getRuntime().addShutdownHook(object : Thread() {
@@ -37,9 +36,14 @@ class HttpCache private constructor(val cacheDir: String) {
     }
 
     private fun rebuildIndex() {
+        //println("Rebuilding cache index")
         val cacheDir = Paths.get(cacheDir)
         synchronized(cache) {
             cache.clear()
+            val dir = cacheDir.toFile()
+            if (!dir.exists() && !dir.mkdirs()) {
+                throw KoolException("Failed to create cache directory")
+            }
         }
         Files.walk(cacheDir).forEach {
             val f = it.toFile()
@@ -93,9 +97,14 @@ class HttpCache private constructor(val cacheDir: String) {
         }
     }
 
-    private fun loadHttpResource(url: String, cachePath: String?): File {
+    private fun loadHttpResource(url: String): File {
         val req = URL(url)
-        val file = File(cacheDir + '/' + (cachePath ?: req.host + '/' + req.path + '_' + req.query))
+        val cachePath = if (req.query != null) {
+            cacheDir + '/' + req.host + '/' + req.path + '_' + req.query
+        } else {
+            cacheDir + '/' + req.host + '/' + req.path
+        }
+        val file = File(cachePath)
 
         var load = false
         val entry: CacheEntry = synchronized(cache) {
@@ -112,7 +121,6 @@ class HttpCache private constructor(val cacheDir: String) {
         }
 
         if (load) {
-            println("downloading $url")
             file.parentFile.mkdirs()
 
             var size = 0L
@@ -158,8 +166,9 @@ class HttpCache private constructor(val cacheDir: String) {
         private const val MAX_CACHE_SIZE = 500L * 1024L * 1024L
         private val instance = HttpCache("./.httpCache")
 
-        fun loadHttpResource(url: String, cachePath: String? = null): File =
-                instance.loadHttpResource(url, cachePath)
+        fun loadHttpResource(url: String): File {
+            return instance.loadHttpResource(url)
+        }
     }
 
     private data class CacheEntry(val file: File, var size: Long, var lastAccess: Long) : Serializable {

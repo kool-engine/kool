@@ -1,9 +1,9 @@
 package de.fabmax.kool.shading
 
+import de.fabmax.kool.RenderContext
 import de.fabmax.kool.Texture
-import de.fabmax.kool.platform.Float32Buffer
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.gl.*
+import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MutableVec2f
 import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.MutableVec4f
@@ -36,7 +36,7 @@ class UniformTexture2D(name: String) : Uniform<Texture?>(name, null) {
     override fun doBind(ctx: RenderContext) {
         val tex = value
         if (tex != null) {
-            GL.uniform1i(location, ctx.textureMgr.bindTexture(tex, ctx))
+            glUniform1i(location, ctx.textureMgr.bindTexture(tex, ctx))
         }
     }
 }
@@ -47,7 +47,7 @@ class Uniform1i(name: String) : Uniform<Int>(name, 0) {
         public set      // explicit public is needed to overwrite protected set from super
 
     override fun doBind(ctx: RenderContext) {
-        GL.uniform1i(location, value)
+        glUniform1i(location, value)
     }
 }
 
@@ -57,7 +57,7 @@ class Uniform1f(name: String) : Uniform<Float>(name, 0f) {
         public set      // explicit public is needed to overwrite protected set from super
 
     override fun doBind(ctx: RenderContext) {
-        GL.uniform1f(location, value)
+        glUniform1f(location, value)
     }
 }
 
@@ -65,7 +65,7 @@ class Uniform2f(name: String) : Uniform<MutableVec2f>(name, MutableVec2f()) {
     override val type = "vec2"
 
     override fun doBind(ctx: RenderContext) {
-        GL.uniform2f(location, value.x, value.y)
+        glUniform2f(location, value.x, value.y)
     }
 }
 
@@ -73,7 +73,7 @@ class Uniform3f(name: String) : Uniform<MutableVec3f>(name, MutableVec3f()) {
     override val type = "vec3"
 
     override fun doBind(ctx: RenderContext) {
-        GL.uniform3f(location, value.x, value.y, value.z)
+        glUniform3f(location, value.x, value.y, value.z)
     }
 }
 
@@ -81,7 +81,7 @@ class Uniform4f(name: String) : Uniform<MutableVec4f>(name, MutableVec4f()) {
     override val type = "vec4"
 
     override fun doBind(ctx: RenderContext) {
-        GL.uniform4f(location, value.x, value.y, value.z, value.w)
+        glUniform4f(location, value.x, value.y, value.z, value.w)
     }
 }
 
@@ -93,7 +93,7 @@ class UniformMatrix4(name: String) : Uniform<Float32Buffer?>(name, null) {
     override fun doBind(ctx: RenderContext) {
         val buf = value
         if (buf != null) {
-            GL.uniformMatrix4fv(location, false, buf)
+            glUniformMatrix4fv(location, false, buf)
         }
     }
 }

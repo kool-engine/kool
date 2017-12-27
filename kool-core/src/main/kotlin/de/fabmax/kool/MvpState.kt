@@ -1,9 +1,8 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.util.Mat4f
 import de.fabmax.kool.util.Mat4fStack
+import de.fabmax.kool.util.createFloat32Buffer
 
 
 /**
@@ -13,21 +12,21 @@ import de.fabmax.kool.util.Mat4fStack
 class MvpState internal constructor() {
 
     val projMatrix = Mat4fStack()
-    val projMatrixBuffer = Platform.createFloat32Buffer(16)
+    val projMatrixBuffer = createFloat32Buffer(16)
         get() {
             projMatrix.toBuffer(field)
             return field
         }
 
     val viewMatrix = Mat4fStack()
-    val viewMatrixBuffer = Platform.createFloat32Buffer(16)
+    val viewMatrixBuffer = createFloat32Buffer(16)
         get() {
             viewMatrix.toBuffer(field)
             return field
         }
 
     val modelMatrix = Mat4fStack()
-    val modelMatrixBuffer = Platform.createFloat32Buffer(16)
+    val modelMatrixBuffer = createFloat32Buffer(16)
         get() {
             modelMatrix.toBuffer(field)
             return field
@@ -35,7 +34,7 @@ class MvpState internal constructor() {
 
     // combined model view projection matrix
     val mvpMatrix = Mat4f()
-    val mvpMatrixBuffer = Platform.createFloat32Buffer(16)
+    val mvpMatrixBuffer = createFloat32Buffer(16)
         get() {
             mvpMatrix.toBuffer(field)
             return field

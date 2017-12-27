@@ -16,7 +16,7 @@ buildscript {
     }
 }
 
-apply plugin: 'kotlin'
+apply plugin: 'kotlin-platform-jvm'
 
 sourceSets {
     main.kotlin.srcDirs += "src/main/kotlin"
@@ -24,15 +24,17 @@ sourceSets {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.16"
+    compile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.20"
+
+    expectedBy project(":kool-core")
+
     compile 'com.github.wendykierp:JTransforms:3.1'
 
     compile "org.lwjgl:lwjgl:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
-
-    compile project(":kool-core")
 
     runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"

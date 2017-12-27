@@ -1,7 +1,9 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.platform.Math
-
+import de.fabmax.kool.math.clamp
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.round
 
 /**
  * @author fabmax
@@ -15,44 +17,44 @@ class ColorGradient(vararg colors: Color) {
         val len = colors.size
         var steps = 0
         val stepsn = IntArray(len - 1)
-        for (i in 1..len - 1) {
+        for (i in 1 until len) {
             val c1 = colors[i - 1]
             val c2 = colors[i]
 
-            val da = Math.round(Math.clamp(Math.abs(c1.a - c2.a), 0f, 1f) * 255f)
-            val dr = Math.round(Math.clamp(Math.abs(c1.r - c2.r), 0f, 1f) * 255f)
-            val dg = Math.round(Math.clamp(Math.abs(c1.g - c2.g), 0f, 1f) * 255f)
-            val db = Math.round(Math.clamp(Math.abs(c1.b - c2.b), 0f, 1f) * 255f)
+            val da = round(abs(c1.a - c2.a).clamp(0f, 1f) * 255f)
+            val dr = round(abs(c1.r - c2.r).clamp(0f, 1f) * 255f)
+            val dg = round(abs(c1.g - c2.g).clamp(0f, 1f) * 255f)
+            val db = round(abs(c1.b - c2.b).clamp(0f, 1f) * 255f)
 
-            var m = Math.max(da, dr)
-            m = Math.max(m, dg)
-            m = Math.max(m, db)
-            steps += m
-            stepsn[i - 1] = m
+            var m = max(da, dr)
+            m = max(m, dg)
+            m = max(m, db)
+            steps += m.toInt()
+            stepsn[i - 1] = m.toInt()
         }
 
         // generate color look up table
         gradient = Array(steps) { MutableColor() }
         var n = 0
         for (i in stepsn.indices) {
-            val a0 = Math.round(Math.clamp(colors[i].a, 0f, 1f) * 255f)
-            val r0 = Math.round(Math.clamp(colors[i].r, 0f, 1f) * 255f)
-            val g0 = Math.round(Math.clamp(colors[i].g, 0f, 1f) * 255f)
-            val b0 = Math.round(Math.clamp(colors[i].b, 0f, 1f) * 255f)
-            val a1 = Math.round(Math.clamp(colors[i + 1].a, 0f, 1f) * 255f)
-            val r1 = Math.round(Math.clamp(colors[i + 1].r, 0f, 1f) * 255f)
-            val g1 = Math.round(Math.clamp(colors[i + 1].g, 0f, 1f) * 255f)
-            val b1 = Math.round(Math.clamp(colors[i + 1].b, 0f, 1f) * 255f)
-            val da = (a1 - a0).toFloat() / stepsn[i].toFloat()
-            val dr = (r1 - r0).toFloat() / stepsn[i].toFloat()
-            val dg = (g1 - g0).toFloat() / stepsn[i].toFloat()
-            val db = (b1 - b0).toFloat() / stepsn[i].toFloat()
+            val a0 = round(colors[i].a.clamp(0f, 1f) * 255f)
+            val r0 = round(colors[i].r.clamp(0f, 1f) * 255f)
+            val g0 = round(colors[i].g.clamp(0f, 1f) * 255f)
+            val b0 = round(colors[i].b.clamp(0f, 1f) * 255f)
+            val a1 = round(colors[i + 1].a.clamp(0f, 1f) * 255f)
+            val r1 = round(colors[i + 1].r.clamp(0f, 1f) * 255f)
+            val g1 = round(colors[i + 1].g.clamp(0f, 1f) * 255f)
+            val b1 = round(colors[i + 1].b.clamp(0f, 1f) * 255f)
+            val da = (a1 - a0) / stepsn[i].toFloat()
+            val dr = (r1 - r0) / stepsn[i].toFloat()
+            val dg = (g1 - g0) / stepsn[i].toFloat()
+            val db = (b1 - b0) / stepsn[i].toFloat()
             var j = 0
             while (j < stepsn[i]) {
-                gradient[n].a = (a0 + Math.round(da * j)) / 255.0f
-                gradient[n].r = (r0 + Math.round(dr * j)) / 255.0f
-                gradient[n].g = (g0 + Math.round(dg * j)) / 255.0f
-                gradient[n].b = (b0 + Math.round(db * j)) / 255.0f
+                gradient[n].a = (a0 + round(da * j)) / 255.0f
+                gradient[n].r = (r0 + round(dr * j)) / 255.0f
+                gradient[n].g = (g0 + round(dg * j)) / 255.0f
+                gradient[n].b = (b0 + round(db * j)) / 255.0f
                 j++
                 n++
             }
@@ -60,7 +62,7 @@ class ColorGradient(vararg colors: Color) {
     }
 
     fun getColor(value: Float, min: Float = 0f, max: Float = 1f): Color {
-        val i = Math.clamp(((value - min) / (max - min) * gradient.size).toInt(), 0, gradient.size - 1)
+        val i = ((value - min) / (max - min) * gradient.size).toInt().clamp(0, gradient.size - 1)
         return gradient[i]
     }
 

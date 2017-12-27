@@ -1,16 +1,15 @@
 package de.fabmax.kool.gl
 
+import de.fabmax.kool.RenderContext
 import de.fabmax.kool.TextureProps
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.RenderContext
+import kotlin.math.max
 
 class TextureResource private constructor(glRef: Any, val target: Int, val props: TextureProps, ctx: RenderContext) :
         GlResource(glRef, Type.TEXTURE, ctx) {
 
     companion object {
         fun create(target: Int, props: TextureProps, ctx: RenderContext): TextureResource {
-            return TextureResource(GL.createTexture(), target, props, ctx)
+            return TextureResource(glCreateTexture(), target, props, ctx)
         }
     }
 
@@ -20,20 +19,20 @@ class TextureResource private constructor(glRef: Any, val target: Int, val props
         internal set
 
     init {
-        GL.bindTexture(GL.TEXTURE_2D, this)
-        GL.texParameteri(target, GL.TEXTURE_MIN_FILTER, props.minFilter)
-        GL.texParameteri(target, GL.TEXTURE_MAG_FILTER, props.magFilter)
-        GL.texParameteri(target, GL.TEXTURE_WRAP_S, props.xWrapping)
-        GL.texParameteri(target, GL.TEXTURE_WRAP_T, props.yWrapping)
+        glBindTexture(GL_TEXTURE_2D, this)
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, props.minFilter)
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, props.magFilter)
+        glTexParameteri(target, GL_TEXTURE_WRAP_S, props.xWrapping)
+        glTexParameteri(target, GL_TEXTURE_WRAP_T, props.yWrapping)
 
         if (props.anisotropy > 1 && ctx.anisotropicTexFilterInfo.isSupported) {
-            val anisotropy = Math.max(ctx.anisotropicTexFilterInfo.maxAnisotropy.toInt(), props.anisotropy)
-            GL.texParameteri(target, ctx.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy)
+            val anisotropy = max(ctx.anisotropicTexFilterInfo.maxAnisotropy.toInt(), props.anisotropy)
+            glTexParameteri(target, ctx.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy)
         }
     }
 
     override fun delete(ctx: RenderContext) {
-        GL.deleteTexture(this)
+        glDeleteTexture(this)
         super.delete(ctx)
     }
 }

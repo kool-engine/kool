@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.platform.Math
+import de.fabmax.kool.math.isZero
 
 /**
  * @author fabmax
@@ -23,7 +23,7 @@ class Plane {
      */
     fun intersectionPoint(result: MutableVec3f, ray: Ray): Boolean {
         val denom = n.dot(ray.direction)
-        if (!Math.Companion.isZero(denom)) {
+        if (!denom.isZero()) {
             val t = p.subtract(ray.origin, result).dot(n) / denom
             result.set(ray.direction).scale(t).add(ray.origin)
             return t >= 0

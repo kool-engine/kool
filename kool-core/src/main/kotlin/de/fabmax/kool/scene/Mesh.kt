@@ -1,12 +1,11 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.gl.BufferResource
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.Platform
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.gl.*
 import de.fabmax.kool.shading.*
+import de.fabmax.kool.supportsUint32Indices
 import de.fabmax.kool.util.*
+import kotlin.math.sqrt
 
 fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
          block: Mesh.() -> Unit): Mesh {
@@ -63,7 +62,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         set(value) { meshData.generator = value }
 
     open var shader: Shader? = null
-    open var primitiveType = GL.TRIANGLES
+    open var primitiveType = GL_TRIANGLES
 
     override val bounds: BoundingBox
         get() = meshData.bounds
@@ -107,7 +106,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
             boundShader.bindMesh(this, ctx)
             // draw mesh
             meshData.indexBuffer?.bind(ctx)
-            GL.drawElements(primitiveType, meshData.indexSize, GL.UNSIGNED_INT, 0)
+            glDrawElements(primitiveType, meshData.indexSize, GL_UNSIGNED_INT, 0)
             boundShader.unbindMesh(ctx)
         }
     }
@@ -119,7 +118,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
             test.hitDistanceSqr = distSqr
             test.hitNode = this
             test.hitPositionLocal.set(test.ray.direction)
-                    .scale(Math.sqrt(distSqr.toDouble()).toFloat())
+                    .scale(sqrt(distSqr.toDouble()).toFloat())
                     .add(test.ray.origin)
         }
     }
@@ -133,7 +132,7 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
 
     private var referenceCount = 0
 
-    var usage = GL.STATIC_DRAW
+    var usage = GL_STATIC_DRAW
 
     var dataBuffer: BufferResource? = null
         private set
@@ -240,10 +239,10 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
 
     fun checkBuffers(ctx: RenderContext) {
         if (indexBuffer == null) {
-            indexBuffer = BufferResource.create(GL.ELEMENT_ARRAY_BUFFER, ctx)
+            indexBuffer = BufferResource.create(GL_ELEMENT_ARRAY_BUFFER, ctx)
         }
         if (dataBuffer == null) {
-            dataBuffer = BufferResource.create(GL.ARRAY_BUFFER, ctx)
+            dataBuffer = BufferResource.create(GL_ARRAY_BUFFER, ctx)
             positionBinder = VboBinder(dataBuffer!!, 3, data.strideBytes)
             if (hasNormals) { normalBinder = VboBinder(dataBuffer!!, 3, data.strideBytes, data.normalOffset) }
             if (hasColors) { colorBinder = VboBinder(dataBuffer!!, 4, data.strideBytes, data.colorOffset) }
@@ -255,9 +254,9 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
                 if (!isBatchUpdate) {
                     indexSize = data.indices.position
 
-                    if (!Platform.supportsUint32Indices) {
+                    if (!supportsUint32Indices) {
                         // convert index buffer to uint16
-                        val uint16Buffer = Platform.createUint16Buffer(indexSize)
+                        val uint16Buffer = createUint16Buffer(indexSize)
                         for (i in 0..(data.indices.position - 1)) {
                             uint16Buffer.put(data.indices[i].toShort())
                         }

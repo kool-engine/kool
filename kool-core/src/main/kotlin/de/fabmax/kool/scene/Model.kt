@@ -1,9 +1,7 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.shading.BasicShader
+import de.fabmax.kool.RenderContext
 import de.fabmax.kool.shading.Shader
-import de.fabmax.kool.shading.ShaderProps
 
 /**
  * @author fabmax

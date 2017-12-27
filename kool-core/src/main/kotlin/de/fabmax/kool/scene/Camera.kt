@@ -1,9 +1,13 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.math.isZero
+import de.fabmax.kool.math.toRad
 import de.fabmax.kool.util.*
+import kotlin.math.atan
+import kotlin.math.cos
+import kotlin.math.tan
 
 /**
  * @author fabmax
@@ -96,7 +100,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     fun project_(world: Vec3f, result: MutableVec3f): Boolean {
         tmpVec4.set(world.x, world.y, world.z, 1f)
         mvp.transform(tmpVec4)
-        if (Math.isZero(tmpVec4.w)) {
+        if (tmpVec4.w.isZero()) {
             return false
         }
         result.set(tmpVec4.x, tmpVec4.y, tmpVec4.z).scale(1f / tmpVec4.w)
@@ -212,11 +216,11 @@ class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
         ctx.mvpState.projMatrix.setPerspective(fovy, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling
-        val angY = Math.toRad(fovy) / 2f
-        speherFacY = 1f / Math.cos(angY)
-        tangY = Math.tan(angY)
-        val angX = Math.atan(tangY * aspectRatio)
-        sphereFacX = 1f / Math.cos(angX)
+        val angY = fovy.toRad() / 2f
+        speherFacY = 1f / cos(angY)
+        tangY = tan(angY)
+        val angX = atan(tangY * aspectRatio)
+        sphereFacX = 1f / cos(angX)
     }
 
     /**

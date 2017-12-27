@@ -5,5 +5,4 @@ include 'kool-js'
 
 include 'kool-demo'
 include 'kool-demo-desktop'
-include 'kool-demo-web'
-
+include 'kool-demo-js'

@@ -1,7 +1,5 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.platform.RenderContext
-
 /**
  * @author fabmax
  */

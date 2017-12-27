@@ -1,15 +1,18 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.MutableVec2f
 
 /**
  * @author fabmax
@@ -46,7 +49,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
     var value = value
         set(value) {
             if (value != field) {
-                field = Math.clamp(value, min, max)
+                field = value.clamp(min, max)
                 requestUiUpdate()
 
                 for (i in onValueChanged.indices) {

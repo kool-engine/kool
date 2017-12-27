@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.RenderContext
 import de.fabmax.kool.demo.earth.earthScene
-import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*

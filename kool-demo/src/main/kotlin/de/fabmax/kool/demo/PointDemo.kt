@@ -1,8 +1,7 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.Platform
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.currentTimeMillis
+import de.fabmax.kool.math.random
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 
@@ -35,13 +34,13 @@ fun pointScene(): Scene {
                     }
                 }
 
-                trav.center.set((Math.random() - 0.5).toFloat() * 2f,
-                        (Math.random() - 0.5).toFloat() * 2f, (Math.random() - 0.5).toFloat() * 2f)
-                val t = Platform.currentTimeMillis()
+                trav.center.set((random() - 0.5).toFloat() * 2f,
+                        (random() - 0.5).toFloat() * 2f, (random() - 0.5).toFloat() * 2f)
+                val t = currentTimeMillis()
                 tree.traverse(trav)
-                println("In-radius search in ${Platform.currentTimeMillis() - t} ms, got ${trav.result.size} points")
+                println("In-radius search in ${currentTimeMillis() - t} ms, got ${trav.result.size} points")
 
-                val color = Color.fromHsv(Math.random().toFloat() * 360f, 1f, 1f, 1f)
+                val color = Color.fromHsv(random().toFloat() * 360f, 1f, 1f, 1f)
                 for (point in trav.result) {
                     for (i in 0..ptVertCnt-1) {
                         vert.index = point.index + i
@@ -65,7 +64,7 @@ fun pointScene(): Scene {
 
         +transformGroup {
             onRender += {
-                rotate(it.deltaT * 45, Vec3f.Y_AXIS)
+                rotate(it.deltaT.toFloat() * 45, Vec3f.Y_AXIS)
             }
             +pointMesh
         }
@@ -79,9 +78,9 @@ fun makePointMesh(): Pair<Mesh, KdTree<MeshPoint>> {
         pointSize = 3f
 
         for (i in 1..100_000) {
-            val x = (Math.random().toFloat() - 0.5f) * 5
-            val z = (Math.random().toFloat() - 0.5f) * 5
-            val y = (Math.random().toFloat() - 0.5f) * 5
+            val x = (random().toFloat() - 0.5f) * 5
+            val z = (random().toFloat() - 0.5f) * 5
+            val y = (random().toFloat() - 0.5f) * 5
 
             val idx = addPoint {
                 position.set(x, y, z)
@@ -90,9 +89,9 @@ fun makePointMesh(): Pair<Mesh, KdTree<MeshPoint>> {
             points.add(MeshPoint(x, y, z, idx))
         }
     }
-    val t = Platform.currentTimeMillis()
+    val t = currentTimeMillis()
     val tree = pointTree(points)
-    println("Constructed k-d-Tree with ${points.size} points in ${Platform.currentTimeMillis() - t} ms")
+    println("Constructed k-d-Tree with ${points.size} points in ${currentTimeMillis() - t} ms")
     return Pair(mesh, tree)
 }
 
@@ -102,17 +101,17 @@ fun makeBillboardPointMesh(): Pair<BillboardMesh, KdTree<MeshPoint>> {
 
     val points: MutableList<MeshPoint> = mutableListOf()
     for (i in 1..100_000) {
-        val x = (Math.random().toFloat() - 0.5f) * 5
-        val z = (Math.random().toFloat() - 0.5f) * 5
-        val y = (Math.random().toFloat() - 0.5f) * 5
+        val x = (random().toFloat() - 0.5f) * 5
+        val z = (random().toFloat() - 0.5f) * 5
+        val y = (random().toFloat() - 0.5f) * 5
 
         mesh.addQuad(Vec3f(x, y, z), Color.DARK_GRAY)
         points.add(MeshPoint(x, y, z, (i-1)*4))
     }
 
-    val t = Platform.currentTimeMillis()
+    val t = currentTimeMillis()
     val tree = pointTree(points)
-    println("Constructed k-d-Tree with ${points.size} points in ${Platform.currentTimeMillis() - t} ms")
+    println("Constructed k-d-Tree with ${points.size} points in ${currentTimeMillis() - t} ms")
     return Pair(mesh, tree)
 }
 

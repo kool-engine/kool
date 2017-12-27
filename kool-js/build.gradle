@@ -1,5 +1,4 @@
-apply plugin: 'kotlin2js'
-apply plugin: 'idea'
+apply plugin: 'kotlin-platform-js'
 
 compileKotlin2Js {
     kotlinOptions.outputFile = "${buildDir}/web/kool.js"
@@ -8,24 +7,11 @@ compileKotlin2Js {
 
 sourceSets {
     main.kotlin.srcDirs += "src/main/kotlin"
-    main.kotlin.srcDirs += buildDir.toString() + "/lib"
-}
-
-idea {
-    module {
-        generatedSourceDirs += new File(buildDir, "lib")
-    }
 }
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
-}
+    compile "org.jetbrains.kotlin:kotlin-test-js:$kotlin_version"
 
-tasks.create(name: 'copyLib', type: Copy) {
-    def libDir = new File(buildDir, "/lib")
-    delete libDir
-    from(file('../kool-core/src/main/kotlin'))
-    into(libDir)
+    expectedBy project(":kool-core")
 }
-
-compileKotlin2Js.dependsOn copyLib

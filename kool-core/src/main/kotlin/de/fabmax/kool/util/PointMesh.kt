@@ -1,9 +1,8 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.platform.GL
+import de.fabmax.kool.gl.GL_POINTS
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.shading.BasicPointShader
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
@@ -19,7 +18,7 @@ fun pointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
 
 class PointMesh(data: MeshData = MeshData(false, true, false), name: String? = null) : Mesh(data, name) {
     init {
-        primitiveType = GL.POINTS
+        primitiveType = GL_POINTS
         shader = basicPointShader {
             colorModel = ColorModel.VERTEX_COLOR
             lightModel = LightModel.NO_LIGHTING

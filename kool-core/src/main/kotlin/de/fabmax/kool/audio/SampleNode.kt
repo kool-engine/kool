@@ -1,6 +1,9 @@
 package de.fabmax.kool.audio
 
-import de.fabmax.kool.platform.Math
+import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.random
+import kotlin.math.max
+import kotlin.math.pow
 
 /**
  * @author fabmax
@@ -28,25 +31,25 @@ abstract class SampleNode {
 
     companion object {
         private val NOTE_TABLE = Array(15, { oct ->
-            FloatArray(100, { n -> Math.pow(2.0, (n-20 - 33.0 + 12.0 * (oct-5)) / 12.0).toFloat() * 440f })
+            FloatArray(100, { n -> 2.0.pow((n-20 - 33.0 + 12.0 * (oct-5)) / 12.0).toFloat() * 440f })
         })
 
         fun clip(value: Float, clip: Float): Float {
-            return Math.clamp(value, -clip, clip)
+            return value.clamp(-clip, clip)
         }
 
         fun noise(amplitude: Float = 1f): Float {
-            return (Math.random().toFloat() * 2f - 1f) * amplitude
+            return (random().toFloat() * 2f - 1f) * amplitude
         }
 
         fun note(note: Int, octave: Int): Float {
-            val o = Math.clamp(octave, -5, 9) + 5
-            val n = Math.clamp(note, -20, 79) + 20
+            val o = octave.clamp(-5, 9) + 5
+            val n = note.clamp(-20, 79) + 20
             return NOTE_TABLE[o][n]
         }
 
         fun perc(sample: Float, decay: Float, f: Float, c: Float = 0.889f): Float {
-            return sample * Math.max(0f, c - (f * decay) / ((f * decay) + 1))
+            return sample * max(0f, c - (f * decay) / ((f * decay) + 1))
         }
     }
 }

@@ -2,8 +2,8 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
+import de.fabmax.kool.createCharMap
 import de.fabmax.kool.defaultProps
-import de.fabmax.kool.platform.Platform
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.shading.ShaderProps
@@ -77,7 +77,7 @@ class Font(val fontProps: FontProps) :
         private fun getCharMap(fontProps: FontProps): CharMap {
             var map = charMaps[fontProps]
             if (map == null) {
-                map = Platform.createCharMap(fontProps)
+                map = createCharMap(fontProps)
                 charMaps[fontProps] = map
             }
             return map

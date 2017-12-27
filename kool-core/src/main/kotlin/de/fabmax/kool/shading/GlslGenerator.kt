@@ -1,7 +1,7 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.defaultGlslInjector
 
 /**
  * @author fabmax
@@ -44,12 +44,14 @@ open class GlslGenerator {
     }
 
     interface GlslInjector {
+        fun vsHeader(text: StringBuilder) { }
         fun vsStart(shaderProps: ShaderProps, text: StringBuilder) { }
         fun vsAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
         fun vsBeforeProj(shaderProps: ShaderProps, text: StringBuilder) { }
         fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) { }
         fun vsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
 
+        fun fsHeader(text: StringBuilder) { }
         fun fsStart(shaderProps: ShaderProps, text: StringBuilder) { }
         fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
         fun fsBeforeSampling(shaderProps: ShaderProps, text: StringBuilder) { }
@@ -57,7 +59,7 @@ open class GlslGenerator {
         fun fsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
     }
 
-    val injectors: MutableList<GlslInjector> = mutableListOf()
+    val injectors: MutableList<GlslInjector> = mutableListOf(defaultGlslInjector())
 
     val uniformMvpMatrix: UniformMatrix4 = UniformMatrix4(UNIFORM_MVP_MATRIX)
     val uniformModelMatrix: UniformMatrix4 = UniformMatrix4(UNIFORM_MODEL_MATRIX)
@@ -77,7 +79,7 @@ open class GlslGenerator {
     val customUnitforms: MutableMap<String, Uniform<*>> = mutableMapOf()
 
     fun addCustomUniform(uniform: Uniform<*>) {
-        customUnitforms.put(uniform.name, uniform);
+        customUnitforms.put(uniform.name, uniform)
     }
 
     fun onLoad(shader: BasicShader, ctx: RenderContext) {
@@ -128,7 +130,7 @@ open class GlslGenerator {
     private fun generateVertShader(shaderProps: ShaderProps): String {
         val text = StringBuilder("// Generated vertex shader code\n")
 
-        text.append(GL.glslVertHeader())
+        injectors.forEach { it.vsHeader(text) }
 
         injectors.forEach { it.vsStart(shaderProps, text) }
         generateVertInputCode(shaderProps, text)
@@ -142,7 +144,7 @@ open class GlslGenerator {
     private fun generateFragShader(shaderProps: ShaderProps): String {
         val text = StringBuilder("// Generated fragment shader code\n")
 
-        text.append(GL.glslFragHeader())
+        injectors.forEach { it.fsHeader(text) }
 
         injectors.forEach { it.fsStart(shaderProps, text) }
         generateFragInputCode(shaderProps, text)
@@ -200,7 +202,7 @@ open class GlslGenerator {
         }
 
         for (uniform in customUnitforms.values) {
-            text.append("uniform ${uniform.type} ${uniform.name};\n");
+            text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
     }
 
@@ -337,7 +339,7 @@ open class GlslGenerator {
         }
 
         for (uniform in customUnitforms.values) {
-            text.append("uniform ${uniform.type} ${uniform.name};\n");
+            text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
     }
 

@@ -1,6 +1,9 @@
 package de.fabmax.kool.demo.earth
 
-import de.fabmax.kool.platform.Math
+import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.math.toRad
+import kotlin.math.*
 
 /**
  * Slippy map tilename implementation
@@ -14,9 +17,9 @@ data class TileName(val x: Int, val y: Int, val zoom: Int) {
 
     init {
         val zp = (1 shl zoom)
-        val s = Math.toDeg(Math.atan(Math.sinh(Math.PI - (y+1).toDouble() / (1 shl zoom) * 2 * Math.PI)))
+        val s = atan(sinh(PI - (y+1).toDouble() / (1 shl zoom) * 2 * PI)).toDeg()
         val w = (x+1).toDouble() / zp * 360 - 180
-        val n = Math.toDeg(Math.atan(Math.sinh(Math.PI - y.toDouble() / (1 shl zoom) * 2 * Math.PI)))
+        val n = atan(sinh(PI - y.toDouble() / (1 shl zoom) * 2 * PI)).toDeg()
         val e = x.toDouble() / zp * 360 - 180
         sw = LatLon(s, w)
         ne = LatLon(n, e)
@@ -27,12 +30,11 @@ data class TileName(val x: Int, val y: Int, val zoom: Int) {
         fun forLatLng(latLon: LatLon, zoom: Int): TileName = forLatLng(latLon.lat, latLon.lon, zoom)
 
         fun forLatLng(lat: Double, lon: Double, zoom: Int): TileName {
-            val latRad = lat * Math.DEG_2_RAD
+            val latRad = lat.toRad()
             val zp = (1 shl zoom)
-            val x = Math.clamp(((lon + 180.0) / 360 * zp).toInt(), 0, zp-1)
-            val y = Math.clamp(
-                    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI)/ 2 * zp).toInt(),
-                    0, zp-1)
+            val x = ((lon + 180.0) / 360 * zp).toInt().clamp(0, zp-1)
+            val y = ((1 - ln(tan(latRad) + 1 / cos(latRad)) / PI)/ 2 * zp).toInt()
+                    .clamp(0, zp-1)
             return TileName(x, y, zoom)
         }
     }

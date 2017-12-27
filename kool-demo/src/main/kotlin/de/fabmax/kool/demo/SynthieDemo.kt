@@ -1,8 +1,10 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.InputManager
+import de.fabmax.kool.RenderContext
 import de.fabmax.kool.audio.*
-import de.fabmax.kool.platform.*
+import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.BasicShader
@@ -10,6 +12,8 @@ import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.*
+import kotlin.math.abs
+import kotlin.math.max
 
 /**
  * @author fabmax
@@ -230,7 +234,7 @@ private class SequenceButton(val col: Int, val row: Int, val melody: Melody, roo
         } else {
             val a = melody.index - col
             if (a > 0 && a <= 1) {
-                background.bgColor.a += Math.clamp((0.5f - Math.abs(a - 0.5f)), 0f, 0.1f)
+                background.bgColor.a += (0.5f - abs(a - 0.5f)).clamp(0f, 0.1f)
             }
         }
 
@@ -266,7 +270,7 @@ private class SynthieScene: Scene() {
             zoom = 8f
         }
 
-        audioGen = Platform.getAudioImpl().newAudioGenerator { dt -> nextSample(dt) }
+        audioGen = AudioGenerator { dt -> nextSample(dt) }
         audioGen.enableFftComputation(1024)
     }
 
@@ -284,7 +288,7 @@ private class SynthieScene: Scene() {
     private inner class Heightmap(val width: Int, val length: Int) : TransformGroup() {
         val quads = colorMesh {
             isFrustumChecked = false
-            meshData.usage = GL.DYNAMIC_DRAW
+            meshData.usage = GL_DYNAMIC_DRAW
             generator = {
                 // Set y-axis as surface normal for all quad vertices
                 vertexModFun = {
@@ -314,14 +318,14 @@ private class SynthieScene: Scene() {
         }
 
         override fun render(ctx: RenderContext) {
-            nextSample -= ctx.deltaT
+            nextSample -= ctx.deltaT.toFloat()
 
             if (nextSample <= 0) {
-                nextSample += Math.max(sampleInterval, -nextSample)
+                nextSample += max(sampleInterval, -nextSample)
 
                 val freqData = audioGen.getPowerSpectrum()
                 for (i in 0..width-1) {
-                    val c = (Math.clamp(freqData[i] / 90f, -1f, 0f) + 1f)
+                    val c = (freqData[i] / 90f).clamp(-1f, 0f) + 1f
                     val h = c * 50f
                     val x = i - width * 0.5f
                     val color = ColorGradient.VIRIDIS.getColor(c + 0.05f, 0f, 0.7f)
@@ -352,7 +356,7 @@ private class SynthieScene: Scene() {
                 }
                 quads.meshData.isSyncRequired = true
             }
-            translate(0f, 0f, -ctx.deltaT / sampleInterval)
+            translate(0f, 0f, -ctx.deltaT.toFloat() / sampleInterval)
 
             super.render(ctx)
         }
@@ -376,7 +380,7 @@ private class SynthieScene: Scene() {
                     lightModel = LightModel.NO_LIGHTING
                 }
                 (shader as BasicShader).staticColor.set(Color.LIME)
-                meshData.usage = GL.DYNAMIC_DRAW
+                meshData.usage = GL_DYNAMIC_DRAW
             }
         })
         val items = Array(lines.size, { i -> lines[i].meshData.data[0] })

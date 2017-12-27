@@ -1,8 +1,10 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.gl.GL_COLOR_BUFFER_BIT
+import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
+import de.fabmax.kool.gl.glClear
 import de.fabmax.kool.util.RayTest
 
 /**
@@ -21,7 +23,7 @@ open class Scene(name: String? = null) : Group(name) {
     var camera: Camera = PerspectiveCamera()
     var light = Light()
 
-    var clearMask = GL.COLOR_BUFFER_BIT or GL.DEPTH_BUFFER_BIT
+    var clearMask = GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
     var isPickingEnabled = true
     private val rayTest = RayTest()
     private var hoverNode: Node? = null
@@ -47,7 +49,7 @@ open class Scene(name: String? = null) : Group(name) {
         handleInput(ctx)
 
         if (clearMask != 0) {
-            GL.clear(clearMask)
+            glClear(clearMask)
         }
         super.render(ctx)
 

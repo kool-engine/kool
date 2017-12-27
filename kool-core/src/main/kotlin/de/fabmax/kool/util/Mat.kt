@@ -1,8 +1,9 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.platform.Float32Buffer
-import de.fabmax.kool.platform.Math
+import de.fabmax.kool.math.isEqual
+import de.fabmax.kool.math.toRad
+import kotlin.math.*
 
 /**
  * @author fabmax
@@ -285,7 +286,7 @@ open class Mat4f {
     }
 
     fun setRotate(rotA: Float, axX: Float, axY: Float, axZ: Float): Mat4f {
-        val a = Math.toRad(rotA)
+        val a = rotA.toRad()
         var x = axX
         var y = axY
         var z = axZ
@@ -296,8 +297,8 @@ open class Mat4f {
         matrix[offset + 13] = 0f
         matrix[offset + 14] = 0f
         matrix[offset + 15] = 1f
-        val s = Math.sin(a.toDouble()).toFloat()
-        val c = Math.cos(a.toDouble()).toFloat()
+        val s = sin(a.toDouble()).toFloat()
+        val c = cos(a.toDouble()).toFloat()
         if (1.0f == x && 0.0f == y && 0.0f == z) {
             matrix[offset + 5] = c
             matrix[offset + 10] = c
@@ -329,8 +330,8 @@ open class Mat4f {
             matrix[offset + 9] = 0f
             matrix[offset + 10] = 1f
         } else {
-            val len = Math.sqrt((x*x + y*y + z*z).toDouble()).toFloat()
-            if (!Math.isEqual(len, 1f)) {
+            val len = sqrt((x*x + y*y + z*z).toDouble()).toFloat()
+            if (!isEqual(len, 1f)) {
                 val recipLen = 1.0f / len
                 x *= recipLen
                 y *= recipLen
@@ -364,7 +365,7 @@ open class Mat4f {
         var fz = lookAt.z - position.z
 
         // Normalize f
-        val rlf = 1.0f / Math.sqrt((fx*fx + fy*fy + fz*fz).toDouble()).toFloat()
+        val rlf = 1.0f / sqrt((fx*fx + fy*fy + fz*fz).toDouble()).toFloat()
         fx *= rlf
         fy *= rlf
         fz *= rlf
@@ -375,7 +376,7 @@ open class Mat4f {
         var sz = fx * up.y - fy * up.x
 
         // and normalize s
-        val rls = 1.0f / Math.sqrt((sx*sx + sy*sy + sz*sz).toDouble()).toFloat()
+        val rls = 1.0f / sqrt((sx*sx + sy*sy + sz*sz).toDouble()).toFloat()
         sx *= rls
         sy *= rls
         sz *= rls
@@ -449,7 +450,7 @@ open class Mat4f {
     }
 
     fun setPerspective(fovy: Float, aspect: Float, near: Float, far: Float): Mat4f {
-        val f = 1.0f / Math.tan(fovy * (Math.PI / 360.0)).toFloat()
+        val f = 1.0f / tan(fovy * (PI / 360.0)).toFloat()
         val rangeReciprocal = 1.0f / (near - far)
 
         matrix[offset + 0] = f / aspect

@@ -1,24 +1,28 @@
 package de.fabmax.kool.gl
 
-import de.fabmax.kool.platform.*
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.Uint16Buffer
+import de.fabmax.kool.util.Uint32Buffer
+import de.fabmax.kool.util.Uint8Buffer
 
 class BufferResource private constructor(glRef: Any, val target: Int, ctx: RenderContext) :
         GlResource(glRef, Type.BUFFER, ctx) {
 
     companion object {
         fun create(target: Int, ctx: RenderContext): BufferResource {
-            return BufferResource(GL.createBuffer(), target, ctx)
+            return BufferResource(glCreateBuffer(), target, ctx)
         }
     }
 
     override fun delete(ctx: RenderContext) {
-        GL.deleteBuffer(this)
+        glDeleteBuffer(this)
         super.delete(ctx)
     }
 
     fun bind(ctx: RenderContext) {
         if (ctx.boundBuffers[target] != this) {
-            GL.bindBuffer(target, this)
+            glBindBuffer(target, this)
             ctx.boundBuffers[target] = this
         }
     }
@@ -28,7 +32,7 @@ class BufferResource private constructor(glRef: Any, val target: Int, ctx: Rende
         val pos = data.position
         data.flip()
         bind(ctx)
-        GL.bufferData(target, data, usage)
+        glBufferData(target, data, usage)
         ctx.memoryMgr.memoryAllocated(this, pos * 4)
         data.limit = limit
         data.position = pos
@@ -39,7 +43,7 @@ class BufferResource private constructor(glRef: Any, val target: Int, ctx: Rende
         val pos = data.position
         data.flip()
         bind(ctx)
-        GL.bufferData(target, data, usage)
+        glBufferData(target, data, usage)
         ctx.memoryMgr.memoryAllocated(this, pos)
         data.limit = limit
         data.position = pos
@@ -50,7 +54,7 @@ class BufferResource private constructor(glRef: Any, val target: Int, ctx: Rende
         val pos = data.position
         data.flip()
         bind(ctx)
-        GL.bufferData(target, data, usage)
+        glBufferData(target, data, usage)
         ctx.memoryMgr.memoryAllocated(this, pos * 2)
         data.limit = limit
         data.position = pos
@@ -61,14 +65,14 @@ class BufferResource private constructor(glRef: Any, val target: Int, ctx: Rende
         val pos = data.position
         data.flip()
         bind(ctx)
-        GL.bufferData(target, data, usage)
+        glBufferData(target, data, usage)
         ctx.memoryMgr.memoryAllocated(this, pos * 4)
         data.limit = limit
         data.position = pos
     }
 
     fun unbind(ctx: RenderContext) {
-        GL.bindBuffer(target, null)
+        glBindBuffer(target, null)
         ctx.boundBuffers[target] = null
     }
 }

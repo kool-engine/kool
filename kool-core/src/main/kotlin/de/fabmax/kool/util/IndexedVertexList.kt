@@ -1,9 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.platform.Float32Buffer
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.Platform
+import kotlin.math.round
 
 /**
  * @author fabmax
@@ -30,7 +28,7 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
         private set
     var data: Float32Buffer
         private set
-    var indices = Platform.createUint32Buffer(INITIAL_SIZE)
+    var indices = createUint32Buffer(INITIAL_SIZE)
         private set
 
     private val tmpItem: Item
@@ -62,13 +60,13 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
         vertexSize = cnt
         strideBytes = vertexSize * 4
 
-        data = Platform.createFloat32Buffer(cnt * INITIAL_SIZE)
+        data = createFloat32Buffer(cnt * INITIAL_SIZE)
         tmpItem = Item(0)
     }
 
     private fun increaseDataSize() {
-        val newData = Platform.createFloat32Buffer(Math.round(data.capacity * GROW_FACTOR))
-        for (i in 0..data.capacity-1) {
+        val newData = createFloat32Buffer(round(data.capacity * GROW_FACTOR).toInt())
+        for (i in 0 until data.capacity) {
             newData[i] = data[i]
         }
         newData.position = data.position
@@ -76,8 +74,8 @@ class IndexedVertexList(val hasNormals: Boolean, val hasColors: Boolean, val has
     }
 
     private fun increaseIndicesSize() {
-        val newIdxs = Platform.createUint32Buffer(Math.round(indices.capacity * IndexedVertexList.GROW_FACTOR))
-        for (i in 0..indices.capacity-1) {
+        val newIdxs = createUint32Buffer(round(indices.capacity * IndexedVertexList.GROW_FACTOR).toInt())
+        for (i in 0 until indices.capacity) {
             newIdxs[i] = indices[i]
         }
         newIdxs.position = indices.position

@@ -1,9 +1,8 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.gl.GlResource
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
@@ -11,6 +10,7 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
+import kotlin.math.min
 
 /**
  * @author fabmax
@@ -78,7 +78,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
 
                 var updateT = 1f
                 onRender += { c ->
-                    updateT -= c.deltaT
+                    updateT -= c.deltaT.toFloat()
                     if (updateT < 0) {
                         updateT += 1f
 
@@ -181,7 +181,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
 
     init {
         graphMesh = Mesh(graphData)
-        graphMesh.meshData.usage = GL.DYNAMIC_DRAW
+        graphMesh.meshData.usage = GL_DYNAMIC_DRAW
         graphMesh.shader = basicShader {
             colorModel = ColorModel.VERTEX_COLOR
             lightModel = LightModel.NO_LIGHTING
@@ -197,13 +197,13 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
             color = Color.YELLOW
         }
         setCurrentBarColor(color)
-        prevDeltaT = ctx.deltaT
+        prevDeltaT = ctx.deltaT.toFloat()
 
         // modify vertices in graph mesh to change line height of current bar
         graphIdx = (graphIdx + 4) % (WIDTH * 4)
         graphItem.index = graphIdx
         val y0 = graphItem.position.y
-        val h = Math.min(ctx.deltaT * 250, height)
+        val h = min(ctx.deltaT.toFloat() * 250, height)
         graphItem.index++
         graphItem.position.y = y0 + h
         graphItem.index++

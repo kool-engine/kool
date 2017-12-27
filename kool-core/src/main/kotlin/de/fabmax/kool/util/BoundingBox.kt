@@ -1,7 +1,7 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.platform.Math
-
+import de.fabmax.kool.math.clamp
+import kotlin.math.sqrt
 
 /**
  * A simple axis-aligned bounding box
@@ -123,9 +123,9 @@ class BoundingBox() {
     }
 
     fun clampToBounds(point: MutableVec3f) {
-        point.x = Math.clamp(point.x, min.x, max.x)
-        point.y = Math.clamp(point.y, min.y, max.y)
-        point.z = Math.clamp(point.z, min.z, max.z)
+        point.x = point.x.clamp(min.x, max.x)
+        point.y = point.y.clamp(min.y, max.y)
+        point.z = point.z.clamp(min.z, max.z)
     }
 
     /**
@@ -133,7 +133,7 @@ class BoundingBox() {
      * the point, 0 is returned.
      */
     fun pointDistance(pt: Vec3f): Float {
-        return Math.sqrt(pointDistanceSqr(pt).toDouble()).toFloat()
+        return sqrt(pointDistanceSqr(pt).toDouble()).toFloat()
     }
 
     /**
@@ -190,13 +190,13 @@ class BoundingBox() {
 
     /**
      * Computes the squared hit distance for the given ray. If the ray does not intersect this BoundingBox
-     * [Float.POSITIVE_INFINITY] is returned. If the ray origin is inside this BoundingBox 0 is returned.
+     * Float.POSITIVE_INFINITY is returned. If the ray origin is inside this BoundingBox 0 is returned.
      * The method returns the squared distance because it's faster to compute. If the exact distance is needed
      * the square root of the result has to be taken.
      *
      * @param ray    The ray to test
      * @return squared distance between origin and the hit point on the BoundingBox surface or
-     * [Float.POSITIVE_INFINITY] if the ray does not intersects the BoundingBox
+     * Float.POSITIVE_INFINITY if the ray does not intersects the BoundingBox
      */
     fun hitDistanceSqr(ray: Ray): Float {
         var tmin: Float

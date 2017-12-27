@@ -1,7 +1,7 @@
 package de.fabmax.kool.shading
 
+import de.fabmax.kool.RenderContext
 import de.fabmax.kool.Texture
-import de.fabmax.kool.platform.RenderContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color

@@ -1,7 +1,10 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.isZero
+import kotlin.math.PI
+import kotlin.math.cos
 
 /**
  * @author fabmax
@@ -19,8 +22,8 @@ abstract class Animator<V, out T: InterpolatedValue<V>>(val value: T) {
     var progress = 0f
 
     open fun tick(ctx: RenderContext): V {
-        if (!Math.isZero(speed)) {
-            progress += ctx.deltaT * speed / duration
+        if (!speed.isZero()) {
+            progress += ctx.deltaT.toFloat() * speed / duration
             if (progress >= 1f && speed > 0) {
                 when (repeating) {
                     ONCE -> {
@@ -59,7 +62,7 @@ abstract class Animator<V, out T: InterpolatedValue<V>>(val value: T) {
                 }
             }
 
-            progress = Math.clamp(progress, 0f, 1f)
+            progress = progress.clamp(0f, 1f)
             value.interpolate(interpolate(progress))
         }
         return value.value
@@ -76,7 +79,7 @@ class LinearAnimator<V, out T: InterpolatedValue<V>>(value: T) : Animator<V, T>(
 
 class CosAnimator<V, out T: InterpolatedValue<V>>(value: T) : Animator<V, T>(value) {
     override fun interpolate(progress: Float): Float {
-        return 0.5f - Math.cos(progress * Math.PI).toFloat() * 0.5f
+        return 0.5f - cos(progress * PI).toFloat() * 0.5f
     }
 }
 

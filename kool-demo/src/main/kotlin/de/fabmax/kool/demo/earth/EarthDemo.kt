@@ -1,10 +1,10 @@
 package de.fabmax.kool.demo.earth
 
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.Platform
+import de.fabmax.kool.openUrl
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
+import kotlin.math.min
 
 /**
  * Earth demo: Show an OSM map on a sphere.
@@ -96,7 +96,7 @@ class EarthUi(val earth: Earth) {
 
             onClick += { _,_,_ ->
                 if (!earth.attributionUrl.isEmpty()) {
-                    Platform.openUrl(earth.attributionUrl)
+                    openUrl(earth.attributionUrl)
                 }
             }
         }
@@ -136,7 +136,7 @@ class EarthUi(val earth: Earth) {
             s += "."
         }
         s += "000000"
-        return s.substring(0, s.indexOf('.') + 1 + Math.min(6, precision))
+        return s.substring(0, s.indexOf('.') + 1 + min(6, precision))
     }
 
 }

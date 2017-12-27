@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
 

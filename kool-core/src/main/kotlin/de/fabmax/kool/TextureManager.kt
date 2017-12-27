@@ -1,8 +1,6 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.gl.TextureResource
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.gl.*
 
 /**
  * @author fabmax
@@ -53,13 +51,13 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
 
     private fun activateTexUnit(unit: Int) {
         activeTexUnit = unit
-        GL.activeTexture(GL.TEXTURE0 + unit)
+        glActiveTexture(GL_TEXTURE0 + unit)
     }
 
     private fun bindToActiveTexUnit(texRes: TextureResource?) {
         boundTextures[activeTexUnit]?.texUnit = -1
 
-        GL.bindTexture(GL.TEXTURE_2D, texRes)
+        glBindTexture(GL_TEXTURE_2D, texRes)
         texRes?.texUnit = activeTexUnit
         boundTextures[activeTexUnit] = texRes
     }
@@ -85,7 +83,7 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
     }
 
     override fun createResource(key: TextureProps, ctx: RenderContext): TextureResource {
-        val texRes = TextureResource.create(GL.TEXTURE_2D, key, ctx)
+        val texRes = TextureResource.create(GL_TEXTURE_2D, key, ctx)
         bindToActiveTexUnit(texRes)
         return texRes
     }

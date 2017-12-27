@@ -1,9 +1,11 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.*
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * @author fabmax
@@ -81,7 +83,7 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
         var caretX = textStartX
         var selectionX = textStartX
         if (textField.editText.caretPosition > 0 || textField.editText.selectionStart > 0) {
-            for (i in 0..(Math.max(textField.editText.caretPosition, textField.editText.selectionStart) - 1)) {
+            for (i in 0..(max(textField.editText.caretPosition, textField.editText.selectionStart) - 1)) {
                 val w = font.charWidth(textField.editText[i])
                 if (i < textField.editText.caretPosition) {
                     caretX += w
@@ -131,7 +133,7 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
 
 class EditableText(txt: String = "") {
 
-    var text: String = ""
+    var text: String = txt
         set(value) {
             if (caretPosition > value.length) {
                 caretPosition = value.length
@@ -144,12 +146,12 @@ class EditableText(txt: String = "") {
 
     var caretPosition = 0
         set(value) {
-            field = Math.clamp(value, 0, text.length)
+            field = value.clamp(0, text.length)
         }
 
     var selectionStart = 0
         set(value) {
-            field = Math.clamp(value, 0, text.length)
+            field = value.clamp(0, text.length)
         }
 
     fun charTyped(c: Char) {
@@ -210,12 +212,12 @@ class EditableText(txt: String = "") {
     }
 
     fun replaceSelection(string: String) {
-        val start = Math.min(selectionStart, caretPosition)
-        val end = Math.max(selectionStart, caretPosition)
+        val start = min(selectionStart, caretPosition)
+        val end = max(selectionStart, caretPosition)
 
         text = text.substring(0, start) + string + text.substring(end)
 
-        caretPosition = Math.min(selectionStart, caretPosition) + string.length
+        caretPosition = min(selectionStart, caretPosition) + string.length
         selectionStart = caretPosition
     }
 

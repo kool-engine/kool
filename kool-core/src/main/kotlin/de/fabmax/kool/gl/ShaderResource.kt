@@ -1,17 +1,16 @@
 package de.fabmax.kool.gl
 
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
 
 class ShaderResource private constructor(glRef: Any, ctx: RenderContext) :
         GlResource(glRef, Type.SHADER, ctx) {
     companion object {
         fun createFragmentShader(ctx: RenderContext): ShaderResource {
-            return ShaderResource(GL.createShader(GL.Companion.FRAGMENT_SHADER), ctx)
+            return ShaderResource(glCreateShader(GL_FRAGMENT_SHADER), ctx)
         }
 
         fun createVertexShader(ctx: RenderContext): ShaderResource {
-            return ShaderResource(GL.createShader(GL.Companion.VERTEX_SHADER), ctx)
+            return ShaderResource(glCreateShader(GL_VERTEX_SHADER), ctx)
         }
     }
 
@@ -20,20 +19,20 @@ class ShaderResource private constructor(glRef: Any, ctx: RenderContext) :
     }
 
     override fun delete(ctx: RenderContext) {
-        GL.deleteShader(this)
+        glDeleteShader(this)
         super.delete(ctx)
     }
 
     fun shaderSource(source: String, ctx: RenderContext) {
-        GL.shaderSource(this, source)
+        glShaderSource(this, source)
     }
 
     fun compile(ctx: RenderContext): Boolean {
-        GL.compileShader(this)
-        return GL.getShaderi(this, GL.COMPILE_STATUS) == GL.TRUE
+        glCompileShader(this)
+        return glGetShaderi(this, GL_COMPILE_STATUS) == GL_TRUE
     }
 
     fun getInfoLog(ctx: RenderContext): String {
-        return GL.getShaderInfoLog(this)
+        return glGetShaderInfoLog(this)
     }
 }

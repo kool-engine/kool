@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.platform.Math
+import kotlin.math.round
 
 /**
  * @author fabmax
@@ -53,9 +53,9 @@ fun UiComponent.dp(pc: Float) = dp(pc, this.dpi)
 fun UiComponent.mm(pc: Float) = mm(pc, this.dpi)
 
 // _R variants of size functions round to units (can prevent blurry text in UIs)
-fun pcR(pc: Float, size: Float) = Math.round(size * pc / 100f).toFloat()
-fun dpR(dp: Float, dpi: Float) = Math.round(dp * dpi / 96f).toFloat()
-fun mmR(mm: Float, dpi: Float) = Math.round(mm * dpi / 25.4f).toFloat()
+fun pcR(pc: Float, size: Float) = round(size * pc / 100f)
+fun dpR(dp: Float, dpi: Float) = round(dp * dpi / 96f)
+fun mmR(mm: Float, dpi: Float) = round(mm * dpi / 25.4f)
 
 fun UiComponent.pcWR(pc: Float) = pcR(pc, this.width)
 fun UiComponent.pcHR(pc: Float) = pcR(pc, this.height)
@@ -66,7 +66,7 @@ open class SizeSpec(val value: Float, val unit: SizeUnit, val roundToUnit: Boole
     open fun toUnits(size: Float, dpi: Float): Float {
         return if (roundToUnit) {
             when (unit) {
-                SizeUnit.UN -> Math.round(value).toFloat()
+                SizeUnit.UN -> round(value)
                 SizeUnit.DP -> dpR(value, dpi)
                 SizeUnit.MM -> mmR(value, dpi)
                 SizeUnit.PC -> pcR(value, size)

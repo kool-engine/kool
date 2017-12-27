@@ -1,14 +1,8 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.Texture
-import de.fabmax.kool.TextureData
-import de.fabmax.kool.TextureProps
-import de.fabmax.kool.gl.FramebufferResource
-import de.fabmax.kool.gl.colorAttachmentTex
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.*
+import de.fabmax.kool.gl.*
+import de.fabmax.kool.math.random
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
@@ -16,6 +10,8 @@ import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableVec3f
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * @author fabmax
@@ -45,8 +41,8 @@ class BlurredBackgroundHelper(
     var isForceUpdateTex = false
     internal var isInUse = true
 
-    private val fb1Tex = colorAttachmentTex(texSize, texSize, GL.LINEAR, GL.LINEAR)
-    val blurredBgTex = colorAttachmentTex(texSize, texSize, GL.LINEAR, GL.LINEAR)
+    private val fb1Tex = colorAttachmentTex(texSize, texSize, GL_LINEAR, GL_LINEAR)
+    val blurredBgTex = colorAttachmentTex(texSize, texSize, GL_LINEAR, GL_LINEAR)
 
     val capturedScrX: Int get() = copyTexData.x
     val capturedScrY: Int get() = copyTexData.y
@@ -56,9 +52,9 @@ class BlurredBackgroundHelper(
     var numPasses = 2
 
     init {
-        val id = Math.random()
+        val id = random()
         val texProps = TextureProps("DistortedBackground-$id",
-                GL.LINEAR, GL.LINEAR, GL.CLAMP_TO_EDGE, GL.CLAMP_TO_EDGE, 0)
+                GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0)
         copyTex = Texture(texProps, { copyTexData })
 
         texMesh = textureMesh {
@@ -84,16 +80,16 @@ class BlurredBackgroundHelper(
         }
 
         blurX = when(blurMethod) {
-            BlurMethod.BLUR_9_TAP -> BlurShader9Tap()
-            BlurMethod.BLUR_13_TAP -> BlurShader13Tap()
+            BlurMethod.BLUR_9_TAP -> QuadShader.blurShader9Tap()
+            BlurMethod.BLUR_13_TAP -> QuadShader.blurShader13Tap()
         }.apply {
             uTexture.value = copyTex
             uDirection.value.set(1f / texSize, 0f)
         }
 
         blurY = when(blurMethod) {
-            BlurMethod.BLUR_9_TAP -> BlurShader9Tap()
-            BlurMethod.BLUR_13_TAP -> BlurShader13Tap()
+            BlurMethod.BLUR_9_TAP -> QuadShader.blurShader9Tap()
+            BlurMethod.BLUR_13_TAP -> QuadShader.blurShader13Tap()
         }.apply {
             uTexture.value = fb1Tex
             uDirection.value.set(0f, 1f / texSize)
@@ -121,10 +117,10 @@ class BlurredBackgroundHelper(
         addToTexBounds(cam, node, bounds.max.x, bounds.max.y, bounds.min.z, ctx)
         addToTexBounds(cam, node, bounds.max.x, bounds.max.y, bounds.max.z, ctx)
 
-        var minScrX = Math.max(texBounds.min.x.toInt(), 0)
-        val maxScrX = Math.min(texBounds.max.x.toInt(), ctx.windowWidth - 1)
-        var minScrY = Math.max(ctx.windowHeight - texBounds.max.y.toInt(), 0)
-        val maxScrY = Math.min(ctx.windowHeight - texBounds.min.y.toInt(), ctx.windowHeight - 1)
+        var minScrX = max(texBounds.min.x.toInt(), 0)
+        val maxScrX = min(texBounds.max.x.toInt(), ctx.windowWidth - 1)
+        var minScrY = max(ctx.windowHeight - texBounds.max.y.toInt(), 0)
+        val maxScrY = min(ctx.windowHeight - texBounds.min.y.toInt(), ctx.windowHeight - 1)
 
         var sizeX = maxScrX - minScrX
         var sizeY = maxScrY - minScrY
@@ -134,12 +130,12 @@ class BlurredBackgroundHelper(
 
             // captured texture needs to be square for equal blur effect in x and y direction
             if (sizeX > sizeY) {
-                sizeY = Math.min(sizeX, ctx.windowHeight - 1)
+                sizeY = min(sizeX, ctx.windowHeight - 1)
                 if (minScrY + sizeY >= ctx.windowHeight) {
                     minScrY = ctx.windowHeight - sizeY - 1
                 }
             } else if (sizeY > sizeX) {
-                sizeX = Math.min(sizeY, ctx.windowWidth - 1)
+                sizeX = min(sizeY, ctx.windowWidth - 1)
                 if (minScrX + sizeX >= ctx.windowWidth) {
                     minScrX = ctx.windowWidth - sizeX - 1
                 }
@@ -210,7 +206,7 @@ class BlurredBackgroundHelper(
 
     private fun renderFb(fb: FramebufferResource, mesh: Mesh, shader: Shader, ctx: RenderContext) {
         fb.bind(ctx)
-        GL.clear(GL.COLOR_BUFFER_BIT)
+        glClear(GL_COLOR_BUFFER_BIT)
         mesh.shader = shader
         mesh.render(ctx)
         fb.unbind(ctx)
@@ -242,11 +238,11 @@ class BlurredBackgroundHelper(
         override fun onLoad(texture: Texture, ctx: RenderContext) {
             val res = texture.res ?: throw KoolException("Texture wasn't created")
             //println("$x $y $width $height")
-            GL.copyTexImage2D(res.target, 0, GL.RGBA, x, y, width, height, 0)
+            glCopyTexImage2D(res.target, 0, GL_RGBA, x, y, width, height, 0)
         }
     }
 
-    private abstract class QuadShader(src: Shader.Source) : Shader(src) {
+    private class QuadShader(src: Shader.Source) : Shader(src) {
         val uTexture = UniformTexture2D("uTexture")
         val uDirection = Uniform2f("uDirection")
 
@@ -266,64 +262,84 @@ class BlurredBackgroundHelper(
         override fun onMatrixUpdate(ctx: RenderContext) {
             // not needed
         }
+
+        companion object {
+            fun blurShader9Tap(): QuadShader {
+                val injector = defaultGlslInjector()
+
+                val vsBuilder = StringBuilder()
+                injector.vsHeader(vsBuilder)
+                vsBuilder.append(
+                        "attribute vec3 aVertexPosition;\n" +
+                        "attribute vec2 aVertexTexCoord;\n" +
+                        "varying vec2 vTexCoord;\n" +
+                        "void main() {\n" +
+                        "  gl_Position = vec4(aVertexPosition, 1.0);\n" +
+                        "  vTexCoord = aVertexTexCoord;\n" +
+                        "}")
+
+                val fsBuilder = StringBuilder()
+                injector.fsHeader(fsBuilder)
+                fsBuilder.append(
+                        "precision mediump float;\n" +
+                        "uniform sampler2D uTexture;\n" +
+                        "uniform vec2 uDirection;\n" +
+                        "uniform float uTexSize;\n" +
+                        "varying vec2 vTexCoord;" +
+                        "void main() {\n" +
+                        "  vec2 off1 = vec2(1.3846153) * uDirection;\n" +
+                        "  vec2 off2 = vec2(3.2307692) * uDirection;\n" +
+                        "  gl_FragColor = texture2D(uTexture, vTexCoord) * 0.2270270;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord + off1) * 0.3162162;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off1) * 0.3162162;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord + off2) * 0.0702702;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off2) * 0.0702702;\n" +
+                        "  gl_FragColor.rgb *= gl_FragColor.a;\n" +
+                        "}")
+
+                return QuadShader(Source(vsBuilder.toString(), fsBuilder.toString()))
+            }
+
+            fun blurShader13Tap(): QuadShader {
+                val injector = defaultGlslInjector()
+
+                val vsBuilder = StringBuilder()
+                injector.vsHeader(vsBuilder)
+                vsBuilder.append(
+                        "attribute vec3 aVertexPosition;\n" +
+                        "attribute vec2 aVertexTexCoord;\n" +
+                        "varying vec2 vTexCoord;\n" +
+                        "void main() {\n" +
+                        "  gl_Position = vec4(aVertexPosition, 1.0);\n" +
+                        "  vTexCoord = aVertexTexCoord;\n" +
+                        "}")
+
+                val fsBuilder = StringBuilder()
+                injector.fsHeader(fsBuilder)
+                fsBuilder.append(
+                        "precision mediump float;\n" +
+                        "uniform sampler2D uTexture;\n" +
+                        "uniform vec2 uDirection;\n" +
+                        "uniform float uTexSize;\n" +
+                        "varying vec2 vTexCoord;" +
+                        "void main() {\n" +
+                        "  vec2 off1 = vec2(1.4117647) * uDirection;\n" +
+                        "  vec2 off2 = vec2(3.2941176) * uDirection;\n" +
+                        "  vec2 off3 = vec2(5.1764705) * uDirection;\n" +
+                        "  gl_FragColor = texture2D(uTexture, vTexCoord) * 0.1968255;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord + off1) * 0.2969069;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off1) * 0.2969069;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord + off2) * 0.0944703;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off2) * 0.0944703;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off3) * 0.0103813;\n" +
+                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off3) * 0.0103813;\n" +
+                        "  gl_FragColor.rgb *= gl_FragColor.a;\n" +
+                        "}")
+
+                return QuadShader(Source(vsBuilder.toString(), fsBuilder.toString()))
+            }
+        }
     }
-
-    private class BlurShader9Tap : QuadShader(Source(
-            GL.glslVertHeader() +
-                    "attribute vec3 aVertexPosition;\n" +
-                    "attribute vec2 aVertexTexCoord;\n" +
-                    "varying vec2 vTexCoord;\n" +
-                    "void main() {\n" +
-                    "  gl_Position = vec4(aVertexPosition, 1.0);\n" +
-                    "  vTexCoord = aVertexTexCoord;\n" +
-                    "}",
-            GL.glslFragHeader() +
-                    "precision mediump float;\n" +
-                    "uniform sampler2D uTexture;\n" +
-                    "uniform vec2 uDirection;\n" +
-                    "uniform float uTexSize;\n" +
-                    "varying vec2 vTexCoord;" +
-                    "void main() {\n" +
-                    "  vec2 off1 = vec2(1.3846153) * uDirection;\n" +
-                    "  vec2 off2 = vec2(3.2307692) * uDirection;\n" +
-                    "  gl_FragColor = texture2D(uTexture, vTexCoord) * 0.2270270;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord + off1) * 0.3162162;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord - off1) * 0.3162162;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord + off2) * 0.0702702;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord - off2) * 0.0702702;\n" +
-                    "  gl_FragColor.rgb *= gl_FragColor.a;\n" +
-                    "}"
-    ))
-
-    private class BlurShader13Tap : QuadShader(Source(
-            GL.glslVertHeader() +
-                    "attribute vec3 aVertexPosition;\n" +
-                    "attribute vec2 aVertexTexCoord;\n" +
-                    "varying vec2 vTexCoord;\n" +
-                    "void main() {\n" +
-                    "  gl_Position = vec4(aVertexPosition, 1.0);\n" +
-                    "  vTexCoord = aVertexTexCoord;\n" +
-                    "}",
-            GL.glslFragHeader() +
-                    "precision mediump float;\n" +
-                    "uniform sampler2D uTexture;\n" +
-                    "uniform vec2 uDirection;\n" +
-                    "uniform float uTexSize;\n" +
-                    "varying vec2 vTexCoord;" +
-                    "void main() {\n" +
-                    "  vec2 off1 = vec2(1.4117647) * uDirection;\n" +
-                    "  vec2 off2 = vec2(3.2941176) * uDirection;\n" +
-                    "  vec2 off3 = vec2(5.1764705) * uDirection;\n" +
-                    "  gl_FragColor = texture2D(uTexture, vTexCoord) * 0.1968255;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord + off1) * 0.2969069;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord - off1) * 0.2969069;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord + off2) * 0.0944703;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord - off2) * 0.0944703;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord - off3) * 0.0103813;\n" +
-                    "  gl_FragColor += texture2D(uTexture, vTexCoord - off3) * 0.0103813;\n" +
-                    "  gl_FragColor.rgb *= gl_FragColor.a;\n" +
-                    "}"
-    ))
 }
 
 fun blurShader(propsInit: ShaderProps.() -> Unit = { }): BlurShader {

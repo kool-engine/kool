@@ -1,7 +1,9 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.platform.Math
+import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.math.toRad
 import de.fabmax.kool.scene.MeshData
+import kotlin.math.*
 
 /**
  * @author fabmax
@@ -106,9 +108,9 @@ open class MeshBuilder(val meshData: MeshData) {
         var i1 = 0
         val iCenter = vertex(props.center, Vec3f.Z_AXIS, props.uvCenter)
         for (i in 0..props.steps) {
-            val ang = Math.toRad(props.startDeg + props.sweepDeg * i / props.steps).toDouble()
-            val cos = Math.cos(ang).toFloat()
-            val sin = Math.sin(ang).toFloat()
+            val ang = (props.startDeg + props.sweepDeg * i / props.steps).toRad()
+            val cos = cos(ang)
+            val sin = sin(ang)
             val px = props.center.x + props.radius * cos
             val py = props.center.y + props.radius * sin
             tmpUv.set(cos, -sin).scale(props.uvRadius).add(props.uvCenter)
@@ -127,25 +129,25 @@ open class MeshBuilder(val meshData: MeshData) {
     }
 
     fun sphere(props: SphereProps) {
-        val steps = Math.max(props.steps / 2, 4)
+        val steps = max(props.steps / 2, 4)
         var prevIndices = IntArray(steps * 2 + 1)
         var rowIndices = IntArray(steps * 2 + 1)
 
         // bottom cap
-        var theta = Math.PI * (steps - 1) / steps
-        var r = Math.sin(theta).toFloat() * props.radius
-        var y = Math.cos(theta).toFloat() * props.radius
+        var theta = PI * (steps - 1) / steps
+        var r = sin(theta).toFloat() * props.radius
+        var y = cos(theta).toFloat() * props.radius
         for (i in 0..(steps * 2)) {
-            val phi = Math.PI * i / steps
-            val x = Math.cos(-phi).toFloat() * r
-            val z = Math.sin(-phi).toFloat() * r
+            val phi = PI * i / steps
+            val x = cos(-phi).toFloat() * r
+            val z = sin(-phi).toFloat() * r
 
             var uv = props.texCoordGenerator(theta.toFloat(), phi.toFloat())
             rowIndices[i] = vertex(tmpPos.set(x, y, z).add(props.center),
                     tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
 
             if (i > 0) {
-                uv = props.texCoordGenerator(Math.PI.toFloat(), phi.toFloat())
+                uv = props.texCoordGenerator(PI.toFloat(), phi.toFloat())
                 tmpPos.set(props.center.x, props.center.y-props.radius, props.center.z)
                 val iCenter = vertex(tmpPos, Vec3f.NEG_Y_AXIS, uv)
                 meshData.addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
@@ -158,13 +160,13 @@ open class MeshBuilder(val meshData: MeshData) {
             prevIndices = rowIndices
             rowIndices = tmp
 
-            theta = Math.PI * (steps - row) / steps
-            r = Math.sin(theta).toFloat() * props.radius
-            y = Math.cos(theta).toFloat() * props.radius
+            theta = PI * (steps - row) / steps
+            r = sin(theta).toFloat() * props.radius
+            y = cos(theta).toFloat() * props.radius
             for (i in 0..(steps * 2)) {
-                val phi = Math.PI * i / steps
-                val x = Math.cos(-phi).toFloat() * r
-                val z = Math.sin(-phi).toFloat() * r
+                val phi = PI * i / steps
+                val x = cos(-phi).toFloat() * r
+                val z = sin(-phi).toFloat() * r
                 val uv = props.texCoordGenerator(theta.toFloat(), phi.toFloat())
                 rowIndices[i] = vertex(tmpPos.set(x, y, z).add(props.center),
                         tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
@@ -178,7 +180,7 @@ open class MeshBuilder(val meshData: MeshData) {
 
         // top cap
         for (i in 1..(steps * 2)) {
-            val uv = props.texCoordGenerator(0f, (Math.PI * i / steps).toFloat())
+            val uv = props.texCoordGenerator(0f, (PI * i / steps).toFloat())
             val iCenter = vertex(tmpPos.set(props.center.x, props.center.y + props.radius, props.center.z),
                     Vec3f.Y_AXIS, uv)
             meshData.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
@@ -292,7 +294,7 @@ open class MeshBuilder(val meshData: MeshData) {
     fun line(x1: Float, y1: Float, x2: Float, y2: Float, width: Float) {
         var dx = x2 - x1
         var dy = y2 - y1
-        var len = Math.sqrt((dx * dx + dy * dy).toDouble()).toFloat()
+        var len = sqrt((dx * dx + dy * dy).toDouble()).toFloat()
 
         val addX = width * 0.25f * dx / len
         val addY = width * 0.25f * dy / len
@@ -420,13 +422,12 @@ open class MeshBuilder(val meshData: MeshData) {
         }
 
         val dr = props.bottomRadius - props.topRadius
-        val nrmAng = 90f -
-                Math.toDeg(Math.acos(dr / Math.sqrt(dr.toDouble() * dr + props.height * props.height)).toFloat())
+        val nrmAng = 90f - acos(dr / sqrt(dr * dr + props.height * props.height)).toDeg()
         var i0 = 0
         var i1 = 0
         for (i in 0..props.steps) {
-            val c = Math.cos(i * Math.PI * 2 / props.steps).toFloat()
-            val s = Math.sin(i * Math.PI * 2 / props.steps).toFloat()
+            val c = cos(i * PI * 2 / props.steps).toFloat()
+            val s = sin(i * PI * 2 / props.steps).toFloat()
 
             val px2 = props.origin.x + props.bottomRadius * c
             val pz2 = props.origin.z + props.bottomRadius * s
@@ -523,7 +524,7 @@ class SphereProps {
     var texCoordGenerator: (Float, Float) -> Vec2f = { t, p -> defaultTexCoordGenerator(t, p) }
 
     private fun defaultTexCoordGenerator(theta: Float, phi: Float): Vec2f {
-        return uv.set(phi / (Math.PI.toFloat() * 2f), theta / Math.PI.toFloat())
+        return uv.set(phi / (PI.toFloat() * 2f), theta / PI.toFloat())
     }
 
     fun defaults(): SphereProps {

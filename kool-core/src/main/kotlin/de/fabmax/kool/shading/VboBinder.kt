@@ -1,8 +1,9 @@
 package de.fabmax.kool.shading
 
+import de.fabmax.kool.RenderContext
 import de.fabmax.kool.gl.BufferResource
-import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.platform.GL
+import de.fabmax.kool.gl.GL_FLOAT
+import de.fabmax.kool.gl.glVertexAttribPointer
 
 
 /**
@@ -15,7 +16,7 @@ class VboBinder(
         var elemSize: Int,
         var strideBytes: Int,
         var offset: Int = 0,
-        var type: Int = GL.FLOAT) {
+        var type: Int = GL_FLOAT) {
 
     /**
      * Is called by the used shader to bind a vertex attribute buffer to the specified target.
@@ -24,6 +25,6 @@ class VboBinder(
      */
     fun bindAttribute(target: Int, ctx: RenderContext) {
         vbo.bind(ctx)
-        GL.vertexAttribPointer(target, elemSize, type, false, strideBytes, offset * 4)
+        glVertexAttribPointer(target, elemSize, type, false, strideBytes, offset * 4)
     }
 }

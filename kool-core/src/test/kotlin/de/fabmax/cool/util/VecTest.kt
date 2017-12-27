@@ -1,22 +1,14 @@
 package de.fabmax.cool.util
 
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.PlatformImpl
+import de.fabmax.kool.math.isEqual
 import de.fabmax.kool.util.*
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Tag
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import kotlin.math.sqrt
+import kotlin.test.Test
 
 /**
  * Tests for Vec class
  */
-@Tag("math")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VecTest {
-    @BeforeAll
-    fun initPlatform() = PlatformImpl.init()
-
     @Test
     fun vec3Consts() {
         testAssert(Vec3f.X_AXIS.x == 1f && Vec3f.X_AXIS.y == 0f && Vec3f.X_AXIS.z == 0f, "x != (1, 0, 0)")
@@ -28,9 +20,9 @@ class VecTest {
     @Test
     fun vec3Len() {
         val t = Vec3f(2f, 3f, 4f)
-        testAssert(Math.isEqual(t.sqrLength(), 29f), "sqrLen failed")
-        testAssert(Math.isEqual(t.length(), Math.sqrt(29f)), "length failed")
-        testAssert(Math.isEqual(t.norm(MutableVec3f()).length(), 1f), "norm failed")
+        testAssert(isEqual(t.sqrLength(), 29f), "sqrLen failed")
+        testAssert(isEqual(t.length(), sqrt(29f)), "length failed")
+        testAssert(isEqual(t.norm(MutableVec3f()).length(), 1f), "norm failed")
     }
 
     @Test
@@ -46,7 +38,7 @@ class VecTest {
 
     @Test
     fun vec3Dist() {
-        testAssert(Math.isEqual(Vec3f(1f, 2f, 3f).distance(Vec3f.ZERO), Vec3f(1f, 2f, 3f).length()))
+        testAssert(isEqual(Vec3f(1f, 2f, 3f).distance(Vec3f.ZERO), Vec3f(1f, 2f, 3f).length()))
     }
 
     @Test

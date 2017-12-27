@@ -1,9 +1,13 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.isEqual
+import de.fabmax.kool.math.isZero
 import de.fabmax.kool.util.*
+import kotlin.math.min
+import kotlin.math.sqrt
 
 /**
  * A special kind of transform group which translates mouse input into a spherical transform. This is mainly useful
@@ -34,7 +38,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     var verticalRotation = 0f
     var horizontalRotation = 0f
     var zoom = 10f
-        set(value) { field = Math.clamp(value, minZoom, maxZoom) }
+        set(value) { field = value.clamp(minZoom, maxZoom) }
 
     var minZoom = 1f
     var maxZoom = 100f
@@ -65,9 +69,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     var smoothness: Float = 0f
         set(value) {
             field = value
-            if (!Math.isZero(value)) {
+            if (!value.isZero()) {
                 stiffness = 50.0f / value
-                damping = 2f * Math.sqrt(stiffness.toDouble()).toFloat()
+                damping = 2f * sqrt(stiffness.toDouble()).toFloat()
             }
         }
 
@@ -122,7 +126,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
                 stopSmoothMotion()
 
             } else if (dragMethod == DragMethod.PAN) {
-                val s = Math.clamp(1 - smoothness, 0.1f, 1f)
+                val s = (1 - smoothness).clamp(0.1f, 1f)
                 tmpVec1.set(pointerHitStart).subtract(pointerHit).scale(s)
 
                 // limit panning speed
@@ -137,7 +141,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             pointerHit.set(scene.camera.globalLookAt)
         }
 
-        if (!Math.isZero(deltaScroll)) {
+        if (!deltaScroll.isZero()) {
             zoom *= 1f - deltaScroll / 10f
             deltaScroll = 0f
         }
@@ -145,7 +149,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         if (dragMethod == DragMethod.ROTATE) {
             verticalRotation -= deltaPos.x / 3
             horizontalRotation -= deltaPos.y / 3
-            horizontalRotation = Math.clamp(horizontalRotation, minHorizontalRot, maxHorizontalRot)
+            horizontalRotation = horizontalRotation.clamp(minHorizontalRot, maxHorizontalRot)
             deltaPos.set(Vec2f.ZERO)
         }
 
@@ -155,7 +159,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
         val oldZ = zoomAnimator.actual
         val z = zoomAnimator.animate(ctx.deltaT)
-        if (!Math.isEqual(oldZ, z) && zoomMethod == ZoomMethod.ZOOM_TRANSLATE) {
+        if (!isEqual(oldZ, z) && zoomMethod == ZoomMethod.ZOOM_TRANSLATE) {
             computeZoomTranslationPerspective(scene, oldZ, z)
         }
 
@@ -245,8 +249,8 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             speed = 0f
         }
 
-        fun animate(deltaT: Float): Float {
-            if (Math.isZero(smoothness) || deltaT > 0.2f) {
+        fun animate(deltaT: Double): Float {
+            if (smoothness.isZero() || deltaT > 0.2f) {
                 // don't care about smoothing on low frame rates
                 actual = desired
                 return actual
@@ -254,8 +258,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
             var t = 0f
             while (t < deltaT) {
-                // with js math library there is no min for Float?!
-                val dt = Math.min(0.05, (deltaT - t).toDouble()).toFloat()
+                val dt = min(0.05f, (deltaT - t).toFloat())
                 t += dt + 0.001f
 
                 val err = desired - actual

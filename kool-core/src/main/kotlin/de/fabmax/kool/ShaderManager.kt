@@ -2,8 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.gl.ProgramResource
 import de.fabmax.kool.gl.ShaderResource
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.gl.glUseProgram
 import de.fabmax.kool.shading.Shader
 
 /**
@@ -21,7 +20,7 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
             }
             if (!shader.isBound(ctx)) {
                 if (shader.res?.glRef != boundShader?.res?.glRef) {
-                    GL.useProgram(shader.res)
+                    glUseProgram(shader.res)
                 }
                 boundShader = shader
                 shader.onBind(ctx)
@@ -29,7 +28,7 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
 
         } else if (boundShader != null) {
             // clear used shader
-            GL.useProgram(null)
+            glUseProgram(null)
             boundShader = null
         }
     }

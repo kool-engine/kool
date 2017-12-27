@@ -1,7 +1,11 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.platform.Math
+import de.fabmax.kool.math.isEqual
+import de.fabmax.kool.math.toRad
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * @author fabmax
@@ -40,13 +44,13 @@ open class Vec2f(x: Float, y: Float) {
 
     fun add(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).add(other)
 
-    fun distance(other: Vec3f): Float = Math.sqrt(sqrDistance(other).toDouble()).toFloat()
+    fun distance(other: Vec3f): Float = sqrt(sqrDistance(other).toDouble()).toFloat()
 
     fun dot(other: Vec2f): Float = x * other.x + y * other.y
 
-    fun isEqual(other: Vec2f): Boolean = Math.isEqual(x, other.x) && Math.isEqual(y, other.y)
+    fun isEqual(other: Vec2f): Boolean = isEqual(x, other.x) && isEqual(y, other.y)
 
-    fun length(): Float = Math.sqrt(sqrLength().toDouble()).toFloat()
+    fun length(): Float = sqrt(sqrLength().toDouble()).toFloat()
 
     fun norm(result: MutableVec2f): MutableVec2f = result.set(this).norm()
 
@@ -107,9 +111,9 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
     fun norm(): MutableVec2f = scale(1f / length())
 
     fun rotate(angleDeg: Float): MutableVec2f {
-        val rad = Math.toRad(angleDeg)
-        val cos = Math.cos(rad)
-        val sin = Math.sin(rad)
+        val rad = angleDeg.toRad()
+        val cos = cos(rad)
+        val sin = sin(rad)
         val rx = x * cos - y * sin
         val ry = x * sin + y * cos
         x = rx
@@ -183,14 +187,14 @@ open class Vec3f(x: Float, y: Float, z: Float) {
         return result
     }
 
-    fun distance(other: Vec3f): Float = Math.sqrt(sqrDistance(other).toDouble()).toFloat()
+    fun distance(other: Vec3f): Float = sqrt(sqrDistance(other).toDouble()).toFloat()
 
     fun dot(other: Vec3f): Float = x * other.x + y * other.y + z * other.z
 
     fun isEqual(other: Vec3f): Boolean =
-            Math.isEqual(x, other.x) && Math.isEqual(y, other.y) && Math.isEqual(z, other.z)
+            isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z)
 
-    fun length(): Float = Math.sqrt(sqrLength().toDouble()).toFloat()
+    fun length(): Float = sqrt(sqrLength().toDouble()).toFloat()
 
     fun norm(result: MutableVec3f): MutableVec3f = result.set(this).norm()
 
@@ -263,10 +267,10 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
     fun norm(): MutableVec3f = scale(1f / length())
 
     fun rotate(angleDeg: Float, axisX: Float, axisY: Float, axisZ: Float): MutableVec3f {
-        val rad = Math.toRad(angleDeg)
-        val c = Math.cos(rad)
+        val rad = angleDeg.toRad()
+        val c = cos(rad)
         val c1 = 1f - c
-        val s = Math.sin(rad)
+        val s = sin(rad)
 
         val rx = x * (axisX * axisX * c1 + c) + y * (axisX * axisY * c1 - axisZ * s) + z * (axisX * axisZ * c1 + axisY * s)
         val ry = x * (axisY * axisX * c1 + axisZ * s) + y * (axisY * axisY * c1 + c) + z * (axisY * axisZ * c1 - axisX * s)
@@ -346,7 +350,7 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
     fun add(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).add(other)
 
     fun isEqual(other: Vec4f): Boolean =
-        Math.isEqual(x, other.x) && Math.isEqual(y, other.y) && Math.isEqual(z, other.z) && Math.isEqual(w, other.w)
+        isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z) && isEqual(w, other.w)
 
     fun scale(factor: Float, result: MutableVec4f): MutableVec4f = result.set(this).scale(factor)
 

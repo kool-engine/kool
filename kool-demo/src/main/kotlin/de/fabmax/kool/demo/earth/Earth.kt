@@ -1,14 +1,17 @@
 package de.fabmax.kool.demo.earth
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.Math
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.gl.GL_ALWAYS
+import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.math.toRad
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.*
+import kotlin.math.*
 
 /**
  * Mouse controlled transform group for earth rotation / translation
@@ -93,22 +96,22 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
             val dh = if (camDist > prevCamHeight) { prevCamHeight / camDist } else { camDist / prevCamHeight }
             prevCamHeight = camDist
 
-            val lat = Math.clamp(Math.PI * 0.5 - Math.acos(camDirection.y.toDouble()), -RAD_85, RAD_85)
-            val lon = Math.atan2(camDirection.x.toDouble(), camDirection.z.toDouble())
+            val lat = (PI * 0.5 - acos(camDirection.y.toDouble())).clamp(-RAD_85, RAD_85)
+            val lon = atan2(camDirection.x.toDouble(), camDirection.z.toDouble())
 
-            val isMoving = dh < 0.99f || Math.abs(lat - prevLat) > 1e-5 || Math.abs(lon - prevLon) > 1e-5
+            val isMoving = dh < 0.99f || abs(lat - prevLat) > 1e-5 || abs(lon - prevLon) > 1e-5
             prevLat = lat
             prevLon = lon
-            centerLat = Math.toDeg(lat)
-            centerLon = Math.toDeg(lon)
+            centerLat = lat.toDeg()
+            centerLon = lon.toDeg()
 
             // determine best zoom level
             camDirection.scale(EARTH_R.toFloat())
             val camHeight = camDirection.distance(camPosition)
-            val meterPerPx = camHeight * Math.tan(Math.toRad(cam.fovy) * 0.5f) * 2f / ctx.viewportHeight
+            val meterPerPx = camHeight * tan(cam.fovy.toRad() * 0.5f) * 2f / ctx.viewportHeight
             val centerZoom = getBestZoom(meterPerPx, lat)
 
-            val newCenter = TileName.forLatLng(Math.toDeg(lat), Math.toDeg(lon), centerZoom)
+            val newCenter = TileName.forLatLng(lat.toDeg(), lon.toDeg(), centerZoom)
             if (newCenter != center && (tiles.size < 300 || !isMoving)) {
                 //println("$newCenter ${tiles.size}")
                 center = newCenter
@@ -147,8 +150,8 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     }
 
     private fun getBestZoom(meterPerPx: Float, lat: Double): Int =
-            Math.clamp(Math.round(0.2f + Math.log2(meterPerPxLvl0 / meterPerPx * Math.cos(lat))),
-                    MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL)
+            round(0.2f + log2(meterPerPxLvl0 / meterPerPx * cos(lat)))
+                    .clamp(MIN_ZOOM_LEVEL.toDouble(), MAX_ZOOM_LEVEL.toDouble()).toInt()
 
     private fun rebuildMesh() {
         removableTiles.putAll(tiles)
@@ -189,7 +192,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
         if (tiles.size > 400) {
             // queue is getting too large, remove stuff even though it might be visible
             val rmQueue = mutableListOf<TileMesh>().apply { addAll(removableTiles.values) }
-            rmQueue.sortBy { m -> if (!m.isTexLoaded) { Int.MIN_VALUE } else { -Math.abs(m.tz - center.zoom) } }
+            rmQueue.sortBy { m -> if (!m.isTexLoaded) { Int.MIN_VALUE } else { -abs(m.tz - center.zoom) } }
             for (i in 0..(tiles.size-400)) {
                 removeTileMesh(rmQueue[i], false)
             }
@@ -198,16 +201,16 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
 
     private fun addMeshesWrappingX(xStart: Int, xEnd: Int, yStart: Int, yEnd: Int, zoom: Int) {
         val size = 1 shl zoom
-        val ys = Math.max(0, yStart)
-        val ye = Math.min(size - 1, yEnd)
+        val ys = max(0, yStart)
+        val ye = min(size - 1, yEnd)
 
-        addMeshes(Math.max(0, xStart)..Math.min(size - 1, xEnd), ys..ye, zoom)
+        addMeshes(max(0, xStart)..min(size - 1, xEnd), ys..ye, zoom)
         if (xStart < 0 && xEnd < size - 1) {
             // wrap around 180° long
-            addMeshes(Math.max(size + xStart, xEnd)..size - 1, ys..ye, zoom)
+            addMeshes(max(size + xStart, xEnd) until size, ys..ye, zoom)
         } else if (xStart > 0 && xEnd > size - 1) {
             // wrap around 180° long
-            addMeshes(0..Math.min(xStart, xEnd - (size - 1)), ys..ye, zoom)
+            addMeshes(0..min(xStart, xEnd - (size - 1)), ys..ye, zoom)
         }
     }
 
@@ -230,7 +233,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     private fun addMeshesCircular(xRng: IntRange, yRng: IntRange, zoom: Int) {
         val cx = xRng.first + (xRng.last - xRng.first) / 2
         val cy = yRng.first + (yRng.last - yRng.first) / 2
-        val r = Math.max(Math.max(cx - xRng.first, xRng.last - cx), Math.max(cy - yRng.first, yRng.last - cy))
+        val r = max(max(cx - xRng.first, xRng.last - cx), max(cy - yRng.first, yRng.last - cy))
 
         for (i in 0..r) {
             for (x in cx - i..cx + i) {
@@ -352,7 +355,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
             val ldo = l * o
             val sqr = ldo * ldo - o.sqrLength() + EARTH_R * EARTH_R
             if (sqr > 0) {
-                val d = -ldo - Math.sqrt(sqr)
+                val d = -ldo - sqrt(sqr)
                 l.scale(d.toFloat(), tmpVec).add(o)
 
                 tmpVec.norm()
@@ -379,7 +382,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
         const val MIN_ZOOM_LEVEL = 3
         const val MAX_ZOOM_LEVEL = 19
 
-        private val RAD_85 = Math.toRad(85.0)
+        private val RAD_85 = 85.0.toRad()
 
         private const val STEADY_SCREEN_PT_OFF = 0
         private const val STEADY_SCREEN_PT_INIT = 1
@@ -389,7 +392,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     private class TileGroup : Group() {
         override fun render(ctx: RenderContext) {
             ctx.pushAttributes()
-            ctx.depthFunc = GL.ALWAYS
+            ctx.depthFunc = GL_ALWAYS
             ctx.applyAttributes()
             super.render(ctx)
             ctx.popAttributes()

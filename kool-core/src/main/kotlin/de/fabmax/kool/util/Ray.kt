@@ -1,7 +1,7 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.platform.Math
 import de.fabmax.kool.scene.Node
+import kotlin.math.sqrt
 
 /**
  * @author fabmax
@@ -51,7 +51,7 @@ class RayTest {
 
     fun computeHitPosition() {
         if (isHit) {
-            val dist = Math.sqrt(hitDistanceSqr.toDouble()).toFloat()
+            val dist = sqrt(hitDistanceSqr.toDouble()).toFloat()
             hitPosition.set(ray.direction).norm().scale(dist).add(ray.origin)
         }
     }

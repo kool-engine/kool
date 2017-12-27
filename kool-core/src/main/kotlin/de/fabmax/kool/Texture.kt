@@ -1,18 +1,14 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.gl.GlObject
-import de.fabmax.kool.gl.TextureResource
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.Platform
-import de.fabmax.kool.platform.RenderContext
-import de.fabmax.kool.platform.Uint8Buffer
+import de.fabmax.kool.gl.*
+import de.fabmax.kool.util.Uint8Buffer
 
 /**
  * @author fabmax
  */
 
 fun defaultProps(id: String): TextureProps {
-    return TextureProps(id, GL.LINEAR, GL.CLAMP_TO_EDGE)
+    return TextureProps(id, GL_LINEAR, GL_CLAMP_TO_EDGE)
 }
 
 data class TextureProps(
@@ -30,18 +26,18 @@ data class TextureProps(
             this(id, minFilter(filter), magFilter(filter), wrapping, wrapping, anisotropy)
 
     companion object {
-        val DEFAULT_MIN = GL.LINEAR_MIPMAP_LINEAR
-        val DEFAULT_MAG = GL.LINEAR
-        val DEFAULT_X_WRAP = GL.CLAMP_TO_EDGE
-        val DEFAULT_Y_WRAP = GL.CLAMP_TO_EDGE
+        val DEFAULT_MIN = GL_LINEAR_MIPMAP_LINEAR
+        val DEFAULT_MAG = GL_LINEAR
+        val DEFAULT_X_WRAP = GL_CLAMP_TO_EDGE
+        val DEFAULT_Y_WRAP = GL_CLAMP_TO_EDGE
 
         private fun magFilter(filter: Int) = when (filter) {
-            GL.NEAREST -> GL.NEAREST
+            GL_NEAREST -> GL_NEAREST
             else -> DEFAULT_MAG
         }
 
         private fun minFilter(filter: Int) = when (filter) {
-            GL.NEAREST -> GL.NEAREST
+            GL_NEAREST -> GL_NEAREST
             else -> DEFAULT_MIN
         }
     }
@@ -59,8 +55,8 @@ abstract class TextureData {
     internal fun loadData(texture: Texture, ctx: RenderContext) {
         onLoad(texture, ctx)
         texture.res!!.isLoaded = true
-        if (texture.props.minFilter == GL.LINEAR_MIPMAP_LINEAR) {
-            GL.generateMipmap(texture.res!!.target)
+        if (texture.props.minFilter == GL_LINEAR_MIPMAP_LINEAR) {
+            glGenerateMipmap(texture.res!!.target)
         }
     }
 
@@ -79,7 +75,7 @@ class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val 
         val limit = buffer.limit
         val pos = buffer.position
         buffer.flip()
-        GL.texImage2D(res.target, 0, format, width, height, 0, format, GL.UNSIGNED_BYTE, buffer)
+        glTexImage2D(res.target, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
         buffer.limit = limit
         buffer.position = pos
         ctx.memoryMgr.memoryAllocated(res, buffer.position)
@@ -123,16 +119,6 @@ fun assetTexture(assetPath: String): Texture {
 
 fun assetTexture(props: TextureProps): Texture {
     return Texture(props) {
-        Platform.loadTextureAsset(props.id)
-    }
-}
-
-fun httpTexture(assetPath: String, cachePath: String? = null): Texture {
-    return httpTexture(defaultProps(assetPath), cachePath)
-}
-
-fun httpTexture(props: TextureProps, cachePath: String? = null): Texture {
-    return Texture(props) {
-        Platform.loadTextureAssetHttp(props.id, cachePath)
+        loadTextureAsset(props.id)
     }
 }

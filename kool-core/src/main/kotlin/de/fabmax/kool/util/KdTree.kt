@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.platform.Math
+import kotlin.math.*
 
 /**
  * @author fabmax
@@ -185,7 +185,7 @@ class KdTree<T>(items: List<T>,
         }
 
         /**
-         * Partitions tree items with the given comparator. After partitioning all elements left of k are smaller
+         * Partitions tree items with the given comparator. After partitioning, all elements left of k are smaller
          * than all elements right of k with respect to the given comparator function.
          *
          * This method implements the Floyd-Rivest selection algorithm:
@@ -198,11 +198,11 @@ class KdTree<T>(items: List<T>,
                 if (right - left > 600) {
                     val n = right - left + 1
                     val i = k - left + 1
-                    val z = Math.log(n.toDouble())
-                    val s = 0.5 * Math.exp(2.0 * z / 3.0)
-                    val sd = 0.5 * Math.sqrt(z * s * (n - s) / n) * Math.sign(i - n / 2.0)
-                    val newLeft = Math.max(left, (k - i * s / n + sd).toInt())
-                    val newRight = Math.min(right, (k + (n - i) * s / n + sd).toInt())
+                    val z = ln(n.toDouble())
+                    val s = 0.5 * exp(2.0 * z / 3.0)
+                    val sd = 0.5 * sqrt(z * s * (n - s) / n) * sign(i - n / 2.0)
+                    val newLeft = max(left, (k - i * s / n + sd).toInt())
+                    val newRight = min(right, (k + (n - i) * s / n + sd).toInt())
                     partition(newLeft, newRight, k, cmp)
                 }
                 val t = mutItems[k]

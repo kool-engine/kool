@@ -1,6 +1,7 @@
 package de.fabmax.kool.audio
 
-import de.fabmax.kool.platform.Math
+import kotlin.math.PI
+import kotlin.math.sin
 
 /**
  * @author fabmax
@@ -55,7 +56,7 @@ class MoodFilter(var input: SampleNode) : SampleNode() {
     fun filter(input: Float, dt: Float): Float {
         val cut = 2 * cutoff * dt
         val p = cut * (C1 - C2 * cut)
-        val k = 2 * Math.sin(cut * Math.PI * 0.5f).toFloat() - 1
+        val k = 2 * sin(cut * PI * 0.5f).toFloat() - 1
         val t1 = (1 - p) * C3
         val t2 = 12 + t1 * t1
         val r = res * (t2 + 6 * t1) / (t2 - 6 * t1)

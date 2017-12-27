@@ -1,11 +1,13 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.platform.GL
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.gl.GL_LINES
+import de.fabmax.kool.gl.glLineWidth
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.shading.*
+import de.fabmax.kool.shading.ColorModel
+import de.fabmax.kool.shading.LightModel
+import de.fabmax.kool.shading.basicShader
 
 /**
  * @author fabmax
@@ -17,7 +19,7 @@ fun lineMesh(name: String? = null, block: LineMesh.() -> Unit): LineMesh {
 
 open class LineMesh(data: MeshData = MeshData(false, true, false), name: String? = null) : Mesh(data, name) {
     init {
-        primitiveType = GL.LINES
+        primitiveType = GL_LINES
         shader = basicShader {
             colorModel = ColorModel.VERTEX_COLOR
             lightModel = LightModel.NO_LIGHTING
@@ -34,7 +36,7 @@ open class LineMesh(data: MeshData = MeshData(false, true, false), name: String?
     }
 
     override fun render(ctx: RenderContext) {
-        GL.lineWidth(lineWidth)
+        glLineWidth(lineWidth)
         super.render(ctx)
     }
 }

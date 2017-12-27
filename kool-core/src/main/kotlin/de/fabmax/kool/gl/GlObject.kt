@@ -1,6 +1,6 @@
 package de.fabmax.kool.gl
 
-import de.fabmax.kool.platform.RenderContext
+import de.fabmax.kool.RenderContext
 
 /**
  * @author fabmax
