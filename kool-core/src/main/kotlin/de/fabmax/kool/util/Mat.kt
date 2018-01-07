@@ -72,6 +72,8 @@ open class Mat4f {
         return this
     }
 
+    fun scale(scale: Vec3f): Mat4f = scale(scale.x, scale.y, scale.z)
+
     fun scale(sx: Float, sy: Float, sz: Float, result: Mat4f): Mat4f {
         for (i in 0..3) {
             val smi = result.offset + i
@@ -354,6 +356,38 @@ open class Mat4f {
             matrix[offset + 6] = yz * nc + xs
             matrix[offset + 10] = z * z * nc + c
         }
+        return this
+    }
+
+    fun setRotate(quaternion: Vec4f): Mat4f {
+        val r = quaternion.w
+        val i = quaternion.x
+        val j = quaternion.y
+        val k = quaternion.z
+
+        var s = sqrt(r*r + i*i + j*j + k*k)
+        s = 1f / (s * s)
+
+        this[0, 0] = 1 - 2*s*(j*j + k*k)
+        this[0, 1] = 2*s*(i*j - k*r)
+        this[0, 2] = 2*s*(i*k + j*r)
+        this[0, 3] = 0f
+
+        this[1, 0] = 2*s*(i*j + k*r)
+        this[1, 1] = 1 - 2*s*(i*i + k*k)
+        this[1, 2] = 2*s*(j*k - i*r)
+        this[1, 3] = 0f
+
+        this[2, 0] = 2*s*(i*k - j*r)
+        this[2, 1] = 2*s*(j*k + i*r)
+        this[2, 2] = 1 - 2*s*(i*i + j*j)
+        this[2, 3] = 0f
+
+        this[3, 0] = 0f
+        this[3, 1] = 0f
+        this[3, 2] = 0f
+        this[3, 3] = 1f
+
         return this
     }
 

@@ -1,8 +1,10 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.isEqual
 import de.fabmax.kool.math.toRad
+import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -28,6 +30,38 @@ fun norm(a: Vec3f): MutableVec3f = a.norm(MutableVec3f())
 
 fun cross(a: Vec3f, b: Vec3f): MutableVec3f = a.cross(b, MutableVec3f())
 
+private val slerpTmpA = MutableVec4f()
+private val slerpTmpB = MutableVec4f()
+private val slerpTmpC = MutableVec4f()
+fun slerp(quatA: Vec4f, quatB: Vec4f, f: Float, result: MutableVec4f): MutableVec4f {
+    synchronized(slerpTmpA) {
+        quatA.norm(slerpTmpA)
+        quatB.norm(slerpTmpB)
+
+        val t = f.clamp(0f, 1f)
+
+        var dot = slerpTmpA.dot(slerpTmpB).clamp(-1f, 1f)
+        if (dot < 0) {
+            slerpTmpA.scale(-1f)
+            dot = -dot
+        }
+
+        if (dot > 0.9995f) {
+            slerpTmpB.subtract(slerpTmpA, result).scale(t).add(slerpTmpA).norm()
+        } else {
+            val theta0 = acos(dot)
+            val theta = theta0 * t
+
+            slerpTmpA.scale(-dot, slerpTmpC).add(slerpTmpB).norm()
+
+            slerpTmpA.scale(cos(theta))
+            slerpTmpC.scale(sin(theta))
+            result.set(slerpTmpA).add(slerpTmpC)
+        }
+    }
+    return result
+}
+
 open class Vec2f(x: Float, y: Float) {
 
     // backing fields for properties are declared individual, otherwise overriding the properties and using
@@ -44,13 +78,13 @@ open class Vec2f(x: Float, y: Float) {
 
     fun add(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).add(other)
 
-    fun distance(other: Vec3f): Float = sqrt(sqrDistance(other).toDouble()).toFloat()
+    fun distance(other: Vec2f): Float = sqrt(sqrDistance(other))
 
     fun dot(other: Vec2f): Float = x * other.x + y * other.y
 
     fun isEqual(other: Vec2f): Boolean = isEqual(x, other.x) && isEqual(y, other.y)
 
-    fun length(): Float = sqrt(sqrLength().toDouble()).toFloat()
+    fun length(): Float = sqrt(sqrLength())
 
     fun norm(result: MutableVec2f): MutableVec2f = result.set(this).norm()
 
@@ -58,7 +92,7 @@ open class Vec2f(x: Float, y: Float) {
 
     fun scale(factor: Float, result: MutableVec2f): MutableVec2f = result.set(this).scale(factor)
 
-    fun sqrDistance(other: Vec3f): Float {
+    fun sqrDistance(other: Vec2f): Float {
         val dx = x - other.x
         val dy = y - other.y
         return dx*dx + dy*dy
@@ -187,14 +221,14 @@ open class Vec3f(x: Float, y: Float, z: Float) {
         return result
     }
 
-    fun distance(other: Vec3f): Float = sqrt(sqrDistance(other).toDouble()).toFloat()
+    fun distance(other: Vec3f): Float = sqrt(sqrDistance(other))
 
     fun dot(other: Vec3f): Float = x * other.x + y * other.y + z * other.z
 
     fun isEqual(other: Vec3f): Boolean =
             isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z)
 
-    fun length(): Float = sqrt(sqrLength().toDouble()).toFloat()
+    fun length(): Float = sqrt(sqrLength())
 
     fun norm(result: MutableVec3f): MutableVec3f = result.set(this).norm()
 
@@ -349,10 +383,28 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
     fun add(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).add(other)
 
+    fun distance(other: Vec4f): Float = sqrt(sqrDistance(other))
+
+    fun dot(other: Vec4f): Float = x * other.x + y * other.y + z * other.z + w * other.w
+
     fun isEqual(other: Vec4f): Boolean =
         isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z) && isEqual(w, other.w)
 
+    fun length(): Float = sqrt(sqrLength())
+
+    fun norm(result: MutableVec4f): MutableVec4f = result.set(this).norm()
+
     fun scale(factor: Float, result: MutableVec4f): MutableVec4f = result.set(this).scale(factor)
+
+    fun sqrDistance(other: Vec4f): Float {
+        val dx = x - other.x
+        val dy = y - other.y
+        val dz = z - other.z
+        val dw = z - other.w
+        return dx*dx + dy*dy + dz*dz + dw*dw
+    }
+
+    fun sqrLength(): Float = x*x + y*y + z*z + w*w
 
     fun subtract(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).subtract(other)
 
@@ -407,6 +459,8 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
         w += other.w
         return this
     }
+
+    fun norm(): MutableVec4f = scale(1f / length())
 
     fun scale(factor : Float): MutableVec4f {
         x *= factor
