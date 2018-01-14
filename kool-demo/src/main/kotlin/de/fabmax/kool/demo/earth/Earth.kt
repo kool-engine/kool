@@ -108,7 +108,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
             // determine best zoom level
             camDirection.scale(EARTH_R.toFloat())
             val camHeight = camDirection.distance(camPosition)
-            val meterPerPx = camHeight * tan(cam.fovy.toRad() * 0.5f) * 2f / ctx.viewportHeight
+            val meterPerPx = camHeight * tan(cam.fovy.toRad() * 0.5f) * 2f / ctx.viewport.height
             val centerZoom = getBestZoom(meterPerPx, lat)
 
             val newCenter = TileName.forLatLng(lat.toDeg(), lon.toDeg(), centerZoom)

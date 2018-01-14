@@ -61,8 +61,8 @@ class BillboardShader internal constructor(props: ShaderProps, generator: GlslGe
 
     override fun onBind(ctx: RenderContext) {
         super.onBind(ctx)
-        uViewportSz.value.set(0.5f * ctx.viewportWidth.toFloat() / billboardSize,
-                0.5f * ctx.viewportHeight.toFloat() / billboardSize)
+        uViewportSz.value.set(0.5f * ctx.viewport.width.toFloat() / billboardSize,
+                0.5f * ctx.viewport.height.toFloat() / billboardSize)
         uViewportSz.bind(ctx)
     }
 }

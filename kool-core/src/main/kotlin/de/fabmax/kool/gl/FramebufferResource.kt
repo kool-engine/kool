@@ -45,10 +45,7 @@ class FramebufferResource private constructor(glRef: Any, val colorAttachment: T
         }
 
         ctx.pushAttributes()
-        ctx.viewportX = 0
-        ctx.viewportY = 0
-        ctx.viewportWidth = colorAttachment.width
-        ctx.viewportHeight = colorAttachment.height
+        ctx.viewport = RenderContext.Viewport(0, 0, colorAttachment.width, colorAttachment.height)
         ctx.applyAttributes()
     }
 

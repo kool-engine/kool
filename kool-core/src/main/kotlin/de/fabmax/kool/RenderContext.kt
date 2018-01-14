@@ -62,16 +62,14 @@ abstract class RenderContext {
 
     abstract val anisotropicTexFilterInfo: AnisotropicTexFilterInfo
 
-    var viewportX by attribs.viewportX
-    var viewportY by attribs.viewportY
-    var viewportWidth by attribs.viewportWidth
-    var viewportHeight by attribs.viewportHeight
-    var clearColor by attribs.clearColor
-    var depthFunc by attribs.depthFunc
-    var isDepthTest by attribs.isDepthTest
-    var isDepthMask by attribs.isDepthMask
-    var isCullFace by attribs.isCullFace
-    var isBlend by attribs.isBlend
+    var viewport by attribs.get<Viewport>("viewport")
+    var clearColor by attribs.get<Color>("clearColor")
+    var depthFunc by attribs.get<Int>("depthFunc")
+    var isDepthTest by attribs.get<Boolean>("isDepthTest")
+    var isDepthMask by attribs.get<Boolean>("isDepthMask")
+    var isCullFace by attribs.get<Boolean>("isCullFace")
+    var isBlend by attribs.get<Boolean>("isBlend")
+    var lineWidth by attribs.get<Float>("lineWidth")
 
     internal val boundBuffers: MutableMap<Int, BufferResource?> = mutableMapOf()
 
@@ -80,19 +78,6 @@ abstract class RenderContext {
     abstract fun run()
 
     abstract fun destroy()
-
-    /*protected fun render() {
-        val now = currentTimeMillis()
-        if (startTimeMillis == 0L) {
-            // this is the first time render() is called, set start time
-            startTimeMillis = now
-        }
-        val prevTime = time
-        time = (now - startTimeMillis) / 1000.0
-        deltaT = max((time - prevTime).toFloat(), 0.0001f)
-
-        render(deltaT)
-    }*/
 
     protected fun render(dt: Double) {
         deltaT = max(dt, 0.0001)
@@ -110,8 +95,7 @@ abstract class RenderContext {
         shaderMgr.bindShader(null, this)
 
         // by default the viewport covers the full window
-        viewportWidth = windowWidth
-        viewportHeight = windowHeight
+        viewport = Viewport(0, 0, windowWidth, windowHeight)
         applyAttributes()
 
         for (i in onRender.indices) {
@@ -145,79 +129,77 @@ abstract class RenderContext {
     }
 
     private class Attribs {
-        val viewportX = Property(0)
-        val viewportY = Property(0)
-        val viewportWidth = Property(0)
-        val viewportHeight = Property(0)
-        val clearColor = Property(Color(0.05f, 0.15f, 0.25f, 1f))
-        val depthFunc = Property(GL_LEQUAL)
-        val isDepthTest = Property(true)
-        val isDepthMask = Property(true)
-        val isCullFace = Property(true)
-        val isBlend = Property(true)
+        private val attribs = mutableListOf(
+                Property("viewport", Viewport(0, 0, 0, 0)) {
+                    val dimen = clear
+                    glViewport(dimen.x, dimen.y, dimen.width, dimen.height)
+                },
+                Property("clearColor", Color(0.05f, 0.15f, 0.25f, 1f)) {
+                    val color = clear
+                    glClearColor(color.r, color.g, color.b, color.a)
+                },
+                Property("depthFunc", GL_LEQUAL) {
+                    glDepthFunc(clear)
+                },
+                Property("isDepthTest", true) {
+                    if (clear) {
+                        glEnable(GL_DEPTH_TEST)
+                    } else {
+                        glDisable(GL_DEPTH_TEST)
+                    }
+                },
+                Property("isDepthMask", true) {
+                    glDepthMask(clear)
+                },
+                Property("isCullFace", true) {
+                    if (clear) {
+                        glEnable(GL_CULL_FACE)
+                    } else {
+                        glDisable(GL_CULL_FACE)
+                    }
+                },
+                Property("isBlend", true) {
+                    if (clear) {
+                        glEnable(GL_BLEND)
+                        // use blending with pre-multiplied alpha
+                        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
+                    } else {
+                        glDisable(GL_BLEND)
+                    }
+                },
+                Property("lineWidth", 1f) {
+                    glLineWidth(clear)
+                }
+        )
+
+        fun <T> get(name: String): Property<T> {
+            for (i in attribs.indices) {
+                if (attribs[i].name == name) {
+                    return attribs[i] as (Property<T>)
+                }
+            }
+            throw RuntimeException("Attribute not found: $name")
+        }
 
         fun apply() {
-            if (viewportX.valueChanged || viewportY.valueChanged ||
-                    viewportWidth.valueChanged || viewportHeight.valueChanged) {
-                glViewport(viewportX.clear, viewportY.clear, viewportWidth.clear, viewportHeight.clear)
-            }
-            if (clearColor.valueChanged) {
-                val color = clearColor.clear
-                glClearColor(color.r, color.g, color.b, color.a)
-            }
-            if (depthFunc.valueChanged) {
-                glDepthFunc(depthFunc.clear)
-            }
-            if (isDepthTest.valueChanged) {
-                if (isDepthTest.clear) {
-                    glEnable(GL_DEPTH_TEST)
-                } else {
-                    glDisable(GL_DEPTH_TEST)
-                }
-            }
-            if (isDepthTest.valueChanged) {
-                if (isDepthTest.clear) {
-                    glEnable(GL_DEPTH_TEST)
-                } else {
-                    glDisable(GL_DEPTH_TEST)
-                }
-            }
-            if (isDepthMask.valueChanged) {
-                glDepthMask(isDepthMask.clear)
-            }
-            if (isCullFace.valueChanged) {
-                if (isCullFace.clear) {
-                    glEnable(GL_CULL_FACE)
-                } else {
-                    glDisable(GL_CULL_FACE)
-                }
-            }
-            if (isBlend.valueChanged) {
-                if (isBlend.clear) {
-                    glEnable(GL_BLEND)
-                    // use blending with pre-multiplied alpha
-                    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
-                } else {
-                    glDisable(GL_BLEND)
-                }
+            for (i in attribs.indices) {
+                attribs[i].applyIfChanged()
             }
         }
 
         fun set(other: Attribs) {
-            viewportX.copy(other.viewportX, false)
-            viewportY.copy(other.viewportY, false)
-            viewportWidth.copy(other.viewportWidth, false)
-            viewportHeight.copy(other.viewportHeight, false)
-            clearColor.copy(other.clearColor, false)
-            depthFunc.copy(other.depthFunc, false)
-            isDepthTest.copy(other.isDepthTest, false)
-            isDepthMask.copy(other.isDepthMask, false)
-            isCullFace.copy(other.isCullFace, false)
-            isBlend.copy(other.isBlend, false)
+            for (i in attribs.indices) {
+                attribs[i].copy(other.attribs[i], false)
+            }
         }
     }
 
     data class AnisotropicTexFilterInfo(val maxAnisotropy: Float, val TEXTURE_MAX_ANISOTROPY_EXT: Int) {
         val isSupported get() = TEXTURE_MAX_ANISOTROPY_EXT != 0
+    }
+
+    data class Viewport(val x: Int, val y: Int, val width: Int, val height: Int) {
+        fun isInViewport(x: Float, y: Float) = x >= this.x && x < this.x + width &&
+                y >= this.y && y < this.y + height
     }
 }

@@ -113,9 +113,9 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
 
     override fun render(ctx: RenderContext) {
         if (isFillViewport &&
-                (globalWidth != ctx.viewportWidth.toFloat() || globalHeight != ctx.viewportHeight.toFloat())) {
-            globalWidth = ctx.viewportWidth.toFloat()
-            globalHeight = ctx.viewportHeight.toFloat()
+                (globalWidth != ctx.viewport.width.toFloat() || globalHeight != ctx.viewport.height.toFloat())) {
+            globalWidth = ctx.viewport.width.toFloat()
+            globalHeight = ctx.viewport.height.toFloat()
         }
 
         if (isLayoutNeeded) {

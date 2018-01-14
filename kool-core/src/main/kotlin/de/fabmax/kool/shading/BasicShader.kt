@@ -4,7 +4,6 @@ import de.fabmax.kool.RenderContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.MutableVec4f
 
@@ -62,13 +61,14 @@ open class BasicShader(props: ShaderProps, private val generator: GlslGenerator 
 
     init {
         // set meaningful uniform default values
-        shininess = 20.0f
-        specularIntensity = 0.75f
-        staticColor.set(Color.BLACK)
-        alpha = 1.0f
-        saturation = 1.0f
-        fogRange = 250.0f
-        fogColor.set(Color.LIGHT_GRAY)
+        shininess = props.shininess
+        specularIntensity = props.specularIntensity
+        staticColor.set(props.staticColor)
+        texture = props.texture
+        alpha = props.alpha
+        saturation = props.saturation
+        fogRange = props.fogRange
+        fogColor.set(props.fogColor)
     }
 
     override fun onLoad(ctx: RenderContext) {

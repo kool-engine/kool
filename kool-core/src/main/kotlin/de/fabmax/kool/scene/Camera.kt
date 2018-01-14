@@ -43,7 +43,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec4 = MutableVec4f()
 
     fun updateCamera(ctx: RenderContext) {
-        aspectRatio = ctx.viewportWidth.toFloat() / ctx.viewportHeight.toFloat()
+        aspectRatio = ctx.viewport.width.toFloat() / ctx.viewport.height.toFloat()
 
         updateViewMatrix(ctx)
         updateProjectionMatrix(ctx)
@@ -111,16 +111,16 @@ abstract class Camera(name: String = "camera") : Node(name) {
         if (!project_(world, result)) {
             return false
         }
-        result.x = (1 + result.x) * 0.5f * ctx.viewportWidth + ctx.viewportX
-        result.y = ctx.windowHeight - ((1 + result.y) * 0.5f * ctx.viewportHeight + ctx.viewportY)
+        result.x = (1 + result.x) * 0.5f * ctx.viewport.width + ctx.viewport.x
+        result.y = ctx.windowHeight - ((1 + result.y) * 0.5f * ctx.viewport.height + ctx.viewport.y)
         result.z = (1 + result.z) * 0.5f
         return true
     }
 
     fun unProjectScreen(screen: Vec3f, ctx: RenderContext, result: MutableVec3f): Boolean {
-        val x = screen.x - ctx.viewportX
-        val y = (ctx.windowHeight - screen.y) - ctx.viewportY
-        tmpVec4.set(2f * x / ctx.viewportWidth - 1f, 2f * y / ctx.viewportHeight - 1f, 2f * screen.z - 1f, 1f)
+        val x = screen.x - ctx.viewport.x
+        val y = (ctx.windowHeight - screen.y) - ctx.viewport.y
+        tmpVec4.set(2f * x / ctx.viewport.width - 1f, 2f * y / ctx.viewport.height - 1f, 2f * screen.z - 1f, 1f)
         invMvp.transform(tmpVec4)
         val s = 1f / tmpVec4.w
         result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)
@@ -154,9 +154,9 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     override fun updateProjectionMatrix(ctx: RenderContext) {
         if (clipToViewport) {
             left = 0f
-            right = ctx.viewportWidth.toFloat()
+            right = ctx.viewport.width.toFloat()
             bottom = 0f
-            top = ctx.viewportHeight.toFloat()
+            top = ctx.viewport.height.toFloat()
 
         } else if (keepAspectRatio) {
             val h = top - bottom

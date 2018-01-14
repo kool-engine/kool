@@ -1,5 +1,8 @@
 package de.fabmax.kool.shading
 
+import de.fabmax.kool.Texture
+import de.fabmax.kool.util.Color
+
 enum class LightModel {
     PHONG_LIGHTING,
     GOURAUD_LIGHTING,
@@ -35,4 +38,14 @@ class ShaderProps {
 
     var isAlpha = false
     var isSaturation = false
+
+    // init values for newly created BasicShader
+    var shininess = 20.0f
+    var specularIntensity = 0.75f
+    var staticColor = Color.BLACK
+    var alpha = 1.0f
+    var saturation = 1.0f
+    var fogRange = 250.0f
+    var fogColor = Color.LIGHT_GRAY
+    var texture: Texture? = null
 }

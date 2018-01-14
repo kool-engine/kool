@@ -19,8 +19,6 @@ fun simpleShapesScene(): Scene = scene("simpleShapes") {
     +sphericalInputTransform {
         // Set some initial rotation so that we look down on the scene
         setMouseRotation(20f, -30f)
-        // camera pans in y-plane (y is up-axis, camera can move along x and z axis)
-        panMethod = yPlanePan()
         // panning / camera translation is limited to a certain area
         translationBounds = BoundingBox(Vec3f(-50f), Vec3f(50f))
         // Add camera to the transform group

@@ -5,7 +5,7 @@ import kotlin.reflect.KProperty
 /**
  * @author fabmax
  */
-class Property<T>(value: T) {
+class Property<T>(val name: String, value: T, private val onChange: Property<T>.() -> Unit) {
 
     var value: T = value
         private set
@@ -30,12 +30,18 @@ class Property<T>(value: T) {
         }
     }
 
-    fun copy(other: Property<T>, maintainChangeFlag: Boolean) {
+    fun copy(other: Property<*>, maintainChangeFlag: Boolean) {
         if (maintainChangeFlag) {
             valueChanged = other.valueChanged
         } else {
             valueChanged = value != other.value
         }
-        value = other.value
+        value = other.value as T
+    }
+
+    fun applyIfChanged() {
+        if (valueChanged) {
+            onChange()
+        }
     }
 }

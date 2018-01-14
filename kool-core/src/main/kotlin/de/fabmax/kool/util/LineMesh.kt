@@ -1,8 +1,8 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.gl.GL_ALWAYS
 import de.fabmax.kool.gl.GL_LINES
-import de.fabmax.kool.gl.glLineWidth
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.ColorModel
@@ -26,6 +26,7 @@ open class LineMesh(data: MeshData = MeshData(false, true, false), name: String?
         }
     }
 
+    var isXray = false
     var lineWidth = 1f
 
     fun addLine(point0: Vec3f, color0: Color, point1: Vec3f, color1: Color) {
@@ -36,7 +37,15 @@ open class LineMesh(data: MeshData = MeshData(false, true, false), name: String?
     }
 
     override fun render(ctx: RenderContext) {
-        glLineWidth(lineWidth)
+        ctx.pushAttributes()
+        ctx.lineWidth = lineWidth
+        if (isXray) {
+            ctx.depthFunc = GL_ALWAYS
+        }
+        ctx.applyAttributes()
+
         super.render(ctx)
+
+        ctx.popAttributes()
     }
 }

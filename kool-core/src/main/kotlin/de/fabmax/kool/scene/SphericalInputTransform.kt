@@ -40,7 +40,6 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     var zoom = 10f
         set(value) {
             field = value.clamp(minZoom, maxZoom)
-            zoomAnimator.set(field)
         }
 
     var minZoom = 1f
@@ -97,6 +96,11 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
     fun setMouseTranslation(x: Float, y: Float, z: Float) {
         translation.set(x, y, z)
+    }
+
+    fun resetZoom(newZoom: Float) {
+        zoom = newZoom
+        zoomAnimator.set(zoom)
     }
 
     fun updateTransform() {

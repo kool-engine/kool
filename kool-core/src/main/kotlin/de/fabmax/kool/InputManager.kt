@@ -189,8 +189,7 @@ class InputManager internal constructor() {
         fun isInViewport(ctx: RenderContext): Boolean {
             // y-axis of viewport is inverted to window coordinates
             val ptrY = ctx.windowHeight - y
-            return (isValid || wasValid) && x >= ctx.viewportX && ptrY >= ctx.viewportY &&
-                    x < ctx.viewportX + ctx.viewportWidth && ptrY < ctx.viewportY + ctx.viewportHeight
+            return (isValid || wasValid) && ctx.viewport.isInViewport(x, ptrY)
         }
     }
 
