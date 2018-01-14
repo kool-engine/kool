@@ -64,8 +64,9 @@ fun modelScene(): Scene = scene {
 
             model.onRender += { ctx ->
                 // translation is in model coordinates -> front direction is -y, not z
-                translate(0f, -ctx.deltaT.toFloat() * movementSpeed * slowMotion * 5f, 0f)
-                rotate(ctx.deltaT.toFloat() * movementSpeed * slowMotion * 50f, Vec3f.Z_AXIS)
+                val dt = ctx.deltaT.clamp(0.0, 0.1).toFloat()
+                translate(0f, -dt * movementSpeed * slowMotion * 5f, 0f)
+                rotate(dt * movementSpeed * slowMotion * 50f, Vec3f.Z_AXIS)
                 model.armatures[0].animationSpeed = slowMotion
             }
         }
