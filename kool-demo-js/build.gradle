@@ -2,6 +2,8 @@ apply plugin: 'kotlin-platform-js'
 
 compileKotlin2Js {
     kotlinOptions.outputFile = "${projectDir}/web/kooldemo.js"
+    kotlinOptions.moduleKind = "amd"
+    //kotlinOptions.sourceMap = true
 }
 
 sourceSets {

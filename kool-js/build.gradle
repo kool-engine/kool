@@ -1,8 +1,11 @@
 apply plugin: 'kotlin-platform-js'
+apply plugin: 'kotlinx-serialization'
 
 compileKotlin2Js {
     kotlinOptions.outputFile = "${buildDir}/web/kool.js"
-    kotlinOptions.metaInfo = true
+    kotlinOptions.moduleKind = "amd"
+    //kotlinOptions.sourceMap = true
+    //kotlinOptions.metaInfo = true
 }
 
 sourceSets {
@@ -11,6 +14,7 @@ sourceSets {
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
+    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version"
     compile "org.jetbrains.kotlin:kotlin-test-js:$kotlin_version"
 
     expectedBy project(":kool-core")

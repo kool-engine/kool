@@ -1,7 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 
 buildscript {
-    ext.lwjglVersion = '3.1.1'
+    ext.lwjglVersion = '3.1.5'
 
     switch (OperatingSystem.current()) {
         case OperatingSystem.WINDOWS:
@@ -17,6 +17,7 @@ buildscript {
 }
 
 apply plugin: 'kotlin-platform-jvm'
+apply plugin: 'kotlinx-serialization'
 
 sourceSets {
     main.kotlin.srcDirs += "src/main/kotlin"
@@ -26,6 +27,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.20"
+    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
 
     expectedBy project(":kool-core")
 
@@ -33,11 +35,13 @@ dependencies {
 
     compile "org.lwjgl:lwjgl:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-glfw:${lwjglVersion}"
+    compile "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
 
     runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
+    runtime "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
 }

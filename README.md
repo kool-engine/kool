@@ -8,8 +8,9 @@ For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
 
 What's working:
-- New [OSM Earth Demo](https://fabmax.lima-city.de/kool/index.html?demo=earthDemo)
-- Synthie music (see new [Synthie Demo](https://fabmax.lima-city.de/kool/index.html?demo=synthieDemo), quite CPU intense...)
+- Mesh animation (see [Model Demo](https://fabmax.lima-city.de/kool/index.html?demo=earthDemo), vertex-shader based animation yet to come...)
+- OpenStreetMap tile loading (see [OSM Earth Demo](https://fabmax.lima-city.de/kool/index.html?demo=earthDemo))
+- Synthie music (see [Synthie Demo](https://fabmax.lima-city.de/kool/index.html?demo=synthieDemo), quite CPU intense...)
 - Multi-scene / multi-viewport support
 - Some simple UI stuff: Text-Fields, (Toggle-)Buttons, Sliders, Labels
 - Meshes with shared geometry
@@ -30,7 +31,7 @@ Below is the code for a demo scene
 ```kotlin
 fun main(args: Array<String>) {
     // Initialize platform and kool context
-    val ctx = PlatformImpl.initContext()
+    val ctx = createContext()
     
     // Create scene contents
     ctx.scenes += scene {

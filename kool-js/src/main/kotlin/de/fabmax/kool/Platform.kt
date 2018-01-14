@@ -6,8 +6,14 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.get
 import org.w3c.dom.HTMLDivElement
+import org.w3c.xhr.ARRAYBUFFER
+import org.w3c.xhr.XMLHttpRequest
+import org.w3c.xhr.XMLHttpRequestResponseType
 import kotlin.browser.document
 import kotlin.browser.window
 import kotlin.js.Date
@@ -31,6 +37,21 @@ actual fun createCharMap(fontProps: FontProps): CharMap = JsImpl.fontGenerator.c
 actual fun currentTimeMillis(): Long = Date().getTime().toLong()
 
 actual fun defaultGlslInjector(): GlslGenerator.GlslInjector = JsImpl.defaultGlslInjector
+
+actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
+    val req = XMLHttpRequest()
+    req.open("GET", assetPath)
+    req.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
+    req.onload = { evt ->
+        val array = Uint8Array(req.response as ArrayBuffer)
+        val bytes = ByteArray(array.length)
+        for (i in 0 until array.length) {
+            bytes[i] = array[i]
+        }
+        onLoad(bytes)
+    }
+    req.send()
+}
 
 actual fun loadTextureAsset(assetPath: String): TextureData {
     val img = js("new Image();")

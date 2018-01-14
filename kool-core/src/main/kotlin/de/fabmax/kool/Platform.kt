@@ -20,6 +20,8 @@ expect fun currentTimeMillis(): Long
 
 expect fun defaultGlslInjector(): GlslGenerator.GlslInjector
 
+expect fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit)
+
 expect fun loadTextureAsset(assetPath: String): TextureData
 
 expect fun openUrl(url: String)

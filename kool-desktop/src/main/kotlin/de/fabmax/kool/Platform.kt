@@ -10,6 +10,9 @@ import de.fabmax.kool.util.FontProps
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import java.awt.Desktop
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
 import java.net.URI
 
 /**
@@ -31,6 +34,23 @@ actual fun createCharMap(fontProps: FontProps): CharMap = DesktopImpl.fontGenera
 actual fun currentTimeMillis(): Long = System.currentTimeMillis()
 
 actual fun defaultGlslInjector(): GlslGenerator.GlslInjector = DesktopImpl.defaultGlslInjector
+
+actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
+    val file = File(assetPath)
+    FileInputStream(assetPath).use { inStream ->
+        val len = file.length().toInt()
+        var pos = 0
+        val data = ByteArray(len)
+        while (pos < len) {
+            val read = inStream.read(data, pos, len - pos)
+            if (read < 0) {
+                throw IOException("Unexpected end of file")
+            }
+            pos += read
+        }
+        onLoad(data)
+    }
+}
 
 actual fun loadTextureAsset(assetPath: String): TextureData = ImageTextureData(assetPath)
 
@@ -86,23 +106,25 @@ internal object DesktopImpl {
 
 /**
  * AutoCloseable variant of the standard use extension function (which only works for Closeable).
- * This is mainly needed for MemoryStack.stackPush() to work in a try-with-resources manner.
+ * This is mainly needed for lwjgl's MemoryStack.stackPush() to work in a try-with-resources manner.
  */
-inline fun <T : AutoCloseable, R> T.use(block: (T) -> R): R {
-    var closed = false
+inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
+    var exception: Throwable? = null
     try {
         return block(this)
-    } catch (e: Exception) {
-        closed = true
-        try {
-            this.close()
-        } catch (closeException: Exception) {
-            e.addSuppressed(closeException)
-        }
+    } catch (e: Throwable) {
+        exception = e
         throw e
     } finally {
-        if (!closed) {
-            this.close()
+        when {
+            this == null -> {}
+            exception == null -> close()
+            else ->
+                try {
+                    close()
+                } catch (closeException: Throwable) {
+                    exception.addSuppressed(closeException)
+                }
         }
     }
 }

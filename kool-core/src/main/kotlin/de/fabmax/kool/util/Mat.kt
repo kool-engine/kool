@@ -277,6 +277,12 @@ open class Mat4f {
         return this
     }
 
+    fun set(floats: List<Float>) {
+        for (i in 0..15) {
+            matrix[offset + i] = floats[i]
+        }
+    }
+
     fun setIdentity(): Mat4f {
         for (i in 1..15) {
             matrix[offset + i] = 0f

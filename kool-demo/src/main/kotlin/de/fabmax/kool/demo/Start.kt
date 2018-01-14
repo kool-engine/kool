@@ -13,8 +13,18 @@ import de.fabmax.kool.util.*
 class Demo(ctx: RenderContext, startScene: String? = null) {
 
     private val dbgOverlay = debugOverlay(ctx, true)
-    private val newScenes: MutableList<Scene> = mutableListOf()
-    private val currentScenes: MutableList<Scene> = mutableListOf()
+    private val newScenes = mutableListOf<Scene>()
+    private val currentScenes = mutableListOf<Scene>()
+
+    private val defaultScene = DemoEntry("Simple Demo") { add(simpleShapesScene()) }
+    private val demos = mutableMapOf(
+            "simpleDemo" to defaultScene,
+            "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene()) },
+            "pointDemo" to DemoEntry("Point Cloud Demo") { add(pointScene()) },
+            "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
+            "earthDemo" to DemoEntry("Earth Demo") { addAll(earthScene()) },
+            "modelDemo" to DemoEntry("Model Demo") { add(modelScene()) }
+    )
 
     init {
         ctx.scenes += demoOverlay(ctx)
@@ -23,14 +33,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
 
         dbgOverlay.isVisible = false
 
-        when (startScene) {
-            "simpleDemo" -> newScenes.add(simpleShapesScene())
-            "multiDemo" -> newScenes.addAll(multiScene())
-            "pointDemo" -> newScenes.add(pointScene())
-            "synthieDemo" -> newScenes.addAll(synthieScene(ctx))
-            "earthDemo" -> newScenes.addAll(earthScene())
-            else -> newScenes.add(simpleShapesScene())
-        }
+        (demos[startScene] ?: defaultScene).loadScene(newScenes, ctx)
 
         ctx.run()
     }
@@ -87,61 +90,22 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
                 ui.setCustom(bg)
             }
 
-            +button("simpleDemo") {
-                layoutSpec.setOrigin(zero(), dps(-105f, true), zero())
-                layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = "Simple Demo"
+            var y = -105f
+            for (demo in demos) {
+                +button(demo.key) {
+                    layoutSpec.setOrigin(zero(), dps(y, true), zero())
+                    layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
+                    textAlignment = Gravity(Alignment.START, Alignment.CENTER)
+                    text = demo.value.label
+                    y -= 35f
 
-                onClick += { _,_,_ ->
-                    newScenes.add(simpleShapesScene())
-                    menuButton.isEnabled = false
+                    onClick += { _,_,_ ->
+                        demo.value.loadScene.invoke(newScenes, ctx)
+                        menuButton.isEnabled = false
+                    }
                 }
             }
-            +button("multiDemo") {
-                layoutSpec.setOrigin(zero(), dps(-140f, true), zero())
-                layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = "Split Viewport Demo"
 
-                onClick += { _,_,_ ->
-                    newScenes.addAll(multiScene())
-                    menuButton.isEnabled = false
-                }
-            }
-            +button("pointDemo") {
-                layoutSpec.setOrigin(zero(), dps(-175f, true), zero())
-                layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = "Point Cloud Demo"
-
-                onClick += { _,_,_ ->
-                    newScenes.add(pointScene())
-                    menuButton.isEnabled = false
-                }
-            }
-            +button("synthieDemo") {
-                layoutSpec.setOrigin(zero(), dps(-210f, true), zero())
-                layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = "Synthie Demo"
-
-                onClick += { _,_,_ ->
-                    newScenes.addAll(synthieScene(ctx))
-                    menuButton.isEnabled = false
-                }
-            }
-            +button("earthDemo") {
-                layoutSpec.setOrigin(zero(), dps(-245f, true), zero())
-                layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
-                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = "Earth Demo"
-
-                onClick += { _,_,_ ->
-                    newScenes.addAll(earthScene())
-                    menuButton.isEnabled = false
-                }
-            }
             +toggleButton("showDbg") {
                 layoutSpec.setOrigin(zero(), dps(10f, true), zero())
                 layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
@@ -155,6 +119,8 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         menuButton.ui.setCustom(MenuButtonUi(menuButton, menu))
         +menuButton
     }
+
+    private class DemoEntry(val label: String, val loadScene: MutableList<Scene>.(RenderContext) -> Unit)
 }
 
 class MenuButtonUi(tb: ToggleButton, val menu: UiContainer) : ToggleButtonUi(tb, BlankComponentUi()) {

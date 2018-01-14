@@ -38,13 +38,16 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     var verticalRotation = 0f
     var horizontalRotation = 0f
     var zoom = 10f
-        set(value) { field = value.clamp(minZoom, maxZoom) }
+        set(value) {
+            field = value.clamp(minZoom, maxZoom)
+            zoomAnimator.set(field)
+        }
 
     var minZoom = 1f
     var maxZoom = 100f
     var translationBounds: BoundingBox? = null
 
-    var panMethod: PanBase = yPlanePan()
+    var panMethod: PanBase = CameraOrthogonalPan()
 
     val vertRotAnimator = AnimatedVal(0f)
     val horiRotAnimator = AnimatedVal(0f)

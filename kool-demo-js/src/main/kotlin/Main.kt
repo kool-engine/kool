@@ -1,12 +1,11 @@
-package de.fabmax.kool.demo
-
 import de.fabmax.kool.createContext
+import de.fabmax.kool.demo.Demo
 import kotlin.browser.window
 
 /**
  * @author fabmax
  */
-fun main(args: Array<String>) {
+fun main() {
     Demo(createContext(), getParams()["demo"])
 }
 

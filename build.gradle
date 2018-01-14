@@ -3,19 +3,22 @@ allprojects {
     version '0.0.3'
 
     repositories {
-        mavenCentral()
         jcenter()
+        maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 }
 
 buildscript {
     ext.kotlin_version = '1.2.10'
+    ext.serialization_version = '0.4'
 
     repositories {
-        mavenCentral()
+        jcenter()
+        maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:$serialization_version"
     }
 }
