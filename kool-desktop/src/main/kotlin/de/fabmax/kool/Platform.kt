@@ -10,9 +10,8 @@ import de.fabmax.kool.util.FontProps
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import java.awt.Desktop
-import java.io.File
+import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
-import java.io.IOException
 import java.net.URI
 
 /**
@@ -36,19 +35,22 @@ actual fun currentTimeMillis(): Long = System.currentTimeMillis()
 actual fun defaultGlslInjector(): GlslGenerator.GlslInjector = DesktopImpl.defaultGlslInjector
 
 actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
-    val file = File(assetPath)
-    FileInputStream(assetPath).use { inStream ->
-        val len = file.length().toInt()
-        var pos = 0
-        val data = ByteArray(len)
-        while (pos < len) {
-            val read = inStream.read(data, pos, len - pos)
-            if (read < 0) {
-                throw IOException("Unexpected end of file")
-            }
-            pos += read
+    // try to load asset from resources
+    //for (url in ClassLoader.getSystemResources())
+    var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
+    if (inStream == null) {
+        // if asset wasn't found in resources try to load it from file system
+        inStream = FileInputStream(assetPath)
+    }
+
+    inStream.use {
+        val data = ByteArrayOutputStream()
+        val buf = ByteArray(1024 * 1024)
+        while (it.available() > 0) {
+            val len = it.read(buf)
+            data.write(buf, 0, len)
         }
-        onLoad(data)
+        onLoad(data.toByteArray())
     }
 }
 

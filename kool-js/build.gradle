@@ -5,11 +5,6 @@ compileKotlin2Js {
     kotlinOptions.outputFile = "${buildDir}/web/kool.js"
     kotlinOptions.moduleKind = "amd"
     //kotlinOptions.sourceMap = true
-    //kotlinOptions.metaInfo = true
-}
-
-sourceSets {
-    main.kotlin.srcDirs += "src/main/kotlin"
 }
 
 dependencies {

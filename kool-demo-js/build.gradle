@@ -1,14 +1,8 @@
+buildscript {
+    ext.webPath = 'web'
+}
+
 apply plugin: 'kotlin-platform-js'
-
-compileKotlin2Js {
-    kotlinOptions.outputFile = "${projectDir}/web/kooldemo.js"
-    kotlinOptions.moduleKind = "amd"
-    //kotlinOptions.sourceMap = true
-}
-
-sourceSets {
-    main.kotlin.srcDirs += "src/main/kotlin"
-}
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
@@ -17,17 +11,32 @@ dependencies {
     expectedBy project(":kool-demo")
 }
 
+compileKotlin2Js {
+    kotlinOptions.outputFile = "${projectDir}/web/kooldemo.js"
+    kotlinOptions.moduleKind = "amd"
+    //kotlinOptions.sourceMap = true
+}
+
+clean {
+    delete new File("${projectDir}/$webPath")
+}
+
 build.doLast {
     configurations.compile.each { File file ->
         copy {
             includeEmptyDirs = false
 
             from zipTree(file.absolutePath)
-            into "${projectDir}/web"
+            into "${projectDir}/$webPath"
             include { fileTreeElement ->
                 def path = fileTreeElement.path
                 path.endsWith(".js") && (path.startsWith("META-INF/resources/") || !path.startsWith("META-INF/"))
             }
         }
+    }
+
+    copy {
+        from sourceSets.main.resources.srcDirs
+        into "${projectDir}/$webPath"
     }
 }

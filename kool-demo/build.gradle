@@ -1,9 +1,5 @@
 apply plugin: 'kotlin-platform-common'
 
-sourceSets {
-    main.kotlin.srcDirs += "src/main/kotlin"
-}
-
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile project(":kool-core")
