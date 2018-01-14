@@ -14,6 +14,8 @@ class Model(name: String?): TransformGroup(name) {
     private val armatures = mutableListOf<Armature>()
     private val subModels = mutableListOf<Model>()
 
+    var activeAnimation = ""
+
     private var initGeometries = true
 
     var shaderFab: (() -> Shader)? = null
@@ -32,12 +34,6 @@ class Model(name: String?): TransformGroup(name) {
         }
 
         return copy
-    }
-
-    fun setActiveAnimation(name: String) {
-        for (i in armatures.indices) {
-            armatures[i].activeAnimation = name
-        }
     }
 
     fun addGeometry(meshData: MeshData, armature: Armature?, block: (Geometry.() -> Unit)?) {
@@ -94,7 +90,7 @@ class Model(name: String?): TransformGroup(name) {
         }
 
         for (i in armatures.indices) {
-            armatures[i].applyAnimation(ctx.time)
+            armatures[i].applyAnimation(activeAnimation, ctx.time)
         }
 
         super.render(ctx)

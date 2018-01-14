@@ -12,7 +12,6 @@ class Armature(val meshData: MeshData) {
     val bones = mutableMapOf<String, Bone>()
 
     val animations = mutableMapOf<String, Animation>()
-    var activeAnimation = ""
 
     private val transform = Mat4fStack()
     private val tmpVec = MutableVec3f()
@@ -49,13 +48,12 @@ class Armature(val meshData: MeshData) {
         }
     }
 
-    fun applyAnimation(time: Double) {
+    fun applyAnimation(animation: String, time: Double) {
         meshData.isBatchUpdate = true
         meshData.isSyncRequired = true
 
+        animations[animation]?.apply(time)
         clearMesh()
-
-        animations[activeAnimation]?.apply(time)
         for (i in rootBones.indices) {
             applyBone(rootBones[i], transform)
         }
