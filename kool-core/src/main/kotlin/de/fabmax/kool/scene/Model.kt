@@ -10,11 +10,9 @@ import de.fabmax.kool.shading.Shader
 
 class Model(name: String?): TransformGroup(name) {
 
+    val armatures = mutableListOf<Armature>()
     private val geometries = mutableListOf<Geometry>()
-    private val armatures = mutableListOf<Armature>()
     private val subModels = mutableListOf<Model>()
-
-    var activeAnimation = ""
 
     private var initGeometries = true
 
@@ -90,7 +88,7 @@ class Model(name: String?): TransformGroup(name) {
         }
 
         for (i in armatures.indices) {
-            armatures[i].applyAnimation(activeAnimation, ctx.time)
+            armatures[i].applyAnimation(ctx.deltaT)
         }
 
         super.render(ctx)

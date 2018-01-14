@@ -113,7 +113,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         textBaseline = when (label.textAlignment.yAlignment) {
             Alignment.START -> label.height - label.padding.top.toUnits(label.width, label.dpi) - font.normHeight
             Alignment.CENTER -> (label.height - font.normHeight) / 2f
-            Alignment.END -> label.padding.bottom.toUnits(label.width, label.dpi)
+            Alignment.END -> label.padding.bottom.toUnits(label.height, label.dpi)
         }
     }
 

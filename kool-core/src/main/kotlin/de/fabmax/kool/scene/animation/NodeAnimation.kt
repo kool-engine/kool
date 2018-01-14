@@ -4,7 +4,8 @@ import de.fabmax.kool.util.*
 import kotlin.math.max
 
 interface AnimatedNode {
-    fun setTransform(transform: Mat4f)
+    fun clearTransform()
+    fun addTransform(transform: Mat4f, weight: Float)
 }
 
 class NodeAnimation(val name: String, val node: AnimatedNode) {
@@ -15,12 +16,16 @@ class NodeAnimation(val name: String, val node: AnimatedNode) {
     private val tmpTransform = Mat4f()
     private val tmpMat = Mat4f()
 
-    fun apply(time: Float) {
+    fun apply(time: Float, weight: Float, clearTransform: Boolean) {
         tmpTransform.setIdentity()
         mul(positionKeys, time)
         mul(rotationKeys, time)
         mul(scalingKeys, time)
-        node.setTransform(tmpTransform)
+
+        if (clearTransform) {
+            node.clearTransform()
+        }
+        node.addTransform(tmpTransform, weight)
     }
 
     private fun <T, U : AnimationKey<T>> mul(keys: List<U>, time: Float) {

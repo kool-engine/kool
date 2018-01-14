@@ -136,7 +136,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         blurHelper?.updateDistortionTexture(this, ctx, content.bounds)
 
         ctx.pushAttributes()
-        ctx.isDepthMask = false
+        //ctx.isDepthMask = false
         ctx.isCullFace = false
         ctx.applyAttributes()
 

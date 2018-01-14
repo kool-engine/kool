@@ -53,7 +53,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
                 requestUiUpdate()
 
                 for (i in onValueChanged.indices) {
-                    onValueChanged[i](value)
+                    onValueChanged[i](field)
                 }
             }
         }

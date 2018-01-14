@@ -1,7 +1,9 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.loadAsset
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
@@ -9,6 +11,8 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Vec3f
 import de.fabmax.kool.util.lineMesh
 import de.fabmax.kool.util.serialization.loadModel
+import kotlin.math.round
+import kotlin.math.sqrt
 
 /**
  * @author fabmax
@@ -43,9 +47,14 @@ fun modelScene(): Scene = scene {
 
     // add animated character model
     +transformGroup {
+        var asyncModel: Model? = null
+        var movementSpeed = 0.25f
+        var slowMotion = 1f
+
         loadAsset("player.kmf") { data ->
             val model = loadModel(data)
-            model.activeAnimation = "Armature|walk"
+            asyncModel = model
+            model.armatures[0].getAnimation("Armature|walk")?.weight = 1f
             model.shader = basicShader {
                 lightModel = LightModel.PHONG_LIGHTING
                 colorModel = ColorModel.STATIC_COLOR
@@ -55,8 +64,9 @@ fun modelScene(): Scene = scene {
 
             model.onRender += { ctx ->
                 // translation is in model coordinates -> front direction is -y, not z
-                translate(0f, -ctx.deltaT.toFloat() * 1.2f, 0f)
-                rotate(ctx.deltaT.toFloat() * 10f, Vec3f.Z_AXIS)
+                translate(0f, -ctx.deltaT.toFloat() * movementSpeed * slowMotion * 5f, 0f)
+                rotate(ctx.deltaT.toFloat() * movementSpeed * slowMotion * 50f, Vec3f.Z_AXIS)
+                model.armatures[0].animationSpeed = slowMotion
             }
         }
 
@@ -73,7 +83,7 @@ fun modelScene(): Scene = scene {
             zoomMethod = SphericalInputTransform.ZoomMethod.ZOOM_CENTER
             rightDragMethod = SphericalInputTransform.DragMethod.NONE
             // move camera up a little so we look at the center of the model
-            translation.set(0f, 0f, 1f)
+            translation.set(0.5f, 0f, 1f)
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(20f, 75f)
             // Zoom in a little
@@ -81,46 +91,86 @@ fun modelScene(): Scene = scene {
             // Add camera to the transform group
             +camera
         }
-    }
 
-    /*val model = Model("cube").apply {
-        // Set default shader properties used for all meshes in this model, which don't define own properties
-        shaderFab = { basicShader {
-            colorModel = ColorModel.VERTEX_COLOR
-            lightModel = LightModel.PHONG_LIGHTING
-        }}
-        addColorGeometry {
-            meshData.generator = {
-                // Generate centered cube mesh with every face set to a different color
-                cube {
-                    colorCube()
-                    centerOrigin()
+        +embeddedUi(dps(400f)) {
+            globalWidth = 0.75f
+            globalHeight = 1f
+
+            content.apply {
+                rotate(90f, Vec3f.X_AXIS)
+                translate(0.5f, 1.2f, 0f)
+
+                +Label("label1", root).apply {
+                    layoutSpec.setOrigin(uns(0f), dps(140f), uns(0f))
+                    layoutSpec.setSize(pcs(75f), dps(35f), uns(0f))
+                    textAlignment = Gravity(Alignment.START, Alignment.END)
+                    padding.bottom = dps(4f)
+                    text = "Movement Speed:"
                 }
-            }
-        }
+                val speedLabel = Label("speedLabel", root).apply {
+                    layoutSpec.setOrigin(pcs(75f), dps(140f), uns(0f))
+                    layoutSpec.setSize(pcs(25f), dps(35f), uns(0f))
+                    textAlignment = Gravity(Alignment.START, Alignment.END)
+                    padding.bottom = dps(4f)
+                    text = formatFloat(movementSpeed)
+                }
+                +speedLabel
+                +Slider("speedSlider", 0.0f, 1f, sqrt(movementSpeed), root).apply {
+                    layoutSpec.setOrigin(uns(0f), dps(90f), uns(0f))
+                    layoutSpec.setSize(pcs(100f), dps(50f), uns(0f))
+                    onValueChanged += { value ->
+                        movementSpeed = value * value
 
-        addSubModel(Model("text").apply {
-            val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN, 0.75f))
-            shaderFab = { fontShader(font) }
-            addTextGeometry {
-                meshData.generator = {
-                    color = Color.LIME
-                    text(font) {
-                        // Set the text to be rendered, for now only characters defined in [Font.STD_CHARS] can be rendered
-                        text = "Shared Model"
+                        val armature = asyncModel?.armatures?.get(0)
+                        if (armature != null) {
+                            val idleWeight = (1f - value * 2f).clamp(0f, 1f)
+                            val runWeight = ((value - 0.5f) * 2f).clamp(0f, 1f)
+                            val walkWeight = when {
+                                runWeight > 0f -> 1f - runWeight
+                                else -> 1f - idleWeight
+                            }
+                            speedLabel.text = formatFloat(value)
+
+                            armature.getAnimation("Armature|idle")?.weight = idleWeight
+                            armature.getAnimation("Armature|walk")?.weight = walkWeight
+                            armature.getAnimation("Armature|run")?.weight = runWeight
+                        }
+                    }
+                }
+
+                +Label("label2", root).apply {
+                    layoutSpec.setOrigin(uns(0f), dps(50f), uns(0f))
+                    layoutSpec.setSize(pcs(75f), dps(40f), uns(0f))
+                    textAlignment = Gravity(Alignment.START, Alignment.END)
+                    padding.bottom = dps(4f)
+                    text = "Slow Motion:"
+                }
+                val slowMoLabel = Label("slowMotion", root).apply {
+                    layoutSpec.setOrigin(pcs(75f), dps(50f), uns(0f))
+                    layoutSpec.setSize(pcs(25f), dps(40f), uns(0f))
+                    textAlignment = Gravity(Alignment.START, Alignment.END)
+                    padding.bottom = dps(4f)
+                    text = formatFloat(slowMotion)
+                }
+                +slowMoLabel
+                +Slider("slowMoSlider", 0.0f, 1f, slowMotion, root).apply {
+                    layoutSpec.setOrigin(uns(0f), uns(0f), uns(0f))
+                    layoutSpec.setSize(pcs(100f), dps(50f), uns(0f))
+                    onValueChanged += { value ->
+                        slowMotion = value
+                        slowMoLabel.text = formatFloat(slowMotion)
                     }
                 }
             }
-        })
-    }
-
-    for (i in -1..1) {
-        val inst = model.copyInstance()
-        inst.translate(3f*i, -3f, 0f)
-        (inst["text"] as TransformGroup).apply {
-            translate(.25f, 2f + i, 0f)
-            rotate(90f, Vec3f.Z_AXIS)
         }
-        +inst
-    }*/
+    }
+}
+
+private fun formatFloat(value: Float): String {
+    val i = round(value.clamp(0f, 1f) * 100).toInt()
+    val str = when {
+        i < 10 -> "0.0$i"
+        else -> "${i / 100}.${i % 100}0"
+    }
+    return str.substring(0, str.indexOf('.') + 3)
 }

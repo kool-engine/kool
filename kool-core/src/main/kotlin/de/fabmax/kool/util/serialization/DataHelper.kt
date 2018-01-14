@@ -73,7 +73,7 @@ fun loadModel(data: MeshData): Model {
     armature.normalizeBoneWeights()
 
     // load animations
-    data.animations.forEach { armature.animations[it.name] = it.getAnimation(armature.bones) }
+    data.animations.forEach { armature.addAnimation(it.name, it.getAnimation(armature.bones)) }
 
     val model = Model(data.name)
     model.addGeometry(meshData, armature, null)

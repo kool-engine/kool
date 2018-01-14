@@ -12,7 +12,15 @@ class Bone(val name: String, numVertices: Int) : AnimatedNode {
     var vertexIds = IntArray(numVertices)
     var vertexWeights = FloatArray(numVertices)
 
-    override fun setTransform(transform: Mat4f) {
-        this.transform.set(transform)
+    override fun clearTransform() {
+        for (i in 0..15) {
+            transform.matrix[i] = 0f
+        }
+    }
+
+    override fun addTransform(transform: Mat4f, weight: Float) {
+        for (i in 0..15) {
+            this.transform.matrix[i] += transform[i] * weight
+        }
     }
 }

@@ -11,7 +11,10 @@ class Armature(val meshData: MeshData) {
     val rootBones = mutableListOf<Bone>()
     val bones = mutableMapOf<String, Bone>()
 
-    val animations = mutableMapOf<String, Animation>()
+    private val animations = mutableMapOf<String, Animation>()
+    private val animationList = mutableListOf<Animation>()
+    private var animationPos = 0f
+    var animationSpeed = 1f
 
     private val transform = Mat4fStack()
     private val tmpVec = MutableVec3f()
@@ -33,6 +36,19 @@ class Armature(val meshData: MeshData) {
         origV = originalMeshData.data[0]
     }
 
+    fun getAnimation(name: String): Animation? {
+        return animations[name]
+    }
+
+    fun addAnimation(name: String, animation: Animation) {
+        animations[name] = animation
+        animationList += animation
+    }
+
+    fun removeAnimation(name: String) {
+        animationList.remove(animations.remove(name))
+    }
+
     fun normalizeBoneWeights() {
         val sums = FloatArray(originalMeshData.data.size)
         for (bone in bones.values) {
@@ -48,17 +64,34 @@ class Armature(val meshData: MeshData) {
         }
     }
 
-    fun applyAnimation(animation: String, time: Double) {
-        meshData.isBatchUpdate = true
-        meshData.isSyncRequired = true
-
-        animations[animation]?.apply(time)
-        clearMesh()
-        for (i in rootBones.indices) {
-            applyBone(rootBones[i], transform)
+    fun applyAnimation(deltaT: Double) {
+        var clear = true
+        var weightedDuration = 0f
+        for (i in animationList.indices) {
+            val anim = animationList[i]
+            if (anim.weight > 0) {
+                weightedDuration += anim.duration * anim.weight
+            }
+        }
+        animationPos = (animationPos + deltaT.toFloat() / weightedDuration * animationSpeed) % 1f
+        for (i in animationList.indices) {
+            val anim = animationList[i]
+            if (anim.weight > 0) {
+                anim.apply(animationPos, clear)
+                clear = false
+            }
         }
 
-        meshData.isBatchUpdate = false
+        if (!clear) {
+            // only update mesh if an animation was applied
+            meshData.isBatchUpdate = true
+            meshData.isSyncRequired = true
+            clearMesh()
+            for (i in rootBones.indices) {
+                applyBone(rootBones[i], transform)
+            }
+            meshData.isBatchUpdate = false
+        }
     }
 
     private fun applyBone(bone: Bone, transform: Mat4fStack) {
