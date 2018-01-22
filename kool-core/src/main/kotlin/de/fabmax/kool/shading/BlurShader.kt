@@ -16,6 +16,68 @@ import kotlin.math.min
 /**
  * @author fabmax
  */
+
+fun blurShader(propsInit: ShaderProps.() -> Unit = { }): BlurShader {
+    val props = ShaderProps()
+    props.propsInit()
+    val generator = GlslGenerator()
+
+    generator.addCustomUniform(UniformTexture2D("uBlurTexture"))
+    generator.addCustomUniform(Uniform1f("uColorMix"))
+    generator.addCustomUniform(Uniform2f("uTexPos"))
+    generator.addCustomUniform(Uniform2f("uTexSz"))
+
+    generator.injectors += object: GlslGenerator.GlslInjector {
+        override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
+            text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ")
+                    .append("1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n")
+                    .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" = texture2D(")
+                    .append("uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ")
+                    .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" * uColorMix;\n")
+        }
+    }
+
+    return BlurShader(props, generator)
+}
+
+class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerator) :
+        BasicShader(props, generator) {
+
+    private val uBlurTex = generator.customUnitforms["uBlurTexture"] as UniformTexture2D
+    private val uColorMix = generator.customUnitforms["uColorMix"] as Uniform1f
+    private val uTexPos = generator.customUnitforms["uTexPos"] as Uniform2f
+    private val uTexSz = generator.customUnitforms["uTexSz"] as Uniform2f
+
+    var blurHelper: BlurredBackgroundHelper? = null
+        set(value) {
+            field = value
+            uBlurTex.value = value?.blurredBgTex
+        }
+
+    var colorMix: Float
+        get() = uColorMix.value
+        set(value) { uColorMix.value = value }
+
+    init {
+        colorMix = 0f
+    }
+
+    override fun onBind(ctx: RenderContext) {
+        super.onBind(ctx)
+        val helper = blurHelper
+        if (helper != null) {
+            helper.isInUse = true
+            uTexPos.value.set(helper.capturedScrX.toFloat(), helper.capturedScrY.toFloat())
+            uTexSz.value.set(helper.capturedScrW.toFloat(), helper.capturedScrH.toFloat())
+        }
+
+        uBlurTex.bind(ctx)
+        uColorMix.bind(ctx)
+        uTexPos.bind(ctx)
+        uTexSz.bind(ctx)
+    }
+}
+
 class BlurredBackgroundHelper(
         val texSize: Int = 256, blurMethod: BlurMethod = BlurredBackgroundHelper.BlurMethod.BLUR_13_TAP) {
 
@@ -32,8 +94,8 @@ class BlurredBackgroundHelper(
     private val copyTexData = BlurredBgTextureData()
     private val texMesh: Mesh
     private val texMeshFlipped: Mesh
-    private val blurX: QuadShader
-    private val blurY: QuadShader
+    private val blurX: BlurQuadShader
+    private val blurY: BlurQuadShader
 
     private var blurFb1: FramebufferResource? = null
     private var blurFb2: FramebufferResource? = null
@@ -79,18 +141,12 @@ class BlurredBackgroundHelper(
             }
         }
 
-        blurX = when(blurMethod) {
-            BlurMethod.BLUR_9_TAP -> QuadShader.blurShader9Tap()
-            BlurMethod.BLUR_13_TAP -> QuadShader.blurShader13Tap()
-        }.apply {
+        blurX = BlurQuadShader(blurMethod).apply {
             uTexture.value = copyTex
             uDirection.value.set(1f / texSize, 0f)
         }
 
-        blurY = when(blurMethod) {
-            BlurMethod.BLUR_9_TAP -> QuadShader.blurShader9Tap()
-            BlurMethod.BLUR_13_TAP -> QuadShader.blurShader13Tap()
-        }.apply {
+        blurY = BlurQuadShader(blurMethod).apply {
             uTexture.value = fb1Tex
             uDirection.value.set(0f, 1f / texSize)
         }
@@ -237,49 +293,31 @@ class BlurredBackgroundHelper(
 
         override fun onLoad(texture: Texture, ctx: RenderContext) {
             val res = texture.res ?: throw KoolException("Texture wasn't created")
-            //println("$x $y $width $height")
             glCopyTexImage2D(res.target, 0, GL_RGBA, x, y, width, height, 0)
         }
     }
 
-    private class QuadShader(src: Shader.Source) : Shader(src) {
+    private class BlurQuadShader(private val blurMethod: BlurMethod) : Shader() {
         val uTexture = UniformTexture2D("uTexture")
         val uDirection = Uniform2f("uDirection")
 
-        override fun onLoad(ctx: RenderContext) {
-            super.onLoad(ctx)
-            enableAttribute(Attribute.POSITIONS, "aVertexPosition", ctx)
-            enableAttribute(Attribute.TEXTURE_COORDS, "aVertexTexCoord", ctx)
-            setUniformLocation(uTexture, ctx)
-            setUniformLocation(uDirection, ctx)
-        }
+        override fun generateSource(ctx: RenderContext) {
+            val injector = defaultGlslInjector()
 
-        override fun onBind(ctx: RenderContext) {
-            uTexture.bind(ctx)
-            uDirection.bind(ctx)
-        }
+            val vsBuilder = StringBuilder()
+            injector.vsHeader(vsBuilder)
+            vsBuilder.append(
+                    "attribute vec3 aVertexPosition;\n" +
+                            "attribute vec2 aVertexTexCoord;\n" +
+                            "varying vec2 vTexCoord;\n" +
+                            "void main() {\n" +
+                            "  gl_Position = vec4(aVertexPosition, 1.0);\n" +
+                            "  vTexCoord = aVertexTexCoord;\n" +
+                            "}")
 
-        override fun onMatrixUpdate(ctx: RenderContext) {
-            // not needed
-        }
-
-        companion object {
-            fun blurShader9Tap(): QuadShader {
-                val injector = defaultGlslInjector()
-
-                val vsBuilder = StringBuilder()
-                injector.vsHeader(vsBuilder)
-                vsBuilder.append(
-                        "attribute vec3 aVertexPosition;\n" +
-                        "attribute vec2 aVertexTexCoord;\n" +
-                        "varying vec2 vTexCoord;\n" +
-                        "void main() {\n" +
-                        "  gl_Position = vec4(aVertexPosition, 1.0);\n" +
-                        "  vTexCoord = aVertexTexCoord;\n" +
-                        "}")
-
-                val fsBuilder = StringBuilder()
-                injector.fsHeader(fsBuilder)
+            val fsBuilder = StringBuilder()
+            injector.fsHeader(fsBuilder)
+            if (blurMethod == BlurMethod.BLUR_9_TAP) {
                 fsBuilder.append(
                         "precision mediump float;\n" +
                         "uniform sampler2D uTexture;\n" +
@@ -296,26 +334,7 @@ class BlurredBackgroundHelper(
                         "  gl_FragColor += texture2D(uTexture, vTexCoord - off2) * 0.0702702;\n" +
                         "  gl_FragColor.rgb *= gl_FragColor.a;\n" +
                         "}")
-
-                return QuadShader(Source(vsBuilder.toString(), fsBuilder.toString()))
-            }
-
-            fun blurShader13Tap(): QuadShader {
-                val injector = defaultGlslInjector()
-
-                val vsBuilder = StringBuilder()
-                injector.vsHeader(vsBuilder)
-                vsBuilder.append(
-                        "attribute vec3 aVertexPosition;\n" +
-                        "attribute vec2 aVertexTexCoord;\n" +
-                        "varying vec2 vTexCoord;\n" +
-                        "void main() {\n" +
-                        "  gl_Position = vec4(aVertexPosition, 1.0);\n" +
-                        "  vTexCoord = aVertexTexCoord;\n" +
-                        "}")
-
-                val fsBuilder = StringBuilder()
-                injector.fsHeader(fsBuilder)
+            } else {
                 fsBuilder.append(
                         "precision mediump float;\n" +
                         "uniform sampler2D uTexture;\n" +
@@ -335,70 +354,25 @@ class BlurredBackgroundHelper(
                         "  gl_FragColor += texture2D(uTexture, vTexCoord - off3) * 0.0103813;\n" +
                         "  gl_FragColor.rgb *= gl_FragColor.a;\n" +
                         "}")
-
-                return QuadShader(Source(vsBuilder.toString(), fsBuilder.toString()))
             }
-        }
-    }
-}
-
-fun blurShader(propsInit: ShaderProps.() -> Unit = { }): BlurShader {
-    val props = ShaderProps()
-    props.propsInit()
-    val generator = GlslGenerator()
-
-    generator.addCustomUniform(UniformTexture2D("uBlurTexture"))
-    generator.addCustomUniform(Uniform1f("uColorMix"))
-    generator.addCustomUniform(Uniform2f("uTexPos"))
-    generator.addCustomUniform(Uniform2f("uTexSz"))
-
-    generator.injectors += object: GlslGenerator.GlslInjector {
-        override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ")
-                    .append("1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n")
-                    .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" = texture2D(")
-                    .append("uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ")
-                    .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" * uColorMix;\n")
-        }
-    }
-
-    return BlurShader(props, generator)
-}
-
-class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerator) :
-        BasicShader(props, generator) {
-
-    private val uBlurTex = generator.customUnitforms["uBlurTexture"] as UniformTexture2D
-    private val uColorMix = generator.customUnitforms["uColorMix"] as Uniform1f
-    private val uTexPos = generator.customUnitforms["uTexPos"] as Uniform2f
-    private val uTexSz = generator.customUnitforms["uTexSz"] as Uniform2f
-
-    var blurHelper: BlurredBackgroundHelper? = null
-        set(value) {
-            field = value
-            uBlurTex.value = value?.blurredBgTex
+            source = Source(vsBuilder.toString(), fsBuilder.toString())
         }
 
-    var colorMix: Float
-        get() = uColorMix.value
-        set(value) { uColorMix.value = value }
-
-    init {
-        colorMix = 0f
-    }
-
-    override fun onBind(ctx: RenderContext) {
-        super.onBind(ctx)
-        val helper = blurHelper
-        if (helper != null) {
-            helper.isInUse = true
-            uTexPos.value.set(helper.capturedScrX.toFloat(), helper.capturedScrY.toFloat())
-            uTexSz.value.set(helper.capturedScrW.toFloat(), helper.capturedScrH.toFloat())
+        override fun onLoad(ctx: RenderContext) {
+            super.onLoad(ctx)
+            enableAttribute(Attribute.POSITIONS, "aVertexPosition", ctx)
+            enableAttribute(Attribute.TEXTURE_COORDS, "aVertexTexCoord", ctx)
+            setUniformLocation(uTexture, ctx)
+            setUniformLocation(uDirection, ctx)
         }
 
-        uBlurTex.bind(ctx)
-        uColorMix.bind(ctx)
-        uTexPos.bind(ctx)
-        uTexSz.bind(ctx)
+        override fun onBind(ctx: RenderContext) {
+            uTexture.bind(ctx)
+            uDirection.bind(ctx)
+        }
+
+        override fun onMatrixUpdate(ctx: RenderContext) {
+            // not needed
+        }
     }
 }

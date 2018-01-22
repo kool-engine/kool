@@ -3,7 +3,10 @@ package de.fabmax.kool
 import de.fabmax.kool.gl.ProgramResource
 import de.fabmax.kool.gl.ShaderResource
 import de.fabmax.kool.gl.glUseProgram
+import de.fabmax.kool.shading.PreferredLightModel
+import de.fabmax.kool.shading.PreferredShadowMethod
 import de.fabmax.kool.shading.Shader
+import de.fabmax.kool.shading.ShadingHints
 
 /**
  * @author fabmax
@@ -12,6 +15,9 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
 
     var boundShader: Shader? = null
         private set
+
+    var shadingHints = ShadingHints(PreferredLightModel.PHONG, PreferredShadowMethod.NO_SHADOW)
+        // TODO: set(value) { updateAllShaders() }
 
     fun bindShader(shader: Shader?, ctx: RenderContext) {
         if (shader != null) {

@@ -10,12 +10,14 @@ import de.fabmax.kool.scene.Mesh
  *
  * @author fabmax
  */
-abstract class Shader(source: Source) : GlObject<ProgramResource>() {
+abstract class Shader : GlObject<ProgramResource>() {
 
-    var source = source
+    var source = Source("", "", "")
         protected set
 
-    data class Source(val vertexSrc: String, val fragmentSrc: String)
+    data class Source(val vertexSrc: String, val geometrySrc: String, val fragmentSrc: String) {
+        constructor(vertexSrc: String, fragmentSrc: String) : this(vertexSrc, "", fragmentSrc)
+    }
 
     enum class Attribute {
         POSITIONS,
@@ -29,6 +31,8 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
     protected var attributeNormals = -1
     protected var attributeTexCoords = -1
     protected var attributeColors = -1
+
+    abstract fun generateSource(ctx: RenderContext)
 
     /**
      * Checks if this Shader is currently bound.
@@ -46,6 +50,7 @@ abstract class Shader(source: Source) : GlObject<ProgramResource>() {
      * @param ctx    the graphics engine context
      */
     open fun onLoad(ctx: RenderContext) {
+        generateSource(ctx)
         res = ctx.shaderMgr.createShader(source, ctx)
     }
 
