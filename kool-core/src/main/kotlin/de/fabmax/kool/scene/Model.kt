@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.shading.Shader
+import de.fabmax.kool.util.Attribute
 
 /**
  * @author fabmax
@@ -45,17 +46,17 @@ class Model(name: String?): TransformGroup(name) {
     }
 
     fun addColorGeometry(block: Geometry.() -> Unit) {
-        val meshData = MeshData(true, true, false)
+        val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS)
         addGeometry(meshData, null, block)
     }
 
     fun addTextGeometry(block: Geometry.() -> Unit) {
-        val meshData = MeshData(true, true, true)
+        val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
         addGeometry(meshData, null, block)
     }
 
     fun addTextureGeometry(block: Geometry.() -> Unit) {
-        val meshData = MeshData(true, false, true)
+        val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
         addGeometry(meshData, null, block)
     }
 

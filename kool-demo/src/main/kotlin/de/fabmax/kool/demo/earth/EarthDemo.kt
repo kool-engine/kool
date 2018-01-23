@@ -1,7 +1,10 @@
 package de.fabmax.kool.demo.earth
 
 import de.fabmax.kool.openUrl
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.SphericalInputTransform
+import de.fabmax.kool.scene.scene
+import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
 import kotlin.math.min
@@ -39,23 +42,6 @@ fun earthScene(): List<Scene> {
 
         earth = Earth().apply {
             translate(0f, 0f, -Earth.EARTH_R.toFloat())
-
-            +transformGroup {
-                rotate(13.341f, Vec3f.Y_AXIS)
-                rotate(-52.556f, Vec3f.X_AXIS)
-                translate(0f, 0f, Earth.EARTH_R.toFloat())
-
-                +colorMesh {
-                    generator = {
-                        scale(2e1f, 2e1f, 2e1f)
-
-                        cube {
-                            colorCube()
-                            centerOrigin()
-                        }
-                    }
-                }
-            }
         }
         +earth!!
     }

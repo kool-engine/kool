@@ -2,6 +2,7 @@ package de.fabmax.kool.shading
 
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.defaultGlslInjector
+import de.fabmax.kool.util.Attribute
 
 /**
  * @author fabmax
@@ -83,10 +84,10 @@ open class GlslGenerator {
     }
 
     fun onLoad(shader: BasicShader, ctx: RenderContext) {
-        shader.enableAttribute(Shader.Attribute.POSITIONS, ATTRIBUTE_NAME_POSITION, ctx)
-        shader.enableAttribute(Shader.Attribute.NORMALS, ATTRIBUTE_NAME_NORMAL, ctx)
-        shader.enableAttribute(Shader.Attribute.TEXTURE_COORDS, ATTRIBUTE_NAME_TEX_COORD, ctx)
-        shader.enableAttribute(Shader.Attribute.COLORS, ATTRIBUTE_NAME_COLOR, ctx)
+        shader.enableAttribute(Attribute.POSITIONS, ATTRIBUTE_NAME_POSITION, ctx)
+        shader.enableAttribute(Attribute.NORMALS, ATTRIBUTE_NAME_NORMAL, ctx)
+        shader.enableAttribute(Attribute.TEXTURE_COORDS, ATTRIBUTE_NAME_TEX_COORD, ctx)
+        shader.enableAttribute(Attribute.COLORS, ATTRIBUTE_NAME_COLOR, ctx)
 
         shader.setUniformLocation(uniformMvpMatrix, ctx)
         shader.setUniformLocation(uniformModelMatrix, ctx)

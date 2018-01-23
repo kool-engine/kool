@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Attribute
 
 /**
  * Base class for custom shader implementations.
@@ -19,18 +20,9 @@ abstract class Shader : GlObject<ProgramResource>() {
         constructor(vertexSrc: String, fragmentSrc: String) : this(vertexSrc, "", fragmentSrc)
     }
 
-    enum class Attribute {
-        POSITIONS,
-        NORMALS,
-        TEXTURE_COORDS,
-        COLORS
-    }
+    protected data class LocatedAttribute(val descr: Attribute, val location: Int)
 
-    // Shader attribute pointers
-    protected var attributePositions = -1
-    protected var attributeNormals = -1
-    protected var attributeTexCoords = -1
-    protected var attributeColors = -1
+    protected val attributes = mutableListOf<LocatedAttribute>()
 
     abstract fun generateSource(ctx: RenderContext)
 
@@ -108,11 +100,8 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param location     attribute location in shader code, if specified with layout (location=...)
      */
     open fun enableAttribute(attribute: Attribute, location: Int, ctx: RenderContext) {
-        when (attribute) {
-            Attribute.POSITIONS -> attributePositions = location
-            Attribute.NORMALS -> attributeNormals = location
-            Attribute.TEXTURE_COORDS -> attributeTexCoords = location
-            Attribute.COLORS -> attributeColors = location
+        if (location >= 0) {
+            attributes.add(LocatedAttribute(attribute, location))
         }
     }
 
@@ -151,29 +140,12 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param ctx    the graphics engine context
      */
     open fun bindMesh(mesh: Mesh, ctx: RenderContext) {
-        if (attributePositions != -1) {
-            val binder = mesh.meshData.positionBinder ?:
-                    throw KoolException("Mesh must supply an attribute binder for vertex positions")
-            glEnableVertexAttribArray(attributePositions)
-            binder.bindAttribute(attributePositions, ctx)
-        }
-        if (attributeNormals != -1) {
-            val binder = mesh.meshData.normalBinder ?:
-                    throw KoolException("Mesh must supply an attribute binder for vertex normals")
-            glEnableVertexAttribArray(attributeNormals)
-            binder.bindAttribute(attributeNormals, ctx)
-        }
-        if (attributeTexCoords != -1) {
-            val binder = mesh.meshData.texCoordBinder ?:
-                    throw KoolException("Mesh must supply an attribute binder for vertex texture coordinates")
-            glEnableVertexAttribArray(attributeTexCoords)
-            binder.bindAttribute(attributeTexCoords, ctx)
-        }
-        if (attributeColors != -1) {
-            val binder = mesh.meshData.colorBinder ?:
-                    throw KoolException("Mesh must supply an attribute binder for vertex colors")
-            glEnableVertexAttribArray(attributeColors)
-            binder.bindAttribute(attributeColors, ctx)
+        for (i in attributes.indices) {
+            val attrib = attributes[i]
+            val binder = mesh.meshData.attributeBinders[attrib.descr] ?:
+                    throw KoolException("Mesh must supply an attribute binder for attribute ${attrib.descr.name}")
+            glEnableVertexAttribArray(attrib.location)
+            binder.bindAttribute(attrib.location, ctx)
         }
     }
 
@@ -183,10 +155,9 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param ctx    the graphics engine context
      */
     open fun unbindMesh(ctx: RenderContext) {
-        if (attributePositions != -1) { glDisableVertexAttribArray(attributePositions) }
-        if (attributeNormals != -1) { glDisableVertexAttribArray(attributeNormals) }
-        if (attributeTexCoords != -1) { glDisableVertexAttribArray(attributeTexCoords) }
-        if (attributeColors != -1) { glDisableVertexAttribArray(attributeColors) }
+        for (i in attributes.indices) {
+            glDisableVertexAttribArray(attributes[i].location)
+        }
     }
 
     /**

@@ -9,10 +9,7 @@ import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.MutableColor
-import de.fabmax.kool.util.MutableVec2f
+import de.fabmax.kool.util.*
 
 /**
  * @author fabmax
@@ -111,7 +108,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
 
 open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi by baseUi {
 
-    protected val meshData = MeshData(true, true, true)
+    protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
     protected val meshBuilder = MeshBuilder(meshData)
     protected val mesh = Mesh(meshData)
 

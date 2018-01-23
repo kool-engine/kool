@@ -46,7 +46,7 @@ open class Label(name: String, root: UiRoot) : UiComponent(name, root) {
 
 open class LabelUi(val label: Label, private val baseUi: ComponentUi) : ComponentUi by baseUi {
 
-    protected val meshData = MeshData(true, true, true)
+    protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
     protected val meshBuilder = MeshBuilder(meshData)
     protected val mesh = Mesh(meshData)
     protected var meshAdded = false

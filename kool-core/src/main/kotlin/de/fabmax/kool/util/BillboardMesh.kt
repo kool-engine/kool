@@ -8,7 +8,8 @@ import de.fabmax.kool.shading.*
 /**
  * @author fabmax
  */
-class BillboardMesh(data: MeshData = MeshData(false, true, true), name: String = "") : Mesh(data, name) {
+class BillboardMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COLORS, Attribute.TEXTURE_COORDS),
+                    name: String = "") : Mesh(data, name) {
 
     init {
         shader = billboardShader {

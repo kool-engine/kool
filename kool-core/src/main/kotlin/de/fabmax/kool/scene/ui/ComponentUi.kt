@@ -4,6 +4,7 @@ import de.fabmax.kool.RenderContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
+import de.fabmax.kool.util.Attribute
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
 
@@ -25,7 +26,7 @@ open class BlankComponentUi : ComponentUi
 open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 
     protected var shader: BasicShader? = null
-    protected val meshData = MeshData(true, true, true)
+    protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
     protected val meshBuilder = MeshBuilder(meshData)
     protected val mesh = Mesh(meshData)
 

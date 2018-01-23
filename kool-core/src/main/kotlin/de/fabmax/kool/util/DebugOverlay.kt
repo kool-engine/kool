@@ -168,7 +168,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
 
 private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
     val graphMesh: Mesh
-    val graphData = MeshData(false, true, false)
+    val graphData = MeshData(Attribute.POSITIONS, Attribute.COLORS)
     val graphBuilder = MeshBuilder(graphData)
     val graphItem = graphData.data[0]
 

@@ -1,15 +1,14 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.Mat4f
-import de.fabmax.kool.util.Mat4fStack
-import de.fabmax.kool.util.MutableVec3f
+import de.fabmax.kool.util.*
 
 class Armature(val meshData: MeshData) {
 
     val rootBones = mutableListOf<Bone>()
     val bones = mutableMapOf<String, Bone>()
+
+    private val withNormals = meshData.hasAttribute(Attribute.NORMALS)
 
     private val animations = mutableMapOf<String, Animation>()
     private val animationList = mutableListOf<Animation>()
@@ -19,16 +18,16 @@ class Armature(val meshData: MeshData) {
     private val transform = Mat4fStack()
     private val tmpVec = MutableVec3f()
 
-    private val originalMeshData = MeshData(meshData.hasNormals, false, false)
-    private val meshV: IndexedVertexList.Item = meshData.data[0]
-    private val origV: IndexedVertexList.Item
+    private val originalMeshData = MeshData(meshData.vertexAttributes)
+    private val meshV: IndexedVertexList.Vertex = meshData.data[0]
+    private val origV: IndexedVertexList.Vertex
 
     init {
         for (i in 0 until meshData.data.size) {
             meshV.index = i
             originalMeshData.addVertex {
                 position.set(meshV.position)
-                if (meshData.hasNormals) {
+                if (withNormals) {
                     normal.set(meshV.normal)
                 }
             }
@@ -110,7 +109,7 @@ class Armature(val meshData: MeshData) {
         for (i in 0 until meshData.data.size) {
             meshV.index = i
             meshV.position.set(0f, 0f, 0f)
-            if (meshData.hasNormals) {
+            if (withNormals) {
                 meshV.normal.set(0f, 0f, 0f)
             }
         }
@@ -127,7 +126,7 @@ class Armature(val meshData: MeshData) {
             tmpVec *= bone.vertexWeights[i]
             meshV.position += tmpVec
 
-            if (meshData.hasNormals) {
+            if (withNormals) {
                 tmpVec.set(origV.normal)
                 bone.offsetMatrix.transform(tmpVec, 0f)
                 transform.transform(tmpVec, 0f)

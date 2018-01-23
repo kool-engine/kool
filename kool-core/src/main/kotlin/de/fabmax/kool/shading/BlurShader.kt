@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.textureMesh
+import de.fabmax.kool.util.Attribute
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableVec3f

@@ -4,6 +4,7 @@ import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.scene.animation.Bone
+import de.fabmax.kool.util.Attribute
 import kotlinx.serialization.protobuf.ProtoBuf
 
 fun loadModel(data: ByteArray): Model {
@@ -11,7 +12,18 @@ fun loadModel(data: ByteArray): Model {
 }
 
 fun loadModel(data: MeshData): Model {
-    val meshData = de.fabmax.kool.scene.MeshData(data.hasNormals(), data.hasColors(), data.hasTexCoords())
+    val attributes = mutableSetOf(Attribute.POSITIONS)
+    if (data.hasNormals()) {
+        attributes += Attribute.NORMALS
+    }
+    if (data.hasColors()) {
+        attributes += Attribute.COLORS
+    }
+    if (data.hasTexCoords()) {
+        attributes += Attribute.TEXTURE_COORDS
+    }
+
+    val meshData = de.fabmax.kool.scene.MeshData(attributes)
 
     if (!data.armature.isEmpty()) {
         meshData.usage = GL_DYNAMIC_DRAW

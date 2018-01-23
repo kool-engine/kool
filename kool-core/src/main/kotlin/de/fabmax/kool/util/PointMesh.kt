@@ -16,7 +16,8 @@ fun pointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
     return PointMesh(name = name).apply(block)
 }
 
-class PointMesh(data: MeshData = MeshData(false, true, false), name: String? = null) : Mesh(data, name) {
+class PointMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
+        Mesh(data, name) {
     init {
         primitiveType = GL_POINTS
         shader = basicPointShader {
@@ -29,7 +30,7 @@ class PointMesh(data: MeshData = MeshData(false, true, false), name: String? = n
         get() = (shader as BasicPointShader).pointSize
         set(value) { (shader as BasicPointShader).pointSize = value }
 
-    fun addPoint(block: IndexedVertexList.Item.() -> Unit): Int {
+    fun addPoint(block: IndexedVertexList.Vertex.() -> Unit): Int {
         val idx =  meshData.addVertex(block)
         meshData.addIndex(idx)
         return idx

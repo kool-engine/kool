@@ -7,20 +7,39 @@ import de.fabmax.kool.supportsUint32Indices
 import de.fabmax.kool.util.*
 import kotlin.math.sqrt
 
-fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
+
+inline fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
          block: Mesh.() -> Unit): Mesh {
-    val mesh = Mesh(MeshData(withNormals, withColors, withTexCoords), name)
+    val attributes = mutableSetOf(Attribute.POSITIONS)
+    if (withNormals) {
+        attributes += Attribute.NORMALS
+    }
+    if (withColors) {
+        attributes += Attribute.COLORS
+    }
+    if (withTexCoords) {
+        attributes += Attribute.TEXTURE_COORDS
+    }
+    return mesh(name, attributes, block)
+}
+
+inline fun mesh(name: String? = null, vararg attributes: Attribute, block: Mesh.() -> Unit): Mesh {
+    return mesh(name, attributes.toHashSet(), block)
+}
+
+inline fun mesh(name: String? = null, attributes: Set<Attribute>, block: Mesh.() -> Unit): Mesh {
+    val mesh = Mesh(MeshData(attributes), name)
 
     mesh.shader = basicShader {
-        if (withNormals) {
+        if (attributes.contains(Attribute.NORMALS)) {
             lightModel = LightModel.PHONG_LIGHTING
         } else {
             lightModel = LightModel.NO_LIGHTING
         }
 
-        if (withTexCoords) {
+        if (attributes.contains(Attribute.TEXTURE_COORDS)) {
             colorModel = ColorModel.TEXTURE_COLOR
-        } else if (withColors) {
+        } else if (attributes.contains(Attribute.COLORS)) {
             colorModel = ColorModel.VERTEX_COLOR
         } else {
             colorModel = ColorModel.STATIC_COLOR
@@ -90,11 +109,8 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
             return
         }
 
+        // create or update data buffers for this mesh
         meshData.checkBuffers(ctx)
-
-        if (meshData.positionBinder == null) {
-            throw IllegalStateException("Vertex positions attribute binder is null")
-        }
 
         // bind shader for this mesh
         ctx.shaderMgr.bindShader(shader, ctx)
@@ -124,8 +140,8 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     }
 }
 
-class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords: Boolean) {
-    val data = IndexedVertexList(hasNormals, hasColors, hasTexCoords)
+class MeshData(val vertexAttributes: Set<Attribute>) {
+    val data = IndexedVertexList(vertexAttributes)
     val bounds = BoundingBox()
 
     var generator: (MeshBuilder.() -> Unit)? = null
@@ -149,14 +165,11 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
             }
         }
 
-    var positionBinder: VboBinder? = null
-        private set
-    var normalBinder: VboBinder? = null
-        private set
-    var texCoordBinder: VboBinder? = null
-        private set
-    var colorBinder: VboBinder? = null
-        private set
+    val attributeBinders = mutableMapOf<Attribute, VboBinder>()
+
+    constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toHashSet())
+
+    fun hasAttribute(attribute: Attribute): Boolean = vertexAttributes.contains(attribute)
 
     fun generateGeometry() {
         val gen = generator
@@ -169,7 +182,7 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
         }
     }
 
-    fun addVertex(block: IndexedVertexList.Item.() -> Unit): Int {
+    fun addVertex(block: IndexedVertexList.Vertex.() -> Unit): Int {
         var idx = 0
         synchronized(data) {
             isSyncRequired = true
@@ -243,10 +256,10 @@ class MeshData(val hasNormals: Boolean, val hasColors: Boolean, val hasTexCoords
         }
         if (dataBuffer == null) {
             dataBuffer = BufferResource.create(GL_ARRAY_BUFFER, ctx)
-            positionBinder = VboBinder(dataBuffer!!, 3, data.strideBytes)
-            if (hasNormals) { normalBinder = VboBinder(dataBuffer!!, 3, data.strideBytes, data.normalOffset) }
-            if (hasColors) { colorBinder = VboBinder(dataBuffer!!, 4, data.strideBytes, data.colorOffset) }
-            if (hasTexCoords) { texCoordBinder = VboBinder(dataBuffer!!, 2, data.strideBytes, data.texCoordOffset) }
+            for (vertexAttrib in vertexAttributes) {
+                attributeBinders[vertexAttrib] = VboBinder(dataBuffer!!, vertexAttrib.type.size,
+                        data.strideBytes, data.attributeOffsets[vertexAttrib]!!)
+            }
         }
 
         if (isSyncRequired && !isBatchUpdate) {

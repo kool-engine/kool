@@ -8,13 +8,14 @@ import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.util.Attribute
 import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.Vec2f
 import de.fabmax.kool.util.Vec3f
 import kotlin.math.*
 
 class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int) :
-        Mesh(MeshData(true, false, true), "$tz/$tx/$ty") {
+        Mesh(MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS), "$tz/$tx/$ty") {
 
     val key = tileKey(tx, ty, tz)
 

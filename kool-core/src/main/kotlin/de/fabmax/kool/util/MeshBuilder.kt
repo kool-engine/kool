@@ -13,7 +13,9 @@ open class MeshBuilder(val meshData: MeshData) {
     val transform = Mat4fStack()
 
     var color = Color.BLACK
-    var vertexModFun: (IndexedVertexList.Item.() -> Unit)? = null
+    var vertexModFun: (IndexedVertexList.Vertex.() -> Unit)? = null
+
+    private val hasNormals = meshData.hasAttribute(Attribute.NORMALS)
 
     private val tmpPos = MutableVec3f()
     private val tmpNrm = MutableVec3f()
@@ -33,8 +35,9 @@ open class MeshBuilder(val meshData: MeshData) {
             texCoord.set(uv)
             color.set(this@MeshBuilder.color)
             vertexModFun?.invoke(this)
+
             transform.transform(position)
-            if (meshData.hasNormals) {
+            if (hasNormals) {
                 transform.transform(normal, 0f)
                 normal.norm()
             }
