@@ -1,17 +1,16 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.RenderContext
-import de.fabmax.kool.scene.animation.Armature
+import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.Shader
-import de.fabmax.kool.util.Attribute
 
 /**
+ * fixme: kinda deprecated, use TransformGroup with meshes instead, however copyInstance() is still needed
+ *
  * @author fabmax
  */
-
 class Model(name: String?): TransformGroup(name) {
 
-    val armatures = mutableListOf<Armature>()
     private val geometries = mutableListOf<Geometry>()
     private val subModels = mutableListOf<Model>()
 
@@ -26,7 +25,6 @@ class Model(name: String?): TransformGroup(name) {
         copy.shaderFab = shaderFab
 
         copy.geometries.addAll(geometries)
-        copy.armatures.addAll(armatures)
 
         for (child in subModels) {
             copy.addSubModel(child.copyInstance())
@@ -35,29 +33,26 @@ class Model(name: String?): TransformGroup(name) {
         return copy
     }
 
-    fun addGeometry(meshData: MeshData, armature: Armature?, block: (Geometry.() -> Unit)?) {
+    fun addGeometry(meshData: MeshData, block: (Geometry.() -> Unit)?) {
         geometries += Geometry(meshData).apply {
             block?.invoke(this)
             meshData.generateGeometry()
-        }
-        if (armature != null) {
-            armatures.add(armature)
         }
     }
 
     fun addColorGeometry(block: Geometry.() -> Unit) {
         val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS)
-        addGeometry(meshData, null, block)
+        addGeometry(meshData, block)
     }
 
     fun addTextGeometry(block: Geometry.() -> Unit) {
         val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
-        addGeometry(meshData, null, block)
+        addGeometry(meshData, block)
     }
 
     fun addTextureGeometry(block: Geometry.() -> Unit) {
         val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
-        addGeometry(meshData, null, block)
+        addGeometry(meshData, block)
     }
 
     fun addSubModel(child: Model) {
@@ -86,10 +81,6 @@ class Model(name: String?): TransformGroup(name) {
                 }
                 addNode(mesh)
             }
-        }
-
-        for (i in armatures.indices) {
-            armatures[i].applyAnimation(ctx.deltaT)
         }
 
         super.render(ctx)

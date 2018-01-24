@@ -3,7 +3,6 @@ package de.fabmax.kool
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import org.khronos.webgl.ArrayBuffer
@@ -28,6 +27,9 @@ actual val supportsMultiContext: Boolean = false
 
 actual val supportsUint32Indices: Boolean = true
 
+actual val glslVersion
+    get() = if (JsImpl.ctx!!.isWebGL2) { GlslVersion.GLSL_300_ES } else { GlslVersion.GLSL_200_ES }
+
 fun createContext() = createContext(JsContext.InitProps())
 
 actual fun createContext(props: RenderContext.InitProps): RenderContext = JsImpl.createContext(props)
@@ -35,8 +37,6 @@ actual fun createContext(props: RenderContext.InitProps): RenderContext = JsImpl
 actual fun createCharMap(fontProps: FontProps): CharMap = JsImpl.fontGenerator.createCharMap(fontProps)
 
 actual fun currentTimeMillis(): Long = Date().getTime().toLong()
-
-actual fun defaultGlslInjector(): GlslGenerator.GlslInjector = JsImpl.defaultGlslInjector
 
 actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
     val req = XMLHttpRequest()
@@ -74,15 +74,6 @@ internal object JsImpl {
     val gl: WebGLRenderingContext
         get() = ctx?.gl ?: throw KoolException("Platform.createContext() not called")
     val fontGenerator: FontMapGenerator by lazy { FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT) }
-    val defaultGlslInjector = object : GlslGenerator.GlslInjector {
-        override fun vsHeader(text: StringBuilder) {
-            text.append("#version 100\n")
-        }
-
-        override fun fsHeader(text: StringBuilder) {
-            text.append("#version 100\n")
-        }
-    }
 
     init {
         val measure = document.getElementById("dpiMeasure")
@@ -108,42 +99,3 @@ internal object JsImpl {
         }
     }
 }
-
-/*class PlatformImpl private constructor() : Platform() {
-
-    companion object {
-        internal var jsContext: JsContext? = null
-        internal val gl: WebGLRenderingContext
-            get() = jsContext?.gl ?: throw KoolException("Platform.createContext() not called")
-
-    }
-
-    private var audioImpl: AudioGenerator? = null
-    private var fontGenerator: FontMapGenerator? = null
-
-    override val supportsMultiContext = false
-
-    override val supportsUint32Indices: Boolean
-        get() = jsContext?.supportsUint32Indices ?: throw KoolException("Platform.createContext() not called")
-
-    override fun createContext(props: RenderContext.InitProps): RenderContext {
-        var ctx = jsContext
-        if (ctx == null) {
-            if (props is JsContext.InitProps) {
-                ctx = JsContext(props)
-                jsContext = ctx
-            } else {
-                throw IllegalArgumentException("Props must be of JsContext.InitProps")
-            }
-        }
-        return ctx
-    }
-
-    override fun getAudioImpl(): Audio {
-        if (audioImpl == null) {
-            audioImpl = AudioGenerator(this)
-        }
-        return audioImpl!!
-    }
-
-}*/

@@ -4,7 +4,6 @@ import de.fabmax.kool.RenderContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
-import de.fabmax.kool.util.Attribute
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
 

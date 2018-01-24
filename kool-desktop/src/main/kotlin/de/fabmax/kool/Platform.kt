@@ -4,7 +4,6 @@ import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
-import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import org.lwjgl.glfw.GLFW
@@ -24,6 +23,8 @@ actual val supportsMultiContext: Boolean = true
 
 actual val supportsUint32Indices: Boolean = true
 
+actual val glslVersion = GlslVersion.GLSL_330
+
 fun createContext() = createContext(Lwjgl3Context.InitProps())
 
 actual fun createContext(props: RenderContext.InitProps): RenderContext = DesktopImpl.createContext(props)
@@ -31,8 +32,6 @@ actual fun createContext(props: RenderContext.InitProps): RenderContext = Deskto
 actual fun createCharMap(fontProps: FontProps): CharMap = DesktopImpl.fontGenerator.createCharMap(fontProps)
 
 actual fun currentTimeMillis(): Long = System.currentTimeMillis()
-
-actual fun defaultGlslInjector(): GlslGenerator.GlslInjector = DesktopImpl.defaultGlslInjector
 
 actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
     // try to load asset from resources
@@ -65,15 +64,6 @@ internal object DesktopImpl {
     val monitors: MutableList<MonitorSpec> = mutableListOf()
     val primaryMonitor: MonitorSpec
     val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
-    val defaultGlslInjector = object : GlslGenerator.GlslInjector {
-        override fun vsHeader(text: StringBuilder) {
-            text.append("#version 330\n")
-        }
-
-        override fun fsHeader(text: StringBuilder) {
-            text.append("#version 330\n")
-        }
-    }
 
     init {
         // setup an error callback

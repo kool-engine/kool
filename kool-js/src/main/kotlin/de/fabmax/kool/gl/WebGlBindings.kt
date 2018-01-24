@@ -196,17 +196,12 @@ actual fun glVertexAttribDivisor(index: Int, divisor: Int) {
 actual fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) =
         JsImpl.gl.vertexAttribPointer(index, size, type, normalized, stride, offset)
 
-actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) {
-    val gl2Ctx = JsImpl.gl as WebGL2RenderingContext
-    gl2Ctx.vertexAttribIPointer(index, size, type, stride, offset)
-}
+actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) =
+        (JsImpl.gl as WebGL2RenderingContext).vertexAttribIPointer(index, size, type, stride, offset)
+
 
 actual fun glViewport(x: Int, y: Int, width: Int, height: Int) = JsImpl.gl.viewport(x, y, width, height)
 
-
-//fun WebGLRenderingContext.vertexAttribIPointer(indx: Int, size: Int, type: Int, stride: Int, offset: Int) {
-//    js("")
-//}
 
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)

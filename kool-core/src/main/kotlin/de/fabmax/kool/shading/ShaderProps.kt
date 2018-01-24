@@ -39,6 +39,8 @@ class ShaderProps {
     var isAlpha = false
     var isSaturation = false
 
+    var isSkinned = false
+
     // init values for newly created BasicShader
     var shininess = 20.0f
     var specularIntensity = 0.75f

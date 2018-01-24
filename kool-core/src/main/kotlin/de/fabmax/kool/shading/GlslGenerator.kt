@@ -1,47 +1,42 @@
 package de.fabmax.kool.shading
 
 import de.fabmax.kool.RenderContext
-import de.fabmax.kool.defaultGlslInjector
-import de.fabmax.kool.util.Attribute
+import de.fabmax.kool.glslVersion
+import de.fabmax.kool.scene.animation.Armature
 
 /**
  * @author fabmax
  */
 open class GlslGenerator {
     companion object {
-        const val UNIFORM_MVP_MATRIX = "uMvpMatrix"
-        const val UNIFORM_MODEL_MATRIX = "uModelMatrix"
-        const val UNIFORM_VIEW_MATRIX = "uViewMatrix"
-        const val UNIFORM_LIGHT_DIRECTION = "uLightDirection"
-        const val UNIFORM_LIGHT_COLOR = "uLightColor"
-        const val UNIFORM_SHININESS = "uShininess"
-        const val UNIFORM_SPECULAR_INTENSITY = "uSpecularIntensity"
-        const val UNIFORM_CAMERA_POSITION = "uCameraPosition"
-        const val UNIFORM_FOG_COLOR = "uFogColor"
-        const val UNIFORM_FOG_RANGE = "uFogRange"
-        const val UNIFORM_TEXTURE_0 = "uTexture0"
-        const val UNIFORM_STATIC_COLOR = "uStaticColor"
-        const val UNIFORM_ALPHA = "uAlpha"
-        const val UNIFORM_SATURATION = "uSaturation"
+        const val U_MVP_MATRIX = "uMvpMatrix"
+        const val U_MODEL_MATRIX = "uModelMatrix"
+        const val U_VIEW_MATRIX = "uViewMatrix"
+        const val U_LIGHT_DIRECTION = "uLightDirection"
+        const val U_LIGHT_COLOR = "uLightColor"
+        const val U_SHININESS = "uShininess"
+        const val U_SPECULAR_INTENSITY = "uSpecularIntensity"
+        const val U_CAMERA_POSITION = "uCameraPosition"
+        const val U_FOG_COLOR = "uFogColor"
+        const val U_FOG_RANGE = "uFogRange"
+        const val U_TEXTURE_0 = "uTexture0"
+        const val U_STATIC_COLOR = "uStaticColor"
+        const val U_ALPHA = "uAlpha"
+        const val U_SATURATION = "uSaturation"
+        const val U_BONES = "uBones"
 
-        const val ATTRIBUTE_NAME_POSITION = "aVertexPosition_modelspace"
-        const val ATTRIBUTE_NAME_NORMAL = "aVertexNormal_modelspace"
-        const val ATTRIBUTE_NAME_TEX_COORD = "aVertexTexCoord"
-        const val ATTRIBUTE_NAME_COLOR = "aVertexColor"
+        const val V_TEX_COORD = "vTexCoord"
+        const val V_EYE_DIRECTION = "vEyeDirection_cameraspace"
+        const val V_LIGHT_DIRECTION = "vLightDirection_cameraspace"
+        const val V_NORMAL = "vNormal_cameraspace"
+        const val V_COLOR = "vFragmentColor"
+        const val V_DIFFUSE_LIGHT_COLOR = "vDiffuseLightColor"
+        const val V_SPECULAR_LIGHT_COLOR = "vSpecularLightColor"
+        const val V_POSITION_WORLDSPACE = "vPositionWorldspace"
 
-        const val VARYING_NAME_TEX_COORD = "vTexCoord"
-        const val VARYING_NAME_EYE_DIRECTION = "vEyeDirection_cameraspace"
-        const val VARYING_NAME_LIGHT_DIRECTION = "vLightDirection_cameraspace"
-        const val VARYING_NAME_NORMAL = "vNormal_cameraspace"
-        const val VARYING_NAME_COLOR = "vFragmentColor"
-        const val VARYING_NAME_DIFFUSE_LIGHT_COLOR = "vDiffuseLightColor"
-        const val VARYING_NAME_SPECULAR_LIGHT_COLOR = "vSpecularLightColor"
-        const val VARYING_NAME_POSITION_WORLDSPACE = "vPositionWorldspace"
-
-        const val LOCAL_NAME_FRAG_COLOR = "fragColor"
-        const val LOCAL_NAME_TEX_COLOR = "texColor"
-        const val LOCAL_NAME_VERTEX_COLOR = "vertColor"
-        const val LOCAL_NAME_STATIC_COLOR = "staticColor"
+        const val L_TEX_COLOR = "texColor"
+        const val L_VERTEX_COLOR = "vertColor"
+        const val L_STATIC_COLOR = "staticColor"
     }
 
     interface GlslInjector {
@@ -60,34 +55,49 @@ open class GlslGenerator {
         fun fsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
     }
 
-    val injectors: MutableList<GlslInjector> = mutableListOf(defaultGlslInjector())
+    val injectors = mutableListOf<GlslInjector>()
 
-    val uniformMvpMatrix: UniformMatrix4 = UniformMatrix4(UNIFORM_MVP_MATRIX)
-    val uniformModelMatrix: UniformMatrix4 = UniformMatrix4(UNIFORM_MODEL_MATRIX)
-    val uniformViewMatrix: UniformMatrix4 = UniformMatrix4(UNIFORM_VIEW_MATRIX)
-    val uniformLightColor: Uniform3f = Uniform3f(UNIFORM_LIGHT_COLOR)
-    val uniformLightDirection: Uniform3f = Uniform3f(UNIFORM_LIGHT_DIRECTION)
-    val uniformCameraPosition: Uniform3f = Uniform3f(UNIFORM_CAMERA_POSITION)
-    val uniformShininess: Uniform1f = Uniform1f(UNIFORM_SHININESS)
-    val uniformSpecularIntensity: Uniform1f = Uniform1f(UNIFORM_SPECULAR_INTENSITY)
-    val uniformStaticColor: Uniform4f = Uniform4f(UNIFORM_STATIC_COLOR)
-    val uniformTexture: UniformTexture2D = UniformTexture2D(UNIFORM_TEXTURE_0)
-    val uniformAlpha: Uniform1f = Uniform1f(UNIFORM_ALPHA)
-    val uniformSaturation: Uniform1f = Uniform1f(UNIFORM_SATURATION)
-    val uniformFogRange: Uniform1f = Uniform1f(UNIFORM_FOG_RANGE)
-    val uniformFogColor: Uniform4f = Uniform4f(UNIFORM_FOG_COLOR)
+    val uniformMvpMatrix: UniformMatrix4 = UniformMatrix4(U_MVP_MATRIX)
+    val uniformModelMatrix: UniformMatrix4 = UniformMatrix4(U_MODEL_MATRIX)
+    val uniformViewMatrix: UniformMatrix4 = UniformMatrix4(U_VIEW_MATRIX)
+    val uniformLightColor: Uniform3f = Uniform3f(U_LIGHT_COLOR)
+    val uniformLightDirection: Uniform3f = Uniform3f(U_LIGHT_DIRECTION)
+    val uniformCameraPosition: Uniform3f = Uniform3f(U_CAMERA_POSITION)
+    val uniformShininess: Uniform1f = Uniform1f(U_SHININESS)
+    val uniformSpecularIntensity: Uniform1f = Uniform1f(U_SPECULAR_INTENSITY)
+    val uniformStaticColor: Uniform4f = Uniform4f(U_STATIC_COLOR)
+    val uniformTexture: UniformTexture2D = UniformTexture2D(U_TEXTURE_0)
+    val uniformAlpha: Uniform1f = Uniform1f(U_ALPHA)
+    val uniformSaturation: Uniform1f = Uniform1f(U_SATURATION)
+    val uniformFogRange: Uniform1f = Uniform1f(U_FOG_RANGE)
+    val uniformFogColor: Uniform4f = Uniform4f(U_FOG_COLOR)
 
     val customUnitforms: MutableMap<String, Uniform<*>> = mutableMapOf()
 
+    private val vsIn = glslVersion.dialect.vsIn
+    private val vsOut = glslVersion.dialect.vsOut
+    private val fsIn = glslVersion.dialect.fsIn
+    private val fsOut = glslVersion.dialect.fragColorHead
+    private val fsOutBody = glslVersion.dialect.fragColorBody
+    private val texSampler = glslVersion.dialect.texSampler
+
     fun addCustomUniform(uniform: Uniform<*>) {
-        customUnitforms.put(uniform.name, uniform)
+        customUnitforms[uniform.name] = uniform
     }
 
+    /**
+     * Called when shader is loaded / compiled
+     */
     fun onLoad(shader: BasicShader, ctx: RenderContext) {
-        shader.enableAttribute(Attribute.POSITIONS, ATTRIBUTE_NAME_POSITION, ctx)
-        shader.enableAttribute(Attribute.NORMALS, ATTRIBUTE_NAME_NORMAL, ctx)
-        shader.enableAttribute(Attribute.TEXTURE_COORDS, ATTRIBUTE_NAME_TEX_COORD, ctx)
-        shader.enableAttribute(Attribute.COLORS, ATTRIBUTE_NAME_COLOR, ctx)
+        shader.enableAttribute(Attribute.POSITIONS, ctx)
+        shader.enableAttribute(Attribute.NORMALS, ctx)
+        shader.enableAttribute(Attribute.TEXTURE_COORDS, ctx)
+        shader.enableAttribute(Attribute.COLORS, ctx)
+
+        if (shader.props.isSkinned) {
+            shader.enableAttribute(Armature.BONE_INDICES, ctx)
+            shader.enableAttribute(Armature.BONE_WEIGHTS, ctx)
+        }
 
         shader.setUniformLocation(uniformMvpMatrix, ctx)
         shader.setUniformLocation(uniformModelMatrix, ctx)
@@ -129,7 +139,7 @@ open class GlslGenerator {
     }
 
     private fun generateVertShader(shaderProps: ShaderProps): String {
-        val text = StringBuilder("// Generated vertex shader code\n")
+        val text = StringBuilder("${glslVersion.versionStr}\n")
 
         injectors.forEach { it.vsHeader(text) }
 
@@ -143,7 +153,7 @@ open class GlslGenerator {
     }
 
     private fun generateFragShader(shaderProps: ShaderProps): String {
-        val text = StringBuilder("// Generated fragment shader code\n")
+        val text = StringBuilder("${glslVersion.versionStr}\n")
 
         injectors.forEach { it.fsHeader(text) }
 
@@ -158,48 +168,54 @@ open class GlslGenerator {
 
     private fun generateVertInputCode(shaderProps: ShaderProps, text: StringBuilder) {
         // MVP matrices and vertex position attribute are always needed
-        text.append("attribute vec3 ").append(ATTRIBUTE_NAME_POSITION).append(";\n")
-        text.append("uniform mat4 ").append(UNIFORM_MVP_MATRIX).append(";\n")
-        text.append("uniform mat4 ").append(UNIFORM_MODEL_MATRIX).append(";\n")
-        text.append("uniform mat4 ").append(UNIFORM_VIEW_MATRIX).append(";\n")
+        text.append("$vsIn vec3 ${Attribute.POSITIONS.name};\n")
+        text.append("uniform mat4 $U_MVP_MATRIX;\n")
+        text.append("uniform mat4 $U_MODEL_MATRIX;\n")
+        text.append("uniform mat4 $U_VIEW_MATRIX;\n")
 
         // add light dependent uniforms and attributes
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
-            text.append("attribute vec3 ").append(ATTRIBUTE_NAME_NORMAL).append(";\n")
-            text.append("uniform vec3 ").append(UNIFORM_LIGHT_DIRECTION).append(";\n")
+            text.append("$vsIn vec3 ${Attribute.NORMALS.name};\n")
+            text.append("uniform vec3 $U_LIGHT_DIRECTION;\n")
 
             if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
                 // Phong model specific stuff
-                text.append("varying vec3 ").append(VARYING_NAME_EYE_DIRECTION).append(";\n")
-                text.append("varying vec3 ").append(VARYING_NAME_LIGHT_DIRECTION).append(";\n")
-                text.append("varying vec3 ").append(VARYING_NAME_NORMAL).append(";\n")
+                text.append("$vsOut vec3 $V_EYE_DIRECTION;\n")
+                text.append("$vsOut vec3 $V_LIGHT_DIRECTION;\n")
+                text.append("$vsOut vec3 $V_NORMAL;\n")
 
             } else {
                 // Gouraud model specific stuff
-                text.append("uniform vec3 ").append(UNIFORM_LIGHT_COLOR).append(";\n")
-                text.append("uniform float ").append(UNIFORM_SHININESS).append(";\n")
-                text.append("uniform float ").append(UNIFORM_SPECULAR_INTENSITY).append(";\n")
-                text.append("varying vec3 ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
-                text.append("varying vec3 ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(";\n")
+                text.append("uniform vec3 $U_LIGHT_COLOR;\n")
+                text.append("uniform float $U_SHININESS;\n")
+                text.append("uniform float $U_SPECULAR_INTENSITY;\n")
+                text.append("$vsOut vec3 $V_DIFFUSE_LIGHT_COLOR;\n")
+                text.append("$vsOut vec3 $V_SPECULAR_LIGHT_COLOR;\n")
             }
         }
 
         // add color dependent attributes
         if (shaderProps.isTextureColor) {
             // texture color
-            text.append("attribute vec2 ").append(ATTRIBUTE_NAME_TEX_COORD).append(";\n")
-            text.append("varying vec2 ").append(VARYING_NAME_TEX_COORD).append(";\n")
+            text.append("$vsIn vec2 ${Attribute.TEXTURE_COORDS.name};\n")
+            text.append("$vsOut vec2 $V_TEX_COORD;\n")
 
         }
         if (shaderProps.isVertexColor) {
             // vertex color
-            text.append("attribute vec4 ").append(ATTRIBUTE_NAME_COLOR).append(";\n")
-            text.append("varying vec4 ").append(VARYING_NAME_COLOR).append(";\n")
+            text.append("$vsIn vec4 ${Attribute.COLORS.name};\n")
+            text.append("$vsOut vec4 $V_COLOR;\n")
+        }
+
+        if (shaderProps.isSkinned) {
+            text.append("$vsIn ivec4 ${Armature.BONE_INDICES.name};\n")
+            text.append("$vsIn vec4 ${Armature.BONE_WEIGHTS.name};\n")
+            text.append("uniform mat4 $U_BONES[${Armature.MAX_BONES}];\n")
         }
 
         // if fog is enabled, fragment shader needs to know the world position
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
-            text.append("varying vec3 ").append(VARYING_NAME_POSITION_WORLDSPACE).append(";\n")
+            text.append("$vsIn vec3 $V_POSITION_WORLDSPACE;\n")
         }
 
         for (uniform in customUnitforms.values) {
@@ -213,65 +229,43 @@ open class GlslGenerator {
         injectors.forEach { it.vsBeforeProj(shaderProps, text) }
 
         // output position of the vertex in clip space: MVP * position
-        // gl_Position = uMvpMatrix * vec4(aVertexPosition_modelspace, 1.0);
-        text.append("gl_Position = ").append(UNIFORM_MVP_MATRIX).append(" * vec4(")
-                .append(ATTRIBUTE_NAME_POSITION).append(", 1.0);\n")
+        text.append("gl_Position = $U_MVP_MATRIX * vec4(${Attribute.POSITIONS.name}, 1.0);\n")
 
         injectors.forEach { it.vsAfterProj(shaderProps, text) }
 
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
-            // vPositionWorldspace = (uModelMatrix * vec4(aVertexPosition_modelspace, 1.0)).xyz;
-            text.append(VARYING_NAME_POSITION_WORLDSPACE).append(" = (").append(UNIFORM_MODEL_MATRIX)
-                    .append(" * vec4(").append(ATTRIBUTE_NAME_POSITION).append(", 1.0)).xyz;\n")
+            text.append("$V_POSITION_WORLDSPACE = ($U_MODEL_MATRIX * vec4(${Attribute.POSITIONS.name}, 1.0)).xyz;\n")
         }
 
         if (shaderProps.isTextureColor) {
             // interpolate vertex texture coordinate for usage in fragment shader
-            // vTexCoord = aVertexTexCoord;
-            text.append(VARYING_NAME_TEX_COORD).append(" = ").append(ATTRIBUTE_NAME_TEX_COORD).append(";\n")
+            text.append("$V_TEX_COORD = ${Attribute.TEXTURE_COORDS.name};\n")
 
         }
         if (shaderProps.isVertexColor) {
             // interpolate vertex color for usage in fragment shader
-            // vFragmentColor = aVertexColor;
-            text.append(VARYING_NAME_COLOR).append(" = ").append(ATTRIBUTE_NAME_COLOR).append(";\n")
+            text.append("$V_COLOR = ${Attribute.COLORS.name};\n")
         }
 
         if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
             // vector from vertex to camera, in camera space. In camera space, the camera is at the origin (0, 0, 0).
-            // vEyeDirection_cameraspace = -(uViewMatrix * uModelMatrix * vec4(aVertexPosition_modelspace, 1)).xyz;
-            text.append(VARYING_NAME_EYE_DIRECTION).append(" = -(").append(UNIFORM_VIEW_MATRIX)
-                    .append(" * ").append(UNIFORM_MODEL_MATRIX).append(" * vec4(")
-                    .append(ATTRIBUTE_NAME_POSITION).append(", 1.0)).xyz;\n")
+            text.append("$V_EYE_DIRECTION = -($U_VIEW_MATRIX * ($U_MODEL_MATRIX * vec4(${Attribute.POSITIONS.name}, 1.0))).xyz;\n")
 
             // light direction, in camera space. M is left out because light position is already in world space.
-            // vLightDirection_cameraspace = (uViewMatrix * vec4(uLightDirection_worldspace, 0)).xyz;
-            text.append(VARYING_NAME_LIGHT_DIRECTION).append(" = (").append(UNIFORM_VIEW_MATRIX)
-                    .append(" * vec4(").append(UNIFORM_LIGHT_DIRECTION).append(", 0.0)).xyz;\n")
+            text.append("$V_LIGHT_DIRECTION = ($U_VIEW_MATRIX * vec4($U_LIGHT_DIRECTION, 0.0)).xyz;\n")
 
             // normal of the the vertex, in camera space
-            // vNormal_cameraspace = (uViewMatrix * uModelMatrix * vec4(aVertexNormal_modelspace, 0)).xyz;
-            text.append(VARYING_NAME_NORMAL).append(" = (").append(UNIFORM_VIEW_MATRIX).append(" * ")
-                    .append(UNIFORM_MODEL_MATRIX).append(" * vec4(").append(ATTRIBUTE_NAME_NORMAL)
-                    .append(", 0.0)).xyz;\n")
+            text.append("$V_NORMAL = ($U_VIEW_MATRIX * ($U_MODEL_MATRIX * vec4(${Attribute.NORMALS.name}, 0.0))).xyz;\n")
 
         } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
             // vector from vertex to camera, in camera space. In camera space, the camera is at the origin (0, 0, 0).
-            // vec3 e = normalize(-(uViewMatrix * uModelMatrix * vec4(aVertexPosition_modelspace, 1)).xyz);
-            text.append("vec3 e = normalize(-(").append(UNIFORM_VIEW_MATRIX).append(" * ")
-                    .append(UNIFORM_MODEL_MATRIX).append(" * vec4(").append(ATTRIBUTE_NAME_POSITION)
-                    .append(", 1.0)).xyz);\n")
+            text.append("vec3 e = normalize(-($U_VIEW_MATRIX * ($U_MODEL_MATRIX * vec4(${Attribute.POSITIONS.name}, 1.0))).xyz);\n")
 
             // light direction, in camera space. M is left out because light position is already in world space.
-            // vec3 l = normalize((uViewMatrix * vec4(uLightDirection_worldspace, 0)).xyz);
-            text.append("vec3 l = normalize((").append(UNIFORM_VIEW_MATRIX)
-                    .append(" * vec4(").append(UNIFORM_LIGHT_DIRECTION).append(", 0.0)).xyz);\n")
+            text.append("vec3 l = normalize(($U_VIEW_MATRIX * vec4($U_LIGHT_DIRECTION, 0.0)).xyz);\n")
 
             // normal of the the vertex, in camera space
-            // vec3 n = normalize((uViewMatrix * uModelMatrix * vec4(aVertexNormal_modelspace, 0)).xyz);
-            text.append("vec3 n = normalize((").append(UNIFORM_VIEW_MATRIX).append(" * ")
-                    .append(UNIFORM_MODEL_MATRIX).append(" * vec4(").append(ATTRIBUTE_NAME_NORMAL)
-                    .append(", 0.0)).xyz);\n")
+            text.append("vec3 n = normalize(($U_VIEW_MATRIX * ($U_MODEL_MATRIX * vec4(${Attribute.NORMALS.name}, 0.0))).xyz);\n")
 
             // cosine of angle between surface normal and light direction
             text.append("float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n")
@@ -281,92 +275,87 @@ open class GlslGenerator {
             text.append("float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n")
 
             // interpolate light colors for usage in fragment shader
-            // vDiffuseLightColor = uLightColor * cosTheta;
-            text.append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(" = ")
-                    .append(UNIFORM_LIGHT_COLOR).append(" * cosTheta;\n")
-            // vSpecularLightColor = uLightColor * specularIntensity * pow(cosAlpha, uShininess);
-            text.append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(" = ")
-                    .append(UNIFORM_LIGHT_COLOR).append(" * ").append(UNIFORM_SPECULAR_INTENSITY)
-                    .append(" * pow(cosAlpha, ").append(UNIFORM_SHININESS).append(");\n")
+            text.append("$V_DIFFUSE_LIGHT_COLOR = $U_LIGHT_COLOR * cosTheta;\n")
+            text.append("$V_SPECULAR_LIGHT_COLOR = $U_LIGHT_COLOR * $U_SPECULAR_INTENSITY * pow(cosAlpha, $U_SHININESS);\n")
         }
         text.append("}\n")
     }
 
     private fun generateFragInputCode(shaderProps: ShaderProps, text: StringBuilder) {
         text.append("precision highp float;\n")
-        text.append("uniform mat4 ").append(UNIFORM_MODEL_MATRIX).append(";\n")
-        text.append("uniform mat4 ").append(UNIFORM_VIEW_MATRIX).append(";\n")
+        text.append("uniform mat4 $U_MODEL_MATRIX;\n")
+        text.append("uniform mat4 $U_VIEW_MATRIX;\n")
         if (shaderProps.isAlpha) {
-            text.append("uniform float ").append(UNIFORM_ALPHA).append(";\n")
+            text.append("uniform float $U_ALPHA;\n")
         }
         if (shaderProps.isSaturation) {
-            text.append("uniform float ").append(UNIFORM_SATURATION).append(";\n")
+            text.append("uniform float $U_SATURATION;\n")
         }
 
         // add light dependent uniforms and varyings
         if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
-            text.append("uniform vec3 ").append(UNIFORM_LIGHT_COLOR).append(";\n")
-            text.append("uniform float ").append(UNIFORM_SHININESS).append(";\n")
-            text.append("uniform float ").append(UNIFORM_SPECULAR_INTENSITY).append(";\n")
-            text.append("varying vec3 ").append(VARYING_NAME_EYE_DIRECTION).append(";\n")
-            text.append("varying vec3 ").append(VARYING_NAME_LIGHT_DIRECTION).append(";\n")
-            text.append("varying vec3 ").append(VARYING_NAME_NORMAL).append(";\n")
+            text.append("uniform vec3 $U_LIGHT_COLOR;\n")
+            text.append("uniform float $U_SHININESS;\n")
+            text.append("uniform float $U_SPECULAR_INTENSITY;\n")
+            text.append("$fsIn vec3 $V_EYE_DIRECTION;\n")
+            text.append("$fsIn vec3 $V_LIGHT_DIRECTION;\n")
+            text.append("$fsIn vec3 $V_NORMAL;\n")
         } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
-            text.append("varying vec3 ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
-            text.append("varying vec3 ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR).append(";\n")
+            text.append("$fsIn vec3 $V_DIFFUSE_LIGHT_COLOR;\n")
+            text.append("$fsIn vec3 $V_SPECULAR_LIGHT_COLOR;\n")
         }
 
         // add color dependent uniforms and varyings
         if (shaderProps.isTextureColor) {
             // texture color
-            text.append("uniform sampler2D ").append(UNIFORM_TEXTURE_0).append(";\n")
-            text.append("varying vec2 ").append(VARYING_NAME_TEX_COORD).append(";\n")
+            text.append("uniform sampler2D $U_TEXTURE_0;\n")
+            text.append("$fsIn vec2 $V_TEX_COORD;\n")
         }
         if (shaderProps.isVertexColor) {
             // vertex color
-            text.append("varying vec4 ").append(VARYING_NAME_COLOR).append(";\n")
+            text.append("$fsIn vec4 $V_COLOR;\n")
         }
         if (shaderProps.isStaticColor) {
             // static color
-            text.append("uniform vec4 ").append(UNIFORM_STATIC_COLOR).append(";\n")
+            text.append("uniform vec4 $U_STATIC_COLOR;\n")
         }
 
         // add fog uniforms
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
-            text.append("uniform vec3 ").append(UNIFORM_CAMERA_POSITION).append(";\n")
-            text.append("uniform vec4 ").append(UNIFORM_FOG_COLOR).append(";\n")
-            text.append("uniform float ").append(UNIFORM_FOG_RANGE).append(";\n")
-            text.append("varying vec3 ").append(VARYING_NAME_POSITION_WORLDSPACE).append(";\n")
+            text.append("uniform vec3 $U_CAMERA_POSITION;\n")
+            text.append("uniform vec4 $U_FOG_COLOR;\n")
+            text.append("uniform float $U_FOG_RANGE;\n")
+            text.append("$fsIn vec3 $V_POSITION_WORLDSPACE;\n")
         }
 
         for (uniform in customUnitforms.values) {
             text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
+        text.append(fsOut)
     }
 
     private fun generateFragBodyCode(shaderProps: ShaderProps, text: StringBuilder) {
         text.append("\nvoid main() {\n")
-        text.append("vec4 ").append(LOCAL_NAME_FRAG_COLOR).append(" = vec4(0.0);\n")
+        text.append("$fsOutBody = vec4(0.0);\n")
 
         injectors.forEach { it.fsBeforeSampling(shaderProps, text) }
 
         if (shaderProps.isTextureColor) {
             // get base fragment color from texture
-            text.append("vec4 ").append(LOCAL_NAME_TEX_COLOR).append(" = texture2D(")
-                    .append(UNIFORM_TEXTURE_0).append(", ").append(VARYING_NAME_TEX_COORD).append(");\n")
-            text.append(LOCAL_NAME_FRAG_COLOR).append(" = ").append(LOCAL_NAME_TEX_COLOR).append(";\n")
+            text.append("vec4 $L_TEX_COLOR = $texSampler($U_TEXTURE_0, $V_TEX_COORD);\n")
+            text.append("$fsOutBody = $L_TEX_COLOR;\n")
         }
         if (shaderProps.isVertexColor) {
             // get base fragment color from vertex attribute
-            text.append("vec4 ").append(LOCAL_NAME_VERTEX_COLOR).append(" = ").append(VARYING_NAME_COLOR).append(";\n")
-            text.append(LOCAL_NAME_VERTEX_COLOR).append(".rgb *= ").append(LOCAL_NAME_VERTEX_COLOR).append(".a;\n")
-            text.append(LOCAL_NAME_FRAG_COLOR).append(" = ").append(LOCAL_NAME_VERTEX_COLOR).append(";\n")
+            text.append("vec4 $L_VERTEX_COLOR = $V_COLOR;\n")
+            text.append("$L_VERTEX_COLOR.rgb *= $L_VERTEX_COLOR.a;\n")
+            text.append("$fsOutBody = $L_VERTEX_COLOR;\n")
         }
         if (shaderProps.isStaticColor) {
             // get base fragment color from static color uniform
-            text.append("vec4 ").append(LOCAL_NAME_STATIC_COLOR).append(" = ").append(UNIFORM_STATIC_COLOR).append(";\n")
-            text.append(LOCAL_NAME_STATIC_COLOR).append(".rgb *= ").append(LOCAL_NAME_STATIC_COLOR).append(".a;\n")
-            text.append(LOCAL_NAME_FRAG_COLOR).append(" = ").append(LOCAL_NAME_STATIC_COLOR).append(";\n")
+            text.append("vec4 $L_STATIC_COLOR = $U_STATIC_COLOR;\n")
+            text.append("$L_STATIC_COLOR.rgb *= $L_STATIC_COLOR.a;\n")
+            text.append("$fsOutBody = $L_STATIC_COLOR;\n")
         }
 
         injectors.forEach { it.fsAfterSampling(shaderProps, text) }
@@ -374,9 +363,9 @@ open class GlslGenerator {
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
             if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
                 // normalize input vectors
-                text.append("vec3 e = normalize(").append(VARYING_NAME_EYE_DIRECTION).append(");\n")
-                text.append("vec3 l = normalize(").append(VARYING_NAME_LIGHT_DIRECTION).append(");\n")
-                text.append("vec3 n = normalize(").append(VARYING_NAME_NORMAL).append(");\n")
+                text.append("vec3 e = normalize($V_EYE_DIRECTION);\n")
+                text.append("vec3 l = normalize($V_LIGHT_DIRECTION);\n")
+                text.append("vec3 n = normalize($V_NORMAL);\n")
 
                 // cosine of angle between surface normal and light direction
                 text.append("float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n")
@@ -385,55 +374,33 @@ open class GlslGenerator {
                 // cosine of the angle between the eye vector and the reflect vector
                 text.append("float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n")
 
-                // vec3 materialAmbientColor = vFragmentColor.rgb * vec3(0.4);
-                text.append("vec3 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR).append(".rgb * vec3(0.42);\n")
-
-                // vec3 materialDiffuseColor = vFragmentColor.rgb * uLightColor * cosTheta;
-                text.append("vec3 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
-                        .append(".rgb * ").append(UNIFORM_LIGHT_COLOR).append(" * cosTheta;\n")
-
-                // vec4 materialSpecularColor = vec4(uLightColor * uSpecular, 0.0) * pow(cosAlpha, uShininess) * alpha;
-                text.append("vec3 materialSpecularColor = ").append(UNIFORM_LIGHT_COLOR)
-                        .append(" * ").append(UNIFORM_SPECULAR_INTENSITY).append(" * pow(cosAlpha, ")
-                        .append(UNIFORM_SHININESS).append(") * ").append(LOCAL_NAME_FRAG_COLOR).append(".a;\n")
+                text.append("vec3 materialAmbientColor = $fsOutBody.rgb * vec3(0.42);\n")
+                text.append("vec3 materialDiffuseColor = $fsOutBody.rgb * $U_LIGHT_COLOR * cosTheta;\n")
+                text.append("vec3 materialSpecularColor = $U_LIGHT_COLOR * $U_SPECULAR_INTENSITY * pow(cosAlpha, $U_SHININESS) * $fsOutBody.a;\n")
 
             } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
-                // vec3 materialAmbientColor = vFragmentColor.rgb * vec3(0.4);
-                text.append("vec3 materialAmbientColor = ").append(LOCAL_NAME_FRAG_COLOR)
-                        .append(".rgb * vec3(0.42);\n")
-
-                // vec3 materialDiffuseColor = vFragmentColor.rgb * vDiffuseLightColor;
-                text.append("vec3 materialDiffuseColor = ").append(LOCAL_NAME_FRAG_COLOR)
-                        .append(".rgb * ").append(VARYING_NAME_DIFFUSE_LIGHT_COLOR).append(";\n")
-
-                // vec4 materialSpecularColor = vSpecularLightColor;
-                text.append("vec3 materialSpecularColor = ").append(VARYING_NAME_SPECULAR_LIGHT_COLOR)
-                        .append(" * ").append(LOCAL_NAME_FRAG_COLOR).append(".a;\n")
+                text.append("vec3 materialAmbientColor = $fsOutBody.rgb * vec3(0.42);\n")
+                text.append("vec3 materialDiffuseColor = $fsOutBody.rgb * $V_DIFFUSE_LIGHT_COLOR;\n")
+                text.append("vec3 materialSpecularColor = $V_SPECULAR_LIGHT_COLOR * $fsOutBody.a;\n")
             }
 
             // compute output color
-            text.append("gl_FragColor = vec4(materialAmbientColor + materialDiffuseColor + materialSpecularColor, ")
-                    .append(LOCAL_NAME_FRAG_COLOR).append(".a);\n")
+            text.append("$fsOutBody = vec4(materialAmbientColor + materialDiffuseColor + materialSpecularColor, $fsOutBody.a);\n")
 
-        } else {
-            text.append("gl_FragColor = ").append(LOCAL_NAME_FRAG_COLOR).append(";\n")
         }
 
         // add fog code
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
-            text.append("float d = 1.0 - clamp(length(").append(UNIFORM_CAMERA_POSITION).append(" - ")
-                    .append(VARYING_NAME_POSITION_WORLDSPACE).append(") / ")
-                    .append(UNIFORM_FOG_RANGE).append(", 0.0, 1.0);\n")
-            text.append("gl_FragColor.rgb = mix(").append(UNIFORM_FOG_COLOR).append(".rgb, gl_FragColor.rgb, d * d * ")
-                    .append(UNIFORM_FOG_COLOR).append(".a);\n")
+            text.append("float d = 1.0 - clamp(length($U_CAMERA_POSITION - $V_POSITION_WORLDSPACE / $U_FOG_RANGE), 0.0, 1.0);\n")
+            text.append("$fsOutBody.rgb = mix($U_FOG_COLOR.rgb, $fsOutBody.rgb, d * d * $U_FOG_COLOR.a);\n")
         }
 
         if (shaderProps.isAlpha) {
-            text.append("gl_FragColor *= ").append(UNIFORM_ALPHA).append(";\n")
+            text.append("$fsOutBody *= $U_ALPHA;\n")
         }
         if (shaderProps.isSaturation) {
-            text.append("float avgColor = (gl_FragColor.r + gl_FragColor.g + gl_FragColor.b) * 0.333;\n")
-            text.append("gl_FragColor.rgb = mix(vec3(avgColor), gl_FragColor.rgb, ").append(UNIFORM_SATURATION).append(");\n")
+            text.append("float avgColor = ($fsOutBody.r + $fsOutBody.g + $fsOutBody.b) * 0.333;\n")
+            text.append("$fsOutBody.rgb = mix(vec3(avgColor), $fsOutBody.rgb, $U_SATURATION);\n")
         }
 
         text.append("}\n")

@@ -3,6 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.loadAsset
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
@@ -10,7 +11,7 @@ import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Vec3f
 import de.fabmax.kool.util.lineMesh
-import de.fabmax.kool.util.serialization.loadModel
+import de.fabmax.kool.util.serialization.loadMesh
 import kotlin.math.round
 import kotlin.math.sqrt
 
@@ -47,27 +48,34 @@ fun modelScene(): Scene = scene {
 
     // add animated character model
     +transformGroup {
-        var asyncModel: Model? = null
+        val model = TransformGroup()
         var movementSpeed = 0.25f
         var slowMotion = 1f
+        var armature: Armature? =null
+
+        +model
 
         loadAsset("player.kmf") { data ->
-            val model = loadModel(data)
-            asyncModel = model
-            model.armatures[0].getAnimation("Armature|walk")?.weight = 1f
-            model.shader = basicShader {
+            val mesh = loadMesh(data)
+            model += mesh
+
+            mesh.shader = basicShader {
                 lightModel = LightModel.PHONG_LIGHTING
                 colorModel = ColorModel.STATIC_COLOR
                 staticColor = Color.GRAY
             }
-            +model
 
-            model.onRender += { ctx ->
-                // translation is in model coordinates -> front direction is -y, not z
-                val dt = ctx.deltaT.clamp(0.0, 0.1).toFloat()
-                translate(0f, -dt * movementSpeed * slowMotion * 5f, 0f)
-                rotate(dt * movementSpeed * slowMotion * 50f, Vec3f.Z_AXIS)
-                model.armatures[0].animationSpeed = slowMotion
+            if (mesh is Armature) {
+                armature = mesh
+                mesh.getAnimation("Armature|walk")?.weight = 1f
+
+                mesh.onRender += { ctx ->
+                    // translation is in model coordinates -> front direction is -y, not z
+                    val dt = ctx.deltaT.clamp(0.0, 0.1).toFloat()
+                    translate(0f, -dt * movementSpeed * slowMotion * 5f, 0f)
+                    rotate(dt * movementSpeed * slowMotion * 50f, Vec3f.Z_AXIS)
+                    mesh.animationSpeed = slowMotion
+                }
             }
         }
 
@@ -122,7 +130,6 @@ fun modelScene(): Scene = scene {
                     onValueChanged += { value ->
                         movementSpeed = value * value
 
-                        val armature = asyncModel?.armatures?.get(0)
                         if (armature != null) {
                             val idleWeight = (1f - value * 2f).clamp(0f, 1f)
                             val runWeight = ((value - 0.5f) * 2f).clamp(0f, 1f)
@@ -132,9 +139,9 @@ fun modelScene(): Scene = scene {
                             }
                             speedLabel.text = formatFloat(value)
 
-                            armature.getAnimation("Armature|idle")?.weight = idleWeight
-                            armature.getAnimation("Armature|walk")?.weight = walkWeight
-                            armature.getAnimation("Armature|run")?.weight = runWeight
+                            armature!!.getAnimation("Armature|idle")?.weight = idleWeight
+                            armature!!.getAnimation("Armature|walk")?.weight = walkWeight
+                            armature!!.getAnimation("Armature|run")?.weight = runWeight
                         }
                     }
                 }

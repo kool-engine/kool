@@ -45,9 +45,9 @@ fun billboardShader(propsInit: ShaderProps.() -> Unit = { }): BillboardShader {
 
     generator.injectors += object: GlslGenerator.GlslInjector {
         override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append("gl_Position.x += (").append(GlslGenerator.ATTRIBUTE_NAME_TEX_COORD)
+            text.append("gl_Position.x += (").append(Attribute.TEXTURE_COORDS.name)
                     .append(".x - 0.5) * gl_Position.w / uViewportSz.x;\n")
-                    .append("gl_Position.y -= (").append(GlslGenerator.ATTRIBUTE_NAME_TEX_COORD)
+                    .append("gl_Position.y -= (").append(Attribute.TEXTURE_COORDS.name)
                     .append(".y - 0.5) * gl_Position.w / uViewportSz.y;\n")
         }
     }

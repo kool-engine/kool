@@ -3,6 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.shading.Attribute
 import kotlin.math.*
 
 /**

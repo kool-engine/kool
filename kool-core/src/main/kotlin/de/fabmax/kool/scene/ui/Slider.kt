@@ -5,11 +5,11 @@ import de.fabmax.kool.RenderContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
-import de.fabmax.kool.util.*
+import de.fabmax.kool.shading.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.MutableVec2f
 
 /**
  * @author fabmax

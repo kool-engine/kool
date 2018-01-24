@@ -58,6 +58,8 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
             // compilation failed
             val log = vertShader.getInfoLog(ctx)
             vertShader.delete(ctx)
+            println(log)
+            println(key.vertexSrc)
             throw KoolException("Vertex shader compilation failed: " + log)
         }
 
@@ -68,6 +70,8 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
             // compilation failed
             val log = fragShader.getInfoLog(ctx)
             fragShader.delete(ctx)
+            println(log)
+            println(key.fragmentSrc)
             throw KoolException("Fragment shader compilation failed: " + log)
         }
 

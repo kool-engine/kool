@@ -3,6 +3,7 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.util.*

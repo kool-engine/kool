@@ -7,7 +7,6 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.textureMesh
-import de.fabmax.kool.util.Attribute
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableVec3f
@@ -32,9 +31,9 @@ fun blurShader(propsInit: ShaderProps.() -> Unit = { }): BlurShader {
         override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
             text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ")
                     .append("1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n")
-                    .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" = texture2D(")
+                    .append("${glslVersion.dialect.fragColorBody} = ${glslVersion.dialect.texSampler}(")
                     .append("uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ")
-                    .append(GlslGenerator.LOCAL_NAME_FRAG_COLOR).append(" * uColorMix;\n")
+                    .append("${glslVersion.dialect.fragColorBody} * uColorMix;\n")
         }
     }
 
@@ -303,66 +302,66 @@ class BlurredBackgroundHelper(
         val uDirection = Uniform2f("uDirection")
 
         override fun generateSource(ctx: RenderContext) {
-            val injector = defaultGlslInjector()
 
-            val vsBuilder = StringBuilder()
-            injector.vsHeader(vsBuilder)
-            vsBuilder.append(
-                    "attribute vec3 aVertexPosition;\n" +
-                            "attribute vec2 aVertexTexCoord;\n" +
-                            "varying vec2 vTexCoord;\n" +
-                            "void main() {\n" +
-                            "  gl_Position = vec4(aVertexPosition, 1.0);\n" +
-                            "  vTexCoord = aVertexTexCoord;\n" +
-                            "}")
+            val vs = "${glslVersion.versionStr}\n" +
+                    "${glslVersion.dialect.vsIn} vec3 ${Attribute.POSITIONS.name};\n" +
+                    "${glslVersion.dialect.vsIn} vec2 ${Attribute.TEXTURE_COORDS.name};\n" +
+                    "${glslVersion.dialect.vsOut} vec2 vTexCoord;\n" +
+                    "void main() {\n" +
+                    "  gl_Position = vec4(${Attribute.POSITIONS.name}, 1.0);\n" +
+                    "  vTexCoord = ${Attribute.TEXTURE_COORDS.name};\n" +
+                    "}"
 
-            val fsBuilder = StringBuilder()
-            injector.fsHeader(fsBuilder)
+            val fs: String
+            val fragColor = glslVersion.dialect.fragColorBody
+            val sampler = glslVersion.dialect.texSampler
             if (blurMethod == BlurMethod.BLUR_9_TAP) {
-                fsBuilder.append(
+                fs = "${glslVersion.versionStr}\n" +
                         "precision mediump float;\n" +
                         "uniform sampler2D uTexture;\n" +
                         "uniform vec2 uDirection;\n" +
                         "uniform float uTexSize;\n" +
-                        "varying vec2 vTexCoord;" +
+                        "${glslVersion.dialect.fsIn} vec2 vTexCoord;" +
+                        "${glslVersion.dialect.fragColorHead}\n" +
                         "void main() {\n" +
                         "  vec2 off1 = vec2(1.3846153) * uDirection;\n" +
                         "  vec2 off2 = vec2(3.2307692) * uDirection;\n" +
-                        "  gl_FragColor = texture2D(uTexture, vTexCoord) * 0.2270270;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord + off1) * 0.3162162;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off1) * 0.3162162;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord + off2) * 0.0702702;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off2) * 0.0702702;\n" +
-                        "  gl_FragColor.rgb *= gl_FragColor.a;\n" +
-                        "}")
+                        "  $fragColor = $sampler(uTexture, vTexCoord) * 0.2270270;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord + off1) * 0.3162162;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord - off1) * 0.3162162;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord + off2) * 0.0702702;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord - off2) * 0.0702702;\n" +
+                        "  $fragColor.rgb *= ${glslVersion.dialect.fragColorBody}.a;\n" +
+                        "}"
             } else {
-                fsBuilder.append(
+                fs = "${glslVersion.versionStr}\n" +
                         "precision mediump float;\n" +
                         "uniform sampler2D uTexture;\n" +
                         "uniform vec2 uDirection;\n" +
                         "uniform float uTexSize;\n" +
-                        "varying vec2 vTexCoord;" +
+                        "${glslVersion.dialect.fsIn} vec2 vTexCoord;" +
+                        "${glslVersion.dialect.fragColorHead}\n" +
                         "void main() {\n" +
                         "  vec2 off1 = vec2(1.4117647) * uDirection;\n" +
                         "  vec2 off2 = vec2(3.2941176) * uDirection;\n" +
                         "  vec2 off3 = vec2(5.1764705) * uDirection;\n" +
-                        "  gl_FragColor = texture2D(uTexture, vTexCoord) * 0.1968255;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord + off1) * 0.2969069;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off1) * 0.2969069;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord + off2) * 0.0944703;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off2) * 0.0944703;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off3) * 0.0103813;\n" +
-                        "  gl_FragColor += texture2D(uTexture, vTexCoord - off3) * 0.0103813;\n" +
-                        "  gl_FragColor.rgb *= gl_FragColor.a;\n" +
-                        "}")
+                        "  $fragColor = $sampler(uTexture, vTexCoord) * 0.1968255;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord + off1) * 0.2969069;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord - off1) * 0.2969069;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord + off2) * 0.0944703;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord - off2) * 0.0944703;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord - off3) * 0.0103813;\n" +
+                        "  $fragColor += $sampler(uTexture, vTexCoord - off3) * 0.0103813;\n" +
+                        "  $fragColor.rgb *= ${glslVersion.dialect.fragColorBody}.a;\n" +
+                        "}"
             }
-            source = Source(vsBuilder.toString(), fsBuilder.toString())
+            source = Source(vs, fs)
         }
 
         override fun onLoad(ctx: RenderContext) {
             super.onLoad(ctx)
-            enableAttribute(Attribute.POSITIONS, "aVertexPosition", ctx)
-            enableAttribute(Attribute.TEXTURE_COORDS, "aVertexTexCoord", ctx)
+            enableAttribute(Attribute.POSITIONS, ctx)
+            enableAttribute(Attribute.TEXTURE_COORDS, ctx)
             setUniformLocation(uTexture, ctx)
             setUniformLocation(uDirection, ctx)
         }

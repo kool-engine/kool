@@ -1,18 +1,27 @@
 package de.fabmax.kool.scene.animation
 
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.util.*
+import de.fabmax.kool.shading.Attribute
+import de.fabmax.kool.shading.AttributeType
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.Mat4f
+import de.fabmax.kool.util.Mat4fStack
+import de.fabmax.kool.util.MutableVec3f
 
-class Armature(val meshData: MeshData) {
+class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
 
     val rootBones = mutableListOf<Bone>()
     val bones = mutableMapOf<String, Bone>()
 
     private val withNormals = meshData.hasAttribute(Attribute.NORMALS)
 
+    // animations are held in map and list, to get index-based list access for less overhead in render loop
     private val animations = mutableMapOf<String, Animation>()
     private val animationList = mutableListOf<Animation>()
     private var animationPos = 0f
+
     var animationSpeed = 1f
 
     private val transform = Mat4fStack()
@@ -93,6 +102,11 @@ class Armature(val meshData: MeshData) {
         }
     }
 
+    override fun render(ctx: RenderContext) {
+        applyAnimation(ctx.deltaT)
+        super.render(ctx)
+    }
+
     private fun applyBone(bone: Bone, transform: Mat4fStack) {
         transform.push()
 
@@ -134,5 +148,12 @@ class Armature(val meshData: MeshData) {
                 meshV.normal += tmpVec
             }
         }
+    }
+
+    companion object {
+        const val MAX_BONES = 100
+
+        val BONE_WEIGHTS = Attribute("attrib_bone_weights", AttributeType.VEC_4F)
+        val BONE_INDICES = Attribute("attrib_bone_indices", AttributeType.VEC_4I)
     }
 }

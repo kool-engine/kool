@@ -29,6 +29,7 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
 
     internal val canvas: HTMLCanvasElement
     internal val gl: WebGLRenderingContext
+    internal val isWebGL2: Boolean
     internal val supportsUint32Indices: Boolean
 
     private var animationMillis = 0.0
@@ -40,9 +41,11 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
         if (webGlCtx == null) {
             webGlCtx = canvas.getContext("experimental-webgl2")
         }
+        isWebGL2 = webGlCtx != null
 
         if (webGlCtx != null) {
             gl = webGlCtx as WebGL2RenderingContext
+
         } else {
             println("falling back to WebGL 1 context")
             webGlCtx = canvas.getContext("webgl")

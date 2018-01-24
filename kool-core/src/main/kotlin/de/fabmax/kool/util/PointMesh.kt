@@ -3,10 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.gl.GL_POINTS
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.BasicPointShader
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicPointShader
+import de.fabmax.kool.shading.*
 
 /**
  * @author fabmax

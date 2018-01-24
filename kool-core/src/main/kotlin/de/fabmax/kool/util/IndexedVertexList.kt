@@ -1,36 +1,9 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.gl.GL_FLOAT
-import de.fabmax.kool.gl.GL_INT
+import de.fabmax.kool.shading.Attribute
+import de.fabmax.kool.shading.AttributeType
 import kotlin.math.round
-
-/**
- * @author fabmax
- */
-
-enum class AttributeType(val size: Int, val isInt: Boolean, val glType: Int) {
-    FLOAT(1, false, GL_FLOAT),
-    VEC_2F(2, false, GL_FLOAT),
-    VEC_3F(3, false, GL_FLOAT),
-    VEC_4F(4, false, GL_FLOAT),
-
-    COLOR_4F(4, false, GL_FLOAT),
-
-    INT(1, true, GL_INT),
-    VEC_2I(2, true, GL_INT),
-    VEC_3I(3, true, GL_INT),
-    VEC_4I(4, true, GL_INT)
-}
-
-data class Attribute(val name: String, val type: AttributeType) {
-    companion object {
-        val POSITIONS = Attribute("positions", AttributeType.VEC_3F)
-        val NORMALS = Attribute("normals", AttributeType.VEC_3F)
-        val TEXTURE_COORDS = Attribute("texture_coordinates", AttributeType.VEC_2F)
-        val COLORS = Attribute("colors", AttributeType.COLOR_4F)
-    }
-}
 
 class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 

@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Attribute
 
 /**
  * Base class for custom shader implementations.
@@ -82,12 +81,12 @@ abstract class Shader : GlObject<ProgramResource>() {
      * implementations to set the vertex attributes used by the implementation. If no attribute with
      * the specified name is found, the attribute is disabled.
      *
-     * @param attribute     the attribute to enable
-     * @param attribName    name of the attribute in shader code
+     * @param attribute     the attribute to enable, attribute.name must correspond to the attribute
+     *                      name in shader source
      * @return whether the attribute was enabled (i.e. attribName was found)
      */
-    open fun enableAttribute(attribute: Attribute, attribName: String, ctx: RenderContext): Boolean {
-        val location = findAttributeLocation(attribName, ctx)
+    open fun enableAttribute(attribute: Attribute, ctx: RenderContext): Boolean {
+        val location = findAttributeLocation(attribute.name, ctx)
         enableAttribute(attribute, location, ctx)
         return location >= 0
     }
