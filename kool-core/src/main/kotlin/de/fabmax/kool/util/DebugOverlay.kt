@@ -170,7 +170,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
     val graphMesh: Mesh
     val graphData = MeshData(Attribute.POSITIONS, Attribute.COLORS)
     val graphBuilder = MeshBuilder(graphData)
-    val graphItem = graphData.data[0]
+    val graphVertex = graphData[0]
 
     var graphIdx = 0
     var prevDeltaT = 0f
@@ -201,13 +201,13 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
 
         // modify vertices in graph mesh to change line height of current bar
         graphIdx = (graphIdx + 4) % (WIDTH * 4)
-        graphItem.index = graphIdx
-        val y0 = graphItem.position.y
+        graphVertex.index = graphIdx
+        val y0 = graphVertex.position.y
         val h = min(ctx.deltaT.toFloat() * 250, height)
-        graphItem.index++
-        graphItem.position.y = y0 + h
-        graphItem.index++
-        graphItem.position.y = y0 + h
+        graphVertex.index++
+        graphVertex.position.y = y0 + h
+        graphVertex.index++
+        graphVertex.position.y = y0 + h
 
         setCurrentBarColor(Color.MAGENTA)
         graphData.isSyncRequired = true
@@ -216,10 +216,10 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
     }
 
     fun setCurrentBarColor(color: Color) {
-        graphItem.index = graphIdx
+        graphVertex.index = graphIdx
         for (i in 0..3) {
-            graphItem.index = graphIdx + i
-            graphItem.color.set(color)
+            graphVertex.index = graphIdx + i
+            graphVertex.color.set(color)
         }
     }
 

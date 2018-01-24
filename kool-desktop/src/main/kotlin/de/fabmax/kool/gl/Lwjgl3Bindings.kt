@@ -155,7 +155,10 @@ actual fun glUseProgram(program: ProgramResource?) = GL20.glUseProgram((program?
 
 actual fun glVertexAttribDivisor(index: Int, divisor: Int) = GL33.glVertexAttribDivisor(index, divisor)
 
-actual fun glVertexAttribPointer(indx: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) =
-        GL20.glVertexAttribPointer(indx, size, type, normalized, stride, offset.toLong())
+actual fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) =
+        GL20.glVertexAttribPointer(index, size, type, normalized, stride, offset.toLong())
+
+actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) =
+        GL30.glVertexAttribIPointer(index, size, type, stride, offset.toLong())
 
 actual fun glViewport(x: Int, y: Int, width: Int, height: Int) = GL11.glViewport(x, y, width, height)

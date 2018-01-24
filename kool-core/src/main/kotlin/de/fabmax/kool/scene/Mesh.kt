@@ -122,7 +122,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
             boundShader.bindMesh(this, ctx)
             // draw mesh
             meshData.indexBuffer?.bind(ctx)
-            glDrawElements(primitiveType, meshData.indexSize, GL_UNSIGNED_INT, 0)
+            glDrawElements(primitiveType, meshData.numIndices, GL_UNSIGNED_INT, 0)
             boundShader.unbindMesh(ctx)
         }
     }
@@ -141,7 +141,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 }
 
 class MeshData(val vertexAttributes: Set<Attribute>) {
-    val data = IndexedVertexList(vertexAttributes)
+    val vertexList = IndexedVertexList(vertexAttributes)
     val bounds = BoundingBox()
 
     var generator: (MeshBuilder.() -> Unit)? = null
@@ -154,13 +154,16 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
         private set
     var indexBuffer: BufferResource? = null
         private set
-    var indexSize = 0
-        private set
+
+    val numIndices: Int
+        get() = vertexList.indices.position
+    val numVertices: Int
+        get() = vertexList.size
 
     var isSyncRequired = false
     var isBatchUpdate = false
         set(value) {
-            synchronized(data) {
+            synchronized(vertexList) {
                 field = value
             }
         }
@@ -184,9 +187,9 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
 
     fun addVertex(block: IndexedVertexList.Vertex.() -> Unit): Int {
         var idx = 0
-        synchronized(data) {
+        synchronized(vertexList) {
             isSyncRequired = true
-            idx = data.addVertex(bounds, block)
+            idx = vertexList.addVertex(bounds, block)
         }
         // return must be outside of synchronized block for successful javascript transpiling
         return idx
@@ -194,9 +197,9 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
 
     fun addVertex(position: Vec3f, normal: Vec3f? = null, color: Color? = null, texCoord: Vec2f? = null): Int {
         var idx = 0
-        synchronized(data) {
+        synchronized(vertexList) {
             isSyncRequired = true
-            idx = data.addVertex(position, normal, color, texCoord)
+            idx = vertexList.addVertex(position, normal, color, texCoord)
             bounds.add(position)
         }
         // return must be outside of synchronized block for successful javascript transpiling
@@ -204,35 +207,37 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
     }
 
     fun addIndex(idx: Int) {
-        synchronized(data) {
-            data.addIndex(idx)
+        synchronized(vertexList) {
+            vertexList.addIndex(idx)
             isSyncRequired = true
         }
     }
 
     fun addTriIndices(i0: Int, i1: Int, i2: Int) {
-        synchronized(data) {
-            data.addIndex(i0)
-            data.addIndex(i1)
-            data.addIndex(i2)
+        synchronized(vertexList) {
+            vertexList.addIndex(i0)
+            vertexList.addIndex(i1)
+            vertexList.addIndex(i2)
             isSyncRequired = true
         }
     }
 
     fun addIndices(vararg indices: Int) {
-        synchronized(data) {
-            data.addIndices(indices)
+        synchronized(vertexList) {
+            vertexList.addIndices(indices)
             isSyncRequired = true
         }
     }
 
     fun clear() {
-        synchronized(data) {
-            data.clear()
+        synchronized(vertexList) {
+            vertexList.clear()
             bounds.clear()
             isSyncRequired = true
         }
     }
+
+    operator fun get(i: Int): IndexedVertexList.Vertex = vertexList[i]
 
     fun incrementReferenceCount() {
         referenceCount++
@@ -258,26 +263,24 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
             dataBuffer = BufferResource.create(GL_ARRAY_BUFFER, ctx)
             for (vertexAttrib in vertexAttributes) {
                 attributeBinders[vertexAttrib] = VboBinder(dataBuffer!!, vertexAttrib.type.size,
-                        data.strideBytes, data.attributeOffsets[vertexAttrib]!!)
+                        vertexList.strideBytesF, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
             }
         }
 
         if (isSyncRequired && !isBatchUpdate) {
-            synchronized(data) {
+            synchronized(vertexList) {
                 if (!isBatchUpdate) {
-                    indexSize = data.indices.position
-
                     if (!supportsUint32Indices) {
                         // convert index buffer to uint16
-                        val uint16Buffer = createUint16Buffer(indexSize)
-                        for (i in 0..(data.indices.position - 1)) {
-                            uint16Buffer.put(data.indices[i].toShort())
+                        val uint16Buffer = createUint16Buffer(numIndices)
+                        for (i in 0..(vertexList.indices.position - 1)) {
+                            uint16Buffer.put(vertexList.indices[i].toShort())
                         }
                         indexBuffer?.setData(uint16Buffer, usage, ctx)
                     } else {
-                        indexBuffer?.setData(data.indices, usage, ctx)
+                        indexBuffer?.setData(vertexList.indices, usage, ctx)
                     }
-                    dataBuffer?.setData(data.data, usage, ctx)
+                    dataBuffer?.setData(vertexList.dataF, usage, ctx)
                     isSyncRequired = false
                 }
             }

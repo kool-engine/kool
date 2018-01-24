@@ -1,9 +1,7 @@
 package de.fabmax.kool.shading
 
 import de.fabmax.kool.RenderContext
-import de.fabmax.kool.gl.BufferResource
-import de.fabmax.kool.gl.GL_FLOAT
-import de.fabmax.kool.gl.glVertexAttribPointer
+import de.fabmax.kool.gl.*
 
 
 /**
@@ -25,6 +23,10 @@ class VboBinder(
      */
     fun bindAttribute(target: Int, ctx: RenderContext) {
         vbo.bind(ctx)
-        glVertexAttribPointer(target, elemSize, type, false, strideBytes, offset * 4)
+        if (type == GL_INT || type == GL_UNSIGNED_INT) {
+            glVertexAttribIPointer(target, elemSize, type, strideBytes, offset * 4)
+        } else {
+            glVertexAttribPointer(target, elemSize, type, false, strideBytes, offset * 4)
+        }
     }
 }

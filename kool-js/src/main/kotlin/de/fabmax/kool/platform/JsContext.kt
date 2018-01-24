@@ -3,6 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.JsImpl
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.gl.WebGL2RenderingContext
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
@@ -34,16 +35,27 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
 
     init {
         canvas = document.getElementById(props.canvasName) as HTMLCanvasElement
-        var webGlCtx = canvas.getContext("webgl")
+        // try to get a WebGL2 context first and use WebGL as fallback
+        var webGlCtx = canvas.getContext("webgl2")
         if (webGlCtx == null) {
-            webGlCtx = canvas.getContext("experimental-webgl")
+            webGlCtx = canvas.getContext("experimental-webgl2")
+        }
+
+        if (webGlCtx != null) {
+            gl = webGlCtx as WebGL2RenderingContext
+        } else {
+            println("falling back to WebGL 1 context")
+            webGlCtx = canvas.getContext("webgl")
+            if (webGlCtx == null) {
+                webGlCtx = canvas.getContext("experimental-webgl")
+            }
             if (webGlCtx == null) {
                 js("alert(\"Unable to initialize WebGL. Your browser may not support it.\")")
             }
+            gl = webGlCtx as WebGLRenderingContext
         }
         screenDpi = JsImpl.dpi
 
-        gl = webGlCtx as WebGLRenderingContext
         supportsUint32Indices = gl.getExtension("OES_element_index_uint") != null
 
         val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:

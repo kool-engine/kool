@@ -26,9 +26,9 @@ fun pointScene(): Scene {
             if (--frameCnt == 0) {
                 frameCnt = 30
 
-                val vert = data.data[0]
+                val vert = data[0]
                 for (point in trav.result) {
-                    for (i in 0..ptVertCnt-1) {
+                    for (i in 0 until ptVertCnt) {
                         vert.index = point.index + i
                         vert.color.set(Color.DARK_GRAY)
                     }

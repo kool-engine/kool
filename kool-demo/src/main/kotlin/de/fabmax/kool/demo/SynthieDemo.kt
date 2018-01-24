@@ -305,7 +305,7 @@ private class SynthieScene: Scene() {
                 }
             }
         }
-        val quadIt = quads.meshData.data[0]
+        val quadV = quads.meshData[0]
         var zPos = -10000f
 
         val sampleInterval = .05f
@@ -330,24 +330,24 @@ private class SynthieScene: Scene() {
                     val x = i - width * 0.5f
                     val color = ColorGradient.VIRIDIS.getColor(c + 0.05f, 0f, 0.7f)
 
-                    quadIt.position.set(x, h, zPos)
-                    quadIt.color.set(color)
-                    quadIt.index++
+                    quadV.position.set(x, h, zPos)
+                    quadV.color.set(color)
+                    quadV.index++
 
-                    quadIt.position.set(x, h, zPos + 0.9f)
-                    quadIt.color.set(color)
-                    quadIt.index++
+                    quadV.position.set(x, h, zPos + 0.9f)
+                    quadV.color.set(color)
+                    quadV.index++
 
-                    quadIt.position.set(x + 0.9f, h, zPos + 0.9f)
-                    quadIt.color.set(color)
-                    quadIt.index++
+                    quadV.position.set(x + 0.9f, h, zPos + 0.9f)
+                    quadV.color.set(color)
+                    quadV.index++
 
-                    quadIt.position.set(x + 0.9f, h, zPos)
-                    quadIt.color.set(color)
-                    quadIt.index++
+                    quadV.position.set(x + 0.9f, h, zPos)
+                    quadV.color.set(color)
+                    quadV.index++
                 }
-                if (quadIt.index == width * length * 4) {
-                    quadIt.index = 0
+                if (quadV.index == width * length * 4) {
+                    quadV.index = 0
                 }
                 zPos += 1f
                 if (zPos > 10000) {
@@ -383,7 +383,7 @@ private class SynthieScene: Scene() {
                 meshData.usage = GL_DYNAMIC_DRAW
             }
         })
-        val items = Array(lines.size, { i -> lines[i].meshData.data[0] })
+        val vertices = Array(lines.size, { i -> lines[i].meshData[0] })
 
         val sampleBuf = FloatArray(sampleRate)
         var sampleIdx = 0
@@ -427,9 +427,9 @@ private class SynthieScene: Scene() {
                 pos += sampleBuf.size
             }
 
-            for (i in 0..points-1) {
-                items[lineIdx].index = i
-                items[lineIdx].position.y = sampleBuf[pos++] * 2f + 2f
+            for (i in 0 until points) {
+                vertices[lineIdx].index = i
+                vertices[lineIdx].position.y = sampleBuf[pos++] * 2f + 2f
                 if (pos >= sampleBuf.size) {
                     pos = 0
                 }

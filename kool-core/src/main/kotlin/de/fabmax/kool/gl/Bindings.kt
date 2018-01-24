@@ -131,7 +131,9 @@ expect fun glUseProgram(program: ProgramResource?)
 
 expect fun glVertexAttribDivisor(index: Int, divisor: Int)
 
-expect fun glVertexAttribPointer(indx: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int)
+expect fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int)
+
+expect fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
 
 expect fun glViewport(x: Int, y: Int, width: Int, height: Int)
 

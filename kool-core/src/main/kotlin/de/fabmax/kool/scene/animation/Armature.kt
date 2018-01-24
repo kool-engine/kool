@@ -19,11 +19,11 @@ class Armature(val meshData: MeshData) {
     private val tmpVec = MutableVec3f()
 
     private val originalMeshData = MeshData(meshData.vertexAttributes)
-    private val meshV: IndexedVertexList.Vertex = meshData.data[0]
+    private val meshV: IndexedVertexList.Vertex = meshData[0]
     private val origV: IndexedVertexList.Vertex
 
     init {
-        for (i in 0 until meshData.data.size) {
+        for (i in 0 until meshData.numVertices) {
             meshV.index = i
             originalMeshData.addVertex {
                 position.set(meshV.position)
@@ -32,7 +32,7 @@ class Armature(val meshData: MeshData) {
                 }
             }
         }
-        origV = originalMeshData.data[0]
+        origV = originalMeshData[0]
     }
 
     fun getAnimation(name: String): Animation? {
@@ -49,7 +49,7 @@ class Armature(val meshData: MeshData) {
     }
 
     fun normalizeBoneWeights() {
-        val sums = FloatArray(originalMeshData.data.size)
+        val sums = FloatArray(originalMeshData.numVertices)
         for (bone in bones.values) {
             for (i in bone.vertexIds.indices) {
                 sums[bone.vertexIds[i]] += bone.vertexWeights[i]
@@ -106,7 +106,7 @@ class Armature(val meshData: MeshData) {
     }
 
     private fun clearMesh() {
-        for (i in 0 until meshData.data.size) {
+        for (i in 0 until meshData.numVertices) {
             meshV.index = i
             meshV.position.set(0f, 0f, 0f)
             if (withNormals) {
