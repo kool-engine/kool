@@ -28,4 +28,8 @@ data class Attribute(val name: String, val type: AttributeType) {
         val TEXTURE_COORDS = Attribute("attrib_texture_coords", AttributeType.VEC_2F)
         val COLORS = Attribute("attrib_colors", AttributeType.COLOR_4F)
     }
+
+    override fun toString(): String {
+        return name
+    }
 }

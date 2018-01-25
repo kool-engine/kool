@@ -205,6 +205,25 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
             color = getColorAttribute(Attribute.COLORS) ?: ColorView(-1)
         }
 
+        fun set(other: Vertex) {
+            for (attrib in attributeViews.keys) {
+                val view = other.attributeViews[attrib]
+                if (view != null) {
+                    when (view) {
+                        is FloatView -> (attributeViews[attrib] as FloatView).f = view.f
+                        is Vec2fView -> (attributeViews[attrib] as Vec2fView).set(view)
+                        is Vec3fView -> (attributeViews[attrib] as Vec3fView).set(view)
+                        is Vec4fView -> (attributeViews[attrib] as Vec4fView).set(view)
+                        is ColorView -> (attributeViews[attrib] as ColorView).set(view)
+                        is IntView   -> (attributeViews[attrib] as IntView).i = view.i
+                        is Vec2iView -> (attributeViews[attrib] as Vec2iView).set(view)
+                        is Vec3iView -> (attributeViews[attrib] as Vec3iView).set(view)
+                        is Vec4iView -> (attributeViews[attrib] as Vec4iView).set(view)
+                    }
+                }
+            }
+        }
+
         fun getFloatAttribute(attribute: Attribute): FloatView? = attributeViews[attribute] as FloatView?
         fun getVec2fAttribute(attribute: Attribute): Vec2fView? = attributeViews[attribute] as Vec2fView?
         fun getVec3fAttribute(attribute: Attribute): Vec3fView? = attributeViews[attribute] as Vec3fView?
@@ -342,6 +361,16 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
                 set(value) {
                     if (attribOffset >= 0) { dataI[offsetI + attribOffset + 1] = value }
                 }
+
+            fun set(x: Int, y: Int) {
+                this.x = x
+                this.y = y
+            }
+
+            fun set(other: Vec2iView) {
+                x = other.x
+                y = other.y
+            }
         }
 
         inner class Vec3iView(private val attribOffset: Int) {
@@ -360,6 +389,18 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
                 set(value) {
                     if (attribOffset >= 0) { dataI[offsetI + attribOffset + 2] = value }
                 }
+
+            fun set(other: Vec3iView) {
+                x = other.x
+                y = other.y
+                z = other.z
+            }
+
+            fun set(x: Int, y: Int, z: Int) {
+                this.x = x
+                this.y = y
+                this.z = z
+            }
         }
 
         inner class Vec4iView(private val attribOffset: Int) {
@@ -383,6 +424,20 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
                 set(value) {
                     if (attribOffset >= 0) { dataI[offsetI + attribOffset + 3] = value }
                 }
+
+            fun set(other: Vec4iView) {
+                x = other.x
+                y = other.y
+                z = other.z
+                w = other.w
+            }
+
+            fun set(x: Int, y: Int, z: Int, w: Int) {
+                this.x = x
+                this.y = y
+                this.z = z
+                this.w = w
+            }
         }
     }
 }

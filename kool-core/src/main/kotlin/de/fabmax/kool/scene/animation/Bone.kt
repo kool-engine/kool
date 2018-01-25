@@ -4,6 +4,7 @@ import de.fabmax.kool.util.Mat4f
 
 class Bone(val name: String, numVertices: Int) : AnimatedNode {
     var parent: Bone? = null
+    var id = 0
     val children = mutableListOf<Bone>()
 
     val offsetMatrix = Mat4f()

@@ -83,8 +83,8 @@ fun loadMesh(data: MeshData): Mesh {
             }
         }
 
-        // make sure bone weights are normed
-        mesh.normalizeBoneWeights()
+        // apply bones to mesh data
+        mesh.updateBones()
 
         // load animations
         data.animations.forEach { mesh.addAnimation(it.name, it.getAnimation(mesh.bones)) }

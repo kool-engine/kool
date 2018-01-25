@@ -1,21 +1,24 @@
 package de.fabmax.kool.scene.animation
 
+import de.fabmax.kool.GlslDialect
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.glslVersion
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.AttributeType
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.Mat4f
-import de.fabmax.kool.util.Mat4fStack
-import de.fabmax.kool.util.MutableVec3f
+import de.fabmax.kool.shading.BasicShader
+import de.fabmax.kool.util.*
 
 class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
 
     val rootBones = mutableListOf<Bone>()
     val bones = mutableMapOf<String, Bone>()
 
-    private val withNormals = meshData.hasAttribute(Attribute.NORMALS)
+    private val indexedBones = mutableListOf<Bone>()
+    private var boneTransforms: Float32Buffer? = null
+
+    var isCpuAnimated = glslVersion.dialect != GlslDialect.GLSL_DIALECT_300
 
     // animations are held in map and list, to get index-based list access for less overhead in render loop
     private val animations = mutableMapOf<String, Animation>()
@@ -25,23 +28,95 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
     var animationSpeed = 1f
 
     private val transform = Mat4fStack()
+    private val tmpTransform = Mat4f()
     private val tmpVec = MutableVec3f()
 
-    private val originalMeshData = MeshData(meshData.vertexAttributes)
-    private val meshV: IndexedVertexList.Vertex = meshData[0]
+    private val originalMeshData = meshData
+    private val meshV: IndexedVertexList.Vertex
     private val origV: IndexedVertexList.Vertex
 
+    private data class BoneWeight(var weight: Float, var id: Int)
+
     init {
-        for (i in 0 until meshData.numVertices) {
-            meshV.index = i
-            originalMeshData.addVertex {
-                position.set(meshV.position)
-                if (withNormals) {
-                    normal.set(meshV.normal)
+        // extend mesh data with bone vertex attributes
+        val armatureAttribs = mutableSetOf(BONE_WEIGHTS, BONE_INDICES)
+        armatureAttribs.addAll(meshData.vertexAttributes)
+        this.meshData = MeshData(armatureAttribs)
+
+        origV = originalMeshData[0]
+        for (i in 0 until originalMeshData.numVertices) {
+            origV.index = i
+            this.meshData.addVertex { set(origV) }
+        }
+        for (i in 0 until originalMeshData.numIndices) {
+            this.meshData.addIndex(originalMeshData.vertexList.indices[i])
+        }
+        meshV = this.meshData[0]
+    }
+
+    private fun addBoneWeight(boneWeights: Array<BoneWeight>, boneId: Int, boneWeight: Float) {
+        for (i in 0..3) {
+            if (boneWeight > boneWeights[i].weight) {
+                boneWeights[i].weight = boneWeight
+                boneWeights[i].id = boneId
+                break
+            }
+        }
+    }
+
+    /**
+     * Normalizes bone weights such that the sum of weights of all influencing bones per vertex is one. Also every
+     * vertex can be influenced by up to four bones. In case more bones influence a vertex the four bones with highest
+     * weights are chosen.
+     */
+    fun updateBones() {
+        indexedBones.clear()
+        indexedBones.addAll(bones.values)
+
+        boneTransforms = createFloat32Buffer(indexedBones.size * 16)
+        tmpTransform.setIdentity()
+
+        // collect bone weights per vertex
+        val boneWeights = Array(meshData.numVertices) { Array(4) { BoneWeight(0f, 0) } }
+        indexedBones.forEachIndexed { boneId, bone ->
+            bone.id = boneId
+            boneTransforms!!.position = boneId * 16
+            tmpTransform.toBuffer(boneTransforms!!)
+            boneTransforms!!.limit = boneTransforms!!.capacity
+
+            for (i in bone.vertexIds.indices) {
+                val vertexId = bone.vertexIds[i]
+                addBoneWeight(boneWeights[vertexId], boneId, bone.vertexWeights[i])
+            }
+        }
+
+        // normalize bone weights
+        for (vertexBoneWeights in boneWeights) {
+            val weightSum = vertexBoneWeights.sumByDouble { w -> w.weight.toDouble() }.toFloat()
+            vertexBoneWeights.forEach { w -> w.weight /= weightSum }
+        }
+
+        // write back normalized weights ton bones to get normalized weights for cpu animation
+        indexedBones.forEachIndexed { boneId, bone ->
+            for (i in bone.vertexIds.indices) {
+                val vertexId = bone.vertexIds[i]
+                bone.vertexWeights[i] = 0f
+                for (boneW in boneWeights[vertexId]) {
+                    if (boneW.id == boneId) {
+                        bone.vertexWeights[i] = boneW.weight
+                        break
+                    }
                 }
             }
         }
-        origV = originalMeshData[0]
+
+        // set bone vertex attributes
+        for (i in 0 until meshData.numVertices) {
+            val boneWs = boneWeights[i]
+            meshV.index = i
+            meshV.getVec4fAttribute(BONE_WEIGHTS)?.set(boneWs[0].weight, boneWs[1].weight, boneWs[2].weight, boneWs[3].weight)
+            meshV.getVec4iAttribute(BONE_INDICES)?.set(boneWs[0].id, boneWs[1].id, boneWs[2].id, boneWs[3].id)
+        }
     }
 
     fun getAnimation(name: String): Animation? {
@@ -57,23 +132,19 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
         animationList.remove(animations.remove(name))
     }
 
-    fun normalizeBoneWeights() {
-        val sums = FloatArray(originalMeshData.numVertices)
-        for (bone in bones.values) {
-            for (i in bone.vertexIds.indices) {
-                sums[bone.vertexIds[i]] += bone.vertexWeights[i]
-            }
+    override fun render(ctx: RenderContext) {
+        val shader = this.shader
+        if (shader is BasicShader) {
+            shader.bones = boneTransforms
         }
-
-        for (bone in bones.values) {
-            for (i in bone.vertexIds.indices) {
-                bone.vertexWeights[i] /= sums[bone.vertexIds[i]]
-            }
-        }
+        applyAnimation(ctx.deltaT)
+        super.render(ctx)
     }
 
-    fun applyAnimation(deltaT: Double) {
-        var clear = true
+    private fun applyAnimation(deltaT: Double) {
+        var update = false
+
+        // interpolate animation duration of active animations (needed for smooth interpolation between animations)
         var weightedDuration = 0f
         for (i in animationList.indices) {
             val anim = animationList[i]
@@ -82,38 +153,56 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
             }
         }
         animationPos = (animationPos + deltaT.toFloat() / weightedDuration * animationSpeed) % 1f
+
+        // update all active (weighted) animations
         for (i in animationList.indices) {
             val anim = animationList[i]
             if (anim.weight > 0) {
-                anim.apply(animationPos, clear)
-                clear = false
+                // clear bone transform before applying first animation with weight > 0
+                anim.apply(animationPos, !update)
+                update = true
             }
         }
 
-        if (!clear) {
+        if (update) {
             // only update mesh if an animation was applied
-            meshData.isBatchUpdate = true
-            meshData.isSyncRequired = true
-            clearMesh()
-            for (i in rootBones.indices) {
-                applyBone(rootBones[i], transform)
+            if (isCpuAnimated) {
+                // transform mesh vertex positions on CPU
+                meshData.isBatchUpdate = true
+                meshData.isSyncRequired = true
+                clearMesh()
+                for (i in rootBones.indices) {
+                    applyBone(rootBones[i], transform, isCpuAnimated)
+                }
+                meshData.isBatchUpdate = false
+
+            } else {
+                // transform mesh vertex positions on vertex shader, we only need to compute bone transforms
+                for (i in rootBones.indices) {
+                    applyBone(rootBones[i], transform, isCpuAnimated)
+                }
+
             }
-            meshData.isBatchUpdate = false
         }
     }
 
-    override fun render(ctx: RenderContext) {
-        applyAnimation(ctx.deltaT)
-        super.render(ctx)
-    }
-
-    private fun applyBone(bone: Bone, transform: Mat4fStack) {
+    private fun applyBone(bone: Bone, transform: Mat4fStack, updateMesh: Boolean) {
         transform.push()
+        transform.mul(bone.transform).mul(bone.offsetMatrix, tmpTransform)
 
-        transform.mul(bone.transform)
-        softTransformMesh(bone, transform)
+        if (updateMesh) {
+            // transform mesh vertices on CPU
+            softTransformMesh(bone, tmpTransform)
+
+        } else {
+            // set bone transform matrix for use in vertex shader
+            boneTransforms!!.position = 16 * bone.id
+            tmpTransform.toBuffer(boneTransforms!!)
+            boneTransforms!!.limit = boneTransforms!!.capacity
+        }
+
         for (i in bone.children.indices) {
-            applyBone(bone.children[i], transform)
+            applyBone(bone.children[i], transform, updateMesh)
         }
 
         transform.pop()
@@ -123,9 +212,7 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
         for (i in 0 until meshData.numVertices) {
             meshV.index = i
             meshV.position.set(0f, 0f, 0f)
-            if (withNormals) {
-                meshV.normal.set(0f, 0f, 0f)
-            }
+            meshV.normal.set(0f, 0f, 0f)
         }
     }
 
@@ -135,18 +222,14 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
             origV.index = bone.vertexIds[i]
 
             tmpVec.set(origV.position)
-            bone.offsetMatrix.transform(tmpVec)
             transform.transform(tmpVec)
             tmpVec *= bone.vertexWeights[i]
             meshV.position += tmpVec
 
-            if (withNormals) {
-                tmpVec.set(origV.normal)
-                bone.offsetMatrix.transform(tmpVec, 0f)
-                transform.transform(tmpVec, 0f)
-                tmpVec *= bone.vertexWeights[i]
-                meshV.normal += tmpVec
-            }
+            tmpVec.set(origV.normal)
+            transform.transform(tmpVec, 0f)
+            tmpVec *= bone.vertexWeights[i]
+            meshV.normal += tmpVec
         }
     }
 

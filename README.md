@@ -8,7 +8,7 @@ For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
 
 What's working:
-- Mesh animation (see [Model Demo](https://fabmax.lima-city.de/kool/index.html?demo=modelDemo), vertex-shader based animation yet to come...)
+- Vertex shader mesh animation (see [Model Demo](https://fabmax.lima-city.de/kool/index.html?demo=modelDemo))
 - OpenStreetMap tile loading (see [OSM Earth Demo](https://fabmax.lima-city.de/kool/index.html?demo=earthDemo))
 - Synthie music (see [Synthie Demo](https://fabmax.lima-city.de/kool/index.html?demo=synthieDemo), quite CPU intense...)
 - Multi-scene / multi-viewport support

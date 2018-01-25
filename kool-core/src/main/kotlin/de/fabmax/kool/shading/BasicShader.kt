@@ -4,6 +4,7 @@ import de.fabmax.kool.RenderContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.MutableVec4f
 
@@ -56,6 +57,10 @@ open class BasicShader(val props: ShaderProps, private val generator: GlslGenera
         get() = generator.uniformFogRange.value
         set(value) { generator.uniformFogRange.value = value }
 
+    var bones: Float32Buffer?
+        get() = generator.uniformBones.value
+        set(value) { generator.uniformBones.value = value }
+
     private var scene: Scene? = null
 
     init {
@@ -97,6 +102,7 @@ open class BasicShader(val props: ShaderProps, private val generator: GlslGenera
         generator.uniformSpecularIntensity.bind(ctx)
         generator.uniformStaticColor.bind(ctx)
         generator.uniformTexture.bind(ctx)
+        generator.uniformBones.bind(ctx)
     }
 
     override fun bindMesh(mesh: Mesh, ctx: RenderContext) {

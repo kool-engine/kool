@@ -63,6 +63,12 @@ fun modelScene(): Scene = scene {
                 lightModel = LightModel.PHONG_LIGHTING
                 colorModel = ColorModel.STATIC_COLOR
                 staticColor = Color.GRAY
+
+                if (mesh is Armature) {
+                    // do mesh animation on vertex shader if available.
+                    // Works with GLSL version 300 and above (OpenGL (ES) 3.0 and WebGL2)
+                    isShaderAnimated = !mesh.isCpuAnimated
+                }
             }
 
             if (mesh is Armature) {

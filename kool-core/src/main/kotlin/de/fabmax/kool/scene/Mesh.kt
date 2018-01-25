@@ -150,10 +150,9 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
 
     var usage = GL_STATIC_DRAW
 
-    var dataBuffer: BufferResource? = null
-        private set
+    var dataBufferF: BufferResource? = null
+    var dataBufferI: BufferResource? = null
     var indexBuffer: BufferResource? = null
-        private set
 
     val numIndices: Int
         get() = vertexList.indices.position
@@ -249,9 +248,11 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
     fun dispose(ctx: RenderContext) {
         if (--referenceCount == 0) {
             indexBuffer?.delete(ctx)
-            dataBuffer?.delete(ctx)
+            dataBufferF?.delete(ctx)
+            dataBufferI?.delete(ctx)
             indexBuffer = null
-            dataBuffer = null
+            dataBufferF = null
+            dataBufferI = null
         }
     }
 
@@ -259,11 +260,25 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
         if (indexBuffer == null) {
             indexBuffer = BufferResource.create(GL_ELEMENT_ARRAY_BUFFER, ctx)
         }
-        if (dataBuffer == null) {
-            dataBuffer = BufferResource.create(GL_ARRAY_BUFFER, ctx)
+        var hasIntData = false
+        if (dataBufferF == null) {
+            dataBufferF = BufferResource.create(GL_ARRAY_BUFFER, ctx)
             for (vertexAttrib in vertexAttributes) {
-                attributeBinders[vertexAttrib] = VboBinder(dataBuffer!!, vertexAttrib.type.size,
-                        vertexList.strideBytesF, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
+                if (vertexAttrib.type.isInt) {
+                    hasIntData = true
+                } else {
+                    attributeBinders[vertexAttrib] = VboBinder(dataBufferF!!, vertexAttrib.type.size,
+                            vertexList.strideBytesF, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
+                }
+            }
+        }
+        if (hasIntData && dataBufferI == null) {
+            dataBufferI = BufferResource.create(GL_ARRAY_BUFFER, ctx)
+            for (vertexAttrib in vertexAttributes) {
+                if (vertexAttrib.type.isInt) {
+                    attributeBinders[vertexAttrib] = VboBinder(dataBufferI!!, vertexAttrib.type.size,
+                            vertexList.strideBytesI, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
+                }
             }
         }
 
@@ -280,7 +295,8 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
                     } else {
                         indexBuffer?.setData(vertexList.indices, usage, ctx)
                     }
-                    dataBuffer?.setData(vertexList.dataF, usage, ctx)
+                    dataBufferF?.setData(vertexList.dataF, usage, ctx)
+                    dataBufferI?.setData(vertexList.dataI, usage, ctx)
                     isSyncRequired = false
                 }
             }

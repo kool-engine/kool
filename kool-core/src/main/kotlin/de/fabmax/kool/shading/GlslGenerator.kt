@@ -71,6 +71,7 @@ open class GlslGenerator {
     val uniformSaturation: Uniform1f = Uniform1f(U_SATURATION)
     val uniformFogRange: Uniform1f = Uniform1f(U_FOG_RANGE)
     val uniformFogColor: Uniform4f = Uniform4f(U_FOG_COLOR)
+    val uniformBones: UniformMatrix4 = UniformMatrix4(U_BONES)
 
     val customUnitforms: MutableMap<String, Uniform<*>> = mutableMapOf()
 
@@ -94,7 +95,7 @@ open class GlslGenerator {
         shader.enableAttribute(Attribute.TEXTURE_COORDS, ctx)
         shader.enableAttribute(Attribute.COLORS, ctx)
 
-        if (shader.props.isSkinned) {
+        if (shader.props.isShaderAnimated) {
             shader.enableAttribute(Armature.BONE_INDICES, ctx)
             shader.enableAttribute(Armature.BONE_WEIGHTS, ctx)
         }
@@ -113,6 +114,7 @@ open class GlslGenerator {
         shader.setUniformLocation(uniformStaticColor, ctx)
         shader.setUniformLocation(uniformAlpha, ctx)
         shader.setUniformLocation(uniformSaturation, ctx)
+        shader.setUniformLocation(uniformBones, ctx)
 
         for (uniform in customUnitforms.values) {
             shader.setUniformLocation(uniform, ctx)
@@ -207,7 +209,7 @@ open class GlslGenerator {
             text.append("$vsOut vec4 $V_COLOR;\n")
         }
 
-        if (shaderProps.isSkinned) {
+        if (shaderProps.isShaderAnimated) {
             text.append("$vsIn ivec4 ${Armature.BONE_INDICES.name};\n")
             text.append("$vsIn vec4 ${Armature.BONE_WEIGHTS.name};\n")
             text.append("uniform mat4 $U_BONES[${Armature.MAX_BONES}];\n")
@@ -226,15 +228,29 @@ open class GlslGenerator {
     private fun generateVertBodyCode(shaderProps: ShaderProps, text: StringBuilder) {
         text.append("\nvoid main() {\n")
 
+        text.append("vec4 position = vec4(${Attribute.POSITIONS}, 1.0);\n")
+        if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
+            text.append("vec4 normal = vec4(${Attribute.NORMALS}, 0.0);\n")
+        }
+
         injectors.forEach { it.vsBeforeProj(shaderProps, text) }
 
+        if (shaderProps.isShaderAnimated) {
+            text.append("mat4 boneT = $U_BONES[${Armature.BONE_INDICES}[0]] * ${Armature.BONE_WEIGHTS}[0];\n")
+            text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[1]] * ${Armature.BONE_WEIGHTS}[1];\n")
+            text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[2]] * ${Armature.BONE_WEIGHTS}[2];\n")
+            text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[3]] * ${Armature.BONE_WEIGHTS}[3];\n")
+            text.append("position = boneT * position;\n")
+            text.append("normal = boneT * normal;\n")
+        }
+
         // output position of the vertex in clip space: MVP * position
-        text.append("gl_Position = $U_MVP_MATRIX * vec4(${Attribute.POSITIONS.name}, 1.0);\n")
+        text.append("gl_Position = $U_MVP_MATRIX * position;\n")
 
         injectors.forEach { it.vsAfterProj(shaderProps, text) }
 
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
-            text.append("$V_POSITION_WORLDSPACE = ($U_MODEL_MATRIX * vec4(${Attribute.POSITIONS.name}, 1.0)).xyz;\n")
+            text.append("$V_POSITION_WORLDSPACE = ($U_MODEL_MATRIX * position).xyz;\n")
         }
 
         if (shaderProps.isTextureColor) {
@@ -249,23 +265,23 @@ open class GlslGenerator {
 
         if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
             // vector from vertex to camera, in camera space. In camera space, the camera is at the origin (0, 0, 0).
-            text.append("$V_EYE_DIRECTION = -($U_VIEW_MATRIX * ($U_MODEL_MATRIX * vec4(${Attribute.POSITIONS.name}, 1.0))).xyz;\n")
+            text.append("$V_EYE_DIRECTION = -($U_VIEW_MATRIX * ($U_MODEL_MATRIX * position)).xyz;\n")
 
             // light direction, in camera space. M is left out because light position is already in world space.
             text.append("$V_LIGHT_DIRECTION = ($U_VIEW_MATRIX * vec4($U_LIGHT_DIRECTION, 0.0)).xyz;\n")
 
             // normal of the the vertex, in camera space
-            text.append("$V_NORMAL = ($U_VIEW_MATRIX * ($U_MODEL_MATRIX * vec4(${Attribute.NORMALS.name}, 0.0))).xyz;\n")
+            text.append("$V_NORMAL = ($U_VIEW_MATRIX * ($U_MODEL_MATRIX * normal)).xyz;\n")
 
         } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
             // vector from vertex to camera, in camera space. In camera space, the camera is at the origin (0, 0, 0).
-            text.append("vec3 e = normalize(-($U_VIEW_MATRIX * ($U_MODEL_MATRIX * vec4(${Attribute.POSITIONS.name}, 1.0))).xyz);\n")
+            text.append("vec3 e = normalize(-($U_VIEW_MATRIX * ($U_MODEL_MATRIX * position)).xyz);\n")
 
             // light direction, in camera space. M is left out because light position is already in world space.
             text.append("vec3 l = normalize(($U_VIEW_MATRIX * vec4($U_LIGHT_DIRECTION, 0.0)).xyz);\n")
 
             // normal of the the vertex, in camera space
-            text.append("vec3 n = normalize(($U_VIEW_MATRIX * ($U_MODEL_MATRIX * vec4(${Attribute.NORMALS.name}, 0.0))).xyz);\n")
+            text.append("vec3 n = normalize(($U_VIEW_MATRIX * ($U_MODEL_MATRIX * normal)).xyz);\n")
 
             // cosine of angle between surface normal and light direction
             text.append("float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n")
