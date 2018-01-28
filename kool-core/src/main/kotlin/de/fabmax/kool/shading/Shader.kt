@@ -19,11 +19,13 @@ abstract class Shader : GlObject<ProgramResource>() {
         constructor(vertexSrc: String, fragmentSrc: String) : this(vertexSrc, "", fragmentSrc)
     }
 
-    protected data class LocatedAttribute(val descr: Attribute, val location: Int)
+    protected data class AttributeLocation(val descr: Attribute, val location: Int)
+    protected val attributeLocations = mutableListOf<AttributeLocation>()
 
-    protected val attributes = mutableListOf<LocatedAttribute>()
+    val attributes = mutableSetOf<Attribute>()
+    val uniforms = mutableMapOf<String, Uniform<*>>()
 
-    abstract fun generateSource(ctx: RenderContext)
+    abstract fun generate(ctx: RenderContext)
 
     /**
      * Checks if this Shader is currently bound.
@@ -41,8 +43,17 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param ctx    the graphics engine context
      */
     open fun onLoad(ctx: RenderContext) {
-        generateSource(ctx)
+        generate(ctx)
         res = ctx.shaderMgr.createShader(source, ctx)
+
+        attributeLocations.clear()
+        for (attrib in attributes) {
+            enableAttribute(attrib, ctx)
+        }
+
+        for (uniform in uniforms.values) {
+            uniform.location = findUniformLocation(uniform.name, ctx)
+        }
     }
 
     /**
@@ -67,7 +78,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param attribName    The attribute name to look for
      * @return the attribute location or -1 if the attribute was not found.
      */
-    open fun findAttributeLocation(attribName: String, ctx: RenderContext): Int {
+    protected open fun findAttributeLocation(attribName: String, ctx: RenderContext): Int {
         val ref: ProgramResource? = res
         if (ref != null) {
             return glGetAttribLocation(ref, attribName)
@@ -85,7 +96,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      *                      name in shader source
      * @return whether the attribute was enabled (i.e. attribName was found)
      */
-    open fun enableAttribute(attribute: Attribute, ctx: RenderContext): Boolean {
+    private fun enableAttribute(attribute: Attribute, ctx: RenderContext): Boolean {
         val location = findAttributeLocation(attribute.name, ctx)
         enableAttribute(attribute, location, ctx)
         return location >= 0
@@ -98,31 +109,33 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param attribute    the attribute to enable
      * @param location     attribute location in shader code, if specified with layout (location=...)
      */
-    open fun enableAttribute(attribute: Attribute, location: Int, ctx: RenderContext) {
+    private fun enableAttribute(attribute: Attribute, location: Int, ctx: RenderContext) {
         if (location >= 0) {
-            attributes.add(LocatedAttribute(attribute, location))
+            attributeLocations.add(AttributeLocation(attribute, location))
         }
     }
 
     /**
-     * Sets the location of the given uniform. Returns true if location was set or false if the uniform was
-     * not found
+     * Adds the given uniform to this shader. The uniform location is not set until [Shader.onLoad] is called (when the
+     * shader is loaded for the first time).
      *
-     * @param uniform    The uniform to set
-     * @return true if location was successfully set
+     * @param uniform    The uniform to add
      */
-    open fun setUniformLocation(uniform: Uniform<*>, ctx: RenderContext): Boolean {
-        uniform.location = findUniformLocation(uniform.name, ctx)
-        return uniform.location != null
+    inline fun <reified T: Uniform<*>> addUniform(uniform: T): T {
+        uniforms[uniform.name] = uniform
+        return uniform
     }
 
+    inline fun <reified T: Uniform<*>> getUniform(name: String): T? = uniforms[name] as? T
+
     /**
-     * Looks for the specified uniform and returns its location or -1 if the uniform was not found.
+     * Looks for the specified uniform and returns its location or null if the uniform was not found. The actual type
+     * of the uniform location is platform dependent.
      *
      * @param uniformName    The uniform name to look for
-     * @return the uniform location or -1 if the attribute was not found.
+     * @return the uniform location or null if the attribute was not found.
      */
-    open fun findUniformLocation(uniformName: String, ctx: RenderContext): Any? {
+    protected open fun findUniformLocation(uniformName: String, ctx: RenderContext): Any? {
         val ref: ProgramResource? = res
         if (ref != null) {
             return glGetUniformLocation(ref, uniformName)
@@ -139,8 +152,8 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param ctx    the graphics engine context
      */
     open fun bindMesh(mesh: Mesh, ctx: RenderContext) {
-        for (i in attributes.indices) {
-            val attrib = attributes[i]
+        for (i in attributeLocations.indices) {
+            val attrib = attributeLocations[i]
             val binder = mesh.meshData.attributeBinders[attrib.descr] ?:
                     throw KoolException("Mesh must supply an attribute binder for attribute ${attrib.descr.name}")
             glEnableVertexAttribArray(attrib.location)
@@ -154,8 +167,8 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param ctx    the graphics engine context
      */
     open fun unbindMesh(ctx: RenderContext) {
-        for (i in attributes.indices) {
-            glDisableVertexAttribArray(attributes[i].location)
+        for (i in attributeLocations.indices) {
+            glDisableVertexAttribArray(attributeLocations[i].location)
         }
     }
 

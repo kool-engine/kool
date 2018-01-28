@@ -202,6 +202,7 @@ actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int,
 
 actual fun glViewport(x: Int, y: Int, width: Int, height: Int) = JsImpl.gl.viewport(x, y, width, height)
 
+actual fun isValidUniformLocation(location: Any?): Boolean = location != null && location is WebGLUniformLocation
 
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)

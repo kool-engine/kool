@@ -18,35 +18,16 @@ import kotlin.math.min
  */
 
 fun blurShader(propsInit: ShaderProps.() -> Unit = { }): BlurShader {
-    val props = ShaderProps()
-    props.propsInit()
-    val generator = GlslGenerator()
-
-    generator.addCustomUniform(UniformTexture2D("uBlurTexture"))
-    generator.addCustomUniform(Uniform1f("uColorMix"))
-    generator.addCustomUniform(Uniform2f("uTexPos"))
-    generator.addCustomUniform(Uniform2f("uTexSz"))
-
-    generator.injectors += object: GlslGenerator.GlslInjector {
-        override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ")
-                    .append("1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n")
-                    .append("${glslVersion.dialect.fragColorBody} = ${glslVersion.dialect.texSampler}(")
-                    .append("uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ")
-                    .append("${glslVersion.dialect.fragColorBody} * uColorMix;\n")
-        }
-    }
-
-    return BlurShader(props, generator)
+    return BlurShader(ShaderProps().apply(propsInit), GlslGenerator())
 }
 
 class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerator) :
         BasicShader(props, generator) {
 
-    private val uBlurTex = generator.customUnitforms["uBlurTexture"] as UniformTexture2D
-    private val uColorMix = generator.customUnitforms["uColorMix"] as Uniform1f
-    private val uTexPos = generator.customUnitforms["uTexPos"] as Uniform2f
-    private val uTexSz = generator.customUnitforms["uTexSz"] as Uniform2f
+    private val uBlurTex = addUniform(UniformTexture2D("uBlurTexture"))
+    private val uColorMix = addUniform(Uniform1f("uColorMix"))
+    private val uTexPos = addUniform(Uniform2f("uTexPos"))
+    private val uTexSz = addUniform(Uniform2f("uTexSz"))
 
     var blurHelper: BlurredBackgroundHelper? = null
         set(value) {
@@ -60,6 +41,21 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
 
     init {
         colorMix = 0f
+
+        generator.customUnitforms += uBlurTex
+        generator.customUnitforms += uColorMix
+        generator.customUnitforms += uTexPos
+        generator.customUnitforms += uTexSz
+
+        generator.injectors += object: GlslGenerator.GlslInjector {
+            override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
+                text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ")
+                        .append("1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n")
+                        .append("${glslVersion.dialect.fragColorBody} = ${glslVersion.dialect.texSampler}(")
+                        .append("uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ")
+                        .append("${glslVersion.dialect.fragColorBody} * uColorMix;\n")
+            }
+        }
     }
 
     override fun onBind(ctx: RenderContext) {
@@ -298,10 +294,12 @@ class BlurredBackgroundHelper(
     }
 
     private class BlurQuadShader(private val blurMethod: BlurMethod) : Shader() {
-        val uTexture = UniformTexture2D("uTexture")
-        val uDirection = Uniform2f("uDirection")
+        val uTexture = addUniform(UniformTexture2D("uTexture"))
+        val uDirection = addUniform(Uniform2f("uDirection"))
 
-        override fun generateSource(ctx: RenderContext) {
+        override fun generate(ctx: RenderContext) {
+            attributes.add(Attribute.POSITIONS)
+            attributes.add(Attribute.TEXTURE_COORDS)
 
             val vs = "${glslVersion.versionStr}\n" +
                     "${glslVersion.dialect.vsIn} vec3 ${Attribute.POSITIONS.name};\n" +
@@ -356,14 +354,6 @@ class BlurredBackgroundHelper(
                         "}"
             }
             source = Source(vs, fs)
-        }
-
-        override fun onLoad(ctx: RenderContext) {
-            super.onLoad(ctx)
-            enableAttribute(Attribute.POSITIONS, ctx)
-            enableAttribute(Attribute.TEXTURE_COORDS, ctx)
-            setUniformLocation(uTexture, ctx)
-            setUniformLocation(uDirection, ctx)
         }
 
         override fun onBind(ctx: RenderContext) {

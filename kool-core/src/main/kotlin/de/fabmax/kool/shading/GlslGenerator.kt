@@ -1,6 +1,5 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.RenderContext
 import de.fabmax.kool.glslVersion
 import de.fabmax.kool.scene.animation.Armature
 
@@ -56,24 +55,7 @@ open class GlslGenerator {
     }
 
     val injectors = mutableListOf<GlslInjector>()
-
-    val uniformMvpMatrix: UniformMatrix4 = UniformMatrix4(U_MVP_MATRIX)
-    val uniformModelMatrix: UniformMatrix4 = UniformMatrix4(U_MODEL_MATRIX)
-    val uniformViewMatrix: UniformMatrix4 = UniformMatrix4(U_VIEW_MATRIX)
-    val uniformLightColor: Uniform3f = Uniform3f(U_LIGHT_COLOR)
-    val uniformLightDirection: Uniform3f = Uniform3f(U_LIGHT_DIRECTION)
-    val uniformCameraPosition: Uniform3f = Uniform3f(U_CAMERA_POSITION)
-    val uniformShininess: Uniform1f = Uniform1f(U_SHININESS)
-    val uniformSpecularIntensity: Uniform1f = Uniform1f(U_SPECULAR_INTENSITY)
-    val uniformStaticColor: Uniform4f = Uniform4f(U_STATIC_COLOR)
-    val uniformTexture: UniformTexture2D = UniformTexture2D(U_TEXTURE_0)
-    val uniformAlpha: Uniform1f = Uniform1f(U_ALPHA)
-    val uniformSaturation: Uniform1f = Uniform1f(U_SATURATION)
-    val uniformFogRange: Uniform1f = Uniform1f(U_FOG_RANGE)
-    val uniformFogColor: Uniform4f = Uniform4f(U_FOG_COLOR)
-    val uniformBones: UniformMatrix4 = UniformMatrix4(U_BONES)
-
-    val customUnitforms: MutableMap<String, Uniform<*>> = mutableMapOf()
+    val customUnitforms = mutableListOf<Uniform<*>>()
 
     private val vsIn = glslVersion.dialect.vsIn
     private val vsOut = glslVersion.dialect.vsOut
@@ -82,61 +64,7 @@ open class GlslGenerator {
     private val fsOutBody = glslVersion.dialect.fragColorBody
     private val texSampler = glslVersion.dialect.texSampler
 
-    fun addCustomUniform(uniform: Uniform<*>) {
-        customUnitforms[uniform.name] = uniform
-    }
-
-    /**
-     * Called when shader is loaded / compiled
-     */
-    fun onLoad(shader: BasicShader, ctx: RenderContext) {
-        shader.enableAttribute(Attribute.POSITIONS, ctx)
-        shader.enableAttribute(Attribute.NORMALS, ctx)
-        shader.enableAttribute(Attribute.TEXTURE_COORDS, ctx)
-        shader.enableAttribute(Attribute.COLORS, ctx)
-
-        if (shader.props.isShaderAnimated) {
-            shader.enableAttribute(Armature.BONE_INDICES, ctx)
-            shader.enableAttribute(Armature.BONE_WEIGHTS, ctx)
-        }
-
-        shader.setUniformLocation(uniformMvpMatrix, ctx)
-        shader.setUniformLocation(uniformModelMatrix, ctx)
-        shader.setUniformLocation(uniformViewMatrix, ctx)
-        shader.setUniformLocation(uniformLightDirection, ctx)
-        shader.setUniformLocation(uniformLightColor, ctx)
-        shader.setUniformLocation(uniformShininess, ctx)
-        shader.setUniformLocation(uniformSpecularIntensity, ctx)
-        shader.setUniformLocation(uniformCameraPosition, ctx)
-        shader.setUniformLocation(uniformFogColor, ctx)
-        shader.setUniformLocation(uniformFogRange, ctx)
-        shader.setUniformLocation(uniformTexture, ctx)
-        shader.setUniformLocation(uniformStaticColor, ctx)
-        shader.setUniformLocation(uniformAlpha, ctx)
-        shader.setUniformLocation(uniformSaturation, ctx)
-        shader.setUniformLocation(uniformBones, ctx)
-
-        for (uniform in customUnitforms.values) {
-            shader.setUniformLocation(uniform, ctx)
-        }
-    }
-
-    fun generate(shaderProps: ShaderProps): Shader.Source {
-        uniformMvpMatrix.location = null
-        uniformModelMatrix.location = null
-        uniformViewMatrix.location = null
-        uniformLightColor.location = null
-        uniformLightDirection.location = null
-        uniformCameraPosition.location = null
-        uniformShininess.location = null
-        uniformSpecularIntensity.location = null
-        uniformStaticColor.location = null
-        uniformTexture.location = null
-        uniformAlpha.location = null
-        uniformSaturation.location = null
-        uniformFogRange.location = null
-        uniformFogColor.location = null
-
+    fun generate(shaderProps: ShaderProps, hints: ShadingHints): Shader.Source {
         return Shader.Source(generateVertShader(shaderProps), generateFragShader(shaderProps))
     }
 
@@ -220,7 +148,7 @@ open class GlslGenerator {
             text.append("$vsIn vec3 $V_POSITION_WORLDSPACE;\n")
         }
 
-        for (uniform in customUnitforms.values) {
+        for (uniform in customUnitforms) {
             text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
     }
@@ -344,7 +272,7 @@ open class GlslGenerator {
             text.append("$fsIn vec3 $V_POSITION_WORLDSPACE;\n")
         }
 
-        for (uniform in customUnitforms.values) {
+        for (uniform in customUnitforms) {
             text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
         text.append(fsOut)

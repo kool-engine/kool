@@ -47,7 +47,5 @@ class ShaderProps {
     var staticColor = Color.BLACK
     var alpha = 1.0f
     var saturation = 1.0f
-    var fogRange = 250.0f
-    var fogColor = Color.LIGHT_GRAY
     var texture: Texture? = null
 }

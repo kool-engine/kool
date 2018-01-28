@@ -4,8 +4,8 @@ import de.fabmax.kool.RenderContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.MutableVec3f
 import de.fabmax.kool.util.MutableVec4f
 
 
@@ -18,48 +18,43 @@ fun basicShader(propsInit: ShaderProps.() -> Unit): BasicShader {
  */
 open class BasicShader(val props: ShaderProps, private val generator: GlslGenerator = GlslGenerator()) : Shader() {
 
-    protected var lightColor: MutableVec3f
-        get() = generator.uniformLightColor.value
-        set(value) { generator.uniformLightColor.value.set(value) }
-    protected var lightDirection: MutableVec3f
-        get() = generator.uniformLightDirection.value
-        set(value) { generator.uniformLightDirection.value.set(value) }
-    protected var cameraPosition: MutableVec3f
-        get() = generator.uniformCameraPosition.value
-        set(value) { generator.uniformCameraPosition.value.set(value) }
+    protected val uMvpMatrix = addUniform(UniformMatrix4(GlslGenerator.U_MVP_MATRIX))
+    protected val uModelMatrix = addUniform(UniformMatrix4(GlslGenerator.U_MODEL_MATRIX))
+    protected val uViewMatrix = addUniform(UniformMatrix4(GlslGenerator.U_VIEW_MATRIX))
+    protected val uLightColor = addUniform(Uniform3f(GlslGenerator.U_LIGHT_COLOR))
+    protected val uLightDirection = addUniform(Uniform3f(GlslGenerator.U_LIGHT_DIRECTION))
+    protected val uCamPosition = addUniform(Uniform3f(GlslGenerator.U_CAMERA_POSITION))
+    protected val uShininess = addUniform(Uniform1f(GlslGenerator.U_SHININESS))
+    protected val uSpecularIntensity = addUniform(Uniform1f(GlslGenerator.U_SPECULAR_INTENSITY))
+    protected val uStaticColor = addUniform(Uniform4f(GlslGenerator.U_STATIC_COLOR))
+    protected val uTexture = addUniform(UniformTexture2D(GlslGenerator.U_TEXTURE_0))
+    protected val uAlpha = addUniform(Uniform1f(GlslGenerator.U_ALPHA))
+    protected val uSaturation = addUniform(Uniform1f(GlslGenerator.U_SATURATION))
+    protected val uFogColor = addUniform(Uniform4f(GlslGenerator.U_FOG_COLOR))
+    protected val uFogRange = addUniform(Uniform1f(GlslGenerator.U_FOG_RANGE))
+    protected val uBones = addUniform(UniformMatrix4(GlslGenerator.U_BONES))
 
     var shininess: Float
-        get() = generator.uniformShininess.value
-        set(value) { generator.uniformShininess.value = value }
+        get() = uShininess.value
+        set(value) { uShininess.value = value }
     var specularIntensity: Float
-        get() = generator.uniformSpecularIntensity.value
-        set(value) { generator.uniformSpecularIntensity.value = value }
-
+        get() = uSpecularIntensity.value
+        set(value) { uSpecularIntensity.value = value }
     var staticColor: MutableVec4f
-        get() = generator.uniformStaticColor.value
-        set(value) { generator.uniformStaticColor.value.set(value) }
+        get() = uStaticColor.value
+        set(value) { uStaticColor.value.set(value) }
     var texture: Texture?
-        get() = generator.uniformTexture.value
-        set(value) { generator.uniformTexture.value = value }
-
+        get() = uTexture.value
+        set(value) { uTexture.value = value }
     var alpha: Float
-        get() = generator.uniformAlpha.value
-        set(value) { generator.uniformAlpha.value = value }
-
+        get() = uAlpha.value
+        set(value) { uAlpha.value = value }
     var saturation: Float
-        get() = generator.uniformSaturation.value
-        set(value) { generator.uniformSaturation.value = value }
-
-    var fogColor: MutableVec4f
-        get() = generator.uniformFogColor.value
-        set(value) { generator.uniformFogColor.value.set(value) }
-    var fogRange: Float
-        get() = generator.uniformFogRange.value
-        set(value) { generator.uniformFogRange.value = value }
-
+        get() = uSaturation.value
+        set(value) { uSaturation.value = value }
     var bones: Float32Buffer?
-        get() = generator.uniformBones.value
-        set(value) { generator.uniformBones.value = value }
+        get() = uBones.value
+        set(value) { uBones.value = value }
 
     private var scene: Scene? = null
 
@@ -71,17 +66,20 @@ open class BasicShader(val props: ShaderProps, private val generator: GlslGenera
         texture = props.texture
         alpha = props.alpha
         saturation = props.saturation
-        fogRange = props.fogRange
-        fogColor.set(props.fogColor)
     }
 
-    override fun generateSource(ctx: RenderContext) {
-        source = generator.generate(props)
-    }
+    override fun generate(ctx: RenderContext) {
+        source = generator.generate(props, ctx.shaderMgr.shadingHints)
 
-    override fun onLoad(ctx: RenderContext) {
-        super.onLoad(ctx)
-        generator.onLoad(this, ctx)
+        attributes.clear()
+        attributes.add(Attribute.POSITIONS)
+        attributes.add(Attribute.NORMALS)
+        attributes.add(Attribute.TEXTURE_COORDS)
+        attributes.add(Attribute.COLORS)
+        if (props.isShaderAnimated) {
+            attributes.add(Armature.BONE_INDICES)
+            attributes.add(Armature.BONE_WEIGHTS)
+        }
     }
 
     override fun onBind(ctx: RenderContext) {
@@ -89,50 +87,42 @@ open class BasicShader(val props: ShaderProps, private val generator: GlslGenera
 
         scene = null
 
-        // fixme: if (isGlobalFog) fogColor.set(global)
-        generator.uniformFogColor.bind(ctx)
-        // fixme: if (isGlobalFog) fogRange = global
-        generator.uniformFogRange.bind(ctx)
-
-        // fixme: if (isGlobalSaturation) saturation = globalSaturation
-        generator.uniformSaturation.bind(ctx)
-
-        generator.uniformAlpha.bind(ctx)
-        generator.uniformShininess.bind(ctx)
-        generator.uniformSpecularIntensity.bind(ctx)
-        generator.uniformStaticColor.bind(ctx)
-        generator.uniformTexture.bind(ctx)
-        generator.uniformBones.bind(ctx)
+        uFogColor.bind(ctx)
+        uFogRange.bind(ctx)
+        uSaturation.bind(ctx)
+        uAlpha.bind(ctx)
+        uShininess.bind(ctx)
+        uSpecularIntensity.bind(ctx)
+        uStaticColor.bind(ctx)
+        uTexture.bind(ctx)
+        uBones.bind(ctx)
     }
 
     override fun bindMesh(mesh: Mesh, ctx: RenderContext) {
         if (scene != mesh.scene) {
             scene = mesh.scene
             if (scene != null) {
-                cameraPosition.set(scene!!.camera.globalPos)
-                generator.uniformCameraPosition.bind(ctx)
+                uCamPosition.value.set(scene!!.camera.globalPos)
+                uCamPosition.bind(ctx)
 
                 val light = scene!!.light
-                lightDirection.set(light.direction)
-                generator.uniformLightDirection.bind(ctx)
-                lightColor.set(light.color.r, light.color.g, light.color.b)
-                generator.uniformLightColor.bind(ctx)
+                uLightDirection.value.set(light.direction)
+                uLightDirection.bind(ctx)
+                uLightColor.value.set(light.color.r, light.color.g, light.color.b)
+                uLightColor.bind(ctx)
             }
         }
-
         super.bindMesh(mesh, ctx)
     }
 
     override fun onMatrixUpdate(ctx: RenderContext) {
         // pass current transformation matrices to shader
-        generator.uniformMvpMatrix.value = ctx.mvpState.mvpMatrixBuffer
-        generator.uniformMvpMatrix.bind(ctx)
-
-        generator.uniformViewMatrix.value = ctx.mvpState.viewMatrixBuffer
-        generator.uniformViewMatrix.bind(ctx)
-
-        generator.uniformModelMatrix.value = ctx.mvpState.modelMatrixBuffer
-        generator.uniformModelMatrix.bind(ctx)
+        uMvpMatrix.value = ctx.mvpState.mvpMatrixBuffer
+        uMvpMatrix.bind(ctx)
+        uViewMatrix.value = ctx.mvpState.viewMatrixBuffer
+        uViewMatrix.bind(ctx)
+        uModelMatrix.value = ctx.mvpState.modelMatrixBuffer
+        uModelMatrix.bind(ctx)
     }
 
     override fun dispose(ctx: RenderContext) {
@@ -142,25 +132,29 @@ open class BasicShader(val props: ShaderProps, private val generator: GlslGenera
 }
 
 fun basicPointShader(propsInit: ShaderProps.() -> Unit): BasicPointShader {
-    val generator = GlslGenerator()
-    generator.addCustomUniform(Uniform1f("uPointSz"))
-    generator.injectors += object : GlslGenerator.GlslInjector {
-        override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append("gl_PointSize = uPointSz;\n")
-        }
-    }
-    return BasicPointShader(ShaderProps().apply(propsInit), generator)
+    return BasicPointShader(ShaderProps().apply(propsInit), GlslGenerator())
 }
 
 open class BasicPointShader internal constructor(props: ShaderProps, generator: GlslGenerator) :
         BasicShader(props, generator) {
 
-    private val uPointSz = generator.customUnitforms["uPointSz"] as Uniform1f
+    companion object {
+        const val U_POINT_SIZE = "uPointSz"
+    }
+
+    protected val uPointSz = addUniform(Uniform1f(U_POINT_SIZE))
     var pointSize: Float
         get() = uPointSz.value
         set(value) { uPointSz.value = value }
 
     init {
+        generator.customUnitforms += uPointSz
+        generator.injectors += object : GlslGenerator.GlslInjector {
+            override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) {
+                text.append("gl_PointSize = ${BasicPointShader.U_POINT_SIZE};\n")
+            }
+        }
+
         pointSize = 1f
     }
 

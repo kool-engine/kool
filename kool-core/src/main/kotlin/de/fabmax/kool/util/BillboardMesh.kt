@@ -40,25 +40,24 @@ fun billboardShader(propsInit: ShaderProps.() -> Unit = { }): BillboardShader {
     val props = ShaderProps()
     props.propsInit()
     props.isTextureColor = true
-    val generator = GlslGenerator()
-    generator.addCustomUniform(Uniform2f("uViewportSz"))
-
-    generator.injectors += object: GlslGenerator.GlslInjector {
-        override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append("gl_Position.x += (").append(Attribute.TEXTURE_COORDS.name)
-                    .append(".x - 0.5) * gl_Position.w / uViewportSz.x;\n")
-                    .append("gl_Position.y -= (").append(Attribute.TEXTURE_COORDS.name)
-                    .append(".y - 0.5) * gl_Position.w / uViewportSz.y;\n")
-        }
-    }
-    return BillboardShader(props, generator)
+    return BillboardShader(props, GlslGenerator())
 }
 
 class BillboardShader internal constructor(props: ShaderProps, generator: GlslGenerator) : BasicShader(props, generator) {
 
-    private val uViewportSz = generator.customUnitforms["uViewportSz"] as Uniform2f
+    private val uViewportSz = addUniform(Uniform2f("uViewportSz"))
 
     var billboardSize = 1f
+
+    init {
+        generator.customUnitforms += uViewportSz
+        generator.injectors += object: GlslGenerator.GlslInjector {
+            override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) {
+                text.append("gl_Position.x += (${Attribute.TEXTURE_COORDS.name}.x - 0.5) * gl_Position.w / uViewportSz.x;\n")
+                        .append("gl_Position.y -= (${Attribute.TEXTURE_COORDS.name}.y - 0.5) * gl_Position.w / uViewportSz.y;\n")
+            }
+        }
+    }
 
     override fun onBind(ctx: RenderContext) {
         super.onBind(ctx)

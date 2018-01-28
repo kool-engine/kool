@@ -137,6 +137,8 @@ expect fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int,
 
 expect fun glViewport(x: Int, y: Int, width: Int, height: Int)
 
+expect fun isValidUniformLocation(location: Any?): Boolean
+
 const val GL_ACTIVE_TEXTURE = 0x84E0
 const val GL_DEPTH_BUFFER_BIT = 0x00000100
 const val GL_STENCIL_BUFFER_BIT = 0x00000400

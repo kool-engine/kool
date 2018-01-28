@@ -17,7 +17,7 @@ abstract class Uniform<T>(val name: String, value: T) {
 
     var location: Any? = null
     val isValid: Boolean
-        get() = location != null
+        get() = isValidUniformLocation(location)
 
     internal fun bind(ctx: RenderContext) {
         if (isValid) {
