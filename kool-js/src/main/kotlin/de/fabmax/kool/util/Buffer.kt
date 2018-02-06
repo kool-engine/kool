@@ -56,6 +56,13 @@ internal class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<Uint8
         return this
     }
 
+    override fun put(data: de.fabmax.kool.util.Buffer<Byte>): Uint8Buffer {
+        for (i in data.position until data.limit) {
+            put(data[i])
+        }
+        return this
+    }
+
     override fun get(i: Int): Byte {
         return buffer[i]
     }
@@ -80,6 +87,13 @@ internal class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Uin
 
     override fun put(value: Short): Uint16Buffer {
         buffer[position++] = value
+        return this
+    }
+
+    override fun put(data: de.fabmax.kool.util.Buffer<Short>): Uint16Buffer {
+        for (i in data.position until data.limit) {
+            put(data[i])
+        }
         return this
     }
 
@@ -110,6 +124,13 @@ internal class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Uin
         return this
     }
 
+    override fun put(data: de.fabmax.kool.util.Buffer<Int>): Uint32Buffer {
+        for (i in data.position until data.limit) {
+            put(data[i])
+        }
+        return this
+    }
+
     override fun get(i: Int): Int {
         return buffer[i]
     }
@@ -134,6 +155,13 @@ internal class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<F
 
     override fun put(value: Float): Float32Buffer {
         buffer[position++] = value
+        return this
+    }
+
+    override fun put(data: de.fabmax.kool.util.Buffer<Float>): Float32Buffer {
+        for (i in data.position until data.limit) {
+            put(data[i])
+        }
         return this
     }
 

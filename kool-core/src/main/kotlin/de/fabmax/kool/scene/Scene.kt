@@ -35,7 +35,7 @@ open class Scene(name: String? = null) : Group(name) {
         scene = this
     }
 
-    override fun render(ctx: RenderContext) {
+    fun renderScene(ctx: RenderContext) {
         if (!isVisible) {
             return
         }
@@ -51,7 +51,7 @@ open class Scene(name: String? = null) : Group(name) {
         if (clearMask != 0) {
             glClear(clearMask)
         }
-        super.render(ctx)
+        render(ctx)
 
         for (i in postRender.indices) {
             postRender[i](ctx)

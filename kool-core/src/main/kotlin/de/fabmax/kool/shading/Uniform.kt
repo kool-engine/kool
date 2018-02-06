@@ -19,7 +19,7 @@ abstract class Uniform<T>(val name: String, value: T) {
     val isValid: Boolean
         get() = isValidUniformLocation(location)
 
-    internal fun bind(ctx: RenderContext) {
+    fun bind(ctx: RenderContext) {
         if (isValid) {
             doBind(ctx)
         }
@@ -36,8 +36,28 @@ class UniformTexture2D(name: String) : Uniform<Texture?>(name, null) {
     override fun doBind(ctx: RenderContext) {
         val tex = value
         if (tex != null) {
-            glUniform1i(location, ctx.textureMgr.bindTexture(tex, ctx))
+            val unit = ctx.textureMgr.bindTexture(tex, ctx)
+            if (tex.isValid && tex.res!!.isLoaded) {
+                glUniform1i(location, unit)
+            }
         }
+    }
+}
+
+class UniformTexture2Dv(name: String, size: Int) : Uniform<Array<Texture?>>(name, Array(size) { null }) {
+    override val type = "sampler2D"
+    private val texNames = IntArray(size)
+
+    override fun doBind(ctx: RenderContext) {
+        for (i in value.indices) {
+            val tex = value[i]
+            texNames[i] = if (tex != null) {
+                ctx.textureMgr.bindTexture(tex, ctx)
+            } else {
+                -1
+            }
+        }
+        glUniform1iv(location, texNames)
     }
 }
 
@@ -51,6 +71,14 @@ class Uniform1i(name: String) : Uniform<Int>(name, 0) {
     }
 }
 
+class Uniform1iv(name: String, size: Int) : Uniform<IntArray>(name, IntArray(size)) {
+    override val type = "int"
+
+    override fun doBind(ctx: RenderContext) {
+        glUniform1iv(location, value)
+    }
+}
+
 class Uniform1f(name: String) : Uniform<Float>(name, 0f) {
     override val type = "float"
     override var value = 0f
@@ -58,6 +86,14 @@ class Uniform1f(name: String) : Uniform<Float>(name, 0f) {
 
     override fun doBind(ctx: RenderContext) {
         glUniform1f(location, value)
+    }
+}
+
+class Uniform1fv(name: String, size: Int) : Uniform<FloatArray>(name, FloatArray(size)) {
+    override val type = "float"
+
+    override fun doBind(ctx: RenderContext) {
+        glUniform1fv(location, value)
     }
 }
 

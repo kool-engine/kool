@@ -5,6 +5,7 @@ import de.fabmax.kool.demo.earth.earthScene
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
+import kotlin.math.min
 
 /**
  * @author fabmax
@@ -162,12 +163,13 @@ class MenuButtonUi(tb: ToggleButton, val menu: UiContainer) : ToggleButtonUi(tb,
 
         tb.setupBuilder(meshBuilder)
         meshBuilder.apply {
-//            color = bgColor
-//            circle {
-//                radius = Math.min(tb.width, tb.height) / 2f
-//                center.set(tb.width / 2f, tb.height / 2f, 0f)
-//                steps = 30
-//            }
+            // add a completely translucent circle as background to get a larger click target
+            color = Color(0f, 0f, 0f, 0f)
+            circle {
+                radius = min(tb.width, tb.height) / 2f
+                center.set(tb.width / 2f, tb.height / 2f, 0f)
+                steps = 30
+            }
 
             val tx = knobAnimator.value.value * -hw * 0.1f
             val w = hw - knobAnimator.value.value * hw * 0.4f

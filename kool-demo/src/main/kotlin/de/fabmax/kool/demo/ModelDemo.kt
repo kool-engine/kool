@@ -8,6 +8,7 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Vec3f
 import de.fabmax.kool.util.lineMesh
@@ -20,19 +21,31 @@ import kotlin.math.sqrt
  */
 
 fun modelScene(): Scene = scene {
+    val cascadedShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
+    preRender += { ctx ->
+        cascadedShadowMap.renderShadowMap(this, ctx)
+    }
+
+    (camera as PerspectiveCamera).clipFar = 100f
+
     // add some sort of ground plane
     val groundExt = 20
     +colorMesh {
         generator = {
             withTransform {
                 rotate(-90f, Vec3f.X_AXIS)
-                color = Color.LIGHT_GRAY.withAlpha(0.1f)
+                color = Color.LIGHT_GRAY.withAlpha(0.2f)
                 rect {
                     origin.set(-groundExt.toFloat(), -groundExt.toFloat(), 0f)
                     width = groundExt * 2f
                     height = groundExt * 2f
                 }
             }
+        }
+        shader = basicShader {
+            lightModel = LightModel.PHONG_LIGHTING
+            colorModel = ColorModel.VERTEX_COLOR
+            shadowMap = cascadedShadowMap
         }
     }
     +lineMesh {
@@ -51,7 +64,7 @@ fun modelScene(): Scene = scene {
         val model = TransformGroup()
         var movementSpeed = 0.25f
         var slowMotion = 1f
-        var armature: Armature? =null
+        var armature: Armature? = null
 
         +model
 
@@ -63,6 +76,7 @@ fun modelScene(): Scene = scene {
                 lightModel = LightModel.PHONG_LIGHTING
                 colorModel = ColorModel.STATIC_COLOR
                 staticColor = Color.GRAY
+                shadowMap = cascadedShadowMap
 
                 if (mesh is Armature) {
                     // do mesh animation on vertex shader if available.
@@ -127,7 +141,7 @@ fun modelScene(): Scene = scene {
                     layoutSpec.setSize(pcs(25f), dps(35f), uns(0f))
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
-                    text = formatFloat(movementSpeed)
+                    text = formatFloat(sqrt(movementSpeed))
                 }
                 +speedLabel
                 +Slider("speedSlider", 0.0f, 1f, sqrt(movementSpeed), root).apply {

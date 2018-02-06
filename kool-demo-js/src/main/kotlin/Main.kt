@@ -7,6 +7,9 @@ import kotlin.browser.window
  */
 fun main() {
     Demo(createContext(), getParams()["demo"])
+//    val ctx = createContext()
+//    ctx.scenes += simpleShapesScene()
+//    ctx.run()
 }
 
 fun getParams(): Map<String, String> {
@@ -20,7 +23,7 @@ fun getParams(): Map<String, String> {
                 val valEnc = keyVal[1]
                 val key = js("decodeURIComponent(keyEnc)").toString()
                 val value = js("decodeURIComponent(valEnc)").toString()
-                params.put(key, value)
+                params[key] = value
             }
         }
     }

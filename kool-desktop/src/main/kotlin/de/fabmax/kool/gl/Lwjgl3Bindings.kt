@@ -61,6 +61,8 @@ actual fun glCreateShader(type: Int): Any = GL20.glCreateShader(type)
 
 actual fun glCreateTexture(): Any = GL11.glGenTextures()
 
+actual fun glCullFace(mode: Int) = GL11.glCullFace(mode)
+
 actual fun glDeleteBuffer(buffer: BufferResource) = GL15.glDeleteBuffers(buffer.glRef as Int)
 
 actual fun glDeleteFramebuffer(framebuffer: FramebufferResource) = GL30.glDeleteFramebuffers(framebuffer.glRef as Int)
@@ -81,6 +83,8 @@ actual fun glDepthMask(enabled: Boolean) = GL11.glDepthMask(enabled)
 actual fun glDisable(cap: Int) = GL11.glDisable(cap)
 
 actual fun glDisableVertexAttribArray(index: Int) = GL20.glDisableVertexAttribArray(index)
+
+actual fun glDrawBuffer(buf: Int) = GL11.glDrawBuffer(buf)
 
 actual fun glDrawElements(mode: Int, count: Int, type: Int, offset: Int) =
         GL11.glDrawElements(mode, count, type, offset.toLong())
@@ -124,6 +128,8 @@ actual fun glLinkProgram(program: ProgramResource) = GL20.glLinkProgram(program.
 
 actual fun glPointSize(size: Float) = GL11.glPointSize(size)
 
+actual fun glReadBuffer(src: Int) = GL11.glReadBuffer(src)
+
 actual fun glRenderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) =
         GL30.glRenderbufferStorage(target, internalformat, width, height)
 
@@ -139,7 +145,11 @@ actual fun glTexParameteri(target: Int, pname: Int, param: Int) = GL11.glTexPara
 
 actual fun glUniform1f(location: Any?, x: Float) = GL20.glUniform1f(location as Int, x)
 
+actual fun glUniform1fv(location: Any?, x: FloatArray) = GL20.glUniform1fv(location as Int, x)
+
 actual fun glUniform1i(location: Any?, x: Int) = GL20.glUniform1i(location as Int, x)
+
+actual fun glUniform1iv(location: Any?, x: IntArray) = GL20.glUniform1iv(location as Int, x)
 
 actual fun glUniform2f(location: Any?, x: Float, y: Float) = GL20.glUniform2f(location as Int, x, y)
 

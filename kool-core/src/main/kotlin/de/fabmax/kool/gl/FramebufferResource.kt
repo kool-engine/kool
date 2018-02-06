@@ -1,33 +1,74 @@
 package de.fabmax.kool.gl
 
-import de.fabmax.kool.RenderContext
-import de.fabmax.kool.Texture
-import de.fabmax.kool.TextureData
-import de.fabmax.kool.TextureProps
-import de.fabmax.kool.math.random
+import de.fabmax.kool.*
+import de.fabmax.kool.util.UniqueId
 
-fun colorAttachmentTex(width: Int, height: Int, minFilter: Int, magFilter: Int): Texture {
-    val id = random()
-    val texProps = TextureProps("framebuffer-colorAttachment-$id",
-            minFilter, magFilter, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0)
-    return Texture(texProps, { FbTexData(width, height) })
+class Framebuffer(val width: Int, val height: Int) {
+
+    private val fbId = UniqueId.nextId()
+
+    var fbResource: FramebufferResource? = null
+        private set
+
+    var colorAttachment: Texture? = null
+        private set
+    var depthAttachment: Texture? = null
+        private set
+
+    fun withColor(): Framebuffer {
+        if (colorAttachment == null) {
+            colorAttachment = FbColorTexData.colorTex(width, height, fbId)
+        }
+        return this
+    }
+
+    fun withDepth(): Framebuffer {
+        if (depthAttachment == null) {
+            val filterMethod = glCapabilities.depthFilterMethod
+            val depthProps = TextureProps("framebuffer-$fbId-depth",
+                    filterMethod, filterMethod, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0)
+            depthAttachment = Texture(depthProps) {
+                FbDepthTexData(this@Framebuffer.width, this@Framebuffer.height)
+            }
+        }
+        return this
+    }
+
+    fun delete(ctx: RenderContext) {
+        fbResource?.delete(ctx)
+        colorAttachment?.dispose(ctx)
+        depthAttachment?.dispose(ctx)
+
+        fbResource = null
+        colorAttachment = null
+        depthAttachment = null
+    }
+
+    fun bind(ctx: RenderContext) {
+        val fb = fbResource ?: FramebufferResource.create(width, height, ctx).apply {
+            fbResource = this
+            colorAttachment = this@Framebuffer.colorAttachment
+            depthAttachment = this@Framebuffer.depthAttachment
+        }
+        fb.bind(ctx)
+    }
+
+    fun unbind(ctx: RenderContext) {
+        fbResource?.unbind(ctx)
+    }
 }
 
-class FramebufferResource private constructor(glRef: Any, val colorAttachment: Texture, ctx: RenderContext) :
+class FramebufferResource private constructor(glRef: Any, val width: Int, val height: Int, ctx: RenderContext) :
         GlResource(glRef, Type.FRAMEBUFFER, ctx) {
     companion object {
         fun create(width: Int, height: Int, ctx: RenderContext): FramebufferResource {
-            val id = ctx.generateUniqueId()
-            val texProps = TextureProps("framebuffer-colorAttachment-$id",
-                    GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0)
-            return create(Texture(texProps, { FbTexData(width, height) }), ctx)
-        }
-
-        fun create(colorAttachment: Texture, ctx: RenderContext): FramebufferResource {
-            return FramebufferResource(glCreateFramebuffer(), colorAttachment, ctx)
+            return FramebufferResource(glCreateFramebuffer(), width, height, ctx)
         }
     }
+    private val fbId = UniqueId.nextId()
 
+    var colorAttachment: Texture? = null
+    var depthAttachment: Texture? = null
     private var isFbComplete = false
 
     override fun delete(ctx: RenderContext) {
@@ -40,12 +81,33 @@ class FramebufferResource private constructor(glRef: Any, val colorAttachment: T
         if (!isFbComplete) {
             isFbComplete = true
 
-            ctx.textureMgr.bindTexture(colorAttachment, ctx)
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment.res!!, 0)
+            if (colorAttachment == null && depthAttachment != null && !glCapabilities.framebufferWithoutColor) {
+                // fixme: Improve depth rendering performance on OpenGL ES 2.0
+                // Currently depth renderer expects that there is no color attachment at the depth framebuffer
+                // this way regular shaders can be used during depth rendering without big performance impact:
+                // without color attachment all expensive fragment shader operations are skipped.
+                // However for OpenGL ES 2.0 this doesn't work and we have to add a color attachment, otherwise
+                // the framebuffer is incomplete. This makes depth rendering VERY expensive.
+                colorAttachment = FbColorTexData.colorTex(width, height, fbId)
+            }
+
+            val color = colorAttachment
+            if (color != null) {
+                ctx.textureMgr.bindTexture(color, ctx)
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color.res!!, 0)
+            } else {
+                glDrawBuffer(GL_NONE)
+                glReadBuffer(GL_NONE)
+            }
+            val depth = depthAttachment
+            if (depth != null) {
+                ctx.textureMgr.bindTexture(depth, ctx)
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.res!!, 0)
+            }
         }
 
         ctx.pushAttributes()
-        ctx.viewport = RenderContext.Viewport(0, 0, colorAttachment.width, colorAttachment.height)
+        ctx.viewport = RenderContext.Viewport(0, 0, width, height)
         ctx.applyAttributes()
     }
 
@@ -55,7 +117,7 @@ class FramebufferResource private constructor(glRef: Any, val colorAttachment: T
     }
 }
 
-private class FbTexData(width: Int, height: Int) : TextureData() {
+private class FbColorTexData(width: Int, height: Int) : TextureData() {
     init {
         this.isAvailable = true
         this.width = width
@@ -63,8 +125,41 @@ private class FbTexData(width: Int, height: Int) : TextureData() {
     }
 
     override fun onLoad(texture: Texture, ctx: RenderContext) {
-        // texture data is not loaded but generated when drawn to the framebuffer - do nothing here
-
+        // sets up the color attachment texture
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null)
+    }
+
+    companion object {
+        fun colorTex(sizeX: Int, sizeY: Int, fbId: Long): Texture {
+            val colorProps = TextureProps("framebuffer-$fbId-color",
+                    GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0)
+            return Texture(colorProps) {
+                FbColorTexData(sizeX, sizeY)
+            }
+        }
+    }
+}
+
+private class FbDepthTexData(width: Int, height: Int) : TextureData() {
+    init {
+        this.isAvailable = true
+        this.width = width
+        this.height = height
+    }
+
+    override fun onLoad(texture: Texture, ctx: RenderContext) {
+        // sets up the depth attachment texture
+        glTexImage2D(GL_TEXTURE_2D, 0, glCapabilities.depthComponentIntFormat, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, null)
+    }
+
+    companion object {
+        fun depthTex(sizeX: Int, sizeY: Int, fbId: Long): Texture {
+            val filterMethod = glCapabilities.depthFilterMethod
+            val depthProps = TextureProps("framebuffer-$fbId-depth",
+                    filterMethod, filterMethod, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0)
+            return Texture(depthProps) {
+                FbDepthTexData(sizeX, sizeY)
+            }
+        }
     }
 }

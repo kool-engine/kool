@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.math.isZero
+import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.util.*
 import kotlin.math.atan
@@ -14,9 +15,9 @@ import kotlin.math.tan
  */
 abstract class Camera(name: String = "camera") : Node(name) {
 
-    protected val position = MutableVec3f(0f, 0f, 1f)
-    protected val lookAt = MutableVec3f(Vec3f.Companion.ZERO)
-    protected val up = MutableVec3f(Vec3f.Companion.Y_AXIS)
+    val position = MutableVec3f(0f, 0f, 1f)
+    val lookAt = MutableVec3f(Vec3f.Companion.ZERO)
+    val up = MutableVec3f(Vec3f.Companion.Y_AXIS)
 
     var aspectRatio = 1.0f
         protected set
@@ -29,43 +30,48 @@ abstract class Camera(name: String = "camera") : Node(name) {
     var globalRange = 0f
         protected set
 
-    // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     protected val globalPosMut = MutableVec3f()
     protected val globalLookAtMut = MutableVec3f()
     protected val globalUpMut = MutableVec3f()
     protected val globalRightMut = MutableVec3f()
     protected val globalLookDirMut = MutableVec3f()
 
+    protected val view = Mat4f()
+    protected val invView = Mat4f()
     protected val mvp = Mat4f()
     protected val invMvp = Mat4f()
 
+    // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
 
     fun updateCamera(ctx: RenderContext) {
-        aspectRatio = ctx.viewport.width.toFloat() / ctx.viewport.height.toFloat()
+        aspectRatio = ctx.viewport.aspectRatio
 
         updateViewMatrix(ctx)
         updateProjectionMatrix(ctx)
 
-        ctx.mvpState.projMatrix.mul(ctx.mvpState.viewMatrix, mvp)
-        mvp.invert(invMvp)
-
         ctx.mvpState.update(ctx)
+        mvp.set(ctx.mvpState.mvpMatrix)
+        mvp.invert(invMvp)
     }
 
-    protected fun updateViewMatrix(ctx: RenderContext) {
+    protected open fun updateViewMatrix(ctx: RenderContext) {
         toGlobalCoords(globalPosMut.set(position))
         toGlobalCoords(globalLookAtMut.set(lookAt))
         toGlobalCoords(globalUpMut.set(up), 0f).norm()
 
         globalLookDirMut.set(globalLookAtMut).subtract(globalPosMut)
         globalRange = globalLookDirMut.length()
-        globalLookDirMut.scale(1f / globalRange)
+        //globalLookDirMut.scale(1f / globalRange)
+        globalLookDirMut.norm()
 
-        globalLookDirMut.cross(globalUpMut, globalRightMut)
+        globalLookDirMut.cross(globalUpMut, globalRightMut).norm()
+        globalRightMut.cross(globalLookDirMut, globalUpMut).norm()
 
-        ctx.mvpState.viewMatrix.setLookAt(globalPosMut, globalLookAtMut, globalUpMut)
+        view.setLookAt(globalPosMut, globalLookAtMut, globalUpMut)
+        view.invert(invView)
+        ctx.mvpState.viewMatrix.set(view)
     }
 
     abstract protected fun updateProjectionMatrix(ctx: RenderContext)
@@ -95,9 +101,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return computePickRay(rayTest.ray, screenX, screenY, ctx)
     }
 
+    abstract fun computeFrustumPlane(z: Float, result: FrustumPlane)
+
     abstract fun isInFrustum(node: Node): Boolean
 
-    fun project_(world: Vec3f, result: MutableVec3f): Boolean {
+    fun project(world: Vec3f, result: MutableVec3f): Boolean {
         tmpVec4.set(world.x, world.y, world.z, 1f)
         mvp.transform(tmpVec4)
         if (tmpVec4.w.isZero()) {
@@ -107,8 +115,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return true
     }
 
+    fun project(world: Vec3f, result: MutableVec4f): MutableVec4f =
+            mvp.transform(result.set(world.x, world.y, world.z, 1f))
+
     fun projectScreen(world: Vec3f, ctx: RenderContext, result: MutableVec3f): Boolean {
-        if (!project_(world, result)) {
+        if (!project(world, result)) {
             return false
         }
         result.x = (1 + result.x) * 0.5f * ctx.viewport.width + ctx.viewport.x
@@ -151,6 +162,11 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         this.far = far
     }
 
+    override fun updateViewMatrix(ctx: RenderContext) {
+        super.updateViewMatrix(ctx)
+        globalLookDir
+    }
+
     override fun updateProjectionMatrix(ctx: RenderContext) {
         if (clipToViewport) {
             left = 0f
@@ -168,6 +184,14 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         if (left != right && bottom != top && near != far) {
             ctx.mvpState.projMatrix.setOrthographic(left, right, bottom, top, near, far)
         }
+    }
+
+    override fun computeFrustumPlane(z: Float, result: FrustumPlane) {
+        val zd = near + (far - near) * z
+        invView.transform(result.upperLeft.set(left, top, -zd))
+        invView.transform(result.upperRight.set(right, top, -zd))
+        invView.transform(result.lowerLeft.set(left, bottom, -zd))
+        invView.transform(result.lowerRight.set(right, bottom, -zd))
     }
 
     /**
@@ -201,12 +225,16 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 }
 
 class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
-    var fovy = 60.0f
     var clipNear = 0.2f
     var clipFar = 200.0f
 
+    var fovy = 60.0f
+    var fovX = 0f
+        private set
+
     private var sphereFacX = 1f
     private var speherFacY = 1f
+    private var tangX = 1f
     private var tangY = 1f
 
     private val tmpNodeCenter = MutableVec3f()
@@ -219,8 +247,22 @@ class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
         val angY = fovy.toRad() / 2f
         speherFacY = 1f / cos(angY)
         tangY = tan(angY)
+
         val angX = atan(tangY * aspectRatio)
         sphereFacX = 1f / cos(angX)
+        tangX = tan(angX)
+        fovX = (angX * 2).toDeg()
+    }
+
+    override fun computeFrustumPlane(z: Float, result: FrustumPlane) {
+        val zd = clipNear + (clipFar - clipNear) * z
+        val x = zd * tangX
+        val y = zd * tangY
+
+        invView.transform(result.upperLeft.set(-x, y, -zd))
+        invView.transform(result.upperRight.set(x, y, -zd))
+        invView.transform(result.lowerLeft.set(-x, -y, -zd))
+        invView.transform(result.lowerRight.set(x, -y, -zd))
     }
 
     /**
@@ -257,4 +299,11 @@ class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
 
         return true
     }
+}
+
+class FrustumPlane {
+    val upperLeft = MutableVec3f()
+    val upperRight = MutableVec3f()
+    val lowerLeft = MutableVec3f()
+    val lowerRight = MutableVec3f()
 }

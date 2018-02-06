@@ -16,6 +16,7 @@ interface Buffer<T> {
     fun clear()
 
     fun put(value: T): Buffer<T>
+    fun put(data: Buffer<T>): Buffer<T>
     operator fun get(i: Int): T
     operator fun set(i: Int, value: T)
     operator fun plusAssign(value: T) { put(value) }

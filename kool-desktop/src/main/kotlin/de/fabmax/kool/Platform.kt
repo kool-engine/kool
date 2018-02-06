@@ -19,11 +19,7 @@ import java.net.URI
  * @author fabmax
  */
 
-actual val supportsMultiContext: Boolean = true
-
-actual val supportsUint32Indices: Boolean = true
-
-actual val glslVersion = GlslVersion.GLSL_330
+actual var glCapabilities = GlCapabilities.GL_330
 
 fun createContext() = createContext(Lwjgl3Context.InitProps())
 

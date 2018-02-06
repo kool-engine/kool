@@ -1,8 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.InputManager
-import de.fabmax.kool.JsImpl
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.*
 import de.fabmax.kool.gl.WebGL2RenderingContext
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLCanvasElement
@@ -29,22 +27,22 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
 
     internal val canvas: HTMLCanvasElement
     internal val gl: WebGLRenderingContext
-    internal val isWebGL2: Boolean
     internal val supportsUint32Indices: Boolean
 
     private var animationMillis = 0.0
 
     init {
         canvas = document.getElementById(props.canvasName) as HTMLCanvasElement
-        // try to get a WebGL2 context first and use WebGL as fallback
+        // try to get a WebGL2 context first and use WebGL version 1 as fallback
         var webGlCtx = canvas.getContext("webgl2")
         if (webGlCtx == null) {
             webGlCtx = canvas.getContext("experimental-webgl2")
         }
-        isWebGL2 = webGlCtx != null
+        JsImpl.isWebGl2Context = webGlCtx != null
 
         if (webGlCtx != null) {
             gl = webGlCtx as WebGL2RenderingContext
+            glCapabilities = GlCapabilities.GL_ES_300
 
         } else {
             println("falling back to WebGL 1 context")
@@ -56,7 +54,20 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
                 js("alert(\"Unable to initialize WebGL. Your browser may not support it.\")")
             }
             gl = webGlCtx as WebGLRenderingContext
+            glCapabilities = GlCapabilities.GL_ES_200
+
+            if (gl.getExtension("OES_element_index_uint") != null) {
+                glCapabilities.uint32Indices = true
+            }
+            if (gl.getExtension("WEBGL_depth_texture") != null) {
+                glCapabilities.depthTextures = true
+            }
         }
+
+//        for (ext in gl.getSupportedExtensions() ?: arrayOf("none")) {
+//            println(ext)
+//        }
+
         screenDpi = JsImpl.dpi
 
         supportsUint32Indices = gl.getExtension("OES_element_index_uint") != null

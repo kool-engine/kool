@@ -1,6 +1,6 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.glslVersion
+import de.fabmax.kool.glCapabilities
 import de.fabmax.kool.scene.animation.Armature
 
 /**
@@ -23,6 +23,10 @@ open class GlslGenerator {
         const val U_ALPHA = "uAlpha"
         const val U_SATURATION = "uSaturation"
         const val U_BONES = "uBones"
+        const val U_SHADOW_MVP = "uShadowMvp"
+        const val U_SHADOW_TEX = "uShadowTex"
+        const val U_SHADOW_TEX_SZ = "uShadowTexSz"
+        const val U_CLIP_SPACE_FAR_Z = "uClipSpaceFarZ"
 
         const val V_TEX_COORD = "vTexCoord"
         const val V_EYE_DIRECTION = "vEyeDirection_cameraspace"
@@ -32,6 +36,8 @@ open class GlslGenerator {
         const val V_DIFFUSE_LIGHT_COLOR = "vDiffuseLightColor"
         const val V_SPECULAR_LIGHT_COLOR = "vSpecularLightColor"
         const val V_POSITION_WORLDSPACE = "vPositionWorldspace"
+        const val V_POSITION_LIGHTSPACE = "vPositionLightspace"
+        const val V_POSITION_CLIPSPACE_Z = "vPositionClipspaceZ"
 
         const val L_TEX_COLOR = "texColor"
         const val L_VERTEX_COLOR = "vertColor"
@@ -55,21 +61,21 @@ open class GlslGenerator {
     }
 
     val injectors = mutableListOf<GlslInjector>()
-    val customUnitforms = mutableListOf<Uniform<*>>()
+    val customUniforms = mutableListOf<Uniform<*>>()
 
-    private val vsIn = glslVersion.dialect.vsIn
-    private val vsOut = glslVersion.dialect.vsOut
-    private val fsIn = glslVersion.dialect.fsIn
-    private val fsOut = glslVersion.dialect.fragColorHead
-    private val fsOutBody = glslVersion.dialect.fragColorBody
-    private val texSampler = glslVersion.dialect.texSampler
+    private val vsIn = glCapabilities.glslDialect.vsIn
+    private val vsOut = glCapabilities.glslDialect.vsOut
+    private val fsIn = glCapabilities.glslDialect.fsIn
+    private val fsOut = glCapabilities.glslDialect.fragColorHead
+    private val fsOutBody = glCapabilities.glslDialect.fragColorBody
+    private val texSampler = glCapabilities.glslDialect.texSampler
 
     fun generate(shaderProps: ShaderProps, hints: ShadingHints): Shader.Source {
         return Shader.Source(generateVertShader(shaderProps), generateFragShader(shaderProps))
     }
 
     private fun generateVertShader(shaderProps: ShaderProps): String {
-        val text = StringBuilder("${glslVersion.versionStr}\n")
+        val text = StringBuilder("${glCapabilities.glslDialect.version}\n")
 
         injectors.forEach { it.vsHeader(text) }
 
@@ -77,13 +83,12 @@ open class GlslGenerator {
         generateVertInputCode(shaderProps, text)
         injectors.forEach { it.vsAfterInput(shaderProps, text) }
         generateVertBodyCode(shaderProps, text)
-        injectors.forEach { it.vsEnd(shaderProps, text) }
 
         return text.toString()
     }
 
     private fun generateFragShader(shaderProps: ShaderProps): String {
-        val text = StringBuilder("${glslVersion.versionStr}\n")
+        val text = StringBuilder("${glCapabilities.glslDialect.version}\n")
 
         injectors.forEach { it.fsHeader(text) }
 
@@ -91,7 +96,6 @@ open class GlslGenerator {
         generateFragInputCode(shaderProps, text)
         injectors.forEach { it.fsAfterInput(shaderProps, text) }
         generateFragBodyCode(shaderProps, text)
-        injectors.forEach { it.fsEnd(shaderProps, text) }
 
         return text.toString()
     }
@@ -143,12 +147,19 @@ open class GlslGenerator {
             text.append("uniform mat4 $U_BONES[${Armature.MAX_BONES}];\n")
         }
 
+        val shadowMap = shaderProps.shadowMap
+        if (shadowMap != null) {
+            text.append("uniform mat4 $U_SHADOW_MVP[${shadowMap.subMaps.size}];\n")
+            text.append("$vsOut vec4 $V_POSITION_LIGHTSPACE[${shadowMap.subMaps.size}];\n")
+            text.append("$vsOut float $V_POSITION_CLIPSPACE_Z;\n")
+        }
+
         // if fog is enabled, fragment shader needs to know the world position
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
             text.append("$vsIn vec3 $V_POSITION_WORLDSPACE;\n")
         }
 
-        for (uniform in customUnitforms) {
+        for (uniform in customUniforms) {
             text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
     }
@@ -176,6 +187,14 @@ open class GlslGenerator {
         text.append("gl_Position = $U_MVP_MATRIX * position;\n")
 
         injectors.forEach { it.vsAfterProj(shaderProps, text) }
+
+        val shadowMap = shaderProps.shadowMap
+        if (shadowMap != null) {
+            for (i in shadowMap.subMaps.indices) {
+                text.append("$V_POSITION_LIGHTSPACE[$i] = $U_SHADOW_MVP[$i] * ($U_MODEL_MATRIX * position);\n")
+            }
+            text.append("$V_POSITION_CLIPSPACE_Z = gl_Position.z;\n")
+        }
 
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
             text.append("$V_POSITION_WORLDSPACE = ($U_MODEL_MATRIX * position).xyz;\n")
@@ -222,6 +241,8 @@ open class GlslGenerator {
             text.append("$V_DIFFUSE_LIGHT_COLOR = $U_LIGHT_COLOR * cosTheta;\n")
             text.append("$V_SPECULAR_LIGHT_COLOR = $U_LIGHT_COLOR * $U_SPECULAR_INTENSITY * pow(cosAlpha, $U_SHININESS);\n")
         }
+
+        injectors.forEach { it.vsEnd(shaderProps, text) }
         text.append("}\n")
     }
 
@@ -264,6 +285,15 @@ open class GlslGenerator {
             text.append("uniform vec4 $U_STATIC_COLOR;\n")
         }
 
+        val shadowMap = shaderProps.shadowMap
+        if (shadowMap != null) {
+            text.append("$fsIn vec4 $V_POSITION_LIGHTSPACE[${shadowMap.subMaps.size}];\n")
+            text.append("$fsIn float $V_POSITION_CLIPSPACE_Z;\n")
+            text.append("uniform sampler2D $U_SHADOW_TEX[${shadowMap.subMaps.size}];\n")
+            text.append("uniform int $U_SHADOW_TEX_SZ[${shadowMap.subMaps.size}];\n")
+            text.append("uniform float $U_CLIP_SPACE_FAR_Z[${shadowMap.subMaps.size}];\n")
+        }
+
         // add fog uniforms
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
             text.append("uniform vec3 $U_CAMERA_POSITION;\n")
@@ -272,13 +302,33 @@ open class GlslGenerator {
             text.append("$fsIn vec3 $V_POSITION_WORLDSPACE;\n")
         }
 
-        for (uniform in customUnitforms) {
+        for (uniform in customUniforms) {
             text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
         text.append(fsOut)
     }
 
     private fun generateFragBodyCode(shaderProps: ShaderProps, text: StringBuilder) {
+        val shadowMap = shaderProps.shadowMap
+        if (shadowMap != null) {
+            fun addSample(x: Int, y: Int) {
+                text.append("shadowMapDepth = $texSampler(shadowTex, projPos.xy + vec2(float($x) * off, float($y) * off)).x;\n")
+                text.append("factor += clamp((shadowMapDepth - (projPos.z - accLvl)) * 1e6, 0.0, 1.0);\n")
+            }
+
+            text.append("float calcShadowFactor(sampler2D shadowTex, vec3 projPos, float off, float accLvl) {\n")
+            text.append("  float factor = 0.0;\n")
+            text.append("  float shadowMapDepth = 0.0;\n")
+            for (y in -1..1) {
+                for (x in -1..1) {
+                    addSample(x, y)
+                }
+            }
+            text.append("  return 0.5 + factor / 18.0;\n")
+
+            text.append("}\n")
+        }
+
         text.append("\nvoid main() {\n")
         text.append("$fsOutBody = vec4(0.0);\n")
 
@@ -303,6 +353,19 @@ open class GlslGenerator {
         }
 
         injectors.forEach { it.fsAfterSampling(shaderProps, text) }
+
+        if (shadowMap != null) {
+            text.append("float shadowFactor = 1.0;\n")
+            text.append("for (int i = 0; i < ${shadowMap.subMaps.size}; i++) {\n")
+            text.append("  if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[i]) {\n")
+            text.append("    vec3 projPos = $V_POSITION_LIGHTSPACE[i].xyz / $V_POSITION_LIGHTSPACE[i].w;\n")
+            text.append("    float off = 1.0 / float($U_SHADOW_TEX_SZ[i]);\n")
+            text.append("    shadowFactor = calcShadowFactor($U_SHADOW_TEX[i], projPos, off, float(i+1) * 0.001);\n")
+            text.append("    break;\n")
+            text.append("  }\n")
+            text.append("}\n")
+            text.append("$fsOutBody.xyz *= shadowFactor;\n")
+        }
 
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
             if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
@@ -347,6 +410,7 @@ open class GlslGenerator {
             text.append("$fsOutBody.rgb = mix(vec3(avgColor), $fsOutBody.rgb, $U_SATURATION);\n")
         }
 
+        injectors.forEach { it.fsEnd(shaderProps, text) }
         text.append("}\n")
     }
 }

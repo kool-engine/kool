@@ -30,11 +30,6 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
     private val uTexSz = addUniform(Uniform2f("uTexSz"))
 
     var blurHelper: BlurredBackgroundHelper? = null
-        set(value) {
-            field = value
-            uBlurTex.value = value?.blurredBgTex
-        }
-
     var colorMix: Float
         get() = uColorMix.value
         set(value) { uColorMix.value = value }
@@ -42,18 +37,18 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
     init {
         colorMix = 0f
 
-        generator.customUnitforms += uBlurTex
-        generator.customUnitforms += uColorMix
-        generator.customUnitforms += uTexPos
-        generator.customUnitforms += uTexSz
+        generator.customUniforms += uBlurTex
+        generator.customUniforms += uColorMix
+        generator.customUniforms += uTexPos
+        generator.customUniforms += uTexSz
 
-        generator.injectors += object: GlslGenerator.GlslInjector {
+        generator.injectors += object : GlslGenerator.GlslInjector {
             override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
                 text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ")
                         .append("1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n")
-                        .append("${glslVersion.dialect.fragColorBody} = ${glslVersion.dialect.texSampler}(")
+                        .append("${glCapabilities.glslDialect.fragColorBody} = ${glCapabilities.glslDialect.texSampler}(")
                         .append("uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ")
-                        .append("${glslVersion.dialect.fragColorBody} * uColorMix;\n")
+                        .append("${glCapabilities.glslDialect.fragColorBody} * uColorMix;\n")
             }
         }
     }
@@ -63,6 +58,7 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
         val helper = blurHelper
         if (helper != null) {
             helper.isInUse = true
+            uBlurTex.value = helper.getOutputTexture()
             uTexPos.value.set(helper.capturedScrX.toFloat(), helper.capturedScrY.toFloat())
             uTexSz.value.set(helper.capturedScrW.toFloat(), helper.capturedScrH.toFloat())
         }
@@ -74,8 +70,8 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
     }
 }
 
-class BlurredBackgroundHelper(
-        val texSize: Int = 256, blurMethod: BlurMethod = BlurredBackgroundHelper.BlurMethod.BLUR_13_TAP) {
+class BlurredBackgroundHelper(private val texSize: Int = 256,
+                              private val blurMethod: BlurMethod = BlurredBackgroundHelper.BlurMethod.BLUR_13_TAP) {
 
     enum class BlurMethod {
         BLUR_9_TAP,
@@ -90,17 +86,14 @@ class BlurredBackgroundHelper(
     private val copyTexData = BlurredBgTextureData()
     private val texMesh: Mesh
     private val texMeshFlipped: Mesh
-    private val blurX: BlurQuadShader
-    private val blurY: BlurQuadShader
 
-    private var blurFb1: FramebufferResource? = null
-    private var blurFb2: FramebufferResource? = null
+    private var blurFb1 = Framebuffer(texSize, texSize).withColor()
+    private var blurFb2 = Framebuffer(texSize, texSize).withColor()
+    private var blurX: BlurQuadShader? = null
+    private var blurY: BlurQuadShader? = null
 
     var isForceUpdateTex = false
     internal var isInUse = true
-
-    private val fb1Tex = colorAttachmentTex(texSize, texSize, GL_LINEAR, GL_LINEAR)
-    val blurredBgTex = colorAttachmentTex(texSize, texSize, GL_LINEAR, GL_LINEAR)
 
     val capturedScrX: Int get() = copyTexData.x
     val capturedScrY: Int get() = copyTexData.y
@@ -136,23 +129,15 @@ class BlurredBackgroundHelper(
                 }
             }
         }
-
-        blurX = BlurQuadShader(blurMethod).apply {
-            uTexture.value = copyTex
-            uDirection.value.set(1f / texSize, 0f)
-        }
-
-        blurY = BlurQuadShader(blurMethod).apply {
-            uTexture.value = fb1Tex
-            uDirection.value.set(0f, 1f / texSize)
-        }
     }
+
+    fun getOutputTexture(): Texture? = blurFb2?.colorAttachment
 
     fun updateDistortionTexture(node: Node, ctx: RenderContext, bounds: BoundingBox = node.bounds) {
         // Only update the distortion texture if it is really used. This saves considerable performance if it is used
         // as background of a hidden UI.
         // The isInUse flag is set by BlurShaders which use this texture
-        if (!isInUse || isForceUpdateTex) {
+        if (!isInUse || isForceUpdateTex || ctx.renderPass != RenderPass.SCREEN) {
             return
         }
         isInUse = false
@@ -174,10 +159,10 @@ class BlurredBackgroundHelper(
         var minScrY = max(ctx.windowHeight - texBounds.max.y.toInt(), 0)
         val maxScrY = min(ctx.windowHeight - texBounds.min.y.toInt(), ctx.windowHeight - 1)
 
-        var sizeX = maxScrX - minScrX
-        var sizeY = maxScrY - minScrY
-        if (maxScrX > 0 && minScrX < ctx.windowWidth && sizeX > 0 &&
-                maxScrY > 0 && minScrY < ctx.windowHeight && sizeY > 0 &&
+        var sizeX = max(maxScrX - minScrX, 16)
+        var sizeY = max(maxScrY - minScrY, 16)
+        if (maxScrX > 0 && minScrX < ctx.windowWidth &&
+                maxScrY > 0 && minScrY < ctx.windowHeight &&
                 texBounds.min.z < 1 && texBounds.max.z > 0) {
 
             // captured texture needs to be square for equal blur effect in x and y direction
@@ -204,30 +189,27 @@ class BlurredBackgroundHelper(
     }
 
     fun dispose(ctx: RenderContext) {
-        blurFb1?.delete(ctx)
-        blurFb2?.delete(ctx)
+        blurFb1.delete(ctx)
+        blurFb2.delete(ctx)
+        blurX?.dispose(ctx)
+        blurY?.dispose(ctx)
         copyTex.dispose(ctx)
-        fb1Tex.dispose(ctx)
-        blurredBgTex.dispose(ctx)
         texMesh.dispose(ctx)
         texMeshFlipped.dispose(ctx)
-        blurX.dispose(ctx)
-        blurY.dispose(ctx)
     }
 
     private fun doBlurring(ctx: RenderContext) {
         ctx.textureMgr.bindTexture(copyTex, ctx)
-        ctx.textureMgr.bindTexture(fb1Tex, ctx)
-        ctx.textureMgr.bindTexture(blurredBgTex, ctx)
 
-        val fb1 = blurFb1 ?: FramebufferResource.create(fb1Tex, ctx)
-        val fb2 = blurFb2 ?: FramebufferResource.create(blurredBgTex, ctx)
-
-        if (blurFb1 == null) {
-            blurFb1 = fb1
+        val blrX = blurX ?: BlurQuadShader(blurMethod).apply {
+            uTexture.value = copyTex
+            uDirection.value.set(1f / texSize, 0f)
+            blurX = this
         }
-        if (blurFb2 == null) {
-            blurFb2 = fb2
+        val blrY = blurY ?: BlurQuadShader(blurMethod).apply {
+            uTexture.value = blurFb1.colorAttachment
+            uDirection.value.set(0f, 1f / texSize)
+            blurY = this
         }
 
         ctx.pushAttributes()
@@ -241,14 +223,14 @@ class BlurredBackgroundHelper(
         ctx.mvpState.modelMatrix.setIdentity()
         ctx.mvpState.update(ctx)
 
-        blurX.uTexture.value = copyTex
-        renderFb(fb1, texMeshFlipped, blurX, ctx)
-        renderFb(fb2, texMesh, blurY, ctx)
+        blrX.uTexture.value = copyTex
+        renderFb(blurFb1, texMeshFlipped, blrX, ctx)
+        renderFb(blurFb2, texMesh, blrY, ctx)
+        blrX.uTexture.value = blurFb2.colorAttachment
 
-        for (i in (1..numPasses-1)) {
-            blurX.uTexture.value = blurredBgTex
-            renderFb(fb1, texMesh, blurX, ctx)
-            renderFb(fb2, texMesh, blurY, ctx)
+        for (i in 1 until numPasses) {
+            renderFb(blurFb1, texMesh, blrX, ctx)
+            renderFb(blurFb2, texMesh, blrY, ctx)
         }
 
         ctx.mvpState.popMatrices()
@@ -256,7 +238,7 @@ class BlurredBackgroundHelper(
         ctx.popAttributes()
     }
 
-    private fun renderFb(fb: FramebufferResource, mesh: Mesh, shader: Shader, ctx: RenderContext) {
+    private fun renderFb(fb: Framebuffer, mesh: Mesh, shader: Shader, ctx: RenderContext) {
         fb.bind(ctx)
         glClear(GL_COLOR_BUFFER_BIT)
         mesh.shader = shader
@@ -301,26 +283,26 @@ class BlurredBackgroundHelper(
             attributes.add(Attribute.POSITIONS)
             attributes.add(Attribute.TEXTURE_COORDS)
 
-            val vs = "${glslVersion.versionStr}\n" +
-                    "${glslVersion.dialect.vsIn} vec3 ${Attribute.POSITIONS.name};\n" +
-                    "${glslVersion.dialect.vsIn} vec2 ${Attribute.TEXTURE_COORDS.name};\n" +
-                    "${glslVersion.dialect.vsOut} vec2 vTexCoord;\n" +
+            val vs = "${glCapabilities.glslDialect.version}\n" +
+                    "${glCapabilities.glslDialect.vsIn} vec3 ${Attribute.POSITIONS.name};\n" +
+                    "${glCapabilities.glslDialect.vsIn} vec2 ${Attribute.TEXTURE_COORDS.name};\n" +
+                    "${glCapabilities.glslDialect.vsOut} vec2 vTexCoord;\n" +
                     "void main() {\n" +
                     "  gl_Position = vec4(${Attribute.POSITIONS.name}, 1.0);\n" +
                     "  vTexCoord = ${Attribute.TEXTURE_COORDS.name};\n" +
                     "}"
 
             val fs: String
-            val fragColor = glslVersion.dialect.fragColorBody
-            val sampler = glslVersion.dialect.texSampler
+            val fragColor = glCapabilities.glslDialect.fragColorBody
+            val sampler = glCapabilities.glslDialect.texSampler
             if (blurMethod == BlurMethod.BLUR_9_TAP) {
-                fs = "${glslVersion.versionStr}\n" +
+                fs = "${glCapabilities.glslDialect.version}\n" +
                         "precision mediump float;\n" +
                         "uniform sampler2D uTexture;\n" +
                         "uniform vec2 uDirection;\n" +
                         "uniform float uTexSize;\n" +
-                        "${glslVersion.dialect.fsIn} vec2 vTexCoord;" +
-                        "${glslVersion.dialect.fragColorHead}\n" +
+                        "${glCapabilities.glslDialect.fsIn} vec2 vTexCoord;" +
+                        "${glCapabilities.glslDialect.fragColorHead}\n" +
                         "void main() {\n" +
                         "  vec2 off1 = vec2(1.3846153) * uDirection;\n" +
                         "  vec2 off2 = vec2(3.2307692) * uDirection;\n" +
@@ -329,16 +311,16 @@ class BlurredBackgroundHelper(
                         "  $fragColor += $sampler(uTexture, vTexCoord - off1) * 0.3162162;\n" +
                         "  $fragColor += $sampler(uTexture, vTexCoord + off2) * 0.0702702;\n" +
                         "  $fragColor += $sampler(uTexture, vTexCoord - off2) * 0.0702702;\n" +
-                        "  $fragColor.rgb *= ${glslVersion.dialect.fragColorBody}.a;\n" +
+                        "  $fragColor.rgb *= ${glCapabilities.glslDialect.fragColorBody}.a;\n" +
                         "}"
             } else {
-                fs = "${glslVersion.versionStr}\n" +
+                fs = "${glCapabilities.glslDialect.version}\n" +
                         "precision mediump float;\n" +
                         "uniform sampler2D uTexture;\n" +
                         "uniform vec2 uDirection;\n" +
                         "uniform float uTexSize;\n" +
-                        "${glslVersion.dialect.fsIn} vec2 vTexCoord;" +
-                        "${glslVersion.dialect.fragColorHead}\n" +
+                        "${glCapabilities.glslDialect.fsIn} vec2 vTexCoord;" +
+                        "${glCapabilities.glslDialect.fragColorHead}\n" +
                         "void main() {\n" +
                         "  vec2 off1 = vec2(1.4117647) * uDirection;\n" +
                         "  vec2 off2 = vec2(3.2941176) * uDirection;\n" +
@@ -350,7 +332,7 @@ class BlurredBackgroundHelper(
                         "  $fragColor += $sampler(uTexture, vTexCoord - off2) * 0.0944703;\n" +
                         "  $fragColor += $sampler(uTexture, vTexCoord - off3) * 0.0103813;\n" +
                         "  $fragColor += $sampler(uTexture, vTexCoord - off3) * 0.0103813;\n" +
-                        "  $fragColor.rgb *= ${glslVersion.dialect.fragColorBody}.a;\n" +
+                        "  $fragColor.rgb *= ${glCapabilities.glslDialect.fragColorBody}.a;\n" +
                         "}"
             }
             source = Source(vs, fs)

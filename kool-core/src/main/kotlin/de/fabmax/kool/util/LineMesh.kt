@@ -32,10 +32,12 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
     var lineWidth = 1f
 
     fun addLine(point0: Vec3f, color0: Color, point1: Vec3f, color1: Color) {
+        meshData.isBatchUpdate = true
         var idx =  meshData.addVertex(point0, null, color0, null)
         meshData.addIndex(idx)
         idx =  meshData.addVertex(point1, null, color1, null)
         meshData.addIndex(idx)
+        meshData.isBatchUpdate = false
     }
 
     override fun render(ctx: RenderContext) {

@@ -1,8 +1,7 @@
 package de.fabmax.kool.scene.animation
 
-import de.fabmax.kool.GlslDialect
 import de.fabmax.kool.RenderContext
-import de.fabmax.kool.glslVersion
+import de.fabmax.kool.glCapabilities
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
@@ -18,7 +17,8 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
     private val indexedBones = mutableListOf<Bone>()
     private var boneTransforms: Float32Buffer? = null
 
-    var isCpuAnimated = glslVersion.dialect != GlslDialect.GLSL_DIALECT_300
+    // to do mesh animation in vertex shader we need to add integer mesh attributes (OpenGL (ES) >= 3.0)
+    var isCpuAnimated = !glCapabilities.shaderIntAttribs
 
     // animations are held in map and list, to get index-based list access for less overhead in render loop
     private val animations = mutableMapOf<String, Animation>()
@@ -137,8 +137,12 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
         if (shader is BasicShader) {
             shader.bones = boneTransforms
         }
-        applyAnimation(ctx.deltaT)
         super.render(ctx)
+
+        // increment animation after rendering to keep armature in the same position as in pre passes (shadow pass)
+        if (ctx.deltaT > 0) {
+            applyAnimation(ctx.deltaT)
+        }
     }
 
     private fun applyAnimation(deltaT: Double) {

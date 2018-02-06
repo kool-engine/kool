@@ -1,6 +1,8 @@
 package de.fabmax.kool.shading
 
 import de.fabmax.kool.Texture
+import de.fabmax.kool.glCapabilities
+import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 
 enum class LightModel {
@@ -40,6 +42,13 @@ class ShaderProps {
     var isSaturation = false
 
     var isShaderAnimated = false
+
+    var shadowMap: CascadedShadowMap? = null
+        get() = if (glCapabilities.depthTextures) {
+            field
+        } else {
+            null
+        }
 
     // init values for newly created BasicShader
     var shininess = 20.0f

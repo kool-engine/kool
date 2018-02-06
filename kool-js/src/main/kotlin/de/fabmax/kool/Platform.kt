@@ -23,12 +23,7 @@ import kotlin.js.Date
  * @author fabmax
  */
 
-actual val supportsMultiContext: Boolean = false
-
-actual val supportsUint32Indices: Boolean = true
-
-actual val glslVersion
-    get() = if (JsImpl.ctx!!.isWebGL2) { GlslVersion.GLSL_300_ES } else { GlslVersion.GLSL_200_ES }
+actual var glCapabilities = GlCapabilities.GL_ES_200
 
 fun createContext() = createContext(JsContext.InitProps())
 
@@ -69,6 +64,7 @@ internal object JsImpl {
     private const val MAX_GENERATED_TEX_WIDTH = 1024
     private const val MAX_GENERATED_TEX_HEIGHT = 1024
 
+    var isWebGl2Context = false
     val dpi: Float
     var ctx: JsContext? = null
     val gl: WebGLRenderingContext

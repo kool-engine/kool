@@ -27,7 +27,7 @@ fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): Bas
     generator.injectors += object: GlslGenerator.GlslInjector {
         override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
             text.append("if (${GlslGenerator.L_TEX_COLOR}.a == 0.0) { discard; }\n")
-            text.append("${glslVersion.dialect.fragColorBody} = ${GlslGenerator.L_VERTEX_COLOR} * ${GlslGenerator.L_TEX_COLOR}.a;\n")
+            text.append("${glCapabilities.glslDialect.fragColorBody} = ${GlslGenerator.L_VERTEX_COLOR} * ${GlslGenerator.L_TEX_COLOR}.a;\n")
         }
     }
 

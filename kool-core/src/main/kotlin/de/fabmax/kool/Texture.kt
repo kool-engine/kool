@@ -86,9 +86,9 @@ open class Texture(val props: TextureProps, val generator: Texture.() -> Texture
         GlObject<TextureResource>() {
 
     var width = 0
-        private set
+        protected set
     var height = 0
-        private set
+        protected set
 
     internal fun onCreate(ctx: RenderContext) {
         res = ctx.textureMgr.createTexture(props, ctx)

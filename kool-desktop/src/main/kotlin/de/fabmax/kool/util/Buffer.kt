@@ -45,6 +45,19 @@ internal class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<ByteB
         return this
     }
 
+    override fun put(data: de.fabmax.kool.util.Buffer<Byte>): Uint8Buffer {
+        if (data is Uint8BufferImpl) {
+            val dataPos = data.position
+            buffer.put(data.buffer)
+            data.position = dataPos
+        } else {
+            for (i in data.position until data.limit) {
+                buffer.put(data[i])
+            }
+        }
+        return this
+    }
+
     override fun get(i: Int): Byte {
         return buffer[i]
     }
@@ -67,6 +80,19 @@ internal class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Sho
 
     override fun put(value: Short): Uint16Buffer {
         buffer.put(value)
+        return this
+    }
+
+    override fun put(data: de.fabmax.kool.util.Buffer<Short>): Uint16Buffer {
+        if (data is Uint16BufferImpl) {
+            val dataPos = data.position
+            buffer.put(data.buffer)
+            data.position = dataPos
+        } else {
+            for (i in data.position until data.limit) {
+                buffer.put(data[i])
+            }
+        }
         return this
     }
 
@@ -95,6 +121,19 @@ internal class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Int
         return this
     }
 
+    override fun put(data: de.fabmax.kool.util.Buffer<Int>): Uint32Buffer {
+        if (data is Uint32BufferImpl) {
+            val dataPos = data.position
+            buffer.put(data.buffer)
+            data.position = dataPos
+        } else {
+            for (i in data.position until data.limit) {
+                buffer.put(data[i])
+            }
+        }
+        return this
+    }
+
     override fun get(i: Int): Int {
         return buffer[i]
     }
@@ -117,6 +156,19 @@ internal class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<F
 
     override fun put(value: Float): Float32Buffer {
         buffer.put(value)
+        return this
+    }
+
+    override fun put(data: de.fabmax.kool.util.Buffer<Float>): Float32Buffer {
+        if (data is Float32BufferImpl) {
+            val dataPos = data.position
+            buffer.put(data.buffer)
+            data.position = dataPos
+        } else {
+            for (i in data.position until data.limit) {
+                buffer.put(data[i])
+            }
+        }
         return this
     }
 

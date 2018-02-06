@@ -1,6 +1,7 @@
 package de.fabmax.kool.gl
 
 import de.fabmax.kool.JsImpl
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.util.*
 import org.khronos.webgl.*
 import org.w3c.dom.HTMLImageElement
@@ -62,6 +63,8 @@ actual fun glCreateShader(type: Int): Any = JsImpl.gl.createShader(type)!!
 
 actual fun glCreateTexture(): Any = JsImpl.gl.createTexture()!!
 
+actual fun glCullFace(mode: Int) = JsImpl.gl.cullFace(mode)
+
 actual fun glDeleteBuffer(buffer: BufferResource) = JsImpl.gl.deleteBuffer(buffer.glRef as WebGLBuffer)
 
 actual fun glDeleteFramebuffer(framebuffer: FramebufferResource) =
@@ -83,6 +86,12 @@ actual fun glDepthMask(enabled: Boolean) = JsImpl.gl.depthMask(enabled)
 actual fun glDisable(cap: Int) = JsImpl.gl.disable(cap)
 
 actual fun glDisableVertexAttribArray(index: Int) = JsImpl.gl.disableVertexAttribArray(index)
+
+actual fun glDrawBuffer(buf: Int) {
+    if (JsImpl.isWebGl2Context) {
+        (JsImpl.gl as WebGL2RenderingContext).drawBuffers(intArrayOf(buf))
+    } // else just ignore this call
+}
 
 actual fun glDrawElements(mode: Int, count: Int, type: Int, offset: Int) =
         JsImpl.gl.drawElements(mode, count, type, offset)
@@ -149,6 +158,12 @@ actual fun glPointSize(size: Float) {
     // not supported by WebGL and silently ignored
 }
 
+actual fun glReadBuffer(src: Int) {
+    if (JsImpl.isWebGl2Context) {
+        (JsImpl.gl as WebGL2RenderingContext).readBuffer(src)
+    } // else just ignore this call
+}
+
 actual fun glRenderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) =
         JsImpl.gl.renderbufferStorage(target, internalformat, width, height)
 
@@ -173,7 +188,17 @@ actual fun glTexParameteri(target: Int, pname: Int, param: Int) = JsImpl.gl.texP
 
 actual fun glUniform1f(location: Any?, x: Float) = JsImpl.gl.uniform1f((location as WebGLUniformLocation?), x)
 
+actual fun glUniform1fv(location: Any?, x: FloatArray) {
+    val tmp = Array(x.size) { i -> x[i] }
+    JsImpl.gl.uniform1fv((location as WebGLUniformLocation?), tmp)
+}
+
 actual fun glUniform1i(location: Any?, x: Int) = JsImpl.gl.uniform1i((location as WebGLUniformLocation?), x)
+
+actual fun glUniform1iv(location: Any?, x: IntArray) {
+    val tmp = Array(x.size) { i -> x[i] }
+    JsImpl.gl.uniform1iv((location as WebGLUniformLocation?), tmp)
+}
 
 actual fun glUniform2f(location: Any?, x: Float, y: Float) =
         JsImpl.gl.uniform2f((location as WebGLUniformLocation?), x, y)
@@ -196,14 +221,20 @@ actual fun glVertexAttribDivisor(index: Int, divisor: Int) {
 actual fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) =
         JsImpl.gl.vertexAttribPointer(index, size, type, normalized, stride, offset)
 
-actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) =
+actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) {
+    if (JsImpl.isWebGl2Context) {
         (JsImpl.gl as WebGL2RenderingContext).vertexAttribIPointer(index, size, type, stride, offset)
-
+    } else {
+        throw KoolException("This function requires WebGL2 support")
+    }
+}
 
 actual fun glViewport(x: Int, y: Int, width: Int, height: Int) = JsImpl.gl.viewport(x, y, width, height)
 
 actual fun isValidUniformLocation(location: Any?): Boolean = location != null && location is WebGLUniformLocation
 
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
+    fun drawBuffers(buffers: IntArray)
+    fun readBuffer(src: Int)
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
 }

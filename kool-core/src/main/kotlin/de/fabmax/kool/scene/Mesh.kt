@@ -1,9 +1,10 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.RenderPass
 import de.fabmax.kool.gl.*
+import de.fabmax.kool.glCapabilities
 import de.fabmax.kool.shading.*
-import de.fabmax.kool.supportsUint32Indices
 import de.fabmax.kool.util.*
 import kotlin.math.sqrt
 
@@ -104,7 +105,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
     override fun render(ctx: RenderContext) {
         super.render(ctx)
-        if (!isRendered) {
+        if (!isRendered || (!ctx.isDepthTest && ctx.renderPass == RenderPass.DEPTH)) {
             // mesh is not visible (either hidden or outside frustum)
             return
         }
@@ -285,7 +286,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
         if (isSyncRequired && !isBatchUpdate) {
             synchronized(vertexList) {
                 if (!isBatchUpdate) {
-                    if (!supportsUint32Indices) {
+                    if (!glCapabilities.uint32Indices) {
                         // convert index buffer to uint16
                         val uint16Buffer = createUint16Buffer(numIndices)
                         for (i in 0..(vertexList.indices.position - 1)) {

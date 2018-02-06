@@ -4,7 +4,6 @@ import de.fabmax.kool.gl.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Property
-import kotlin.math.max
 
 /**
  * @author fabmax
@@ -21,8 +20,7 @@ abstract class RenderContext {
 
     val onRender: MutableList<(RenderContext) -> Unit> = mutableListOf()
 
-    private var nextId = 1L
-    private val idLock = Any()
+    var renderPass = RenderPass.SCREEN
 
     /**
      * Run time of this render context in seconds. This is the wall clock time between now and the first time render()
@@ -32,10 +30,11 @@ abstract class RenderContext {
         protected set
 
     /**
-     * Time between current and last call of render() in seconds. This will never be zero.
+     * Time between current and last call of render() in seconds.
      */
-    var deltaT = 0.0001
-        protected set
+    val deltaT
+        get() = if (renderPass.increaseTime) { dt } else { 0.0 }
+    private var dt = 0.0
 
     /**
      * Number of rendered frames.
@@ -64,6 +63,7 @@ abstract class RenderContext {
 
     var viewport by attribs.get<Viewport>("viewport")
     var clearColor by attribs.get<Color>("clearColor")
+    var cullFace by attribs.get<Int>("cullFace")
     var depthFunc by attribs.get<Int>("depthFunc")
     var isDepthTest by attribs.get<Boolean>("isDepthTest")
     var isDepthMask by attribs.get<Boolean>("isDepthMask")
@@ -80,7 +80,7 @@ abstract class RenderContext {
     abstract fun destroy()
 
     protected fun render(dt: Double) {
-        deltaT = max(dt, 0.0001)
+        this.dt = dt
         time += dt
         frameIdx++
 
@@ -103,7 +103,7 @@ abstract class RenderContext {
         }
 
         for (i in scenes.indices) {
-            scenes[i].render(this)
+            scenes[i].renderScene(this)
         }
     }
 
@@ -120,14 +120,6 @@ abstract class RenderContext {
         attribs.apply()
     }
 
-    fun generateUniqueId(): Long {
-        var id = 0L
-        synchronized(idLock) {
-            id = ++nextId
-        }
-        return id
-    }
-
     private class Attribs {
         private val attribs = mutableListOf(
                 Property("viewport", Viewport(0, 0, 0, 0)) {
@@ -137,6 +129,9 @@ abstract class RenderContext {
                 Property("clearColor", Color(0.05f, 0.15f, 0.25f, 1f)) {
                     val color = clear
                     glClearColor(color.r, color.g, color.b, color.a)
+                },
+                Property("cullFace", GL_BACK) {
+                    glCullFace(clear)
                 },
                 Property("depthFunc", GL_LEQUAL) {
                     glDepthFunc(clear)
@@ -199,7 +194,14 @@ abstract class RenderContext {
     }
 
     data class Viewport(val x: Int, val y: Int, val width: Int, val height: Int) {
+        val aspectRatio get() = width.toFloat() / height.toFloat()
+
         fun isInViewport(x: Float, y: Float) = x >= this.x && x < this.x + width &&
                 y >= this.y && y < this.y + height
     }
+}
+
+enum class RenderPass(val increaseTime: Boolean) {
+    DEPTH(false),
+    SCREEN(true)
 }

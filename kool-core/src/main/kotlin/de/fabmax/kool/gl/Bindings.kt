@@ -51,6 +51,8 @@ expect fun glCreateShader(type: Int): Any
 
 expect fun glCreateTexture(): Any
 
+expect fun glCullFace(mode: Int)
+
 expect fun glDeleteBuffer(buffer: BufferResource)
 
 expect fun glDeleteFramebuffer(framebuffer: FramebufferResource)
@@ -70,6 +72,8 @@ expect fun glDepthMask(enabled: Boolean)
 expect fun glDisable(cap: Int)
 
 expect fun glDisableVertexAttribArray(index: Int)
+
+expect fun glDrawBuffer(buf: Int)
 
 expect fun glDrawElements(mode: Int, count: Int, type: Int, offset: Int)
 
@@ -105,6 +109,8 @@ expect fun glLinkProgram(program: ProgramResource)
 
 expect fun glPointSize(size: Float)
 
+expect fun glReadBuffer(src: Int)
+
 expect fun glRenderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int)
 
 expect fun glRenderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
@@ -117,7 +123,11 @@ expect fun glTexParameteri(target: Int, pname: Int, param: Int)
 
 expect fun glUniform1f(location: Any?, x: Float)
 
+expect fun glUniform1fv(location: Any?, x: FloatArray)
+
 expect fun glUniform1i(location: Any?, x: Int)
+
+expect fun glUniform1iv(location: Any?, x: IntArray)
 
 expect fun glUniform2f(location: Any?, x: Float, y: Float)
 
@@ -269,6 +279,8 @@ const val GL_UNSIGNED_INT = 0x1405
 const val GL_FLOAT = 0x1406
 const val GL_FIXED = 0x140C
 const val GL_DEPTH_COMPONENT = 0x1902
+const val GL_DEPTH_COMPONENT24 = 0x81A6
+const val GL_DEPTH_COMPONENT32F = 0x8CAC
 const val GL_ALPHA = 0x1906
 const val GL_RGB = 0x1907
 const val GL_RGBA = 0x1908
