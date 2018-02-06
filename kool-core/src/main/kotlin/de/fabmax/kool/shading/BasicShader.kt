@@ -1,6 +1,7 @@
 package de.fabmax.kool.shading
 
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.RenderPass
 import de.fabmax.kool.Texture
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
@@ -111,15 +112,23 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         uStaticColor.bind(ctx)
         uTexture.bind(ctx)
         uBones.bind(ctx)
-        uShadowMvp.bind(ctx)
-        uShadowTex.bind(ctx)
-        uShadowTexSz.bind(ctx)
 
         if (shadowMap != null) {
-            for (i in 0 until shadowMap.subMaps.size) {
-                uClipSpaceFarZ.value[i] = shadowMap.subMaps[i].clipSpaceFarZ
+            if (ctx.renderPass == RenderPass.DEPTH) {
+                for (i in 0 until shadowMap.subMaps.size) {
+                    uShadowTex.value[i] = null
+                }
+                uShadowTex.bind(ctx)
+            } else {
+                for (i in 0 until shadowMap.subMaps.size) {
+                    uClipSpaceFarZ.value[i] = shadowMap.subMaps[i].clipSpaceFarZ
+                    uShadowTex.value[i] = shadowMap.subMaps[i].depthTexture
+                }
+                uShadowMvp.bind(ctx)
+                uShadowTex.bind(ctx)
+                uShadowTexSz.bind(ctx)
+                uClipSpaceFarZ.bind(ctx)
             }
-            uClipSpaceFarZ.bind(ctx)
         }
     }
 

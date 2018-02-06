@@ -54,7 +54,7 @@ class UniformTexture2Dv(name: String, size: Int) : Uniform<Array<Texture?>>(name
             texNames[i] = if (tex != null) {
                 ctx.textureMgr.bindTexture(tex, ctx)
             } else {
-                -1
+                0
             }
         }
         glUniform1iv(location, texNames)
