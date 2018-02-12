@@ -36,9 +36,11 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     protected val uFogRange = addUniform(Uniform1f(GlslGenerator.U_FOG_RANGE))
     protected val uBones = addUniform(UniformMatrix4(GlslGenerator.U_BONES))
     protected val uShadowMvp: UniformMatrix4 = addUniform(UniformMatrix4(GlslGenerator.U_SHADOW_MVP))
-    protected val uShadowTex: UniformTexture2Dv = addUniform(UniformTexture2Dv(GlslGenerator.U_SHADOW_TEX, props.shadowMap?.subMaps?.size ?: 0))
+    //protected val uShadowTex: UniformTexture2Dv = addUniform(UniformTexture2Dv(GlslGenerator.U_SHADOW_TEX, props.shadowMap?.subMaps?.size ?: 0))
     protected val uShadowTexSz: Uniform1iv = addUniform(Uniform1iv(GlslGenerator.U_SHADOW_TEX_SZ, props.shadowMap?.subMaps?.size ?: 0))
     protected val uClipSpaceFarZ: Uniform1fv = addUniform(Uniform1fv(GlslGenerator.U_CLIP_SPACE_FAR_Z, props.shadowMap?.subMaps?.size ?: 0))
+
+    protected val uShadowTex = mutableListOf<UniformTexture2D>()
 
     var shininess: Float
         get() = uShininess.value
@@ -78,7 +80,9 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         if (shadowMap != null) {
             uShadowMvp.value = shadowMap.shadowMvp
             for (i in 0 until shadowMap.subMaps.size) {
-                uShadowTex.value[i] = shadowMap.subMaps[i].depthTexture
+                val shadowTex = addUniform(UniformTexture2D("${GlslGenerator.U_SHADOW_TEX}_$i"))
+                uShadowTex += shadowTex
+                shadowTex.value = shadowMap.subMaps[i].depthTexture
                 uShadowTexSz.value[i] = shadowMap.subMaps[i].texSize
             }
         }
@@ -92,7 +96,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         attributes.add(Attribute.NORMALS)
         attributes.add(Attribute.TEXTURE_COORDS)
         attributes.add(Attribute.COLORS)
-        if (props.isShaderAnimated) {
+        if (props.numBones > 0) {
             attributes.add(Armature.BONE_INDICES)
             attributes.add(Armature.BONE_WEIGHTS)
         }
@@ -116,16 +120,16 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         if (shadowMap != null) {
             if (ctx.renderPass == RenderPass.DEPTH) {
                 for (i in 0 until shadowMap.subMaps.size) {
-                    uShadowTex.value[i] = null
+                    uShadowTex[i].value = null
+                    uShadowTex[i].bind(ctx)
                 }
-                uShadowTex.bind(ctx)
             } else {
                 for (i in 0 until shadowMap.subMaps.size) {
                     uClipSpaceFarZ.value[i] = shadowMap.subMaps[i].clipSpaceFarZ
-                    uShadowTex.value[i] = shadowMap.subMaps[i].depthTexture
+                    uShadowTex[i].value = shadowMap.subMaps[i].depthTexture
+                    uShadowTex[i].bind(ctx)
                 }
                 uShadowMvp.bind(ctx)
-                uShadowTex.bind(ctx)
                 uShadowTexSz.bind(ctx)
                 uClipSpaceFarZ.bind(ctx)
             }

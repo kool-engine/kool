@@ -78,10 +78,10 @@ fun modelScene(): Scene = scene {
                 staticColor = Color.GRAY
                 shadowMap = cascadedShadowMap
 
-                if (mesh is Armature) {
+                if (mesh is Armature && !mesh.isCpuAnimated) {
                     // do mesh animation on vertex shader if available.
                     // Works with GLSL version 300 and above (OpenGL (ES) 3.0 and WebGL2)
-                    isShaderAnimated = !mesh.isCpuAnimated
+                    numBones = mesh.bones.size
                 }
             }
 

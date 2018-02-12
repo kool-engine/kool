@@ -238,8 +238,6 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
     }
 
     companion object {
-        const val MAX_BONES = 100
-
         val BONE_WEIGHTS = Attribute("attrib_bone_weights", AttributeType.VEC_4F)
         val BONE_INDICES = Attribute("attrib_bone_indices", AttributeType.VEC_4I)
     }

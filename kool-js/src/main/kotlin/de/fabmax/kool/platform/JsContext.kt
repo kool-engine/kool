@@ -41,11 +41,12 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
         JsImpl.isWebGl2Context = webGlCtx != null
 
         if (webGlCtx != null) {
+            println("Using WebGL 2 context")
             gl = webGlCtx as WebGL2RenderingContext
             glCapabilities = GlCapabilities.GL_ES_300
 
         } else {
-            println("falling back to WebGL 1 context")
+            println("Falling back to WebGL 1 context")
             webGlCtx = canvas.getContext("webgl")
             if (webGlCtx == null) {
                 webGlCtx = canvas.getContext("experimental-webgl")

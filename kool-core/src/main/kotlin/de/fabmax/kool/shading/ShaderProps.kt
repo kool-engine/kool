@@ -41,7 +41,7 @@ class ShaderProps {
     var isAlpha = false
     var isSaturation = false
 
-    var isShaderAnimated = false
+    var numBones = 0
 
     var shadowMap: CascadedShadowMap? = null
         get() = if (glCapabilities.depthTextures) {

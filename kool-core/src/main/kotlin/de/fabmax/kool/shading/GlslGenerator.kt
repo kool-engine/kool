@@ -141,10 +141,10 @@ open class GlslGenerator {
             text.append("$vsOut vec4 $V_COLOR;\n")
         }
 
-        if (shaderProps.isShaderAnimated) {
+        if (shaderProps.numBones > 0) {
             text.append("$vsIn ivec4 ${Armature.BONE_INDICES.name};\n")
             text.append("$vsIn vec4 ${Armature.BONE_WEIGHTS.name};\n")
-            text.append("uniform mat4 $U_BONES[${Armature.MAX_BONES}];\n")
+            text.append("uniform mat4 $U_BONES[${shaderProps.numBones}];\n")
         }
 
         val shadowMap = shaderProps.shadowMap
@@ -174,7 +174,7 @@ open class GlslGenerator {
 
         injectors.forEach { it.vsBeforeProj(shaderProps, text) }
 
-        if (shaderProps.isShaderAnimated) {
+        if (shaderProps.numBones > 0) {
             text.append("mat4 boneT = $U_BONES[${Armature.BONE_INDICES}[0]] * ${Armature.BONE_WEIGHTS}[0];\n")
             text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[1]] * ${Armature.BONE_WEIGHTS}[1];\n")
             text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[2]] * ${Armature.BONE_WEIGHTS}[2];\n")
@@ -289,7 +289,12 @@ open class GlslGenerator {
         if (shadowMap != null) {
             text.append("$fsIn vec4 $V_POSITION_LIGHTSPACE[${shadowMap.subMaps.size}];\n")
             text.append("$fsIn float $V_POSITION_CLIPSPACE_Z;\n")
-            text.append("uniform sampler2D $U_SHADOW_TEX[${shadowMap.subMaps.size}];\n")
+
+            // arrays of sampler2D uniforms are only supported with extensions in GL ES
+            //text.append("uniform sampler2D $U_SHADOW_TEX[${shadowMap.subMaps.size}];\n")
+            for (i in shadowMap.subMaps.indices) {
+                text.append("uniform sampler2D ${U_SHADOW_TEX}_$i;\n")
+            }
             text.append("uniform int $U_SHADOW_TEX_SZ[${shadowMap.subMaps.size}];\n")
             text.append("uniform float $U_CLIP_SPACE_FAR_Z[${shadowMap.subMaps.size}];\n")
         }
@@ -356,14 +361,24 @@ open class GlslGenerator {
 
         if (shadowMap != null) {
             text.append("float shadowFactor = 1.0;\n")
-            text.append("for (int i = 0; i < ${shadowMap.subMaps.size}; i++) {\n")
-            text.append("  if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[i]) {\n")
-            text.append("    vec3 projPos = $V_POSITION_LIGHTSPACE[i].xyz / $V_POSITION_LIGHTSPACE[i].w;\n")
-            text.append("    float off = 1.0 / float($U_SHADOW_TEX_SZ[i]);\n")
-            text.append("    shadowFactor = calcShadowFactor($U_SHADOW_TEX[i], projPos, off, float(i+1) * 0.001);\n")
-            text.append("    break;\n")
-            text.append("  }\n")
-            text.append("}\n")
+            for (i in shadowMap.subMaps.indices) {
+                text.append("if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[$i]) {\n")
+                text.append("  vec3 projPos = $V_POSITION_LIGHTSPACE[$i].xyz / $V_POSITION_LIGHTSPACE[$i].w;\n")
+                text.append("  float off = 1.0 / float($U_SHADOW_TEX_SZ[$i]);\n")
+                text.append("  shadowFactor = calcShadowFactor(${U_SHADOW_TEX}_$i, projPos, off, ${i+1}.0 * 0.001);\n")
+                text.append("}\n")
+                if (i < shadowMap.subMaps.size - 1) {
+                    text.append("else ")
+                }
+            }
+//            text.append("for (int i = 0; i < ${shadowMap.subMaps.size}; i++) {\n")
+//            text.append("  if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[i]) {\n")
+//            text.append("    vec3 projPos = $V_POSITION_LIGHTSPACE[i].xyz / $V_POSITION_LIGHTSPACE[i].w;\n")
+//            text.append("    float off = 1.0 / float($U_SHADOW_TEX_SZ[i]);\n")
+//            text.append("    shadowFactor = calcShadowFactor($U_SHADOW_TEX[i], projPos, off, float(i+1) * 0.001);\n")
+//            text.append("    break;\n")
+//            text.append("  }\n")
+//            text.append("}\n")
             text.append("$fsOutBody.xyz *= shadowFactor;\n")
         }
 
