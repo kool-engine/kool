@@ -19,6 +19,7 @@ abstract class Node(val name: String? = null) {
     val onHoverEnter: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
     val onHover: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
     val onHoverExit: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    val onDispose: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
 
     /**
      * Axis-aligned bounds of this node in local coordinates.
@@ -65,6 +66,11 @@ abstract class Node(val name: String? = null) {
      * rendering.
      */
     open var isVisible = true
+
+    /**
+     * Determines whether this node is considered during shadow pass.
+     */
+    var isCastingShadow = true
 
     /**
      * Determines whether this node is considered for ray-picking tests.
@@ -114,7 +120,11 @@ abstract class Node(val name: String? = null) {
      *
      * @param ctx    the graphics engine context
      */
-    open fun dispose(ctx: RenderContext) { }
+    open fun dispose(ctx: RenderContext) {
+        for (i in onDispose.indices) {
+            onDispose[i](ctx)
+        }
+    }
 
     /**
      * Transforms [vec] in-place from local to global coordinates.

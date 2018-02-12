@@ -99,13 +99,14 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
      * Deletes all buffers associated with this mesh.
      */
     override fun dispose(ctx: RenderContext) {
+        super.dispose(ctx)
         meshData.dispose(ctx)
         shader?.dispose(ctx)
     }
 
     override fun render(ctx: RenderContext) {
         super.render(ctx)
-        if (!isRendered || (!ctx.isDepthTest && ctx.renderPass == RenderPass.DEPTH)) {
+        if (!isRendered || (!ctx.isDepthTest && ctx.renderPass == RenderPass.SHADOW)) {
             // mesh is not visible (either hidden or outside frustum)
             return
         }

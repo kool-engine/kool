@@ -329,13 +329,13 @@ open class GlslGenerator {
                     addSample(x, y)
                 }
             }
-            text.append("  return 0.5 + factor / 18.0;\n")
+            text.append("  return factor / 9.0;\n")
 
             text.append("}\n")
         }
 
         text.append("\nvoid main() {\n")
-        text.append("$fsOutBody = vec4(0.0);\n")
+        text.append("float shadowFactor = 1.0;\n")
 
         injectors.forEach { it.fsBeforeSampling(shaderProps, text) }
 
@@ -360,7 +360,6 @@ open class GlslGenerator {
         injectors.forEach { it.fsAfterSampling(shaderProps, text) }
 
         if (shadowMap != null) {
-            text.append("float shadowFactor = 1.0;\n")
             for (i in shadowMap.subMaps.indices) {
                 text.append("if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[$i]) {\n")
                 text.append("  vec3 projPos = $V_POSITION_LIGHTSPACE[$i].xyz / $V_POSITION_LIGHTSPACE[$i].w;\n")
@@ -371,15 +370,7 @@ open class GlslGenerator {
                     text.append("else ")
                 }
             }
-//            text.append("for (int i = 0; i < ${shadowMap.subMaps.size}; i++) {\n")
-//            text.append("  if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[i]) {\n")
-//            text.append("    vec3 projPos = $V_POSITION_LIGHTSPACE[i].xyz / $V_POSITION_LIGHTSPACE[i].w;\n")
-//            text.append("    float off = 1.0 / float($U_SHADOW_TEX_SZ[i]);\n")
-//            text.append("    shadowFactor = calcShadowFactor($U_SHADOW_TEX[i], projPos, off, float(i+1) * 0.001);\n")
-//            text.append("    break;\n")
-//            text.append("  }\n")
-//            text.append("}\n")
-            text.append("$fsOutBody.xyz *= shadowFactor;\n")
+            text.append("$fsOutBody.xyz *= shadowFactor / 2 + 0.5;\n")
         }
 
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
@@ -398,12 +389,12 @@ open class GlslGenerator {
 
                 text.append("vec3 materialAmbientColor = $fsOutBody.rgb * vec3(0.42);\n")
                 text.append("vec3 materialDiffuseColor = $fsOutBody.rgb * $U_LIGHT_COLOR * cosTheta;\n")
-                text.append("vec3 materialSpecularColor = $U_LIGHT_COLOR * $U_SPECULAR_INTENSITY * pow(cosAlpha, $U_SHININESS) * $fsOutBody.a;\n")
+                text.append("vec3 materialSpecularColor = $U_LIGHT_COLOR * $U_SPECULAR_INTENSITY * pow(cosAlpha, $U_SHININESS) * $fsOutBody.a * shadowFactor;\n")
 
             } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
                 text.append("vec3 materialAmbientColor = $fsOutBody.rgb * vec3(0.42);\n")
                 text.append("vec3 materialDiffuseColor = $fsOutBody.rgb * $V_DIFFUSE_LIGHT_COLOR;\n")
-                text.append("vec3 materialSpecularColor = $V_SPECULAR_LIGHT_COLOR * $fsOutBody.a;\n")
+                text.append("vec3 materialSpecularColor = $V_SPECULAR_LIGHT_COLOR * $fsOutBody.a * shadowFactor;\n")
             }
 
             // compute output color

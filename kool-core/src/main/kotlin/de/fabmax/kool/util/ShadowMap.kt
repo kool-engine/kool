@@ -73,7 +73,7 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
         BIAS_MATRIX.mul(ctx.mvpState.mvpMatrix, depthMvpMat).toBuffer(depthMvp)
 
         val prevRenderPass = ctx.renderPass
-        ctx.renderPass = RenderPass.DEPTH
+        ctx.renderPass = RenderPass.SHADOW
         scene.camera = depthCam
 
         nodeToRender.render(ctx)
@@ -83,6 +83,10 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
         ctx.mvpState.popMatrices()
         ctx.mvpState.update(ctx)
         fbo.unbind(ctx)
+    }
+
+    fun dispose(ctx: RenderContext) {
+        fbo.delete(ctx)
     }
 
     companion object {
@@ -105,6 +109,12 @@ class CascadedShadowMap(val subMaps: Array<ShadowMap>) {
             shadowMvp.put(subMaps[i].depthMvp)
         }
         shadowMvp.flip()
+    }
+
+    fun dispose(ctx: RenderContext) {
+        for (i in subMaps.indices) {
+            subMaps[i].dispose(ctx)
+        }
     }
 
     companion object {
