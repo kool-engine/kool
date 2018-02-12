@@ -40,6 +40,8 @@ class UniformTexture2D(name: String) : Uniform<Texture?>(name, null) {
             if (tex.isValid && tex.res!!.isLoaded) {
                 glUniform1i(location, unit)
             }
+        } else {
+            glUniform1i(location, GL_NONE)
         }
     }
 }
@@ -54,7 +56,7 @@ class UniformTexture2Dv(name: String, size: Int) : Uniform<Array<Texture?>>(name
             texNames[i] = if (tex != null) {
                 ctx.textureMgr.bindTexture(tex, ctx)
             } else {
-                0
+                GL_NONE
             }
         }
         glUniform1iv(location, texNames)

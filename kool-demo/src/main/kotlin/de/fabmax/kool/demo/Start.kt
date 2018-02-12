@@ -32,7 +32,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         ctx.scenes += dbgOverlay
         ctx.onRender += this::onRender
 
-        dbgOverlay.isVisible = false
+        //dbgOverlay.isVisible = false
 
         (demos[startScene] ?: defaultScene).loadScene(newScenes, ctx)
 
@@ -111,6 +111,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
                 layoutSpec.setOrigin(zero(), dps(10f, true), zero())
                 layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
                 text = "Debug Info"
+                isEnabled = dbgOverlay.isVisible
 
                 onClick += { _,_,_ -> dbgOverlay.isVisible = isEnabled }
             }

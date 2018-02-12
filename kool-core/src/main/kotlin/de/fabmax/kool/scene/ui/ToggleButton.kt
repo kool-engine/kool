@@ -69,6 +69,7 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
 
         knobAnimator.speed = 0f
         knobAnimator.duration = 0.15f
+        knobAnimator.value.value = if (tb.isEnabled) { 1f } else { 0f }
         knobAnimator.value.onUpdate = { tb.requestUiUpdate() }
 
         tb.onStateChange += stateChangedListener
