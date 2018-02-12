@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.RenderPass
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.RayTest
 
@@ -43,13 +44,16 @@ open class Group(name: String? = null) : Node(name) {
 
         tmpBounds.clear()
         for (i in children.indices) {
-            children[i].render(ctx)
+            if (ctx.renderPass != RenderPass.SHADOW || children[i].isCastingShadow) {
+                children[i].render(ctx)
+            }
             tmpBounds.add(children[i].bounds)
         }
         bounds.set(tmpBounds)
     }
 
     override fun dispose(ctx: RenderContext) {
+        super.dispose(ctx)
         for (i in children.indices) {
             children[i].dispose(ctx)
         }

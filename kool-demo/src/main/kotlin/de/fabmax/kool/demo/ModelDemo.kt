@@ -21,16 +21,14 @@ import kotlin.math.sqrt
  */
 
 fun modelScene(): Scene = scene {
-    val cascadedShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
-    preRender += { ctx ->
-        cascadedShadowMap.renderShadowMap(this, ctx)
-    }
+    defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
     (camera as PerspectiveCamera).clipFar = 100f
 
     // add some sort of ground plane
     val groundExt = 20
     +colorMesh {
+        isCastingShadow = false
         generator = {
             withTransform {
                 rotate(-90f, Vec3f.X_AXIS)
@@ -45,10 +43,11 @@ fun modelScene(): Scene = scene {
         shader = basicShader {
             lightModel = LightModel.PHONG_LIGHTING
             colorModel = ColorModel.VERTEX_COLOR
-            shadowMap = cascadedShadowMap
+            shadowMap = defaultShadowMap
         }
     }
     +lineMesh {
+        isCastingShadow = false
         isXray = true
         for (i in -groundExt..groundExt) {
             val color = Color.LIGHT_GRAY.withAlpha(0.5f)
@@ -76,7 +75,7 @@ fun modelScene(): Scene = scene {
                 lightModel = LightModel.PHONG_LIGHTING
                 colorModel = ColorModel.STATIC_COLOR
                 staticColor = Color.GRAY
-                shadowMap = cascadedShadowMap
+                shadowMap = defaultShadowMap
 
                 if (mesh is Armature && !mesh.isCpuAnimated) {
                     // do mesh animation on vertex shader if available.

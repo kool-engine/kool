@@ -118,7 +118,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         uBones.bind(ctx)
 
         if (shadowMap != null) {
-            if (ctx.renderPass == RenderPass.DEPTH) {
+            if (ctx.renderPass == RenderPass.SHADOW) {
                 for (i in 0 until shadowMap.subMaps.size) {
                     uShadowTex[i].value = null
                     uShadowTex[i].bind(ctx)

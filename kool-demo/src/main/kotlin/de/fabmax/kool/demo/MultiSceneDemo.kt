@@ -11,27 +11,27 @@ fun multiScene(): List<Scene> {
     val leftScene = simpleShapesScene()
     val rightScene = uiDemoScene()
 
-    leftScene.preRender += { ctx ->
+    leftScene.onPreRender += { ctx ->
         val vp = ctx.viewport
         val width = (vp.width * 0.5).toInt()
         ctx.pushAttributes()
         ctx.viewport = RenderContext.Viewport(vp.x, vp.y, width, vp.height)
         ctx.applyAttributes()
     }
-    leftScene.postRender += { ctx ->
+    leftScene.onPostRender += { ctx ->
         ctx.popAttributes()
     }
 
     // right scene must not clear the screen (otherwise, left scene is cleared as well)
     rightScene.clearMask = 0
-    rightScene.preRender += { ctx ->
+    rightScene.onPreRender += { ctx ->
         val vp = ctx.viewport
         val width = (vp.width * 0.5).toInt()
         ctx.pushAttributes()
         ctx.viewport = RenderContext.Viewport(width, vp.y, width, vp.height)
         ctx.applyAttributes()
     }
-    rightScene.postRender += { ctx ->
+    rightScene.onPostRender += { ctx ->
         ctx.popAttributes()
     }
 

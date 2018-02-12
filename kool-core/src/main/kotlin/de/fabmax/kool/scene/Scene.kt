@@ -5,6 +5,7 @@ import de.fabmax.kool.RenderContext
 import de.fabmax.kool.gl.GL_COLOR_BUFFER_BIT
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.gl.glClear
+import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.RayTest
 
 /**
@@ -17,11 +18,23 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
 
 open class Scene(name: String? = null) : Group(name) {
 
-    val preRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
-    val postRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
+    val onPreRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
+    val onPostRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
 
     var camera: Camera = PerspectiveCamera()
     var light = Light()
+    var defaultShadowMap: CascadedShadowMap? = null
+        set(value) {
+            field = value
+            if (value != null) {
+                onPreRender += { ctx ->
+                    value.renderShadowMap(this, ctx)
+                }
+                onDispose += { ctx ->
+                    value.dispose(ctx)
+                }
+            }
+        }
 
     var clearMask = GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
     var isPickingEnabled = true
@@ -40,8 +53,8 @@ open class Scene(name: String? = null) : Group(name) {
             return
         }
 
-        for (i in preRender.indices) {
-            preRender[i](ctx)
+        for (i in onPreRender.indices) {
+            onPreRender[i](ctx)
         }
 
         camera.updateCamera(ctx)
@@ -53,8 +66,8 @@ open class Scene(name: String? = null) : Group(name) {
         }
         render(ctx)
 
-        for (i in postRender.indices) {
-            postRender[i](ctx)
+        for (i in onPostRender.indices) {
+            onPostRender[i](ctx)
         }
     }
 

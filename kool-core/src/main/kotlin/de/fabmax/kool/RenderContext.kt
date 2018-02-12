@@ -202,6 +202,6 @@ abstract class RenderContext {
 }
 
 enum class RenderPass(val increaseTime: Boolean) {
-    DEPTH(false),
+    SHADOW(false),
     SCREEN(true)
 }
