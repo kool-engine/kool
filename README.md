@@ -7,11 +7,13 @@ bindings)
 For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
 
-What's working:
+Features / Noticeable stuff:
+- New algorithmic [Tree Demo](https://fabmax.github.io/kool/kool-js/?demo=treeDemo)
 - Cascaded shadow maps
-- Vertex shader mesh animation (see [Model Demo](https://fabmax.lima-city.de/kool/index.html?demo=modelDemo))
-- OpenStreetMap tile loading (see [OSM Earth Demo](https://fabmax.lima-city.de/kool/index.html?demo=earthDemo))
-- Synthie music (see [Synthie Demo](https://fabmax.lima-city.de/kool/index.html?demo=synthieDemo), quite CPU intense...)
+- Vertex shader mesh animation: [Model Demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo)
+- Normal mapping
+- OpenStreetMap tile loading: [OSM Earth Demo](https://fabmax.github.io/kool/kool-js/?demo=earthDemo)
+- Synthie music: [Synthie Demo](https://fabmax.github.io/kool/kool-js/?demo=synthieDemo), quite CPU intense...
 - Multi-scene / multi-viewport support
 - Some simple UI stuff: Text-Fields, (Toggle-)Buttons, Sliders, Labels
 - Meshes with shared geometry
