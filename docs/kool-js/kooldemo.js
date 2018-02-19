@@ -1837,6 +1837,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var builder = new MeshBuilder(tmp$.meshData);
         var t = currentTimeMillis();
         closure$treeGen_0.buildTrunkMesh_84rojv$(builder);
+        tmp$.meshData.generateTangents();
         println('Generated ' + (tmp$.meshData.numIndices / 3 | 0) + ' trunk triangles, took ' + currentTimeMillis().subtract(t) + ' ms');
         tmp$.meshData.isBatchUpdate = false;
       }

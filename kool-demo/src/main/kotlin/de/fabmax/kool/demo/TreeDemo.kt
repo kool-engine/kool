@@ -212,6 +212,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                         val builder = MeshBuilder(meshData)
                         val t = currentTimeMillis()
                         treeGen.buildTrunkMesh(builder)
+                        meshData.generateTangents()
                         println("Generated ${meshData.numIndices / 3} trunk triangles, took ${currentTimeMillis() - t} ms")
                         meshData.isBatchUpdate = false
                     }
