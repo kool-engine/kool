@@ -61,7 +61,7 @@ class EarthUi(val earth: Earth) {
     val scene = uiScene {
         theme = theme(UiTheme.DARK) {
             componentUi(::SimpleComponentUi)
-            containerUi({ BlankComponentUi() })
+            containerUi { BlankComponentUi() }
             standardFont(FontProps(Font.SYSTEM_FONT, 12f))
         }
 

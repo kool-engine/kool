@@ -73,6 +73,12 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
         }
     }
 
+    fun setValue(min: Float, max: Float, value: Float) {
+        this.min = min
+        this.max = max
+        this.value = value
+    }
+
     private fun isOverKnob(x: Float, y: Float): Boolean {
         val dx = x - knobPosition.x
         val dy = y - knobPosition.y

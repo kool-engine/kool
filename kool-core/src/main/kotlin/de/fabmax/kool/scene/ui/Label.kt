@@ -14,7 +14,7 @@ import de.fabmax.kool.util.*
 
 open class Label(name: String, root: UiRoot) : UiComponent(name, root) {
 
-    var text = ""
+    var text = name
         set(value) {
             if (value != field) {
                 field = value

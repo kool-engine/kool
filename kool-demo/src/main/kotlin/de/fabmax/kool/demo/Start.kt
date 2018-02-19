@@ -25,7 +25,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
             "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
             "earthDemo" to DemoEntry("Earth Demo") { addAll(earthScene()) },
             "modelDemo" to DemoEntry("Model Demo") { add(modelScene()) },
-            "treeDemo" to DemoEntry("Tree Demo") { add(treeScene()) }
+            "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) }
     )
 
     init {
@@ -59,7 +59,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
 
     private fun demoOverlay(ctx: RenderContext): Scene = uiScene(ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
-            componentUi({ BlankComponentUi() })
+            componentUi { BlankComponentUi() }
             containerUi(::BlurredComponentUi)
         }
         content.ui.setCustom(BlankComponentUi())

@@ -27,8 +27,8 @@ fun synthieScene(ctx: RenderContext): MutableList<Scene> {
 
 private fun synthieMenu(content: SynthieScene, ctx: RenderContext): Scene = uiScene(ctx.screenDpi) {
     theme = theme(UiTheme.DARK) {
-        componentUi({ BlankComponentUi() })
-        containerUi({ BlankComponentUi() })
+        componentUi { BlankComponentUi() }
+        containerUi { BlankComponentUi() }
     }
 
     val menu = container("menu") {
