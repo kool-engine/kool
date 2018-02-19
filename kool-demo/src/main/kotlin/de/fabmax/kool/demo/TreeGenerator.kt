@@ -63,10 +63,12 @@ class TreeGenerator {
         // find current nearest
         for (node in treeNodes) {
             node.influencingPts.clear()
-            attractionPointsTree.inRadius(nearAttractionPoints, node, radiusOfInfluence)
-            for (attracPt in nearAttractionPoints) {
-                if (attracPt.isOpen) {
-                    attracPt.checkNearest(node)
+            if (!node.isFinished) {
+                attractionPointsTree.inRadius(nearAttractionPoints, node, radiusOfInfluence)
+                for (attracPt in nearAttractionPoints) {
+                    if (attracPt.isOpen) {
+                        attracPt.checkNearest(node)
+                    }
                 }
             }
         }
@@ -98,6 +100,8 @@ class TreeGenerator {
                     nearAttractionPoints.forEach { it.isOpen = false }
                     changed = true
                 }
+            } else {
+                node.isFinished = true
             }
         }
         treeNodes.addAll(newNodes)
@@ -185,6 +189,7 @@ class TreeGenerator {
         var branchDepth = 0
 
         val influencingPts = mutableListOf<AttractionPoint>()
+        var isFinished = false
 
         var radius = 0.005f
         var texV = 0f

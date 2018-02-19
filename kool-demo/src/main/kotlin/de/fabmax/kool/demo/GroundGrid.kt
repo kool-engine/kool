@@ -34,7 +34,7 @@ fun makeGroundGrid(cells: Int, shadows: CascadedShadowMap?) = group {
     }
     +lineMesh {
         isCastingShadow = false
-        isXray = false
+        isXray = true
         for (i in -groundExt..groundExt) {
             val color = Color.LIGHT_GRAY.withAlpha(0.5f)
             addLine(Vec3f(i.toFloat(), 0f, -groundExt.toFloat()), color,

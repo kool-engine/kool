@@ -20,13 +20,14 @@ fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): Bas
     // vertex color and texture color are required to render fonts
     props.isVertexColor = true
     props.isTextureColor = true
+    props.isDiscardTranslucent = true
     val generator = GlslGenerator()
 
     // inject shader code to take color from static color and alpha from texture
     // static color rgb has to be pre-multiplied with texture alpha
     generator.injectors += object: GlslGenerator.GlslInjector {
         override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
-            text.append("if (${GlslGenerator.L_TEX_COLOR}.a == 0.0) { discard; }\n")
+            //text.append("if (${GlslGenerator.L_TEX_COLOR}.a == 0.0) { discard; }\n")
             text.append("${glCapabilities.glslDialect.fragColorBody} = ${GlslGenerator.L_VERTEX_COLOR} * ${GlslGenerator.L_TEX_COLOR}.a;\n")
         }
     }

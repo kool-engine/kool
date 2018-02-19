@@ -18,55 +18,16 @@ import de.fabmax.kool.util.Vec3f
  * @author fabmax
  */
 
-fun treeScene2(): Scene = scene {
-
-    +sphericalInputTransform {
-        +textureMesh(isNormalMapped = true) {
-            generator = {
-                rect {
-                    origin.set(-1f, -1f, 0f)
-                    width = 2f
-                    height = 2f
-                    texCoordUpperLeft.set(0f, 0f)
-                    texCoordUpperRight.set(2f, 0f)
-                    texCoordLowerLeft.set(0f, 2f)
-                    texCoordLowerRight.set(2f, 2f)
-                }
-            }
-            shader = basicShader {
-                colorModel = ColorModel.TEXTURE_COLOR
-                lightModel = LightModel.PHONG_LIGHTING
-                isNormalMapped = true
-
-                val textureProps = TextureProps("tree_bark.png", GL_LINEAR, GL_REPEAT, 16)
-                val nrmMapProps = TextureProps("tree_bark_nrm.png", GL_LINEAR, GL_REPEAT, 16)
-                texture = assetTexture(textureProps)
-                normalMap = assetTexture(nrmMapProps)
-            }
-        }
-
-        setMouseRotation(0f, -30f)
-        minZoom = 0.2f
-        maxZoom = 25f
-        // panning / camera translation is limited to a certain area
-        translationBounds = BoundingBox(Vec3f(-10f, -10f, -10f), Vec3f(10f, 10f, 10f))
-
-        invertRotX = true
-        invertRotY = true
-
-        zoomMethod = SphericalInputTransform.ZoomMethod.ZOOM_CENTER
-        rightDragMethod = SphericalInputTransform.DragMethod.NONE
-    }
-}
-
 fun treeScene(): Scene = scene {
     defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
     +makeGroundGrid(40, defaultShadowMap)
 
+    // generate tree structure
     val treeGen = TreeGenerator()
     treeGen.generate()
 
+    // generate tree trunk mesh
     +textureMesh(isNormalMapped = true) {
         generator = {
             val t = currentTimeMillis()
@@ -87,6 +48,7 @@ fun treeScene(): Scene = scene {
         }
     }
 
+    // generate tree leaf mesh
     +textureMesh {
         generator = {
             val t = currentTimeMillis()
@@ -98,6 +60,7 @@ fun treeScene(): Scene = scene {
             lightModel = LightModel.PHONG_LIGHTING
             shadowMap = defaultShadowMap
             specularIntensity = 0.1f
+            isDiscardTranslucent = true
             texture = assetTexture("leaf.png")
         }
     }

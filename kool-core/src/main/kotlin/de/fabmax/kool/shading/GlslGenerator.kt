@@ -398,6 +398,10 @@ open class GlslGenerator {
 
         injectors.forEach { it.fsAfterSampling(shaderProps, text) }
 
+        if (shaderProps.isDiscardTranslucent) {
+            text.append("if ($fsOutBody.a == 0.0) { discard; }")
+        }
+
         if (shadowMap != null) {
             for (i in shadowMap.subMaps.indices) {
                 text.append("if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[$i]) {\n")

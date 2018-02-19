@@ -40,6 +40,7 @@ class ShaderProps {
 
     var isAlpha = false
     var isSaturation = false
+    var isDiscardTranslucent = false
 
     var numBones = 0
 
