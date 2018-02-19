@@ -24,7 +24,8 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
             "pointDemo" to DemoEntry("Point Cloud Demo") { add(pointScene()) },
             "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
             "earthDemo" to DemoEntry("Earth Demo") { addAll(earthScene()) },
-            "modelDemo" to DemoEntry("Model Demo") { add(modelScene()) }
+            "modelDemo" to DemoEntry("Model Demo") { add(modelScene()) },
+            "treeDemo" to DemoEntry("Tree Demo") { add(treeScene()) }
     )
 
     init {
@@ -64,7 +65,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         content.ui.setCustom(BlankComponentUi())
 
         val menuButton = toggleButton("menuButton") {
-            layoutSpec.setOrigin(dps(10f, true), dps(-50f, true), dps(4f))
+            layoutSpec.setOrigin(dps(10f, true), dps(-50f, true), zero())
             layoutSpec.setSize(dps(40f, true), dps(40f, true), zero())
         }
 

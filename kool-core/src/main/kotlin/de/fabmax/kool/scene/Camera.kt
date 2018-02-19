@@ -225,8 +225,8 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 }
 
 class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
-    var clipNear = 0.2f
-    var clipFar = 200.0f
+    var clipNear = 0.1f
+    var clipFar = 100.0f
 
     var fovy = 60.0f
     var fovX = 0f

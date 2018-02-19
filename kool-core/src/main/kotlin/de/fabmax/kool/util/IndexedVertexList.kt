@@ -175,6 +175,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         // standard attributes for easy access
         val position: Vec3fView
         val normal: Vec3fView
+        val tangent: Vec3fView
         val color: ColorView
         val texCoord: Vec2fView
 
@@ -201,6 +202,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
             position = getVec3fAttribute(Attribute.POSITIONS) ?: Vec3fView(-1)
             normal = getVec3fAttribute(Attribute.NORMALS) ?: Vec3fView(-1)
+            tangent = getVec3fAttribute(Attribute.TANGENTS) ?: Vec3fView(-1)
             texCoord = getVec2fAttribute(Attribute.TEXTURE_COORDS) ?: Vec2fView(-1)
             color = getColorAttribute(Attribute.COLORS) ?: ColorView(-1)
         }

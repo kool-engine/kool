@@ -9,7 +9,7 @@ import java.io.FileOutputStream
  * @author fabmax
  */
 fun main(args: Array<String>) {
-    Demo(createContext(),"modelDemo")
+    Demo(createContext(),"treeDemo")
 }
 
 fun convertMesh() {

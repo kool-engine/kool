@@ -42,6 +42,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             field = value.clamp(minZoom, maxZoom)
         }
 
+    var invertRotX = false
+    var invertRotY = false
+
     var minZoom = 1f
     var maxZoom = 100f
     var translationBounds: BoundingBox? = null
@@ -154,8 +157,8 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         }
 
         if (dragMethod == DragMethod.ROTATE) {
-            verticalRotation -= deltaPos.x / 3
-            horizontalRotation -= deltaPos.y / 3
+            verticalRotation -= deltaPos.x / 3 * if (invertRotX) { -1f } else { 1f }
+            horizontalRotation -= deltaPos.y / 3 * if (invertRotY) { -1f } else { 1f }
             horizontalRotation = horizontalRotation.clamp(minHorizontalRot, maxHorizontalRot)
             deltaPos.set(Vec2f.ZERO)
         }

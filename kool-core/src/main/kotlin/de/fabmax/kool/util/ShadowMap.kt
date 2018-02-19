@@ -58,7 +58,7 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
         depthCam.bottom = bounds.min.y
         depthCam.top = bounds.max.y
         depthCam.near = -bounds.max.z - 10
-        depthCam.far = -bounds.min.z + 10
+        depthCam.far = -bounds.min.z
 
         fbo.bind(ctx)
 
@@ -120,9 +120,9 @@ class CascadedShadowMap(val subMaps: Array<ShadowMap>) {
     companion object {
         fun defaultCascadedShadowMap3(): CascadedShadowMap {
             val subMaps = arrayOf(
-                    ShadowMap(0f, 0.05f),
-                    ShadowMap(0.05f, 0.2f),
-                    ShadowMap(0.2f, 1f)
+                    ShadowMap(0f, 0.1f),
+                    ShadowMap(0.1f, 0.25f),
+                    ShadowMap(0.25f, 1f)
             )
             return CascadedShadowMap(subMaps)
         }

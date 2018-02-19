@@ -50,6 +50,8 @@ class ShaderProps {
             null
         }
 
+    var isNormalMapped = false
+
     // init values for newly created BasicShader
     var shininess = 20.0f
     var specularIntensity = 0.75f
@@ -57,4 +59,5 @@ class ShaderProps {
     var alpha = 1.0f
     var saturation = 1.0f
     var texture: Texture? = null
+    var normalMap: Texture? = null
 }

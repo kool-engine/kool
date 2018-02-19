@@ -25,6 +25,7 @@ data class Attribute(val name: String, val type: AttributeType) {
     companion object {
         val POSITIONS = Attribute("attrib_positions", AttributeType.VEC_3F)
         val NORMALS = Attribute("attrib_normals", AttributeType.VEC_3F)
+        val TANGENTS = Attribute("attrib_tangents", AttributeType.VEC_3F)
         val TEXTURE_COORDS = Attribute("attrib_texture_coords", AttributeType.VEC_2F)
         val COLORS = Attribute("attrib_colors", AttributeType.COLOR_4F)
     }

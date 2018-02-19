@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
@@ -18,10 +19,14 @@ fun embeddedUi(contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> 
 
 fun uiScene(dpi: Float = 96f, overlay: Boolean = true, block: UiRoot.() -> Unit): Scene {
     return scene {
-        camera = OrthographicCamera().apply { clipToViewport = true }
+        camera = OrthographicCamera().apply {
+            clipToViewport = true
+            near = -1000f
+            far = 1000f
+        }
 
         if (overlay) {
-            clearMask = 0
+            clearMask = GL_DEPTH_BUFFER_BIT
         }
 
         +embeddedUi(null, dpi) {

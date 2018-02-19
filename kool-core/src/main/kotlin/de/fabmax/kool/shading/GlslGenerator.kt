@@ -27,6 +27,7 @@ open class GlslGenerator {
         const val U_SHADOW_TEX = "uShadowTex"
         const val U_SHADOW_TEX_SZ = "uShadowTexSz"
         const val U_CLIP_SPACE_FAR_Z = "uClipSpaceFarZ"
+        const val U_NORMAL_MAP_0 = "uNormalMap0"
 
         const val V_TEX_COORD = "vTexCoord"
         const val V_EYE_DIRECTION = "vEyeDirection_cameraspace"
@@ -38,6 +39,7 @@ open class GlslGenerator {
         const val V_POSITION_WORLDSPACE = "vPositionWorldspace"
         const val V_POSITION_LIGHTSPACE = "vPositionLightspace"
         const val V_POSITION_CLIPSPACE_Z = "vPositionClipspaceZ"
+        const val V_TANGENT = "vTangent"
 
         const val L_TEX_COLOR = "texColor"
         const val L_VERTEX_COLOR = "vertColor"
@@ -118,6 +120,11 @@ open class GlslGenerator {
                 text.append("$vsOut vec3 $V_LIGHT_DIRECTION;\n")
                 text.append("$vsOut vec3 $V_NORMAL;\n")
 
+                if (shaderProps.isNormalMapped) {
+                    text.append("$vsIn vec3 ${Attribute.TANGENTS.name};\n")
+                    text.append("$vsOut vec3 $V_TANGENT;\n")
+                }
+
             } else {
                 // Gouraud model specific stuff
                 text.append("uniform vec3 $U_LIGHT_COLOR;\n")
@@ -170,6 +177,9 @@ open class GlslGenerator {
         text.append("vec4 position = vec4(${Attribute.POSITIONS}, 1.0);\n")
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
             text.append("vec4 normal = vec4(${Attribute.NORMALS}, 0.0);\n")
+            if (shaderProps.isNormalMapped) {
+                text.append("vec4 tangent = vec4(${Attribute.TANGENTS}, 0.0);\n")
+            }
         }
 
         injectors.forEach { it.vsBeforeProj(shaderProps, text) }
@@ -180,7 +190,13 @@ open class GlslGenerator {
             text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[2]] * ${Armature.BONE_WEIGHTS}[2];\n")
             text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[3]] * ${Armature.BONE_WEIGHTS}[3];\n")
             text.append("position = boneT * position;\n")
-            text.append("normal = boneT * normal;\n")
+
+            if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
+                text.append("normal = boneT * normal;\n")
+                if (shaderProps.isNormalMapped) {
+                    text.append("tangent = boneT * tangent;\n")
+                }
+            }
         }
 
         // output position of the vertex in clip space: MVP * position
@@ -219,6 +235,10 @@ open class GlslGenerator {
 
             // normal of the the vertex, in camera space
             text.append("$V_NORMAL = ($U_VIEW_MATRIX * ($U_MODEL_MATRIX * normal)).xyz;\n")
+
+            if (shaderProps.isNormalMapped) {
+                text.append("$V_TANGENT = ($U_VIEW_MATRIX * ($U_MODEL_MATRIX * tangent)).xyz;\n")
+            }
 
         } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
             // vector from vertex to camera, in camera space. In camera space, the camera is at the origin (0, 0, 0).
@@ -265,6 +285,12 @@ open class GlslGenerator {
             text.append("$fsIn vec3 $V_EYE_DIRECTION;\n")
             text.append("$fsIn vec3 $V_LIGHT_DIRECTION;\n")
             text.append("$fsIn vec3 $V_NORMAL;\n")
+
+            if (shaderProps.isNormalMapped) {
+                text.append("uniform sampler2D $U_NORMAL_MAP_0;\n")
+                text.append("$fsIn vec3 $V_TANGENT;\n")
+            }
+
         } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
             text.append("$fsIn vec3 $V_DIFFUSE_LIGHT_COLOR;\n")
             text.append("$fsIn vec3 $V_SPECULAR_LIGHT_COLOR;\n")
@@ -334,6 +360,19 @@ open class GlslGenerator {
             text.append("}\n")
         }
 
+        if (shaderProps.isNormalMapped) {
+            text.append("vec3 calcBumpedNormal() {\n")
+            text.append("  vec3 normal = normalize($V_NORMAL);\n")
+            text.append("  vec3 tangent = normalize($V_TANGENT);\n")
+            text.append("  tangent = normalize(tangent - dot(tangent, normal) * normal);\n")
+            text.append("  vec3 bitangent = cross(tangent, normal);\n")
+            text.append("  vec3 bumpMapNormal = $texSampler($U_NORMAL_MAP_0, $V_TEX_COORD).xyz;\n")
+            text.append("  bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);\n")
+            text.append("  mat3 tbn = mat3(tangent, bitangent, normal);\n")
+            text.append("  return normalize(tbn * bumpMapNormal);\n")
+            text.append("}\n")
+        }
+
         text.append("\nvoid main() {\n")
         text.append("float shadowFactor = 1.0;\n")
 
@@ -378,7 +417,12 @@ open class GlslGenerator {
                 // normalize input vectors
                 text.append("vec3 e = normalize($V_EYE_DIRECTION);\n")
                 text.append("vec3 l = normalize($V_LIGHT_DIRECTION);\n")
-                text.append("vec3 n = normalize($V_NORMAL);\n")
+
+                if (shaderProps.isNormalMapped) {
+                    text.append("vec3 n = calcBumpedNormal();\n")
+                } else {
+                    text.append("vec3 n = normalize($V_NORMAL);\n")
+                }
 
                 // cosine of angle between surface normal and light direction
                 text.append("float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n")

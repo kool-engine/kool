@@ -66,8 +66,23 @@ fun textMesh(font: Font, name: String? = null, generate: Mesh.() -> Unit): Mesh 
     return text
 }
 
-fun textureMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
-    return mesh(true, false, true, name, generate)
+fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate: Mesh.() -> Unit): Mesh {
+    val attributes = mutableSetOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
+    if (isNormalMapped) {
+        attributes += Attribute.TANGENTS
+    }
+    val mesh = mesh(name, attributes, generate)
+    if (isNormalMapped) {
+        mesh.meshData.generateTangents()
+    }
+    return mesh
+}
+
+enum class CullMethod {
+    DEFAULT,
+    CULL_BACK_FACES,
+    CULL_FRONT_FACES,
+    NO_CULLING
 }
 
 /**
@@ -83,6 +98,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
     open var shader: Shader? = null
     open var primitiveType = GL_TRIANGLES
+    open var cullMethod = CullMethod.DEFAULT
 
     override val bounds: BoundingBox
         get() = meshData.bounds
@@ -122,10 +138,31 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         if (boundShader != null) {
             // bind this mesh as input to the used shader
             boundShader.bindMesh(this, ctx)
+
+            if (cullMethod != CullMethod.DEFAULT) {
+                ctx.pushAttributes()
+                when (cullMethod) {
+                    CullMethod.CULL_BACK_FACES -> {
+                        ctx.isCullFace = true
+                        ctx.cullFace = GL_BACK
+                    }
+                    CullMethod.CULL_FRONT_FACES -> {
+                        ctx.isCullFace = true
+                        ctx.cullFace = GL_FRONT
+                    }
+                    else -> ctx.isCullFace = false
+                }
+                ctx.applyAttributes()
+            }
+
             // draw mesh
             meshData.indexBuffer?.bind(ctx)
             glDrawElements(primitiveType, meshData.numIndices, GL_UNSIGNED_INT, 0)
             boundShader.unbindMesh(ctx)
+
+            if (cullMethod != CullMethod.DEFAULT) {
+                ctx.popAttributes()
+            }
         }
     }
 
@@ -183,6 +220,48 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
             val builder = MeshBuilder(this)
             builder.gen()
             isBatchUpdate = false
+        }
+    }
+
+    fun generateTangents() {
+        val v0 = this[0]
+        val v1 = this[1]
+        val v2 = this[2]
+        val e1 = MutableVec3f()
+        val e2 = MutableVec3f()
+        val tan = MutableVec3f()
+
+        for (i in 0 until numVertices) {
+            v0.index = i
+            v0.tangent.set(Vec3f.ZERO)
+        }
+
+        for (i in 0 until numIndices step 3) {
+            v0.index = vertexList.indices[i]
+            v1.index = vertexList.indices[i+1]
+            v2.index = vertexList.indices[i+2]
+
+            v1.position.subtract(v0.position, e1)
+            v2.position.subtract(v0.position, e2)
+
+            val du1 = v1.texCoord.x - v0.texCoord.x
+            val dv1 = v1.texCoord.y - v0.texCoord.y
+            val du2 = v2.texCoord.x - v0.texCoord.x
+            val dv2 = v2.texCoord.y - v0.texCoord.y
+            val f = 1f / (du1 * dv2 - du2 * dv1)
+
+            tan.x = f * (dv2 * e1.x - dv1 * e2.x)
+            tan.y = f * (dv2 * e1.y - dv1 * e2.y)
+            tan.z = f * (dv2 * e1.z - dv1 * e2.z)
+
+            v0.tangent += tan
+            v1.tangent += tan
+            v2.tangent += tan
+        }
+
+        for (i in 0 until numVertices) {
+            v0.index = i
+            v0.tangent.norm()
         }
     }
 

@@ -30,6 +30,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     protected val uSpecularIntensity = addUniform(Uniform1f(GlslGenerator.U_SPECULAR_INTENSITY))
     protected val uStaticColor = addUniform(Uniform4f(GlslGenerator.U_STATIC_COLOR))
     protected val uTexture = addUniform(UniformTexture2D(GlslGenerator.U_TEXTURE_0))
+    protected val uNormalMap = addUniform(UniformTexture2D(GlslGenerator.U_NORMAL_MAP_0))
     protected val uAlpha = addUniform(Uniform1f(GlslGenerator.U_ALPHA))
     protected val uSaturation = addUniform(Uniform1f(GlslGenerator.U_SATURATION))
     protected val uFogColor = addUniform(Uniform4f(GlslGenerator.U_FOG_COLOR))
@@ -54,6 +55,9 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     var texture: Texture?
         get() = uTexture.value
         set(value) { uTexture.value = value }
+    var normalMap: Texture?
+        get() = uNormalMap.value
+        set(value) { uNormalMap.value = value }
     var alpha: Float
         get() = uAlpha.value
         set(value) { uAlpha.value = value }
@@ -73,6 +77,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         specularIntensity = props.specularIntensity
         staticColor.set(props.staticColor)
         texture = props.texture
+        normalMap = props.normalMap
         alpha = props.alpha
         saturation = props.saturation
 
@@ -96,6 +101,9 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         attributes.add(Attribute.NORMALS)
         attributes.add(Attribute.TEXTURE_COORDS)
         attributes.add(Attribute.COLORS)
+        if (props.isNormalMapped) {
+            attributes.add(Attribute.TANGENTS)
+        }
         if (props.numBones > 0) {
             attributes.add(Armature.BONE_INDICES)
             attributes.add(Armature.BONE_WEIGHTS)
@@ -115,6 +123,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         uSpecularIntensity.bind(ctx)
         uStaticColor.bind(ctx)
         uTexture.bind(ctx)
+        uNormalMap.bind(ctx)
         uBones.bind(ctx)
 
         if (shadowMap != null) {
@@ -166,6 +175,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     override fun dispose(ctx: RenderContext) {
         super.dispose(ctx)
         texture?.dispose(ctx)
+        normalMap?.dispose(ctx)
     }
 }
 
