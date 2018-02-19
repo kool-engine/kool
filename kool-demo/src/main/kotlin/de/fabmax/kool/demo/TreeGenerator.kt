@@ -296,12 +296,14 @@ class TreeGenerator {
         fun buildLeafMesh(target: MeshBuilder) {
             if (branchDepth <= 1 && parent != null) {
                 // add leafs
-                val n = this@TreeNode.subtract(parent!!, MutableVec3f()).norm()
+                val n = this@TreeNode.subtract(parent!!, MutableVec3f())
+                val len = n.length()
+                n.norm()
                 for (i in 1..20) {
                     target.withTransform {
                         val r = MutableVec3f(circumPts[0]).subtract(this@TreeNode).norm().scale(radius + random().toFloat() * 0.15f)
                         r.rotate(random().toFloat() * 360, n)
-                        val p = MutableVec3f(n).scale(random().toFloat() * 0.15f).add(r).add(this@TreeNode)
+                        val p = MutableVec3f(n).scale(random().toFloat() * len).add(r).add(this@TreeNode)
 
                         translate(p)
                         rotate(random().toFloat() * 360, n)

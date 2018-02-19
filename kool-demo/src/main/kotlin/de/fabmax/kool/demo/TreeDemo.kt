@@ -98,6 +98,18 @@ fun treeScene(ctx: RenderContext): List<Scene> {
     }
     scenes += treeScene
 
+    fun Slider.disableCamDrag() {
+        onHoverEnter += { _, _, _ ->
+            // disable mouse interaction on content scene while pointer is over menu
+            treeScene.isPickingEnabled = false
+        }
+        onHoverExit += { _, rt, _->
+            // enable mouse interaction on content scene when pointer leaves menu (and nothing else in this scene
+            // is hit instead)
+            treeScene.isPickingEnabled = true
+        }
+    }
+
     scenes += uiScene(ctx.screenDpi) {
         theme = theme(UiTheme.DARK_SIMPLE) {
             componentUi { BlankComponentUi() }
@@ -126,6 +138,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 layoutSpec.setOrigin(dps(200f, true), dps(110f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
                 setValue(0.05f, 1f, treeGen.growDistance)
+                disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.growDistance = value
                     growDistVal.text = formatFloat(value)
@@ -148,6 +161,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 layoutSpec.setOrigin(dps(200f, true), dps(75f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
                 setValue(1f, 10f, treeGen.killDistance)
+                disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.killDistance = value
                     killDistVal.text = formatFloat(value)
@@ -170,6 +184,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 layoutSpec.setOrigin(dps(200f, true), dps(40f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
                 setValue(100f, 20000f, treeGen.numberOfAttractionPoints.toFloat())
+                disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.numberOfAttractionPoints = value.toInt()
                     attractPtsVal.text = "${value.toInt()}"
@@ -192,6 +207,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 layoutSpec.setOrigin(dps(200f, true), dps(5f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
                 setValue(0.25f, 10f, treeGen.radiusOfInfluence)
+                disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.radiusOfInfluence = value
                     infRadiusVal.text = formatFloat(value)
@@ -235,18 +251,6 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 isEnabled = true
                 onClick += { _, _, _ ->
                     leafMesh?.isVisible = isEnabled
-                }
-            }
-
-            onHoverEnter += { _, _, _ ->
-                // disable mouse interaction on content scene while pointer is over menu
-                treeScene.isPickingEnabled = false
-            }
-            onHoverExit += { _, rt, _->
-                if (!rt.isHit) {
-                    // enable mouse interaction on content scene when pointer leaves menu (and nothing else in this scene
-                    // is hit instead)
-                    treeScene.isPickingEnabled = true
                 }
             }
         }

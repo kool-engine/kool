@@ -1691,6 +1691,28 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
+  function treeScene$disableCamDrag$lambda(closure$treeScene) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$treeScene.isPickingEnabled = false;
+      return Unit;
+    };
+  }
+  function treeScene$disableCamDrag$lambda_0(closure$treeScene) {
+    return function ($receiver, f, rt, f_0) {
+      closure$treeScene.isPickingEnabled = true;
+      return Unit;
+    };
+  }
+  function treeScene$disableCamDrag(closure$treeScene) {
+    return function ($receiver) {
+      var $receiver_0 = $receiver.onHoverEnter;
+      var element = treeScene$disableCamDrag$lambda(closure$treeScene);
+      $receiver_0.add_11rb$(element);
+      var $receiver_1 = $receiver.onHoverExit;
+      var element_0 = treeScene$disableCamDrag$lambda_0(closure$treeScene);
+      $receiver_1.add_11rb$(element_0);
+    };
+  }
   function treeScene$lambda$lambda$lambda_3(it) {
     return new BlankComponentUi();
   }
@@ -1724,11 +1746,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_7(closure$treeGen, closure$growDistVal) {
+  function treeScene$lambda$lambda$lambda_7(closure$treeGen, closure$disableCamDrag, closure$growDistVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(110.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
       $receiver.setValue_y2kzbl$(0.05, 1.0, closure$treeGen.growDistance);
+      closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda(closure$treeGen, closure$growDistVal));
       return Unit;
     };
@@ -1755,11 +1778,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_10(closure$treeGen, closure$killDistVal) {
+  function treeScene$lambda$lambda$lambda_10(closure$treeGen, closure$disableCamDrag, closure$killDistVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(75.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
       $receiver.setValue_y2kzbl$(1.0, 10.0, closure$treeGen.killDistance);
+      closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_0(closure$treeGen, closure$killDistVal));
       return Unit;
     };
@@ -1786,11 +1810,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_13(closure$treeGen, closure$attractPtsVal) {
+  function treeScene$lambda$lambda$lambda_13(closure$treeGen, closure$disableCamDrag, closure$attractPtsVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(40.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
       $receiver.setValue_y2kzbl$(100.0, 20000.0, closure$treeGen.numberOfAttractionPoints);
+      closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_1(closure$treeGen, closure$attractPtsVal));
       return Unit;
     };
@@ -1817,11 +1842,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_16(closure$treeGen, closure$infRadiusVal) {
+  function treeScene$lambda$lambda$lambda_16(closure$treeGen, closure$disableCamDrag, closure$infRadiusVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(5.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
       $receiver.setValue_y2kzbl$(0.25, 10.0, closure$treeGen.radiusOfInfluence);
+      closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_2(closure$treeGen, closure$infRadiusVal));
       return Unit;
     };
@@ -1885,21 +1911,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_19(closure$treeScene) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$treeScene.isPickingEnabled = false;
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_20(closure$treeScene) {
-    return function ($receiver, f, rt, f_0) {
-      if (!rt.isHit) {
-        closure$treeScene.isPickingEnabled = true;
-      }
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda_3(this$, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$treeScene) {
+  function treeScene$lambda$lambda_3(this$, closure$treeGen, closure$disableCamDrag, closure$trunkMesh, closure$leafMesh) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(150.0), zero());
@@ -1907,34 +1919,28 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Grow Distance:', treeScene$lambda$lambda$lambda_5));
       var growDistVal = this$.label_tokfmu$('growDistVal', treeScene$lambda$lambda$lambda_6(closure$treeGen));
       $receiver.unaryPlus_uv0sim$(growDistVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('growDist', treeScene$lambda$lambda$lambda_7(closure$treeGen, growDistVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('growDist', treeScene$lambda$lambda$lambda_7(closure$treeGen, closure$disableCamDrag, growDistVal)));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Kill Distance:', treeScene$lambda$lambda$lambda_8));
       var killDistVal = this$.label_tokfmu$('killDistVal', treeScene$lambda$lambda$lambda_9(closure$treeGen));
       $receiver.unaryPlus_uv0sim$(killDistVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_10(closure$treeGen, killDistVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_10(closure$treeGen, closure$disableCamDrag, killDistVal)));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Attraction Points:', treeScene$lambda$lambda$lambda_11));
       var attractPtsVal = this$.label_tokfmu$('attractPtsVal', treeScene$lambda$lambda$lambda_12(closure$treeGen));
       $receiver.unaryPlus_uv0sim$(attractPtsVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('attractPts', treeScene$lambda$lambda$lambda_13(closure$treeGen, attractPtsVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('attractPts', treeScene$lambda$lambda$lambda_13(closure$treeGen, closure$disableCamDrag, attractPtsVal)));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius of Influence:', treeScene$lambda$lambda$lambda_14));
       var infRadiusVal = this$.label_tokfmu$('killDistVal', treeScene$lambda$lambda$lambda_15(closure$treeGen));
       $receiver.unaryPlus_uv0sim$(infRadiusVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_16(closure$treeGen, infRadiusVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_16(closure$treeGen, closure$disableCamDrag, infRadiusVal)));
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('generate', treeScene$lambda$lambda$lambda_17(closure$treeGen, closure$trunkMesh, closure$leafMesh)));
       $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('toggleLeafs', treeScene$lambda$lambda$lambda_18(closure$leafMesh)));
-      var $receiver_0 = $receiver.onHoverEnter;
-      var element = treeScene$lambda$lambda$lambda_19(closure$treeScene);
-      $receiver_0.add_11rb$(element);
-      var $receiver_1 = $receiver.onHoverExit;
-      var element_0 = treeScene$lambda$lambda$lambda_20(closure$treeScene);
-      $receiver_1.add_11rb$(element_0);
       return Unit;
     };
   }
-  function treeScene$lambda(closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$treeScene) {
+  function treeScene$lambda(closure$treeGen, closure$disableCamDrag, closure$trunkMesh, closure$leafMesh) {
     return function ($receiver) {
       $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, treeScene$lambda$lambda_2);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', treeScene$lambda$lambda_3($receiver, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$treeScene)));
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', treeScene$lambda$lambda_3($receiver, closure$treeGen, closure$disableCamDrag, closure$trunkMesh, closure$leafMesh)));
       return Unit;
     };
   }
@@ -1954,7 +1960,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, treeScene$lambda$lambda_1($receiver)));
     var treeScene = $receiver;
     scenes.add_11rb$(treeScene);
-    var element = uiScene(ctx.screenDpi, void 0, treeScene$lambda(treeGen, trunkMesh, leafMesh, treeScene));
+    var disableCamDrag = treeScene$disableCamDrag(treeScene);
+    var element = uiScene(ctx.screenDpi, void 0, treeScene$lambda(treeGen, disableCamDrag, trunkMesh, leafMesh));
     scenes.add_11rb$(element);
     return scenes;
   }
@@ -2353,12 +2360,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   TreeGenerator$TreeNode.prototype.buildLeafMesh_84rojv$ = function (target) {
     if (this.branchDepth <= 1 && this.parent != null) {
-      var n = this.subtract_87xh0$(ensureNotNull(this.parent), MutableVec3f_init()).norm();
+      var n = this.subtract_87xh0$(ensureNotNull(this.parent), MutableVec3f_init());
+      var len = n.length();
+      n.norm();
       for (var i = 1; i <= 20; i++) {
         target.transform.push();
         var r = MutableVec3f_init_0(this.circumPts.get_za3lpa$(0)).subtract_cx11x8$(this).norm().scale_mx4ult$(this.radius + random() * 0.15);
         r.rotate_ag3lbb$(random() * 360, n);
-        var p = MutableVec3f_init_0(n).scale_mx4ult$(random() * 0.15).add_cx11x8$(r).add_cx11x8$(this);
+        var p = MutableVec3f_init_0(n).scale_mx4ult$(random() * len).add_cx11x8$(r).add_cx11x8$(this);
         target.translate_cx11x8$(p);
         target.rotate_ag3lbb$(random() * 360, n);
         var i0 = target.vertex_hd42uj$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 0.0));
