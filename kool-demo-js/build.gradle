@@ -1,5 +1,5 @@
 buildscript {
-    ext.webPath = 'web'
+    ext.webPath = '../docs/kool-js'
 }
 
 apply plugin: 'kotlin-platform-js'
@@ -12,9 +12,9 @@ dependencies {
 }
 
 compileKotlin2Js {
-    kotlinOptions.outputFile = "${projectDir}/web/kooldemo.js"
+    kotlinOptions.outputFile = "${projectDir}/$webPath/kooldemo.js"
     kotlinOptions.moduleKind = "amd"
-    kotlinOptions.sourceMap = true
+    kotlinOptions.sourceMap = false
 }
 
 clean {
