@@ -11089,8 +11089,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function debugOverlay$lambda$lambda$lambda_0(closure$ctx) {
     return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(-40.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(40.0, true), zero());
+      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(-37.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(37.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$CENTER_getInstance(), Alignment$CENTER_getInstance());
       $receiver.text = '';
@@ -11280,8 +11280,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
       $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(height, true), zero());
       var $receiver_0 = new DeltaTGraph(this$);
-      $receiver_0.layoutSpec.setOrigin_4ujscr$(dps(-120.0, true), dps(-40.0, true), zero());
-      $receiver_0.layoutSpec.setSize_4ujscr$(dps(120.0, true), dps(40.0, true), zero());
+      $receiver_0.layoutSpec.setOrigin_4ujscr$(zero(), dps(-40.0, true), zero());
+      $receiver_0.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(40.0, true), zero());
       $receiver.unaryPlus_uv0sim$($receiver_0);
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblFps', debugOverlay$lambda$lambda$lambda_0(closure$ctx)));
       var yOri = {v: -60.0};
@@ -11319,7 +11319,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return dbgOverlay;
   }
   function DeltaTGraph(root) {
-    DeltaTGraph$Companion_getInstance();
     UiComponent.call(this, 'deltaT', root);
     this.graphMesh = null;
     this.graphData = MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().COLORS]);
@@ -11331,22 +11330,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.graphMesh.meshData.usage = GL_DYNAMIC_DRAW;
     this.graphMesh.shader = basicShader(DeltaTGraph_init$lambda);
   }
-  function DeltaTGraph$Companion() {
-    DeltaTGraph$Companion_instance = this;
-    this.WIDTH = 120;
-  }
-  DeltaTGraph$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var DeltaTGraph$Companion_instance = null;
-  function DeltaTGraph$Companion_getInstance() {
-    if (DeltaTGraph$Companion_instance === null) {
-      new DeltaTGraph$Companion();
-    }
-    return DeltaTGraph$Companion_instance;
-  }
   DeltaTGraph.prototype.render_evfofk$ = function (ctx) {
     var color = Color$Companion_getInstance().WHITE;
     if (this.prevDeltaT > 0.05) {
@@ -11357,7 +11340,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     this.setCurrentBarColor_d7aj7k$(color);
     this.prevDeltaT = ctx.deltaT;
-    this.graphIdx = (this.graphIdx + 4 | 0) % (DeltaTGraph$Companion_getInstance().WIDTH * 4 | 0);
+    this.graphIdx = (this.graphIdx + 4 | 0) % (numberToInt(this.width) * 4 | 0);
     this.graphVertex.index = this.graphIdx;
     var y0 = this.graphVertex.position.y;
     var a = ctx.deltaT * 250;
@@ -11387,7 +11370,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     UiComponent.prototype.updateUi_evfofk$.call(this, ctx);
     this.setupBuilder_84rojv$(this.graphBuilder);
     this.graphBuilder.color = Color$Companion_getInstance().WHITE;
-    tmp$ = DeltaTGraph$Companion_getInstance().WIDTH;
+    tmp$ = numberToInt(this.width);
     for (var i = 1; i <= tmp$; i++) {
       this.graphBuilder.line_s2l86p$(i - 0.5, 0.0, i - 0.5, 1.0, 1.0);
     }
