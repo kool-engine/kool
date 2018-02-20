@@ -19,7 +19,7 @@ import java.net.URI
  * @author fabmax
  */
 
-actual var glCapabilities = GlCapabilities.GL_330
+actual var glCapabilities = GlCapabilities.UNKNOWN_CAPABILITIES
 
 fun createContext() = createContext(Lwjgl3Context.InitProps())
 
@@ -52,6 +52,13 @@ actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
 actual fun loadTextureAsset(assetPath: String): TextureData = ImageTextureData(assetPath)
 
 actual fun openUrl(url: String) = Desktop.getDesktop().browse(URI(url))
+
+actual fun getMemoryInfo(): String {
+    val rt = Runtime.getRuntime()
+    val freeMem = rt.freeMemory()
+    val totalMem = rt.totalMemory()
+    return "Heap Size: ${(totalMem - freeMem) / 1024 / 1024} MB"
+}
 
 internal object DesktopImpl {
     private const val MAX_GENERATED_TEX_WIDTH = 2048

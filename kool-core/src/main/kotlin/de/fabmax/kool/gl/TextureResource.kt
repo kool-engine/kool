@@ -2,6 +2,7 @@ package de.fabmax.kool.gl
 
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.TextureProps
+import de.fabmax.kool.glCapabilities
 import kotlin.math.max
 
 class TextureResource private constructor(glRef: Any, val target: Int, val props: TextureProps, ctx: RenderContext) :
@@ -25,9 +26,9 @@ class TextureResource private constructor(glRef: Any, val target: Int, val props
         glTexParameteri(target, GL_TEXTURE_WRAP_S, props.xWrapping)
         glTexParameteri(target, GL_TEXTURE_WRAP_T, props.yWrapping)
 
-        if (props.anisotropy > 1 && ctx.anisotropicTexFilterInfo.isSupported) {
-            val anisotropy = max(ctx.anisotropicTexFilterInfo.maxAnisotropy.toInt(), props.anisotropy)
-            glTexParameteri(target, ctx.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy)
+        if (props.anisotropy > 1 && glCapabilities.anisotropicTexFilterInfo.isSupported) {
+            val anisotropy = max(glCapabilities.anisotropicTexFilterInfo.maxAnisotropy.toInt(), props.anisotropy)
+            glTexParameteri(target, glCapabilities.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy)
         }
     }
 

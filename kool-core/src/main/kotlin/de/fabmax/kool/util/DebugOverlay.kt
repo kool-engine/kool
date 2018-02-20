@@ -1,8 +1,10 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.getMemoryInfo
 import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.gl.GlResource
+import de.fabmax.kool.glCapabilities
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
@@ -27,21 +29,24 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
         content.ui.setCustom(BlankComponentUi())
 
         +container("dbgPanel") {
+            val hasMemInfo = !getMemoryInfo().isEmpty()
+            val height = if (hasMemInfo) { 168f } else { 150f }
+
             if (alignBottom) {
-                layoutSpec.setOrigin(dps(-120f, true), dps(0f, true), zero())
+                layoutSpec.setOrigin(dps(-140f, true), dps(0f, true), zero())
             } else {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-132f, true), zero())
+                layoutSpec.setOrigin(dps(-120f, true), dps(-150f, true), zero())
             }
-            layoutSpec.setSize(dps(120f, true), dps(132f, true), zero())
+            layoutSpec.setSize(dps(140f, true), dps(height, true), zero())
 
             +DeltaTGraph(this@uiScene).apply {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-40f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(40f, true), zero())
+                layoutSpec.setOrigin(zero(), dps(-40f, true), zero())
+                layoutSpec.setSize(dps(140f, true), dps(40f, true), zero())
             }
 
             +label("lblFps") {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-40f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(40f, true), zero())
+                layoutSpec.setOrigin(zero(), dps(-37f, true), zero())
+                layoutSpec.setSize(dps(140f, true), dps(37f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                 text = ""
@@ -53,9 +58,33 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                 }
             }
 
+            var yOri = -60f
+            +label("lblVersion") {
+                layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
+                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
+                padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+                text = "GL Version: ${glCapabilities.glVersion}"
+            }
+
+            if (hasMemInfo) {
+                yOri -= 18f
+                +label("lblMemInfo") {
+                    layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
+                    layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
+                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
+                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+
+                    onRender += {
+                        text = getMemoryInfo()
+                    }
+                }
+            }
+
+            yOri -= 18f
             +label("lblVpSize") {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-60f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
+                layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
+                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -70,9 +99,10 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                 }
             }
 
+            yOri -= 18f
             +label("lblUpTime") {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-78f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
+                layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
+                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                 text = "Up: 00:00.00"
@@ -101,9 +131,10 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                 }
             }
 
+            yOri -= 18f
             +label("lblNumTextures") {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-96f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
+                layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
+                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -123,9 +154,10 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                 }
             }
 
+            yOri -= 18f
             +label("lblNumBuffers") {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-114f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
+                layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
+                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -145,9 +177,10 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                 }
             }
 
+            yOri -= 18f
             +label("lblNumShaders") {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-132f, true), zero())
-                layoutSpec.setSize(dps(120f, true), dps(18f, true), zero())
+                layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
+                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -176,10 +209,6 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
     var graphIdx = 0
     var prevDeltaT = 0f
 
-    companion object {
-        const val WIDTH = 120
-    }
-
     init {
         graphMesh = Mesh(graphData)
         graphMesh.meshData.usage = GL_DYNAMIC_DRAW
@@ -201,7 +230,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         prevDeltaT = ctx.deltaT.toFloat()
 
         // modify vertices in graph mesh to change line height of current bar
-        graphIdx = (graphIdx + 4) % (WIDTH * 4)
+        graphIdx = (graphIdx + 4) % (width.toInt() * 4)
         graphVertex.index = graphIdx
         val y0 = graphVertex.position.y
         val h = min(ctx.deltaT.toFloat() * 250, height)
@@ -229,7 +258,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
 
         setupBuilder(graphBuilder)
         graphBuilder.color = Color.WHITE
-        for (i in 1..WIDTH) {
+        for (i in 1..width.toInt()) {
             graphBuilder.line(i - 0.5f, 0f, i - 0.5f, 1f, 1f)
         }
     }

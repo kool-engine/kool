@@ -23,7 +23,7 @@ import kotlin.js.Date
  * @author fabmax
  */
 
-actual var glCapabilities = GlCapabilities.GL_ES_200
+actual var glCapabilities = GlCapabilities.UNKNOWN_CAPABILITIES
 
 fun createContext() = createContext(JsContext.InitProps())
 
@@ -59,6 +59,9 @@ actual fun loadTextureAsset(assetPath: String): TextureData {
 actual fun openUrl(url: String) {
     window.open(url)
 }
+
+actual fun getMemoryInfo(): String = ""
+
 
 internal object JsImpl {
     private const val MAX_GENERATED_TEX_WIDTH = 1024

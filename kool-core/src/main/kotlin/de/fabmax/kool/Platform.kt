@@ -20,3 +20,5 @@ expect fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit)
 expect fun loadTextureAsset(assetPath: String): TextureData
 
 expect fun openUrl(url: String)
+
+expect fun getMemoryInfo(): String

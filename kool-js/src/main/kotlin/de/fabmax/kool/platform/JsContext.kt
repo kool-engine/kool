@@ -1,6 +1,9 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.gl.GL_DEPTH_COMPONENT
+import de.fabmax.kool.gl.GL_DEPTH_COMPONENT24
+import de.fabmax.kool.gl.GL_NEAREST
 import de.fabmax.kool.gl.WebGL2RenderingContext
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLCanvasElement
@@ -22,12 +25,8 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
     override var windowHeight = 0
         private set
 
-    override var anisotropicTexFilterInfo = AnisotropicTexFilterInfo(0f, 0)
-        private set
-
     internal val canvas: HTMLCanvasElement
     internal val gl: WebGLRenderingContext
-    internal val supportsUint32Indices: Boolean
 
     private var animationMillis = 0.0
 
@@ -40,13 +39,29 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
         }
         JsImpl.isWebGl2Context = webGlCtx != null
 
+        // default attributes for minimal WebGL 1 context, are changed depending on available stuff
+        var uint32Indices = false
+        var depthTextures = false
+        var shaderIntAttribs = false
+        var depthComponentIntFormat = GL_DEPTH_COMPONENT
+        var depthFilterMethod = GL_NEAREST
+        var framebufferWithoutColor = false
+        var anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED
+        var glslDialect = GlslDialect.GLSL_DIALECT_100
+        var glVersion = GlVersion("WebGL", 1, 0)
+
         if (webGlCtx != null) {
-            println("Using WebGL 2 context")
             gl = webGlCtx as WebGL2RenderingContext
-            glCapabilities = GlCapabilities.GL_ES_300
+
+            uint32Indices = true
+            depthTextures = true
+            shaderIntAttribs = true
+            depthComponentIntFormat = GL_DEPTH_COMPONENT24
+            framebufferWithoutColor = true
+            glslDialect = GlslDialect.GLSL_DIALECT_300_ES
+            glVersion = GlVersion("WebGL", 2, 0)
 
         } else {
-            println("Falling back to WebGL 1 context")
             webGlCtx = canvas.getContext("webgl")
             if (webGlCtx == null) {
                 webGlCtx = canvas.getContext("experimental-webgl")
@@ -55,32 +70,35 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
                 js("alert(\"Unable to initialize WebGL. Your browser may not support it.\")")
             }
             gl = webGlCtx as WebGLRenderingContext
-            glCapabilities = GlCapabilities.GL_ES_200
 
-            if (gl.getExtension("OES_element_index_uint") != null) {
-                glCapabilities.uint32Indices = true
-            }
-            if (gl.getExtension("WEBGL_depth_texture") != null) {
-                glCapabilities.depthTextures = true
-            }
+            uint32Indices = gl.getExtension("OES_element_index_uint") != null
+            depthTextures = gl.getExtension("WEBGL_depth_texture") != null
         }
+
+        val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:
+        gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
+        gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
+        if (extAnisotropic != null) {
+            val max = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Float
+            anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT)
+        }
+
+        glCapabilities = GlCapabilities(
+                uint32Indices,
+                shaderIntAttribs,
+                depthTextures,
+                depthComponentIntFormat,
+                depthFilterMethod,
+                framebufferWithoutColor,
+                anisotropicTexFilterInfo,
+                glslDialect,
+                glVersion)
 
 //        for (ext in gl.getSupportedExtensions() ?: arrayOf("none")) {
 //            println(ext)
 //        }
 
         screenDpi = JsImpl.dpi
-
-        supportsUint32Indices = gl.getExtension("OES_element_index_uint") != null
-
-        val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:
-                gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
-                gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
-        if (extAnisotropic != null) {
-            val max = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Float
-            anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT)
-        }
-
         windowWidth = canvas.clientWidth
         windowHeight = canvas.clientHeight
 

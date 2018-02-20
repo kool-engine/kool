@@ -59,8 +59,6 @@ abstract class RenderContext {
     abstract val windowWidth: Int
     abstract val windowHeight: Int
 
-    abstract val anisotropicTexFilterInfo: AnisotropicTexFilterInfo
-
     var viewport by attribs.get<Viewport>("viewport")
     var clearColor by attribs.get<Color>("clearColor")
     var cullFace by attribs.get<Int>("cullFace")
@@ -187,10 +185,6 @@ abstract class RenderContext {
                 attribs[i].copy(other.attribs[i], false)
             }
         }
-    }
-
-    data class AnisotropicTexFilterInfo(val maxAnisotropy: Float, val TEXTURE_MAX_ANISOTROPY_EXT: Int) {
-        val isSupported get() = TEXTURE_MAX_ANISOTROPY_EXT != 0
     }
 
     data class Viewport(val x: Int, val y: Int, val width: Int, val height: Int) {

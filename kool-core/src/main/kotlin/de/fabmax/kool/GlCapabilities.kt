@@ -1,54 +1,43 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.gl.GL_DEPTH_COMPONENT
-import de.fabmax.kool.gl.GL_DEPTH_COMPONENT24
-import de.fabmax.kool.gl.GL_LINEAR
-import de.fabmax.kool.gl.GL_NEAREST
+data class GlCapabilities(
+        val uint32Indices: Boolean,
+        val shaderIntAttribs: Boolean,
+        val depthTextures: Boolean,
+        val depthComponentIntFormat: Int,
+        val depthFilterMethod: Int,
+        val framebufferWithoutColor: Boolean,
+        val anisotropicTexFilterInfo: AnisotropicTexFilterInfo,
+        val glslDialect: GlslDialect,
+        val glVersion: GlVersion
+) {
+    companion object {
+        val UNKNOWN_CAPABILITIES = GlCapabilities(
+                uint32Indices = false,
+                shaderIntAttribs = false,
+                depthTextures = false,
+                depthComponentIntFormat = 0,
+                depthFilterMethod = 0,
+                framebufferWithoutColor = false,
+                anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED,
+                glslDialect = GlslDialect.GLSL_DIALECT_100,
+                glVersion = GlVersion("Unknown", 0, 0))
+    }
+}
 
-class GlCapabilities {
-    var uint32Indices = false
-    var shaderIntAttribs = false
-    var depthTextures = false
-    var depthComponentIntFormat = GL_DEPTH_COMPONENT
-    var depthFilterMethod = GL_NEAREST
-    var framebufferWithoutColor = false
+data class GlVersion(
+        val glDialect: String,
+        val versionMajor: Int,
+        val versionMinor: Int
+) {
+    override fun toString(): String = "$glDialect $versionMajor.$versionMinor"
+}
 
-    var glslDialect = GlslDialect.GLSL_DIALECT_100
+data class AnisotropicTexFilterInfo(val maxAnisotropy: Float, val TEXTURE_MAX_ANISOTROPY_EXT: Int) {
+    val isSupported get() = TEXTURE_MAX_ANISOTROPY_EXT != 0
 
     companion object {
-        val GL_330: GlCapabilities = GlCapabilities().apply {
-            uint32Indices = true
-            shaderIntAttribs = true
-            depthTextures = true
-            depthComponentIntFormat = GL_DEPTH_COMPONENT
-            depthFilterMethod = GL_LINEAR
-            framebufferWithoutColor = true
-
-            glslDialect = GlslDialect.GLSL_DIALECT_330
-        }
-
-        val GL_ES_300: GlCapabilities = GlCapabilities().apply {
-            uint32Indices = true
-            shaderIntAttribs = true
-            depthTextures = true
-            depthComponentIntFormat = GL_DEPTH_COMPONENT24
-            depthFilterMethod = GL_NEAREST
-            framebufferWithoutColor = true
-
-            glslDialect = GlslDialect.GLSL_DIALECT_300_ES
-        }
-
-        val GL_ES_200: GlCapabilities = GlCapabilities().apply {
-            // most capabilities can be true depending on available extensions, set by implementation accordingly
-            uint32Indices = false
-            shaderIntAttribs = false
-            depthTextures = false
-            depthComponentIntFormat = GL_DEPTH_COMPONENT
-            depthFilterMethod = GL_NEAREST
-            framebufferWithoutColor = false
-
-            glslDialect = GlslDialect.GLSL_DIALECT_100
-        }
+        val NOT_SUPPORTED = AnisotropicTexFilterInfo(0f, 0)
     }
 }
 

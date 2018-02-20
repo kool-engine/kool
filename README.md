@@ -5,7 +5,7 @@ in browsers with Javascript/WebGL (and also on Android once I add the platform
 bindings)
 
 For now this is just an experiment. However, if you are curious
-you can checkout the [javascript demo](https://fabmax.lima-city.de/kool/index.html).
+you can checkout the [javascript demo](https://fabmax.github.io/kool/kool-js/).
 
 Features / Noticeable stuff:
 - New algorithmic [Tree Demo](https://fabmax.github.io/kool/kool-js/?demo=treeDemo)

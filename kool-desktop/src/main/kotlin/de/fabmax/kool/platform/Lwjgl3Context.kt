@@ -1,6 +1,9 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.gl.GL_DEPTH_COMPONENT
+import de.fabmax.kool.gl.GL_LINEAR
+import de.fabmax.kool.gl.GL_VERSION
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.EXTTextureFilterAnisotropic
@@ -21,9 +24,6 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
     override var windowWidth = 0
         private set
     override var windowHeight = 0
-        private set
-
-    override var anisotropicTexFilterInfo = AnisotropicTexFilterInfo(0f, 0)
         private set
 
     val supportedExtensions = mutableSetOf<String>()
@@ -101,9 +101,7 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
             windowWidth = pWidth[0]
             windowHeight = pHeight[0]
         } // the stack frame is popped automatically
-    }
 
-    override fun run() {
         // make the OpenGL context current
         glfwMakeContextCurrent(window)
         // enable v-sync
@@ -116,7 +114,17 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         // instance and makes the OpenGL bindings available for use.
         GL.createCapabilities()
 
+        val versionStr = GL11.glGetString(GL_VERSION)
+        var versionMajor = 0
+        var versionMinor = 0
+        if (versionStr.matches(Regex("^[0-9]\\.[0-9].*"))) {
+            val parts = versionStr.split(Regex("[^0-9]"), 3)
+            versionMajor = java.lang.Integer.parseInt(parts[0])
+            versionMinor = java.lang.Integer.parseInt(parts[1])
+        }
+
         // check for anisotropic texture filtering support
+        var anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED
         supportedExtensions.addAll(GL11.glGetString(GL11.GL_EXTENSIONS).split(" "))
         if (supportedExtensions.contains("GL_EXT_texture_filter_anisotropic")) {
             val max = GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)
@@ -126,6 +134,19 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         // This is required to be able to set gl_PointSize in vertex shaders (to get same behaviour as in GLES)
         GL11.glEnable(GL20.GL_VERTEX_PROGRAM_POINT_SIZE)
 
+        glCapabilities = GlCapabilities(
+                uint32Indices = true,
+                shaderIntAttribs = true,
+                depthTextures = true,
+                depthComponentIntFormat = GL_DEPTH_COMPONENT,
+                depthFilterMethod = GL_LINEAR,
+                framebufferWithoutColor = true,
+                glslDialect = GlslDialect.GLSL_DIALECT_330,
+                glVersion = GlVersion("OpenGL", versionMajor, versionMinor),
+                anisotropicTexFilterInfo = anisotropicTexFilterInfo)
+    }
+
+    override fun run() {
         // run the rendering loop until the user has attempted to close the window
         var prevTime = System.nanoTime()
         while (!glfwWindowShouldClose(window)) {
