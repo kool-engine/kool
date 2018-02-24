@@ -1,7 +1,7 @@
 package de.fabmax.kool.audio
 
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.random
+import de.fabmax.kool.math.randomF
 import kotlin.math.max
 import kotlin.math.pow
 
@@ -39,7 +39,7 @@ abstract class SampleNode {
         }
 
         fun noise(amplitude: Float = 1f): Float {
-            return (random().toFloat() * 2f - 1f) * amplitude
+            return randomF(-amplitude, amplitude)
         }
 
         fun note(note: Int, octave: Int): Float {

@@ -1,7 +1,8 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.currentTimeMillis
-import de.fabmax.kool.math.random
+import de.fabmax.kool.math.CubicPointDistribution
+import de.fabmax.kool.math.randomF
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 
@@ -34,13 +35,12 @@ fun pointScene(): Scene {
                     }
                 }
 
-                trav.center.set((random() - 0.5).toFloat() * 2f,
-                        (random() - 0.5).toFloat() * 2f, (random() - 0.5).toFloat() * 2f)
+                trav.center.set(randomF(-1f, 1f), randomF(-1f, 1f), randomF(-1f, 1f))
                 val t = currentTimeMillis()
                 tree.traverse(trav)
                 println("In-radius search in ${currentTimeMillis() - t} ms, got ${trav.result.size} points")
 
-                val color = Color.fromHsv(random().toFloat() * 360f, 1f, 1f, 1f)
+                val color = Color.fromHsv(randomF(0f, 360f), 1f, 1f, 1f)
                 for (point in trav.result) {
                     for (i in 0..ptVertCnt-1) {
                         vert.index = point.index + i
@@ -77,16 +77,14 @@ fun makePointMesh(): Pair<Mesh, KdTree<MeshPoint>> {
     val mesh = pointMesh {
         pointSize = 3f
 
+        val dist = CubicPointDistribution(5f)
         for (i in 1..100_000) {
-            val x = (random().toFloat() - 0.5f) * 5
-            val z = (random().toFloat() - 0.5f) * 5
-            val y = (random().toFloat() - 0.5f) * 5
-
+            val pt = dist.nextPoint()
             val idx = addPoint {
-                position.set(x, y, z)
+                position.set(pt)
                 color.set(Color.DARK_GRAY)
             }
-            points.add(MeshPoint(x, y, z, idx))
+            points.add(MeshPoint(pt.x, pt.y, pt.z, idx))
         }
     }
     val t = currentTimeMillis()
@@ -101,9 +99,9 @@ fun makeBillboardPointMesh(): Pair<BillboardMesh, KdTree<MeshPoint>> {
 
     val points: MutableList<MeshPoint> = mutableListOf()
     for (i in 1..100_000) {
-        val x = (random().toFloat() - 0.5f) * 5
-        val z = (random().toFloat() - 0.5f) * 5
-        val y = (random().toFloat() - 0.5f) * 5
+        val x = randomF(-2.5f, 2.5f)
+        val z = randomF(-2.5f, 2.5f)
+        val y = randomF(-2.5f, 2.5f)
 
         mesh.addQuad(Vec3f(x, y, z), Color.DARK_GRAY)
         points.add(MeshPoint(x, y, z, (i-1)*4))

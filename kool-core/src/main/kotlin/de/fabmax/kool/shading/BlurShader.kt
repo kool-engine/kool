@@ -2,7 +2,6 @@ package de.fabmax.kool.shading
 
 import de.fabmax.kool.*
 import de.fabmax.kool.gl.*
-import de.fabmax.kool.math.random
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
@@ -10,6 +9,7 @@ import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableVec3f
+import de.fabmax.kool.util.UniqueId
 import kotlin.math.max
 import kotlin.math.min
 
@@ -103,7 +103,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
     var numPasses = 2
 
     init {
-        val id = random()
+        val id = UniqueId.nextId()
         val texProps = TextureProps("DistortedBackground-$id",
                 GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0)
         copyTex = Texture(texProps, { copyTexData })

@@ -6,6 +6,7 @@ import de.fabmax.kool.assetTexture
 import de.fabmax.kool.currentTimeMillis
 import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_REPEAT
+import de.fabmax.kool.math.SphericalPointDistribution
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
@@ -26,7 +27,8 @@ fun treeScene(ctx: RenderContext): List<Scene> {
     val scenes = mutableListOf<Scene>()
 
     // generate tree structure
-    val treeGen = TreeGenerator()
+    val treeGen = TreeGenerator(SphericalPointDistribution(2f, Vec3f(0f, 3f, 0f)))
+    //val treeGen = TreeGenerator(CubicPointDistribution(4f, Vec3f(0f, 3f, 0f)))
     treeGen.generate()
 
     // meshes

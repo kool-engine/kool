@@ -1,13 +1,16 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.currentTimeMillis
-import de.fabmax.kool.math.random
+import de.fabmax.kool.math.PointDistribution
+import de.fabmax.kool.math.randomF
 import de.fabmax.kool.util.*
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.pow
 
-class TreeGenerator {
+class TreeGenerator(val distribution: PointDistribution,
+                    val baseTop: Vec3f = Vec3f(0f, 1f, 0f),
+                    val baseBot: Vec3f = Vec3f.ZERO) {
 
     var radiusOfInfluence = 1.0f
     var growDistance = 0.15f
@@ -29,14 +32,14 @@ class TreeGenerator {
 
         treeNodes.clear()
         root = TreeNode()
+        root.set(baseBot)
         treeNodes += root
 
+        val d = baseTop.subtract(baseBot, MutableVec3f()).norm().scale(growDistance)
         var prev = root
-        var y = growDistance
-        while (y < 1f) {
+        while (prev.distance(baseTop) > growDistance) {
             val newNd = TreeNode()
-            newNd.y = y
-            y += growDistance
+            newNd.set(prev).add(d)
             prev.addChild(newNd)
             treeNodes += newNd
             prev = newNd
@@ -115,9 +118,9 @@ class TreeGenerator {
                 this += MutableVec3f(parent!!).subtract(this).norm().scale(growDistance * 0.5f)
 
                 // add a small random offset
-                x += (random().toFloat() - 0.5f) * 0.02f
-                y += (random().toFloat() - 0.5f) * 0.02f
-                z += (random().toFloat() - 0.5f) * 0.02f
+                x += randomF(-0.01f, 0.01f)
+                y += randomF(-0.01f, 0.01f)
+                z += randomF(-0.01f, 0.01f)
             }
             computeTrunkRadiusAndDepth()
             computeCircumPoints()
@@ -140,25 +143,14 @@ class TreeGenerator {
     }
 
     private fun populateAttractionPoints() {
-        val center = Vec3f(0f, 3f, 0f)
-        val radius = 2f
         attractionPoints.clear()
-        for (i in 1..numberOfAttractionPoints) {
-            attractionPoints += AttractionPoint().apply {
-                var l = radius * 2
-                while (l > radius) {
-                    x = (random().toFloat() - 0.5f) * 2f * radius
-                    y = (random().toFloat() - 0.5f) * 2f * radius
-                    z = (random().toFloat() - 0.5f) * 2f * radius
-                    l = length()
-                }
-                add(center)
-            }
+        for (pt in distribution.nextPoints(numberOfAttractionPoints)) {
+            attractionPoints += AttractionPoint(pt)
         }
         attractionPointsTree = pointTree(attractionPoints)
     }
 
-    private class AttractionPoint : MutableVec3f() {
+    private class AttractionPoint(pt: Vec3f) : MutableVec3f(pt) {
         var nearestNode: TreeNode? = null
             set(value) {
                 field = value
@@ -301,12 +293,12 @@ class TreeGenerator {
                 n.norm()
                 for (i in 1..20) {
                     target.withTransform {
-                        val r = MutableVec3f(circumPts[0]).subtract(this@TreeNode).norm().scale(radius + random().toFloat() * 0.15f)
-                        r.rotate(random().toFloat() * 360, n)
-                        val p = MutableVec3f(n).scale(random().toFloat() * len).add(r).add(this@TreeNode)
+                        val r = MutableVec3f(circumPts[0]).subtract(this@TreeNode).norm().scale(radius + randomF(0f, 0.15f))
+                        r.rotate(randomF(0f, 360f), n)
+                        val p = MutableVec3f(n).scale(randomF(0f, len)).add(r).add(this@TreeNode)
 
                         translate(p)
-                        rotate(random().toFloat() * 360, n)
+                        rotate(randomF(0f, 360f), n)
 
                         var i0 = vertex(Vec3f(0f, -0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 0f))
                         var i1 = vertex(Vec3f(0f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 1f))

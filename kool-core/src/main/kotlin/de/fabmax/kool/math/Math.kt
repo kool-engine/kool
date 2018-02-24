@@ -36,5 +36,3 @@ inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
     this > max -> max
     else -> this
 }
-
-expect fun random(): Double
