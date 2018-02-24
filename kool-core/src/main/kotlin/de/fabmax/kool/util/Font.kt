@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.*
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.shading.ShaderProps

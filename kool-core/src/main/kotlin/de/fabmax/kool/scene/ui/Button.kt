@@ -2,8 +2,12 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.InterpolatedFloat
+import de.fabmax.kool.util.LinearAnimator
 
 /**
  * @author fabmax
@@ -76,12 +80,12 @@ open class ButtonUi(val button: Button, baseUi: ComponentUi) : LabelUi(button, b
     protected var colorWeightStd = 1f
     protected var colorWeightHovered = 0f
 
-    protected val hoverEnterListener: Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit = { _,_,_ ->
+    protected val hoverEnterListener: Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit = { _, _, _ ->
         hoverAnimator.duration = 0.1f
         hoverAnimator.speed = 1f
     }
 
-    protected val hoverExitListener: Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit = { _,_,_ ->
+    protected val hoverExitListener: Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit = { _, _, _ ->
         hoverAnimator.duration = 0.2f
         hoverAnimator.speed = -1f
     }

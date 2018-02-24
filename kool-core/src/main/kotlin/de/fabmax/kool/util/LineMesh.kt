@@ -3,6 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.gl.GL_ALWAYS
 import de.fabmax.kool.gl.GL_LINES
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute

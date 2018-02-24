@@ -1,10 +1,10 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.RenderContext
-import de.fabmax.kool.util.Mat4f
-import de.fabmax.kool.util.MutableVec3f
-import de.fabmax.kool.util.RayTest
-import de.fabmax.kool.util.Vec3f
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.Vec3f
 
 /**
  * @author fabmax

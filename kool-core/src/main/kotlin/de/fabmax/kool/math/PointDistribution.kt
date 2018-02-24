@@ -1,7 +1,5 @@
 package de.fabmax.kool.math
 
-import de.fabmax.kool.util.Vec3f
-
 abstract class PointDistribution {
 
     abstract fun nextPoint(): Vec3f
@@ -27,7 +25,7 @@ class CubicPointDistribution(val size: Float = 1f, val center: Vec3f = Vec3f.ZER
 }
 
 class SphericalPointDistribution(val radius: Float = 1f, val center: Vec3f = Vec3f.ZERO,
-                             val random: Random = defaultRandomInstance) : PointDistribution() {
+                                 val random: Random = defaultRandomInstance) : PointDistribution() {
 
     private val rSqr = radius * radius
 

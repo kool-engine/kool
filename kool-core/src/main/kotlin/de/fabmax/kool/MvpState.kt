@@ -1,7 +1,7 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.util.Mat4f
-import de.fabmax.kool.util.Mat4fStack
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.Mat4fStack
 import de.fabmax.kool.util.createFloat32Buffer
 
 

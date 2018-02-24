@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.loadAsset
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.animation.Armature
@@ -10,7 +11,6 @@ import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Vec3f
 import de.fabmax.kool.util.serialization.loadMesh
 import kotlin.math.round
 import kotlin.math.sqrt

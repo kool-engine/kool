@@ -2,12 +2,17 @@ package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.glCapabilities
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.Mat4fStack
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.AttributeType
 import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.createFloat32Buffer
 
 class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
 

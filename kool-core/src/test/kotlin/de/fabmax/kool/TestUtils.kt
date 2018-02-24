@@ -1,4 +1,4 @@
-package de.fabmax.cool.util
+package de.fabmax.kool
 
 /**
  * Test util functions

@@ -2,10 +2,10 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.MutableVec3f
-import de.fabmax.kool.util.RayTest
-import de.fabmax.kool.util.Vec3f
 
 /**
  * A scene node. This is the base class for all scene objects.

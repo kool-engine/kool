@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene.animation
 
-import de.fabmax.kool.util.*
+import de.fabmax.kool.math.*
 import kotlin.math.max
 
 interface AnimatedNode {

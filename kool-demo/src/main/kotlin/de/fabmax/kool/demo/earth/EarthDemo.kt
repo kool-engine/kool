@@ -1,12 +1,16 @@
 package de.fabmax.kool.demo.earth
 
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.openUrl
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.SphericalInputTransform
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.color
 import kotlin.math.min
 
 /**

@@ -1,9 +1,6 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.math
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.isEqual
-import de.fabmax.kool.math.toRad
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -161,7 +158,7 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
         return this
     }
 
-    fun set(x: Float, y: Float): MutableVec2f  {
+    fun set(x: Float, y: Float): MutableVec2f {
         this.x = x
         this.y = y
         return this
@@ -429,7 +426,7 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
         val NEG_X_AXIS = Vec4f(-1f, 0f, 0f, 0f)
         val NEG_Y_AXIS = Vec4f(0f, -1f, 0f, 0f)
         val NEG_Z_AXIS = Vec4f(0f, 0f, -1f, 0f)
-        val NEG_W_AXIS = Vec4f(0f, 0f,  0f, -1f)
+        val NEG_W_AXIS = Vec4f(0f, 0f, 0f, -1f)
     }
 }
 

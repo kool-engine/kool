@@ -2,12 +2,12 @@ package de.fabmax.kool.demo.earth
 
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.assetTexture
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
-import de.fabmax.kool.util.MutableVec3f
-import de.fabmax.kool.util.Vec2f
-import de.fabmax.kool.util.Vec3f
 import kotlin.math.*
 
 class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int) :

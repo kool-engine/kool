@@ -2,6 +2,7 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
@@ -9,7 +10,6 @@ import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.MutableColor
-import de.fabmax.kool.util.MutableVec2f
 
 /**
  * @author fabmax

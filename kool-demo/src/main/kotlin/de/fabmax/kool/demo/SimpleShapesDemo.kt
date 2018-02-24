@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.assetTexture
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.ColorModel

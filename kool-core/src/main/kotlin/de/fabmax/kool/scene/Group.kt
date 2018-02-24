@@ -2,8 +2,8 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.RenderPass
+import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.RayTest
 
 /**
  * @author fabmax

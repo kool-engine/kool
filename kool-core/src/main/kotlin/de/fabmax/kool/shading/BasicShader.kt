@@ -3,12 +3,12 @@ package de.fabmax.kool.shading
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.RenderPass
 import de.fabmax.kool.Texture
+import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.MutableVec4f
 
 
 fun basicShader(propsInit: ShaderProps.() -> Unit): BasicShader {

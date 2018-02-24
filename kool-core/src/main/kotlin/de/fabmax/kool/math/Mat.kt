@@ -1,8 +1,7 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.math
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.math.isEqual
-import de.fabmax.kool.math.toRad
+import de.fabmax.kool.util.Float32Buffer
 import kotlin.math.*
 
 /**
@@ -562,7 +561,7 @@ open class Mat4f {
     }
 }
 
-class Mat4fStack(val stackSize: Int = Mat4fStack.DEFAULT_STACK_SIZE) : Mat4f() {
+class Mat4fStack(val stackSize: Int = DEFAULT_STACK_SIZE) : Mat4f() {
     companion object {
         val DEFAULT_STACK_SIZE = 32
     }

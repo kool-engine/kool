@@ -2,13 +2,13 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
+import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.shading.BlurredBackgroundHelper
 import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.util.RayTest
 
 fun embeddedUi(contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
     val ui = UiRoot(dpi)

@@ -1,5 +1,8 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Ray
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import kotlin.math.sqrt
 

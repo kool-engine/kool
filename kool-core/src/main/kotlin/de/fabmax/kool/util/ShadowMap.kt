@@ -7,6 +7,8 @@ import de.fabmax.kool.gl.Framebuffer
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.gl.glClear
 import de.fabmax.kool.glCapabilities
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.scene.FrustumPlane
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera

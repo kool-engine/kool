@@ -2,6 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.currentTimeMillis
 import de.fabmax.kool.math.CubicPointDistribution
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*

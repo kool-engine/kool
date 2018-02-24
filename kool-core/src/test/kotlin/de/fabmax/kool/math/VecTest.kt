@@ -1,7 +1,6 @@
-package de.fabmax.cool.util
+package de.fabmax.kool.math
 
-import de.fabmax.kool.math.isEqual
-import de.fabmax.kool.util.*
+import de.fabmax.kool.testAssert
 import kotlin.math.sqrt
 import kotlin.test.Test
 

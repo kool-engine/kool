@@ -7,6 +7,7 @@ import de.fabmax.kool.currentTimeMillis
 import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_REPEAT
 import de.fabmax.kool.math.SphericalPointDistribution
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
@@ -15,7 +16,6 @@ import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.Vec3f
 import kotlin.math.round
 
 

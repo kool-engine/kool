@@ -1,9 +1,9 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.currentTimeMillis
-import de.fabmax.kool.math.PointDistribution
-import de.fabmax.kool.math.randomF
-import de.fabmax.kool.util.*
+import de.fabmax.kool.math.*
+import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.pointTree
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.pow
@@ -67,7 +67,7 @@ class TreeGenerator(val distribution: PointDistribution,
         for (node in treeNodes) {
             node.influencingPts.clear()
             if (!node.isFinished) {
-                attractionPointsTree.inRadius(nearAttractionPoints, node, radiusOfInfluence)
+                attractionPointsTree.inRadius(node, radiusOfInfluence, nearAttractionPoints)
                 for (attracPt in nearAttractionPoints) {
                     if (attracPt.isOpen) {
                         attracPt.checkNearest(node)
@@ -99,7 +99,7 @@ class TreeGenerator(val distribution: PointDistribution,
                     node.addChild(newNode)
                     newNodes += newNode
 
-                    attractionPointsTree.inRadius(nearAttractionPoints, newNode, actualKillDistance)
+                    attractionPointsTree.inRadius(newNode, actualKillDistance, nearAttractionPoints)
                     nearAttractionPoints.forEach { it.isOpen = false }
                     changed = true
                 }

@@ -2,10 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.RenderContext
-import de.fabmax.kool.math.isZero
-import de.fabmax.kool.math.toDeg
-import de.fabmax.kool.math.toRad
-import de.fabmax.kool.util.*
+import de.fabmax.kool.math.*
 import kotlin.math.atan
 import kotlin.math.cos
 import kotlin.math.tan
@@ -16,8 +13,8 @@ import kotlin.math.tan
 abstract class Camera(name: String = "camera") : Node(name) {
 
     val position = MutableVec3f(0f, 0f, 1f)
-    val lookAt = MutableVec3f(Vec3f.Companion.ZERO)
-    val up = MutableVec3f(Vec3f.Companion.Y_AXIS)
+    val lookAt = MutableVec3f(Vec3f.ZERO)
+    val up = MutableVec3f(Vec3f.Y_AXIS)
 
     var aspectRatio = 1.0f
         protected set

@@ -3,10 +3,10 @@ package de.fabmax.kool.shading
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.gl.*
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.MutableVec2f
-import de.fabmax.kool.util.MutableVec3f
-import de.fabmax.kool.util.MutableVec4f
 
 
 abstract class Uniform<T>(val name: String, value: T) {

@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.math.*
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.AttributeType
 import kotlin.math.round

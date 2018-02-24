@@ -1,4 +1,4 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.math
 
 import de.fabmax.kool.scene.Node
 import kotlin.math.sqrt

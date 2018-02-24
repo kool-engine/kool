@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene.animation
 
-import de.fabmax.kool.util.Mat4f
+import de.fabmax.kool.math.Mat4f
 
 class Bone(val name: String, numVertices: Int) : AnimatedNode {
     var parent: Bone? = null

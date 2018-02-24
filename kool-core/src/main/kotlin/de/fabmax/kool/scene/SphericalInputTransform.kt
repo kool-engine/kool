@@ -2,10 +2,8 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.RenderContext
-import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.isEqual
-import de.fabmax.kool.math.isZero
-import de.fabmax.kool.util.*
+import de.fabmax.kool.math.*
+import de.fabmax.kool.util.BoundingBox
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -290,7 +288,7 @@ class CameraOrthogonalPan : PanBase() {
     private val pointerRay = Ray()
 
     override fun computePanPoint(result: MutableVec3f,
-                                   scene: Scene, ptrPos: Vec2f, ctx: RenderContext): Boolean {
+                                 scene: Scene, ptrPos: Vec2f, ctx: RenderContext): Boolean {
         panPlane.p.set(scene.camera.globalLookAt)
         panPlane.n.set(scene.camera.globalLookDir)
         return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, ctx) &&

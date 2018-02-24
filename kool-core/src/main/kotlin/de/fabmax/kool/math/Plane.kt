@@ -1,6 +1,4 @@
-package de.fabmax.kool.util
-
-import de.fabmax.kool.math.isZero
+package de.fabmax.kool.math
 
 /**
  * @author fabmax

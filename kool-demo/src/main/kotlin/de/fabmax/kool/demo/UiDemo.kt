@@ -1,8 +1,8 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.Vec3f
 
 /**
  * @author fabmax

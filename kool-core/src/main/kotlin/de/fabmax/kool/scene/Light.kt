@@ -1,8 +1,8 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
-import de.fabmax.kool.util.MutableVec3f
 
 /**
  * @author fabmax

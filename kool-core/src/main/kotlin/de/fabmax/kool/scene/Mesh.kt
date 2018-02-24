@@ -4,6 +4,10 @@ import de.fabmax.kool.RenderContext
 import de.fabmax.kool.RenderPass
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.glCapabilities
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.*
 import kotlin.math.sqrt

@@ -3,14 +3,11 @@ package de.fabmax.kool.demo.earth
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.gl.GL_ALWAYS
-import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.toDeg
-import de.fabmax.kool.math.toRad
+import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TransformGroup
-import de.fabmax.kool.util.*
 import kotlin.math.*
 
 /**

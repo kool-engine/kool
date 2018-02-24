@@ -1,8 +1,8 @@
 package de.fabmax.kool.util.serialization
 
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.scene.animation.*
-import de.fabmax.kool.util.Vec3f
-import de.fabmax.kool.util.Vec4f
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 

@@ -5,8 +5,8 @@ import de.fabmax.kool.RenderContext
 import de.fabmax.kool.gl.GL_COLOR_BUFFER_BIT
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.gl.glClear
+import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.util.CascadedShadowMap
-import de.fabmax.kool.util.RayTest
 
 /**
  * @author fabmax

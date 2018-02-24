@@ -1,7 +1,7 @@
 package de.fabmax.kool.util.serialization
 
-import de.fabmax.kool.util.Vec3f
-import de.fabmax.kool.util.Vec4f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
 

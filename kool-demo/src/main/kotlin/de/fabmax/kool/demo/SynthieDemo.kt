@@ -4,6 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.audio.*
 import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*

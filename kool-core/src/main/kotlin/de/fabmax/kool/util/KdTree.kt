@@ -1,5 +1,7 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
 import kotlin.math.*
 
 /**
@@ -16,8 +18,6 @@ interface KdTreeTraverser<T> {
     fun traversalOrder(tree: KdTree<T>, left: KdTree<T>.Node, right: KdTree<T>.Node): Int {
         return KdTree.TRAV_NO_PREFERENCE
     }
-
-    fun isNodeOfInterest(tree: KdTree<T>, node: KdTree<T>.Node): Boolean
 
     fun traverseLeaf(tree: KdTree<T>, leaf: KdTree<T>.Node)
 }
@@ -42,8 +42,18 @@ class InRadiusTraverser<T>() : KdTreeTraverser<T> {
         result.clear()
     }
 
-    override fun isNodeOfInterest(tree: KdTree<T>, node: KdTree<T>.Node): Boolean {
-        return node.bounds.pointDistanceSqr(center) < radiusSqr
+    override fun traversalOrder(tree: KdTree<T>, left: KdTree<T>.Node, right: KdTree<T>.Node): Int {
+        val dLeft = left.bounds.pointDistanceSqr(center)
+        val dRight = right.bounds.pointDistanceSqr(center)
+
+        if (dLeft > radiusSqr && dRight > radiusSqr) {
+            return KdTree.TRAV_NONE
+        } else if (dLeft > radiusSqr) {
+            return KdTree.TRAV_RIGHT_ONLY
+        } else if (dRight > radiusSqr) {
+            return KdTree.TRAV_LEFT_ONLY
+        }
+        return KdTree.TRAV_NO_PREFERENCE
     }
 
     override fun traverseLeaf(tree: KdTree<T>, leaf: KdTree<T>.Node) {
@@ -92,9 +102,9 @@ class KdTree<T>(items: List<T>,
         root.traverse(traverser)
     }
 
-    fun inRadius(result: MutableList<T>, center: Vec3f, radius: Float) {
+    fun inRadius(center: Vec3f, radius: Float, result: MutableList<T>) {
         result.clear()
-        root.inRadius(result, center, radius*radius)
+        root.inRadius(center, radius*radius, result)
     }
 
     inner class Node(val indices: IntRange, val depth: Int, bucketSz: Int) {
@@ -141,30 +151,28 @@ class KdTree<T>(items: List<T>,
         }
 
         fun traverse(traverser: KdTreeTraverser<T>) {
-            if (traverser.isNodeOfInterest(this@KdTree, this)) {
-                if (isLeaf) {
-                    traverser.traverseLeaf(this@KdTree, this)
+            if (isLeaf) {
+                traverser.traverseLeaf(this@KdTree, this)
 
-                } else {
-                    val pref = traverser.traversalOrder(this@KdTree, left!!, right!!)
-                    when (pref) {
-                        TRAV_NONE -> return
-                        TRAV_LEFT_ONLY -> left.traverse(traverser)
-                        TRAV_RIGHT_ONLY -> right.traverse(traverser)
-                        TRAV_RIGHT_FIRST -> {
-                            right.traverse(traverser)
-                            left.traverse(traverser)
-                        }
-                        else -> {   // TRAV_LEFT_FIRST, TRAV_NO_PREFERENCE
-                            left.traverse(traverser)
-                            right.traverse(traverser)
-                        }
+            } else {
+                val pref = traverser.traversalOrder(this@KdTree, left!!, right!!)
+                when (pref) {
+                    TRAV_NONE -> return
+                    TRAV_LEFT_ONLY -> left.traverse(traverser)
+                    TRAV_RIGHT_ONLY -> right.traverse(traverser)
+                    TRAV_RIGHT_FIRST -> {
+                        right.traverse(traverser)
+                        left.traverse(traverser)
+                    }
+                    else -> {   // TRAV_LEFT_FIRST, TRAV_NO_PREFERENCE
+                        left.traverse(traverser)
+                        right.traverse(traverser)
                     }
                 }
             }
         }
 
-        fun inRadius(result: MutableList<T>, center: Vec3f, sqrRadius: Float) {
+        fun inRadius(center: Vec3f, sqrRadius: Float, result: MutableList<T>) {
             if (isLeaf) {
                 for (i in indices) {
                     val dx = center.x - mutItems[i].getX()
@@ -176,10 +184,10 @@ class KdTree<T>(items: List<T>,
                 }
             } else {
                 if (left!!.bounds.pointDistanceSqr(center) < sqrRadius) {
-                    left.inRadius(result, center, sqrRadius)
+                    left.inRadius(center, sqrRadius, result)
                 }
                 if (right!!.bounds.pointDistanceSqr(center) < sqrRadius) {
-                    right.inRadius(result, center, sqrRadius)
+                    right.inRadius(center, sqrRadius, result)
                 }
             }
         }
