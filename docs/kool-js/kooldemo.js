@@ -1704,7 +1704,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function treeScene$disableCamDrag$lambda_0(closure$treeScene) {
-    return function ($receiver, f, rt, f_0) {
+    return function ($receiver, f, f_0, f_1) {
       closure$treeScene.isPickingEnabled = true;
       return Unit;
     };
@@ -2037,7 +2037,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     while ((tmp$ = i, i = tmp$ + 1 | 0, tmp$) < maxIterations && this.growSingleStep()) {
     }
     println('Generation done, took ' + i + ' iterations, ' + this.treeNodes_0.size + ' nodes, took ' + currentTimeMillis().subtract(t) + ' ms');
-    this.finalizeTree();
+    this.finishTree();
   };
   TreeGenerator.prototype.growSingleStep = function () {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
@@ -2104,7 +2104,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.treeNodes_0.addAll_brywnq$(newNodes);
     return changed;
   };
-  function TreeGenerator$finalizeTree$lambda(this$TreeGenerator) {
+  function TreeGenerator$finishTree$lambda(this$TreeGenerator) {
     return function ($receiver) {
       if ($receiver.parent != null) {
         $receiver.plusAssign_czzhiu$(MutableVec3f_init_0(ensureNotNull($receiver.parent)).subtract_czzhiu$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
@@ -2117,16 +2117,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function TreeGenerator$finalizeTree$lambda_0($receiver) {
+  function TreeGenerator$finishTree$lambda_0($receiver) {
     if ($receiver.parent != null) {
       var baseV = ensureNotNull($receiver.parent).texV;
       $receiver.texV = baseV + $receiver.distance_czzhiu$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math.PI * 1.5);
     }
     return Unit;
   }
-  TreeGenerator.prototype.finalizeTree = function () {
-    this.root_0.forEachTopDown_ttqnr0$(TreeGenerator$finalizeTree$lambda(this));
-    this.root_0.forEachBottomUp_ttqnr0$(TreeGenerator$finalizeTree$lambda_0);
+  TreeGenerator.prototype.finishTree = function () {
+    this.root_0.forEachTopDown_ttqnr0$(TreeGenerator$finishTree$lambda(this));
+    this.root_0.forEachBottomUp_ttqnr0$(TreeGenerator$finishTree$lambda_0);
   };
   TreeGenerator.prototype.buildTrunkMesh_84rojv$ = function (target) {
     var tmp$;
@@ -2417,7 +2417,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.e10_0 = MutableVec2f_init();
     this.e11_0 = MutableVec2f_init();
     var tmp$;
-    for (var j = 1; j <= 6; j++) {
+    for (var j = 1; j <= 8; j++) {
       var spline = new BSplineVec2f(3);
       var n = 7;
       for (var i = 0; i <= n; i++) {
@@ -2447,6 +2447,21 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.borders_0.add_11rb$(pts);
     }
   }
+  TreeTopPointDistribution.prototype.drawBorders_acte6c$ = function (target) {
+    var tmp$;
+    tmp$ = this.borders_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var tmp$_0;
+      var a = i / this.borders_0.size * 2.0 * math.PI;
+      var pts = this.borders_0.get_za3lpa$(i);
+      tmp$_0 = pts.size;
+      for (var j = 1; j < tmp$_0; j++) {
+        var p0 = new Vec3f(-Math_0.cos(a) * pts.get_za3lpa$(j - 1 | 0).x, pts.get_za3lpa$(j - 1 | 0).y, -Math_0.sin(a) * pts.get_za3lpa$(j - 1 | 0).x);
+        var p1 = new Vec3f(-Math_0.cos(a) * pts.get_za3lpa$(j).x, pts.get_za3lpa$(j).y, -Math_0.sin(a) * pts.get_za3lpa$(j).x);
+        target.addLine_b8opkg$(p0, Color.Companion.ORANGE, p1, Color.Companion.ORANGE);
+      }
+    }
+  };
   TreeTopPointDistribution.prototype.nextPoint = function () {
     var w = this.width * 0.5;
     var h = this.height * 0.5;
@@ -2455,13 +2470,24 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var x = this.tmpPt1_0.x * this.tmpPt1_0.x + this.tmpPt1_0.z * this.tmpPt1_0.z;
       var px = Math_0.sqrt(x);
       var py = this.tmpPt1_0.y;
-      var y = this.tmpPt1_0.x;
-      var x_0 = this.tmpPt1_0.y;
-      var a = (Math_0.atan2(y, x_0) / math.PI + 0.5) * this.borders_0.size;
+      var y = this.tmpPt1_0.z;
+      var x_0 = this.tmpPt1_0.x;
+      var $receiver = Math_0.atan2(y, x_0) / (2.0 * math.PI) + 0.5;
+      var clamp$result;
+      if ($receiver < 0.0) {
+        clamp$result = 0.0;
+      }
+       else if ($receiver > 1.0) {
+        clamp$result = 1.0;
+      }
+       else {
+        clamp$result = $receiver;
+      }
+      var a = clamp$result * this.borders_0.size;
       var i0 = numberToInt(a);
       var i1 = (i0 + 1 | 0) % this.borders_0.size;
-      var w0 = a - i0;
-      var w1 = 1.0 - w0;
+      var w1 = a - i0;
+      var w0 = 1.0 - w1;
       this.nearestEdge_0(px, py, this.borders_0.get_za3lpa$(i0), this.e00_0, this.e01_0);
       this.nearestEdge_0(px, py, this.borders_0.get_za3lpa$(i1), this.e10_0, this.e11_0);
       this.e00_0.scale_mx4ult$(w0).add_czzhjp$(this.e10_0.scale_mx4ult$(w1));

@@ -2,6 +2,8 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.currentTimeMillis
 import de.fabmax.kool.math.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.LineMesh
 import de.fabmax.kool.util.MeshBuilder
 import kotlin.math.*
 
@@ -53,7 +55,7 @@ class TreeGenerator(val distribution: PointDistribution,
             }
         }
         println("Generation done, took $i iterations, ${treeNodes.size} nodes, took ${currentTimeMillis() - t} ms")
-        finalizeTree()
+        finishTree()
     }
 
     fun growSingleStep(): Boolean {
@@ -108,7 +110,7 @@ class TreeGenerator(val distribution: PointDistribution,
         return changed
     }
 
-    fun finalizeTree() {
+    fun finishTree() {
         root.forEachTopDown {
             if (parent != null) {
                 // shift nodes towards base to make branches nicer
@@ -326,7 +328,7 @@ class TreeTopPointDistribution(val centerY: Float, val width: Float, val height:
     private val e11 = MutableVec2f()
 
     init {
-        for (j in 1..6) {
+        for (j in 1..8) {
             val spline = BSplineVec2f(3)
             val n = 7
             for (i in 0..n) {
@@ -349,6 +351,18 @@ class TreeTopPointDistribution(val centerY: Float, val width: Float, val height:
         }
     }
 
+    fun drawBorders(target: LineMesh) {
+        for (i in borders.indices) {
+            val a = (i.toFloat() / borders.size) * 2f * PI.toFloat()
+            val pts = borders[i]
+            for (j in 1 until pts.size) {
+                val p0 = Vec3f(-cos(a) * pts[j-1].x, pts[j-1].y, -sin(a) * pts[j-1].x)
+                val p1 = Vec3f(-cos(a) * pts[j].x, pts[j].y, -sin(a) * pts[j].x)
+                target.addLine(p0, Color.ORANGE, p1, Color.ORANGE)
+            }
+        }
+    }
+
     override fun nextPoint(): Vec3f {
         val w = width * 0.5f
         val h = height * 0.5f
@@ -359,11 +373,11 @@ class TreeTopPointDistribution(val centerY: Float, val width: Float, val height:
             val px = sqrt(tmpPt1.x * tmpPt1.x + tmpPt1.z * tmpPt1.z)
             val py = tmpPt1.y
 
-            val a = (atan2(tmpPt1.x, tmpPt1.y) / PI.toFloat() + 0.5f) * borders.size
+            val a = (atan2(tmpPt1.z, tmpPt1.x) / (2f * PI.toFloat()) + 0.5f).clamp(0f, 1f) * borders.size
             val i0 = a.toInt()
             val i1 = (i0 + 1) % borders.size
-            val w0 = a - i0
-            val w1 = 1f - w0
+            val w1 = a - i0
+            val w0 = 1f - w1
 
             nearestEdge(px, py, borders[i0], e00, e01)
             nearestEdge(px, py, borders[i1], e10, e11)
