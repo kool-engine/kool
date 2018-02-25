@@ -21,9 +21,9 @@ apply plugin: 'kotlinx-serialization'
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.20"
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
     expectedBy project(":kool-core")
 
