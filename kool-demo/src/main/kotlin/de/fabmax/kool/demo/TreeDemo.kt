@@ -6,7 +6,6 @@ import de.fabmax.kool.assetTexture
 import de.fabmax.kool.currentTimeMillis
 import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_REPEAT
-import de.fabmax.kool.math.SphericalPointDistribution
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -27,8 +26,12 @@ fun treeScene(ctx: RenderContext): List<Scene> {
     val scenes = mutableListOf<Scene>()
 
     // generate tree structure
-    val treeGen = TreeGenerator(SphericalPointDistribution(2f, Vec3f(0f, 3f, 0f)))
-    //val treeGen = TreeGenerator(CubicPointDistribution(4f, Vec3f(0f, 3f, 0f)))
+    val w = 3f
+    val h = 3.5f
+    val dist = TreeTopPointDistribution(1f + h / 2f, w, h)
+    //val dist = SphericalPointDistribution(2f, Vec3f(0f, 3f, 0f))
+    //val dist = CubicPointDistribution(4f, Vec3f(0f, 3f, 0f))
+    val treeGen = TreeGenerator(dist)
     treeGen.generate()
 
     // meshes
@@ -105,7 +108,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
             // disable mouse interaction on content scene while pointer is over menu
             treeScene.isPickingEnabled = false
         }
-        onHoverExit += { _, rt, _->
+        onHoverExit += { _, _, _->
             // enable mouse interaction on content scene when pointer leaves menu (and nothing else in this scene
             // is hit instead)
             treeScene.isPickingEnabled = true
@@ -139,7 +142,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
             +slider("growDist") {
                 layoutSpec.setOrigin(dps(200f, true), dps(110f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
-                setValue(0.05f, 1f, treeGen.growDistance)
+                setValue(0.05f, 0.4f, treeGen.growDistance)
                 disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.growDistance = value
@@ -162,7 +165,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
             +slider("killDist") {
                 layoutSpec.setOrigin(dps(200f, true), dps(75f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
-                setValue(1f, 10f, treeGen.killDistance)
+                setValue(1f, 4f, treeGen.killDistance)
                 disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.killDistance = value
@@ -185,7 +188,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
             +slider("attractPts") {
                 layoutSpec.setOrigin(dps(200f, true), dps(40f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
-                setValue(100f, 20000f, treeGen.numberOfAttractionPoints.toFloat())
+                setValue(100f, 10000f, treeGen.numberOfAttractionPoints.toFloat())
                 disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.numberOfAttractionPoints = value.toInt()

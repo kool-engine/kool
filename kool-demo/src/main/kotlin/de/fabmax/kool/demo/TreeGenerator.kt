@@ -3,10 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.currentTimeMillis
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.pointTree
-import kotlin.math.PI
-import kotlin.math.atan2
-import kotlin.math.pow
+import kotlin.math.*
 
 class TreeGenerator(val distribution: PointDistribution,
                     val baseTop: Vec3f = Vec3f(0f, 1f, 0f),
@@ -313,6 +310,104 @@ class TreeGenerator(val distribution: PointDistribution,
                     }
                 }
             }
+        }
+    }
+}
+
+class TreeTopPointDistribution(val centerY: Float, val width: Float, val height: Float,
+                               private val random: Random = defaultRandomInstance) : PointDistribution() {
+
+    private val borders = mutableListOf<MutableList<Vec2f>>()
+    private val tmpPt1 = MutableVec3f()
+    private val tmpPt2 = MutableVec2f()
+    private val e00 = MutableVec2f()
+    private val e01 = MutableVec2f()
+    private val e10 = MutableVec2f()
+    private val e11 = MutableVec2f()
+
+    init {
+        for (j in 1..6) {
+            val spline = BSplineVec2f(3)
+            val n = 7
+            for (i in 0..n) {
+                val a = i / n.toFloat() * PI.toFloat()
+                val f = if (i in 1..(n - 1)) { randomF(0.4f, 0.6f) } else { 0.5f }
+                val x = sin(a) * (width - 0.4f) * f + 0.2f
+                val y = cos(a) * height * f + centerY
+                spline.ctrlPoints += MutableVec2f(x, y)
+            }
+            spline.ctrlPoints.add(0, MutableVec2f(0f, centerY + height * 0.5f))
+            spline.ctrlPoints.add(MutableVec2f(0f, centerY - height * 0.5f))
+            spline.addInterpolationEndpoints()
+
+            val pts = mutableListOf<Vec2f>()
+            val m = 20
+            for (i in 0..m) {
+                pts += spline.evaluate(i.toFloat() / m, MutableVec2f())
+            }
+            borders += pts
+        }
+    }
+
+    override fun nextPoint(): Vec3f {
+        val w = width * 0.5f
+        val h = height * 0.5f
+
+        while (true) {
+            tmpPt1.set(random.randomF(-w, w), centerY + random.randomF(-h, h), randomF(-w, w))
+
+            val px = sqrt(tmpPt1.x * tmpPt1.x + tmpPt1.z * tmpPt1.z)
+            val py = tmpPt1.y
+
+            val a = (atan2(tmpPt1.x, tmpPt1.y) / PI.toFloat() + 0.5f) * borders.size
+            val i0 = a.toInt()
+            val i1 = (i0 + 1) % borders.size
+            val w0 = a - i0
+            val w1 = 1f - w0
+
+            nearestEdge(px, py, borders[i0], e00, e01)
+            nearestEdge(px, py, borders[i1], e10, e11)
+
+            e00.scale(w0).add(e10.scale(w1))
+            e01.scale(w0).add(e11.scale(w1))
+
+            val d = (px - e00.x) * (e01.y - e00.y) - (py - e00.y) * (e01.x - e00.x)
+            if (d > 0) {
+                return Vec3f(tmpPt1)
+            }
+        }
+    }
+
+    private fun nearestEdge(px: Float, py: Float, pts: List<Vec2f>, e0: MutableVec2f, e1: MutableVec2f) {
+        var minDist = Float.POSITIVE_INFINITY
+        var ni = 0
+        for (i in 0 until pts.size-1) {
+            val d = edgeDist(px, py, e0.set(pts[i]), e1.set(pts[i + 1]))
+            if (d < minDist) {
+                minDist = d
+                ni = i
+            }
+        }
+        e0.set(pts[ni])
+        e1.set(pts[ni + 1])
+    }
+
+    private fun edgeDist(px: Float, py: Float, e0: MutableVec2f, e1: MutableVec2f): Float {
+        e1.subtract(e0, tmpPt2)
+        val l = ((px * tmpPt2.x + py * tmpPt2.y) - e0 * tmpPt2) / (tmpPt2 * tmpPt2)
+        return if (l < 0) {
+            val dx = e0.x - px
+            val dy = e0.y - py
+            sqrt(dx * dx + dy * dy)
+        } else if (l > 1) {
+            val dx = e1.x - px
+            val dy = e1.y - py
+            sqrt(dx * dx + dy * dy)
+        } else {
+            tmpPt2.scale(l).add(e0)
+            val dx = tmpPt2.x - px
+            val dy = tmpPt2.y - py
+            sqrt(dx * dx + dy * dy)
         }
     }
 }

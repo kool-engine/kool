@@ -1,11 +1,12 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.currentTimeMillis
-import de.fabmax.kool.math.CubicPointDistribution
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.randomF
+import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BillboardMesh
+import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.pointMesh
 
 /**
  * @author fabmax

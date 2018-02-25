@@ -3,7 +3,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var createContext = $module$kool.de.fabmax.kool.createContext;
   var split = Kotlin.kotlin.text.split_ip8yn$;
-  var Vec3f = $module$kool.de.fabmax.kool.util.Vec3f;
+  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
   var Color = $module$kool.de.fabmax.kool.util.Color;
   var Unit = Kotlin.kotlin.Unit;
   var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
@@ -35,17 +35,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
   var RenderContext$Viewport = $module$kool.de.fabmax.kool.RenderContext.Viewport;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
-  var InRadiusTraverser_init = $module$kool.de.fabmax.kool.util.InRadiusTraverser_init_gc2aox$;
+  var InRadiusTraverser_init = $module$kool.de.fabmax.kool.math.InRadiusTraverser_init_34hdy3$;
   var BillboardMesh = $module$kool.de.fabmax.kool.util.BillboardMesh;
-  var random = $module$kool.de.fabmax.kool.math.random;
+  var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var currentTimeMillis = $module$kool.de.fabmax.kool.currentTimeMillis;
   var println = Kotlin.kotlin.io.println_s8jyv4$;
-  var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_winjqc$;
+  var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
+  var CubicPointDistribution = $module$kool.de.fabmax.kool.math.CubicPointDistribution;
   var pointMesh = $module$kool.de.fabmax.kool.util.pointMesh_h6khem$;
-  var pointTree = $module$kool.de.fabmax.kool.util.pointTree_fclsfb$;
+  var pointTree = $module$kool.de.fabmax.kool.math.pointTree_ffk80x$;
   var Pair = Kotlin.kotlin.Pair;
   var Kind_CLASS = Kotlin.Kind.CLASS;
-  var Vec3f_init = $module$kool.de.fabmax.kool.util.Vec3f_init_mx4ult$;
+  var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
   var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
   var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
   var Animator = $module$kool.de.fabmax.kool.util.Animator;
@@ -96,13 +97,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
   var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_46ie3i$;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
-  var MutableVec3f_init = $module$kool.de.fabmax.kool.util.MutableVec3f_init;
-  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.util.MutableVec3f_init_cx11x8$;
+  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
+  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var math = Kotlin.kotlin.math;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
-  var MutableVec3f = $module$kool.de.fabmax.kool.util.MutableVec3f;
-  var Vec3f_init_0 = $module$kool.de.fabmax.kool.util.Vec3f_init_cx11x8$;
-  var Vec2f = $module$kool.de.fabmax.kool.util.Vec2f;
+  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
+  var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
+  var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
+  var math_0 = $module$kool.de.fabmax.kool.math;
+  var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
+  var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
+  var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
+  var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var ToggleButton = $module$kool.de.fabmax.kool.scene.ui.ToggleButton;
   var TextField = $module$kool.de.fabmax.kool.scene.ui.TextField;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
@@ -111,9 +117,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var abs = Kotlin.kotlin.math.abs_za3lpa$;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
-  var Mat4f = $module$kool.de.fabmax.kool.util.Mat4f;
-  var Ray = $module$kool.de.fabmax.kool.util.Ray;
-  var MutableVec2f_init = $module$kool.de.fabmax.kool.util.MutableVec2f_init;
+  var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
+  var Ray = $module$kool.de.fabmax.kool.math.Ray;
   var InputManager$DragHandler = $module$kool.de.fabmax.kool.InputManager.DragHandler;
   var throwUPAE = Kotlin.throwUPAE;
   var contains = Kotlin.kotlin.text.contains_sgbm27$;
@@ -144,6 +149,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   TreeGenerator$AttractionPoint.prototype.constructor = TreeGenerator$AttractionPoint;
   TreeGenerator$TreeNode.prototype = Object.create(MutableVec3f.prototype);
   TreeGenerator$TreeNode.prototype.constructor = TreeGenerator$TreeNode;
+  TreeTopPointDistribution.prototype = Object.create(PointDistribution.prototype);
+  TreeTopPointDistribution.prototype.constructor = TreeTopPointDistribution;
   Earth$TileGroup.prototype = Object.create(Group.prototype);
   Earth$TileGroup.prototype.constructor = Earth$TileGroup;
   Earth.prototype = Object.create(TransformGroup.prototype);
@@ -178,7 +185,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.transform.push();
       var closure$groundExt_0 = closure$groundExt;
-      $receiver.rotate_ag3lbb$(-90.0, Vec3f.Companion.X_AXIS);
+      $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
       $receiver.color = Color.Companion.LIGHT_GRAY.withAlpha_mx4ult$(0.2);
       var $receiver_0 = $receiver.rectProps.defaults();
       $receiver_0.origin.set_y2kzbl$(-closure$groundExt_0, -closure$groundExt_0, 0.0);
@@ -221,8 +228,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       tmp$ = closure$groundExt;
       for (var i = -closure$groundExt | 0; i <= tmp$; i++) {
         var color = Color.Companion.LIGHT_GRAY.withAlpha_mx4ult$(0.5);
-        $receiver.addLine_ryym4c$(new Vec3f(i, 0.0, -closure$groundExt), color, new Vec3f(i, 0.0, closure$groundExt), color);
-        $receiver.addLine_ryym4c$(new Vec3f(-closure$groundExt, 0.0, i), color, new Vec3f(closure$groundExt, 0.0, i), color);
+        $receiver.addLine_b8opkg$(new Vec3f(i, 0.0, -closure$groundExt), color, new Vec3f(i, 0.0, closure$groundExt), color);
+        $receiver.addLine_b8opkg$(new Vec3f(-closure$groundExt, 0.0, i), color, new Vec3f(closure$groundExt, 0.0, i), color);
       }
       $receiver.shader = basicShader(makeGroundGrid$lambda$lambda$lambda_1(closure$shadows));
       return Unit;
@@ -266,7 +273,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
       var dt = clamp$result;
       this$.translate_y2kzbl$(0.0, -dt * closure$movementSpeed.v * closure$slowMotion.v * 5.0, 0.0);
-      this$.rotate_ag3lbb$(dt * closure$movementSpeed.v * closure$slowMotion.v * 50.0, Vec3f.Companion.Z_AXIS);
+      this$.rotate_ad55pp$(dt * closure$movementSpeed.v * closure$slowMotion.v * 50.0, Vec3f.Companion.Z_AXIS);
       closure$mesh.animationSpeed = closure$slowMotion.v;
       return Unit;
     };
@@ -359,7 +366,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var closure$movementSpeed_0 = closure$movementSpeed;
       var closure$armature_0 = closure$armature;
       var closure$slowMotion_0 = closure$slowMotion;
-      $receiver_0.rotate_ag3lbb$(90.0, Vec3f.Companion.X_AXIS);
+      $receiver_0.rotate_ad55pp$(90.0, Vec3f.Companion.X_AXIS);
       $receiver_0.translate_y2kzbl$(0.5, 1.2, 0.0);
       var $receiver_1 = new Label('label1', $receiver_0.root);
       $receiver_1.layoutSpec.setOrigin_4ujscr$(uns(0.0), dps(140.0), uns(0.0));
@@ -414,7 +421,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var armature = {v: null};
       $receiver.unaryPlus_uv0sim$(model);
       loadAsset('player.kmf', modelScene$lambda$lambda$lambda(model, this$, armature, movementSpeed, slowMotion, $receiver));
-      $receiver.rotate_ag3lbb$(-90.0, Vec3f.Companion.X_AXIS);
+      $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
       $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, modelScene$lambda$lambda$lambda_0(this$)));
       $receiver.unaryPlus_uv0sim$(embeddedUi(dps(400.0), void 0, modelScene$lambda$lambda$lambda_1(movementSpeed, armature, slowMotion)));
       return Unit;
@@ -497,11 +504,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
             vert.color.set_d7aj7k$(Color.Companion.DARK_GRAY);
           }
         }
-        closure$trav.center.set_y2kzbl$((random() - 0.5) * 2.0, (random() - 0.5) * 2.0, (random() - 0.5) * 2.0);
+        closure$trav.center.set_y2kzbl$(randomF(-1.0, 1.0), randomF(-1.0, 1.0), randomF(-1.0, 1.0));
         var t = currentTimeMillis();
-        closure$tree.traverse_dv0vsd$(closure$trav);
+        closure$tree.traverse_vqgpt3$(closure$trav);
         println('In-radius search in ' + currentTimeMillis().subtract(t) + ' ms, got ' + closure$trav.result.size + ' points');
-        var color = Color.Companion.fromHsv_7b5o5w$(random() * 360.0, 1.0, 1.0, 1.0);
+        var color = Color.Companion.fromHsv_7b5o5w$(randomF(0.0, 360.0), 1.0, 1.0, 1.0);
         tmp$_1 = closure$trav.result.iterator();
         while (tmp$_1.hasNext()) {
           var point_0 = tmp$_1.next();
@@ -528,7 +535,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function pointScene$lambda$lambda$lambda(this$) {
     return function ($receiver, it) {
-      this$.rotate_ag3lbb$(it.deltaT * 45, Vec3f.Companion.Y_AXIS);
+      this$.rotate_ad55pp$(it.deltaT * 45, Vec3f.Companion.Y_AXIS);
       return Unit;
     };
   }
@@ -554,9 +561,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var scene = $receiver;
     return scene;
   }
-  function makePointMesh$lambda$lambda(closure$x, closure$y, closure$z) {
+  function makePointMesh$lambda$lambda(closure$pt) {
     return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$x, closure$y, closure$z);
+      $receiver.position.set_czzhiu$(closure$pt);
       $receiver.color.set_d7aj7k$(Color.Companion.DARK_GRAY);
       return Unit;
     };
@@ -564,12 +571,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function makePointMesh$lambda(closure$points) {
     return function ($receiver) {
       $receiver.pointSize = 3.0;
+      var dist = new CubicPointDistribution(5.0);
       for (var i = 1; i <= 100000; i++) {
-        var x = (random() - 0.5) * 5;
-        var z = (random() - 0.5) * 5;
-        var y = (random() - 0.5) * 5;
-        var idx = $receiver.addPoint_hvwyd1$(makePointMesh$lambda$lambda(x, y, z));
-        closure$points.add_11rb$(new MeshPoint(x, y, z, idx));
+        var pt = dist.nextPoint();
+        var idx = $receiver.addPoint_hvwyd1$(makePointMesh$lambda$lambda(pt));
+        closure$points.add_11rb$(new MeshPoint(pt.x, pt.y, pt.z, idx));
       }
       return Unit;
     };
@@ -588,10 +594,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     mesh.billboardSize = 3.0;
     var points = ArrayList_init();
     for (var i = 1; i <= 100000; i++) {
-      var x = (random() - 0.5) * 5;
-      var z = (random() - 0.5) * 5;
-      var y = (random() - 0.5) * 5;
-      mesh.addQuad_wsx10o$(new Vec3f(x, y, z), Color.Companion.DARK_GRAY);
+      var x = randomF(-2.5, 2.5);
+      var z = randomF(-2.5, 2.5);
+      var y = randomF(-2.5, 2.5);
+      mesh.addQuad_4sqmhu$(new Vec3f(x, y, z), Color.Companion.DARK_GRAY);
       points.add_11rb$(new MeshPoint(x, y, z, (i - 1 | 0) * 4 | 0));
     }
     var t = currentTimeMillis();
@@ -620,7 +626,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver, ctx) {
       $receiver.setIdentity();
       $receiver.translate_y2kzbl$(-5.0, closure$animator.tick_evfofk$(ctx), 0.0);
-      $receiver.rotate_ag3lbb$(ctx.time * 19, Vec3f.Companion.Y_AXIS);
+      $receiver.rotate_ad55pp$(ctx.time * 19, Vec3f.Companion.Y_AXIS);
       return Unit;
     };
   }
@@ -649,8 +655,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var angle = closure$cubeAnimator.tick_evfofk$(ctx);
       $receiver.setIdentity();
       $receiver.translate_y2kzbl$(5.0, 0.0, 0.0);
-      $receiver.rotate_ag3lbb$(angle * 5, Vec3f.Companion.Y_AXIS);
-      $receiver.rotate_ag3lbb$(angle, Vec3f.Companion.X_AXIS);
+      $receiver.rotate_ad55pp$(angle * 5, Vec3f.Companion.Y_AXIS);
+      $receiver.rotate_ad55pp$(angle, Vec3f.Companion.X_AXIS);
       return Unit;
     };
   }
@@ -1014,10 +1020,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var w = hw - this.knobAnimator.value.value * hw * 0.4;
     $receiver.color = this.textColor;
     $receiver.translate_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, 0.0);
-    $receiver.rotate_ag3lbb$(180.0 - this.knobAnimator.value.value * 180.0, Vec3f.Companion.Z_AXIS);
+    $receiver.rotate_ad55pp$(180.0 - this.knobAnimator.value.value * 180.0, Vec3f.Companion.Z_AXIS);
     $receiver.transform.push();
     $receiver.translate_y2kzbl$(tx, hh, 0.0);
-    $receiver.rotate_ag3lbb$(this.knobAnimator.value.value * 45.0, Vec3f.Companion.Z_AXIS);
+    $receiver.rotate_ad55pp$(this.knobAnimator.value.value * 45.0, Vec3f.Companion.Z_AXIS);
     var $receiver_1 = $receiver.rectProps.defaults();
     $receiver_1.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
     $receiver_1.size.set_dleff0$(w, ph);
@@ -1029,7 +1035,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.rect_e5k3t5$($receiver.rectProps);
     $receiver.transform.push();
     $receiver.translate_y2kzbl$(tx, -hh, 0.0);
-    $receiver.rotate_ag3lbb$(this.knobAnimator.value.value * -45.0, Vec3f.Companion.Z_AXIS);
+    $receiver.rotate_ad55pp$(this.knobAnimator.value.value * -45.0, Vec3f.Companion.Z_AXIS);
     var $receiver_3 = $receiver.rectProps.defaults();
     $receiver_3.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
     $receiver_3.size.set_dleff0$(w, ph);
@@ -1230,7 +1236,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     UiContainer.prototype.doLayout_oytkew$.call(this, bounds, ctx);
     if (!equals(bounds, this.contentBounds)) {
       this.translate_y2kzbl$(-this.posInParent.x, -this.posInParent.y, -this.posInParent.z);
-      this.rotate_ag3lbb$(90.0, Vec3f.Companion.Z_AXIS);
+      this.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
       this.translate_y2kzbl$(this.posInParent.y, -this.posInParent.x, this.posInParent.z);
     }
   };
@@ -1369,7 +1375,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   SequenceButtonUi.prototype.onRender_evfofk$ = function (ctx) {
     var tmp$;
-    (Kotlin.isType(tmp$ = this.shader, BasicShader) ? tmp$ : throwCCE()).staticColor.set_cx11wd$(this.bgColor);
+    (Kotlin.isType(tmp$ = this.shader, BasicShader) ? tmp$ : throwCCE()).staticColor.set_czzhhz$(this.bgColor);
     SimpleComponentUi.prototype.onRender_evfofk$.call(this, ctx);
   };
   SequenceButtonUi.$metadata$ = {
@@ -1475,7 +1481,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     TransformGroup.prototype.render_evfofk$.call(this, ctx);
   };
   function SynthieScene$Heightmap$quads$lambda$lambda$lambda($receiver) {
-    $receiver.normal.set_cx11x8$(Vec3f.Companion.Y_AXIS);
+    $receiver.normal.set_czzhiu$(Vec3f.Companion.Y_AXIS);
     return Unit;
   }
   function SynthieScene$Heightmap$quads$lambda$lambda(this$Heightmap) {
@@ -1528,7 +1534,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
       $receiver.lineWidth = 1.0;
       $receiver.shader = basicShader(SynthieScene$Waveform$lines$lambda$lambda$lambda_0);
-      (Kotlin.isType(tmp$_1 = $receiver.shader, BasicShader) ? tmp$_1 : throwCCE()).staticColor.set_cx11wd$(Color.Companion.LIME);
+      (Kotlin.isType(tmp$_1 = $receiver.shader, BasicShader) ? tmp$_1 : throwCCE()).staticColor.set_czzhhz$(Color.Companion.LIME);
       $receiver.meshData.usage = gl.GL_DYNAMIC_DRAW;
       array[i] = $receiver;
     }
@@ -1750,7 +1756,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(110.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
-      $receiver.setValue_y2kzbl$(0.05, 1.0, closure$treeGen.growDistance);
+      $receiver.setValue_y2kzbl$(0.05, 0.4, closure$treeGen.growDistance);
       closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda(closure$treeGen, closure$growDistVal));
       return Unit;
@@ -1782,7 +1788,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(75.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
-      $receiver.setValue_y2kzbl$(1.0, 10.0, closure$treeGen.killDistance);
+      $receiver.setValue_y2kzbl$(1.0, 4.0, closure$treeGen.killDistance);
       closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_0(closure$treeGen, closure$killDistVal));
       return Unit;
@@ -1814,7 +1820,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(40.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
-      $receiver.setValue_y2kzbl$(100.0, 20000.0, closure$treeGen.numberOfAttractionPoints);
+      $receiver.setValue_y2kzbl$(100.0, 10000.0, closure$treeGen.numberOfAttractionPoints);
       closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_1(closure$treeGen, closure$attractPtsVal));
       return Unit;
@@ -1946,7 +1952,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function treeScene(ctx) {
     var scenes = ArrayList_init();
-    var treeGen = new TreeGenerator();
+    var w = 3.0;
+    var h = 3.5;
+    var dist = new TreeTopPointDistribution(1.0 + h / 2.0, w, h);
+    var treeGen = new TreeGenerator(dist);
     treeGen.generate_za3lpa$();
     var trunkMesh = {v: null};
     var leafMesh = {v: null};
@@ -1977,7 +1986,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return str.substring(0, endIndex);
   }
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
-  function TreeGenerator() {
+  function TreeGenerator(distribution, baseTop, baseBot) {
+    if (baseTop === void 0)
+      baseTop = new Vec3f(0.0, 1.0, 0.0);
+    if (baseBot === void 0)
+      baseBot = Vec3f.Companion.ZERO;
+    this.distribution = distribution;
+    this.baseTop = baseTop;
+    this.baseBot = baseBot;
     this.radiusOfInfluence = 1.0;
     this.growDistance = 0.15;
     this.killDistance = 1.5;
@@ -1997,15 +2013,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.populateAttractionPoints_0();
     this.treeNodes_0.clear();
     this.root_0 = new TreeGenerator$TreeNode();
+    this.root_0.set_czzhiu$(this.baseBot);
     var $receiver = this.treeNodes_0;
     var element = this.root_0;
     $receiver.add_11rb$(element);
+    var d = this.baseTop.subtract_2gj7b4$(this.baseBot, MutableVec3f_init()).norm().scale_mx4ult$(this.growDistance);
     var prev = this.root_0;
-    var y = this.growDistance;
-    while (y < 1.0) {
+    while (prev.distance_czzhiu$(this.baseTop) > this.growDistance) {
       var newNd = new TreeGenerator$TreeNode();
-      newNd.y = y;
-      y += this.growDistance;
+      newNd.set_czzhiu$(prev).add_czzhiu$(d);
       prev.addChild_15eqn9$(newNd);
       this.treeNodes_0.add_11rb$(newNd);
       prev = newNd;
@@ -2036,7 +2052,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var node = tmp$.next();
       node.influencingPts.clear();
       if (!node.isFinished) {
-        this.attractionPointsTree_0.inRadius_w38bim$(this.nearAttractionPoints_0, node, this.radiusOfInfluence);
+        this.attractionPointsTree_0.inRadius_29jwp2$(node, this.radiusOfInfluence, this.nearAttractionPoints_0);
         tmp$_0 = this.nearAttractionPoints_0.iterator();
         while (tmp$_0.hasNext()) {
           var attracPt = tmp$_0.next();
@@ -2063,15 +2079,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         tmp$_5 = node_0.influencingPts.iterator();
         while (tmp$_5.hasNext()) {
           var attracPt_1 = tmp$_5.next();
-          growDir.plusAssign_cx11x8$(attracPt_1.subtract_87xh0$(node_0, MutableVec3f_init()).norm());
+          growDir.plusAssign_czzhiu$(attracPt_1.subtract_2gj7b4$(node_0, MutableVec3f_init()).norm());
         }
         growDir.norm().scale_mx4ult$(this.growDistance);
         var newNode = new TreeGenerator$TreeNode();
-        newNode.set_cx11x8$(node_0).add_cx11x8$(growDir);
+        newNode.set_czzhiu$(node_0).add_czzhiu$(growDir);
         if (!node_0.containsChild_15eqn9$(newNode)) {
           node_0.addChild_15eqn9$(newNode);
           newNodes.add_11rb$(newNode);
-          this.attractionPointsTree_0.inRadius_w38bim$(this.nearAttractionPoints_0, newNode, this.actualKillDistance);
+          this.attractionPointsTree_0.inRadius_29jwp2$(newNode, this.actualKillDistance, this.nearAttractionPoints_0);
           var tmp$_7;
           tmp$_7 = this.nearAttractionPoints_0.iterator();
           while (tmp$_7.hasNext()) {
@@ -2091,10 +2107,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function TreeGenerator$finalizeTree$lambda(this$TreeGenerator) {
     return function ($receiver) {
       if ($receiver.parent != null) {
-        $receiver.plusAssign_cx11x8$(MutableVec3f_init_0(ensureNotNull($receiver.parent)).subtract_cx11x8$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
-        $receiver.x = $receiver.x + (random() - 0.5) * 0.02;
-        $receiver.y = $receiver.y + (random() - 0.5) * 0.02;
-        $receiver.z = $receiver.z + (random() - 0.5) * 0.02;
+        $receiver.plusAssign_czzhiu$(MutableVec3f_init_0(ensureNotNull($receiver.parent)).subtract_czzhiu$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
+        $receiver.x = $receiver.x + randomF(-0.01, 0.01);
+        $receiver.y = $receiver.y + randomF(-0.01, 0.01);
+        $receiver.z = $receiver.z + randomF(-0.01, 0.01);
       }
       $receiver.computeTrunkRadiusAndDepth();
       $receiver.computeCircumPoints();
@@ -2104,7 +2120,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function TreeGenerator$finalizeTree$lambda_0($receiver) {
     if ($receiver.parent != null) {
       var baseV = ensureNotNull($receiver.parent).texV;
-      $receiver.texV = baseV + $receiver.distance_cx11x8$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math.PI * 1.5);
+      $receiver.texV = baseV + $receiver.distance_czzhiu$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math.PI * 1.5);
     }
     return Unit;
   }
@@ -2130,27 +2146,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   TreeGenerator.prototype.populateAttractionPoints_0 = function () {
     var tmp$;
-    var center = new Vec3f(0.0, 3.0, 0.0);
-    var radius = 2.0;
     this.attractionPoints_0.clear();
-    tmp$ = this.numberOfAttractionPoints;
-    for (var i = 1; i <= tmp$; i++) {
-      var tmp$_0 = this.attractionPoints_0;
-      var $receiver = new TreeGenerator$AttractionPoint();
-      var l = radius * 2;
-      while (l > radius) {
-        $receiver.x = (random() - 0.5) * 2.0 * radius;
-        $receiver.y = (random() - 0.5) * 2.0 * radius;
-        $receiver.z = (random() - 0.5) * 2.0 * radius;
-        l = $receiver.length();
-      }
-      $receiver.add_cx11x8$(center);
-      tmp$_0.add_11rb$($receiver);
+    tmp$ = this.distribution.nextPoints_za3lpa$(this.numberOfAttractionPoints).iterator();
+    while (tmp$.hasNext()) {
+      var pt = tmp$.next();
+      var $receiver = this.attractionPoints_0;
+      var element = new TreeGenerator$AttractionPoint(pt);
+      $receiver.add_11rb$(element);
     }
     this.attractionPointsTree_0 = pointTree(this.attractionPoints_0);
   };
-  function TreeGenerator$AttractionPoint() {
-    MutableVec3f_init(this);
+  function TreeGenerator$AttractionPoint(pt) {
+    MutableVec3f_init_0(pt, this);
     this.nearestNode_3mwxa2$_0 = null;
     this.nearestNodeDist_dewf4c$_0 = kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
     this.isOpen = true;
@@ -2176,7 +2183,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
   });
   TreeGenerator$AttractionPoint.prototype.checkNearest_15eqn9$ = function (node) {
-    var dist = this.distance_cx11x8$(node);
+    var dist = this.distance_czzhiu$(node);
     if (dist < this.nearestNodeDist) {
       this.nearestNode = node;
       this.nearestNodeDist = dist;
@@ -2207,7 +2214,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     tmp$ = this.children.iterator();
     while (tmp$.hasNext()) {
       var c = tmp$.next();
-      if (c.isEqual_cx11x8$(node)) {
+      if (c.isEqual_czzhiu$(node)) {
         return true;
       }
     }
@@ -2283,50 +2290,50 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var tmp$;
     this.circumPts.clear();
     if (this.parent != null) {
-      tmp$ = this.subtract_87xh0$(ensureNotNull(this.parent), MutableVec3f_init()).norm();
+      tmp$ = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init()).norm();
     }
      else {
-      tmp$ = this.children.get_za3lpa$(0).subtract_87xh0$(this, MutableVec3f_init()).norm();
+      tmp$ = this.children.get_za3lpa$(0).subtract_2gj7b4$(this, MutableVec3f_init()).norm();
     }
     var n = tmp$;
-    var c = MutableVec3f_init_0(n).scale_mx4ult$(-n.times_cx11x8$(Vec3f.Companion.Z_AXIS)).add_cx11x8$(Vec3f.Companion.Z_AXIS).norm().scale_mx4ult$(this.radius);
+    var c = MutableVec3f_init_0(n).scale_mx4ult$(-n.times_czzhiu$(Vec3f.Companion.Z_AXIS)).add_czzhiu$(Vec3f.Companion.Z_AXIS).norm().scale_mx4ult$(this.radius);
     var y = c.z;
     var x = c.x;
-    c.rotate_ag3lbb$(-Math_0.atan2(y, x), n);
+    c.rotate_ad55pp$(-Math_0.atan2(y, x), n);
     for (var i = 0; i < 8; i++) {
-      var pt = MutableVec3f_init_0(c).add_cx11x8$(this);
+      var pt = MutableVec3f_init_0(c).add_czzhiu$(this);
       this.circumPts.add_11rb$(Vec3f_init_0(pt));
-      c.rotate_ag3lbb$(360.0 / 8, n);
+      c.rotate_ad55pp$(360.0 / 8, n);
     }
   };
   function TreeGenerator$TreeNode$buildTrunkMesh$lambda(this$TreeNode) {
     return function ($receiver) {
-      $receiver.position.set_cx11x8$(this$TreeNode);
-      this$TreeNode.subtract_87xh0$(ensureNotNull(this$TreeNode.parent), $receiver.normal).norm();
+      $receiver.position.set_czzhiu$(this$TreeNode);
+      this$TreeNode.subtract_2gj7b4$(ensureNotNull(this$TreeNode.parent), $receiver.normal).norm();
       $receiver.texCoord.set_dleff0$(0.0, this$TreeNode.texV);
       return Unit;
     };
   }
   function TreeGenerator$TreeNode$buildTrunkMesh$lambda_0(this$TreeNode, closure$i) {
     return function ($receiver) {
-      $receiver.position.set_cx11x8$(ensureNotNull(this$TreeNode.parent).circumPts.get_za3lpa$(closure$i % 8));
-      ensureNotNull(this$TreeNode.parent).circumPts.get_za3lpa$(closure$i % 8).subtract_87xh0$(ensureNotNull(this$TreeNode.parent), $receiver.normal).norm();
+      $receiver.position.set_czzhiu$(ensureNotNull(this$TreeNode.parent).circumPts.get_za3lpa$(closure$i % 8));
+      ensureNotNull(this$TreeNode.parent).circumPts.get_za3lpa$(closure$i % 8).subtract_2gj7b4$(ensureNotNull(this$TreeNode.parent), $receiver.normal).norm();
       $receiver.texCoord.set_dleff0$(closure$i / 8.0, ensureNotNull(this$TreeNode.parent).texV);
       return Unit;
     };
   }
   function TreeGenerator$TreeNode$buildTrunkMesh$lambda_1(this$TreeNode, closure$i) {
     return function ($receiver) {
-      $receiver.position.set_cx11x8$(this$TreeNode.circumPts.get_za3lpa$(closure$i % 8));
-      this$TreeNode.circumPts.get_za3lpa$(closure$i % 8).subtract_87xh0$(this$TreeNode, $receiver.normal).norm();
+      $receiver.position.set_czzhiu$(this$TreeNode.circumPts.get_za3lpa$(closure$i % 8));
+      this$TreeNode.circumPts.get_za3lpa$(closure$i % 8).subtract_2gj7b4$(this$TreeNode, $receiver.normal).norm();
       $receiver.texCoord.set_dleff0$(closure$i / 8.0, this$TreeNode.texV);
       return Unit;
     };
   }
   function TreeGenerator$TreeNode$buildTrunkMesh$lambda_2(this$TreeNode, closure$i) {
     return function ($receiver) {
-      $receiver.position.set_cx11x8$(ensureNotNull(this$TreeNode.parent).circumPts.get_za3lpa$(closure$i % 8));
-      ensureNotNull(this$TreeNode.parent).circumPts.get_za3lpa$(closure$i % 8).subtract_87xh0$(ensureNotNull(this$TreeNode.parent), $receiver.normal).norm();
+      $receiver.position.set_czzhiu$(ensureNotNull(this$TreeNode.parent).circumPts.get_za3lpa$(closure$i % 8));
+      ensureNotNull(this$TreeNode.parent).circumPts.get_za3lpa$(closure$i % 8).subtract_2gj7b4$(ensureNotNull(this$TreeNode.parent), $receiver.normal).norm();
       $receiver.texCoord.set_dleff0$(closure$i / 8.0, ensureNotNull(this$TreeNode.parent).texV);
       return Unit;
     };
@@ -2360,25 +2367,25 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   TreeGenerator$TreeNode.prototype.buildLeafMesh_84rojv$ = function (target) {
     if (this.branchDepth <= 1 && this.parent != null) {
-      var n = this.subtract_87xh0$(ensureNotNull(this.parent), MutableVec3f_init());
+      var n = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init());
       var len = n.length();
       n.norm();
       for (var i = 1; i <= 20; i++) {
         target.transform.push();
-        var r = MutableVec3f_init_0(this.circumPts.get_za3lpa$(0)).subtract_cx11x8$(this).norm().scale_mx4ult$(this.radius + random() * 0.15);
-        r.rotate_ag3lbb$(random() * 360, n);
-        var p = MutableVec3f_init_0(n).scale_mx4ult$(random() * len).add_cx11x8$(r).add_cx11x8$(this);
-        target.translate_cx11x8$(p);
-        target.rotate_ag3lbb$(random() * 360, n);
-        var i0 = target.vertex_hd42uj$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 0.0));
-        var i1 = target.vertex_hd42uj$(new Vec3f(0.0, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 1.0));
-        var i2 = target.vertex_hd42uj$(new Vec3f(0.1, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 1.0));
-        var i3 = target.vertex_hd42uj$(new Vec3f(0.1, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 0.0));
+        var r = MutableVec3f_init_0(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + randomF(0.0, 0.15));
+        r.rotate_ad55pp$(randomF(0.0, 360.0), n);
+        var p = MutableVec3f_init_0(n).scale_mx4ult$(randomF(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
+        target.translate_czzhiu$(p);
+        target.rotate_ad55pp$(randomF(0.0, 360.0), n);
+        var i0 = target.vertex_n440gp$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 0.0));
+        var i1 = target.vertex_n440gp$(new Vec3f(0.0, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 1.0));
+        var i2 = target.vertex_n440gp$(new Vec3f(0.1, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 1.0));
+        var i3 = target.vertex_n440gp$(new Vec3f(0.1, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 0.0));
         target.meshData.addIndices_pmhfmb$(new Int32Array([i0, i1, i2, i0, i2, i3]));
-        i0 = target.vertex_hd42uj$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.Z_AXIS, new Vec2f(0.0, 0.0));
-        i1 = target.vertex_hd42uj$(new Vec3f(0.0, 0.022, 0.0), Vec3f.Companion.Z_AXIS, new Vec2f(0.0, 1.0));
-        i2 = target.vertex_hd42uj$(new Vec3f(0.1, 0.022, 0.0), Vec3f.Companion.Z_AXIS, new Vec2f(1.0, 1.0));
-        i3 = target.vertex_hd42uj$(new Vec3f(0.1, -0.022, 0.0), Vec3f.Companion.Z_AXIS, new Vec2f(1.0, 0.0));
+        i0 = target.vertex_n440gp$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.Z_AXIS, new Vec2f(0.0, 0.0));
+        i1 = target.vertex_n440gp$(new Vec3f(0.0, 0.022, 0.0), Vec3f.Companion.Z_AXIS, new Vec2f(0.0, 1.0));
+        i2 = target.vertex_n440gp$(new Vec3f(0.1, 0.022, 0.0), Vec3f.Companion.Z_AXIS, new Vec2f(1.0, 1.0));
+        i3 = target.vertex_n440gp$(new Vec3f(0.1, -0.022, 0.0), Vec3f.Companion.Z_AXIS, new Vec2f(1.0, 0.0));
         target.meshData.addIndices_pmhfmb$(new Int32Array([i0, i2, i1, i0, i3, i2]));
         target.transform.pop();
       }
@@ -2394,6 +2401,122 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'TreeGenerator',
     interfaces: []
   };
+  function TreeTopPointDistribution(centerY, width, height, random) {
+    if (random === void 0)
+      random = math_0.defaultRandomInstance;
+    PointDistribution.call(this);
+    this.centerY = centerY;
+    this.width = width;
+    this.height = height;
+    this.random_0 = random;
+    this.borders_0 = ArrayList_init();
+    this.tmpPt1_0 = MutableVec3f_init();
+    this.tmpPt2_0 = MutableVec2f_init();
+    this.e00_0 = MutableVec2f_init();
+    this.e01_0 = MutableVec2f_init();
+    this.e10_0 = MutableVec2f_init();
+    this.e11_0 = MutableVec2f_init();
+    var tmp$;
+    for (var j = 1; j <= 6; j++) {
+      var spline = new BSplineVec2f(3);
+      var n = 7;
+      for (var i = 0; i <= n; i++) {
+        var a = i / n * math.PI;
+        if (1 <= i && i <= (n - 1 | 0)) {
+          tmp$ = randomF(0.4, 0.6);
+        }
+         else {
+          tmp$ = 0.5;
+        }
+        var f = tmp$;
+        var x = Math_0.sin(a) * (this.width - 0.4) * f + 0.2;
+        var y = Math_0.cos(a) * this.height * f + this.centerY;
+        var $receiver = spline.ctrlPoints;
+        var element = new MutableVec2f(x, y);
+        $receiver.add_11rb$(element);
+      }
+      spline.ctrlPoints.add_wxm5ur$(0, new MutableVec2f(0.0, this.centerY + this.height * 0.5));
+      spline.ctrlPoints.add_11rb$(new MutableVec2f(0.0, this.centerY - this.height * 0.5));
+      spline.addInterpolationEndpoints();
+      var pts = ArrayList_init();
+      var m = 20;
+      for (var i_0 = 0; i_0 <= m; i_0++) {
+        var element_0 = spline.evaluate_f6p79m$(i_0 / m, MutableVec2f_init());
+        pts.add_11rb$(element_0);
+      }
+      this.borders_0.add_11rb$(pts);
+    }
+  }
+  TreeTopPointDistribution.prototype.nextPoint = function () {
+    var w = this.width * 0.5;
+    var h = this.height * 0.5;
+    while (true) {
+      this.tmpPt1_0.set_y2kzbl$(this.random_0.randomF_dleff0$(-w, w), this.centerY + this.random_0.randomF_dleff0$(-h, h), randomF(-w, w));
+      var x = this.tmpPt1_0.x * this.tmpPt1_0.x + this.tmpPt1_0.z * this.tmpPt1_0.z;
+      var px = Math_0.sqrt(x);
+      var py = this.tmpPt1_0.y;
+      var y = this.tmpPt1_0.x;
+      var x_0 = this.tmpPt1_0.y;
+      var a = (Math_0.atan2(y, x_0) / math.PI + 0.5) * this.borders_0.size;
+      var i0 = numberToInt(a);
+      var i1 = (i0 + 1 | 0) % this.borders_0.size;
+      var w0 = a - i0;
+      var w1 = 1.0 - w0;
+      this.nearestEdge_0(px, py, this.borders_0.get_za3lpa$(i0), this.e00_0, this.e01_0);
+      this.nearestEdge_0(px, py, this.borders_0.get_za3lpa$(i1), this.e10_0, this.e11_0);
+      this.e00_0.scale_mx4ult$(w0).add_czzhjp$(this.e10_0.scale_mx4ult$(w1));
+      this.e01_0.scale_mx4ult$(w0).add_czzhjp$(this.e11_0.scale_mx4ult$(w1));
+      var d = (px - this.e00_0.x) * (this.e01_0.y - this.e00_0.y) - (py - this.e00_0.y) * (this.e01_0.x - this.e00_0.x);
+      if (d > 0) {
+        return Vec3f_init_0(this.tmpPt1_0);
+      }
+    }
+  };
+  TreeTopPointDistribution.prototype.nearestEdge_0 = function (px, py, pts, e0, e1) {
+    var tmp$;
+    var minDist = kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
+    var ni = 0;
+    tmp$ = pts.size - 1 | 0;
+    for (var i = 0; i < tmp$; i++) {
+      var d = this.edgeDist_0(px, py, e0.set_czzhjp$(pts.get_za3lpa$(i)), e1.set_czzhjp$(pts.get_za3lpa$(i + 1 | 0)));
+      if (d < minDist) {
+        minDist = d;
+        ni = i;
+      }
+    }
+    e0.set_czzhjp$(pts.get_za3lpa$(ni));
+    e1.set_czzhjp$(pts.get_za3lpa$(ni + 1 | 0));
+  };
+  TreeTopPointDistribution.prototype.edgeDist_0 = function (px, py, e0, e1) {
+    var tmp$;
+    e1.subtract_q2ruao$(e0, this.tmpPt2_0);
+    var l = (px * this.tmpPt2_0.x + py * this.tmpPt2_0.y - e0.times_czzhjp$(this.tmpPt2_0)) / this.tmpPt2_0.times_czzhjp$(this.tmpPt2_0);
+    if (l < 0) {
+      var dx = e0.x - px;
+      var dy = e0.y - py;
+      var x = dx * dx + dy * dy;
+      tmp$ = Math_0.sqrt(x);
+    }
+     else if (l > 1) {
+      var dx_0 = e1.x - px;
+      var dy_0 = e1.y - py;
+      var x_0 = dx_0 * dx_0 + dy_0 * dy_0;
+      tmp$ = Math_0.sqrt(x_0);
+    }
+     else {
+      this.tmpPt2_0.scale_mx4ult$(l).add_czzhjp$(e0);
+      var dx_1 = this.tmpPt2_0.x - px;
+      var dy_1 = this.tmpPt2_0.y - py;
+      var x_1 = dx_1 * dx_1 + dy_1 * dy_1;
+      tmp$ = Math_0.sqrt(x_1);
+    }
+    return tmp$;
+  };
+  TreeTopPointDistribution.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TreeTopPointDistribution',
+    interfaces: [PointDistribution]
+  };
   function uiDemoScene$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
@@ -2404,8 +2527,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver, ctx) {
       this$.setIdentity();
       this$.translate_y2kzbl$(0.0, 0.0, -7.0);
-      this$.rotate_ag3lbb$(ctx.time * 60, Vec3f.Companion.X_AXIS);
-      this$.rotate_ag3lbb$(ctx.time * 17, Vec3f.Companion.Y_AXIS);
+      this$.rotate_ad55pp$(ctx.time * 60, Vec3f.Companion.X_AXIS);
+      this$.rotate_ad55pp$(ctx.time * 17, Vec3f.Companion.Y_AXIS);
       return Unit;
     };
   }
@@ -2561,18 +2684,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.steadyScreenPt_0.set_dleff0$(screenX, screenY);
     this.steadyScreenPtMode_0 = Earth$Companion_getInstance().STEADY_SCREEN_PT_INIT_0;
   };
-  var math_0 = $module$kool.de.fabmax.kool.math;
   Earth.prototype.render_evfofk$ = function (ctx) {
     var tmp$, tmp$_0;
     var cam = (tmp$ = this.scene) != null ? tmp$.camera : null;
     if (cam != null && Kotlin.isType(cam, PerspectiveCamera)) {
-      this.toGlobalCoords_64rgyf$(this.tmpVec_0.set_cx11x8$(Vec3f.Companion.ZERO));
-      this.tmpVec_0.subtract_cx11x8$(cam.globalPos);
+      this.toGlobalCoords_w1lst9$(this.tmpVec_0.set_czzhiu$(Vec3f.Companion.ZERO));
+      this.tmpVec_0.subtract_czzhiu$(cam.globalPos);
       this.cameraHeight = this.tmpVec_0.length() - Earth$Companion_getInstance().EARTH_R;
       var camDist = cam.globalPos.length();
-      this.camPosition_0.set_cx11x8$(Vec3f.Companion.Z_AXIS).scale_mx4ult$(camDist);
-      this.toLocalCoords_64rgyf$(this.camPosition_0);
-      this.camPosition_0.norm_aq7j6k$(this.camDirection_0);
+      this.camPosition_0.set_czzhiu$(Vec3f.Companion.Z_AXIS).scale_mx4ult$(camDist);
+      this.toLocalCoords_w1lst9$(this.camPosition_0);
+      this.camPosition_0.norm_5s4mqq$(this.camDirection_0);
       cam.clipNear = camDist * 0.05;
       cam.clipFar = camDist * 10.0;
       if (camDist > this.prevCamHeight_0) {
@@ -2618,7 +2740,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.centerLat = lat * math_0.RAD_2_DEG;
       this.centerLon = lon * math_0.RAD_2_DEG;
       this.camDirection_0.scale_mx4ult$(Earth$Companion_getInstance().EARTH_R);
-      var camHeight = this.camDirection_0.distance_cx11x8$(this.camPosition_0);
+      var camHeight = this.camDirection_0.distance_czzhiu$(this.camPosition_0);
       var x_3 = cam.fovy * math_0.DEG_2_RAD * 0.5;
       var meterPerPx = camHeight * Math_0.tan(x_3) * 2.0 / ctx.viewport.height;
       var centerZoom = this.getBestZoom_0(meterPerPx, lat);
@@ -2630,18 +2752,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     if (this.steadyScreenPtMode_0 === Earth$Companion_getInstance().STEADY_SCREEN_PT_INIT_0 && this.computePointOrientation_0(this.steadyScreenPt_0.x, this.steadyScreenPt_0.y, ctx)) {
       this.steadyScreenPtMode_0 = Earth$Companion_getInstance().STEADY_SCREEN_PT_HOLD_0;
-      this.ptOrientation_0.transpose_d21ekx$(this.mouseRotationStart_0);
-      this.startTransform_0.set_d21ekx$(this.transform);
+      this.ptOrientation_0.transpose_d4zu6j$(this.mouseRotationStart_0);
+      this.startTransform_0.set_d4zu6j$(this.transform);
     }
      else if (this.steadyScreenPtMode_0 === Earth$Companion_getInstance().STEADY_SCREEN_PT_HOLD_0) {
-      this.set_d21ekx$(this.startTransform_0);
+      this.set_d4zu6j$(this.startTransform_0);
       if (this.computePointOrientation_0(this.steadyScreenPt_0.x, this.steadyScreenPt_0.y, ctx)) {
-        this.ptOrientation_0.mul_d21ekx$(this.mouseRotationStart_0);
+        this.ptOrientation_0.mul_d4zu6j$(this.mouseRotationStart_0);
       }
        else {
         this.steadyScreenPtMode_0 = Earth$Companion_getInstance().STEADY_SCREEN_PT_OFF_0;
       }
-      this.mul_d21ekx$(this.ptOrientation_0);
+      this.mul_d4zu6j$(this.ptOrientation_0);
     }
     TransformGroup.prototype.render_evfofk$.call(this, ctx);
     if (!this.removeTiles_0.isEmpty()) {
@@ -2884,16 +3006,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         this.steadyScreenPtMode_0 = Earth$Companion_getInstance().STEADY_SCREEN_PT_OFF_0;
         if (dragPtrs.get_za3lpa$(0).isLeftButtonEvent) {
           this.isDragging_0 = this.computePointOrientation_0(ptrX, ptrY, ctx);
-          this.ptOrientation_0.transpose_d21ekx$(this.mouseRotationStart_0);
-          this.startTransform_0.set_d21ekx$(this.transform);
+          this.ptOrientation_0.transpose_d4zu6j$(this.mouseRotationStart_0);
+          this.startTransform_0.set_d4zu6j$(this.transform);
         }
          else if (this.isDragging_0) {
-          this.set_d21ekx$(this.startTransform_0);
+          this.set_d4zu6j$(this.startTransform_0);
           var valid = this.computePointOrientation_0(ptrX, ptrY, ctx);
           if (valid) {
-            this.ptOrientation_0.mul_d21ekx$(this.mouseRotationStart_0);
+            this.ptOrientation_0.mul_d4zu6j$(this.mouseRotationStart_0);
           }
-          this.mul_d21ekx$(this.ptOrientation_0);
+          this.mul_d4zu6j$(this.ptOrientation_0);
           this.isDragging_0 = valid;
         }
       }
@@ -2907,27 +3029,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   Earth.prototype.computePointOrientation_0 = function (screenX, screenY, ctx) {
     var tmp$, tmp$_0, tmp$_1;
-    if ((tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.computePickRay_twtodx$(this.pickRay_0, screenX, screenY, ctx) : null) != null ? tmp$_1 : false) {
+    if ((tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.computePickRay_jieknl$(this.pickRay_0, screenX, screenY, ctx) : null) != null ? tmp$_1 : false) {
       var o = this.pickRay_0.origin;
       var l = this.pickRay_0.direction;
-      this.toLocalCoords_64rgyf$(this.pickRay_0.origin);
-      this.toLocalCoords_64rgyf$(this.pickRay_0.direction, 0.0);
-      this.toLocalCoords_64rgyf$(this.tmpVecY_0.set_cx11x8$(Vec3f.Companion.Y_AXIS), 0.0);
-      var ldo = l.times_cx11x8$(o);
+      this.toLocalCoords_w1lst9$(this.pickRay_0.origin);
+      this.toLocalCoords_w1lst9$(this.pickRay_0.direction, 0.0);
+      this.toLocalCoords_w1lst9$(this.tmpVecY_0.set_czzhiu$(Vec3f.Companion.Y_AXIS), 0.0);
+      var ldo = l.times_czzhiu$(o);
       var sqr = ldo * ldo - o.sqrLength() + Earth$Companion_getInstance().EARTH_R * Earth$Companion_getInstance().EARTH_R;
       if (sqr > 0) {
         var d = -ldo - Math_0.sqrt(sqr);
-        l.scale_c2c7of$(d, this.tmpVec_0).add_cx11x8$(o);
+        l.scale_749b8l$(d, this.tmpVec_0).add_czzhiu$(o);
         this.tmpVec_0.norm();
-        if (this.tmpVec_0.isEqual_cx11x8$(this.tmpVecY_0)) {
+        if (this.tmpVec_0.isEqual_czzhiu$(this.tmpVecY_0)) {
           return false;
         }
-        this.tmpVecY_0.cross_87xh0$(this.tmpVec_0, this.tmpVecRt_0).norm();
-        this.tmpVec_0.cross_87xh0$(this.tmpVecRt_0, this.tmpVecUp_0);
-        this.ptOrientation_0.setColVec_rmg4an$(0, this.tmpVec_0, 0.0);
-        this.ptOrientation_0.setColVec_rmg4an$(1, this.tmpVecRt_0, 0.0);
-        this.ptOrientation_0.setColVec_rmg4an$(2, this.tmpVecUp_0, 0.0);
-        this.ptOrientation_0.setColVec_rmg4an$(3, Vec3f.Companion.ZERO, 1.0);
+        this.tmpVecY_0.cross_2gj7b4$(this.tmpVec_0, this.tmpVecRt_0).norm();
+        this.tmpVec_0.cross_2gj7b4$(this.tmpVecRt_0, this.tmpVecUp_0);
+        this.ptOrientation_0.setColVec_gdg6t7$(0, this.tmpVec_0, 0.0);
+        this.ptOrientation_0.setColVec_gdg6t7$(1, this.tmpVecRt_0, 0.0);
+        this.ptOrientation_0.setColVec_gdg6t7$(2, this.tmpVecUp_0, 0.0);
+        this.ptOrientation_0.setColVec_gdg6t7$(3, Vec3f.Companion.ZERO, 1.0);
         return true;
       }
     }
@@ -3202,8 +3324,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.isTexLoaded = (tmp$_1 = (tmp$_0 = tex.res) != null ? tmp$_0.isLoaded : null) != null ? tmp$_1 : false;
     var visible = this.isTexLoaded && Mesh.prototype.checkIsVisible_evfofk$.call(this, ctx);
     if (visible) {
-      this.toGlobalCoords_64rgyf$(this.tmpVec_0.set_cx11x8$(this.centerNormal_0), 0.0);
-      var cos = (tmp$_5 = (tmp$_4 = (tmp$_3 = (tmp$_2 = this.scene) != null ? tmp$_2.camera : null) != null ? tmp$_3.globalLookDir : null) != null ? tmp$_4.dot_cx11x8$(this.tmpVec_0) : null) != null ? tmp$_5 : 0.0;
+      this.toGlobalCoords_w1lst9$(this.tmpVec_0.set_czzhiu$(this.centerNormal_0), 0.0);
+      var cos = (tmp$_5 = (tmp$_4 = (tmp$_3 = (tmp$_2 = this.scene) != null ? tmp$_2.camera : null) != null ? tmp$_3.globalLookDir : null) != null ? tmp$_4.dot_czzhiu$(this.tmpVec_0) : null) != null ? tmp$_5 : 0.0;
       return cos < 0.1;
     }
      else if (!this.isTexLoaded) {
@@ -3258,7 +3380,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var fy = y;
           var fz = z;
           var nrm = (new MutableVec3f(fx, fy, fz)).norm();
-          rowIndices[i] = $receiver.vertex_hd42uj$(new Vec3f(fx, fy, fz), nrm, uv);
+          rowIndices[i] = $receiver.vertex_n440gp$(new Vec3f(fx, fy, fz), nrm, uv);
           if (row === (steps / 2 | 0) && i === (steps / 2 | 0)) {
             this$TileMesh.centerNormal_0 = Vec3f_init_0(nrm);
           }
@@ -3433,6 +3555,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$demo.synthieScene_evfofk$ = synthieScene;
   package$demo.treeScene_evfofk$ = treeScene;
   package$demo.TreeGenerator = TreeGenerator;
+  package$demo.TreeTopPointDistribution = TreeTopPointDistribution;
   package$demo.uiDemoScene = uiDemoScene;
   package$demo.uiDemoContent_d6jo3u$ = uiDemoContent;
   Object.defineProperty(Earth, 'Companion', {

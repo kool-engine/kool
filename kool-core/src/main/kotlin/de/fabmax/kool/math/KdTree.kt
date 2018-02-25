@@ -1,7 +1,6 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.math
 
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.util.BoundingBox
 import kotlin.math.*
 
 /**
