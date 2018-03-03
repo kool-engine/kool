@@ -137,8 +137,17 @@ class TreeGenerator(val distribution: PointDistribution,
         treeNodes.forEach { it.buildTrunkMesh(target) }
     }
 
-    fun buildLeafMesh(target: MeshBuilder) {
+    fun buildLeafMesh(target: MeshBuilder, lightDir: Vec3f) {
+        val oldModFun = target.vertexModFun
+
+        // set vertex mod fun to ensure that all normals point in light direction
+        target.vertexModFun = {
+            if (normal * lightDir < 0) {
+                normal.scale(-1f)
+            }
+        }
         treeNodes.forEach { it.buildLeafMesh(target) }
+        target.vertexModFun = oldModFun
     }
 
     private fun populateAttractionPoints() {
@@ -304,11 +313,11 @@ class TreeGenerator(val distribution: PointDistribution,
                         var i2 = vertex(Vec3f(0.1f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(1f, 1f))
                         var i3 = vertex(Vec3f(0.1f, -0.022f, 0f), NEG_Z_AXIS, Vec2f(1f, 0f))
                         meshData.addIndices(i0, i1, i2, i0, i2, i3)
-                        i0 = vertex(Vec3f(0f, -0.022f, 0f), Z_AXIS, Vec2f(0f, 0f))
-                        i1 = vertex(Vec3f(0f, 0.022f, 0f), Z_AXIS, Vec2f(0f, 1f))
-                        i2 = vertex(Vec3f(0.1f, 0.022f, 0f), Z_AXIS, Vec2f(1f, 1f))
-                        i3 = vertex(Vec3f(0.1f, -0.022f, 0f), Z_AXIS, Vec2f(1f, 0f))
-                        meshData.addIndices(i0, i2, i1, i0, i3, i2)
+//                        i0 = vertex(Vec3f(0f, -0.022f, 0f), Z_AXIS, Vec2f(0f, 0f))
+//                        i1 = vertex(Vec3f(0f, 0.022f, 0f), Z_AXIS, Vec2f(0f, 1f))
+//                        i2 = vertex(Vec3f(0.1f, 0.022f, 0f), Z_AXIS, Vec2f(1f, 1f))
+//                        i3 = vertex(Vec3f(0.1f, -0.022f, 0f), Z_AXIS, Vec2f(1f, 0f))
+//                        meshData.addIndices(i0, i2, i1, i0, i3, i2)
                     }
                 }
             }

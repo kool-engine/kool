@@ -69,9 +69,12 @@ fun treeScene(ctx: RenderContext): List<Scene> {
         leafMesh = textureMesh {
             generator = {
                 val t = currentTimeMillis()
-                treeGen.buildLeafMesh(this)
+                treeGen.buildLeafMesh(this, light.direction)
                 println("Generated ${meshData.numIndices / 3} leaf triangles, took ${currentTimeMillis() - t} ms")
             }
+
+            // disable culling, leafs are visible from both sides
+            cullMethod = CullMethod.NO_CULLING
 
             shader = basicShader {
                 colorModel = ColorModel.TEXTURE_COLOR
@@ -242,7 +245,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                         meshData.clear()
                         val builder = MeshBuilder(meshData)
                         val t = currentTimeMillis()
-                        treeGen.buildLeafMesh(builder)
+                        treeGen.buildLeafMesh(builder, scene?.light?.direction ?: Vec3f.ZERO)
                         println("Generated ${meshData.numIndices / 3} leaf triangles, took ${currentTimeMillis() - t} ms")
                         meshData.isBatchUpdate = false
                     }
