@@ -97,7 +97,11 @@ actual fun glDrawElements(mode: Int, count: Int, type: Int, offset: Int) =
         JsImpl.gl.drawElements(mode, count, type, offset)
 
 actual fun glDrawElementsInstanced(mode: Int, count: Int, type: Int, indicesOffset: Int, instanceCount: Int) {
-    throw UnsupportedOperationException("not available on WebGL")
+    if (JsImpl.isWebGl2Context) {
+        (JsImpl.gl as WebGL2RenderingContext).drawElementsInstanced(mode, count, type, indicesOffset, instanceCount)
+    } else {
+        throw KoolException("This function requires WebGL2 support")
+    }
 }
 
 actual fun glEnable(cap: Int) = JsImpl.gl.enable(cap)
@@ -168,7 +172,11 @@ actual fun glRenderbufferStorage(target: Int, internalformat: Int, width: Int, h
         JsImpl.gl.renderbufferStorage(target, internalformat, width, height)
 
 actual fun glRenderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) {
-    throw UnsupportedOperationException("not available on WebGL")
+    if (JsImpl.isWebGl2Context) {
+        (JsImpl.gl as WebGL2RenderingContext).renderbufferStorageMultisample(target, samples, internalformat, width, height)
+    } else {
+        throw KoolException("This function requires WebGL2 support")
+    }
 }
 
 actual fun glShaderSource(shader: ShaderResource, source: String) =
@@ -215,7 +223,11 @@ actual fun glUniformMatrix4fv(location: Any?, transpose: Boolean, value: Float32
 actual fun glUseProgram(program: ProgramResource?) = JsImpl.gl.useProgram(program?.glRef as WebGLProgram?)
 
 actual fun glVertexAttribDivisor(index: Int, divisor: Int) {
-    throw UnsupportedOperationException("not available on WebGL")
+    if (JsImpl.isWebGl2Context) {
+        (JsImpl.gl as WebGL2RenderingContext).vertexAttribDivisor(index, divisor)
+    } else {
+        throw KoolException("This function requires WebGL2 support")
+    }
 }
 
 actual fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) =
@@ -235,6 +247,9 @@ actual fun isValidUniformLocation(location: Any?): Boolean = location != null &&
 
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun drawBuffers(buffers: IntArray)
+    fun drawElementsInstanced(mode: Int, count: Int, type: Int, offset: Int, instanceCount: Int)
     fun readBuffer(src: Int)
+    fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
+    fun vertexAttribDivisor(index: Int, divisor: Int)
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
 }
