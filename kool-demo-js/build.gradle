@@ -6,7 +6,7 @@ apply plugin: 'kotlin-platform-js'
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
-    compile project(":kool-js")
+    compile project(":kool-core-js")
 
     expectedBy project(":kool-demo")
 }

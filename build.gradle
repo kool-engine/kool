@@ -9,7 +9,7 @@ allprojects {
 }
 
 buildscript {
-    ext.kotlin_version = '1.2.21'
+    ext.kotlin_version = '1.2.30'
     ext.serialization_version = '0.4'
     ext.coroutines_version = '0.22'
 

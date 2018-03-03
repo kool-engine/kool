@@ -1,8 +1,8 @@
 rootProject.name = 'kool'
 include 'kool-core'
-include 'kool-desktop'
-include 'kool-js'
+include 'kool-core-jvm'
+include 'kool-core-js'
 
 include 'kool-demo'
-include 'kool-demo-desktop'
+include 'kool-demo-jvm'
 include 'kool-demo-js'
