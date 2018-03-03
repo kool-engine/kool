@@ -8,4 +8,4 @@ include 'kool-demo'
 include 'kool-demo-jvm'
 include 'kool-demo-js'
 
-include 'android', 'android:kool-core-wrapper', 'android:kool-core-android', 'android:kool-demo-android'
+include 'android', 'android:kool-core-wrapper', 'android:kool-core-android', 'android:kool-demo-wrapper', 'android:kool-demo-android'

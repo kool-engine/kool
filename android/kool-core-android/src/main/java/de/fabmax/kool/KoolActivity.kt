@@ -2,7 +2,15 @@ package de.fabmax.kool
 
 import android.app.Activity
 import android.opengl.GLSurfaceView
+import android.util.Log
 import de.fabmax.kool.gl.AndroidGlBindings
+import de.fabmax.kool.gl.GL_RGB
+import de.fabmax.kool.util.CharMap
+import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.createUint8Buffer
+import kotlinx.coroutines.experimental.launch
+import java.io.ByteArrayOutputStream
+
 
 /**
  * Base Activity for using Kool on android.
@@ -12,20 +20,19 @@ abstract class KoolActivity : Activity() {
     private var glSurfaceView: GLSurfaceView? = null
 
     fun createContext(): RenderContext {
-        val glSurfaceView = GLSurfaceView(this)
-        val ctx = createContext(glSurfaceView)
+        val glView = GLSurfaceView(this)
+        val ctx = createContext(glView)
 
-        setContentView(glSurfaceView)
+        setContentView(glView)
         return ctx
     }
 
     fun createContext(glSurfaceView: GLSurfaceView): RenderContext {
         this.glSurfaceView = glSurfaceView
 
-        // fixme: testing: next line enables OpenGL ES 2.0, no 3.0 support yet...
-        glSurfaceView.setEGLContextClientVersion(2)
 
         val ctx = createContext(WrapperInitProps(AndroidPlatformImpl(), AndroidGlBindings())) as AndroidRenderContext
+        glSurfaceView.setEGLContextFactory(ctx)
         glSurfaceView.setRenderer(ctx)
         glSurfaceView.preserveEGLContextOnPause = true
 
@@ -40,5 +47,47 @@ abstract class KoolActivity : Activity() {
     override fun onResume() {
         super.onResume()
         glSurfaceView?.onResume()
+    }
+
+    private inner class AndroidPlatformImpl : PlatformImpl {
+        override fun createContext(props: RenderContext.InitProps): RenderContext {
+            return AndroidRenderContext()
+        }
+
+        override fun createCharMap(fontProps: FontProps): CharMap {
+            val texData = BufferedTextureData(createUint8Buffer(16*16*3), 16, 16, GL_RGB)
+            return CharMap(texData, mapOf())
+        }
+
+        override fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
+            launch {
+                assets.open(assetPath)?.use {
+                    val t = System.nanoTime()
+                    val data = ByteArrayOutputStream()
+                    val buf = ByteArray(128 * 1024)
+                    while (it.available() > 0) {
+                        val len = it.read(buf)
+                        data.write(buf, 0, len)
+                    }
+                    val bytes = data.toByteArray()
+                    Log.d("KoolActivity", "Loaded asset \"$assetPath\" in ${(System.nanoTime() - t) / 1e6} ms (${bytes.size / (1024.0*1024.0)} MB)")
+
+                    onLoad(bytes)
+                }
+            }
+        }
+
+        override fun loadTextureAsset(assetPath: String): TextureData {
+            return ImageTextureData(assetPath, this@KoolActivity)
+        }
+
+        override fun openUrl(url: String) {
+            // todo
+        }
+
+        override fun getMemoryInfo(): String {
+            // todo
+            return ""
+        }
     }
 }

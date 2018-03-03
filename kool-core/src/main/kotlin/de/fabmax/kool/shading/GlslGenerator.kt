@@ -65,14 +65,22 @@ open class GlslGenerator {
     val injectors = mutableListOf<GlslInjector>()
     val customUniforms = mutableListOf<Uniform<*>>()
 
-    private val vsIn = glCapabilities.glslDialect.vsIn
-    private val vsOut = glCapabilities.glslDialect.vsOut
-    private val fsIn = glCapabilities.glslDialect.fsIn
-    private val fsOut = glCapabilities.glslDialect.fragColorHead
-    private val fsOutBody = glCapabilities.glslDialect.fragColorBody
-    private val texSampler = glCapabilities.glslDialect.texSampler
+    // keywords are set when shader is generated, before glCapabilites might not be initialized
+    private var vsIn = ""
+    private var vsOut = ""
+    private var fsIn = ""
+    private var fsOut = ""
+    private var fsOutBody = ""
+    private var texSampler = ""
 
     fun generate(shaderProps: ShaderProps, hints: ShadingHints): Shader.Source {
+        vsIn = glCapabilities.glslDialect.vsIn
+        vsOut = glCapabilities.glslDialect.vsOut
+        fsIn = glCapabilities.glslDialect.fsIn
+        fsOut = glCapabilities.glslDialect.fragColorHead
+        fsOutBody = glCapabilities.glslDialect.fragColorBody
+        texSampler = glCapabilities.glslDialect.texSampler
+
         return Shader.Source(generateVertShader(shaderProps), generateFragShader(shaderProps))
     }
 
