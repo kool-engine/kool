@@ -2,12 +2,11 @@ package de.fabmax.kool
 
 import android.app.Activity
 import android.opengl.GLSurfaceView
+import android.os.Bundle
 import android.util.Log
 import de.fabmax.kool.gl.AndroidGlBindings
-import de.fabmax.kool.gl.GL_RGB
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.createUint8Buffer
 import kotlinx.coroutines.experimental.launch
 import java.io.ByteArrayOutputStream
 
@@ -18,8 +17,11 @@ import java.io.ByteArrayOutputStream
 abstract class KoolActivity : Activity() {
 
     private var glSurfaceView: GLSurfaceView? = null
+    private val fontMapGenerator = FontMapGenerator(this, 1024, 1024)
 
-    fun createContext(): RenderContext {
+    private var ctx: AndroidRenderContext? = null
+
+    fun createContext(): AndroidRenderContext {
         val glView = GLSurfaceView(this)
         val ctx = createContext(glView)
 
@@ -27,7 +29,7 @@ abstract class KoolActivity : Activity() {
         return ctx
     }
 
-    fun createContext(glSurfaceView: GLSurfaceView): RenderContext {
+    fun createContext(glSurfaceView: GLSurfaceView): AndroidRenderContext {
         this.glSurfaceView = glSurfaceView
 
 
@@ -37,6 +39,21 @@ abstract class KoolActivity : Activity() {
         glSurfaceView.preserveEGLContextOnPause = true
 
         return ctx
+    }
+
+    open fun onCreateContext() {
+        // creates the Kool render context
+        ctx = createContext()
+    }
+
+    open fun onKoolContextCreated(ctx: AndroidRenderContext) {
+        // default impl does nothing
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        onCreateContext()
     }
 
     override fun onPause() {
@@ -51,12 +68,11 @@ abstract class KoolActivity : Activity() {
 
     private inner class AndroidPlatformImpl : PlatformImpl {
         override fun createContext(props: RenderContext.InitProps): RenderContext {
-            return AndroidRenderContext()
+            return AndroidRenderContext(this@KoolActivity)
         }
 
         override fun createCharMap(fontProps: FontProps): CharMap {
-            val texData = BufferedTextureData(createUint8Buffer(16*16*3), 16, 16, GL_RGB)
-            return CharMap(texData, mapOf())
+            return fontMapGenerator.createCharMap(fontProps)
         }
 
         override fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {

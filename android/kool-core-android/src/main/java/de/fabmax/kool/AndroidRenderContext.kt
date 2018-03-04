@@ -5,7 +5,6 @@ import android.opengl.GLSurfaceView
 import android.util.Log
 import de.fabmax.kool.gl.GL_DEPTH_COMPONENT
 import de.fabmax.kool.gl.GL_DEPTH_COMPONENT24
-import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_NEAREST
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
@@ -16,7 +15,7 @@ import javax.microedition.khronos.opengles.GL10
 /**
  * Created by max on 03.03.2018.
  */
-class AndroidRenderContext : RenderContext(), GLSurfaceView.Renderer, GLSurfaceView.EGLContextFactory {
+class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GLSurfaceView.Renderer, GLSurfaceView.EGLContextFactory {
     override var windowWidth = 0
         private set
     override var windowHeight = 0
@@ -88,6 +87,8 @@ class AndroidRenderContext : RenderContext(), GLSurfaceView.Renderer, GLSurfaceV
                     glVersion = GlVersion("OpenGL ES", 2, 0),
                     anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED)
         }
+
+        koolActivity.onKoolContextCreated(this)
     }
 
     override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
