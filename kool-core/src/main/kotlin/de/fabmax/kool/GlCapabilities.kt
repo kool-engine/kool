@@ -6,7 +6,6 @@ data class GlCapabilities(
         val depthTextures: Boolean,
         val depthComponentIntFormat: Int,
         val depthFilterMethod: Int,
-        val framebufferWithoutColor: Boolean,
         val anisotropicTexFilterInfo: AnisotropicTexFilterInfo,
         val glslDialect: GlslDialect,
         val glVersion: GlVersion
@@ -18,7 +17,6 @@ data class GlCapabilities(
                 depthTextures = false,
                 depthComponentIntFormat = 0,
                 depthFilterMethod = 0,
-                framebufferWithoutColor = false,
                 anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED,
                 glslDialect = GlslDialect.GLSL_DIALECT_100,
                 glVersion = GlVersion("Unknown", 0, 0))

@@ -59,7 +59,7 @@ actual fun getMemoryInfo(): String {
     val rt = Runtime.getRuntime()
     val freeMem = rt.freeMemory()
     val totalMem = rt.totalMemory()
-    return "Heap Size: ${(totalMem - freeMem) / 1024 / 1024} MB"
+    return "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB"
 }
 
 internal object DesktopImpl {

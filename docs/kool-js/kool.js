@@ -5,7 +5,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var Unit = Kotlin.kotlin.Unit;
   var Kind_CLASS = Kotlin.Kind.CLASS;
   var ensureNotNull = Kotlin.ensureNotNull;
-  var UnsupportedOperationException_init = Kotlin.kotlin.UnsupportedOperationException_init_pdl1vj$;
   var PropertyMetadata = Kotlin.PropertyMetadata;
   var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var lazy = Kotlin.kotlin.lazy_klfg04$;
@@ -407,6 +406,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     JsImpl_getInstance().gl.bufferData(target, (Kotlin.isType(tmp$ = data, Float32BufferImpl) ? tmp$ : throwCCE()).buffer, usage);
   }
+  function glCheckFramebufferStatus(target) {
+    return JsImpl_getInstance().gl.checkFramebufferStatus(target);
+  }
   function glClear(mask) {
     JsImpl_getInstance().gl.clear(mask);
   }
@@ -487,7 +489,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     JsImpl_getInstance().gl.drawElements(mode, count, type, offset);
   }
   function glDrawElementsInstanced(mode, count, type, indicesOffset, instanceCount) {
-    throw UnsupportedOperationException_init('not available on WebGL');
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).drawElementsInstanced(mode, count, type, indicesOffset, instanceCount);
+    }
+     else {
+      throw new KoolException('This function requires WebGL2 support');
+    }
   }
   function glEnable(cap) {
     JsImpl_getInstance().gl.enable(cap);
@@ -572,7 +580,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     JsImpl_getInstance().gl.renderbufferStorage(target, internalformat, width, height);
   }
   function glRenderbufferStorageMultisample(target, samples, internalformat, width, height) {
-    throw UnsupportedOperationException_init('not available on WebGL');
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).renderbufferStorageMultisample(target, samples, internalformat, width, height);
+    }
+     else {
+      throw new KoolException('This function requires WebGL2 support');
+    }
   }
   function glShaderSource(shader, source) {
     var tmp$;
@@ -643,7 +657,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     JsImpl_getInstance().gl.useProgram((tmp$ = program != null ? program.glRef : null) == null || Kotlin.isType(tmp$, WebGLProgram) ? tmp$ : throwCCE());
   }
   function glVertexAttribDivisor(index, divisor) {
-    throw UnsupportedOperationException_init('not available on WebGL');
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).vertexAttribDivisor(index, divisor);
+    }
+     else {
+      throw new KoolException('This function requires WebGL2 support');
+    }
   }
   function glVertexAttribPointer(index, size, type, normalized, stride, offset) {
     JsImpl_getInstance().gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
@@ -916,7 +936,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var shaderIntAttribs = false;
     var depthComponentIntFormat = GL_DEPTH_COMPONENT;
     var depthFilterMethod = GL_NEAREST;
-    var framebufferWithoutColor = false;
     var anisotropicTexFilterInfo = AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED;
     var glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_100;
     var glVersion = new GlVersion('WebGL', 1, 0);
@@ -926,7 +945,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       depthTextures = true;
       shaderIntAttribs = true;
       depthComponentIntFormat = GL_DEPTH_COMPONENT24;
-      framebufferWithoutColor = true;
       glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_300_ES;
       glVersion = new GlVersion('WebGL', 2, 0);
     }
@@ -947,7 +965,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var max = typeof (tmp$_4 = this.gl_8be2vx$.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) === 'number' ? tmp$_4 : throwCCE();
       anisotropicTexFilterInfo = new AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT);
     }
-    glCapabilities = new GlCapabilities(uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, framebufferWithoutColor, anisotropicTexFilterInfo, glslDialect, glVersion);
+    glCapabilities = new GlCapabilities(uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
     this.screenDpi = JsImpl_getInstance().dpi;
     this.windowWidth = this.canvas_8be2vx$.clientWidth;
     this.windowHeight = this.canvas_8be2vx$.clientHeight;
@@ -2363,9 +2381,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     glBindFramebuffer(GL_FRAMEBUFFER, this);
     if (!this.isFbComplete_0) {
       this.isFbComplete_0 = true;
-      if (this.colorAttachment == null && this.depthAttachment != null && !glCapabilities.framebufferWithoutColor) {
-        this.colorAttachment = FbColorTexData$Companion_getInstance().colorTex_ld7r1l$(this.width, this.height, this.fbId_0);
-      }
       var color = this.colorAttachment;
       if (color != null) {
         ctx.textureMgr.bindTexture_4yp9vu$(color, ctx);
@@ -2379,6 +2394,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       if (depth != null) {
         ctx.textureMgr.bindTexture_4yp9vu$(depth, ctx);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ensureNotNull(depth.res), 0);
+      }
+      var fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+      if (fbStatus !== GL_FRAMEBUFFER_COMPLETE) {
+        if (this.colorAttachment == null && this.depthAttachment != null) {
+          this.colorAttachment = FbColorTexData$Companion_getInstance().colorTex_ld7r1l$(this.width, this.height, this.fbId_0);
+          ctx.textureMgr.bindTexture_4yp9vu$(ensureNotNull(this.colorAttachment), ctx);
+          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ensureNotNull(ensureNotNull(this.colorAttachment).res), 0);
+          glDrawBuffer(GL_FRONT);
+          glReadBuffer(GL_FRONT);
+          fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+          println('Creating fallback framebuffer color attachment');
+        }
+        if (fbStatus !== GL_FRAMEBUFFER_COMPLETE) {
+          throw new KoolException('Framebuffer incomplete, status: ' + fbStatus);
+        }
       }
     }
     ctx.pushAttributes();
@@ -2770,21 +2800,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'TextureResource',
     interfaces: [GlResource]
   };
-  function GlCapabilities(uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, framebufferWithoutColor, anisotropicTexFilterInfo, glslDialect, glVersion) {
+  function GlCapabilities(uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
     GlCapabilities$Companion_getInstance();
     this.uint32Indices = uint32Indices;
     this.shaderIntAttribs = shaderIntAttribs;
     this.depthTextures = depthTextures;
     this.depthComponentIntFormat = depthComponentIntFormat;
     this.depthFilterMethod = depthFilterMethod;
-    this.framebufferWithoutColor = framebufferWithoutColor;
     this.anisotropicTexFilterInfo = anisotropicTexFilterInfo;
     this.glslDialect = glslDialect;
     this.glVersion = glVersion;
   }
   function GlCapabilities$Companion() {
     GlCapabilities$Companion_instance = this;
-    this.UNKNOWN_CAPABILITIES = new GlCapabilities(false, false, false, 0, 0, false, AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED, GlslDialect$Companion_getInstance().GLSL_DIALECT_100, new GlVersion('Unknown', 0, 0));
+    this.UNKNOWN_CAPABILITIES = new GlCapabilities(false, false, false, 0, 0, AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED, GlslDialect$Companion_getInstance().GLSL_DIALECT_100, new GlVersion('Unknown', 0, 0));
   }
   GlCapabilities$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -2819,22 +2848,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return this.depthFilterMethod;
   };
   GlCapabilities.prototype.component6 = function () {
-    return this.framebufferWithoutColor;
-  };
-  GlCapabilities.prototype.component7 = function () {
     return this.anisotropicTexFilterInfo;
   };
-  GlCapabilities.prototype.component8 = function () {
+  GlCapabilities.prototype.component7 = function () {
     return this.glslDialect;
   };
-  GlCapabilities.prototype.component9 = function () {
+  GlCapabilities.prototype.component8 = function () {
     return this.glVersion;
   };
-  GlCapabilities.prototype.copy_x5djhs$ = function (uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, framebufferWithoutColor, anisotropicTexFilterInfo, glslDialect, glVersion) {
-    return new GlCapabilities(uint32Indices === void 0 ? this.uint32Indices : uint32Indices, shaderIntAttribs === void 0 ? this.shaderIntAttribs : shaderIntAttribs, depthTextures === void 0 ? this.depthTextures : depthTextures, depthComponentIntFormat === void 0 ? this.depthComponentIntFormat : depthComponentIntFormat, depthFilterMethod === void 0 ? this.depthFilterMethod : depthFilterMethod, framebufferWithoutColor === void 0 ? this.framebufferWithoutColor : framebufferWithoutColor, anisotropicTexFilterInfo === void 0 ? this.anisotropicTexFilterInfo : anisotropicTexFilterInfo, glslDialect === void 0 ? this.glslDialect : glslDialect, glVersion === void 0 ? this.glVersion : glVersion);
+  GlCapabilities.prototype.copy_c2nipr$ = function (uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
+    return new GlCapabilities(uint32Indices === void 0 ? this.uint32Indices : uint32Indices, shaderIntAttribs === void 0 ? this.shaderIntAttribs : shaderIntAttribs, depthTextures === void 0 ? this.depthTextures : depthTextures, depthComponentIntFormat === void 0 ? this.depthComponentIntFormat : depthComponentIntFormat, depthFilterMethod === void 0 ? this.depthFilterMethod : depthFilterMethod, anisotropicTexFilterInfo === void 0 ? this.anisotropicTexFilterInfo : anisotropicTexFilterInfo, glslDialect === void 0 ? this.glslDialect : glslDialect, glVersion === void 0 ? this.glVersion : glVersion);
   };
   GlCapabilities.prototype.toString = function () {
-    return 'GlCapabilities(uint32Indices=' + Kotlin.toString(this.uint32Indices) + (', shaderIntAttribs=' + Kotlin.toString(this.shaderIntAttribs)) + (', depthTextures=' + Kotlin.toString(this.depthTextures)) + (', depthComponentIntFormat=' + Kotlin.toString(this.depthComponentIntFormat)) + (', depthFilterMethod=' + Kotlin.toString(this.depthFilterMethod)) + (', framebufferWithoutColor=' + Kotlin.toString(this.framebufferWithoutColor)) + (', anisotropicTexFilterInfo=' + Kotlin.toString(this.anisotropicTexFilterInfo)) + (', glslDialect=' + Kotlin.toString(this.glslDialect)) + (', glVersion=' + Kotlin.toString(this.glVersion)) + ')';
+    return 'GlCapabilities(uint32Indices=' + Kotlin.toString(this.uint32Indices) + (', shaderIntAttribs=' + Kotlin.toString(this.shaderIntAttribs)) + (', depthTextures=' + Kotlin.toString(this.depthTextures)) + (', depthComponentIntFormat=' + Kotlin.toString(this.depthComponentIntFormat)) + (', depthFilterMethod=' + Kotlin.toString(this.depthFilterMethod)) + (', anisotropicTexFilterInfo=' + Kotlin.toString(this.anisotropicTexFilterInfo)) + (', glslDialect=' + Kotlin.toString(this.glslDialect)) + (', glVersion=' + Kotlin.toString(this.glVersion)) + ')';
   };
   GlCapabilities.prototype.hashCode = function () {
     var result = 0;
@@ -2843,14 +2869,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     result = result * 31 + Kotlin.hashCode(this.depthTextures) | 0;
     result = result * 31 + Kotlin.hashCode(this.depthComponentIntFormat) | 0;
     result = result * 31 + Kotlin.hashCode(this.depthFilterMethod) | 0;
-    result = result * 31 + Kotlin.hashCode(this.framebufferWithoutColor) | 0;
     result = result * 31 + Kotlin.hashCode(this.anisotropicTexFilterInfo) | 0;
     result = result * 31 + Kotlin.hashCode(this.glslDialect) | 0;
     result = result * 31 + Kotlin.hashCode(this.glVersion) | 0;
     return result;
   };
   GlCapabilities.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uint32Indices, other.uint32Indices) && Kotlin.equals(this.shaderIntAttribs, other.shaderIntAttribs) && Kotlin.equals(this.depthTextures, other.depthTextures) && Kotlin.equals(this.depthComponentIntFormat, other.depthComponentIntFormat) && Kotlin.equals(this.depthFilterMethod, other.depthFilterMethod) && Kotlin.equals(this.framebufferWithoutColor, other.framebufferWithoutColor) && Kotlin.equals(this.anisotropicTexFilterInfo, other.anisotropicTexFilterInfo) && Kotlin.equals(this.glslDialect, other.glslDialect) && Kotlin.equals(this.glVersion, other.glVersion)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uint32Indices, other.uint32Indices) && Kotlin.equals(this.shaderIntAttribs, other.shaderIntAttribs) && Kotlin.equals(this.depthTextures, other.depthTextures) && Kotlin.equals(this.depthComponentIntFormat, other.depthComponentIntFormat) && Kotlin.equals(this.depthFilterMethod, other.depthFilterMethod) && Kotlin.equals(this.anisotropicTexFilterInfo, other.anisotropicTexFilterInfo) && Kotlin.equals(this.glslDialect, other.glslDialect) && Kotlin.equals(this.glVersion, other.glVersion)))));
   };
   function GlVersion(glDialect, versionMajor, versionMinor) {
     this.glDialect = glDialect;
@@ -11194,7 +11219,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var helper = this.blurHelper;
     if (helper != null) {
       helper.isInUse_8be2vx$ = true;
-      this.uBlurTex_0.value = helper.getOutputTexture();
+      this.uBlurTex_0.value = helper.outputTexture;
       this.uTexPos_0.value.set_dleff0$(helper.capturedScrX, helper.capturedScrY);
       this.uTexSz_0.value.set_dleff0$(helper.capturedScrW, helper.capturedScrH);
     }
@@ -11284,6 +11309,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
   }
   BlurredBackgroundHelper$BlurMethod.valueOf_61zpoe$ = BlurredBackgroundHelper$BlurMethod$valueOf;
+  Object.defineProperty(BlurredBackgroundHelper.prototype, 'outputTexture', {
+    get: function () {
+      return this.blurFb2_0.colorAttachment;
+    }
+  });
   Object.defineProperty(BlurredBackgroundHelper.prototype, 'capturedScrX', {
     get: function () {
       return this.copyTexData_0.x;
@@ -11304,10 +11334,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.copyTexData_0.height;
     }
   });
-  BlurredBackgroundHelper.prototype.getOutputTexture = function () {
-    var tmp$;
-    return (tmp$ = this.blurFb2_0) != null ? tmp$.colorAttachment : null;
-  };
   BlurredBackgroundHelper.prototype.updateDistortionTexture_vcyfmv$ = function (node, ctx, bounds) {
     if (bounds === void 0)
       bounds = node.bounds;
@@ -11452,13 +11478,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.height = value;
   };
   BlurredBackgroundHelper$BlurredBgTextureData.prototype.onLoad_4yp9vu$ = function (texture, ctx) {
-    var tmp$;
-    tmp$ = texture.res;
-    if (tmp$ == null) {
-      throw new KoolException("Texture wasn't created");
-    }
-    var res = tmp$;
-    glCopyTexImage2D(res.target, 0, GL_RGBA, this.x, this.y, this.width, this.height, 0);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this.x, this.y, this.width, this.height, 0);
   };
   BlurredBackgroundHelper$BlurredBgTextureData.$metadata$ = {
     kind: Kind_CLASS,
@@ -11538,12 +11558,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     GlslGenerator$Companion_getInstance();
     this.injectors = ArrayList_init();
     this.customUniforms = ArrayList_init();
-    this.vsIn_5467de$_0 = glCapabilities.glslDialect.vsIn;
-    this.vsOut_gj894f$_0 = glCapabilities.glslDialect.vsOut;
-    this.fsIn_4vdhvm$_0 = glCapabilities.glslDialect.fsIn;
-    this.fsOut_8yiatb$_0 = glCapabilities.glslDialect.fragColorHead;
-    this.fsOutBody_rbmxbx$_0 = glCapabilities.glslDialect.fragColorBody;
-    this.texSampler_1a4zdf$_0 = glCapabilities.glslDialect.texSampler;
+    this.vsIn_5467de$_0 = '';
+    this.vsOut_gj894f$_0 = '';
+    this.fsIn_4vdhvm$_0 = '';
+    this.fsOut_8yiatb$_0 = '';
+    this.fsOutBody_rbmxbx$_0 = '';
+    this.texSampler_1a4zdf$_0 = '';
   }
   function GlslGenerator$Companion() {
     GlslGenerator$Companion_instance = this;
@@ -11626,6 +11646,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     interfaces: []
   };
   GlslGenerator.prototype.generate_md635r$ = function (shaderProps, hints) {
+    this.vsIn_5467de$_0 = glCapabilities.glslDialect.vsIn;
+    this.vsOut_gj894f$_0 = glCapabilities.glslDialect.vsOut;
+    this.fsIn_4vdhvm$_0 = glCapabilities.glslDialect.fsIn;
+    this.fsOut_8yiatb$_0 = glCapabilities.glslDialect.fragColorHead;
+    this.fsOutBody_rbmxbx$_0 = glCapabilities.glslDialect.fragColorBody;
+    this.texSampler_1a4zdf$_0 = glCapabilities.glslDialect.texSampler;
     return Shader$Shader$Source_init(this.generateVertShader_uwpm6f$_0(shaderProps), this.generateFragShader_4yhy3q$_0(shaderProps));
   };
   GlslGenerator.prototype.generateVertShader_uwpm6f$_0 = function (shaderProps) {
@@ -14224,10 +14250,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda$lambda_0(closure$ctx) {
+  function debugOverlay$lambda$lambda$lambda_0(closure$width, closure$ctx) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(-37.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(37.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(37.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$CENTER_getInstance(), Alignment$CENTER_getInstance());
       $receiver.text = '';
@@ -14237,13 +14263,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda$lambda_1(closure$yOri) {
+  function debugOverlay$lambda$lambda$lambda_1(closure$yOri, closure$width) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(18.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
-      $receiver.text = 'GL Version: ' + glCapabilities.glVersion;
+      $receiver.text = glCapabilities.glVersion.toString();
       return Unit;
     };
   }
@@ -14253,10 +14279,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda$lambda_2(closure$yOri) {
+  function debugOverlay$lambda$lambda$lambda_2(closure$yOri, closure$width) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(18.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       $receiver.onRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_0($receiver));
@@ -14273,10 +14299,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda$lambda_3(closure$yOri) {
+  function debugOverlay$lambda$lambda$lambda_3(closure$yOri, closure$width) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(18.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var lastWndW = {v: -1};
@@ -14307,10 +14333,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda$lambda_4(closure$yOri) {
+  function debugOverlay$lambda$lambda$lambda_4(closure$yOri, closure$width) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(18.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       $receiver.text = 'Up: 00:00.00';
@@ -14336,10 +14362,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda$lambda_5(closure$yOri) {
+  function debugOverlay$lambda$lambda$lambda_5(closure$yOri, closure$width) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(18.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
@@ -14365,10 +14391,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda$lambda_6(closure$yOri) {
+  function debugOverlay$lambda$lambda$lambda_6(closure$yOri, closure$width) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(18.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
@@ -14387,10 +14413,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda$lambda_7(closure$yOri) {
+  function debugOverlay$lambda$lambda$lambda_7(closure$yOri, closure$width) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(18.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
@@ -14409,34 +14435,35 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         tmp$ = 150.0;
       }
       var height = tmp$;
+      var width = 130.0;
       if (closure$alignBottom) {
-        $receiver.layoutSpec.setOrigin_4ujscr$(dps(-140.0, true), dps(0.0, true), zero());
+        $receiver.layoutSpec.setOrigin_4ujscr$(dps(-width, true), dps(0.0, true), zero());
       }
        else {
-        $receiver.layoutSpec.setOrigin_4ujscr$(dps(-120.0, true), dps(-150.0, true), zero());
+        $receiver.layoutSpec.setOrigin_4ujscr$(dps(-width, true), dps(-150.0, true), zero());
       }
-      $receiver.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(height, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(width, true), dps(height, true), zero());
       var $receiver_0 = new DeltaTGraph(this$);
       $receiver_0.layoutSpec.setOrigin_4ujscr$(zero(), dps(-40.0, true), zero());
-      $receiver_0.layoutSpec.setSize_4ujscr$(dps(140.0, true), dps(40.0, true), zero());
+      $receiver_0.layoutSpec.setSize_4ujscr$(dps(width, true), dps(40.0, true), zero());
       $receiver.unaryPlus_uv0sim$($receiver_0);
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblFps', debugOverlay$lambda$lambda$lambda_0(closure$ctx)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblFps', debugOverlay$lambda$lambda$lambda_0(width, closure$ctx)));
       var yOri = {v: -60.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblVersion', debugOverlay$lambda$lambda$lambda_1(yOri)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblVersion', debugOverlay$lambda$lambda$lambda_1(yOri, width)));
       if (hasMemInfo) {
         yOri.v -= 18.0;
-        $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblMemInfo', debugOverlay$lambda$lambda$lambda_2(yOri)));
+        $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblMemInfo', debugOverlay$lambda$lambda$lambda_2(yOri, width)));
       }
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblVpSize', debugOverlay$lambda$lambda$lambda_3(yOri)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblVpSize', debugOverlay$lambda$lambda$lambda_3(yOri, width)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblUpTime', debugOverlay$lambda$lambda$lambda_4(yOri)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblUpTime', debugOverlay$lambda$lambda$lambda_4(yOri, width)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumTextures', debugOverlay$lambda$lambda$lambda_5(yOri)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumTextures', debugOverlay$lambda$lambda$lambda_5(yOri, width)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumBuffers', debugOverlay$lambda$lambda$lambda_6(yOri)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumBuffers', debugOverlay$lambda$lambda$lambda_6(yOri, width)));
       yOri.v -= 18.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumShaders', debugOverlay$lambda$lambda$lambda_7(yOri)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblNumShaders', debugOverlay$lambda$lambda$lambda_7(yOri, width)));
       return Unit;
     };
   }
@@ -17936,6 +17963,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$gl.glBufferData_wta2e6$ = glBufferData_0;
   package$gl.glBufferData_57ow2w$ = glBufferData_1;
   package$gl.glBufferData_d9f8rk$ = glBufferData_2;
+  package$gl.glCheckFramebufferStatus_za3lpa$ = glCheckFramebufferStatus;
   package$gl.glClear_za3lpa$ = glClear;
   package$gl.glClearColor_7b5o5w$ = glClearColor;
   package$gl.glCompileShader_4nv1hv$ = glCompileShader;

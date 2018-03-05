@@ -140,7 +140,6 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
                 depthTextures = true,
                 depthComponentIntFormat = GL_DEPTH_COMPONENT,
                 depthFilterMethod = GL_LINEAR,
-                framebufferWithoutColor = true,
                 glslDialect = GlslDialect.GLSL_DIALECT_330,
                 glVersion = GlVersion("OpenGL", versionMajor, versionMinor),
                 anisotropicTexFilterInfo = anisotropicTexFilterInfo)

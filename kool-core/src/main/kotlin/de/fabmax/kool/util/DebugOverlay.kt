@@ -31,22 +31,23 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
         +container("dbgPanel") {
             val hasMemInfo = !getMemoryInfo().isEmpty()
             val height = if (hasMemInfo) { 168f } else { 150f }
+            val width = 130f
 
             if (alignBottom) {
-                layoutSpec.setOrigin(dps(-140f, true), dps(0f, true), zero())
+                layoutSpec.setOrigin(dps(-width, true), dps(0f, true), zero())
             } else {
-                layoutSpec.setOrigin(dps(-120f, true), dps(-150f, true), zero())
+                layoutSpec.setOrigin(dps(-width, true), dps(-150f, true), zero())
             }
-            layoutSpec.setSize(dps(140f, true), dps(height, true), zero())
+            layoutSpec.setSize(dps(width, true), dps(height, true), zero())
 
             +DeltaTGraph(this@uiScene).apply {
                 layoutSpec.setOrigin(zero(), dps(-40f, true), zero())
-                layoutSpec.setSize(dps(140f, true), dps(40f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(40f, true), zero())
             }
 
             +label("lblFps") {
                 layoutSpec.setOrigin(zero(), dps(-37f, true), zero())
-                layoutSpec.setSize(dps(140f, true), dps(37f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(37f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                 text = ""
@@ -61,17 +62,17 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
             var yOri = -60f
             +label("lblVersion") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                text = "GL Version: ${glCapabilities.glVersion}"
+                text = glCapabilities.glVersion.toString()
             }
 
             if (hasMemInfo) {
                 yOri -= 18f
                 +label("lblMemInfo") {
                     layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                    layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
+                    layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
                     padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -84,7 +85,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
             yOri -= 18f
             +label("lblVpSize") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -102,7 +103,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
             yOri -= 18f
             +label("lblUpTime") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                 text = "Up: 00:00.00"
@@ -134,7 +135,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
             yOri -= 18f
             +label("lblNumTextures") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -157,7 +158,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
             yOri -= 18f
             +label("lblNumBuffers") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -180,7 +181,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
             yOri -= 18f
             +label("lblNumShaders") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(140f, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
