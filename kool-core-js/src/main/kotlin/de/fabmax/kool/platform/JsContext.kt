@@ -45,7 +45,6 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
         var shaderIntAttribs = false
         var depthComponentIntFormat = GL_DEPTH_COMPONENT
         var depthFilterMethod = GL_NEAREST
-        var framebufferWithoutColor = false
         var anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED
         var glslDialect = GlslDialect.GLSL_DIALECT_100
         var glVersion = GlVersion("WebGL", 1, 0)
@@ -57,7 +56,6 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
             depthTextures = true
             shaderIntAttribs = true
             depthComponentIntFormat = GL_DEPTH_COMPONENT24
-            framebufferWithoutColor = true
             glslDialect = GlslDialect.GLSL_DIALECT_300_ES
             glVersion = GlVersion("WebGL", 2, 0)
 
@@ -89,7 +87,6 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
                 depthTextures,
                 depthComponentIntFormat,
                 depthFilterMethod,
-                framebufferWithoutColor,
                 anisotropicTexFilterInfo,
                 glslDialect,
                 glVersion)

@@ -71,7 +71,7 @@ class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<ByteBuffer, By
  * ShortBuffer buffer implementation
  */
 class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<ShortBuffer, Short>(capacity, {
-    ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asShortBuffer()
+    ByteBuffer.allocateDirect(capacity * 2).order(ByteOrder.nativeOrder()).asShortBuffer()
 }) {
     override fun put(data: ShortArray, offset: Int, len: Int): Uint16Buffer {
         buffer.put(data, offset, len)
