@@ -49,14 +49,14 @@ class Font(val fontProps: FontProps) :
         Texture(defaultProps(fontProps.toString()), { getCharMap(fontProps).textureData }) {
 
     companion object {
-        val PLAIN = 0
-        val BOLD = 1
-        val ITALIC = 2
+        const val PLAIN = 0
+        const val BOLD = 1
+        const val ITALIC = 2
 
         val DEFAULT_FONT: Font
         val STD_CHARS: String
 
-        val SYSTEM_FONT = "-apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+        const val SYSTEM_FONT = "-apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
 
         private val charMaps: MutableMap<FontProps, CharMap> = mutableMapOf()
 

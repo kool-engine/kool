@@ -6,6 +6,7 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import kotlinx.coroutines.experimental.launch
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import java.awt.Desktop
@@ -31,21 +32,22 @@ actual fun currentTimeMillis(): Long = System.currentTimeMillis()
 
 actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
     // try to load asset from resources
-    //for (url in ClassLoader.getSystemResources())
-    var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
-    if (inStream == null) {
-        // if asset wasn't found in resources try to load it from file system
-        inStream = FileInputStream(assetPath)
-    }
-
-    inStream.use {
-        val data = ByteArrayOutputStream()
-        val buf = ByteArray(1024 * 1024)
-        while (it.available() > 0) {
-            val len = it.read(buf)
-            data.write(buf, 0, len)
+    launch {
+        var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
+        if (inStream == null) {
+            // if asset wasn't found in resources try to load it from file system
+            inStream = FileInputStream(assetPath)
         }
-        onLoad(data.toByteArray())
+
+        inStream.use {
+            val data = ByteArrayOutputStream()
+            val buf = ByteArray(1024 * 1024)
+            while (it.available() > 0) {
+                val len = it.read(buf)
+                data.write(buf, 0, len)
+            }
+            onLoad(data.toByteArray())
+        }
     }
 }
 

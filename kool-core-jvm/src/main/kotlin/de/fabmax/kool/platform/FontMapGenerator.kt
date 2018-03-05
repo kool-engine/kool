@@ -54,8 +54,10 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
             val f = fam.trim().replace("\"", "")
             if (f == "sans-serif") {
                 family = java.awt.Font.SANS_SERIF
+                break
             } else if (f == "monospaced") {
                 family = java.awt.Font.MONOSPACED
+                break
             } else if (f in availableFamilies) {
                 family = f
                 break
@@ -115,7 +117,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 
             metrics.uvMin.set((x + padding).toFloat(), (y - hab).toFloat())
             metrics.uvMax.set((x + padding + widthPx), (y - hab).toFloat() + heightPx)
-            map.put(c, metrics)
+            map[c] = metrics
 
             g.drawString("$c", x + padding, y)
             x += paddedWidth
