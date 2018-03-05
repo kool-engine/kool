@@ -31,6 +31,8 @@ expect fun glBufferData(target: Int, data: Uint32Buffer, usage: Int)
 
 expect fun glBufferData(target: Int, data: Float32Buffer, usage: Int)
 
+expect fun glCheckFramebufferStatus(target: Int): Int
+
 expect fun glClear(mask: Int)
 
 expect fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float)

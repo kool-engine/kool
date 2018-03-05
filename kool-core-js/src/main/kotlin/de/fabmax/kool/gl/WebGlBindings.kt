@@ -41,6 +41,9 @@ actual fun glBufferData(target: Int, data: Uint32Buffer, usage: Int) =
 actual fun glBufferData(target: Int, data: Float32Buffer, usage: Int) =
         JsImpl.gl.bufferData(target, (data as Float32BufferImpl).buffer, usage)
 
+actual fun glCheckFramebufferStatus(target: Int) =
+        JsImpl.gl.checkFramebufferStatus(target)
+
 actual fun glClear(mask: Int) = JsImpl.gl.clear(mask)
 
 actual fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float) =

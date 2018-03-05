@@ -1,6 +1,7 @@
 package de.fabmax.kool
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
@@ -67,6 +68,8 @@ abstract class KoolActivity : Activity() {
     }
 
     private inner class AndroidPlatformImpl : PlatformImpl {
+        private val memInfo = ActivityManager.MemoryInfo()
+
         override fun createContext(props: RenderContext.InitProps): RenderContext {
             return AndroidRenderContext(this@KoolActivity)
         }
@@ -102,8 +105,10 @@ abstract class KoolActivity : Activity() {
         }
 
         override fun getMemoryInfo(): String {
-            // todo
-            return ""
+            val rt = Runtime.getRuntime()
+            val freeMem = rt.freeMemory()
+            val totalMem = rt.totalMemory()
+            return "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB"
         }
     }
 }

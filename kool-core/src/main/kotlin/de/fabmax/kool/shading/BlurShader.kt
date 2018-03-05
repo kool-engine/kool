@@ -58,7 +58,7 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
         val helper = blurHelper
         if (helper != null) {
             helper.isInUse = true
-            uBlurTex.value = helper.getOutputTexture()
+            uBlurTex.value = helper.outputTexture
             uTexPos.value.set(helper.capturedScrX.toFloat(), helper.capturedScrY.toFloat())
             uTexSz.value.set(helper.capturedScrW.toFloat(), helper.capturedScrH.toFloat())
         }
@@ -91,6 +91,8 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
     private var blurFb2 = Framebuffer(texSize, texSize).withColor()
     private var blurX: BlurQuadShader? = null
     private var blurY: BlurQuadShader? = null
+    val outputTexture: Texture?
+        get() = blurFb2.colorAttachment
 
     var isForceUpdateTex = false
     internal var isInUse = true
@@ -131,8 +133,6 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         }
     }
 
-    fun getOutputTexture(): Texture? = blurFb2?.colorAttachment
-
     fun updateDistortionTexture(node: Node, ctx: RenderContext, bounds: BoundingBox = node.bounds) {
         // Only update the distortion texture if it is really used. This saves considerable performance if it is used
         // as background of a hidden UI.
@@ -161,6 +161,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
 
         var sizeX = max(maxScrX - minScrX, 16)
         var sizeY = max(maxScrY - minScrY, 16)
+
         if (maxScrX > 0 && minScrX < ctx.windowWidth &&
                 maxScrY > 0 && minScrY < ctx.windowHeight &&
                 texBounds.min.z < 1 && texBounds.max.z > 0) {
@@ -178,6 +179,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
                 }
             }
 
+            // set isLoaded to false, to force a call of onLoad() which copies the current framebuffer content
             copyTex.res?.isLoaded = false
             copyTexData.x = minScrX
             copyTexData.y = minScrY
@@ -270,8 +272,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         }
 
         override fun onLoad(texture: Texture, ctx: RenderContext) {
-            val res = texture.res ?: throw KoolException("Texture wasn't created")
-            glCopyTexImage2D(res.target, 0, GL_RGBA, x, y, width, height, 0)
+            glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, width, height, 0)
         }
     }
 

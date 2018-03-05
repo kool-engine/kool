@@ -24,6 +24,7 @@ actual fun glBufferData(target: Int, data: Uint8Buffer, usage: Int) = glImpl.glB
 actual fun glBufferData(target: Int, data: Uint16Buffer, usage: Int) = glImpl.glBufferData(target, data, usage)
 actual fun glBufferData(target: Int, data: Uint32Buffer, usage: Int) = glImpl.glBufferData(target, data, usage)
 actual fun glBufferData(target: Int, data: Float32Buffer, usage: Int) = glImpl.glBufferData(target, data, usage)
+actual fun glCheckFramebufferStatus(target: Int): Int = glImpl.glCheckFramebufferStatus(target)
 actual fun glClear(mask: Int) = glImpl.glClear(mask)
 actual fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float) = glImpl.glClearColor(red, green, blue, alpha)
 actual fun glCompileShader(shader: ShaderResource) = glImpl.glCompileShader(shader)
@@ -96,6 +97,7 @@ interface GlImpl {
     fun glBufferData(target: Int, data: Uint16Buffer, usage: Int)
     fun glBufferData(target: Int, data: Uint32Buffer, usage: Int)
     fun glBufferData(target: Int, data: Float32Buffer, usage: Int)
+    fun glCheckFramebufferStatus(target: Int): Int
     fun glClear(mask: Int)
     fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float)
     fun glCompileShader(shader: ShaderResource)
@@ -168,6 +170,7 @@ private class NoGlImpl : GlImpl {
     override fun glBufferData(target: Int, data: Uint16Buffer, usage: Int) { throw KoolException("No GL implementation set") }
     override fun glBufferData(target: Int, data: Uint32Buffer, usage: Int) { throw KoolException("No GL implementation set") }
     override fun glBufferData(target: Int, data: Float32Buffer, usage: Int) { throw KoolException("No GL implementation set") }
+    override fun glCheckFramebufferStatus(target: Int): Int { throw KoolException("No GL implementation set") }
     override fun glClear(mask: Int) { throw KoolException("No GL implementation set") }
     override fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float) { throw KoolException("No GL implementation set") }
     override fun glCompileShader(shader: ShaderResource) { throw KoolException("No GL implementation set") }

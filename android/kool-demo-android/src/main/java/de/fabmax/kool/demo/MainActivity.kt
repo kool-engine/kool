@@ -6,6 +6,6 @@ import de.fabmax.kool.KoolActivity
 class MainActivity : KoolActivity() {
     override fun onKoolContextCreated(ctx: AndroidRenderContext) {
         super.onKoolContextCreated(ctx)
-        Demo(ctx)
+        Demo(ctx, "modelDemo")
     }
 }

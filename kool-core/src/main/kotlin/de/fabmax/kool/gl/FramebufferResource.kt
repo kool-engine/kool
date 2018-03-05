@@ -81,16 +81,6 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
         if (!isFbComplete) {
             isFbComplete = true
 
-            if (colorAttachment == null && depthAttachment != null && !glCapabilities.framebufferWithoutColor) {
-                // fixme: Improve depth rendering performance on OpenGL ES 2.0
-                // Currently depth renderer expects that there is no color attachment at the depth framebuffer
-                // this way regular shaders can be used during depth rendering without big performance impact:
-                // without color attachment all expensive fragment shader operations are skipped.
-                // However for OpenGL ES 2.0 this doesn't work and we have to add a color attachment, otherwise
-                // the framebuffer is incomplete. This makes depth rendering VERY expensive.
-                colorAttachment = FbColorTexData.colorTex(width, height, fbId)
-            }
-
             val color = colorAttachment
             if (color != null) {
                 ctx.textureMgr.bindTexture(color, ctx)
@@ -103,6 +93,28 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
             if (depth != null) {
                 ctx.textureMgr.bindTexture(depth, ctx)
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.res!!, 0)
+            }
+
+            var fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER)
+            if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {
+                // fixme: Improve depth rendering performance on OpenGL ES 2.0
+                // Currently depth renderer expects that there is no color attachment at the depth framebuffer
+                // this way regular shaders can be used during depth rendering without big performance impact:
+                // without color attachment all expensive fragment shader operations are skipped.
+                // However not every implementation supports having only a depth attachment, so we
+                // need to specify a color attachment which makes depth rendering very expensive...
+                if (colorAttachment == null && depthAttachment != null) {
+                    colorAttachment = FbColorTexData.colorTex(width, height, fbId)
+                    ctx.textureMgr.bindTexture(colorAttachment!!, ctx)
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorAttachment!!.res!!, 0)
+                    glDrawBuffer(GL_FRONT)
+                    glReadBuffer(GL_FRONT)
+                    fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER)
+                }
+
+                if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {
+                    throw KoolException("Framebuffer incomplete, status: $fbStatus")
+                }
             }
         }
 

@@ -39,6 +39,9 @@ actual fun glBufferData(target: Int, data: Uint32Buffer, usage: Int) =
 actual fun glBufferData(target: Int, data: Float32Buffer, usage: Int) =
         GL15.glBufferData(target, (data as Float32BufferImpl).buffer, usage)
 
+actual fun glCheckFramebufferStatus(target: Int) =
+        GL30.glCheckFramebufferStatus(target)
+
 actual fun glClear(mask: Int) = GL11.glClear(mask)
 
 actual fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float) =

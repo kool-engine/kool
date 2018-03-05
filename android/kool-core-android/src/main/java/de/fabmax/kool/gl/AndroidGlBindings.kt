@@ -1,7 +1,6 @@
 package de.fabmax.kool.gl
 
 import android.opengl.GLES30
-import android.util.Log
 import de.fabmax.kool.util.*
 
 /**
@@ -43,6 +42,9 @@ class AndroidGlBindings : GlImpl {
 
     override fun glBufferData(target: Int, data: Float32Buffer, usage: Int) =
             GLES30.glBufferData(target, data.remaining * 4, (data as Float32BufferImpl).buffer, usage)
+
+    override fun glCheckFramebufferStatus(target: Int) =
+            GLES30.glCheckFramebufferStatus(target)
 
     override fun glClear(mask: Int) =
             GLES30.glClear(mask)

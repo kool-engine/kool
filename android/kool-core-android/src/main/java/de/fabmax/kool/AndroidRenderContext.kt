@@ -25,6 +25,12 @@ class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GL
 
     private var prevRenderTime = System.nanoTime()
 
+    init {
+        val dispMetrics = koolActivity.resources.displayMetrics
+        val scale = 0.66f
+        screenDpi = (dispMetrics.xdpi + dispMetrics.ydpi) / 2 * scale
+    }
+
     override fun run() {
         // nothing to do here
     }
@@ -70,7 +76,6 @@ class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GL
                     depthTextures = true,
                     depthComponentIntFormat = GL_DEPTH_COMPONENT24,
                     depthFilterMethod = GL_NEAREST,
-                    framebufferWithoutColor = true,
                     glslDialect = GlslDialect.GLSL_DIALECT_300_ES,
                     glVersion = GlVersion("OpenGL ES", 3, 0),
                     anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED)
@@ -82,7 +87,6 @@ class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GL
                     depthTextures = false,
                     depthComponentIntFormat = GL_DEPTH_COMPONENT,
                     depthFilterMethod = GL_NEAREST,
-                    framebufferWithoutColor = true,
                     glslDialect = GlslDialect.GLSL_DIALECT_100,
                     glVersion = GlVersion("OpenGL ES", 2, 0),
                     anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED)
