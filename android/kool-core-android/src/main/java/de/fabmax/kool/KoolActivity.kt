@@ -5,6 +5,8 @@ import android.app.ActivityManager
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
+import android.view.View
 import de.fabmax.kool.gl.AndroidGlBindings
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
@@ -15,7 +17,7 @@ import java.io.ByteArrayOutputStream
 /**
  * Base Activity for using Kool on android.
  */
-abstract class KoolActivity : Activity() {
+abstract class KoolActivity : Activity(), View.OnTouchListener {
 
     private var glSurfaceView: GLSurfaceView? = null
     private val fontMapGenerator = FontMapGenerator(this, 1024, 1024)
@@ -33,6 +35,7 @@ abstract class KoolActivity : Activity() {
     fun createContext(glSurfaceView: GLSurfaceView): AndroidRenderContext {
         this.glSurfaceView = glSurfaceView
 
+        glSurfaceView.setOnTouchListener(this)
 
         val ctx = createContext(WrapperInitProps(AndroidPlatformImpl(), AndroidGlBindings())) as AndroidRenderContext
         glSurfaceView.setEGLContextFactory(ctx)
@@ -40,6 +43,38 @@ abstract class KoolActivity : Activity() {
         glSurfaceView.preserveEGLContextOnPause = true
 
         return ctx
+    }
+
+    override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
+        val inputMgr = ctx?.inputMgr ?: return false
+        val action = motionEvent.actionMasked
+
+        for (i in 0 until motionEvent.pointerCount) {
+            val pointerId = motionEvent.getPointerId(i)
+            val x = motionEvent.getX(i)
+            val y = motionEvent.getY(i)
+
+            val ptrAction = when {
+                action == MotionEvent.ACTION_POINTER_DOWN && i == motionEvent.actionIndex -> MotionEvent.ACTION_DOWN
+                action == MotionEvent.ACTION_POINTER_UP && i == motionEvent.actionIndex -> MotionEvent.ACTION_UP
+                else -> action
+            }
+
+            when (ptrAction) {
+                MotionEvent.ACTION_DOWN -> inputMgr.handleTouchStart(pointerId, x, y)
+                MotionEvent.ACTION_UP -> inputMgr.handleTouchEnd(pointerId)
+                MotionEvent.ACTION_CANCEL -> inputMgr.handleTouchCancel(pointerId)
+                else -> inputMgr.handleTouchMove(pointerId, x, y)
+            }
+
+//            if (ptrAction == MotionEvent.ACTION_DOWN) {
+//                Log.d("KoolActivity", "pointer down: $pointerId, pos = ($x, $y)")
+//            }
+//            if (ptrAction == MotionEvent.ACTION_UP) {
+//                Log.d("KoolActivity", "pointer up: $pointerId, pos = ($x, $y)")
+//            }
+        }
+        return true
     }
 
     open fun onCreateContext() {

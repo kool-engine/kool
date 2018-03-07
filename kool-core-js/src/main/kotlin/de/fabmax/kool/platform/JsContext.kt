@@ -6,11 +6,9 @@ import de.fabmax.kool.gl.GL_DEPTH_COMPONENT24
 import de.fabmax.kool.gl.GL_NEAREST
 import de.fabmax.kool.gl.WebGL2RenderingContext
 import org.khronos.webgl.WebGLRenderingContext
+import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.events.Event
-import org.w3c.dom.events.KeyboardEvent
-import org.w3c.dom.events.MouseEvent
-import org.w3c.dom.events.WheelEvent
+import org.w3c.dom.events.*
 import kotlin.browser.document
 import kotlin.browser.window
 
@@ -91,47 +89,76 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
                 glslDialect,
                 glVersion)
 
-//        for (ext in gl.getSupportedExtensions() ?: arrayOf("none")) {
-//            println(ext)
-//        }
-
         screenDpi = JsImpl.dpi
         windowWidth = canvas.clientWidth
         windowHeight = canvas.clientHeight
 
+        // suppress context menu
+        canvas.oncontextmenu = Event::preventDefault
+
+        // install mouse handlers
         canvas.onmousemove = { ev ->
             ev as MouseEvent
             val bounds = canvas.getBoundingClientRect()
             val x = (ev.clientX - bounds.left).toFloat()
             val y = (ev.clientY - bounds.top).toFloat()
-            inputMgr.updatePointerPos(InputManager.PRIMARY_POINTER, x, y)
+            inputMgr.handleMouseMove(x, y)
         }
         canvas.onmousedown = { ev ->
             ev as MouseEvent
-            inputMgr.updatePointerButtonStates(InputManager.PRIMARY_POINTER, ev.buttons.toInt())
+            inputMgr.handleMouseButtonStates(ev.buttons.toInt())
         }
         canvas.onmouseup = { ev ->
             ev as MouseEvent
-            inputMgr.updatePointerButtonStates(InputManager.PRIMARY_POINTER, ev.buttons.toInt())
+            inputMgr.handleMouseButtonStates(ev.buttons.toInt())
         }
-
-        // suppress context menu
-        canvas.oncontextmenu = Event::preventDefault
-
-        canvas.onmouseenter = { inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, true) }
-        canvas.onmouseleave = { inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, false) }
+        canvas.onmouseleave = { inputMgr.handleMouseExit() }
         canvas.onwheel = { ev ->
             ev as WheelEvent
-            // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse scroll
-            // wheel tick
+            // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse
+            // scroll wheel tick
             var ticks = -ev.deltaY.toFloat() / 3f
             if (ev.deltaMode == 0) {
                 // scroll delta is specified in pixels...
                 ticks /= 30f
             }
-            inputMgr.updatePointerScrollPos(InputManager.PRIMARY_POINTER, ticks)
+            inputMgr.handleMouseScroll(ticks)
             ev.preventDefault()
         }
+
+        // install touch handlers
+        canvas.addEventListener("touchstart", { ev ->
+            ev.preventDefault()
+            val changedTouches = (ev as TouchEvent).changedTouches
+            for (i in 0 until changedTouches.length) {
+                val touch = changedTouches.item(i)
+                inputMgr.handleTouchStart(touch.identifier, touch.elementX, touch.elementY)
+            }
+        }, false)
+        canvas.addEventListener("touchend", { ev ->
+            ev.preventDefault()
+            val changedTouches = (ev as TouchEvent).changedTouches
+            for (i in 0 until changedTouches.length) {
+                val touch = changedTouches.item(i)
+                inputMgr.handleTouchEnd(touch.identifier)
+            }
+        }, false)
+        canvas.addEventListener("touchcancel", { ev ->
+            ev.preventDefault()
+            val changedTouches = (ev as TouchEvent).changedTouches
+            for (i in 0 until changedTouches.length) {
+                val touch = changedTouches.item(i)
+                inputMgr.handleTouchCancel(touch.identifier)
+            }
+        }, false)
+        canvas.addEventListener("touchmove", { ev ->
+            ev.preventDefault()
+            val changedTouches = (ev as TouchEvent).changedTouches
+            for (i in 0 until changedTouches.length) {
+                val touch = changedTouches.item(i)
+                inputMgr.handleTouchMove(touch.identifier, touch.elementX, touch.elementY)
+            }
+        }, false)
 
         document.onkeydown = { ev -> handleKeyDown(ev as KeyboardEvent) }
         document.onkeyup = { ev -> handleKeyUp(ev as KeyboardEvent) }
@@ -274,3 +301,39 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
         )
     }
 }
+
+external class TouchEvent: UIEvent {
+    val altKey: Boolean
+    val changedTouches: TouchList
+    val ctrlKey: Boolean
+    val metaKey: Boolean
+    val shiftKey: Boolean
+    val targetTouches: TouchList
+    val touches: TouchList
+}
+
+external class TouchList {
+    val length: Int
+    fun item(index: Int): Touch
+}
+
+external class Touch {
+    val identifier: Int
+    val screenX: Float
+    val screenY: Float
+    val clientX: Float
+    val clientY: Float
+    val pageX: Float
+    val pageY: Float
+    val target: Element
+    val radiusX: Float
+    val radiusY: Float
+    val rotationAngle: Float
+    val force: Float
+}
+
+val Touch.elementX: Float
+    get() = clientX - ((target as? HTMLCanvasElement)?.clientLeft?.toFloat() ?: 0f)
+
+val Touch.elementY: Float
+    get() = clientY - ((target as? HTMLCanvasElement)?.clientTop?.toFloat() ?: 0f)

@@ -66,7 +66,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         content.ui.setCustom(BlankComponentUi())
 
         val menuButton = toggleButton("menuButton") {
-            layoutSpec.setOrigin(dps(10f, true), dps(-50f, true), zero())
+            layoutSpec.setOrigin(dps(10f, true), dps(-50f, true), dps(4f))
             layoutSpec.setSize(dps(40f, true), dps(40f, true), zero())
         }
 
