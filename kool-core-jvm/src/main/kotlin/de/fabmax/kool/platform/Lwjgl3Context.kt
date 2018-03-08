@@ -59,16 +59,18 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
 
         // install mouse callbacks
         glfwSetMouseButtonCallback(window) { _, btn, act, _ ->
-            inputMgr.updatePointerButtonState(InputManager.PRIMARY_POINTER, btn, act == GLFW_PRESS)
+            inputMgr.handleMouseButtonState(btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(window) { _, x, y ->
-            inputMgr.updatePointerPos(InputManager.PRIMARY_POINTER, x.toFloat(), y.toFloat())
+            inputMgr.handleMouseMove(x.toFloat(), y.toFloat())
         }
         glfwSetCursorEnterCallback(window) { _, entered ->
-            inputMgr.updatePointerValid(InputManager.PRIMARY_POINTER, entered)
+            if (!entered) {
+                inputMgr.handleMouseExit()
+            }
         }
         glfwSetScrollCallback(window) { _, _, yOff ->
-            inputMgr.updatePointerScrollPos(InputManager.PRIMARY_POINTER, yOff.toFloat())
+            inputMgr.handleMouseScroll(yOff.toFloat())
         }
 
         // install keyboard callbacks

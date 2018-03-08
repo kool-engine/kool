@@ -110,8 +110,6 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
                     glDrawBuffer(GL_FRONT)
                     glReadBuffer(GL_FRONT)
                     fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER)
-
-                    println("Creating fallback framebuffer color attachment")
                 }
 
                 if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {

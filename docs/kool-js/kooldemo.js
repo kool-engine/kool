@@ -22,9 +22,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   var ToggleButtonUi = $module$kool.de.fabmax.kool.scene.ui.ToggleButtonUi;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
+  var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
+  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
   var Color = $module$kool.de.fabmax.kool.util.Color;
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
-  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
   var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
@@ -64,9 +65,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
-  var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
   var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
-  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
   var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
   var lineMesh = $module$kool.de.fabmax.kool.util.lineMesh_6a24eg$;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
@@ -107,8 +106,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Oscillator = $module$kool.de.fabmax.kool.audio.Oscillator;
   var MoodFilter = $module$kool.de.fabmax.kool.audio.MoodFilter;
   var Button = $module$kool.de.fabmax.kool.scene.ui.Button;
-  var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
+  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var InterpolatedColor = $module$kool.de.fabmax.kool.util.InterpolatedColor;
+  var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var Scene = $module$kool.de.fabmax.kool.scene.Scene;
   var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var LineMesh = $module$kool.de.fabmax.kool.util.LineMesh;
@@ -201,7 +201,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_0.add_11rb$(element_0);
     var $receiver_1 = ctx.onRender;
     var element_1 = getCallableRef('onRender', function ($receiver, ctx) {
-      return $receiver.onRender_evfofk$(ctx), Unit;
+      return $receiver.onRender_0(ctx), Unit;
     }.bind(null, this));
     $receiver_1.add_11rb$(element_1);
     var $receiver_2 = this.demos_0;
@@ -210,7 +210,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     ((tmp$ = (Kotlin.isType(tmp$_0 = $receiver_2, Map) ? tmp$_0 : throwCCE()).get_11rb$(key)) != null ? tmp$ : this.defaultScene_0).loadScene(this.newScenes_0, ctx);
     ctx.run();
   }
-  Demo.prototype.onRender_evfofk$ = function (ctx) {
+  Demo.prototype.onRender_0 = function (ctx) {
     if (!this.newScenes_0.isEmpty()) {
       var tmp$;
       tmp$ = this.currentScenes_0.iterator();
@@ -382,21 +382,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function MenuButtonUi(tb, menu) {
     ToggleButtonUi.call(this, tb, new BlankComponentUi());
-    this.menu = menu;
-    this.bgColor_0 = MutableColor_init();
+    this.menu_0 = menu;
     this.menuAnimator_0 = new CosAnimator(new InterpolatedFloat(0.0, 1.0));
   }
   function MenuButtonUi$createUi$lambda(this$MenuButtonUi) {
     return function (v) {
-      this$MenuButtonUi.menu.setIdentity();
-      this$MenuButtonUi.menu.translate_y2kzbl$(this$MenuButtonUi.menu.posInParent.x + dp(this$MenuButtonUi.tb, -40.0) * (1.0 - v), this$MenuButtonUi.menu.posInParent.y, this$MenuButtonUi.menu.posInParent.z);
-      this$MenuButtonUi.menu.alpha = v;
+      this$MenuButtonUi.menu_0.setIdentity();
+      this$MenuButtonUi.menu_0.translate_y2kzbl$(this$MenuButtonUi.menu_0.posInParent.x + dp(this$MenuButtonUi.tb, -40.0) * (1.0 - v), this$MenuButtonUi.menu_0.posInParent.y, this$MenuButtonUi.menu_0.posInParent.z);
+      this$MenuButtonUi.menu_0.alpha = v;
       return Unit;
     };
   }
   function MenuButtonUi$createUi$lambda_0(this$MenuButtonUi) {
     return function ($receiver) {
       this$MenuButtonUi.menuAnimator_0.speed = this$MenuButtonUi.tb.isEnabled ? 1.0 : -1.0;
+      return Unit;
+    };
+  }
+  function MenuButtonUi$createUi$lambda_1(this$MenuButtonUi) {
+    return function ($receiver) {
+      $receiver.colorModel = ColorModel.VERTEX_COLOR;
+      $receiver.lightModel = this$MenuButtonUi.tb.root.shaderLightModel;
       return Unit;
     };
   }
@@ -408,6 +414,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.menuAnimator_0.speed = -1.0;
     this.menuAnimator_0.value.onUpdate = MenuButtonUi$createUi$lambda(this);
     this.tb.onStateChange.add_11rb$(MenuButtonUi$createUi$lambda_0(this));
+    this.mesh.shader = basicShader(MenuButtonUi$createUi$lambda_1(this));
   };
   MenuButtonUi.prototype.onRender_evfofk$ = function (ctx) {
     ToggleButtonUi.prototype.onRender_evfofk$.call(this, ctx);
@@ -419,8 +426,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var hh = this.tb.height * 0.18;
     var hx = -hw / 2.0;
     var ph = dp(this.tb, 2.5);
-    this.bgColor_0.set_d7aj7k$(this.tb.root.theme.backgroundColor);
-    this.bgColor_0.a = 0.7;
     this.updateTextColor();
     this.tb.setupBuilder_84rojv$(this.meshBuilder);
     var $receiver = this.meshBuilder;
@@ -2224,7 +2229,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.row = row;
     this.melody = melody;
     this.background_0 = new SequenceButtonUi(this);
-    this.colorAnimator_0 = new CosAnimator(new InterpolatedColor(MutableColor_init_0(Color.Companion.WHITE.withAlpha_mx4ult$(0.2)), MutableColor_init_0(Color.Companion.LIME.withAlpha_mx4ult$(0.6))));
+    this.colorAnimator_0 = new CosAnimator(new InterpolatedColor(MutableColor_init(Color.Companion.WHITE.withAlpha_mx4ult$(0.2)), MutableColor_init(Color.Companion.LIME.withAlpha_mx4ult$(0.6))));
     this.wasHovered_0 = false;
     this.layoutSpec.setOrigin_4ujscr$(dps(this.col * 20.0), dps(this.row * 15.0), zero());
     this.layoutSpec.setSize_4ujscr$(dps(18.0), dps(13.0), zero());
@@ -2301,7 +2306,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function SequenceButtonUi(btn) {
     SimpleComponentUi.call(this, btn);
-    this.bgColor = MutableColor_init();
+    this.bgColor = MutableColor_init_0();
   }
   SequenceButtonUi.prototype.onRender_evfofk$ = function (ctx) {
     var tmp$;

@@ -5,7 +5,12 @@ import de.fabmax.kool.demo.earth.earthScene
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.shading.ColorModel
+import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.CosAnimator
+import de.fabmax.kool.util.InterpolatedFloat
+import de.fabmax.kool.util.debugOverlay
 import kotlin.math.min
 
 /**
@@ -41,7 +46,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         ctx.run()
     }
 
-    fun onRender(ctx: RenderContext) {
+    private fun onRender(ctx: RenderContext) {
         if (!newScenes.isEmpty()) {
             currentScenes.forEach { s ->
                 ctx.scenes -= s
@@ -127,9 +132,8 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
     private class DemoEntry(val label: String, val loadScene: MutableList<Scene>.(RenderContext) -> Unit)
 }
 
-class MenuButtonUi(tb: ToggleButton, val menu: UiContainer) : ToggleButtonUi(tb, BlankComponentUi()) {
+class MenuButtonUi(tb: ToggleButton, private val menu: UiContainer) : ToggleButtonUi(tb, BlankComponentUi()) {
 
-    private val bgColor = MutableColor()
     private val menuAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
 
     override fun createUi(ctx: RenderContext) {
@@ -144,8 +148,13 @@ class MenuButtonUi(tb: ToggleButton, val menu: UiContainer) : ToggleButtonUi(tb,
             menu.translate(menu.posInParent.x + tb.dp(-40f) * (1f - v), menu.posInParent.y, menu.posInParent.z)
             menu.alpha = v
         }
-        tb.onStateChange += { ->
+        tb.onStateChange += {
             menuAnimator.speed = if (tb.isEnabled) 1f else -1f
+        }
+
+        mesh.shader = basicShader {
+            colorModel = ColorModel.VERTEX_COLOR
+            lightModel = tb.root.shaderLightModel
         }
     }
 
@@ -160,8 +169,6 @@ class MenuButtonUi(tb: ToggleButton, val menu: UiContainer) : ToggleButtonUi(tb,
         val hx = -hw / 2f
         val ph = tb.dp(2.5f)
 
-        bgColor.set(tb.root.theme.backgroundColor)
-        bgColor.a = 0.7f
         updateTextColor()
 
         tb.setupBuilder(meshBuilder)

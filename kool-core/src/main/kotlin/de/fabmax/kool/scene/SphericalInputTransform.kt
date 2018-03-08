@@ -208,7 +208,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     }
 
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: RenderContext): Int {
-        if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(ctx)) {
+        if (!dragPtrs.isEmpty() && dragPtrs[0].isInViewport(ctx)) {
             if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
                 if (dragPtrs[0].isLeftButtonDown) {
                     dragMethod = leftDragMethod

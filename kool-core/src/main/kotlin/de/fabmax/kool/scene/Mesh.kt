@@ -161,7 +161,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
             // draw mesh
             meshData.indexBuffer?.bind(ctx)
-            glDrawElements(primitiveType, meshData.numIndices, GL_UNSIGNED_INT, 0)
+            glDrawElements(primitiveType, meshData.numIndices, meshData.indexType, 0)
             boundShader.unbindMesh(ctx)
 
             if (cullMethod != CullMethod.DEFAULT) {
@@ -192,6 +192,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
     private var referenceCount = 0
 
     var usage = GL_STATIC_DRAW
+    var indexType = GL_UNSIGNED_INT
 
     var dataBufferF: BufferResource? = null
     var dataBufferI: BufferResource? = null
@@ -377,8 +378,10 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
                             uint16Buffer.put(vertexList.indices[i].toShort())
                         }
                         indexBuffer?.setData(uint16Buffer, usage, ctx)
+                        indexType = GL_UNSIGNED_SHORT
                     } else {
                         indexBuffer?.setData(vertexList.indices, usage, ctx)
+                        indexType = GL_UNSIGNED_INT
                     }
                     dataBufferF?.setData(vertexList.dataF, usage, ctx)
                     dataBufferI?.setData(vertexList.dataI, usage, ctx)

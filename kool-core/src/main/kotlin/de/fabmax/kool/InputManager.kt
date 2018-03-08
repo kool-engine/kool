@@ -1,5 +1,7 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.util.TouchGestureEvaluator
+
 /**
  * @author fabmax
  */
@@ -15,27 +17,70 @@ class InputManager internal constructor() {
         fun handleDrag(dragPtrs: List<Pointer>, ctx: RenderContext): Int
     }
 
+    private val compatGestureEvaluator = TouchGestureEvaluator()
+    var isEvaluatingCompatGestures = true
+
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
     val keyEvents: MutableList<KeyEvent> = mutableListOf()
 
-    private val tmpPointers = Array(MAX_POINTERS, ::Pointer)
-    val pointers = Array(MAX_POINTERS, ::Pointer)
+    private var lastPtrInput = 0L
+    private val inputPointers = Array(MAX_POINTERS) { BufferedPointerInput() }
+    val pointers = Array(MAX_POINTERS) { Pointer() }
 
     /**
      * The primary pointer. For mouse-input that's the mouse cursor, for touch-input it's the first finger
      * that touched the screen. Keep in mind that the returned [Pointer] might be invalid (i.e. [Pointer.isValid] is
-     * false) if the cursor exited the GL surface or if no finger touches the screen. Invalid pointers will keep
-     * the last state that was set.
+     * false) if the cursor exited the GL surface or if no finger touches the screen.
      */
-    val primaryPointer = pointers[PRIMARY_POINTER]
+    val primaryPointer = pointers[0]
 
-    internal fun onNewFrame() {
-        synchronized(tmpPointers) {
+    fun getActivePointers(result: MutableList<Pointer>) {
+        result.clear()
+        pointers.filter { it.isValid }.forEach { result.add(it) }
+    }
+
+    private fun getFreeInputPointer(): BufferedPointerInput? {
+        return inputPointers.firstOrNull { !it.isValid }
+    }
+
+    private fun findInputPointer(pointerId: Int): BufferedPointerInput? {
+        return inputPointers.firstOrNull { it.isValid && it.id == pointerId }
+    }
+
+    internal fun onNewFrame(ctx: RenderContext) {
+        synchronized(inputPointers) {
             for (i in pointers.indices) {
-                pointers[i].updateFrom(tmpPointers[i])
-                tmpPointers[i].buttonEventMask = 0
+                inputPointers[i].update(pointers[i], lastPtrInput)
             }
         }
+
+        if (isEvaluatingCompatGestures) {
+            compatGestureEvaluator.evaluate(ctx)
+            when (compatGestureEvaluator.currentGesture.type) {
+                TouchGestureEvaluator.PINCH -> {
+                    // set primary pointer deltaScroll for compatibility with mouse input
+                    primaryPointer.deltaScroll = compatGestureEvaluator.currentGesture.dPinchAmount / 20
+                    primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
+                    primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
+                    primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
+                    primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
+                }
+                TouchGestureEvaluator.TWO_FINGER_DRAG -> {
+                    // set primary pointer right button down for compatibility with mouse input
+                    primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
+                    primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
+                    primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
+                    primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
+                    if (primaryPointer.buttonMask == LEFT_BUTTON_MASK) {
+                        primaryPointer.buttonMask = RIGHT_BUTTON_MASK
+                        if (compatGestureEvaluator.currentGesture.numUpdates > 1){
+                            primaryPointer.buttonEventMask = 0
+                        }
+                    }
+                }
+            }
+        }
+
         synchronized(queuedKeyEvents) {
             keyEvents.clear()
             keyEvents.addAll(queuedKeyEvents)
@@ -49,8 +94,6 @@ class InputManager internal constructor() {
         ev.event = event
         ev.modifiers = modifiers
 
-        //println("key event: $keyCode ev=$event mods=$modifiers")
-
         synchronized(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
         }
@@ -61,93 +104,110 @@ class InputManager internal constructor() {
         ev.event = KEY_EV_CHAR_TYPED
         ev.typedChar = typedChar
 
-        //println("char type: $typedChar")
-
         synchronized(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
         }
     }
 
-    /**
-     * Updates the position of the specified pointer (mouse or finger on touch devices). Position is given
-     * in screen coordinates.
-     */
-    fun updatePointerPos(pointer: Int, x: Float, y: Float) {
-        if (pointer in 0..(MAX_POINTERS - 1)) {
-            synchronized(tmpPointers) {
-                val ptr = tmpPointers[pointer]
-                ptr.isValid = true
-                ptr.x = x
-                ptr.y = y
+    //
+    // touch handler functions to be called by platform code
+    //
+
+    fun handleTouchStart(pointerId: Int, x: Float, y: Float) {
+        synchronized(inputPointers) {
+            lastPtrInput = currentTimeMillis()
+            val inPtr = getFreeInputPointer() ?: return
+            inPtr.startPointer(pointerId, x, y)
+            inPtr.buttonMask = 1
+        }
+    }
+
+    fun handleTouchEnd(pointerId: Int) {
+        synchronized(inputPointers) {
+            findInputPointer(pointerId)?.endPointer()
+        }
+    }
+
+    fun handleTouchCancel(pointerId: Int) {
+        synchronized(inputPointers) {
+            findInputPointer(pointerId)?.cancelPointer()
+        }
+    }
+
+    fun handleTouchMove(pointerId: Int, x: Float, y: Float) {
+        synchronized(inputPointers) {
+            lastPtrInput = currentTimeMillis()
+            findInputPointer(pointerId)?.movePointer(x, y)
+        }
+    }
+
+    //
+    // mouse handler functions to be called by platform code
+    //
+
+    fun handleMouseMove(x: Float, y: Float) {
+        synchronized(inputPointers) {
+            lastPtrInput = currentTimeMillis()
+            val mousePtr = findInputPointer(MOUSE_POINTER_ID)
+            if (mousePtr == null) {
+                val startPtr = getFreeInputPointer() ?: return
+                startPtr.startPointer(MOUSE_POINTER_ID, x, y)
+            } else {
+                mousePtr.movePointer(x, y)
             }
         }
     }
 
-    /**
-     * Updates the button state of a single button of the specified pointer.
-     */
-    fun updatePointerButtonState(pointer: Int, button: Int, down: Boolean) {
-        if (pointer in 0..(MAX_POINTERS - 1)) {
-            synchronized(tmpPointers) {
-                val ptr = tmpPointers[pointer]
-                ptr.isValid = true
-                if (down) {
-                    ptr.buttonMask = ptr.buttonMask or (1 shl button)
-                } else {
-                    ptr.buttonMask = ptr.buttonMask and (1 shl button).inv()
-                }
+    fun handleMouseButtonState(button: Int, down: Boolean) {
+        synchronized(inputPointers) {
+            val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
+            if (down) {
+                ptr.buttonMask = ptr.buttonMask or (1 shl button)
+            } else {
+                ptr.buttonMask = ptr.buttonMask and (1 shl button).inv()
             }
+            // todo: on low frame rates, mouse button events can get lost if button is pressed
+            // and released again before a new frame was rendered
         }
     }
 
-    /**
-     * Updates the button state of all buttons of the specified pointer.
-     */
-    fun updatePointerButtonStates(pointer: Int, mask: Int) {
-        if (pointer in 0..(MAX_POINTERS - 1)) {
-            synchronized(tmpPointers) {
-                val ptr = tmpPointers[pointer]
-                ptr.isValid = true
-                ptr.buttonMask = mask
-            }
+    fun handleMouseButtonStates(mask: Int) {
+        synchronized(inputPointers) {
+            val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
+            ptr.buttonMask = mask
+            // todo: on low frame rates, mouse button events can get lost if button is pressed
+            // and released again before a new frame was rendered
         }
     }
 
-    /**
-     * Updates the scroll position of the specified pointer.
-     */
-    fun updatePointerScrollPos(pointer: Int, ticks: Float) {
-        if (pointer in 0..(MAX_POINTERS - 1)) {
-            synchronized(tmpPointers) {
-                val ptr = tmpPointers[pointer]
-                ptr.isValid = true
-                ptr.scrollPos += ticks
-            }
+    fun handleMouseScroll(ticks: Float) {
+        synchronized(inputPointers) {
+            val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
+            ptr.deltaScroll += ticks
         }
     }
 
-    /**
-     * Updates the isValid state of the specified pointer. A pointer gets invalid if the cursor leaves the GL surface.
-     */
-    fun updatePointerValid(pointer: Int, valid: Boolean) {
-        if (pointer in 0..(MAX_POINTERS - 1)) {
-            synchronized(tmpPointers) {
-                tmpPointers[pointer].isValid = valid
-            }
+    fun handleMouseExit() {
+        synchronized(inputPointers) {
+            findInputPointer(MOUSE_POINTER_ID)?.cancelPointer()
         }
     }
 
-    class Pointer(val id: Int) {
+    open class Pointer {
+        var id = 0
+            internal set
+
         var x = 0f
             internal set
         var y = 0f
             internal set
-        var scrollPos = 0f
-            internal set
 
         var deltaX = 0f
+            internal set
         var deltaY = 0f
+            internal set
         var deltaScroll = 0f
+            internal set
 
         var buttonMask = 0
             internal set(value) {
@@ -155,8 +215,6 @@ class InputManager internal constructor() {
                 field = value
             }
         var buttonEventMask = 0
-            internal set
-        var wasValid = false
             internal set
         var isValid = false
             internal set
@@ -173,23 +231,116 @@ class InputManager internal constructor() {
         val isBackButtonEvent: Boolean get() = (buttonEventMask and BACK_BUTTON_MASK) != 0
         val isForwardButtonEvent: Boolean get() = (buttonEventMask and FORWARD_BUTTON_MASK) != 0
 
-        internal fun updateFrom(ptr: Pointer) {
-            deltaX = ptr.x - x
-            deltaY = ptr.y - y
-            deltaScroll = ptr.scrollPos - scrollPos
-            x = ptr.x
-            y = ptr.y
-            scrollPos = ptr.scrollPos
-            buttonMask = ptr.buttonMask
-            buttonEventMask = ptr.buttonEventMask
-            wasValid = isValid
-            isValid = ptr.isValid
-        }
-
+        /**
+         * Usually, if a pointer is outside the viewport, it is not valid. However, they can be
+         * outside a viewport and valid, if there is more than one viewport (e.g. split viewport
+         * demo).
+         */
         fun isInViewport(ctx: RenderContext): Boolean {
             // y-axis of viewport is inverted to window coordinates
             val ptrY = ctx.windowHeight - y
-            return (isValid || wasValid) && ctx.viewport.isInViewport(x, ptrY)
+            //return (isValid || wasValid) && ctx.viewport.isInViewport(x, ptrY)
+            return (isValid) && ctx.viewport.isInViewport(x, ptrY)
+        }
+    }
+
+    internal class BufferedPointerInput : Pointer() {
+        private var updateState = UpdateState.INVALID
+        private var processedState = UpdateState.INVALID
+
+        var lastUpdate = 0L
+
+        fun startPointer(pointerId: Int, x: Float, y: Float) {
+            movePointer(x, y)
+            id = pointerId
+            deltaX = 0f
+            deltaY = 0f
+            deltaScroll = 0f
+            updateState = UpdateState.STARTED
+            isValid = true
+        }
+
+        fun movePointer(x: Float, y: Float) {
+            deltaX += x - this.x
+            deltaY += y - this.y
+            this.x = x
+            this.y = y
+            lastUpdate = currentTimeMillis()
+        }
+
+        fun endPointer() {
+            updateState = when (processedState) {
+                UpdateState.ACTIVE -> UpdateState.ENDED
+                UpdateState.STARTED -> UpdateState.ENDED_BEFORE_ACTIVE
+                else -> UpdateState.ENDED_BEFORE_STARTED
+            }
+        }
+
+        fun cancelPointer() {
+            updateState = UpdateState.INVALID
+            isValid = false
+        }
+
+        fun update(target: Pointer, t: Long) {
+            if (updateState != UpdateState.INVALID && t - lastUpdate > 200) {
+                println("Pointer $id timed out!")
+                cancelPointer()
+            }
+
+            target.id = id
+            target.deltaX = deltaX
+            target.deltaY = deltaY
+            target.deltaScroll = deltaScroll
+            target.x = x
+            target.y = y
+            target.isValid = true
+            target.buttonEventMask = 0
+
+            when (updateState) {
+                UpdateState.STARTED -> target.buttonMask = 0
+                UpdateState.ENDED_BEFORE_STARTED -> target.buttonMask = 0
+                UpdateState.ACTIVE -> target.buttonMask = buttonMask
+                UpdateState.ENDED_BEFORE_ACTIVE -> target.buttonMask = buttonMask
+                UpdateState.ENDED -> target.buttonMask = 0
+                UpdateState.INVALID -> {
+                    isValid = false
+                    target.isValid = false
+                }
+            }
+
+            deltaX = 0f
+            deltaY = 0f
+            deltaScroll = 0f
+
+            processedState = updateState
+            updateState = updateState.next()
+        }
+
+        /**
+         * State machine for handling pointer state, needed for correct mouse button emulation for
+         * touche events.
+         */
+        enum class UpdateState {
+            STARTED {
+                override fun next(): UpdateState = ACTIVE
+            },
+            ACTIVE {
+                override fun next(): UpdateState = ACTIVE
+            },
+            ENDED_BEFORE_STARTED {
+                override fun next(): UpdateState = ENDED_BEFORE_ACTIVE
+            },
+            ENDED_BEFORE_ACTIVE {
+                override fun next(): UpdateState = ENDED
+            },
+            ENDED {
+                override fun next(): UpdateState = INVALID
+            },
+            INVALID {
+                override fun next(): UpdateState = INVALID
+            };
+
+            abstract fun next(): UpdateState
         }
     }
 
@@ -227,7 +378,7 @@ class InputManager internal constructor() {
         const val FORWARD_BUTTON_MASK = 16
 
         const val MAX_POINTERS = 10
-        const val PRIMARY_POINTER = 0
+        const val MOUSE_POINTER_ID = -1000000
 
         const val KEY_EV_UP = 1
         const val KEY_EV_DOWN = 2

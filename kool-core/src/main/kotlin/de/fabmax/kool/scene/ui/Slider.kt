@@ -66,10 +66,8 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
             if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown && isOverKnob(prevHit.x, prevHit.y)) {
                 // register drag handler to handle knob movement
                 scene?.registerDragHandler(this@Slider)
+                hitDelta.set(0f, 0f)
             }
-        }
-        onHoverExit += { _,_,_ ->
-            hitDelta.set(0f, 0f)
         }
     }
 
@@ -92,7 +90,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
             // delta, which is in screen coords
             value += (hitDelta.x / trackWidth) * (max - min)
 
-            // don't process the drag event any further (camera rotation, etc.)
+            // don't let other drag handlers process the drag event (camera rotation, etc.)
             return InputManager.DragHandler.HANDLED
 
         } else {
