@@ -1,5 +1,7 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.util.TouchGestureEvaluator
+
 /**
  * @author fabmax
  */
@@ -15,9 +17,13 @@ class InputManager internal constructor() {
         fun handleDrag(dragPtrs: List<Pointer>, ctx: RenderContext): Int
     }
 
+    private val compatGestureEvaluator = TouchGestureEvaluator()
+    var isEvaluatingCompatGestures = true
+
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
     val keyEvents: MutableList<KeyEvent> = mutableListOf()
 
+    private var lastPtrInput = 0L
     private val inputPointers = Array(MAX_POINTERS) { BufferedPointerInput() }
     val pointers = Array(MAX_POINTERS) { Pointer() }
 
@@ -28,30 +34,53 @@ class InputManager internal constructor() {
      */
     val primaryPointer = pointers[0]
 
+    fun getActivePointers(result: MutableList<Pointer>) {
+        result.clear()
+        pointers.filter { it.isValid }.forEach { result.add(it) }
+    }
+
     private fun getFreeInputPointer(): BufferedPointerInput? {
-        for (i in inputPointers.indices) {
-            if (!inputPointers[i].isValid) {
-                return inputPointers[i]
-            }
-        }
-        return null
+        return inputPointers.firstOrNull { !it.isValid }
     }
 
     private fun findInputPointer(pointerId: Int): BufferedPointerInput? {
-        for (i in inputPointers.indices) {
-            if (inputPointers[i].id == pointerId && inputPointers[i].isValid) {
-                return inputPointers[i]
-            }
-        }
-        return null
+        return inputPointers.firstOrNull { it.isValid && it.id == pointerId }
     }
 
-    internal fun onNewFrame() {
+    internal fun onNewFrame(ctx: RenderContext) {
         synchronized(inputPointers) {
             for (i in pointers.indices) {
-                inputPointers[i].update(pointers[i])
+                inputPointers[i].update(pointers[i], lastPtrInput)
             }
         }
+
+        if (isEvaluatingCompatGestures) {
+            compatGestureEvaluator.evaluate(ctx)
+            when (compatGestureEvaluator.currentGesture.type) {
+                TouchGestureEvaluator.PINCH -> {
+                    // set primary pointer deltaScroll for compatibility with mouse input
+                    primaryPointer.deltaScroll = compatGestureEvaluator.currentGesture.dPinchAmount / 20
+                    primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
+                    primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
+                    primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
+                    primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
+                }
+                TouchGestureEvaluator.TWO_FINGER_DRAG -> {
+                    // set primary pointer right button down for compatibility with mouse input
+                    primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
+                    primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
+                    primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
+                    primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
+                    if (primaryPointer.buttonMask == LEFT_BUTTON_MASK) {
+                        primaryPointer.buttonMask = RIGHT_BUTTON_MASK
+                        if (compatGestureEvaluator.currentGesture.numUpdates > 1){
+                            primaryPointer.buttonEventMask = 0
+                        }
+                    }
+                }
+            }
+        }
+
         synchronized(queuedKeyEvents) {
             keyEvents.clear()
             keyEvents.addAll(queuedKeyEvents)
@@ -65,8 +94,6 @@ class InputManager internal constructor() {
         ev.event = event
         ev.modifiers = modifiers
 
-        //println("key event: $keyCode ev=$event mods=$modifiers")
-
         synchronized(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
         }
@@ -76,8 +103,6 @@ class InputManager internal constructor() {
         val ev = KeyEvent()
         ev.event = KEY_EV_CHAR_TYPED
         ev.typedChar = typedChar
-
-        //println("char type: $typedChar")
 
         synchronized(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
@@ -90,6 +115,7 @@ class InputManager internal constructor() {
 
     fun handleTouchStart(pointerId: Int, x: Float, y: Float) {
         synchronized(inputPointers) {
+            lastPtrInput = currentTimeMillis()
             val inPtr = getFreeInputPointer() ?: return
             inPtr.startPointer(pointerId, x, y)
             inPtr.buttonMask = 1
@@ -110,6 +136,7 @@ class InputManager internal constructor() {
 
     fun handleTouchMove(pointerId: Int, x: Float, y: Float) {
         synchronized(inputPointers) {
+            lastPtrInput = currentTimeMillis()
             findInputPointer(pointerId)?.movePointer(x, y)
         }
     }
@@ -120,6 +147,7 @@ class InputManager internal constructor() {
 
     fun handleMouseMove(x: Float, y: Float) {
         synchronized(inputPointers) {
+            lastPtrInput = currentTimeMillis()
             val mousePtr = findInputPointer(MOUSE_POINTER_ID)
             if (mousePtr == null) {
                 val startPtr = getFreeInputPointer() ?: return
@@ -220,9 +248,10 @@ class InputManager internal constructor() {
         private var updateState = UpdateState.INVALID
         private var processedState = UpdateState.INVALID
 
+        var lastUpdate = 0L
+
         fun startPointer(pointerId: Int, x: Float, y: Float) {
-            this.x = x
-            this.y = y
+            movePointer(x, y)
             id = pointerId
             deltaX = 0f
             deltaY = 0f
@@ -236,6 +265,7 @@ class InputManager internal constructor() {
             deltaY += y - this.y
             this.x = x
             this.y = y
+            lastUpdate = currentTimeMillis()
         }
 
         fun endPointer() {
@@ -251,7 +281,12 @@ class InputManager internal constructor() {
             isValid = false
         }
 
-        fun update(target: Pointer) {
+        fun update(target: Pointer, t: Long) {
+            if (updateState != UpdateState.INVALID && t - lastUpdate > 200) {
+                println("Pointer $id timed out!")
+                cancelPointer()
+            }
+
             target.id = id
             target.deltaX = deltaX
             target.deltaY = deltaY
@@ -276,10 +311,6 @@ class InputManager internal constructor() {
             deltaX = 0f
             deltaY = 0f
             deltaScroll = 0f
-
-            if (processedState != UpdateState.INVALID && updateState == UpdateState.INVALID) {
-                println("pointer invalidated")
-            }
 
             processedState = updateState
             updateState = updateState.next()

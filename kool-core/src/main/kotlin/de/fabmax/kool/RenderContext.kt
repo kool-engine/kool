@@ -87,7 +87,7 @@ abstract class RenderContext {
         for (i in frameTimes.indices) { sum += frameTimes[i] }
         fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
 
-        inputMgr.onNewFrame()
+        inputMgr.onNewFrame(this)
 
         // force re-binding shader, otherwise delayed loaded resources (e.g. textures) might not be loaded at all
         shaderMgr.bindShader(null, this)
