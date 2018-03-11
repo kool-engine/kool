@@ -2,16 +2,16 @@ package de.fabmax.kool
 
 import de.fabmax.kool.gl.GlImpl
 import de.fabmax.kool.gl.glImpl
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
-import java.awt.Desktop
-import java.net.URI
+import java.util.*
 
 internal var platformImpl: PlatformImpl = NoPlatformImpl()
 
 actual var glCapabilities = GlCapabilities.UNKNOWN_CAPABILITIES
 
-actual fun currentTimeMillis(): Long = System.currentTimeMillis()
+actual fun now(): Double = System.nanoTime() / 1e6
 
 actual fun createContext(props: RenderContext.InitProps): RenderContext {
     val wrapperProps = props as? WrapperInitProps ?: throw KoolException("Supplied props must sub-class ${WrapperInitProps::javaClass.name}")
@@ -19,6 +19,9 @@ actual fun createContext(props: RenderContext.InitProps): RenderContext {
     glImpl = wrapperProps.glImpl
     return platformImpl.createContext(props)
 }
+
+actual fun formatDouble(d: Double, precision: Int): String =
+        java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", d)
 
 actual fun createCharMap(fontProps: FontProps): CharMap = platformImpl.createCharMap(fontProps)
 actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) = platformImpl.loadAsset(assetPath, onLoad)

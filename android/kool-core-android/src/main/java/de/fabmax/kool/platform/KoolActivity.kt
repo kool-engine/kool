@@ -1,4 +1,4 @@
-package de.fabmax.kool
+package de.fabmax.kool.platform
 
 import android.app.Activity
 import android.app.ActivityManager
@@ -7,6 +7,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import de.fabmax.kool.PlatformImpl
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.TextureData
+import de.fabmax.kool.WrapperInitProps
 import de.fabmax.kool.gl.AndroidGlBindings
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
@@ -37,7 +41,7 @@ abstract class KoolActivity : Activity(), View.OnTouchListener {
 
         glSurfaceView.setOnTouchListener(this)
 
-        val ctx = createContext(WrapperInitProps(AndroidPlatformImpl(), AndroidGlBindings())) as AndroidRenderContext
+        val ctx = de.fabmax.kool.createContext(WrapperInitProps(AndroidPlatformImpl(), AndroidGlBindings())) as AndroidRenderContext
         glSurfaceView.setEGLContextFactory(ctx)
         glSurfaceView.setRenderer(ctx)
         glSurfaceView.preserveEGLContextOnPause = true

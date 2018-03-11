@@ -1,10 +1,11 @@
-package de.fabmax.kool
+package de.fabmax.kool.platform
 
 import android.opengl.EGL14
 import android.opengl.GLES11Ext
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.util.Log
+import de.fabmax.kool.*
 import de.fabmax.kool.gl.GL_DEPTH_COMPONENT
 import de.fabmax.kool.gl.GL_DEPTH_COMPONENT24
 import de.fabmax.kool.gl.GL_EXTENSIONS

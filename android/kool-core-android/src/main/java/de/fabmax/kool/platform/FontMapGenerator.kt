@@ -1,10 +1,10 @@
-package de.fabmax.kool
+package de.fabmax.kool.platform
 
 import android.content.Context
 import android.graphics.*
 import android.graphics.Color
+import de.fabmax.kool.BufferedTextureData
 import de.fabmax.kool.gl.GL_ALPHA
-import de.fabmax.kool.gl.GL_RGBA
 import de.fabmax.kool.util.*
 import java.nio.ByteBuffer
 
@@ -17,24 +17,21 @@ internal class FontMapGenerator(val appCtx: Context, val maxWidth: Int, val maxH
     private val loadedFonts = mutableMapOf<String, Typeface>()
     private val bitmap = Bitmap.createBitmap(maxWidth, maxHeight, Bitmap.Config.ALPHA_8)
     private val outputBuf = ByteBuffer.allocate(maxWidth * maxHeight)
-    //private val bitmap = Bitmap.createBitmap(maxWidth, maxHeight, Bitmap.Config.ARGB_8888)
-    //private val outputBuf = ByteBuffer.allocate(maxWidth * maxHeight * 4)
     private val canvas = Canvas(bitmap)
 
     fun createCharMap(fontProps: FontProps): CharMap {
         val charMetrics = mutableMapOf<Char, CharMetrics>()
         val texH = renderFontImage(fontProps, charMetrics)
-        val stride = 1
 
         outputBuf.clear()
         bitmap.copyPixelsToBuffer(outputBuf)
         outputBuf.flip()
-        val texBuf = createUint8Buffer(maxWidth * texH * stride) as Uint8BufferImpl
-        outputBuf.limit(maxWidth * texH * stride)
+
+        val texBuf = createUint8Buffer(maxWidth * texH) as Uint8BufferImpl
+        outputBuf.limit(maxWidth * texH)
         texBuf.buffer.put(outputBuf)
 
-        val format = if (stride == 1) GL_ALPHA else GL_RGBA
-        val texData = BufferedTextureData(texBuf, maxWidth, texH, format)
+        val texData = BufferedTextureData(texBuf, maxWidth, texH, GL_ALPHA)
         return CharMap(texData, charMetrics)
     }
 

@@ -1,9 +1,13 @@
-package de.fabmax.kool
+package de.fabmax.kool.platform
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import de.fabmax.kool.KoolException
+import de.fabmax.kool.RenderContext
+import de.fabmax.kool.Texture
+import de.fabmax.kool.TextureData
 import de.fabmax.kool.gl.GL_RGB
 import de.fabmax.kool.gl.GL_RGBA
 import de.fabmax.kool.gl.GL_UNSIGNED_BYTE
@@ -31,21 +35,16 @@ class ImageTextureData(assetPath: String, context: Context) : TextureData() {
                 }
 
                 inputStream.use {
-                    val t = System.nanoTime()
-
                     val opts = BitmapFactory.Options()
                     opts.inPreferredConfig = Bitmap.Config.ARGB_8888
                     val bitmap = BitmapFactory.decodeStream(it, null, opts)
                     buffer = convertBitmapToBuffer(bitmap)
-                    bitmap.recycle()
-
                     format = if (bitmap.hasAlpha()) GL_RGBA else GL_RGB
                     width = bitmap.width
                     height = bitmap.height
                     isAvailable = true
 
-                    Log.d("KoolActivity", "Loaded texture asset \"$assetPath\" in " +
-                            "${(System.nanoTime() - t) / 1e6} ms ($width x $height px)")
+                    bitmap.recycle()
                 }
 
             } catch (e: IOException) {
@@ -72,35 +71,36 @@ class ImageTextureData(assetPath: String, context: Context) : TextureData() {
             val h = bitmap.height
             val alpha = bitmap.hasAlpha()
             val stride = if (alpha) 4 else 3
+
             val resultBuffer = createUint8Buffer(w * h * stride)
             val buf = (resultBuffer as Uint8BufferImpl).buffer
 
             if (bitmap.config === Bitmap.Config.ARGB_8888) {
                 if (alpha) {
-                    // copy bitmap pixels to created buf
+                    // copy bitmap pixels to created buf, we need pre-multiplied alpha but that's
+                    // the standard format in android, so there's nothing else to do
                     bitmap.copyPixelsToBuffer(buf)
-                    // pre-multiply alpha
-                    for (i in 0 until w * h * 4 step 4) {
-                        val a = buf[i+3].toInt() and 0xff
-                        if (a < 255) {
-                            val f = a / 255f
-                            buf.put(i, round(buf[i] * f).toByte())
-                            buf.put(i+1, round(buf[i+1] * f).toByte())
-                            buf.put(i+2, round(buf[i+2] * f).toByte())
-                        }
-                    }
 
                 } else {
                     // although image has no alpha we need a temp buffer with 4 bytes per pixel
-                    val out = ByteBuffer.allocate(w * h * 4)
-                    bitmap.copyPixelsToBuffer(out)
-                    // copy pixel to RGB buf (and skip alpha)
-                    for (i in 0 until w * h * 4 step 4) {
-                        buf.put(out[i+0])
-                        buf.put(out[i+1])
-                        buf.put(out[i+2])
+                    val tmp = ByteBuffer.allocate(w * h * 4)
+                    bitmap.copyPixelsToBuffer(tmp)
+                    tmp.flip()
+                    // discard alpha channel bytes (every 4th byte)
+                    // use backing byte array instead of buffer (much faster)
+                    val tmpArr = if (tmp.hasArray()) tmp.array() else {
+                        val array = ByteArray(w * h * 4)
+                        tmp.get(array)
+                        array
                     }
-                    buf.flip()
+                    var j = 0
+                    for (i in 3 until w * h * 3 step 3) {
+                        tmpArr[i] = tmpArr[j]
+                        tmpArr[i+1] = tmpArr[j+1]
+                        tmpArr[i+2] = tmpArr[j+2]
+                        j += 4
+                    }
+                    buf.put(tmpArr, 0, w * h * 3)
                 }
             } else {
                 // bitmap has a weird internal format, fallback to slow copy
@@ -122,8 +122,8 @@ class ImageTextureData(assetPath: String, context: Context) : TextureData() {
                         buf.put(b.toByte())
                     }
                 }
-                buf.flip()
             }
+            buf.flip()
             return resultBuffer
         }
     }
