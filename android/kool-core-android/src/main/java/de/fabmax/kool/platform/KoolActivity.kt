@@ -11,6 +11,8 @@ import de.fabmax.kool.PlatformImpl
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.WrapperInitProps
+import de.fabmax.kool.audio.AudioGenerator
+import de.fabmax.kool.audio.AudioGeneratorImpl
 import de.fabmax.kool.gl.AndroidGlBindings
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
@@ -27,6 +29,14 @@ abstract class KoolActivity : Activity(), View.OnTouchListener {
     private val fontMapGenerator = FontMapGenerator(this, 1024, 1024)
 
     private var ctx: AndroidRenderContext? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        AudioGenerator.factory = ::AudioGeneratorImpl
+
+        onCreateContext()
+    }
 
     fun createContext(): AndroidRenderContext {
         val glView = GLSurfaceView(this)
@@ -88,12 +98,6 @@ abstract class KoolActivity : Activity(), View.OnTouchListener {
 
     open fun onKoolContextCreated(ctx: AndroidRenderContext) {
         // default impl does nothing
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        onCreateContext()
     }
 
     override fun onPause() {

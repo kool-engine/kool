@@ -1,27 +1,30 @@
 package de.fabmax.kool.audio
 
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
+import android.util.Log
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.createFloat32Buffer
 import org.jtransforms.fft.FloatFFT_1D
 import org.jtransforms.utils.CommonUtils
-import java.nio.ByteBuffer
-import javax.sound.sampled.AudioFormat
-import javax.sound.sampled.AudioSystem
 import kotlin.concurrent.thread
+
 
 /**
  * @author fabmax
  */
 
-actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Float) -> Float) {
+class AudioGeneratorImpl(gen: AudioGenerator, generatorFun: AudioGenerator.(Float) -> Float) : AudioGenerator.Api {
 
     private val pauseLock = java.lang.Object()
+    private val generatorThread: Thread
     private var isStopRequested = false
 
     private var fftHelper: FftHelper? = null
 
-    actual val sampleRate = 48000f
-    actual var isPaused: Boolean = false
+    override val sampleRate = AudioTrack.getNativeOutputSampleRate(AudioTrack.MODE_STREAM).toFloat()
+    override var isPaused: Boolean = false
         set(value) {
             if (field != value) {
                 field = value
@@ -35,34 +38,32 @@ actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Flo
         CommonUtils.setThreadsBeginN_1D_FFT_2Threads(16384)
         CommonUtils.setThreadsBeginN_1D_FFT_4Threads(16384 * 2)
 
-        thread(start = true, isDaemon = true) {
-            val sampleRate = 48000f
-            val format = AudioFormat(sampleRate, 16, 1, true, true)
-            val line = AudioSystem.getSourceDataLine(format)
-            line.open(format)
-            line.start()
+        generatorThread = thread(start = true, isDaemon = true) {
+            val audioSink = AudioTrack(AudioManager.STREAM_MUSIC,
+                    sampleRate.toInt(),
+                    AudioFormat.CHANNEL_OUT_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                    10240,
+                    AudioTrack.MODE_STREAM)
 
-            val numSamples = 256
-            val buf = ByteBuffer.allocate(numSamples * 2)
-            val samples = buf.asShortBuffer()
-            var sampleIdx = 0L
+            audioSink.play()
+            Log.i("AudioGenerator", "starting playback")
 
             var startTime = System.currentTimeMillis()
             val dt = 1f / sampleRate
+            val samples = ShortArray(1280)
+            var sampleIdx = 0L
 
             while (!isStopRequested) {
-                samples.rewind()
-                for (i in 0..numSamples-1) {
-                    var f = generatorFun(dt)
+                for (i in samples.indices) {
+                    var f = gen.generatorFun(dt)
                     if (f > 1f) { f = 1f }
                     if (f < -1f) { f = -1f }
-                    samples.put((f * 32767).toShort())
+                    samples[i] = (f * 32767).toShort()
                     fftHelper?.putSample(f)
                     sampleIdx++
                 }
-
-                val data = buf.array()
-                line.write(data, 0, data.size)
+                audioSink.write(samples, 0, samples.size)
 
                 // don't generate too many samples in advance...
                 val played = (sampleIdx / sampleRate) * 1000
@@ -70,7 +71,6 @@ actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Flo
                 if (sleepT > 0) {
                     Thread.sleep(sleepT)
                 }
-
 
                 if (isPaused) {
                     val t = System.currentTimeMillis()
@@ -80,14 +80,19 @@ actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Flo
                     startTime += System.currentTimeMillis() - t
                 }
             }
+
+            Log.i("AudioGenerator", "playback stopped")
+            audioSink.stop()
+            audioSink.release()
         }
     }
 
-    actual fun stop() {
+    override fun stop() {
         isStopRequested = true
     }
 
-    actual fun enableFftComputation(nSamples: Int) {
+
+    override fun enableFftComputation(nSamples: Int) {
         if (nSamples <= 0) {
             fftHelper = null
         } else {
@@ -95,7 +100,7 @@ actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Flo
         }
     }
 
-    actual fun getPowerSpectrum(): Float32Buffer {
+    override fun getPowerSpectrum(): Float32Buffer {
         return fftHelper?.getOutput() ?: createFloat32Buffer(1)
     }
 }
