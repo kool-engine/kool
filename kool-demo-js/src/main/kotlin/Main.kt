@@ -7,9 +7,6 @@ import kotlin.browser.window
  */
 fun main() {
     Demo(createContext(), getParams()["demo"])
-//    val ctx = createContext()
-//    ctx.scenes += simpleShapesScene()
-//    ctx.run()
 }
 
 fun getParams(): Map<String, String> {

@@ -1,9 +1,9 @@
 package de.fabmax.kool.math
 
-import de.fabmax.kool.currentTimeMillis
+import de.fabmax.kool.now
 import kotlin.math.abs
 
-val defaultRandomInstance = Random(currentTimeMillis().toInt())
+val defaultRandomInstance = Random(now().toInt())
 
 fun randomI(): Int = defaultRandomInstance.randomI()
 fun randomI(min: Int, max: Int): Int = defaultRandomInstance.randomI(min, max)

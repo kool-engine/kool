@@ -1,12 +1,9 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.currentTimeMillis
+import de.fabmax.kool.formatDouble
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.BillboardMesh
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.pointMesh
+import de.fabmax.kool.util.*
 
 /**
  * @author fabmax
@@ -23,7 +20,7 @@ fun pointScene(): Scene {
     var frameCnt = 30
 
     // Create scene contents
-    val scene = scene {
+    return scene {
         onRender += {
             // change color of a few points every 30 frames
             if (--frameCnt == 0) {
@@ -38,17 +35,21 @@ fun pointScene(): Scene {
                 }
 
                 trav.center.set(randomF(-1f, 1f), randomF(-1f, 1f), randomF(-1f, 1f))
-                val t = currentTimeMillis()
+                val t = PerfTimer()
                 tree.traverse(trav)
-                println("In-radius search in ${currentTimeMillis() - t} ms, got ${trav.result.size} points")
+                val searchT = t.takeMs()
 
+                t.reset()
                 val color = Color.fromHsv(randomF(0f, 360f), 1f, 1f, 1f)
                 for (point in trav.result) {
-                    for (i in 0..ptVertCnt-1) {
+                    for (i in 0 until ptVertCnt) {
                         vert.index = point.index + i
                         vert.color.set(color)
                     }
                 }
+                val updateT = t.takeMs()
+                println("In-radius search retrieved ${trav.result.size} points, took " +
+                        "${formatDouble(searchT, 3)} ms; Point update took ${formatDouble(updateT, 3)} ms")
 
                 data.isSyncRequired = true
             }
@@ -71,7 +72,6 @@ fun pointScene(): Scene {
             +pointMesh
         }
     }
-    return scene
 }
 
 fun makePointMesh(): Pair<Mesh, KdTree<MeshPoint>> {
@@ -89,9 +89,9 @@ fun makePointMesh(): Pair<Mesh, KdTree<MeshPoint>> {
             points.add(MeshPoint(pt.x, pt.y, pt.z, idx))
         }
     }
-    val t = currentTimeMillis()
-    val tree = pointTree(points)
-    println("Constructed k-d-Tree with ${points.size} points in ${currentTimeMillis() - t} ms")
+    val tree = timedMs("Constructed k-d-Tree with ${points.size} points in ") {
+        pointTree(points)
+    }
     return Pair(mesh, tree)
 }
 
@@ -109,9 +109,9 @@ fun makeBillboardPointMesh(): Pair<BillboardMesh, KdTree<MeshPoint>> {
         points.add(MeshPoint(x, y, z, (i-1)*4))
     }
 
-    val t = currentTimeMillis()
-    val tree = pointTree(points)
-    println("Constructed k-d-Tree with ${points.size} points in ${currentTimeMillis() - t} ms")
+    val tree = timedMs("Constructed k-d-Tree with ${points.size} points in ") {
+        pointTree(points)
+    }
     return Pair(mesh, tree)
 }
 

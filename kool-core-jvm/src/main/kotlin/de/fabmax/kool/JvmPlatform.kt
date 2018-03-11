@@ -1,17 +1,20 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import kotlinx.coroutines.experimental.launch
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import java.awt.Desktop
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.net.URI
+import java.util.*
 
 /**
  * Desktop LWJGL3 platform implementation
@@ -27,25 +30,26 @@ actual fun createContext(props: RenderContext.InitProps): RenderContext = Deskto
 
 actual fun createCharMap(fontProps: FontProps): CharMap = DesktopImpl.fontGenerator.createCharMap(fontProps)
 
-actual fun currentTimeMillis(): Long = System.currentTimeMillis()
+actual fun now(): Double = System.nanoTime() / 1e6
 
 actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
     // try to load asset from resources
-    //for (url in ClassLoader.getSystemResources())
-    var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
-    if (inStream == null) {
-        // if asset wasn't found in resources try to load it from file system
-        inStream = FileInputStream(assetPath)
-    }
-
-    inStream.use {
-        val data = ByteArrayOutputStream()
-        val buf = ByteArray(1024 * 1024)
-        while (it.available() > 0) {
-            val len = it.read(buf)
-            data.write(buf, 0, len)
+    launch {
+        var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
+        if (inStream == null) {
+            // if asset wasn't found in resources try to load it from file system
+            inStream = FileInputStream(assetPath)
         }
-        onLoad(data.toByteArray())
+
+        inStream.use {
+            val data = ByteArrayOutputStream()
+            val buf = ByteArray(1024 * 1024)
+            while (it.available() > 0) {
+                val len = it.read(buf)
+                data.write(buf, 0, len)
+            }
+            onLoad(data.toByteArray())
+        }
     }
 }
 
@@ -59,6 +63,9 @@ actual fun getMemoryInfo(): String {
     val totalMem = rt.totalMemory()
     return "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB"
 }
+
+actual fun formatDouble(d: Double, precision: Int): String =
+        java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", d)
 
 internal object DesktopImpl {
     private const val MAX_GENERATED_TEX_WIDTH = 2048

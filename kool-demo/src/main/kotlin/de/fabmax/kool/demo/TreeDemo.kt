@@ -3,7 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.RenderContext
 import de.fabmax.kool.TextureProps
 import de.fabmax.kool.assetTexture
-import de.fabmax.kool.currentTimeMillis
+import de.fabmax.kool.formatFloat
 import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_REPEAT
 import de.fabmax.kool.math.Vec3f
@@ -15,7 +15,7 @@ import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.MeshBuilder
-import kotlin.math.round
+import de.fabmax.kool.util.timedMs
 
 
 /**
@@ -46,9 +46,9 @@ fun treeScene(ctx: RenderContext): List<Scene> {
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {
             generator = {
-                val t = currentTimeMillis()
-                treeGen.buildTrunkMesh(this)
-                println("Generated ${meshData.numIndices / 3} trunk triangles, took ${currentTimeMillis() - t} ms")
+                timedMs({"Generated ${meshData.numIndices / 3} trunk triangles in"}) {
+                    treeGen.buildTrunkMesh(this)
+                }
             }
 
             shader = basicShader {
@@ -68,9 +68,9 @@ fun treeScene(ctx: RenderContext): List<Scene> {
         // generate tree leaf mesh
         leafMesh = textureMesh {
             generator = {
-                val t = currentTimeMillis()
-                treeGen.buildLeafMesh(this, light.direction)
-                println("Generated ${meshData.numIndices / 3} leaf triangles, took ${currentTimeMillis() - t} ms")
+                timedMs({"Generated ${meshData.numIndices / 3} leaf triangles in"}) {
+                    treeGen.buildLeafMesh(this, light.direction)
+                }
             }
 
             // disable culling, leafs are visible from both sides
@@ -139,7 +139,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 layoutSpec.setOrigin(dps(380f, true), dps(110f, true), zero())
                 layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = formatFloat(treeGen.growDistance)
+                text = formatFloat(treeGen.growDistance, 2)
             }
             +growDistVal
             +slider("growDist") {
@@ -149,7 +149,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.growDistance = value
-                    growDistVal.text = formatFloat(value)
+                    growDistVal.text = formatFloat(value, 2)
                 }
             }
 
@@ -162,7 +162,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 layoutSpec.setOrigin(dps(380f, true), dps(75f, true), zero())
                 layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = formatFloat(treeGen.killDistance)
+                text = formatFloat(treeGen.killDistance, 2)
             }
             +killDistVal
             +slider("killDist") {
@@ -172,7 +172,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.killDistance = value
-                    killDistVal.text = formatFloat(value)
+                    killDistVal.text = formatFloat(value, 2)
                 }
             }
 
@@ -208,7 +208,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 layoutSpec.setOrigin(dps(380f, true), dps(5f, true), zero())
                 layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = formatFloat(treeGen.radiusOfInfluence)
+                text = formatFloat(treeGen.radiusOfInfluence, 2)
             }
             +infRadiusVal
             +slider("killDist") {
@@ -218,7 +218,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.radiusOfInfluence = value
-                    infRadiusVal.text = formatFloat(value)
+                    infRadiusVal.text = formatFloat(value, 2)
                 }
             }
 
@@ -234,19 +234,19 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                         meshData.isBatchUpdate = true
                         meshData.clear()
                         val builder = MeshBuilder(meshData)
-                        val t = currentTimeMillis()
-                        treeGen.buildTrunkMesh(builder)
-                        meshData.generateTangents()
-                        println("Generated ${meshData.numIndices / 3} trunk triangles, took ${currentTimeMillis() - t} ms")
+                        timedMs({"Generated ${meshData.numIndices / 3} trunk triangles in"}) {
+                            treeGen.buildTrunkMesh(builder)
+                            meshData.generateTangents()
+                        }
                         meshData.isBatchUpdate = false
                     }
                     leafMesh?.apply {
                         meshData.isBatchUpdate = true
                         meshData.clear()
                         val builder = MeshBuilder(meshData)
-                        val t = currentTimeMillis()
-                        treeGen.buildLeafMesh(builder, scene?.light?.direction ?: Vec3f.ZERO)
-                        println("Generated ${meshData.numIndices / 3} leaf triangles, took ${currentTimeMillis() - t} ms")
+                        timedMs({"Generated ${meshData.numIndices / 3} leaf triangles in"}) {
+                            treeGen.buildLeafMesh(builder, scene?.light?.direction ?: Vec3f.ZERO)
+                        }
                         meshData.isBatchUpdate = false
                     }
                 }
@@ -265,14 +265,4 @@ fun treeScene(ctx: RenderContext): List<Scene> {
     }
 
     return scenes
-}
-
-
-private fun formatFloat(value: Float): String {
-    val i = round(value * 100).toInt()
-    val str = when {
-        i < 10 -> "0.0$i"
-        else -> "${i / 100}.${i % 100}0"
-    }
-    return str.substring(0, str.indexOf('.') + 3)
 }

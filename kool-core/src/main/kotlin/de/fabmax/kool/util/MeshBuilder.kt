@@ -34,13 +34,14 @@ open class MeshBuilder(val meshData: MeshData) {
             normal.set(nrm)
             texCoord.set(uv)
             color.set(this@MeshBuilder.color)
-            vertexModFun?.invoke(this)
 
             transform.transform(position)
             if (hasNormals) {
                 transform.transform(normal, 0f)
                 normal.norm()
             }
+
+            vertexModFun?.invoke(this)
         }
     }
 

@@ -3,10 +3,33 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var createContext = $module$kool.de.fabmax.kool.createContext;
   var split = Kotlin.kotlin.text.split_ip8yn$;
-  var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
-  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
-  var math = Kotlin.kotlin.math;
   var Unit = Kotlin.kotlin.Unit;
+  var UiTheme = $module$kool.de.fabmax.kool.scene.ui.UiTheme;
+  var BlankComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlankComponentUi;
+  var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
+  var getCallableRef = Kotlin.getCallableRef;
+  var theme = $module$kool.de.fabmax.kool.scene.ui.theme_vvurn$;
+  var dps = $module$kool.de.fabmax.kool.scene.ui.dps_8ca0d4$;
+  var zero = $module$kool.de.fabmax.kool.scene.ui.zero;
+  var pcs = $module$kool.de.fabmax.kool.scene.ui.pcs_8ca0d4$;
+  var Alignment = $module$kool.de.fabmax.kool.scene.ui.Alignment;
+  var Gravity = $module$kool.de.fabmax.kool.scene.ui.Gravity;
+  var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
+  var uiScene = $module$kool.de.fabmax.kool.scene.ui.uiScene_7c31we$;
+  var Kind_CLASS = Kotlin.Kind.CLASS;
+  var debugOverlay = $module$kool.de.fabmax.kool.util.debugOverlay_3i7a9j$;
+  var to = Kotlin.kotlin.to_ujzrz7$;
+  var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
+  var ToggleButtonUi = $module$kool.de.fabmax.kool.scene.ui.ToggleButtonUi;
+  var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
+  var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
+  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
+  var Color = $module$kool.de.fabmax.kool.util.Color;
+  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
+  var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
+  var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
+  var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
+  var math = Kotlin.kotlin.math;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var round = Kotlin.kotlin.math.round_14dthe$;
   var numberToInt = Kotlin.numberToInt;
@@ -17,7 +40,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
   var gl = $module$kool.de.fabmax.kool.gl;
   var Group = $module$kool.de.fabmax.kool.scene.Group;
-  var Kind_CLASS = Kotlin.Kind.CLASS;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
   var Ray = $module$kool.de.fabmax.kool.math.Ray;
@@ -28,22 +50,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var sphericalInputTransform = $module$kool.de.fabmax.kool.scene.sphericalInputTransform_6sxffc$;
   var ensureNotNull = Kotlin.ensureNotNull;
   var throwUPAE = Kotlin.throwUPAE;
-  var contains = Kotlin.kotlin.text.contains_sgbm27$;
-  var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
-  var UiTheme = $module$kool.de.fabmax.kool.scene.ui.UiTheme;
-  var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
-  var getCallableRef = Kotlin.getCallableRef;
-  var BlankComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlankComponentUi;
   var Font = $module$kool.de.fabmax.kool.util.Font;
   var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
-  var theme = $module$kool.de.fabmax.kool.scene.ui.theme_vvurn$;
-  var zero = $module$kool.de.fabmax.kool.scene.ui.zero;
-  var dps = $module$kool.de.fabmax.kool.scene.ui.dps_8ca0d4$;
   var Margin = $module$kool.de.fabmax.kool.scene.ui.Margin;
-  var Color = $module$kool.de.fabmax.kool.util.Color;
   var color = $module$kool.de.fabmax.kool.util.color_61zpoe$;
   var openUrl = $module$kool.de.fabmax.kool.openUrl_61zpoe$;
-  var uiScene = $module$kool.de.fabmax.kool.scene.ui.uiScene_7c31we$;
+  var formatDouble = $module$kool.de.fabmax.kool.formatDouble_12fank$;
   var assetTexture = $module$kool.de.fabmax.kool.assetTexture_61zpoe$;
   var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
   var Attribute = $module$kool.de.fabmax.kool.shading.Attribute;
@@ -52,9 +64,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
-  var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
   var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
-  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
   var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
   var lineMesh = $module$kool.de.fabmax.kool.util.lineMesh_6a24eg$;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
@@ -64,9 +74,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var loadAsset = $module$kool.de.fabmax.kool.loadAsset_jrww91$;
   var Label = $module$kool.de.fabmax.kool.scene.ui.Label;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
-  var pcs = $module$kool.de.fabmax.kool.scene.ui.pcs_8ca0d4$;
-  var Alignment = $module$kool.de.fabmax.kool.scene.ui.Alignment;
-  var Gravity = $module$kool.de.fabmax.kool.scene.ui.Gravity;
+  var formatFloat = $module$kool.de.fabmax.kool.formatFloat_vjorfl$;
   var Slider = $module$kool.de.fabmax.kool.scene.ui.Slider;
   var plus = Kotlin.kotlin.collections.plus_qloxvw$;
   var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_o1x1d9$;
@@ -76,28 +84,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var InRadiusTraverser_init = $module$kool.de.fabmax.kool.math.InRadiusTraverser_init_34hdy3$;
   var BillboardMesh = $module$kool.de.fabmax.kool.util.BillboardMesh;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
-  var currentTimeMillis = $module$kool.de.fabmax.kool.currentTimeMillis;
+  var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
   var println = Kotlin.kotlin.io.println_s8jyv4$;
   var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
   var CubicPointDistribution = $module$kool.de.fabmax.kool.math.CubicPointDistribution;
   var pointMesh = $module$kool.de.fabmax.kool.util.pointMesh_h6khem$;
   var pointTree = $module$kool.de.fabmax.kool.math.pointTree_ffk80x$;
   var Pair = Kotlin.kotlin.Pair;
-  var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
-  var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
   var Animator = $module$kool.de.fabmax.kool.util.Animator;
   var BasicShader = $module$kool.de.fabmax.kool.shading.BasicShader;
   var throwCCE = Kotlin.throwCCE;
   var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var LinearAnimator = $module$kool.de.fabmax.kool.util.LinearAnimator;
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
-  var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
-  var debugOverlay = $module$kool.de.fabmax.kool.util.debugOverlay_3i7a9j$;
-  var to = Kotlin.kotlin.to_ujzrz7$;
-  var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
-  var ToggleButtonUi = $module$kool.de.fabmax.kool.scene.ui.ToggleButtonUi;
-  var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
-  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
   var equals = Kotlin.equals;
@@ -107,8 +106,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Oscillator = $module$kool.de.fabmax.kool.audio.Oscillator;
   var MoodFilter = $module$kool.de.fabmax.kool.audio.MoodFilter;
   var Button = $module$kool.de.fabmax.kool.scene.ui.Button;
-  var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
+  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var InterpolatedColor = $module$kool.de.fabmax.kool.util.InterpolatedColor;
+  var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var Scene = $module$kool.de.fabmax.kool.scene.Scene;
   var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var LineMesh = $module$kool.de.fabmax.kool.util.LineMesh;
@@ -128,6 +128,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var ToggleButton = $module$kool.de.fabmax.kool.scene.ui.ToggleButton;
   var TextField = $module$kool.de.fabmax.kool.scene.ui.TextField;
+  MenuButtonUi.prototype = Object.create(ToggleButtonUi.prototype);
+  MenuButtonUi.prototype.constructor = MenuButtonUi;
   Earth$TileGroup.prototype = Object.create(Group.prototype);
   Earth$TileGroup.prototype.constructor = Earth$TileGroup;
   Earth.prototype = Object.create(TransformGroup.prototype);
@@ -136,8 +138,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   TileMesh.prototype.constructor = TileMesh;
   MeshPoint.prototype = Object.create(Vec3f.prototype);
   MeshPoint.prototype.constructor = MeshPoint;
-  MenuButtonUi.prototype = Object.create(ToggleButtonUi.prototype);
-  MenuButtonUi.prototype.constructor = MenuButtonUi;
   VerticalLayout.prototype = Object.create(UiContainer.prototype);
   VerticalLayout.prototype.constructor = VerticalLayout;
   Melody.prototype = Object.create(SampleNode.prototype);
@@ -183,6 +183,291 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return params;
   }
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
+  var Map = Kotlin.kotlin.collections.Map;
+  function Demo(ctx, startScene) {
+    if (startScene === void 0)
+      startScene = null;
+    this.dbgOverlay_0 = debugOverlay(ctx, true);
+    this.newScenes_0 = ArrayList_init();
+    this.currentScenes_0 = ArrayList_init();
+    this.defaultScene_0 = new Demo$DemoEntry('Simple Demo', Demo$defaultScene$lambda);
+    this.demos_0 = mutableMapOf([to('simpleDemo', this.defaultScene_0), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda)), to('pointDemo', new Demo$DemoEntry('Point Cloud Demo', Demo$demos$lambda_0)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_1)), to('earthDemo', new Demo$DemoEntry('Earth Demo', Demo$demos$lambda_2)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_4))]);
+    var tmp$;
+    var $receiver = ctx.scenes;
+    var element = this.demoOverlay_0(ctx);
+    $receiver.add_11rb$(element);
+    var $receiver_0 = ctx.scenes;
+    var element_0 = this.dbgOverlay_0;
+    $receiver_0.add_11rb$(element_0);
+    var $receiver_1 = ctx.onRender;
+    var element_1 = getCallableRef('onRender', function ($receiver, ctx) {
+      return $receiver.onRender_0(ctx), Unit;
+    }.bind(null, this));
+    $receiver_1.add_11rb$(element_1);
+    var $receiver_2 = this.demos_0;
+    var key = startScene;
+    var tmp$_0;
+    ((tmp$ = (Kotlin.isType(tmp$_0 = $receiver_2, Map) ? tmp$_0 : throwCCE()).get_11rb$(key)) != null ? tmp$ : this.defaultScene_0).loadScene(this.newScenes_0, ctx);
+    ctx.run();
+  }
+  Demo.prototype.onRender_0 = function (ctx) {
+    if (!this.newScenes_0.isEmpty()) {
+      var tmp$;
+      tmp$ = this.currentScenes_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        ctx.scenes.remove_11rb$(element);
+        element.dispose_evfofk$(ctx);
+      }
+      this.currentScenes_0.clear();
+      var tmp$_0, tmp$_0_0;
+      var index = 0;
+      tmp$_0 = this.newScenes_0.iterator();
+      while (tmp$_0.hasNext()) {
+        var item = tmp$_0.next();
+        ctx.scenes.add_wxm5ur$((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0), item);
+        this.currentScenes_0.add_11rb$(item);
+      }
+      this.newScenes_0.clear();
+    }
+  };
+  function Demo$demoOverlay$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
+  }
+  function Demo$demoOverlay$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(Demo$demoOverlay$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(getCallableRef('BlurredComponentUi', function (component) {
+      return new BlurredComponentUi(component);
+    }));
+    return Unit;
+  }
+  function Demo$demoOverlay$lambda$lambda_0($receiver) {
+    $receiver.layoutSpec.setOrigin_4ujscr$(dps(10.0, true), dps(-50.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(40.0, true), dps(40.0, true), zero());
+    return Unit;
+  }
+  function Demo$demoOverlay$lambda$lambda$lambda_0(this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(-50.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(40.0, true), zero());
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      $receiver.text = 'Demos';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.font.setCustom_11rb$(this$.theme.titleFont_mx4ult$($receiver.dpi));
+      return Unit;
+    };
+  }
+  function Demo$demoOverlay$lambda$lambda$lambda_1(this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(-60.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
+      var bg = new SimpleComponentUi($receiver);
+      bg.color.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.ui.setCustom_11rb$(bg);
+      return Unit;
+    };
+  }
+  function Demo$demoOverlay$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, closure$menuButton) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$demo.value.loadScene(this$Demo.newScenes_0, closure$ctx);
+      closure$menuButton.isEnabled = false;
+      return Unit;
+    };
+  }
+  function Demo$demoOverlay$lambda$lambda$lambda_2(closure$y, closure$demo, this$Demo, closure$ctx, closure$menuButton) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$y.v, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), zero());
+      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
+      $receiver.text = closure$demo.value.label;
+      closure$y.v -= 35.0;
+      var $receiver_0 = $receiver.onClick;
+      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, closure$menuButton);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function Demo$demoOverlay$lambda$lambda$lambda$lambda_0(this$, this$Demo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$Demo.dbgOverlay_0.isVisible = this$.isEnabled;
+      return Unit;
+    };
+  }
+  function Demo$demoOverlay$lambda$lambda$lambda_3(this$Demo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(10.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), zero());
+      $receiver.text = 'Debug Info';
+      $receiver.isEnabled = this$Demo.dbgOverlay_0.isVisible;
+      var $receiver_0 = $receiver.onClick;
+      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda_0($receiver, this$Demo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function Demo$demoOverlay$lambda$lambda_1(this$, this$Demo, closure$ctx, closure$menuButton) {
+    return function ($receiver) {
+      var tmp$;
+      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0, true), pcs(100.0, true), zero());
+      $receiver.alpha = 0.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('title', Demo$demoOverlay$lambda$lambda$lambda_0(this$)));
+      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', Demo$demoOverlay$lambda$lambda$lambda_1(this$)));
+      var y = {v: -105.0};
+      tmp$ = this$Demo.demos_0.entries.iterator();
+      while (tmp$.hasNext()) {
+        var demo = tmp$.next();
+        $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$(demo.key, Demo$demoOverlay$lambda$lambda$lambda_2(y, demo, this$Demo, closure$ctx, closure$menuButton)));
+      }
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('showDbg', Demo$demoOverlay$lambda$lambda$lambda_3(this$Demo)));
+      return Unit;
+    };
+  }
+  function Demo$demoOverlay$lambda(this$Demo, closure$ctx) {
+    return function ($receiver) {
+      $receiver.theme = theme(UiTheme.Companion.DARK, Demo$demoOverlay$lambda$lambda);
+      $receiver.content.ui.setCustom_11rb$(new BlankComponentUi());
+      var menuButton = $receiver.toggleButton_6j87po$('menuButton', Demo$demoOverlay$lambda$lambda_0);
+      var menu = $receiver.container_t34sov$('menu', Demo$demoOverlay$lambda$lambda_1($receiver, this$Demo, closure$ctx, menuButton));
+      $receiver.unaryPlus_uv0sim$(menu);
+      menuButton.ui.setCustom_11rb$(new MenuButtonUi(menuButton, menu));
+      $receiver.unaryPlus_uv0sim$(menuButton);
+      return Unit;
+    };
+  }
+  Demo.prototype.demoOverlay_0 = function (ctx) {
+    return uiScene(ctx.screenDpi, void 0, Demo$demoOverlay$lambda(this, ctx));
+  };
+  function Demo$DemoEntry(label, loadScene) {
+    this.label = label;
+    this.loadScene = loadScene;
+  }
+  Demo$DemoEntry.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DemoEntry',
+    interfaces: []
+  };
+  function Demo$defaultScene$lambda($receiver, it) {
+    $receiver.add_11rb$(simpleShapesScene());
+    return Unit;
+  }
+  function Demo$demos$lambda($receiver, it) {
+    $receiver.addAll_brywnq$(multiScene());
+    return Unit;
+  }
+  function Demo$demos$lambda_0($receiver, it) {
+    $receiver.add_11rb$(pointScene());
+    return Unit;
+  }
+  function Demo$demos$lambda_1($receiver, it) {
+    $receiver.addAll_brywnq$(synthieScene(it));
+    return Unit;
+  }
+  function Demo$demos$lambda_2($receiver, it) {
+    $receiver.addAll_brywnq$(earthScene());
+    return Unit;
+  }
+  function Demo$demos$lambda_3($receiver, it) {
+    $receiver.add_11rb$(modelScene());
+    return Unit;
+  }
+  function Demo$demos$lambda_4($receiver, it) {
+    $receiver.addAll_brywnq$(treeScene(it));
+    return Unit;
+  }
+  Demo.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Demo',
+    interfaces: []
+  };
+  function MenuButtonUi(tb, menu) {
+    ToggleButtonUi.call(this, tb, new BlankComponentUi());
+    this.menu_0 = menu;
+    this.menuAnimator_0 = new CosAnimator(new InterpolatedFloat(0.0, 1.0));
+  }
+  function MenuButtonUi$createUi$lambda(this$MenuButtonUi) {
+    return function (v) {
+      this$MenuButtonUi.menu_0.setIdentity();
+      this$MenuButtonUi.menu_0.translate_y2kzbl$(this$MenuButtonUi.menu_0.posInParent.x + dp(this$MenuButtonUi.tb, -40.0) * (1.0 - v), this$MenuButtonUi.menu_0.posInParent.y, this$MenuButtonUi.menu_0.posInParent.z);
+      this$MenuButtonUi.menu_0.alpha = v;
+      return Unit;
+    };
+  }
+  function MenuButtonUi$createUi$lambda_0(this$MenuButtonUi) {
+    return function ($receiver) {
+      this$MenuButtonUi.menuAnimator_0.speed = this$MenuButtonUi.tb.isEnabled ? 1.0 : -1.0;
+      return Unit;
+    };
+  }
+  function MenuButtonUi$createUi$lambda_1(this$MenuButtonUi) {
+    return function ($receiver) {
+      $receiver.colorModel = ColorModel.VERTEX_COLOR;
+      $receiver.lightModel = this$MenuButtonUi.tb.root.shaderLightModel;
+      return Unit;
+    };
+  }
+  MenuButtonUi.prototype.createUi_evfofk$ = function (ctx) {
+    ToggleButtonUi.prototype.createUi_evfofk$.call(this, ctx);
+    this.knobAnimator.duration = 0.5;
+    this.knobAnimator.value.onUpdate;
+    this.menuAnimator_0.duration = 0.25;
+    this.menuAnimator_0.speed = -1.0;
+    this.menuAnimator_0.value.onUpdate = MenuButtonUi$createUi$lambda(this);
+    this.tb.onStateChange.add_11rb$(MenuButtonUi$createUi$lambda_0(this));
+    this.mesh.shader = basicShader(MenuButtonUi$createUi$lambda_1(this));
+  };
+  MenuButtonUi.prototype.onRender_evfofk$ = function (ctx) {
+    ToggleButtonUi.prototype.onRender_evfofk$.call(this, ctx);
+    this.menuAnimator_0.tick_evfofk$(ctx);
+  };
+  var Math_0 = Math;
+  MenuButtonUi.prototype.updateUi_evfofk$ = function (ctx) {
+    var hw = this.tb.width * 0.5;
+    var hh = this.tb.height * 0.18;
+    var hx = -hw / 2.0;
+    var ph = dp(this.tb, 2.5);
+    this.updateTextColor();
+    this.tb.setupBuilder_84rojv$(this.meshBuilder);
+    var $receiver = this.meshBuilder;
+    $receiver.color = new Color(0.0, 0.0, 0.0, 0.0);
+    var $receiver_0 = $receiver.circleProps.defaults();
+    var a = this.tb.width;
+    var b = this.tb.height;
+    $receiver_0.radius = Math_0.min(a, b) / 2.0;
+    $receiver_0.center.set_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, -4.0);
+    $receiver_0.steps = 30;
+    $receiver.circle_59f34t$($receiver.circleProps);
+    var tx = this.knobAnimator.value.value * -hw * 0.1;
+    var w = hw - this.knobAnimator.value.value * hw * 0.4;
+    $receiver.color = this.textColor;
+    $receiver.translate_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, 0.0);
+    $receiver.rotate_ad55pp$(180.0 - this.knobAnimator.value.value * 180.0, Vec3f.Companion.Z_AXIS);
+    $receiver.transform.push();
+    $receiver.translate_y2kzbl$(tx, hh, 0.0);
+    $receiver.rotate_ad55pp$(this.knobAnimator.value.value * 45.0, Vec3f.Companion.Z_AXIS);
+    var $receiver_1 = $receiver.rectProps.defaults();
+    $receiver_1.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
+    $receiver_1.size.set_dleff0$(w, ph);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    $receiver.transform.pop();
+    var $receiver_2 = $receiver.rectProps.defaults();
+    $receiver_2.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
+    $receiver_2.size.set_dleff0$(hw, ph);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    $receiver.transform.push();
+    $receiver.translate_y2kzbl$(tx, -hh, 0.0);
+    $receiver.rotate_ad55pp$(this.knobAnimator.value.value * -45.0, Vec3f.Companion.Z_AXIS);
+    var $receiver_3 = $receiver.rectProps.defaults();
+    $receiver_3.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
+    $receiver_3.size.set_dleff0$(w, ph);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    $receiver.transform.pop();
+  };
+  MenuButtonUi.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MenuButtonUi',
+    interfaces: [ToggleButtonUi]
+  };
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   function Earth(name) {
     Earth$Companion_getInstance();
@@ -261,7 +546,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.steadyScreenPt_0.set_dleff0$(screenX, screenY);
     this.steadyScreenPtMode_0 = Earth$Companion_getInstance().STEADY_SCREEN_PT_INIT_0;
   };
-  var Math_0 = Math;
   Earth.prototype.render_evfofk$ = function (ctx) {
     var tmp$, tmp$_0;
     var cam = (tmp$ = this.scene) != null ? tmp$.camera : null;
@@ -724,15 +1008,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.attributionText_6dibss$_0 = attributionText;
     }
   });
-  EarthUi.prototype.formatDouble_0 = function (value, precision) {
-    var s = value.toString();
-    if (!contains(s, 46)) {
-      s += '.';
-    }
-    s += '000000';
-    var endIndex = indexOf(s, 46) + 1 + Math_0.min(6, precision) | 0;
-    return s.substring(0, endIndex);
-  };
   function EarthUi$scene$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
   }
@@ -781,13 +1056,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function EarthUi$scene$lambda$lambda$lambda_2(this$EarthUi, this$, this$_0) {
     return function ($receiver, it) {
       var tmp$;
-      var lat = this$EarthUi.formatDouble_0(this$EarthUi.earth.centerLat, 5);
-      var lon = this$EarthUi.formatDouble_0(this$EarthUi.earth.centerLon, 5);
+      var lat = formatDouble(this$EarthUi.earth.centerLat, 5);
+      var lon = formatDouble(this$EarthUi.earth.centerLon, 5);
       if (this$EarthUi.earth.cameraHeight > 10000) {
-        tmp$ = this$EarthUi.formatDouble_0(this$EarthUi.earth.cameraHeight / 1000.0, 1) + ' km';
+        tmp$ = formatDouble(this$EarthUi.earth.cameraHeight / 1000.0, 1) + ' km';
       }
        else {
-        tmp$ = this$EarthUi.formatDouble_0(this$EarthUi.earth.cameraHeight, 1) + ' m';
+        tmp$ = formatDouble(this$EarthUi.earth.cameraHeight, 1) + ' m';
       }
       var hgt = tmp$;
       this$.text = lat + '\xB0, ' + lon + '\xB0  ' + hgt;
@@ -1274,7 +1549,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         else
           tmp$ = 1.0 - idleWeight;
         var walkWeight = tmp$;
-        closure$speedLabel.text = formatFloat(value);
+        closure$speedLabel.text = formatFloat(value, 2);
         (tmp$_0 = ensureNotNull(closure$armature.v).getAnimation_61zpoe$('Armature|idle')) != null ? (tmp$_0.weight = idleWeight) : null;
         (tmp$_1 = ensureNotNull(closure$armature.v).getAnimation_61zpoe$('Armature|walk')) != null ? (tmp$_1.weight = walkWeight) : null;
         (tmp$_2 = ensureNotNull(closure$armature.v).getAnimation_61zpoe$('Armature|run')) != null ? (tmp$_2.weight = runWeight) : null;
@@ -1285,7 +1560,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function modelScene$lambda$lambda$lambda$lambda$lambda$lambda_0(closure$slowMotion, closure$slowMoLabel) {
     return function ($receiver, value) {
       closure$slowMotion.v = value;
-      closure$slowMoLabel.text = formatFloat(closure$slowMotion.v);
+      closure$slowMoLabel.text = formatFloat(closure$slowMotion.v, 2);
       return Unit;
     };
   }
@@ -1312,7 +1587,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_2.textAlignment = new Gravity(Alignment.START, Alignment.END);
       $receiver_2.padding.bottom = dps(4.0);
       var x = closure$movementSpeed_0.v;
-      $receiver_2.text = formatFloat(Math_0.sqrt(x));
+      $receiver_2.text = formatFloat(Math_0.sqrt(x), 2);
       var speedLabel = $receiver_2;
       $receiver_0.unaryPlus_uv0sim$(speedLabel);
       var x_0 = closure$movementSpeed_0.v;
@@ -1333,7 +1608,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_5.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(40.0), uns(0.0));
       $receiver_5.textAlignment = new Gravity(Alignment.START, Alignment.END);
       $receiver_5.padding.bottom = dps(4.0);
-      $receiver_5.text = formatFloat(closure$slowMotion_0.v);
+      $receiver_5.text = formatFloat(closure$slowMotion_0.v, 2);
       var slowMoLabel = $receiver_5;
       $receiver_0.unaryPlus_uv0sim$(slowMoLabel);
       var $receiver_6 = new Slider('slowMoSlider', 0.0, 1.0, closure$slowMotion_0.v, $receiver_0.root);
@@ -1364,27 +1639,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, $receiver.defaultShadowMap));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, modelScene$lambda$lambda($receiver)));
     return $receiver;
-  }
-  function formatFloat(value) {
-    var tmp$;
-    var clamp$result;
-    if (value < 0.0) {
-      clamp$result = 0.0;
-    }
-     else if (value > 1.0) {
-      clamp$result = 1.0;
-    }
-     else {
-      clamp$result = value;
-    }
-    var i = numberToInt(round(clamp$result * 100));
-    if (i < 10)
-      tmp$ = '0.0' + i;
-    else
-      tmp$ = (i / 100 | 0).toString() + '.' + i % 100 + '0';
-    var str = tmp$;
-    var endIndex = indexOf(str, 46) + 3 | 0;
-    return str.substring(0, endIndex);
   }
   function multiScene$lambda($receiver, ctx) {
     var vp = ctx.viewport;
@@ -1436,19 +1690,22 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           }
         }
         closure$trav.center.set_y2kzbl$(randomF(-1.0, 1.0), randomF(-1.0, 1.0), randomF(-1.0, 1.0));
-        var t = currentTimeMillis();
+        var t = new PerfTimer();
         closure$tree.traverse_vqgpt3$(closure$trav);
-        println('In-radius search in ' + currentTimeMillis().subtract(t) + ' ms, got ' + closure$trav.result.size + ' points');
+        var searchT = t.takeMs();
+        t.reset();
         var color = Color.Companion.fromHsv_7b5o5w$(randomF(0.0, 360.0), 1.0, 1.0, 1.0);
         tmp$_1 = closure$trav.result.iterator();
         while (tmp$_1.hasNext()) {
           var point_0 = tmp$_1.next();
-          tmp$_2 = closure$ptVertCnt - 1 | 0;
-          for (var i_0 = 0; i_0 <= tmp$_2; i_0++) {
+          tmp$_2 = closure$ptVertCnt;
+          for (var i_0 = 0; i_0 < tmp$_2; i_0++) {
             vert.index = point_0.index + i_0 | 0;
             vert.color.set_d7aj7k$(color);
           }
         }
+        var updateT = t.takeMs();
+        println('In-radius search retrieved ' + closure$trav.result.size + ' points, took ' + (formatDouble(searchT, 3) + ' ms; Point update took ' + formatDouble(updateT, 3) + ' ms'));
         closure$data.isSyncRequired = true;
       }
       return Unit;
@@ -1489,8 +1746,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.onRender.add_11rb$(pointScene$lambda$lambda(frameCnt, data, trav, ptVertCnt, tree));
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, pointScene$lambda$lambda_0($receiver)));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, pointScene$lambda$lambda_1(pointMesh)));
-    var scene = $receiver;
-    return scene;
+    return $receiver;
   }
   function makePointMesh$lambda$lambda(closure$pt) {
     return function ($receiver) {
@@ -1511,12 +1767,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
+  var now = $module$kool.de.fabmax.kool.now;
   function makePointMesh() {
     var points = ArrayList_init();
     var mesh = pointMesh(void 0, makePointMesh$lambda(points));
-    var t = currentTimeMillis();
-    var tree = pointTree(points);
-    println('Constructed k-d-Tree with ' + points.size + ' points in ' + currentTimeMillis().subtract(t) + ' ms');
+    var message = 'Constructed k-d-Tree with ' + points.size + ' points in ';
+    var t = now();
+    var ret = pointTree(points);
+    println(message + ' ' + formatDouble(now() - t, 3) + ' ms');
+    var tree = ret;
     return new Pair(mesh, tree);
   }
   function makeBillboardPointMesh() {
@@ -1530,9 +1789,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       mesh.addQuad_4sqmhu$(new Vec3f(x, y, z), Color.Companion.DARK_GRAY);
       points.add_11rb$(new MeshPoint(x, y, z, (i - 1 | 0) * 4 | 0));
     }
-    var t = currentTimeMillis();
-    var tree = pointTree(points);
-    println('Constructed k-d-Tree with ' + points.size + ' points in ' + currentTimeMillis().subtract(t) + ' ms');
+    var message = 'Constructed k-d-Tree with ' + points.size + ' points in ';
+    var t = now();
+    var ret = pointTree(points);
+    println(message + ' ' + formatDouble(now() - t, 3) + ' ms');
+    var tree = ret;
     return new Pair(mesh, tree);
   }
   function MeshPoint(x, y, z, index) {
@@ -1698,285 +1959,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_2));
     return $receiver;
   }
-  var Map = Kotlin.kotlin.collections.Map;
-  function Demo(ctx, startScene) {
-    if (startScene === void 0)
-      startScene = null;
-    this.dbgOverlay_0 = debugOverlay(ctx, true);
-    this.newScenes_0 = ArrayList_init();
-    this.currentScenes_0 = ArrayList_init();
-    this.defaultScene_0 = new Demo$DemoEntry('Simple Demo', Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('simpleDemo', this.defaultScene_0), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda)), to('pointDemo', new Demo$DemoEntry('Point Cloud Demo', Demo$demos$lambda_0)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_1)), to('earthDemo', new Demo$DemoEntry('Earth Demo', Demo$demos$lambda_2)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_4))]);
-    var tmp$;
-    var $receiver = ctx.scenes;
-    var element = this.demoOverlay_0(ctx);
-    $receiver.add_11rb$(element);
-    var $receiver_0 = ctx.scenes;
-    var element_0 = this.dbgOverlay_0;
-    $receiver_0.add_11rb$(element_0);
-    var $receiver_1 = ctx.onRender;
-    var element_1 = getCallableRef('onRender', function ($receiver, ctx) {
-      return $receiver.onRender_evfofk$(ctx), Unit;
-    }.bind(null, this));
-    $receiver_1.add_11rb$(element_1);
-    var $receiver_2 = this.demos_0;
-    var key = startScene;
-    var tmp$_0;
-    ((tmp$ = (Kotlin.isType(tmp$_0 = $receiver_2, Map) ? tmp$_0 : throwCCE()).get_11rb$(key)) != null ? tmp$ : this.defaultScene_0).loadScene(this.newScenes_0, ctx);
-    ctx.run();
-  }
-  Demo.prototype.onRender_evfofk$ = function (ctx) {
-    if (!this.newScenes_0.isEmpty()) {
-      var tmp$;
-      tmp$ = this.currentScenes_0.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        ctx.scenes.remove_11rb$(element);
-        element.dispose_evfofk$(ctx);
-      }
-      this.currentScenes_0.clear();
-      var tmp$_0, tmp$_0_0;
-      var index = 0;
-      tmp$_0 = this.newScenes_0.iterator();
-      while (tmp$_0.hasNext()) {
-        var item = tmp$_0.next();
-        ctx.scenes.add_wxm5ur$((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0), item);
-        this.currentScenes_0.add_11rb$(item);
-      }
-      this.newScenes_0.clear();
-    }
-  };
-  function Demo$demoOverlay$lambda$lambda$lambda(it) {
-    return new BlankComponentUi();
-  }
-  function Demo$demoOverlay$lambda$lambda($receiver) {
-    $receiver.componentUi_mloaa0$(Demo$demoOverlay$lambda$lambda$lambda);
-    $receiver.containerUi_2t3ptw$(getCallableRef('BlurredComponentUi', function (component) {
-      return new BlurredComponentUi(component);
-    }));
-    return Unit;
-  }
-  function Demo$demoOverlay$lambda$lambda_0($receiver) {
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(10.0, true), dps(-50.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(40.0, true), dps(40.0, true), zero());
-    return Unit;
-  }
-  function Demo$demoOverlay$lambda$lambda$lambda_0(this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(-50.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(40.0, true), zero());
-      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
-      $receiver.text = 'Demos';
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.font.setCustom_11rb$(this$.theme.titleFont_mx4ult$($receiver.dpi));
-      return Unit;
-    };
-  }
-  function Demo$demoOverlay$lambda$lambda$lambda_1(this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(-60.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
-      var bg = new SimpleComponentUi($receiver);
-      bg.color.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.ui.setCustom_11rb$(bg);
-      return Unit;
-    };
-  }
-  function Demo$demoOverlay$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, closure$menuButton) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$demo.value.loadScene(this$Demo.newScenes_0, closure$ctx);
-      closure$menuButton.isEnabled = false;
-      return Unit;
-    };
-  }
-  function Demo$demoOverlay$lambda$lambda$lambda_2(closure$y, closure$demo, this$Demo, closure$ctx, closure$menuButton) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$y.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), zero());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      $receiver.text = closure$demo.value.label;
-      closure$y.v -= 35.0;
-      var $receiver_0 = $receiver.onClick;
-      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, closure$menuButton);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function Demo$demoOverlay$lambda$lambda$lambda$lambda_0(this$, this$Demo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$Demo.dbgOverlay_0.isVisible = this$.isEnabled;
-      return Unit;
-    };
-  }
-  function Demo$demoOverlay$lambda$lambda$lambda_3(this$Demo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(10.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), zero());
-      $receiver.text = 'Debug Info';
-      $receiver.isEnabled = this$Demo.dbgOverlay_0.isVisible;
-      var $receiver_0 = $receiver.onClick;
-      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda_0($receiver, this$Demo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function Demo$demoOverlay$lambda$lambda_1(this$, this$Demo, closure$ctx, closure$menuButton) {
-    return function ($receiver) {
-      var tmp$;
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0, true), pcs(100.0, true), zero());
-      $receiver.alpha = 0.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('title', Demo$demoOverlay$lambda$lambda$lambda_0(this$)));
-      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', Demo$demoOverlay$lambda$lambda$lambda_1(this$)));
-      var y = {v: -105.0};
-      tmp$ = this$Demo.demos_0.entries.iterator();
-      while (tmp$.hasNext()) {
-        var demo = tmp$.next();
-        $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$(demo.key, Demo$demoOverlay$lambda$lambda$lambda_2(y, demo, this$Demo, closure$ctx, closure$menuButton)));
-      }
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('showDbg', Demo$demoOverlay$lambda$lambda$lambda_3(this$Demo)));
-      return Unit;
-    };
-  }
-  function Demo$demoOverlay$lambda(this$Demo, closure$ctx) {
-    return function ($receiver) {
-      $receiver.theme = theme(UiTheme.Companion.DARK, Demo$demoOverlay$lambda$lambda);
-      $receiver.content.ui.setCustom_11rb$(new BlankComponentUi());
-      var menuButton = $receiver.toggleButton_6j87po$('menuButton', Demo$demoOverlay$lambda$lambda_0);
-      var menu = $receiver.container_t34sov$('menu', Demo$demoOverlay$lambda$lambda_1($receiver, this$Demo, closure$ctx, menuButton));
-      $receiver.unaryPlus_uv0sim$(menu);
-      menuButton.ui.setCustom_11rb$(new MenuButtonUi(menuButton, menu));
-      $receiver.unaryPlus_uv0sim$(menuButton);
-      return Unit;
-    };
-  }
-  Demo.prototype.demoOverlay_0 = function (ctx) {
-    return uiScene(ctx.screenDpi, void 0, Demo$demoOverlay$lambda(this, ctx));
-  };
-  function Demo$DemoEntry(label, loadScene) {
-    this.label = label;
-    this.loadScene = loadScene;
-  }
-  Demo$DemoEntry.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DemoEntry',
-    interfaces: []
-  };
-  function Demo$defaultScene$lambda($receiver, it) {
-    $receiver.add_11rb$(simpleShapesScene());
-    return Unit;
-  }
-  function Demo$demos$lambda($receiver, it) {
-    $receiver.addAll_brywnq$(multiScene());
-    return Unit;
-  }
-  function Demo$demos$lambda_0($receiver, it) {
-    $receiver.add_11rb$(pointScene());
-    return Unit;
-  }
-  function Demo$demos$lambda_1($receiver, it) {
-    $receiver.addAll_brywnq$(synthieScene(it));
-    return Unit;
-  }
-  function Demo$demos$lambda_2($receiver, it) {
-    $receiver.addAll_brywnq$(earthScene());
-    return Unit;
-  }
-  function Demo$demos$lambda_3($receiver, it) {
-    $receiver.add_11rb$(modelScene());
-    return Unit;
-  }
-  function Demo$demos$lambda_4($receiver, it) {
-    $receiver.addAll_brywnq$(treeScene(it));
-    return Unit;
-  }
-  Demo.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Demo',
-    interfaces: []
-  };
-  function MenuButtonUi(tb, menu) {
-    ToggleButtonUi.call(this, tb, new BlankComponentUi());
-    this.menu = menu;
-    this.bgColor_0 = MutableColor_init();
-    this.menuAnimator_0 = new CosAnimator(new InterpolatedFloat(0.0, 1.0));
-  }
-  function MenuButtonUi$createUi$lambda(this$MenuButtonUi) {
-    return function (v) {
-      this$MenuButtonUi.menu.setIdentity();
-      this$MenuButtonUi.menu.translate_y2kzbl$(this$MenuButtonUi.menu.posInParent.x + dp(this$MenuButtonUi.tb, -40.0) * (1.0 - v), this$MenuButtonUi.menu.posInParent.y, this$MenuButtonUi.menu.posInParent.z);
-      this$MenuButtonUi.menu.alpha = v;
-      return Unit;
-    };
-  }
-  function MenuButtonUi$createUi$lambda_0(this$MenuButtonUi) {
-    return function ($receiver) {
-      this$MenuButtonUi.menuAnimator_0.speed = this$MenuButtonUi.tb.isEnabled ? 1.0 : -1.0;
-      return Unit;
-    };
-  }
-  MenuButtonUi.prototype.createUi_evfofk$ = function (ctx) {
-    ToggleButtonUi.prototype.createUi_evfofk$.call(this, ctx);
-    this.knobAnimator.duration = 0.5;
-    this.knobAnimator.value.onUpdate;
-    this.menuAnimator_0.duration = 0.25;
-    this.menuAnimator_0.speed = -1.0;
-    this.menuAnimator_0.value.onUpdate = MenuButtonUi$createUi$lambda(this);
-    this.tb.onStateChange.add_11rb$(MenuButtonUi$createUi$lambda_0(this));
-  };
-  MenuButtonUi.prototype.onRender_evfofk$ = function (ctx) {
-    ToggleButtonUi.prototype.onRender_evfofk$.call(this, ctx);
-    this.menuAnimator_0.tick_evfofk$(ctx);
-  };
-  MenuButtonUi.prototype.updateUi_evfofk$ = function (ctx) {
-    var hw = this.tb.width * 0.5;
-    var hh = this.tb.height * 0.18;
-    var hx = -hw / 2.0;
-    var ph = dp(this.tb, 2.5);
-    this.bgColor_0.set_d7aj7k$(this.tb.root.theme.backgroundColor);
-    this.bgColor_0.a = 0.7;
-    this.updateTextColor();
-    this.tb.setupBuilder_84rojv$(this.meshBuilder);
-    var $receiver = this.meshBuilder;
-    $receiver.color = new Color(0.0, 0.0, 0.0, 0.0);
-    var $receiver_0 = $receiver.circleProps.defaults();
-    var a = this.tb.width;
-    var b = this.tb.height;
-    $receiver_0.radius = Math_0.min(a, b) / 2.0;
-    $receiver_0.center.set_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, 0.0);
-    $receiver_0.steps = 30;
-    $receiver.circle_59f34t$($receiver.circleProps);
-    var tx = this.knobAnimator.value.value * -hw * 0.1;
-    var w = hw - this.knobAnimator.value.value * hw * 0.4;
-    $receiver.color = this.textColor;
-    $receiver.translate_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, 0.0);
-    $receiver.rotate_ad55pp$(180.0 - this.knobAnimator.value.value * 180.0, Vec3f.Companion.Z_AXIS);
-    $receiver.transform.push();
-    $receiver.translate_y2kzbl$(tx, hh, 0.0);
-    $receiver.rotate_ad55pp$(this.knobAnimator.value.value * 45.0, Vec3f.Companion.Z_AXIS);
-    var $receiver_1 = $receiver.rectProps.defaults();
-    $receiver_1.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
-    $receiver_1.size.set_dleff0$(w, ph);
-    $receiver.rect_e5k3t5$($receiver.rectProps);
-    $receiver.transform.pop();
-    var $receiver_2 = $receiver.rectProps.defaults();
-    $receiver_2.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
-    $receiver_2.size.set_dleff0$(hw, ph);
-    $receiver.rect_e5k3t5$($receiver.rectProps);
-    $receiver.transform.push();
-    $receiver.translate_y2kzbl$(tx, -hh, 0.0);
-    $receiver.rotate_ad55pp$(this.knobAnimator.value.value * -45.0, Vec3f.Companion.Z_AXIS);
-    var $receiver_3 = $receiver.rectProps.defaults();
-    $receiver_3.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
-    $receiver_3.size.set_dleff0$(w, ph);
-    $receiver.rect_e5k3t5$($receiver.rectProps);
-    $receiver.transform.pop();
-  };
-  MenuButtonUi.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MenuButtonUi',
-    interfaces: [ToggleButtonUi]
-  };
   function synthieScene(ctx) {
     var content = new SynthieScene();
     var menu = synthieMenu(content, ctx);
@@ -2224,7 +2206,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.row = row;
     this.melody = melody;
     this.background_0 = new SequenceButtonUi(this);
-    this.colorAnimator_0 = new CosAnimator(new InterpolatedColor(MutableColor_init_0(Color.Companion.WHITE.withAlpha_mx4ult$(0.2)), MutableColor_init_0(Color.Companion.LIME.withAlpha_mx4ult$(0.6))));
+    this.colorAnimator_0 = new CosAnimator(new InterpolatedColor(MutableColor_init(Color.Companion.WHITE.withAlpha_mx4ult$(0.2)), MutableColor_init(Color.Companion.LIME.withAlpha_mx4ult$(0.6))));
     this.wasHovered_0 = false;
     this.layoutSpec.setOrigin_4ujscr$(dps(this.col * 20.0), dps(this.row * 15.0), zero());
     this.layoutSpec.setSize_4ujscr$(dps(18.0), dps(13.0), zero());
@@ -2301,7 +2283,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function SequenceButtonUi(btn) {
     SimpleComponentUi.call(this, btn);
-    this.bgColor = MutableColor_init();
+    this.bgColor = MutableColor_init_0();
   }
   SequenceButtonUi.prototype.onRender_evfofk$ = function (ctx) {
     var tmp$;
@@ -2561,9 +2543,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function treeScene$lambda$lambda$lambda(closure$treeGen) {
     return function ($receiver) {
-      var t = currentTimeMillis();
+      var t = now();
       closure$treeGen.buildTrunkMesh_84rojv$($receiver);
-      println('Generated ' + ($receiver.meshData.numIndices / 3 | 0) + ' trunk triangles, took ' + currentTimeMillis().subtract(t) + ' ms');
+      var ret = Unit;
+      println('Generated ' + ($receiver.meshData.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
       return Unit;
     };
   }
@@ -2590,9 +2573,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function treeScene$lambda$lambda$lambda_1(closure$treeGen, this$) {
     return function ($receiver) {
-      var t = currentTimeMillis();
+      var t = now();
       closure$treeGen.buildLeafMesh_d7s9uf$($receiver, this$.light.direction);
-      println('Generated ' + ($receiver.meshData.numIndices / 3 | 0) + ' leaf triangles, took ' + currentTimeMillis().subtract(t) + ' ms');
+      var ret = Unit;
+      println('Generated ' + ($receiver.meshData.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
       return Unit;
     };
   }
@@ -2672,14 +2656,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(110.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      $receiver.text = formatFloat_0(closure$treeGen.growDistance);
+      $receiver.text = formatFloat(closure$treeGen.growDistance, 2);
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda$lambda(closure$treeGen, closure$growDistVal) {
     return function ($receiver, value) {
       closure$treeGen.growDistance = value;
-      closure$growDistVal.text = formatFloat_0(value);
+      closure$growDistVal.text = formatFloat(value, 2);
       return Unit;
     };
   }
@@ -2704,14 +2688,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(75.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      $receiver.text = formatFloat_0(closure$treeGen.killDistance);
+      $receiver.text = formatFloat(closure$treeGen.killDistance, 2);
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda$lambda_0(closure$treeGen, closure$killDistVal) {
     return function ($receiver, value) {
       closure$treeGen.killDistance = value;
-      closure$killDistVal.text = formatFloat_0(value);
+      closure$killDistVal.text = formatFloat(value, 2);
       return Unit;
     };
   }
@@ -2768,14 +2752,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(5.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      $receiver.text = formatFloat_0(closure$treeGen.radiusOfInfluence);
+      $receiver.text = formatFloat(closure$treeGen.radiusOfInfluence, 2);
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda$lambda_2(closure$treeGen, closure$infRadiusVal) {
     return function ($receiver, value) {
       closure$treeGen.radiusOfInfluence = value;
-      closure$infRadiusVal.text = formatFloat_0(value);
+      closure$infRadiusVal.text = formatFloat(value, 2);
       return Unit;
     };
   }
@@ -2798,21 +2782,23 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         tmp$.meshData.isBatchUpdate = true;
         tmp$.meshData.clear();
         var builder = new MeshBuilder(tmp$.meshData);
-        var t = currentTimeMillis();
+        var t = now();
         closure$treeGen_0.buildTrunkMesh_84rojv$(builder);
         tmp$.meshData.generateTangents();
-        println('Generated ' + (tmp$.meshData.numIndices / 3 | 0) + ' trunk triangles, took ' + currentTimeMillis().subtract(t) + ' ms');
+        var ret = Unit;
+        println('Generated ' + (tmp$.meshData.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
         tmp$.meshData.isBatchUpdate = false;
       }
       if ((tmp$_0 = closure$leafMesh.v) != null) {
         var closure$treeGen_1 = closure$treeGen;
-        var tmp$_1, tmp$_2, tmp$_3;
         tmp$_0.meshData.isBatchUpdate = true;
         tmp$_0.meshData.clear();
         var builder_0 = new MeshBuilder(tmp$_0.meshData);
-        var t_0 = currentTimeMillis();
+        var t_0 = now();
+        var tmp$_1, tmp$_2, tmp$_3;
         closure$treeGen_1.buildLeafMesh_d7s9uf$(builder_0, (tmp$_3 = (tmp$_2 = (tmp$_1 = tmp$_0.scene) != null ? tmp$_1.light : null) != null ? tmp$_2.direction : null) != null ? tmp$_3 : Vec3f.Companion.ZERO);
-        println('Generated ' + (tmp$_0.meshData.numIndices / 3 | 0) + ' leaf triangles, took ' + currentTimeMillis().subtract(t_0) + ' ms');
+        var ret_0 = Unit;
+        println('Generated ' + (tmp$_0.meshData.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + formatDouble(now() - t_0, 3) + ' ms');
         tmp$_0.meshData.isBatchUpdate = false;
       }
       return Unit;
@@ -2906,17 +2892,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     scenes.add_11rb$(element);
     return scenes;
   }
-  function formatFloat_0(value) {
-    var tmp$;
-    var i = numberToInt(round(value * 100));
-    if (i < 10)
-      tmp$ = '0.0' + i;
-    else
-      tmp$ = (i / 100 | 0).toString() + '.' + i % 100 + '0';
-    var str = tmp$;
-    var endIndex = indexOf(str, 46) + 3 | 0;
-    return str.substring(0, endIndex);
-  }
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   function TreeGenerator(distribution, baseTop, baseBot) {
     if (baseTop === void 0)
@@ -2962,14 +2937,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   TreeGenerator.prototype.generate_za3lpa$ = function (maxIterations) {
     if (maxIterations === void 0)
       maxIterations = 1000;
+    var i = {v: 0};
+    var t = now();
     var tmp$;
-    var t = currentTimeMillis();
     this.seedTree();
-    var i = 0;
-    while ((tmp$ = i, i = tmp$ + 1 | 0, tmp$) < maxIterations && this.growSingleStep()) {
+    while ((tmp$ = i.v, i.v = tmp$ + 1 | 0, tmp$) < maxIterations && this.growSingleStep()) {
     }
-    println('Generation done, took ' + i + ' iterations, ' + this.treeNodes_0.size + ' nodes, took ' + currentTimeMillis().subtract(t) + ' ms');
     this.finishTree();
+    var ret = Unit;
+    println('Generation done, took ' + i.v + ' iterations, ' + this.treeNodes_0.size + ' nodes in' + ' ' + formatDouble(now() - t, 3) + ' ms');
   };
   TreeGenerator.prototype.growSingleStep = function () {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
@@ -3068,9 +3044,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       element.buildTrunkMesh_84rojv$(target);
     }
   };
-  function TreeGenerator$buildLeafMesh$lambda(closure$lightDir) {
+  function TreeGenerator$buildLeafMesh$lambda(closure$ld) {
     return function ($receiver) {
-      if ($receiver.normal.times_czzhiu$(closure$lightDir) < 0) {
+      if ($receiver.normal.times_czzhiu$(closure$ld) < 0) {
         $receiver.normal.scale_mx4ult$(-1.0);
       }
       return Unit;
@@ -3078,7 +3054,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   TreeGenerator.prototype.buildLeafMesh_d7s9uf$ = function (target, lightDir) {
     var oldModFun = target.vertexModFun;
-    target.vertexModFun = TreeGenerator$buildLeafMesh$lambda(lightDir);
+    var ld = lightDir.norm_5s4mqq$(MutableVec3f_init());
+    target.vertexModFun = TreeGenerator$buildLeafMesh$lambda(ld);
     var tmp$;
     tmp$ = this.treeNodes_0.iterator();
     while (tmp$.hasNext()) {
@@ -3104,7 +3081,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.nearestNode_3mwxa2$_0 = null;
     this.nearestNodeDist_dewf4c$_0 = kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
     this.isOpen = true;
-    this.vertexIdx = 0;
   }
   Object.defineProperty(TreeGenerator$AttractionPoint.prototype, 'nearestNode', {
     get: function () {
@@ -3572,14 +3548,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   _.main = main;
   _.getParams = getParams;
-  $$importsForInline$$.kool = $module$kool;
-  Object.defineProperty(Earth, 'Companion', {
-    get: Earth$Companion_getInstance
-  });
   var package$de = _.de || (_.de = {});
   var package$fabmax = package$de.fabmax || (package$de.fabmax = {});
   var package$kool = package$fabmax.kool || (package$fabmax.kool = {});
   var package$demo = package$kool.demo || (package$kool.demo = {});
+  package$demo.Demo = Demo;
+  $$importsForInline$$.kool = $module$kool;
+  package$demo.MenuButtonUi = MenuButtonUi;
+  Object.defineProperty(Earth, 'Companion', {
+    get: Earth$Companion_getInstance
+  });
   var package$earth = package$demo.earth || (package$demo.earth = {});
   package$earth.Earth = Earth;
   package$earth.earthScene = earthScene;
@@ -3601,8 +3579,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$demo.makeBillboardPointMesh = makeBillboardPointMesh;
   package$demo.MeshPoint = MeshPoint;
   package$demo.simpleShapesScene = simpleShapesScene;
-  package$demo.Demo = Demo;
-  package$demo.MenuButtonUi = MenuButtonUi;
   package$demo.synthieScene_evfofk$ = synthieScene;
   package$demo.treeScene_evfofk$ = treeScene;
   package$demo.TreeGenerator = TreeGenerator;
