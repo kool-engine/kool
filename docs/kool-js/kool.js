@@ -2510,9 +2510,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           glDrawBuffer(GL_FRONT);
           glReadBuffer(GL_FRONT);
           fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+          println('Framebuffer incomplete: attached fallback color buffer');
         }
         if (fbStatus !== GL_FRAMEBUFFER_COMPLETE) {
-          println('ERROR: Framebuffer incomplete, status: ' + fbStatus);
+          println('ERROR: Framebuffer incomplete, status: ' + fbStatus + ', color: ' + (this.colorAttachment != null) + ', depth: ' + (this.depthAttachment != null));
         }
       }
     }
@@ -13471,6 +13472,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.generator = generator;
     this.width_uigb2o$_0 = 0;
     this.height_vdup1l$_0 = 0;
+    this.delayLoading = false;
   }
   Object.defineProperty(Texture.prototype, 'width', {
     get: function () {
@@ -13510,16 +13512,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'Texture',
     interfaces: [GlObject]
   };
-  function assetTexture(assetPath) {
-    return assetTexture_0(defaultProps(assetPath));
+  function assetTexture(assetPath, delayLoading) {
+    if (delayLoading === void 0)
+      delayLoading = true;
+    return assetTexture_0(defaultProps(assetPath), delayLoading);
   }
-  function assetTexture$lambda(closure$props) {
+  function assetTexture$lambda(closure$delayLoading, closure$props) {
     return function ($receiver) {
+      $receiver.delayLoading = closure$delayLoading;
       return loadTextureAsset(closure$props.id);
     };
   }
-  function assetTexture_0(props) {
-    return new Texture(props, assetTexture$lambda(props));
+  function assetTexture_0(props, delayLoading) {
+    if (delayLoading === void 0)
+      delayLoading = true;
+    return new Texture(props, assetTexture$lambda(delayLoading, props));
   }
   function TextureManager() {
     SharedResManager.call(this);
@@ -13605,7 +13612,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var value = data;
       $receiver.put_xwzc9p$(key, value);
     }
-    if (data.isAvailable && this.allowedTexLoads_0 > 0) {
+    if (data.isAvailable && (!texture.delayLoading || this.allowedTexLoads_0 > 0)) {
       if (res.texUnit !== this.activeTexUnit_0) {
         this.activateTexUnit_0(ensureNotNull(texture.res).texUnit);
       }
@@ -20763,8 +20770,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$kool.TextureData = TextureData;
   package$kool.BufferedTextureData = BufferedTextureData;
   package$kool.Texture = Texture;
-  package$kool.assetTexture_61zpoe$ = assetTexture;
-  package$kool.assetTexture_46ie3i$ = assetTexture_0;
+  package$kool.assetTexture_ivxn3r$ = assetTexture;
+  package$kool.assetTexture_4689t5$ = assetTexture_0;
   package$kool.TextureManager = TextureManager;
   Object.defineProperty(TouchGestureEvaluator, 'Companion', {
     get: TouchGestureEvaluator$Companion_getInstance

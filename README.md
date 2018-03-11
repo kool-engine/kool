@@ -1,7 +1,10 @@
 # Kotlin + OpenGL = kool
 
-A simple OpenGL based graphics engine, which works with Desktop Java as well as
-in browsers with Javascript/WebGL. Android is in progress (quite far, see android branch...)
+A simple OpenGL based graphics engine that works on Desktop Java, Android and
+in browsers with Javascript / WebGL.
+
+Android version currently doesn't compile in IntelliJ (only in Android-Studio due to some
+gradle-plugin incompatibilities) and therefore remains in a separate branch for now.
 
 For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo).
@@ -10,7 +13,7 @@ The hamburger-button in the upper-left corner triggers the demo chooser menu. Co
 all demos is available in kool-demo sub-project. 
 
 ## Features / Noticeable stuff:
-- Multi-touch support in Javascript / WebGL (works on mobile browsers)
+- Multi-touch support (on Android and Javascript / WebGL)
 - New procedural [Tree Demo](https://fabmax.github.io/kool/kool-js/?demo=treeDemo)
 - Cascaded shadow maps
 - Vertex shader mesh animation: [Model Demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo)

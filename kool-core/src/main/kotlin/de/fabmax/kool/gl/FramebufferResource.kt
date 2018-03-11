@@ -110,10 +110,11 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
                     glDrawBuffer(GL_FRONT)
                     glReadBuffer(GL_FRONT)
                     fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER)
+                    println("Framebuffer incomplete: attached fallback color buffer")
                 }
 
                 if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {
-                    println("ERROR: Framebuffer incomplete, status: $fbStatus")
+                    println("ERROR: Framebuffer incomplete, status: $fbStatus, color: ${colorAttachment != null}, depth: ${depthAttachment != null}")
                     //throw KoolException("Framebuffer incomplete, status: $fbStatus")
                 }
             }

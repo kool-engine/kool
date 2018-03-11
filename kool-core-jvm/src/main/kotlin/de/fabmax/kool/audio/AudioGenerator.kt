@@ -7,6 +7,7 @@ import org.jtransforms.utils.CommonUtils
 import java.nio.ByteBuffer
 import javax.sound.sampled.AudioFormat
 import javax.sound.sampled.AudioSystem
+import kotlin.concurrent.thread
 
 /**
  * @author fabmax
@@ -15,7 +16,6 @@ import javax.sound.sampled.AudioSystem
 actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Float) -> Float) {
 
     private val pauseLock = java.lang.Object()
-    private val generatorThread: Thread
     private var isStopRequested = false
 
     private var fftHelper: FftHelper? = null
@@ -35,7 +35,7 @@ actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Flo
         CommonUtils.setThreadsBeginN_1D_FFT_2Threads(16384)
         CommonUtils.setThreadsBeginN_1D_FFT_4Threads(16384 * 2)
 
-        generatorThread = Thread {
+        thread(start = true, isDaemon = true) {
             val sampleRate = 48000f
             val format = AudioFormat(sampleRate, 16, 1, true, true)
             val line = AudioSystem.getSourceDataLine(format)
@@ -79,21 +79,6 @@ actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Flo
                     }
                     startTime += System.currentTimeMillis() - t
                 }
-            }
-        }
-        generatorThread.isDaemon = true
-        generatorThread.start()
-    }
-
-    private fun copyFftResult(resultArray: FloatArray, resultBuffer: Float32Buffer) {
-        for (i in 0..resultArray.size / 2 - 1) {
-            if (i < resultBuffer.capacity) {
-                val re = resultArray[i * 2] / resultArray.size.toDouble()
-                val im = resultArray[i * 2 + 1] / resultArray.size.toDouble()
-                resultBuffer[i] = Math.log10(Math.sqrt(re * re + im * im)).toFloat() * 10f
-                //resultBuffer[i] = Math.sqrt(re*re + im*im).toFloat()
-            } else {
-                break
             }
         }
     }

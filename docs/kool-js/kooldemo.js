@@ -56,7 +56,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var color = $module$kool.de.fabmax.kool.util.color_61zpoe$;
   var openUrl = $module$kool.de.fabmax.kool.openUrl_61zpoe$;
   var formatDouble = $module$kool.de.fabmax.kool.formatDouble_12fank$;
-  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_61zpoe$;
+  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_ivxn3r$;
   var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
   var Attribute = $module$kool.de.fabmax.kool.shading.Attribute;
   var MeshData_init = $module$kool.de.fabmax.kool.scene.MeshData_init_j0mu7e$;
@@ -97,7 +97,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var LinearAnimator = $module$kool.de.fabmax.kool.util.LinearAnimator;
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
-  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
   var equals = Kotlin.equals;
   var UiContainer = $module$kool.de.fabmax.kool.scene.ui.UiContainer;
@@ -117,7 +116,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Pad = $module$kool.de.fabmax.kool.audio.Pad;
   var AudioGenerator = $module$kool.de.fabmax.kool.audio.AudioGenerator;
   var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
-  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_46ie3i$;
+  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_4689t5$;
   var CullMethod = $module$kool.de.fabmax.kool.scene.CullMethod;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
@@ -1962,7 +1961,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function synthieScene(ctx) {
     var content = new SynthieScene();
     var menu = synthieMenu(content, ctx);
-    return mutableListOf([content, menu]);
+    return listOf([content, menu]);
   }
   function synthieMenu$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
@@ -2329,8 +2328,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.sampleInterval = 0.05;
     this.nextSample = 0.0;
     this.unaryPlus_uv0sim$(this.quads);
-    this.scale_y2kzbl$(1.0 / 32.0, 1.0 / 32.0, 1.0 / 32.0);
-    this.translate_y2kzbl$(0.0, -32.0, -this.zPos + this.length / 5.0);
   }
   SynthieScene$Heightmap.prototype.render_evfofk$ = function (ctx) {
     var tmp$;
@@ -2340,8 +2337,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var b = -this.nextSample;
       this.nextSample += Math_0.max(a, b);
       var freqData = this.$outer.audioGen_0.getPowerSpectrum();
-      tmp$ = this.width - 1 | 0;
-      for (var i = 0; i <= tmp$; i++) {
+      tmp$ = this.width;
+      for (var i = 0; i < tmp$; i++) {
         var $receiver = freqData.get_za3lpa$(i) / 90.0;
         var min = -1.0;
         var clamp$result;
@@ -2384,12 +2381,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
       this.zPos += 1.0;
       if (this.zPos > 10000) {
-        this.translate_y2kzbl$(0.0, 0.0, this.zPos + 10000);
         this.zPos = -10000.0;
       }
       this.quads.meshData.isSyncRequired = true;
     }
-    this.translate_y2kzbl$(0.0, 0.0, -ctx.deltaT / this.sampleInterval);
+    this.setIdentity();
+    this.scale_y2kzbl$(1.0 / 32.0, 1.0 / 32.0, 1.0 / 32.0);
+    this.translate_y2kzbl$(0.0, -32.0, -this.zPos + this.length / 5.0);
     TransformGroup.prototype.render_evfofk$.call(this, ctx);
   };
   function SynthieScene$Heightmap$quads$lambda$lambda$lambda($receiver) {

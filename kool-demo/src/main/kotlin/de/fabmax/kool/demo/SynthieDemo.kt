@@ -20,10 +20,10 @@ import kotlin.math.max
  * @author fabmax
  */
 
-fun synthieScene(ctx: RenderContext): MutableList<Scene> {
+fun synthieScene(ctx: RenderContext): List<Scene> {
     val content = SynthieScene()
     val menu = synthieMenu(content, ctx)
-    return mutableListOf(content, menu)
+    return listOf(content, menu)
 }
 
 private fun synthieMenu(content: SynthieScene, ctx: RenderContext): Scene = uiScene(ctx.screenDpi) {
@@ -314,8 +314,6 @@ private class SynthieScene: Scene() {
 
         init {
             +quads
-            scale(1f / 32f, 1f / 32f, 1f / 32f)
-            translate(0f, -32f, -zPos + length / 5f)
         }
 
         override fun render(ctx: RenderContext) {
@@ -325,7 +323,7 @@ private class SynthieScene: Scene() {
                 nextSample += max(sampleInterval, -nextSample)
 
                 val freqData = audioGen.getPowerSpectrum()
-                for (i in 0..width-1) {
+                for (i in 0 until width) {
                     val c = (freqData[i] / 90f).clamp(-1f, 0f) + 1f
                     val h = c * 50f
                     val x = i - width * 0.5f
@@ -352,12 +350,14 @@ private class SynthieScene: Scene() {
                 }
                 zPos += 1f
                 if (zPos > 10000) {
-                    translate(0f, 0f, zPos + 10000)
                     zPos = -10000f
                 }
                 quads.meshData.isSyncRequired = true
             }
-            translate(0f, 0f, -ctx.deltaT.toFloat() / sampleInterval)
+
+            setIdentity()
+            scale(1f / 32f, 1f / 32f, 1f / 32f)
+            translate(0f, -32f, -zPos + length / 5f)
 
             super.render(ctx)
         }

@@ -90,6 +90,8 @@ open class Texture(val props: TextureProps, val generator: Texture.() -> Texture
     var height = 0
         protected set
 
+    var delayLoading = false
+
     internal fun onCreate(ctx: RenderContext) {
         res = ctx.textureMgr.createTexture(props, ctx)
     }
@@ -113,12 +115,13 @@ open class Texture(val props: TextureProps, val generator: Texture.() -> Texture
     }
 }
 
-fun assetTexture(assetPath: String): Texture {
-    return assetTexture(defaultProps(assetPath))
+fun assetTexture(assetPath: String, delayLoading: Boolean = true): Texture {
+    return assetTexture(defaultProps(assetPath), delayLoading)
 }
 
-fun assetTexture(props: TextureProps): Texture {
+fun assetTexture(props: TextureProps, delayLoading: Boolean = true): Texture {
     return Texture(props) {
+        this.delayLoading = delayLoading
         loadTextureAsset(props.id)
     }
 }
