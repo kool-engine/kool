@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.JsContext
@@ -15,7 +16,8 @@ import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 import kotlin.browser.document
 import kotlin.browser.window
-import kotlin.js.Date
+import kotlin.math.pow
+import kotlin.math.round
 
 /**
  * Javascript / WebGL platform implementation
@@ -31,7 +33,7 @@ actual fun createContext(props: RenderContext.InitProps): RenderContext = JsImpl
 
 actual fun createCharMap(fontProps: FontProps): CharMap = JsImpl.fontGenerator.createCharMap(fontProps)
 
-actual fun currentTimeMillis(): Long = Date().getTime().toLong()
+actual fun now(): Double = js("performance.now()")
 
 actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
     val req = XMLHttpRequest()
@@ -61,6 +63,23 @@ actual fun openUrl(url: String) {
 }
 
 actual fun getMemoryInfo(): String = ""
+
+actual fun formatDouble(d: Double, precision: Int): String {
+    val p = precision.clamp(0, 12)
+    if (p == 0) {
+        return "${round(d).toLong()}"
+    }
+
+    val shifted = round(d * 10.0.pow(p)).toLong()
+    var str = "$shifted"
+    var i = str.length - precision
+    while (i < 1) {
+        str = "0$str"
+        i++
+    }
+
+    return str.substring(0 until i) + "." + str.substring(i)
+}
 
 
 internal object JsImpl {

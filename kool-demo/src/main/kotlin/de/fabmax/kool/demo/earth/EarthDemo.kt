@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.earth
 
+import de.fabmax.kool.formatDouble
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.openUrl
 import de.fabmax.kool.scene.Scene
@@ -11,7 +12,6 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.color
-import kotlin.math.min
 
 /**
  * Earth demo: Show an OSM map on a sphere.
@@ -118,15 +118,4 @@ class EarthUi(val earth: Earth) {
             }
         }
     }
-
-    // fixme: any better way to do string formatting which also works in js?
-    private fun formatDouble(value: Double, precision: Int): String {
-        var s = "$value"
-        if (!s.contains('.')) {
-            s += "."
-        }
-        s += "000000"
-        return s.substring(0, s.indexOf('.') + 1 + min(6, precision))
-    }
-
 }

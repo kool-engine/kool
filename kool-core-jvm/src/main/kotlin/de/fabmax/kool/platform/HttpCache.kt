@@ -15,10 +15,10 @@ class HttpCache private constructor(val cacheDir: String) {
 
     init {
         try {
-            ObjectInputStream(FileInputStream(cacheDir + "/.cacheIndex")).use {
+            ObjectInputStream(FileInputStream("$cacheDir/.cacheIndex")).use {
                 @Suppress("UNCHECKED_CAST")
                 val entries = it.readObject() as List<CacheEntry>
-                for (entry in entries) {
+                entries.filter { it.file.canRead() }.forEach { entry ->
                     entry.fileFuture = CompletableFuture.completedFuture(entry.file)
                     addCacheEntry(entry)
                 }
@@ -68,7 +68,7 @@ class HttpCache private constructor(val cacheDir: String) {
             entries.addAll(cache.values)
         }
         try {
-            ObjectOutputStream(FileOutputStream(cacheDir + "/.cacheIndex")).use {
+            ObjectOutputStream(FileOutputStream("$cacheDir/.cacheIndex")).use {
                 it.writeObject(entries)
             }
         } catch (e: Exception) {

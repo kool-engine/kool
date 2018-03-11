@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -13,6 +14,7 @@ import java.awt.Desktop
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.net.URI
+import java.util.*
 
 /**
  * Desktop LWJGL3 platform implementation
@@ -28,7 +30,7 @@ actual fun createContext(props: RenderContext.InitProps): RenderContext = Deskto
 
 actual fun createCharMap(fontProps: FontProps): CharMap = DesktopImpl.fontGenerator.createCharMap(fontProps)
 
-actual fun currentTimeMillis(): Long = System.currentTimeMillis()
+actual fun now(): Double = System.nanoTime() / 1e6
 
 actual fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
     // try to load asset from resources
@@ -61,6 +63,9 @@ actual fun getMemoryInfo(): String {
     val totalMem = rt.totalMemory()
     return "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB"
 }
+
+actual fun formatDouble(d: Double, precision: Int): String =
+        java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", d)
 
 internal object DesktopImpl {
     private const val MAX_GENERATED_TEX_WIDTH = 2048

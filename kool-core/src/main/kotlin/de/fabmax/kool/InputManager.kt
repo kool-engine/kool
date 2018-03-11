@@ -23,7 +23,7 @@ class InputManager internal constructor() {
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
     val keyEvents: MutableList<KeyEvent> = mutableListOf()
 
-    private var lastPtrInput = 0L
+    private var lastPtrInput = 0.0
     private val inputPointers = Array(MAX_POINTERS) { BufferedPointerInput() }
     val pointers = Array(MAX_POINTERS) { Pointer() }
 
@@ -115,7 +115,7 @@ class InputManager internal constructor() {
 
     fun handleTouchStart(pointerId: Int, x: Float, y: Float) {
         synchronized(inputPointers) {
-            lastPtrInput = currentTimeMillis()
+            lastPtrInput = now()
             val inPtr = getFreeInputPointer() ?: return
             inPtr.startPointer(pointerId, x, y)
             inPtr.buttonMask = 1
@@ -136,7 +136,7 @@ class InputManager internal constructor() {
 
     fun handleTouchMove(pointerId: Int, x: Float, y: Float) {
         synchronized(inputPointers) {
-            lastPtrInput = currentTimeMillis()
+            lastPtrInput = now()
             findInputPointer(pointerId)?.movePointer(x, y)
         }
     }
@@ -147,7 +147,7 @@ class InputManager internal constructor() {
 
     fun handleMouseMove(x: Float, y: Float) {
         synchronized(inputPointers) {
-            lastPtrInput = currentTimeMillis()
+            lastPtrInput = now()
             val mousePtr = findInputPointer(MOUSE_POINTER_ID)
             if (mousePtr == null) {
                 val startPtr = getFreeInputPointer() ?: return
@@ -248,7 +248,7 @@ class InputManager internal constructor() {
         private var updateState = UpdateState.INVALID
         private var processedState = UpdateState.INVALID
 
-        var lastUpdate = 0L
+        var lastUpdate = 0.0
 
         fun startPointer(pointerId: Int, x: Float, y: Float) {
             movePointer(x, y)
@@ -265,7 +265,7 @@ class InputManager internal constructor() {
             deltaY += y - this.y
             this.x = x
             this.y = y
-            lastUpdate = currentTimeMillis()
+            lastUpdate = now()
         }
 
         fun endPointer() {
@@ -281,7 +281,7 @@ class InputManager internal constructor() {
             isValid = false
         }
 
-        fun update(target: Pointer, t: Long) {
+        fun update(target: Pointer, t: Double) {
             if (updateState != UpdateState.INVALID && t - lastUpdate > 200) {
                 println("Pointer $id timed out!")
                 cancelPointer()

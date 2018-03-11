@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.RenderContext
+import de.fabmax.kool.formatDouble
 import de.fabmax.kool.getMemoryInfo
 import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.gl.GlResource
@@ -55,7 +56,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                 textColor.setCustom(root.theme.accentColor)
 
                 onRender += { c ->
-                    text = "${c.fps.toInt()}.${(c.fps * 10f).toInt() % 10} fps"
+                    text = "${formatDouble(c.fps, 1)} fps"
                 }
             }
 
@@ -147,10 +148,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
-                        var mb = "${mem / (1024*1024) + 0.05}"
-                        val pt = mb.indexOf('.')
-                        mb = mb.substring(0, pt+2)
-                        text = "$num Textures: ${mb}M"
+                        text = "$num Textures: ${formatDouble(mem / (1024.0*1024.0), 1)}M"
                     }
                 }
             }
@@ -170,10 +168,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
-                        var mb = "${mem / (1024*1024) + 0.05}"
-                        val pt = mb.indexOf('.')
-                        mb = mb.substring(0, pt+2)
-                        text = "$num Buffers: ${mb}M"
+                        text = "$num Buffers: ${formatDouble(mem / (1024.0*1024.0), 1)}M"
                     }
                 }
             }

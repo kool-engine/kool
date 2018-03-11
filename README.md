@@ -4,7 +4,7 @@ A simple OpenGL based graphics engine, which works with Desktop Java as well as
 in browsers with Javascript/WebGL. Android is in progress (quite far, see android branch...)
 
 For now this is just an experiment. However, if you are curious
-you can checkout the [javascript demo](https://fabmax.github.io/kool/kool-js/?demo=treeDemo).
+you can checkout the [javascript demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo).
 
 The hamburger-button in the upper-left corner triggers the demo chooser menu. Code for
 all demos is available in kool-demo sub-project. 

@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.formatFloat
 import de.fabmax.kool.loadAsset
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
@@ -12,7 +13,6 @@ import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.serialization.loadMesh
-import kotlin.math.round
 import kotlin.math.sqrt
 
 /**
@@ -106,7 +106,7 @@ fun modelScene(): Scene = scene {
                     layoutSpec.setSize(pcs(25f), dps(35f), uns(0f))
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
-                    text = formatFloat(sqrt(movementSpeed))
+                    text = formatFloat(sqrt(movementSpeed), 2)
                 }
                 +speedLabel
                 +Slider("speedSlider", 0.0f, 1f, sqrt(movementSpeed), root).apply {
@@ -122,7 +122,7 @@ fun modelScene(): Scene = scene {
                                 runWeight > 0f -> 1f - runWeight
                                 else -> 1f - idleWeight
                             }
-                            speedLabel.text = formatFloat(value)
+                            speedLabel.text = formatFloat(value, 2)
 
                             armature!!.getAnimation("Armature|idle")?.weight = idleWeight
                             armature!!.getAnimation("Armature|walk")?.weight = walkWeight
@@ -143,7 +143,7 @@ fun modelScene(): Scene = scene {
                     layoutSpec.setSize(pcs(25f), dps(40f), uns(0f))
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
-                    text = formatFloat(slowMotion)
+                    text = formatFloat(slowMotion, 2)
                 }
                 +slowMoLabel
                 +Slider("slowMoSlider", 0.0f, 1f, slowMotion, root).apply {
@@ -151,19 +151,10 @@ fun modelScene(): Scene = scene {
                     layoutSpec.setSize(pcs(100f), dps(50f), uns(0f))
                     onValueChanged += { value ->
                         slowMotion = value
-                        slowMoLabel.text = formatFloat(slowMotion)
+                        slowMoLabel.text = formatFloat(slowMotion, 2)
                     }
                 }
             }
         }
     }
-}
-
-private fun formatFloat(value: Float): String {
-    val i = round(value.clamp(0f, 1f) * 100).toInt()
-    val str = when {
-        i < 10 -> "0.0$i"
-        else -> "${i / 100}.${i % 100}0"
-    }
-    return str.substring(0, str.indexOf('.') + 3)
 }

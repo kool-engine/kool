@@ -1,10 +1,10 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.currentTimeMillis
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.LineMesh
 import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.timedMs
 import kotlin.math.*
 
 class TreeGenerator(val distribution: PointDistribution,
@@ -46,16 +46,16 @@ class TreeGenerator(val distribution: PointDistribution,
     }
 
     fun generate(maxIterations: Int = 1000) {
-        val t = currentTimeMillis()
-        seedTree()
         var i = 0
-        while (i++ < maxIterations) {
-            if (!growSingleStep()) {
-                break
+        timedMs({"Generation done, took $i iterations, ${treeNodes.size} nodes in"}) {
+            seedTree()
+            while (i++ < maxIterations) {
+                if (!growSingleStep()) {
+                    break
+                }
             }
+            finishTree()
         }
-        println("Generation done, took $i iterations, ${treeNodes.size} nodes, took ${currentTimeMillis() - t} ms")
-        finishTree()
     }
 
     fun growSingleStep(): Boolean {
@@ -139,10 +139,11 @@ class TreeGenerator(val distribution: PointDistribution,
 
     fun buildLeafMesh(target: MeshBuilder, lightDir: Vec3f) {
         val oldModFun = target.vertexModFun
+        val ld = lightDir.norm(MutableVec3f())
 
         // set vertex mod fun to ensure that all normals point in light direction
         target.vertexModFun = {
-            if (normal * lightDir < 0) {
+            if (normal * ld < 0) {
                 normal.scale(-1f)
             }
         }
@@ -171,8 +172,6 @@ class TreeGenerator(val distribution: PointDistribution,
             private set
 
         var isOpen = true
-
-        var vertexIdx = 0
 
         fun checkNearest(node: TreeNode) {
             val dist = distance(node)
@@ -308,16 +307,11 @@ class TreeGenerator(val distribution: PointDistribution,
                         translate(p)
                         rotate(randomF(0f, 360f), n)
 
-                        var i0 = vertex(Vec3f(0f, -0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 0f))
-                        var i1 = vertex(Vec3f(0f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 1f))
-                        var i2 = vertex(Vec3f(0.1f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(1f, 1f))
-                        var i3 = vertex(Vec3f(0.1f, -0.022f, 0f), NEG_Z_AXIS, Vec2f(1f, 0f))
+                        val i0 = vertex(Vec3f(0f, -0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 0f))
+                        val i1 = vertex(Vec3f(0f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 1f))
+                        val i2 = vertex(Vec3f(0.1f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(1f, 1f))
+                        val i3 = vertex(Vec3f(0.1f, -0.022f, 0f), NEG_Z_AXIS, Vec2f(1f, 0f))
                         meshData.addIndices(i0, i1, i2, i0, i2, i3)
-//                        i0 = vertex(Vec3f(0f, -0.022f, 0f), Z_AXIS, Vec2f(0f, 0f))
-//                        i1 = vertex(Vec3f(0f, 0.022f, 0f), Z_AXIS, Vec2f(0f, 1f))
-//                        i2 = vertex(Vec3f(0.1f, 0.022f, 0f), Z_AXIS, Vec2f(1f, 1f))
-//                        i3 = vertex(Vec3f(0.1f, -0.022f, 0f), Z_AXIS, Vec2f(1f, 0f))
-//                        meshData.addIndices(i0, i2, i1, i0, i3, i2)
                     }
                 }
             }
