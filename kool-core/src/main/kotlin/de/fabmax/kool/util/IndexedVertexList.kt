@@ -62,28 +62,22 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
     private fun increaseDataSizeF() {
         val newData = createFloat32Buffer(round(dataF.capacity * GROW_FACTOR).toInt())
-        for (i in 0 until dataF.capacity) {
-            newData[i] = dataF[i]
-        }
-        newData.position = dataF.position
+        dataF.flip()
+        newData.put(dataF)
         dataF = newData
     }
 
     private fun increaseDataSizeI() {
         val newData = createUint32Buffer(round(dataI.capacity * GROW_FACTOR).toInt())
-        for (i in 0 until dataI.capacity) {
-            newData[i] = dataI[i]
-        }
-        newData.position = dataI.position
+        dataI.flip()
+        newData.put(dataI)
         dataI = newData
     }
 
     private fun increaseIndicesSize() {
         val newIdxs = createUint32Buffer(round(indices.capacity * IndexedVertexList.GROW_FACTOR).toInt())
-        for (i in 0 until indices.capacity) {
-            newIdxs[i] = indices[i]
-        }
-        newIdxs.position = indices.position
+        indices.flip()
+        newIdxs.put(indices)
         indices = newIdxs
     }
 

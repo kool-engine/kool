@@ -113,7 +113,8 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
                 }
 
                 if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {
-                    throw KoolException("Framebuffer incomplete, status: $fbStatus")
+                    println("ERROR: Framebuffer incomplete, status: $fbStatus")
+                    //throw KoolException("Framebuffer incomplete, status: $fbStatus")
                 }
             }
         }

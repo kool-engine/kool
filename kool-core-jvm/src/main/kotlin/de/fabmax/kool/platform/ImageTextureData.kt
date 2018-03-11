@@ -7,7 +7,6 @@ import de.fabmax.kool.TextureData
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.createUint8Buffer
-import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
 import java.awt.Transparency
 import java.awt.image.BufferedImage
@@ -22,7 +21,10 @@ class ImageTextureData(val assetPath: String) : TextureData() {
     private var format = 0
 
     init {
-        launch(CommonPool) {
+        // inits http cache if not already happened
+        HttpCache.initCache(File(".httpCache"))
+
+        launch(HttpCache.assetLoadingCtx) {
             try {
                 // todo: use a less naive distinction between http and local textures
                 val file = if (assetPath.startsWith("http")) {

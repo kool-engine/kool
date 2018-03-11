@@ -5,12 +5,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var Unit = Kotlin.kotlin.Unit;
   var Kind_CLASS = Kotlin.Kind.CLASS;
   var ensureNotNull = Kotlin.ensureNotNull;
+  var round = Kotlin.kotlin.math.round_14dthe$;
+  var until = Kotlin.kotlin.ranges.until_dqglrj$;
+  var substring = Kotlin.kotlin.text.substring_fc3b62$;
   var PropertyMetadata = Kotlin.PropertyMetadata;
   var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var lazy = Kotlin.kotlin.lazy_klfg04$;
   var println = Kotlin.kotlin.io.println_s8jyv4$;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
-  var round = Kotlin.kotlin.math.round_14dthe$;
   var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
   var toBoxedChar = Kotlin.toBoxedChar;
   var unboxChar = Kotlin.unboxChar;
@@ -710,8 +712,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function createCharMap(fontProps) {
     return JsImpl_getInstance().fontGenerator.createCharMap_ttufcy$(fontProps);
   }
-  function currentTimeMillis() {
-    return Kotlin.Long.fromNumber((new Date()).getTime());
+  function now() {
+    return performance.now();
   }
   function loadAsset$lambda(closure$req, closure$onLoad) {
     return function (evt) {
@@ -745,6 +747,34 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function getMemoryInfo() {
     return '';
+  }
+  var Math_0 = Math;
+  function formatDouble(d, precision) {
+    var clamp$result;
+    if (precision < 0) {
+      clamp$result = 0;
+    }
+     else if (precision > 12) {
+      clamp$result = 12;
+    }
+     else {
+      clamp$result = precision;
+    }
+    var p = clamp$result;
+    if (p === 0) {
+      return Kotlin.Long.fromNumber(round(d)).toString();
+    }
+    var shifted = Kotlin.Long.fromNumber(round(d * Math_0.pow(10.0, p)));
+    var str = shifted.toString();
+    var i = str.length - precision | 0;
+    while (i < 1) {
+      str = '0' + str;
+      i = i + 1 | 0;
+    }
+    var tmp$ = substring(str, until(0, i)) + '.';
+    var $receiver = str;
+    var startIndex = i;
+    return tmp$ + $receiver.substring(startIndex);
   }
   function JsImpl() {
     JsImpl_instance = this;
@@ -948,8 +978,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       webGlCtx = this.canvas_8be2vx$.getContext('experimental-webgl2');
     }
     JsImpl_getInstance().isWebGl2Context = webGlCtx != null;
-    var uint32Indices = false;
-    var depthTextures = false;
+    var uint32Indices;
+    var depthTextures;
+    var maxTexUnits;
     var shaderIntAttribs = false;
     var depthComponentIntFormat = GL_DEPTH_COMPONENT;
     var depthFilterMethod = GL_NEAREST;
@@ -964,6 +995,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       depthComponentIntFormat = GL_DEPTH_COMPONENT24;
       glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_300_ES;
       glVersion = new GlVersion('WebGL', 2, 0);
+      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
     }
      else {
       webGlCtx = this.canvas_8be2vx$.getContext('webgl');
@@ -976,13 +1008,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.gl_8be2vx$ = Kotlin.isType(tmp$_1 = webGlCtx, WebGLRenderingContext) ? tmp$_1 : throwCCE();
       uint32Indices = this.gl_8be2vx$.getExtension('OES_element_index_uint') != null;
       depthTextures = this.gl_8be2vx$.getExtension('WEBGL_depth_texture') != null;
+      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
     }
     var extAnisotropic = (tmp$_3 = (tmp$_2 = this.gl_8be2vx$.getExtension('EXT_texture_filter_anisotropic')) != null ? tmp$_2 : this.gl_8be2vx$.getExtension('MOZ_EXT_texture_filter_anisotropic')) != null ? tmp$_3 : this.gl_8be2vx$.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
     if (extAnisotropic != null) {
       var max = typeof (tmp$_4 = this.gl_8be2vx$.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) === 'number' ? tmp$_4 : throwCCE();
       anisotropicTexFilterInfo = new AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT);
     }
-    glCapabilities = new GlCapabilities(uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
+    glCapabilities = new GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
     this.screenDpi = JsImpl_getInstance().dpi;
     this.windowWidth = this.canvas_8be2vx$.clientWidth;
     this.windowHeight = this.canvas_8be2vx$.clientHeight;
@@ -1544,7 +1577,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.res = res;
     return this.filter_dleff0$(input, dt);
   };
-  var Math_0 = Math;
   MoodFilter.prototype.filter_dleff0$ = function (input, dt) {
     var cut = 2 * this.cutoff * dt;
     var p = cut * (MoodFilter$Companion_getInstance().C1_0 - MoodFilter$Companion_getInstance().C2_0 * cut);
@@ -2480,7 +2512,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         }
         if (fbStatus !== GL_FRAMEBUFFER_COMPLETE) {
-          throw new KoolException('Framebuffer incomplete, status: ' + fbStatus);
+          println('ERROR: Framebuffer incomplete, status: ' + fbStatus);
         }
       }
     }
@@ -2873,10 +2905,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'TextureResource',
     interfaces: [GlResource]
   };
-  function GlCapabilities(uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
+  function GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
     GlCapabilities$Companion_getInstance();
     this.uint32Indices = uint32Indices;
     this.shaderIntAttribs = shaderIntAttribs;
+    this.maxTexUnits = maxTexUnits;
     this.depthTextures = depthTextures;
     this.depthComponentIntFormat = depthComponentIntFormat;
     this.depthFilterMethod = depthFilterMethod;
@@ -2886,7 +2919,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function GlCapabilities$Companion() {
     GlCapabilities$Companion_instance = this;
-    this.UNKNOWN_CAPABILITIES = new GlCapabilities(false, false, false, 0, 0, AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED, GlslDialect$Companion_getInstance().GLSL_DIALECT_100, new GlVersion('Unknown', 0, 0));
+    this.UNKNOWN_CAPABILITIES = new GlCapabilities(false, false, 16, false, 0, 0, AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED, GlslDialect$Companion_getInstance().GLSL_DIALECT_100, new GlVersion('Unknown', 0, 0));
   }
   GlCapabilities$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -2912,33 +2945,37 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return this.shaderIntAttribs;
   };
   GlCapabilities.prototype.component3 = function () {
-    return this.depthTextures;
+    return this.maxTexUnits;
   };
   GlCapabilities.prototype.component4 = function () {
-    return this.depthComponentIntFormat;
+    return this.depthTextures;
   };
   GlCapabilities.prototype.component5 = function () {
-    return this.depthFilterMethod;
+    return this.depthComponentIntFormat;
   };
   GlCapabilities.prototype.component6 = function () {
-    return this.anisotropicTexFilterInfo;
+    return this.depthFilterMethod;
   };
   GlCapabilities.prototype.component7 = function () {
-    return this.glslDialect;
+    return this.anisotropicTexFilterInfo;
   };
   GlCapabilities.prototype.component8 = function () {
+    return this.glslDialect;
+  };
+  GlCapabilities.prototype.component9 = function () {
     return this.glVersion;
   };
-  GlCapabilities.prototype.copy_c2nipr$ = function (uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
-    return new GlCapabilities(uint32Indices === void 0 ? this.uint32Indices : uint32Indices, shaderIntAttribs === void 0 ? this.shaderIntAttribs : shaderIntAttribs, depthTextures === void 0 ? this.depthTextures : depthTextures, depthComponentIntFormat === void 0 ? this.depthComponentIntFormat : depthComponentIntFormat, depthFilterMethod === void 0 ? this.depthFilterMethod : depthFilterMethod, anisotropicTexFilterInfo === void 0 ? this.anisotropicTexFilterInfo : anisotropicTexFilterInfo, glslDialect === void 0 ? this.glslDialect : glslDialect, glVersion === void 0 ? this.glVersion : glVersion);
+  GlCapabilities.prototype.copy_9b28tz$ = function (uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
+    return new GlCapabilities(uint32Indices === void 0 ? this.uint32Indices : uint32Indices, shaderIntAttribs === void 0 ? this.shaderIntAttribs : shaderIntAttribs, maxTexUnits === void 0 ? this.maxTexUnits : maxTexUnits, depthTextures === void 0 ? this.depthTextures : depthTextures, depthComponentIntFormat === void 0 ? this.depthComponentIntFormat : depthComponentIntFormat, depthFilterMethod === void 0 ? this.depthFilterMethod : depthFilterMethod, anisotropicTexFilterInfo === void 0 ? this.anisotropicTexFilterInfo : anisotropicTexFilterInfo, glslDialect === void 0 ? this.glslDialect : glslDialect, glVersion === void 0 ? this.glVersion : glVersion);
   };
   GlCapabilities.prototype.toString = function () {
-    return 'GlCapabilities(uint32Indices=' + Kotlin.toString(this.uint32Indices) + (', shaderIntAttribs=' + Kotlin.toString(this.shaderIntAttribs)) + (', depthTextures=' + Kotlin.toString(this.depthTextures)) + (', depthComponentIntFormat=' + Kotlin.toString(this.depthComponentIntFormat)) + (', depthFilterMethod=' + Kotlin.toString(this.depthFilterMethod)) + (', anisotropicTexFilterInfo=' + Kotlin.toString(this.anisotropicTexFilterInfo)) + (', glslDialect=' + Kotlin.toString(this.glslDialect)) + (', glVersion=' + Kotlin.toString(this.glVersion)) + ')';
+    return 'GlCapabilities(uint32Indices=' + Kotlin.toString(this.uint32Indices) + (', shaderIntAttribs=' + Kotlin.toString(this.shaderIntAttribs)) + (', maxTexUnits=' + Kotlin.toString(this.maxTexUnits)) + (', depthTextures=' + Kotlin.toString(this.depthTextures)) + (', depthComponentIntFormat=' + Kotlin.toString(this.depthComponentIntFormat)) + (', depthFilterMethod=' + Kotlin.toString(this.depthFilterMethod)) + (', anisotropicTexFilterInfo=' + Kotlin.toString(this.anisotropicTexFilterInfo)) + (', glslDialect=' + Kotlin.toString(this.glslDialect)) + (', glVersion=' + Kotlin.toString(this.glVersion)) + ')';
   };
   GlCapabilities.prototype.hashCode = function () {
     var result = 0;
     result = result * 31 + Kotlin.hashCode(this.uint32Indices) | 0;
     result = result * 31 + Kotlin.hashCode(this.shaderIntAttribs) | 0;
+    result = result * 31 + Kotlin.hashCode(this.maxTexUnits) | 0;
     result = result * 31 + Kotlin.hashCode(this.depthTextures) | 0;
     result = result * 31 + Kotlin.hashCode(this.depthComponentIntFormat) | 0;
     result = result * 31 + Kotlin.hashCode(this.depthFilterMethod) | 0;
@@ -2948,7 +2985,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return result;
   };
   GlCapabilities.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uint32Indices, other.uint32Indices) && Kotlin.equals(this.shaderIntAttribs, other.shaderIntAttribs) && Kotlin.equals(this.depthTextures, other.depthTextures) && Kotlin.equals(this.depthComponentIntFormat, other.depthComponentIntFormat) && Kotlin.equals(this.depthFilterMethod, other.depthFilterMethod) && Kotlin.equals(this.anisotropicTexFilterInfo, other.anisotropicTexFilterInfo) && Kotlin.equals(this.glslDialect, other.glslDialect) && Kotlin.equals(this.glVersion, other.glVersion)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uint32Indices, other.uint32Indices) && Kotlin.equals(this.shaderIntAttribs, other.shaderIntAttribs) && Kotlin.equals(this.maxTexUnits, other.maxTexUnits) && Kotlin.equals(this.depthTextures, other.depthTextures) && Kotlin.equals(this.depthComponentIntFormat, other.depthComponentIntFormat) && Kotlin.equals(this.depthFilterMethod, other.depthFilterMethod) && Kotlin.equals(this.anisotropicTexFilterInfo, other.anisotropicTexFilterInfo) && Kotlin.equals(this.glslDialect, other.glslDialect) && Kotlin.equals(this.glVersion, other.glVersion)))));
   };
   function GlVersion(glDialect, versionMajor, versionMinor) {
     this.glDialect = glDialect;
@@ -3118,7 +3155,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.isEvaluatingCompatGestures = true;
     this.queuedKeyEvents_0 = ArrayList_init();
     this.keyEvents = ArrayList_init();
-    this.lastPtrInput_0 = Kotlin.Long.ZERO;
+    this.lastPtrInput_0 = 0.0;
     var array = Array_0(InputManager$Companion_getInstance().MAX_POINTERS);
     var tmp$;
     tmp$ = array.length - 1 | 0;
@@ -3215,7 +3252,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     tmp$ = this.pointers;
     for (var i = 0; i !== tmp$.length; ++i) {
-      this.inputPointers_0[i].update_rlpzug$(this.pointers[i], this.lastPtrInput_0);
+      this.inputPointers_0[i].update_sjovm5$(this.pointers[i], this.lastPtrInput_0);
     }
     if (this.isEvaluatingCompatGestures) {
       this.compatGestureEvaluator_0.evaluate_evfofk$(ctx);
@@ -3261,7 +3298,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   InputManager.prototype.handleTouchStart_nhq4am$ = function (pointerId, x, y) {
     var tmp$;
-    this.lastPtrInput_0 = currentTimeMillis();
+    this.lastPtrInput_0 = now();
     tmp$ = this.getFreeInputPointer_0();
     if (tmp$ == null) {
       return;
@@ -3280,12 +3317,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   InputManager.prototype.handleTouchMove_nhq4am$ = function (pointerId, x, y) {
     var tmp$;
-    this.lastPtrInput_0 = currentTimeMillis();
+    this.lastPtrInput_0 = now();
     (tmp$ = this.findInputPointer_0(pointerId)) != null ? (tmp$.movePointer_dleff0$(x, y), Unit) : null;
   };
   InputManager.prototype.handleMouseMove_dleff0$ = function (x, y) {
     var tmp$;
-    this.lastPtrInput_0 = currentTimeMillis();
+    this.lastPtrInput_0 = now();
     var mousePtr = this.findInputPointer_0(InputManager$Companion_getInstance().MOUSE_POINTER_ID);
     if (mousePtr == null) {
       tmp$ = this.getFreeInputPointer_0();
@@ -3482,7 +3519,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     InputManager$Pointer.call(this);
     this.updateState_0 = InputManager$BufferedPointerInput$UpdateState$INVALID_getInstance();
     this.processedState_0 = InputManager$BufferedPointerInput$UpdateState$INVALID_getInstance();
-    this.lastUpdate = Kotlin.Long.ZERO;
+    this.lastUpdate = 0.0;
   }
   InputManager$BufferedPointerInput.prototype.startPointer_nhq4am$ = function (pointerId, x, y) {
     this.movePointer_dleff0$(x, y);
@@ -3498,7 +3535,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.deltaY = this.deltaY + (y - this.y);
     this.x = x;
     this.y = y;
-    this.lastUpdate = currentTimeMillis();
+    this.lastUpdate = now();
   };
   InputManager$BufferedPointerInput.prototype.endPointer = function () {
     var tmp$;
@@ -3518,8 +3555,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.updateState_0 = InputManager$BufferedPointerInput$UpdateState$INVALID_getInstance();
     this.isValid = false;
   };
-  InputManager$BufferedPointerInput.prototype.update_rlpzug$ = function (target, t) {
-    if (this.updateState_0 !== InputManager$BufferedPointerInput$UpdateState$INVALID_getInstance() && t.subtract(this.lastUpdate).compareTo_11rb$(Kotlin.Long.fromInt(200)) > 0) {
+  InputManager$BufferedPointerInput.prototype.update_sjovm5$ = function (target, t) {
+    if (this.updateState_0 !== InputManager$BufferedPointerInput$UpdateState$INVALID_getInstance() && t - this.lastUpdate > 200) {
       println('Pointer ' + this.id + ' timed out!');
       this.cancelPointer();
     }
@@ -6089,6 +6126,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'MvpState',
     interfaces: []
   };
+  function formatFloat(f, precision) {
+    return formatDouble(f, precision);
+  }
   function RenderContext() {
     this.screenDpi = 96.0;
     this.inputMgr = new InputManager();
@@ -6265,6 +6305,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     this.fps = this.frameTimes_z5q5nn$_0.length / sum * 0.1 + this.fps * 0.9;
     this.inputMgr.onNewFrame_p81l1v$(this);
+    this.textureMgr.onNewFrame_evfofk$(this);
     this.shaderMgr.bindShader_wa3i41$(null, this);
     this.viewport = new RenderContext$Viewport(0, 0, this.windowWidth, this.windowHeight);
     this.applyAttributes();
@@ -13481,10 +13522,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return new Texture(props, assetTexture$lambda(props));
   }
   function TextureManager() {
-    TextureManager$Companion_getInstance();
     SharedResManager.call(this);
+    this.maxTextureLoadsPerFrame = 5;
     this.activeTexUnit_0 = 0;
-    var array = Array_0(TextureManager$Companion_getInstance().TEXTURE_UNITS);
+    var array = Array_0(16);
     var tmp$;
     tmp$ = array.length - 1 | 0;
     for (var i = 0; i <= tmp$; i++) {
@@ -13492,23 +13533,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     this.boundTextures_0 = array;
     this.loadingTextures_0 = LinkedHashMap_init();
+    this.allowedTexLoads_0 = this.maxTextureLoadsPerFrame;
   }
-  function TextureManager$Companion() {
-    TextureManager$Companion_instance = this;
-    this.TEXTURE_UNITS = 32;
-  }
-  TextureManager$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var TextureManager$Companion_instance = null;
-  function TextureManager$Companion_getInstance() {
-    if (TextureManager$Companion_instance === null) {
-      new TextureManager$Companion();
+  TextureManager.prototype.onNewFrame_evfofk$ = function (ctx) {
+    this.allowedTexLoads_0 = this.maxTextureLoadsPerFrame;
+    if (this.boundTextures_0.length !== glCapabilities.maxTexUnits) {
+      var array = Array_0(glCapabilities.maxTexUnits);
+      var tmp$;
+      tmp$ = array.length - 1 | 0;
+      for (var i = 0; i <= tmp$; i++) {
+        array[i] = null;
+      }
+      this.boundTextures_0 = array;
     }
-    return TextureManager$Companion_instance;
-  }
+  };
   TextureManager.prototype.bindTexture_4yp9vu$ = function (texture, ctx) {
     var tmp$;
     if (!texture.isValid) {
@@ -13539,7 +13577,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
   };
   TextureManager.prototype.nextTexUnit_0 = function () {
-    this.activateTexUnit_0((this.activeTexUnit_0 + 1 | 0) % TextureManager$Companion_getInstance().TEXTURE_UNITS);
+    this.activateTexUnit_0((this.activeTexUnit_0 + 1 | 0) % this.boundTextures_0.length);
   };
   TextureManager.prototype.activateTexUnit_0 = function (unit) {
     this.activeTexUnit_0 = unit;
@@ -13567,12 +13605,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var value = data;
       $receiver.put_xwzc9p$(key, value);
     }
-    if (data.isAvailable) {
+    if (data.isAvailable && this.allowedTexLoads_0 > 0) {
       if (res.texUnit !== this.activeTexUnit_0) {
         this.activateTexUnit_0(ensureNotNull(texture.res).texUnit);
       }
       texture.loadData_3vby0t$(data, ctx);
       this.loadingTextures_0.remove_11rb$(texture.props.id);
+      this.allowedTexLoads_0 = this.allowedTexLoads_0 - 1 | 0;
     }
   };
   TextureManager.prototype.createResource_cmpczv$ = function (key, ctx) {
@@ -14856,7 +14895,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function debugOverlay$lambda$lambda$lambda$lambda(this$) {
     return function ($receiver, c) {
-      this$.text = numberToInt(c.fps).toString() + '.' + numberToInt(c.fps * 10.0) % 10 + ' fps';
+      this$.text = formatDouble(c.fps, 1) + ' fps';
       return Unit;
     };
   }
@@ -14962,12 +15001,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       if (num !== closure$last.v || mem !== closure$lastMem.v) {
         closure$last.v = num;
         closure$lastMem.v = mem;
-        var mb = (mem / (1024 * 1024 | 0) + 0.05).toString();
-        var pt = indexOf(mb, 46);
-        var $receiver_0 = mb;
-        var endIndex = pt + 2 | 0;
-        mb = $receiver_0.substring(0, endIndex);
-        this$.text = num.toString() + ' Textures: ' + mb + 'M';
+        this$.text = num.toString() + ' Textures: ' + formatDouble(mem / (1024.0 * 1024.0), 1) + 'M';
       }
       return Unit;
     };
@@ -14991,12 +15025,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       if (num !== closure$last.v || mem !== closure$lastMem.v) {
         closure$last.v = num;
         closure$lastMem.v = mem;
-        var mb = (mem / (1024 * 1024 | 0) + 0.05).toString();
-        var pt = indexOf(mb, 46);
-        var $receiver_0 = mb;
-        var endIndex = pt + 2 | 0;
-        mb = $receiver_0.substring(0, endIndex);
-        this$.text = num.toString() + ' Buffers: ' + mb + 'M';
+        this$.text = num.toString() + ' Buffers: ' + formatDouble(mem / (1024.0 * 1024.0), 1) + 'M';
       }
       return Unit;
     };
@@ -15486,33 +15515,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
   });
   IndexedVertexList.prototype.increaseDataSizeF_0 = function () {
-    var tmp$;
     var newData = createFloat32Buffer(numberToInt(round(this.dataF.capacity * IndexedVertexList$Companion_getInstance().GROW_FACTOR_8be2vx$)));
-    tmp$ = this.dataF.capacity;
-    for (var i = 0; i < tmp$; i++) {
-      newData.set_wxm5ur$(i, this.dataF.get_za3lpa$(i));
-    }
-    newData.position = this.dataF.position;
+    this.dataF.flip();
+    newData.put_axfmcw$(this.dataF);
     this.dataF = newData;
   };
   IndexedVertexList.prototype.increaseDataSizeI_0 = function () {
-    var tmp$;
     var newData = createUint32Buffer(numberToInt(round(this.dataI.capacity * IndexedVertexList$Companion_getInstance().GROW_FACTOR_8be2vx$)));
-    tmp$ = this.dataI.capacity;
-    for (var i = 0; i < tmp$; i++) {
-      newData.set_wxm5ur$(i, this.dataI.get_za3lpa$(i));
-    }
-    newData.position = this.dataI.position;
+    this.dataI.flip();
+    newData.put_axfmcw$(this.dataI);
     this.dataI = newData;
   };
   IndexedVertexList.prototype.increaseIndicesSize_0 = function () {
-    var tmp$;
     var newIdxs = createUint32Buffer(numberToInt(round(this.indices.capacity * IndexedVertexList$Companion_getInstance().GROW_FACTOR_8be2vx$)));
-    tmp$ = this.indices.capacity;
-    for (var i = 0; i < tmp$; i++) {
-      newIdxs.set_wxm5ur$(i, this.indices.get_za3lpa$(i));
-    }
-    newIdxs.position = this.indices.position;
+    this.indices.flip();
+    newIdxs.put_axfmcw$(this.indices);
     this.indices = newIdxs;
   };
   IndexedVertexList.prototype.addVertex_z2do90$ = function (updateBounds, block) {
@@ -16347,12 +16364,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.normal.set_czzhiu$(closure$nrm);
       $receiver.texCoord.set_czzhjp$(closure$uv);
       $receiver.color.set_d7aj7k$(this$MeshBuilder.color);
-      (tmp$ = this$MeshBuilder.vertexModFun) != null ? tmp$($receiver) : null;
       this$MeshBuilder.transform.transform_w1lst9$($receiver.position);
       if (this$MeshBuilder.hasNormals_c51zdn$_0) {
         this$MeshBuilder.transform.transform_w1lst9$($receiver.normal, 0.0);
         $receiver.normal.norm();
       }
+      (tmp$ = this$MeshBuilder.vertexModFun) != null ? tmp$($receiver) : null;
       return Unit;
     };
   }
@@ -17035,6 +17052,52 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'TextProps',
     interfaces: []
   };
+  function PerfTimer() {
+    this.tStart_0 = 0.0;
+    this.reset();
+  }
+  PerfTimer.prototype.reset = function () {
+    this.tStart_0 = now();
+  };
+  PerfTimer.prototype.takeSecs = function () {
+    return this.takeMs() / 1000.0;
+  };
+  PerfTimer.prototype.takeMs = function () {
+    return now() - this.tStart_0;
+  };
+  PerfTimer.prototype.print_61zpoe$ = function (message) {
+    println(message + ' ' + formatDouble(this.takeSecs(), 3) + ' secs');
+  };
+  PerfTimer.prototype.printMs_61zpoe$ = function (message) {
+    println(message + ' ' + formatDouble(this.takeMs(), 3) + ' ms');
+  };
+  PerfTimer.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PerfTimer',
+    interfaces: []
+  };
+  var timedMs = defineInlineFunction('kool.de.fabmax.kool.util.timedMs_85cpgq$', wrapFunction(function () {
+    var now = _.de.fabmax.kool.now;
+    var formatDouble = _.de.fabmax.kool.formatDouble_12fank$;
+    var println = Kotlin.kotlin.io.println_s8jyv4$;
+    return function (message, block) {
+      var t = now();
+      var ret = block();
+      println(message + ' ' + formatDouble(now() - t, 3) + ' ms');
+      return ret;
+    };
+  }));
+  var timedMs_0 = defineInlineFunction('kool.de.fabmax.kool.util.timedMs_27vacu$', wrapFunction(function () {
+    var now = _.de.fabmax.kool.now;
+    var formatDouble = _.de.fabmax.kool.formatDouble_12fank$;
+    var println = Kotlin.kotlin.io.println_s8jyv4$;
+    return function (message, block) {
+      var t = now();
+      var ret = block();
+      println(message() + ' ' + formatDouble(now() - t, 3) + ' ms');
+      return ret;
+    };
+  }));
   function pointMesh(name, block) {
     if (name === void 0)
       name = null;
@@ -18645,11 +18708,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$kool.createContext = createContext;
   package$kool.createContext_izggji$ = createContext_0;
   package$kool.createCharMap_ttufcy$ = createCharMap;
-  package$kool.currentTimeMillis = currentTimeMillis;
+  package$kool.now = now;
   package$kool.loadAsset_jrww91$ = loadAsset;
   package$kool.loadTextureAsset_61zpoe$ = loadTextureAsset;
   package$kool.openUrl_61zpoe$ = openUrl;
   package$kool.getMemoryInfo = getMemoryInfo;
+  $$importsForInline$$.kool = _;
+  package$kool.formatDouble_12fank$ = formatDouble;
   Object.defineProperty(package$kool, 'JsImpl', {
     get: JsImpl_getInstance
   });
@@ -18682,7 +18747,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$audio.HiHat = HiHat;
   package$audio.Kick = Kick;
   package$audio.Melody = Melody;
-  $$importsForInline$$.kool = _;
   package$audio.Oscillator = Oscillator;
   package$audio.Pad = Pad;
   Object.defineProperty(SampleNode, 'Companion', {
@@ -20402,6 +20466,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$math.MutableVec4f = MutableVec4f;
   package$kool.MemoryManager = MemoryManager;
   package$kool.MvpState = MvpState;
+  package$kool.formatFloat_vjorfl$ = formatFloat;
   RenderContext.InitProps = RenderContext$InitProps;
   RenderContext.Viewport = RenderContext$Viewport;
   package$kool.RenderContext = RenderContext;
@@ -20700,9 +20765,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$kool.Texture = Texture;
   package$kool.assetTexture_61zpoe$ = assetTexture;
   package$kool.assetTexture_46ie3i$ = assetTexture_0;
-  Object.defineProperty(TextureManager, 'Companion', {
-    get: TextureManager$Companion_getInstance
-  });
   package$kool.TextureManager = TextureManager;
   Object.defineProperty(TouchGestureEvaluator, 'Companion', {
     get: TouchGestureEvaluator$Companion_getInstance
@@ -20773,6 +20835,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$util.CubeProps = CubeProps;
   package$util.CylinderProps = CylinderProps;
   package$util.TextProps = TextProps;
+  package$util.PerfTimer = PerfTimer;
+  package$util.timedMs_85cpgq$ = timedMs;
+  package$util.timedMs_27vacu$ = timedMs_0;
   package$util.pointMesh_h6khem$ = pointMesh;
   package$util.PointMesh = PointMesh;
   package$util.Property = Property;
@@ -21208,7 +21273,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   GL_INVALID_FRAMEBUFFER_OPERATION = 1286;
   DEG_2_RAD = math.PI / 180.0;
   RAD_2_DEG = 180.0 / math.PI;
-  defaultRandomInstance = new Random(currentTimeMillis().toInt());
+  defaultRandomInstance = new Random(numberToInt(now()));
   slerpTmpA = MutableVec4f_init();
   slerpTmpB = MutableVec4f_init();
   slerpTmpC = MutableVec4f_init();

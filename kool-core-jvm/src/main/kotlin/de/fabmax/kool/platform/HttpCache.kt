@@ -1,25 +1,27 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolException
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.CompletableDeferred
+import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.experimental.async
 import java.io.*
 import java.net.URL
-import java.nio.file.Files
-import java.nio.file.Paths
 import java.util.*
-import java.util.concurrent.CompletableFuture
+import kotlin.coroutines.experimental.coroutineContext
 
-class HttpCache private constructor(val cacheDir: String) {
+class HttpCache private constructor(val cacheDir: File) {
 
     private val cache = mutableMapOf<File, CacheEntry>()
     private var cacheSize = 0L
 
     init {
         try {
-            ObjectInputStream(FileInputStream("$cacheDir/.cacheIndex")).use {
+            ObjectInputStream(FileInputStream(cacheDir)).use {
                 @Suppress("UNCHECKED_CAST")
                 val entries = it.readObject() as List<CacheEntry>
                 entries.filter { it.file.canRead() }.forEach { entry ->
-                    entry.fileFuture = CompletableFuture.completedFuture(entry.file)
+                    entry.fileDeferred = CompletableDeferred(entry.file)
                     addCacheEntry(entry)
                 }
                 checkCacheSize()
@@ -30,25 +32,42 @@ class HttpCache private constructor(val cacheDir: String) {
 
         Runtime.getRuntime().addShutdownHook(object : Thread() {
             override fun run() {
-                saveIndex()
+                close()
             }
         })
     }
 
+    private fun close() {
+        synchronized(cache) {
+            cache.values.forEach {
+                it.fileDeferred?.cancel()
+            }
+        }
+        saveIndex()
+    }
+
     private fun rebuildIndex() {
-        //println("Rebuilding cache index")
-        val cacheDir = Paths.get(cacheDir)
         synchronized(cache) {
             cache.clear()
-            val dir = cacheDir.toFile()
-            if (!dir.exists() && !dir.mkdirs()) {
+            if (!cacheDir.exists() && !cacheDir.mkdirs()) {
                 throw KoolException("Failed to create cache directory")
             }
         }
-        Files.walk(cacheDir).forEach {
-            val f = it.toFile()
-            if (!f.isDirectory && it.fileName.toString() != ".cacheIndex") {
-                addCacheEntry(CacheEntry(f, f.length(), System.currentTimeMillis()).apply { fileFuture.complete(f) })
+
+        fun File.walk(recv: (File) -> Unit) {
+            listFiles().forEach {
+                if (it.isDirectory) {
+                    it.walk(recv)
+                } else {
+                    recv(it)
+                }
+            }
+        }
+        cacheDir.walk {
+            if (it.name != ".cacheIndex") {
+                addCacheEntry(CacheEntry(it, it.length(), System.currentTimeMillis()).apply {
+                    fileDeferred = CompletableDeferred(it)
+                })
             }
         }
         saveIndex()
@@ -56,6 +75,7 @@ class HttpCache private constructor(val cacheDir: String) {
 
     private fun addCacheEntry(entry: CacheEntry) {
         synchronized(cache) {
+            cacheSize -= cache[entry.file]?.size ?: 0
             cacheSize += entry.size
             cache[entry.file] = entry
         }
@@ -78,7 +98,7 @@ class HttpCache private constructor(val cacheDir: String) {
 
     private fun checkCacheSize() {
         if (cacheSize > MAX_CACHE_SIZE) {
-            val removeQueue = PriorityQueue<CacheEntry>(Comparator.comparingLong { e -> e.lastAccess })
+            val removeQueue = PriorityQueue<CacheEntry>()
             synchronized(cache) {
                 removeQueue.addAll(cache.values)
             }
@@ -97,19 +117,18 @@ class HttpCache private constructor(val cacheDir: String) {
         }
     }
 
-    private fun loadHttpResource(url: String): File {
+    suspend fun loadHttpResource(url: String): File? {
         val req = URL(url)
-        val cachePath = if (req.query != null) {
-            cacheDir + '/' + req.host + '/' + req.path + '_' + req.query
+        val file = if (req.query != null) {
+            File(cacheDir, "/${req.host}/${req.path}_${req.query}")
         } else {
-            cacheDir + '/' + req.host + '/' + req.path
+            File(cacheDir, "/${req.host}/${req.path}")
         }
-        val file = File(cachePath)
 
         var load = false
         val entry: CacheEntry = synchronized(cache) {
             val cached = cache[file]
-            if (cached != null) {
+            if (cached != null && !cached.isReloadNeeded) {
                 cached.lastAccess = System.currentTimeMillis()
                 cached
             } else {
@@ -121,59 +140,86 @@ class HttpCache private constructor(val cacheDir: String) {
         }
 
         if (load) {
-            file.parentFile.mkdirs()
+//            Log.i("HttpCache", "Loading $url")
+            entry.fileDeferred = async(coroutineContext) {
+                file.parentFile.mkdirs()
+                entry.size = 0L
 
-            var size = 0L
-            var instream: InputStream? = null
-            var outstream: OutputStream? = null
-            try {
-                instream = req.openStream()
-                outstream = FileOutputStream(file)
-                val buf = ByteArray(4096)
-                var len = 1
-                while (len > 0) {
-                    len = instream.read(buf)
-                    if (len > 0) {
-                        outstream.write(buf, 0, len)
-                        size += len
+                req.openStream().use { httpStream ->
+                    FileOutputStream(file).use { outStream ->
+                        val buf = ByteArray(4096)
+                        var len = 1
+                        while (len > 0) {
+                            len = httpStream.read(buf)
+                            if (len > 0) {
+                                outStream.write(buf, 0, len)
+                                entry.size += len
+                            }
+                        }
                     }
                 }
-            } finally {
-                try {
-                    instream?.close()
-                } catch (e: IOException) {
-                    e.printStackTrace()
+                synchronized(cache) {
+                    cacheSize += entry.size
                 }
-                try {
-                    outstream?.close()
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-            }
-            entry.size = size
-            entry.fileFuture.complete(file)
-            synchronized(cache) {
-                cacheSize += size
+                entry.file
             }
             checkCacheSize()
         }
+//        else {
+//            Log.i("HttpCache", "Got from cache: $url")
+//        }
 
-        return entry.fileFuture.get().also { entry.lastAccess = System.currentTimeMillis() }
+        return try {
+            entry.fileDeferred?.await().also { entry.lastAccess = System.currentTimeMillis() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
 
     companion object {
-        private const val MAX_CACHE_SIZE = 500L * 1024L * 1024L
-        private val instance = HttpCache("./.httpCache")
+        private const val MAX_CACHE_SIZE = 100L * 1024L * 1024L
+        private var instance: HttpCache? = null
 
-        fun loadHttpResource(url: String): File {
-            return instance.loadHttpResource(url)
+        var assetLoadingCtx = CommonPool
+
+        fun initCache(cacheDir: File) {
+            if (instance == null) {
+                instance = HttpCache(cacheDir)
+            }
+        }
+
+        suspend fun loadHttpResource(url: String): File {
+            val inst = instance ?: throw KoolException("Default cache used before initCache() was called")
+            return inst.loadHttpResource(url) ?: throw KoolException("Failed loading http resource")
         }
     }
 
-    private data class CacheEntry(val file: File, var size: Long, var lastAccess: Long) : Serializable {
-        @Transient
-        var fileFuture = CompletableFuture<File>()
-    }
+    private class CacheEntry(val file: File, var size: Long, lastAccess: Long) :
+            Serializable, Comparable<CacheEntry> {
 
+        var lastAccess = lastAccess
+            set(value) {
+                field = value
+                file.setLastModified(value)
+            }
+
+        @Transient
+        var fileDeferred: Deferred<File>? = null
+
+        val isReloadNeeded: Boolean
+            get() {
+                val fd = fileDeferred
+                return fd != null && ((fd.isCompleted && !fd.getCompleted().canRead()) || fd.isCompletedExceptionally)
+            }
+
+        override fun compareTo(other: CacheEntry): Int {
+            return when {
+                lastAccess < other.lastAccess -> -1
+                lastAccess > other.lastAccess -> 1
+                else -> 0
+            }
+        }
+    }
 }

@@ -36,6 +36,9 @@ class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int) :
             val lonW = tx / (1 shl tz).toDouble() * 2 * PI - PI
             val lonE = (tx + 1) / (1 shl tz).toDouble() * 2 * PI - PI
 
+            val uvScale = 255f / 256f
+            val uvOff = 0.5f / 256f
+
             val stepsExp = 4
             val steps = 1 shl stepsExp
             val tysFac = 1.0 / (1 shl (tz + stepsExp)).toDouble() * 2 * PI
@@ -54,7 +57,7 @@ class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int) :
                     val phi = lonW + (lonE - lonW) * i / steps
                     val x = sin(phi) * r
                     val z = cos(phi) * r
-                    val uv = Vec2f(i.toFloat() / steps, 1f - row.toFloat() / steps)
+                    val uv = Vec2f((i.toFloat() / steps) * uvScale + uvOff, 1f - ((row.toFloat() / steps) * uvScale + uvOff))
 
                     val fx = x.toFloat()
                     val fy = y.toFloat()
