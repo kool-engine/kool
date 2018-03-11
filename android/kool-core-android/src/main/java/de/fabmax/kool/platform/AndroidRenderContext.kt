@@ -6,10 +6,7 @@ import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.util.Log
 import de.fabmax.kool.*
-import de.fabmax.kool.gl.GL_DEPTH_COMPONENT
-import de.fabmax.kool.gl.GL_DEPTH_COMPONENT24
-import de.fabmax.kool.gl.GL_EXTENSIONS
-import de.fabmax.kool.gl.GL_NEAREST
+import de.fabmax.kool.gl.*
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLContext
@@ -89,11 +86,16 @@ class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GL
             anisotropicTexFilterInfo = AnisotropicTexFilterInfo(resultBuf[0], GLES11Ext.GL_TEXTURE_MAX_ANISOTROPY_EXT)
         }
 
+        // get number of available texture unis
+        val resultBuf = IntArray(1)
+        GLES30.glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, resultBuf, 0)
+        val maxTexUnits = resultBuf[0]
 
         if (isGLES30Context) {
             glCapabilities = GlCapabilities(
                     uint32Indices = uint32Indices,
                     shaderIntAttribs = true,
+                    maxTexUnits = maxTexUnits,
                     depthTextures = true,
                     depthComponentIntFormat = GL_DEPTH_COMPONENT24,
                     depthFilterMethod = GL_NEAREST,
@@ -105,6 +107,7 @@ class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GL
             glCapabilities = GlCapabilities(
                     uint32Indices = uint32Indices,
                     shaderIntAttribs = false,
+                    maxTexUnits = maxTexUnits,
                     depthTextures = extensions.contains("GL_OES_depth_texture"),
                     depthComponentIntFormat = GL_DEPTH_COMPONENT,
                     depthFilterMethod = GL_NEAREST,

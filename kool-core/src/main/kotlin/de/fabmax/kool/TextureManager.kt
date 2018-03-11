@@ -7,13 +7,21 @@ import de.fabmax.kool.gl.*
  */
 class TextureManager internal constructor() : SharedResManager<TextureProps, TextureResource>() {
 
-    companion object {
-        val TEXTURE_UNITS = 32
-    }
+    var maxTextureLoadsPerFrame = 5
 
     private var activeTexUnit = 0
-    private val boundTextures = Array<TextureResource?>(TEXTURE_UNITS, { null })
+    private var boundTextures = Array<TextureResource?>(16, { null })
     private val loadingTextures: MutableMap<String, TextureData> = mutableMapOf()
+
+    private var allowedTexLoads = maxTextureLoadsPerFrame
+
+    fun onNewFrame(ctx: RenderContext) {
+        allowedTexLoads = maxTextureLoadsPerFrame
+
+        if (boundTextures.size != glCapabilities.maxTexUnits) {
+            boundTextures = Array(glCapabilities.maxTexUnits, { null })
+        }
+    }
 
     fun bindTexture(texture: Texture, ctx: RenderContext): Int {
         if (!texture.isValid) {
@@ -46,7 +54,7 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
     }
 
     private fun nextTexUnit() {
-        activateTexUnit((activeTexUnit + 1) % TEXTURE_UNITS)
+        activateTexUnit((activeTexUnit + 1) % boundTextures.size)
     }
 
     private fun activateTexUnit(unit: Int) {
@@ -73,12 +81,13 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
             loadingTextures[texture.props.id] = data
         }
         // texture data is available (depending on the texture source that might not be the case immediately)
-        if (data.isAvailable) {
+        if (data.isAvailable && allowedTexLoads > 0) {
             if (res.texUnit != activeTexUnit) {
                 activateTexUnit(texture.res!!.texUnit)
             }
             texture.loadData(data, ctx)
             loadingTextures.remove(texture.props.id)
+            allowedTexLoads--
         }
     }
 

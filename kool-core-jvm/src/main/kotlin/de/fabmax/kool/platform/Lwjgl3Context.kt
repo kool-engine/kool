@@ -3,6 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.*
 import de.fabmax.kool.gl.GL_DEPTH_COMPONENT
 import de.fabmax.kool.gl.GL_LINEAR
+import de.fabmax.kool.gl.GL_MAX_TEXTURE_IMAGE_UNITS
 import de.fabmax.kool.gl.GL_VERSION
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW.*
@@ -133,18 +134,24 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
             anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT)
         }
 
+        // get number of available texture unis
+        val maxTexUnits = GL11.glGetInteger(GL_MAX_TEXTURE_IMAGE_UNITS)
+
         // This is required to be able to set gl_PointSize in vertex shaders (to get same behaviour as in GLES)
         GL11.glEnable(GL20.GL_VERTEX_PROGRAM_POINT_SIZE)
 
         glCapabilities = GlCapabilities(
                 uint32Indices = true,
                 shaderIntAttribs = true,
+                maxTexUnits = maxTexUnits,
                 depthTextures = true,
                 depthComponentIntFormat = GL_DEPTH_COMPONENT,
                 depthFilterMethod = GL_LINEAR,
                 glslDialect = GlslDialect.GLSL_DIALECT_330,
                 glVersion = GlVersion("OpenGL", versionMajor, versionMinor),
                 anisotropicTexFilterInfo = anisotropicTexFilterInfo)
+
+        textureMgr.maxTextureLoadsPerFrame = MAX_TEXTURE_LOADS_PER_FRAmE
     }
 
     override fun run() {
@@ -190,6 +197,8 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
     }
 
     companion object {
+        const val MAX_TEXTURE_LOADS_PER_FRAmE = 20
+
         val KEY_CODE_MAP: Map<Int, Int> = mutableMapOf(
                 GLFW_KEY_LEFT_CONTROL to InputManager.KEY_CTRL_LEFT,
                 GLFW_KEY_RIGHT_CONTROL to InputManager.KEY_CTRL_RIGHT,

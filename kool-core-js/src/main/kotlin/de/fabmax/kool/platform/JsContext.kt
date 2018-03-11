@@ -1,10 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
-import de.fabmax.kool.gl.GL_DEPTH_COMPONENT
-import de.fabmax.kool.gl.GL_DEPTH_COMPONENT24
-import de.fabmax.kool.gl.GL_NEAREST
-import de.fabmax.kool.gl.WebGL2RenderingContext
+import de.fabmax.kool.gl.*
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
@@ -38,11 +35,12 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
         JsImpl.isWebGl2Context = webGlCtx != null
 
         // default attributes for minimal WebGL 1 context, are changed depending on available stuff
-        var uint32Indices = false
-        var depthTextures = false
+        val uint32Indices: Boolean
+        val depthTextures: Boolean
+        val maxTexUnits: Int
         var shaderIntAttribs = false
         var depthComponentIntFormat = GL_DEPTH_COMPONENT
-        var depthFilterMethod = GL_NEAREST
+        val depthFilterMethod = GL_NEAREST
         var anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED
         var glslDialect = GlslDialect.GLSL_DIALECT_100
         var glVersion = GlVersion("WebGL", 1, 0)
@@ -56,6 +54,7 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
             depthComponentIntFormat = GL_DEPTH_COMPONENT24
             glslDialect = GlslDialect.GLSL_DIALECT_300_ES
             glVersion = GlVersion("WebGL", 2, 0)
+            maxTexUnits = gl.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS).asDynamic()
 
         } else {
             webGlCtx = canvas.getContext("webgl")
@@ -69,6 +68,7 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
 
             uint32Indices = gl.getExtension("OES_element_index_uint") != null
             depthTextures = gl.getExtension("WEBGL_depth_texture") != null
+            maxTexUnits = gl.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS).asDynamic()
         }
 
         val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:
@@ -79,9 +79,12 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
             anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT)
         }
 
+        println("Max tex units: $maxTexUnits")
+
         glCapabilities = GlCapabilities(
                 uint32Indices,
                 shaderIntAttribs,
+                maxTexUnits,
                 depthTextures,
                 depthComponentIntFormat,
                 depthFilterMethod,

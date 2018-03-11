@@ -16,8 +16,9 @@ import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.createUint8Buffer
 import kotlinx.coroutines.experimental.launch
+import java.io.File
+import java.io.FileInputStream
 import java.io.IOException
-import java.net.URL
 import java.nio.ByteBuffer
 import kotlin.math.round
 
@@ -26,10 +27,13 @@ class ImageTextureData(assetPath: String, context: Context) : TextureData() {
     private var format = 0
 
     init {
-        launch {
+        // inits http cache if not already happened
+        HttpCache.initCache(File(context.cacheDir, ".httpCache"))
+
+        launch(HttpCache.assetLoadingCtx) {
             try {
                 val inputStream = if (assetPath.startsWith("http")) {
-                    URL(assetPath).openStream()
+                    FileInputStream(HttpCache.loadHttpResource(assetPath))
                 } else {
                     context.assets.open(assetPath)
                 }
@@ -55,14 +59,8 @@ class ImageTextureData(assetPath: String, context: Context) : TextureData() {
 
     override fun onLoad(texture: Texture, ctx: RenderContext) {
         val res = texture.res ?: throw KoolException("Texture wasn't created")
-        val limit = buffer!!.limit
-        val pos = buffer!!.position
-        buffer!!.flip()
-
         glTexImage2D(res.target, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
-        buffer!!.limit = limit
-        buffer!!.position = pos
-        ctx.memoryMgr.memoryAllocated(res, buffer!!.position)
+        ctx.memoryMgr.memoryAllocated(res, buffer!!.remaining)
     }
 
     companion object {

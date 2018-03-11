@@ -3,6 +3,7 @@ package de.fabmax.kool
 data class GlCapabilities(
         val uint32Indices: Boolean,
         val shaderIntAttribs: Boolean,
+        val maxTexUnits: Int,
         val depthTextures: Boolean,
         val depthComponentIntFormat: Int,
         val depthFilterMethod: Int,
@@ -14,6 +15,7 @@ data class GlCapabilities(
         val UNKNOWN_CAPABILITIES = GlCapabilities(
                 uint32Indices = false,
                 shaderIntAttribs = false,
+                maxTexUnits = 16,
                 depthTextures = false,
                 depthComponentIntFormat = 0,
                 depthFilterMethod = 0,

@@ -15,7 +15,6 @@ import kotlin.math.*
  */
 class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandler {
 
-    var tileRes = 256
     var meterPerPxLvl0 = 156e3f
 
     var centerLat = 0.0
@@ -35,7 +34,6 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     private val loadingTiles = mutableSetOf<Long>()
     private val removeTiles = mutableListOf<TileMesh>()
 
-    private val rotAxis = MutableVec3f()
     private val camPosition = MutableVec3f()
     private val camDirection = MutableVec3f()
 
@@ -105,7 +103,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
             // determine best zoom level
             camDirection.scale(EARTH_R.toFloat())
             val camHeight = camDirection.distance(camPosition)
-            val meterPerPx = camHeight * tan(cam.fovy.toRad() * 0.5f) * 2f / ctx.viewport.height
+            val meterPerPx = camHeight * tan(cam.fovy.toRad() * 0.5f) * 2f / (ctx.viewport.height * 96f / ctx.screenDpi)
             val centerZoom = getBestZoom(meterPerPx, lat)
 
             val newCenter = TileName.forLatLng(lat.toDeg(), lon.toDeg(), centerZoom)
