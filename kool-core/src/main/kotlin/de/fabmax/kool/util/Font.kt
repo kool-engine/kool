@@ -1,6 +1,9 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.*
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.Texture
+import de.fabmax.kool.TextureData
+import de.fabmax.kool.defaultProps
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.GlslGenerator
@@ -10,9 +13,9 @@ import de.fabmax.kool.shading.ShaderProps
  * @author fabmax
  */
 
-fun uiFont(family: String, sizeDp: Float, dpi: Float, style: Int = Font.PLAIN, chars: String = Font.STD_CHARS): Font {
-    val pts = (sizeDp * dpi / 96f)
-    return Font(FontProps(family, pts, style, pts, chars))
+fun uiFont(family: String, sizeDp: Float, ctx: KoolContext, style: Int = Font.PLAIN, chars: String = Font.STD_CHARS): Font {
+    val pts = (sizeDp * ctx.screenDpi / 96f)
+    return Font(FontProps(family, pts, style, pts, chars), ctx)
 }
 
 fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
@@ -27,9 +30,8 @@ fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): Bas
     // inject shader code to take color from static color and alpha from texture
     // static color rgb has to be pre-multiplied with texture alpha
     generator.injectors += object: GlslGenerator.GlslInjector {
-        override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
-            //text.append("if (${GlslGenerator.L_TEX_COLOR}.a == 0.0) { discard; }\n")
-            text.append("${glCapabilities.glslDialect.fragColorBody} = ${GlslGenerator.L_VERTEX_COLOR} * ${GlslGenerator.L_TEX_COLOR}.a;\n")
+        override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+            text.append("${ctx.glCapabilities.glslDialect.fragColorBody} = ${GlslGenerator.L_VERTEX_COLOR} * ${GlslGenerator.L_TEX_COLOR}.a;\n")
         }
     }
 
@@ -45,18 +47,18 @@ data class FontProps(
         val sizeUnits: Float = sizePts,
         var chars: String = Font.STD_CHARS)
 
-class Font(val fontProps: FontProps) :
-        Texture(defaultProps(fontProps.toString()), { getCharMap(fontProps).textureData }) {
+class Font(val fontProps: FontProps, ctx: KoolContext) :
+        Texture(defaultProps(fontProps.toString()), { getCharMap(fontProps, it).textureData }) {
 
     companion object {
         const val PLAIN = 0
         const val BOLD = 1
         const val ITALIC = 2
 
-        val DEFAULT_FONT: Font
-        val STD_CHARS: String
-
         const val SYSTEM_FONT = "-apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+
+        val STD_CHARS: String
+        val DEFAULT_FONT_PROPS: FontProps
 
         private val charMaps: MutableMap<FontProps, CharMap> = mutableMapOf()
 
@@ -67,24 +69,29 @@ class Font(val fontProps: FontProps) :
             }
             str += "äÄöÖüÜß°©"
             STD_CHARS = str
-
-            DEFAULT_FONT = Font(FontProps(SYSTEM_FONT, 12f))
+            DEFAULT_FONT_PROPS = FontProps(SYSTEM_FONT, 12f)
         }
 
-        private fun getCharMap(fontProps: FontProps): CharMap {
+        fun defaultFont(ctx: KoolContext): Font = Font(Font.DEFAULT_FONT_PROPS, ctx)
+
+        private fun getCharMap(fontProps: FontProps, ctx: KoolContext): CharMap {
             var map = charMaps[fontProps]
             if (map == null) {
-                map = createCharMap(fontProps)
+                map = ctx.assetMgr.createCharMap(fontProps)
                 charMaps[fontProps] = map
             }
             return map
         }
     }
 
-    val charMap: CharMap = getCharMap(fontProps)
+    val charMap: CharMap
 
     val lineSpace = fontProps.sizeUnits * 1.2f
     val normHeight = fontProps.sizeUnits * 0.7f
+
+    init {
+        charMap = getCharMap(fontProps, ctx)
+    }
 
     fun textWidth(string: String): Float {
         var width = 0f
@@ -123,4 +130,4 @@ class CharMetrics {
     val uvMax = MutableVec2f()
 }
 
-class CharMap(val textureData: TextureData, private val map: Map<Char, CharMetrics>) : Map<Char, CharMetrics> by map
+class CharMap(val textureData: TextureData, private val map: Map<Char, CharMetrics>, val fontProps: FontProps) : Map<Char, CharMetrics> by map

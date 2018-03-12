@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.isZero
 import kotlin.math.PI
@@ -21,7 +21,7 @@ abstract class Animator<V, out T: InterpolatedValue<V>>(val value: T) {
     var repeating = ONCE
     var progress = 0f
 
-    open fun tick(ctx: RenderContext): V {
+    open fun tick(ctx: KoolContext): V {
         if (!speed.isZero()) {
             progress += ctx.deltaT.toFloat() * speed / duration
             if (progress >= 1f && speed > 0) {

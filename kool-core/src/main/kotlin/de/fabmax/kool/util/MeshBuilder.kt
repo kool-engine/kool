@@ -26,7 +26,7 @@ open class MeshBuilder(val meshData: MeshData) {
     val cylinderProps = CylinderProps()
     val rectProps = RectProps()
     val sphereProps = SphereProps()
-    val textProps = TextProps()
+    var textProps: TextProps? = null
 
     open fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO): Int {
         return meshData.addVertex {
@@ -451,11 +451,12 @@ open class MeshBuilder(val meshData: MeshData) {
         }
     }
 
-    inline fun text(font: Font, props: TextProps.() -> Unit) {
-        textProps.defaults()
-        textProps.font = font
-        textProps.props()
-        text(textProps)
+    inline fun text(font: Font, block: TextProps.() -> Unit) {
+        val props = textProps ?: TextProps(font).apply { textProps = this}
+        props.defaults()
+        props.font = font
+        props.block()
+        text(props)
     }
 
     fun text(props: TextProps) {
@@ -685,14 +686,12 @@ class CylinderProps {
     }
 }
 
-class TextProps {
+class TextProps(var font: Font) {
     var text = ""
-    var font = Font.DEFAULT_FONT
     val origin = MutableVec3f()
 
     fun defaults(): TextProps {
         text = ""
-        font = Font.DEFAULT_FONT
         origin.set(Vec3f.ZERO)
         return this
     }

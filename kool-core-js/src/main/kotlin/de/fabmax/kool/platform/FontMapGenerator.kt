@@ -46,7 +46,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         for (i in 0 until buffer.capacity) {
             buffer.put(data.data[i*4+3])
         }
-        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, GL_ALPHA), metrics)
+        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, GL_ALPHA), metrics, fontProps)
     }
 
     private fun makeMap(fontProps: FontProps, style: String, map: MutableMap<Char, CharMetrics>): Int {

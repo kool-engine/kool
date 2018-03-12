@@ -1,6 +1,6 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.glCapabilities
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.animation.Armature
 
 /**
@@ -47,19 +47,19 @@ open class GlslGenerator {
     }
 
     interface GlslInjector {
-        fun vsHeader(text: StringBuilder) { }
-        fun vsStart(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun vsAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun vsBeforeProj(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun vsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun vsHeader(text: StringBuilder, ctx: KoolContext) { }
+        fun vsStart(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun vsAfterInput(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun vsBeforeProj(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun vsEnd(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
 
-        fun fsHeader(text: StringBuilder) { }
-        fun fsStart(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun fsBeforeSampling(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) { }
-        fun fsEnd(shaderProps: ShaderProps, text: StringBuilder) { }
+        fun fsHeader(text: StringBuilder, ctx: KoolContext) { }
+        fun fsStart(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun fsBeforeSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun fsEnd(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
     }
 
     val injectors = mutableListOf<GlslInjector>()
@@ -73,44 +73,44 @@ open class GlslGenerator {
     private var fsOutBody = ""
     private var texSampler = ""
 
-    fun generate(shaderProps: ShaderProps, hints: ShadingHints): Shader.Source {
-        vsIn = glCapabilities.glslDialect.vsIn
-        vsOut = glCapabilities.glslDialect.vsOut
-        fsIn = glCapabilities.glslDialect.fsIn
-        fsOut = glCapabilities.glslDialect.fragColorHead
-        fsOutBody = glCapabilities.glslDialect.fragColorBody
-        texSampler = glCapabilities.glslDialect.texSampler
+    fun generate(shaderProps: ShaderProps, ctx: KoolContext): Shader.Source {
+        vsIn = ctx.glCapabilities.glslDialect.vsIn
+        vsOut = ctx.glCapabilities.glslDialect.vsOut
+        fsIn = ctx.glCapabilities.glslDialect.fsIn
+        fsOut = ctx.glCapabilities.glslDialect.fragColorHead
+        fsOutBody = ctx.glCapabilities.glslDialect.fragColorBody
+        texSampler = ctx.glCapabilities.glslDialect.texSampler
 
-        return Shader.Source(generateVertShader(shaderProps), generateFragShader(shaderProps))
+        return Shader.Source(generateVertShader(shaderProps, ctx), generateFragShader(shaderProps, ctx))
     }
 
-    private fun generateVertShader(shaderProps: ShaderProps): String {
-        val text = StringBuilder("${glCapabilities.glslDialect.version}\n")
+    private fun generateVertShader(shaderProps: ShaderProps, ctx: KoolContext): String {
+        val text = StringBuilder("${ctx.glCapabilities.glslDialect.version}\n")
 
-        injectors.forEach { it.vsHeader(text) }
+        injectors.forEach { it.vsHeader(text, ctx) }
 
-        injectors.forEach { it.vsStart(shaderProps, text) }
-        generateVertInputCode(shaderProps, text)
-        injectors.forEach { it.vsAfterInput(shaderProps, text) }
-        generateVertBodyCode(shaderProps, text)
+        injectors.forEach { it.vsStart(shaderProps, text, ctx) }
+        generateVertInputCode(shaderProps, text, ctx)
+        injectors.forEach { it.vsAfterInput(shaderProps, text, ctx) }
+        generateVertBodyCode(shaderProps, text, ctx)
 
         return text.toString()
     }
 
-    private fun generateFragShader(shaderProps: ShaderProps): String {
-        val text = StringBuilder("${glCapabilities.glslDialect.version}\n")
+    private fun generateFragShader(shaderProps: ShaderProps, ctx: KoolContext): String {
+        val text = StringBuilder("${ctx.glCapabilities.glslDialect.version}\n")
 
-        injectors.forEach { it.fsHeader(text) }
+        injectors.forEach { it.fsHeader(text, ctx) }
 
-        injectors.forEach { it.fsStart(shaderProps, text) }
-        generateFragInputCode(shaderProps, text)
-        injectors.forEach { it.fsAfterInput(shaderProps, text) }
-        generateFragBodyCode(shaderProps, text)
+        injectors.forEach { it.fsStart(shaderProps, text, ctx) }
+        generateFragInputCode(shaderProps, text, ctx)
+        injectors.forEach { it.fsAfterInput(shaderProps, text, ctx) }
+        generateFragBodyCode(shaderProps, text, ctx)
 
         return text.toString()
     }
 
-    private fun generateVertInputCode(shaderProps: ShaderProps, text: StringBuilder) {
+    private fun generateVertInputCode(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
         // MVP matrices and vertex position attribute are always needed
         text.append("$vsIn vec3 ${Attribute.POSITIONS.name};\n")
         text.append("uniform mat4 $U_MVP_MATRIX;\n")
@@ -179,7 +179,7 @@ open class GlslGenerator {
         }
     }
 
-    private fun generateVertBodyCode(shaderProps: ShaderProps, text: StringBuilder) {
+    private fun generateVertBodyCode(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
         text.append("\nvoid main() {\n")
 
         text.append("vec4 position = vec4(${Attribute.POSITIONS}, 1.0);\n")
@@ -190,7 +190,7 @@ open class GlslGenerator {
             }
         }
 
-        injectors.forEach { it.vsBeforeProj(shaderProps, text) }
+        injectors.forEach { it.vsBeforeProj(shaderProps, text, ctx) }
 
         if (shaderProps.numBones > 0) {
             text.append("mat4 boneT = $U_BONES[${Armature.BONE_INDICES}[0]] * ${Armature.BONE_WEIGHTS}[0];\n")
@@ -210,7 +210,7 @@ open class GlslGenerator {
         // output position of the vertex in clip space: MVP * position
         text.append("gl_Position = $U_MVP_MATRIX * position;\n")
 
-        injectors.forEach { it.vsAfterProj(shaderProps, text) }
+        injectors.forEach { it.vsAfterProj(shaderProps, text, ctx) }
 
         val shadowMap = shaderProps.shadowMap
         if (shadowMap != null) {
@@ -270,11 +270,11 @@ open class GlslGenerator {
             text.append("$V_SPECULAR_LIGHT_COLOR = $U_LIGHT_COLOR * $U_SPECULAR_INTENSITY * pow(cosAlpha, $U_SHININESS);\n")
         }
 
-        injectors.forEach { it.vsEnd(shaderProps, text) }
+        injectors.forEach { it.vsEnd(shaderProps, text, ctx) }
         text.append("}\n")
     }
 
-    private fun generateFragInputCode(shaderProps: ShaderProps, text: StringBuilder) {
+    private fun generateFragInputCode(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
         text.append("precision highp float;\n")
         text.append("uniform mat4 $U_MODEL_MATRIX;\n")
         text.append("uniform mat4 $U_VIEW_MATRIX;\n")
@@ -347,7 +347,7 @@ open class GlslGenerator {
         text.append(fsOut)
     }
 
-    private fun generateFragBodyCode(shaderProps: ShaderProps, text: StringBuilder) {
+    private fun generateFragBodyCode(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
         val shadowMap = shaderProps.shadowMap
         if (shadowMap != null) {
             fun addSample(x: Int, y: Int) {
@@ -384,7 +384,7 @@ open class GlslGenerator {
         text.append("\nvoid main() {\n")
         text.append("float shadowFactor = 1.0;\n")
 
-        injectors.forEach { it.fsBeforeSampling(shaderProps, text) }
+        injectors.forEach { it.fsBeforeSampling(shaderProps, text, ctx) }
 
         if (shaderProps.isTextureColor) {
             // get base fragment color from texture
@@ -404,7 +404,7 @@ open class GlslGenerator {
             text.append("$fsOutBody = $L_STATIC_COLOR;\n")
         }
 
-        injectors.forEach { it.fsAfterSampling(shaderProps, text) }
+        injectors.forEach { it.fsAfterSampling(shaderProps, text, ctx) }
 
         if (shaderProps.isDiscardTranslucent) {
             text.append("if ($fsOutBody.a == 0.0) { discard; }")
@@ -472,7 +472,7 @@ open class GlslGenerator {
             text.append("$fsOutBody.rgb = mix(vec3(avgColor), $fsOutBody.rgb, $U_SATURATION);\n")
         }
 
-        injectors.forEach { it.fsEnd(shaderProps, text) }
+        injectors.forEach { it.fsEnd(shaderProps, text, ctx) }
         text.append("}\n")
     }
 }

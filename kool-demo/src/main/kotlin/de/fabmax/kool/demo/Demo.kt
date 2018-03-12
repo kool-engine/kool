@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.earth.earthScene
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Scene
@@ -17,20 +17,20 @@ import kotlin.math.min
  * @author fabmax
  */
 
-class Demo(ctx: RenderContext, startScene: String? = null) {
+class Demo(ctx: KoolContext, startScene: String? = null) {
 
     private val dbgOverlay = debugOverlay(ctx, true)
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
-    private val defaultScene = DemoEntry("Simple Demo") { add(simpleShapesScene()) }
+    private val defaultScene = DemoEntry("Simple Demo") { add(simpleShapesScene(it)) }
     private val demos = mutableMapOf(
             "simpleDemo" to defaultScene,
-            "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene()) },
+            "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene(it)) },
             "pointDemo" to DemoEntry("Point Cloud Demo") { add(pointScene()) },
             "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
-            "earthDemo" to DemoEntry("Earth Demo") { addAll(earthScene()) },
-            "modelDemo" to DemoEntry("Model Demo") { add(modelScene()) },
+            "earthDemo" to DemoEntry("Earth Demo") { addAll(earthScene(it)) },
+            "modelDemo" to DemoEntry("Model Demo") { add(modelScene(it)) },
             "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) }
     )
 
@@ -46,7 +46,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         ctx.run()
     }
 
-    private fun onRender(ctx: RenderContext) {
+    private fun onRender(ctx: KoolContext) {
         if (!newScenes.isEmpty()) {
             currentScenes.forEach { s ->
                 ctx.scenes -= s
@@ -63,7 +63,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         }
     }
 
-    private fun demoOverlay(ctx: RenderContext): Scene = uiScene(ctx.screenDpi) {
+    private fun demoOverlay(ctx: KoolContext): Scene = uiScene(ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
             componentUi { BlankComponentUi() }
             containerUi(::BlurredComponentUi)
@@ -88,7 +88,7 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                 text = "Demos"
                 textColor.setCustom(theme.accentColor)
-                font.setCustom(theme.titleFont(dpi))
+                font.setCustom(theme.titleFont(ctx))
             }
             +component("divider") {
                 layoutSpec.setOrigin(pcs(5f), dps(-60f, true), zero())
@@ -129,14 +129,14 @@ class Demo(ctx: RenderContext, startScene: String? = null) {
         +menuButton
     }
 
-    private class DemoEntry(val label: String, val loadScene: MutableList<Scene>.(RenderContext) -> Unit)
+    private class DemoEntry(val label: String, val loadScene: MutableList<Scene>.(KoolContext) -> Unit)
 }
 
 class MenuButtonUi(tb: ToggleButton, private val menu: UiContainer) : ToggleButtonUi(tb, BlankComponentUi()) {
 
     private val menuAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
 
-    override fun createUi(ctx: RenderContext) {
+    override fun createUi(ctx: KoolContext) {
         super.createUi(ctx)
         knobAnimator.duration = 0.5f
         knobAnimator.value.onUpdate
@@ -158,12 +158,12 @@ class MenuButtonUi(tb: ToggleButton, private val menu: UiContainer) : ToggleButt
         }
     }
 
-    override fun onRender(ctx: RenderContext) {
+    override fun onRender(ctx: KoolContext) {
         super.onRender(ctx)
         menuAnimator.tick(ctx)
     }
 
-    override fun updateUi(ctx: RenderContext) {
+    override fun updateUi(ctx: KoolContext) {
         val hw = tb.width * 0.5f
         val hh = tb.height * 0.18f
         val hx = -hw / 2f

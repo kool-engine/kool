@@ -1,7 +1,6 @@
 package de.fabmax.kool.scene.animation
 
-import de.fabmax.kool.RenderContext
-import de.fabmax.kool.glCapabilities
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Mat4fStack
 import de.fabmax.kool.math.MutableVec3f
@@ -23,7 +22,7 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
     private var boneTransforms: Float32Buffer? = null
 
     // to do mesh animation in vertex shader we need to add integer mesh attributes (OpenGL (ES) >= 3.0)
-    var isCpuAnimated = !glCapabilities.shaderIntAttribs
+    var isCpuAnimated = false
 
     // animations are held in map and list, to get index-based list access for less overhead in render loop
     private val animations = mutableMapOf<String, Animation>()
@@ -137,7 +136,7 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
         animationList.remove(animations.remove(name))
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         val shader = this.shader
         if (shader is BasicShader) {
             shader.bones = boneTransforms
@@ -146,11 +145,11 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
 
         // increment animation after rendering to keep armature in the same position as in pre passes (shadow pass)
         if (ctx.deltaT > 0) {
-            applyAnimation(ctx.deltaT)
+            applyAnimation(ctx)
         }
     }
 
-    private fun applyAnimation(deltaT: Double) {
+    private fun applyAnimation(ctx: KoolContext) {
         var update = false
 
         // interpolate animation duration of active animations (needed for smooth interpolation between animations)
@@ -161,7 +160,7 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
                 weightedDuration += anim.duration * anim.weight
             }
         }
-        animationPos = (animationPos + deltaT.toFloat() / weightedDuration * animationSpeed) % 1f
+        animationPos = (animationPos + ctx.deltaT.toFloat() / weightedDuration * animationSpeed) % 1f
 
         // update all active (weighted) animations
         for (i in animationList.indices) {
@@ -174,6 +173,11 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
         }
 
         if (update) {
+            if (!isCpuAnimated && !ctx.glCapabilities.shaderIntAttribs) {
+                // vertex shader animation is not supported, fall back to CPU transform
+                isCpuAnimated = true
+            }
+
             // only update mesh if an animation was applied
             if (isCpuAnimated) {
                 // transform mesh vertex positions on CPU

@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.BoundingBox
 import kotlin.math.min
@@ -122,7 +122,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         val scene = this.scene ?: return
 
         if (panMethod.computePanPoint(pointerHit, scene, ptrPos, ctx)) {
@@ -207,7 +207,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         newScene?.registerDragHandler(this)
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: RenderContext): Int {
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext): Int {
         if (!dragPtrs.isEmpty() && dragPtrs[0].isInViewport(ctx)) {
             if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
                 if (dragPtrs[0].isLeftButtonDown) {
@@ -280,7 +280,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
 abstract class PanBase {
     abstract fun computePanPoint(result: MutableVec3f,
-                                 scene: Scene, ptrPos: Vec2f, ctx: RenderContext): Boolean
+                                 scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean
 }
 
 class CameraOrthogonalPan : PanBase() {
@@ -288,7 +288,7 @@ class CameraOrthogonalPan : PanBase() {
     private val pointerRay = Ray()
 
     override fun computePanPoint(result: MutableVec3f,
-                                 scene: Scene, ptrPos: Vec2f, ctx: RenderContext): Boolean {
+                                 scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
         panPlane.p.set(scene.camera.globalLookAt)
         panPlane.n.set(scene.camera.globalLookDir)
         return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, ctx) &&
@@ -305,7 +305,7 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
     }
 
     override fun computePanPoint(result: MutableVec3f,
-                                 scene: Scene, ptrPos: Vec2f, ctx: RenderContext): Boolean {
+                                 scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
         panPlane.p.set(scene.camera.globalLookAt)
         return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, ctx) &&
                 panPlane.intersectionPoint(result, pointerRay)

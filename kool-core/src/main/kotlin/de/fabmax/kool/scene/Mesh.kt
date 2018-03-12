@@ -1,9 +1,8 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
 import de.fabmax.kool.gl.*
-import de.fabmax.kool.glCapabilities
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec2f
@@ -118,13 +117,13 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     /**
      * Deletes all buffers associated with this mesh.
      */
-    override fun dispose(ctx: RenderContext) {
+    override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         meshData.dispose(ctx)
         shader?.dispose(ctx)
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         super.render(ctx)
         if (!isRendered || (!ctx.isDepthTest && ctx.renderPass == RenderPass.SHADOW)) {
             // mesh is not visible (either hidden or outside frustum)
@@ -331,7 +330,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
     /**
      * Deletes all index and data buffer of this mesh.
      */
-    fun dispose(ctx: RenderContext) {
+    fun dispose(ctx: KoolContext) {
         if (--referenceCount == 0) {
             indexBuffer?.delete(ctx)
             dataBufferF?.delete(ctx)
@@ -342,7 +341,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
         }
     }
 
-    fun checkBuffers(ctx: RenderContext) {
+    fun checkBuffers(ctx: KoolContext) {
         if (indexBuffer == null) {
             indexBuffer = BufferResource.create(GL_ELEMENT_ARRAY_BUFFER, ctx)
         }
@@ -371,7 +370,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
         if (isSyncRequired && !isBatchUpdate) {
             synchronized(vertexList) {
                 if (!isBatchUpdate) {
-                    if (!glCapabilities.uint32Indices) {
+                    if (!ctx.glCapabilities.uint32Indices) {
                         // convert index buffer to uint16
                         val uint16Buffer = createUint16Buffer(numIndices)
                         for (i in 0..(vertexList.indices.position - 1)) {

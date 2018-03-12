@@ -43,17 +43,17 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
         generator.customUniforms += uTexSz
 
         generator.injectors += object : GlslGenerator.GlslInjector {
-            override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder) {
+            override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
                 text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ")
                         .append("1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n")
-                        .append("${glCapabilities.glslDialect.fragColorBody} = ${glCapabilities.glslDialect.texSampler}(")
+                        .append("${ctx.glCapabilities.glslDialect.fragColorBody} = ${ctx.glCapabilities.glslDialect.texSampler}(")
                         .append("uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ")
-                        .append("${glCapabilities.glslDialect.fragColorBody} * uColorMix;\n")
+                        .append("${ctx.glCapabilities.glslDialect.fragColorBody} * uColorMix;\n")
             }
         }
     }
 
-    override fun onBind(ctx: RenderContext) {
+    override fun onBind(ctx: KoolContext) {
         super.onBind(ctx)
         val helper = blurHelper
         if (helper != null) {
@@ -133,7 +133,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         }
     }
 
-    fun updateDistortionTexture(node: Node, ctx: RenderContext, bounds: BoundingBox = node.bounds) {
+    fun updateDistortionTexture(node: Node, ctx: KoolContext, bounds: BoundingBox = node.bounds) {
         // Only update the distortion texture if it is really used. This saves considerable performance if it is used
         // as background of a hidden UI.
         // The isInUse flag is set by BlurShaders which use this texture
@@ -190,7 +190,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         }
     }
 
-    fun dispose(ctx: RenderContext) {
+    fun dispose(ctx: KoolContext) {
         blurFb1.delete(ctx)
         blurFb2.delete(ctx)
         blurX?.dispose(ctx)
@@ -200,7 +200,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         texMeshFlipped.dispose(ctx)
     }
 
-    private fun doBlurring(ctx: RenderContext) {
+    private fun doBlurring(ctx: KoolContext) {
         ctx.textureMgr.bindTexture(copyTex, ctx)
 
         val blrX = blurX ?: BlurQuadShader(blurMethod).apply {
@@ -240,7 +240,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         ctx.popAttributes()
     }
 
-    private fun renderFb(fb: Framebuffer, mesh: Mesh, shader: Shader, ctx: RenderContext) {
+    private fun renderFb(fb: Framebuffer, mesh: Mesh, shader: Shader, ctx: KoolContext) {
         fb.bind(ctx)
         glClear(GL_COLOR_BUFFER_BIT)
         mesh.shader = shader
@@ -248,7 +248,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         fb.unbind(ctx)
     }
 
-    private fun addToTexBounds(cam: Camera, node: Node, x: Float, y: Float, z: Float, ctx: RenderContext) {
+    private fun addToTexBounds(cam: Camera, node: Node, x: Float, y: Float, z: Float, ctx: KoolContext) {
         tmpVec.set(x, y, z)
         node.toGlobalCoords(tmpVec)
         cam.projectScreen(tmpVec, ctx, tmpRes)
@@ -271,7 +271,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
             height = value
         }
 
-        override fun onLoad(texture: Texture, ctx: RenderContext) {
+        override fun onLoad(texture: Texture, ctx: KoolContext) {
             glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, width, height, 0)
         }
     }
@@ -280,30 +280,30 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         val uTexture = addUniform(UniformTexture2D("uTexture"))
         val uDirection = addUniform(Uniform2f("uDirection"))
 
-        override fun generate(ctx: RenderContext) {
+        override fun generate(ctx: KoolContext) {
             attributes.add(Attribute.POSITIONS)
             attributes.add(Attribute.TEXTURE_COORDS)
 
-            val vs = "${glCapabilities.glslDialect.version}\n" +
-                    "${glCapabilities.glslDialect.vsIn} vec3 ${Attribute.POSITIONS.name};\n" +
-                    "${glCapabilities.glslDialect.vsIn} vec2 ${Attribute.TEXTURE_COORDS.name};\n" +
-                    "${glCapabilities.glslDialect.vsOut} vec2 vTexCoord;\n" +
+            val vs = "${ctx.glCapabilities.glslDialect.version}\n" +
+                    "${ctx.glCapabilities.glslDialect.vsIn} vec3 ${Attribute.POSITIONS.name};\n" +
+                    "${ctx.glCapabilities.glslDialect.vsIn} vec2 ${Attribute.TEXTURE_COORDS.name};\n" +
+                    "${ctx.glCapabilities.glslDialect.vsOut} vec2 vTexCoord;\n" +
                     "void main() {\n" +
                     "  gl_Position = vec4(${Attribute.POSITIONS.name}, 1.0);\n" +
                     "  vTexCoord = ${Attribute.TEXTURE_COORDS.name};\n" +
                     "}"
 
             val fs: String
-            val fragColor = glCapabilities.glslDialect.fragColorBody
-            val sampler = glCapabilities.glslDialect.texSampler
+            val fragColor = ctx.glCapabilities.glslDialect.fragColorBody
+            val sampler = ctx.glCapabilities.glslDialect.texSampler
             if (blurMethod == BlurMethod.BLUR_9_TAP) {
-                fs = "${glCapabilities.glslDialect.version}\n" +
+                fs = "${ctx.glCapabilities.glslDialect.version}\n" +
                         "precision mediump float;\n" +
                         "uniform sampler2D uTexture;\n" +
                         "uniform vec2 uDirection;\n" +
                         "uniform float uTexSize;\n" +
-                        "${glCapabilities.glslDialect.fsIn} vec2 vTexCoord;" +
-                        "${glCapabilities.glslDialect.fragColorHead}\n" +
+                        "${ctx.glCapabilities.glslDialect.fsIn} vec2 vTexCoord;" +
+                        "${ctx.glCapabilities.glslDialect.fragColorHead}\n" +
                         "void main() {\n" +
                         "  vec2 off1 = vec2(1.3846153) * uDirection;\n" +
                         "  vec2 off2 = vec2(3.2307692) * uDirection;\n" +
@@ -312,16 +312,16 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
                         "  $fragColor += $sampler(uTexture, vTexCoord - off1) * 0.3162162;\n" +
                         "  $fragColor += $sampler(uTexture, vTexCoord + off2) * 0.0702702;\n" +
                         "  $fragColor += $sampler(uTexture, vTexCoord - off2) * 0.0702702;\n" +
-                        "  $fragColor.rgb *= ${glCapabilities.glslDialect.fragColorBody}.a;\n" +
+                        "  $fragColor.rgb *= ${ctx.glCapabilities.glslDialect.fragColorBody}.a;\n" +
                         "}"
             } else {
-                fs = "${glCapabilities.glslDialect.version}\n" +
+                fs = "${ctx.glCapabilities.glslDialect.version}\n" +
                         "precision mediump float;\n" +
                         "uniform sampler2D uTexture;\n" +
                         "uniform vec2 uDirection;\n" +
                         "uniform float uTexSize;\n" +
-                        "${glCapabilities.glslDialect.fsIn} vec2 vTexCoord;" +
-                        "${glCapabilities.glslDialect.fragColorHead}\n" +
+                        "${ctx.glCapabilities.glslDialect.fsIn} vec2 vTexCoord;" +
+                        "${ctx.glCapabilities.glslDialect.fragColorHead}\n" +
                         "void main() {\n" +
                         "  vec2 off1 = vec2(1.4117647) * uDirection;\n" +
                         "  vec2 off2 = vec2(3.2941176) * uDirection;\n" +
@@ -333,18 +333,18 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
                         "  $fragColor += $sampler(uTexture, vTexCoord - off2) * 0.0944703;\n" +
                         "  $fragColor += $sampler(uTexture, vTexCoord - off3) * 0.0103813;\n" +
                         "  $fragColor += $sampler(uTexture, vTexCoord - off3) * 0.0103813;\n" +
-                        "  $fragColor.rgb *= ${glCapabilities.glslDialect.fragColorBody}.a;\n" +
+                        "  $fragColor.rgb *= ${ctx.glCapabilities.glslDialect.fragColorBody}.a;\n" +
                         "}"
             }
             source = Source(vs, fs)
         }
 
-        override fun onBind(ctx: RenderContext) {
+        override fun onBind(ctx: KoolContext) {
             uTexture.bind(ctx)
             uDirection.bind(ctx)
         }
 
-        override fun onMatrixUpdate(ctx: RenderContext) {
+        override fun onMatrixUpdate(ctx: KoolContext) {
             // not needed
         }
     }

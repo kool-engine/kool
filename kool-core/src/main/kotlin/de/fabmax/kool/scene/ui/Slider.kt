@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.Mesh
@@ -83,7 +83,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
         return dx*dx + dy*dy < knobSize * knobSize
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: RenderContext): Int {
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext): Int {
         if (dragPtrs.size == 1 && dragPtrs[0].isValid && dragPtrs[0].isLeftButtonDown) {
             // drag event is handled, no other drag handler should do something
             // we use the delta computed in local coordinates in the onHover handler instead of the native pointer
@@ -99,13 +99,13 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
         }
     }
 
-    override fun setThemeProps() {
-        super.setThemeProps()
+    override fun setThemeProps(ctx: KoolContext) {
+        super.setThemeProps(ctx)
         knobColor.setTheme(root.theme.accentColor)
         trackColorHighlighted.setTheme(MutableColor().add(root.theme.accentColor, 0.4f))
     }
 
-    override fun createThemeUi(ctx: RenderContext): ComponentUi {
+    override fun createThemeUi(ctx: KoolContext): ComponentUi {
         return root.theme.newSliderUi(this)
     }
 }
@@ -124,7 +124,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
         }
     }
 
-    override fun createUi(ctx: RenderContext) {
+    override fun createUi(ctx: KoolContext) {
         baseUi.createUi(ctx)
 
         mesh.shader = basicShader {
@@ -135,14 +135,14 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
         slider += mesh
     }
 
-    override fun disposeUi(ctx: RenderContext) {
+    override fun disposeUi(ctx: KoolContext) {
         baseUi.disposeUi(ctx)
 
         mesh.dispose(ctx)
         slider -= mesh
     }
 
-    override fun updateUi(ctx: RenderContext) {
+    override fun updateUi(ctx: KoolContext) {
         baseUi.updateUi(ctx)
 
         slider.knobSize = slider.dp(10f)

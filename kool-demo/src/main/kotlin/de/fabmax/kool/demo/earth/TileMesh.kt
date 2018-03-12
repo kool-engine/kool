@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo.earth
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.assetTexture
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
 import kotlin.math.*
 
-class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int) :
+class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int, ctx: KoolContext) :
         Mesh(MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS), "$tz/$tx/$ty") {
 
     val key = tileKey(tx, ty, tz)
@@ -86,16 +86,16 @@ class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int) :
         tileShader.alpha = 0f
         shader = tileShader
         //tileShader.staticColor.set(Color(tz / 10f, 1 - tz / 10f, 0f))
-        loadTileTex(tx, ty, tz)
+        loadTileTex(tx, ty, tz, ctx)
 
         generateGeometry()
     }
 
-    private fun loadTileTex(x: Int, y: Int, z:Int) {
-        tileShader.texture = assetTexture("http://tile.openstreetmap.org/$z/$x/$y.png")
+    private fun loadTileTex(x: Int, y: Int, z:Int, ctx: KoolContext) {
+        tileShader.texture = assetTexture("http://tile.openstreetmap.org/$z/$x/$y.png", ctx)
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         val targetAlpha = 1f
         if (isTexLoaded && !isFadingOut && tileShader.alpha < targetAlpha) {
             // increase alpha as soon as texture is available (but mesh doesn't have to be visible)
@@ -117,7 +117,7 @@ class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int) :
         super.render(ctx)
     }
 
-    override fun checkIsVisible(ctx: RenderContext): Boolean {
+    override fun checkIsVisible(ctx: KoolContext): Boolean {
         val tex = tileShader.texture ?: return false
         isTexLoaded = tex.res?.isLoaded ?: false
         val visible = isTexLoaded && super.checkIsVisible(ctx)

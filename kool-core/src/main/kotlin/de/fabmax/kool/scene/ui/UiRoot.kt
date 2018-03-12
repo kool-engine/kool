@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
@@ -116,7 +116,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         this.globalDepth = depth
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         if (isFillViewport &&
                 (globalWidth != ctx.viewport.width.toFloat() || globalHeight != ctx.viewport.height.toFloat())) {
             globalWidth = ctx.viewport.width.toFloat()
@@ -152,7 +152,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         ctx.popAttributes()
     }
 
-    override fun dispose(ctx: RenderContext) {
+    override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         content.dispose(ctx)
         blurHelper?.dispose(ctx)

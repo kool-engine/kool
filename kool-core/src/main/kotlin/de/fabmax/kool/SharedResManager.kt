@@ -8,7 +8,7 @@ abstract class SharedResManager<K, R> {
 
     protected val resources: MutableMap<K, SharedResource<R>> = mutableMapOf()
 
-    protected fun addReference(key: K, ctx: RenderContext): R {
+    protected fun addReference(key: K, ctx: KoolContext): R {
         var res = resources[key]
         if (res == null) {
             res = SharedResource(createResource(key, ctx))
@@ -18,7 +18,7 @@ abstract class SharedResManager<K, R> {
         return res.resource
     }
 
-    protected fun removeReference(key: K, ctx: RenderContext) {
+    protected fun removeReference(key: K, ctx: KoolContext) {
         val res = resources[key]
         if (res != null) {
             if (--res.refCount == 0) {
@@ -28,8 +28,8 @@ abstract class SharedResManager<K, R> {
         }
     }
 
-    protected abstract fun createResource(key: K, ctx: RenderContext): R
-    protected abstract fun deleteResource(key: K, res: R, ctx: RenderContext)
+    protected abstract fun createResource(key: K, ctx: KoolContext): R
+    protected abstract fun deleteResource(key: K, res: R, ctx: KoolContext)
 
     protected class SharedResource<out R>(val resource: R) {
         var refCount = 0

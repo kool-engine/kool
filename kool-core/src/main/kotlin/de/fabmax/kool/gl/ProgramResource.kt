@@ -1,10 +1,10 @@
 package de.fabmax.kool.gl
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 
-class ProgramResource private constructor(glRef: Any, ctx: RenderContext) : GlResource(glRef, Type.PROGRAM, ctx) {
+class ProgramResource private constructor(glRef: Any, ctx: KoolContext) : GlResource(glRef, Type.PROGRAM, ctx) {
     companion object {
-        fun create(ctx: RenderContext): ProgramResource {
+        fun create(ctx: KoolContext): ProgramResource {
             return ProgramResource(glCreateProgram(), ctx)
         }
     }
@@ -13,21 +13,21 @@ class ProgramResource private constructor(glRef: Any, ctx: RenderContext) : GlRe
         ctx.memoryMgr.memoryAllocated(this, 1)
     }
 
-    override fun delete(ctx: RenderContext) {
+    override fun delete(ctx: KoolContext) {
         glDeleteProgram(this)
         super.delete(ctx)
     }
 
-    fun attachShader(shader: ShaderResource, ctx: RenderContext) {
+    fun attachShader(shader: ShaderResource, ctx: KoolContext) {
         glAttachShader(this, shader)
     }
 
-    fun link(ctx: RenderContext): Boolean {
+    fun link(ctx: KoolContext): Boolean {
         glLinkProgram(this)
         return glGetProgrami(this, GL_LINK_STATUS) == GL_TRUE
     }
 
-    fun getInfoLog(ctx: RenderContext): String {
+    fun getInfoLog(ctx: KoolContext): String {
         return glGetProgramInfoLog(this)
     }
 }

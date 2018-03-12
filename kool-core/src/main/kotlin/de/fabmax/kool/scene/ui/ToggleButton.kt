@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.CosAnimator
@@ -38,17 +38,17 @@ open class ToggleButton(name: String, root: UiRoot, initState: Boolean = false):
         }
     }
 
-    override fun fireOnClick(ptr: InputManager.Pointer, rt: RayTest, ctx: RenderContext) {
+    override fun fireOnClick(ptr: InputManager.Pointer, rt: RayTest, ctx: KoolContext) {
         isEnabled = !isEnabled
         super.fireOnClick(ptr, rt, ctx)
     }
 
-    override fun setThemeProps() {
-        super.setThemeProps()
+    override fun setThemeProps(ctx: KoolContext) {
+        super.setThemeProps(ctx)
         knobColorOn = root.theme.accentColor
     }
 
-    override fun createThemeUi(ctx: RenderContext): ComponentUi {
+    override fun createThemeUi(ctx: KoolContext): ComponentUi {
         return root.theme.newToggleButtonUi(this)
     }
 }
@@ -68,7 +68,7 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         }
     }
 
-    override fun createUi(ctx: RenderContext) {
+    override fun createUi(ctx: KoolContext) {
         super.createUi(ctx)
 
         knobAnimator.speed = 0f
@@ -79,12 +79,12 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         tb.onStateChange += stateChangedListener
     }
 
-    override fun disposeUi(ctx: RenderContext) {
+    override fun disposeUi(ctx: KoolContext) {
         super.disposeUi(ctx)
         tb.onStateChange -= stateChangedListener
     }
 
-    override fun updateUi(ctx: RenderContext) {
+    override fun updateUi(ctx: KoolContext) {
         super.updateUi(ctx)
 
         val paddingR = tb.padding.right.toUnits(tb.width, tb.dpi)
@@ -115,7 +115,7 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         }
     }
 
-    override fun onRender(ctx: RenderContext) {
+    override fun onRender(ctx: KoolContext) {
         super.onRender(ctx)
         knobAnimator.tick(ctx)
     }

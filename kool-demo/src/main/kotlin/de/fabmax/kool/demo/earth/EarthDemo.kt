@@ -1,8 +1,8 @@
 package de.fabmax.kool.demo.earth
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.formatDouble
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.openUrl
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.SphericalInputTransform
 import de.fabmax.kool.scene.scene
@@ -17,7 +17,7 @@ import de.fabmax.kool.util.color
  * Earth demo: Show an OSM map on a sphere.
  */
 
-fun earthScene(): List<Scene> {
+fun earthScene(ctx: KoolContext): List<Scene> {
     val scenes = mutableListOf<Scene>()
     var earth: Earth? = null
 
@@ -50,13 +50,13 @@ fun earthScene(): List<Scene> {
         +earth!!
     }
 
-    val ui = EarthUi(earth!!)
+    val ui = EarthUi(earth!!, ctx)
     scenes += ui.scene
 
     return scenes
 }
 
-class EarthUi(val earth: Earth) {
+class EarthUi(val earth: Earth, val ctx: KoolContext) {
 
     private lateinit var attributionText: Label
     private var attribWidth = 0f
@@ -76,7 +76,7 @@ class EarthUi(val earth: Earth) {
 
             onRender += {
                 text = earth.attribution
-                val w = font.apply().textWidth(text)
+                val w = font.apply()?.textWidth(text) ?: 0f
                 if (w != attribWidth) {
                     attribWidth = w
                     layoutSpec.setSize(dps(w + 8, true), dps(18f), zero())
@@ -86,7 +86,7 @@ class EarthUi(val earth: Earth) {
 
             onClick += { _,_,_ ->
                 if (!earth.attributionUrl.isEmpty()) {
-                    openUrl(earth.attributionUrl)
+                    ctx.openUrl(earth.attributionUrl)
                 }
             }
         }
@@ -104,7 +104,7 @@ class EarthUi(val earth: Earth) {
                     "${formatDouble(earth.cameraHeight, 1)} m"
                 }
                 text = "$lat°, $lon°  $hgt"
-                val w = font.apply().textWidth(text)
+                val w = font.apply()?.textWidth(text) ?: 0f
                 if (w != posWidth) {
                     posWidth = w
 

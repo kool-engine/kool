@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import kotlin.math.atan
 import kotlin.math.cos
@@ -42,7 +42,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
 
-    fun updateCamera(ctx: RenderContext) {
+    fun updateCamera(ctx: KoolContext) {
         aspectRatio = ctx.viewport.aspectRatio
 
         updateViewMatrix(ctx)
@@ -53,7 +53,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         mvp.invert(invMvp)
     }
 
-    protected open fun updateViewMatrix(ctx: RenderContext) {
+    protected open fun updateViewMatrix(ctx: KoolContext) {
         toGlobalCoords(globalPosMut.set(position))
         toGlobalCoords(globalLookAtMut.set(lookAt))
         toGlobalCoords(globalUpMut.set(up), 0f).norm()
@@ -71,13 +71,13 @@ abstract class Camera(name: String = "camera") : Node(name) {
         ctx.mvpState.viewMatrix.set(view)
     }
 
-    abstract protected fun updateProjectionMatrix(ctx: RenderContext)
+    abstract protected fun updateProjectionMatrix(ctx: KoolContext)
 
-    fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, ctx: RenderContext): Boolean {
+    fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, ctx: KoolContext): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.x, ptr.y, ctx)
     }
 
-    fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, ctx: RenderContext): Boolean {
+    fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, ctx: KoolContext): Boolean {
         var valid = unProjectScreen(tmpVec3.set(screenX, screenY, 0f), ctx, pickRay.origin)
         valid = valid && unProjectScreen(tmpVec3.set(screenX, screenY, 1f), ctx, pickRay.direction)
 
@@ -89,11 +89,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return valid
     }
 
-    fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, ctx: RenderContext): Boolean {
+    fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, ctx: KoolContext): Boolean {
         return ptr.isValid && initRayTes(rayTest, ptr.x, ptr.y, ctx)
     }
 
-    fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, ctx: RenderContext): Boolean {
+    fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, ctx: KoolContext): Boolean {
         rayTest.clear()
         return computePickRay(rayTest.ray, screenX, screenY, ctx)
     }
@@ -115,7 +115,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     fun project(world: Vec3f, result: MutableVec4f): MutableVec4f =
             mvp.transform(result.set(world.x, world.y, world.z, 1f))
 
-    fun projectScreen(world: Vec3f, ctx: RenderContext, result: MutableVec3f): Boolean {
+    fun projectScreen(world: Vec3f, ctx: KoolContext, result: MutableVec3f): Boolean {
         if (!project(world, result)) {
             return false
         }
@@ -125,7 +125,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return true
     }
 
-    fun unProjectScreen(screen: Vec3f, ctx: RenderContext, result: MutableVec3f): Boolean {
+    fun unProjectScreen(screen: Vec3f, ctx: KoolContext, result: MutableVec3f): Boolean {
         val x = screen.x - ctx.viewport.x
         val y = (ctx.windowHeight - screen.y) - ctx.viewport.y
         tmpVec4.set(2f * x / ctx.viewport.width - 1f, 2f * y / ctx.viewport.height - 1f, 2f * screen.z - 1f, 1f)
@@ -159,12 +159,12 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         this.far = far
     }
 
-    override fun updateViewMatrix(ctx: RenderContext) {
+    override fun updateViewMatrix(ctx: KoolContext) {
         super.updateViewMatrix(ctx)
         globalLookDir
     }
 
-    override fun updateProjectionMatrix(ctx: RenderContext) {
+    override fun updateProjectionMatrix(ctx: KoolContext) {
         if (clipToViewport) {
             left = 0f
             right = ctx.viewport.width.toFloat()
@@ -237,7 +237,7 @@ class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
     private val tmpNodeExtent = MutableVec3f()
 
-    override fun updateProjectionMatrix(ctx: RenderContext) {
+    override fun updateProjectionMatrix(ctx: KoolContext) {
         ctx.mvpState.projMatrix.setPerspective(fovy, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling

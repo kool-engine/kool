@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
@@ -11,13 +11,13 @@ interface ComponentUi {
 
     fun updateComponentAlpha() { }
 
-    fun createUi(ctx: RenderContext) { }
+    fun createUi(ctx: KoolContext) { }
 
-    fun updateUi(ctx: RenderContext) { }
+    fun updateUi(ctx: KoolContext) { }
 
-    fun disposeUi(ctx: RenderContext) { }
+    fun disposeUi(ctx: KoolContext) { }
 
-    fun onRender(ctx: RenderContext) { }
+    fun onRender(ctx: KoolContext) { }
 }
 
 open class BlankComponentUi : ComponentUi
@@ -35,7 +35,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
         shader?.alpha = component.alpha
     }
 
-    override fun createUi(ctx: RenderContext) {
+    override fun createUi(ctx: KoolContext) {
         color.setTheme(component.root.theme.backgroundColor).apply()
         shader = createShader(ctx)
         shader?.staticColor?.set(color.prop)
@@ -43,12 +43,12 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
         component.addNode(mesh, 0)
     }
 
-    override fun disposeUi(ctx: RenderContext) {
+    override fun disposeUi(ctx: KoolContext) {
         component -= mesh
         mesh.dispose(ctx)
     }
 
-    override fun updateUi(ctx: RenderContext) {
+    override fun updateUi(ctx: KoolContext) {
         color.setTheme(component.root.theme.backgroundColor).apply()
         shader?.staticColor?.set(color.prop)
 
@@ -60,7 +60,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
         }
     }
 
-    protected open fun createShader(ctx: RenderContext): BasicShader {
+    protected open fun createShader(ctx: KoolContext): BasicShader {
         return basicShader {
             lightModel = component.root.shaderLightModel
             colorModel = ColorModel.STATIC_COLOR
@@ -70,7 +70,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 }
 
 open class BlurredComponentUi(component: UiComponent) : SimpleComponentUi(component) {
-    override fun createShader(ctx: RenderContext): BasicShader {
+    override fun createShader(ctx: KoolContext): BasicShader {
         return blurShader {
             lightModel = component.root.shaderLightModel
             colorModel = ColorModel.STATIC_COLOR
@@ -80,7 +80,7 @@ open class BlurredComponentUi(component: UiComponent) : SimpleComponentUi(compon
         }
     }
 
-    override fun updateUi(ctx: RenderContext) {
+    override fun updateUi(ctx: KoolContext) {
         super.updateUi(ctx)
         val bs = shader
         if (bs is BlurShader) {

@@ -13,7 +13,10 @@ import kotlin.browser.window
  * @author fabmax
  */
 @Suppress("UnsafeCastFromDynamic")
-class JsContext internal constructor(val props: InitProps) : RenderContext() {
+class JsContext internal constructor(val props: InitProps) : KoolContext() {
+    override val glCapabilities: GlCapabilities
+
+    override val assetMgr = JsAssetManager()
 
     override var windowWidth = 0
         private set
@@ -243,6 +246,10 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
         window.requestAnimationFrame { t -> renderFrame(t) }
     }
 
+    override fun openUrl(url: String) {
+        window.open(url)
+    }
+
     override fun run() {
         window.requestAnimationFrame { t -> renderFrame(t) }
     }
@@ -251,7 +258,7 @@ class JsContext internal constructor(val props: InitProps) : RenderContext() {
         // nothing to do here...
     }
 
-    class InitProps : RenderContext.InitProps() {
+    class InitProps {
         var canvasName = "glCanvas"
         val excludedKeyCodes: MutableSet<String> = mutableSetOf("F5")
     }

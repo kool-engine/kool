@@ -1,6 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.TextureProps
 import de.fabmax.kool.assetTexture
 import de.fabmax.kool.formatFloat
@@ -22,7 +22,7 @@ import de.fabmax.kool.util.timedMs
  * @author fabmax
  */
 
-fun treeScene(ctx: RenderContext): List<Scene> {
+fun treeScene(ctx: KoolContext): List<Scene> {
     val scenes = mutableListOf<Scene>()
 
     // generate tree structure
@@ -60,8 +60,8 @@ fun treeScene(ctx: RenderContext): List<Scene> {
 
                 val textureProps = TextureProps("tree_bark.png", GL_LINEAR, GL_REPEAT, 16)
                 val nrmMapProps = TextureProps("tree_bark_nrm.png", GL_LINEAR, GL_REPEAT, 16)
-                texture = assetTexture(textureProps)
-                normalMap = assetTexture(nrmMapProps)
+                texture = assetTexture(textureProps, ctx)
+                normalMap = assetTexture(nrmMapProps, ctx)
             }
         }
 
@@ -82,7 +82,7 @@ fun treeScene(ctx: RenderContext): List<Scene> {
                 shadowMap = defaultShadowMap
                 specularIntensity = 0.1f
                 isDiscardTranslucent = true
-                texture = assetTexture("leaf.png")
+                texture = assetTexture("leaf.png", ctx)
             }
         }
 

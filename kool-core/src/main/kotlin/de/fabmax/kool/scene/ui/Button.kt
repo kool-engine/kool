@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
@@ -14,7 +14,7 @@ import de.fabmax.kool.util.LinearAnimator
  */
 open class Button(name: String, root: UiRoot) : Label(name, root) {
 
-    val onClick: MutableList<Button.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
+    val onClick: MutableList<Button.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
 
     val textColorHovered = ThemeOrCustomProp(Color.WHITE)
 
@@ -58,18 +58,18 @@ open class Button(name: String, root: UiRoot) : Label(name, root) {
         }
     }
 
-    protected open fun fireOnClick(ptr: InputManager.Pointer, rt: RayTest, ctx: RenderContext) {
+    protected open fun fireOnClick(ptr: InputManager.Pointer, rt: RayTest, ctx: KoolContext) {
         for (i in onClick.indices) {
             onClick[i](ptr, rt, ctx)
         }
     }
 
-    override fun setThemeProps() {
-        super.setThemeProps()
+    override fun setThemeProps(ctx: KoolContext) {
+        super.setThemeProps(ctx)
         textColorHovered.setTheme(root.theme.accentColor)
     }
 
-    override fun createThemeUi(ctx: RenderContext): ComponentUi {
+    override fun createThemeUi(ctx: KoolContext): ComponentUi {
         return root.theme.newButtonUi(this)
     }
 }
@@ -80,17 +80,17 @@ open class ButtonUi(val button: Button, baseUi: ComponentUi) : LabelUi(button, b
     protected var colorWeightStd = 1f
     protected var colorWeightHovered = 0f
 
-    protected val hoverEnterListener: Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit = { _, _, _ ->
+    protected val hoverEnterListener: Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit = { _, _, _ ->
         hoverAnimator.duration = 0.1f
         hoverAnimator.speed = 1f
     }
 
-    protected val hoverExitListener: Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit = { _, _, _ ->
+    protected val hoverExitListener: Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit = { _, _, _ ->
         hoverAnimator.duration = 0.2f
         hoverAnimator.speed = -1f
     }
 
-    override fun createUi(ctx: RenderContext) {
+    override fun createUi(ctx: KoolContext) {
         super.createUi(ctx)
 
         hoverAnimator.speed = 0f
@@ -110,13 +110,13 @@ open class ButtonUi(val button: Button, baseUi: ComponentUi) : LabelUi(button, b
         textColor.add(button.textColorHovered.apply(), colorWeightHovered)
     }
 
-    override fun disposeUi(ctx: RenderContext) {
+    override fun disposeUi(ctx: KoolContext) {
         super.disposeUi(ctx)
         button.onHoverEnter -= hoverEnterListener
         button.onHoverExit -= hoverExitListener
     }
 
-    override fun onRender(ctx: RenderContext) {
+    override fun onRender(ctx: KoolContext) {
         super.onRender(ctx)
         hoverAnimator.tick(ctx)
     }

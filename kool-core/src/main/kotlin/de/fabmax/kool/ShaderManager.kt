@@ -19,7 +19,7 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
     var shadingHints = ShadingHints(PreferredLightModel.PHONG, PreferredShadowMethod.NO_SHADOW)
         // TODO: set(value) { updateAllShaders() }
 
-    fun bindShader(shader: Shader?, ctx: RenderContext) {
+    fun bindShader(shader: Shader?, ctx: KoolContext) {
         if (shader != null) {
             if (!shader.isValid) {
                 shader.onLoad(ctx)
@@ -39,18 +39,18 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
         }
     }
 
-    internal fun createShader(source: Shader.Source, ctx: RenderContext): ProgramResource {
+    internal fun createShader(source: Shader.Source, ctx: KoolContext): ProgramResource {
         return addReference(source, ctx)
     }
 
-    internal fun deleteShader(shader: Shader, ctx: RenderContext) {
+    internal fun deleteShader(shader: Shader, ctx: KoolContext) {
         val res = shader.res
         if (res != null) {
             removeReference(shader.source, ctx)
         }
     }
 
-    override fun createResource(key: Shader.Source, ctx: RenderContext): ProgramResource {
+    override fun createResource(key: Shader.Source, ctx: KoolContext): ProgramResource {
         // create vertex shader
         val vertShader = ShaderResource.createVertexShader(ctx)
         vertShader.shaderSource(key.vertexSrc, ctx)
@@ -93,7 +93,7 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
         return prog
     }
 
-    override fun deleteResource(key: Shader.Source, res: ProgramResource, ctx: RenderContext) {
+    override fun deleteResource(key: Shader.Source, res: ProgramResource, ctx: KoolContext) {
         res.delete(ctx)
     }
 }

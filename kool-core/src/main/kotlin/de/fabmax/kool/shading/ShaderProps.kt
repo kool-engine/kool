@@ -1,7 +1,6 @@
 package de.fabmax.kool.shading
 
 import de.fabmax.kool.Texture
-import de.fabmax.kool.glCapabilities
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 
@@ -45,11 +44,6 @@ class ShaderProps {
     var numBones = 0
 
     var shadowMap: CascadedShadowMap? = null
-        get() = if (glCapabilities.depthTextures) {
-            field
-        } else {
-            null
-        }
 
     var isNormalMapped = false
 

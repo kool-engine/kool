@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo.earth
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.gl.GL_ALWAYS
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Group
@@ -72,7 +72,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
         steadyScreenPtMode = STEADY_SCREEN_PT_INIT
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         val cam = scene?.camera
         if (cam != null && cam is PerspectiveCamera) {
             toGlobalCoords(tmpVec.set(Vec3f.ZERO))
@@ -110,7 +110,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
             if (newCenter != center && (tiles.size < 300 || !isMoving)) {
                 //println("$newCenter ${tiles.size}")
                 center = newCenter
-                rebuildMesh()
+                rebuildMesh(ctx)
             }
         }
 
@@ -148,7 +148,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
             round(0.2f + log2(meterPerPxLvl0 / meterPerPx * cos(lat)))
                     .clamp(MIN_ZOOM_LEVEL.toDouble(), MAX_ZOOM_LEVEL.toDouble()).toInt()
 
-    private fun rebuildMesh() {
+    private fun rebuildMesh(ctx: KoolContext) {
         removableTiles.putAll(tiles)
 
         val rng = 5
@@ -159,7 +159,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
         var yStart = (center.y - rng + 1) and 1.inv()
         var yEnd = ((center.y + rng + 1) and 1.inv()) - 1
 
-        addMeshesWrappingX(xStart, xEnd, yStart, yEnd, zoom)
+        addMeshesWrappingX(xStart, xEnd, yStart, yEnd, zoom, ctx)
 
         for (i in 1..4) {
             zoom--
@@ -174,11 +174,11 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
                 yStart = (yStShf - 1) and 1.inv()
                 yEnd = (yEdShf and 1.inv()) + 1
 
-                addMeshesWrappingX(xStart, xStShf-1, yStart, yEnd, zoom)
-                addMeshesWrappingX(xEdShf, xEnd, yStart, yEnd, zoom)
+                addMeshesWrappingX(xStart, xStShf-1, yStart, yEnd, zoom, ctx)
+                addMeshesWrappingX(xEdShf, xEnd, yStart, yEnd, zoom, ctx)
 
-                addMeshesWrappingX(xStShf, xEdShf-1, yStart, yStShf-1, zoom)
-                addMeshesWrappingX(xStShf, xEdShf-1, yEdShf, yEnd, zoom)
+                addMeshesWrappingX(xStShf, xEdShf-1, yStart, yStShf-1, zoom, ctx)
+                addMeshesWrappingX(xStShf, xEdShf-1, yEdShf, yEnd, zoom, ctx)
             } else {
                 break
             }
@@ -194,59 +194,59 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
         }
     }
 
-    private fun addMeshesWrappingX(xStart: Int, xEnd: Int, yStart: Int, yEnd: Int, zoom: Int) {
+    private fun addMeshesWrappingX(xStart: Int, xEnd: Int, yStart: Int, yEnd: Int, zoom: Int, ctx: KoolContext) {
         val size = 1 shl zoom
         val ys = max(0, yStart)
         val ye = min(size - 1, yEnd)
 
-        addMeshes(max(0, xStart)..min(size - 1, xEnd), ys..ye, zoom)
+        addMeshes(max(0, xStart)..min(size - 1, xEnd), ys..ye, zoom, ctx)
         if (xStart < 0 && xEnd < size - 1) {
             // wrap around 180° long
-            addMeshes(max(size + xStart, xEnd) until size, ys..ye, zoom)
+            addMeshes(max(size + xStart, xEnd) until size, ys..ye, zoom, ctx)
         } else if (xStart > 0 && xEnd > size - 1) {
             // wrap around 180° long
-            addMeshes(0..min(xStart, xEnd - (size - 1)), ys..ye, zoom)
+            addMeshes(0..min(xStart, xEnd - (size - 1)), ys..ye, zoom, ctx)
         }
     }
 
-    private fun addMeshes(xRng: IntRange, yRng: IntRange, zoom: Int) {
+    private fun addMeshes(xRng: IntRange, yRng: IntRange, zoom: Int, ctx: KoolContext) {
         if (xRng.last - xRng.first > 2 && yRng.last - yRng.first > 2) {
-            addMeshesCircular(xRng, yRng, zoom)
+            addMeshesCircular(xRng, yRng, zoom, ctx)
         } else {
-            addMeshesRectRange(xRng, yRng, zoom)
+            addMeshesRectRange(xRng, yRng, zoom, ctx)
         }
     }
 
-    private fun addMeshesRectRange(xRng: IntRange, yRng: IntRange, zoom: Int) {
+    private fun addMeshesRectRange(xRng: IntRange, yRng: IntRange, zoom: Int, ctx: KoolContext) {
         for (x in xRng) {
             for (y in yRng) {
-                addTile(x, y, zoom, xRng, yRng)
+                addTile(x, y, zoom, xRng, yRng, ctx)
             }
         }
     }
 
-    private fun addMeshesCircular(xRng: IntRange, yRng: IntRange, zoom: Int) {
+    private fun addMeshesCircular(xRng: IntRange, yRng: IntRange, zoom: Int, ctx: KoolContext) {
         val cx = xRng.first + (xRng.last - xRng.first) / 2
         val cy = yRng.first + (yRng.last - yRng.first) / 2
         val r = max(max(cx - xRng.first, xRng.last - cx), max(cy - yRng.first, yRng.last - cy))
 
         for (i in 0..r) {
             for (x in cx - i..cx + i) {
-                addTile(x, cy - i, zoom, xRng, yRng)
+                addTile(x, cy - i, zoom, xRng, yRng, ctx)
                 if (i > 0) {
-                    addTile(x, cy + i, zoom, xRng, yRng)
+                    addTile(x, cy + i, zoom, xRng, yRng, ctx)
                 }
             }
             if (i > 0) {
                 for (y in cy - i + 1..cy + i - 1) {
-                    addTile(cx - i, y, zoom, xRng, yRng)
-                    addTile(cx + i, y, zoom, xRng, yRng)
+                    addTile(cx - i, y, zoom, xRng, yRng, ctx)
+                    addTile(cx + i, y, zoom, xRng, yRng, ctx)
                 }
             }
         }
     }
 
-    private fun addTile(x: Int, y: Int, zoom: Int, xRng: IntRange, yRng: IntRange) {
+    private fun addTile(x: Int, y: Int, zoom: Int, xRng: IntRange, yRng: IntRange, ctx: KoolContext) {
         if (x in xRng && y in yRng) {
             val key = TileMesh.tileKey(x, y, zoom)
             val existing = tiles[key]
@@ -257,7 +257,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
                     loadingTiles += key
                 }
             } else {
-                val mesh = TileMesh(this, x, y, zoom)
+                val mesh = TileMesh(this, x, y, zoom, ctx)
                 tiles[key] = mesh
                 getZoomGroup(zoom) += mesh
                 loadingTiles += key
@@ -308,7 +308,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
         newScene?.registerDragHandler(this)
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: RenderContext): Int {
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext): Int {
         if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(ctx)) {
             val ptrX = dragPtrs[0].x
             val ptrY = dragPtrs[0].y
@@ -339,7 +339,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
         return 0
     }
 
-    private fun computePointOrientation(screenX: Float, screenY: Float, ctx: RenderContext): Boolean {
+    private fun computePointOrientation(screenX: Float, screenY: Float, ctx: KoolContext): Boolean {
         if (scene?.camera?.computePickRay(pickRay, screenX, screenY, ctx) ?: false) {
             val o = pickRay.origin
             val l = pickRay.direction
@@ -385,7 +385,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     }
 
     private class TileGroup : Group() {
-        override fun render(ctx: RenderContext) {
+        override fun render(ctx: KoolContext) {
             ctx.pushAttributes()
             ctx.depthFunc = GL_ALWAYS
             ctx.applyAttributes()

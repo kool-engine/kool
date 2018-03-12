@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.util.BoundingBox
@@ -32,7 +32,7 @@ open class Group(name: String? = null) : Node(name) {
         }
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         if (!isVisible) {
             // group is hidden
             return
@@ -52,7 +52,7 @@ open class Group(name: String? = null) : Node(name) {
         bounds.set(tmpBounds)
     }
 
-    override fun dispose(ctx: RenderContext) {
+    override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         for (i in children.indices) {
             children[i].dispose(ctx)

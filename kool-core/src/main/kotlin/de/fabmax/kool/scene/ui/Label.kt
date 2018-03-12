@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
@@ -31,16 +31,16 @@ open class Label(name: String, root: UiRoot) : UiComponent(name, root) {
         }
 
     // fixme: updateUi() is not issued when custom values are set
-    val font = ThemeOrCustomProp(Font.DEFAULT_FONT)
+    val font = ThemeOrCustomProp<Font?>(null)
     val textColor = ThemeOrCustomProp(Color.WHITE)
 
-    override fun setThemeProps() {
-        super.setThemeProps()
-        font.setTheme(root.theme.standardFont(dpi))
+    override fun setThemeProps(ctx: KoolContext) {
+        super.setThemeProps(ctx)
+        font.setTheme(root.theme.standardFont(ctx))
         textColor.setTheme(root.theme.foregroundColor)
     }
 
-    override fun createThemeUi(ctx: RenderContext): ComponentUi {
+    override fun createThemeUi(ctx: KoolContext): ComponentUi {
         return root.theme.newLabelUi(this)
     }
 }
@@ -67,7 +67,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         }
     }
 
-    override fun createUi(ctx: RenderContext) {
+    override fun createUi(ctx: KoolContext) {
         baseUi.createUi(ctx)
         mesh.shader = fontShader {
             lightModel = label.root.shaderLightModel
@@ -77,11 +77,14 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         label += mesh
     }
 
-    override fun updateUi(ctx: RenderContext) {
+    override fun updateUi(ctx: KoolContext) {
         baseUi.updateUi(ctx)
 
+        if (!label.font.isUpdate && label.font.prop == null) {
+            label.font.setCustom(Font.defaultFont(ctx))
+        }
         if (label.font.isUpdate) {
-            label.font.prop.dispose(ctx)
+            label.font.prop?.dispose(ctx)
             font = label.font.apply()
         }
 
@@ -96,14 +99,14 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         renderText(ctx)
     }
 
-    override fun disposeUi(ctx: RenderContext) {
+    override fun disposeUi(ctx: KoolContext) {
         baseUi.disposeUi(ctx)
         label -= mesh
         mesh.dispose(ctx)
     }
 
     protected open fun computeTextMetrics() {
-        textWidth = font.textWidth(label.text)
+        textWidth = font?.textWidth(label.text) ?: 0f
 
         textStartX = when (label.textAlignment.xAlignment) {
             Alignment.START -> label.padding.left.toUnits(label.width, label.dpi)
@@ -112,17 +115,20 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         }
 
         textBaseline = when (label.textAlignment.yAlignment) {
-            Alignment.START -> label.height - label.padding.top.toUnits(label.width, label.dpi) - font.normHeight
-            Alignment.CENTER -> (label.height - font.normHeight) / 2f
+            Alignment.START -> label.height - label.padding.top.toUnits(label.width, label.dpi) - (font?.normHeight ?: 0f)
+            Alignment.CENTER -> (label.height - (font?.normHeight ?: 0f)) / 2f
             Alignment.END -> label.padding.bottom.toUnits(label.height, label.dpi)
         }
     }
 
-    protected open fun renderText(ctx: RenderContext) {
+    protected open fun renderText(ctx: KoolContext) {
         meshBuilder.color = textColor
-        meshBuilder.text(font) {
-            origin.set(textStartX, textBaseline, label.dp(4f))
-            text = label.text
+        val fnt = font
+        if (fnt != null) {
+            meshBuilder.text(fnt) {
+                origin.set(textStartX, textBaseline, label.dp(4f))
+                text = label.text
+            }
         }
     }
 

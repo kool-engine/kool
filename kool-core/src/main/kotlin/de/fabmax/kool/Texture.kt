@@ -52,7 +52,7 @@ abstract class TextureData {
     var height = 0
         protected set
 
-    internal fun loadData(texture: Texture, ctx: RenderContext) {
+    internal fun loadData(texture: Texture, ctx: KoolContext) {
         onLoad(texture, ctx)
         texture.res!!.isLoaded = true
         if (texture.props.minFilter == GL_LINEAR_MIPMAP_LINEAR) {
@@ -60,7 +60,7 @@ abstract class TextureData {
         }
     }
 
-    abstract fun onLoad(texture: Texture, ctx: RenderContext)
+    abstract fun onLoad(texture: Texture, ctx: KoolContext)
 }
 
 class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val format: Int) : TextureData() {
@@ -70,7 +70,7 @@ class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val 
         this.height = height
     }
 
-    override fun onLoad(texture: Texture, ctx: RenderContext) {
+    override fun onLoad(texture: Texture, ctx: KoolContext) {
         val res = texture.res ?: throw KoolException("Texture wasn't created")
         val limit = buffer.limit
         val pos = buffer.position
@@ -82,7 +82,7 @@ class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val 
     }
 }
 
-open class Texture(val props: TextureProps, val generator: Texture.() -> TextureData) :
+open class Texture(val props: TextureProps, val generator: Texture.(ctx: KoolContext) -> TextureData) :
         GlObject<TextureResource>() {
 
     var width = 0
@@ -92,11 +92,11 @@ open class Texture(val props: TextureProps, val generator: Texture.() -> Texture
 
     var delayLoading = false
 
-    internal fun onCreate(ctx: RenderContext) {
+    internal fun onCreate(ctx: KoolContext) {
         res = ctx.textureMgr.createTexture(props, ctx)
     }
 
-    override fun dispose(ctx: RenderContext) {
+    override fun dispose(ctx: KoolContext) {
         // do not call super, as this will immediately delete the texture on the GPU. However, texture resource is
         // shared and might be used by other Texture objects...
         if (isValid) {
@@ -105,7 +105,7 @@ open class Texture(val props: TextureProps, val generator: Texture.() -> Texture
         }
     }
 
-    internal fun loadData(texData: TextureData, ctx: RenderContext) {
+    internal fun loadData(texData: TextureData, ctx: KoolContext) {
         if (!texData.isAvailable) {
             throw KoolException("Texture data is not available")
         }
@@ -115,13 +115,13 @@ open class Texture(val props: TextureProps, val generator: Texture.() -> Texture
     }
 }
 
-fun assetTexture(assetPath: String, delayLoading: Boolean = true): Texture {
-    return assetTexture(defaultProps(assetPath), delayLoading)
+fun assetTexture(assetPath: String, ctx: KoolContext, delayLoading: Boolean = true): Texture {
+    return assetTexture(defaultProps(assetPath), ctx, delayLoading)
 }
 
-fun assetTexture(props: TextureProps, delayLoading: Boolean = true): Texture {
+fun assetTexture(props: TextureProps, ctx: KoolContext, delayLoading: Boolean = true): Texture {
     return Texture(props) {
         this.delayLoading = delayLoading
-        loadTextureAsset(props.id)
+        ctx.assetMgr.loadTextureAsset(props.id)
     }
 }

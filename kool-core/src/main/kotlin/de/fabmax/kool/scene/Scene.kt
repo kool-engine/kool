@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.gl.GL_COLOR_BUFFER_BIT
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.gl.glClear
@@ -18,8 +18,8 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
 
 open class Scene(name: String? = null) : Group(name) {
 
-    val onPreRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
-    val onPostRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
+    val onPreRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+    val onPostRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
 
     var camera: Camera = PerspectiveCamera()
     var light = Light()
@@ -48,7 +48,7 @@ open class Scene(name: String? = null) : Group(name) {
         scene = this
     }
 
-    fun renderScene(ctx: RenderContext) {
+    fun renderScene(ctx: KoolContext) {
         if (!isVisible) {
             return
         }
@@ -81,7 +81,7 @@ open class Scene(name: String? = null) : Group(name) {
         dragHandlers -= handler
     }
 
-    private fun handleInput(ctx: RenderContext) {
+    private fun handleInput(ctx: KoolContext) {
         var hovered: Node? = null
         val prevHovered = hoverNode
         val ptr = ctx.inputMgr.primaryPointer
@@ -118,7 +118,7 @@ open class Scene(name: String? = null) : Group(name) {
         }
     }
 
-    private fun handleDrag(ctx: RenderContext) {
+    private fun handleDrag(ctx: KoolContext) {
         dragPtrs.clear()
         for (i in ctx.inputMgr.pointers.indices) {
             val ptr = ctx.inputMgr.pointers[i]

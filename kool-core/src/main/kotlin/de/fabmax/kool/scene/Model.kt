@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.Shader
 
@@ -60,7 +60,7 @@ class Model(name: String?): TransformGroup(name) {
         addNode(child)
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         if (initGeometries) {
             initGeometries = false
 

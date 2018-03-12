@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Mesh
@@ -54,14 +54,14 @@ class BillboardShader internal constructor(props: ShaderProps, generator: GlslGe
     init {
         generator.customUniforms += uViewportSz
         generator.injectors += object: GlslGenerator.GlslInjector {
-            override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) {
+            override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
                 text.append("gl_Position.x += (${Attribute.TEXTURE_COORDS.name}.x - 0.5) * gl_Position.w / uViewportSz.x;\n")
                         .append("gl_Position.y -= (${Attribute.TEXTURE_COORDS.name}.y - 0.5) * gl_Position.w / uViewportSz.y;\n")
             }
         }
     }
 
-    override fun onBind(ctx: RenderContext) {
+    override fun onBind(ctx: KoolContext) {
         super.onBind(ctx)
         uViewportSz.value.set(0.5f * ctx.viewport.width.toFloat() / billboardSize,
                 0.5f * ctx.viewport.height.toFloat() / billboardSize)

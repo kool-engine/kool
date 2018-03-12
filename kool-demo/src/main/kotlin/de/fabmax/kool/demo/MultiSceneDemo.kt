@@ -1,21 +1,21 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Scene
 
 /**
  * @author fabmax
  */
 
-fun multiScene(): List<Scene> {
-    val leftScene = simpleShapesScene()
+fun multiScene(ctx: KoolContext): List<Scene> {
+    val leftScene = simpleShapesScene(ctx)
     val rightScene = uiDemoScene()
 
     leftScene.onPreRender += { ctx ->
         val vp = ctx.viewport
         val width = (vp.width * 0.5).toInt()
         ctx.pushAttributes()
-        ctx.viewport = RenderContext.Viewport(vp.x, vp.y, width, vp.height)
+        ctx.viewport = KoolContext.Viewport(vp.x, vp.y, width, vp.height)
         ctx.applyAttributes()
     }
     leftScene.onPostRender += { ctx ->
@@ -28,7 +28,7 @@ fun multiScene(): List<Scene> {
         val vp = ctx.viewport
         val width = (vp.width * 0.5).toInt()
         ctx.pushAttributes()
-        ctx.viewport = RenderContext.Viewport(width, vp.y, width, vp.height)
+        ctx.viewport = KoolContext.Viewport(width, vp.y, width, vp.height)
         ctx.applyAttributes()
     }
     rightScene.onPostRender += { ctx ->

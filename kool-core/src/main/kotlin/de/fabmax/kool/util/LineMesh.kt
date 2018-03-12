@@ -1,6 +1,6 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.gl.GL_ALWAYS
 import de.fabmax.kool.gl.GL_LINES
 import de.fabmax.kool.math.Vec3f
@@ -41,7 +41,7 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
         meshData.isBatchUpdate = false
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         ctx.pushAttributes()
         ctx.lineWidth = lineWidth
         if (isXray) {
