@@ -1,7 +1,10 @@
 # Kotlin + OpenGL = kool
 
 A simple OpenGL based graphics engine that works on Desktop Java, Android and
-in browsers with Javascript/WebGL.
+in browsers with Javascript / WebGL.
+
+Android version currently doesn't compile in IntelliJ (only in Android-Studio due to some
+gradle-plugin incompatibilities) and therefore remains in a separate branch for now.
 
 For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo).

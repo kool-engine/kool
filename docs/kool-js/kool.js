@@ -978,8 +978,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       webGlCtx = this.canvas_8be2vx$.getContext('experimental-webgl2');
     }
     JsImpl_getInstance().isWebGl2Context = webGlCtx != null;
-    var uint32Indices = false;
-    var depthTextures = false;
+    var uint32Indices;
+    var depthTextures;
+    var maxTexUnits;
     var shaderIntAttribs = false;
     var depthComponentIntFormat = GL_DEPTH_COMPONENT;
     var depthFilterMethod = GL_NEAREST;
@@ -994,6 +995,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       depthComponentIntFormat = GL_DEPTH_COMPONENT24;
       glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_300_ES;
       glVersion = new GlVersion('WebGL', 2, 0);
+      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
     }
      else {
       webGlCtx = this.canvas_8be2vx$.getContext('webgl');
@@ -1006,13 +1008,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.gl_8be2vx$ = Kotlin.isType(tmp$_1 = webGlCtx, WebGLRenderingContext) ? tmp$_1 : throwCCE();
       uint32Indices = this.gl_8be2vx$.getExtension('OES_element_index_uint') != null;
       depthTextures = this.gl_8be2vx$.getExtension('WEBGL_depth_texture') != null;
+      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
     }
     var extAnisotropic = (tmp$_3 = (tmp$_2 = this.gl_8be2vx$.getExtension('EXT_texture_filter_anisotropic')) != null ? tmp$_2 : this.gl_8be2vx$.getExtension('MOZ_EXT_texture_filter_anisotropic')) != null ? tmp$_3 : this.gl_8be2vx$.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
     if (extAnisotropic != null) {
       var max = typeof (tmp$_4 = this.gl_8be2vx$.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) === 'number' ? tmp$_4 : throwCCE();
       anisotropicTexFilterInfo = new AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT);
     }
-    glCapabilities = new GlCapabilities(uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
+    glCapabilities = new GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
     this.screenDpi = JsImpl_getInstance().dpi;
     this.windowWidth = this.canvas_8be2vx$.clientWidth;
     this.windowHeight = this.canvas_8be2vx$.clientHeight;
@@ -2507,9 +2510,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           glDrawBuffer(GL_FRONT);
           glReadBuffer(GL_FRONT);
           fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+          println('Framebuffer incomplete: attached fallback color buffer');
         }
         if (fbStatus !== GL_FRAMEBUFFER_COMPLETE) {
-          throw new KoolException('Framebuffer incomplete, status: ' + fbStatus);
+          println('ERROR: Framebuffer incomplete, status: ' + fbStatus + ', color: ' + (this.colorAttachment != null) + ', depth: ' + (this.depthAttachment != null));
         }
       }
     }
@@ -2902,10 +2906,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'TextureResource',
     interfaces: [GlResource]
   };
-  function GlCapabilities(uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
+  function GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
     GlCapabilities$Companion_getInstance();
     this.uint32Indices = uint32Indices;
     this.shaderIntAttribs = shaderIntAttribs;
+    this.maxTexUnits = maxTexUnits;
     this.depthTextures = depthTextures;
     this.depthComponentIntFormat = depthComponentIntFormat;
     this.depthFilterMethod = depthFilterMethod;
@@ -2915,7 +2920,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function GlCapabilities$Companion() {
     GlCapabilities$Companion_instance = this;
-    this.UNKNOWN_CAPABILITIES = new GlCapabilities(false, false, false, 0, 0, AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED, GlslDialect$Companion_getInstance().GLSL_DIALECT_100, new GlVersion('Unknown', 0, 0));
+    this.UNKNOWN_CAPABILITIES = new GlCapabilities(false, false, 16, false, 0, 0, AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED, GlslDialect$Companion_getInstance().GLSL_DIALECT_100, new GlVersion('Unknown', 0, 0));
   }
   GlCapabilities$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -2941,33 +2946,37 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return this.shaderIntAttribs;
   };
   GlCapabilities.prototype.component3 = function () {
-    return this.depthTextures;
+    return this.maxTexUnits;
   };
   GlCapabilities.prototype.component4 = function () {
-    return this.depthComponentIntFormat;
+    return this.depthTextures;
   };
   GlCapabilities.prototype.component5 = function () {
-    return this.depthFilterMethod;
+    return this.depthComponentIntFormat;
   };
   GlCapabilities.prototype.component6 = function () {
-    return this.anisotropicTexFilterInfo;
+    return this.depthFilterMethod;
   };
   GlCapabilities.prototype.component7 = function () {
-    return this.glslDialect;
+    return this.anisotropicTexFilterInfo;
   };
   GlCapabilities.prototype.component8 = function () {
+    return this.glslDialect;
+  };
+  GlCapabilities.prototype.component9 = function () {
     return this.glVersion;
   };
-  GlCapabilities.prototype.copy_c2nipr$ = function (uint32Indices, shaderIntAttribs, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
-    return new GlCapabilities(uint32Indices === void 0 ? this.uint32Indices : uint32Indices, shaderIntAttribs === void 0 ? this.shaderIntAttribs : shaderIntAttribs, depthTextures === void 0 ? this.depthTextures : depthTextures, depthComponentIntFormat === void 0 ? this.depthComponentIntFormat : depthComponentIntFormat, depthFilterMethod === void 0 ? this.depthFilterMethod : depthFilterMethod, anisotropicTexFilterInfo === void 0 ? this.anisotropicTexFilterInfo : anisotropicTexFilterInfo, glslDialect === void 0 ? this.glslDialect : glslDialect, glVersion === void 0 ? this.glVersion : glVersion);
+  GlCapabilities.prototype.copy_9b28tz$ = function (uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
+    return new GlCapabilities(uint32Indices === void 0 ? this.uint32Indices : uint32Indices, shaderIntAttribs === void 0 ? this.shaderIntAttribs : shaderIntAttribs, maxTexUnits === void 0 ? this.maxTexUnits : maxTexUnits, depthTextures === void 0 ? this.depthTextures : depthTextures, depthComponentIntFormat === void 0 ? this.depthComponentIntFormat : depthComponentIntFormat, depthFilterMethod === void 0 ? this.depthFilterMethod : depthFilterMethod, anisotropicTexFilterInfo === void 0 ? this.anisotropicTexFilterInfo : anisotropicTexFilterInfo, glslDialect === void 0 ? this.glslDialect : glslDialect, glVersion === void 0 ? this.glVersion : glVersion);
   };
   GlCapabilities.prototype.toString = function () {
-    return 'GlCapabilities(uint32Indices=' + Kotlin.toString(this.uint32Indices) + (', shaderIntAttribs=' + Kotlin.toString(this.shaderIntAttribs)) + (', depthTextures=' + Kotlin.toString(this.depthTextures)) + (', depthComponentIntFormat=' + Kotlin.toString(this.depthComponentIntFormat)) + (', depthFilterMethod=' + Kotlin.toString(this.depthFilterMethod)) + (', anisotropicTexFilterInfo=' + Kotlin.toString(this.anisotropicTexFilterInfo)) + (', glslDialect=' + Kotlin.toString(this.glslDialect)) + (', glVersion=' + Kotlin.toString(this.glVersion)) + ')';
+    return 'GlCapabilities(uint32Indices=' + Kotlin.toString(this.uint32Indices) + (', shaderIntAttribs=' + Kotlin.toString(this.shaderIntAttribs)) + (', maxTexUnits=' + Kotlin.toString(this.maxTexUnits)) + (', depthTextures=' + Kotlin.toString(this.depthTextures)) + (', depthComponentIntFormat=' + Kotlin.toString(this.depthComponentIntFormat)) + (', depthFilterMethod=' + Kotlin.toString(this.depthFilterMethod)) + (', anisotropicTexFilterInfo=' + Kotlin.toString(this.anisotropicTexFilterInfo)) + (', glslDialect=' + Kotlin.toString(this.glslDialect)) + (', glVersion=' + Kotlin.toString(this.glVersion)) + ')';
   };
   GlCapabilities.prototype.hashCode = function () {
     var result = 0;
     result = result * 31 + Kotlin.hashCode(this.uint32Indices) | 0;
     result = result * 31 + Kotlin.hashCode(this.shaderIntAttribs) | 0;
+    result = result * 31 + Kotlin.hashCode(this.maxTexUnits) | 0;
     result = result * 31 + Kotlin.hashCode(this.depthTextures) | 0;
     result = result * 31 + Kotlin.hashCode(this.depthComponentIntFormat) | 0;
     result = result * 31 + Kotlin.hashCode(this.depthFilterMethod) | 0;
@@ -2977,7 +2986,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return result;
   };
   GlCapabilities.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uint32Indices, other.uint32Indices) && Kotlin.equals(this.shaderIntAttribs, other.shaderIntAttribs) && Kotlin.equals(this.depthTextures, other.depthTextures) && Kotlin.equals(this.depthComponentIntFormat, other.depthComponentIntFormat) && Kotlin.equals(this.depthFilterMethod, other.depthFilterMethod) && Kotlin.equals(this.anisotropicTexFilterInfo, other.anisotropicTexFilterInfo) && Kotlin.equals(this.glslDialect, other.glslDialect) && Kotlin.equals(this.glVersion, other.glVersion)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uint32Indices, other.uint32Indices) && Kotlin.equals(this.shaderIntAttribs, other.shaderIntAttribs) && Kotlin.equals(this.maxTexUnits, other.maxTexUnits) && Kotlin.equals(this.depthTextures, other.depthTextures) && Kotlin.equals(this.depthComponentIntFormat, other.depthComponentIntFormat) && Kotlin.equals(this.depthFilterMethod, other.depthFilterMethod) && Kotlin.equals(this.anisotropicTexFilterInfo, other.anisotropicTexFilterInfo) && Kotlin.equals(this.glslDialect, other.glslDialect) && Kotlin.equals(this.glVersion, other.glVersion)))));
   };
   function GlVersion(glDialect, versionMajor, versionMinor) {
     this.glDialect = glDialect;
@@ -6297,6 +6306,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     this.fps = this.frameTimes_z5q5nn$_0.length / sum * 0.1 + this.fps * 0.9;
     this.inputMgr.onNewFrame_p81l1v$(this);
+    this.textureMgr.onNewFrame_evfofk$(this);
     this.shaderMgr.bindShader_wa3i41$(null, this);
     this.viewport = new RenderContext$Viewport(0, 0, this.windowWidth, this.windowHeight);
     this.applyAttributes();
@@ -13462,6 +13472,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.generator = generator;
     this.width_uigb2o$_0 = 0;
     this.height_vdup1l$_0 = 0;
+    this.delayLoading = false;
   }
   Object.defineProperty(Texture.prototype, 'width', {
     get: function () {
@@ -13501,22 +13512,27 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'Texture',
     interfaces: [GlObject]
   };
-  function assetTexture(assetPath) {
-    return assetTexture_0(defaultProps(assetPath));
+  function assetTexture(assetPath, delayLoading) {
+    if (delayLoading === void 0)
+      delayLoading = true;
+    return assetTexture_0(defaultProps(assetPath), delayLoading);
   }
-  function assetTexture$lambda(closure$props) {
+  function assetTexture$lambda(closure$delayLoading, closure$props) {
     return function ($receiver) {
+      $receiver.delayLoading = closure$delayLoading;
       return loadTextureAsset(closure$props.id);
     };
   }
-  function assetTexture_0(props) {
-    return new Texture(props, assetTexture$lambda(props));
+  function assetTexture_0(props, delayLoading) {
+    if (delayLoading === void 0)
+      delayLoading = true;
+    return new Texture(props, assetTexture$lambda(delayLoading, props));
   }
   function TextureManager() {
-    TextureManager$Companion_getInstance();
     SharedResManager.call(this);
+    this.maxTextureLoadsPerFrame = 5;
     this.activeTexUnit_0 = 0;
-    var array = Array_0(TextureManager$Companion_getInstance().TEXTURE_UNITS);
+    var array = Array_0(16);
     var tmp$;
     tmp$ = array.length - 1 | 0;
     for (var i = 0; i <= tmp$; i++) {
@@ -13524,23 +13540,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     this.boundTextures_0 = array;
     this.loadingTextures_0 = LinkedHashMap_init();
+    this.allowedTexLoads_0 = this.maxTextureLoadsPerFrame;
   }
-  function TextureManager$Companion() {
-    TextureManager$Companion_instance = this;
-    this.TEXTURE_UNITS = 32;
-  }
-  TextureManager$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var TextureManager$Companion_instance = null;
-  function TextureManager$Companion_getInstance() {
-    if (TextureManager$Companion_instance === null) {
-      new TextureManager$Companion();
+  TextureManager.prototype.onNewFrame_evfofk$ = function (ctx) {
+    this.allowedTexLoads_0 = this.maxTextureLoadsPerFrame;
+    if (this.boundTextures_0.length !== glCapabilities.maxTexUnits) {
+      var array = Array_0(glCapabilities.maxTexUnits);
+      var tmp$;
+      tmp$ = array.length - 1 | 0;
+      for (var i = 0; i <= tmp$; i++) {
+        array[i] = null;
+      }
+      this.boundTextures_0 = array;
     }
-    return TextureManager$Companion_instance;
-  }
+  };
   TextureManager.prototype.bindTexture_4yp9vu$ = function (texture, ctx) {
     var tmp$;
     if (!texture.isValid) {
@@ -13571,7 +13584,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
   };
   TextureManager.prototype.nextTexUnit_0 = function () {
-    this.activateTexUnit_0((this.activeTexUnit_0 + 1 | 0) % TextureManager$Companion_getInstance().TEXTURE_UNITS);
+    this.activateTexUnit_0((this.activeTexUnit_0 + 1 | 0) % this.boundTextures_0.length);
   };
   TextureManager.prototype.activateTexUnit_0 = function (unit) {
     this.activeTexUnit_0 = unit;
@@ -13599,12 +13612,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var value = data;
       $receiver.put_xwzc9p$(key, value);
     }
-    if (data.isAvailable) {
+    if (data.isAvailable && (!texture.delayLoading || this.allowedTexLoads_0 > 0)) {
       if (res.texUnit !== this.activeTexUnit_0) {
         this.activateTexUnit_0(ensureNotNull(texture.res).texUnit);
       }
       texture.loadData_3vby0t$(data, ctx);
       this.loadingTextures_0.remove_11rb$(texture.props.id);
+      this.allowedTexLoads_0 = this.allowedTexLoads_0 - 1 | 0;
     }
   };
   TextureManager.prototype.createResource_cmpczv$ = function (key, ctx) {
@@ -20756,11 +20770,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$kool.TextureData = TextureData;
   package$kool.BufferedTextureData = BufferedTextureData;
   package$kool.Texture = Texture;
-  package$kool.assetTexture_61zpoe$ = assetTexture;
-  package$kool.assetTexture_46ie3i$ = assetTexture_0;
-  Object.defineProperty(TextureManager, 'Companion', {
-    get: TextureManager$Companion_getInstance
-  });
+  package$kool.assetTexture_ivxn3r$ = assetTexture;
+  package$kool.assetTexture_4689t5$ = assetTexture_0;
   package$kool.TextureManager = TextureManager;
   Object.defineProperty(Animator, 'Companion', {
     get: Animator$Companion_getInstance

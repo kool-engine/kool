@@ -56,7 +56,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var color = $module$kool.de.fabmax.kool.util.color_61zpoe$;
   var openUrl = $module$kool.de.fabmax.kool.openUrl_61zpoe$;
   var formatDouble = $module$kool.de.fabmax.kool.formatDouble_12fank$;
-  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_61zpoe$;
+  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_ivxn3r$;
   var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
   var Attribute = $module$kool.de.fabmax.kool.shading.Attribute;
   var MeshData_init = $module$kool.de.fabmax.kool.scene.MeshData_init_j0mu7e$;
@@ -97,7 +97,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var LinearAnimator = $module$kool.de.fabmax.kool.util.LinearAnimator;
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
-  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
   var equals = Kotlin.equals;
   var UiContainer = $module$kool.de.fabmax.kool.scene.ui.UiContainer;
@@ -117,7 +116,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Pad = $module$kool.de.fabmax.kool.audio.Pad;
   var AudioGenerator = $module$kool.de.fabmax.kool.audio.AudioGenerator;
   var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
-  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_46ie3i$;
+  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_4689t5$;
   var CullMethod = $module$kool.de.fabmax.kool.scene.CullMethod;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
@@ -434,7 +433,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var a = this.tb.width;
     var b = this.tb.height;
     $receiver_0.radius = Math_0.min(a, b) / 2.0;
-    $receiver_0.center.set_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, -4.0);
+    $receiver_0.center.set_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, 0.0);
     $receiver_0.steps = 30;
     $receiver.circle_59f34t$($receiver.circleProps);
     var tx = this.knobAnimator.value.value * -hw * 0.1;
@@ -474,7 +473,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     if (name === void 0)
       name = null;
     TransformGroup.call(this, name);
-    this.tileRes = 256;
     this.meterPerPxLvl0 = 156000.0;
     this.centerLat_tivji2$_0 = 0.0;
     this.centerLon_tivtqm$_0 = 0.0;
@@ -487,7 +485,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.removableTiles_0 = LinkedHashMap_init();
     this.loadingTiles_0 = LinkedHashSet_init();
     this.removeTiles_0 = ArrayList_init();
-    this.rotAxis_0 = MutableVec3f_init();
     this.camPosition_0 = MutableVec3f_init();
     this.camDirection_0 = MutableVec3f_init();
     this.startTransform_0 = new Mat4f();
@@ -604,7 +601,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.camDirection_0.scale_mx4ult$(Earth$Companion_getInstance().EARTH_R);
       var camHeight = this.camDirection_0.distance_czzhiu$(this.camPosition_0);
       var x_3 = cam.fovy * math_0.DEG_2_RAD * 0.5;
-      var meterPerPx = camHeight * Math_0.tan(x_3) * 2.0 / ctx.viewport.height;
+      var meterPerPx = camHeight * Math_0.tan(x_3) * 2.0 / (ctx.viewport.height * 96.0 / ctx.screenDpi);
       var centerZoom = this.getBestZoom_0(meterPerPx, lat);
       var newCenter = TileName$Companion_getInstance().forLatLng_syxxoe$(lat * math_0.RAD_2_DEG, lon * math_0.RAD_2_DEG, centerZoom);
       if (!(newCenter != null ? newCenter.equals(this.center_0) : null) && (this.tiles_0.size < 300 || !isMoving)) {
@@ -1208,6 +1205,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       var lonW = this$TileMesh.tx / (1 << this$TileMesh.tz) * 2 * math.PI - math.PI;
       var lonE = (this$TileMesh.tx + 1 | 0) / (1 << this$TileMesh.tz) * 2 * math.PI - math.PI;
+      var uvScale = 255.0 / 256.0;
+      var uvOff = 0.5 / 256.0;
       var stepsExp = 4;
       var steps = 1 << stepsExp;
       var tysFac = 1.0 / (1 << this$TileMesh.tz + stepsExp) * 2 * math.PI;
@@ -1228,7 +1227,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var phi = lonW + (lonE - lonW) * i / steps;
           var x_1 = Math_0.sin(phi) * r;
           var z = Math_0.cos(phi) * r;
-          var uv = new Vec2f(i / steps, 1.0 - row / steps);
+          var uv = new Vec2f(i / steps * uvScale + uvOff, 1.0 - (row / steps * uvScale + uvOff));
           var fx = x_1;
           var fy = y;
           var fz = z;
@@ -1962,7 +1961,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function synthieScene(ctx) {
     var content = new SynthieScene();
     var menu = synthieMenu(content, ctx);
-    return mutableListOf([content, menu]);
+    return listOf([content, menu]);
   }
   function synthieMenu$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
@@ -2329,8 +2328,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.sampleInterval = 0.05;
     this.nextSample = 0.0;
     this.unaryPlus_uv0sim$(this.quads);
-    this.scale_y2kzbl$(1.0 / 32.0, 1.0 / 32.0, 1.0 / 32.0);
-    this.translate_y2kzbl$(0.0, -32.0, -this.zPos + this.length / 5.0);
   }
   SynthieScene$Heightmap.prototype.render_evfofk$ = function (ctx) {
     var tmp$;
@@ -2340,8 +2337,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var b = -this.nextSample;
       this.nextSample += Math_0.max(a, b);
       var freqData = this.$outer.audioGen_0.getPowerSpectrum();
-      tmp$ = this.width - 1 | 0;
-      for (var i = 0; i <= tmp$; i++) {
+      tmp$ = this.width;
+      for (var i = 0; i < tmp$; i++) {
         var $receiver = freqData.get_za3lpa$(i) / 90.0;
         var min = -1.0;
         var clamp$result;
@@ -2384,12 +2381,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
       this.zPos += 1.0;
       if (this.zPos > 10000) {
-        this.translate_y2kzbl$(0.0, 0.0, this.zPos + 10000);
         this.zPos = -10000.0;
       }
       this.quads.meshData.isSyncRequired = true;
     }
-    this.translate_y2kzbl$(0.0, 0.0, -ctx.deltaT / this.sampleInterval);
+    this.setIdentity();
+    this.scale_y2kzbl$(1.0 / 32.0, 1.0 / 32.0, 1.0 / 32.0);
+    this.translate_y2kzbl$(0.0, -32.0, -this.zPos + this.length / 5.0);
     TransformGroup.prototype.render_evfofk$.call(this, ctx);
   };
   function SynthieScene$Heightmap$quads$lambda$lambda$lambda($receiver) {
