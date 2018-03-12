@@ -32,16 +32,30 @@ class PerfTimer {
     }
 }
 
-inline fun <T> timedMs(message: String, block: () -> T): T {
+inline fun <T> timedMs(message: String, tag: String? = "PerfTimer", level: Log.Level = Log.Level.INFO, block: () -> T): T {
     val t = now()
     val ret = block()
-    println("$message ${formatDouble(now() - t, 3)} ms")
+    Log.log(level, tag) { "$message ${formatDouble(now() - t, 3)} ms" }
     return ret
 }
 
-inline fun <T> timedMs(message: () -> String, block: () -> T): T {
+inline fun <T> timedMs(message: () -> String, tag: String? = "PerfTimer", level: Log.Level = Log.Level.INFO, block: () -> T): T {
     val t = now()
     val ret = block()
-    println("${message()} ${formatDouble(now() - t, 3)} ms")
+    Log.log(level, tag) { "${message()} ${formatDouble(now() - t, 3)} ms" }
+    return ret
+}
+
+inline fun <T> Any.timedMs(message: String, level: Log.Level = Log.Level.INFO, block: () -> T): T {
+    val t = now()
+    val ret = block()
+    Log.log(level, this) { "$message ${formatDouble(now() - t, 3)} ms" }
+    return ret
+}
+
+inline fun <T> Any.timedMs(message: () -> String, level: Log.Level = Log.Level.INFO, block: () -> T): T {
+    val t = now()
+    val ret = block()
+    Log.log(level, this) { "${message()} ${formatDouble(now() - t, 3)} ms" }
     return ret
 }

@@ -48,8 +48,11 @@ fun pointScene(): Scene {
                     }
                 }
                 val updateT = t.takeMs()
-                println("In-radius search retrieved ${trav.result.size} points, took " +
-                        "${formatDouble(searchT, 3)} ms; Point update took ${formatDouble(updateT, 3)} ms")
+                logI {
+                    "In-radius search retrieved ${trav.result.size} points, " +
+                            "took ${formatDouble(searchT, 3)} ms; " +
+                            "Point update took ${formatDouble(updateT, 3)} ms"
+                }
 
                 data.isSyncRequired = true
             }

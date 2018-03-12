@@ -7,6 +7,7 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.Log
 import kotlinx.coroutines.experimental.launch
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -14,6 +15,7 @@ import java.awt.Desktop
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.net.URI
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -76,6 +78,18 @@ internal object DesktopImpl {
     val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     init {
+        val dateFmt = SimpleDateFormat("HH:mm:ss.SSS")
+        Log.printer = { lvl, tag, message ->
+            synchronized(dateFmt) {
+                val txt = "${dateFmt.format(System.currentTimeMillis())} ${lvl.indicator}/$tag: $message"
+                if (lvl.level < Log.Level.WARN.level) {
+                    println(txt)
+                } else {
+                    System.err.println(txt)
+                }
+            }
+        }
+
         // setup an error callback
         GLFWErrorCallback.createPrint(System.err).set()
 
