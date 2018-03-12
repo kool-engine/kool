@@ -38,14 +38,6 @@ actual fun glBufferData(target: Int, data: Uint32Buffer, usage: Int) =
 
 actual fun glBufferData(target: Int, data: Float32Buffer, usage: Int) =
         GL15.glBufferData(target, (data as Float32BufferImpl).buffer, usage)
-//actual fun glBufferData(target: Int, data: Float32Buffer, usage: Int) {
-//    val arr = FloatArray(data.remaining)
-//    (data as Float32BufferImpl).buffer.get(arr)
-//    val perf = PerfTimer()
-//    //GL15.glBufferData(target, (data as Float32BufferImpl).buffer, usage)
-//    GL15.glBufferData(target, arr, usage)
-//    perf.logMs("buffer data took %.3f (${arr.size} floats)")
-//}
 
 actual fun glCheckFramebufferStatus(target: Int) =
         GL30.glCheckFramebufferStatus(target)

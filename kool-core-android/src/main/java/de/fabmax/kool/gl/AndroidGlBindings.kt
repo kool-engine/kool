@@ -241,3 +241,5 @@ actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int,
 
 actual fun glViewport(x: Int, y: Int, width: Int, height: Int) =
         GLES30.glViewport(x, y, width, height)
+
+actual fun isValidUniformLocation(location: Any?): Boolean = (location as? Int ?: -1) >= 0

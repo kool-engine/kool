@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-platform-android'
 
 android {
     compileSdkVersion 27
@@ -19,13 +19,13 @@ android {
 }
 
 dependencies {
+    expectedBy project(":kool-demo")
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:27.0.2'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 
-    //implementation project(':android:kool-core-wrapper')
-    implementation project(':android:kool-core-android')
-    implementation project(':android:kool-demo-wrapper')
+    implementation project(':kool-core-android')
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'

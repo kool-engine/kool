@@ -1,11 +1,11 @@
 rootProject.name = 'kool'
 
 include 'kool-core'
+include 'kool-core-android'
 include 'kool-core-jvm'
 include 'kool-core-js'
 
 include 'kool-demo'
+include 'kool-demo-android'
 include 'kool-demo-jvm'
 include 'kool-demo-js'
-
-include 'android', 'android:kool-core-wrapper', 'android:kool-core-android', 'android:kool-demo-wrapper', 'android:kool-demo-android'

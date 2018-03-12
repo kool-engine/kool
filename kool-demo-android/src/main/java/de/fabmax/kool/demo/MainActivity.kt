@@ -2,9 +2,6 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.platform.AndroidRenderContext
 import de.fabmax.kool.platform.KoolActivity
-import de.fabmax.kool.util.timedMs
-import java.nio.ByteBuffer
-import java.nio.FloatBuffer
 
 class MainActivity : KoolActivity() {
     override fun onKoolContextCreated(ctx: AndroidRenderContext) {

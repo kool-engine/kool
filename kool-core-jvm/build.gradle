@@ -22,12 +22,11 @@ apply plugin: 'kotlinx-serialization'
 kotlin { experimental { coroutines 'enable' } }
 
 dependencies {
+    expectedBy project(":kool-core")
+
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
-    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
-
-    expectedBy project(":kool-core")
 
     compile 'com.github.wendykierp:JTransforms:3.1'
 
@@ -36,6 +35,8 @@ dependencies {
     compile "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
     compile "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
+
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
     runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
     runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
