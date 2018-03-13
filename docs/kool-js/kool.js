@@ -51,7 +51,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
   var StringBuilder = Kotlin.kotlin.text.StringBuilder;
-  var removeAll = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   var toInt = Kotlin.kotlin.text.toInt_6ic1pp$;
   var get_indices_0 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
@@ -59,6 +58,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var KSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.KSerializer;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
+  var removeAll = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   ImageTextureData.prototype = Object.create(TextureData.prototype);
   ImageTextureData.prototype.constructor = ImageTextureData;
   JsContext$InitProps.prototype = Object.create(RenderContext$InitProps.prototype);
@@ -13634,210 +13634,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'TextureManager',
     interfaces: [SharedResManager]
   };
-  function TouchGestureEvaluator() {
-    TouchGestureEvaluator$Companion_getInstance();
-    this.currentGesture_nrwzky$_0 = new TouchGestureEvaluator$Gesture();
-    this.activePointers_ajelte$_0 = ArrayList_init();
-    this.tmpVec1_vwccvm$_0 = MutableVec2f_init();
-    this.tmpVec2_vwccwh$_0 = MutableVec2f_init();
-    this.startPositions = LinkedHashMap_init();
-    this.screenDpi = 96.0;
-  }
-  Object.defineProperty(TouchGestureEvaluator.prototype, 'currentGesture', {
-    get: function () {
-      return this.currentGesture_nrwzky$_0;
-    },
-    set: function (currentGesture) {
-      this.currentGesture_nrwzky$_0 = currentGesture;
-    }
-  });
-  TouchGestureEvaluator.prototype.evaluate_evfofk$ = function (ctx) {
-    this.screenDpi = ctx.screenDpi;
-    ctx.inputMgr.getActivePointers_mcn869$(this.activePointers_ajelte$_0);
-    if (this.activePointers_ajelte$_0.size > 1) {
-      switch (this.currentGesture.type) {
-        case 0:
-          this.onGestureInit_mcn869$(this.activePointers_ajelte$_0);
-          break;
-        case -1:
-          this.onDetermineGesture_mcn869$(this.activePointers_ajelte$_0);
-          break;
-        case 1:
-          this.handleGesture_mcn869$(this.activePointers_ajelte$_0);
-          break;
-        case 2:
-          this.handleGesture_mcn869$(this.activePointers_ajelte$_0);
-          break;
-      }
-    }
-     else {
-      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().INVALID;
-      this.startPositions.clear();
-    }
-  };
-  TouchGestureEvaluator.prototype.onGestureInit_mcn869$ = function (pointers) {
-    var tmp$;
-    tmp$ = pointers.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      var $receiver = this.startPositions;
-      var key = element.id;
-      var value = new Vec2f(element.x, element.y);
-      $receiver.put_xwzc9p$(key, value);
-    }
-    this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().INDETERMINATE;
-  };
-  function TouchGestureEvaluator$onDetermineGesture$lambda(closure$pointers) {
-    return function (ptrId) {
-      var $receiver = closure$pointers;
-      var firstOrNull$result;
-      firstOrNull$break: do {
-        var tmp$;
-        tmp$ = $receiver.iterator();
-        while (tmp$.hasNext()) {
-          var element = tmp$.next();
-          if (element.id === ptrId) {
-            firstOrNull$result = element;
-            break firstOrNull$break;
-          }
-        }
-        firstOrNull$result = null;
-      }
-       while (false);
-      return firstOrNull$result == null;
-    };
-  }
-  TouchGestureEvaluator.prototype.onDetermineGesture_mcn869$ = function (pointers) {
-    removeAll(this.startPositions.keys, TouchGestureEvaluator$onDetermineGesture$lambda(pointers));
-    var destination = ArrayList_init();
-    var tmp$;
-    tmp$ = pointers.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      if (!this.startPositions.containsKey_11rb$(element.id))
-        destination.add_11rb$(element);
-    }
-    var tmp$_0;
-    tmp$_0 = destination.iterator();
-    while (tmp$_0.hasNext()) {
-      var element_0 = tmp$_0.next();
-      var $receiver = this.startPositions;
-      var key = element_0.id;
-      var value = new Vec2f(element_0.x, element_0.y);
-      $receiver.put_xwzc9p$(key, value);
-    }
-    if (this.isPinch_mcn869$(pointers))
-      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().PINCH;
-    else if (this.isTwoFingerDrag_mcn869$(pointers))
-      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().TWO_FINGER_DRAG;
-  };
-  TouchGestureEvaluator.prototype.isPinch_mcn869$ = function (pointers) {
-    if (pointers.size === 2) {
-      this.tmpVec1_vwccvm$_0.set_dleff0$(pointers.get_za3lpa$(0).x, pointers.get_za3lpa$(0).y).subtract_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
-      this.tmpVec2_vwccwh$_0.set_dleff0$(pointers.get_za3lpa$(1).x, pointers.get_za3lpa$(1).y).subtract_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
-      this.tmpVec1_vwccvm$_0.scale_mx4ult$(96.0 / this.screenDpi);
-      this.tmpVec2_vwccwh$_0.scale_mx4ult$(96.0 / this.screenDpi);
-      if (this.tmpVec1_vwccvm$_0.length() > 5.0 && this.tmpVec2_vwccwh$_0.length() > 5.0 && this.tmpVec1_vwccvm$_0.times_czzhjp$(this.tmpVec2_vwccwh$_0) < 0) {
-        this.tmpVec1_vwccvm$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
-        this.tmpVec2_vwccwh$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
-        this.currentGesture.init_4s1jvi$(TouchGestureEvaluator$Companion_getInstance().PINCH, this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
-        this.handleGesture_mcn869$(pointers);
-        return true;
-      }
-    }
-    return false;
-  };
-  TouchGestureEvaluator.prototype.isTwoFingerDrag_mcn869$ = function (pointers) {
-    if (pointers.size === 2) {
-      this.tmpVec1_vwccvm$_0.set_dleff0$(pointers.get_za3lpa$(0).x, pointers.get_za3lpa$(0).y).subtract_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
-      this.tmpVec2_vwccwh$_0.set_dleff0$(pointers.get_za3lpa$(1).x, pointers.get_za3lpa$(1).y).subtract_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
-      this.tmpVec1_vwccvm$_0.scale_mx4ult$(96.0 / this.screenDpi);
-      this.tmpVec2_vwccwh$_0.scale_mx4ult$(96.0 / this.screenDpi);
-      if (this.tmpVec1_vwccvm$_0.length() > 5.0 && this.tmpVec2_vwccwh$_0.length() > 5.0 && this.tmpVec1_vwccvm$_0.times_czzhjp$(this.tmpVec2_vwccwh$_0) > 0) {
-        this.tmpVec1_vwccvm$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
-        this.tmpVec2_vwccwh$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
-        this.currentGesture.init_4s1jvi$(TouchGestureEvaluator$Companion_getInstance().TWO_FINGER_DRAG, this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
-        this.handleGesture_mcn869$(pointers);
-        return true;
-      }
-    }
-    return false;
-  };
-  TouchGestureEvaluator.prototype.handleGesture_mcn869$ = function (pointers) {
-    if (pointers.size === 2) {
-      this.tmpVec1_vwccvm$_0.set_dleff0$(pointers.get_za3lpa$(0).x, pointers.get_za3lpa$(0).y);
-      this.tmpVec2_vwccwh$_0.set_dleff0$(pointers.get_za3lpa$(1).x, pointers.get_za3lpa$(1).y);
-      this.currentGesture.update_enjys2$(this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
-    }
-     else {
-      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().INVALID;
-    }
-  };
-  function TouchGestureEvaluator$Companion() {
-    TouchGestureEvaluator$Companion_instance = this;
-    this.INVALID = 0;
-    this.INDETERMINATE = -1;
-    this.PINCH = 1;
-    this.TWO_FINGER_DRAG = 2;
-  }
-  TouchGestureEvaluator$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var TouchGestureEvaluator$Companion_instance = null;
-  function TouchGestureEvaluator$Companion_getInstance() {
-    if (TouchGestureEvaluator$Companion_instance === null) {
-      new TouchGestureEvaluator$Companion();
-    }
-    return TouchGestureEvaluator$Companion_instance;
-  }
-  function TouchGestureEvaluator$Gesture() {
-    this.centerStart = MutableVec2f_init();
-    this.centerCurrent = MutableVec2f_init();
-    this.centerShift = MutableVec2f_init();
-    this.dCenter = MutableVec2f_init();
-    this.pinchAmountStart = 0.0;
-    this.pinchAmountCurrent = 0.0;
-    this.dPinchAmount = 0.0;
-    this.type = TouchGestureEvaluator$Companion_getInstance().INVALID;
-    this.numUpdates = 0;
-  }
-  Object.defineProperty(TouchGestureEvaluator$Gesture.prototype, 'pinchAmountRel', {
-    get: function () {
-      return (this.pinchAmountCurrent - this.pinchAmountStart) / this.pinchAmountStart + 1.0;
-    }
-  });
-  TouchGestureEvaluator$Gesture.prototype.init_4s1jvi$ = function (type, ptr1, ptr2, dpi) {
-    this.type = type;
-    this.centerStart.set_czzhjp$(ptr1).add_czzhjp$(ptr2).scale_mx4ult$(0.5);
-    this.centerCurrent.set_czzhjp$(this.centerStart);
-    this.centerShift.set_czzhjp$(Vec2f$Companion_getInstance().ZERO);
-    this.dCenter.set_czzhjp$(Vec2f$Companion_getInstance().ZERO);
-    this.pinchAmountStart = ptr1.distance_czzhjp$(ptr2) * 96.0 / dpi;
-    this.pinchAmountCurrent = this.pinchAmountStart;
-    this.dPinchAmount = 0.0;
-    this.numUpdates = 0;
-  };
-  TouchGestureEvaluator$Gesture.prototype.update_enjys2$ = function (ptr1, ptr2, dpi) {
-    this.dCenter.set_czzhjp$(ptr1).add_czzhjp$(ptr2).scale_mx4ult$(0.5).subtract_czzhjp$(this.centerCurrent);
-    this.centerCurrent.set_czzhjp$(ptr1).add_czzhjp$(ptr2).scale_mx4ult$(0.5);
-    this.centerShift.set_czzhjp$(this.centerCurrent).subtract_czzhjp$(this.centerStart);
-    var pinch = ptr1.distance_czzhjp$(ptr2) * 96.0 / dpi;
-    this.dPinchAmount = pinch - this.pinchAmountCurrent;
-    this.pinchAmountCurrent = pinch;
-    this.numUpdates = this.numUpdates + 1 | 0;
-  };
-  TouchGestureEvaluator$Gesture.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Gesture',
-    interfaces: []
-  };
-  TouchGestureEvaluator.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TouchGestureEvaluator',
-    interfaces: []
-  };
   function Animator(value) {
     Animator$Companion_getInstance();
     this.value = value;
@@ -18603,6 +18399,210 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     $receiver.add_czzhiu$(far.lowerRight);
     $receiver.batchUpdate = false;
   }
+  function TouchGestureEvaluator() {
+    TouchGestureEvaluator$Companion_getInstance();
+    this.currentGesture_nrwzky$_0 = new TouchGestureEvaluator$Gesture();
+    this.activePointers_ajelte$_0 = ArrayList_init();
+    this.tmpVec1_vwccvm$_0 = MutableVec2f_init();
+    this.tmpVec2_vwccwh$_0 = MutableVec2f_init();
+    this.startPositions = LinkedHashMap_init();
+    this.screenDpi = 96.0;
+  }
+  Object.defineProperty(TouchGestureEvaluator.prototype, 'currentGesture', {
+    get: function () {
+      return this.currentGesture_nrwzky$_0;
+    },
+    set: function (currentGesture) {
+      this.currentGesture_nrwzky$_0 = currentGesture;
+    }
+  });
+  TouchGestureEvaluator.prototype.evaluate_evfofk$ = function (ctx) {
+    this.screenDpi = ctx.screenDpi;
+    ctx.inputMgr.getActivePointers_mcn869$(this.activePointers_ajelte$_0);
+    if (this.activePointers_ajelte$_0.size > 1) {
+      switch (this.currentGesture.type) {
+        case 0:
+          this.onGestureInit_mcn869$(this.activePointers_ajelte$_0);
+          break;
+        case -1:
+          this.onDetermineGesture_mcn869$(this.activePointers_ajelte$_0);
+          break;
+        case 1:
+          this.handleGesture_mcn869$(this.activePointers_ajelte$_0);
+          break;
+        case 2:
+          this.handleGesture_mcn869$(this.activePointers_ajelte$_0);
+          break;
+      }
+    }
+     else {
+      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().INVALID;
+      this.startPositions.clear();
+    }
+  };
+  TouchGestureEvaluator.prototype.onGestureInit_mcn869$ = function (pointers) {
+    var tmp$;
+    tmp$ = pointers.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var $receiver = this.startPositions;
+      var key = element.id;
+      var value = new Vec2f(element.x, element.y);
+      $receiver.put_xwzc9p$(key, value);
+    }
+    this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().INDETERMINATE;
+  };
+  function TouchGestureEvaluator$onDetermineGesture$lambda(closure$pointers) {
+    return function (ptrId) {
+      var $receiver = closure$pointers;
+      var firstOrNull$result;
+      firstOrNull$break: do {
+        var tmp$;
+        tmp$ = $receiver.iterator();
+        while (tmp$.hasNext()) {
+          var element = tmp$.next();
+          if (element.id === ptrId) {
+            firstOrNull$result = element;
+            break firstOrNull$break;
+          }
+        }
+        firstOrNull$result = null;
+      }
+       while (false);
+      return firstOrNull$result == null;
+    };
+  }
+  TouchGestureEvaluator.prototype.onDetermineGesture_mcn869$ = function (pointers) {
+    removeAll(this.startPositions.keys, TouchGestureEvaluator$onDetermineGesture$lambda(pointers));
+    var destination = ArrayList_init();
+    var tmp$;
+    tmp$ = pointers.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (!this.startPositions.containsKey_11rb$(element.id))
+        destination.add_11rb$(element);
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      var $receiver = this.startPositions;
+      var key = element_0.id;
+      var value = new Vec2f(element_0.x, element_0.y);
+      $receiver.put_xwzc9p$(key, value);
+    }
+    if (this.isPinch_mcn869$(pointers))
+      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().PINCH;
+    else if (this.isTwoFingerDrag_mcn869$(pointers))
+      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().TWO_FINGER_DRAG;
+  };
+  TouchGestureEvaluator.prototype.isPinch_mcn869$ = function (pointers) {
+    if (pointers.size === 2) {
+      this.tmpVec1_vwccvm$_0.set_dleff0$(pointers.get_za3lpa$(0).x, pointers.get_za3lpa$(0).y).subtract_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
+      this.tmpVec2_vwccwh$_0.set_dleff0$(pointers.get_za3lpa$(1).x, pointers.get_za3lpa$(1).y).subtract_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
+      this.tmpVec1_vwccvm$_0.scale_mx4ult$(96.0 / this.screenDpi);
+      this.tmpVec2_vwccwh$_0.scale_mx4ult$(96.0 / this.screenDpi);
+      if (this.tmpVec1_vwccvm$_0.length() > 5.0 && this.tmpVec2_vwccwh$_0.length() > 5.0 && this.tmpVec1_vwccvm$_0.times_czzhjp$(this.tmpVec2_vwccwh$_0) < 0) {
+        this.tmpVec1_vwccvm$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
+        this.tmpVec2_vwccwh$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
+        this.currentGesture.init_4s1jvi$(TouchGestureEvaluator$Companion_getInstance().PINCH, this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
+        this.handleGesture_mcn869$(pointers);
+        return true;
+      }
+    }
+    return false;
+  };
+  TouchGestureEvaluator.prototype.isTwoFingerDrag_mcn869$ = function (pointers) {
+    if (pointers.size === 2) {
+      this.tmpVec1_vwccvm$_0.set_dleff0$(pointers.get_za3lpa$(0).x, pointers.get_za3lpa$(0).y).subtract_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
+      this.tmpVec2_vwccwh$_0.set_dleff0$(pointers.get_za3lpa$(1).x, pointers.get_za3lpa$(1).y).subtract_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
+      this.tmpVec1_vwccvm$_0.scale_mx4ult$(96.0 / this.screenDpi);
+      this.tmpVec2_vwccwh$_0.scale_mx4ult$(96.0 / this.screenDpi);
+      if (this.tmpVec1_vwccvm$_0.length() > 5.0 && this.tmpVec2_vwccwh$_0.length() > 5.0 && this.tmpVec1_vwccvm$_0.times_czzhjp$(this.tmpVec2_vwccwh$_0) > 0) {
+        this.tmpVec1_vwccvm$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
+        this.tmpVec2_vwccwh$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
+        this.currentGesture.init_4s1jvi$(TouchGestureEvaluator$Companion_getInstance().TWO_FINGER_DRAG, this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
+        this.handleGesture_mcn869$(pointers);
+        return true;
+      }
+    }
+    return false;
+  };
+  TouchGestureEvaluator.prototype.handleGesture_mcn869$ = function (pointers) {
+    if (pointers.size === 2) {
+      this.tmpVec1_vwccvm$_0.set_dleff0$(pointers.get_za3lpa$(0).x, pointers.get_za3lpa$(0).y);
+      this.tmpVec2_vwccwh$_0.set_dleff0$(pointers.get_za3lpa$(1).x, pointers.get_za3lpa$(1).y);
+      this.currentGesture.update_enjys2$(this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
+    }
+     else {
+      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().INVALID;
+    }
+  };
+  function TouchGestureEvaluator$Companion() {
+    TouchGestureEvaluator$Companion_instance = this;
+    this.INVALID = 0;
+    this.INDETERMINATE = -1;
+    this.PINCH = 1;
+    this.TWO_FINGER_DRAG = 2;
+  }
+  TouchGestureEvaluator$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var TouchGestureEvaluator$Companion_instance = null;
+  function TouchGestureEvaluator$Companion_getInstance() {
+    if (TouchGestureEvaluator$Companion_instance === null) {
+      new TouchGestureEvaluator$Companion();
+    }
+    return TouchGestureEvaluator$Companion_instance;
+  }
+  function TouchGestureEvaluator$Gesture() {
+    this.centerStart = MutableVec2f_init();
+    this.centerCurrent = MutableVec2f_init();
+    this.centerShift = MutableVec2f_init();
+    this.dCenter = MutableVec2f_init();
+    this.pinchAmountStart = 0.0;
+    this.pinchAmountCurrent = 0.0;
+    this.dPinchAmount = 0.0;
+    this.type = TouchGestureEvaluator$Companion_getInstance().INVALID;
+    this.numUpdates = 0;
+  }
+  Object.defineProperty(TouchGestureEvaluator$Gesture.prototype, 'pinchAmountRel', {
+    get: function () {
+      return (this.pinchAmountCurrent - this.pinchAmountStart) / this.pinchAmountStart + 1.0;
+    }
+  });
+  TouchGestureEvaluator$Gesture.prototype.init_4s1jvi$ = function (type, ptr1, ptr2, dpi) {
+    this.type = type;
+    this.centerStart.set_czzhjp$(ptr1).add_czzhjp$(ptr2).scale_mx4ult$(0.5);
+    this.centerCurrent.set_czzhjp$(this.centerStart);
+    this.centerShift.set_czzhjp$(Vec2f$Companion_getInstance().ZERO);
+    this.dCenter.set_czzhjp$(Vec2f$Companion_getInstance().ZERO);
+    this.pinchAmountStart = ptr1.distance_czzhjp$(ptr2) * 96.0 / dpi;
+    this.pinchAmountCurrent = this.pinchAmountStart;
+    this.dPinchAmount = 0.0;
+    this.numUpdates = 0;
+  };
+  TouchGestureEvaluator$Gesture.prototype.update_enjys2$ = function (ptr1, ptr2, dpi) {
+    this.dCenter.set_czzhjp$(ptr1).add_czzhjp$(ptr2).scale_mx4ult$(0.5).subtract_czzhjp$(this.centerCurrent);
+    this.centerCurrent.set_czzhjp$(ptr1).add_czzhjp$(ptr2).scale_mx4ult$(0.5);
+    this.centerShift.set_czzhjp$(this.centerCurrent).subtract_czzhjp$(this.centerStart);
+    var pinch = ptr1.distance_czzhjp$(ptr2) * 96.0 / dpi;
+    this.dPinchAmount = pinch - this.pinchAmountCurrent;
+    this.pinchAmountCurrent = pinch;
+    this.numUpdates = this.numUpdates + 1 | 0;
+  };
+  TouchGestureEvaluator$Gesture.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Gesture',
+    interfaces: []
+  };
+  TouchGestureEvaluator.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TouchGestureEvaluator',
+    interfaces: []
+  };
   function UniqueId() {
     UniqueId_instance = this;
     this.nextId_0 = Kotlin.Long.ONE;
@@ -20773,11 +20773,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$kool.assetTexture_ivxn3r$ = assetTexture;
   package$kool.assetTexture_4689t5$ = assetTexture_0;
   package$kool.TextureManager = TextureManager;
-  Object.defineProperty(TouchGestureEvaluator, 'Companion', {
-    get: TouchGestureEvaluator$Companion_getInstance
-  });
-  TouchGestureEvaluator.Gesture = TouchGestureEvaluator$Gesture;
-  package$util.TouchGestureEvaluator = TouchGestureEvaluator;
   Object.defineProperty(Animator, 'Companion', {
     get: Animator$Companion_getInstance
   });
@@ -20902,6 +20897,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: CascadedShadowMap$Companion_getInstance
   });
   package$util.CascadedShadowMap = CascadedShadowMap;
+  Object.defineProperty(TouchGestureEvaluator, 'Companion', {
+    get: TouchGestureEvaluator$Companion_getInstance
+  });
+  TouchGestureEvaluator.Gesture = TouchGestureEvaluator$Gesture;
+  package$util.TouchGestureEvaluator = TouchGestureEvaluator;
   Object.defineProperty(package$util, 'UniqueId', {
     get: UniqueId_getInstance
   });

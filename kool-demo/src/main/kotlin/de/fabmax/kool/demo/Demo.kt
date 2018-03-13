@@ -177,7 +177,7 @@ class MenuButtonUi(tb: ToggleButton, private val menu: UiContainer) : ToggleButt
             color = Color(0f, 0f, 0f, 0f)
             circle {
                 radius = min(tb.width, tb.height) / 2f
-                center.set(tb.width / 2f, tb.height / 2f, 0f)
+                center.set(tb.width / 2f, tb.height / 2f, -4f)
                 steps = 30
             }
 

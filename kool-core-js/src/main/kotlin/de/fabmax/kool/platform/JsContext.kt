@@ -82,6 +82,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT)
         }
 
+        println("Max tex units: $maxTexUnits")
+
         glCapabilities = GlCapabilities(
                 uint32Indices,
                 shaderIntAttribs,
