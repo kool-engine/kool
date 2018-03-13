@@ -70,7 +70,7 @@ class MvpState internal constructor() {
      * Computes the MVP matrix from the individual model-, view- and projection matrices. This
      * method must be called after an update of any of these matrices.
      */
-    fun update(ctx: RenderContext) {
+    fun update(ctx: KoolContext) {
         // Combine projection, model and view matrices
         projMatrix.mul(viewMatrix.mul(modelMatrix, tempMatrix), mvpMatrix)
 

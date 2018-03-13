@@ -8,17 +8,21 @@ import de.fabmax.kool.util.Property
 /**
  * @author fabmax
  */
-abstract class RenderContext {
+abstract class KoolContext {
 
     var screenDpi = 96f
 
+    abstract val glCapabilities: GlCapabilities
+
+    abstract val assetMgr: AssetManager
     val inputMgr = InputManager()
     val memoryMgr = MemoryManager()
     val shaderMgr = ShaderManager()
     val textureMgr = TextureManager()
+
     val mvpState = MvpState()
 
-    val onRender: MutableList<(RenderContext) -> Unit> = mutableListOf()
+    val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()
 
     var renderPass = RenderPass.SCREEN
 
@@ -71,7 +75,7 @@ abstract class RenderContext {
 
     internal val boundBuffers: MutableMap<Int, BufferResource?> = mutableMapOf()
 
-    abstract class InitProps
+    abstract fun openUrl(url: String)
 
     abstract fun run()
 

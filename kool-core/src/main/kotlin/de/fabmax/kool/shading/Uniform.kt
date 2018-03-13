@@ -1,6 +1,6 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.math.MutableVec2f
@@ -19,13 +19,13 @@ abstract class Uniform<T>(val name: String, value: T) {
     val isValid: Boolean
         get() = isValidUniformLocation(location)
 
-    fun bind(ctx: RenderContext) {
+    fun bind(ctx: KoolContext) {
         if (isValid) {
             doBind(ctx)
         }
     }
 
-    protected abstract fun doBind(ctx: RenderContext)
+    protected abstract fun doBind(ctx: KoolContext)
 }
 
 class UniformTexture2D(name: String) : Uniform<Texture?>(name, null) {
@@ -33,7 +33,7 @@ class UniformTexture2D(name: String) : Uniform<Texture?>(name, null) {
     override var value: Texture? = null
         public set      // explicit public is needed to overwrite protected set from super
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         val tex = value
         if (tex != null) {
             val unit = ctx.textureMgr.bindTexture(tex, ctx)
@@ -50,7 +50,7 @@ class UniformTexture2Dv(name: String, size: Int) : Uniform<Array<Texture?>>(name
     override val type = "sampler2D"
     private val texNames = IntArray(size)
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         for (i in value.indices) {
             val tex = value[i]
             texNames[i] = if (tex != null) {
@@ -68,7 +68,7 @@ class Uniform1i(name: String) : Uniform<Int>(name, 0) {
     override var value = 0
         public set      // explicit public is needed to overwrite protected set from super
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         glUniform1i(location, value)
     }
 }
@@ -76,7 +76,7 @@ class Uniform1i(name: String) : Uniform<Int>(name, 0) {
 class Uniform1iv(name: String, size: Int) : Uniform<IntArray>(name, IntArray(size)) {
     override val type = "int"
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         glUniform1iv(location, value)
     }
 }
@@ -86,7 +86,7 @@ class Uniform1f(name: String) : Uniform<Float>(name, 0f) {
     override var value = 0f
         public set      // explicit public is needed to overwrite protected set from super
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         glUniform1f(location, value)
     }
 }
@@ -94,7 +94,7 @@ class Uniform1f(name: String) : Uniform<Float>(name, 0f) {
 class Uniform1fv(name: String, size: Int) : Uniform<FloatArray>(name, FloatArray(size)) {
     override val type = "float"
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         glUniform1fv(location, value)
     }
 }
@@ -102,7 +102,7 @@ class Uniform1fv(name: String, size: Int) : Uniform<FloatArray>(name, FloatArray
 class Uniform2f(name: String) : Uniform<MutableVec2f>(name, MutableVec2f()) {
     override val type = "vec2"
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         glUniform2f(location, value.x, value.y)
     }
 }
@@ -110,7 +110,7 @@ class Uniform2f(name: String) : Uniform<MutableVec2f>(name, MutableVec2f()) {
 class Uniform3f(name: String) : Uniform<MutableVec3f>(name, MutableVec3f()) {
     override val type = "vec3"
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         glUniform3f(location, value.x, value.y, value.z)
     }
 }
@@ -118,7 +118,7 @@ class Uniform3f(name: String) : Uniform<MutableVec3f>(name, MutableVec3f()) {
 class Uniform4f(name: String) : Uniform<MutableVec4f>(name, MutableVec4f()) {
     override val type = "vec4"
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         glUniform4f(location, value.x, value.y, value.z, value.w)
     }
 }
@@ -128,7 +128,7 @@ class UniformMatrix4(name: String) : Uniform<Float32Buffer?>(name, null) {
     override var value: Float32Buffer? = null
         public set      // explicit public is needed to overwrite protected set from super
 
-    override fun doBind(ctx: RenderContext) {
+    override fun doBind(ctx: KoolContext) {
         val buf = value
         if (buf != null) {
             glUniformMatrix4fv(location, false, buf)

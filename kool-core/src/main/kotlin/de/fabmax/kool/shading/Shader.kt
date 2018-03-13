@@ -1,7 +1,7 @@
 package de.fabmax.kool.shading
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.RenderContext
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.scene.Mesh
 
@@ -25,14 +25,14 @@ abstract class Shader : GlObject<ProgramResource>() {
     val attributes = mutableSetOf<Attribute>()
     val uniforms = mutableMapOf<String, Uniform<*>>()
 
-    abstract fun generate(ctx: RenderContext)
+    abstract fun generate(ctx: KoolContext)
 
     /**
      * Checks if this Shader is currently bound.
      *
      * @return true if this Shader is bound, false otherwise.
      */
-    fun isBound(ctx: RenderContext): Boolean {
+    fun isBound(ctx: KoolContext): Boolean {
         return ctx.shaderMgr.boundShader === this
     }
 
@@ -42,7 +42,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      *
      * @param ctx    the graphics engine context
      */
-    open fun onLoad(ctx: RenderContext) {
+    open fun onLoad(ctx: KoolContext) {
         generate(ctx)
         res = ctx.shaderMgr.createShader(source, ctx)
 
@@ -62,7 +62,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      *
      * @param ctx    the graphics engine context
      */
-    abstract fun onBind(ctx: RenderContext)
+    abstract fun onBind(ctx: KoolContext)
 
     /**
      * Is called on the currently bound shader when the MVP matrix has changed. Implementations should update their
@@ -70,7 +70,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      *
      * @param ctx    the graphics engine context
      */
-    abstract fun onMatrixUpdate(ctx: RenderContext)
+    abstract fun onMatrixUpdate(ctx: KoolContext)
 
     /**
      * Looks for the specified attribute and returns its location or -1 if the attribute was not found.
@@ -78,7 +78,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param attribName    The attribute name to look for
      * @return the attribute location or -1 if the attribute was not found.
      */
-    protected open fun findAttributeLocation(attribName: String, ctx: RenderContext): Int {
+    protected open fun findAttributeLocation(attribName: String, ctx: KoolContext): Int {
         val ref: ProgramResource? = res
         if (ref != null) {
             return glGetAttribLocation(ref, attribName)
@@ -96,7 +96,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      *                      name in shader source
      * @return whether the attribute was enabled (i.e. attribName was found)
      */
-    private fun enableAttribute(attribute: Attribute, ctx: RenderContext): Boolean {
+    private fun enableAttribute(attribute: Attribute, ctx: KoolContext): Boolean {
         val location = findAttributeLocation(attribute.name, ctx)
         enableAttribute(attribute, location, ctx)
         return location >= 0
@@ -109,7 +109,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param attribute    the attribute to enable
      * @param location     attribute location in shader code, if specified with layout (location=...)
      */
-    private fun enableAttribute(attribute: Attribute, location: Int, ctx: RenderContext) {
+    private fun enableAttribute(attribute: Attribute, location: Int, ctx: KoolContext) {
         if (location >= 0) {
             attributeLocations.add(AttributeLocation(attribute, location))
         }
@@ -135,7 +135,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param uniformName    The uniform name to look for
      * @return the uniform location or null if the attribute was not found.
      */
-    protected open fun findUniformLocation(uniformName: String, ctx: RenderContext): Any? {
+    protected open fun findUniformLocation(uniformName: String, ctx: KoolContext): Any? {
         val ref: ProgramResource? = res
         if (ref != null) {
             return glGetUniformLocation(ref, uniformName)
@@ -151,7 +151,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param mesh    Mesh to use as input for shader execution
      * @param ctx    the graphics engine context
      */
-    open fun bindMesh(mesh: Mesh, ctx: RenderContext) {
+    open fun bindMesh(mesh: Mesh, ctx: KoolContext) {
         for (i in attributeLocations.indices) {
             val attrib = attributeLocations[i]
             val binder = mesh.meshData.attributeBinders[attrib.descr] ?:
@@ -166,7 +166,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      *
      * @param ctx    the graphics engine context
      */
-    open fun unbindMesh(ctx: RenderContext) {
+    open fun unbindMesh(ctx: KoolContext) {
         for (i in attributeLocations.indices) {
             glDisableVertexAttribArray(attributeLocations[i].location)
         }
@@ -177,7 +177,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      *
      * @param ctx    the graphics engine context
      */
-    override fun dispose(ctx: RenderContext) {
+    override fun dispose(ctx: KoolContext) {
         // do not call super, as this will immediately delete the shader program on the GPU. However, Shader program is
         // a shared resource and might be used by other shaders. Therefore deletion on the GPU is handled by the
         // ShaderManager:

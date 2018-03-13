@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.JsImpl
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.gl.GL_RGBA
@@ -14,7 +14,7 @@ class ImageTextureData(val image: HTMLImageElement) : TextureData() {
         get() = image.complete
         set(value) {}
 
-    override fun onLoad(texture: Texture, ctx: RenderContext) {
+    override fun onLoad(texture: Texture, ctx: KoolContext) {
         // fixme: is there a way to find out if the image has an alpha channel and set the GL format accordingly?
         JsImpl.gl.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, image)
         width = image.width

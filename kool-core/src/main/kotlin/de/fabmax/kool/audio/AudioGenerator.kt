@@ -1,5 +1,6 @@
 package de.fabmax.kool.audio
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Float32Buffer
 
 /**
@@ -9,7 +10,7 @@ import de.fabmax.kool.util.Float32Buffer
  *
  * @author fabmax
  */
-expect class AudioGenerator(generatorFun: AudioGenerator.(Float) -> Float) {
+expect class AudioGenerator(ctx: KoolContext, generatorFun: AudioGenerator.(Float) -> Float) {
 
     val sampleRate: Float
     var isPaused: Boolean

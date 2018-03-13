@@ -1,11 +1,10 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.formatDouble
 import de.fabmax.kool.getMemoryInfo
 import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.gl.GlResource
-import de.fabmax.kool.glCapabilities
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
@@ -20,7 +19,7 @@ import kotlin.math.min
  * @author fabmax
  */
 
-fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
+fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
     val dbgOverlay = uiScene(ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
             componentUi({ BlankComponentUi() })
@@ -52,7 +51,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                 text = ""
-                font.setCustom(UiTheme.DARK_SIMPLE.standardFont(ctx.screenDpi))
+                font.setCustom(UiTheme.DARK_SIMPLE.standardFont(ctx))
                 textColor.setCustom(root.theme.accentColor)
 
                 onRender += { c ->
@@ -66,7 +65,7 @@ fun debugOverlay(ctx: RenderContext, alignBottom: Boolean = false): Scene {
                 layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                text = glCapabilities.glVersion.toString()
+                text = ctx.glCapabilities.glVersion.toString()
             }
 
             if (hasMemInfo) {
@@ -214,7 +213,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         }
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         // set previous bar color according to previous deltaT
         var color = Color.WHITE
         if (prevDeltaT > 0.05f) {
@@ -249,7 +248,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         }
     }
 
-    override fun updateUi(ctx: RenderContext) {
+    override fun updateUi(ctx: KoolContext) {
         super.updateUi(ctx)
 
         setupBuilder(graphBuilder)
@@ -259,7 +258,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         }
     }
 
-    override fun updateTheme(ctx: RenderContext) {
+    override fun updateTheme(ctx: KoolContext) {
         super.updateTheme(ctx)
 
         // re-add graph mesh to make sure it is drawn after the background

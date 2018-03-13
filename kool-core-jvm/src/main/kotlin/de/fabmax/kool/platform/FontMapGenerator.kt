@@ -70,7 +70,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
         val texHeight = makeMap(fontProps, g, metrics)
         val buffer = bufferedImageToBuffer(canvas, GL_ALPHA, maxWidth, texHeight)
-        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, GL_ALPHA), metrics)
+        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, GL_ALPHA), metrics, fontProps)
     }
 
     private fun makeMap(fontProps: FontProps, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {

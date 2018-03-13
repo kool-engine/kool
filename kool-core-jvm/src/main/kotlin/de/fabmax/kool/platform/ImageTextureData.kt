@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.RenderContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.gl.*
@@ -46,7 +46,7 @@ class ImageTextureData(val assetPath: String) : TextureData() {
         }
     }
 
-    override fun onLoad(texture: Texture, ctx: RenderContext) {
+    override fun onLoad(texture: Texture, ctx: KoolContext) {
         val res = texture.res ?: throw KoolException("Texture wasn't created")
         val limit = buffer!!.limit
         val pos = buffer!!.position

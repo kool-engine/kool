@@ -14,7 +14,7 @@ class InputManager internal constructor() {
             const val REMOVE_HANDLER = 2
         }
 
-        fun handleDrag(dragPtrs: List<Pointer>, ctx: RenderContext): Int
+        fun handleDrag(dragPtrs: List<Pointer>, ctx: KoolContext): Int
     }
 
     private val compatGestureEvaluator = TouchGestureEvaluator()
@@ -47,7 +47,7 @@ class InputManager internal constructor() {
         return inputPointers.firstOrNull { it.isValid && it.id == pointerId }
     }
 
-    internal fun onNewFrame(ctx: RenderContext) {
+    internal fun onNewFrame(ctx: KoolContext) {
         synchronized(inputPointers) {
             for (i in pointers.indices) {
                 inputPointers[i].update(pointers[i], lastPtrInput)
@@ -236,7 +236,7 @@ class InputManager internal constructor() {
          * outside a viewport and valid, if there is more than one viewport (e.g. split viewport
          * demo).
          */
-        fun isInViewport(ctx: RenderContext): Boolean {
+        fun isInViewport(ctx: KoolContext): Boolean {
             // y-axis of viewport is inverted to window coordinates
             val ptrY = ctx.windowHeight - y
             //return (isValid || wasValid) && ctx.viewport.isInViewport(x, ptrY)

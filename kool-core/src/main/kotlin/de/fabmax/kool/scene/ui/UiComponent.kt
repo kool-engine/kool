@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene.ui
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
@@ -64,28 +64,28 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         ui.prop.updateComponentAlpha()
     }
 
-    protected open fun updateUi(ctx: RenderContext) {
+    protected open fun updateUi(ctx: KoolContext) {
         ui.prop.updateUi(ctx)
     }
 
-    protected open fun updateTheme(ctx: RenderContext) {
+    protected open fun updateTheme(ctx: KoolContext) {
         ui.prop.disposeUi(ctx)
         ui.setTheme(createThemeUi(ctx)).apply()
-        setThemeProps()
+        setThemeProps(ctx)
         ui.prop.createUi(ctx)
         ui.prop.updateComponentAlpha()
         requestUiUpdate()
     }
 
-    protected open fun setThemeProps() {
+    protected open fun setThemeProps(ctx: KoolContext) {
         // no props to set
     }
 
-    protected open fun createThemeUi(ctx: RenderContext): ComponentUi {
+    protected open fun createThemeUi(ctx: KoolContext): ComponentUi {
         return root.theme.componentUi(this)
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         if (isThemeUpdate) {
             isThemeUpdate = false
             updateTheme(ctx)
@@ -101,7 +101,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         }
     }
 
-    open fun doLayout(bounds: BoundingBox, ctx: RenderContext) {
+    open fun doLayout(bounds: BoundingBox, ctx: KoolContext) {
         if (!contentBounds.isEqual(bounds)) {
             contentBounds.set(bounds)
             requestUiUpdate()

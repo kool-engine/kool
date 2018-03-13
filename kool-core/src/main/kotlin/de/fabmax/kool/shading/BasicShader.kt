@@ -1,6 +1,6 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
 import de.fabmax.kool.Texture
 import de.fabmax.kool.math.MutableVec4f
@@ -37,7 +37,6 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     protected val uFogRange = addUniform(Uniform1f(GlslGenerator.U_FOG_RANGE))
     protected val uBones = addUniform(UniformMatrix4(GlslGenerator.U_BONES))
     protected val uShadowMvp: UniformMatrix4 = addUniform(UniformMatrix4(GlslGenerator.U_SHADOW_MVP))
-    //protected val uShadowTex: UniformTexture2Dv = addUniform(UniformTexture2Dv(GlslGenerator.U_SHADOW_TEX, props.shadowMap?.subMaps?.size ?: 0))
     protected val uShadowTexSz: Uniform1iv = addUniform(Uniform1iv(GlslGenerator.U_SHADOW_TEX_SZ, props.shadowMap?.subMaps?.size ?: 0))
     protected val uClipSpaceFarZ: Uniform1fv = addUniform(Uniform1fv(GlslGenerator.U_CLIP_SPACE_FAR_Z, props.shadowMap?.subMaps?.size ?: 0))
 
@@ -93,8 +92,8 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         }
     }
 
-    override fun generate(ctx: RenderContext) {
-        source = generator.generate(props, ctx.shaderMgr.shadingHints)
+    override fun generate(ctx: KoolContext) {
+        source = generator.generate(props, ctx)
 
         attributes.clear()
         attributes.add(Attribute.POSITIONS)
@@ -110,7 +109,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         }
     }
 
-    override fun onBind(ctx: RenderContext) {
+    override fun onBind(ctx: KoolContext) {
         onMatrixUpdate(ctx)
 
         scene = null
@@ -126,7 +125,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         uNormalMap.bind(ctx)
         uBones.bind(ctx)
 
-        if (shadowMap != null) {
+        if (ctx.glCapabilities.depthTextures && shadowMap != null) {
             if (ctx.renderPass == RenderPass.SHADOW) {
                 for (i in 0 until shadowMap.subMaps.size) {
                     uShadowTex[i].value = null
@@ -145,7 +144,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         }
     }
 
-    override fun bindMesh(mesh: Mesh, ctx: RenderContext) {
+    override fun bindMesh(mesh: Mesh, ctx: KoolContext) {
         if (scene != mesh.scene) {
             scene = mesh.scene
             if (scene != null) {
@@ -162,7 +161,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         super.bindMesh(mesh, ctx)
     }
 
-    override fun onMatrixUpdate(ctx: RenderContext) {
+    override fun onMatrixUpdate(ctx: KoolContext) {
         // pass current transformation matrices to shader
         uMvpMatrix.value = ctx.mvpState.mvpMatrixBuffer
         uMvpMatrix.bind(ctx)
@@ -172,7 +171,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         uModelMatrix.bind(ctx)
     }
 
-    override fun dispose(ctx: RenderContext) {
+    override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         texture?.dispose(ctx)
         normalMap?.dispose(ctx)
@@ -198,7 +197,7 @@ open class BasicPointShader internal constructor(props: ShaderProps, generator: 
     init {
         generator.customUniforms += uPointSz
         generator.injectors += object : GlslGenerator.GlslInjector {
-            override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder) {
+            override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
                 text.append("gl_PointSize = ${BasicPointShader.U_POINT_SIZE};\n")
             }
         }
@@ -206,7 +205,7 @@ open class BasicPointShader internal constructor(props: ShaderProps, generator: 
         pointSize = 1f
     }
 
-    override fun onBind(ctx: RenderContext) {
+    override fun onBind(ctx: KoolContext) {
         super.onBind(ctx)
         uPointSz.bind(ctx)
     }

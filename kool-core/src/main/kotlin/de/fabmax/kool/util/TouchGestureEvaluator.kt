@@ -1,7 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 
@@ -21,7 +21,7 @@ open class TouchGestureEvaluator {
     protected val startPositions = mutableMapOf<Int, Vec2f>()
     protected var screenDpi = 96f
 
-    fun evaluate(ctx: RenderContext) {
+    fun evaluate(ctx: KoolContext) {
         screenDpi = ctx.screenDpi
         ctx.inputMgr.getActivePointers(activePointers)
 

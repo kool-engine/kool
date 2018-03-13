@@ -1,6 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.RayTest
@@ -22,7 +22,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
     protected var isIdentity = false
     protected var isDirty = false
 
-    open var animation: (TransformGroup.(RenderContext) -> Unit)? = null
+    open var animation: (TransformGroup.(KoolContext) -> Unit)? = null
 
     private val tmpTransformVec = MutableVec3f()
 
@@ -38,7 +38,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
         isIdentity = false
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         if (!isVisible) {
             return
         }

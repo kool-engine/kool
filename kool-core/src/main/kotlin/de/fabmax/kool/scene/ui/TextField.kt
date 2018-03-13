@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.*
 import kotlin.math.max
@@ -50,7 +50,7 @@ class TextField(name: String, root: UiRoot) : Label(name, root) {
         }
     }
 
-    override fun createThemeUi(ctx: RenderContext): ComponentUi {
+    override fun createThemeUi(ctx: KoolContext): ComponentUi {
         return root.theme.newTextFieldUi(this)
     }
 }
@@ -70,21 +70,21 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
         caretPosAnimator.duration = 0.1f
     }
 
-    override fun onRender(ctx: RenderContext) {
+    override fun onRender(ctx: KoolContext) {
         textField.requestUiUpdate()
         super.onRender(ctx)
     }
 
-    override fun renderText(ctx: RenderContext) {
+    override fun renderText(ctx: KoolContext) {
         val x1 = label.padding.left.toUnits(label.width, label.dpi)
         val x2 = label.width - label.padding.right.toUnits(label.width, label.dpi)
-        val y = textBaseline - font.fontProps.sizeUnits * 0.2f
+        val y = textBaseline - (font?.fontProps?.sizeUnits ?: 0f) * 0.2f
 
         var caretX = textStartX
         var selectionX = textStartX
         if (textField.editText.caretPosition > 0 || textField.editText.selectionStart > 0) {
             for (i in 0..(max(textField.editText.caretPosition, textField.editText.selectionStart) - 1)) {
-                val w = font.charWidth(textField.editText[i])
+                val w = font?.charWidth(textField.editText[i]) ?: 0f
                 if (i < textField.editText.caretPosition) {
                     caretX += w
                 }
@@ -116,7 +116,7 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
                 meshBuilder.color = caretColor
                 meshBuilder.rect {
                     origin.set(caretX, y, 0f)
-                    size.set(selectionX - caretX, font.fontProps.sizeUnits * 1.2f)
+                    size.set(selectionX - caretX, (font?.fontProps?.sizeUnits ?: 0f) * 1.2f)
                 }
             }
 
@@ -124,7 +124,7 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
             caretColor.set(label.root.theme.accentColor)
             caretColor.a = caretAlphaAnimator.tick(ctx)
             meshBuilder.color = caretColor
-            meshBuilder.line(caretX, y, caretX, textBaseline + font.fontProps.sizeUnits, label.dp(1.5f))
+            meshBuilder.line(caretX, y, caretX, textBaseline + (font?.fontProps?.sizeUnits ?: 0f), label.dp(1.5f))
         }
 
         super.renderText(ctx)

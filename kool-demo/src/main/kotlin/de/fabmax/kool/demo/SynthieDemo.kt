@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.audio.*
 import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.math.Vec3f
@@ -20,13 +20,13 @@ import kotlin.math.max
  * @author fabmax
  */
 
-fun synthieScene(ctx: RenderContext): List<Scene> {
-    val content = SynthieScene()
+fun synthieScene(ctx: KoolContext): List<Scene> {
+    val content = SynthieScene(ctx)
     val menu = synthieMenu(content, ctx)
     return listOf(content, menu)
 }
 
-private fun synthieMenu(content: SynthieScene, ctx: RenderContext): Scene = uiScene(ctx.screenDpi) {
+private fun synthieMenu(content: SynthieScene, ctx: KoolContext): Scene = uiScene(ctx.screenDpi) {
     theme = theme(UiTheme.DARK) {
         componentUi { BlankComponentUi() }
         containerUi { BlankComponentUi() }
@@ -141,7 +141,7 @@ private fun synthieMenu(content: SynthieScene, ctx: RenderContext): Scene = uiSc
  * Super-hacky UI Container which is rotated by 90 degrees
  */
 private class VerticalLayout(name: String, root: UiRoot) : UiContainer(name, root) {
-    override fun doLayout(bounds: BoundingBox, ctx: RenderContext) {
+    override fun doLayout(bounds: BoundingBox, ctx: KoolContext) {
         if (bounds != contentBounds) {
             contentBounds.clear()
         }
@@ -222,7 +222,7 @@ private class SequenceButton(val col: Int, val row: Int, val melody: Melody, roo
         wasHovered = true
     }
 
-    override fun render(ctx: RenderContext) {
+    override fun render(ctx: KoolContext) {
         if (melody.sequence[col] == row) {
             colorAnimator.speed = 1f
         } else {
@@ -246,13 +246,13 @@ private class SequenceButton(val col: Int, val row: Int, val melody: Melody, roo
 private class SequenceButtonUi(btn: SequenceButton) : SimpleComponentUi(btn) {
     val bgColor = MutableColor()
 
-    override fun onRender(ctx: RenderContext) {
+    override fun onRender(ctx: KoolContext) {
         (shader as BasicShader).staticColor.set(bgColor)
         super.onRender(ctx)
     }
 }
 
-private class SynthieScene: Scene() {
+private class SynthieScene(ctx: KoolContext): Scene() {
 
     val melody = Melody()
     val shaker = Shaker(60f)
@@ -271,7 +271,7 @@ private class SynthieScene: Scene() {
             zoom = 8f
         }
 
-        audioGen = AudioGenerator { dt -> nextSample(dt) }
+        audioGen = AudioGenerator(ctx) { dt -> nextSample(dt) }
         audioGen.enableFftComputation(1024)
     }
 
@@ -281,7 +281,7 @@ private class SynthieScene: Scene() {
         return sample
     }
 
-    override fun dispose(ctx: RenderContext) {
+    override fun dispose(ctx: KoolContext) {
         audioGen.stop()
         super.dispose(ctx)
     }
@@ -316,7 +316,7 @@ private class SynthieScene: Scene() {
             +quads
         }
 
-        override fun render(ctx: RenderContext) {
+        override fun render(ctx: KoolContext) {
             nextSample -= ctx.deltaT.toFloat()
 
             if (nextSample <= 0) {
@@ -399,7 +399,7 @@ private class SynthieScene: Scene() {
             }
         }
 
-        override fun render(ctx: RenderContext) {
+        override fun render(ctx: KoolContext) {
             playT += ctx.deltaT
 
             if (--updateFrms == 0) {

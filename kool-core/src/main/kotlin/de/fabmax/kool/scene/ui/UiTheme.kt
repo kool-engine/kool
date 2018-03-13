@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene.ui
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.*
 
 /**
@@ -13,13 +14,13 @@ open class UiTheme {
     var accentColor = Color.LIME
         protected set
 
-    fun standardFont(dpi: Float): Font =
-            uiFont(standardFontProps.family, standardFontProps.sizePts, dpi, standardFontProps.style, standardFontProps.chars)
+    fun standardFont(ctx: KoolContext): Font =
+            uiFont(standardFontProps.family, standardFontProps.sizePts, ctx, standardFontProps.style, standardFontProps.chars)
     var standardFontProps = FontProps(Font.SYSTEM_FONT, 20f)
         protected set
 
-    fun titleFont(dpi: Float): Font =
-            uiFont(titleFontProps.family, titleFontProps.sizePts, dpi, titleFontProps.style, titleFontProps.chars)
+    fun titleFont(ctx: KoolContext): Font =
+            uiFont(titleFontProps.family, titleFontProps.sizePts, ctx, titleFontProps.style, titleFontProps.chars)
     var titleFontProps = FontProps(Font.SYSTEM_FONT, 28f)
         protected set
 

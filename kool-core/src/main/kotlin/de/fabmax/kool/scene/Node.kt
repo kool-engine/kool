@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
@@ -14,12 +14,12 @@ import de.fabmax.kool.util.BoundingBox
  */
 abstract class Node(val name: String? = null) {
 
-    val onRender: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
+    val onRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
 
-    val onHoverEnter: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
-    val onHover: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
-    val onHoverExit: MutableList<Node.(InputManager.Pointer, RayTest, RenderContext) -> Unit> = mutableListOf()
-    val onDispose: MutableList<Node.(RenderContext) -> Unit> = mutableListOf()
+    val onHoverEnter: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
+    val onHover: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
+    val onHoverExit: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
+    val onDispose: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
 
     /**
      * Axis-aligned bounds of this node in local coordinates.
@@ -96,7 +96,7 @@ abstract class Node(val name: String? = null) {
      *
      * @param ctx    the graphics engine context
      */
-    open fun render(ctx: RenderContext) {
+    open fun render(ctx: KoolContext) {
         // update global center and radius
         globalCenterMut.set(bounds.center)
         globalExtentMut.set(bounds.max)
@@ -120,7 +120,7 @@ abstract class Node(val name: String? = null) {
      *
      * @param ctx    the graphics engine context
      */
-    open fun dispose(ctx: RenderContext) {
+    open fun dispose(ctx: KoolContext) {
         for (i in onDispose.indices) {
             onDispose[i](ctx)
         }
@@ -162,7 +162,7 @@ abstract class Node(val name: String? = null) {
      * Called during [render]: Checks if this node is currently visible. If not rendering is skipped. Default
      * implementation considers [isVisible] flag and performs a camera frustum check if [isFrustumChecked] is true.
      */
-    protected open fun checkIsVisible(ctx: RenderContext): Boolean {
+    protected open fun checkIsVisible(ctx: KoolContext): Boolean {
         if (!isVisible) {
             return false
         } else if (isFrustumChecked && !bounds.isEmpty) {

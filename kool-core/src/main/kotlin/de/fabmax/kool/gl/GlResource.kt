@@ -1,11 +1,11 @@
 package de.fabmax.kool.gl
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 
 /**
  * @author fabmax
  */
-abstract class GlResource constructor(glRef: Any, val type: Type, ctx: RenderContext) {
+abstract class GlResource constructor(glRef: Any, val type: Type, ctx: KoolContext) {
     enum class Type {
         BUFFER,
         FRAMEBUFFER,
@@ -26,7 +26,7 @@ abstract class GlResource constructor(glRef: Any, val type: Type, ctx: RenderCon
         ctx.memoryMgr.memoryAllocated(this, 0)
     }
 
-    open fun delete(ctx: RenderContext) {
+    open fun delete(ctx: KoolContext) {
         ctx.memoryMgr.deleted(this)
         glRef = null
     }

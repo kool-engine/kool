@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.assetTexture
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
@@ -15,7 +16,7 @@ import de.fabmax.kool.util.*
  * @author fabmax
  */
 
-fun simpleShapesScene(): Scene = scene("simpleShapes") {
+fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
     // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
     +sphericalInputTransform {
         // Set some initial rotation so that we look down on the scene
@@ -54,7 +55,7 @@ fun simpleShapesScene(): Scene = scene("simpleShapes") {
                 }
             }
             // load texture from assets
-            (shader as BasicShader).texture = assetTexture("world.jpg")
+            (shader as BasicShader).texture = assetTexture("world.jpg", ctx)
         }
     }
 
@@ -147,7 +148,7 @@ fun simpleShapesScene(): Scene = scene("simpleShapes") {
 
         // Add the text, you can use any font you like. We us a font size of 72pts and characters will be 1.5
         // units tall
-        val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN, 1.5f))
+        val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN, 1.5f), ctx)
         +textMesh(font) {
             generator = {
                 color = Color.LIME

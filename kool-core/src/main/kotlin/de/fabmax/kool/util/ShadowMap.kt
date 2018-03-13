@@ -1,12 +1,11 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.RenderContext
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
 import de.fabmax.kool.Texture
 import de.fabmax.kool.gl.Framebuffer
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.gl.glClear
-import de.fabmax.kool.glCapabilities
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.scene.FrustumPlane
@@ -31,8 +30,8 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
     var clipSpaceFarZ = 0f
         private set
 
-    fun renderShadowMap(nodeToRender: Node, ctx: RenderContext) {
-        if (!glCapabilities.depthTextures) {
+    fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
+        if (!ctx.glCapabilities.depthTextures) {
             // depth textures are not supported on current platform, there's no point in going ahead
             return
         }
@@ -87,7 +86,7 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
         fbo.unbind(ctx)
     }
 
-    fun dispose(ctx: RenderContext) {
+    fun dispose(ctx: KoolContext) {
         fbo.delete(ctx)
     }
 
@@ -105,7 +104,7 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
 class CascadedShadowMap(val subMaps: Array<ShadowMap>) {
     val shadowMvp = createFloat32Buffer(16 * subMaps.size)
 
-    fun renderShadowMap(nodeToRender: Node, ctx: RenderContext) {
+    fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
         for (i in subMaps.indices) {
             subMaps[i].renderShadowMap(nodeToRender, ctx)
             shadowMvp.put(subMaps[i].depthMvp)
@@ -113,7 +112,7 @@ class CascadedShadowMap(val subMaps: Array<ShadowMap>) {
         shadowMvp.flip()
     }
 
-    fun dispose(ctx: RenderContext) {
+    fun dispose(ctx: KoolContext) {
         for (i in subMaps.indices) {
             subMaps[i].dispose(ctx)
         }

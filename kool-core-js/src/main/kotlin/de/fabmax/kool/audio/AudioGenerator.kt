@@ -1,5 +1,6 @@
 package de.fabmax.kool.audio
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.createFloat32Buffer
@@ -8,7 +9,7 @@ import de.fabmax.kool.util.createFloat32Buffer
  * @author fabmax
  */
 
-actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Float) -> Float) {
+actual class AudioGenerator actual constructor(ctx: KoolContext, generatorFun: AudioGenerator.(Float) -> Float) {
     private val audioCtx = js("new (window.AudioContext || window.webkitAudioContext)();")
 
     actual val sampleRate: Float = audioCtx.sampleRate

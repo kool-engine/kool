@@ -1,5 +1,6 @@
 package de.fabmax.kool.audio
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.createFloat32Buffer
 import org.jtransforms.fft.FloatFFT_1D
@@ -13,7 +14,7 @@ import kotlin.concurrent.thread
  * @author fabmax
  */
 
-actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Float) -> Float) {
+actual class AudioGenerator actual constructor(ctx: KoolContext, generatorFun: AudioGenerator.(Float) -> Float) {
 
     private val pauseLock = java.lang.Object()
     private var isStopRequested = false

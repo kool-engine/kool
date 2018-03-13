@@ -13,12 +13,18 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL20
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
+import java.awt.Desktop
+import java.net.URI
 
 
 /**
  * @author fabmax
  */
-class Lwjgl3Context(props: InitProps) : RenderContext() {
+class Lwjgl3Context(props: InitProps) : KoolContext() {
+
+    override val glCapabilities: GlCapabilities
+
+    override val assetMgr = JvmAssetManager()
 
     val window: Long
 
@@ -154,6 +160,8 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         textureMgr.maxTextureLoadsPerFrame = MAX_TEXTURE_LOADS_PER_FRAmE
     }
 
+    override fun openUrl(url: String)  = Desktop.getDesktop().browse(URI(url))
+
     override fun run() {
         // run the rendering loop until the user has attempted to close the window
         var prevTime = System.nanoTime()
@@ -182,7 +190,7 @@ class Lwjgl3Context(props: InitProps) : RenderContext() {
         glfwSetErrorCallback(null).free()
     }
 
-    class InitProps(init: InitProps.() -> Unit = {}) : RenderContext.InitProps() {
+    class InitProps(init: InitProps.() -> Unit = {}) {
         var width = 1024
         var height = 768
         var title = "Kool"

@@ -15,15 +15,15 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
 
     private var allowedTexLoads = maxTextureLoadsPerFrame
 
-    fun onNewFrame(ctx: RenderContext) {
+    fun onNewFrame(ctx: KoolContext) {
         allowedTexLoads = maxTextureLoadsPerFrame
 
-        if (boundTextures.size != glCapabilities.maxTexUnits) {
-            boundTextures = Array(glCapabilities.maxTexUnits, { null })
+        if (boundTextures.size != ctx.glCapabilities.maxTexUnits) {
+            boundTextures = Array(ctx.glCapabilities.maxTexUnits, { null })
         }
     }
 
-    fun bindTexture(texture: Texture, ctx: RenderContext): Int {
+    fun bindTexture(texture: Texture, ctx: KoolContext): Int {
         if (!texture.isValid) {
             nextTexUnit()
             texture.onCreate(ctx)
@@ -42,11 +42,11 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         return texRes.texUnit
     }
 
-    internal fun createTexture(props: TextureProps, ctx: RenderContext): TextureResource {
+    internal fun createTexture(props: TextureProps, ctx: KoolContext): TextureResource {
         return addReference(props, ctx)
     }
 
-    internal fun deleteTexture(texture: Texture, ctx: RenderContext) {
+    internal fun deleteTexture(texture: Texture, ctx: KoolContext) {
         val res = texture.res
         if (res != null) {
             removeReference(texture.props, ctx)
@@ -70,14 +70,14 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         boundTextures[activeTexUnit] = texRes
     }
 
-    private fun loadTexture(texture: Texture, ctx: RenderContext) {
+    private fun loadTexture(texture: Texture, ctx: KoolContext) {
         val res = texture.res ?: throw KoolException("Can't load a texture that wasn't created")
 
         // check if texture is already loading
         var data = loadingTextures[texture.props.id]
         if (data == null) {
             // initiate loading of texture data
-            data = texture.generator(texture)
+            data = texture.generator(texture, ctx)
             loadingTextures[texture.props.id] = data
         }
         // texture data is available (depending on the texture source that might not be the case immediately)
@@ -91,13 +91,13 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         }
     }
 
-    override fun createResource(key: TextureProps, ctx: RenderContext): TextureResource {
+    override fun createResource(key: TextureProps, ctx: KoolContext): TextureResource {
         val texRes = TextureResource.create(GL_TEXTURE_2D, key, ctx)
         bindToActiveTexUnit(texRes)
         return texRes
     }
 
-    override fun deleteResource(key: TextureProps, res: TextureResource, ctx: RenderContext) {
+    override fun deleteResource(key: TextureProps, res: TextureResource, ctx: KoolContext) {
         res.delete(ctx)
     }
 }

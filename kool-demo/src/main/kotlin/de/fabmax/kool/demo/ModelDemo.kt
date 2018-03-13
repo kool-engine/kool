@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.formatFloat
-import de.fabmax.kool.loadAsset
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
@@ -19,7 +19,7 @@ import kotlin.math.sqrt
  * @author fabmax
  */
 
-fun modelScene(): Scene = scene {
+fun modelScene(ctx: KoolContext): Scene = scene {
     defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
     +makeGroundGrid(40, defaultShadowMap)
@@ -33,7 +33,7 @@ fun modelScene(): Scene = scene {
 
         +model
 
-        loadAsset("player.kmf") { data ->
+        ctx.assetMgr.loadAsset("player.kmf") { data ->
             val mesh = loadMesh(data)
             model += mesh
 
