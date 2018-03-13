@@ -36,7 +36,7 @@ open class Label(name: String, root: UiRoot) : UiComponent(name, root) {
 
     override fun setThemeProps(ctx: KoolContext) {
         super.setThemeProps(ctx)
-        font.setTheme(root.theme.standardFont(ctx))
+        font.setTheme(standardFont(ctx))
         textColor.setTheme(root.theme.foregroundColor)
     }
 

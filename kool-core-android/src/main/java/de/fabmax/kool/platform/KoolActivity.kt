@@ -6,14 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import de.fabmax.kool.AndroidInitProps
-import de.fabmax.kool.RenderContext
-import de.fabmax.kool.TextureData
-import de.fabmax.kool.koolActivity
-import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.FontProps
-import kotlinx.coroutines.experimental.launch
-import java.io.ByteArrayOutputStream
 
 
 /**
@@ -22,33 +14,44 @@ import java.io.ByteArrayOutputStream
 abstract class KoolActivity : Activity(), View.OnTouchListener {
 
     private var glSurfaceView: GLSurfaceView? = null
-    private val fontMapGenerator = FontMapGenerator(this, 1024, 1024)
 
     private var ctx: AndroidRenderContext? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // fixme: This is super bad practice and will be fixed soon
-        koolActivity = this
+        de.fabmax.kool.util.Log.printer = { lvl, tag, message ->
+            var t = tag ?: "Kool"
+            if (t.length > 23) {
+                t = t.substring(0..22)
+            }
+            when (lvl) {
+                de.fabmax.kool.util.Log.Level.TRACE -> Log.d(t, message)
+                de.fabmax.kool.util.Log.Level.DEBUG -> Log.d(t, message)
+                de.fabmax.kool.util.Log.Level.INFO -> Log.i(t, message)
+                de.fabmax.kool.util.Log.Level.WARN -> Log.w(t, message)
+                de.fabmax.kool.util.Log.Level.ERROR -> Log.e(t, message)
+                else -> { }
+            }
+        }
 
         onCreateContext()
     }
 
-    fun createContext(): AndroidRenderContext {
+    protected fun createDefaultKoolContext(): AndroidRenderContext {
         val glView = GLSurfaceView(this)
-        val ctx = createContext(glView)
+        val ctx = createKoolContext(glView)
 
         setContentView(glView)
         return ctx
     }
 
-    fun createContext(glSurfaceView: GLSurfaceView): AndroidRenderContext {
+    protected fun createKoolContext(glSurfaceView: GLSurfaceView): AndroidRenderContext {
         this.glSurfaceView = glSurfaceView
 
         glSurfaceView.setOnTouchListener(this)
 
-        val ctx = de.fabmax.kool.createContext(AndroidInitProps(this)) as AndroidRenderContext
+        val ctx = AndroidRenderContext(this)
         glSurfaceView.setEGLContextFactory(ctx)
         glSurfaceView.setRenderer(ctx)
         glSurfaceView.preserveEGLContextOnPause = true
@@ -77,20 +80,13 @@ abstract class KoolActivity : Activity(), View.OnTouchListener {
                 MotionEvent.ACTION_CANCEL -> inputMgr.handleTouchCancel(pointerId)
                 else -> inputMgr.handleTouchMove(pointerId, x, y)
             }
-
-//            if (ptrAction == MotionEvent.ACTION_DOWN) {
-//                Log.d("KoolActivity", "pointer down: $pointerId, pos = ($x, $y)")
-//            }
-//            if (ptrAction == MotionEvent.ACTION_UP) {
-//                Log.d("KoolActivity", "pointer up: $pointerId, pos = ($x, $y)")
-//            }
         }
         return true
     }
 
     open fun onCreateContext() {
-        // creates the Kool render context
-        ctx = createContext()
+        // creates the default Kool render context
+        ctx = createDefaultKoolContext()
     }
 
     open fun onKoolContextCreated(ctx: AndroidRenderContext) {
@@ -105,39 +101,5 @@ abstract class KoolActivity : Activity(), View.OnTouchListener {
     override fun onResume() {
         super.onResume()
         glSurfaceView?.onResume()
-    }
-
-    internal fun createContext(props: RenderContext.InitProps): RenderContext {
-        return AndroidRenderContext(this@KoolActivity)
-    }
-
-    internal fun createCharMap(fontProps: FontProps): CharMap {
-        return fontMapGenerator.createCharMap(fontProps)
-    }
-
-    internal fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
-        launch {
-            assets.open(assetPath)?.use {
-                val t = System.nanoTime()
-                val data = ByteArrayOutputStream()
-                val buf = ByteArray(128 * 1024)
-                while (it.available() > 0) {
-                    val len = it.read(buf)
-                    data.write(buf, 0, len)
-                }
-                val bytes = data.toByteArray()
-                Log.d("KoolActivity", "Loaded asset \"$assetPath\" in ${(System.nanoTime() - t) / 1e6} ms (${bytes.size / (1024.0*1024.0)} MB)")
-
-                onLoad(bytes)
-            }
-        }
-    }
-
-    internal fun loadTextureAsset(assetPath: String): TextureData {
-        return ImageTextureData(assetPath, this@KoolActivity)
-    }
-
-    internal fun openUrl(url: String) {
-        // todo
     }
 }

@@ -4,8 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.RenderContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.gl.GL_RGB
@@ -57,7 +57,7 @@ class ImageTextureData(assetPath: String, context: Context) : TextureData() {
         }
     }
 
-    override fun onLoad(texture: Texture, ctx: RenderContext) {
+    override fun onLoad(texture: Texture, ctx: KoolContext) {
         val res = texture.res ?: throw KoolException("Texture wasn't created")
         glTexImage2D(res.target, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
         ctx.memoryMgr.memoryAllocated(res, buffer!!.remaining)

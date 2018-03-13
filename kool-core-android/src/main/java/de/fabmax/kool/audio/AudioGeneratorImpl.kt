@@ -4,7 +4,7 @@ import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
 import android.util.Log
-import de.fabmax.kool.platform.KoolActivity
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.createFloat32Buffer
 import org.jtransforms.fft.FloatFFT_1D
@@ -16,7 +16,7 @@ import kotlin.concurrent.thread
  * @author fabmax
  */
 
-actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Float) -> Float) {
+actual class AudioGenerator actual constructor(ctx: KoolContext, generatorFun: AudioGenerator.(Float) -> Float) {
 
     private val pauseLock = java.lang.Object()
     private val generatorThread: Thread
@@ -104,11 +104,6 @@ actual class AudioGenerator actual constructor(generatorFun: AudioGenerator.(Flo
 
     actual fun getPowerSpectrum(): Float32Buffer {
         return fftHelper?.getOutput() ?: createFloat32Buffer(1)
-    }
-
-    companion object {
-        // fixme: This is super bad practice and will be fixed soon
-        var koolActivity: KoolActivity? = null
     }
 }
 

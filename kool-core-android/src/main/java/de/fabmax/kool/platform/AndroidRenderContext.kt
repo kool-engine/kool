@@ -1,5 +1,7 @@
 package de.fabmax.kool.platform
 
+import android.content.Intent
+import android.net.Uri
 import android.opengl.EGL14
 import android.opengl.GLES11Ext
 import android.opengl.GLES30
@@ -13,10 +15,17 @@ import javax.microedition.khronos.egl.EGLContext
 import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.opengles.GL10
 
+
 /**
  * Android specific implementation of Kool's RenderContext
  */
-class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GLSurfaceView.Renderer, GLSurfaceView.EGLContextFactory {
+class AndroidRenderContext(private val koolActivity: KoolActivity) :
+        KoolContext(), GLSurfaceView.Renderer, GLSurfaceView.EGLContextFactory {
+
+    override var glCapabilities: GlCapabilities = GlCapabilities.UNKNOWN_CAPABILITIES
+
+    override val assetMgr = AndroidAssetManager(koolActivity)
+
     override var windowWidth = 0
         private set
     override var windowHeight = 0
@@ -32,6 +41,15 @@ class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GL
         screenDpi = (dispMetrics.xdpi + dispMetrics.ydpi) / 2 * scale
     }
 
+    //
+    // Functions overriden from KoolContext
+    //
+
+    override fun openUrl(url: String) {
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        koolActivity.startActivity(browserIntent)
+    }
+
     override fun run() {
         // nothing to do here
     }
@@ -39,6 +57,10 @@ class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GL
     override fun destroy() {
         // for now, we silently ignore this (if app is closing everything is deleted anyway...)
     }
+
+    //
+    // Functions overriden from GLSurfaceView.EGLContextFactory
+    //
 
     override fun destroyContext(egl: EGL10, display: EGLDisplay, context: EGLContext) {
         egl.eglDestroyContext(display, context)
@@ -68,6 +90,10 @@ class AndroidRenderContext(val koolActivity: KoolActivity) : RenderContext(), GL
         }
         return context
     }
+
+    //
+    // Functions overriden from GLSurfaceView.Renderer
+    //
 
     override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
         // check available extensions

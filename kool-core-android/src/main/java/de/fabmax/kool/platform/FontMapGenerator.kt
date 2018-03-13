@@ -32,7 +32,7 @@ internal class FontMapGenerator(val appCtx: Context, val maxWidth: Int, val maxH
         texBuf.buffer.put(outputBuf)
 
         val texData = BufferedTextureData(texBuf, maxWidth, texH, GL_ALPHA)
-        return CharMap(texData, charMetrics)
+        return CharMap(texData, charMetrics, fontProps)
     }
 
     private fun loadFromAssets(family: String): Typeface? {
