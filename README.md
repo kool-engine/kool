@@ -3,8 +3,9 @@
 A simple OpenGL based graphics engine that works on Desktop Java, Android and
 in browsers with Javascript / WebGL.
 
-Android version currently doesn't compile in IntelliJ (only in Android-Studio due to some
-gradle-plugin incompatibilities) and therefore remains in a separate branch for now.
+Android version is now merged into main branch, but in IntelliJ the kotlin-platform-android plugin still
+behaves a bit odd (IntelliJ 2018.1 EAP).
+Android build can be disabled by removing the two android modules from settings.gradle...
 
 For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo).
@@ -13,6 +14,7 @@ The hamburger-button in the upper-left corner triggers the demo chooser menu. Co
 all demos is available in kool-demo sub-project. 
 
 ## Features / Noticeable stuff:
+- Full support of all features on all platforms
 - Multi-touch support (on Android and Javascript / WebGL)
 - New procedural [Tree Demo](https://fabmax.github.io/kool/kool-js/?demo=treeDemo)
 - Cascaded shadow maps

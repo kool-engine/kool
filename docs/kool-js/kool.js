@@ -8,9 +8,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var round = Kotlin.kotlin.math.round_14dthe$;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
-  var PropertyMetadata = Kotlin.PropertyMetadata;
-  var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
-  var lazy = Kotlin.kotlin.lazy_klfg04$;
   var println = Kotlin.kotlin.io.println_s8jyv4$;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
   var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
@@ -28,12 +25,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var throwISE = Kotlin.throwISE;
   var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
   var toChar = Kotlin.toChar;
+  var PropertyMetadata = Kotlin.PropertyMetadata;
+  var RuntimeException_init = Kotlin.kotlin.RuntimeException_init_pdl1vj$;
+  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var Exception_init = Kotlin.kotlin.Exception_init_pdl1vj$;
   var Exception = Kotlin.kotlin.Exception;
   var first = Kotlin.kotlin.collections.first_2p1efm$;
   var last = Kotlin.kotlin.collections.last_2p1efm$;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
+  var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var Any = Object;
   var defineInlineFunction = Kotlin.defineInlineFunction;
   var wrapFunction = Kotlin.wrapFunction;
@@ -42,8 +43,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var abs_0 = Kotlin.kotlin.math.abs_s8cxhz$;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var toString = Kotlin.toString;
-  var RuntimeException_init = Kotlin.kotlin.RuntimeException_init_pdl1vj$;
-  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
   var toShort = Kotlin.toShort;
   var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
@@ -61,9 +60,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var removeAll = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   ImageTextureData.prototype = Object.create(TextureData.prototype);
   ImageTextureData.prototype.constructor = ImageTextureData;
-  JsContext$InitProps.prototype = Object.create(RenderContext$InitProps.prototype);
-  JsContext$InitProps.prototype.constructor = JsContext$InitProps;
-  JsContext.prototype = Object.create(RenderContext.prototype);
+  JsAssetManager.prototype = Object.create(AssetManager.prototype);
+  JsAssetManager.prototype.constructor = JsAssetManager;
+  JsContext.prototype = Object.create(KoolContext.prototype);
   JsContext.prototype.constructor = JsContext;
   Uint8BufferImpl.prototype = Object.create(GenericBuffer.prototype);
   Uint8BufferImpl.prototype.constructor = Uint8BufferImpl;
@@ -127,6 +126,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   InputManager$BufferedPointerInput$UpdateState$INVALID.prototype.constructor = InputManager$BufferedPointerInput$UpdateState$INVALID;
   InputManager$BufferedPointerInput.prototype = Object.create(InputManager$Pointer.prototype);
   InputManager$BufferedPointerInput.prototype.constructor = InputManager$BufferedPointerInput;
+  RenderPass.prototype = Object.create(Enum.prototype);
+  RenderPass.prototype.constructor = RenderPass;
   KoolException.prototype = Object.create(Exception.prototype);
   KoolException.prototype.constructor = KoolException;
   BSplineVec2f.prototype = Object.create(BSpline.prototype);
@@ -145,8 +146,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MutableVec3f.prototype.constructor = MutableVec3f;
   MutableVec4f.prototype = Object.create(Vec4f.prototype);
   MutableVec4f.prototype.constructor = MutableVec4f;
-  RenderPass.prototype = Object.create(Enum.prototype);
-  RenderPass.prototype.constructor = RenderPass;
   Mesh.prototype = Object.create(Node.prototype);
   Mesh.prototype.constructor = Mesh;
   Armature.prototype = Object.create(Mesh.prototype);
@@ -299,9 +298,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   IndexedVertexList$Vertex$ColorView.prototype.constructor = IndexedVertexList$Vertex$ColorView;
   LineMesh.prototype = Object.create(Mesh.prototype);
   LineMesh.prototype.constructor = LineMesh;
+  Log$Level.prototype = Object.create(Enum.prototype);
+  Log$Level.prototype.constructor = Log$Level;
   PointMesh.prototype = Object.create(Mesh.prototype);
   PointMesh.prototype.constructor = PointMesh;
-  function AudioGenerator(generatorFun) {
+  function AudioGenerator(ctx, generatorFun) {
     this.audioCtx_0 = new (window.AudioContext || window.webkitAudioContext)();
     this.sampleRate = this.audioCtx_0.sampleRate;
     this.isPaused_p8nrgy$_0 = false;
@@ -702,48 +703,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function isValidUniformLocation(location) {
     return location != null && Kotlin.isType(location, WebGLUniformLocation);
   }
-  var glCapabilities;
   function createContext() {
     return createContext_0(new JsContext$InitProps());
   }
   function createContext_0(props) {
-    return JsImpl_getInstance().createContext_izggji$(props);
-  }
-  function createCharMap(fontProps) {
-    return JsImpl_getInstance().fontGenerator.createCharMap_ttufcy$(fontProps);
+    return JsImpl_getInstance().createContext_s8od96$(props);
   }
   function now() {
     return performance.now();
-  }
-  function loadAsset$lambda(closure$req, closure$onLoad) {
-    return function (evt) {
-      var tmp$, tmp$_0;
-      var array = new Uint8Array(Kotlin.isType(tmp$ = closure$req.response, ArrayBuffer) ? tmp$ : throwCCE());
-      var bytes = new Int8Array(array.length);
-      tmp$_0 = array.length;
-      for (var i = 0; i < tmp$_0; i++) {
-        bytes[i] = array[i];
-      }
-      closure$onLoad(bytes);
-      return Unit;
-    };
-  }
-  function loadAsset(assetPath, onLoad) {
-    var req = new XMLHttpRequest();
-    req.open('GET', assetPath);
-    req.responseType = 'arraybuffer';
-    req.onload = loadAsset$lambda(req, onLoad);
-    req.send();
-  }
-  function loadTextureAsset(assetPath) {
-    var img = new Image();
-    var data = new ImageTextureData(img);
-    img.crossOrigin = '';
-    img.src = assetPath;
-    return data;
-  }
-  function openUrl(url) {
-    window.open(url);
   }
   function getMemoryInfo() {
     return '';
@@ -778,12 +745,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function JsImpl() {
     JsImpl_instance = this;
-    this.MAX_GENERATED_TEX_WIDTH_0 = 1024;
-    this.MAX_GENERATED_TEX_HEIGHT_0 = 1024;
     this.isWebGl2Context = false;
     this.dpi = 0;
     this.ctx = null;
-    this.fontGenerator_1ovgb6$_0 = lazy(JsImpl$fontGenerator$lambda(this));
     var tmp$;
     var measure = document.getElementById('dpiMeasure');
     if (measure == null) {
@@ -806,28 +770,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return tmp$_0;
     }
   });
-  Object.defineProperty(JsImpl.prototype, 'fontGenerator', {
-    get: function () {
-      return this.fontGenerator_1ovgb6$_0.value;
-    }
-  });
-  JsImpl.prototype.createContext_izggji$ = function (props) {
+  JsImpl.prototype.createContext_s8od96$ = function (props) {
     if (this.ctx != null) {
       throw new KoolException('Context was already creates (multi-context is currently not supported in js');
     }
-    if (Kotlin.isType(props, JsContext$InitProps)) {
-      this.ctx = new JsContext(props);
-      return ensureNotNull(this.ctx);
-    }
-     else {
-      throw IllegalArgumentException_init('Props must be of JsContext.InitProps');
-    }
+    this.ctx = new JsContext(props);
+    return ensureNotNull(this.ctx);
   };
-  function JsImpl$fontGenerator$lambda(this$JsImpl) {
-    return function () {
-      return new FontMapGenerator(this$JsImpl.MAX_GENERATED_TEX_WIDTH_0, this$JsImpl.MAX_GENERATED_TEX_HEIGHT_0);
-    };
-  }
   JsImpl.$metadata$ = {
     kind: Kind_OBJECT,
     simpleName: 'JsImpl',
@@ -869,7 +818,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     for (var i = 0; i < tmp$; i++) {
       buffer.put_11rb$(data.data[(i * 4 | 0) + 3 | 0]);
     }
-    return new CharMap(new BufferedTextureData(buffer, this.maxWidth, texHeight, GL_ALPHA), metrics);
+    return new CharMap(new BufferedTextureData(buffer, this.maxWidth, texHeight, GL_ALPHA), metrics, fontProps);
   };
   FontMapGenerator.prototype.makeMap_0 = function (fontProps, style, map) {
     var tmp$, tmp$_0;
@@ -950,7 +899,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     set: function (value) {
     }
   });
-  ImageTextureData.prototype.onLoad_4yp9vu$ = function (texture, ctx) {
+  ImageTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
     JsImpl_getInstance().gl.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, this.image);
     this.width = this.image.width;
     this.height = this.image.height;
@@ -962,10 +911,69 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'ImageTextureData',
     interfaces: [TextureData]
   };
+  function JsAssetManager() {
+    JsAssetManager$Companion_getInstance();
+    AssetManager.call(this);
+    this.fontGenerator_0 = new FontMapGenerator(JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_WIDTH_0, JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_HEIGHT_0);
+  }
+  function JsAssetManager$loadAsset$lambda(closure$req, closure$onLoad) {
+    return function (evt) {
+      var tmp$, tmp$_0;
+      var array = new Uint8Array(Kotlin.isType(tmp$ = closure$req.response, ArrayBuffer) ? tmp$ : throwCCE());
+      var bytes = new Int8Array(array.length);
+      tmp$_0 = array.length;
+      for (var i = 0; i < tmp$_0; i++) {
+        bytes[i] = array[i];
+      }
+      closure$onLoad(bytes);
+      return Unit;
+    };
+  }
+  JsAssetManager.prototype.loadAsset_jrww91$ = function (assetPath, onLoad) {
+    var req = new XMLHttpRequest();
+    req.open('GET', assetPath);
+    req.responseType = 'arraybuffer';
+    req.onload = JsAssetManager$loadAsset$lambda(req, onLoad);
+    req.send();
+  };
+  JsAssetManager.prototype.loadTextureAsset_61zpoe$ = function (assetPath) {
+    var img = new Image();
+    var data = new ImageTextureData(img);
+    img.crossOrigin = '';
+    img.src = assetPath;
+    return data;
+  };
+  JsAssetManager.prototype.createCharMap_ttufcy$ = function (fontProps) {
+    return this.fontGenerator_0.createCharMap_ttufcy$(fontProps);
+  };
+  function JsAssetManager$Companion() {
+    JsAssetManager$Companion_instance = this;
+    this.MAX_GENERATED_TEX_WIDTH_0 = 1024;
+    this.MAX_GENERATED_TEX_HEIGHT_0 = 1024;
+  }
+  JsAssetManager$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var JsAssetManager$Companion_instance = null;
+  function JsAssetManager$Companion_getInstance() {
+    if (JsAssetManager$Companion_instance === null) {
+      new JsAssetManager$Companion();
+    }
+    return JsAssetManager$Companion_instance;
+  }
+  JsAssetManager.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'JsAssetManager',
+    interfaces: [AssetManager]
+  };
   function JsContext(props) {
     JsContext$Companion_getInstance();
-    RenderContext.call(this);
+    KoolContext.call(this);
     this.props = props;
+    this.glCapabilities_4q43mj$_0 = null;
+    this.assetMgr_z54vt4$_0 = new JsAssetManager();
     this.windowWidth_7sdnb6$_0 = 0;
     this.windowHeight_xsf9ux$_0 = 0;
     this.canvas_8be2vx$ = null;
@@ -1015,7 +1023,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var max = typeof (tmp$_4 = this.gl_8be2vx$.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) === 'number' ? tmp$_4 : throwCCE();
       anisotropicTexFilterInfo = new AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT);
     }
-    glCapabilities = new GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
+    println('Max tex units: ' + maxTexUnits);
+    this.glCapabilities_4q43mj$_0 = new GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
     this.screenDpi = JsImpl_getInstance().dpi;
     this.windowWidth = this.canvas_8be2vx$.clientWidth;
     this.windowHeight = this.canvas_8be2vx$.clientHeight;
@@ -1034,6 +1043,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     document.onkeydown = JsContext_init$lambda_8(this);
     document.onkeyup = JsContext_init$lambda_9(this);
   }
+  Object.defineProperty(JsContext.prototype, 'glCapabilities', {
+    get: function () {
+      return this.glCapabilities_4q43mj$_0;
+    }
+  });
+  Object.defineProperty(JsContext.prototype, 'assetMgr', {
+    get: function () {
+      return this.assetMgr_z54vt4$_0;
+    }
+  });
   Object.defineProperty(JsContext.prototype, 'windowWidth', {
     get: function () {
       return this.windowWidth_7sdnb6$_0;
@@ -1129,6 +1148,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.gl_8be2vx$.finish();
     window.requestAnimationFrame(JsContext$renderFrame$lambda(this));
   };
+  JsContext.prototype.openUrl_61zpoe$ = function (url) {
+    window.open(url);
+  };
   function JsContext$run$lambda(this$JsContext) {
     return function (t) {
       this$JsContext.renderFrame_0(t);
@@ -1141,14 +1163,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   JsContext.prototype.destroy = function () {
   };
   function JsContext$InitProps() {
-    RenderContext$InitProps.call(this);
     this.canvasName = 'glCanvas';
     this.excludedKeyCodes = mutableSetOf(['F5']);
   }
   JsContext$InitProps.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'InitProps',
-    interfaces: [RenderContext$InitProps]
+    interfaces: []
   };
   function JsContext$Companion() {
     JsContext$Companion_instance = this;
@@ -1283,7 +1304,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   JsContext.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'JsContext',
-    interfaces: [RenderContext]
+    interfaces: [KoolContext]
   };
   function get_elementX($receiver) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
@@ -1520,6 +1541,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function createFloat32Buffer(capacity) {
     return new Float32BufferImpl(capacity);
   }
+  function AssetManager() {
+  }
+  AssetManager.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AssetManager',
+    interfaces: []
+  };
   function LowPassFilter(coeff, input) {
     SampleNode.call(this);
     this.coeff = coeff;
@@ -2289,7 +2317,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function BufferResource$Companion() {
     BufferResource$Companion_instance = this;
   }
-  BufferResource$Companion.prototype.create_gre2l6$ = function (target, ctx) {
+  BufferResource$Companion.prototype.create_2shagh$ = function (target, ctx) {
     return new BufferResource(glCreateBuffer(), target, ctx);
   };
   BufferResource$Companion.$metadata$ = {
@@ -2304,11 +2332,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return BufferResource$Companion_instance;
   }
-  BufferResource.prototype.delete_evfofk$ = function (ctx) {
+  BufferResource.prototype.delete_aemszp$ = function (ctx) {
     glDeleteBuffer(this);
-    GlResource.prototype.delete_evfofk$.call(this, ctx);
+    GlResource.prototype.delete_aemszp$.call(this, ctx);
   };
-  BufferResource.prototype.bind_evfofk$ = function (ctx) {
+  BufferResource.prototype.bind_aemszp$ = function (ctx) {
     if (!equals(ctx.boundBuffers_8be2vx$.get_11rb$(this.target), this)) {
       glBindBuffer(this.target, this);
       var $receiver = ctx.boundBuffers_8be2vx$;
@@ -2316,47 +2344,47 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.put_xwzc9p$(key, this);
     }
   };
-  BufferResource.prototype.setData_i6at0a$ = function (data, usage, ctx) {
+  BufferResource.prototype.setData_wcsk4b$ = function (data, usage, ctx) {
     var limit = data.limit;
     var pos = data.position;
     data.flip();
-    this.bind_evfofk$(ctx);
+    this.bind_aemszp$(ctx);
     glBufferData_2(this.target, data, usage);
     ctx.memoryMgr.memoryAllocated_927jj9$(this, pos * 4 | 0);
     data.limit = limit;
     data.position = pos;
   };
-  BufferResource.prototype.setData_a5dm9j$ = function (data, usage, ctx) {
+  BufferResource.prototype.setData_t9c4ce$ = function (data, usage, ctx) {
     var limit = data.limit;
     var pos = data.position;
     data.flip();
-    this.bind_evfofk$(ctx);
+    this.bind_aemszp$(ctx);
     glBufferData(this.target, data, usage);
     ctx.memoryMgr.memoryAllocated_927jj9$(this, pos);
     data.limit = limit;
     data.position = pos;
   };
-  BufferResource.prototype.setData_wsx8y8$ = function (data, usage, ctx) {
+  BufferResource.prototype.setData_34zp6t$ = function (data, usage, ctx) {
     var limit = data.limit;
     var pos = data.position;
     data.flip();
-    this.bind_evfofk$(ctx);
+    this.bind_aemszp$(ctx);
     glBufferData_0(this.target, data, usage);
     ctx.memoryMgr.memoryAllocated_927jj9$(this, pos * 2 | 0);
     data.limit = limit;
     data.position = pos;
   };
-  BufferResource.prototype.setData_5irzgq$ = function (data, usage, ctx) {
+  BufferResource.prototype.setData_5h48zj$ = function (data, usage, ctx) {
     var limit = data.limit;
     var pos = data.position;
     data.flip();
-    this.bind_evfofk$(ctx);
+    this.bind_aemszp$(ctx);
     glBufferData_1(this.target, data, usage);
     ctx.memoryMgr.memoryAllocated_927jj9$(this, pos * 4 | 0);
     data.limit = limit;
     data.position = pos;
   };
-  BufferResource.prototype.unbind_evfofk$ = function (ctx) {
+  BufferResource.prototype.unbind_aemszp$ = function (ctx) {
     glBindBuffer(this.target, null);
     var $receiver = ctx.boundBuffers_8be2vx$;
     var key = this.target;
@@ -2405,46 +2433,39 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return this;
   };
-  function Framebuffer$withDepth$lambda(this$Framebuffer) {
-    return function ($receiver) {
-      return new FbDepthTexData(this$Framebuffer.width, this$Framebuffer.height);
-    };
-  }
   Framebuffer.prototype.withDepth = function () {
     if (this.depthAttachment == null) {
-      var filterMethod = glCapabilities.depthFilterMethod;
-      var depthProps = new TextureProps('framebuffer-' + this.fbId_0 + '-depth', filterMethod, filterMethod, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0);
-      this.depthAttachment = new Texture(depthProps, Framebuffer$withDepth$lambda(this));
+      this.depthAttachment = FbDepthTexData$Companion_getInstance().depthTex_ld7r1l$(this.width, this.height, this.fbId_0);
     }
     return this;
   };
-  Framebuffer.prototype.delete_evfofk$ = function (ctx) {
+  Framebuffer.prototype.delete_aemszp$ = function (ctx) {
     var tmp$, tmp$_0, tmp$_1;
-    (tmp$ = this.fbResource) != null ? (tmp$.delete_evfofk$(ctx), Unit) : null;
-    (tmp$_0 = this.colorAttachment) != null ? (tmp$_0.dispose_evfofk$(ctx), Unit) : null;
-    (tmp$_1 = this.depthAttachment) != null ? (tmp$_1.dispose_evfofk$(ctx), Unit) : null;
+    (tmp$ = this.fbResource) != null ? (tmp$.delete_aemszp$(ctx), Unit) : null;
+    (tmp$_0 = this.colorAttachment) != null ? (tmp$_0.dispose_aemszp$(ctx), Unit) : null;
+    (tmp$_1 = this.depthAttachment) != null ? (tmp$_1.dispose_aemszp$(ctx), Unit) : null;
     this.fbResource = null;
     this.colorAttachment = null;
     this.depthAttachment = null;
   };
-  Framebuffer.prototype.bind_evfofk$ = function (ctx) {
+  Framebuffer.prototype.bind_aemszp$ = function (ctx) {
     var tmp$;
     var tmp$_0;
     if ((tmp$ = this.fbResource) != null)
       tmp$_0 = tmp$;
     else {
-      var $receiver = FramebufferResource$Companion_getInstance().create_uavttc$(this.width, this.height, ctx);
+      var $receiver = FramebufferResource$Companion_getInstance().create_w70mbp$(this.width, this.height, ctx);
       this.fbResource = $receiver;
       $receiver.colorAttachment = this.colorAttachment;
       $receiver.depthAttachment = this.depthAttachment;
       tmp$_0 = $receiver;
     }
     var fb = tmp$_0;
-    fb.bind_evfofk$(ctx);
+    fb.bind_aemszp$(ctx);
   };
-  Framebuffer.prototype.unbind_evfofk$ = function (ctx) {
+  Framebuffer.prototype.unbind_aemszp$ = function (ctx) {
     var tmp$;
-    (tmp$ = this.fbResource) != null ? (tmp$.unbind_evfofk$(ctx), Unit) : null;
+    (tmp$ = this.fbResource) != null ? (tmp$.unbind_aemszp$(ctx), Unit) : null;
   };
   Framebuffer.$metadata$ = {
     kind: Kind_CLASS,
@@ -2464,7 +2485,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function FramebufferResource$Companion() {
     FramebufferResource$Companion_instance = this;
   }
-  FramebufferResource$Companion.prototype.create_uavttc$ = function (width, height, ctx) {
+  FramebufferResource$Companion.prototype.create_w70mbp$ = function (width, height, ctx) {
     return new FramebufferResource(glCreateFramebuffer(), width, height, ctx);
   };
   FramebufferResource$Companion.$metadata$ = {
@@ -2479,17 +2500,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return FramebufferResource$Companion_instance;
   }
-  FramebufferResource.prototype.delete_evfofk$ = function (ctx) {
+  FramebufferResource.prototype.delete_aemszp$ = function (ctx) {
     glDeleteFramebuffer(this);
-    GlResource.prototype.delete_evfofk$.call(this, ctx);
+    GlResource.prototype.delete_aemszp$.call(this, ctx);
   };
-  FramebufferResource.prototype.bind_evfofk$ = function (ctx) {
+  FramebufferResource.prototype.bind_aemszp$ = function (ctx) {
     glBindFramebuffer(GL_FRAMEBUFFER, this);
     if (!this.isFbComplete_0) {
       this.isFbComplete_0 = true;
       var color = this.colorAttachment;
       if (color != null) {
-        ctx.textureMgr.bindTexture_4yp9vu$(color, ctx);
+        ctx.textureMgr.bindTexture_dletmp$(color, ctx);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ensureNotNull(color.res), 0);
       }
        else {
@@ -2498,14 +2519,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
       var depth = this.depthAttachment;
       if (depth != null) {
-        ctx.textureMgr.bindTexture_4yp9vu$(depth, ctx);
+        ctx.textureMgr.bindTexture_dletmp$(depth, ctx);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ensureNotNull(depth.res), 0);
       }
       var fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
       if (fbStatus !== GL_FRAMEBUFFER_COMPLETE) {
         if (this.colorAttachment == null && this.depthAttachment != null) {
           this.colorAttachment = FbColorTexData$Companion_getInstance().colorTex_ld7r1l$(this.width, this.height, this.fbId_0);
-          ctx.textureMgr.bindTexture_4yp9vu$(ensureNotNull(this.colorAttachment), ctx);
+          ctx.textureMgr.bindTexture_dletmp$(ensureNotNull(this.colorAttachment), ctx);
           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ensureNotNull(ensureNotNull(this.colorAttachment).res), 0);
           glDrawBuffer(GL_FRONT);
           glReadBuffer(GL_FRONT);
@@ -2518,10 +2539,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
     ctx.pushAttributes();
-    ctx.viewport = new RenderContext$Viewport(0, 0, this.width, this.height);
+    ctx.viewport = new KoolContext$Viewport(0, 0, this.width, this.height);
     ctx.applyAttributes();
   };
-  FramebufferResource.prototype.unbind_evfofk$ = function (ctx) {
+  FramebufferResource.prototype.unbind_aemszp$ = function (ctx) {
     glBindFramebuffer(GL_FRAMEBUFFER, null);
     ctx.popAttributes();
   };
@@ -2537,14 +2558,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.width = width;
     this.height = height;
   }
-  FbColorTexData.prototype.onLoad_4yp9vu$ = function (texture, ctx) {
+  FbColorTexData.prototype.onLoad_dletmp$ = function (texture, ctx) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
   };
   function FbColorTexData$Companion() {
     FbColorTexData$Companion_instance = this;
   }
   function FbColorTexData$Companion$colorTex$lambda(closure$sizeX, closure$sizeY) {
-    return function ($receiver) {
+    return function ($receiver, it) {
       return new FbColorTexData(closure$sizeX, closure$sizeY);
     };
   }
@@ -2576,20 +2597,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.width = width;
     this.height = height;
   }
-  FbDepthTexData.prototype.onLoad_4yp9vu$ = function (texture, ctx) {
-    glTexImage2D(GL_TEXTURE_2D, 0, glCapabilities.depthComponentIntFormat, this.width, this.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, null);
+  FbDepthTexData.prototype.onLoad_dletmp$ = function (texture, ctx) {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, ctx.glCapabilities.depthFilterMethod);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, ctx.glCapabilities.depthFilterMethod);
+    glTexImage2D(GL_TEXTURE_2D, 0, ctx.glCapabilities.depthComponentIntFormat, this.width, this.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, null);
   };
   function FbDepthTexData$Companion() {
     FbDepthTexData$Companion_instance = this;
   }
   function FbDepthTexData$Companion$depthTex$lambda(closure$sizeX, closure$sizeY) {
-    return function ($receiver) {
+    return function ($receiver, it) {
       return new FbDepthTexData(closure$sizeX, closure$sizeY);
     };
   }
   FbDepthTexData$Companion.prototype.depthTex_ld7r1l$ = function (sizeX, sizeY, fbId) {
-    var filterMethod = glCapabilities.depthFilterMethod;
-    var depthProps = new TextureProps('framebuffer-' + fbId + '-depth', filterMethod, filterMethod, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0);
+    var depthProps = new TextureProps('framebuffer-' + fbId + '-depth', GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0);
     return new Texture(depthProps, FbDepthTexData$Companion$depthTex$lambda(sizeX, sizeY));
   };
   FbDepthTexData$Companion.$metadata$ = {
@@ -2625,9 +2647,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.res != null;
     }
   });
-  GlObject.prototype.dispose_evfofk$ = function (ctx) {
+  GlObject.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
-    (tmp$ = this.res) != null ? (tmp$.delete_evfofk$(ctx), Unit) : null;
+    (tmp$ = this.res) != null ? (tmp$.delete_aemszp$(ctx), Unit) : null;
     this.res = null;
   };
   GlObject.$metadata$ = {
@@ -2725,7 +2747,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.glRef != null;
     }
   });
-  GlResource.prototype.delete_evfofk$ = function (ctx) {
+  GlResource.prototype.delete_aemszp$ = function (ctx) {
     ctx.memoryMgr.deleted_esgzal$(this);
     this.glRef = null;
   };
@@ -2742,7 +2764,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function ProgramResource$Companion() {
     ProgramResource$Companion_instance = this;
   }
-  ProgramResource$Companion.prototype.create_evfofk$ = function (ctx) {
+  ProgramResource$Companion.prototype.create_aemszp$ = function (ctx) {
     return new ProgramResource(glCreateProgram(), ctx);
   };
   ProgramResource$Companion.$metadata$ = {
@@ -2757,18 +2779,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return ProgramResource$Companion_instance;
   }
-  ProgramResource.prototype.delete_evfofk$ = function (ctx) {
+  ProgramResource.prototype.delete_aemszp$ = function (ctx) {
     glDeleteProgram(this);
-    GlResource.prototype.delete_evfofk$.call(this, ctx);
+    GlResource.prototype.delete_aemszp$.call(this, ctx);
   };
-  ProgramResource.prototype.attachShader_j05587$ = function (shader, ctx) {
+  ProgramResource.prototype.attachShader_55k08u$ = function (shader, ctx) {
     glAttachShader(this, shader);
   };
-  ProgramResource.prototype.link_evfofk$ = function (ctx) {
+  ProgramResource.prototype.link_aemszp$ = function (ctx) {
     glLinkProgram(this);
     return glGetProgrami(this, GL_LINK_STATUS) === GL_TRUE;
   };
-  ProgramResource.prototype.getInfoLog_evfofk$ = function (ctx) {
+  ProgramResource.prototype.getInfoLog_aemszp$ = function (ctx) {
     return glGetProgramInfoLog(this);
   };
   ProgramResource.$metadata$ = {
@@ -2783,7 +2805,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function RenderbufferResource$Companion() {
     RenderbufferResource$Companion_instance = this;
   }
-  RenderbufferResource$Companion.prototype.create_evfofk$ = function (ctx) {
+  RenderbufferResource$Companion.prototype.create_aemszp$ = function (ctx) {
     return new RenderbufferResource(glCreateRenderbuffer(), ctx);
   };
   RenderbufferResource$Companion.$metadata$ = {
@@ -2798,9 +2820,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return RenderbufferResource$Companion_instance;
   }
-  RenderbufferResource.prototype.delete_evfofk$ = function (ctx) {
+  RenderbufferResource.prototype.delete_aemszp$ = function (ctx) {
     glDeleteRenderbuffer(this);
-    GlResource.prototype.delete_evfofk$.call(this, ctx);
+    GlResource.prototype.delete_aemszp$.call(this, ctx);
   };
   RenderbufferResource.$metadata$ = {
     kind: Kind_CLASS,
@@ -2815,10 +2837,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function ShaderResource$Companion() {
     ShaderResource$Companion_instance = this;
   }
-  ShaderResource$Companion.prototype.createFragmentShader_evfofk$ = function (ctx) {
+  ShaderResource$Companion.prototype.createFragmentShader_aemszp$ = function (ctx) {
     return new ShaderResource(glCreateShader(GL_FRAGMENT_SHADER), ctx);
   };
-  ShaderResource$Companion.prototype.createVertexShader_evfofk$ = function (ctx) {
+  ShaderResource$Companion.prototype.createVertexShader_aemszp$ = function (ctx) {
     return new ShaderResource(glCreateShader(GL_VERTEX_SHADER), ctx);
   };
   ShaderResource$Companion.$metadata$ = {
@@ -2833,18 +2855,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return ShaderResource$Companion_instance;
   }
-  ShaderResource.prototype.delete_evfofk$ = function (ctx) {
+  ShaderResource.prototype.delete_aemszp$ = function (ctx) {
     glDeleteShader(this);
-    GlResource.prototype.delete_evfofk$.call(this, ctx);
+    GlResource.prototype.delete_aemszp$.call(this, ctx);
   };
-  ShaderResource.prototype.shaderSource_myr2gy$ = function (source, ctx) {
+  ShaderResource.prototype.shaderSource_vvp3il$ = function (source, ctx) {
     glShaderSource(this, source);
   };
-  ShaderResource.prototype.compile_evfofk$ = function (ctx) {
+  ShaderResource.prototype.compile_aemszp$ = function (ctx) {
     glCompileShader(this);
     return glGetShaderi(this, GL_COMPILE_STATUS) === GL_TRUE;
   };
-  ShaderResource.prototype.getInfoLog_evfofk$ = function (ctx) {
+  ShaderResource.prototype.getInfoLog_aemszp$ = function (ctx) {
     return glGetShaderInfoLog(this);
   };
   ShaderResource.$metadata$ = {
@@ -2859,22 +2881,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.props = props;
     this.isLoaded = false;
     this.texUnit_xdyr2s$_0 = -1;
-    glBindTexture(GL_TEXTURE_2D, this);
+    glBindTexture(this.target, this);
     glTexParameteri(this.target, GL_TEXTURE_MIN_FILTER, this.props.minFilter);
     glTexParameteri(this.target, GL_TEXTURE_MAG_FILTER, this.props.magFilter);
     glTexParameteri(this.target, GL_TEXTURE_WRAP_S, this.props.xWrapping);
     glTexParameteri(this.target, GL_TEXTURE_WRAP_T, this.props.yWrapping);
-    if (this.props.anisotropy > 1 && glCapabilities.anisotropicTexFilterInfo.isSupported) {
-      var a = numberToInt(glCapabilities.anisotropicTexFilterInfo.maxAnisotropy);
+    if (this.props.anisotropy > 1 && ctx.glCapabilities.anisotropicTexFilterInfo.isSupported) {
+      var a = numberToInt(ctx.glCapabilities.anisotropicTexFilterInfo.maxAnisotropy);
       var b = this.props.anisotropy;
       var anisotropy = Math_0.max(a, b);
-      glTexParameteri(this.target, glCapabilities.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+      glTexParameteri(this.target, ctx.glCapabilities.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
     }
   }
   function TextureResource$Companion() {
     TextureResource$Companion_instance = this;
   }
-  TextureResource$Companion.prototype.create_wmc4vc$ = function (target, props, ctx) {
+  TextureResource$Companion.prototype.create_9khcnx$ = function (target, props, ctx) {
     return new TextureResource(glCreateTexture(), target, props, ctx);
   };
   TextureResource$Companion.$metadata$ = {
@@ -2897,9 +2919,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.texUnit_xdyr2s$_0 = texUnit;
     }
   });
-  TextureResource.prototype.delete_evfofk$ = function (ctx) {
+  TextureResource.prototype.delete_aemszp$ = function (ctx) {
     glDeleteTexture(this);
-    GlResource.prototype.delete_evfofk$.call(this, ctx);
+    GlResource.prototype.delete_aemszp$.call(this, ctx);
   };
   TextureResource.$metadata$ = {
     kind: Kind_CLASS,
@@ -3249,14 +3271,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
      while (false);
     return firstOrNull$result;
   };
-  InputManager.prototype.onNewFrame_p81l1v$ = function (ctx) {
+  InputManager.prototype.onNewFrame_cwprtu$ = function (ctx) {
     var tmp$;
     tmp$ = this.pointers;
     for (var i = 0; i !== tmp$.length; ++i) {
       this.inputPointers_0[i].update_sjovm5$(this.pointers[i], this.lastPtrInput_0);
     }
     if (this.isEvaluatingCompatGestures) {
-      this.compatGestureEvaluator_0.evaluate_evfofk$(ctx);
+      this.compatGestureEvaluator_0.evaluate_aemszp$(ctx);
       switch (this.compatGestureEvaluator_0.currentGesture.type) {
         case 1:
           this.primaryPointer.deltaScroll = this.compatGestureEvaluator_0.currentGesture.dPinchAmount / 20;
@@ -3507,7 +3529,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return (this.buttonEventMask & InputManager$Companion_getInstance().FORWARD_BUTTON_MASK) !== 0;
     }
   });
-  InputManager$Pointer.prototype.isInViewport_evfofk$ = function (ctx) {
+  InputManager$Pointer.prototype.isInViewport_aemszp$ = function (ctx) {
     var ptrY = ctx.windowHeight - this.y;
     return this.isValid && ctx.viewport.isInViewport_dleff0$(this.x, ptrY);
   };
@@ -3908,6 +3930,380 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'InputManager',
     interfaces: []
   };
+  function KoolContext() {
+    this.screenDpi = 96.0;
+    this.inputMgr = new InputManager();
+    this.memoryMgr = new MemoryManager();
+    this.shaderMgr = new ShaderManager();
+    this.textureMgr = new TextureManager();
+    this.mvpState = new MvpState();
+    this.onRender = ArrayList_init();
+    this.renderPass = RenderPass$SCREEN_getInstance();
+    this.time_q5mkh0$_0 = 0.0;
+    this.dt_fpsqdb$_0 = 0.0;
+    this.frameIdx_2g8w1r$_0 = 0;
+    this.fps_a02wsa$_0 = 60.0;
+    this.scenes = ArrayList_init();
+    this.attribs_e3zeo6$_0 = new KoolContext$Attribs();
+    var array = Array_0(16);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = new KoolContext$Attribs();
+    }
+    this.attribsStack_y8vpjm$_0 = array;
+    this.attribsStackIdx_q83m91$_0 = 0;
+    var array_0 = new Float64Array(25);
+    var tmp$_0;
+    tmp$_0 = array_0.length - 1 | 0;
+    for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
+      array_0[i_0] = 0.017;
+    }
+    this.frameTimes_6eiyeg$_0 = array_0;
+    this.viewport_xt8oob$_0 = this.attribs_e3zeo6$_0.get_ytbaoo$('viewport');
+    this.clearColor_wr4e63$_0 = this.attribs_e3zeo6$_0.get_ytbaoo$('clearColor');
+    this.cullFace_kxwi7y$_0 = this.attribs_e3zeo6$_0.get_ytbaoo$('cullFace');
+    this.depthFunc_37d7wc$_0 = this.attribs_e3zeo6$_0.get_ytbaoo$('depthFunc');
+    this.isDepthTest_pyg3t4$_0 = this.attribs_e3zeo6$_0.get_ytbaoo$('isDepthTest');
+    this.isDepthMask_q2d84i$_0 = this.attribs_e3zeo6$_0.get_ytbaoo$('isDepthMask');
+    this.isCullFace_5lucc8$_0 = this.attribs_e3zeo6$_0.get_ytbaoo$('isCullFace');
+    this.isBlend_z2c90k$_0 = this.attribs_e3zeo6$_0.get_ytbaoo$('isBlend');
+    this.lineWidth_1iezcf$_0 = this.attribs_e3zeo6$_0.get_ytbaoo$('lineWidth');
+    this.boundBuffers_8be2vx$ = LinkedHashMap_init();
+  }
+  Object.defineProperty(KoolContext.prototype, 'time', {
+    get: function () {
+      return this.time_q5mkh0$_0;
+    },
+    set: function (time) {
+      this.time_q5mkh0$_0 = time;
+    }
+  });
+  Object.defineProperty(KoolContext.prototype, 'deltaT', {
+    get: function () {
+      if (this.renderPass.increaseTime) {
+        return this.dt_fpsqdb$_0;
+      }
+       else {
+        return 0.0;
+      }
+    }
+  });
+  Object.defineProperty(KoolContext.prototype, 'frameIdx', {
+    get: function () {
+      return this.frameIdx_2g8w1r$_0;
+    },
+    set: function (frameIdx) {
+      this.frameIdx_2g8w1r$_0 = frameIdx;
+    }
+  });
+  Object.defineProperty(KoolContext.prototype, 'fps', {
+    get: function () {
+      return this.fps_a02wsa$_0;
+    },
+    set: function (fps) {
+      this.fps_a02wsa$_0 = fps;
+    }
+  });
+  var KoolContext$viewport_metadata = new PropertyMetadata('viewport');
+  Object.defineProperty(KoolContext.prototype, 'viewport', {
+    get: function () {
+      return this.viewport_xt8oob$_0.getValue_n5byny$(this, KoolContext$viewport_metadata);
+    },
+    set: function (viewport) {
+      this.viewport_xt8oob$_0.setValue_sq4zib$(this, KoolContext$viewport_metadata, viewport);
+    }
+  });
+  var KoolContext$clearColor_metadata = new PropertyMetadata('clearColor');
+  Object.defineProperty(KoolContext.prototype, 'clearColor', {
+    get: function () {
+      return this.clearColor_wr4e63$_0.getValue_n5byny$(this, KoolContext$clearColor_metadata);
+    },
+    set: function (clearColor) {
+      this.clearColor_wr4e63$_0.setValue_sq4zib$(this, KoolContext$clearColor_metadata, clearColor);
+    }
+  });
+  var KoolContext$cullFace_metadata = new PropertyMetadata('cullFace');
+  Object.defineProperty(KoolContext.prototype, 'cullFace', {
+    get: function () {
+      return this.cullFace_kxwi7y$_0.getValue_n5byny$(this, KoolContext$cullFace_metadata);
+    },
+    set: function (cullFace) {
+      this.cullFace_kxwi7y$_0.setValue_sq4zib$(this, KoolContext$cullFace_metadata, cullFace);
+    }
+  });
+  var KoolContext$depthFunc_metadata = new PropertyMetadata('depthFunc');
+  Object.defineProperty(KoolContext.prototype, 'depthFunc', {
+    get: function () {
+      return this.depthFunc_37d7wc$_0.getValue_n5byny$(this, KoolContext$depthFunc_metadata);
+    },
+    set: function (depthFunc) {
+      this.depthFunc_37d7wc$_0.setValue_sq4zib$(this, KoolContext$depthFunc_metadata, depthFunc);
+    }
+  });
+  var KoolContext$isDepthTest_metadata = new PropertyMetadata('isDepthTest');
+  Object.defineProperty(KoolContext.prototype, 'isDepthTest', {
+    get: function () {
+      return this.isDepthTest_pyg3t4$_0.getValue_n5byny$(this, KoolContext$isDepthTest_metadata);
+    },
+    set: function (isDepthTest) {
+      this.isDepthTest_pyg3t4$_0.setValue_sq4zib$(this, KoolContext$isDepthTest_metadata, isDepthTest);
+    }
+  });
+  var KoolContext$isDepthMask_metadata = new PropertyMetadata('isDepthMask');
+  Object.defineProperty(KoolContext.prototype, 'isDepthMask', {
+    get: function () {
+      return this.isDepthMask_q2d84i$_0.getValue_n5byny$(this, KoolContext$isDepthMask_metadata);
+    },
+    set: function (isDepthMask) {
+      this.isDepthMask_q2d84i$_0.setValue_sq4zib$(this, KoolContext$isDepthMask_metadata, isDepthMask);
+    }
+  });
+  var KoolContext$isCullFace_metadata = new PropertyMetadata('isCullFace');
+  Object.defineProperty(KoolContext.prototype, 'isCullFace', {
+    get: function () {
+      return this.isCullFace_5lucc8$_0.getValue_n5byny$(this, KoolContext$isCullFace_metadata);
+    },
+    set: function (isCullFace) {
+      this.isCullFace_5lucc8$_0.setValue_sq4zib$(this, KoolContext$isCullFace_metadata, isCullFace);
+    }
+  });
+  var KoolContext$isBlend_metadata = new PropertyMetadata('isBlend');
+  Object.defineProperty(KoolContext.prototype, 'isBlend', {
+    get: function () {
+      return this.isBlend_z2c90k$_0.getValue_n5byny$(this, KoolContext$isBlend_metadata);
+    },
+    set: function (isBlend) {
+      this.isBlend_z2c90k$_0.setValue_sq4zib$(this, KoolContext$isBlend_metadata, isBlend);
+    }
+  });
+  var KoolContext$lineWidth_metadata = new PropertyMetadata('lineWidth');
+  Object.defineProperty(KoolContext.prototype, 'lineWidth', {
+    get: function () {
+      return this.lineWidth_1iezcf$_0.getValue_n5byny$(this, KoolContext$lineWidth_metadata);
+    },
+    set: function (lineWidth) {
+      this.lineWidth_1iezcf$_0.setValue_sq4zib$(this, KoolContext$lineWidth_metadata, lineWidth);
+    }
+  });
+  KoolContext.prototype.render_14dthe$ = function (dt) {
+    var tmp$, tmp$_0, tmp$_1;
+    this.dt_fpsqdb$_0 = dt;
+    this.time = this.time + dt;
+    this.frameIdx = this.frameIdx + 1 | 0;
+    this.frameTimes_6eiyeg$_0[this.frameIdx % this.frameTimes_6eiyeg$_0.length] = dt;
+    var sum = 0.0;
+    tmp$ = this.frameTimes_6eiyeg$_0;
+    for (var i = 0; i !== tmp$.length; ++i) {
+      sum += this.frameTimes_6eiyeg$_0[i];
+    }
+    this.fps = this.frameTimes_6eiyeg$_0.length / sum * 0.1 + this.fps * 0.9;
+    this.inputMgr.onNewFrame_cwprtu$(this);
+    this.textureMgr.onNewFrame_aemszp$(this);
+    this.shaderMgr.bindShader_gt83r0$(null, this);
+    this.viewport = new KoolContext$Viewport(0, 0, this.windowWidth, this.windowHeight);
+    this.applyAttributes();
+    tmp$_0 = this.onRender;
+    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+      this.onRender.get_za3lpa$(i_0)(this);
+    }
+    tmp$_1 = this.scenes;
+    for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
+      this.scenes.get_za3lpa$(i_1).renderScene_aemszp$(this);
+    }
+  };
+  KoolContext.prototype.pushAttributes = function () {
+    var tmp$;
+    this.attribsStack_y8vpjm$_0[tmp$ = this.attribsStackIdx_q83m91$_0, this.attribsStackIdx_q83m91$_0 = tmp$ + 1 | 0, tmp$].set_td6xi8$(this.attribs_e3zeo6$_0);
+  };
+  KoolContext.prototype.popAttributes = function () {
+    this.attribs_e3zeo6$_0.set_td6xi8$(this.attribsStack_y8vpjm$_0[this.attribsStackIdx_q83m91$_0 = this.attribsStackIdx_q83m91$_0 - 1 | 0, this.attribsStackIdx_q83m91$_0]);
+    this.applyAttributes();
+  };
+  KoolContext.prototype.applyAttributes = function () {
+    this.attribs_e3zeo6$_0.apply();
+  };
+  function KoolContext$Attribs() {
+    this.attribs_0 = mutableListOf([new Property('viewport', new KoolContext$Viewport(0, 0, 0, 0), KoolContext$Attribs$attribs$lambda), new Property('clearColor', new Color(0.05, 0.15, 0.25, 1.0), KoolContext$Attribs$attribs$lambda_0), new Property('cullFace', GL_BACK, KoolContext$Attribs$attribs$lambda_1), new Property('depthFunc', GL_LEQUAL, KoolContext$Attribs$attribs$lambda_2), new Property('isDepthTest', true, KoolContext$Attribs$attribs$lambda_3), new Property('isDepthMask', true, KoolContext$Attribs$attribs$lambda_4), new Property('isCullFace', true, KoolContext$Attribs$attribs$lambda_5), new Property('isBlend', true, KoolContext$Attribs$attribs$lambda_6), new Property('lineWidth', 1.0, KoolContext$Attribs$attribs$lambda_7)]);
+  }
+  KoolContext$Attribs.prototype.get_ytbaoo$ = function (name) {
+    var tmp$;
+    tmp$ = this.attribs_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var tmp$_0;
+      if (equals(this.attribs_0.get_za3lpa$(i).name, name)) {
+        return Kotlin.isType(tmp$_0 = this.attribs_0.get_za3lpa$(i), Property) ? tmp$_0 : throwCCE();
+      }
+    }
+    throw RuntimeException_init('Attribute not found: ' + name);
+  };
+  KoolContext$Attribs.prototype.apply = function () {
+    var tmp$;
+    tmp$ = this.attribs_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.attribs_0.get_za3lpa$(i).applyIfChanged();
+    }
+  };
+  KoolContext$Attribs.prototype.set_td6xi8$ = function (other) {
+    var tmp$;
+    tmp$ = this.attribs_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.attribs_0.get_za3lpa$(i).copy_lshn67$(other.attribs_0.get_za3lpa$(i), false);
+    }
+  };
+  function KoolContext$Attribs$attribs$lambda($receiver) {
+    var dimen = $receiver.clear;
+    glViewport(dimen.x, dimen.y, dimen.width, dimen.height);
+    return Unit;
+  }
+  function KoolContext$Attribs$attribs$lambda_0($receiver) {
+    var color = $receiver.clear;
+    glClearColor(color.r, color.g, color.b, color.a);
+    return Unit;
+  }
+  function KoolContext$Attribs$attribs$lambda_1($receiver) {
+    glCullFace($receiver.clear);
+    return Unit;
+  }
+  function KoolContext$Attribs$attribs$lambda_2($receiver) {
+    glDepthFunc($receiver.clear);
+    return Unit;
+  }
+  function KoolContext$Attribs$attribs$lambda_3($receiver) {
+    if ($receiver.clear) {
+      glEnable(GL_DEPTH_TEST);
+    }
+     else {
+      glDisable(GL_DEPTH_TEST);
+    }
+    return Unit;
+  }
+  function KoolContext$Attribs$attribs$lambda_4($receiver) {
+    glDepthMask($receiver.clear);
+    return Unit;
+  }
+  function KoolContext$Attribs$attribs$lambda_5($receiver) {
+    if ($receiver.clear) {
+      glEnable(GL_CULL_FACE);
+    }
+     else {
+      glDisable(GL_CULL_FACE);
+    }
+    return Unit;
+  }
+  function KoolContext$Attribs$attribs$lambda_6($receiver) {
+    if ($receiver.clear) {
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    }
+     else {
+      glDisable(GL_BLEND);
+    }
+    return Unit;
+  }
+  function KoolContext$Attribs$attribs$lambda_7($receiver) {
+    glLineWidth($receiver.clear);
+    return Unit;
+  }
+  KoolContext$Attribs.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Attribs',
+    interfaces: []
+  };
+  function KoolContext$Viewport(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
+  Object.defineProperty(KoolContext$Viewport.prototype, 'aspectRatio', {
+    get: function () {
+      return this.width / this.height;
+    }
+  });
+  KoolContext$Viewport.prototype.isInViewport_dleff0$ = function (x, y) {
+    return x >= this.x && x < (this.x + this.width | 0) && y >= this.y && y < (this.y + this.height | 0);
+  };
+  KoolContext$Viewport.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Viewport',
+    interfaces: []
+  };
+  KoolContext$Viewport.prototype.component1 = function () {
+    return this.x;
+  };
+  KoolContext$Viewport.prototype.component2 = function () {
+    return this.y;
+  };
+  KoolContext$Viewport.prototype.component3 = function () {
+    return this.width;
+  };
+  KoolContext$Viewport.prototype.component4 = function () {
+    return this.height;
+  };
+  KoolContext$Viewport.prototype.copy_tjonv8$ = function (x, y, width, height) {
+    return new KoolContext$Viewport(x === void 0 ? this.x : x, y === void 0 ? this.y : y, width === void 0 ? this.width : width, height === void 0 ? this.height : height);
+  };
+  KoolContext$Viewport.prototype.toString = function () {
+    return 'Viewport(x=' + Kotlin.toString(this.x) + (', y=' + Kotlin.toString(this.y)) + (', width=' + Kotlin.toString(this.width)) + (', height=' + Kotlin.toString(this.height)) + ')';
+  };
+  KoolContext$Viewport.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.x) | 0;
+    result = result * 31 + Kotlin.hashCode(this.y) | 0;
+    result = result * 31 + Kotlin.hashCode(this.width) | 0;
+    result = result * 31 + Kotlin.hashCode(this.height) | 0;
+    return result;
+  };
+  KoolContext$Viewport.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.x, other.x) && Kotlin.equals(this.y, other.y) && Kotlin.equals(this.width, other.width) && Kotlin.equals(this.height, other.height)))));
+  };
+  KoolContext.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'KoolContext',
+    interfaces: []
+  };
+  function RenderPass(name, ordinal, increaseTime) {
+    Enum.call(this);
+    this.increaseTime = increaseTime;
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function RenderPass_initFields() {
+    RenderPass_initFields = function () {
+    };
+    RenderPass$SHADOW_instance = new RenderPass('SHADOW', 0, false);
+    RenderPass$SCREEN_instance = new RenderPass('SCREEN', 1, true);
+  }
+  var RenderPass$SHADOW_instance;
+  function RenderPass$SHADOW_getInstance() {
+    RenderPass_initFields();
+    return RenderPass$SHADOW_instance;
+  }
+  var RenderPass$SCREEN_instance;
+  function RenderPass$SCREEN_getInstance() {
+    RenderPass_initFields();
+    return RenderPass$SCREEN_instance;
+  }
+  RenderPass.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RenderPass',
+    interfaces: [Enum]
+  };
+  function RenderPass$values() {
+    return [RenderPass$SHADOW_getInstance(), RenderPass$SCREEN_getInstance()];
+  }
+  RenderPass.values = RenderPass$values;
+  function RenderPass$valueOf(name) {
+    switch (name) {
+      case 'SHADOW':
+        return RenderPass$SHADOW_getInstance();
+      case 'SCREEN':
+        return RenderPass$SCREEN_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.RenderPass.' + name);
+    }
+  }
+  RenderPass.valueOf_61zpoe$ = RenderPass$valueOf;
   function KoolException(message) {
     Exception_init(message, this);
     this.name = 'KoolException';
@@ -6117,10 +6513,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.viewMatrix.pop();
     this.modelMatrix.pop();
   };
-  MvpState.prototype.update_evfofk$ = function (ctx) {
+  MvpState.prototype.update_aemszp$ = function (ctx) {
     var tmp$;
     this.projMatrix.mul_93v2ma$(this.viewMatrix.mul_93v2ma$(this.modelMatrix, this.tempMatrix_0), this.mvpMatrix);
-    (tmp$ = ctx.shaderMgr.boundShader) != null ? (tmp$.onMatrixUpdate_evfofk$(ctx), Unit) : null;
+    (tmp$ = ctx.shaderMgr.boundShader) != null ? (tmp$.onMatrixUpdate_aemszp$(ctx), Unit) : null;
   };
   MvpState.$metadata$ = {
     kind: Kind_CLASS,
@@ -6130,387 +6526,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function formatFloat(f, precision) {
     return formatDouble(f, precision);
   }
-  function RenderContext() {
-    this.screenDpi = 96.0;
-    this.inputMgr = new InputManager();
-    this.memoryMgr = new MemoryManager();
-    this.shaderMgr = new ShaderManager();
-    this.textureMgr = new TextureManager();
-    this.mvpState = new MvpState();
-    this.onRender = ArrayList_init();
-    this.renderPass = RenderPass$SCREEN_getInstance();
-    this.time_dnkisv$_0 = 0.0;
-    this.dt_mxdlcc$_0 = 0.0;
-    this.frameIdx_wel5xo$_0 = 0;
-    this.fps_fm2a7$_0 = 60.0;
-    this.scenes = ArrayList_init();
-    this.attribs_xlw4q9$_0 = new RenderContext$Attribs();
-    var array = Array_0(16);
-    var tmp$;
-    tmp$ = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$; i++) {
-      array[i] = new RenderContext$Attribs();
-    }
-    this.attribsStack_ei9uxv$_0 = array;
-    this.attribsStackIdx_qxqem2$_0 = 0;
-    var array_0 = new Float64Array(25);
-    var tmp$_0;
-    tmp$_0 = array_0.length - 1 | 0;
-    for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
-      array_0[i_0] = 0.017;
-    }
-    this.frameTimes_z5q5nn$_0 = array_0;
-    this.viewport_2d1bbe$_0 = this.attribs_xlw4q9$_0.get_ytbaoo$('viewport');
-    this.clearColor_3a9g92$_0 = this.attribs_xlw4q9$_0.get_ytbaoo$('clearColor');
-    this.cullFace_dwxjrh$_0 = this.attribs_xlw4q9$_0.get_ytbaoo$('cullFace');
-    this.depthFunc_iak3rl$_0 = this.attribs_xlw4q9$_0.get_ytbaoo$('depthFunc');
-    this.isDepthTest_g2mlkj$_0 = this.attribs_xlw4q9$_0.get_ytbaoo$('isDepthTest');
-    this.isDepthMask_g6jpvx$_0 = this.attribs_xlw4q9$_0.get_ytbaoo$('isDepthMask');
-    this.isCullFace_nv0lkt$_0 = this.attribs_xlw4q9$_0.get_ytbaoo$('isCullFace');
-    this.isBlend_ggv2wh$_0 = this.attribs_xlw4q9$_0.get_ytbaoo$('isBlend');
-    this.lineWidth_dkrwiu$_0 = this.attribs_xlw4q9$_0.get_ytbaoo$('lineWidth');
-    this.boundBuffers_8be2vx$ = LinkedHashMap_init();
-  }
-  Object.defineProperty(RenderContext.prototype, 'time', {
-    get: function () {
-      return this.time_dnkisv$_0;
-    },
-    set: function (time) {
-      this.time_dnkisv$_0 = time;
-    }
-  });
-  Object.defineProperty(RenderContext.prototype, 'deltaT', {
-    get: function () {
-      if (this.renderPass.increaseTime) {
-        return this.dt_mxdlcc$_0;
-      }
-       else {
-        return 0.0;
-      }
-    }
-  });
-  Object.defineProperty(RenderContext.prototype, 'frameIdx', {
-    get: function () {
-      return this.frameIdx_wel5xo$_0;
-    },
-    set: function (frameIdx) {
-      this.frameIdx_wel5xo$_0 = frameIdx;
-    }
-  });
-  Object.defineProperty(RenderContext.prototype, 'fps', {
-    get: function () {
-      return this.fps_fm2a7$_0;
-    },
-    set: function (fps) {
-      this.fps_fm2a7$_0 = fps;
-    }
-  });
-  var RenderContext$viewport_metadata = new PropertyMetadata('viewport');
-  Object.defineProperty(RenderContext.prototype, 'viewport', {
-    get: function () {
-      return this.viewport_2d1bbe$_0.getValue_n5byny$(this, RenderContext$viewport_metadata);
-    },
-    set: function (viewport) {
-      this.viewport_2d1bbe$_0.setValue_sq4zib$(this, RenderContext$viewport_metadata, viewport);
-    }
-  });
-  var RenderContext$clearColor_metadata = new PropertyMetadata('clearColor');
-  Object.defineProperty(RenderContext.prototype, 'clearColor', {
-    get: function () {
-      return this.clearColor_3a9g92$_0.getValue_n5byny$(this, RenderContext$clearColor_metadata);
-    },
-    set: function (clearColor) {
-      this.clearColor_3a9g92$_0.setValue_sq4zib$(this, RenderContext$clearColor_metadata, clearColor);
-    }
-  });
-  var RenderContext$cullFace_metadata = new PropertyMetadata('cullFace');
-  Object.defineProperty(RenderContext.prototype, 'cullFace', {
-    get: function () {
-      return this.cullFace_dwxjrh$_0.getValue_n5byny$(this, RenderContext$cullFace_metadata);
-    },
-    set: function (cullFace) {
-      this.cullFace_dwxjrh$_0.setValue_sq4zib$(this, RenderContext$cullFace_metadata, cullFace);
-    }
-  });
-  var RenderContext$depthFunc_metadata = new PropertyMetadata('depthFunc');
-  Object.defineProperty(RenderContext.prototype, 'depthFunc', {
-    get: function () {
-      return this.depthFunc_iak3rl$_0.getValue_n5byny$(this, RenderContext$depthFunc_metadata);
-    },
-    set: function (depthFunc) {
-      this.depthFunc_iak3rl$_0.setValue_sq4zib$(this, RenderContext$depthFunc_metadata, depthFunc);
-    }
-  });
-  var RenderContext$isDepthTest_metadata = new PropertyMetadata('isDepthTest');
-  Object.defineProperty(RenderContext.prototype, 'isDepthTest', {
-    get: function () {
-      return this.isDepthTest_g2mlkj$_0.getValue_n5byny$(this, RenderContext$isDepthTest_metadata);
-    },
-    set: function (isDepthTest) {
-      this.isDepthTest_g2mlkj$_0.setValue_sq4zib$(this, RenderContext$isDepthTest_metadata, isDepthTest);
-    }
-  });
-  var RenderContext$isDepthMask_metadata = new PropertyMetadata('isDepthMask');
-  Object.defineProperty(RenderContext.prototype, 'isDepthMask', {
-    get: function () {
-      return this.isDepthMask_g6jpvx$_0.getValue_n5byny$(this, RenderContext$isDepthMask_metadata);
-    },
-    set: function (isDepthMask) {
-      this.isDepthMask_g6jpvx$_0.setValue_sq4zib$(this, RenderContext$isDepthMask_metadata, isDepthMask);
-    }
-  });
-  var RenderContext$isCullFace_metadata = new PropertyMetadata('isCullFace');
-  Object.defineProperty(RenderContext.prototype, 'isCullFace', {
-    get: function () {
-      return this.isCullFace_nv0lkt$_0.getValue_n5byny$(this, RenderContext$isCullFace_metadata);
-    },
-    set: function (isCullFace) {
-      this.isCullFace_nv0lkt$_0.setValue_sq4zib$(this, RenderContext$isCullFace_metadata, isCullFace);
-    }
-  });
-  var RenderContext$isBlend_metadata = new PropertyMetadata('isBlend');
-  Object.defineProperty(RenderContext.prototype, 'isBlend', {
-    get: function () {
-      return this.isBlend_ggv2wh$_0.getValue_n5byny$(this, RenderContext$isBlend_metadata);
-    },
-    set: function (isBlend) {
-      this.isBlend_ggv2wh$_0.setValue_sq4zib$(this, RenderContext$isBlend_metadata, isBlend);
-    }
-  });
-  var RenderContext$lineWidth_metadata = new PropertyMetadata('lineWidth');
-  Object.defineProperty(RenderContext.prototype, 'lineWidth', {
-    get: function () {
-      return this.lineWidth_dkrwiu$_0.getValue_n5byny$(this, RenderContext$lineWidth_metadata);
-    },
-    set: function (lineWidth) {
-      this.lineWidth_dkrwiu$_0.setValue_sq4zib$(this, RenderContext$lineWidth_metadata, lineWidth);
-    }
-  });
-  function RenderContext$InitProps() {
-  }
-  RenderContext$InitProps.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'InitProps',
-    interfaces: []
-  };
-  RenderContext.prototype.render_14dthe$ = function (dt) {
-    var tmp$, tmp$_0, tmp$_1;
-    this.dt_mxdlcc$_0 = dt;
-    this.time = this.time + dt;
-    this.frameIdx = this.frameIdx + 1 | 0;
-    this.frameTimes_z5q5nn$_0[this.frameIdx % this.frameTimes_z5q5nn$_0.length] = dt;
-    var sum = 0.0;
-    tmp$ = this.frameTimes_z5q5nn$_0;
-    for (var i = 0; i !== tmp$.length; ++i) {
-      sum += this.frameTimes_z5q5nn$_0[i];
-    }
-    this.fps = this.frameTimes_z5q5nn$_0.length / sum * 0.1 + this.fps * 0.9;
-    this.inputMgr.onNewFrame_p81l1v$(this);
-    this.textureMgr.onNewFrame_evfofk$(this);
-    this.shaderMgr.bindShader_wa3i41$(null, this);
-    this.viewport = new RenderContext$Viewport(0, 0, this.windowWidth, this.windowHeight);
-    this.applyAttributes();
-    tmp$_0 = this.onRender;
-    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-      this.onRender.get_za3lpa$(i_0)(this);
-    }
-    tmp$_1 = this.scenes;
-    for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
-      this.scenes.get_za3lpa$(i_1).renderScene_evfofk$(this);
-    }
-  };
-  RenderContext.prototype.pushAttributes = function () {
-    var tmp$;
-    this.attribsStack_ei9uxv$_0[tmp$ = this.attribsStackIdx_qxqem2$_0, this.attribsStackIdx_qxqem2$_0 = tmp$ + 1 | 0, tmp$].set_jkllyj$(this.attribs_xlw4q9$_0);
-  };
-  RenderContext.prototype.popAttributes = function () {
-    this.attribs_xlw4q9$_0.set_jkllyj$(this.attribsStack_ei9uxv$_0[this.attribsStackIdx_qxqem2$_0 = this.attribsStackIdx_qxqem2$_0 - 1 | 0, this.attribsStackIdx_qxqem2$_0]);
-    this.applyAttributes();
-  };
-  RenderContext.prototype.applyAttributes = function () {
-    this.attribs_xlw4q9$_0.apply();
-  };
-  function RenderContext$Attribs() {
-    this.attribs_0 = mutableListOf([new Property('viewport', new RenderContext$Viewport(0, 0, 0, 0), RenderContext$Attribs$attribs$lambda), new Property('clearColor', new Color(0.05, 0.15, 0.25, 1.0), RenderContext$Attribs$attribs$lambda_0), new Property('cullFace', GL_BACK, RenderContext$Attribs$attribs$lambda_1), new Property('depthFunc', GL_LEQUAL, RenderContext$Attribs$attribs$lambda_2), new Property('isDepthTest', true, RenderContext$Attribs$attribs$lambda_3), new Property('isDepthMask', true, RenderContext$Attribs$attribs$lambda_4), new Property('isCullFace', true, RenderContext$Attribs$attribs$lambda_5), new Property('isBlend', true, RenderContext$Attribs$attribs$lambda_6), new Property('lineWidth', 1.0, RenderContext$Attribs$attribs$lambda_7)]);
-  }
-  RenderContext$Attribs.prototype.get_ytbaoo$ = function (name) {
-    var tmp$;
-    tmp$ = this.attribs_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      var tmp$_0;
-      if (equals(this.attribs_0.get_za3lpa$(i).name, name)) {
-        return Kotlin.isType(tmp$_0 = this.attribs_0.get_za3lpa$(i), Property) ? tmp$_0 : throwCCE();
-      }
-    }
-    throw RuntimeException_init('Attribute not found: ' + name);
-  };
-  RenderContext$Attribs.prototype.apply = function () {
-    var tmp$;
-    tmp$ = this.attribs_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.attribs_0.get_za3lpa$(i).applyIfChanged();
-    }
-  };
-  RenderContext$Attribs.prototype.set_jkllyj$ = function (other) {
-    var tmp$;
-    tmp$ = this.attribs_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.attribs_0.get_za3lpa$(i).copy_lshn67$(other.attribs_0.get_za3lpa$(i), false);
-    }
-  };
-  function RenderContext$Attribs$attribs$lambda($receiver) {
-    var dimen = $receiver.clear;
-    glViewport(dimen.x, dimen.y, dimen.width, dimen.height);
-    return Unit;
-  }
-  function RenderContext$Attribs$attribs$lambda_0($receiver) {
-    var color = $receiver.clear;
-    glClearColor(color.r, color.g, color.b, color.a);
-    return Unit;
-  }
-  function RenderContext$Attribs$attribs$lambda_1($receiver) {
-    glCullFace($receiver.clear);
-    return Unit;
-  }
-  function RenderContext$Attribs$attribs$lambda_2($receiver) {
-    glDepthFunc($receiver.clear);
-    return Unit;
-  }
-  function RenderContext$Attribs$attribs$lambda_3($receiver) {
-    if ($receiver.clear) {
-      glEnable(GL_DEPTH_TEST);
-    }
-     else {
-      glDisable(GL_DEPTH_TEST);
-    }
-    return Unit;
-  }
-  function RenderContext$Attribs$attribs$lambda_4($receiver) {
-    glDepthMask($receiver.clear);
-    return Unit;
-  }
-  function RenderContext$Attribs$attribs$lambda_5($receiver) {
-    if ($receiver.clear) {
-      glEnable(GL_CULL_FACE);
-    }
-     else {
-      glDisable(GL_CULL_FACE);
-    }
-    return Unit;
-  }
-  function RenderContext$Attribs$attribs$lambda_6($receiver) {
-    if ($receiver.clear) {
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    }
-     else {
-      glDisable(GL_BLEND);
-    }
-    return Unit;
-  }
-  function RenderContext$Attribs$attribs$lambda_7($receiver) {
-    glLineWidth($receiver.clear);
-    return Unit;
-  }
-  RenderContext$Attribs.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Attribs',
-    interfaces: []
-  };
-  function RenderContext$Viewport(x, y, width, height) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
-  }
-  Object.defineProperty(RenderContext$Viewport.prototype, 'aspectRatio', {
-    get: function () {
-      return this.width / this.height;
-    }
-  });
-  RenderContext$Viewport.prototype.isInViewport_dleff0$ = function (x, y) {
-    return x >= this.x && x < (this.x + this.width | 0) && y >= this.y && y < (this.y + this.height | 0);
-  };
-  RenderContext$Viewport.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Viewport',
-    interfaces: []
-  };
-  RenderContext$Viewport.prototype.component1 = function () {
-    return this.x;
-  };
-  RenderContext$Viewport.prototype.component2 = function () {
-    return this.y;
-  };
-  RenderContext$Viewport.prototype.component3 = function () {
-    return this.width;
-  };
-  RenderContext$Viewport.prototype.component4 = function () {
-    return this.height;
-  };
-  RenderContext$Viewport.prototype.copy_tjonv8$ = function (x, y, width, height) {
-    return new RenderContext$Viewport(x === void 0 ? this.x : x, y === void 0 ? this.y : y, width === void 0 ? this.width : width, height === void 0 ? this.height : height);
-  };
-  RenderContext$Viewport.prototype.toString = function () {
-    return 'Viewport(x=' + Kotlin.toString(this.x) + (', y=' + Kotlin.toString(this.y)) + (', width=' + Kotlin.toString(this.width)) + (', height=' + Kotlin.toString(this.height)) + ')';
-  };
-  RenderContext$Viewport.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.x) | 0;
-    result = result * 31 + Kotlin.hashCode(this.y) | 0;
-    result = result * 31 + Kotlin.hashCode(this.width) | 0;
-    result = result * 31 + Kotlin.hashCode(this.height) | 0;
-    return result;
-  };
-  RenderContext$Viewport.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.x, other.x) && Kotlin.equals(this.y, other.y) && Kotlin.equals(this.width, other.width) && Kotlin.equals(this.height, other.height)))));
-  };
-  RenderContext.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'RenderContext',
-    interfaces: []
-  };
-  function RenderPass(name, ordinal, increaseTime) {
-    Enum.call(this);
-    this.increaseTime = increaseTime;
-    this.name$ = name;
-    this.ordinal$ = ordinal;
-  }
-  function RenderPass_initFields() {
-    RenderPass_initFields = function () {
-    };
-    RenderPass$SHADOW_instance = new RenderPass('SHADOW', 0, false);
-    RenderPass$SCREEN_instance = new RenderPass('SCREEN', 1, true);
-  }
-  var RenderPass$SHADOW_instance;
-  function RenderPass$SHADOW_getInstance() {
-    RenderPass_initFields();
-    return RenderPass$SHADOW_instance;
-  }
-  var RenderPass$SCREEN_instance;
-  function RenderPass$SCREEN_getInstance() {
-    RenderPass_initFields();
-    return RenderPass$SCREEN_instance;
-  }
-  RenderPass.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'RenderPass',
-    interfaces: [Enum]
-  };
-  function RenderPass$values() {
-    return [RenderPass$SHADOW_getInstance(), RenderPass$SCREEN_getInstance()];
-  }
-  RenderPass.values = RenderPass$values;
-  function RenderPass$valueOf(name) {
-    switch (name) {
-      case 'SHADOW':
-        return RenderPass$SHADOW_getInstance();
-      case 'SCREEN':
-        return RenderPass$SCREEN_getInstance();
-      default:throwISE('No enum constant de.fabmax.kool.RenderPass.' + name);
-    }
-  }
-  RenderPass.valueOf_61zpoe$ = RenderPass$valueOf;
   function Animation(duration) {
     this.duration = duration;
     this.channels = ArrayList_init();
@@ -6535,7 +6550,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.bones = LinkedHashMap_init();
     this.indexedBones_0 = ArrayList_init();
     this.boneTransforms_0 = null;
-    this.isCpuAnimated = !glCapabilities.shaderIntAttribs;
+    this.isCpuAnimated = false;
     this.animations_0 = LinkedHashMap_init();
     this.animationList_0 = ArrayList_init();
     this.animationPos_0 = 0.0;
@@ -6696,17 +6711,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     (Kotlin.isType(tmp$ = $receiver, MutableCollection) ? tmp$ : throwCCE()).remove_11rb$(element);
   };
-  Armature.prototype.render_evfofk$ = function (ctx) {
+  Armature.prototype.render_aemszp$ = function (ctx) {
     var shader = this.shader;
     if (Kotlin.isType(shader, BasicShader)) {
       shader.bones = this.boneTransforms_0;
     }
-    Mesh.prototype.render_evfofk$.call(this, ctx);
+    Mesh.prototype.render_aemszp$.call(this, ctx);
     if (ctx.deltaT > 0) {
-      this.applyAnimation_0(ctx.deltaT);
+      this.applyAnimation_0(ctx);
     }
   };
-  Armature.prototype.applyAnimation_0 = function (deltaT) {
+  Armature.prototype.applyAnimation_0 = function (ctx) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     var update = false;
     var weightedDuration = 0.0;
@@ -6717,7 +6732,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         weightedDuration += anim.duration * anim.weight;
       }
     }
-    this.animationPos_0 = (this.animationPos_0 + deltaT / weightedDuration * this.animationSpeed) % 1.0;
+    this.animationPos_0 = (this.animationPos_0 + ctx.deltaT / weightedDuration * this.animationSpeed) % 1.0;
     tmp$_0 = this.animationList_0;
     for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
       var anim_0 = this.animationList_0.get_za3lpa$(i_0);
@@ -6727,6 +6742,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
     if (update) {
+      if (!this.isCpuAnimated && !ctx.glCapabilities.shaderIntAttribs) {
+        this.isCpuAnimated = true;
+      }
       if (this.isCpuAnimated) {
         this.meshData.isBatchUpdate = true;
         this.meshData.isSyncRequired = true;
@@ -7026,15 +7044,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.globalRange_4hi0xu$_0 = globalRange;
     }
   });
-  Camera.prototype.updateCamera_evfofk$ = function (ctx) {
+  Camera.prototype.updateCamera_aemszp$ = function (ctx) {
     this.aspectRatio = ctx.viewport.aspectRatio;
-    this.updateViewMatrix_evfofk$(ctx);
-    this.updateProjectionMatrix_evfofk$(ctx);
-    ctx.mvpState.update_evfofk$(ctx);
+    this.updateViewMatrix_aemszp$(ctx);
+    this.updateProjectionMatrix_aemszp$(ctx);
+    ctx.mvpState.update_aemszp$(ctx);
     this.mvp.set_d4zu6j$(ctx.mvpState.mvpMatrix);
     this.mvp.invert_d4zu6j$(this.invMvp);
   };
-  Camera.prototype.updateViewMatrix_evfofk$ = function (ctx) {
+  Camera.prototype.updateViewMatrix_aemszp$ = function (ctx) {
     this.toGlobalCoords_w1lst9$(this.globalPosMut.set_czzhiu$(this.position));
     this.toGlobalCoords_w1lst9$(this.globalLookAtMut.set_czzhiu$(this.lookAt));
     this.toGlobalCoords_w1lst9$(this.globalUpMut.set_czzhiu$(this.up), 0.0).norm();
@@ -7047,24 +7065,24 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.view.invert_d4zu6j$(this.invView);
     ctx.mvpState.viewMatrix.set_d4zu6j$(this.view);
   };
-  Camera.prototype.computePickRay_ywr59c$ = function (pickRay, ptr, ctx) {
-    return ptr.isValid && this.computePickRay_jieknl$(pickRay, ptr.x, ptr.y, ctx);
+  Camera.prototype.computePickRay_qhyfdh$ = function (pickRay, ptr, ctx) {
+    return ptr.isValid && this.computePickRay_jker1g$(pickRay, ptr.x, ptr.y, ctx);
   };
-  Camera.prototype.computePickRay_jieknl$ = function (pickRay, screenX, screenY, ctx) {
-    var valid = this.unProjectScreen_54xt5k$(this.tmpVec3_txabpe$_0.set_y2kzbl$(screenX, screenY, 0.0), ctx, pickRay.origin);
-    valid = (valid && this.unProjectScreen_54xt5k$(this.tmpVec3_txabpe$_0.set_y2kzbl$(screenX, screenY, 1.0), ctx, pickRay.direction));
+  Camera.prototype.computePickRay_jker1g$ = function (pickRay, screenX, screenY, ctx) {
+    var valid = this.unProjectScreen_l99i6b$(this.tmpVec3_txabpe$_0.set_y2kzbl$(screenX, screenY, 0.0), ctx, pickRay.origin);
+    valid = (valid && this.unProjectScreen_l99i6b$(this.tmpVec3_txabpe$_0.set_y2kzbl$(screenX, screenY, 1.0), ctx, pickRay.direction));
     if (valid) {
       pickRay.direction.subtract_czzhiu$(pickRay.origin);
       pickRay.direction.norm();
     }
     return valid;
   };
-  Camera.prototype.initRayTes_fpzm1e$ = function (rayTest, ptr, ctx) {
-    return ptr.isValid && this.initRayTes_gkn0xv$(rayTest, ptr.x, ptr.y, ctx);
+  Camera.prototype.initRayTes_dzhogt$ = function (rayTest, ptr, ctx) {
+    return ptr.isValid && this.initRayTes_ezjm2a$(rayTest, ptr.x, ptr.y, ctx);
   };
-  Camera.prototype.initRayTes_gkn0xv$ = function (rayTest, screenX, screenY, ctx) {
+  Camera.prototype.initRayTes_ezjm2a$ = function (rayTest, screenX, screenY, ctx) {
     rayTest.clear();
-    return this.computePickRay_jieknl$(rayTest.ray, screenX, screenY, ctx);
+    return this.computePickRay_jker1g$(rayTest.ray, screenX, screenY, ctx);
   };
   Camera.prototype.project_2gj7b4$ = function (world, result) {
     this.tmpVec4_txabq9$_0.set_7b5o5w$(world.x, world.y, world.z, 1.0);
@@ -7079,7 +7097,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Camera.prototype.project_2gj7bz$ = function (world, result) {
     return this.mvp.transform_5s4mpv$(result.set_7b5o5w$(world.x, world.y, world.z, 1.0));
   };
-  Camera.prototype.projectScreen_54xt5k$ = function (world, ctx, result) {
+  Camera.prototype.projectScreen_l99i6b$ = function (world, ctx, result) {
     if (!this.project_2gj7b4$(world, result)) {
       return false;
     }
@@ -7088,7 +7106,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     result.z = (1 + result.z) * 0.5;
     return true;
   };
-  Camera.prototype.unProjectScreen_54xt5k$ = function (screen, ctx, result) {
+  Camera.prototype.unProjectScreen_l99i6b$ = function (screen, ctx, result) {
     var x = screen.x - ctx.viewport.x;
     var y = ctx.windowHeight - screen.y - ctx.viewport.y;
     this.tmpVec4_txabq9$_0.set_7b5o5w$(2.0 * x / ctx.viewport.width - 1.0, 2.0 * y / ctx.viewport.height - 1.0, 2.0 * screen.z - 1.0, 1.0);
@@ -7125,11 +7143,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.near = near;
     this.far = far;
   };
-  OrthographicCamera.prototype.updateViewMatrix_evfofk$ = function (ctx) {
-    Camera.prototype.updateViewMatrix_evfofk$.call(this, ctx);
+  OrthographicCamera.prototype.updateViewMatrix_aemszp$ = function (ctx) {
+    Camera.prototype.updateViewMatrix_aemszp$.call(this, ctx);
     this.globalLookDir;
   };
-  OrthographicCamera.prototype.updateProjectionMatrix_evfofk$ = function (ctx) {
+  OrthographicCamera.prototype.updateProjectionMatrix_aemszp$ = function (ctx) {
     if (this.clipToViewport) {
       this.left = 0.0;
       this.right = ctx.viewport.width;
@@ -7200,7 +7218,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.fovX_7k9npl$_0 = fovX;
     }
   });
-  PerspectiveCamera.prototype.updateProjectionMatrix_evfofk$ = function (ctx) {
+  PerspectiveCamera.prototype.updateProjectionMatrix_aemszp$ = function (ctx) {
     ctx.mvpState.projMatrix.setPerspective_7b5o5w$(this.fovy, this.aspectRatio, this.clipNear, this.clipFar);
     var angY = this.fovy * package$math.DEG_2_RAD / 2.0;
     this.speherFacY_0 = 1.0 / Math_0.cos(angY);
@@ -7287,28 +7305,28 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.children.get_za3lpa$(i).scene = newScene;
     }
   };
-  Group.prototype.render_evfofk$ = function (ctx) {
+  Group.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
     if (!this.isVisible) {
       return;
     }
-    Node.prototype.render_evfofk$.call(this, ctx);
+    Node.prototype.render_aemszp$.call(this, ctx);
     this.tmpBounds.clear();
     tmp$ = this.children;
     for (var i = 0; i !== tmp$.size; ++i) {
       if (ctx.renderPass !== RenderPass$SHADOW_getInstance() || this.children.get_za3lpa$(i).isCastingShadow) {
-        this.children.get_za3lpa$(i).render_evfofk$(ctx);
+        this.children.get_za3lpa$(i).render_aemszp$(ctx);
       }
       this.tmpBounds.add_ea4od8$(this.children.get_za3lpa$(i).bounds);
     }
     this.bounds.set_ea4od8$(this.tmpBounds);
   };
-  Group.prototype.dispose_evfofk$ = function (ctx) {
+  Group.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
-    Node.prototype.dispose_evfofk$.call(this, ctx);
+    Node.prototype.dispose_aemszp$.call(this, ctx);
     tmp$ = this.children;
     for (var i = 0; i !== tmp$.size; ++i) {
-      this.children.get_za3lpa$(i).dispose_evfofk$(ctx);
+      this.children.get_za3lpa$(i).dispose_aemszp$(ctx);
     }
   };
   Group.prototype.get_61zpoe$ = function (name) {
@@ -7733,23 +7751,23 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Mesh.prototype.generateGeometry = function () {
     this.meshData.generateGeometry();
   };
-  Mesh.prototype.dispose_evfofk$ = function (ctx) {
+  Mesh.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
-    Node.prototype.dispose_evfofk$.call(this, ctx);
-    this.meshData.dispose_evfofk$(ctx);
-    (tmp$ = this.shader) != null ? (tmp$.dispose_evfofk$(ctx), Unit) : null;
+    Node.prototype.dispose_aemszp$.call(this, ctx);
+    this.meshData.dispose_aemszp$(ctx);
+    (tmp$ = this.shader) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
   };
-  Mesh.prototype.render_evfofk$ = function (ctx) {
+  Mesh.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
-    Node.prototype.render_evfofk$.call(this, ctx);
+    Node.prototype.render_aemszp$.call(this, ctx);
     if (!this.isRendered || (!ctx.isDepthTest && ctx.renderPass === RenderPass$SHADOW_getInstance())) {
       return;
     }
-    this.meshData.checkBuffers_evfofk$(ctx);
-    ctx.shaderMgr.bindShader_wa3i41$(this.shader, ctx);
+    this.meshData.checkBuffers_aemszp$(ctx);
+    ctx.shaderMgr.bindShader_gt83r0$(this.shader, ctx);
     var boundShader = ctx.shaderMgr.boundShader;
     if (boundShader != null) {
-      boundShader.bindMesh_lij8m4$(this, ctx);
+      boundShader.bindMesh_sbx4mf$(this, ctx);
       if (this.cullMethod !== CullMethod$DEFAULT_getInstance()) {
         ctx.pushAttributes();
         switch (this.cullMethod.name) {
@@ -7766,9 +7784,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         }
         ctx.applyAttributes();
       }
-      (tmp$ = this.meshData.indexBuffer) != null ? (tmp$.bind_evfofk$(ctx), Unit) : null;
+      (tmp$ = this.meshData.indexBuffer) != null ? (tmp$.bind_aemszp$(ctx), Unit) : null;
       glDrawElements(this.primitiveType, this.meshData.numIndices, this.meshData.indexType, 0);
-      boundShader.unbindMesh_evfofk$(ctx);
+      boundShader.unbindMesh_aemszp$(ctx);
       if (this.cullMethod !== CullMethod$DEFAULT_getInstance()) {
         ctx.popAttributes();
       }
@@ -7915,25 +7933,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MeshData.prototype.incrementReferenceCount = function () {
     this.referenceCount_0 = this.referenceCount_0 + 1 | 0;
   };
-  MeshData.prototype.dispose_evfofk$ = function (ctx) {
+  MeshData.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$, tmp$_0, tmp$_1;
     if ((this.referenceCount_0 = this.referenceCount_0 - 1 | 0, this.referenceCount_0) === 0) {
-      (tmp$ = this.indexBuffer) != null ? (tmp$.delete_evfofk$(ctx), Unit) : null;
-      (tmp$_0 = this.dataBufferF) != null ? (tmp$_0.delete_evfofk$(ctx), Unit) : null;
-      (tmp$_1 = this.dataBufferI) != null ? (tmp$_1.delete_evfofk$(ctx), Unit) : null;
+      (tmp$ = this.indexBuffer) != null ? (tmp$.delete_aemszp$(ctx), Unit) : null;
+      (tmp$_0 = this.dataBufferF) != null ? (tmp$_0.delete_aemszp$(ctx), Unit) : null;
+      (tmp$_1 = this.dataBufferI) != null ? (tmp$_1.delete_aemszp$(ctx), Unit) : null;
       this.indexBuffer = null;
       this.dataBufferF = null;
       this.dataBufferI = null;
     }
   };
-  MeshData.prototype.checkBuffers_evfofk$ = function (ctx) {
+  MeshData.prototype.checkBuffers_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
     if (this.indexBuffer == null) {
-      this.indexBuffer = BufferResource$Companion_getInstance().create_gre2l6$(GL_ELEMENT_ARRAY_BUFFER, ctx);
+      this.indexBuffer = BufferResource$Companion_getInstance().create_2shagh$(GL_ELEMENT_ARRAY_BUFFER, ctx);
     }
     var hasIntData = false;
     if (this.dataBufferF == null) {
-      this.dataBufferF = BufferResource$Companion_getInstance().create_gre2l6$(GL_ARRAY_BUFFER, ctx);
+      this.dataBufferF = BufferResource$Companion_getInstance().create_2shagh$(GL_ARRAY_BUFFER, ctx);
       tmp$ = this.vertexAttributes.iterator();
       while (tmp$.hasNext()) {
         var vertexAttrib = tmp$.next();
@@ -7948,7 +7966,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
     if (hasIntData && this.dataBufferI == null) {
-      this.dataBufferI = BufferResource$Companion_getInstance().create_gre2l6$(GL_ARRAY_BUFFER, ctx);
+      this.dataBufferI = BufferResource$Companion_getInstance().create_2shagh$(GL_ARRAY_BUFFER, ctx);
       tmp$_0 = this.vertexAttributes.iterator();
       while (tmp$_0.hasNext()) {
         var vertexAttrib_0 = tmp$_0.next();
@@ -7962,21 +7980,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (this.isSyncRequired && !this.isBatchUpdate) {
       var tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
       if (!this.isBatchUpdate) {
-        if (!glCapabilities.uint32Indices) {
+        if (!ctx.glCapabilities.uint32Indices) {
           var uint16Buffer = createUint16Buffer(this.numIndices);
           tmp$_1 = this.vertexList.indices.position - 1 | 0;
           for (var i = 0; i <= tmp$_1; i++) {
             uint16Buffer.put_11rb$(toShort(this.vertexList.indices.get_za3lpa$(i)));
           }
-          (tmp$_2 = this.indexBuffer) != null ? (tmp$_2.setData_wsx8y8$(uint16Buffer, this.usage, ctx), Unit) : null;
+          (tmp$_2 = this.indexBuffer) != null ? (tmp$_2.setData_34zp6t$(uint16Buffer, this.usage, ctx), Unit) : null;
           this.indexType = GL_UNSIGNED_SHORT;
         }
          else {
-          (tmp$_3 = this.indexBuffer) != null ? (tmp$_3.setData_5irzgq$(this.vertexList.indices, this.usage, ctx), Unit) : null;
+          (tmp$_3 = this.indexBuffer) != null ? (tmp$_3.setData_5h48zj$(this.vertexList.indices, this.usage, ctx), Unit) : null;
           this.indexType = GL_UNSIGNED_INT;
         }
-        (tmp$_4 = this.dataBufferF) != null ? (tmp$_4.setData_i6at0a$(this.vertexList.dataF, this.usage, ctx), Unit) : null;
-        (tmp$_5 = this.dataBufferI) != null ? (tmp$_5.setData_5irzgq$(this.vertexList.dataI, this.usage, ctx), Unit) : null;
+        (tmp$_4 = this.dataBufferF) != null ? (tmp$_4.setData_wcsk4b$(this.vertexList.dataF, this.usage, ctx), Unit) : null;
+        (tmp$_5 = this.dataBufferI) != null ? (tmp$_5.setData_5h48zj$(this.vertexList.dataI, this.usage, ctx), Unit) : null;
         this.isSyncRequired = false;
       }
     }
@@ -8035,7 +8053,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.subModels_0.add_11rb$(child);
     this.addNode_xtids1$(child);
   };
-  Model.prototype.render_evfofk$ = function (ctx) {
+  Model.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
     if (this.initGeometries_0) {
       this.initGeometries_0 = false;
@@ -8059,7 +8077,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         this.addNode_xtids1$(mesh);
       }
     }
-    TransformGroup.prototype.render_evfofk$.call(this, ctx);
+    TransformGroup.prototype.render_aemszp$.call(this, ctx);
   };
   function Model$Geometry(meshData) {
     this.meshData = meshData;
@@ -8179,14 +8197,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.isFrustumChecked_un4x7a$_0 = isFrustumChecked;
     }
   });
-  Node.prototype.render_evfofk$ = function (ctx) {
+  Node.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
     this.globalCenterMut_sys4u1$_0.set_czzhiu$(this.bounds.center);
     this.globalExtentMut_72l7vo$_0.set_czzhiu$(this.bounds.max);
     ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalCenterMut_sys4u1$_0);
     ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalExtentMut_72l7vo$_0);
     this.globalRadius = this.globalCenter.distance_czzhiu$(this.globalExtentMut_72l7vo$_0);
-    this.isRendered = this.checkIsVisible_evfofk$(ctx);
+    this.isRendered = this.checkIsVisible_aemszp$(ctx);
     if (this.isRendered) {
       if (!this.onRender.isEmpty()) {
         tmp$ = this.onRender;
@@ -8196,7 +8214,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   };
-  Node.prototype.dispose_evfofk$ = function (ctx) {
+  Node.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
     tmp$ = this.onDispose;
     for (var i = 0; i !== tmp$.size; ++i) {
@@ -8231,7 +8249,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return null;
   };
-  Node.prototype.checkIsVisible_evfofk$ = function (ctx) {
+  Node.prototype.checkIsVisible_aemszp$ = function (ctx) {
     var tmp$, tmp$_0, tmp$_1;
     if (!this.isVisible) {
       return false;
@@ -8290,13 +8308,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function Scene$set_Scene$defaultShadowMap$lambda(closure$value) {
     return function ($receiver, ctx) {
-      closure$value.renderShadowMap_jkftm7$($receiver, ctx);
+      closure$value.renderShadowMap_x4tdlw$($receiver, ctx);
       return Unit;
     };
   }
   function Scene$set_Scene$defaultShadowMap$lambda_0(closure$value) {
     return function ($receiver, ctx) {
-      closure$value.dispose_evfofk$(ctx);
+      closure$value.dispose_aemszp$(ctx);
       return Unit;
     };
   }
@@ -8312,7 +8330,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   });
-  Scene.prototype.renderScene_evfofk$ = function (ctx) {
+  Scene.prototype.renderScene_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
     if (!this.isVisible) {
       return;
@@ -8321,12 +8339,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     for (var i = 0; i !== tmp$.size; ++i) {
       this.onPreRender.get_za3lpa$(i)(this, ctx);
     }
-    this.camera.updateCamera_evfofk$(ctx);
-    this.handleInput_xkom3v$_0(ctx);
+    this.camera.updateCamera_aemszp$(ctx);
+    this.handleInput_gqm22e$_0(ctx);
     if (this.clearMask !== 0) {
       glClear(this.clearMask);
     }
-    this.render_evfofk$(ctx);
+    this.render_aemszp$(ctx);
     tmp$_0 = this.onPostRender;
     for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
       this.onPostRender.get_za3lpa$(i_0)(this, ctx);
@@ -8340,12 +8358,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Scene.prototype.removeDragHandler_dsvxak$ = function (handler) {
     this.dragHandlers_ipew8g$_0.remove_11rb$(handler);
   };
-  Scene.prototype.handleInput_xkom3v$_0 = function (ctx) {
+  Scene.prototype.handleInput_gqm22e$_0 = function (ctx) {
     var tmp$, tmp$_0, tmp$_1;
     var hovered = null;
     var prevHovered = this.hoverNode_ab2f3d$_0;
     var ptr = ctx.inputMgr.primaryPointer;
-    if (this.isPickingEnabled && ptr.isInViewport_evfofk$(ctx) && this.camera.initRayTes_fpzm1e$(this.rayTest_odjp91$_0, ptr, ctx)) {
+    if (this.isPickingEnabled && ptr.isInViewport_aemszp$(ctx) && this.camera.initRayTes_dzhogt$(this.rayTest_odjp91$_0, ptr, ctx)) {
       this.rayTest_jljx4v$(this.rayTest_odjp91$_0);
       if (this.rayTest_odjp91$_0.isHit) {
         this.rayTest_odjp91$_0.computeHitPosition();
@@ -8374,22 +8392,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
     if (this.isPickingEnabled) {
-      this.handleDrag_unv5i9$_0(ctx);
+      this.handleDrag_dsfjhm$_0(ctx);
     }
   };
-  Scene.prototype.handleDrag_unv5i9$_0 = function (ctx) {
+  Scene.prototype.handleDrag_dsfjhm$_0 = function (ctx) {
     var tmp$;
     this.dragPtrs_mbcqtw$_0.clear();
     tmp$ = ctx.inputMgr.pointers;
     for (var i = 0; i !== tmp$.length; ++i) {
       var ptr = ctx.inputMgr.pointers[i];
-      if (ptr.isInViewport_evfofk$(ctx) && (ptr.buttonMask !== 0 || ptr.buttonEventMask !== 0 || ptr.deltaScroll !== 0.0)) {
+      if (ptr.isInViewport_aemszp$(ctx) && (ptr.buttonMask !== 0 || ptr.buttonEventMask !== 0 || ptr.deltaScroll !== 0.0)) {
         this.dragPtrs_mbcqtw$_0.add_11rb$(ctx.inputMgr.pointers[i]);
       }
     }
     var handlerIdx = get_lastIndex(this.dragHandlers_ipew8g$_0);
     while (handlerIdx >= 0) {
-      var result = this.dragHandlers_ipew8g$_0.get_za3lpa$(handlerIdx).handleDrag_t4w9y2$(this.dragPtrs_mbcqtw$_0, ctx);
+      var result = this.dragHandlers_ipew8g$_0.get_za3lpa$(handlerIdx).handleDrag_kin2e3$(this.dragPtrs_mbcqtw$_0, ctx);
       if ((result & InputManager$DragHandler$Companion_getInstance().REMOVE_HANDLER) !== 0) {
         this.dragHandlers_ipew8g$_0.removeAt_za3lpa$(handlerIdx);
       }
@@ -8517,14 +8535,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.mouseTransform_xgc6g7$_0.rotate_ad55pp$(hr, this.horizontalAxis);
     this.mul_d4zu6j$(this.mouseTransform_xgc6g7$_0);
   };
-  SphericalInputTransform.prototype.render_evfofk$ = function (ctx) {
+  SphericalInputTransform.prototype.render_aemszp$ = function (ctx) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
     tmp$ = this.scene;
     if (tmp$ == null) {
       return;
     }
     var scene = tmp$;
-    if (this.panMethod.computePanPoint_h7ddm6$(this.pointerHit_wr4hnu$_0, scene, this.ptrPos_e3vj7e$_0, ctx)) {
+    if (this.panMethod.computePanPoint_9h8rqb$(this.pointerHit_wr4hnu$_0, scene, this.ptrPos_e3vj7e$_0, ctx)) {
       if (this.dragStart_48qwuy$_0) {
         this.dragStart_48qwuy$_0 = false;
         this.pointerHitStart_kpvvnc$_0.set_czzhiu$(this.pointerHit_wr4hnu$_0);
@@ -8606,7 +8624,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.vertRotAnimator.animate_14dthe$(ctx.deltaT);
     this.horiRotAnimator.animate_14dthe$(ctx.deltaT);
     this.updateTransform();
-    TransformGroup.prototype.render_evfofk$.call(this, ctx);
+    TransformGroup.prototype.render_aemszp$.call(this, ctx);
   };
   SphericalInputTransform.prototype.computeZoomTranslationPerspective_sqm467$ = function (scene, oldZoom, newZoom) {
     scene.camera.globalPos.subtract_2gj7b4$(this.pointerHit_wr4hnu$_0, this.tmpVec1_mu7x28$_0).scale_mx4ult$(newZoom / oldZoom).add_czzhiu$(this.pointerHit_wr4hnu$_0);
@@ -8626,8 +8644,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     oldScene != null ? (oldScene.removeDragHandler_dsvxak$(this), Unit) : null;
     newScene != null ? (newScene.registerDragHandler_dsvxak$(this), Unit) : null;
   };
-  SphericalInputTransform.prototype.handleDrag_t4w9y2$ = function (dragPtrs, ctx) {
-    if (!dragPtrs.isEmpty() && dragPtrs.get_za3lpa$(0).isInViewport_evfofk$(ctx)) {
+  SphericalInputTransform.prototype.handleDrag_kin2e3$ = function (dragPtrs, ctx) {
+    if (!dragPtrs.isEmpty() && dragPtrs.get_za3lpa$(0).isInViewport_aemszp$(ctx)) {
       if (dragPtrs.get_za3lpa$(0).buttonEventMask !== 0 || dragPtrs.get_za3lpa$(0).buttonMask !== this.prevButtonMask_tpqbjl$_0) {
         if (dragPtrs.get_za3lpa$(0).isLeftButtonDown) {
           this.dragMethod_dbmj85$_0 = this.leftDragMethod;
@@ -8792,10 +8810,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.panPlane = new Plane();
     this.pointerRay_0 = new Ray();
   }
-  CameraOrthogonalPan.prototype.computePanPoint_h7ddm6$ = function (result, scene, ptrPos, ctx) {
+  CameraOrthogonalPan.prototype.computePanPoint_9h8rqb$ = function (result, scene, ptrPos, ctx) {
     this.panPlane.p.set_czzhiu$(scene.camera.globalLookAt);
     this.panPlane.n.set_czzhiu$(scene.camera.globalLookDir);
-    return scene.camera.computePickRay_jieknl$(this.pointerRay_0, ptrPos.x, ptrPos.y, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
+    return scene.camera.computePickRay_jker1g$(this.pointerRay_0, ptrPos.x, ptrPos.y, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
   };
   CameraOrthogonalPan.$metadata$ = {
     kind: Kind_CLASS,
@@ -8808,9 +8826,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.pointerRay_0 = new Ray();
     this.panPlane.n.set_czzhiu$(planeNormal);
   }
-  FixedPlanePan.prototype.computePanPoint_h7ddm6$ = function (result, scene, ptrPos, ctx) {
+  FixedPlanePan.prototype.computePanPoint_9h8rqb$ = function (result, scene, ptrPos, ctx) {
     this.panPlane.p.set_czzhiu$(scene.camera.globalLookAt);
-    return scene.camera.computePickRay_jieknl$(this.pointerRay_0, ptrPos.x, ptrPos.y, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
+    return scene.camera.computePickRay_jker1g$(this.pointerRay_0, ptrPos.x, ptrPos.y, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
   };
   FixedPlanePan.$metadata$ = {
     kind: Kind_CLASS,
@@ -8862,7 +8880,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.isDirty = true;
     this.isIdentity = false;
   };
-  TransformGroup.prototype.render_evfofk$ = function (ctx) {
+  TransformGroup.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
     if (!this.isVisible) {
       return;
@@ -8872,9 +8890,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (!wasIdentity) {
       ctx.mvpState.modelMatrix.push();
       ctx.mvpState.modelMatrix.mul_d4zu6j$(this.transform);
-      ctx.mvpState.update_evfofk$(ctx);
+      ctx.mvpState.update_aemszp$(ctx);
     }
-    Group.prototype.render_evfofk$.call(this, ctx);
+    Group.prototype.render_aemszp$.call(this, ctx);
     if (!this.bounds.isEmpty && !wasIdentity) {
       this.tmpBounds.clear();
       this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_xv9rzf$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.min.y, this.bounds.min.z), 1.0));
@@ -8889,7 +8907,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     if (!wasIdentity) {
       ctx.mvpState.modelMatrix.pop();
-      ctx.mvpState.update_evfofk$(ctx);
+      ctx.mvpState.update_aemszp$(ctx);
     }
   };
   TransformGroup.prototype.toGlobalCoords_w1lst9$$default = function (vec, w) {
@@ -8991,18 +9009,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.isHovered_k6sd62$_0 = isHovered;
     }
   });
-  Button.prototype.fireOnClick_1tlxzm$ = function (ptr, rt, ctx) {
+  Button.prototype.fireOnClick_kjsf19$ = function (ptr, rt, ctx) {
     var tmp$;
     tmp$ = this.onClick;
     for (var i = 0; i !== tmp$.size; ++i) {
       this.onClick.get_za3lpa$(i)(this, ptr, rt, ctx);
     }
   };
-  Button.prototype.setThemeProps = function () {
-    Label.prototype.setThemeProps.call(this);
+  Button.prototype.setThemeProps_aemszp$ = function (ctx) {
+    Label.prototype.setThemeProps_aemszp$.call(this, ctx);
     this.textColorHovered.setTheme_11rb$(this.root.theme.accentColor);
   };
-  Button.prototype.createThemeUi_evfofk$ = function (ctx) {
+  Button.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newButtonUi_t4rm0v$(this);
   };
   function Button_init$lambda(this$Button) {
@@ -9030,7 +9048,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           this$Button.ptrDownPos.x = this$Button.ptrDownPos.x - rt.hitPositionLocal.x;
           this$Button.ptrDownPos.y = this$Button.ptrDownPos.y - rt.hitPositionLocal.y;
           if (this$Button.ptrDownPos.length() < dp_0(this$Button, 5.0)) {
-            this$Button.fireOnClick_1tlxzm$(ptr, rt, ctx);
+            this$Button.fireOnClick_kjsf19$(ptr, rt, ctx);
           }
         }
       }
@@ -9059,8 +9077,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  ButtonUi.prototype.createUi_evfofk$ = function (ctx) {
-    LabelUi.prototype.createUi_evfofk$.call(this, ctx);
+  ButtonUi.prototype.createUi_aemszp$ = function (ctx) {
+    LabelUi.prototype.createUi_aemszp$.call(this, ctx);
     this.hoverAnimator.speed = 0.0;
     this.hoverAnimator.value.onUpdate = ButtonUi$createUi$lambda(this);
     var $receiver = this.button.onHoverEnter;
@@ -9075,8 +9093,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.textColor.add_y83vuj$(this.button.textColor.apply(), this.colorWeightStd);
     this.textColor.add_y83vuj$(this.button.textColorHovered.apply(), this.colorWeightHovered);
   };
-  ButtonUi.prototype.disposeUi_evfofk$ = function (ctx) {
-    LabelUi.prototype.disposeUi_evfofk$.call(this, ctx);
+  ButtonUi.prototype.disposeUi_aemszp$ = function (ctx) {
+    LabelUi.prototype.disposeUi_aemszp$.call(this, ctx);
     var $receiver = this.button.onHoverEnter;
     var element = this.hoverEnterListener;
     $receiver.remove_11rb$(element);
@@ -9084,9 +9102,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var element_0 = this.hoverExitListener;
     $receiver_0.remove_11rb$(element_0);
   };
-  ButtonUi.prototype.onRender_evfofk$ = function (ctx) {
-    LabelUi.prototype.onRender_evfofk$.call(this, ctx);
-    this.hoverAnimator.tick_evfofk$(ctx);
+  ButtonUi.prototype.onRender_aemszp$ = function (ctx) {
+    LabelUi.prototype.onRender_aemszp$.call(this, ctx);
+    this.hoverAnimator.tick_aemszp$(ctx);
   };
   function ButtonUi$hoverEnterListener$lambda(this$ButtonUi) {
     return function ($receiver, f, f_0, f_1) {
@@ -9111,13 +9129,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   ComponentUi.prototype.updateComponentAlpha = function () {
   };
-  ComponentUi.prototype.createUi_evfofk$ = function (ctx) {
+  ComponentUi.prototype.createUi_aemszp$ = function (ctx) {
   };
-  ComponentUi.prototype.updateUi_evfofk$ = function (ctx) {
+  ComponentUi.prototype.updateUi_aemszp$ = function (ctx) {
   };
-  ComponentUi.prototype.disposeUi_evfofk$ = function (ctx) {
+  ComponentUi.prototype.disposeUi_aemszp$ = function (ctx) {
   };
-  ComponentUi.prototype.onRender_evfofk$ = function (ctx) {
+  ComponentUi.prototype.onRender_aemszp$ = function (ctx) {
   };
   ComponentUi.$metadata$ = {
     kind: Kind_INTERFACE,
@@ -9143,19 +9161,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     (tmp$ = this.shader) != null ? (tmp$.alpha = this.component.alpha) : null;
   };
-  SimpleComponentUi.prototype.createUi_evfofk$ = function (ctx) {
+  SimpleComponentUi.prototype.createUi_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
     this.color.setTheme_11rb$(this.component.root.theme.backgroundColor).apply();
-    this.shader = this.createShader_evfofk$(ctx);
+    this.shader = this.createShader_aemszp$(ctx);
     (tmp$_0 = (tmp$ = this.shader) != null ? tmp$.staticColor : null) != null ? tmp$_0.set_czzhhz$(this.color.prop) : null;
     this.mesh.shader = this.shader;
     this.component.addNode_xtids1$(this.mesh, 0);
   };
-  SimpleComponentUi.prototype.disposeUi_evfofk$ = function (ctx) {
+  SimpleComponentUi.prototype.disposeUi_aemszp$ = function (ctx) {
     this.component.minusAssign_f1kmr1$(this.mesh);
-    this.mesh.dispose_evfofk$(ctx);
+    this.mesh.dispose_aemszp$(ctx);
   };
-  SimpleComponentUi.prototype.updateUi_evfofk$ = function (ctx) {
+  SimpleComponentUi.prototype.updateUi_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
     this.color.setTheme_11rb$(this.component.root.theme.backgroundColor).apply();
     (tmp$_0 = (tmp$ = this.shader) != null ? tmp$.staticColor : null) != null ? tmp$_0.set_czzhhz$(this.color.prop) : null;
@@ -9175,7 +9193,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  SimpleComponentUi.prototype.createShader_evfofk$ = function (ctx) {
+  SimpleComponentUi.prototype.createShader_aemszp$ = function (ctx) {
     return basicShader(SimpleComponentUi$createShader$lambda(this));
   };
   SimpleComponentUi.$metadata$ = {
@@ -9194,13 +9212,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  BlurredComponentUi.prototype.createShader_evfofk$ = function (ctx) {
+  BlurredComponentUi.prototype.createShader_aemszp$ = function (ctx) {
     var $receiver = blurShader(BlurredComponentUi$createShader$lambda(this));
     $receiver.blurHelper = this.component.root.createBlurHelper();
     return $receiver;
   };
-  BlurredComponentUi.prototype.updateUi_evfofk$ = function (ctx) {
-    SimpleComponentUi.prototype.updateUi_evfofk$.call(this, ctx);
+  BlurredComponentUi.prototype.updateUi_aemszp$ = function (ctx) {
+    SimpleComponentUi.prototype.updateUi_aemszp$.call(this, ctx);
     var bs = this.shader;
     if (Kotlin.isType(bs, BlurShader)) {
       bs.colorMix = bs.staticColor.w;
@@ -9216,7 +9234,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     UiComponent.call(this, name, root);
     this.text_qvo458$_0 = name;
     this.textAlignment_ux8xbn$_0 = new Gravity(Alignment$START_getInstance(), Alignment$CENTER_getInstance());
-    this.font = new ThemeOrCustomProp(Font$Companion_getInstance().DEFAULT_FONT);
+    this.font = new ThemeOrCustomProp(null);
     this.textColor = new ThemeOrCustomProp(Color$Companion_getInstance().WHITE);
   }
   Object.defineProperty(Label.prototype, 'text', {
@@ -9241,12 +9259,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   });
-  Label.prototype.setThemeProps = function () {
-    UiComponent.prototype.setThemeProps.call(this);
-    this.font.setTheme_11rb$(this.root.theme.standardFont_mx4ult$(this.dpi));
+  Label.prototype.setThemeProps_aemszp$ = function (ctx) {
+    UiComponent.prototype.setThemeProps_aemszp$.call(this, ctx);
+    this.font.setTheme_11rb$(standardFont(this, ctx));
     this.textColor.setTheme_11rb$(this.root.theme.foregroundColor);
   };
-  Label.prototype.createThemeUi_evfofk$ = function (ctx) {
+  Label.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newLabelUi_wviu0r$(this);
   };
   Label.$metadata$ = {
@@ -9282,15 +9300,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  LabelUi.prototype.createUi_evfofk$ = function (ctx) {
-    this.baseUi_tctiu8$_0.createUi_evfofk$(ctx);
+  LabelUi.prototype.createUi_aemszp$ = function (ctx) {
+    this.baseUi_tctiu8$_0.createUi_aemszp$(ctx);
     this.mesh.shader = fontShader(void 0, LabelUi$createUi$lambda(this));
     this.label.plusAssign_f1kmr1$(this.mesh);
   };
-  LabelUi.prototype.updateUi_evfofk$ = function (ctx) {
-    this.baseUi_tctiu8$_0.updateUi_evfofk$(ctx);
+  LabelUi.prototype.updateUi_aemszp$ = function (ctx) {
+    var tmp$;
+    this.baseUi_tctiu8$_0.updateUi_aemszp$(ctx);
+    if (!this.label.font.isUpdate && this.label.font.prop == null) {
+      this.label.font.setCustom_11rb$(Font$Companion_getInstance().defaultFont_aemszp$(ctx));
+    }
     if (this.label.font.isUpdate) {
-      this.label.font.prop.dispose_evfofk$(ctx);
+      (tmp$ = this.label.font.prop) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
       this.font = this.label.font.apply();
     }
     var shader = this.mesh.shader;
@@ -9300,61 +9322,72 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.label.setupBuilder_84rojv$(this.meshBuilder);
     this.updateTextColor();
     this.computeTextMetrics();
-    this.renderText_evfofk$(ctx);
+    this.renderText_aemszp$(ctx);
   };
-  LabelUi.prototype.disposeUi_evfofk$ = function (ctx) {
-    this.baseUi_tctiu8$_0.disposeUi_evfofk$(ctx);
+  LabelUi.prototype.disposeUi_aemszp$ = function (ctx) {
+    this.baseUi_tctiu8$_0.disposeUi_aemszp$(ctx);
     this.label.minusAssign_f1kmr1$(this.mesh);
-    this.mesh.dispose_evfofk$(ctx);
+    this.mesh.dispose_aemszp$(ctx);
   };
   LabelUi.prototype.computeTextMetrics = function () {
-    var tmp$, tmp$_0;
-    this.textWidth = this.font.textWidth_61zpoe$(this.label.text);
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6;
+    this.textWidth = (tmp$_0 = (tmp$ = this.font) != null ? tmp$.textWidth_61zpoe$(this.label.text) : null) != null ? tmp$_0 : 0.0;
     switch (this.label.textAlignment.xAlignment.name) {
       case 'START':
-        tmp$ = this.label.padding.left.toUnits_dleff0$(this.label.width, this.label.dpi);
+        tmp$_1 = this.label.padding.left.toUnits_dleff0$(this.label.width, this.label.dpi);
         break;
       case 'CENTER':
-        tmp$ = (this.label.width - this.textWidth) / 2.0;
+        tmp$_1 = (this.label.width - this.textWidth) / 2.0;
         break;
       case 'END':
-        tmp$ = this.label.width - this.textWidth - this.label.padding.right.toUnits_dleff0$(this.label.width, this.label.dpi);
+        tmp$_1 = this.label.width - this.textWidth - this.label.padding.right.toUnits_dleff0$(this.label.width, this.label.dpi);
         break;
-      default:tmp$ = Kotlin.noWhenBranchMatched();
+      default:tmp$_1 = Kotlin.noWhenBranchMatched();
         break;
     }
-    this.textStartX = tmp$;
+    this.textStartX = tmp$_1;
     switch (this.label.textAlignment.yAlignment.name) {
       case 'START':
-        tmp$_0 = this.label.height - this.label.padding.top.toUnits_dleff0$(this.label.width, this.label.dpi) - this.font.normHeight;
+        tmp$_6 = this.label.height - this.label.padding.top.toUnits_dleff0$(this.label.width, this.label.dpi) - ((tmp$_3 = (tmp$_2 = this.font) != null ? tmp$_2.normHeight : null) != null ? tmp$_3 : 0.0);
         break;
       case 'CENTER':
-        tmp$_0 = (this.label.height - this.font.normHeight) / 2.0;
+        tmp$_6 = (this.label.height - ((tmp$_5 = (tmp$_4 = this.font) != null ? tmp$_4.normHeight : null) != null ? tmp$_5 : 0.0)) / 2.0;
         break;
       case 'END':
-        tmp$_0 = this.label.padding.bottom.toUnits_dleff0$(this.label.height, this.label.dpi);
+        tmp$_6 = this.label.padding.bottom.toUnits_dleff0$(this.label.height, this.label.dpi);
         break;
-      default:tmp$_0 = Kotlin.noWhenBranchMatched();
+      default:tmp$_6 = Kotlin.noWhenBranchMatched();
         break;
     }
-    this.textBaseline = tmp$_0;
+    this.textBaseline = tmp$_6;
   };
-  LabelUi.prototype.renderText_evfofk$ = function (ctx) {
+  LabelUi.prototype.renderText_aemszp$ = function (ctx) {
     this.meshBuilder.color = this.textColor;
-    var $this = this.meshBuilder;
-    var font = this.font;
-    $this.textProps.defaults();
-    $this.textProps.font = font;
-    var $receiver = $this.textProps;
-    $receiver.origin.set_y2kzbl$(this.textStartX, this.textBaseline, dp_0(this.label, 4.0));
-    $receiver.text = this.label.text;
-    $this.text_lis6zk$($this.textProps);
+    var fnt = this.font;
+    if (fnt != null) {
+      var $this = this.meshBuilder;
+      var tmp$;
+      var tmp$_0;
+      if ((tmp$ = $this.textProps) != null)
+        tmp$_0 = tmp$;
+      else {
+        var $receiver = new TextProps(fnt);
+        $this.textProps = $receiver;
+        tmp$_0 = $receiver;
+      }
+      var props = tmp$_0;
+      props.defaults();
+      props.font = fnt;
+      props.origin.set_y2kzbl$(this.textStartX, this.textBaseline, dp_0(this.label, 4.0));
+      props.text = this.label.text;
+      $this.text_lis6zk$(props);
+    }
   };
   LabelUi.prototype.updateTextColor = function () {
     this.textColor.set_d7aj7k$(this.label.textColor.apply());
   };
-  LabelUi.prototype.onRender_evfofk$ = function (ctx) {
-    return this.baseUi_tctiu8$_0.onRender_evfofk$(ctx);
+  LabelUi.prototype.onRender_aemszp$ = function (ctx) {
+    return this.baseUi_tctiu8$_0.onRender_aemszp$(ctx);
   };
   LabelUi.$metadata$ = {
     kind: Kind_CLASS,
@@ -9797,7 +9830,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var dy = y - this.knobPosition.y;
     return dx * dx + dy * dy < this.knobSize * this.knobSize;
   };
-  Slider.prototype.handleDrag_t4w9y2$ = function (dragPtrs, ctx) {
+  Slider.prototype.handleDrag_kin2e3$ = function (dragPtrs, ctx) {
     if (dragPtrs.size === 1 && dragPtrs.get_za3lpa$(0).isValid && dragPtrs.get_za3lpa$(0).isLeftButtonDown) {
       this.value = this.value + this.hitDelta_0.x / this.trackWidth * (this.max - this.min);
       return InputManager$DragHandler$Companion_getInstance().HANDLED;
@@ -9806,12 +9839,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return InputManager$DragHandler$Companion_getInstance().REMOVE_HANDLER;
     }
   };
-  Slider.prototype.setThemeProps = function () {
-    UiComponent.prototype.setThemeProps.call(this);
+  Slider.prototype.setThemeProps_aemszp$ = function (ctx) {
+    UiComponent.prototype.setThemeProps_aemszp$.call(this, ctx);
     this.knobColor.setTheme_11rb$(this.root.theme.accentColor);
     this.trackColorHighlighted.setTheme_11rb$(MutableColor_init().add_y83vuj$(this.root.theme.accentColor, 0.4));
   };
-  Slider.prototype.createThemeUi_evfofk$ = function (ctx) {
+  Slider.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newSliderUi_l85jm8$(this);
   };
   function Slider_init$lambda(this$Slider) {
@@ -9851,18 +9884,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     $receiver.isAlpha = true;
     return Unit;
   }
-  SliderUi.prototype.createUi_evfofk$ = function (ctx) {
-    this.baseUi.createUi_evfofk$(ctx);
+  SliderUi.prototype.createUi_aemszp$ = function (ctx) {
+    this.baseUi.createUi_aemszp$(ctx);
     this.mesh.shader = basicShader(SliderUi$createUi$lambda);
     this.slider.plusAssign_f1kmr1$(this.mesh);
   };
-  SliderUi.prototype.disposeUi_evfofk$ = function (ctx) {
-    this.baseUi.disposeUi_evfofk$(ctx);
-    this.mesh.dispose_evfofk$(ctx);
+  SliderUi.prototype.disposeUi_aemszp$ = function (ctx) {
+    this.baseUi.disposeUi_aemszp$(ctx);
+    this.mesh.dispose_aemszp$(ctx);
     this.slider.minusAssign_f1kmr1$(this.mesh);
   };
-  SliderUi.prototype.updateUi_evfofk$ = function (ctx) {
-    this.baseUi.updateUi_evfofk$(ctx);
+  SliderUi.prototype.updateUi_aemszp$ = function (ctx) {
+    this.baseUi.updateUi_aemszp$(ctx);
     this.slider.knobSize = dp_0(this.slider, 10.0);
     var trackH = dp_0(this.slider, 6.0);
     var x = this.slider.padding.left.toUnits_dleff0$(this.slider.width, this.slider.dpi) + this.slider.knobSize;
@@ -9899,8 +9932,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     $receiver_1.steps = 30;
     $this_1.circle_59f34t$($this_1.circleProps);
   };
-  SliderUi.prototype.onRender_evfofk$ = function (ctx) {
-    return this.baseUi.onRender_evfofk$(ctx);
+  SliderUi.prototype.onRender_aemszp$ = function (ctx) {
+    return this.baseUi.onRender_aemszp$(ctx);
   };
   SliderUi.$metadata$ = {
     kind: Kind_CLASS,
@@ -9912,7 +9945,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.editText = new EditableText();
     this.onRender.add_11rb$(TextField_init$lambda(this));
   }
-  TextField.prototype.createThemeUi_evfofk$ = function (ctx) {
+  TextField.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newTextFieldUi_p39bdq$(this);
   };
   function TextField_init$lambda(this$TextField) {
@@ -9981,23 +10014,23 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.caretAlphaAnimator_mmbcs$_0.repeating = Animator$Companion_getInstance().REPEAT_TOGGLE_DIR;
     this.caretPosAnimator_3ucebe$_0.duration = 0.1;
   }
-  TextFieldUi.prototype.onRender_evfofk$ = function (ctx) {
+  TextFieldUi.prototype.onRender_aemszp$ = function (ctx) {
     this.textField.requestUiUpdate();
-    LabelUi.prototype.onRender_evfofk$.call(this, ctx);
+    LabelUi.prototype.onRender_aemszp$.call(this, ctx);
   };
-  TextFieldUi.prototype.renderText_evfofk$ = function (ctx) {
-    var tmp$;
+  TextFieldUi.prototype.renderText_aemszp$ = function (ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
     var x1 = this.label.padding.left.toUnits_dleff0$(this.label.width, this.label.dpi);
     var x2 = this.label.width - this.label.padding.right.toUnits_dleff0$(this.label.width, this.label.dpi);
-    var y = this.textBaseline - this.font.fontProps.sizeUnits * 0.2;
+    var y = this.textBaseline - ((tmp$_1 = (tmp$_0 = (tmp$ = this.font) != null ? tmp$.fontProps : null) != null ? tmp$_0.sizeUnits : null) != null ? tmp$_1 : 0.0) * 0.2;
     var caretX = {v: this.textStartX};
     var selectionX = {v: this.textStartX};
     if (this.textField.editText.caretPosition > 0 || this.textField.editText.selectionStart > 0) {
       var a = this.textField.editText.caretPosition;
       var b = this.textField.editText.selectionStart;
-      tmp$ = Math_0.max(a, b) - 1 | 0;
-      for (var i = 0; i <= tmp$; i++) {
-        var w = this.font.charWidth_s8itvh$(unboxChar(this.textField.editText.get_za3lpa$(i)));
+      tmp$_2 = Math_0.max(a, b) - 1 | 0;
+      for (var i = 0; i <= tmp$_2; i++) {
+        var w = (tmp$_4 = (tmp$_3 = this.font) != null ? tmp$_3.charWidth_s8itvh$(unboxChar(this.textField.editText.get_za3lpa$(i))) : null) != null ? tmp$_4 : 0.0;
         if (i < this.textField.editText.caretPosition) {
           caretX.v += w;
         }
@@ -10012,9 +10045,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.caretPosAnimator_3ucebe$_0.progress = 0.0;
       this.caretPosAnimator_3ucebe$_0.speed = 1.0;
     }
-    caretX.v = this.caretPosAnimator_3ucebe$_0.tick_evfofk$(ctx);
+    caretX.v = this.caretPosAnimator_3ucebe$_0.tick_aemszp$(ctx);
     var $this = this.meshBuilder;
     $this.transform.push();
+    var tmp$_5, tmp$_6, tmp$_7;
     $this.translate_y2kzbl$(0.0, 0.0, dp_0(this.label, 4.0));
     this.meshBuilder.color = this.label.root.theme.accentColor;
     this.meshBuilder.line_s2l86p$(x1, y, x2, y, dp_0(this.label, 1.5));
@@ -10024,16 +10058,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.meshBuilder.color = this.caretColor_qpd03i$_0;
       var $this_0 = this.meshBuilder;
       var $receiver = $this_0.rectProps.defaults();
+      var tmp$_8, tmp$_9, tmp$_10;
       $receiver.origin.set_y2kzbl$(caretX.v, y, 0.0);
-      $receiver.size.set_dleff0$(selectionX.v - caretX.v, this.font.fontProps.sizeUnits * 1.2);
+      $receiver.size.set_dleff0$(selectionX.v - caretX.v, ((tmp$_10 = (tmp$_9 = (tmp$_8 = this.font) != null ? tmp$_8.fontProps : null) != null ? tmp$_9.sizeUnits : null) != null ? tmp$_10 : 0.0) * 1.2);
       $this_0.rect_e5k3t5$($this_0.rectProps);
     }
     this.caretColor_qpd03i$_0.set_d7aj7k$(this.label.root.theme.accentColor);
-    this.caretColor_qpd03i$_0.a = this.caretAlphaAnimator_mmbcs$_0.tick_evfofk$(ctx);
+    this.caretColor_qpd03i$_0.a = this.caretAlphaAnimator_mmbcs$_0.tick_aemszp$(ctx);
     this.meshBuilder.color = this.caretColor_qpd03i$_0;
-    this.meshBuilder.line_s2l86p$(caretX.v, y, caretX.v, this.textBaseline + this.font.fontProps.sizeUnits, dp_0(this.label, 1.5));
+    this.meshBuilder.line_s2l86p$(caretX.v, y, caretX.v, this.textBaseline + ((tmp$_7 = (tmp$_6 = (tmp$_5 = this.font) != null ? tmp$_5.fontProps : null) != null ? tmp$_6.sizeUnits : null) != null ? tmp$_7 : 0.0), dp_0(this.label, 1.5));
     $this.transform.pop();
-    LabelUi.prototype.renderText_evfofk$.call(this, ctx);
+    LabelUi.prototype.renderText_aemszp$.call(this, ctx);
   };
   TextFieldUi.$metadata$ = {
     kind: Kind_CLASS,
@@ -10253,15 +10288,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.onStateChange.get_za3lpa$(i)(this);
     }
   };
-  ToggleButton.prototype.fireOnClick_1tlxzm$ = function (ptr, rt, ctx) {
+  ToggleButton.prototype.fireOnClick_kjsf19$ = function (ptr, rt, ctx) {
     this.isEnabled = !this.isEnabled;
-    Button.prototype.fireOnClick_1tlxzm$.call(this, ptr, rt, ctx);
+    Button.prototype.fireOnClick_kjsf19$.call(this, ptr, rt, ctx);
   };
-  ToggleButton.prototype.setThemeProps = function () {
-    Button.prototype.setThemeProps.call(this);
+  ToggleButton.prototype.setThemeProps_aemszp$ = function (ctx) {
+    Button.prototype.setThemeProps_aemszp$.call(this, ctx);
     this.knobColorOn = this.root.theme.accentColor;
   };
-  ToggleButton.prototype.createThemeUi_evfofk$ = function (ctx) {
+  ToggleButton.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newToggleButtonUi_r83hfv$(this);
   };
   ToggleButton.$metadata$ = {
@@ -10282,9 +10317,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  ToggleButtonUi.prototype.createUi_evfofk$ = function (ctx) {
+  ToggleButtonUi.prototype.createUi_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
-    ButtonUi.prototype.createUi_evfofk$.call(this, ctx);
+    ButtonUi.prototype.createUi_aemszp$.call(this, ctx);
     this.knobAnimator.speed = 0.0;
     this.knobAnimator.duration = 0.15;
     tmp$_0 = this.knobAnimator.value;
@@ -10300,14 +10335,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var element = this.stateChangedListener;
     $receiver.add_11rb$(element);
   };
-  ToggleButtonUi.prototype.disposeUi_evfofk$ = function (ctx) {
-    ButtonUi.prototype.disposeUi_evfofk$.call(this, ctx);
+  ToggleButtonUi.prototype.disposeUi_aemszp$ = function (ctx) {
+    ButtonUi.prototype.disposeUi_aemszp$.call(this, ctx);
     var $receiver = this.tb.onStateChange;
     var element = this.stateChangedListener;
     $receiver.remove_11rb$(element);
   };
-  ToggleButtonUi.prototype.updateUi_evfofk$ = function (ctx) {
-    ButtonUi.prototype.updateUi_evfofk$.call(this, ctx);
+  ToggleButtonUi.prototype.updateUi_aemszp$ = function (ctx) {
+    ButtonUi.prototype.updateUi_aemszp$.call(this, ctx);
     var paddingR = this.tb.padding.right.toUnits_dleff0$(this.tb.width, this.tb.dpi);
     var trackW = dp_0(this.tb, 24.0);
     var trackH = dp_0(this.tb, 6.0);
@@ -10334,9 +10369,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     $receiver_0.steps = 30;
     $this_0.circle_59f34t$($this_0.circleProps);
   };
-  ToggleButtonUi.prototype.onRender_evfofk$ = function (ctx) {
-    ButtonUi.prototype.onRender_evfofk$.call(this, ctx);
-    this.knobAnimator.tick_evfofk$(ctx);
+  ToggleButtonUi.prototype.onRender_aemszp$ = function (ctx) {
+    ButtonUi.prototype.onRender_aemszp$.call(this, ctx);
+    this.knobAnimator.tick_aemszp$(ctx);
   };
   function ToggleButtonUi$stateChangedListener$lambda(this$ToggleButtonUi) {
     return function ($receiver) {
@@ -10437,37 +10472,37 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   UiComponent.prototype.updateComponentAlpha = function () {
     this.ui.prop.updateComponentAlpha();
   };
-  UiComponent.prototype.updateUi_evfofk$ = function (ctx) {
-    this.ui.prop.updateUi_evfofk$(ctx);
+  UiComponent.prototype.updateUi_aemszp$ = function (ctx) {
+    this.ui.prop.updateUi_aemszp$(ctx);
   };
-  UiComponent.prototype.updateTheme_evfofk$ = function (ctx) {
-    this.ui.prop.disposeUi_evfofk$(ctx);
-    this.ui.setTheme_11rb$(this.createThemeUi_evfofk$(ctx)).apply();
-    this.setThemeProps();
-    this.ui.prop.createUi_evfofk$(ctx);
+  UiComponent.prototype.updateTheme_aemszp$ = function (ctx) {
+    this.ui.prop.disposeUi_aemszp$(ctx);
+    this.ui.setTheme_11rb$(this.createThemeUi_aemszp$(ctx)).apply();
+    this.setThemeProps_aemszp$(ctx);
+    this.ui.prop.createUi_aemszp$(ctx);
     this.ui.prop.updateComponentAlpha();
     this.requestUiUpdate();
   };
-  UiComponent.prototype.setThemeProps = function () {
+  UiComponent.prototype.setThemeProps_aemszp$ = function (ctx) {
   };
-  UiComponent.prototype.createThemeUi_evfofk$ = function (ctx) {
+  UiComponent.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.componentUi(this);
   };
-  UiComponent.prototype.render_evfofk$ = function (ctx) {
+  UiComponent.prototype.render_aemszp$ = function (ctx) {
     if (this.isThemeUpdate_yv706e$_0) {
       this.isThemeUpdate_yv706e$_0 = false;
-      this.updateTheme_evfofk$(ctx);
+      this.updateTheme_aemszp$(ctx);
     }
     if (this.isUiUpdate_l4k16n$_0) {
       this.isUiUpdate_l4k16n$_0 = false;
-      this.updateUi_evfofk$(ctx);
+      this.updateUi_aemszp$(ctx);
     }
     if (this.alpha !== 0.0) {
-      this.ui.prop.onRender_evfofk$(ctx);
-      TransformGroup.prototype.render_evfofk$.call(this, ctx);
+      this.ui.prop.onRender_aemszp$(ctx);
+      TransformGroup.prototype.render_aemszp$.call(this, ctx);
     }
   };
-  UiComponent.prototype.doLayout_oytkew$ = function (bounds, ctx) {
+  UiComponent.prototype.doLayout_sq5703$ = function (bounds, ctx) {
     if (!this.contentBounds.isEqual_ea4od8$(bounds)) {
       this.contentBounds.set_ea4od8$(bounds);
       this.requestUiUpdate();
@@ -10495,9 +10530,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   UiContainer.prototype.requestLayout = function () {
     this.isLayoutNeeded_exywcf$_0 = true;
   };
-  UiContainer.prototype.updateTheme_evfofk$ = function (ctx) {
+  UiContainer.prototype.updateTheme_aemszp$ = function (ctx) {
     var tmp$;
-    UiComponent.prototype.updateTheme_evfofk$.call(this, ctx);
+    UiComponent.prototype.updateTheme_aemszp$.call(this, ctx);
     tmp$ = this.children;
     for (var i = 0; i !== tmp$.size; ++i) {
       var child = this.children.get_za3lpa$(i);
@@ -10517,29 +10552,29 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   };
-  UiContainer.prototype.render_evfofk$ = function (ctx) {
+  UiContainer.prototype.render_aemszp$ = function (ctx) {
     if (this.isLayoutNeeded_exywcf$_0) {
       this.isLayoutNeeded_exywcf$_0 = false;
-      this.doLayout_oytkew$(this.contentBounds, ctx);
+      this.doLayout_sq5703$(this.contentBounds, ctx);
     }
-    UiComponent.prototype.render_evfofk$.call(this, ctx);
+    UiComponent.prototype.render_aemszp$.call(this, ctx);
   };
-  UiContainer.prototype.doLayout_oytkew$ = function (bounds, ctx) {
+  UiContainer.prototype.doLayout_sq5703$ = function (bounds, ctx) {
     var tmp$;
-    this.applyBounds_oytkew$(bounds, ctx);
+    this.applyBounds_sq5703$(bounds, ctx);
     tmp$ = this.children;
     for (var i = 0; i !== tmp$.size; ++i) {
       var child = this.children.get_za3lpa$(i);
       if (Kotlin.isType(child, UiComponent)) {
-        this.computeChildLayoutBounds_hs15d6$(this.tmpChildBounds_j2uogg$_0, child, ctx);
-        child.doLayout_oytkew$(this.tmpChildBounds_j2uogg$_0, ctx);
+        this.computeChildLayoutBounds_q1axsv$(this.tmpChildBounds_j2uogg$_0, child, ctx);
+        child.doLayout_sq5703$(this.tmpChildBounds_j2uogg$_0, ctx);
       }
     }
   };
-  UiContainer.prototype.createThemeUi_evfofk$ = function (ctx) {
+  UiContainer.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.containerUi(this);
   };
-  UiContainer.prototype.applyBounds_oytkew$ = function (bounds, ctx) {
+  UiContainer.prototype.applyBounds_sq5703$ = function (bounds, ctx) {
     if (!bounds.size.isEqual_czzhiu$(this.contentBounds.size) || !bounds.min.isEqual_czzhiu$(this.contentBounds.min)) {
       this.posInParent.set_czzhiu$(bounds.min);
       this.setIdentity().translate_czzhiu$(bounds.min);
@@ -10547,7 +10582,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.requestUiUpdate();
     }
   };
-  UiContainer.prototype.computeChildLayoutBounds_hs15d6$ = function (result, child, ctx) {
+  UiContainer.prototype.computeChildLayoutBounds_q1axsv$ = function (result, child, ctx) {
     var x = child.layoutSpec.x.toUnits_dleff0$(this.contentBounds.size.x, this.dpi);
     var y = child.layoutSpec.y.toUnits_dleff0$(this.contentBounds.size.y, this.dpi);
     var z = child.layoutSpec.z.toUnits_dleff0$(this.contentBounds.size.z, this.dpi);
@@ -10702,7 +10737,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.globalHeight = height;
     this.globalDepth = depth;
   };
-  UiRoot.prototype.render_evfofk$ = function (ctx) {
+  UiRoot.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
     if (this.isFillViewport && (this.globalWidth !== ctx.viewport.width || this.globalHeight !== ctx.viewport.height)) {
       this.globalWidth = ctx.viewport.width;
@@ -10719,20 +10754,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.content.contentBounds.set_w8lrqs$(0.0, 0.0, 0.0, this.globalWidth / contentScale, this.globalHeight / contentScale, this.globalDepth / contentScale);
       this.content.requestLayout();
     }
-    (tmp$ = this.blurHelper_0) != null ? (tmp$.updateDistortionTexture_vcyfmv$(this, ctx, this.content.bounds), Unit) : null;
+    (tmp$ = this.blurHelper_0) != null ? (tmp$.updateDistortionTexture_hp84kc$(this, ctx, this.content.bounds), Unit) : null;
     ctx.pushAttributes();
     ctx.isCullFace = false;
     ctx.applyAttributes();
-    Node.prototype.render_evfofk$.call(this, ctx);
-    this.content.render_evfofk$(ctx);
+    Node.prototype.render_aemszp$.call(this, ctx);
+    this.content.render_aemszp$(ctx);
     this.bounds.set_ea4od8$(this.content.bounds);
     ctx.popAttributes();
   };
-  UiRoot.prototype.dispose_evfofk$ = function (ctx) {
+  UiRoot.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
-    Node.prototype.dispose_evfofk$.call(this, ctx);
-    this.content.dispose_evfofk$(ctx);
-    (tmp$ = this.blurHelper_0) != null ? (tmp$.dispose_evfofk$(ctx), Unit) : null;
+    Node.prototype.dispose_aemszp$.call(this, ctx);
+    this.content.dispose_aemszp$(ctx);
+    (tmp$ = this.blurHelper_0) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
   };
   UiRoot.prototype.rayTest_jljx4v$ = function (test) {
     Node.prototype.rayTest_jljx4v$.call(this, test);
@@ -10835,8 +10870,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.accentColor_2rzgrt$_0 = accentColor;
     }
   });
-  UiTheme.prototype.standardFont_mx4ult$ = function (dpi) {
-    return uiFont(this.standardFontProps.family, this.standardFontProps.sizePts, dpi, this.standardFontProps.style, this.standardFontProps.chars);
+  UiTheme.prototype.standardFont_oei9ky$ = function (uiDpi, ctx) {
+    return uiFont(this.standardFontProps.family, this.standardFontProps.sizePts, uiDpi, ctx, this.standardFontProps.style, this.standardFontProps.chars);
   };
   Object.defineProperty(UiTheme.prototype, 'standardFontProps', {
     get: function () {
@@ -10846,8 +10881,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.standardFontProps_v4eg6a$_0 = standardFontProps;
     }
   });
-  UiTheme.prototype.titleFont_mx4ult$ = function (dpi) {
-    return uiFont(this.titleFontProps.family, this.titleFontProps.sizePts, dpi, this.titleFontProps.style, this.titleFontProps.chars);
+  UiTheme.prototype.titleFont_oei9ky$ = function (uiDpi, ctx) {
+    return uiFont(this.titleFontProps.family, this.titleFontProps.sizePts, uiDpi, ctx, this.titleFontProps.style, this.titleFontProps.chars);
   };
   Object.defineProperty(UiTheme.prototype, 'titleFontProps', {
     get: function () {
@@ -10985,6 +11020,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'UiTheme',
     interfaces: []
   };
+  function standardFont($receiver, ctx) {
+    return $receiver.root.theme.standardFont_oei9ky$($receiver.dpi, ctx);
+  }
+  function titleFont($receiver, ctx) {
+    return $receiver.root.theme.titleFont_oei9ky$($receiver.dpi, ctx);
+  }
   function theme(base, block) {
     if (base === void 0)
       base = null;
@@ -11142,18 +11183,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.boundShader_u35sjq$_0 = boundShader;
     }
   });
-  ShaderManager.prototype.bindShader_wa3i41$ = function (shader, ctx) {
+  ShaderManager.prototype.bindShader_gt83r0$ = function (shader, ctx) {
     var tmp$, tmp$_0, tmp$_1;
     if (shader != null) {
       if (!shader.isValid) {
-        shader.onLoad_evfofk$(ctx);
+        shader.onLoad_aemszp$(ctx);
       }
-      if (!shader.isBound_evfofk$(ctx)) {
+      if (!shader.isBound_aemszp$(ctx)) {
         if (!equals((tmp$ = shader.res) != null ? tmp$.glRef : null, (tmp$_1 = (tmp$_0 = this.boundShader) != null ? tmp$_0.res : null) != null ? tmp$_1.glRef : null)) {
           glUseProgram(shader.res);
         }
         this.boundShader = shader;
-        shader.onBind_evfofk$(ctx);
+        shader.onBind_aemszp$(ctx);
       }
     }
      else if (this.boundShader != null) {
@@ -11161,49 +11202,49 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.boundShader = null;
     }
   };
-  ShaderManager.prototype.createShader_saxrfs$ = function (source, ctx) {
-    return this.addReference_cmpczv$(source, ctx);
+  ShaderManager.prototype.createShader_2ouvod$ = function (source, ctx) {
+    return this.addReference_pl4ufq$(source, ctx);
   };
-  ShaderManager.prototype.deleteShader_v7cqlj$ = function (shader, ctx) {
+  ShaderManager.prototype.deleteShader_495nfo$ = function (shader, ctx) {
     var res = shader.res;
     if (res != null) {
-      this.removeReference_cmpczv$(shader.source, ctx);
+      this.removeReference_pl4ufq$(shader.source, ctx);
     }
   };
-  ShaderManager.prototype.createResource_cmpczv$ = function (key, ctx) {
-    var vertShader = ShaderResource$Companion_getInstance().createVertexShader_evfofk$(ctx);
-    vertShader.shaderSource_myr2gy$(key.vertexSrc, ctx);
-    if (!vertShader.compile_evfofk$(ctx)) {
-      var log = vertShader.getInfoLog_evfofk$(ctx);
-      vertShader.delete_evfofk$(ctx);
+  ShaderManager.prototype.createResource_pl4ufq$ = function (key, ctx) {
+    var vertShader = ShaderResource$Companion_getInstance().createVertexShader_aemszp$(ctx);
+    vertShader.shaderSource_vvp3il$(key.vertexSrc, ctx);
+    if (!vertShader.compile_aemszp$(ctx)) {
+      var log = vertShader.getInfoLog_aemszp$(ctx);
+      vertShader.delete_aemszp$(ctx);
       println(log);
       println(key.vertexSrc);
       throw new KoolException('Vertex shader compilation failed: ' + log);
     }
-    var fragShader = ShaderResource$Companion_getInstance().createFragmentShader_evfofk$(ctx);
-    fragShader.shaderSource_myr2gy$(key.fragmentSrc, ctx);
-    if (!fragShader.compile_evfofk$(ctx)) {
-      var log_0 = fragShader.getInfoLog_evfofk$(ctx);
-      fragShader.delete_evfofk$(ctx);
+    var fragShader = ShaderResource$Companion_getInstance().createFragmentShader_aemszp$(ctx);
+    fragShader.shaderSource_vvp3il$(key.fragmentSrc, ctx);
+    if (!fragShader.compile_aemszp$(ctx)) {
+      var log_0 = fragShader.getInfoLog_aemszp$(ctx);
+      fragShader.delete_aemszp$(ctx);
       println(log_0);
       println(key.fragmentSrc);
       throw new KoolException('Fragment shader compilation failed: ' + log_0);
     }
-    var prog = ProgramResource$Companion_getInstance().create_evfofk$(ctx);
-    prog.attachShader_j05587$(vertShader, ctx);
-    prog.attachShader_j05587$(fragShader, ctx);
-    var success = prog.link_evfofk$(ctx);
-    vertShader.delete_evfofk$(ctx);
-    fragShader.delete_evfofk$(ctx);
+    var prog = ProgramResource$Companion_getInstance().create_aemszp$(ctx);
+    prog.attachShader_55k08u$(vertShader, ctx);
+    prog.attachShader_55k08u$(fragShader, ctx);
+    var success = prog.link_aemszp$(ctx);
+    vertShader.delete_aemszp$(ctx);
+    fragShader.delete_aemszp$(ctx);
     if (!success) {
-      var log_1 = prog.getInfoLog_evfofk$(ctx);
-      prog.delete_evfofk$(ctx);
+      var log_1 = prog.getInfoLog_aemszp$(ctx);
+      prog.delete_aemszp$(ctx);
       throw new KoolException('Shader linkage failed: ' + log_1);
     }
     return prog;
   };
-  ShaderManager.prototype.deleteResource_x4m4qh$ = function (key, res, ctx) {
-    res.delete_evfofk$(ctx);
+  ShaderManager.prototype.deleteResource_5nn3pu$ = function (key, res, ctx) {
+    res.delete_aemszp$(ctx);
   };
   ShaderManager.$metadata$ = {
     kind: Kind_CLASS,
@@ -11477,8 +11518,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.uBones.value = value;
     }
   });
-  BasicShader.prototype.generate_evfofk$ = function (ctx) {
-    this.source = this.generator.generate_md635r$(this.props, ctx.shaderMgr.shadingHints);
+  BasicShader.prototype.generate_aemszp$ = function (ctx) {
+    this.source = this.generator.generate_eh8ey5$(this.props, ctx);
     this.attributes.clear();
     this.attributes.add_11rb$(Attribute$Companion_getInstance().POSITIONS);
     this.attributes.add_11rb$(Attribute$Companion_getInstance().NORMALS);
@@ -11492,26 +11533,26 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.attributes.add_11rb$(Armature$Companion_getInstance().BONE_WEIGHTS);
     }
   };
-  BasicShader.prototype.onBind_evfofk$ = function (ctx) {
+  BasicShader.prototype.onBind_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
-    this.onMatrixUpdate_evfofk$(ctx);
+    this.onMatrixUpdate_aemszp$(ctx);
     this.scene_i3j15i$_0 = null;
-    this.uFogColor.bind_evfofk$(ctx);
-    this.uFogRange.bind_evfofk$(ctx);
-    this.uSaturation.bind_evfofk$(ctx);
-    this.uAlpha.bind_evfofk$(ctx);
-    this.uShininess.bind_evfofk$(ctx);
-    this.uSpecularIntensity.bind_evfofk$(ctx);
-    this.uStaticColor.bind_evfofk$(ctx);
-    this.uTexture.bind_evfofk$(ctx);
-    this.uNormalMap.bind_evfofk$(ctx);
-    this.uBones.bind_evfofk$(ctx);
-    if (this.shadowMap_6x93ay$_0 != null) {
+    this.uFogColor.bind_aemszp$(ctx);
+    this.uFogRange.bind_aemszp$(ctx);
+    this.uSaturation.bind_aemszp$(ctx);
+    this.uAlpha.bind_aemszp$(ctx);
+    this.uShininess.bind_aemszp$(ctx);
+    this.uSpecularIntensity.bind_aemszp$(ctx);
+    this.uStaticColor.bind_aemszp$(ctx);
+    this.uTexture.bind_aemszp$(ctx);
+    this.uNormalMap.bind_aemszp$(ctx);
+    this.uBones.bind_aemszp$(ctx);
+    if (ctx.glCapabilities.depthTextures && this.shadowMap_6x93ay$_0 != null) {
       if (ctx.renderPass === RenderPass$SHADOW_getInstance()) {
         tmp$ = this.shadowMap_6x93ay$_0.subMaps.length;
         for (var i = 0; i < tmp$; i++) {
           this.uShadowTex.get_za3lpa$(i).value = null;
-          this.uShadowTex.get_za3lpa$(i).bind_evfofk$(ctx);
+          this.uShadowTex.get_za3lpa$(i).bind_aemszp$(ctx);
         }
       }
        else {
@@ -11519,42 +11560,42 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         for (var i_0 = 0; i_0 < tmp$_0; i_0++) {
           this.uClipSpaceFarZ.value[i_0] = this.shadowMap_6x93ay$_0.subMaps[i_0].clipSpaceFarZ;
           this.uShadowTex.get_za3lpa$(i_0).value = this.shadowMap_6x93ay$_0.subMaps[i_0].depthTexture;
-          this.uShadowTex.get_za3lpa$(i_0).bind_evfofk$(ctx);
+          this.uShadowTex.get_za3lpa$(i_0).bind_aemszp$(ctx);
         }
-        this.uShadowMvp.bind_evfofk$(ctx);
-        this.uShadowTexSz.bind_evfofk$(ctx);
-        this.uClipSpaceFarZ.bind_evfofk$(ctx);
+        this.uShadowMvp.bind_aemszp$(ctx);
+        this.uShadowTexSz.bind_aemszp$(ctx);
+        this.uClipSpaceFarZ.bind_aemszp$(ctx);
       }
     }
   };
-  BasicShader.prototype.bindMesh_lij8m4$ = function (mesh, ctx) {
+  BasicShader.prototype.bindMesh_sbx4mf$ = function (mesh, ctx) {
     if (!equals(this.scene_i3j15i$_0, mesh.scene)) {
       this.scene_i3j15i$_0 = mesh.scene;
       if (this.scene_i3j15i$_0 != null) {
         this.uCamPosition.value.set_czzhiu$(ensureNotNull(this.scene_i3j15i$_0).camera.globalPos);
-        this.uCamPosition.bind_evfofk$(ctx);
+        this.uCamPosition.bind_aemszp$(ctx);
         var light = ensureNotNull(this.scene_i3j15i$_0).light;
         this.uLightDirection.value.set_czzhiu$(light.direction);
-        this.uLightDirection.bind_evfofk$(ctx);
+        this.uLightDirection.bind_aemszp$(ctx);
         this.uLightColor.value.set_y2kzbl$(light.color.r, light.color.g, light.color.b);
-        this.uLightColor.bind_evfofk$(ctx);
+        this.uLightColor.bind_aemszp$(ctx);
       }
     }
-    Shader.prototype.bindMesh_lij8m4$.call(this, mesh, ctx);
+    Shader.prototype.bindMesh_sbx4mf$.call(this, mesh, ctx);
   };
-  BasicShader.prototype.onMatrixUpdate_evfofk$ = function (ctx) {
+  BasicShader.prototype.onMatrixUpdate_aemszp$ = function (ctx) {
     this.uMvpMatrix.value = ctx.mvpState.mvpMatrixBuffer;
-    this.uMvpMatrix.bind_evfofk$(ctx);
+    this.uMvpMatrix.bind_aemszp$(ctx);
     this.uViewMatrix.value = ctx.mvpState.viewMatrixBuffer;
-    this.uViewMatrix.bind_evfofk$(ctx);
+    this.uViewMatrix.bind_aemszp$(ctx);
     this.uModelMatrix.value = ctx.mvpState.modelMatrixBuffer;
-    this.uModelMatrix.bind_evfofk$(ctx);
+    this.uModelMatrix.bind_aemszp$(ctx);
   };
-  BasicShader.prototype.dispose_evfofk$ = function (ctx) {
+  BasicShader.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
-    Shader.prototype.dispose_evfofk$.call(this, ctx);
-    (tmp$ = this.texture) != null ? (tmp$.dispose_evfofk$(ctx), Unit) : null;
-    (tmp$_0 = this.normalMap) != null ? (tmp$_0.dispose_evfofk$(ctx), Unit) : null;
+    Shader.prototype.dispose_aemszp$.call(this, ctx);
+    (tmp$ = this.texture) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
+    (tmp$_0 = this.normalMap) != null ? (tmp$_0.dispose_aemszp$(ctx), Unit) : null;
   };
   BasicShader.$metadata$ = {
     kind: Kind_CLASS,
@@ -11602,13 +11643,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.uPointSz.value = value;
     }
   });
-  BasicPointShader.prototype.onBind_evfofk$ = function (ctx) {
-    BasicShader.prototype.onBind_evfofk$.call(this, ctx);
-    this.uPointSz.bind_evfofk$(ctx);
+  BasicPointShader.prototype.onBind_aemszp$ = function (ctx) {
+    BasicShader.prototype.onBind_aemszp$.call(this, ctx);
+    this.uPointSz.bind_aemszp$(ctx);
   };
   function BasicPointShader_init$ObjectLiteral() {
   }
-  BasicPointShader_init$ObjectLiteral.prototype.vsAfterProj_3c8d48$ = function (shaderProps, text) {
+  BasicPointShader_init$ObjectLiteral.prototype.vsAfterProj_jh5913$ = function (shaderProps, text, ctx) {
     text.append_gw00v9$('gl_PointSize = uPointSz;\n');
   };
   BasicPointShader_init$ObjectLiteral.$metadata$ = {
@@ -11662,8 +11703,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.uColorMix_0.value = value;
     }
   });
-  BlurShader.prototype.onBind_evfofk$ = function (ctx) {
-    BasicShader.prototype.onBind_evfofk$.call(this, ctx);
+  BlurShader.prototype.onBind_aemszp$ = function (ctx) {
+    BasicShader.prototype.onBind_aemszp$.call(this, ctx);
     var helper = this.blurHelper;
     if (helper != null) {
       helper.isInUse_8be2vx$ = true;
@@ -11671,15 +11712,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.uTexPos_0.value.set_dleff0$(helper.capturedScrX, helper.capturedScrY);
       this.uTexSz_0.value.set_dleff0$(helper.capturedScrW, helper.capturedScrH);
     }
-    this.uBlurTex_0.bind_evfofk$(ctx);
-    this.uColorMix_0.bind_evfofk$(ctx);
-    this.uTexPos_0.bind_evfofk$(ctx);
-    this.uTexSz_0.bind_evfofk$(ctx);
+    this.uBlurTex_0.bind_aemszp$(ctx);
+    this.uColorMix_0.bind_aemszp$(ctx);
+    this.uTexPos_0.bind_aemszp$(ctx);
+    this.uTexSz_0.bind_aemszp$(ctx);
   };
   function BlurShader_init$ObjectLiteral() {
   }
-  BlurShader_init$ObjectLiteral.prototype.fsAfterSampling_3c8d48$ = function (shaderProps, text) {
-    text.append_gw00v9$('vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ').append_gw00v9$('1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n').append_gw00v9$(glCapabilities.glslDialect.fragColorBody + ' = ' + glCapabilities.glslDialect.texSampler + '(').append_gw00v9$('uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ').append_gw00v9$(glCapabilities.glslDialect.fragColorBody + ' * uColorMix;' + '\n');
+  BlurShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = function (shaderProps, text, ctx) {
+    text.append_gw00v9$('vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ').append_gw00v9$('1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n').append_gw00v9$(ctx.glCapabilities.glslDialect.fragColorBody + ' = ' + ctx.glCapabilities.glslDialect.texSampler + '(').append_gw00v9$('uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ').append_gw00v9$(ctx.glCapabilities.glslDialect.fragColorBody + ' * uColorMix;' + '\n');
   };
   BlurShader_init$ObjectLiteral.$metadata$ = {
     kind: Kind_CLASS,
@@ -11782,7 +11823,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.copyTexData_0.height;
     }
   });
-  BlurredBackgroundHelper.prototype.updateDistortionTexture_vcyfmv$ = function (node, ctx, bounds) {
+  BlurredBackgroundHelper.prototype.updateDistortionTexture_hp84kc$ = function (node, ctx, bounds) {
     if (bounds === void 0)
       bounds = node.bounds;
     var tmp$, tmp$_0, tmp$_1;
@@ -11843,19 +11884,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.doBlurring_0(ctx);
     }
   };
-  BlurredBackgroundHelper.prototype.dispose_evfofk$ = function (ctx) {
+  BlurredBackgroundHelper.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
-    this.blurFb1_0.delete_evfofk$(ctx);
-    this.blurFb2_0.delete_evfofk$(ctx);
-    (tmp$ = this.blurX_0) != null ? (tmp$.dispose_evfofk$(ctx), Unit) : null;
-    (tmp$_0 = this.blurY_0) != null ? (tmp$_0.dispose_evfofk$(ctx), Unit) : null;
-    this.copyTex_0.dispose_evfofk$(ctx);
-    this.texMesh_0.dispose_evfofk$(ctx);
-    this.texMeshFlipped_0.dispose_evfofk$(ctx);
+    this.blurFb1_0.delete_aemszp$(ctx);
+    this.blurFb2_0.delete_aemszp$(ctx);
+    (tmp$ = this.blurX_0) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
+    (tmp$_0 = this.blurY_0) != null ? (tmp$_0.dispose_aemszp$(ctx), Unit) : null;
+    this.copyTex_0.dispose_aemszp$(ctx);
+    this.texMesh_0.dispose_aemszp$(ctx);
+    this.texMeshFlipped_0.dispose_aemszp$(ctx);
   };
   BlurredBackgroundHelper.prototype.doBlurring_0 = function (ctx) {
     var tmp$, tmp$_0, tmp$_1;
-    ctx.textureMgr.bindTexture_4yp9vu$(this.copyTex_0, ctx);
+    ctx.textureMgr.bindTexture_dletmp$(this.copyTex_0, ctx);
     var tmp$_2;
     if ((tmp$ = this.blurX_0) != null)
       tmp$_2 = tmp$;
@@ -11881,12 +11922,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ctx.pushAttributes();
     ctx.clearColor = Color$Companion_getInstance().BLACK;
     ctx.applyAttributes();
-    ctx.shaderMgr.bindShader_wa3i41$(null, ctx);
+    ctx.shaderMgr.bindShader_gt83r0$(null, ctx);
     ctx.mvpState.pushMatrices();
     ctx.mvpState.projMatrix.setIdentity();
     ctx.mvpState.viewMatrix.setIdentity();
     ctx.mvpState.modelMatrix.setIdentity();
-    ctx.mvpState.update_evfofk$(ctx);
+    ctx.mvpState.update_aemszp$(ctx);
     blrX.uTexture.value = this.copyTex_0;
     this.renderFb_0(this.blurFb1_0, this.texMeshFlipped_0, blrX, ctx);
     this.renderFb_0(this.blurFb2_0, this.texMesh_0, blrY, ctx);
@@ -11897,20 +11938,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.renderFb_0(this.blurFb2_0, this.texMesh_0, blrY, ctx);
     }
     ctx.mvpState.popMatrices();
-    ctx.mvpState.update_evfofk$(ctx);
+    ctx.mvpState.update_aemszp$(ctx);
     ctx.popAttributes();
   };
   BlurredBackgroundHelper.prototype.renderFb_0 = function (fb, mesh, shader, ctx) {
-    fb.bind_evfofk$(ctx);
+    fb.bind_aemszp$(ctx);
     glClear(GL_COLOR_BUFFER_BIT);
     mesh.shader = shader;
-    mesh.render_evfofk$(ctx);
-    fb.unbind_evfofk$(ctx);
+    mesh.render_aemszp$(ctx);
+    fb.unbind_aemszp$(ctx);
   };
   BlurredBackgroundHelper.prototype.addToTexBounds_0 = function (cam, node, x, y, z, ctx) {
     this.tmpVec_0.set_y2kzbl$(x, y, z);
     node.toGlobalCoords_w1lst9$(this.tmpVec_0);
-    cam.projectScreen_54xt5k$(this.tmpVec_0, ctx, this.tmpRes_0);
+    cam.projectScreen_l99i6b$(this.tmpVec_0, ctx, this.tmpRes_0);
     this.texBounds_0.add_czzhiu$(this.tmpRes_0);
   };
   function BlurredBackgroundHelper$BlurredBgTextureData() {
@@ -11925,7 +11966,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   BlurredBackgroundHelper$BlurredBgTextureData.prototype.setCopyHeight_za3lpa$ = function (value) {
     this.height = value;
   };
-  BlurredBackgroundHelper$BlurredBgTextureData.prototype.onLoad_4yp9vu$ = function (texture, ctx) {
+  BlurredBackgroundHelper$BlurredBgTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this.x, this.y, this.width, this.height, 0);
   };
   BlurredBackgroundHelper$BlurredBgTextureData.$metadata$ = {
@@ -11939,26 +11980,26 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.uTexture = this.addUniform_1ybs2r$(new UniformTexture2D('uTexture'));
     this.uDirection = this.addUniform_1ybs2r$(new Uniform2f('uDirection'));
   }
-  BlurredBackgroundHelper$BlurQuadShader.prototype.generate_evfofk$ = function (ctx) {
+  BlurredBackgroundHelper$BlurQuadShader.prototype.generate_aemszp$ = function (ctx) {
     this.attributes.add_11rb$(Attribute$Companion_getInstance().POSITIONS);
     this.attributes.add_11rb$(Attribute$Companion_getInstance().TEXTURE_COORDS);
-    var vs = glCapabilities.glslDialect.version + '\n' + (glCapabilities.glslDialect.vsIn + ' vec3 ' + Attribute$Companion_getInstance().POSITIONS.name + ';' + '\n') + (glCapabilities.glslDialect.vsIn + ' vec2 ' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + ';' + '\n') + (glCapabilities.glslDialect.vsOut + ' vec2 vTexCoord;' + '\n') + 'void main() {\n' + ('  gl_Position = vec4(' + Attribute$Companion_getInstance().POSITIONS.name + ', 1.0);' + '\n') + ('  vTexCoord = ' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + ';' + '\n') + '}';
+    var vs = ctx.glCapabilities.glslDialect.version + '\n' + (ctx.glCapabilities.glslDialect.vsIn + ' vec3 ' + Attribute$Companion_getInstance().POSITIONS.name + ';' + '\n') + (ctx.glCapabilities.glslDialect.vsIn + ' vec2 ' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + ';' + '\n') + (ctx.glCapabilities.glslDialect.vsOut + ' vec2 vTexCoord;' + '\n') + 'void main() {\n' + ('  gl_Position = vec4(' + Attribute$Companion_getInstance().POSITIONS.name + ', 1.0);' + '\n') + ('  vTexCoord = ' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + ';' + '\n') + '}';
     var fs;
-    var fragColor = glCapabilities.glslDialect.fragColorBody;
-    var sampler = glCapabilities.glslDialect.texSampler;
+    var fragColor = ctx.glCapabilities.glslDialect.fragColorBody;
+    var sampler = ctx.glCapabilities.glslDialect.texSampler;
     if (this.blurMethod_0 === BlurredBackgroundHelper$BlurMethod$BLUR_9_TAP_getInstance()) {
-      fs = glCapabilities.glslDialect.version + '\n' + 'precision mediump float;\n' + 'uniform sampler2D uTexture;\n' + 'uniform vec2 uDirection;\n' + 'uniform float uTexSize;\n' + (glCapabilities.glslDialect.fsIn + ' vec2 vTexCoord;') + (glCapabilities.glslDialect.fragColorHead + '\n') + 'void main() {\n' + '  vec2 off1 = vec2(1.3846153) * uDirection;\n' + '  vec2 off2 = vec2(3.2307692) * uDirection;\n' + ('  ' + fragColor + ' = ' + sampler + '(uTexture, vTexCoord) * 0.2270270;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord + off1) * 0.3162162;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off1) * 0.3162162;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord + off2) * 0.0702702;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off2) * 0.0702702;' + '\n') + ('  ' + fragColor + '.rgb *= ' + glCapabilities.glslDialect.fragColorBody + '.a;' + '\n') + '}';
+      fs = ctx.glCapabilities.glslDialect.version + '\n' + 'precision mediump float;\n' + 'uniform sampler2D uTexture;\n' + 'uniform vec2 uDirection;\n' + 'uniform float uTexSize;\n' + (ctx.glCapabilities.glslDialect.fsIn + ' vec2 vTexCoord;') + (ctx.glCapabilities.glslDialect.fragColorHead + '\n') + 'void main() {\n' + '  vec2 off1 = vec2(1.3846153) * uDirection;\n' + '  vec2 off2 = vec2(3.2307692) * uDirection;\n' + ('  ' + fragColor + ' = ' + sampler + '(uTexture, vTexCoord) * 0.2270270;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord + off1) * 0.3162162;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off1) * 0.3162162;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord + off2) * 0.0702702;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off2) * 0.0702702;' + '\n') + ('  ' + fragColor + '.rgb *= ' + ctx.glCapabilities.glslDialect.fragColorBody + '.a;' + '\n') + '}';
     }
      else {
-      fs = glCapabilities.glslDialect.version + '\n' + 'precision mediump float;\n' + 'uniform sampler2D uTexture;\n' + 'uniform vec2 uDirection;\n' + 'uniform float uTexSize;\n' + (glCapabilities.glslDialect.fsIn + ' vec2 vTexCoord;') + (glCapabilities.glslDialect.fragColorHead + '\n') + 'void main() {\n' + '  vec2 off1 = vec2(1.4117647) * uDirection;\n' + '  vec2 off2 = vec2(3.2941176) * uDirection;\n' + '  vec2 off3 = vec2(5.1764705) * uDirection;\n' + ('  ' + fragColor + ' = ' + sampler + '(uTexture, vTexCoord) * 0.1968255;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord + off1) * 0.2969069;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off1) * 0.2969069;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord + off2) * 0.0944703;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off2) * 0.0944703;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off3) * 0.0103813;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off3) * 0.0103813;' + '\n') + ('  ' + fragColor + '.rgb *= ' + glCapabilities.glslDialect.fragColorBody + '.a;' + '\n') + '}';
+      fs = ctx.glCapabilities.glslDialect.version + '\n' + 'precision mediump float;\n' + 'uniform sampler2D uTexture;\n' + 'uniform vec2 uDirection;\n' + 'uniform float uTexSize;\n' + (ctx.glCapabilities.glslDialect.fsIn + ' vec2 vTexCoord;') + (ctx.glCapabilities.glslDialect.fragColorHead + '\n') + 'void main() {\n' + '  vec2 off1 = vec2(1.4117647) * uDirection;\n' + '  vec2 off2 = vec2(3.2941176) * uDirection;\n' + '  vec2 off3 = vec2(5.1764705) * uDirection;\n' + ('  ' + fragColor + ' = ' + sampler + '(uTexture, vTexCoord) * 0.1968255;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord + off1) * 0.2969069;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off1) * 0.2969069;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord + off2) * 0.0944703;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off2) * 0.0944703;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off3) * 0.0103813;' + '\n') + ('  ' + fragColor + ' += ' + sampler + '(uTexture, vTexCoord - off3) * 0.0103813;' + '\n') + ('  ' + fragColor + '.rgb *= ' + ctx.glCapabilities.glslDialect.fragColorBody + '.a;' + '\n') + '}';
     }
     this.source = Shader$Shader$Source_init(vs, fs);
   };
-  BlurredBackgroundHelper$BlurQuadShader.prototype.onBind_evfofk$ = function (ctx) {
-    this.uTexture.bind_evfofk$(ctx);
-    this.uDirection.bind_evfofk$(ctx);
+  BlurredBackgroundHelper$BlurQuadShader.prototype.onBind_aemszp$ = function (ctx) {
+    this.uTexture.bind_aemszp$(ctx);
+    this.uDirection.bind_aemszp$(ctx);
   };
-  BlurredBackgroundHelper$BlurQuadShader.prototype.onMatrixUpdate_evfofk$ = function (ctx) {
+  BlurredBackgroundHelper$BlurQuadShader.prototype.onMatrixUpdate_aemszp$ = function (ctx) {
   };
   BlurredBackgroundHelper$BlurQuadShader.$metadata$ = {
     kind: Kind_CLASS,
@@ -11966,7 +12007,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     interfaces: [Shader]
   };
   function BlurredBackgroundHelper_init$lambda(this$BlurredBackgroundHelper) {
-    return function ($receiver) {
+    return function ($receiver, it) {
       return this$BlurredBackgroundHelper.copyTexData_0;
     };
   }
@@ -12064,93 +12105,93 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function GlslGenerator$GlslInjector() {
   }
-  GlslGenerator$GlslInjector.prototype.vsHeader_irqrwq$ = function (text) {
+  GlslGenerator$GlslInjector.prototype.vsHeader_8slwmz$ = function (text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.vsStart_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.vsStart_jh5913$ = function (shaderProps, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.vsAfterInput_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$ = function (shaderProps, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.vsBeforeProj_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$ = function (shaderProps, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.vsAfterProj_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.vsAfterProj_jh5913$ = function (shaderProps, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.vsEnd_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$ = function (shaderProps, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsHeader_irqrwq$ = function (text) {
+  GlslGenerator$GlslInjector.prototype.fsHeader_8slwmz$ = function (text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsStart_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.fsStart_jh5913$ = function (shaderProps, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsAfterInput_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$ = function (shaderProps, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsBeforeSampling_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$ = function (shaderProps, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsAfterSampling_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.fsAfterSampling_jh5913$ = function (shaderProps, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsEnd_3c8d48$ = function (shaderProps, text) {
+  GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$ = function (shaderProps, text, ctx) {
   };
   GlslGenerator$GlslInjector.$metadata$ = {
     kind: Kind_INTERFACE,
     simpleName: 'GlslInjector',
     interfaces: []
   };
-  GlslGenerator.prototype.generate_md635r$ = function (shaderProps, hints) {
-    this.vsIn_5467de$_0 = glCapabilities.glslDialect.vsIn;
-    this.vsOut_gj894f$_0 = glCapabilities.glslDialect.vsOut;
-    this.fsIn_4vdhvm$_0 = glCapabilities.glslDialect.fsIn;
-    this.fsOut_8yiatb$_0 = glCapabilities.glslDialect.fragColorHead;
-    this.fsOutBody_rbmxbx$_0 = glCapabilities.glslDialect.fragColorBody;
-    this.texSampler_1a4zdf$_0 = glCapabilities.glslDialect.texSampler;
-    return Shader$Shader$Source_init(this.generateVertShader_uwpm6f$_0(shaderProps), this.generateFragShader_4yhy3q$_0(shaderProps));
+  GlslGenerator.prototype.generate_eh8ey5$ = function (shaderProps, ctx) {
+    this.vsIn_5467de$_0 = ctx.glCapabilities.glslDialect.vsIn;
+    this.vsOut_gj894f$_0 = ctx.glCapabilities.glslDialect.vsOut;
+    this.fsIn_4vdhvm$_0 = ctx.glCapabilities.glslDialect.fsIn;
+    this.fsOut_8yiatb$_0 = ctx.glCapabilities.glslDialect.fragColorHead;
+    this.fsOutBody_rbmxbx$_0 = ctx.glCapabilities.glslDialect.fragColorBody;
+    this.texSampler_1a4zdf$_0 = ctx.glCapabilities.glslDialect.texSampler;
+    return Shader$Shader$Source_init(this.generateVertShader_4lpf1y$_0(shaderProps, ctx), this.generateFragShader_l2byrv$_0(shaderProps, ctx));
   };
-  GlslGenerator.prototype.generateVertShader_uwpm6f$_0 = function (shaderProps) {
-    var text = new StringBuilder(glCapabilities.glslDialect.version + '\n');
+  GlslGenerator.prototype.generateVertShader_4lpf1y$_0 = function (shaderProps, ctx) {
+    var text = new StringBuilder(ctx.glCapabilities.glslDialect.version + '\n');
     var tmp$;
     tmp$ = this.injectors.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.vsHeader_irqrwq$(text);
+      element.vsHeader_8slwmz$(text, ctx);
     }
     var tmp$_0;
     tmp$_0 = this.injectors.iterator();
     while (tmp$_0.hasNext()) {
       var element_0 = tmp$_0.next();
-      element_0.vsStart_3c8d48$(shaderProps, text);
+      element_0.vsStart_jh5913$(shaderProps, text, ctx);
     }
-    this.generateVertInputCode_bk8pu1$_0(shaderProps, text);
+    this.generateVertInputCode_mthzc6$_0(shaderProps, text, ctx);
     var tmp$_1;
     tmp$_1 = this.injectors.iterator();
     while (tmp$_1.hasNext()) {
       var element_1 = tmp$_1.next();
-      element_1.vsAfterInput_3c8d48$(shaderProps, text);
+      element_1.vsAfterInput_jh5913$(shaderProps, text, ctx);
     }
-    this.generateVertBodyCode_fozol5$_0(shaderProps, text);
+    this.generateVertBodyCode_srnive$_0(shaderProps, text, ctx);
     return text.toString();
   };
-  GlslGenerator.prototype.generateFragShader_4yhy3q$_0 = function (shaderProps) {
-    var text = new StringBuilder(glCapabilities.glslDialect.version + '\n');
+  GlslGenerator.prototype.generateFragShader_l2byrv$_0 = function (shaderProps, ctx) {
+    var text = new StringBuilder(ctx.glCapabilities.glslDialect.version + '\n');
     var tmp$;
     tmp$ = this.injectors.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.fsHeader_irqrwq$(text);
+      element.fsHeader_8slwmz$(text, ctx);
     }
     var tmp$_0;
     tmp$_0 = this.injectors.iterator();
     while (tmp$_0.hasNext()) {
       var element_0 = tmp$_0.next();
-      element_0.fsStart_3c8d48$(shaderProps, text);
+      element_0.fsStart_jh5913$(shaderProps, text, ctx);
     }
-    this.generateFragInputCode_7emddk$_0(shaderProps, text);
+    this.generateFragInputCode_nfcw8p$_0(shaderProps, text, ctx);
     var tmp$_1;
     tmp$_1 = this.injectors.iterator();
     while (tmp$_1.hasNext()) {
       var element_1 = tmp$_1.next();
-      element_1.fsAfterInput_3c8d48$(shaderProps, text);
+      element_1.fsAfterInput_jh5913$(shaderProps, text, ctx);
     }
-    this.generateFragBodyCode_1c1dne$_0(shaderProps, text);
+    this.generateFragBodyCode_fke3g5$_0(shaderProps, text, ctx);
     return text.toString();
   };
-  GlslGenerator.prototype.generateVertInputCode_bk8pu1$_0 = function (shaderProps, text) {
+  GlslGenerator.prototype.generateVertInputCode_mthzc6$_0 = function (shaderProps, text, ctx) {
     var tmp$;
     text.append_gw00v9$(this.vsIn_5467de$_0 + ' vec3 ' + Attribute$Companion_getInstance().POSITIONS.name + ';' + '\n');
     text.append_gw00v9$('uniform mat4 uMvpMatrix;\n');
@@ -12204,7 +12245,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       text.append_gw00v9$('uniform ' + uniform.type + ' ' + uniform.name + ';' + '\n');
     }
   };
-  GlslGenerator.prototype.generateVertBodyCode_fozol5$_0 = function (shaderProps, text) {
+  GlslGenerator.prototype.generateVertBodyCode_srnive$_0 = function (shaderProps, text, ctx) {
     var tmp$;
     text.append_gw00v9$('\nvoid main() {\n');
     text.append_gw00v9$('vec4 position = vec4(' + Attribute$Companion_getInstance().POSITIONS + ', 1.0);' + '\n');
@@ -12218,7 +12259,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     tmp$_0 = this.injectors.iterator();
     while (tmp$_0.hasNext()) {
       var element = tmp$_0.next();
-      element.vsBeforeProj_3c8d48$(shaderProps, text);
+      element.vsBeforeProj_jh5913$(shaderProps, text, ctx);
     }
     if (shaderProps.numBones > 0) {
       text.append_gw00v9$('mat4 boneT = ' + GlslGenerator$Companion_getInstance().U_BONES + '[' + Armature$Companion_getInstance().BONE_INDICES + '[0]] * ' + Armature$Companion_getInstance().BONE_WEIGHTS + '[0];' + '\n');
@@ -12238,7 +12279,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     tmp$_1 = this.injectors.iterator();
     while (tmp$_1.hasNext()) {
       var element_0 = tmp$_1.next();
-      element_0.vsAfterProj_3c8d48$(shaderProps, text);
+      element_0.vsAfterProj_jh5913$(shaderProps, text, ctx);
     }
     var shadowMap = shaderProps.shadowMap;
     if (shadowMap != null) {
@@ -12279,11 +12320,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     tmp$_2 = this.injectors.iterator();
     while (tmp$_2.hasNext()) {
       var element_1 = tmp$_2.next();
-      element_1.vsEnd_3c8d48$(shaderProps, text);
+      element_1.vsEnd_jh5913$(shaderProps, text, ctx);
     }
     text.append_gw00v9$('}\n');
   };
-  GlslGenerator.prototype.generateFragInputCode_7emddk$_0 = function (shaderProps, text) {
+  GlslGenerator.prototype.generateFragInputCode_nfcw8p$_0 = function (shaderProps, text, ctx) {
     var tmp$, tmp$_0;
     text.append_gw00v9$('precision highp float;\n');
     text.append_gw00v9$('uniform mat4 uModelMatrix;\n');
@@ -12350,7 +12391,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       closure$text.append_gw00v9$('factor += clamp((shadowMapDepth - (projPos.z - accLvl)) * 1e6, 0.0, 1.0);\n');
     };
   }
-  GlslGenerator.prototype.generateFragBodyCode_1c1dne$_0 = function (shaderProps, text) {
+  GlslGenerator.prototype.generateFragBodyCode_fke3g5$_0 = function (shaderProps, text, ctx) {
     var tmp$;
     var shadowMap = shaderProps.shadowMap;
     if (shadowMap != null) {
@@ -12384,7 +12425,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     tmp$_0 = this.injectors.iterator();
     while (tmp$_0.hasNext()) {
       var element = tmp$_0.next();
-      element.fsBeforeSampling_3c8d48$(shaderProps, text);
+      element.fsBeforeSampling_jh5913$(shaderProps, text, ctx);
     }
     if (shaderProps.isTextureColor) {
       text.append_gw00v9$('vec4 ' + GlslGenerator$Companion_getInstance().L_TEX_COLOR + ' = ' + this.texSampler_1a4zdf$_0 + '(' + GlslGenerator$Companion_getInstance().U_TEXTURE_0 + ', ' + GlslGenerator$Companion_getInstance().V_TEX_COORD + ');' + '\n');
@@ -12404,7 +12445,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     tmp$_1 = this.injectors.iterator();
     while (tmp$_1.hasNext()) {
       var element_0 = tmp$_1.next();
-      element_0.fsAfterSampling_3c8d48$(shaderProps, text);
+      element_0.fsAfterSampling_jh5913$(shaderProps, text, ctx);
     }
     if (shaderProps.isDiscardTranslucent) {
       text.append_gw00v9$('if (' + this.fsOutBody_rbmxbx$_0 + '.a == 0.0) { discard; }');
@@ -12462,7 +12503,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     tmp$_2 = this.injectors.iterator();
     while (tmp$_2.hasNext()) {
       var element_1 = tmp$_2.next();
-      element_1.fsEnd_3c8d48$(shaderProps, text);
+      element_1.fsEnd_jh5913$(shaderProps, text, ctx);
     }
     text.append_gw00v9$('}\n');
   };
@@ -12557,26 +12598,26 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Shader$AttributeLocation.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.descr, other.descr) && Kotlin.equals(this.location, other.location)))));
   };
-  Shader.prototype.isBound_evfofk$ = function (ctx) {
+  Shader.prototype.isBound_aemszp$ = function (ctx) {
     return ctx.shaderMgr.boundShader === this;
   };
-  Shader.prototype.onLoad_evfofk$ = function (ctx) {
+  Shader.prototype.onLoad_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
-    this.generate_evfofk$(ctx);
-    this.res = ctx.shaderMgr.createShader_saxrfs$(this.source, ctx);
+    this.generate_aemszp$(ctx);
+    this.res = ctx.shaderMgr.createShader_2ouvod$(this.source, ctx);
     this.attributeLocations.clear();
     tmp$ = this.attributes.iterator();
     while (tmp$.hasNext()) {
       var attrib = tmp$.next();
-      this.enableAttribute_h6qn1s$_0(attrib, ctx);
+      this.enableAttribute_kkd4zf$_0(attrib, ctx);
     }
     tmp$_0 = this.uniforms.values.iterator();
     while (tmp$_0.hasNext()) {
       var uniform = tmp$_0.next();
-      uniform.location = this.findUniformLocation_myr2gy$(uniform.name, ctx);
+      uniform.location = this.findUniformLocation_vvp3il$(uniform.name, ctx);
     }
   };
-  Shader.prototype.findAttributeLocation_myr2gy$ = function (attribName, ctx) {
+  Shader.prototype.findAttributeLocation_vvp3il$ = function (attribName, ctx) {
     var ref = this.res;
     if (ref != null) {
       return glGetAttribLocation(ref, attribName);
@@ -12585,12 +12626,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return -1;
     }
   };
-  Shader.prototype.enableAttribute_h6qn1s$_0 = function (attribute, ctx) {
-    var location = this.findAttributeLocation_myr2gy$(attribute.name, ctx);
-    this.enableAttribute_l20pqy$_0(attribute, location, ctx);
+  Shader.prototype.enableAttribute_kkd4zf$_0 = function (attribute, ctx) {
+    var location = this.findAttributeLocation_vvp3il$(attribute.name, ctx);
+    this.enableAttribute_noa0lr$_0(attribute, location, ctx);
     return location >= 0;
   };
-  Shader.prototype.enableAttribute_l20pqy$_0 = function (attribute, location, ctx) {
+  Shader.prototype.enableAttribute_noa0lr$_0 = function (attribute, location, ctx) {
     if (location >= 0) {
       this.attributeLocations.add_11rb$(new Shader$AttributeLocation(attribute, location));
     }
@@ -12605,7 +12646,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     return Kotlin.isType(tmp$ = this.uniforms.get_11rb$(name), Uniform) ? tmp$ : null;
   };
-  Shader.prototype.findUniformLocation_myr2gy$ = function (uniformName, ctx) {
+  Shader.prototype.findUniformLocation_vvp3il$ = function (uniformName, ctx) {
     var ref = this.res;
     if (ref != null) {
       return glGetUniformLocation(ref, uniformName);
@@ -12614,7 +12655,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return null;
     }
   };
-  Shader.prototype.bindMesh_lij8m4$ = function (mesh, ctx) {
+  Shader.prototype.bindMesh_sbx4mf$ = function (mesh, ctx) {
     var tmp$;
     tmp$ = this.attributeLocations;
     for (var i = 0; i !== tmp$.size; ++i) {
@@ -12626,19 +12667,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
       var binder = tmp$_0;
       glEnableVertexAttribArray(attrib.location);
-      binder.bindAttribute_gre2l6$(attrib.location, ctx);
+      binder.bindAttribute_2shagh$(attrib.location, ctx);
     }
   };
-  Shader.prototype.unbindMesh_evfofk$ = function (ctx) {
+  Shader.prototype.unbindMesh_aemszp$ = function (ctx) {
     var tmp$;
     tmp$ = this.attributeLocations;
     for (var i = 0; i !== tmp$.size; ++i) {
       glDisableVertexAttribArray(this.attributeLocations.get_za3lpa$(i).location);
     }
   };
-  Shader.prototype.dispose_evfofk$ = function (ctx) {
+  Shader.prototype.dispose_aemszp$ = function (ctx) {
     if (this.isValid) {
-      ctx.shaderMgr.deleteShader_v7cqlj$(this, ctx);
+      ctx.shaderMgr.deleteShader_495nfo$(this, ctx);
       this.res = null;
     }
   };
@@ -12794,7 +12835,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.isSaturation = false;
     this.isDiscardTranslucent = false;
     this.numBones = 0;
-    this.shadowMap_15c6aa$_0 = null;
+    this.shadowMap = null;
     this.isNormalMapped = false;
     this.shininess = 20.0;
     this.specularIntensity = 0.75;
@@ -12826,19 +12867,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           this.isStaticColor = true;
           break;
       }
-    }
-  });
-  Object.defineProperty(ShaderProps.prototype, 'shadowMap', {
-    get: function () {
-      if (glCapabilities.depthTextures) {
-        return this.shadowMap_15c6aa$_0;
-      }
-       else {
-        return null;
-      }
-    },
-    set: function (shadowMap) {
-      this.shadowMap_15c6aa$_0 = shadowMap;
     }
   });
   ShaderProps.$metadata$ = {
@@ -12992,9 +13020,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return isValidUniformLocation(this.location);
     }
   });
-  Uniform.prototype.bind_evfofk$ = function (ctx) {
+  Uniform.prototype.bind_aemszp$ = function (ctx) {
     if (this.isValid) {
-      this.doBind_evfofk$(ctx);
+      this.doBind_aemszp$(ctx);
     }
   };
   Uniform.$metadata$ = {
@@ -13020,10 +13048,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.value_l616rz$_0 = value;
     }
   });
-  UniformTexture2D.prototype.doBind_evfofk$ = function (ctx) {
+  UniformTexture2D.prototype.doBind_aemszp$ = function (ctx) {
     var tex = this.value;
     if (tex != null) {
-      var unit = ctx.textureMgr.bindTexture_4yp9vu$(tex, ctx);
+      var unit = ctx.textureMgr.bindTexture_dletmp$(tex, ctx);
       if (tex.isValid && ensureNotNull(tex.res).isLoaded) {
         glUniform1i(this.location, unit);
       }
@@ -13053,14 +13081,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.type_7edzmq$_0;
     }
   });
-  UniformTexture2Dv.prototype.doBind_evfofk$ = function (ctx) {
+  UniformTexture2Dv.prototype.doBind_aemszp$ = function (ctx) {
     var tmp$;
     tmp$ = this.value;
     for (var i = 0; i !== tmp$.length; ++i) {
       var tmp$_0;
       var tex = this.value[i];
       if (tex != null) {
-        tmp$_0 = ctx.textureMgr.bindTexture_4yp9vu$(tex, ctx);
+        tmp$_0 = ctx.textureMgr.bindTexture_dletmp$(tex, ctx);
       }
        else {
         tmp$_0 = GL_NONE;
@@ -13092,7 +13120,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.value_pqheco$_0 = value;
     }
   });
-  Uniform1i.prototype.doBind_evfofk$ = function (ctx) {
+  Uniform1i.prototype.doBind_aemszp$ = function (ctx) {
     glUniform1i(this.location, this.value);
   };
   Uniform1i.$metadata$ = {
@@ -13109,7 +13137,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.type_2txs21$_0;
     }
   });
-  Uniform1iv.prototype.doBind_evfofk$ = function (ctx) {
+  Uniform1iv.prototype.doBind_aemszp$ = function (ctx) {
     glUniform1iv(this.location, this.value);
   };
   Uniform1iv.$metadata$ = {
@@ -13135,7 +13163,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.value_tuvaez$_0 = value;
     }
   });
-  Uniform1f.prototype.doBind_evfofk$ = function (ctx) {
+  Uniform1f.prototype.doBind_aemszp$ = function (ctx) {
     glUniform1f(this.location, this.value);
   };
   Uniform1f.$metadata$ = {
@@ -13152,7 +13180,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.type_cltl5g$_0;
     }
   });
-  Uniform1fv.prototype.doBind_evfofk$ = function (ctx) {
+  Uniform1fv.prototype.doBind_aemszp$ = function (ctx) {
     glUniform1fv(this.location, this.value);
   };
   Uniform1fv.$metadata$ = {
@@ -13169,7 +13197,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.type_2b76pf$_0;
     }
   });
-  Uniform2f.prototype.doBind_evfofk$ = function (ctx) {
+  Uniform2f.prototype.doBind_aemszp$ = function (ctx) {
     glUniform2f(this.location, this.value.x, this.value.y);
   };
   Uniform2f.$metadata$ = {
@@ -13186,7 +13214,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.type_qifacs$_0;
     }
   });
-  Uniform3f.prototype.doBind_evfofk$ = function (ctx) {
+  Uniform3f.prototype.doBind_aemszp$ = function (ctx) {
     glUniform3f(this.location, this.value.x, this.value.y, this.value.z);
   };
   Uniform3f.$metadata$ = {
@@ -13203,7 +13231,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.type_fp2ak5$_0;
     }
   });
-  Uniform4f.prototype.doBind_evfofk$ = function (ctx) {
+  Uniform4f.prototype.doBind_aemszp$ = function (ctx) {
     glUniform4f(this.location, this.value.x, this.value.y, this.value.z, this.value.w);
   };
   Uniform4f.$metadata$ = {
@@ -13229,7 +13257,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.value_z53m2d$_0 = value;
     }
   });
-  UniformMatrix4.prototype.doBind_evfofk$ = function (ctx) {
+  UniformMatrix4.prototype.doBind_aemszp$ = function (ctx) {
     var buf = this.value;
     if (buf != null) {
       glUniformMatrix4fv(this.location, false, buf);
@@ -13251,8 +13279,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.offset = offset;
     this.type = type;
   }
-  VboBinder.prototype.bindAttribute_gre2l6$ = function (target, ctx) {
-    this.vbo.bind_evfofk$(ctx);
+  VboBinder.prototype.bindAttribute_2shagh$ = function (target, ctx) {
+    this.vbo.bind_aemszp$(ctx);
     if (this.type === GL_INT || this.type === GL_UNSIGNED_INT) {
       glVertexAttribIPointer(target, this.elemSize, this.type, this.strideBytes, this.offset * 4 | 0);
     }
@@ -13268,10 +13296,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function SharedResManager() {
     this.resources = LinkedHashMap_init();
   }
-  SharedResManager.prototype.addReference_cmpczv$ = function (key, ctx) {
+  SharedResManager.prototype.addReference_pl4ufq$ = function (key, ctx) {
     var res = this.resources.get_11rb$(key);
     if (res == null) {
-      res = new SharedResManager$SharedResource(this.createResource_cmpczv$(key, ctx));
+      res = new SharedResManager$SharedResource(this.createResource_pl4ufq$(key, ctx));
       var $receiver = this.resources;
       var value = res;
       $receiver.put_xwzc9p$(key, value);
@@ -13279,11 +13307,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     res.refCount = res.refCount + 1 | 0;
     return res.resource;
   };
-  SharedResManager.prototype.removeReference_cmpczv$ = function (key, ctx) {
+  SharedResManager.prototype.removeReference_pl4ufq$ = function (key, ctx) {
     var res = this.resources.get_11rb$(key);
     if (res != null) {
       if ((res.refCount = res.refCount - 1 | 0, res.refCount) === 0) {
-        this.deleteResource_x4m4qh$(key, res.resource, ctx);
+        this.deleteResource_5nn3pu$(key, res.resource, ctx);
         this.resources.remove_11rb$(key);
       }
     }
@@ -13426,8 +13454,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.height_20fnnl$_0 = height;
     }
   });
-  TextureData.prototype.loadData_vbwzqr$ = function (texture, ctx) {
-    this.onLoad_4yp9vu$(texture, ctx);
+  TextureData.prototype.loadData_wmmari$ = function (texture, ctx) {
+    this.onLoad_dletmp$(texture, ctx);
     ensureNotNull(texture.res).isLoaded = true;
     if (texture.props.minFilter === GL_LINEAR_MIPMAP_LINEAR) {
       glGenerateMipmap(ensureNotNull(texture.res).target);
@@ -13446,7 +13474,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.width = width;
     this.height = height;
   }
-  BufferedTextureData.prototype.onLoad_4yp9vu$ = function (texture, ctx) {
+  BufferedTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
     var tmp$;
     tmp$ = texture.res;
     if (tmp$ == null) {
@@ -13490,43 +13518,43 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.height_vdup1l$_0 = height;
     }
   });
-  Texture.prototype.onCreate_p81l1v$ = function (ctx) {
-    this.res = ctx.textureMgr.createTexture_nmo479$(this.props, ctx);
+  Texture.prototype.onCreate_cwprtu$ = function (ctx) {
+    this.res = ctx.textureMgr.createTexture_wcl7ao$(this.props, ctx);
   };
-  Texture.prototype.dispose_evfofk$ = function (ctx) {
+  Texture.prototype.dispose_aemszp$ = function (ctx) {
     if (this.isValid) {
-      ctx.textureMgr.deleteTexture_vbwzqr$(this, ctx);
+      ctx.textureMgr.deleteTexture_wmmari$(this, ctx);
       this.res = null;
     }
   };
-  Texture.prototype.loadData_3vby0t$ = function (texData, ctx) {
+  Texture.prototype.loadData_yashag$ = function (texData, ctx) {
     if (!texData.isAvailable) {
       throw new KoolException('Texture data is not available');
     }
     this.width = texData.width;
     this.height = texData.height;
-    texData.loadData_vbwzqr$(this, ctx);
+    texData.loadData_wmmari$(this, ctx);
   };
   Texture.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Texture',
     interfaces: [GlObject]
   };
-  function assetTexture(assetPath, delayLoading) {
+  function assetTexture(assetPath, ctx, delayLoading) {
     if (delayLoading === void 0)
       delayLoading = true;
-    return assetTexture_0(defaultProps(assetPath), delayLoading);
+    return assetTexture_0(defaultProps(assetPath), ctx, delayLoading);
   }
-  function assetTexture$lambda(closure$delayLoading, closure$props) {
-    return function ($receiver) {
+  function assetTexture$lambda(closure$delayLoading, closure$ctx, closure$props) {
+    return function ($receiver, it) {
       $receiver.delayLoading = closure$delayLoading;
-      return loadTextureAsset(closure$props.id);
+      return closure$ctx.assetMgr.loadTextureAsset_61zpoe$(closure$props.id);
     };
   }
-  function assetTexture_0(props, delayLoading) {
+  function assetTexture_0(props, ctx, delayLoading) {
     if (delayLoading === void 0)
       delayLoading = true;
-    return new Texture(props, assetTexture$lambda(delayLoading, props));
+    return new Texture(props, assetTexture$lambda(delayLoading, ctx, props));
   }
   function TextureManager() {
     SharedResManager.call(this);
@@ -13542,10 +13570,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.loadingTextures_0 = LinkedHashMap_init();
     this.allowedTexLoads_0 = this.maxTextureLoadsPerFrame;
   }
-  TextureManager.prototype.onNewFrame_evfofk$ = function (ctx) {
+  TextureManager.prototype.onNewFrame_aemszp$ = function (ctx) {
     this.allowedTexLoads_0 = this.maxTextureLoadsPerFrame;
-    if (this.boundTextures_0.length !== glCapabilities.maxTexUnits) {
-      var array = Array_0(glCapabilities.maxTexUnits);
+    if (this.boundTextures_0.length !== ctx.glCapabilities.maxTexUnits) {
+      var array = Array_0(ctx.glCapabilities.maxTexUnits);
       var tmp$;
       tmp$ = array.length - 1 | 0;
       for (var i = 0; i <= tmp$; i++) {
@@ -13554,11 +13582,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.boundTextures_0 = array;
     }
   };
-  TextureManager.prototype.bindTexture_4yp9vu$ = function (texture, ctx) {
+  TextureManager.prototype.bindTexture_dletmp$ = function (texture, ctx) {
     var tmp$;
     if (!texture.isValid) {
       this.nextTexUnit_0();
-      texture.onCreate_p81l1v$(ctx);
+      texture.onCreate_cwprtu$(ctx);
     }
     tmp$ = texture.res;
     if (tmp$ == null) {
@@ -13574,13 +13602,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return texRes.texUnit;
   };
-  TextureManager.prototype.createTexture_nmo479$ = function (props, ctx) {
-    return this.addReference_cmpczv$(props, ctx);
+  TextureManager.prototype.createTexture_wcl7ao$ = function (props, ctx) {
+    return this.addReference_pl4ufq$(props, ctx);
   };
-  TextureManager.prototype.deleteTexture_vbwzqr$ = function (texture, ctx) {
+  TextureManager.prototype.deleteTexture_wmmari$ = function (texture, ctx) {
     var res = texture.res;
     if (res != null) {
-      this.removeReference_cmpczv$(texture.props, ctx);
+      this.removeReference_pl4ufq$(texture.props, ctx);
     }
   };
   TextureManager.prototype.nextTexUnit_0 = function () {
@@ -13606,7 +13634,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var res = tmp$;
     var data = this.loadingTextures_0.get_11rb$(texture.props.id);
     if (data == null) {
-      data = texture.generator(texture);
+      data = texture.generator(texture, ctx);
       var $receiver = this.loadingTextures_0;
       var key = texture.props.id;
       var value = data;
@@ -13616,18 +13644,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       if (res.texUnit !== this.activeTexUnit_0) {
         this.activateTexUnit_0(ensureNotNull(texture.res).texUnit);
       }
-      texture.loadData_3vby0t$(data, ctx);
+      texture.loadData_yashag$(data, ctx);
       this.loadingTextures_0.remove_11rb$(texture.props.id);
       this.allowedTexLoads_0 = this.allowedTexLoads_0 - 1 | 0;
     }
   };
-  TextureManager.prototype.createResource_cmpczv$ = function (key, ctx) {
-    var texRes = TextureResource$Companion_getInstance().create_wmc4vc$(GL_TEXTURE_2D, key, ctx);
+  TextureManager.prototype.createResource_pl4ufq$ = function (key, ctx) {
+    var texRes = TextureResource$Companion_getInstance().create_9khcnx$(GL_TEXTURE_2D, key, ctx);
     this.bindToActiveTexUnit_0(texRes);
     return texRes;
   };
-  TextureManager.prototype.deleteResource_x4m4qh$ = function (key, res, ctx) {
-    res.delete_evfofk$(ctx);
+  TextureManager.prototype.deleteResource_5nn3pu$ = function (key, res, ctx) {
+    res.delete_aemszp$(ctx);
   };
   TextureManager.$metadata$ = {
     kind: Kind_CLASS,
@@ -13660,7 +13688,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return Animator$Companion_instance;
   }
-  Animator.prototype.tick_evfofk$ = function (ctx) {
+  Animator.prototype.tick_aemszp$ = function (ctx) {
     var $receiver = this.speed;
     if (!(Math_0.abs($receiver) < 1.0E-5)) {
       this.progress += ctx.deltaT * this.speed / this.duration;
@@ -13839,14 +13867,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var element_0 = new BillboardShader_init$ObjectLiteral();
     $receiver_0.add_11rb$(element_0);
   }
-  BillboardShader.prototype.onBind_evfofk$ = function (ctx) {
-    BasicShader.prototype.onBind_evfofk$.call(this, ctx);
+  BillboardShader.prototype.onBind_aemszp$ = function (ctx) {
+    BasicShader.prototype.onBind_aemszp$.call(this, ctx);
     this.uViewportSz_0.value.set_dleff0$(0.5 * ctx.viewport.width / this.billboardSize, 0.5 * ctx.viewport.height / this.billboardSize);
-    this.uViewportSz_0.bind_evfofk$(ctx);
+    this.uViewportSz_0.bind_aemszp$(ctx);
   };
   function BillboardShader_init$ObjectLiteral() {
   }
-  BillboardShader_init$ObjectLiteral.prototype.vsAfterProj_3c8d48$ = function (shaderProps, text) {
+  BillboardShader_init$ObjectLiteral.prototype.vsAfterProj_jh5913$ = function (shaderProps, text, ctx) {
     text.append_gw00v9$('gl_Position.x += (' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + '.x - 0.5) * gl_Position.w / uViewportSz.x;' + '\n').append_gw00v9$('gl_Position.y -= (' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + '.y - 0.5) * gl_Position.w / uViewportSz.y;' + '\n');
   };
   BillboardShader_init$ObjectLiteral.$metadata$ = {
@@ -14709,19 +14737,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$CENTER_getInstance(), Alignment$CENTER_getInstance());
       $receiver.text = '';
-      $receiver.font.setCustom_11rb$(UiTheme$Companion_getInstance().DARK_SIMPLE.standardFont_mx4ult$(closure$ctx.screenDpi));
+      $receiver.font.setCustom_11rb$(UiTheme$Companion_getInstance().DARK_SIMPLE.standardFont_oei9ky$($receiver.dpi, closure$ctx));
       $receiver.textColor.setCustom_11rb$($receiver.root.theme.accentColor);
       $receiver.onRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda($receiver));
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda$lambda_1(closure$yOri, closure$width) {
+  function debugOverlay$lambda$lambda$lambda_1(closure$yOri, closure$width, closure$ctx) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$yOri.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
-      $receiver.text = glCapabilities.glVersion.toString();
+      $receiver.text = closure$ctx.glCapabilities.glVersion.toString();
       return Unit;
     };
   }
@@ -14891,7 +14919,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.unaryPlus_uv0sim$($receiver_0);
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblFps', debugOverlay$lambda$lambda$lambda_0(width, closure$ctx)));
       var yOri = {v: -60.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblVersion', debugOverlay$lambda$lambda$lambda_1(yOri, width)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblVersion', debugOverlay$lambda$lambda$lambda_1(yOri, width, closure$ctx)));
       if (hasMemInfo) {
         yOri.v -= 18.0;
         $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lblMemInfo', debugOverlay$lambda$lambda$lambda_2(yOri, width)));
@@ -14936,7 +14964,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.graphMesh.meshData.usage = GL_DYNAMIC_DRAW;
     this.graphMesh.shader = basicShader(DeltaTGraph_init$lambda);
   }
-  DeltaTGraph.prototype.render_evfofk$ = function (ctx) {
+  DeltaTGraph.prototype.render_aemszp$ = function (ctx) {
     var color = Color$Companion_getInstance().WHITE;
     if (this.prevDeltaT > 0.05) {
       color = Color$Companion_getInstance().RED;
@@ -14962,7 +14990,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.graphVertex.position.y = y0 + h;
     this.setCurrentBarColor_d7aj7k$(Color$Companion_getInstance().MAGENTA);
     this.graphData.isSyncRequired = true;
-    UiComponent.prototype.render_evfofk$.call(this, ctx);
+    UiComponent.prototype.render_aemszp$.call(this, ctx);
   };
   DeltaTGraph.prototype.setCurrentBarColor_d7aj7k$ = function (color) {
     this.graphVertex.index = this.graphIdx;
@@ -14971,9 +14999,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.graphVertex.color.set_d7aj7k$(color);
     }
   };
-  DeltaTGraph.prototype.updateUi_evfofk$ = function (ctx) {
+  DeltaTGraph.prototype.updateUi_aemszp$ = function (ctx) {
     var tmp$;
-    UiComponent.prototype.updateUi_evfofk$.call(this, ctx);
+    UiComponent.prototype.updateUi_aemszp$.call(this, ctx);
     this.setupBuilder_84rojv$(this.graphBuilder);
     this.graphBuilder.color = Color$Companion_getInstance().WHITE;
     tmp$ = numberToInt(this.width);
@@ -14981,8 +15009,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.graphBuilder.line_s2l86p$(i - 0.5, 0.0, i - 0.5, 1.0, 1.0);
     }
   };
-  DeltaTGraph.prototype.updateTheme_evfofk$ = function (ctx) {
-    UiComponent.prototype.updateTheme_evfofk$.call(this, ctx);
+  DeltaTGraph.prototype.updateTheme_aemszp$ = function (ctx) {
+    UiComponent.prototype.updateTheme_aemszp$.call(this, ctx);
     this.minusAssign_f1kmr1$(this.graphMesh);
     this.plusAssign_f1kmr1$(this.graphMesh);
   };
@@ -14996,21 +15024,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'DeltaTGraph',
     interfaces: [UiComponent]
   };
-  function uiFont(family, sizeDp, dpi, style, chars) {
+  function uiFont(family, sizeDp, uiDpi, ctx, style, chars) {
     if (style === void 0)
       style = Font$Companion_getInstance().PLAIN;
     if (chars === void 0)
       chars = Font$Companion_getInstance().STD_CHARS;
-    var pts = sizeDp * dpi / 96.0;
-    return new Font(new FontProps(family, pts, style, pts, chars));
+    var pts = sizeDp * uiDpi / 96.0;
+    return new Font(new FontProps(family, pts, style, pts, chars), ctx);
   }
   function fontShader$lambda($receiver) {
     return Unit;
   }
   function fontShader$ObjectLiteral() {
   }
-  fontShader$ObjectLiteral.prototype.fsAfterSampling_3c8d48$ = function (shaderProps, text) {
-    text.append_gw00v9$(glCapabilities.glslDialect.fragColorBody + ' = ' + GlslGenerator$Companion_getInstance().L_VERTEX_COLOR + ' * ' + GlslGenerator$Companion_getInstance().L_TEX_COLOR + '.a;' + '\n');
+  fontShader$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = function (shaderProps, text, ctx) {
+    text.append_gw00v9$(ctx.glCapabilities.glslDialect.fragColorBody + ' = ' + GlslGenerator$Companion_getInstance().L_VERTEX_COLOR + ' * ' + GlslGenerator$Companion_getInstance().L_TEX_COLOR + '.a;' + '\n');
   };
   fontShader$ObjectLiteral.$metadata$ = {
     kind: Kind_CLASS,
@@ -15085,22 +15113,23 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   FontProps.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.family, other.family) && Kotlin.equals(this.sizePts, other.sizePts) && Kotlin.equals(this.style, other.style) && Kotlin.equals(this.sizeUnits, other.sizeUnits) && Kotlin.equals(this.chars, other.chars)))));
   };
-  function Font(fontProps) {
+  function Font(fontProps, ctx) {
     Font$Companion_getInstance();
     Texture.call(this, defaultProps(fontProps.toString()), Font_init$lambda(fontProps));
     this.fontProps = fontProps;
-    this.charMap = Font$Companion_getInstance().getCharMap_0(this.fontProps);
+    this.charMap = null;
     this.lineSpace = this.fontProps.sizeUnits * 1.2;
     this.normHeight = this.fontProps.sizeUnits * 0.7;
+    this.charMap = Font$Companion_getInstance().getCharMap_0(this.fontProps, ctx);
   }
   function Font$Companion() {
     Font$Companion_instance = this;
     this.PLAIN = 0;
     this.BOLD = 1;
     this.ITALIC = 2;
-    this.DEFAULT_FONT = null;
-    this.STD_CHARS = null;
     this.SYSTEM_FONT = '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+    this.STD_CHARS = null;
+    this.DEFAULT_FONT_PROPS = null;
     this.charMaps_0 = LinkedHashMap_init();
     var str = '';
     for (var i = 32; i <= 126; i++) {
@@ -15108,12 +15137,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     str += '\xE4\xC4\xF6\xD6\xFC\xDC\xDF\xB0\xA9';
     this.STD_CHARS = str;
-    this.DEFAULT_FONT = new Font(new FontProps(this.SYSTEM_FONT, 12.0));
+    this.DEFAULT_FONT_PROPS = new FontProps(this.SYSTEM_FONT, 12.0);
   }
-  Font$Companion.prototype.getCharMap_0 = function (fontProps) {
+  Font$Companion.prototype.defaultFont_aemszp$ = function (ctx) {
+    return new Font(Font$Companion_getInstance().DEFAULT_FONT_PROPS, ctx);
+  };
+  Font$Companion.prototype.getCharMap_0 = function (fontProps, ctx) {
     var map = this.charMaps_0.get_11rb$(fontProps);
     if (map == null) {
-      map = createCharMap(fontProps);
+      map = ctx.assetMgr.createCharMap_ttufcy$(fontProps);
       var $receiver = this.charMaps_0;
       var value = map;
       $receiver.put_xwzc9p$(fontProps, value);
@@ -15160,8 +15192,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return 'Font(' + this.fontProps.family + ', ' + this.fontProps.sizePts + 'pts, ' + this.fontProps.style + ')';
   };
   function Font_init$lambda(closure$fontProps) {
-    return function ($receiver) {
-      return Font$Companion_getInstance().getCharMap_0(closure$fontProps).textureData;
+    return function ($receiver, it) {
+      return Font$Companion_getInstance().getCharMap_0(closure$fontProps, it).textureData;
     };
   }
   Font.$metadata$ = {
@@ -15183,9 +15215,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'CharMetrics',
     interfaces: []
   };
-  function CharMap(textureData, map) {
+  function CharMap(textureData, map, fontProps) {
     this.textureData = textureData;
     this.map_0 = map;
+    this.fontProps = fontProps;
   }
   Object.defineProperty(CharMap.prototype, 'entries', {
     get: function () {
@@ -16124,14 +16157,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.meshData.addIndex_za3lpa$(idx);
     this.meshData.isBatchUpdate = false;
   };
-  LineMesh.prototype.render_evfofk$ = function (ctx) {
+  LineMesh.prototype.render_aemszp$ = function (ctx) {
     ctx.pushAttributes();
     ctx.lineWidth = this.lineWidth;
     if (this.isXray) {
       ctx.depthFunc = GL_ALWAYS;
     }
     ctx.applyAttributes();
-    Mesh.prototype.render_evfofk$.call(this, ctx);
+    Mesh.prototype.render_aemszp$.call(this, ctx);
     ctx.popAttributes();
   };
   function LineMesh_init$lambda($receiver) {
@@ -16144,6 +16177,268 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'LineMesh',
     interfaces: [Mesh]
   };
+  function Log() {
+    Log_instance = this;
+    this.DEFAULT_PRINTER = Log$DEFAULT_PRINTER$lambda;
+    this.level = Log$Level$DEBUG_getInstance();
+    this.printer = this.DEFAULT_PRINTER;
+  }
+  Log.prototype.tExt_jzryxz$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.tExt_jzryxz$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (src, message) {
+      var level = Log$Level.TRACE;
+      var tag = Kotlin.getKClassFromExpression(src).simpleName;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.t_fkbaij$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.t_fkbaij$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (tag, message) {
+      var level = Log$Level.TRACE;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.dExt_jzryxz$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.dExt_jzryxz$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (src, message) {
+      var level = Log$Level.DEBUG;
+      var tag = Kotlin.getKClassFromExpression(src).simpleName;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.d_fkbaij$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.d_fkbaij$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (tag, message) {
+      var level = Log$Level.DEBUG;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.iExt_jzryxz$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.iExt_jzryxz$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (src, message) {
+      var level = Log$Level.INFO;
+      var tag = Kotlin.getKClassFromExpression(src).simpleName;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.i_fkbaij$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.i_fkbaij$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (tag, message) {
+      var level = Log$Level.INFO;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.wExt_jzryxz$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.wExt_jzryxz$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (src, message) {
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(src).simpleName;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.w_fkbaij$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.w_fkbaij$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (tag, message) {
+      var level = Log$Level.WARN;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.eExt_jzryxz$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.eExt_jzryxz$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (src, message) {
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression(src).simpleName;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.e_fkbaij$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.e_fkbaij$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function (tag, message) {
+      var level = Log$Level.ERROR;
+      if (level.level >= this.level.level) {
+        this.printer(level, tag, message());
+      }
+    };
+  }));
+  Log.prototype.logExt_askb8u$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.logExt_askb8u$', function (level, src, message) {
+    var tag = Kotlin.getKClassFromExpression(src).simpleName;
+    if (level.level >= this.level.level) {
+      this.printer(level, tag, message());
+    }
+  });
+  Log.prototype.log_f0yxhs$ = defineInlineFunction('kool.de.fabmax.kool.util.Log.log_f0yxhs$', function (level, tag, message) {
+    if (level.level >= this.level.level) {
+      this.printer(level, tag, message());
+    }
+  });
+  function Log$Level(name, ordinal, level, indicator) {
+    Enum.call(this);
+    this.level = level;
+    this.indicator = toBoxedChar(indicator);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function Log$Level_initFields() {
+    Log$Level_initFields = function () {
+    };
+    Log$Level$TRACE_instance = new Log$Level('TRACE', 0, 0, 84);
+    Log$Level$DEBUG_instance = new Log$Level('DEBUG', 1, 1, 68);
+    Log$Level$INFO_instance = new Log$Level('INFO', 2, 2, 73);
+    Log$Level$WARN_instance = new Log$Level('WARN', 3, 3, 87);
+    Log$Level$ERROR_instance = new Log$Level('ERROR', 4, 4, 69);
+    Log$Level$OFF_instance = new Log$Level('OFF', 5, 5, 120);
+  }
+  var Log$Level$TRACE_instance;
+  function Log$Level$TRACE_getInstance() {
+    Log$Level_initFields();
+    return Log$Level$TRACE_instance;
+  }
+  var Log$Level$DEBUG_instance;
+  function Log$Level$DEBUG_getInstance() {
+    Log$Level_initFields();
+    return Log$Level$DEBUG_instance;
+  }
+  var Log$Level$INFO_instance;
+  function Log$Level$INFO_getInstance() {
+    Log$Level_initFields();
+    return Log$Level$INFO_instance;
+  }
+  var Log$Level$WARN_instance;
+  function Log$Level$WARN_getInstance() {
+    Log$Level_initFields();
+    return Log$Level$WARN_instance;
+  }
+  var Log$Level$ERROR_instance;
+  function Log$Level$ERROR_getInstance() {
+    Log$Level_initFields();
+    return Log$Level$ERROR_instance;
+  }
+  var Log$Level$OFF_instance;
+  function Log$Level$OFF_getInstance() {
+    Log$Level_initFields();
+    return Log$Level$OFF_instance;
+  }
+  Log$Level.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Level',
+    interfaces: [Enum]
+  };
+  function Log$Level$values() {
+    return [Log$Level$TRACE_getInstance(), Log$Level$DEBUG_getInstance(), Log$Level$INFO_getInstance(), Log$Level$WARN_getInstance(), Log$Level$ERROR_getInstance(), Log$Level$OFF_getInstance()];
+  }
+  Log$Level.values = Log$Level$values;
+  function Log$Level$valueOf(name) {
+    switch (name) {
+      case 'TRACE':
+        return Log$Level$TRACE_getInstance();
+      case 'DEBUG':
+        return Log$Level$DEBUG_getInstance();
+      case 'INFO':
+        return Log$Level$INFO_getInstance();
+      case 'WARN':
+        return Log$Level$WARN_getInstance();
+      case 'ERROR':
+        return Log$Level$ERROR_getInstance();
+      case 'OFF':
+        return Log$Level$OFF_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.util.Log.Level.' + name);
+    }
+  }
+  Log$Level.valueOf_61zpoe$ = Log$Level$valueOf;
+  function Log$DEFAULT_PRINTER$lambda(lvl, tag, message) {
+    println(String.fromCharCode(unboxChar(lvl.indicator)) + '/' + toString(tag) + ': ' + message);
+    return Unit;
+  }
+  Log.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Log',
+    interfaces: []
+  };
+  var Log_instance = null;
+  function Log_getInstance() {
+    if (Log_instance === null) {
+      new Log();
+    }
+    return Log_instance;
+  }
+  var logT = defineInlineFunction('kool.de.fabmax.kool.util.logT_hbfas6$', wrapFunction(function () {
+    var util = _.de.fabmax.kool.util;
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function ($receiver, message) {
+      var $this = util.Log;
+      var level = Log$Level.TRACE;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, message());
+      }
+    };
+  }));
+  var logD = defineInlineFunction('kool.de.fabmax.kool.util.logD_hbfas6$', wrapFunction(function () {
+    var util = _.de.fabmax.kool.util;
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function ($receiver, message) {
+      var $this = util.Log;
+      var level = Log$Level.DEBUG;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, message());
+      }
+    };
+  }));
+  var logI = defineInlineFunction('kool.de.fabmax.kool.util.logI_hbfas6$', wrapFunction(function () {
+    var util = _.de.fabmax.kool.util;
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function ($receiver, message) {
+      var $this = util.Log;
+      var level = Log$Level.INFO;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, message());
+      }
+    };
+  }));
+  var logW = defineInlineFunction('kool.de.fabmax.kool.util.logW_hbfas6$', wrapFunction(function () {
+    var util = _.de.fabmax.kool.util;
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function ($receiver, message) {
+      var $this = util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, message());
+      }
+    };
+  }));
+  var logE = defineInlineFunction('kool.de.fabmax.kool.util.logE_hbfas6$', wrapFunction(function () {
+    var util = _.de.fabmax.kool.util;
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    return function ($receiver, message) {
+      var $this = util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, message());
+      }
+    };
+  }));
   function MeshBuilder(meshData) {
     this.meshData = meshData;
     this.transform = new Mat4fStack();
@@ -16158,7 +16453,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.cylinderProps = new CylinderProps();
     this.rectProps = new RectProps();
     this.sphereProps = new SphereProps();
-    this.textProps = new TextProps();
+    this.textProps = null;
   }
   function MeshBuilder$vertex$lambda(closure$pos, closure$nrm, closure$uv, this$MeshBuilder) {
     return function ($receiver) {
@@ -16572,12 +16867,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       i1 = i3;
     }
   };
-  MeshBuilder.prototype.text_neimsr$ = defineInlineFunction('kool.de.fabmax.kool.util.MeshBuilder.text_neimsr$', function (font, props) {
-    this.textProps.defaults();
-    this.textProps.font = font;
-    props(this.textProps);
-    this.text_lis6zk$(this.textProps);
-  });
+  MeshBuilder.prototype.text_neimsr$ = defineInlineFunction('kool.de.fabmax.kool.util.MeshBuilder.text_neimsr$', wrapFunction(function () {
+    var TextProps_init = _.de.fabmax.kool.util.TextProps;
+    return function (font, block) {
+      var tmp$;
+      var tmp$_0;
+      if ((tmp$ = this.textProps) != null)
+        tmp$_0 = tmp$;
+      else {
+        var $receiver = new TextProps_init(font);
+        this.textProps = $receiver;
+        tmp$_0 = $receiver;
+      }
+      var props = tmp$_0;
+      props.defaults();
+      props.font = font;
+      block(props);
+      this.text_lis6zk$(props);
+    };
+  }));
   MeshBuilder.prototype.text_lis6zk$ = function (props) {
     this.transform.push();
     var tmp$;
@@ -16839,14 +17147,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'CylinderProps',
     interfaces: []
   };
-  function TextProps() {
+  function TextProps(font) {
+    this.font = font;
     this.text = '';
-    this.font = Font$Companion_getInstance().DEFAULT_FONT;
     this.origin = MutableVec3f_init();
   }
   TextProps.prototype.defaults = function () {
     this.text = '';
-    this.font = Font$Companion_getInstance().DEFAULT_FONT;
     this.origin.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
     return this;
   };
@@ -16879,25 +17186,77 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'PerfTimer',
     interfaces: []
   };
-  var timedMs = defineInlineFunction('kool.de.fabmax.kool.util.timedMs_85cpgq$', wrapFunction(function () {
+  var timedMs = defineInlineFunction('kool.de.fabmax.kool.util.timedMs_9vqa9e$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
     var now = _.de.fabmax.kool.now;
+    var util = _.de.fabmax.kool.util;
     var formatDouble = _.de.fabmax.kool.formatDouble_12fank$;
-    var println = Kotlin.kotlin.io.println_s8jyv4$;
-    return function (message, block) {
+    return function (message, tag, level, block) {
+      if (tag === void 0)
+        tag = 'PerfTimer';
+      if (level === void 0)
+        level = Log$Level.INFO;
       var t = now();
       var ret = block();
-      println(message + ' ' + formatDouble(now() - t, 3) + ' ms');
+      var $this = util.Log;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, message + ' ' + formatDouble(now() - t, 3) + ' ms');
+      }
       return ret;
     };
   }));
-  var timedMs_0 = defineInlineFunction('kool.de.fabmax.kool.util.timedMs_27vacu$', wrapFunction(function () {
+  var timedMs_0 = defineInlineFunction('kool.de.fabmax.kool.util.timedMs_v0aq7q$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
     var now = _.de.fabmax.kool.now;
+    var util = _.de.fabmax.kool.util;
     var formatDouble = _.de.fabmax.kool.formatDouble_12fank$;
-    var println = Kotlin.kotlin.io.println_s8jyv4$;
-    return function (message, block) {
+    return function (message, tag, level, block) {
+      if (tag === void 0)
+        tag = 'PerfTimer';
+      if (level === void 0)
+        level = Log$Level.INFO;
       var t = now();
       var ret = block();
-      println(message() + ' ' + formatDouble(now() - t, 3) + ' ms');
+      var $this = util.Log;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, message() + ' ' + formatDouble(now() - t, 3) + ' ms');
+      }
+      return ret;
+    };
+  }));
+  var timedMs_1 = defineInlineFunction('kool.de.fabmax.kool.util.timedMs_sky27l$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    var now = _.de.fabmax.kool.now;
+    var util = _.de.fabmax.kool.util;
+    var formatDouble = _.de.fabmax.kool.formatDouble_12fank$;
+    return function ($receiver, message, level, block) {
+      if (level === void 0)
+        level = Log$Level.INFO;
+      var t = now();
+      var ret = block();
+      var $this = util.Log;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, message + ' ' + formatDouble(now() - t, 3) + ' ms');
+      }
+      return ret;
+    };
+  }));
+  var timedMs_2 = defineInlineFunction('kool.de.fabmax.kool.util.timedMs_780vyl$', wrapFunction(function () {
+    var Log$Level = _.de.fabmax.kool.util.Log.Level;
+    var now = _.de.fabmax.kool.now;
+    var util = _.de.fabmax.kool.util;
+    var formatDouble = _.de.fabmax.kool.formatDouble_12fank$;
+    return function ($receiver, message, level, block) {
+      if (level === void 0)
+        level = Log$Level.INFO;
+      var t = now();
+      var ret = block();
+      var $this = util.Log;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, message() + ' ' + formatDouble(now() - t, 3) + ' ms');
+      }
       return ret;
     };
   }));
@@ -18264,9 +18623,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.clipSpaceFarZ_3g3t06$_0 = clipSpaceFarZ;
     }
   });
-  ShadowMap.prototype.renderShadowMap_jkftm7$ = function (nodeToRender, ctx) {
+  ShadowMap.prototype.renderShadowMap_x4tdlw$ = function (nodeToRender, ctx) {
     var tmp$;
-    if (!glCapabilities.depthTextures) {
+    if (!ctx.glCapabilities.depthTextures) {
       return;
     }
     tmp$ = nodeToRender.scene;
@@ -18290,26 +18649,26 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.depthCam_0.top = this.bounds_0.max.y;
     this.depthCam_0.near = -this.bounds_0.max.z - 10;
     this.depthCam_0.far = -this.bounds_0.min.z;
-    this.fbo_0.bind_evfofk$(ctx);
+    this.fbo_0.bind_aemszp$(ctx);
     glClear(GL_DEPTH_BUFFER_BIT);
     ctx.mvpState.pushMatrices();
     ctx.mvpState.projMatrix.setIdentity();
     ctx.mvpState.viewMatrix.setIdentity();
     ctx.mvpState.modelMatrix.setIdentity();
-    this.depthCam_0.updateCamera_evfofk$(ctx);
+    this.depthCam_0.updateCamera_aemszp$(ctx);
     ShadowMap$Companion_getInstance().BIAS_MATRIX_0.mul_93v2ma$(ctx.mvpState.mvpMatrix, this.depthMvpMat_0).toBuffer_he122g$(this.depthMvp);
     var prevRenderPass = ctx.renderPass;
     ctx.renderPass = RenderPass$SHADOW_getInstance();
     scene.camera = this.depthCam_0;
-    nodeToRender.render_evfofk$(ctx);
+    nodeToRender.render_aemszp$(ctx);
     scene.camera = camera;
     ctx.renderPass = prevRenderPass;
     ctx.mvpState.popMatrices();
-    ctx.mvpState.update_evfofk$(ctx);
-    this.fbo_0.unbind_evfofk$(ctx);
+    ctx.mvpState.update_aemszp$(ctx);
+    this.fbo_0.unbind_aemszp$(ctx);
   };
-  ShadowMap.prototype.dispose_evfofk$ = function (ctx) {
-    this.fbo_0.delete_evfofk$(ctx);
+  ShadowMap.prototype.dispose_aemszp$ = function (ctx) {
+    this.fbo_0.delete_aemszp$(ctx);
   };
   function ShadowMap$Companion() {
     ShadowMap$Companion_instance = this;
@@ -18340,20 +18699,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.subMaps = subMaps;
     this.shadowMvp = createFloat32Buffer(16 * this.subMaps.length | 0);
   }
-  CascadedShadowMap.prototype.renderShadowMap_jkftm7$ = function (nodeToRender, ctx) {
+  CascadedShadowMap.prototype.renderShadowMap_x4tdlw$ = function (nodeToRender, ctx) {
     var tmp$;
     tmp$ = this.subMaps;
     for (var i = 0; i !== tmp$.length; ++i) {
-      this.subMaps[i].renderShadowMap_jkftm7$(nodeToRender, ctx);
+      this.subMaps[i].renderShadowMap_x4tdlw$(nodeToRender, ctx);
       this.shadowMvp.put_axfmcw$(this.subMaps[i].depthMvp);
     }
     this.shadowMvp.flip();
   };
-  CascadedShadowMap.prototype.dispose_evfofk$ = function (ctx) {
+  CascadedShadowMap.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
     tmp$ = this.subMaps;
     for (var i = 0; i !== tmp$.length; ++i) {
-      this.subMaps[i].dispose_evfofk$(ctx);
+      this.subMaps[i].dispose_aemszp$(ctx);
     }
   };
   function CascadedShadowMap$Companion() {
@@ -18416,7 +18775,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.currentGesture_nrwzky$_0 = currentGesture;
     }
   });
-  TouchGestureEvaluator.prototype.evaluate_evfofk$ = function (ctx) {
+  TouchGestureEvaluator.prototype.evaluate_aemszp$ = function (ctx) {
     this.screenDpi = ctx.screenDpi;
     ctx.inputMgr.getActivePointers_mcn869$(this.activePointers_ajelte$_0);
     if (this.activePointers_ajelte$_0.size > 1) {
@@ -18704,21 +19063,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$gl.glVertexAttribIPointer_4qozqa$ = glVertexAttribIPointer;
   package$gl.glViewport_tjonv8$ = glViewport;
   package$gl.isValidUniformLocation_s8jyv4$ = isValidUniformLocation;
-  Object.defineProperty(package$kool, 'glCapabilities', {
-    get: function () {
-      return glCapabilities;
-    },
-    set: function (value) {
-      glCapabilities = value;
-    }
-  });
   package$kool.createContext = createContext;
-  package$kool.createContext_izggji$ = createContext_0;
-  package$kool.createCharMap_ttufcy$ = createCharMap;
+  package$kool.createContext_s8od96$ = createContext_0;
   package$kool.now = now;
-  package$kool.loadAsset_jrww91$ = loadAsset;
-  package$kool.loadTextureAsset_61zpoe$ = loadTextureAsset;
-  package$kool.openUrl_61zpoe$ = openUrl;
   package$kool.getMemoryInfo = getMemoryInfo;
   $$importsForInline$$.kool = _;
   package$kool.formatDouble_12fank$ = formatDouble;
@@ -18728,6 +19075,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var package$platform = package$kool.platform || (package$kool.platform = {});
   package$platform.FontMapGenerator = FontMapGenerator;
   package$platform.ImageTextureData = ImageTextureData;
+  Object.defineProperty(JsAssetManager, 'Companion', {
+    get: JsAssetManager$Companion_getInstance
+  });
+  package$platform.JsAssetManager = JsAssetManager;
   JsContext.InitProps = JsContext$InitProps;
   Object.defineProperty(JsContext, 'Companion', {
     get: JsContext$Companion_getInstance
@@ -18745,6 +19096,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$util.createUint16Buffer_za3lpa$ = createUint16Buffer;
   package$util.createUint32Buffer_za3lpa$ = createUint32Buffer;
   package$util.createFloat32Buffer_za3lpa$ = createFloat32Buffer;
+  package$kool.AssetManager = AssetManager;
   package$audio.LowPassFilter = LowPassFilter;
   package$audio.HighPassFilter = HighPassFilter;
   Object.defineProperty(MoodFilter, 'Companion', {
@@ -20370,6 +20722,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: InputManager$Companion_getInstance
   });
   package$kool.InputManager = InputManager;
+  KoolContext.Viewport = KoolContext$Viewport;
+  package$kool.KoolContext = KoolContext;
+  Object.defineProperty(RenderPass, 'SHADOW', {
+    get: RenderPass$SHADOW_getInstance
+  });
+  Object.defineProperty(RenderPass, 'SCREEN', {
+    get: RenderPass$SCREEN_getInstance
+  });
+  package$kool.RenderPass = RenderPass;
   package$kool.KoolException = KoolException;
   var package$math = package$kool.math || (package$kool.math = {});
   package$math.BSpline = BSpline;
@@ -20474,16 +20835,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$kool.MemoryManager = MemoryManager;
   package$kool.MvpState = MvpState;
   package$kool.formatFloat_vjorfl$ = formatFloat;
-  RenderContext.InitProps = RenderContext$InitProps;
-  RenderContext.Viewport = RenderContext$Viewport;
-  package$kool.RenderContext = RenderContext;
-  Object.defineProperty(RenderPass, 'SHADOW', {
-    get: RenderPass$SHADOW_getInstance
-  });
-  Object.defineProperty(RenderPass, 'SCREEN', {
-    get: RenderPass$SCREEN_getInstance
-  });
-  package$kool.RenderPass = RenderPass;
   var package$scene = package$kool.scene || (package$kool.scene = {});
   var package$animation = package$scene.animation || (package$scene.animation = {});
   package$animation.Animation = Animation;
@@ -20639,6 +20990,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: UiTheme$Companion_getInstance
   });
   package$ui.UiTheme = UiTheme;
+  package$ui.standardFont_mt8j6u$ = standardFont;
+  package$ui.titleFont_mt8j6u$ = titleFont;
   package$ui.theme_vvurn$ = theme;
   package$ui.ThemeBuilder = ThemeBuilder;
   package$ui.ThemeOrCustomProp = ThemeOrCustomProp;
@@ -20770,8 +21123,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$kool.TextureData = TextureData;
   package$kool.BufferedTextureData = BufferedTextureData;
   package$kool.Texture = Texture;
-  package$kool.assetTexture_ivxn3r$ = assetTexture;
-  package$kool.assetTexture_4689t5$ = assetTexture_0;
+  package$kool.assetTexture_2gt2x8$ = assetTexture;
+  package$kool.assetTexture_513zl8$ = assetTexture_0;
   package$kool.TextureManager = TextureManager;
   Object.defineProperty(Animator, 'Companion', {
     get: Animator$Companion_getInstance
@@ -20804,8 +21157,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: ColorGradient$Companion_getInstance
   });
   package$util.ColorGradient = ColorGradient;
-  package$util.debugOverlay_3i7a9j$ = debugOverlay;
-  package$util.uiFont_j4p0la$ = uiFont;
+  package$util.debugOverlay_n8mrtu$ = debugOverlay;
+  package$util.uiFont_a4r08d$ = uiFont;
   package$util.fontShader_s2xzqe$ = fontShader;
   package$util.FontProps = FontProps;
   Object.defineProperty(Font, 'Companion', {
@@ -20830,6 +21183,33 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$util.IndexedVertexList = IndexedVertexList;
   package$util.lineMesh_6a24eg$ = lineMesh;
   package$util.LineMesh = LineMesh;
+  Log.prototype.Level = Log$Level;
+  Object.defineProperty(Log$Level, 'TRACE', {
+    get: Log$Level$TRACE_getInstance
+  });
+  Object.defineProperty(Log$Level, 'DEBUG', {
+    get: Log$Level$DEBUG_getInstance
+  });
+  Object.defineProperty(Log$Level, 'INFO', {
+    get: Log$Level$INFO_getInstance
+  });
+  Object.defineProperty(Log$Level, 'WARN', {
+    get: Log$Level$WARN_getInstance
+  });
+  Object.defineProperty(Log$Level, 'ERROR', {
+    get: Log$Level$ERROR_getInstance
+  });
+  Object.defineProperty(Log$Level, 'OFF', {
+    get: Log$Level$OFF_getInstance
+  });
+  Object.defineProperty(package$util, 'Log', {
+    get: Log_getInstance
+  });
+  package$util.logT_hbfas6$ = logT;
+  package$util.logD_hbfas6$ = logD;
+  package$util.logI_hbfas6$ = logI;
+  package$util.logW_hbfas6$ = logW;
+  package$util.logE_hbfas6$ = logE;
   package$util.MeshBuilder = MeshBuilder;
   package$util.CircleProps = CircleProps;
   package$util.SphereProps = SphereProps;
@@ -20838,8 +21218,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$util.CylinderProps = CylinderProps;
   package$util.TextProps = TextProps;
   package$util.PerfTimer = PerfTimer;
-  package$util.timedMs_85cpgq$ = timedMs;
-  package$util.timedMs_27vacu$ = timedMs_0;
+  package$util.timedMs_9vqa9e$ = timedMs;
+  package$util.timedMs_v0aq7q$ = timedMs_0;
+  package$util.timedMs_sky27l$ = timedMs_1;
+  package$util.timedMs_780vyl$ = timedMs_2;
   package$util.pointMesh_h6khem$ = pointMesh;
   package$util.PointMesh = PointMesh;
   package$util.Property = Property;
@@ -20919,62 +21301,61 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Float32BufferImpl.prototype.put_q3cr5i$ = Float32Buffer.prototype.put_q3cr5i$;
   Float32BufferImpl.prototype.plusAssign_11rb$ = Float32Buffer.prototype.plusAssign_11rb$;
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
-  BlankComponentUi.prototype.createUi_evfofk$ = ComponentUi.prototype.createUi_evfofk$;
-  BlankComponentUi.prototype.updateUi_evfofk$ = ComponentUi.prototype.updateUi_evfofk$;
-  BlankComponentUi.prototype.disposeUi_evfofk$ = ComponentUi.prototype.disposeUi_evfofk$;
-  BlankComponentUi.prototype.onRender_evfofk$ = ComponentUi.prototype.onRender_evfofk$;
-  SimpleComponentUi.prototype.onRender_evfofk$ = ComponentUi.prototype.onRender_evfofk$;
-  BasicPointShader_init$ObjectLiteral.prototype.vsHeader_irqrwq$ = GlslGenerator$GlslInjector.prototype.vsHeader_irqrwq$;
-  BasicPointShader_init$ObjectLiteral.prototype.vsStart_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsStart_3c8d48$;
-  BasicPointShader_init$ObjectLiteral.prototype.vsAfterInput_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_3c8d48$;
-  BasicPointShader_init$ObjectLiteral.prototype.vsBeforeProj_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_3c8d48$;
-  BasicPointShader_init$ObjectLiteral.prototype.vsEnd_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsEnd_3c8d48$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsHeader_irqrwq$ = GlslGenerator$GlslInjector.prototype.fsHeader_irqrwq$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsStart_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsStart_3c8d48$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsAfterInput_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_3c8d48$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsBeforeSampling_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_3c8d48$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsAfterSampling_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsAfterSampling_3c8d48$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsEnd_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsEnd_3c8d48$;
-  BlurShader_init$ObjectLiteral.prototype.vsHeader_irqrwq$ = GlslGenerator$GlslInjector.prototype.vsHeader_irqrwq$;
-  BlurShader_init$ObjectLiteral.prototype.vsStart_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsStart_3c8d48$;
-  BlurShader_init$ObjectLiteral.prototype.vsAfterInput_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_3c8d48$;
-  BlurShader_init$ObjectLiteral.prototype.vsBeforeProj_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_3c8d48$;
-  BlurShader_init$ObjectLiteral.prototype.vsAfterProj_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_3c8d48$;
-  BlurShader_init$ObjectLiteral.prototype.vsEnd_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsEnd_3c8d48$;
-  BlurShader_init$ObjectLiteral.prototype.fsHeader_irqrwq$ = GlslGenerator$GlslInjector.prototype.fsHeader_irqrwq$;
-  BlurShader_init$ObjectLiteral.prototype.fsStart_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsStart_3c8d48$;
-  BlurShader_init$ObjectLiteral.prototype.fsAfterInput_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_3c8d48$;
-  BlurShader_init$ObjectLiteral.prototype.fsBeforeSampling_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_3c8d48$;
-  BlurShader_init$ObjectLiteral.prototype.fsEnd_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsEnd_3c8d48$;
-  BillboardShader_init$ObjectLiteral.prototype.vsHeader_irqrwq$ = GlslGenerator$GlslInjector.prototype.vsHeader_irqrwq$;
-  BillboardShader_init$ObjectLiteral.prototype.vsStart_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsStart_3c8d48$;
-  BillboardShader_init$ObjectLiteral.prototype.vsAfterInput_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_3c8d48$;
-  BillboardShader_init$ObjectLiteral.prototype.vsBeforeProj_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_3c8d48$;
-  BillboardShader_init$ObjectLiteral.prototype.vsEnd_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsEnd_3c8d48$;
-  BillboardShader_init$ObjectLiteral.prototype.fsHeader_irqrwq$ = GlslGenerator$GlslInjector.prototype.fsHeader_irqrwq$;
-  BillboardShader_init$ObjectLiteral.prototype.fsStart_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsStart_3c8d48$;
-  BillboardShader_init$ObjectLiteral.prototype.fsAfterInput_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_3c8d48$;
-  BillboardShader_init$ObjectLiteral.prototype.fsBeforeSampling_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_3c8d48$;
-  BillboardShader_init$ObjectLiteral.prototype.fsAfterSampling_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsAfterSampling_3c8d48$;
-  BillboardShader_init$ObjectLiteral.prototype.fsEnd_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsEnd_3c8d48$;
-  fontShader$ObjectLiteral.prototype.vsHeader_irqrwq$ = GlslGenerator$GlslInjector.prototype.vsHeader_irqrwq$;
-  fontShader$ObjectLiteral.prototype.vsStart_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsStart_3c8d48$;
-  fontShader$ObjectLiteral.prototype.vsAfterInput_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_3c8d48$;
-  fontShader$ObjectLiteral.prototype.vsBeforeProj_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_3c8d48$;
-  fontShader$ObjectLiteral.prototype.vsAfterProj_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_3c8d48$;
-  fontShader$ObjectLiteral.prototype.vsEnd_3c8d48$ = GlslGenerator$GlslInjector.prototype.vsEnd_3c8d48$;
-  fontShader$ObjectLiteral.prototype.fsHeader_irqrwq$ = GlslGenerator$GlslInjector.prototype.fsHeader_irqrwq$;
-  fontShader$ObjectLiteral.prototype.fsStart_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsStart_3c8d48$;
-  fontShader$ObjectLiteral.prototype.fsAfterInput_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_3c8d48$;
-  fontShader$ObjectLiteral.prototype.fsBeforeSampling_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_3c8d48$;
-  fontShader$ObjectLiteral.prototype.fsEnd_3c8d48$ = GlslGenerator$GlslInjector.prototype.fsEnd_3c8d48$;
+  BlankComponentUi.prototype.createUi_aemszp$ = ComponentUi.prototype.createUi_aemszp$;
+  BlankComponentUi.prototype.updateUi_aemszp$ = ComponentUi.prototype.updateUi_aemszp$;
+  BlankComponentUi.prototype.disposeUi_aemszp$ = ComponentUi.prototype.disposeUi_aemszp$;
+  BlankComponentUi.prototype.onRender_aemszp$ = ComponentUi.prototype.onRender_aemszp$;
+  SimpleComponentUi.prototype.onRender_aemszp$ = ComponentUi.prototype.onRender_aemszp$;
+  BasicPointShader_init$ObjectLiteral.prototype.vsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.vsHeader_8slwmz$;
+  BasicPointShader_init$ObjectLiteral.prototype.vsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.vsStart_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.fsHeader_8slwmz$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.fsStart_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterSampling_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.vsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.vsHeader_8slwmz$;
+  BlurShader_init$ObjectLiteral.prototype.vsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.vsStart_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.vsAfterProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.fsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.fsHeader_8slwmz$;
+  BlurShader_init$ObjectLiteral.prototype.fsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.fsStart_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.vsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.vsHeader_8slwmz$;
+  BillboardShader_init$ObjectLiteral.prototype.vsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.vsStart_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.fsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.fsHeader_8slwmz$;
+  BillboardShader_init$ObjectLiteral.prototype.fsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.fsStart_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterSampling_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
+  fontShader$ObjectLiteral.prototype.vsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.vsHeader_8slwmz$;
+  fontShader$ObjectLiteral.prototype.vsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.vsStart_jh5913$;
+  fontShader$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
+  fontShader$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
+  fontShader$ObjectLiteral.prototype.vsAfterProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_jh5913$;
+  fontShader$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
+  fontShader$ObjectLiteral.prototype.fsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.fsHeader_8slwmz$;
+  fontShader$ObjectLiteral.prototype.fsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.fsStart_jh5913$;
+  fontShader$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
+  fontShader$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
+  fontShader$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
   AnimationData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   NodeAnimationData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   Vec3KeyData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   Vec4KeyData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   BoneData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   MeshData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  glCapabilities = GlCapabilities$Companion_getInstance().UNKNOWN_CAPABILITIES;
   GL_ACTIVE_TEXTURE = 34016;
   GL_DEPTH_BUFFER_BIT = 256;
   GL_STENCIL_BUFFER_BIT = 1024;

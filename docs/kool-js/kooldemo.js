@@ -14,10 +14,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var pcs = $module$kool.de.fabmax.kool.scene.ui.pcs_8ca0d4$;
   var Alignment = $module$kool.de.fabmax.kool.scene.ui.Alignment;
   var Gravity = $module$kool.de.fabmax.kool.scene.ui.Gravity;
+  var titleFont = $module$kool.de.fabmax.kool.scene.ui.titleFont_mt8j6u$;
   var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
   var uiScene = $module$kool.de.fabmax.kool.scene.ui.uiScene_7c31we$;
   var Kind_CLASS = Kotlin.Kind.CLASS;
-  var debugOverlay = $module$kool.de.fabmax.kool.util.debugOverlay_3i7a9j$;
+  var debugOverlay = $module$kool.de.fabmax.kool.util.debugOverlay_n8mrtu$;
   var to = Kotlin.kotlin.to_ujzrz7$;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   var ToggleButtonUi = $module$kool.de.fabmax.kool.scene.ui.ToggleButtonUi;
@@ -54,9 +55,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
   var Margin = $module$kool.de.fabmax.kool.scene.ui.Margin;
   var color = $module$kool.de.fabmax.kool.util.color_61zpoe$;
-  var openUrl = $module$kool.de.fabmax.kool.openUrl_61zpoe$;
   var formatDouble = $module$kool.de.fabmax.kool.formatDouble_12fank$;
-  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_ivxn3r$;
+  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_2gt2x8$;
   var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
   var Attribute = $module$kool.de.fabmax.kool.shading.Attribute;
   var MeshData_init = $module$kool.de.fabmax.kool.scene.MeshData_init_j0mu7e$;
@@ -71,7 +71,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var loadMesh = $module$kool.de.fabmax.kool.util.serialization.loadMesh_fqrh44$;
   var Armature = $module$kool.de.fabmax.kool.scene.animation.Armature;
-  var loadAsset = $module$kool.de.fabmax.kool.loadAsset_jrww91$;
   var Label = $module$kool.de.fabmax.kool.scene.ui.Label;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
   var formatFloat = $module$kool.de.fabmax.kool.formatFloat_vjorfl$;
@@ -79,13 +78,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var plus = Kotlin.kotlin.collections.plus_qloxvw$;
   var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_o1x1d9$;
   var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
-  var RenderContext$Viewport = $module$kool.de.fabmax.kool.RenderContext.Viewport;
+  var KoolContext$Viewport = $module$kool.de.fabmax.kool.KoolContext.Viewport;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var InRadiusTraverser_init = $module$kool.de.fabmax.kool.math.InRadiusTraverser_init_34hdy3$;
   var BillboardMesh = $module$kool.de.fabmax.kool.util.BillboardMesh;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
-  var println = Kotlin.kotlin.io.println_s8jyv4$;
   var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
   var CubicPointDistribution = $module$kool.de.fabmax.kool.math.CubicPointDistribution;
   var pointMesh = $module$kool.de.fabmax.kool.util.pointMesh_h6khem$;
@@ -116,7 +114,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Pad = $module$kool.de.fabmax.kool.audio.Pad;
   var AudioGenerator = $module$kool.de.fabmax.kool.audio.AudioGenerator;
   var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
-  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_4689t5$;
+  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_513zl8$;
   var CullMethod = $module$kool.de.fabmax.kool.scene.CullMethod;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
@@ -216,7 +214,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       while (tmp$.hasNext()) {
         var element = tmp$.next();
         ctx.scenes.remove_11rb$(element);
-        element.dispose_evfofk$(ctx);
+        element.dispose_aemszp$(ctx);
       }
       this.currentScenes_0.clear();
       var tmp$_0, tmp$_0_0;
@@ -245,14 +243,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.layoutSpec.setSize_4ujscr$(dps(40.0, true), dps(40.0, true), zero());
     return Unit;
   }
-  function Demo$demoOverlay$lambda$lambda$lambda_0(this$) {
+  function Demo$demoOverlay$lambda$lambda$lambda_0(this$, closure$ctx) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(-50.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(40.0, true), zero());
       $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
       $receiver.text = 'Demos';
       $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.font.setCustom_11rb$(this$.theme.titleFont_mx4ult$($receiver.dpi));
+      $receiver.font.setCustom_11rb$(titleFont($receiver, closure$ctx));
       return Unit;
     };
   }
@@ -304,13 +302,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function Demo$demoOverlay$lambda$lambda_1(this$, this$Demo, closure$ctx, closure$menuButton) {
+  function Demo$demoOverlay$lambda$lambda_1(this$, closure$ctx, this$Demo, closure$menuButton) {
     return function ($receiver) {
       var tmp$;
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(250.0, true), pcs(100.0, true), zero());
       $receiver.alpha = 0.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('title', Demo$demoOverlay$lambda$lambda$lambda_0(this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('title', Demo$demoOverlay$lambda$lambda$lambda_0(this$, closure$ctx)));
       $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', Demo$demoOverlay$lambda$lambda$lambda_1(this$)));
       var y = {v: -105.0};
       tmp$ = this$Demo.demos_0.entries.iterator();
@@ -322,12 +320,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function Demo$demoOverlay$lambda(this$Demo, closure$ctx) {
+  function Demo$demoOverlay$lambda(closure$ctx, this$Demo) {
     return function ($receiver) {
       $receiver.theme = theme(UiTheme.Companion.DARK, Demo$demoOverlay$lambda$lambda);
       $receiver.content.ui.setCustom_11rb$(new BlankComponentUi());
       var menuButton = $receiver.toggleButton_6j87po$('menuButton', Demo$demoOverlay$lambda$lambda_0);
-      var menu = $receiver.container_t34sov$('menu', Demo$demoOverlay$lambda$lambda_1($receiver, this$Demo, closure$ctx, menuButton));
+      var menu = $receiver.container_t34sov$('menu', Demo$demoOverlay$lambda$lambda_1($receiver, closure$ctx, this$Demo, menuButton));
       $receiver.unaryPlus_uv0sim$(menu);
       menuButton.ui.setCustom_11rb$(new MenuButtonUi(menuButton, menu));
       $receiver.unaryPlus_uv0sim$(menuButton);
@@ -335,7 +333,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   Demo.prototype.demoOverlay_0 = function (ctx) {
-    return uiScene(ctx.screenDpi, void 0, Demo$demoOverlay$lambda(this, ctx));
+    return uiScene(ctx.screenDpi, void 0, Demo$demoOverlay$lambda(ctx, this));
   };
   function Demo$DemoEntry(label, loadScene) {
     this.label = label;
@@ -347,11 +345,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     interfaces: []
   };
   function Demo$defaultScene$lambda($receiver, it) {
-    $receiver.add_11rb$(simpleShapesScene());
+    $receiver.add_11rb$(simpleShapesScene(it));
     return Unit;
   }
   function Demo$demos$lambda($receiver, it) {
-    $receiver.addAll_brywnq$(multiScene());
+    $receiver.addAll_brywnq$(multiScene(it));
     return Unit;
   }
   function Demo$demos$lambda_0($receiver, it) {
@@ -363,11 +361,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function Demo$demos$lambda_2($receiver, it) {
-    $receiver.addAll_brywnq$(earthScene());
+    $receiver.addAll_brywnq$(earthScene(it));
     return Unit;
   }
   function Demo$demos$lambda_3($receiver, it) {
-    $receiver.add_11rb$(modelScene());
+    $receiver.add_11rb$(modelScene(it));
     return Unit;
   }
   function Demo$demos$lambda_4($receiver, it) {
@@ -405,8 +403,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  MenuButtonUi.prototype.createUi_evfofk$ = function (ctx) {
-    ToggleButtonUi.prototype.createUi_evfofk$.call(this, ctx);
+  MenuButtonUi.prototype.createUi_aemszp$ = function (ctx) {
+    ToggleButtonUi.prototype.createUi_aemszp$.call(this, ctx);
     this.knobAnimator.duration = 0.5;
     this.knobAnimator.value.onUpdate;
     this.menuAnimator_0.duration = 0.25;
@@ -415,12 +413,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.tb.onStateChange.add_11rb$(MenuButtonUi$createUi$lambda_0(this));
     this.mesh.shader = basicShader(MenuButtonUi$createUi$lambda_1(this));
   };
-  MenuButtonUi.prototype.onRender_evfofk$ = function (ctx) {
-    ToggleButtonUi.prototype.onRender_evfofk$.call(this, ctx);
-    this.menuAnimator_0.tick_evfofk$(ctx);
+  MenuButtonUi.prototype.onRender_aemszp$ = function (ctx) {
+    ToggleButtonUi.prototype.onRender_aemszp$.call(this, ctx);
+    this.menuAnimator_0.tick_aemszp$(ctx);
   };
   var Math_0 = Math;
-  MenuButtonUi.prototype.updateUi_evfofk$ = function (ctx) {
+  MenuButtonUi.prototype.updateUi_aemszp$ = function (ctx) {
     var hw = this.tb.width * 0.5;
     var hh = this.tb.height * 0.18;
     var hx = -hw / 2.0;
@@ -433,7 +431,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var a = this.tb.width;
     var b = this.tb.height;
     $receiver_0.radius = Math_0.min(a, b) / 2.0;
-    $receiver_0.center.set_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, 0.0);
+    $receiver_0.center.set_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, -4.0);
     $receiver_0.steps = 30;
     $receiver.circle_59f34t$($receiver.circleProps);
     var tx = this.knobAnimator.value.value * -hw * 0.1;
@@ -543,7 +541,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.steadyScreenPt_0.set_dleff0$(screenX, screenY);
     this.steadyScreenPtMode_0 = Earth$Companion_getInstance().STEADY_SCREEN_PT_INIT_0;
   };
-  Earth.prototype.render_evfofk$ = function (ctx) {
+  Earth.prototype.render_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
     var cam = (tmp$ = this.scene) != null ? tmp$.camera : null;
     if (cam != null && Kotlin.isType(cam, PerspectiveCamera)) {
@@ -606,7 +604,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var newCenter = TileName$Companion_getInstance().forLatLng_syxxoe$(lat * math_0.RAD_2_DEG, lon * math_0.RAD_2_DEG, centerZoom);
       if (!(newCenter != null ? newCenter.equals(this.center_0) : null) && (this.tiles_0.size < 300 || !isMoving)) {
         this.center_0 = newCenter;
-        this.rebuildMesh_0();
+        this.rebuildMesh_0(ctx);
       }
     }
     if (this.steadyScreenPtMode_0 === Earth$Companion_getInstance().STEADY_SCREEN_PT_INIT_0 && this.computePointOrientation_0(this.steadyScreenPt_0.x, this.steadyScreenPt_0.y, ctx)) {
@@ -624,7 +622,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
       this.mul_d4zu6j$(this.ptOrientation_0);
     }
-    TransformGroup.prototype.render_evfofk$.call(this, ctx);
+    TransformGroup.prototype.render_aemszp$.call(this, ctx);
     if (!this.removeTiles_0.isEmpty()) {
       var tmp$_4;
       tmp$_4 = this.removeTiles_0.iterator();
@@ -634,7 +632,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         this.tiles_0.remove_11rb$(element.key);
         this.removableTiles_0.remove_11rb$(element.key);
         this.getZoomGroup_0(element.tz).removeNode_f1kmr1$(element);
-        element.dispose_evfofk$(ctx);
+        element.dispose_aemszp$(ctx);
       }
       this.removeTiles_0.clear();
     }
@@ -685,7 +683,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return this.closure$comparison(a, b);
   };
   Comparator$ObjectLiteral.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  Earth.prototype.rebuildMesh_0 = function () {
+  Earth.prototype.rebuildMesh_0 = function (ctx) {
     var tmp$;
     this.removableTiles_0.putAll_a2k3zr$(this.tiles_0);
     var rng = 5;
@@ -694,7 +692,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var xEnd = (this.center_0.x + rng + 1 & ~1) - 1 | 0;
     var yStart = this.center_0.y - rng + 1 & ~1;
     var yEnd = (this.center_0.y + rng + 1 & ~1) - 1 | 0;
-    this.addMeshesWrappingX_0(xStart, xEnd, yStart, yEnd, zoom);
+    this.addMeshesWrappingX_0(xStart, xEnd, yStart, yEnd, zoom, ctx);
     for (var i = 1; i <= 4; i++) {
       zoom = zoom - 1 | 0;
       if (zoom >= Earth$Companion_getInstance().MIN_ZOOM_LEVEL) {
@@ -706,10 +704,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         xEnd = (xEdShf & ~1) + 1 | 0;
         yStart = yStShf - 1 & ~1;
         yEnd = (yEdShf & ~1) + 1 | 0;
-        this.addMeshesWrappingX_0(xStart, xStShf - 1 | 0, yStart, yEnd, zoom);
-        this.addMeshesWrappingX_0(xEdShf, xEnd, yStart, yEnd, zoom);
-        this.addMeshesWrappingX_0(xStShf, xEdShf - 1 | 0, yStart, yStShf - 1 | 0, zoom);
-        this.addMeshesWrappingX_0(xStShf, xEdShf - 1 | 0, yEdShf, yEnd, zoom);
+        this.addMeshesWrappingX_0(xStart, xStShf - 1 | 0, yStart, yEnd, zoom, ctx);
+        this.addMeshesWrappingX_0(xEdShf, xEnd, yStart, yEnd, zoom, ctx);
+        this.addMeshesWrappingX_0(xStShf, xEdShf - 1 | 0, yStart, yStShf - 1 | 0, zoom, ctx);
+        this.addMeshesWrappingX_0(xStShf, xEdShf - 1 | 0, yEdShf, yEnd, zoom, ctx);
       }
        else {
         break;
@@ -728,32 +726,32 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
     }
   };
-  Earth.prototype.addMeshesWrappingX_0 = function (xStart, xEnd, yStart, yEnd, zoom) {
+  Earth.prototype.addMeshesWrappingX_0 = function (xStart, xEnd, yStart, yEnd, zoom, ctx) {
     var size = 1 << zoom;
     var ys = Math_0.max(0, yStart);
     var a = size - 1 | 0;
     var ye = Math_0.min(a, yEnd);
     var tmp$ = Math_0.max(0, xStart);
     var a_0 = size - 1 | 0;
-    this.addMeshes_0(new IntRange(tmp$, Math_0.min(a_0, xEnd)), new IntRange(ys, ye), zoom);
+    this.addMeshes_0(new IntRange(tmp$, Math_0.min(a_0, xEnd)), new IntRange(ys, ye), zoom, ctx);
     if (xStart < 0 && xEnd < (size - 1 | 0)) {
       var a_1 = size + xStart | 0;
-      this.addMeshes_0(until(Math_0.max(a_1, xEnd), size), new IntRange(ys, ye), zoom);
+      this.addMeshes_0(until(Math_0.max(a_1, xEnd), size), new IntRange(ys, ye), zoom, ctx);
     }
      else if (xStart > 0 && xEnd > (size - 1 | 0)) {
       var b = xEnd - (size - 1) | 0;
-      this.addMeshes_0(new IntRange(0, Math_0.min(xStart, b)), new IntRange(ys, ye), zoom);
+      this.addMeshes_0(new IntRange(0, Math_0.min(xStart, b)), new IntRange(ys, ye), zoom, ctx);
     }
   };
-  Earth.prototype.addMeshes_0 = function (xRng, yRng, zoom) {
+  Earth.prototype.addMeshes_0 = function (xRng, yRng, zoom, ctx) {
     if ((xRng.last - xRng.first | 0) > 2 && (yRng.last - yRng.first | 0) > 2) {
-      this.addMeshesCircular_0(xRng, yRng, zoom);
+      this.addMeshesCircular_0(xRng, yRng, zoom, ctx);
     }
      else {
-      this.addMeshesRectRange_0(xRng, yRng, zoom);
+      this.addMeshesRectRange_0(xRng, yRng, zoom, ctx);
     }
   };
-  Earth.prototype.addMeshesRectRange_0 = function (xRng, yRng, zoom) {
+  Earth.prototype.addMeshesRectRange_0 = function (xRng, yRng, zoom, ctx) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
     tmp$ = xRng.first;
     tmp$_0 = xRng.last;
@@ -763,11 +761,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       tmp$_3 = yRng.last;
       tmp$_4 = yRng.step;
       for (var y = tmp$_2; y <= tmp$_3; y += tmp$_4) {
-        this.addTile_0(x, y, zoom, xRng, yRng);
+        this.addTile_0(x, y, zoom, xRng, yRng, ctx);
       }
     }
   };
-  Earth.prototype.addMeshesCircular_0 = function (xRng, yRng, zoom) {
+  Earth.prototype.addMeshesCircular_0 = function (xRng, yRng, zoom, ctx) {
     var tmp$, tmp$_0;
     var cx = xRng.first + ((xRng.last - xRng.first | 0) / 2 | 0) | 0;
     var cy = yRng.first + ((yRng.last - yRng.first | 0) / 2 | 0) | 0;
@@ -781,21 +779,21 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     for (var i = 0; i <= r; i++) {
       tmp$ = cx + i | 0;
       for (var x = cx - i | 0; x <= tmp$; x++) {
-        this.addTile_0(x, cy - i | 0, zoom, xRng, yRng);
+        this.addTile_0(x, cy - i | 0, zoom, xRng, yRng, ctx);
         if (i > 0) {
-          this.addTile_0(x, cy + i | 0, zoom, xRng, yRng);
+          this.addTile_0(x, cy + i | 0, zoom, xRng, yRng, ctx);
         }
       }
       if (i > 0) {
         tmp$_0 = cy + i - 1 | 0;
         for (var y = cy - i + 1 | 0; y <= tmp$_0; y++) {
-          this.addTile_0(cx - i | 0, y, zoom, xRng, yRng);
-          this.addTile_0(cx + i | 0, y, zoom, xRng, yRng);
+          this.addTile_0(cx - i | 0, y, zoom, xRng, yRng, ctx);
+          this.addTile_0(cx + i | 0, y, zoom, xRng, yRng, ctx);
         }
       }
     }
   };
-  Earth.prototype.addTile_0 = function (x, y, zoom, xRng, yRng) {
+  Earth.prototype.addTile_0 = function (x, y, zoom, xRng, yRng, ctx) {
     if (xRng.contains_mef7kx$(x) && yRng.contains_mef7kx$(y)) {
       var key = TileMesh$Companion_getInstance().tileKey_qt1dr2$(x, y, zoom);
       var existing = this.tiles_0.get_11rb$(key);
@@ -807,7 +805,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         }
       }
        else {
-        var mesh = new TileMesh(this, x, y, zoom);
+        var mesh = new TileMesh(this, x, y, zoom, ctx);
         this.tiles_0.put_xwzc9p$(key, mesh);
         this.getZoomGroup_0(zoom).plusAssign_f1kmr1$(mesh);
         this.loadingTiles_0.add_11rb$(key);
@@ -857,8 +855,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     oldScene != null ? (oldScene.removeDragHandler_dsvxak$(this), Unit) : null;
     newScene != null ? (newScene.registerDragHandler_dsvxak$(this), Unit) : null;
   };
-  Earth.prototype.handleDrag_t4w9y2$ = function (dragPtrs, ctx) {
-    if (dragPtrs.size === 1 && dragPtrs.get_za3lpa$(0).isInViewport_evfofk$(ctx)) {
+  Earth.prototype.handleDrag_kin2e3$ = function (dragPtrs, ctx) {
+    if (dragPtrs.size === 1 && dragPtrs.get_za3lpa$(0).isInViewport_aemszp$(ctx)) {
       var ptrX = dragPtrs.get_za3lpa$(0).x;
       var ptrY = dragPtrs.get_za3lpa$(0).y;
       if (dragPtrs.get_za3lpa$(0).isLeftButtonDown) {
@@ -888,7 +886,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   Earth.prototype.computePointOrientation_0 = function (screenX, screenY, ctx) {
     var tmp$, tmp$_0, tmp$_1;
-    if ((tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.computePickRay_jieknl$(this.pickRay_0, screenX, screenY, ctx) : null) != null ? tmp$_1 : false) {
+    if ((tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.computePickRay_jker1g$(this.pickRay_0, screenX, screenY, ctx) : null) != null ? tmp$_1 : false) {
       var o = this.pickRay_0.origin;
       var l = this.pickRay_0.direction;
       this.toLocalCoords_w1lst9$(this.pickRay_0.origin);
@@ -939,11 +937,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function Earth$TileGroup() {
     Group.call(this);
   }
-  Earth$TileGroup.prototype.render_evfofk$ = function (ctx) {
+  Earth$TileGroup.prototype.render_aemszp$ = function (ctx) {
     ctx.pushAttributes();
     ctx.depthFunc = gl.GL_ALWAYS;
     ctx.applyAttributes();
-    Group.prototype.render_evfofk$.call(this, ctx);
+    Group.prototype.render_aemszp$.call(this, ctx);
     ctx.popAttributes();
   };
   Earth$TileGroup.$metadata$ = {
@@ -973,7 +971,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function earthScene() {
+  function earthScene(ctx) {
     var scenes = ArrayList_init();
     var earth = {v: null};
     var $receiver = new Scene(null);
@@ -983,13 +981,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     earth.v = $receiver_0;
     $receiver.unaryPlus_uv0sim$(ensureNotNull(earth.v));
     scenes.add_11rb$($receiver);
-    var ui = new EarthUi(ensureNotNull(earth.v));
+    var ui = new EarthUi(ensureNotNull(earth.v), ctx);
     var element = ui.scene;
     scenes.add_11rb$(element);
     return scenes;
   }
-  function EarthUi(earth) {
+  function EarthUi(earth, ctx) {
     this.earth = earth;
+    this.ctx = ctx;
     this.attributionText_6dibss$_0 = this.attributionText_6dibss$_0;
     this.attribWidth_0 = 0.0;
     this.posWidth_0 = 0.0;
@@ -1018,8 +1017,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function EarthUi$scene$lambda$lambda$lambda_0(this$EarthUi, this$) {
     return function ($receiver, it) {
+      var tmp$, tmp$_0;
       this$.text = this$EarthUi.earth.attribution;
-      var w = this$.font.apply().textWidth_61zpoe$(this$.text);
+      var w = (tmp$_0 = (tmp$ = this$.font.apply()) != null ? tmp$.textWidth_61zpoe$(this$.text) : null) != null ? tmp$_0 : 0.0;
       if (w !== this$EarthUi.attribWidth_0) {
         this$EarthUi.attribWidth_0 = w;
         this$.layoutSpec.setSize_4ujscr$(dps(w + 8, true), dps(18.0), zero());
@@ -1031,7 +1031,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function EarthUi$scene$lambda$lambda$lambda_1(this$EarthUi) {
     return function ($receiver, f, f_0, f_1) {
       if (!(this$EarthUi.earth.attributionUrl.length === 0)) {
-        openUrl(this$EarthUi.earth.attributionUrl);
+        this$EarthUi.ctx.openUrl_61zpoe$(this$EarthUi.earth.attributionUrl);
       }
       return Unit;
     };
@@ -1052,7 +1052,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function EarthUi$scene$lambda$lambda$lambda_2(this$EarthUi, this$, this$_0) {
     return function ($receiver, it) {
-      var tmp$;
+      var tmp$, tmp$_0, tmp$_1;
       var lat = formatDouble(this$EarthUi.earth.centerLat, 5);
       var lon = formatDouble(this$EarthUi.earth.centerLon, 5);
       if (this$EarthUi.earth.cameraHeight > 10000) {
@@ -1063,7 +1063,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
       var hgt = tmp$;
       this$.text = lat + '\xB0, ' + lon + '\xB0  ' + hgt;
-      var w = this$.font.apply().textWidth_61zpoe$(this$.text);
+      var w = (tmp$_1 = (tmp$_0 = this$.font.apply()) != null ? tmp$_0.textWidth_61zpoe$(this$.text) : null) != null ? tmp$_1 : 0.0;
       if (w !== this$EarthUi.posWidth_0) {
         this$EarthUi.posWidth_0 = w;
         var xOri = dps(-w - 8, true);
@@ -1098,7 +1098,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'EarthUi',
     interfaces: []
   };
-  function TileMesh(earth, tx, ty, tz) {
+  function TileMesh(earth, tx, ty, tz, ctx) {
     TileMesh$Companion_getInstance();
     Mesh.call(this, MeshData_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS, Attribute.Companion.TEXTURE_COORDS]), tz.toString() + '/' + tx + '/' + ty);
     this.earth = earth;
@@ -1118,7 +1118,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.tileShader_0 = basicShader(TileMesh_init$lambda_0);
     this.tileShader_0.alpha = 0.0;
     this.shader = this.tileShader_0;
-    this.loadTileTex_0(this.tx, this.ty, this.tz);
+    this.loadTileTex_0(this.tx, this.ty, this.tz, ctx);
     this.generateGeometry();
   }
   Object.defineProperty(TileMesh.prototype, 'isCurrentlyVisible', {
@@ -1142,10 +1142,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.isTexLoaded_ux45ej$_0 = isTexLoaded;
     }
   });
-  TileMesh.prototype.loadTileTex_0 = function (x, y, z) {
-    this.tileShader_0.texture = assetTexture('http://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png');
+  TileMesh.prototype.loadTileTex_0 = function (x, y, z, ctx) {
+    this.tileShader_0.texture = assetTexture('http://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png', ctx);
   };
-  TileMesh.prototype.render_evfofk$ = function (ctx) {
+  TileMesh.prototype.render_aemszp$ = function (ctx) {
     var targetAlpha = 1.0;
     if (this.isTexLoaded && !this.isFadingOut && this.tileShader_0.alpha < targetAlpha) {
       this.tileShader_0.alpha = this.tileShader_0.alpha + ctx.deltaT * 2;
@@ -1162,9 +1162,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         this.earth.tileFadedOut_o2opt$(this);
       }
     }
-    Mesh.prototype.render_evfofk$.call(this, ctx);
+    Mesh.prototype.render_aemszp$.call(this, ctx);
   };
-  TileMesh.prototype.checkIsVisible_evfofk$ = function (ctx) {
+  TileMesh.prototype.checkIsVisible_aemszp$ = function (ctx) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
     tmp$ = this.tileShader_0.texture;
     if (tmp$ == null) {
@@ -1172,14 +1172,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     var tex = tmp$;
     this.isTexLoaded = (tmp$_1 = (tmp$_0 = tex.res) != null ? tmp$_0.isLoaded : null) != null ? tmp$_1 : false;
-    var visible = this.isTexLoaded && Mesh.prototype.checkIsVisible_evfofk$.call(this, ctx);
+    var visible = this.isTexLoaded && Mesh.prototype.checkIsVisible_aemszp$.call(this, ctx);
     if (visible) {
       this.toGlobalCoords_w1lst9$(this.tmpVec_0.set_czzhiu$(this.centerNormal_0), 0.0);
       var cos = (tmp$_5 = (tmp$_4 = (tmp$_3 = (tmp$_2 = this.scene) != null ? tmp$_2.camera : null) != null ? tmp$_3.globalLookDir : null) != null ? tmp$_4.dot_czzhiu$(this.tmpVec_0) : null) != null ? tmp$_5 : 0.0;
       return cos < 0.1;
     }
      else if (!this.isTexLoaded) {
-      ctx.textureMgr.bindTexture_4yp9vu$(tex, ctx);
+      ctx.textureMgr.bindTexture_dletmp$(tex, ctx);
     }
     return false;
   };
@@ -1618,32 +1618,32 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function modelScene$lambda$lambda(this$) {
+  function modelScene$lambda$lambda(closure$ctx, this$) {
     return function ($receiver) {
       var model = new TransformGroup();
       var movementSpeed = {v: 0.25};
       var slowMotion = {v: 1.0};
       var armature = {v: null};
       $receiver.unaryPlus_uv0sim$(model);
-      loadAsset('player.kmf', modelScene$lambda$lambda$lambda(model, this$, armature, movementSpeed, slowMotion, $receiver));
+      closure$ctx.assetMgr.loadAsset_jrww91$('player.kmf', modelScene$lambda$lambda$lambda(model, this$, armature, movementSpeed, slowMotion, $receiver));
       $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
       $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, modelScene$lambda$lambda$lambda_0(this$)));
       $receiver.unaryPlus_uv0sim$(embeddedUi(dps(400.0), void 0, modelScene$lambda$lambda$lambda_1(movementSpeed, armature, slowMotion)));
       return Unit;
     };
   }
-  function modelScene() {
+  function modelScene(ctx) {
     var $receiver = new Scene(null);
     $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, $receiver.defaultShadowMap));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, modelScene$lambda$lambda($receiver)));
+    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, modelScene$lambda$lambda(ctx, $receiver)));
     return $receiver;
   }
   function multiScene$lambda($receiver, ctx) {
     var vp = ctx.viewport;
     var width = numberToInt(vp.width * 0.5);
     ctx.pushAttributes();
-    ctx.viewport = new RenderContext$Viewport(vp.x, vp.y, width, vp.height);
+    ctx.viewport = new KoolContext$Viewport(vp.x, vp.y, width, vp.height);
     ctx.applyAttributes();
     return Unit;
   }
@@ -1655,7 +1655,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var vp = ctx.viewport;
     var width = numberToInt(vp.width * 0.5);
     ctx.pushAttributes();
-    ctx.viewport = new RenderContext$Viewport(width, vp.y, width, vp.height);
+    ctx.viewport = new KoolContext$Viewport(width, vp.y, width, vp.height);
     ctx.applyAttributes();
     return Unit;
   }
@@ -1663,8 +1663,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     ctx.popAttributes();
     return Unit;
   }
-  function multiScene() {
-    var leftScene = simpleShapesScene();
+  function multiScene(ctx) {
+    var leftScene = simpleShapesScene(ctx);
     var rightScene = uiDemoScene();
     leftScene.onPreRender.add_11rb$(multiScene$lambda);
     leftScene.onPostRender.add_11rb$(multiScene$lambda_0);
@@ -1673,6 +1673,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     rightScene.onPostRender.add_11rb$(multiScene$lambda_2);
     return listOf([leftScene, rightScene]);
   }
+  var util = $module$kool.de.fabmax.kool.util;
+  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   function pointScene$lambda$lambda(closure$frameCnt, closure$data, closure$trav, closure$ptVertCnt, closure$tree) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2;
@@ -1704,7 +1706,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           }
         }
         var updateT = t.takeMs();
-        println('In-radius search retrieved ' + closure$trav.result.size + ' points, took ' + (formatDouble(searchT, 3) + ' ms; Point update took ' + formatDouble(updateT, 3) + ' ms'));
+        var $this = util.Log;
+        var level = Log$Level.INFO;
+        var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'In-radius search retrieved ' + closure$trav.result.size + ' points, ' + ('took ' + formatDouble(searchT, 3) + ' ms; ') + ('Point update took ' + formatDouble(updateT, 3) + ' ms'));
+        }
         closure$data.isSyncRequired = true;
       }
       return Unit;
@@ -1771,9 +1778,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var points = ArrayList_init();
     var mesh = pointMesh(void 0, makePointMesh$lambda(points));
     var message = 'Constructed k-d-Tree with ' + points.size + ' points in ';
+    var tag;
+    var level;
+    tag = 'PerfTimer';
+    level = Log$Level.INFO;
     var t = now();
     var ret = pointTree(points);
-    println(message + ' ' + formatDouble(now() - t, 3) + ' ms');
+    var $this = util.Log;
+    if (level.level >= $this.level.level) {
+      $this.printer(level, tag, message + ' ' + formatDouble(now() - t, 3) + ' ms');
+    }
     var tree = ret;
     return new Pair(mesh, tree);
   }
@@ -1789,9 +1803,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       points.add_11rb$(new MeshPoint(x, y, z, (i - 1 | 0) * 4 | 0));
     }
     var message = 'Constructed k-d-Tree with ' + points.size + ' points in ';
+    var tag;
+    var level;
+    tag = 'PerfTimer';
+    level = Log$Level.INFO;
     var t = now();
     var ret = pointTree(points);
-    println(message + ' ' + formatDouble(now() - t, 3) + ' ms');
+    var $this = util.Log;
+    if (level.level >= $this.level.level) {
+      $this.printer(level, tag, message + ' ' + formatDouble(now() - t, 3) + ' ms');
+    }
     var tree = ret;
     return new Pair(mesh, tree);
   }
@@ -1815,7 +1836,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function simpleShapesScene$lambda$lambda$lambda(closure$animator) {
     return function ($receiver, ctx) {
       $receiver.setIdentity();
-      $receiver.translate_y2kzbl$(-5.0, closure$animator.tick_evfofk$(ctx), 0.0);
+      $receiver.translate_y2kzbl$(-5.0, closure$animator.tick_aemszp$(ctx), 0.0);
       $receiver.rotate_ad55pp$(ctx.time * 19, Vec3f.Companion.Y_AXIS);
       return Unit;
     };
@@ -1827,22 +1848,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.sphere_mojs8w$($receiver.sphereProps);
     return Unit;
   }
-  function simpleShapesScene$lambda$lambda$lambda_0($receiver) {
-    var tmp$;
-    $receiver.generator = simpleShapesScene$lambda$lambda$lambda$lambda;
-    (Kotlin.isType(tmp$ = $receiver.shader, BasicShader) ? tmp$ : throwCCE()).texture = assetTexture('world.jpg');
-    return Unit;
+  function simpleShapesScene$lambda$lambda$lambda_0(closure$ctx) {
+    return function ($receiver) {
+      var tmp$;
+      $receiver.generator = simpleShapesScene$lambda$lambda$lambda$lambda;
+      (Kotlin.isType(tmp$ = $receiver.shader, BasicShader) ? tmp$ : throwCCE()).texture = assetTexture('world.jpg', closure$ctx);
+      return Unit;
+    };
   }
-  function simpleShapesScene$lambda$lambda_0($receiver) {
-    var animator = new CosAnimator(new InterpolatedFloat(-1.0, 1.0));
-    animator.repeating = Animator.Companion.REPEAT_TOGGLE_DIR;
-    $receiver.animation = simpleShapesScene$lambda$lambda$lambda(animator);
-    $receiver.unaryPlus_uv0sim$(textureMesh('Sphere', void 0, simpleShapesScene$lambda$lambda$lambda_0));
-    return Unit;
+  function simpleShapesScene$lambda$lambda_0(closure$ctx) {
+    return function ($receiver) {
+      var animator = new CosAnimator(new InterpolatedFloat(-1.0, 1.0));
+      animator.repeating = Animator.Companion.REPEAT_TOGGLE_DIR;
+      $receiver.animation = simpleShapesScene$lambda$lambda$lambda(animator);
+      $receiver.unaryPlus_uv0sim$(textureMesh('Sphere', void 0, simpleShapesScene$lambda$lambda$lambda_0(closure$ctx)));
+      return Unit;
+    };
   }
   function simpleShapesScene$lambda$lambda$lambda_1(closure$cubeAnimator) {
     return function ($receiver, ctx) {
-      var angle = closure$cubeAnimator.tick_evfofk$(ctx);
+      var angle = closure$cubeAnimator.tick_aemszp$(ctx);
       $receiver.setIdentity();
       $receiver.translate_y2kzbl$(5.0, 0.0, 0.0);
       $receiver.rotate_ad55pp$(angle * 5, Vec3f.Companion.Y_AXIS);
@@ -1874,7 +1899,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function simpleShapesScene$lambda$lambda$lambda$lambda_3(closure$speedAnimator) {
     return function ($receiver, ctx) {
-      closure$speedAnimator.tick_evfofk$(ctx);
+      closure$speedAnimator.tick_aemszp$(ctx);
       return Unit;
     };
   }
@@ -1914,24 +1939,34 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function simpleShapesScene$lambda$lambda$lambda_3(closure$animator) {
     return function ($receiver, ctx) {
-      var s = closure$animator.tick_evfofk$(ctx);
+      var s = closure$animator.tick_aemszp$(ctx);
       $receiver.setIdentity();
       $receiver.translate_y2kzbl$(0.0, 0.0, -5.0);
       $receiver.scale_y2kzbl$(s, s, s);
       return Unit;
     };
   }
+  var TextProps_init = $module$kool.de.fabmax.kool.util.TextProps;
   function simpleShapesScene$lambda$lambda$lambda$lambda_6(closure$font) {
     return function ($receiver) {
       $receiver.color = Color.Companion.LIME;
       var font = closure$font;
-      $receiver.textProps.defaults();
-      $receiver.textProps.font = font;
+      var tmp$;
+      var tmp$_0;
+      if ((tmp$ = $receiver.textProps) != null)
+        tmp$_0 = tmp$;
+      else {
+        var $receiver_0 = new TextProps_init(font);
+        $receiver.textProps = $receiver_0;
+        tmp$_0 = $receiver_0;
+      }
+      var props = tmp$_0;
+      props.defaults();
+      props.font = font;
       var closure$font_0 = closure$font;
-      var $receiver_0 = $receiver.textProps;
-      $receiver_0.text = 'kool Text!';
-      $receiver_0.origin.set_y2kzbl$(-closure$font_0.textWidth_61zpoe$($receiver_0.text) / 2.0, 0.0, 0.0);
-      $receiver.text_lis6zk$($receiver.textProps);
+      props.text = 'kool Text!';
+      props.origin.set_y2kzbl$(-closure$font_0.textWidth_61zpoe$(props.text) / 2.0, 0.0, 0.0);
+      $receiver.text_lis6zk$(props);
       return Unit;
     };
   }
@@ -1941,25 +1976,27 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function simpleShapesScene$lambda$lambda_2($receiver) {
-    var animator = new CosAnimator(new InterpolatedFloat(0.75, 1.25));
-    animator.repeating = Animator.Companion.REPEAT_TOGGLE_DIR;
-    animator.duration = 0.75;
-    $receiver.animation = simpleShapesScene$lambda$lambda$lambda_3(animator);
-    var font = new Font(new FontProps(Font.Companion.SYSTEM_FONT, 72.0, Font.Companion.PLAIN, 1.5));
-    $receiver.unaryPlus_uv0sim$(textMesh(font, void 0, simpleShapesScene$lambda$lambda$lambda_4(font)));
-    return Unit;
+  function simpleShapesScene$lambda$lambda_2(closure$ctx) {
+    return function ($receiver) {
+      var animator = new CosAnimator(new InterpolatedFloat(0.75, 1.25));
+      animator.repeating = Animator.Companion.REPEAT_TOGGLE_DIR;
+      animator.duration = 0.75;
+      $receiver.animation = simpleShapesScene$lambda$lambda$lambda_3(animator);
+      var font = new Font(new FontProps(Font.Companion.SYSTEM_FONT, 72.0, Font.Companion.PLAIN, 1.5), closure$ctx);
+      $receiver.unaryPlus_uv0sim$(textMesh(font, void 0, simpleShapesScene$lambda$lambda$lambda_4(font)));
+      return Unit;
+    };
   }
-  function simpleShapesScene() {
+  function simpleShapesScene(ctx) {
     var $receiver = new Scene('simpleShapes');
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, simpleShapesScene$lambda$lambda($receiver)));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_0));
+    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_0(ctx)));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_1));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_2));
+    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_2(ctx)));
     return $receiver;
   }
   function synthieScene(ctx) {
-    var content = new SynthieScene();
+    var content = new SynthieScene(ctx);
     var menu = synthieMenu(content, ctx);
     return listOf([content, menu]);
   }
@@ -2140,11 +2177,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function VerticalLayout(name, root) {
     UiContainer.call(this, name, root);
   }
-  VerticalLayout.prototype.doLayout_oytkew$ = function (bounds, ctx) {
+  VerticalLayout.prototype.doLayout_sq5703$ = function (bounds, ctx) {
     if (!equals(bounds, this.contentBounds)) {
       this.contentBounds.clear();
     }
-    UiContainer.prototype.doLayout_oytkew$.call(this, bounds, ctx);
+    UiContainer.prototype.doLayout_sq5703$.call(this, bounds, ctx);
     if (!equals(bounds, this.contentBounds)) {
       this.translate_y2kzbl$(-this.posInParent.x, -this.posInParent.y, -this.posInParent.z);
       this.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
@@ -2229,14 +2266,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     this.wasHovered_0 = true;
   };
-  SequenceButton.prototype.render_evfofk$ = function (ctx) {
+  SequenceButton.prototype.render_aemszp$ = function (ctx) {
     if (this.melody.sequence[this.col] === this.row) {
       this.colorAnimator_0.speed = 1.0;
     }
      else {
       this.colorAnimator_0.speed = -1.0;
     }
-    this.colorAnimator_0.tick_evfofk$(ctx);
+    this.colorAnimator_0.tick_aemszp$(ctx);
     this.background_0.bgColor.set_d7aj7k$(this.colorAnimator_0.value.value);
     if (this.isHovered) {
       this.background_0.bgColor.a = this.background_0.bgColor.a + 0.4;
@@ -2261,7 +2298,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         tmp$.a = tmp$_0 + clamp$result;
       }
     }
-    Button.prototype.render_evfofk$.call(this, ctx);
+    Button.prototype.render_aemszp$.call(this, ctx);
   };
   function SequenceButton_init$lambda(this$SequenceButton) {
     return function ($receiver, ptr, f, f_0) {
@@ -2284,17 +2321,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     SimpleComponentUi.call(this, btn);
     this.bgColor = MutableColor_init_0();
   }
-  SequenceButtonUi.prototype.onRender_evfofk$ = function (ctx) {
+  SequenceButtonUi.prototype.onRender_aemszp$ = function (ctx) {
     var tmp$;
     (Kotlin.isType(tmp$ = this.shader, BasicShader) ? tmp$ : throwCCE()).staticColor.set_czzhhz$(this.bgColor);
-    SimpleComponentUi.prototype.onRender_evfofk$.call(this, ctx);
+    SimpleComponentUi.prototype.onRender_aemszp$.call(this, ctx);
   };
   SequenceButtonUi.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'SequenceButtonUi',
     interfaces: [SimpleComponentUi]
   };
-  function SynthieScene() {
+  function SynthieScene(ctx) {
     Scene.call(this);
     this.melody = new Melody();
     this.shaker = new Shaker(60.0);
@@ -2305,7 +2342,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.unaryPlus_uv0sim$(this.waveform_0);
     this.unaryPlus_uv0sim$(new SynthieScene$Heightmap(this, 256, 256));
     this.unaryPlus_uv0sim$(sphericalInputTransform(void 0, SynthieScene_init$lambda(this)));
-    this.audioGen_0 = new AudioGenerator(SynthieScene_init$lambda_0(this));
+    this.audioGen_0 = new AudioGenerator(ctx, SynthieScene_init$lambda_0(this));
     this.audioGen_0.enableFftComputation_za3lpa$(1024);
   }
   SynthieScene.prototype.nextSample_0 = function (dt) {
@@ -2313,9 +2350,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.waveform_0.updateSample_mx4ult$(sample);
     return sample;
   };
-  SynthieScene.prototype.dispose_evfofk$ = function (ctx) {
+  SynthieScene.prototype.dispose_aemszp$ = function (ctx) {
     this.audioGen_0.stop();
-    Scene.prototype.dispose_evfofk$.call(this, ctx);
+    Scene.prototype.dispose_aemszp$.call(this, ctx);
   };
   function SynthieScene$Heightmap($outer, width, length) {
     this.$outer = $outer;
@@ -2329,7 +2366,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.nextSample = 0.0;
     this.unaryPlus_uv0sim$(this.quads);
   }
-  SynthieScene$Heightmap.prototype.render_evfofk$ = function (ctx) {
+  SynthieScene$Heightmap.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
     this.nextSample -= ctx.deltaT;
     if (this.nextSample <= 0) {
@@ -2388,7 +2425,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.setIdentity();
     this.scale_y2kzbl$(1.0 / 32.0, 1.0 / 32.0, 1.0 / 32.0);
     this.translate_y2kzbl$(0.0, -32.0, -this.zPos + this.length / 5.0);
-    TransformGroup.prototype.render_evfofk$.call(this, ctx);
+    TransformGroup.prototype.render_aemszp$.call(this, ctx);
   };
   function SynthieScene$Heightmap$quads$lambda$lambda$lambda($receiver) {
     $receiver.normal.set_czzhiu$(Vec3f.Companion.Y_AXIS);
@@ -2469,7 +2506,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.sampleIdx = 0;
     }
   };
-  SynthieScene$Waveform.prototype.render_evfofk$ = function (ctx) {
+  SynthieScene$Waveform.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
     this.playT += ctx.deltaT;
     if ((this.updateFrms = this.updateFrms - 1 | 0, this.updateFrms) === 0) {
@@ -2487,7 +2524,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         (Kotlin.isType(tmp$_0 = this.lines[idx].shader, BasicShader) ? tmp$_0 : throwCCE()).staticColor.w = 1.0 - i / this.lines.length;
       }
     }
-    Group.prototype.render_evfofk$.call(this, ctx);
+    Group.prototype.render_aemszp$.call(this, ctx);
   };
   SynthieScene$Waveform.prototype.drawTimeDomain_0 = function () {
     var tmp$, tmp$_0;
@@ -2541,14 +2578,20 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function treeScene$lambda$lambda$lambda(closure$treeGen) {
     return function ($receiver) {
+      var level;
+      level = Log$Level.INFO;
       var t = now();
       closure$treeGen.buildTrunkMesh_84rojv$($receiver);
       var ret = Unit;
-      println('Generated ' + ($receiver.meshData.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
+      var $this = util.Log;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Generated ' + ($receiver.meshData.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
+      }
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_0(this$) {
+  function treeScene$lambda$lambda$lambda_0(this$, closure$ctx) {
     return function ($receiver) {
       $receiver.colorModel = ColorModel.TEXTURE_COLOR;
       $receiver.lightModel = LightModel.PHONG_LIGHTING;
@@ -2557,43 +2600,49 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.specularIntensity = 0.25;
       var textureProps = TextureProps_init('tree_bark.png', gl.GL_LINEAR, gl.GL_REPEAT, 16);
       var nrmMapProps = TextureProps_init('tree_bark_nrm.png', gl.GL_LINEAR, gl.GL_REPEAT, 16);
-      $receiver.texture = assetTexture_0(textureProps);
-      $receiver.normalMap = assetTexture_0(nrmMapProps);
+      $receiver.texture = assetTexture_0(textureProps, closure$ctx);
+      $receiver.normalMap = assetTexture_0(nrmMapProps, closure$ctx);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda(closure$treeGen, this$) {
+  function treeScene$lambda$lambda(closure$treeGen, this$, closure$ctx) {
     return function ($receiver) {
       $receiver.generator = treeScene$lambda$lambda$lambda(closure$treeGen);
-      $receiver.shader = basicShader(treeScene$lambda$lambda$lambda_0(this$));
+      $receiver.shader = basicShader(treeScene$lambda$lambda$lambda_0(this$, closure$ctx));
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda_1(closure$treeGen, this$) {
     return function ($receiver) {
+      var level;
+      level = Log$Level.INFO;
       var t = now();
       closure$treeGen.buildLeafMesh_d7s9uf$($receiver, this$.light.direction);
       var ret = Unit;
-      println('Generated ' + ($receiver.meshData.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
+      var $this = util.Log;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Generated ' + ($receiver.meshData.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
+      }
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_2(this$) {
+  function treeScene$lambda$lambda$lambda_2(this$, closure$ctx) {
     return function ($receiver) {
       $receiver.colorModel = ColorModel.TEXTURE_COLOR;
       $receiver.lightModel = LightModel.PHONG_LIGHTING;
       $receiver.shadowMap = this$.defaultShadowMap;
       $receiver.specularIntensity = 0.1;
       $receiver.isDiscardTranslucent = true;
-      $receiver.texture = assetTexture('leaf.png');
+      $receiver.texture = assetTexture('leaf.png', closure$ctx);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_0(closure$treeGen, this$) {
+  function treeScene$lambda$lambda_0(closure$treeGen, this$, closure$ctx) {
     return function ($receiver) {
       $receiver.generator = treeScene$lambda$lambda$lambda_1(closure$treeGen, this$);
       $receiver.cullMethod = CullMethod.NO_CULLING;
-      $receiver.shader = basicShader(treeScene$lambda$lambda$lambda_2(this$));
+      $receiver.shader = basicShader(treeScene$lambda$lambda$lambda_2(this$, closure$ctx));
       return Unit;
     };
   }
@@ -2780,11 +2829,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         tmp$.meshData.isBatchUpdate = true;
         tmp$.meshData.clear();
         var builder = new MeshBuilder(tmp$.meshData);
+        var level;
+        level = Log$Level.INFO;
         var t = now();
         closure$treeGen_0.buildTrunkMesh_84rojv$(builder);
         tmp$.meshData.generateTangents();
         var ret = Unit;
-        println('Generated ' + (tmp$.meshData.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
+        var $this = util.Log;
+        var tag = Kotlin.getKClassFromExpression(tmp$).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Generated ' + (tmp$.meshData.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
+        }
         tmp$.meshData.isBatchUpdate = false;
       }
       if ((tmp$_0 = closure$leafMesh.v) != null) {
@@ -2792,11 +2847,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         tmp$_0.meshData.isBatchUpdate = true;
         tmp$_0.meshData.clear();
         var builder_0 = new MeshBuilder(tmp$_0.meshData);
+        var level_0;
+        level_0 = Log$Level.INFO;
         var t_0 = now();
         var tmp$_1, tmp$_2, tmp$_3;
         closure$treeGen_1.buildLeafMesh_d7s9uf$(builder_0, (tmp$_3 = (tmp$_2 = (tmp$_1 = tmp$_0.scene) != null ? tmp$_1.light : null) != null ? tmp$_2.direction : null) != null ? tmp$_3 : Vec3f.Companion.ZERO);
         var ret_0 = Unit;
-        println('Generated ' + (tmp$_0.meshData.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + formatDouble(now() - t_0, 3) + ' ms');
+        var $this_0 = util.Log;
+        var tag_0 = Kotlin.getKClassFromExpression(tmp$_0).simpleName;
+        if (level_0.level >= $this_0.level.level) {
+          $this_0.printer(level_0, tag_0, 'Generated ' + (tmp$_0.meshData.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + formatDouble(now() - t_0, 3) + ' ms');
+        }
         tmp$_0.meshData.isBatchUpdate = false;
       }
       return Unit;
@@ -2878,8 +2939,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver = new Scene(null);
     $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, $receiver.defaultShadowMap));
-    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, $receiver));
-    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, $receiver));
+    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, $receiver, ctx));
+    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, $receiver, ctx));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, treeScene$lambda$lambda_1($receiver)));
@@ -2936,6 +2997,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     if (maxIterations === void 0)
       maxIterations = 1000;
     var i = {v: 0};
+    var level;
+    level = Log$Level.INFO;
     var t = now();
     var tmp$;
     this.seedTree();
@@ -2943,7 +3006,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     this.finishTree();
     var ret = Unit;
-    println('Generation done, took ' + i.v + ' iterations, ' + this.treeNodes_0.size + ' nodes in' + ' ' + formatDouble(now() - t, 3) + ' ms');
+    var $this = util.Log;
+    var tag = Kotlin.getKClassFromExpression(this).simpleName;
+    if (level.level >= $this.level.level) {
+      $this.printer(level, tag, 'Generation done, took ' + i.v + ' iterations, ' + this.treeNodes_0.size + ' nodes in' + ' ' + formatDouble(now() - t, 3) + ' ms');
+    }
   };
   TreeGenerator.prototype.growSingleStep = function () {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
@@ -3558,7 +3625,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   });
   var package$earth = package$demo.earth || (package$demo.earth = {});
   package$earth.Earth = Earth;
-  package$earth.earthScene = earthScene;
+  package$earth.earthScene_aemszp$ = earthScene;
   package$earth.EarthUi = EarthUi;
   Object.defineProperty(TileMesh, 'Companion', {
     get: TileMesh$Companion_getInstance
@@ -3570,15 +3637,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$earth.TileName = TileName;
   package$earth.LatLon = LatLon;
   package$demo.makeGroundGrid_fevruo$ = makeGroundGrid;
-  package$demo.modelScene = modelScene;
-  package$demo.multiScene = multiScene;
+  package$demo.modelScene_aemszp$ = modelScene;
+  package$demo.multiScene_aemszp$ = multiScene;
   package$demo.pointScene = pointScene;
   package$demo.makePointMesh = makePointMesh;
   package$demo.makeBillboardPointMesh = makeBillboardPointMesh;
   package$demo.MeshPoint = MeshPoint;
-  package$demo.simpleShapesScene = simpleShapesScene;
-  package$demo.synthieScene_evfofk$ = synthieScene;
-  package$demo.treeScene_evfofk$ = treeScene;
+  package$demo.simpleShapesScene_aemszp$ = simpleShapesScene;
+  package$demo.synthieScene_aemszp$ = synthieScene;
+  package$demo.treeScene_aemszp$ = treeScene;
   package$demo.TreeGenerator = TreeGenerator;
   package$demo.TreeTopPointDistribution = TreeTopPointDistribution;
   package$demo.uiDemoScene = uiDemoScene;
