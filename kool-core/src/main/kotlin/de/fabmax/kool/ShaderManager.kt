@@ -7,6 +7,7 @@ import de.fabmax.kool.shading.PreferredLightModel
 import de.fabmax.kool.shading.PreferredShadowMethod
 import de.fabmax.kool.shading.Shader
 import de.fabmax.kool.shading.ShadingHints
+import de.fabmax.kool.util.logE
 
 /**
  * @author fabmax
@@ -58,9 +59,9 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
             // compilation failed
             val log = vertShader.getInfoLog(ctx)
             vertShader.delete(ctx)
-            println(log)
-            println(key.vertexSrc)
-            throw KoolException("Vertex shader compilation failed: " + log)
+            logE { "Vertex shader compilation failed: $log" }
+            logE { "Shader source: \n${key.vertexSrc}" }
+            throw KoolException("Vertex shader compilation failed: $log")
         }
 
         // create fragment shader
@@ -70,9 +71,9 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
             // compilation failed
             val log = fragShader.getInfoLog(ctx)
             fragShader.delete(ctx)
-            println(log)
-            println(key.fragmentSrc)
-            throw KoolException("Fragment shader compilation failed: " + log)
+            logE { "Fragment shader compilation failed: $log" }
+            logE { "Shader source: \n${key.fragmentSrc}" }
+            throw KoolException("Fragment shader compilation failed: $log")
         }
 
         // link shader
@@ -87,7 +88,8 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
             // linkage failed
             val log = prog.getInfoLog(ctx)
             prog.delete(ctx)
-            throw KoolException("Shader linkage failed: " + log)
+            logE { "Shader linkage failed: $log" }
+            throw KoolException("Shader linkage failed: $log")
         }
 
         return prog

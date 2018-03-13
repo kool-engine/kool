@@ -7,8 +7,8 @@ import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.animation.Armature
-import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.ShadowMap
 
 
 fun basicShader(propsInit: ShaderProps.() -> Unit): BasicShader {
@@ -37,8 +37,8 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     protected val uFogRange = addUniform(Uniform1f(GlslGenerator.U_FOG_RANGE))
     protected val uBones = addUniform(UniformMatrix4(GlslGenerator.U_BONES))
     protected val uShadowMvp: UniformMatrix4 = addUniform(UniformMatrix4(GlslGenerator.U_SHADOW_MVP))
-    protected val uShadowTexSz: Uniform1iv = addUniform(Uniform1iv(GlslGenerator.U_SHADOW_TEX_SZ, props.shadowMap?.subMaps?.size ?: 0))
-    protected val uClipSpaceFarZ: Uniform1fv = addUniform(Uniform1fv(GlslGenerator.U_CLIP_SPACE_FAR_Z, props.shadowMap?.subMaps?.size ?: 0))
+    protected val uShadowTexSz: Uniform1iv = addUniform(Uniform1iv(GlslGenerator.U_SHADOW_TEX_SZ, props.shadowMap?.numMaps ?: 0))
+    protected val uClipSpaceFarZ: Uniform1fv = addUniform(Uniform1fv(GlslGenerator.U_CLIP_SPACE_FAR_Z, props.shadowMap?.numMaps ?: 0))
 
     protected val uShadowTex = mutableListOf<UniformTexture2D>()
 
@@ -67,7 +67,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         get() = uBones.value
         set(value) { uBones.value = value }
 
-    private val shadowMap: CascadedShadowMap?
+    private val shadowMap: ShadowMap?
     private var scene: Scene? = null
 
     init {
@@ -83,11 +83,11 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         shadowMap = props.shadowMap
         if (shadowMap != null) {
             uShadowMvp.value = shadowMap.shadowMvp
-            for (i in 0 until shadowMap.subMaps.size) {
+            for (i in 0 until shadowMap.numMaps) {
                 val shadowTex = addUniform(UniformTexture2D("${GlslGenerator.U_SHADOW_TEX}_$i"))
                 uShadowTex += shadowTex
-                shadowTex.value = shadowMap.subMaps[i].depthTexture
-                uShadowTexSz.value[i] = shadowMap.subMaps[i].texSize
+                shadowTex.value = shadowMap.getShadowMap(i)
+                uShadowTexSz.value[i] = shadowMap.getShadowMapSize(i)
             }
         }
     }
@@ -127,14 +127,14 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
 
         if (ctx.glCapabilities.depthTextures && shadowMap != null) {
             if (ctx.renderPass == RenderPass.SHADOW) {
-                for (i in 0 until shadowMap.subMaps.size) {
+                for (i in 0 until shadowMap.numMaps) {
                     uShadowTex[i].value = null
                     uShadowTex[i].bind(ctx)
                 }
             } else {
-                for (i in 0 until shadowMap.subMaps.size) {
-                    uClipSpaceFarZ.value[i] = shadowMap.subMaps[i].clipSpaceFarZ
-                    uShadowTex[i].value = shadowMap.subMaps[i].depthTexture
+                for (i in 0 until shadowMap.numMaps) {
+                    uClipSpaceFarZ.value[i] = shadowMap.getClipSpaceFarZ(i)
+                    uShadowTex[i].value = shadowMap.getShadowMap(i)
                     uShadowTex[i].bind(ctx)
                 }
                 uShadowMvp.bind(ctx)

@@ -6,11 +6,11 @@ import de.fabmax.kool.scene.group
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
-import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.lineMesh
 
-fun makeGroundGrid(cells: Int, shadows: CascadedShadowMap?) = group {
+fun makeGroundGrid(cells: Int, shadows: ShadowMap?) = group {
     val groundExt = cells / 2
 
     +colorMesh {

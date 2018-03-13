@@ -1,6 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.util.TouchGestureEvaluator
+import de.fabmax.kool.util.logW
 
 /**
  * @author fabmax
@@ -283,7 +284,7 @@ class InputManager internal constructor() {
 
         fun update(target: Pointer, t: Double) {
             if (updateState != UpdateState.INVALID && t - lastUpdate > 200) {
-                println("Pointer $id timed out!")
+                logW { "Pointer $id timed out!" }
                 cancelPointer()
             }
 

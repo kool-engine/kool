@@ -1,8 +1,8 @@
 package de.fabmax.kool.shading
 
 import de.fabmax.kool.Texture
-import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ShadowMap
 
 enum class LightModel {
     PHONG_LIGHTING,
@@ -43,7 +43,7 @@ class ShaderProps {
 
     var numBones = 0
 
-    var shadowMap: CascadedShadowMap? = null
+    var shadowMap: ShadowMap? = null
 
     var isNormalMapped = false
 

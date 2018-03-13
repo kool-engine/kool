@@ -113,7 +113,6 @@ class HttpCache private constructor(val cacheDir: File) {
                 }
                 rmCnt++
             }
-            println("Deleted $rmCnt cache entries")
         }
     }
 

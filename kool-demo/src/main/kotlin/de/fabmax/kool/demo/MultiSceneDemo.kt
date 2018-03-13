@@ -7,8 +7,8 @@ import de.fabmax.kool.scene.Scene
  * @author fabmax
  */
 
-fun multiScene(ctx: KoolContext): List<Scene> {
-    val leftScene = simpleShapesScene(ctx)
+fun multiScene(koolCtx: KoolContext): List<Scene> {
+    val leftScene = simpleShapesScene(koolCtx)
     val rightScene = uiDemoScene()
 
     leftScene.onPreRender += { ctx ->

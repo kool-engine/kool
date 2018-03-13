@@ -164,8 +164,8 @@ open class GlslGenerator {
 
         val shadowMap = shaderProps.shadowMap
         if (shadowMap != null) {
-            text.append("uniform mat4 $U_SHADOW_MVP[${shadowMap.subMaps.size}];\n")
-            text.append("$vsOut vec4 $V_POSITION_LIGHTSPACE[${shadowMap.subMaps.size}];\n")
+            text.append("uniform mat4 $U_SHADOW_MVP[${shadowMap.numMaps}];\n")
+            text.append("$vsOut vec4 $V_POSITION_LIGHTSPACE[${shadowMap.numMaps}];\n")
             text.append("$vsOut float $V_POSITION_CLIPSPACE_Z;\n")
         }
 
@@ -214,7 +214,7 @@ open class GlslGenerator {
 
         val shadowMap = shaderProps.shadowMap
         if (shadowMap != null) {
-            for (i in shadowMap.subMaps.indices) {
+            for (i in 0 until shadowMap.numMaps) {
                 text.append("$V_POSITION_LIGHTSPACE[$i] = $U_SHADOW_MVP[$i] * ($U_MODEL_MATRIX * position);\n")
             }
             text.append("$V_POSITION_CLIPSPACE_Z = gl_Position.z;\n")
@@ -321,16 +321,16 @@ open class GlslGenerator {
 
         val shadowMap = shaderProps.shadowMap
         if (shadowMap != null) {
-            text.append("$fsIn vec4 $V_POSITION_LIGHTSPACE[${shadowMap.subMaps.size}];\n")
+            text.append("$fsIn vec4 $V_POSITION_LIGHTSPACE[${shadowMap.numMaps}];\n")
             text.append("$fsIn float $V_POSITION_CLIPSPACE_Z;\n")
 
             // arrays of sampler2D uniforms are only supported with extensions in GL ES
             //text.append("uniform sampler2D $U_SHADOW_TEX[${shadowMap.subMaps.size}];\n")
-            for (i in shadowMap.subMaps.indices) {
+            for (i in 0 until shadowMap.numMaps) {
                 text.append("uniform sampler2D ${U_SHADOW_TEX}_$i;\n")
             }
-            text.append("uniform int $U_SHADOW_TEX_SZ[${shadowMap.subMaps.size}];\n")
-            text.append("uniform float $U_CLIP_SPACE_FAR_Z[${shadowMap.subMaps.size}];\n")
+            text.append("uniform int $U_SHADOW_TEX_SZ[${shadowMap.numMaps}];\n")
+            text.append("uniform float $U_CLIP_SPACE_FAR_Z[${shadowMap.numMaps}];\n")
         }
 
         // add fog uniforms
@@ -411,13 +411,13 @@ open class GlslGenerator {
         }
 
         if (shadowMap != null) {
-            for (i in shadowMap.subMaps.indices) {
+            for (i in 0 until shadowMap.numMaps) {
                 text.append("if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[$i]) {\n")
                 text.append("  vec3 projPos = $V_POSITION_LIGHTSPACE[$i].xyz / $V_POSITION_LIGHTSPACE[$i].w;\n")
                 text.append("  float off = 1.0 / float($U_SHADOW_TEX_SZ[$i]);\n")
                 text.append("  shadowFactor = calcShadowFactor(${U_SHADOW_TEX}_$i, projPos, off, ${i+1}.0 * 0.001);\n")
                 text.append("}\n")
-                if (i < shadowMap.subMaps.size - 1) {
+                if (i < shadowMap.numMaps - 1) {
                     text.append("else ")
                 }
             }

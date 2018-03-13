@@ -5,6 +5,8 @@ import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.TextureProps
 import de.fabmax.kool.util.UniqueId
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 
 class Framebuffer(val width: Int, val height: Int) {
 
@@ -108,12 +110,11 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
                     glDrawBuffer(GL_FRONT)
                     glReadBuffer(GL_FRONT)
                     fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER)
-                    println("Framebuffer incomplete: attached fallback color buffer")
+                    logW { "Depth-framebuffer is incomplete without an color attachment, adding one (makes shadow rendering slow)" }
                 }
 
                 if (fbStatus != GL_FRAMEBUFFER_COMPLETE) {
-                    println("ERROR: Framebuffer incomplete, status: $fbStatus, color: ${colorAttachment != null}, depth: ${depthAttachment != null}")
-                    //throw KoolException("Framebuffer incomplete, status: $fbStatus")
+                    logE { "Framebuffer is incomplete, status: $fbStatus, has-color: ${colorAttachment != null}, has-depth: ${depthAttachment != null}" }
                 }
             }
         }

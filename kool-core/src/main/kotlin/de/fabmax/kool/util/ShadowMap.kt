@@ -12,7 +12,22 @@ import de.fabmax.kool.scene.FrustumPlane
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 
-class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 1024) {
+interface ShadowMap {
+    val numMaps: Int
+    val shadowMvp: Float32Buffer
+
+    fun renderShadowMap(nodeToRender: Node, ctx: KoolContext)
+    fun dispose(ctx: KoolContext)
+
+    fun getShadowMapSize(map: Int): Int
+    fun getShadowMap(map: Int): Texture?
+    fun getClipSpaceFarZ(map: Int): Float
+}
+
+class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val texSize: Int = 1024) : ShadowMap {
+    override val numMaps = 1
+    override val shadowMvp = createFloat32Buffer(16)
+
     private val depthCam = OrthographicCamera()
     private val depthMvpMat = Mat4f()
     private val depthView = Mat4f()
@@ -24,13 +39,9 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
 
     private var fbo: Framebuffer = Framebuffer(texSize, texSize).withDepth()
 
-    val depthMvp = createFloat32Buffer(16)
-    val depthTexture: Texture?
-        get() = fbo.depthAttachment
-    var clipSpaceFarZ = 0f
-        private set
+    private var clipSpaceFarZ = 0f
 
-    fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
+    override fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
         if (!ctx.glCapabilities.depthTextures) {
             // depth textures are not supported on current platform, there's no point in going ahead
             return
@@ -41,7 +52,6 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
 
         depthCam.position.set(scene.light.direction)
         depthCam.lookAt.set(0f, 0f, 0f)
-        //scene.light.direction.cross(scene.camera.globalLookDir, depthCam.up).norm()
         depthView.setLookAt(depthCam.position, depthCam.lookAt, depthCam.up)
 
         // compute bounding box of main camera's near and far frustum planes in light space
@@ -71,7 +81,7 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
         ctx.mvpState.modelMatrix.setIdentity()
 
         depthCam.updateCamera(ctx)
-        BIAS_MATRIX.mul(ctx.mvpState.mvpMatrix, depthMvpMat).toBuffer(depthMvp)
+        BIAS_MATRIX.mul(ctx.mvpState.mvpMatrix, depthMvpMat).toBuffer(shadowMvp)
 
         val prevRenderPass = ctx.renderPass
         ctx.renderPass = RenderPass.SHADOW
@@ -86,9 +96,15 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
         fbo.unbind(ctx)
     }
 
-    fun dispose(ctx: KoolContext) {
+    override fun dispose(ctx: KoolContext) {
         fbo.delete(ctx)
     }
+
+    override fun getShadowMapSize(map: Int) = texSize
+
+    override fun getShadowMap(map: Int) = fbo.depthAttachment
+
+    override fun getClipSpaceFarZ(map: Int) = clipSpaceFarZ
 
     companion object {
         private val BIAS_MATRIX = Mat4f()
@@ -101,29 +117,38 @@ class ShadowMap(val near: Float = 0f, val far: Float = 1f, val texSize: Int = 10
     }
 }
 
-class CascadedShadowMap(val subMaps: Array<ShadowMap>) {
-    val shadowMvp = createFloat32Buffer(16 * subMaps.size)
+class CascadedShadowMap(private val subMaps: Array<SimpleShadowMap>) : ShadowMap {
+    override val numMaps: Int
+        get() = subMaps.size
 
-    fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
+    override val shadowMvp = createFloat32Buffer(16 * subMaps.size)
+
+    override fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
         for (i in subMaps.indices) {
             subMaps[i].renderShadowMap(nodeToRender, ctx)
-            shadowMvp.put(subMaps[i].depthMvp)
+            shadowMvp.put(subMaps[i].shadowMvp)
         }
         shadowMvp.flip()
     }
 
-    fun dispose(ctx: KoolContext) {
+    override fun dispose(ctx: KoolContext) {
         for (i in subMaps.indices) {
             subMaps[i].dispose(ctx)
         }
     }
 
+    override fun getShadowMapSize(map: Int) = subMaps[map].getShadowMapSize(0)
+
+    override fun getShadowMap(map: Int): Texture? = subMaps[map].getShadowMap(0)
+
+    override fun getClipSpaceFarZ(map: Int) = subMaps[map].getClipSpaceFarZ(0)
+
     companion object {
         fun defaultCascadedShadowMap3(): CascadedShadowMap {
             val subMaps = arrayOf(
-                    ShadowMap(0f, 0.1f),
-                    ShadowMap(0.1f, 0.25f),
-                    ShadowMap(0.25f, 1f)
+                    SimpleShadowMap(0f, 0.1f),
+                    SimpleShadowMap(0.1f, 0.25f),
+                    SimpleShadowMap(0.25f, 1f)
             )
             return CascadedShadowMap(subMaps)
         }

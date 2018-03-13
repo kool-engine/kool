@@ -114,14 +114,3 @@ open class Texture(val props: TextureProps, val generator: Texture.(ctx: KoolCon
         texData.loadData(this, ctx)
     }
 }
-
-fun assetTexture(assetPath: String, ctx: KoolContext, delayLoading: Boolean = true): Texture {
-    return assetTexture(defaultProps(assetPath), ctx, delayLoading)
-}
-
-fun assetTexture(props: TextureProps, ctx: KoolContext, delayLoading: Boolean = true): Texture {
-    return Texture(props) {
-        this.delayLoading = delayLoading
-        ctx.assetMgr.loadTextureAsset(props.id)
-    }
-}

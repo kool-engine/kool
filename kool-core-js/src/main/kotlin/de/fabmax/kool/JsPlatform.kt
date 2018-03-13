@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.util.logW
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLDivElement
 import kotlin.browser.document
@@ -49,9 +50,9 @@ internal object JsImpl {
     init {
         val measure = document.getElementById("dpiMeasure")
         if (measure == null) {
-            println("dpiMeasure element not found, falling back to 96 dpi")
-            println("Add this hidden div to your html:")
-            println("<div id=\"dpiMeasure\" style=\"height: 1in; width: 1in; left: 100%; position: fixed; top: 100%;\"></div>")
+            logW { "dpiMeasure element not found, falling back to 96 dpi" }
+            logW { "Add this hidden div to your html:" }
+            logW { "<div id=\"dpiMeasure\" style=\"height: 1in; width: 1in; left: 100%; position: fixed; top: 100%;\"></div>" }
             dpi = 96f
         } else {
             dpi = (measure as HTMLDivElement).offsetWidth.toFloat()

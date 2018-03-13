@@ -22,14 +22,6 @@ class PerfTimer {
     fun takeMs(): Double {
         return now() - tStart
     }
-
-    fun print(message: String) {
-        println("$message ${formatDouble(takeSecs(), 3)} secs")
-    }
-
-    fun printMs(message: String) {
-        println("$message ${formatDouble(takeMs(), 3)} ms")
-    }
 }
 
 inline fun <T> timedMs(message: String, tag: String? = "PerfTimer", level: Log.Level = Log.Level.INFO, block: () -> T): T {

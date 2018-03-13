@@ -6,7 +6,7 @@ import de.fabmax.kool.gl.GL_COLOR_BUFFER_BIT
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.gl.glClear
 import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.util.CascadedShadowMap
+import de.fabmax.kool.util.ShadowMap
 
 /**
  * @author fabmax
@@ -23,7 +23,7 @@ open class Scene(name: String? = null) : Group(name) {
 
     var camera: Camera = PerspectiveCamera()
     var light = Light()
-    var defaultShadowMap: CascadedShadowMap? = null
+    var defaultShadowMap: ShadowMap? = null
         set(value) {
             field = value
             if (value != null) {
