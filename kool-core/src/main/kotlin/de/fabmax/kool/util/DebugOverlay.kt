@@ -51,7 +51,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                 text = ""
-                font.setCustom(UiTheme.DARK_SIMPLE.standardFont(ctx))
+                font.setCustom(UiTheme.DARK_SIMPLE.standardFont(dpi, ctx))
                 textColor.setCustom(root.theme.accentColor)
 
                 onRender += { c ->

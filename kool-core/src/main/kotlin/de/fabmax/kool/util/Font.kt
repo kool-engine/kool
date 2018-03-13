@@ -13,8 +13,8 @@ import de.fabmax.kool.shading.ShaderProps
  * @author fabmax
  */
 
-fun uiFont(family: String, sizeDp: Float, ctx: KoolContext, style: Int = Font.PLAIN, chars: String = Font.STD_CHARS): Font {
-    val pts = (sizeDp * ctx.screenDpi / 96f)
+fun uiFont(family: String, sizeDp: Float, uiDpi: Float, ctx: KoolContext, style: Int = Font.PLAIN, chars: String = Font.STD_CHARS): Font {
+    val pts = (sizeDp * uiDpi / 96f)
     return Font(FontProps(family, pts, style, pts, chars), ctx)
 }
 

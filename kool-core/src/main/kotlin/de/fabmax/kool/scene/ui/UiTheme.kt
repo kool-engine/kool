@@ -14,13 +14,13 @@ open class UiTheme {
     var accentColor = Color.LIME
         protected set
 
-    fun standardFont(ctx: KoolContext): Font =
-            uiFont(standardFontProps.family, standardFontProps.sizePts, ctx, standardFontProps.style, standardFontProps.chars)
+    fun standardFont(uiDpi: Float, ctx: KoolContext): Font =
+            uiFont(standardFontProps.family, standardFontProps.sizePts, uiDpi, ctx, standardFontProps.style, standardFontProps.chars)
     var standardFontProps = FontProps(Font.SYSTEM_FONT, 20f)
         protected set
 
-    fun titleFont(ctx: KoolContext): Font =
-            uiFont(titleFontProps.family, titleFontProps.sizePts, ctx, titleFontProps.style, titleFontProps.chars)
+    fun titleFont(uiDpi: Float, ctx: KoolContext): Font =
+            uiFont(titleFontProps.family, titleFontProps.sizePts, uiDpi, ctx, titleFontProps.style, titleFontProps.chars)
     var titleFontProps = FontProps(Font.SYSTEM_FONT, 28f)
         protected set
 
@@ -69,6 +69,9 @@ open class UiTheme {
         }
     }
 }
+
+fun UiComponent.standardFont(ctx: KoolContext): Font = root.theme.standardFont(dpi, ctx)
+fun UiComponent.titleFont(ctx: KoolContext): Font = root.theme.titleFont(dpi, ctx)
 
 fun theme(base: UiTheme? = null, block: ThemeBuilder.() -> Unit): UiTheme {
     val builder = ThemeBuilder(base)

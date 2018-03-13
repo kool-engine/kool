@@ -88,7 +88,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                 text = "Demos"
                 textColor.setCustom(theme.accentColor)
-                font.setCustom(theme.titleFont(ctx))
+                font.setCustom(titleFont(ctx))
             }
             +component("divider") {
                 layoutSpec.setOrigin(pcs(5f), dps(-60f, true), zero())
