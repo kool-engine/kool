@@ -19,12 +19,6 @@ open class Group(name: String? = null) : Node(name) {
     protected val children: MutableList<Node> = mutableListOf()
     protected val tmpBounds = BoundingBox()
 
-    // frustum check is disabled for groups because it relies on the node's bounding box, however group bounds depend
-    // on children bounds and are therefore not known before render
-    override var isFrustumChecked: Boolean
-        get() = false
-        set(value) {}
-
     override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
         super.onSceneChanged(oldScene, newScene)
         for (i in children.indices) {
@@ -32,24 +26,34 @@ open class Group(name: String? = null) : Node(name) {
         }
     }
 
-    override fun render(ctx: KoolContext) {
-        if (!isVisible) {
-            // group is hidden
-            return
-        }
-        super.render(ctx)
-
-        // isRendered flag is ignored because this group's bounds aren't valid before children are rendered
-        // therefore the frustum check is not reliable
-
+    override fun preRender(ctx: KoolContext) {
+        // call preRender on all children and update group bounding box
         tmpBounds.clear()
-        for (i in children.indices) {
-            if (ctx.renderPass != RenderPass.SHADOW || children[i].isCastingShadow) {
-                children[i].render(ctx)
-            }
-            tmpBounds.add(children[i].bounds)
+        children.forEach { child ->
+            child.preRender(ctx)
+            tmpBounds.add(child.bounds)
         }
         bounds.set(tmpBounds)
+
+        // compute global position and size based on group bounds and current model transform
+        super.preRender(ctx)
+    }
+
+    override fun render(ctx: KoolContext) {
+        super.render(ctx)
+
+        if (isRendered) {
+            for (i in children.indices) {
+                if (ctx.renderPass != RenderPass.SHADOW || children[i].isCastingShadow) {
+                    children[i].render(ctx)
+                }
+            }
+        }
+    }
+
+    override fun postRender(ctx: KoolContext) {
+        children.forEach { it.postRender(ctx) }
+        super.postRender(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {

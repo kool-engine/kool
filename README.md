@@ -67,7 +67,7 @@ fun main(args: Array<String>) {
             cubeAnimator.duration = 20f
     
             // Update the rotation animation
-            animation = { ctx ->
+            onPreRender += { ctx ->
                 val angle = cubeAnimator.tick(ctx)
                 setIdentity()
                 rotate(angle * 5, Vec3f.Y_AXIS)

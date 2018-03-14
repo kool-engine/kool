@@ -14,12 +14,14 @@ import de.fabmax.kool.util.BoundingBox
  */
 abstract class Node(val name: String? = null) {
 
+    val onPreRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
     val onRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+    val onPostRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+    val onDispose: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
 
     val onHoverEnter: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
     val onHover: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
     val onHoverExit: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
-    val onDispose: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
 
     /**
      * Axis-aligned bounds of this node in local coordinates.
@@ -91,19 +93,29 @@ abstract class Node(val name: String? = null) {
     protected var isRendered = true
 
     /**
-     * Renders this node using the specified graphics engine context. Implementations should consider the [isVisible]
-     * flag and return without drawing anything if it is false.
-     *
-     * @param ctx    the graphics engine context
+     * Called before rendering a new frame. This method is only called once per frame, in contrast to render which
+     * can be called multiple times (e.g, once in shadow pass and another time in screen pass). Implementations should
+     * use this method to update their bounds, animation states, etc.
      */
-    open fun render(ctx: KoolContext) {
+    open fun preRender(ctx: KoolContext) {
+        onPreRender.forEach { it(ctx) }
+
         // update global center and radius
         globalCenterMut.set(bounds.center)
         globalExtentMut.set(bounds.max)
         ctx.mvpState.modelMatrix.transform(globalCenterMut)
         ctx.mvpState.modelMatrix.transform(globalExtentMut)
         globalRadius = globalCenter.distance(globalExtentMut)
+    }
 
+    /**
+     * Renders this node using the specified graphics engine context. Implementations should consider the [isVisible]
+     * flag and return without drawing anything if it is false. This method might be called multiple times per frame,
+     * e.g. during shadow depth texture rendering.
+     *
+     * @param ctx    the graphics engine context
+     */
+    open fun render(ctx: KoolContext) {
         isRendered = checkIsVisible(ctx)
 
         if (isRendered) {
@@ -113,6 +125,13 @@ abstract class Node(val name: String? = null) {
                 }
             }
         }
+    }
+
+    /**
+     * Called after a frame was rendered.
+     */
+    open fun postRender(ctx: KoolContext) {
+        onPostRender.forEach { it(ctx) }
     }
 
     /**

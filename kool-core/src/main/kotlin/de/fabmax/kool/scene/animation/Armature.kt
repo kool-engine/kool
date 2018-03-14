@@ -136,17 +136,19 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
         animationList.remove(animations.remove(name))
     }
 
+    override fun preRender(ctx: KoolContext) {
+        if (ctx.deltaT > 0) {
+            applyAnimation(ctx)
+        }
+        super.preRender(ctx)
+    }
+
     override fun render(ctx: KoolContext) {
         val shader = this.shader
         if (shader is BasicShader) {
             shader.bones = boneTransforms
         }
         super.render(ctx)
-
-        // increment animation after rendering to keep armature in the same position as in pre passes (shadow pass)
-        if (ctx.deltaT > 0) {
-            applyAnimation(ctx)
-        }
     }
 
     private fun applyAnimation(ctx: KoolContext) {

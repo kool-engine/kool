@@ -36,9 +36,8 @@ abstract class KoolContext {
     /**
      * Time between current and last call of render() in seconds.
      */
-    val deltaT
-        get() = if (renderPass.increaseTime) { dt } else { 0.0 }
-    private var dt = 0.0
+    var deltaT = 0.0
+        private set
 
     /**
      * Number of rendered frames.
@@ -82,7 +81,7 @@ abstract class KoolContext {
     abstract fun destroy()
 
     protected fun render(dt: Double) {
-        this.dt = dt
+        this.deltaT = dt
         time += dt
         frameIdx++
 

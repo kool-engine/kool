@@ -39,12 +39,12 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
         }
     }
 
-    override fun render(ctx: KoolContext) {
+    override fun preRender(ctx: KoolContext) {
         if (isLayoutNeeded) {
             isLayoutNeeded = false
             doLayout(contentBounds, ctx)
         }
-        super.render(ctx)
+        super.preRender(ctx)
     }
 
     override fun doLayout(bounds: BoundingBox, ctx: KoolContext) {

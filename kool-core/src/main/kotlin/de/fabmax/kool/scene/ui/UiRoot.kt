@@ -116,7 +116,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         this.globalDepth = depth
     }
 
-    override fun render(ctx: KoolContext) {
+    override fun preRender(ctx: KoolContext) {
         if (isFillViewport &&
                 (globalWidth != ctx.viewport.width.toFloat() || globalHeight != ctx.viewport.height.toFloat())) {
             globalWidth = ctx.viewport.width.toFloat()
@@ -138,6 +138,12 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
             content.requestLayout()
         }
 
+        content.preRender(ctx)
+        bounds.set(content.bounds)
+        super.preRender(ctx)
+    }
+
+    override fun render(ctx: KoolContext) {
         blurHelper?.updateDistortionTexture(this, ctx, content.bounds)
 
         ctx.pushAttributes()
@@ -147,9 +153,13 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
 
         super.render(ctx)
         content.render(ctx)
-        bounds.set(content.bounds)
 
         ctx.popAttributes()
+    }
+
+    override fun postRender(ctx: KoolContext) {
+        content.postRender(ctx)
+        super.postRender(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {

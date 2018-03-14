@@ -34,7 +34,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
         animator.repeating = Animator.REPEAT_TOGGLE_DIR
 
         // Animation function is called on every frame
-        animation = { ctx ->
+        onPreRender += { ctx ->
             // Clear transformation
             setIdentity()
             // Shift content 5 units left and let it bounce along Y-Axis
@@ -69,7 +69,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
         cubeAnimator.duration = 20f
 
         // Update the rotation animation
-        animation = { ctx ->
+        onPreRender += { ctx ->
             val angle = cubeAnimator.tick(ctx)
             setIdentity()
             translate(5f, 0f, 0f)
@@ -139,7 +139,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
         animator.duration = 0.75f
 
         // Content is shifted to the back and scaled depending on time
-        animation = { ctx ->
+        onPreRender += { ctx ->
             val s = animator.tick(ctx)
             setIdentity()
             translate(0f, 0f, -5f)

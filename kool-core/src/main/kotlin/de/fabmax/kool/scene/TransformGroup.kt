@@ -22,8 +22,6 @@ open class TransformGroup(name: String? = null) : Group(name) {
     protected var isIdentity = false
     protected var isDirty = false
 
-    open var animation: (TransformGroup.(KoolContext) -> Unit)? = null
-
     private val tmpTransformVec = MutableVec3f()
 
     protected fun checkInverse() {
@@ -38,13 +36,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
         isIdentity = false
     }
 
-    override fun render(ctx: KoolContext) {
-        if (!isVisible) {
-            return
-        }
-
-        animation?.invoke(this, ctx)
-
+    override fun preRender(ctx: KoolContext) {
         // apply transformation
         val wasIdentity = isIdentity
         if (!wasIdentity) {
@@ -53,13 +45,16 @@ open class TransformGroup(name: String? = null) : Group(name) {
             ctx.mvpState.update(ctx)
         }
 
-        // draw all child nodes
-        super.render(ctx)
+        // compute global position and size based on group bounds and current model transform
+        super.preRender(ctx)
 
-        // isRendered flag is ignored because this group's bounds aren't valid before children are rendered
-        // therefore the frustum check is not reliable
+        // Something to think about: In case transform changes during preRender (e.g. because a onPreRender listener
+        // is animating this transform group) the computed bounds will not match the actual bounds during
+        // render (because of the changed transform matrix). This could be solved by caching the transform used now
+        // and reuse it in render, but that would also introduce an delay of one frame before changed transform
+        // becomes visible. In most cases mismatch between bounds shouldn't be harmful.
 
-        // transform updated bounding box
+        // transform group bounds
         if (!bounds.isEmpty && !wasIdentity) {
             tmpBounds.clear()
             tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.min.z), 1f))
@@ -77,6 +72,27 @@ open class TransformGroup(name: String? = null) : Group(name) {
         if (!wasIdentity) {
             ctx.mvpState.modelMatrix.pop()
             ctx.mvpState.update(ctx)
+        }
+    }
+
+    override fun render(ctx: KoolContext) {
+        if (isVisible) {
+            // apply transformation
+            val wasIdentity = isIdentity
+            if (!wasIdentity) {
+                ctx.mvpState.modelMatrix.push()
+                ctx.mvpState.modelMatrix.mul(transform)
+                ctx.mvpState.update(ctx)
+            }
+
+            // draw all child nodes
+            super.render(ctx)
+
+            // clear transformation
+            if (!wasIdentity) {
+                ctx.mvpState.modelMatrix.pop()
+                ctx.mvpState.update(ctx)
+            }
         }
     }
 

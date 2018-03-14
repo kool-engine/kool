@@ -18,8 +18,9 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
 
 open class Scene(name: String? = null) : Group(name) {
 
-    val onPreRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
-    val onPostRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+    override var isFrustumChecked: Boolean
+        get() = false
+        set(value) {}
 
     var camera: Camera = PerspectiveCamera()
     var light = Light()
@@ -53,12 +54,9 @@ open class Scene(name: String? = null) : Group(name) {
             return
         }
 
-        for (i in onPreRender.indices) {
-            onPreRender[i](ctx)
-        }
+        preRender(ctx)
 
         camera.updateCamera(ctx)
-
         handleInput(ctx)
 
         if (clearMask != 0) {
@@ -66,9 +64,7 @@ open class Scene(name: String? = null) : Group(name) {
         }
         render(ctx)
 
-        for (i in onPostRender.indices) {
-            onPostRender[i](ctx)
-        }
+        postRender(ctx)
     }
 
     fun registerDragHandler(handler: InputManager.DragHandler) {

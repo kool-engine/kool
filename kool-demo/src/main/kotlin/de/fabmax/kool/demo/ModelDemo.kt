@@ -54,7 +54,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                 armature = mesh
                 mesh.getAnimation("Armature|walk")?.weight = 1f
 
-                mesh.onRender += { ctx ->
+                mesh.onPreRender += { ctx ->
                     // translation is in model coordinates -> front direction is -y, not z
                     val dt = ctx.deltaT.clamp(0.0, 0.1).toFloat()
                     translate(0f, -dt * movementSpeed * slowMotion * 5f, 0f)
