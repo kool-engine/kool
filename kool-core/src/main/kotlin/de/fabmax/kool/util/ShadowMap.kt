@@ -12,12 +12,11 @@ import de.fabmax.kool.scene.FrustumPlane
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 
-interface ShadowMap {
+interface ShadowMap : Disposable {
     val numMaps: Int
     val shadowMvp: Float32Buffer
 
     fun renderShadowMap(nodeToRender: Node, ctx: KoolContext)
-    fun dispose(ctx: KoolContext)
 
     fun getShadowMapSize(map: Int): Int
     fun getShadowMap(map: Int): Texture?
@@ -97,7 +96,7 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val tex
     }
 
     override fun dispose(ctx: KoolContext) {
-        fbo.delete(ctx)
+        fbo.dispose(ctx)
     }
 
     override fun getShadowMapSize(map: Int) = texSize

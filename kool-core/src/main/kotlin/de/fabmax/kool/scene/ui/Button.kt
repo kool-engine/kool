@@ -110,8 +110,8 @@ open class ButtonUi(val button: Button, baseUi: ComponentUi) : LabelUi(button, b
         textColor.add(button.textColorHovered.apply(), colorWeightHovered)
     }
 
-    override fun disposeUi(ctx: KoolContext) {
-        super.disposeUi(ctx)
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
         button.onHoverEnter -= hoverEnterListener
         button.onHoverExit -= hoverExitListener
     }

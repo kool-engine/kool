@@ -69,7 +69,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     }
 
     protected open fun updateTheme(ctx: KoolContext) {
-        ui.prop.disposeUi(ctx)
+        ui.prop.dispose(ctx)
         ui.setTheme(createThemeUi(ctx)).apply()
         setThemeProps(ctx)
         ui.prop.createUi(ctx)

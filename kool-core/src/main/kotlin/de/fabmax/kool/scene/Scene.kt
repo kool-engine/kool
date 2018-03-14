@@ -6,6 +6,7 @@ import de.fabmax.kool.gl.GL_COLOR_BUFFER_BIT
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.gl.glClear
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.util.Disposable
 import de.fabmax.kool.util.ShadowMap
 
 /**
@@ -26,15 +27,12 @@ open class Scene(name: String? = null) : Group(name) {
     var light = Light()
     var defaultShadowMap: ShadowMap? = null
         set(value) {
-            field = value
-            if (value != null) {
-                onPreRender += { ctx ->
-                    value.renderShadowMap(this, ctx)
-                }
-                onDispose += { ctx ->
-                    value.dispose(ctx)
+            if (field != null) {
+                synchronized(disposables) {
+                    disposables += field!!
                 }
             }
+            field = value
         }
 
     var clearMask = GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
@@ -45,8 +43,25 @@ open class Scene(name: String? = null) : Group(name) {
     private val dragPtrs: MutableList<InputManager.Pointer> = mutableListOf()
     private val dragHandlers: MutableList<InputManager.DragHandler> = mutableListOf()
 
+    private val disposables = mutableListOf<Disposable>()
+
     init {
         scene = this
+
+        onPreRender += { ctx ->
+            defaultShadowMap?.renderShadowMap(this, ctx)
+        }
+        onDispose += { ctx ->
+            defaultShadowMap?.dispose(ctx)
+        }
+    }
+
+    override fun preRender(ctx: KoolContext) {
+        synchronized(disposables) {
+            disposables.forEach { it.dispose(ctx) }
+            disposables.clear()
+        }
+        super.preRender(ctx)
     }
 
     fun renderScene(ctx: KoolContext) {
@@ -65,6 +80,14 @@ open class Scene(name: String? = null) : Group(name) {
         render(ctx)
 
         postRender(ctx)
+    }
+
+    override fun dispose(ctx: KoolContext) {
+        synchronized(disposables) {
+            disposables.forEach { it.dispose(ctx) }
+            disposables.clear()
+        }
+        super.dispose(ctx)
     }
 
     fun registerDragHandler(handler: InputManager.DragHandler) {

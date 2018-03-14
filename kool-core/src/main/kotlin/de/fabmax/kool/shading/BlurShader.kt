@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Disposable
 import de.fabmax.kool.util.UniqueId
 import kotlin.math.max
 import kotlin.math.min
@@ -71,7 +72,7 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
 }
 
 class BlurredBackgroundHelper(private val texSize: Int = 256,
-                              private val blurMethod: BlurMethod = BlurredBackgroundHelper.BlurMethod.BLUR_13_TAP) {
+                              private val blurMethod: BlurMethod = BlurredBackgroundHelper.BlurMethod.BLUR_13_TAP) : Disposable {
 
     enum class BlurMethod {
         BLUR_9_TAP,
@@ -190,9 +191,9 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         }
     }
 
-    fun dispose(ctx: KoolContext) {
-        blurFb1.delete(ctx)
-        blurFb2.delete(ctx)
+    override fun dispose(ctx: KoolContext) {
+        blurFb1.dispose(ctx)
+        blurFb2.dispose(ctx)
         blurX?.dispose(ctx)
         blurY?.dispose(ctx)
         copyTex.dispose(ctx)

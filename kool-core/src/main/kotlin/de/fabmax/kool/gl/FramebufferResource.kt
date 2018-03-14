@@ -4,11 +4,12 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.TextureProps
+import de.fabmax.kool.util.Disposable
 import de.fabmax.kool.util.UniqueId
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
-class Framebuffer(val width: Int, val height: Int) {
+class Framebuffer(val width: Int, val height: Int) : Disposable {
 
     private val fbId = UniqueId.nextId()
 
@@ -34,7 +35,7 @@ class Framebuffer(val width: Int, val height: Int) {
         return this
     }
 
-    fun delete(ctx: KoolContext) {
+    override fun dispose(ctx: KoolContext) {
         fbResource?.delete(ctx)
         colorAttachment?.dispose(ctx)
         depthAttachment?.dispose(ctx)

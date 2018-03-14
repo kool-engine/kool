@@ -99,8 +99,8 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         renderText(ctx)
     }
 
-    override fun disposeUi(ctx: KoolContext) {
-        baseUi.disposeUi(ctx)
+    override fun dispose(ctx: KoolContext) {
+        baseUi.dispose(ctx)
         label -= mesh
         mesh.dispose(ctx)
     }

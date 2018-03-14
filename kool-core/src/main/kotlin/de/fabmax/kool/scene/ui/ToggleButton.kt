@@ -79,8 +79,8 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
         tb.onStateChange += stateChangedListener
     }
 
-    override fun disposeUi(ctx: KoolContext) {
-        super.disposeUi(ctx)
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
         tb.onStateChange -= stateChangedListener
     }
 

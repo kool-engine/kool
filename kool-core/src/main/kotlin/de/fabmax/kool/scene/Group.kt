@@ -29,9 +29,9 @@ open class Group(name: String? = null) : Node(name) {
     override fun preRender(ctx: KoolContext) {
         // call preRender on all children and update group bounding box
         tmpBounds.clear()
-        children.forEach { child ->
-            child.preRender(ctx)
-            tmpBounds.add(child.bounds)
+        for (i in children.indices) {
+            children[i].preRender(ctx)
+            tmpBounds.add(children[i].bounds)
         }
         bounds.set(tmpBounds)
 
@@ -52,7 +52,9 @@ open class Group(name: String? = null) : Node(name) {
     }
 
     override fun postRender(ctx: KoolContext) {
-        children.forEach { it.postRender(ctx) }
+        for (i in children.indices) {
+            children[i].postRender(ctx)
+        }
         super.postRender(ctx)
     }
 

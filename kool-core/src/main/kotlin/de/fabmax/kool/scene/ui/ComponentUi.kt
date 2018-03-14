@@ -5,9 +5,10 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Disposable
 import de.fabmax.kool.util.MeshBuilder
 
-interface ComponentUi {
+interface ComponentUi : Disposable {
 
     fun updateComponentAlpha() { }
 
@@ -15,9 +16,9 @@ interface ComponentUi {
 
     fun updateUi(ctx: KoolContext) { }
 
-    fun disposeUi(ctx: KoolContext) { }
-
     fun onRender(ctx: KoolContext) { }
+
+    override fun dispose(ctx: KoolContext) { }
 }
 
 open class BlankComponentUi : ComponentUi
@@ -43,7 +44,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
         component.addNode(mesh, 0)
     }
 
-    override fun disposeUi(ctx: KoolContext) {
+    override fun dispose(ctx: KoolContext) {
         component -= mesh
         mesh.dispose(ctx)
     }

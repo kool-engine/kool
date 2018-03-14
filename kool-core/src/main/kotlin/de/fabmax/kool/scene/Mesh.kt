@@ -182,7 +182,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     }
 }
 
-class MeshData(val vertexAttributes: Set<Attribute>) {
+class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     val vertexList = IndexedVertexList(vertexAttributes)
     val bounds = BoundingBox()
 
@@ -330,7 +330,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) {
     /**
      * Deletes all index and data buffer of this mesh.
      */
-    fun dispose(ctx: KoolContext) {
+    override fun dispose(ctx: KoolContext) {
         if (--referenceCount == 0) {
             indexBuffer?.delete(ctx)
             dataBufferF?.delete(ctx)

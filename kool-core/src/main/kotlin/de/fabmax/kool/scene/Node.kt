@@ -6,13 +6,14 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.Disposable
 
 /**
  * A scene node. This is the base class for all scene objects.
  *
  * @author fabmax
  */
-abstract class Node(val name: String? = null) {
+abstract class Node(val name: String? = null) : Disposable {
 
     val onPreRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
     val onRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
@@ -139,7 +140,7 @@ abstract class Node(val name: String? = null) {
      *
      * @param ctx    the graphics engine context
      */
-    open fun dispose(ctx: KoolContext) {
+    override fun dispose(ctx: KoolContext) {
         for (i in onDispose.indices) {
             onDispose[i](ctx)
         }

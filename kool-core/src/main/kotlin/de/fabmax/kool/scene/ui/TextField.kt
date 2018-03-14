@@ -25,7 +25,7 @@ class TextField(name: String, root: UiRoot) : Label(name, root) {
                     } else if (e.isPressed) {
                         when (e.keyCode) {
                             InputManager.KEY_BACKSPACE -> editText.backspace()
-                            InputManager.KEY_DEL -> editText.delete()
+                            InputManager.KEY_DEL -> editText.deleteSelection()
                             InputManager.KEY_CURSOR_LEFT -> {
                                 if (e.isCtrlDown) {
                                     editText.moveCaret(EditableText.MOVE_WORD_LEFT, e.isShiftDown)
@@ -203,7 +203,7 @@ class EditableText(txt: String = "") {
         }
     }
 
-    fun delete() {
+    fun deleteSelection() {
         if (selectionStart != caretPosition) {
             replaceSelection("")
         } else if (caretPosition < text.length) {

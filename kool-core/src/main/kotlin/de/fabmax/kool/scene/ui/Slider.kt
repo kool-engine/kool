@@ -135,8 +135,8 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
         slider += mesh
     }
 
-    override fun disposeUi(ctx: KoolContext) {
-        baseUi.disposeUi(ctx)
+    override fun dispose(ctx: KoolContext) {
+        baseUi.dispose(ctx)
 
         mesh.dispose(ctx)
         slider -= mesh
