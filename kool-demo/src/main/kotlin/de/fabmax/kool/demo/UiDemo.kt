@@ -12,7 +12,7 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
     +sphericalInputTransform { +camera }
 
     +transformGroup {
-        onRender += { ctx ->
+        onPreRender += { ctx ->
             setIdentity()
             translate(0f, 0f, -7f)
             rotate((ctx.time * 60).toFloat(), Vec3f.X_AXIS)

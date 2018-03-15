@@ -21,7 +21,7 @@ fun pointScene(): Scene {
 
     // Create scene contents
     return scene {
-        onRender += {
+        onPreRender += {
             // change color of a few points every 30 frames
             if (--frameCnt == 0) {
                 frameCnt = 30
@@ -69,7 +69,7 @@ fun pointScene(): Scene {
         }
 
         +transformGroup {
-            onRender += {
+            onPreRender += {
                 rotate(it.deltaT.toFloat() * 45, Vec3f.Y_AXIS)
             }
             +pointMesh

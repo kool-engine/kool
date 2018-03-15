@@ -114,7 +114,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
             }
 
             // Update the speed animator on every frame
-            onRender += { ctx ->
+            onPreRender += { ctx ->
                 speedAnimator.tick(ctx)
             }
             // By setting a positive speed the speed animator is started and animates it's value to 1. That value

@@ -54,7 +54,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
                 font.setCustom(UiTheme.DARK_SIMPLE.standardFont(dpi, ctx))
                 textColor.setCustom(root.theme.accentColor)
 
-                onRender += { c ->
+                onPreRender += { c ->
                     text = "${formatDouble(c.fps, 1)} fps"
                 }
             }
@@ -76,7 +76,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
                     padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
-                    onRender += {
+                    onPreRender += {
                         text = getMemoryInfo()
                     }
                 }
@@ -91,7 +91,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
 
                 var lastWndW = -1
                 var lastWndH = -1
-                onRender += { c ->
+                onPreRender += { c ->
                     if (c.windowWidth != lastWndW || c.windowHeight != lastWndH) {
                         lastWndW = c.windowWidth
                         lastWndH = c.windowHeight
@@ -109,7 +109,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
                 text = "Up: 00:00.00"
 
                 var updateT = 1f
-                onRender += { c ->
+                onPreRender += { c ->
                     updateT -= c.deltaT.toFloat()
                     if (updateT < 0) {
                         updateT += 1f
@@ -141,7 +141,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
 
                 var last = -1
                 var lastMem = -1.0
-                onRender += { c ->
+                onPreRender += { c ->
                     val num = c.memoryMgr.numTextures
                     val mem = c.memoryMgr.getTotalMemory(GlResource.Type.TEXTURE)
                     if (num != last || mem != lastMem) {
@@ -161,7 +161,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
 
                 var last = -1
                 var lastMem = -1.0
-                onRender += { c ->
+                onPreRender += { c ->
                     val num = c.memoryMgr.numBuffers
                     val mem = c.memoryMgr.getTotalMemory(GlResource.Type.BUFFER)
                     if (num != last || mem != lastMem) {
@@ -180,7 +180,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
                 var last = -1
-                onRender += { c ->
+                onPreRender += { c ->
                     val num = c.memoryMgr.numShaders
                     if (num != last) {
                         last = num

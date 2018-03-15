@@ -10,6 +10,12 @@ import java.io.FileOutputStream
  */
 fun main(args: Array<String>) {
     Demo(createContext(),"treeDemo")
+
+//    val ctx = createContext()
+//    //ctx.scenes += simpleShapesScene(ctx)
+//    //ctx.scenes += modelScene(ctx)
+//    ctx.scenes += uiDemoScene()
+//    ctx.run()
 }
 
 fun convertMesh() {
