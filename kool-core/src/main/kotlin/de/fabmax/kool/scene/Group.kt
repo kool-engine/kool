@@ -83,7 +83,7 @@ open class Group(name: String? = null) : Node(name) {
             val child = children[i]
             if (child.isPickable) {
                 val d = child.bounds.hitDistanceSqr(test.ray)
-                if (d < Float.POSITIVE_INFINITY && d <= test.hitDistanceSqr) {
+                if (d < Float.MAX_VALUE && d <= test.hitDistanceSqr) {
                     child.rayTest(test)
                 }
             }

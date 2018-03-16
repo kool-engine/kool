@@ -38,15 +38,15 @@ class RayTest {
     val hitPosition = MutableVec3f()
     val hitPositionLocal = MutableVec3f()
     var hitNode: Node? = null
-    var hitDistanceSqr = Float.POSITIVE_INFINITY
+    var hitDistanceSqr = Float.MAX_VALUE
     val isHit: Boolean
-        get() = hitDistanceSqr < Float.POSITIVE_INFINITY
+        get() = hitDistanceSqr < Float.MAX_VALUE
 
     fun clear() {
         hitPosition.set(Vec3f.ZERO)
         hitPositionLocal.set(Vec3f.ZERO)
         hitNode = null
-        hitDistanceSqr = Float.POSITIVE_INFINITY
+        hitDistanceSqr = Float.MAX_VALUE
     }
 
     fun computeHitPosition() {

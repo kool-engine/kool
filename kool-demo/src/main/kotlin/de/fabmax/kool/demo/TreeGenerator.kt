@@ -164,11 +164,11 @@ class TreeGenerator(val distribution: PointDistribution,
             set(value) {
                 field = value
                 if (value == null) {
-                    nearestNodeDist = Float.POSITIVE_INFINITY
+                    nearestNodeDist = Float.MAX_VALUE
                 }
             }
 
-        var nearestNodeDist = Float.POSITIVE_INFINITY
+        var nearestNodeDist = Float.MAX_VALUE
             private set
 
         var isOpen = true
@@ -396,7 +396,7 @@ class TreeTopPointDistribution(val centerY: Float, val width: Float, val height:
     }
 
     private fun nearestEdge(px: Float, py: Float, pts: List<Vec2f>, e0: MutableVec2f, e1: MutableVec2f) {
-        var minDist = Float.POSITIVE_INFINITY
+        var minDist = Float.MAX_VALUE
         var ni = 0
         for (i in 0 until pts.size-1) {
             val d = edgeDist(px, py, e0.set(pts[i]), e1.set(pts[i + 1]))

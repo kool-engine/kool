@@ -193,13 +193,13 @@ class BoundingBox() {
 
     /**
      * Computes the squared hit distance for the given ray. If the ray does not intersect this BoundingBox
-     * Float.POSITIVE_INFINITY is returned. If the ray origin is inside this BoundingBox 0 is returned.
+     * Float.MAX_VALUE is returned. If the ray origin is inside this BoundingBox 0 is returned.
      * The method returns the squared distance because it's faster to compute. If the exact distance is needed
      * the square root of the result has to be taken.
      *
      * @param ray    The ray to test
      * @return squared distance between origin and the hit point on the BoundingBox surface or
-     * Float.POSITIVE_INFINITY if the ray does not intersects the BoundingBox
+     * Float.MAX_VALUE if the ray does not intersects the BoundingBox
      */
     fun hitDistanceSqr(ray: Ray): Float {
         var tmin: Float
@@ -210,7 +210,7 @@ class BoundingBox() {
         val tzmax: Float
 
         if (isEmpty) {
-            return Float.POSITIVE_INFINITY
+            return Float.MAX_VALUE
         }
         if (isIncluding(ray.origin)) {
             return 0f
@@ -236,7 +236,7 @@ class BoundingBox() {
 
         if (tmin > tymax || tymin > tmax) {
             // no intersection
-            return Float.POSITIVE_INFINITY
+            return Float.MAX_VALUE
         }
         if (tymin > tmin) {
             tmin = tymin
@@ -256,7 +256,7 @@ class BoundingBox() {
 
         if (tmin > tzmax || tzmin > tmax) {
             // no intersection
-            return Float.POSITIVE_INFINITY
+            return Float.MAX_VALUE
         }
         if (tzmin > tmin) {
             tmin = tzmin
@@ -273,15 +273,15 @@ class BoundingBox() {
             return dist / ray.direction.sqrLength()
         } else {
             // no intersection
-            return Float.POSITIVE_INFINITY
+            return Float.MAX_VALUE
         }
     }
 
     override fun toString(): String {
-        if (isEmpty) {
-            return "[empty]"
+        return if (isEmpty) {
+            "[empty]"
         } else {
-            return "[min=$min, max=$max]"
+            "[min=$min, max=$max]"
         }
     }
 }
