@@ -36,7 +36,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
             if (alignBottom) {
                 layoutSpec.setOrigin(dps(-width, true), dps(0f, true), zero())
             } else {
-                layoutSpec.setOrigin(dps(-width, true), dps(-150f, true), zero())
+                layoutSpec.setOrigin(dps(-width, true), dps(-height, true), zero())
             }
             layoutSpec.setSize(dps(width, true), dps(height, true), zero())
 
@@ -110,7 +110,7 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
 
                 var updateT = 1f
                 onPreRender += { c ->
-                    updateT -= c.deltaT.toFloat()
+                    updateT -= c.deltaT
                     if (updateT < 0) {
                         updateT += 1f
 
@@ -222,13 +222,13 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
             color = Color.YELLOW
         }
         setCurrentBarColor(color)
-        prevDeltaT = ctx.deltaT.toFloat()
+        prevDeltaT = ctx.deltaT
 
         // modify vertices in graph mesh to change line height of current bar
         graphIdx = (graphIdx + 4) % (width.toInt() * 4)
         graphVertex.index = graphIdx
         val y0 = graphVertex.position.y
-        val h = min(ctx.deltaT.toFloat() * 250, height)
+        val h = min(ctx.deltaT * 250, height)
         graphVertex.index++
         graphVertex.position.y = y0 + h
         graphVertex.index++

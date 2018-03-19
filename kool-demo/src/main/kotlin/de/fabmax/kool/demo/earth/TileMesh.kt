@@ -99,7 +99,7 @@ class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int, ctx: Koo
         val targetAlpha = 1f
         if (isTexLoaded && !isFadingOut && tileShader.alpha < targetAlpha) {
             // increase alpha as soon as texture is available (but mesh doesn't have to be visible)
-            tileShader.alpha += ctx.deltaT.toFloat() * 2
+            tileShader.alpha += ctx.deltaT
             if (tileShader.alpha >= targetAlpha) {
                 tileShader.alpha = targetAlpha
                 isLoaded = true
@@ -107,7 +107,7 @@ class TileMesh(val earth: Earth, val tx: Int, val ty: Int, val tz: Int, ctx: Koo
             }
 
         } else if (isFadingOut && tileShader.alpha > 0f) {
-            tileShader.alpha -= ctx.deltaT.toFloat() * 2
+            tileShader.alpha -= ctx.deltaT
             if (tileShader.alpha <= 0f) {
                 tileShader.alpha = 0f
                 earth.tileFadedOut(this)

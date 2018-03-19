@@ -23,7 +23,7 @@ abstract class Animator<V, out T: InterpolatedValue<V>>(val value: T) {
 
     open fun tick(ctx: KoolContext): V {
         if (!speed.isZero()) {
-            progress += ctx.deltaT.toFloat() * speed / duration
+            progress += ctx.deltaT * speed / duration
             if (progress >= 1f && speed > 0) {
                 when (repeating) {
                     ONCE -> {

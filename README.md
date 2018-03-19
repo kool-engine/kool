@@ -94,3 +94,18 @@ fun main(args: Array<String>) {
     ctx.run()
 }
 ```
+
+## References
+- http://ogldev.atspace.co.uk/index.html
+  Best OpenGL tutorial page I came across so far. [Cascaded shadow maps](http://ogldev.atspace.co.uk/www/tutorial49/tutorial49.html),
+  [vertex shader mesh animation](http://ogldev.atspace.co.uk/www/tutorial38/tutorial38.html) and
+  [normal mapping](http://ogldev.atspace.co.uk/www/tutorial26/tutorial26.html) implementations are based on tutorials
+  from this page.
+- http://www.lighthouse3d.com
+  Also nice OpenGL tutorials. [View frustum culling](http://www.lighthouse3d.com/tutorials/view-frustum-culling/)
+  is based on one of them.
+- [Modeling Trees with a Space Colonization Algorithm](http://algorithmicbotany.org/papers/colonization.egwnp2007.large.pdf)
+  A nice paper about procedural generation of trees. Tree demo is based on that one.
+- http://wavepot.com
+  Javascript audio synthesizer. Melody of synthie demo is taken from here ("unexpected-token"). My implementation is
+  quite different though...

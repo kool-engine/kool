@@ -12,6 +12,7 @@ import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.createFloat32Buffer
+import de.fabmax.kool.util.logW
 
 class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
 
@@ -162,7 +163,7 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
                 weightedDuration += anim.duration * anim.weight
             }
         }
-        animationPos = (animationPos + ctx.deltaT.toFloat() / weightedDuration * animationSpeed) % 1f
+        animationPos = (animationPos + ctx.deltaT / weightedDuration * animationSpeed) % 1f
 
         // update all active (weighted) animations
         for (i in animationList.indices) {
@@ -176,20 +177,19 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
 
         if (update) {
             if (!isCpuAnimated && !ctx.glCapabilities.shaderIntAttribs) {
-                // vertex shader animation is not supported, fall back to CPU transform
+                logW { "Vertex shader animation requested, but not supported by hardware. Falling back to CPU based mesh animation" }
                 isCpuAnimated = true
             }
 
             // only update mesh if an animation was applied
             if (isCpuAnimated) {
                 // transform mesh vertex positions on CPU
-                meshData.isBatchUpdate = true
-                meshData.isSyncRequired = true
-                clearMesh()
-                for (i in rootBones.indices) {
-                    applyBone(rootBones[i], transform, isCpuAnimated)
+                meshData.batchUpdate {
+                    clearMesh()
+                    for (i in rootBones.indices) {
+                        applyBone(rootBones[i], transform, isCpuAnimated)
+                    }
                 }
-                meshData.isBatchUpdate = false
 
             } else {
                 // transform mesh vertex positions on vertex shader, we only need to compute bone transforms

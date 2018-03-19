@@ -257,7 +257,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             speed = 0f
         }
 
-        fun animate(deltaT: Double): Float {
+        fun animate(deltaT: Float): Float {
             if (smoothness.isZero() || deltaT > 0.2f) {
                 // don't care about smoothing on low frame rates
                 actual = desired

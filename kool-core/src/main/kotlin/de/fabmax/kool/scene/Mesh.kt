@@ -202,6 +202,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     val numVertices: Int
         get() = vertexList.size
 
+    var rebuildBoundsOnSync = false
     var isSyncRequired = false
     var isBatchUpdate = false
         set(value) {
@@ -209,6 +210,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
                 field = value
             }
         }
+    private val vertexIt = vertexList[0]
 
     val attributeBinders = mutableMapOf<Attribute, VboBinder>()
 
@@ -219,11 +221,10 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     fun generateGeometry() {
         val gen = generator
         if (gen != null) {
-            isBatchUpdate = true
-            clear()
-            val builder = MeshBuilder(this)
-            builder.gen()
-            isBatchUpdate = false
+            batchUpdate {
+                clear()
+                MeshBuilder(this).gen()
+            }
         }
     }
 
@@ -266,6 +267,15 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         for (i in 0 until numVertices) {
             v0.index = i
             v0.tangent.norm()
+        }
+    }
+
+    inline fun batchUpdate(block: MeshData.() -> Unit) {
+        synchronized(vertexList) {
+            isBatchUpdate = true
+            block()
+            isSyncRequired = true
+            isBatchUpdate = false
         }
     }
 
@@ -321,6 +331,23 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         }
     }
 
+    /**
+     * Rebuilds the bounding box for this mesh data. Rebuilding requires to iterate over all vertices, which can be
+     * very slow for large meshes. However, rebuilding mesh bounds is only required if positions of existing vertices
+     * were changed, or vertices were removed.
+     * If [rebuildBoundsOnSync] is true, this function is called automatically whenever mesh data buffers are
+     * synchronized.
+     */
+    fun rebuildBounds() {
+        synchronized(vertexList) {
+            bounds.clear()
+            for (i in 0 until numVertices) {
+                vertexIt.index = i
+                bounds.add(vertexIt.position)
+            }
+        }
+    }
+
     operator fun get(i: Int): IndexedVertexList.Vertex = vertexList[i]
 
     fun incrementReferenceCount() {
@@ -370,6 +397,9 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         if (isSyncRequired && !isBatchUpdate) {
             synchronized(vertexList) {
                 if (!isBatchUpdate) {
+                    if (rebuildBoundsOnSync) {
+                        rebuildBounds()
+                    }
                     if (!ctx.glCapabilities.uint32Indices) {
                         // convert index buffer to uint16
                         val uint16Buffer = createUint16Buffer(numIndices)

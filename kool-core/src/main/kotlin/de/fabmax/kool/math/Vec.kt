@@ -83,6 +83,8 @@ open class Vec2f(x: Float, y: Float) {
 
     fun length(): Float = sqrt(sqrLength())
 
+    fun mul(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).mul(other)
+
     fun norm(result: MutableVec2f): MutableVec2f = result.set(this).norm()
 
     fun rotate(angleDeg: Float, result: MutableVec2f): MutableVec2f = result.set(this).rotate(angleDeg)
@@ -136,6 +138,12 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
     fun add(other: Vec2f): MutableVec2f {
         x += other.x
         y += other.y
+        return this
+    }
+
+    fun mul(other: Vec2f): MutableVec2f {
+        x *= other.x
+        y *= other.y
         return this
     }
 
@@ -227,6 +235,8 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     fun length(): Float = sqrt(sqrLength())
 
+    fun mul(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).mul(other)
+
     fun norm(result: MutableVec3f): MutableVec3f = result.set(this).norm()
 
     fun rotate(angleDeg: Float, axisX: Float, axisY: Float, axisZ: Float, result: MutableVec3f): MutableVec3f =
@@ -292,6 +302,13 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
         x += other.x
         y += other.y
         z += other.z
+        return this
+    }
+
+    fun mul(other: Vec3f): MutableVec3f {
+        x *= other.x
+        y *= other.y
+        z *= other.z
         return this
     }
 
@@ -389,6 +406,8 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
     fun length(): Float = sqrt(sqrLength())
 
+    fun mul(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).mul(other)
+
     fun norm(result: MutableVec4f): MutableVec4f = result.set(this).norm()
 
     fun scale(factor: Float, result: MutableVec4f): MutableVec4f = result.set(this).scale(factor)
@@ -454,6 +473,14 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
         y += other.y
         z += other.z
         w += other.w
+        return this
+    }
+
+    fun mul(other: Vec4f): MutableVec4f {
+        x *= other.x
+        y *= other.y
+        z *= other.z
+        w *= other.w
         return this
     }
 

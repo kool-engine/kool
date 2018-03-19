@@ -37,6 +37,12 @@ class InRadiusTraverser<T>() : KdTreeTraverser<T> {
         this.radius = radius
     }
 
+    fun reset(center: Vec3f, radius: Float): InRadiusTraverser<T> {
+        this.center.set(center)
+        this.radius = radius
+        return this
+    }
+
     override fun onStart(tree: KdTree<T>) {
         result.clear()
     }
@@ -101,11 +107,6 @@ class KdTree<T>(items: List<T>,
         root.traverse(traverser)
     }
 
-    fun inRadius(center: Vec3f, radius: Float, result: MutableList<T>) {
-        result.clear()
-        root.inRadius(center, radius*radius, result)
-    }
-
     inner class Node(val indices: IntRange, val depth: Int, bucketSz: Int) {
 
         val isLeaf: Boolean
@@ -114,19 +115,18 @@ class KdTree<T>(items: List<T>,
 
         val bounds = BoundingBox()
 
-        private val tmpVec = MutableVec3f()
-
         init {
-            bounds.batchUpdate = true
-            for (i in indices) {
-                val it = mutItems[i]
-                bounds.add(tmpVec.set(it.getX(), it.getY(), it.getZ()))
-                tmpVec.x += it.getSzX()
-                tmpVec.y += it.getSzY()
-                tmpVec.z += it.getSzZ()
-                bounds.add(tmpVec)
+            val tmpVec = MutableVec3f()
+            bounds.batchUpdate {
+                for (i in indices) {
+                    val it = mutItems[i]
+                    add(tmpVec.set(it.getX(), it.getY(), it.getZ()))
+                    tmpVec.x += it.getSzX()
+                    tmpVec.y += it.getSzY()
+                    tmpVec.z += it.getSzZ()
+                    add(tmpVec)
+                }
             }
-            bounds.batchUpdate = false
 
             if (indices.last - indices.first < bucketSz) {
                 isLeaf = true
@@ -167,26 +167,6 @@ class KdTree<T>(items: List<T>,
                         left.traverse(traverser)
                         right.traverse(traverser)
                     }
-                }
-            }
-        }
-
-        fun inRadius(center: Vec3f, sqrRadius: Float, result: MutableList<T>) {
-            if (isLeaf) {
-                for (i in indices) {
-                    val dx = center.x - mutItems[i].getX()
-                    val dy = center.y - mutItems[i].getY()
-                    val dz = center.z - mutItems[i].getZ()
-                    if (dx*dx + dy*dy + dz*dz < sqrRadius) {
-                        result.add(mutItems[i])
-                    }
-                }
-            } else {
-                if (left!!.bounds.pointDistanceSqr(center) < sqrRadius) {
-                    left.inRadius(center, sqrRadius, result)
-                }
-                if (right!!.bounds.pointDistanceSqr(center) < sqrRadius) {
-                    right.inRadius(center, sqrRadius, result)
                 }
             }
         }

@@ -317,7 +317,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
         }
 
         override fun render(ctx: KoolContext) {
-            nextSample -= ctx.deltaT.toFloat()
+            nextSample -= ctx.deltaT
 
             if (nextSample <= 0) {
                 nextSample += max(sampleInterval, -nextSample)

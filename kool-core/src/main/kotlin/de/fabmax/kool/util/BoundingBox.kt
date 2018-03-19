@@ -62,6 +62,12 @@ class BoundingBox() {
         }
     }
 
+    inline fun batchUpdate(block: BoundingBox.() -> Unit) {
+        batchUpdate = true
+        block()
+        batchUpdate = false
+    }
+
     fun isEqual(other: BoundingBox): Boolean {
         return isEmpty == other.isEmpty && min.isEqual(other.min) && max.isEqual(other.max)
     }

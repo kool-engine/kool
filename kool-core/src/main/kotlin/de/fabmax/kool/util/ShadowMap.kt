@@ -161,8 +161,7 @@ private fun Mat4f.transform(plane: FrustumPlane) {
     transform(plane.lowerRight)
 }
 
-private fun BoundingBox.setPlanes(near: FrustumPlane, far: FrustumPlane) {
-    batchUpdate = true
+private fun BoundingBox.setPlanes(near: FrustumPlane, far: FrustumPlane) = batchUpdate {
     clear()
     add(near.upperLeft)
     add(near.upperRight)
@@ -172,5 +171,4 @@ private fun BoundingBox.setPlanes(near: FrustumPlane, far: FrustumPlane) {
     add(far.upperRight)
     add(far.lowerLeft)
     add(far.lowerRight)
-    batchUpdate = false
 }

@@ -70,7 +70,7 @@ fun pointScene(): Scene {
 
         +transformGroup {
             onPreRender += {
-                rotate(it.deltaT.toFloat() * 45, Vec3f.Y_AXIS)
+                rotate(it.deltaT * 45, Vec3f.Y_AXIS)
             }
             +pointMesh
         }

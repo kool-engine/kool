@@ -56,7 +56,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
 
                 mesh.onPreRender += { ctx ->
                     // translation is in model coordinates -> front direction is -y, not z
-                    val dt = ctx.deltaT.clamp(0.0, 0.1).toFloat()
+                    val dt = ctx.deltaT.clamp(0.0f, 0.1f)
                     translate(0f, -dt * movementSpeed * slowMotion * 5f, 0f)
                     rotate(dt * movementSpeed * slowMotion * 50f, Vec3f.Z_AXIS)
                     mesh.animationSpeed = slowMotion

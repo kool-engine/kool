@@ -231,23 +231,23 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     treeGen.generate()
 
                     trunkMesh?.apply {
-                        meshData.isBatchUpdate = true
-                        meshData.clear()
-                        val builder = MeshBuilder(meshData)
-                        timedMs({"Generated ${meshData.numIndices / 3} trunk triangles in"}) {
-                            treeGen.buildTrunkMesh(builder)
-                            meshData.generateTangents()
+                        meshData.batchUpdate {
+                            clear()
+                            val builder = MeshBuilder(this)
+                            timedMs({"Generated ${numIndices / 3} trunk triangles in"}) {
+                                treeGen.buildTrunkMesh(builder)
+                                generateTangents()
+                            }
                         }
-                        meshData.isBatchUpdate = false
                     }
                     leafMesh?.apply {
-                        meshData.isBatchUpdate = true
-                        meshData.clear()
-                        val builder = MeshBuilder(meshData)
-                        timedMs({"Generated ${meshData.numIndices / 3} leaf triangles in"}) {
-                            treeGen.buildLeafMesh(builder, scene?.light?.direction ?: Vec3f.ZERO)
+                        meshData.batchUpdate {
+                            clear()
+                            val builder = MeshBuilder(this)
+                            timedMs({"Generated ${numIndices / 3} leaf triangles in"}) {
+                                treeGen.buildLeafMesh(builder, scene?.light?.direction ?: Vec3f.ZERO)
+                            }
                         }
-                        meshData.isBatchUpdate = false
                     }
                 }
             }

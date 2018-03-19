@@ -36,7 +36,7 @@ abstract class KoolContext {
     /**
      * Time between current and last call of render() in seconds.
      */
-    var deltaT = 0.0
+    var deltaT = 0.0f
         private set
 
     /**
@@ -81,7 +81,7 @@ abstract class KoolContext {
     abstract fun destroy()
 
     protected fun render(dt: Double) {
-        this.deltaT = dt
+        this.deltaT = dt.toFloat()
         time += dt
         frameIdx++
 

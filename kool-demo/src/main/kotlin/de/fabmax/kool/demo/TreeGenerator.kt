@@ -21,7 +21,7 @@ class TreeGenerator(val distribution: PointDistribution,
 
     private val attractionPoints = mutableListOf<AttractionPoint>()
     private var attractionPointsTree = pointTree(listOf<AttractionPoint>())
-    private val nearAttractionPoints = mutableListOf<AttractionPoint>()
+    private val attractionPointTrav = InRadiusTraverser<AttractionPoint>()
     private val treeNodes = mutableListOf<TreeNode>()
 
     private var root = TreeNode()
@@ -66,8 +66,8 @@ class TreeGenerator(val distribution: PointDistribution,
         for (node in treeNodes) {
             node.influencingPts.clear()
             if (!node.isFinished) {
-                attractionPointsTree.inRadius(node, radiusOfInfluence, nearAttractionPoints)
-                for (attracPt in nearAttractionPoints) {
+                attractionPointsTree.traverse(attractionPointTrav.reset(node, radiusOfInfluence))
+                for (attracPt in attractionPointTrav.result) {
                     if (attracPt.isOpen) {
                         attracPt.checkNearest(node)
                     }
@@ -98,8 +98,8 @@ class TreeGenerator(val distribution: PointDistribution,
                     node.addChild(newNode)
                     newNodes += newNode
 
-                    attractionPointsTree.inRadius(newNode, actualKillDistance, nearAttractionPoints)
-                    nearAttractionPoints.forEach { it.isOpen = false }
+                    attractionPointsTree.traverse(attractionPointTrav.reset(newNode, actualKillDistance))
+                    attractionPointTrav.result.forEach { it.isOpen = false }
                     changed = true
                 }
             } else {

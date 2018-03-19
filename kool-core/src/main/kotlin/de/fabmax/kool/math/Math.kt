@@ -8,6 +8,11 @@ import kotlin.math.abs
 const val DEG_2_RAD = PI / 180.0
 const val RAD_2_DEG = 180.0 / PI
 
+/**
+ * The difference between 1 and the smallest floating point number of type float that is greater than 1.
+ */
+const val FLT_EPSILON = 1.19209290e-7f
+
 inline fun Float.toDeg() = this * RAD_2_DEG.toFloat()
 inline fun Float.toRad() = this * DEG_2_RAD.toFloat()
 inline fun Double.toDeg() = this * RAD_2_DEG
