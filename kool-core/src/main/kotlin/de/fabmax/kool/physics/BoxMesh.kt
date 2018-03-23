@@ -5,33 +5,30 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.LineMesh
 
 
-class BoxMesh : LineMesh() {
+class BoxMesh(val world: CollisionWorld) : LineMesh() {
 
-    val boxes = mutableListOf<Box>()
-    private val boxMeshIdcs = mutableMapOf<Box, Int>()
+    private val boxMeshIdcs = mutableMapOf<RigidBody, Int>()
     private val vert = meshData[0]
 
     init {
         meshData.rebuildBoundsOnSync = true
     }
 
-    fun addBox(box: Box, boxColor: Color = Color.MD_PINK) {
-        if (!boxMeshIdcs.containsKey(box)) {
-            boxes += box
-            val idx = addBoxVerts(boxColor)
-            boxMeshIdcs[box] = idx
-            updateBoxVerts(box, idx)
+    fun updateBoxes() {
+        if (boxMeshIdcs.size != world.bodies.size) {
+            for (i in world.bodies.indices) {
+                if (!boxMeshIdcs.containsKey(world.bodies[i])) {
+                    boxMeshIdcs[world.bodies[i]] = addBoxVerts()
+                }
+            }
+        }
+        boxMeshIdcs.forEach { (body, idx) ->
+            updateBoxVerts(body, idx)
         }
     }
 
-    fun updateBoxVerts() {
-        boxMeshIdcs.forEach { (box, idx) ->
-            updateBoxVerts(box, idx)
-        }
-    }
-
-    private fun updateBoxVerts(box: Box, idx: Int) {
-        val color = if (box.isInCollision) {
+    private fun updateBoxVerts(body: RigidBody, idx: Int) {
+        val color = if (body.isInCollision) {
             Color.MD_RED
         } else {
             Color.MD_GREEN
@@ -39,20 +36,23 @@ class BoxMesh : LineMesh() {
         for (i in 0..7) {
             vert.index = idx + i
             vert.color.set(color)
-            box.transform.transform(vert.position.set(box.halfExtents).mul(SIGNS[i]))
+            body.transform.transform(vert.position.set(body.shape.halfExtents).mul(SIGNS[i]))
         }
         meshData.isSyncRequired = true
     }
 
-    private fun addBoxVerts(boxColor: Color): Int {
-        val startIdx = meshData.addVertex { color.set(boxColor) }
-        for (i in 1..7) {
-            meshData.addVertex { color.set(boxColor) }
-        }
-        for (i in 0..3) {
-            meshData.addIndices(startIdx + i, startIdx + (i + 1) % 4)
-            meshData.addIndices(startIdx + i + 4, startIdx + (i + 1) % 4 + 4)
-            meshData.addIndices(startIdx + i, startIdx + i + 4)
+    private fun addBoxVerts(): Int {
+        var startIdx = 0
+        meshData.batchUpdate {
+            startIdx = addVertex { }
+            for (i in 1..7) {
+                addVertex { }
+            }
+            for (i in 0..3) {
+                addIndices(startIdx + i, startIdx + (i + 1) % 4)
+                addIndices(startIdx + i + 4, startIdx + (i + 1) % 4 + 4)
+                addIndices(startIdx + i, startIdx + i + 4)
+            }
         }
         return startIdx
     }

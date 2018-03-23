@@ -5,8 +5,8 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import kotlin.math.abs
 
-class Box {
-    val halfExtents = MutableVec3f(0.5f, 0.5f, 0.5f)
+class Box(sizeX: Float, sizeY: Float, sizeZ: Float) {
+    val halfExtents = MutableVec3f(sizeX * 0.5f, sizeY * 0.5f, sizeZ * 0.5f)
     val eX: Float get() = halfExtents.x
     val eY: Float get() = halfExtents.y
     val eZ: Float get() = halfExtents.z
@@ -17,18 +17,9 @@ class Box {
     val bZ: Vec3f = ColVecView(2)
     val center: MutableVec3f = ColVecView(3)
 
-    val velocity = MutableVec3f()
-
-    var isInCollision = false
-
     private val tmpD = MutableVec3f()
-    private val tmpW = MutableVec3f()
 
-    fun stepSimulation(dt: Float) {
-        center.x += velocity.x * dt
-        center.y += velocity.y * dt
-        center.z += velocity.z * dt
-    }
+    constructor() : this(1f, 1f, 1f)
 
     /**
      * Tests this and another oriented bounding box for intersection. This function performs a separating axis test
