@@ -8,7 +8,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var round = Kotlin.kotlin.math.round_14dthe$;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
-  var println = Kotlin.kotlin.io.println_s8jyv4$;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
   var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
   var toBoxedChar = Kotlin.toBoxedChar;
@@ -34,8 +33,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var last = Kotlin.kotlin.collections.last_2p1efm$;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
-  var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var Any = Object;
+  var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var defineInlineFunction = Kotlin.defineInlineFunction;
   var wrapFunction = Kotlin.wrapFunction;
   var abs = Kotlin.kotlin.math.abs_za3lpa$;
@@ -43,6 +42,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var abs_0 = Kotlin.kotlin.math.abs_s8cxhz$;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var toString = Kotlin.toString;
+  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
   var toShort = Kotlin.toShort;
   var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
@@ -53,6 +53,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var toInt = Kotlin.kotlin.text.toInt_6ic1pp$;
   var get_indices_0 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
+  var println = Kotlin.kotlin.io.println_s8jyv4$;
   var SerialClassDescImpl = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.SerialClassDescImpl;
   var KSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.KSerializer;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
@@ -146,8 +147,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MutableVec3f.prototype.constructor = MutableVec3f;
   MutableVec4f.prototype = Object.create(Vec4f.prototype);
   MutableVec4f.prototype.constructor = MutableVec4f;
+  Box$ColVecView.prototype = Object.create(MutableVec3f.prototype);
+  Box$ColVecView.prototype.constructor = Box$ColVecView;
   Mesh.prototype = Object.create(Node.prototype);
   Mesh.prototype.constructor = Mesh;
+  LineMesh.prototype = Object.create(Mesh.prototype);
+  LineMesh.prototype.constructor = LineMesh;
+  BoxMesh.prototype = Object.create(LineMesh.prototype);
+  BoxMesh.prototype.constructor = BoxMesh;
   Armature.prototype = Object.create(Mesh.prototype);
   Armature.prototype.constructor = Armature;
   RotationKey.prototype = Object.create(AnimationKey.prototype);
@@ -296,8 +303,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   IndexedVertexList$Vertex$Vec4fView.prototype.constructor = IndexedVertexList$Vertex$Vec4fView;
   IndexedVertexList$Vertex$ColorView.prototype = Object.create(MutableColor.prototype);
   IndexedVertexList$Vertex$ColorView.prototype.constructor = IndexedVertexList$Vertex$ColorView;
-  LineMesh.prototype = Object.create(Mesh.prototype);
-  LineMesh.prototype.constructor = LineMesh;
   Log$Level.prototype = Object.create(Enum.prototype);
   Log$Level.prototype.constructor = Log$Level;
   PointMesh.prototype = Object.create(Mesh.prototype);
@@ -751,9 +756,24 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     var measure = document.getElementById('dpiMeasure');
     if (measure == null) {
-      println('dpiMeasure element not found, falling back to 96 dpi');
-      println('Add this hidden div to your html:');
-      println('<div id="dpiMeasure" style="height: 1in; width: 1in; left: 100%; position: fixed; top: 100%;"><\/div>');
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'dpiMeasure element not found, falling back to 96 dpi');
+      }
+      var $this_0 = package$util.Log;
+      var level_0 = Log$Level.WARN;
+      var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_0.level >= $this_0.level.level) {
+        $this_0.printer(level_0, tag_0, 'Add this hidden div to your html:');
+      }
+      var $this_1 = package$util.Log;
+      var level_1 = Log$Level.WARN;
+      var tag_1 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_1.level >= $this_1.level.level) {
+        $this_1.printer(level_1, tag_1, '<div id="dpiMeasure" style="height: 1in; width: 1in; left: 100%; position: fixed; top: 100%;"><\/div>');
+      }
       this.dpi = 96.0;
     }
      else {
@@ -1023,7 +1043,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var max = typeof (tmp$_4 = this.gl_8be2vx$.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) === 'number' ? tmp$_4 : throwCCE();
       anisotropicTexFilterInfo = new AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT);
     }
-    println('Max tex units: ' + maxTexUnits);
     this.glCapabilities_4q43mj$_0 = new GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
     this.screenDpi = JsImpl_getInstance().dpi;
     this.windowWidth = this.canvas_8be2vx$.clientWidth;
@@ -1548,6 +1567,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'AssetManager',
     interfaces: []
   };
+  function assetTexture(assetPath, ctx, delayLoading) {
+    if (delayLoading === void 0)
+      delayLoading = true;
+    return assetTexture_0(defaultProps(assetPath), ctx, delayLoading);
+  }
+  function assetTexture$lambda(closure$delayLoading, closure$ctx, closure$props) {
+    return function ($receiver, it) {
+      $receiver.delayLoading = closure$delayLoading;
+      return closure$ctx.assetMgr.loadTextureAsset_61zpoe$(closure$props.id);
+    };
+  }
+  function assetTexture_0(props, ctx, delayLoading) {
+    if (delayLoading === void 0)
+      delayLoading = true;
+    return new Texture(props, assetTexture$lambda(delayLoading, ctx, props));
+  }
   function LowPassFilter(coeff, input) {
     SampleNode.call(this);
     this.coeff = coeff;
@@ -2439,7 +2474,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return this;
   };
-  Framebuffer.prototype.delete_aemszp$ = function (ctx) {
+  Framebuffer.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$, tmp$_0, tmp$_1;
     (tmp$ = this.fbResource) != null ? (tmp$.delete_aemszp$(ctx), Unit) : null;
     (tmp$_0 = this.colorAttachment) != null ? (tmp$_0.dispose_aemszp$(ctx), Unit) : null;
@@ -2470,7 +2505,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Framebuffer.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Framebuffer',
-    interfaces: []
+    interfaces: [Disposable]
   };
   function FramebufferResource(glRef, width, height, ctx) {
     FramebufferResource$Companion_getInstance();
@@ -2522,19 +2557,29 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         ctx.textureMgr.bindTexture_dletmp$(depth, ctx);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ensureNotNull(depth.res), 0);
       }
-      var fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-      if (fbStatus !== GL_FRAMEBUFFER_COMPLETE) {
+      var fbStatus = {v: glCheckFramebufferStatus(GL_FRAMEBUFFER)};
+      if (fbStatus.v !== GL_FRAMEBUFFER_COMPLETE) {
         if (this.colorAttachment == null && this.depthAttachment != null) {
           this.colorAttachment = FbColorTexData$Companion_getInstance().colorTex_ld7r1l$(this.width, this.height, this.fbId_0);
           ctx.textureMgr.bindTexture_dletmp$(ensureNotNull(this.colorAttachment), ctx);
           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ensureNotNull(ensureNotNull(this.colorAttachment).res), 0);
           glDrawBuffer(GL_FRONT);
           glReadBuffer(GL_FRONT);
-          fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-          println('Framebuffer incomplete: attached fallback color buffer');
+          fbStatus.v = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+          var $this = package$util.Log;
+          var level = Log$Level.WARN;
+          var tag = Kotlin.getKClassFromExpression(this).simpleName;
+          if (level.level >= $this.level.level) {
+            $this.printer(level, tag, 'Depth-framebuffer is incomplete without an color attachment, adding one (makes shadow rendering slow)');
+          }
         }
-        if (fbStatus !== GL_FRAMEBUFFER_COMPLETE) {
-          println('ERROR: Framebuffer incomplete, status: ' + fbStatus + ', color: ' + (this.colorAttachment != null) + ', depth: ' + (this.depthAttachment != null));
+        if (fbStatus.v !== GL_FRAMEBUFFER_COMPLETE) {
+          var $this_0 = package$util.Log;
+          var level_0 = Log$Level.ERROR;
+          var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+          if (level_0.level >= $this_0.level.level) {
+            $this_0.printer(level_0, tag_0, 'Framebuffer is incomplete, status: ' + fbStatus.v + ', has-color: ' + (this.colorAttachment != null) + ', has-depth: ' + (this.depthAttachment != null));
+          }
         }
       }
     }
@@ -2655,7 +2700,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   GlObject.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'GlObject',
-    interfaces: []
+    interfaces: [Disposable]
   };
   function GlResource(glRef, type, ctx) {
     this.type = type;
@@ -3580,7 +3625,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   InputManager$BufferedPointerInput.prototype.update_sjovm5$ = function (target, t) {
     if (this.updateState_0 !== InputManager$BufferedPointerInput$UpdateState$INVALID_getInstance() && t - this.lastUpdate > 200) {
-      println('Pointer ' + this.id + ' timed out!');
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Pointer ' + this.id + ' timed out!');
+      }
       this.cancelPointer();
     }
     target.id = this.id;
@@ -3940,7 +3990,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.onRender = ArrayList_init();
     this.renderPass = RenderPass$SCREEN_getInstance();
     this.time_q5mkh0$_0 = 0.0;
-    this.dt_fpsqdb$_0 = 0.0;
+    this.deltaT_wdv5hn$_0 = 0.0;
     this.frameIdx_2g8w1r$_0 = 0;
     this.fps_a02wsa$_0 = 60.0;
     this.scenes = ArrayList_init();
@@ -3981,12 +4031,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   Object.defineProperty(KoolContext.prototype, 'deltaT', {
     get: function () {
-      if (this.renderPass.increaseTime) {
-        return this.dt_fpsqdb$_0;
-      }
-       else {
-        return 0.0;
-      }
+      return this.deltaT_wdv5hn$_0;
+    },
+    set: function (deltaT) {
+      this.deltaT_wdv5hn$_0 = deltaT;
     }
   });
   Object.defineProperty(KoolContext.prototype, 'frameIdx', {
@@ -4088,7 +4136,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   KoolContext.prototype.render_14dthe$ = function (dt) {
     var tmp$, tmp$_0, tmp$_1;
-    this.dt_fpsqdb$_0 = dt;
+    this.deltaT = dt;
     this.time = this.time + dt;
     this.frameIdx = this.frameIdx + 1 | 0;
     this.frameTimes_6eiyeg$_0[this.frameIdx % this.frameTimes_6eiyeg$_0.length] = dt;
@@ -4487,6 +4535,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.radiusSqr_0 = value * value;
     }
   });
+  InRadiusTraverser.prototype.reset_2qa7tb$ = function (center, radius) {
+    this.center.set_czzhiu$(center);
+    this.radius = radius;
+    return this;
+  };
   InRadiusTraverser.prototype.onStart_xuddlr$ = function (tree) {
     this.result.clear();
   };
@@ -4580,10 +4633,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     traverser.onStart_xuddlr$(this);
     this.root.traverse_vqhcsm$(traverser);
   };
-  KdTree.prototype.inRadius_29jwp2$ = function (center, radius, result) {
-    result.clear();
-    this.root.inRadius_29j9pj$(center, radius * radius, result);
-  };
   function KdTree$Node($outer, indices, depth, bucketSz) {
     this.$outer = $outer;
     this.indices = indices;
@@ -4592,22 +4641,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.left = null;
     this.right = null;
     this.bounds = new BoundingBox();
-    this.tmpVec_0 = MutableVec3f_init();
+    var tmpVec = MutableVec3f_init();
+    var $this = this.bounds;
+    this.$outer;
+    $this.batchUpdate = true;
+    var this$KdTree = this.$outer;
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    this.bounds.batchUpdate = true;
     tmp$ = this.indices;
     tmp$_0 = tmp$.first;
     tmp$_1 = tmp$.last;
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
-      var it = this.$outer.mutItems_0.get_za3lpa$(i);
-      this.bounds.add_czzhiu$(this.tmpVec_0.set_y2kzbl$(this.$outer.getX(it), this.$outer.getY(it), this.$outer.getZ(it)));
-      this.tmpVec_0.x = this.tmpVec_0.x + this.$outer.getSzX(it);
-      this.tmpVec_0.y = this.tmpVec_0.y + this.$outer.getSzY(it);
-      this.tmpVec_0.z = this.tmpVec_0.z + this.$outer.getSzZ(it);
-      this.bounds.add_czzhiu$(this.tmpVec_0);
+      var it = this$KdTree.mutItems_0.get_za3lpa$(i);
+      $this.add_czzhiu$(tmpVec.set_y2kzbl$(this$KdTree.getX(it), this$KdTree.getY(it), this$KdTree.getZ(it)));
+      tmpVec.x = tmpVec.x + this$KdTree.getSzX(it);
+      tmpVec.y = tmpVec.y + this$KdTree.getSzY(it);
+      tmpVec.z = tmpVec.z + this$KdTree.getSzZ(it);
+      $this.add_czzhiu$(tmpVec);
     }
-    this.bounds.batchUpdate = false;
+    $this.batchUpdate = false;
     if ((this.indices.last - this.indices.first | 0) < bucketSz) {
       this.isLeaf = true;
       this.left = null;
@@ -4650,31 +4702,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         default:this.left.traverse_vqhcsm$(traverser);
           this.right.traverse_vqhcsm$(traverser);
           break;
-      }
-    }
-  };
-  KdTree$Node.prototype.inRadius_29j9pj$ = function (center, sqrRadius, result) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    if (this.isLeaf) {
-      tmp$ = this.indices;
-      tmp$_0 = tmp$.first;
-      tmp$_1 = tmp$.last;
-      tmp$_2 = tmp$.step;
-      for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
-        var dx = center.x - this.$outer.getX(this.$outer.mutItems_0.get_za3lpa$(i));
-        var dy = center.y - this.$outer.getY(this.$outer.mutItems_0.get_za3lpa$(i));
-        var dz = center.z - this.$outer.getZ(this.$outer.mutItems_0.get_za3lpa$(i));
-        if (dx * dx + dy * dy + dz * dz < sqrRadius) {
-          result.add_11rb$(this.$outer.mutItems_0.get_za3lpa$(i));
-        }
-      }
-    }
-     else {
-      if (ensureNotNull(this.left).bounds.pointDistanceSqr_czzhiu$(center) < sqrRadius) {
-        this.left.inRadius_29j9pj$(center, sqrRadius, result);
-      }
-      if (ensureNotNull(this.right).bounds.pointDistanceSqr_czzhiu$(center) < sqrRadius) {
-        this.right.inRadius_29j9pj$(center, sqrRadius, result);
       }
     }
   };
@@ -4761,6 +4788,252 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   KdTree.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'KdTree',
+    interfaces: []
+  };
+  function Mat3f() {
+    Mat3f$Companion_getInstance();
+    this.matrix = new Float32Array(9);
+    this.setIdentity();
+  }
+  Mat3f.prototype.rotate_7b5o5w$ = function (angleDeg, axX, axY, axZ) {
+    var aX = axX;
+    var aY = axY;
+    var aZ = axZ;
+    var x = aX * aX + aY * aY + aZ * aZ;
+    var len = Math_0.sqrt(x);
+    var $receiver = 1.0 - len;
+    if (!(Math_0.abs($receiver) < 1.0E-10)) {
+      var recipLen = 1.0 / len;
+      aX *= recipLen;
+      aY *= recipLen;
+      aZ *= recipLen;
+    }
+    var ang = angleDeg * (math.PI / 180.0);
+    var s = Math_0.sin(ang);
+    var c = Math_0.cos(ang);
+    var nc = 1.0 - c;
+    var xy = aX * aY;
+    var yz = aY * aZ;
+    var zx = aZ * aX;
+    var xs = aX * s;
+    var ys = aY * s;
+    var zs = aZ * s;
+    this.set_24o109$(0, aX * aX * nc + c);
+    this.set_24o109$(3, xy * nc - zs);
+    this.set_24o109$(6, zx * nc + ys);
+    this.set_24o109$(1, xy * nc + zs);
+    this.set_24o109$(4, aY * aY * nc + c);
+    this.set_24o109$(7, yz * nc - xs);
+    this.set_24o109$(2, zx * nc - ys);
+    this.set_24o109$(5, yz * nc + xs);
+    this.set_24o109$(8, aZ * aZ * nc + c);
+    return this;
+  };
+  Mat3f.prototype.rotate_ad55pp$ = function (angleDeg, axis) {
+    return this.rotate_7b5o5w$(angleDeg, axis.x, axis.y, axis.z);
+  };
+  Mat3f.prototype.rotate_c240ly$ = function (angleDeg, axX, axY, axZ, result) {
+    result.set_d4zu7e$(this);
+    result.rotate_7b5o5w$(angleDeg, axX, axY, axZ);
+    return result;
+  };
+  Mat3f.prototype.rotate_phvhih$ = function (angleDeg, axis, result) {
+    return this.rotate_c240ly$(angleDeg, axis.x, axis.y, axis.z, result);
+  };
+  Mat3f.prototype.transpose = function () {
+    var d = this.get_za3lpa$(1);
+    this.set_24o109$(1, this.get_za3lpa$(3));
+    this.set_24o109$(3, d);
+    d = this.get_za3lpa$(2);
+    this.set_24o109$(2, this.get_za3lpa$(6));
+    this.set_24o109$(6, d);
+    d = this.get_za3lpa$(5);
+    this.set_24o109$(5, this.get_za3lpa$(7));
+    this.set_24o109$(7, d);
+    return this;
+  };
+  Mat3f.prototype.transpose_d4zu6j$ = function (result) {
+    result.set_24o109$(0, this.get_za3lpa$(0));
+    result.set_24o109$(1, this.get_za3lpa$(3));
+    result.set_24o109$(2, this.get_za3lpa$(6));
+    result.set_24o109$(3, this.get_za3lpa$(1));
+    result.set_24o109$(4, this.get_za3lpa$(4));
+    result.set_24o109$(5, this.get_za3lpa$(7));
+    result.set_24o109$(6, this.get_za3lpa$(2));
+    result.set_24o109$(7, this.get_za3lpa$(5));
+    result.set_24o109$(8, this.get_za3lpa$(8));
+    return result;
+  };
+  Mat3f.prototype.invert = function () {
+    var success = {v: false};
+    Mat3f$Companion_getInstance().tmpMatLock_0;
+    success.v = this.invert_d4zu7e$(Mat3f$Companion_getInstance().tmpMat_0);
+    if (success.v) {
+      this.set_d4zu7e$(Mat3f$Companion_getInstance().tmpMat_0);
+    }
+    return success.v;
+  };
+  Mat3f.prototype.invert_d4zu7e$ = function (result) {
+    var tmp$;
+    var det = 0.0;
+    for (var i = 0; i <= 2; i++) {
+      det += this.get_za3lpa$(i) * (this.get_za3lpa$(3 + (i + 1 | 0) % 3 | 0) * this.get_za3lpa$(6 + (i + 2 | 0) % 3 | 0) - this.get_za3lpa$(3 + (i + 2 | 0) % 3 | 0) * this.get_za3lpa$(6 + (i + 1 | 0) % 3 | 0));
+    }
+    if (det > 0.0) {
+      det = 1.0 / det;
+      for (var j = 0; j <= 2; j++) {
+        for (var i_0 = 0; i_0 <= 2; i_0++) {
+          result.set_24o109$((j * 3 | 0) + i_0 | 0, (this.get_za3lpa$(((i_0 + 1 | 0) % 3 * 3 | 0) + (j + 1 | 0) % 3 | 0) * this.get_za3lpa$(((i_0 + 2 | 0) % 3 * 3 | 0) + (j + 2 | 0) % 3 | 0) - this.get_za3lpa$(((i_0 + 1 | 0) % 3 * 3 | 0) + (j + 2 | 0) % 3 | 0) * this.get_za3lpa$(((i_0 + 2 | 0) % 3 * 3 | 0) + (j + 1 | 0) % 3 | 0)) * det);
+        }
+      }
+      tmp$ = true;
+    }
+     else {
+      tmp$ = false;
+    }
+    return tmp$;
+  };
+  Mat3f.prototype.transform_5s4mqq$ = function (vec) {
+    var x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2);
+    var y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2);
+    var z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2);
+    return vec.set_y2kzbl$(x, y, z);
+  };
+  Mat3f.prototype.transform_2gj7b4$ = function (vec, result) {
+    result.x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2);
+    result.y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2);
+    result.z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2);
+    return result;
+  };
+  Mat3f.prototype.mul_d4zu7e$ = function (other) {
+    Mat3f$Companion_getInstance().tmpMatLock_0;
+    this.mul_4w76o0$(other, Mat3f$Companion_getInstance().tmpMat_0);
+    this.set_d4zu7e$(Mat3f$Companion_getInstance().tmpMat_0);
+    return this;
+  };
+  Mat3f.prototype.mul_4w76o0$ = function (other, result) {
+    for (var i = 0; i <= 2; i++) {
+      for (var j = 0; j <= 2; j++) {
+        var x = 0.0;
+        for (var k = 0; k <= 2; k++) {
+          x += this.get_za3lpa$(j + (k * 3 | 0) | 0) * other.get_za3lpa$((i * 3 | 0) + k | 0);
+        }
+        result.set_24o109$((i * 3 | 0) + j | 0, x);
+      }
+    }
+    return result;
+  };
+  Mat3f.prototype.scale_y2kzbl$ = function (sx, sy, sz) {
+    for (var i = 0; i <= 2; i++) {
+      this.matrix[i] = this.matrix[i] * sx;
+      this.matrix[3 + i | 0] = this.matrix[3 + i | 0] * sy;
+      this.matrix[6 + i | 0] = this.matrix[6 + i | 0] * sz;
+    }
+    return this;
+  };
+  Mat3f.prototype.scale_czzhiu$ = function (scale) {
+    return this.scale_y2kzbl$(scale.x, scale.y, scale.z);
+  };
+  Mat3f.prototype.scale_g84k61$ = function (sx, sy, sz, result) {
+    for (var i = 0; i <= 2; i++) {
+      result.matrix[i] = this.matrix[i] * sx;
+      result.matrix[3 + i | 0] = this.matrix[3 + i | 0] * sy;
+      result.matrix[6 + i | 0] = this.matrix[6 + i | 0] * sz;
+    }
+    return result;
+  };
+  Mat3f.prototype.set_d4zu7e$ = function (other) {
+    for (var i = 0; i <= 8; i++) {
+      this.set_24o109$(i, other.get_za3lpa$(i));
+    }
+    return this;
+  };
+  Mat3f.prototype.set_hcyabg$ = function (floats) {
+    for (var i = 0; i <= 8; i++) {
+      this.set_24o109$(i, floats.get_za3lpa$(i));
+    }
+  };
+  Mat3f.prototype.setIdentity = function () {
+    for (var i = 1; i <= 8; i++) {
+      this.set_24o109$(i, 0.0);
+    }
+    for (var i_0 = 0; i_0 <= 8; i_0 += 4) {
+      this.set_24o109$(i_0, 1.0);
+    }
+    return this;
+  };
+  Mat3f.prototype.setRotate_7b5o5w$ = function (rotA, axX, axY, axZ) {
+    this.setIdentity();
+    this.rotate_7b5o5w$(rotA, axX, axY, axZ);
+    return this;
+  };
+  Mat3f.prototype.setRotate_czzhhz$ = function (quaternion) {
+    var r = quaternion.w;
+    var i = quaternion.x;
+    var j = quaternion.y;
+    var k = quaternion.z;
+    var x = r * r + i * i + j * j + k * k;
+    var s = Math_0.sqrt(x);
+    s = 1.0 / (s * s);
+    this.set_n0b4r3$(0, 0, 1 - 2 * s * (j * j + k * k));
+    this.set_n0b4r3$(0, 1, 2 * s * (i * j - k * r));
+    this.set_n0b4r3$(0, 2, 2 * s * (i * k + j * r));
+    this.set_n0b4r3$(1, 0, 2 * s * (i * j + k * r));
+    this.set_n0b4r3$(1, 1, 1 - 2 * s * (i * i + k * k));
+    this.set_n0b4r3$(1, 2, 2 * s * (j * k - i * r));
+    this.set_n0b4r3$(2, 0, 2 * s * (i * k - j * r));
+    this.set_n0b4r3$(2, 1, 2 * s * (j * k + i * r));
+    this.set_n0b4r3$(2, 2, 1 - 2 * s * (i * i + j * j));
+    return this;
+  };
+  Mat3f.prototype.get_za3lpa$ = function (i) {
+    return this.matrix[i];
+  };
+  Mat3f.prototype.get_vux9f0$ = function (row, col) {
+    return this.matrix[(col * 3 | 0) + row | 0];
+  };
+  Mat3f.prototype.set_24o109$ = function (i, value) {
+    this.matrix[i] = value;
+  };
+  Mat3f.prototype.set_n0b4r3$ = function (row, col, value) {
+    this.matrix[(col * 3 | 0) + row | 0] = value;
+  };
+  Mat3f.prototype.setColVec_ky00qo$ = function (col, vec) {
+    this.set_n0b4r3$(0, col, vec.x);
+    this.set_n0b4r3$(1, col, vec.y);
+    this.set_n0b4r3$(2, col, vec.z);
+  };
+  Mat3f.prototype.getColVec_8irwuw$ = function (col, result) {
+    result.x = this.get_vux9f0$(0, col);
+    result.y = this.get_vux9f0$(1, col);
+    result.z = this.get_vux9f0$(2, col);
+    return result;
+  };
+  Mat3f.prototype.toBuffer_he122g$ = function (buffer) {
+    buffer.put_kgymra$(this.matrix, 0, 9);
+    buffer.flip();
+    return buffer;
+  };
+  function Mat3f$Companion() {
+    Mat3f$Companion_instance = this;
+    this.tmpMatLock_0 = new Any();
+    this.tmpMat_0 = new Mat3f();
+  }
+  Mat3f$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Mat3f$Companion_instance = null;
+  function Mat3f$Companion_getInstance() {
+    if (Mat3f$Companion_instance === null) {
+      new Mat3f$Companion();
+    }
+    return Mat3f$Companion_instance;
+  }
+  Mat3f.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Mat3f',
     interfaces: []
   };
   function Mat4f() {
@@ -5246,6 +5519,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     result.y = this.get_vux9f0$(1, col);
     result.z = this.get_vux9f0$(2, col);
     result.w = this.get_vux9f0$(3, col);
+    return result;
+  };
+  Mat4f.prototype.getOrientation_d4zu7e$ = function (result) {
+    result.set_n0b4r3$(0, 0, this.get_vux9f0$(0, 0));
+    result.set_n0b4r3$(0, 1, this.get_vux9f0$(0, 1));
+    result.set_n0b4r3$(0, 2, this.get_vux9f0$(0, 2));
+    result.set_n0b4r3$(1, 0, this.get_vux9f0$(1, 0));
+    result.set_n0b4r3$(1, 1, this.get_vux9f0$(1, 1));
+    result.set_n0b4r3$(1, 2, this.get_vux9f0$(1, 2));
+    result.set_n0b4r3$(2, 0, this.get_vux9f0$(2, 0));
+    result.set_n0b4r3$(2, 1, this.get_vux9f0$(2, 1));
+    result.set_n0b4r3$(2, 2, this.get_vux9f0$(2, 2));
+    return result;
   };
   Mat4f.prototype.toBuffer_he122g$ = function (buffer) {
     buffer.put_kgymra$(this.matrix, this.offset, 16);
@@ -5337,6 +5623,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   var DEG_2_RAD;
   var RAD_2_DEG;
+  var FLT_EPSILON;
   var toDeg = defineInlineFunction('kool.de.fabmax.kool.math.toDeg_81szk$', wrapFunction(function () {
     var math = _.de.fabmax.kool.math;
     return function ($receiver) {
@@ -5589,18 +5876,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.hitPosition = MutableVec3f_init();
     this.hitPositionLocal = MutableVec3f_init();
     this.hitNode = null;
-    this.hitDistanceSqr = kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
+    this.hitDistanceSqr = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
   }
   Object.defineProperty(RayTest.prototype, 'isHit', {
     get: function () {
-      return this.hitDistanceSqr < kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
+      return this.hitDistanceSqr < kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     }
   });
   RayTest.prototype.clear = function () {
     this.hitPosition.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
     this.hitPositionLocal.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
     this.hitNode = null;
-    this.hitDistanceSqr = kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
+    this.hitDistanceSqr = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
   };
   RayTest.prototype.computeHitPosition = function () {
     if (this.isHit) {
@@ -5736,6 +6023,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var x = this.sqrLength();
     return Math_0.sqrt(x);
   };
+  Vec2f.prototype.mul_q2ruao$ = function (other, result) {
+    return result.set_czzhjp$(this).mul_czzhjp$(other);
+  };
   Vec2f.prototype.norm_5s4mrl$ = function (result) {
     return result.set_czzhjp$(this).norm();
   };
@@ -5832,6 +6122,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MutableVec2f.prototype.add_czzhjp$ = function (other) {
     this.x = this.x + other.x;
     this.y = this.y + other.y;
+    return this;
+  };
+  MutableVec2f.prototype.mul_czzhjp$ = function (other) {
+    this.x = this.x * other.x;
+    this.y = this.y * other.y;
     return this;
   };
   MutableVec2f.prototype.norm = function () {
@@ -5960,6 +6255,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var x = this.sqrLength();
     return Math_0.sqrt(x);
   };
+  Vec3f.prototype.mul_2gj7b4$ = function (other, result) {
+    return result.set_czzhiu$(this).mul_czzhiu$(other);
+  };
   Vec3f.prototype.norm_5s4mqq$ = function (result) {
     return result.set_czzhiu$(this).norm();
   };
@@ -6074,6 +6372,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.x = this.x + other.x;
     this.y = this.y + other.y;
     this.z = this.z + other.z;
+    return this;
+  };
+  MutableVec3f.prototype.mul_czzhiu$ = function (other) {
+    this.x = this.x * other.x;
+    this.y = this.y * other.y;
+    this.z = this.z * other.z;
     return this;
   };
   MutableVec3f.prototype.norm = function () {
@@ -6220,6 +6524,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var x = this.sqrLength();
     return Math_0.sqrt(x);
   };
+  Vec4f.prototype.mul_uzu8ww$ = function (other, result) {
+    return result.set_czzhhz$(this).mul_czzhhz$(other);
+  };
   Vec4f.prototype.norm_5s4mpv$ = function (result) {
     return result.set_czzhhz$(this).norm();
   };
@@ -6340,6 +6647,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.y = this.y + other.y;
     this.z = this.z + other.z;
     this.w = this.w + other.w;
+    return this;
+  };
+  MutableVec4f.prototype.mul_czzhhz$ = function (other) {
+    this.x = this.x * other.x;
+    this.y = this.y * other.y;
+    this.z = this.z * other.z;
+    this.w = this.w * other.w;
     return this;
   };
   MutableVec4f.prototype.norm = function () {
@@ -6523,6 +6837,938 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'MvpState',
     interfaces: []
   };
+  function Box(sizeX, sizeY, sizeZ) {
+    this.halfExtents = new MutableVec3f(sizeX * 0.5, sizeY * 0.5, sizeZ * 0.5);
+    this.transform = new Mat4f();
+    this.bX = new Box$ColVecView(this, 0);
+    this.bY = new Box$ColVecView(this, 1);
+    this.bZ = new Box$ColVecView(this, 2);
+    this.center = new Box$ColVecView(this, 3);
+    this.tmpD_0 = MutableVec3f_init();
+  }
+  Object.defineProperty(Box.prototype, 'eX', {
+    get: function () {
+      return this.halfExtents.x;
+    }
+  });
+  Object.defineProperty(Box.prototype, 'eY', {
+    get: function () {
+      return this.halfExtents.y;
+    }
+  });
+  Object.defineProperty(Box.prototype, 'eZ', {
+    get: function () {
+      return this.halfExtents.z;
+    }
+  });
+  Box.prototype.isIntersecting_rt5l8b$ = function (other) {
+    other.center.subtract_2gj7b4$(this.center, this.tmpD_0);
+    var rX = this.halfExtents.x + other.halfExtents.x;
+    var rY = this.halfExtents.y + other.halfExtents.y;
+    var rZ = this.halfExtents.z + other.halfExtents.z;
+    if (this.tmpD_0.sqrLength() > rX * rX + rY * rY + rZ * rZ) {
+      return false;
+    }
+    var c00 = this.bX.times_czzhiu$(other.bX);
+    var c10 = this.bY.times_czzhiu$(other.bX);
+    var c20 = this.bZ.times_czzhiu$(other.bX);
+    var c01 = this.bX.times_czzhiu$(other.bY);
+    var c11 = this.bY.times_czzhiu$(other.bY);
+    var c21 = this.bZ.times_czzhiu$(other.bY);
+    var c02 = this.bX.times_czzhiu$(other.bZ);
+    var c12 = this.bY.times_czzhiu$(other.bZ);
+    var c22 = this.bZ.times_czzhiu$(other.bZ);
+    var r0 = this.halfExtents.x;
+    var r1 = other.halfExtents.x * Math_0.abs(c00) + other.halfExtents.y * Math_0.abs(c01) + other.halfExtents.z * Math_0.abs(c02);
+    var x = this.bX.times_czzhiu$(this.tmpD_0);
+    var r = Math_0.abs(x);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.y;
+    r1 = other.halfExtents.x * Math_0.abs(c10) + other.halfExtents.y * Math_0.abs(c11) + other.halfExtents.z * Math_0.abs(c12);
+    var x_0 = this.bY.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_0);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.z;
+    r1 = other.halfExtents.x * Math_0.abs(c20) + other.halfExtents.y * Math_0.abs(c21) + other.halfExtents.z * Math_0.abs(c22);
+    var x_1 = this.bZ.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_1);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.x * Math_0.abs(c00) + this.halfExtents.y * Math_0.abs(c10) + this.halfExtents.z * Math_0.abs(c20);
+    r1 = other.halfExtents.x;
+    var x_2 = other.bX.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_2);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.x * Math_0.abs(c01) + this.halfExtents.y * Math_0.abs(c11) + this.halfExtents.z * Math_0.abs(c21);
+    r1 = other.halfExtents.y;
+    var x_3 = other.bY.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_3);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.x * Math_0.abs(c02) + this.halfExtents.y * Math_0.abs(c12) + this.halfExtents.z * Math_0.abs(c22);
+    r1 = other.halfExtents.z;
+    var x_4 = other.bZ.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_4);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.y * Math_0.abs(c20) + this.halfExtents.z * Math_0.abs(c10);
+    r1 = other.halfExtents.y * Math_0.abs(c02) + other.halfExtents.z * Math_0.abs(c01);
+    var x_5 = c10 * this.bZ.times_czzhiu$(this.tmpD_0) - c20 * this.bY.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_5);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.y * Math_0.abs(c21) + this.halfExtents.z * Math_0.abs(c11);
+    r1 = other.halfExtents.x * Math_0.abs(c02) + other.halfExtents.z * Math_0.abs(c00);
+    var x_6 = c11 * this.bZ.times_czzhiu$(this.tmpD_0) - c21 * this.bY.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_6);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.y * Math_0.abs(c22) + this.halfExtents.z * Math_0.abs(c12);
+    r1 = other.halfExtents.x * Math_0.abs(c01) + other.halfExtents.y * Math_0.abs(c00);
+    var x_7 = c12 * this.bZ.times_czzhiu$(this.tmpD_0) - c22 * this.bY.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_7);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.x * Math_0.abs(c20) + this.halfExtents.z * Math_0.abs(c00);
+    r1 = other.halfExtents.y * Math_0.abs(c12) + other.halfExtents.z * Math_0.abs(c11);
+    var x_8 = c20 * this.bX.times_czzhiu$(this.tmpD_0) - c00 * this.bZ.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_8);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.x * Math_0.abs(c21) + this.halfExtents.z * Math_0.abs(c01);
+    r1 = other.halfExtents.x * Math_0.abs(c12) + other.halfExtents.z * Math_0.abs(c10);
+    var x_9 = c21 * this.bX.times_czzhiu$(this.tmpD_0) - c01 * this.bZ.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_9);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.x * Math_0.abs(c22) + this.halfExtents.z * Math_0.abs(c02);
+    r1 = other.halfExtents.x * Math_0.abs(c11) + other.halfExtents.y * Math_0.abs(c10);
+    var x_10 = c22 * this.bX.times_czzhiu$(this.tmpD_0) - c02 * this.bZ.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_10);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.x * Math_0.abs(c10) + this.halfExtents.y * Math_0.abs(c00);
+    r1 = other.halfExtents.y * Math_0.abs(c22) + other.halfExtents.z * Math_0.abs(c21);
+    var x_11 = c00 * this.bY.times_czzhiu$(this.tmpD_0) - c10 * this.bX.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_11);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.x * Math_0.abs(c11) + this.halfExtents.y * Math_0.abs(c01);
+    r1 = other.halfExtents.x * Math_0.abs(c22) + other.halfExtents.z * Math_0.abs(c20);
+    var x_12 = c01 * this.bY.times_czzhiu$(this.tmpD_0) - c11 * this.bX.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_12);
+    if (r > r0 + r1) {
+      return false;
+    }
+    r0 = this.halfExtents.x * Math_0.abs(c12) + this.halfExtents.y * Math_0.abs(c02);
+    r1 = other.halfExtents.x * Math_0.abs(c21) + other.halfExtents.y * Math_0.abs(c20);
+    var x_13 = c02 * this.bY.times_czzhiu$(this.tmpD_0) - c12 * this.bX.times_czzhiu$(this.tmpD_0);
+    r = Math_0.abs(x_13);
+    if (r > r0 + r1) {
+      return false;
+    }
+    return true;
+  };
+  function Box$ColVecView($outer, col) {
+    this.$outer = $outer;
+    MutableVec3f_init(this);
+    this.iX_0 = col * 4 | 0;
+    this.iY_0 = (col * 4 | 0) + 1 | 0;
+    this.iZ_0 = (col * 4 | 0) + 2 | 0;
+  }
+  Object.defineProperty(Box$ColVecView.prototype, 'x', {
+    get: function () {
+      return this.$outer.transform.matrix[this.iX_0];
+    },
+    set: function (value) {
+      this.$outer.transform.matrix[this.iX_0] = value;
+    }
+  });
+  Object.defineProperty(Box$ColVecView.prototype, 'y', {
+    get: function () {
+      return this.$outer.transform.matrix[this.iY_0];
+    },
+    set: function (value) {
+      this.$outer.transform.matrix[this.iY_0] = value;
+    }
+  });
+  Object.defineProperty(Box$ColVecView.prototype, 'z', {
+    get: function () {
+      return this.$outer.transform.matrix[this.iZ_0];
+    },
+    set: function (value) {
+      this.$outer.transform.matrix[this.iZ_0] = value;
+    }
+  });
+  Box$ColVecView.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ColVecView',
+    interfaces: [MutableVec3f]
+  };
+  Box.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Box',
+    interfaces: []
+  };
+  function Box_init($this) {
+    $this = $this || Object.create(Box.prototype);
+    Box.call($this, 1.0, 1.0, 1.0);
+    return $this;
+  }
+  function BoxBoxCollision() {
+    BoxBoxCollision$Companion_getInstance();
+    this.normal_0 = MutableVec3f_init();
+    this.depth_0 = 0.0;
+    this.satP_0 = MutableVec3f_init();
+    this.satPp_0 = MutableVec3f_init();
+    this.satNormalC_0 = MutableVec3f_init();
+    this.pa_0 = MutableVec3f_init();
+    this.pb_0 = MutableVec3f_init();
+    this.tmpP_0 = MutableVec3f_init();
+    this.normal2_0 = MutableVec3f_init();
+    this.nr_0 = MutableVec3f_init();
+    this.anr_0 = MutableVec3f_init();
+    this.faceCenter_0 = MutableVec3f_init();
+    var array = Array_0(4);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = MutableVec2f_init();
+    }
+    this.quad_0 = array;
+    this.rect_0 = MutableVec2f_init();
+    this.rectIntersector_0 = new BoxBoxCollision$QuadRectIntersector();
+    this.quadPt_0 = MutableVec3f_init();
+  }
+  BoxBoxCollision.prototype.testForCollision_fvf3pp$ = function (box1, box2, result) {
+    var tmp$;
+    var satAxis = this.performSat_0(box1, box2);
+    if (satAxis > 6)
+      tmp$ = this.computeEdgeEdgeIntersection_0(box1, box2, satAxis, result);
+    else if (satAxis > 0) {
+      var boxA = satAxis <= 3 ? box1 : box2;
+      var boxB = satAxis <= 3 ? box2 : box1;
+      tmp$ = this.computeFaceSthIntersection_0(boxA, boxB, satAxis, result);
+    }
+     else
+      tmp$ = 0;
+    return tmp$;
+  };
+  function BoxBoxCollision$performSat$tstBase(closure$s, closure$normalR, closure$invertNormal, closure$code) {
+    return function (expr1, expr2, norm, cc) {
+      var s2 = Math_0.abs(expr1) - expr2;
+      if (s2 > 0) {
+        return false;
+      }
+       else if (s2 > closure$s.v) {
+        closure$s.v = s2;
+        closure$normalR.v = norm;
+        closure$invertNormal.v = expr1 < 0;
+        closure$code.v = cc;
+      }
+      return true;
+    };
+  }
+  function BoxBoxCollision$performSat$tstBaseX(closure$s, closure$normalR, this$BoxBoxCollision, closure$invertNormal, closure$code) {
+    return function (expr1, expr2, n1, n2, n3, cc) {
+      var s2 = Math_0.abs(expr1) - expr2;
+      if (s2 > FLT_EPSILON) {
+        return false;
+      }
+      var x = n1 * n1 + n2 * n2 + n3 * n3;
+      var l = Math_0.sqrt(x);
+      if (l > FLT_EPSILON) {
+        s2 /= l;
+        if (s2 * BoxBoxCollision$Companion_getInstance().FUDGE_FACTOR_0 > closure$s.v) {
+          closure$s.v = s2;
+          closure$normalR.v = null;
+          this$BoxBoxCollision.satNormalC_0.set_y2kzbl$(n1, n2, n3).scale_mx4ult$(1.0 / l);
+          closure$invertNormal.v = expr1 < 0;
+          closure$code.v = cc;
+        }
+      }
+      return true;
+    };
+  }
+  BoxBoxCollision.prototype.performSat_0 = function (box1, box2) {
+    var tmp$;
+    box2.center.subtract_2gj7b4$(box1.center, this.satP_0);
+    this.transformTransposed_0(box1.transform, this.satPp_0.set_czzhiu$(this.satP_0));
+    var r11 = box1.bX.times_czzhiu$(box2.bX);
+    var r12 = box1.bX.times_czzhiu$(box2.bY);
+    var r13 = box1.bX.times_czzhiu$(box2.bZ);
+    var r21 = box1.bY.times_czzhiu$(box2.bX);
+    var r22 = box1.bY.times_czzhiu$(box2.bY);
+    var r23 = box1.bY.times_czzhiu$(box2.bZ);
+    var r31 = box1.bZ.times_czzhiu$(box2.bX);
+    var r32 = box1.bZ.times_czzhiu$(box2.bY);
+    var r33 = box1.bZ.times_czzhiu$(box2.bZ);
+    var q11 = Math_0.abs(r11);
+    var q12 = Math_0.abs(r12);
+    var q13 = Math_0.abs(r13);
+    var q21 = Math_0.abs(r21);
+    var q22 = Math_0.abs(r22);
+    var q23 = Math_0.abs(r23);
+    var q31 = Math_0.abs(r31);
+    var q32 = Math_0.abs(r32);
+    var q33 = Math_0.abs(r33);
+    var s = {v: -kotlin_js_internal_FloatCompanionObject.MAX_VALUE};
+    var normalR = {v: null};
+    var invertNormal = {v: false};
+    var code = {v: 0};
+    var tstBase = BoxBoxCollision$performSat$tstBase(s, normalR, invertNormal, code);
+    if (!tstBase(this.satPp_0.x, box1.eX + box2.eX * q11 + box2.eY * q12 + box2.eZ * q13, box1.bX, 1)) {
+      return 0;
+    }
+    if (!tstBase(this.satPp_0.y, box1.eY + box2.eX * q21 + box2.eY * q22 + box2.eZ * q23, box1.bY, 2)) {
+      return 0;
+    }
+    if (!tstBase(this.satPp_0.z, box1.eZ + box2.eX * q31 + box2.eY * q32 + box2.eZ * q33, box1.bZ, 3)) {
+      return 0;
+    }
+    if (!tstBase(box2.bX.times_czzhiu$(this.satP_0), box1.eX * q11 + box1.eY * q21 + box1.eZ * q31 + box2.eX, box2.bX, 4)) {
+      return 0;
+    }
+    if (!tstBase(box2.bY.times_czzhiu$(this.satP_0), box1.eX * q12 + box1.eY * q22 + box1.eZ * q32 + box2.eY, box2.bY, 5)) {
+      return 0;
+    }
+    if (!tstBase(box2.bZ.times_czzhiu$(this.satP_0), box1.eX * q13 + box1.eY * q23 + box1.eZ * q33 + box2.eZ, box2.bZ, 6)) {
+      return 0;
+    }
+    var tstBaseX = BoxBoxCollision$performSat$tstBaseX(s, normalR, this, invertNormal, code);
+    q11 += BoxBoxCollision$Companion_getInstance().FUDGE_2_0;
+    q12 += BoxBoxCollision$Companion_getInstance().FUDGE_2_0;
+    q13 += BoxBoxCollision$Companion_getInstance().FUDGE_2_0;
+    q21 += BoxBoxCollision$Companion_getInstance().FUDGE_2_0;
+    q22 += BoxBoxCollision$Companion_getInstance().FUDGE_2_0;
+    q23 += BoxBoxCollision$Companion_getInstance().FUDGE_2_0;
+    q31 += BoxBoxCollision$Companion_getInstance().FUDGE_2_0;
+    q32 += BoxBoxCollision$Companion_getInstance().FUDGE_2_0;
+    q33 += BoxBoxCollision$Companion_getInstance().FUDGE_2_0;
+    if (!tstBaseX(this.satPp_0.z * r21 - this.satPp_0.y * r31, box1.eY * q31 + box1.eZ * q21 + box2.eY * q13 + box2.eZ * q12, 0.0, -r31, r21, 7)) {
+      return 0;
+    }
+    if (!tstBaseX(this.satPp_0.z * r22 - this.satPp_0.y * r32, box1.eY * q32 + box1.eZ * q22 + box2.eX * q13 + box2.eZ * q11, 0.0, -r32, r22, 8)) {
+      return 0;
+    }
+    if (!tstBaseX(this.satPp_0.z * r23 - this.satPp_0.y * r33, box1.eY * q33 + box1.eZ * q23 + box2.eX * q12 + box2.eY * q11, 0.0, -r33, r23, 9)) {
+      return 0;
+    }
+    if (!tstBaseX(this.satPp_0.x * r31 - this.satPp_0.z * r11, box1.eX * q31 + box1.eZ * q11 + box2.eY * q23 + box2.eZ * q22, r31, 0.0, -r11, 10)) {
+      return 0;
+    }
+    if (!tstBaseX(this.satPp_0.x * r32 - this.satPp_0.z * r12, box1.eX * q32 + box1.eZ * q12 + box2.eX * q23 + box2.eZ * q21, r32, 0.0, -r12, 11)) {
+      return 0;
+    }
+    if (!tstBaseX(this.satPp_0.x * r33 - this.satPp_0.z * r13, box1.eX * q33 + box1.eZ * q13 + box2.eX * q22 + box2.eY * q21, r33, 0.0, -r13, 12)) {
+      return 0;
+    }
+    if (!tstBaseX(this.satPp_0.y * r11 - this.satPp_0.x * r21, box1.eX * q21 + box1.eY * q11 + box2.eY * q33 + box2.eZ * q32, -r21, r11, 0.0, 13)) {
+      return 0;
+    }
+    if (!tstBaseX(this.satPp_0.y * r12 - this.satPp_0.x * r22, box1.eX * q22 + box1.eY * q12 + box2.eX * q33 + box2.eZ * q31, -r22, r12, 0.0, 14)) {
+      return 0;
+    }
+    if (!tstBaseX(this.satPp_0.y * r13 - this.satPp_0.x * r23, box1.eX * q23 + box1.eY * q13 + box2.eX * q32 + box2.eY * q31, -r23, r13, 0.0, 15)) {
+      return 0;
+    }
+    this.normal_0.set_czzhiu$((tmp$ = normalR.v) != null ? tmp$ : this.satNormalC_0);
+    if (normalR.v == null) {
+      box1.transform.transform_w1lst9$(this.normal_0, 0.0);
+    }
+    if (invertNormal.v) {
+      this.normal_0.scale_mx4ult$(-1.0);
+    }
+    this.depth_0 = -s.v;
+    return code.v;
+  };
+  BoxBoxCollision.prototype.computeEdgeEdgeIntersection_0 = function (box1, box2, satAxis, result) {
+    var tmp$;
+    this.pa_0.set_czzhiu$(box1.center);
+    for (var i = 0; i <= 2; i++) {
+      switch (i) {
+        case 0:
+          tmp$ = box1.bX;
+          break;
+        case 1:
+          tmp$ = box1.bY;
+          break;
+        default:tmp$ = box1.bZ;
+          break;
+      }
+      var b = tmp$;
+      var x = this.normal_0.times_czzhiu$(b);
+      var sign = Math_0.sign(x);
+      this.pa_0.x = this.pa_0.x + sign * box1.eX * b.x;
+      this.pa_0.y = this.pa_0.y + sign * box1.eY * b.y;
+      this.pa_0.z = this.pa_0.z + sign * box1.eZ * b.z;
+    }
+    this.pb_0.set_czzhiu$(box2.center);
+    for (var i_0 = 0; i_0 <= 2; i_0++) {
+      var b_0 = this.base_0(box2, i_0);
+      var x_0 = this.normal_0.times_czzhiu$(b_0);
+      var sign_0 = -Math_0.sign(x_0);
+      this.pb_0.x = this.pb_0.x + sign_0 * box2.eX * b_0.x;
+      this.pb_0.y = this.pb_0.y + sign_0 * box2.eY * b_0.y;
+      this.pb_0.z = this.pb_0.z + sign_0 * box2.eZ * b_0.z;
+    }
+    var ua = this.base_0(box1, (satAxis - 7 | 0) / 3 | 0);
+    var ub = this.base_0(box2, (satAxis - 7 | 0) % 3);
+    this.lineClosestApproach_0(this.pa_0, ua, this.pb_0, ub);
+    result.addContactPoint_nve3wz$(this.normal_0.scale_mx4ult$(-1.0), this.pb_0, -this.depth_0);
+    return 1;
+  };
+  BoxBoxCollision.prototype.lineClosestApproach_0 = function (pa, ua, pb, ub) {
+    pb.subtract_2gj7b4$(pa, this.tmpP_0);
+    var uaub = ua.times_czzhiu$(ub);
+    var q1 = ua.times_czzhiu$(this.tmpP_0);
+    var q2 = -ub.times_czzhiu$(this.tmpP_0);
+    var d = 1.0 - uaub * uaub;
+    if (d > FLT_EPSILON) {
+      d = 1.0 / d;
+      var alpha = (q1 + uaub * q2) * d;
+      var beta = (q1 * uaub + q2) * d;
+      pa.x = pa.x + ua.x * alpha;
+      pa.y = pa.y + ua.y * alpha;
+      pa.z = pa.z + ua.z * alpha;
+      pb.x = pb.x + ub.x * beta;
+      pb.y = pb.y + ub.y * beta;
+      pb.z = pb.z + ub.z * beta;
+    }
+  };
+  BoxBoxCollision.prototype.computeFaceSthIntersection_0 = function (box1, box2, satAxis, result) {
+    this.normal2_0.set_czzhiu$(this.normal_0);
+    if (satAxis > 3) {
+      this.normal2_0.scale_mx4ult$(-1.0);
+    }
+    this.transformTransposed_0(box2.transform, this.nr_0.set_czzhiu$(this.normal2_0));
+    var tmp$ = this.anr_0;
+    var x = this.nr_0.x;
+    tmp$.x = Math_0.abs(x);
+    var tmp$_0 = this.anr_0;
+    var x_0 = this.nr_0.y;
+    tmp$_0.y = Math_0.abs(x_0);
+    var tmp$_1 = this.anr_0;
+    var x_1 = this.nr_0.z;
+    tmp$_1.z = Math_0.abs(x_1);
+    var lanr = this.largestComponentIdx_0(this.anr_0);
+    var a1 = lanr === 0 ? 1 : 0;
+    var a2 = lanr <= 1 ? 2 : 1;
+    var sign = this.nr_0.get_za3lpa$(lanr) < 0 ? 1.0 : -1.0;
+    this.faceCenter_0.x = box2.center.x - box1.center.x + sign * box2.halfExtents.get_za3lpa$(lanr) * box2.transform.get_vux9f0$(0, lanr);
+    this.faceCenter_0.y = box2.center.y - box1.center.y + sign * box2.halfExtents.get_za3lpa$(lanr) * box2.transform.get_vux9f0$(1, lanr);
+    this.faceCenter_0.z = box2.center.z - box1.center.z + sign * box2.halfExtents.get_za3lpa$(lanr) * box2.transform.get_vux9f0$(2, lanr);
+    var codeN = satAxis <= 3 ? satAxis - 1 | 0 : satAxis - 4 | 0;
+    var code1 = codeN === 0 ? 1 : 0;
+    var code2 = codeN === 2 ? 1 : 2;
+    var box1Code1 = this.base_0(box1, code1);
+    var box1Code2 = this.base_0(box1, code2);
+    var box2A1 = this.base_0(box2, a1);
+    var box2A2 = this.base_0(box2, a2);
+    var c1 = this.faceCenter_0.times_czzhiu$(box1Code1);
+    var c2 = this.faceCenter_0.times_czzhiu$(box1Code2);
+    var m11 = box1Code1.times_czzhiu$(box2A1);
+    var m12 = box1Code1.times_czzhiu$(box2A2);
+    var m21 = box1Code2.times_czzhiu$(box2A1);
+    var m22 = box1Code2.times_czzhiu$(box2A2);
+    var k1 = m11 * box2.halfExtents.get_za3lpa$(a1);
+    var k2 = m21 * box2.halfExtents.get_za3lpa$(a1);
+    var k3 = m12 * box2.halfExtents.get_za3lpa$(a2);
+    var k4 = m22 * box2.halfExtents.get_za3lpa$(a2);
+    this.quad_0[0].set_dleff0$(c1 - k1 - k3, c2 - k2 - k4);
+    this.quad_0[1].set_dleff0$(c1 - k1 + k3, c2 - k2 + k4);
+    this.quad_0[2].set_dleff0$(c1 + k1 + k3, c2 + k2 + k4);
+    this.quad_0[3].set_dleff0$(c1 + k1 - k3, c2 + k2 - k4);
+    this.rect_0.set_dleff0$(box1.halfExtents.get_za3lpa$(code1), box1.halfExtents.get_za3lpa$(code2));
+    var n = this.rectIntersector_0.intersectRectQuad2_9mrfn4$(this.rect_0, this.quad_0);
+    var quadInterPts = this.rectIntersector_0.resultPoints;
+    var det1 = 1.0 / (m11 * m22 - m12 * m21);
+    m11 *= det1;
+    m12 *= det1;
+    m21 *= det1;
+    m22 *= det1;
+    var cNum = 0;
+    for (var j = 0; j < n; j++) {
+      k1 = m22 * (quadInterPts[j].x - c1) - m12 * (quadInterPts[j].y - c2);
+      k2 = -m21 * (quadInterPts[j].x - c1) + m11 * (quadInterPts[j].y - c2);
+      this.quadPt_0.x = this.faceCenter_0.x + k1 * this.base_0(box2, a1).x + k2 * this.base_0(box2, a2).x;
+      this.quadPt_0.y = this.faceCenter_0.y + k1 * this.base_0(box2, a1).y + k2 * this.base_0(box2, a2).y;
+      this.quadPt_0.z = this.faceCenter_0.z + k1 * this.base_0(box2, a1).z + k2 * this.base_0(box2, a2).z;
+      var depth = box1.halfExtents.get_za3lpa$(codeN) - this.normal2_0.times_czzhiu$(this.quadPt_0);
+      if (depth >= 0) {
+        var contactPt = result.addContactPoint_nve3wz$(this.normal_0, this.quadPt_0, -depth);
+        contactPt.normalOnBInWorld.scale_mx4ult$(-1.0);
+        if (satAxis < 4) {
+          contactPt.pointInWorld.add_czzhiu$(box1.center);
+        }
+         else {
+          contactPt.pointInWorld.add_czzhiu$(box1.center).subtract_czzhiu$(this.quadPt_0.set_czzhiu$(this.normal_0).scale_mx4ult$(depth));
+        }
+        cNum = cNum + 1 | 0;
+      }
+    }
+    return cNum;
+  };
+  BoxBoxCollision.prototype.transformTransposed_0 = function ($receiver, vec) {
+    var x = vec.x * $receiver.get_vux9f0$(0, 0) + vec.y * $receiver.get_vux9f0$(1, 0) + vec.z * $receiver.get_vux9f0$(2, 0);
+    var y = vec.x * $receiver.get_vux9f0$(0, 1) + vec.y * $receiver.get_vux9f0$(1, 1) + vec.z * $receiver.get_vux9f0$(2, 1);
+    var z = vec.x * $receiver.get_vux9f0$(0, 2) + vec.y * $receiver.get_vux9f0$(1, 2) + vec.z * $receiver.get_vux9f0$(2, 2);
+    return vec.set_y2kzbl$(x, y, z);
+  };
+  BoxBoxCollision.prototype.largestComponentIdx_0 = function ($receiver) {
+    if ($receiver.x > $receiver.y && $receiver.x > $receiver.z)
+      return 0;
+    else if ($receiver.y > $receiver.x && $receiver.y > $receiver.z)
+      return 1;
+    else
+      return 2;
+  };
+  BoxBoxCollision.prototype.base_0 = function ($receiver, i) {
+    switch (i) {
+      case 0:
+        return $receiver.bX;
+      case 1:
+        return $receiver.bY;
+      default:return $receiver.bZ;
+    }
+  };
+  function BoxBoxCollision$Companion() {
+    BoxBoxCollision$Companion_instance = this;
+    this.FUDGE_FACTOR_0 = 1.05;
+    this.FUDGE_2_0 = 1.0E-5;
+  }
+  BoxBoxCollision$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var BoxBoxCollision$Companion_instance = null;
+  function BoxBoxCollision$Companion_getInstance() {
+    if (BoxBoxCollision$Companion_instance === null) {
+      new BoxBoxCollision$Companion();
+    }
+    return BoxBoxCollision$Companion_instance;
+  }
+  function BoxBoxCollision$QuadRectIntersector() {
+    var array = Array_0(8);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = MutableVec2f_init();
+    }
+    this.bufferPoints_0 = array;
+    var array_0 = Array_0(8);
+    var tmp$_0;
+    tmp$_0 = array_0.length - 1 | 0;
+    for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
+      array_0[i_0] = MutableVec2f_init();
+    }
+    this.resultPoints = array_0;
+    this.resultPointCnt_pn2lxb$_0 = 0;
+  }
+  Object.defineProperty(BoxBoxCollision$QuadRectIntersector.prototype, 'resultPointCnt', {
+    get: function () {
+      return this.resultPointCnt_pn2lxb$_0;
+    },
+    set: function (resultPointCnt) {
+      this.resultPointCnt_pn2lxb$_0 = resultPointCnt;
+    }
+  });
+  BoxBoxCollision$QuadRectIntersector.prototype.intersectRectQuad2_9mrfn4$ = function (rect, quad) {
+    var tmp$;
+    var nq = 4;
+    this.resultPointCnt = 0;
+    var q = quad;
+    var r = this.resultPoints;
+    dirLoop: for (var dir = 0; dir <= 1; dir++) {
+      for (var sign = -1; sign <= 1; sign += 2) {
+        var pq = 0;
+        var pr = 0;
+        this.resultPointCnt = 0;
+        for (var i = nq; i >= 1; i--) {
+          if (sign * q[pq].get_za3lpa$(dir) < rect.get_za3lpa$(dir)) {
+            r[pr].set_czzhjp$(q[pq]);
+            pr = pr + 1 | 0;
+            this.resultPointCnt = this.resultPointCnt + 1 | 0;
+            if (this.resultPointCnt >= 8) {
+              q = r;
+              break dirLoop;
+            }
+          }
+          var nextQ = i > 1 ? pq + 1 | 0 : 0;
+          if (sign * q[pq].get_za3lpa$(dir) < rect.get_za3lpa$(dir) ^ sign * q[nextQ].get_za3lpa$(dir) < rect.get_za3lpa$(dir)) {
+            r[pr].set_24o109$(1 - dir | 0, q[pq].get_za3lpa$(1 - dir | 0) + (q[nextQ].get_za3lpa$(1 - dir | 0) - q[pq].get_za3lpa$(1 - dir | 0)) / (q[nextQ].get_za3lpa$(dir) - q[pq].get_za3lpa$(dir)) * (sign * rect.get_za3lpa$(dir) - q[pq].get_za3lpa$(dir)));
+            r[pr].set_24o109$(dir, sign * rect.get_za3lpa$(dir));
+            pr = pr + 1 | 0;
+            this.resultPointCnt = this.resultPointCnt + 1 | 0;
+            if (this.resultPointCnt >= 8) {
+              q = r;
+              break dirLoop;
+            }
+          }
+          pq = pq + 1 | 0;
+        }
+        q = r;
+        r = q === this.resultPoints ? this.bufferPoints_0 : this.resultPoints;
+        nq = this.resultPointCnt;
+      }
+    }
+    if (q !== this.resultPoints) {
+      tmp$ = this.resultPointCnt;
+      for (var i_0 = 0; i_0 < tmp$; i_0++) {
+        this.resultPoints[i_0].set_czzhjp$(q[i_0]);
+      }
+    }
+    return this.resultPointCnt;
+  };
+  BoxBoxCollision$QuadRectIntersector.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'QuadRectIntersector',
+    interfaces: []
+  };
+  BoxBoxCollision.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'BoxBoxCollision',
+    interfaces: []
+  };
+  function BoxMesh(world) {
+    BoxMesh$Companion_getInstance();
+    LineMesh.call(this);
+    this.world = world;
+    this.boxMeshIdcs_0 = LinkedHashMap_init();
+    this.vert_0 = this.meshData.get_za3lpa$(0);
+    this.meshData.rebuildBoundsOnSync = true;
+  }
+  BoxMesh.prototype.updateBoxes = function () {
+    var tmp$;
+    if (this.boxMeshIdcs_0.size !== this.world.bodies.size) {
+      tmp$ = this.world.bodies;
+      for (var i = 0; i !== tmp$.size; ++i) {
+        if (!this.boxMeshIdcs_0.containsKey_11rb$(this.world.bodies.get_za3lpa$(i))) {
+          var $receiver = this.boxMeshIdcs_0;
+          var key = this.world.bodies.get_za3lpa$(i);
+          var value = this.addBoxVerts_0();
+          $receiver.put_xwzc9p$(key, value);
+        }
+      }
+    }
+    var tmp$_0;
+    tmp$_0 = this.boxMeshIdcs_0.entries.iterator();
+    while (tmp$_0.hasNext()) {
+      var element = tmp$_0.next();
+      var body = element.key;
+      var idx = element.value;
+      this.updateBoxVerts_0(body, idx);
+    }
+  };
+  BoxMesh.prototype.updateBoxVerts_0 = function (body, idx) {
+    var tmp$;
+    if (body.isInCollision) {
+      tmp$ = Color$Companion_getInstance().MD_RED;
+    }
+     else {
+      tmp$ = Color$Companion_getInstance().MD_GREEN;
+    }
+    var color = tmp$;
+    for (var i = 0; i <= 7; i++) {
+      this.vert_0.index = idx + i | 0;
+      this.vert_0.color.set_d7aj7k$(color);
+      body.transform.transform_w1lst9$(this.vert_0.position.set_czzhiu$(body.shape.halfExtents).mul_czzhiu$(BoxMesh$Companion_getInstance().SIGNS_0.get_za3lpa$(i)));
+    }
+    this.meshData.isSyncRequired = true;
+  };
+  function BoxMesh$addBoxVerts$lambda$lambda($receiver) {
+    return Unit;
+  }
+  function BoxMesh$addBoxVerts$lambda$lambda_0($receiver) {
+    return Unit;
+  }
+  BoxMesh.prototype.addBoxVerts_0 = function () {
+    var startIdx = {v: 0};
+    var $this = this.meshData;
+    $this.isBatchUpdate = true;
+    startIdx.v = $this.addVertex_hvwyd1$(BoxMesh$addBoxVerts$lambda$lambda);
+    for (var i = 1; i <= 7; i++) {
+      $this.addVertex_hvwyd1$(BoxMesh$addBoxVerts$lambda$lambda_0);
+    }
+    for (var i_0 = 0; i_0 <= 3; i_0++) {
+      $this.addIndices_pmhfmb$(new Int32Array([startIdx.v + i_0 | 0, startIdx.v + (i_0 + 1 | 0) % 4 | 0]));
+      $this.addIndices_pmhfmb$(new Int32Array([startIdx.v + i_0 + 4 | 0, startIdx.v + (i_0 + 1 | 0) % 4 + 4 | 0]));
+      $this.addIndices_pmhfmb$(new Int32Array([startIdx.v + i_0 | 0, startIdx.v + i_0 + 4 | 0]));
+    }
+    $this.isSyncRequired = true;
+    $this.isBatchUpdate = false;
+    return startIdx.v;
+  };
+  function BoxMesh$Companion() {
+    BoxMesh$Companion_instance = this;
+    this.SIGNS_0 = listOf([new Vec3f(1.0, 1.0, 1.0), new Vec3f(1.0, 1.0, -1.0), new Vec3f(1.0, -1.0, -1.0), new Vec3f(1.0, -1.0, 1.0), new Vec3f(-1.0, 1.0, 1.0), new Vec3f(-1.0, 1.0, -1.0), new Vec3f(-1.0, -1.0, -1.0), new Vec3f(-1.0, -1.0, 1.0)]);
+  }
+  BoxMesh$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var BoxMesh$Companion_instance = null;
+  function BoxMesh$Companion_getInstance() {
+    if (BoxMesh$Companion_instance === null) {
+      new BoxMesh$Companion();
+    }
+    return BoxMesh$Companion_instance;
+  }
+  BoxMesh.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'BoxMesh',
+    interfaces: [LineMesh]
+  };
+  function CollisionWorld() {
+    this.bodies = ArrayList_init();
+    this.gravity = new MutableVec3f(0.0, -9.81, 0.0);
+    this.collisionChecker_0 = new BoxBoxCollision();
+    this.contactPoints_0 = new ContactPoints();
+    this.tmpVec_0 = MutableVec3f_init();
+  }
+  CollisionWorld.prototype.stepSimulation_mx4ult$ = function (dt) {
+    var tmp$;
+    this.broadPhase();
+    tmp$ = this.bodies;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.bodies.get_za3lpa$(i).stepSimulation_fvh5tf$(dt, this);
+    }
+  };
+  CollisionWorld.prototype.broadPhase = function () {
+    var tmp$;
+    tmp$ = this.bodies;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var tmp$_0;
+      if (this.bodies.get_za3lpa$(i).mass === 0.0) {
+        continue;
+      }
+      tmp$_0 = this.bodies;
+      for (var j = 0; j !== tmp$_0.size; ++j) {
+        if (i !== j) {
+          this.contactPoints_0.clear();
+          this.bodies.get_za3lpa$(i).isInCollision = this.collisionChecker_0.testForCollision_fvf3pp$(this.bodies.get_za3lpa$(i).shape, this.bodies.get_za3lpa$(j).shape, this.contactPoints_0) > 0;
+          if (this.bodies.get_za3lpa$(i).isInCollision) {
+            this.bodies.get_za3lpa$(i).isInCollision = true;
+            this.collisionResponse_0(this.bodies.get_za3lpa$(i), this.contactPoints_0);
+          }
+        }
+      }
+    }
+  };
+  CollisionWorld.prototype.collisionResponse_0 = function (body, contactPoints) {
+    var tmp$, tmp$_0;
+    this.tmpVec_0.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+    var normalMag = 0.0;
+    tmp$ = contactPoints.points;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.tmpVec_0.add_czzhiu$(contactPoints.points.get_za3lpa$(i).normalOnBInWorld);
+      normalMag += contactPoints.points.get_za3lpa$(i).normalOnBInWorld.length();
+    }
+    if (body.velocity.times_czzhiu$(this.tmpVec_0) < 0) {
+      var tmp$_1 = body.mass * 1.25 / normalMag;
+      var $receiver = body.velocity.length();
+      var clamp$result;
+      if ($receiver < 0.05) {
+        clamp$result = 0.05;
+      }
+       else if ($receiver > 100.0) {
+        clamp$result = 100.0;
+      }
+       else {
+        clamp$result = $receiver;
+      }
+      var j = tmp$_1 * clamp$result;
+      tmp$_0 = contactPoints.points;
+      for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+        this.tmpVec_0.set_czzhiu$(contactPoints.points.get_za3lpa$(i_0).normalOnBInWorld).scale_mx4ult$(j);
+        body.applyImpulseGlobal_4lfkt4$(contactPoints.points.get_za3lpa$(i_0).pointInWorld, this.tmpVec_0);
+      }
+    }
+  };
+  CollisionWorld.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CollisionWorld',
+    interfaces: []
+  };
+  function ContactPoints() {
+    this.pointCache_0 = ArrayList_init();
+    this.usedPoints_0 = ArrayList_init();
+  }
+  Object.defineProperty(ContactPoints.prototype, 'points', {
+    get: function () {
+      return this.usedPoints_0;
+    }
+  });
+  ContactPoints.prototype.addContactPoint = function () {
+    var tmp$;
+    if (!this.pointCache_0.isEmpty()) {
+      tmp$ = this.pointCache_0.removeAt_za3lpa$(this.pointCache_0.size - 1 | 0);
+    }
+     else {
+      tmp$ = new ContactPoint();
+    }
+    var pt = tmp$;
+    this.usedPoints_0.add_11rb$(pt);
+    return pt;
+  };
+  ContactPoints.prototype.addContactPoint_nve3wz$ = function (normalOnBInWorld, pointInWorld, depth) {
+    return this.addContactPoint().set_nve3wz$(normalOnBInWorld, pointInWorld, depth);
+  };
+  ContactPoints.prototype.clear = function () {
+    this.pointCache_0.addAll_brywnq$(this.usedPoints_0);
+    this.usedPoints_0.clear();
+  };
+  ContactPoints.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ContactPoints',
+    interfaces: []
+  };
+  function ContactPoint() {
+    this.normalOnBInWorld = MutableVec3f_init();
+    this.pointInWorld = MutableVec3f_init();
+    this.depth = 0.0;
+  }
+  ContactPoint.prototype.set_nve3wz$ = function (normalOnBInWorld, pointInWorld, depth) {
+    this.normalOnBInWorld.set_czzhiu$(normalOnBInWorld);
+    this.pointInWorld.set_czzhiu$(pointInWorld);
+    this.depth = depth;
+    return this;
+  };
+  ContactPoint.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ContactPoint',
+    interfaces: []
+  };
+  function RigidBody(shape, mass, inertiaVec) {
+    this.shape = shape;
+    this.mass = mass;
+    this.inertiaT_0 = new Mat3f();
+    this.invOrientation_0 = new Mat3f();
+    this.velocity = MutableVec3f_init();
+    this.mutAcceleration_0 = MutableVec3f_init();
+    this.angularVelocity = MutableVec3f_init();
+    this.mutAngularAcceleration_0 = MutableVec3f_init();
+    this.force_0 = MutableVec3f_init();
+    this.torque_0 = MutableVec3f_init();
+    this.prevForce_0 = MutableVec3f_init();
+    this.prevTorque_0 = MutableVec3f_init();
+    this.tmpVec_0 = MutableVec3f_init();
+    this.tmpPosLocal_0 = MutableVec3f_init();
+    this.tmpForceLocal_0 = MutableVec3f_init();
+    this.isInCollision = false;
+    this.inertiaT_0.scale_czzhiu$(inertiaVec);
+  }
+  Object.defineProperty(RigidBody.prototype, 'transform', {
+    get: function () {
+      return this.shape.transform;
+    }
+  });
+  Object.defineProperty(RigidBody.prototype, 'centerOfMass', {
+    get: function () {
+      return this.shape.center;
+    }
+  });
+  Object.defineProperty(RigidBody.prototype, 'acceleration', {
+    get: function () {
+      return this.mutAcceleration_0;
+    }
+  });
+  Object.defineProperty(RigidBody.prototype, 'angularAcceleration', {
+    get: function () {
+      return this.mutAngularAcceleration_0;
+    }
+  });
+  RigidBody.prototype.stepSimulation_fvh5tf$ = function (dt, world) {
+    if (this.mass > 0) {
+      this.tmpVec_0.set_czzhiu$(world.gravity).scale_mx4ult$(this.mass);
+      this.force_0.add_czzhiu$(this.tmpVec_0);
+      this.tmpVec_0.set_czzhiu$(this.force_0).subtract_czzhiu$(this.prevForce_0).scale_mx4ult$(0.5).add_czzhiu$(this.prevForce_0);
+      this.prevForce_0.set_czzhiu$(this.force_0);
+      this.tmpVec_0.scale_mx4ult$(1.0 / this.mass);
+      this.mutAcceleration_0.set_czzhiu$(this.tmpVec_0);
+      this.tmpVec_0.scale_mx4ult$(dt).add_czzhiu$(this.velocity);
+      this.velocity.set_czzhiu$(this.tmpVec_0);
+      this.tmpVec_0.scale_mx4ult$(dt);
+      this.centerOfMass.add_czzhiu$(this.tmpVec_0);
+      this.tmpVec_0.set_czzhiu$(this.torque_0).subtract_czzhiu$(this.prevTorque_0).scale_mx4ult$(0.5).add_czzhiu$(this.prevTorque_0);
+      this.prevTorque_0.set_czzhiu$(this.torque_0);
+      this.inertiaT_0.transform_5s4mqq$(this.tmpVec_0);
+      this.mutAngularAcceleration_0.set_czzhiu$(this.tmpVec_0);
+      this.tmpVec_0.scale_mx4ult$(dt).add_czzhiu$(this.angularVelocity).scale_mx4ult$(0.98);
+      this.angularVelocity.set_czzhiu$(this.tmpVec_0);
+      this.tmpVec_0.scale_mx4ult$(dt * RAD_2_DEG);
+      this.transform.rotate_ad55pp$(this.tmpVec_0.x, Vec3f$Companion_getInstance().X_AXIS);
+      this.transform.rotate_ad55pp$(this.tmpVec_0.y, Vec3f$Companion_getInstance().Y_AXIS);
+      this.transform.rotate_ad55pp$(this.tmpVec_0.z, Vec3f$Companion_getInstance().Z_AXIS);
+      this.transform.getOrientation_d4zu7e$(this.invOrientation_0).transpose();
+    }
+    this.force_0.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+    this.torque_0.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+  };
+  RigidBody.prototype.getVelocityInLocalPoint_5s4mqq$ = function (pos) {
+    return pos.set_czzhiu$(this.angularVelocity.cross_2gj7b4$(pos, this.tmpVec_0)).add_czzhiu$(this.velocity);
+  };
+  RigidBody.prototype.applyForceRelative_4lfkt4$ = function (position, force) {
+    this.invOrientation_0.transform_5s4mqq$(this.tmpForceLocal_0.set_czzhiu$(force));
+    this.torque_0.add_czzhiu$(position.cross_2gj7b4$(this.tmpForceLocal_0, this.tmpVec_0));
+    this.force_0.add_czzhiu$(force);
+  };
+  RigidBody.prototype.applyForceGlobal_4lfkt4$ = function (position, force) {
+    this.tmpPosLocal_0.set_czzhiu$(position).subtract_czzhiu$(this.centerOfMass);
+    this.invOrientation_0.transform_5s4mqq$(this.tmpPosLocal_0);
+    this.applyForceRelative_4lfkt4$(this.tmpPosLocal_0, force);
+  };
+  RigidBody.prototype.applyImpulseRelative_4lfkt4$ = function (position, impulse) {
+    this.velocity.add_czzhiu$(this.tmpVec_0.set_czzhiu$(impulse).scale_mx4ult$(1.0 / this.mass));
+    this.invOrientation_0.transform_5s4mqq$(this.tmpForceLocal_0.set_czzhiu$(impulse));
+    this.inertiaT_0.transform_5s4mqq$(position.cross_2gj7b4$(this.tmpForceLocal_0, this.tmpVec_0));
+    this.angularVelocity.add_czzhiu$(this.tmpVec_0);
+  };
+  RigidBody.prototype.applyImpulseGlobal_4lfkt4$ = function (position, impulse) {
+    this.tmpPosLocal_0.set_czzhiu$(position).subtract_czzhiu$(this.centerOfMass);
+    this.invOrientation_0.transform_5s4mqq$(this.tmpPosLocal_0);
+    this.applyImpulseRelative_4lfkt4$(this.tmpPosLocal_0, impulse);
+  };
+  RigidBody.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RigidBody',
+    interfaces: []
+  };
+  function staticBox(size) {
+    return staticBox_0(size.x, size.y, size.z);
+  }
+  function staticBox_0(sizeX, sizeY, sizeZ) {
+    return new RigidBody(new Box(sizeX, sizeY, sizeZ), 0.0, Vec3f$Companion_getInstance().ZERO);
+  }
+  function uniformMassBox(size, mass) {
+    return uniformMassBox_0(size.x, size.y, size.z, mass);
+  }
+  function uniformMassBox_0(sizeX, sizeY, sizeZ, mass) {
+    var inertia = MutableVec3f_init();
+    var i = mass / 12.0;
+    inertia.x = 1.0 / (i * (sizeY * sizeY + sizeZ * sizeZ));
+    inertia.y = 1.0 / (i * (sizeX * sizeX + sizeZ * sizeZ));
+    inertia.z = 1.0 / (i * (sizeX * sizeX + sizeY * sizeY));
+    return new RigidBody(new Box(sizeX, sizeY, sizeZ), mass, inertia);
+  }
   function formatFloat(f, precision) {
     return formatDouble(f, precision);
   }
@@ -6711,18 +7957,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     (Kotlin.isType(tmp$ = $receiver, MutableCollection) ? tmp$ : throwCCE()).remove_11rb$(element);
   };
+  Armature.prototype.preRender_aemszp$ = function (ctx) {
+    if (ctx.deltaT > 0) {
+      this.applyAnimation_0(ctx);
+    }
+    Mesh.prototype.preRender_aemszp$.call(this, ctx);
+  };
   Armature.prototype.render_aemszp$ = function (ctx) {
     var shader = this.shader;
     if (Kotlin.isType(shader, BasicShader)) {
       shader.bones = this.boneTransforms_0;
     }
     Mesh.prototype.render_aemszp$.call(this, ctx);
-    if (ctx.deltaT > 0) {
-      this.applyAnimation_0(ctx);
-    }
   };
   Armature.prototype.applyAnimation_0 = function (ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var tmp$, tmp$_0, tmp$_1;
     var update = false;
     var weightedDuration = 0.0;
     tmp$ = this.animationList_0;
@@ -6743,21 +7992,29 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     if (update) {
       if (!this.isCpuAnimated && !ctx.glCapabilities.shaderIntAttribs) {
+        var $this = package$util.Log;
+        var level = Log$Level.WARN;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Vertex shader animation requested, but not supported by hardware. Falling back to CPU based mesh animation');
+        }
         this.isCpuAnimated = true;
       }
       if (this.isCpuAnimated) {
-        this.meshData.isBatchUpdate = true;
-        this.meshData.isSyncRequired = true;
+        var $this_0 = this.meshData;
+        $this_0.isBatchUpdate = true;
+        var tmp$_2;
         this.clearMesh_0();
-        tmp$_1 = this.rootBones;
-        for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
+        tmp$_2 = this.rootBones;
+        for (var i_1 = 0; i_1 !== tmp$_2.size; ++i_1) {
           this.applyBone_0(this.rootBones.get_za3lpa$(i_1), this.transform_0, this.isCpuAnimated);
         }
-        this.meshData.isBatchUpdate = false;
+        $this_0.isSyncRequired = true;
+        $this_0.isBatchUpdate = false;
       }
        else {
-        tmp$_2 = this.rootBones;
-        for (var i_2 = 0; i_2 !== tmp$_2.size; ++i_2) {
+        tmp$_1 = this.rootBones;
+        for (var i_2 = 0; i_2 !== tmp$_1.size; ++i_2) {
           this.applyBone_0(this.rootBones.get_za3lpa$(i_2), this.transform_0, this.isCpuAnimated);
         }
       }
@@ -7130,8 +8387,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.top = 10.0;
     this.near = -10.0;
     this.far = 10.0;
-    this.clipToViewport = false;
-    this.keepAspectRatio = true;
+    this.isClipToViewport = false;
+    this.isKeepAspectRatio = true;
     this.tmpNodeCenter_0 = MutableVec3f_init();
     this.tmpNodeExtent_0 = MutableVec3f_init();
   }
@@ -7148,13 +8405,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.globalLookDir;
   };
   OrthographicCamera.prototype.updateProjectionMatrix_aemszp$ = function (ctx) {
-    if (this.clipToViewport) {
+    if (this.isClipToViewport) {
       this.left = 0.0;
       this.right = ctx.viewport.width;
       this.bottom = 0.0;
       this.top = ctx.viewport.height;
     }
-     else if (this.keepAspectRatio) {
+     else if (this.isKeepAspectRatio) {
       var h = this.top - this.bottom;
       var w = this.aspectRatio * h;
       var xCenter = this.left + (this.right - this.left) * 0.5;
@@ -7290,13 +8547,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.children = ArrayList_init();
     this.tmpBounds = new BoundingBox();
   }
-  Object.defineProperty(Group.prototype, 'isFrustumChecked', {
-    get: function () {
-      return false;
-    },
-    set: function (value) {
-    }
-  });
   Group.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
     var tmp$;
     Node.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
@@ -7305,21 +8555,36 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.children.get_za3lpa$(i).scene = newScene;
     }
   };
-  Group.prototype.render_aemszp$ = function (ctx) {
+  Group.prototype.preRender_aemszp$ = function (ctx) {
     var tmp$;
-    if (!this.isVisible) {
-      return;
-    }
-    Node.prototype.render_aemszp$.call(this, ctx);
     this.tmpBounds.clear();
     tmp$ = this.children;
     for (var i = 0; i !== tmp$.size; ++i) {
-      if (ctx.renderPass !== RenderPass$SHADOW_getInstance() || this.children.get_za3lpa$(i).isCastingShadow) {
-        this.children.get_za3lpa$(i).render_aemszp$(ctx);
-      }
+      this.children.get_za3lpa$(i).preRender_aemszp$(ctx);
       this.tmpBounds.add_ea4od8$(this.children.get_za3lpa$(i).bounds);
     }
     this.bounds.set_ea4od8$(this.tmpBounds);
+    Node.prototype.preRender_aemszp$.call(this, ctx);
+  };
+  Group.prototype.render_aemszp$ = function (ctx) {
+    var tmp$;
+    Node.prototype.render_aemszp$.call(this, ctx);
+    if (this.isRendered) {
+      tmp$ = this.children;
+      for (var i = 0; i !== tmp$.size; ++i) {
+        if (ctx.renderPass !== RenderPass$SHADOW_getInstance() || this.children.get_za3lpa$(i).isCastingShadow) {
+          this.children.get_za3lpa$(i).render_aemszp$(ctx);
+        }
+      }
+    }
+  };
+  Group.prototype.postRender_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.children;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.children.get_za3lpa$(i).postRender_aemszp$(ctx);
+    }
+    Node.prototype.postRender_aemszp$.call(this, ctx);
   };
   Group.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
@@ -7350,7 +8615,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var child = this.children.get_za3lpa$(i);
       if (child.isPickable) {
         var d = child.bounds.hitDistanceSqr_nvyeur$(test.ray);
-        if (d < kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY && d <= test.hitDistanceSqr) {
+        if (d < kotlin_js_internal_FloatCompanionObject.MAX_VALUE && d <= test.hitDistanceSqr) {
           child.rayTest_jljx4v$(test);
         }
       }
@@ -7794,7 +9059,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   Mesh.prototype.rayTest_jljx4v$ = function (test) {
     var distSqr = this.bounds.hitDistanceSqr_nvyeur$(test.ray);
-    if (distSqr < kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY && distSqr <= test.hitDistanceSqr) {
+    if (distSqr < kotlin_js_internal_FloatCompanionObject.MAX_VALUE && distSqr <= test.hitDistanceSqr) {
       test.hitDistanceSqr = distSqr;
       test.hitNode = this;
       test.hitPositionLocal.set_czzhiu$(test.ray.direction).scale_mx4ult$(Math_0.sqrt(distSqr)).add_czzhiu$(test.ray.origin);
@@ -7816,8 +9081,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.dataBufferF = null;
     this.dataBufferI = null;
     this.indexBuffer = null;
+    this.rebuildBoundsOnSync = false;
     this.isSyncRequired = false;
     this.isBatchUpdate_ubntbn$_0 = false;
+    this.vertexIt_0 = this.vertexList.get_za3lpa$(0);
     this.attributeBinders = LinkedHashMap_init();
   }
   Object.defineProperty(MeshData.prototype, 'numIndices', {
@@ -7846,8 +9113,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (gen != null) {
       this.isBatchUpdate = true;
       this.clear();
-      var builder = new MeshBuilder(this);
-      gen(builder);
+      gen(new MeshBuilder(this));
+      this.isSyncRequired = true;
       this.isBatchUpdate = false;
     }
   };
@@ -7889,6 +9156,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       v0.tangent.norm();
     }
   };
+  MeshData.prototype.batchUpdate_w6qj3l$ = defineInlineFunction('kool.de.fabmax.kool.scene.MeshData.batchUpdate_w6qj3l$', wrapFunction(function () {
+    return function (block) {
+      this.isBatchUpdate = true;
+      block(this);
+      this.isSyncRequired = true;
+      this.isBatchUpdate = false;
+    };
+  }));
   MeshData.prototype.addVertex_hvwyd1$ = function (block) {
     var idx = {v: 0};
     this.isSyncRequired = true;
@@ -7926,6 +9201,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.vertexList.clear();
     this.bounds.clear();
     this.isSyncRequired = true;
+  };
+  MeshData.prototype.rebuildBounds = function () {
+    var tmp$;
+    this.bounds.clear();
+    tmp$ = this.numVertices;
+    for (var i = 0; i < tmp$; i++) {
+      this.vertexIt_0.index = i;
+      this.bounds.add_czzhiu$(this.vertexIt_0.position);
+    }
   };
   MeshData.prototype.get_za3lpa$ = function (i) {
     return this.vertexList.get_za3lpa$(i);
@@ -7980,6 +9264,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (this.isSyncRequired && !this.isBatchUpdate) {
       var tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
       if (!this.isBatchUpdate) {
+        if (this.rebuildBoundsOnSync) {
+          this.rebuildBounds();
+        }
         if (!ctx.glCapabilities.uint32Indices) {
           var uint16Buffer = createUint16Buffer(this.numIndices);
           tmp$_1 = this.vertexList.indices.position - 1 | 0;
@@ -8002,7 +9289,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MeshData.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'MeshData',
-    interfaces: []
+    interfaces: [Disposable]
   };
   function MeshData_init(vertexAttributes, $this) {
     $this = $this || Object.create(MeshData.prototype);
@@ -8110,11 +9397,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (name === void 0)
       name = null;
     this.name = name;
+    this.onPreRender = ArrayList_init();
     this.onRender = ArrayList_init();
+    this.onPostRender = ArrayList_init();
+    this.onDispose = ArrayList_init();
     this.onHoverEnter = ArrayList_init();
     this.onHover = ArrayList_init();
     this.onHoverExit = ArrayList_init();
-    this.onDispose = ArrayList_init();
     this.bounds_ba5obo$_0 = new BoundingBox();
     this.globalRadius_3g00fw$_0 = 0.0;
     this.globalCenterMut_sys4u1$_0 = MutableVec3f_init();
@@ -8197,13 +9486,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.isFrustumChecked_un4x7a$_0 = isFrustumChecked;
     }
   });
-  Node.prototype.render_aemszp$ = function (ctx) {
+  Node.prototype.preRender_aemszp$ = function (ctx) {
     var tmp$;
+    tmp$ = this.onPreRender.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element(this, ctx);
+    }
     this.globalCenterMut_sys4u1$_0.set_czzhiu$(this.bounds.center);
     this.globalExtentMut_72l7vo$_0.set_czzhiu$(this.bounds.max);
     ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalCenterMut_sys4u1$_0);
     ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalExtentMut_72l7vo$_0);
     this.globalRadius = this.globalCenter.distance_czzhiu$(this.globalExtentMut_72l7vo$_0);
+  };
+  Node.prototype.render_aemszp$ = function (ctx) {
+    var tmp$;
     this.isRendered = this.checkIsVisible_aemszp$(ctx);
     if (this.isRendered) {
       if (!this.onRender.isEmpty()) {
@@ -8212,6 +9509,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           this.onRender.get_za3lpa$(i)(this, ctx);
         }
       }
+    }
+  };
+  Node.prototype.postRender_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.onPostRender.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element(this, ctx);
     }
   };
   Node.prototype.dispose_aemszp$ = function (ctx) {
@@ -8277,7 +9582,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Node.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Node',
-    interfaces: []
+    interfaces: [Disposable]
   };
   var scene = defineInlineFunction('kool.de.fabmax.kool.scene.scene_13di2z$', wrapFunction(function () {
     var Scene_init = _.de.fabmax.kool.scene.Scene;
@@ -8293,8 +9598,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (name === void 0)
       name = null;
     Group.call(this, name);
-    this.onPreRender = ArrayList_init();
-    this.onPostRender = ArrayList_init();
     this.camera = new PerspectiveCamera();
     this.light = new Light();
     this.defaultShadowMap_jajs2a$_0 = null;
@@ -8304,51 +9607,63 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.hoverNode_ab2f3d$_0 = null;
     this.dragPtrs_mbcqtw$_0 = ArrayList_init();
     this.dragHandlers_ipew8g$_0 = ArrayList_init();
+    this.disposables_mcwga4$_0 = ArrayList_init();
     this.scene = this;
+    this.onPreRender.add_11rb$(Scene_init$lambda(this));
+    this.onDispose.add_11rb$(Scene_init$lambda_0(this));
   }
-  function Scene$set_Scene$defaultShadowMap$lambda(closure$value) {
-    return function ($receiver, ctx) {
-      closure$value.renderShadowMap_x4tdlw$($receiver, ctx);
-      return Unit;
-    };
-  }
-  function Scene$set_Scene$defaultShadowMap$lambda_0(closure$value) {
-    return function ($receiver, ctx) {
-      closure$value.dispose_aemszp$(ctx);
-      return Unit;
-    };
-  }
+  Object.defineProperty(Scene.prototype, 'isFrustumChecked', {
+    get: function () {
+      return false;
+    },
+    set: function (value) {
+    }
+  });
   Object.defineProperty(Scene.prototype, 'defaultShadowMap', {
     get: function () {
       return this.defaultShadowMap_jajs2a$_0;
     },
     set: function (value) {
-      this.defaultShadowMap_jajs2a$_0 = value;
-      if (value != null) {
-        this.onPreRender.add_11rb$(Scene$set_Scene$defaultShadowMap$lambda(value));
-        this.onDispose.add_11rb$(Scene$set_Scene$defaultShadowMap$lambda_0(value));
+      if (this.defaultShadowMap_jajs2a$_0 != null) {
+        var $receiver = this.disposables_mcwga4$_0;
+        var element = ensureNotNull(this.defaultShadowMap_jajs2a$_0);
+        $receiver.add_11rb$(element);
       }
+      this.defaultShadowMap_jajs2a$_0 = value;
     }
   });
+  Scene.prototype.preRender_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.disposables_mcwga4$_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.dispose_aemszp$(ctx);
+    }
+    this.disposables_mcwga4$_0.clear();
+    Group.prototype.preRender_aemszp$.call(this, ctx);
+  };
   Scene.prototype.renderScene_aemszp$ = function (ctx) {
-    var tmp$, tmp$_0;
     if (!this.isVisible) {
       return;
     }
-    tmp$ = this.onPreRender;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.onPreRender.get_za3lpa$(i)(this, ctx);
-    }
+    this.preRender_aemszp$(ctx);
     this.camera.updateCamera_aemszp$(ctx);
     this.handleInput_gqm22e$_0(ctx);
     if (this.clearMask !== 0) {
       glClear(this.clearMask);
     }
     this.render_aemszp$(ctx);
-    tmp$_0 = this.onPostRender;
-    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-      this.onPostRender.get_za3lpa$(i_0)(this, ctx);
+    this.postRender_aemszp$(ctx);
+  };
+  Scene.prototype.dispose_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.disposables_mcwga4$_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.dispose_aemszp$(ctx);
     }
+    this.disposables_mcwga4$_0.clear();
+    Group.prototype.dispose_aemszp$.call(this, ctx);
   };
   Scene.prototype.registerDragHandler_dsvxak$ = function (handler) {
     if (!this.dragHandlers_ipew8g$_0.contains_11rb$(handler)) {
@@ -8417,6 +9732,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       handlerIdx = handlerIdx - 1 | 0;
     }
   };
+  function Scene_init$lambda(this$Scene) {
+    return function ($receiver, ctx) {
+      var tmp$;
+      (tmp$ = this$Scene.defaultShadowMap) != null ? (tmp$.renderShadowMap_x4tdlw$($receiver, ctx), Unit) : null;
+      return Unit;
+    };
+  }
+  function Scene_init$lambda_0(this$Scene) {
+    return function ($receiver, ctx) {
+      var tmp$;
+      (tmp$ = this$Scene.defaultShadowMap) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
+      return Unit;
+    };
+  }
   Scene.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Scene',
@@ -8616,13 +9945,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.horiRotAnimator.desired = this.horizontalRotation;
     this.zoomAnimator.desired = this.zoom;
     var oldZ = this.zoomAnimator.actual;
-    var z = this.zoomAnimator.animate_14dthe$(ctx.deltaT);
+    var z = this.zoomAnimator.animate_mx4ult$(ctx.deltaT);
     var $receiver_2 = oldZ - z;
     if (!(Math_0.abs($receiver_2) < 1.0E-5) && this.zoomMethod === SphericalInputTransform$ZoomMethod$ZOOM_TRANSLATE_getInstance()) {
       this.computeZoomTranslationPerspective_sqm467$(scene, oldZ, z);
     }
-    this.vertRotAnimator.animate_14dthe$(ctx.deltaT);
-    this.horiRotAnimator.animate_14dthe$(ctx.deltaT);
+    this.vertRotAnimator.animate_mx4ult$(ctx.deltaT);
+    this.horiRotAnimator.animate_mx4ult$(ctx.deltaT);
     this.updateTransform();
     TransformGroup.prototype.render_aemszp$.call(this, ctx);
   };
@@ -8771,7 +10100,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.actual = value;
     this.speed = 0.0;
   };
-  SphericalInputTransform$AnimatedVal.prototype.animate_14dthe$ = function (deltaT) {
+  SphericalInputTransform$AnimatedVal.prototype.animate_mx4ult$ = function (deltaT) {
     var $receiver = this.$outer.smoothness;
     if (Math_0.abs($receiver) < 1.0E-5 || deltaT > 0.2) {
       this.actual = this.desired;
@@ -8859,17 +10188,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.invTransform = new Mat4f();
     this.isIdentity = false;
     this.isDirty = false;
-    this.animation_kl0jay$_0 = null;
     this.tmpTransformVec_xv9rzf$_0 = MutableVec3f_init();
   }
-  Object.defineProperty(TransformGroup.prototype, 'animation', {
-    get: function () {
-      return this.animation_kl0jay$_0;
-    },
-    set: function (animation) {
-      this.animation_kl0jay$_0 = animation;
-    }
-  });
   TransformGroup.prototype.checkInverse = function () {
     if (this.isDirty) {
       this.transform.invert_d4zu6j$(this.invTransform);
@@ -8880,19 +10200,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.isDirty = true;
     this.isIdentity = false;
   };
-  TransformGroup.prototype.render_aemszp$ = function (ctx) {
-    var tmp$;
-    if (!this.isVisible) {
-      return;
-    }
-    (tmp$ = this.animation) != null ? tmp$(this, ctx) : null;
+  TransformGroup.prototype.preRender_aemszp$ = function (ctx) {
     var wasIdentity = this.isIdentity;
     if (!wasIdentity) {
       ctx.mvpState.modelMatrix.push();
       ctx.mvpState.modelMatrix.mul_d4zu6j$(this.transform);
       ctx.mvpState.update_aemszp$(ctx);
     }
-    Group.prototype.render_aemszp$.call(this, ctx);
+    Group.prototype.preRender_aemszp$.call(this, ctx);
     if (!this.bounds.isEmpty && !wasIdentity) {
       this.tmpBounds.clear();
       this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_xv9rzf$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.min.y, this.bounds.min.z), 1.0));
@@ -8908,6 +10223,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (!wasIdentity) {
       ctx.mvpState.modelMatrix.pop();
       ctx.mvpState.update_aemszp$(ctx);
+    }
+  };
+  TransformGroup.prototype.render_aemszp$ = function (ctx) {
+    if (this.isVisible) {
+      var wasIdentity = this.isIdentity;
+      if (!wasIdentity) {
+        ctx.mvpState.modelMatrix.push();
+        ctx.mvpState.modelMatrix.mul_d4zu6j$(this.transform);
+        ctx.mvpState.update_aemszp$(ctx);
+      }
+      Group.prototype.render_aemszp$.call(this, ctx);
+      if (!wasIdentity) {
+        ctx.mvpState.modelMatrix.pop();
+        ctx.mvpState.update_aemszp$(ctx);
+      }
     }
   };
   TransformGroup.prototype.toGlobalCoords_w1lst9$$default = function (vec, w) {
@@ -9093,8 +10423,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.textColor.add_y83vuj$(this.button.textColor.apply(), this.colorWeightStd);
     this.textColor.add_y83vuj$(this.button.textColorHovered.apply(), this.colorWeightHovered);
   };
-  ButtonUi.prototype.disposeUi_aemszp$ = function (ctx) {
-    LabelUi.prototype.disposeUi_aemszp$.call(this, ctx);
+  ButtonUi.prototype.dispose_aemszp$ = function (ctx) {
+    LabelUi.prototype.dispose_aemszp$.call(this, ctx);
     var $receiver = this.button.onHoverEnter;
     var element = this.hoverEnterListener;
     $receiver.remove_11rb$(element);
@@ -9133,14 +10463,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   ComponentUi.prototype.updateUi_aemszp$ = function (ctx) {
   };
-  ComponentUi.prototype.disposeUi_aemszp$ = function (ctx) {
-  };
   ComponentUi.prototype.onRender_aemszp$ = function (ctx) {
+  };
+  ComponentUi.prototype.dispose_aemszp$ = function (ctx) {
   };
   ComponentUi.$metadata$ = {
     kind: Kind_INTERFACE,
     simpleName: 'ComponentUi',
-    interfaces: []
+    interfaces: [Disposable]
   };
   function BlankComponentUi() {
   }
@@ -9169,7 +10499,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.mesh.shader = this.shader;
     this.component.addNode_xtids1$(this.mesh, 0);
   };
-  SimpleComponentUi.prototype.disposeUi_aemszp$ = function (ctx) {
+  SimpleComponentUi.prototype.dispose_aemszp$ = function (ctx) {
     this.component.minusAssign_f1kmr1$(this.mesh);
     this.mesh.dispose_aemszp$(ctx);
   };
@@ -9324,8 +10654,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.computeTextMetrics();
     this.renderText_aemszp$(ctx);
   };
-  LabelUi.prototype.disposeUi_aemszp$ = function (ctx) {
-    this.baseUi_tctiu8$_0.disposeUi_aemszp$(ctx);
+  LabelUi.prototype.dispose_aemszp$ = function (ctx) {
+    this.baseUi_tctiu8$_0.dispose_aemszp$(ctx);
     this.label.minusAssign_f1kmr1$(this.mesh);
     this.mesh.dispose_aemszp$(ctx);
   };
@@ -9889,8 +11219,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.mesh.shader = basicShader(SliderUi$createUi$lambda);
     this.slider.plusAssign_f1kmr1$(this.mesh);
   };
-  SliderUi.prototype.disposeUi_aemszp$ = function (ctx) {
-    this.baseUi.disposeUi_aemszp$(ctx);
+  SliderUi.prototype.dispose_aemszp$ = function (ctx) {
+    this.baseUi.dispose_aemszp$(ctx);
     this.mesh.dispose_aemszp$(ctx);
     this.slider.minusAssign_f1kmr1$(this.mesh);
   };
@@ -9943,7 +11273,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function TextField(name, root) {
     Label.call(this, name, root);
     this.editText = new EditableText();
-    this.onRender.add_11rb$(TextField_init$lambda(this));
+    this.onPreRender.add_11rb$(TextField_init$lambda(this));
   }
   TextField.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newTextFieldUi_p39bdq$(this);
@@ -9964,7 +11294,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
                 this$TextField.editText.backspace();
                 break;
               case -19:
-                this$TextField.editText.delete();
+                this$TextField.editText.deleteSelection();
                 break;
               case -25:
                 if (e.isCtrlDown) {
@@ -10201,7 +11531,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.text = tmp$ + $receiver_0.substring(startIndex);
     }
   };
-  EditableText.prototype.delete = function () {
+  EditableText.prototype.deleteSelection = function () {
     if (this.selectionStart !== this.caretPosition) {
       this.replaceSelection_61zpoe$('');
     }
@@ -10335,8 +11665,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var element = this.stateChangedListener;
     $receiver.add_11rb$(element);
   };
-  ToggleButtonUi.prototype.disposeUi_aemszp$ = function (ctx) {
-    ButtonUi.prototype.disposeUi_aemszp$.call(this, ctx);
+  ToggleButtonUi.prototype.dispose_aemszp$ = function (ctx) {
+    ButtonUi.prototype.dispose_aemszp$.call(this, ctx);
     var $receiver = this.tb.onStateChange;
     var element = this.stateChangedListener;
     $receiver.remove_11rb$(element);
@@ -10476,7 +11806,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.ui.prop.updateUi_aemszp$(ctx);
   };
   UiComponent.prototype.updateTheme_aemszp$ = function (ctx) {
-    this.ui.prop.disposeUi_aemszp$(ctx);
+    this.ui.prop.dispose_aemszp$(ctx);
     this.ui.setTheme_11rb$(this.createThemeUi_aemszp$(ctx)).apply();
     this.setThemeProps_aemszp$(ctx);
     this.ui.prop.createUi_aemszp$(ctx);
@@ -10552,12 +11882,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   };
-  UiContainer.prototype.render_aemszp$ = function (ctx) {
+  UiContainer.prototype.preRender_aemszp$ = function (ctx) {
     if (this.isLayoutNeeded_exywcf$_0) {
       this.isLayoutNeeded_exywcf$_0 = false;
       this.doLayout_sq5703$(this.contentBounds, ctx);
     }
-    UiComponent.prototype.render_aemszp$.call(this, ctx);
+    UiComponent.prototype.preRender_aemszp$.call(this, ctx);
   };
   UiContainer.prototype.doLayout_sq5703$ = function (bounds, ctx) {
     var tmp$;
@@ -10627,7 +11957,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       overlay = true;
     var $receiver = new Scene(null);
     var $receiver_0 = new OrthographicCamera();
-    $receiver_0.clipToViewport = true;
+    $receiver_0.isClipToViewport = true;
     $receiver_0.near = -1000.0;
     $receiver_0.far = 1000.0;
     $receiver.camera = $receiver_0;
@@ -10737,8 +12067,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.globalHeight = height;
     this.globalDepth = depth;
   };
-  UiRoot.prototype.render_aemszp$ = function (ctx) {
-    var tmp$;
+  UiRoot.prototype.preRender_aemszp$ = function (ctx) {
     if (this.isFillViewport && (this.globalWidth !== ctx.viewport.width || this.globalHeight !== ctx.viewport.height)) {
       this.globalWidth = ctx.viewport.width;
       this.globalHeight = ctx.viewport.height;
@@ -10754,14 +12083,23 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.content.contentBounds.set_w8lrqs$(0.0, 0.0, 0.0, this.globalWidth / contentScale, this.globalHeight / contentScale, this.globalDepth / contentScale);
       this.content.requestLayout();
     }
+    this.content.preRender_aemszp$(ctx);
+    this.bounds.set_ea4od8$(this.content.bounds);
+    Node.prototype.preRender_aemszp$.call(this, ctx);
+  };
+  UiRoot.prototype.render_aemszp$ = function (ctx) {
+    var tmp$;
     (tmp$ = this.blurHelper_0) != null ? (tmp$.updateDistortionTexture_hp84kc$(this, ctx, this.content.bounds), Unit) : null;
     ctx.pushAttributes();
     ctx.isCullFace = false;
     ctx.applyAttributes();
     Node.prototype.render_aemszp$.call(this, ctx);
     this.content.render_aemszp$(ctx);
-    this.bounds.set_ea4od8$(this.content.bounds);
     ctx.popAttributes();
+  };
+  UiRoot.prototype.postRender_aemszp$ = function (ctx) {
+    this.content.postRender_aemszp$(ctx);
+    Node.prototype.postRender_aemszp$.call(this, ctx);
   };
   UiRoot.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
@@ -11217,8 +12555,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (!vertShader.compile_aemszp$(ctx)) {
       var log = vertShader.getInfoLog_aemszp$(ctx);
       vertShader.delete_aemszp$(ctx);
-      println(log);
-      println(key.vertexSrc);
+      var $this = package$util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Vertex shader compilation failed: ' + log);
+      }
+      var $this_0 = package$util.Log;
+      var level_0 = Log$Level.ERROR;
+      var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_0.level >= $this_0.level.level) {
+        $this_0.printer(level_0, tag_0, 'Shader source: ' + '\n' + key.vertexSrc);
+      }
       throw new KoolException('Vertex shader compilation failed: ' + log);
     }
     var fragShader = ShaderResource$Companion_getInstance().createFragmentShader_aemszp$(ctx);
@@ -11226,8 +12574,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (!fragShader.compile_aemszp$(ctx)) {
       var log_0 = fragShader.getInfoLog_aemszp$(ctx);
       fragShader.delete_aemszp$(ctx);
-      println(log_0);
-      println(key.fragmentSrc);
+      var $this_1 = package$util.Log;
+      var level_1 = Log$Level.ERROR;
+      var tag_1 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_1.level >= $this_1.level.level) {
+        $this_1.printer(level_1, tag_1, 'Fragment shader compilation failed: ' + log_0);
+      }
+      var $this_2 = package$util.Log;
+      var level_2 = Log$Level.ERROR;
+      var tag_2 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_2.level >= $this_2.level.level) {
+        $this_2.printer(level_2, tag_2, 'Shader source: ' + '\n' + key.fragmentSrc);
+      }
       throw new KoolException('Fragment shader compilation failed: ' + log_0);
     }
     var prog = ProgramResource$Companion_getInstance().create_aemszp$(ctx);
@@ -11239,6 +12597,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (!success) {
       var log_1 = prog.getInfoLog_aemszp$(ctx);
       prog.delete_aemszp$(ctx);
+      var $this_3 = package$util.Log;
+      var level_3 = Log$Level.ERROR;
+      var tag_3 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_3.level >= $this_3.level.level) {
+        $this_3.printer(level_3, tag_3, 'Shader linkage failed: ' + log_1);
+      }
       throw new KoolException('Shader linkage failed: ' + log_1);
     }
     return prog;
@@ -11429,9 +12793,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.uFogRange = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_FOG_RANGE));
     this.uBones = this.addUniform_1ybs2r$(new UniformMatrix4(GlslGenerator$Companion_getInstance().U_BONES));
     this.uShadowMvp = this.addUniform_1ybs2r$(new UniformMatrix4(GlslGenerator$Companion_getInstance().U_SHADOW_MVP));
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
-    this.uShadowTexSz = this.addUniform_1ybs2r$(new Uniform1iv(GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ, (tmp$_1 = (tmp$_0 = (tmp$ = this.props.shadowMap) != null ? tmp$.subMaps : null) != null ? tmp$_0.length : null) != null ? tmp$_1 : 0));
-    this.uClipSpaceFarZ = this.addUniform_1ybs2r$(new Uniform1fv(GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z, (tmp$_4 = (tmp$_3 = (tmp$_2 = this.props.shadowMap) != null ? tmp$_2.subMaps : null) != null ? tmp$_3.length : null) != null ? tmp$_4 : 0));
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    this.uShadowTexSz = this.addUniform_1ybs2r$(new Uniform1iv(GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ, (tmp$_0 = (tmp$ = this.props.shadowMap) != null ? tmp$.numMaps : null) != null ? tmp$_0 : 0));
+    this.uClipSpaceFarZ = this.addUniform_1ybs2r$(new Uniform1fv(GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z, (tmp$_2 = (tmp$_1 = this.props.shadowMap) != null ? tmp$_1.numMaps : null) != null ? tmp$_2 : 0));
     this.uShadowTex = ArrayList_init();
     this.shadowMap_6x93ay$_0 = null;
     this.scene_i3j15i$_0 = null;
@@ -11445,12 +12809,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.shadowMap_6x93ay$_0 = this.props.shadowMap;
     if (this.shadowMap_6x93ay$_0 != null) {
       this.uShadowMvp.value = this.shadowMap_6x93ay$_0.shadowMvp;
-      tmp$_5 = this.shadowMap_6x93ay$_0.subMaps.length;
-      for (var i = 0; i < tmp$_5; i++) {
+      tmp$_3 = this.shadowMap_6x93ay$_0.numMaps;
+      for (var i = 0; i < tmp$_3; i++) {
         var shadowTex = this.addUniform_1ybs2r$(new UniformTexture2D(GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i));
         this.uShadowTex.add_11rb$(shadowTex);
-        shadowTex.value = this.shadowMap_6x93ay$_0.subMaps[i].depthTexture;
-        this.uShadowTexSz.value[i] = this.shadowMap_6x93ay$_0.subMaps[i].texSize;
+        shadowTex.value = this.shadowMap_6x93ay$_0.getShadowMap_za3lpa$(i);
+        this.uShadowTexSz.value[i] = this.shadowMap_6x93ay$_0.getShadowMapSize_za3lpa$(i);
       }
     }
   }
@@ -11528,7 +12892,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (this.props.isNormalMapped) {
       this.attributes.add_11rb$(Attribute$Companion_getInstance().TANGENTS);
     }
-    if (this.props.numBones > 0) {
+    if (this.props.numBones > 0 && ctx.glCapabilities.shaderIntAttribs) {
       this.attributes.add_11rb$(Armature$Companion_getInstance().BONE_INDICES);
       this.attributes.add_11rb$(Armature$Companion_getInstance().BONE_WEIGHTS);
     }
@@ -11549,17 +12913,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.uBones.bind_aemszp$(ctx);
     if (ctx.glCapabilities.depthTextures && this.shadowMap_6x93ay$_0 != null) {
       if (ctx.renderPass === RenderPass$SHADOW_getInstance()) {
-        tmp$ = this.shadowMap_6x93ay$_0.subMaps.length;
+        tmp$ = this.shadowMap_6x93ay$_0.numMaps;
         for (var i = 0; i < tmp$; i++) {
           this.uShadowTex.get_za3lpa$(i).value = null;
           this.uShadowTex.get_za3lpa$(i).bind_aemszp$(ctx);
         }
       }
        else {
-        tmp$_0 = this.shadowMap_6x93ay$_0.subMaps.length;
+        tmp$_0 = this.shadowMap_6x93ay$_0.numMaps;
         for (var i_0 = 0; i_0 < tmp$_0; i_0++) {
-          this.uClipSpaceFarZ.value[i_0] = this.shadowMap_6x93ay$_0.subMaps[i_0].clipSpaceFarZ;
-          this.uShadowTex.get_za3lpa$(i_0).value = this.shadowMap_6x93ay$_0.subMaps[i_0].depthTexture;
+          this.uClipSpaceFarZ.value[i_0] = this.shadowMap_6x93ay$_0.getClipSpaceFarZ_za3lpa$(i_0);
+          this.uShadowTex.get_za3lpa$(i_0).value = this.shadowMap_6x93ay$_0.getShadowMap_za3lpa$(i_0);
           this.uShadowTex.get_za3lpa$(i_0).bind_aemszp$(ctx);
         }
         this.uShadowMvp.bind_aemszp$(ctx);
@@ -11886,8 +13250,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   BlurredBackgroundHelper.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
-    this.blurFb1_0.delete_aemszp$(ctx);
-    this.blurFb2_0.delete_aemszp$(ctx);
+    this.blurFb1_0.dispose_aemszp$(ctx);
+    this.blurFb2_0.dispose_aemszp$(ctx);
     (tmp$ = this.blurX_0) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
     (tmp$_0 = this.blurY_0) != null ? (tmp$_0.dispose_aemszp$(ctx), Unit) : null;
     this.copyTex_0.dispose_aemszp$(ctx);
@@ -12041,7 +13405,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   BlurredBackgroundHelper.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'BlurredBackgroundHelper',
-    interfaces: []
+    interfaces: [Disposable]
   };
   function GlslGenerator() {
     GlslGenerator$Companion_getInstance();
@@ -12225,15 +13589,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       text.append_gw00v9$(this.vsIn_5467de$_0 + ' vec4 ' + Attribute$Companion_getInstance().COLORS.name + ';' + '\n');
       text.append_gw00v9$(this.vsOut_gj894f$_0 + ' vec4 ' + GlslGenerator$Companion_getInstance().V_COLOR + ';' + '\n');
     }
-    if (shaderProps.numBones > 0) {
+    if (shaderProps.numBones > 0 && ctx.glCapabilities.shaderIntAttribs) {
       text.append_gw00v9$(this.vsIn_5467de$_0 + ' ivec4 ' + Armature$Companion_getInstance().BONE_INDICES.name + ';' + '\n');
       text.append_gw00v9$(this.vsIn_5467de$_0 + ' vec4 ' + Armature$Companion_getInstance().BONE_WEIGHTS.name + ';' + '\n');
       text.append_gw00v9$('uniform mat4 ' + GlslGenerator$Companion_getInstance().U_BONES + '[' + shaderProps.numBones + '];' + '\n');
     }
     var shadowMap = shaderProps.shadowMap;
     if (shadowMap != null) {
-      text.append_gw00v9$('uniform mat4 ' + GlslGenerator$Companion_getInstance().U_SHADOW_MVP + '[' + shadowMap.subMaps.length + '];' + '\n');
-      text.append_gw00v9$(this.vsOut_gj894f$_0 + ' vec4 ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + shadowMap.subMaps.length + '];' + '\n');
+      text.append_gw00v9$('uniform mat4 ' + GlslGenerator$Companion_getInstance().U_SHADOW_MVP + '[' + shadowMap.numMaps + '];' + '\n');
+      text.append_gw00v9$(this.vsOut_gj894f$_0 + ' vec4 ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + shadowMap.numMaps + '];' + '\n');
       text.append_gw00v9$(this.vsOut_gj894f$_0 + ' float ' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ';' + '\n');
     }
     if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
@@ -12261,7 +13625,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var element = tmp$_0.next();
       element.vsBeforeProj_jh5913$(shaderProps, text, ctx);
     }
-    if (shaderProps.numBones > 0) {
+    if (shaderProps.numBones > 0 && ctx.glCapabilities.shaderIntAttribs) {
       text.append_gw00v9$('mat4 boneT = ' + GlslGenerator$Companion_getInstance().U_BONES + '[' + Armature$Companion_getInstance().BONE_INDICES + '[0]] * ' + Armature$Companion_getInstance().BONE_WEIGHTS + '[0];' + '\n');
       text.append_gw00v9$('boneT += ' + GlslGenerator$Companion_getInstance().U_BONES + '[' + Armature$Companion_getInstance().BONE_INDICES + '[1]] * ' + Armature$Companion_getInstance().BONE_WEIGHTS + '[1];' + '\n');
       text.append_gw00v9$('boneT += ' + GlslGenerator$Companion_getInstance().U_BONES + '[' + Armature$Companion_getInstance().BONE_INDICES + '[2]] * ' + Armature$Companion_getInstance().BONE_WEIGHTS + '[2];' + '\n');
@@ -12283,8 +13647,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     var shadowMap = shaderProps.shadowMap;
     if (shadowMap != null) {
-      tmp$ = shadowMap.subMaps;
-      for (var i = 0; i !== tmp$.length; ++i) {
+      tmp$ = shadowMap.numMaps;
+      for (var i = 0; i < tmp$; i++) {
         text.append_gw00v9$(GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '] = ' + GlslGenerator$Companion_getInstance().U_SHADOW_MVP + '[' + i + '] * (' + GlslGenerator$Companion_getInstance().U_MODEL_MATRIX + ' * position);' + '\n');
       }
       text.append_gw00v9$('vPositionClipspaceZ = gl_Position.z;\n');
@@ -12363,14 +13727,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     var shadowMap = shaderProps.shadowMap;
     if (shadowMap != null) {
-      text.append_gw00v9$(this.fsIn_4vdhvm$_0 + ' vec4 ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + shadowMap.subMaps.length + '];' + '\n');
+      text.append_gw00v9$(this.fsIn_4vdhvm$_0 + ' vec4 ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + shadowMap.numMaps + '];' + '\n');
       text.append_gw00v9$(this.fsIn_4vdhvm$_0 + ' float ' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ';' + '\n');
-      tmp$ = shadowMap.subMaps;
-      for (var i = 0; i !== tmp$.length; ++i) {
+      tmp$ = shadowMap.numMaps;
+      for (var i = 0; i < tmp$; i++) {
         text.append_gw00v9$('uniform sampler2D ' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i + ';' + '\n');
       }
-      text.append_gw00v9$('uniform int ' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ + '[' + shadowMap.subMaps.length + '];' + '\n');
-      text.append_gw00v9$('uniform float ' + GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z + '[' + shadowMap.subMaps.length + '];' + '\n');
+      text.append_gw00v9$('uniform int ' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ + '[' + shadowMap.numMaps + '];' + '\n');
+      text.append_gw00v9$('uniform float ' + GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z + '[' + shadowMap.numMaps + '];' + '\n');
     }
     if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
       text.append_gw00v9$('uniform vec3 uCameraPosition;\n');
@@ -12451,14 +13815,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       text.append_gw00v9$('if (' + this.fsOutBody_rbmxbx$_0 + '.a == 0.0) { discard; }');
     }
     if (shadowMap != null) {
-      tmp$ = shadowMap.subMaps;
-      for (var i = 0; i !== tmp$.length; ++i) {
+      tmp$ = shadowMap.numMaps;
+      for (var i = 0; i < tmp$; i++) {
         text.append_gw00v9$('if (' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ' <= ' + GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z + '[' + i + ']) {' + '\n');
         text.append_gw00v9$('  vec3 projPos = ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '].xyz / ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '].w;' + '\n');
         text.append_gw00v9$('  float off = 1.0 / float(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ + '[' + i + ']);' + '\n');
         text.append_gw00v9$('  shadowFactor = calcShadowFactor(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i + ', projPos, off, ' + (i + 1 | 0) + '.0 * 0.001);' + '\n');
         text.append_gw00v9$('}\n');
-        if (i < (shadowMap.subMaps.length - 1 | 0)) {
+        if (i < (shadowMap.numMaps - 1 | 0)) {
           text.append_gw00v9$('else ');
         }
       }
@@ -13333,14 +14697,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function defaultProps(id) {
     return TextureProps_init(id, GL_LINEAR, GL_CLAMP_TO_EDGE);
   }
-  function TextureProps(id, minFilter, magFilter, xWrapping, yWrapping, anisotropy) {
+  function TextureProps(id, minFilter, magFilter, xWrapping, yWrapping, anisotropy, target) {
     TextureProps$Companion_getInstance();
+    if (target === void 0)
+      target = GL_TEXTURE_2D;
     this.id = id;
     this.minFilter = minFilter;
     this.magFilter = magFilter;
     this.xWrapping = xWrapping;
     this.yWrapping = yWrapping;
     this.anisotropy = anisotropy;
+    this.target = target;
   }
   function TextureProps$Companion() {
     TextureProps$Companion_instance = this;
@@ -13406,11 +14773,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   TextureProps.prototype.component6 = function () {
     return this.anisotropy;
   };
-  TextureProps.prototype.copy_4g72b4$ = function (id, minFilter, magFilter, xWrapping, yWrapping, anisotropy) {
-    return new TextureProps(id === void 0 ? this.id : id, minFilter === void 0 ? this.minFilter : minFilter, magFilter === void 0 ? this.magFilter : magFilter, xWrapping === void 0 ? this.xWrapping : xWrapping, yWrapping === void 0 ? this.yWrapping : yWrapping, anisotropy === void 0 ? this.anisotropy : anisotropy);
+  TextureProps.prototype.component7 = function () {
+    return this.target;
+  };
+  TextureProps.prototype.copy_6fw3cu$ = function (id, minFilter, magFilter, xWrapping, yWrapping, anisotropy, target) {
+    return new TextureProps(id === void 0 ? this.id : id, minFilter === void 0 ? this.minFilter : minFilter, magFilter === void 0 ? this.magFilter : magFilter, xWrapping === void 0 ? this.xWrapping : xWrapping, yWrapping === void 0 ? this.yWrapping : yWrapping, anisotropy === void 0 ? this.anisotropy : anisotropy, target === void 0 ? this.target : target);
   };
   TextureProps.prototype.toString = function () {
-    return 'TextureProps(id=' + Kotlin.toString(this.id) + (', minFilter=' + Kotlin.toString(this.minFilter)) + (', magFilter=' + Kotlin.toString(this.magFilter)) + (', xWrapping=' + Kotlin.toString(this.xWrapping)) + (', yWrapping=' + Kotlin.toString(this.yWrapping)) + (', anisotropy=' + Kotlin.toString(this.anisotropy)) + ')';
+    return 'TextureProps(id=' + Kotlin.toString(this.id) + (', minFilter=' + Kotlin.toString(this.minFilter)) + (', magFilter=' + Kotlin.toString(this.magFilter)) + (', xWrapping=' + Kotlin.toString(this.xWrapping)) + (', yWrapping=' + Kotlin.toString(this.yWrapping)) + (', anisotropy=' + Kotlin.toString(this.anisotropy)) + (', target=' + Kotlin.toString(this.target)) + ')';
   };
   TextureProps.prototype.hashCode = function () {
     var result = 0;
@@ -13420,10 +14790,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     result = result * 31 + Kotlin.hashCode(this.xWrapping) | 0;
     result = result * 31 + Kotlin.hashCode(this.yWrapping) | 0;
     result = result * 31 + Kotlin.hashCode(this.anisotropy) | 0;
+    result = result * 31 + Kotlin.hashCode(this.target) | 0;
     return result;
   };
   TextureProps.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.id, other.id) && Kotlin.equals(this.minFilter, other.minFilter) && Kotlin.equals(this.magFilter, other.magFilter) && Kotlin.equals(this.xWrapping, other.xWrapping) && Kotlin.equals(this.yWrapping, other.yWrapping) && Kotlin.equals(this.anisotropy, other.anisotropy)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.id, other.id) && Kotlin.equals(this.minFilter, other.minFilter) && Kotlin.equals(this.magFilter, other.magFilter) && Kotlin.equals(this.xWrapping, other.xWrapping) && Kotlin.equals(this.yWrapping, other.yWrapping) && Kotlin.equals(this.anisotropy, other.anisotropy) && Kotlin.equals(this.target, other.target)))));
   };
   function TextureData() {
     this.isAvailable_kzjj4d$_0 = false;
@@ -13540,22 +14911,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'Texture',
     interfaces: [GlObject]
   };
-  function assetTexture(assetPath, ctx, delayLoading) {
-    if (delayLoading === void 0)
-      delayLoading = true;
-    return assetTexture_0(defaultProps(assetPath), ctx, delayLoading);
-  }
-  function assetTexture$lambda(closure$delayLoading, closure$ctx, closure$props) {
-    return function ($receiver, it) {
-      $receiver.delayLoading = closure$delayLoading;
-      return closure$ctx.assetMgr.loadTextureAsset_61zpoe$(closure$props.id);
-    };
-  }
-  function assetTexture_0(props, ctx, delayLoading) {
-    if (delayLoading === void 0)
-      delayLoading = true;
-    return new Texture(props, assetTexture$lambda(delayLoading, ctx, props));
-  }
   function TextureManager() {
     SharedResManager.call(this);
     this.maxTextureLoadsPerFrame = 5;
@@ -13619,9 +14974,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     glActiveTexture(GL_TEXTURE0 + unit | 0);
   };
   TextureManager.prototype.bindToActiveTexUnit_0 = function (texRes) {
-    var tmp$;
+    var tmp$, tmp$_0;
     (tmp$ = this.boundTextures_0[this.activeTexUnit_0]) != null ? (tmp$.texUnit = -1) : null;
-    glBindTexture(GL_TEXTURE_2D, texRes);
+    var target = (tmp$_0 = texRes != null ? texRes.target : null) != null ? tmp$_0 : GL_TEXTURE_2D;
+    glBindTexture(target, texRes);
     texRes != null ? (texRes.texUnit = this.activeTexUnit_0) : null;
     this.boundTextures_0[this.activeTexUnit_0] = texRes;
   };
@@ -13650,7 +15006,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
   };
   TextureManager.prototype.createResource_pl4ufq$ = function (key, ctx) {
-    var texRes = TextureResource$Companion_getInstance().create_9khcnx$(GL_TEXTURE_2D, key, ctx);
+    var texRes = TextureResource$Companion_getInstance().create_9khcnx$(key.target, key, ctx);
     this.bindToActiveTexUnit_0(texRes);
     return texRes;
   };
@@ -13948,6 +15304,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   };
+  BoundingBox.prototype.batchUpdate_xanadp$ = defineInlineFunction('kool.de.fabmax.kool.util.BoundingBox.batchUpdate_xanadp$', function (block) {
+    this.batchUpdate = true;
+    block(this);
+    this.batchUpdate = false;
+  });
   BoundingBox.prototype.isEqual_ea4od8$ = function (other) {
     return this.isEmpty === other.isEmpty && this.min.isEqual_czzhiu$(other.min) && this.max.isEqual_czzhiu$(other.max);
   };
@@ -14098,7 +15459,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tzmin;
     var tzmax;
     if (this.isEmpty) {
-      return kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
+      return kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     }
     if (this.isIncluding_czzhiu$(ray.origin)) {
       return 0.0;
@@ -14122,7 +15483,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       tymax = (this.min.y - ray.origin.y) * div;
     }
     if (tmin > tymax || tymin > tmax) {
-      return kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
+      return kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     }
     if (tymin > tmin) {
       tmin = tymin;
@@ -14140,7 +15501,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       tzmax = (this.min.z - ray.origin.z) * div;
     }
     if (tmin > tzmax || tzmin > tmax) {
-      return kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
+      return kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     }
     if (tzmin > tmin) {
       tmin = tzmin;
@@ -14155,16 +15516,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return dist / ray.direction.sqrLength();
     }
      else {
-      return kotlin_js_internal_FloatCompanionObject.POSITIVE_INFINITY;
+      return kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     }
   };
   BoundingBox.prototype.toString = function () {
+    var tmp$;
     if (this.isEmpty) {
-      return '[empty]';
+      tmp$ = '[empty]';
     }
      else {
-      return '[min=' + this.min + ', max=' + this.max + ']';
+      tmp$ = '[min=' + this.min + ', max=' + this.max + ']';
     }
+    return tmp$;
   };
   BoundingBox.$metadata$ = {
     kind: Kind_CLASS,
@@ -14287,6 +15650,268 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.DARK_CYAN = new Color(0.0, 0.5, 0.5, 1.0);
     this.DARK_MAGENTA = new Color(0.5, 0.0, 0.5, 1.0);
     this.DARK_ORANGE = new Color(0.5, 0.25, 0.0, 1.0);
+    this.MD_RED_50 = color('FFEBEE');
+    this.MD_RED_100 = color('FFCDD2');
+    this.MD_RED_200 = color('EF9A9A');
+    this.MD_RED_300 = color('E57373');
+    this.MD_RED_400 = color('EF5350');
+    this.MD_RED_500 = color('F44336');
+    this.MD_RED_600 = color('E53935');
+    this.MD_RED_700 = color('D32F2F');
+    this.MD_RED_800 = color('C62828');
+    this.MD_RED_900 = color('B71C1C');
+    this.MD_RED_A100 = color('FF8A80');
+    this.MD_RED_A200 = color('FF5252');
+    this.MD_RED_A400 = color('FF1744');
+    this.MD_RED_A700 = color('D50000');
+    this.MD_RED = this.MD_RED_500;
+    this.MD_PINK_50 = color('FCE4EC');
+    this.MD_PINK_100 = color('F8BBD0');
+    this.MD_PINK_200 = color('F48FB1');
+    this.MD_PINK_300 = color('F06292');
+    this.MD_PINK_400 = color('EC407A');
+    this.MD_PINK_500 = color('E91E63');
+    this.MD_PINK_600 = color('D81B60');
+    this.MD_PINK_700 = color('C2185B');
+    this.MD_PINK_800 = color('AD1457');
+    this.MD_PINK_900 = color('880E4F');
+    this.MD_PINK_A100 = color('FF80AB');
+    this.MD_PINK_A200 = color('FF4081');
+    this.MD_PINK_A400 = color('F50057');
+    this.MD_PINK_A700 = color('C51162');
+    this.MD_PINK = this.MD_PINK_500;
+    this.MD_PURPLE_50 = color('F3E5F5');
+    this.MD_PURPLE_100 = color('E1BEE7');
+    this.MD_PURPLE_200 = color('CE93D8');
+    this.MD_PURPLE_300 = color('BA68C8');
+    this.MD_PURPLE_400 = color('AB47BC');
+    this.MD_PURPLE_500 = color('9C27B0');
+    this.MD_PURPLE_600 = color('8E24AA');
+    this.MD_PURPLE_700 = color('7B1FA2');
+    this.MD_PURPLE_800 = color('6A1B9A');
+    this.MD_PURPLE_900 = color('4A148C');
+    this.MD_PURPLE_A100 = color('EA80FC');
+    this.MD_PURPLE_A200 = color('E040FB');
+    this.MD_PURPLE_A400 = color('D500F9');
+    this.MD_PURPLE_A700 = color('AA00FF');
+    this.MD_PURPLE = this.MD_PURPLE_500;
+    this.MD_DEEP_PURPLE_50 = color('EDE7F6');
+    this.MD_DEEP_PURPLE_100 = color('D1C4E9');
+    this.MD_DEEP_PURPLE_200 = color('B39DDB');
+    this.MD_DEEP_PURPLE_300 = color('9575CD');
+    this.MD_DEEP_PURPLE_400 = color('7E57C2');
+    this.MD_DEEP_PURPLE_500 = color('673AB7');
+    this.MD_DEEP_PURPLE_600 = color('5E35B1');
+    this.MD_DEEP_PURPLE_700 = color('512DA8');
+    this.MD_DEEP_PURPLE_800 = color('4527A0');
+    this.MD_DEEP_PURPLE_900 = color('311B92');
+    this.MD_DEEP_PURPLE_A100 = color('B388FF');
+    this.MD_DEEP_PURPLE_A200 = color('7C4DFF');
+    this.MD_DEEP_PURPLE_A400 = color('651FFF');
+    this.MD_DEEP_PURPLE_A700 = color('6200EA');
+    this.MD_DEEP_PURPLE = this.MD_DEEP_PURPLE_500;
+    this.MD_INDIGO_50 = color('E8EAF6');
+    this.MD_INDIGO_100 = color('C5CAE9');
+    this.MD_INDIGO_200 = color('9FA8DA');
+    this.MD_INDIGO_300 = color('7986CB');
+    this.MD_INDIGO_400 = color('5C6BC0');
+    this.MD_INDIGO_500 = color('3F51B5');
+    this.MD_INDIGO_600 = color('3949AB');
+    this.MD_INDIGO_700 = color('303F9F');
+    this.MD_INDIGO_800 = color('283593');
+    this.MD_INDIGO_900 = color('1A237E');
+    this.MD_INDIGO_A100 = color('8C9EFF');
+    this.MD_INDIGO_A200 = color('536DFE');
+    this.MD_INDIGO_A400 = color('3D5AFE');
+    this.MD_INDIGO_A700 = color('304FFE');
+    this.MD_INDIGO = this.MD_INDIGO_500;
+    this.MD_BLUE_50 = color('E3F2FD');
+    this.MD_BLUE_100 = color('BBDEFB');
+    this.MD_BLUE_200 = color('90CAF9');
+    this.MD_BLUE_300 = color('64B5F6');
+    this.MD_BLUE_400 = color('42A5F5');
+    this.MD_BLUE_500 = color('2196F3');
+    this.MD_BLUE_600 = color('1E88E5');
+    this.MD_BLUE_700 = color('1976D2');
+    this.MD_BLUE_800 = color('1565C0');
+    this.MD_BLUE_900 = color('0D47A1');
+    this.MD_BLUE_A100 = color('82B1FF');
+    this.MD_BLUE_A200 = color('448AFF');
+    this.MD_BLUE_A400 = color('2979FF');
+    this.MD_BLUE_A700 = color('2962FF');
+    this.MD_BLUE = this.MD_BLUE_500;
+    this.MD_LIGHT_BLUE_50 = color('E1F5FE');
+    this.MD_LIGHT_BLUE_100 = color('B3E5FC');
+    this.MD_LIGHT_BLUE_200 = color('81D4FA');
+    this.MD_LIGHT_BLUE_300 = color('4FC3F7');
+    this.MD_LIGHT_BLUE_400 = color('29B6F6');
+    this.MD_LIGHT_BLUE_500 = color('03A9F4');
+    this.MD_LIGHT_BLUE_600 = color('039BE5');
+    this.MD_LIGHT_BLUE_700 = color('0288D1');
+    this.MD_LIGHT_BLUE_800 = color('0277BD');
+    this.MD_LIGHT_BLUE_900 = color('01579B');
+    this.MD_LIGHT_BLUE_A100 = color('80D8FF');
+    this.MD_LIGHT_BLUE_A200 = color('40C4FF');
+    this.MD_LIGHT_BLUE_A400 = color('00B0FF');
+    this.MD_LIGHT_BLUE_A700 = color('0091EA');
+    this.MD_LIGHT_BLUE = this.MD_LIGHT_BLUE_500;
+    this.MD_CYAN_50 = color('E0F7FA');
+    this.MD_CYAN_100 = color('B2EBF2');
+    this.MD_CYAN_200 = color('80DEEA');
+    this.MD_CYAN_300 = color('4DD0E1');
+    this.MD_CYAN_400 = color('26C6DA');
+    this.MD_CYAN_500 = color('00BCD4');
+    this.MD_CYAN_600 = color('00ACC1');
+    this.MD_CYAN_700 = color('0097A7');
+    this.MD_CYAN_800 = color('00838F');
+    this.MD_CYAN_900 = color('006064');
+    this.MD_CYAN_A100 = color('84FFFF');
+    this.MD_CYAN_A200 = color('18FFFF');
+    this.MD_CYAN_A400 = color('00E5FF');
+    this.MD_CYAN_A700 = color('00B8D4');
+    this.MD_CYAN = this.MD_CYAN_500;
+    this.MD_TEAL_50 = color('E0F2F1');
+    this.MD_TEAL_100 = color('B2DFDB');
+    this.MD_TEAL_200 = color('80CBC4');
+    this.MD_TEAL_300 = color('4DB6AC');
+    this.MD_TEAL_400 = color('26A69A');
+    this.MD_TEAL_500 = color('009688');
+    this.MD_TEAL_600 = color('00897B');
+    this.MD_TEAL_700 = color('00796B');
+    this.MD_TEAL_800 = color('00695C');
+    this.MD_TEAL_900 = color('004D40');
+    this.MD_TEAL_A100 = color('A7FFEB');
+    this.MD_TEAL_A200 = color('64FFDA');
+    this.MD_TEAL_A400 = color('1DE9B6');
+    this.MD_TEAL_A700 = color('00BFA5');
+    this.MD_TEAL = this.MD_TEAL_500;
+    this.MD_GREEN_50 = color('E8F5E9');
+    this.MD_GREEN_100 = color('C8E6C9');
+    this.MD_GREEN_200 = color('A5D6A7');
+    this.MD_GREEN_300 = color('81C784');
+    this.MD_GREEN_400 = color('66BB6A');
+    this.MD_GREEN_500 = color('4CAF50');
+    this.MD_GREEN_600 = color('43A047');
+    this.MD_GREEN_700 = color('388E3C');
+    this.MD_GREEN_800 = color('2E7D32');
+    this.MD_GREEN_900 = color('1B5E20');
+    this.MD_GREEN_A100 = color('B9F6CA');
+    this.MD_GREEN_A200 = color('69F0AE');
+    this.MD_GREEN_A400 = color('00E676');
+    this.MD_GREEN_A700 = color('00C853');
+    this.MD_GREEN = this.MD_GREEN_500;
+    this.MD_LIGHT_GREEN_50 = color('F1F8E9');
+    this.MD_LIGHT_GREEN_100 = color('DCEDC8');
+    this.MD_LIGHT_GREEN_200 = color('C5E1A5');
+    this.MD_LIGHT_GREEN_300 = color('AED581');
+    this.MD_LIGHT_GREEN_400 = color('9CCC65');
+    this.MD_LIGHT_GREEN_500 = color('8BC34A');
+    this.MD_LIGHT_GREEN_600 = color('7CB342');
+    this.MD_LIGHT_GREEN_700 = color('689F38');
+    this.MD_LIGHT_GREEN_800 = color('558B2F');
+    this.MD_LIGHT_GREEN_900 = color('33691E');
+    this.MD_LIGHT_GREEN_A100 = color('CCFF90');
+    this.MD_LIGHT_GREEN_A200 = color('B2FF59');
+    this.MD_LIGHT_GREEN_A400 = color('76FF03');
+    this.MD_LIGHT_GREEN_A700 = color('64DD17');
+    this.MD_LIGHT_GREEN = this.MD_LIGHT_GREEN_500;
+    this.MD_LIME_50 = color('F9FBE7');
+    this.MD_LIME_100 = color('F0F4C3');
+    this.MD_LIME_200 = color('E6EE9C');
+    this.MD_LIME_300 = color('DCE775');
+    this.MD_LIME_400 = color('D4E157');
+    this.MD_LIME_500 = color('CDDC39');
+    this.MD_LIME_600 = color('C0CA33');
+    this.MD_LIME_700 = color('AFB42B');
+    this.MD_LIME_800 = color('9E9D24');
+    this.MD_LIME_900 = color('827717');
+    this.MD_LIME_A100 = color('F4FF81');
+    this.MD_LIME_A200 = color('EEFF41');
+    this.MD_LIME_A400 = color('C6FF00');
+    this.MD_LIME_A700 = color('AEEA00');
+    this.MD_LIME = this.MD_LIME_500;
+    this.MD_YELLOW_50 = color('FFFDE7');
+    this.MD_YELLOW_100 = color('FFF9C4');
+    this.MD_YELLOW_200 = color('FFF59D');
+    this.MD_YELLOW_300 = color('FFF176');
+    this.MD_YELLOW_400 = color('FFEE58');
+    this.MD_YELLOW_500 = color('FFEB3B');
+    this.MD_YELLOW_600 = color('FDD835');
+    this.MD_YELLOW_700 = color('FBC02D');
+    this.MD_YELLOW_800 = color('F9A825');
+    this.MD_YELLOW_900 = color('F57F17');
+    this.MD_YELLOW_A100 = color('FFFF8D');
+    this.MD_YELLOW_A200 = color('FFFF00');
+    this.MD_YELLOW_A400 = color('FFEA00');
+    this.MD_YELLOW_A700 = color('FFD600');
+    this.MD_YELLOW = this.MD_YELLOW_500;
+    this.MD_AMBER_50 = color('FFF8E1');
+    this.MD_AMBER_100 = color('FFECB3');
+    this.MD_AMBER_200 = color('FFE082');
+    this.MD_AMBER_300 = color('FFD54F');
+    this.MD_AMBER_400 = color('FFCA28');
+    this.MD_AMBER_500 = color('FFC107');
+    this.MD_AMBER_600 = color('FFB300');
+    this.MD_AMBER_700 = color('FFA000');
+    this.MD_AMBER_800 = color('FF8F00');
+    this.MD_AMBER_900 = color('FF6F00');
+    this.MD_AMBER_A100 = color('FFE57F');
+    this.MD_AMBER_A200 = color('FFD740');
+    this.MD_AMBER_A400 = color('FFC400');
+    this.MD_AMBER_A700 = color('FFAB00');
+    this.MD_AMBER = this.MD_AMBER_500;
+    this.MD_ORANGE_50 = color('FFF3E0');
+    this.MD_ORANGE_100 = color('FFE0B2');
+    this.MD_ORANGE_200 = color('FFCC80');
+    this.MD_ORANGE_300 = color('FFB74D');
+    this.MD_ORANGE_400 = color('FFA726');
+    this.MD_ORANGE_500 = color('FF9800');
+    this.MD_ORANGE_600 = color('FB8C00');
+    this.MD_ORANGE_700 = color('F57C00');
+    this.MD_ORANGE_800 = color('EF6C00');
+    this.MD_ORANGE_900 = color('E65100');
+    this.MD_ORANGE_A100 = color('FFD180');
+    this.MD_ORANGE_A200 = color('FFAB40');
+    this.MD_ORANGE_A400 = color('FF9100');
+    this.MD_ORANGE_A700 = color('FF6D00');
+    this.MD_ORANGE = this.MD_ORANGE_500;
+    this.MD_DEEP_ORANGE_50 = color('FBE9E7');
+    this.MD_DEEP_ORANGE_100 = color('FFCCBC');
+    this.MD_DEEP_ORANGE_200 = color('FFAB91');
+    this.MD_DEEP_ORANGE_300 = color('FF8A65');
+    this.MD_DEEP_ORANGE_400 = color('FF7043');
+    this.MD_DEEP_ORANGE_500 = color('FF5722');
+    this.MD_DEEP_ORANGE_600 = color('F4511E');
+    this.MD_DEEP_ORANGE_700 = color('E64A19');
+    this.MD_DEEP_ORANGE_800 = color('D84315');
+    this.MD_DEEP_ORANGE_900 = color('BF360C');
+    this.MD_DEEP_ORANGE_A100 = color('FF9E80');
+    this.MD_DEEP_ORANGE_A200 = color('FF6E40');
+    this.MD_DEEP_ORANGE_A400 = color('FF3D00');
+    this.MD_DEEP_ORANGE_A700 = color('DD2C00');
+    this.MD_DEEP_ORANGE = this.MD_DEEP_ORANGE_500;
+    this.MD_BROWN_50 = color('EFEBE9');
+    this.MD_BROWN_100 = color('D7CCC8');
+    this.MD_BROWN_200 = color('BCAAA4');
+    this.MD_BROWN_300 = color('A1887F');
+    this.MD_BROWN_400 = color('8D6E63');
+    this.MD_BROWN_500 = color('795548');
+    this.MD_BROWN_600 = color('6D4C41');
+    this.MD_BROWN_700 = color('5D4037');
+    this.MD_BROWN_800 = color('4E342E');
+    this.MD_BROWN_900 = color('3E2723');
+    this.MD_BROWN = this.MD_BROWN_500;
+    this.MD_GREY_50 = color('FAFAFA');
+    this.MD_GREY_100 = color('F5F5F5');
+    this.MD_GREY_200 = color('EEEEEE');
+    this.MD_GREY_300 = color('E0E0E0');
+    this.MD_GREY_400 = color('BDBDBD');
+    this.MD_GREY_500 = color('9E9E9E');
+    this.MD_GREY_600 = color('757575');
+    this.MD_GREY_700 = color('616161');
+    this.MD_GREY_800 = color('424242');
+    this.MD_GREY_900 = color('212121');
+    this.MD_GREY = this.MD_GREY_500;
   }
   Color$Companion.prototype.fromHsv_7b5o5w$ = function (h, s, v, a) {
     var color = MutableColor_init();
@@ -14739,7 +16364,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.text = '';
       $receiver.font.setCustom_11rb$(UiTheme$Companion_getInstance().DARK_SIMPLE.standardFont_oei9ky$($receiver.dpi, closure$ctx));
       $receiver.textColor.setCustom_11rb$($receiver.root.theme.accentColor);
-      $receiver.onRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda($receiver));
+      $receiver.onPreRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda($receiver));
       return Unit;
     };
   }
@@ -14765,7 +16390,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.layoutSpec.setSize_4ujscr$(dps(closure$width, true), dps(18.0, true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
-      $receiver.onRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_0($receiver));
+      $receiver.onPreRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_0($receiver));
       return Unit;
     };
   }
@@ -14787,7 +16412,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var lastWndW = {v: -1};
       var lastWndH = {v: -1};
-      $receiver.onRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_1(lastWndW, lastWndH, $receiver));
+      $receiver.onPreRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_1(lastWndW, lastWndH, $receiver));
       return Unit;
     };
   }
@@ -14821,7 +16446,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       $receiver.text = 'Up: 00:00.00';
       var updateT = {v: 1.0};
-      $receiver.onRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_2(updateT, $receiver));
+      $receiver.onPreRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_2(updateT, $receiver));
       return Unit;
     };
   }
@@ -14845,7 +16470,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
       var lastMem = {v: -1.0};
-      $receiver.onRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_3(last, lastMem, $receiver));
+      $receiver.onPreRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_3(last, lastMem, $receiver));
       return Unit;
     };
   }
@@ -14869,7 +16494,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
       var lastMem = {v: -1.0};
-      $receiver.onRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_4(last, lastMem, $receiver));
+      $receiver.onPreRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_4(last, lastMem, $receiver));
       return Unit;
     };
   }
@@ -14890,7 +16515,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
-      $receiver.onRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_5(last, $receiver));
+      $receiver.onPreRender.add_11rb$(debugOverlay$lambda$lambda$lambda$lambda_5(last, $receiver));
       return Unit;
     };
   }
@@ -14910,7 +16535,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         $receiver.layoutSpec.setOrigin_4ujscr$(dps(-width, true), dps(0.0, true), zero());
       }
        else {
-        $receiver.layoutSpec.setOrigin_4ujscr$(dps(-width, true), dps(-150.0, true), zero());
+        $receiver.layoutSpec.setOrigin_4ujscr$(dps(-width, true), dps(-height, true), zero());
       }
       $receiver.layoutSpec.setSize_4ujscr$(dps(width, true), dps(height, true), zero());
       var $receiver_0 = new DeltaTGraph(this$);
@@ -15023,6 +16648,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     kind: Kind_CLASS,
     simpleName: 'DeltaTGraph',
     interfaces: [UiComponent]
+  };
+  function Disposable() {
+  }
+  Disposable.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'Disposable',
+    interfaces: []
   };
   function uiFont(family, sizeDp, uiDpi, ctx, style, chars) {
     if (style === void 0)
@@ -16150,12 +17782,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.lineWidth = 1.0;
   }
   LineMesh.prototype.addLine_b8opkg$ = function (point0, color0, point1, color1) {
-    this.meshData.isBatchUpdate = true;
-    var idx = this.meshData.addVertex_lv7vxo$(point0, null, color0, null);
-    this.meshData.addIndex_za3lpa$(idx);
-    idx = this.meshData.addVertex_lv7vxo$(point1, null, color1, null);
-    this.meshData.addIndex_za3lpa$(idx);
-    this.meshData.isBatchUpdate = false;
+    var idx0 = {v: 0};
+    var $this = this.meshData;
+    $this.isBatchUpdate = true;
+    idx0.v = $this.addVertex_lv7vxo$(point0, null, color0, null);
+    $this.addVertex_lv7vxo$(point1, null, color1, null);
+    $this.addIndex_za3lpa$(idx0.v);
+    $this.addIndex_za3lpa$(idx0.v + 1 | 0);
+    $this.isSyncRequired = true;
+    $this.isBatchUpdate = false;
+    return idx0.v;
   };
   LineMesh.prototype.render_aemszp$ = function (ctx) {
     ctx.pushAttributes();
@@ -17174,12 +18810,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   PerfTimer.prototype.takeMs = function () {
     return now() - this.tStart_0;
-  };
-  PerfTimer.prototype.print_61zpoe$ = function (message) {
-    println(message + ' ' + formatDouble(this.takeSecs(), 3) + ' secs');
-  };
-  PerfTimer.prototype.printMs_61zpoe$ = function (message) {
-    println(message + ' ' + formatDouble(this.takeMs(), 3) + ' ms');
   };
   PerfTimer.$metadata$ = {
     kind: Kind_CLASS,
@@ -18588,17 +20218,26 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MeshData_0.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.triangles, other.triangles) && Kotlin.equals(this.positions, other.positions) && Kotlin.equals(this.normals, other.normals) && Kotlin.equals(this.uvs, other.uvs) && Kotlin.equals(this.colors, other.colors) && Kotlin.equals(this.armature, other.armature) && Kotlin.equals(this.animations, other.animations)))));
   };
-  function ShadowMap(near, far, texSize) {
-    ShadowMap$Companion_getInstance();
+  function ShadowMap() {
+  }
+  ShadowMap.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'ShadowMap',
+    interfaces: [Disposable]
+  };
+  function SimpleShadowMap(near, far, texSize) {
+    SimpleShadowMap$Companion_getInstance();
     if (near === void 0)
       near = 0.0;
     if (far === void 0)
       far = 1.0;
     if (texSize === void 0)
-      texSize = 1024;
+      texSize = SimpleShadowMap$Companion_getInstance().defaultMapSize;
     this.near = near;
     this.far = far;
-    this.texSize = texSize;
+    this.texSize_0 = texSize;
+    this.numMaps_qs18qs$_0 = 1;
+    this.shadowMvp_y8c606$_0 = createFloat32Buffer(16);
     this.depthCam_0 = new OrthographicCamera();
     this.depthMvpMat_0 = new Mat4f();
     this.depthView_0 = new Mat4f();
@@ -18606,24 +20245,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.farPlane_0 = new FrustumPlane();
     this.bounds_0 = new BoundingBox();
     this.tmpVec4_0 = MutableVec4f_init();
-    this.fbo_0 = (new Framebuffer(this.texSize, this.texSize)).withDepth();
-    this.depthMvp = createFloat32Buffer(16);
-    this.clipSpaceFarZ_3g3t06$_0 = 0.0;
+    this.fbo_0 = (new Framebuffer(this.texSize_0, this.texSize_0)).withDepth();
+    this.clipSpaceFarZ_0 = 0.0;
   }
-  Object.defineProperty(ShadowMap.prototype, 'depthTexture', {
+  Object.defineProperty(SimpleShadowMap.prototype, 'numMaps', {
     get: function () {
-      return this.fbo_0.depthAttachment;
+      return this.numMaps_qs18qs$_0;
     }
   });
-  Object.defineProperty(ShadowMap.prototype, 'clipSpaceFarZ', {
+  Object.defineProperty(SimpleShadowMap.prototype, 'shadowMvp', {
     get: function () {
-      return this.clipSpaceFarZ_3g3t06$_0;
-    },
-    set: function (clipSpaceFarZ) {
-      this.clipSpaceFarZ_3g3t06$_0 = clipSpaceFarZ;
+      return this.shadowMvp_y8c606$_0;
     }
   });
-  ShadowMap.prototype.renderShadowMap_x4tdlw$ = function (nodeToRender, ctx) {
+  SimpleShadowMap.prototype.renderShadowMap_x4tdlw$ = function (nodeToRender, ctx) {
     var tmp$;
     if (!ctx.glCapabilities.depthTextures) {
       return;
@@ -18639,7 +20274,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.depthView_0.setLookAt_n440fu$(this.depthCam_0.position, this.depthCam_0.lookAt, this.depthCam_0.up);
     camera.computeFrustumPlane_jwr40o$(this.near, this.nearPlane_0);
     camera.computeFrustumPlane_jwr40o$(this.far, this.farPlane_0);
-    this.clipSpaceFarZ = camera.project_2gj7bz$(this.farPlane_0.upperLeft, this.tmpVec4_0).z;
+    this.clipSpaceFarZ_0 = camera.project_2gj7bz$(this.farPlane_0.upperLeft, this.tmpVec4_0).z;
     transform(this.depthView_0, this.nearPlane_0);
     transform(this.depthView_0, this.farPlane_0);
     setPlanes(this.bounds_0, this.nearPlane_0, this.farPlane_0);
@@ -18656,7 +20291,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ctx.mvpState.viewMatrix.setIdentity();
     ctx.mvpState.modelMatrix.setIdentity();
     this.depthCam_0.updateCamera_aemszp$(ctx);
-    ShadowMap$Companion_getInstance().BIAS_MATRIX_0.mul_93v2ma$(ctx.mvpState.mvpMatrix, this.depthMvpMat_0).toBuffer_he122g$(this.depthMvp);
+    SimpleShadowMap$Companion_getInstance().BIAS_MATRIX_0.mul_93v2ma$(ctx.mvpState.mvpMatrix, this.depthMvpMat_0).toBuffer_he122g$(this.shadowMvp);
     var prevRenderPass = ctx.renderPass;
     ctx.renderPass = RenderPass$SHADOW_getInstance();
     scene.camera = this.depthCam_0;
@@ -18667,59 +20302,88 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ctx.mvpState.update_aemszp$(ctx);
     this.fbo_0.unbind_aemszp$(ctx);
   };
-  ShadowMap.prototype.dispose_aemszp$ = function (ctx) {
-    this.fbo_0.delete_aemszp$(ctx);
+  SimpleShadowMap.prototype.dispose_aemszp$ = function (ctx) {
+    this.fbo_0.dispose_aemszp$(ctx);
   };
-  function ShadowMap$Companion() {
-    ShadowMap$Companion_instance = this;
+  SimpleShadowMap.prototype.getShadowMapSize_za3lpa$ = function (map) {
+    return this.texSize_0;
+  };
+  SimpleShadowMap.prototype.getShadowMap_za3lpa$ = function (map) {
+    return this.fbo_0.depthAttachment;
+  };
+  SimpleShadowMap.prototype.getClipSpaceFarZ_za3lpa$ = function (map) {
+    return this.clipSpaceFarZ_0;
+  };
+  function SimpleShadowMap$Companion() {
+    SimpleShadowMap$Companion_instance = this;
     this.BIAS_MATRIX_0 = new Mat4f();
+    this.defaultMapSize = 1024;
     this.BIAS_MATRIX_0.setIdentity();
     this.BIAS_MATRIX_0.translate_y2kzbl$(0.5, 0.5, 0.5);
     this.BIAS_MATRIX_0.scale_y2kzbl$(0.5, 0.5, 0.5);
   }
-  ShadowMap$Companion.$metadata$ = {
+  SimpleShadowMap$Companion.$metadata$ = {
     kind: Kind_OBJECT,
     simpleName: 'Companion',
     interfaces: []
   };
-  var ShadowMap$Companion_instance = null;
-  function ShadowMap$Companion_getInstance() {
-    if (ShadowMap$Companion_instance === null) {
-      new ShadowMap$Companion();
+  var SimpleShadowMap$Companion_instance = null;
+  function SimpleShadowMap$Companion_getInstance() {
+    if (SimpleShadowMap$Companion_instance === null) {
+      new SimpleShadowMap$Companion();
     }
-    return ShadowMap$Companion_instance;
+    return SimpleShadowMap$Companion_instance;
   }
-  ShadowMap.$metadata$ = {
+  SimpleShadowMap.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'ShadowMap',
-    interfaces: []
+    simpleName: 'SimpleShadowMap',
+    interfaces: [ShadowMap]
   };
   function CascadedShadowMap(subMaps) {
     CascadedShadowMap$Companion_getInstance();
-    this.subMaps = subMaps;
-    this.shadowMvp = createFloat32Buffer(16 * this.subMaps.length | 0);
+    this.subMaps_0 = subMaps;
+    this.shadowMvp_5xyj6w$_0 = createFloat32Buffer(16 * this.subMaps_0.length | 0);
   }
+  Object.defineProperty(CascadedShadowMap.prototype, 'numMaps', {
+    get: function () {
+      return this.subMaps_0.length;
+    }
+  });
+  Object.defineProperty(CascadedShadowMap.prototype, 'shadowMvp', {
+    get: function () {
+      return this.shadowMvp_5xyj6w$_0;
+    }
+  });
   CascadedShadowMap.prototype.renderShadowMap_x4tdlw$ = function (nodeToRender, ctx) {
     var tmp$;
-    tmp$ = this.subMaps;
+    tmp$ = this.subMaps_0;
     for (var i = 0; i !== tmp$.length; ++i) {
-      this.subMaps[i].renderShadowMap_x4tdlw$(nodeToRender, ctx);
-      this.shadowMvp.put_axfmcw$(this.subMaps[i].depthMvp);
+      this.subMaps_0[i].renderShadowMap_x4tdlw$(nodeToRender, ctx);
+      this.shadowMvp.put_axfmcw$(this.subMaps_0[i].shadowMvp);
     }
     this.shadowMvp.flip();
   };
   CascadedShadowMap.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
-    tmp$ = this.subMaps;
+    tmp$ = this.subMaps_0;
     for (var i = 0; i !== tmp$.length; ++i) {
-      this.subMaps[i].dispose_aemszp$(ctx);
+      this.subMaps_0[i].dispose_aemszp$(ctx);
     }
+  };
+  CascadedShadowMap.prototype.getShadowMapSize_za3lpa$ = function (map) {
+    return this.subMaps_0[map].getShadowMapSize_za3lpa$(0);
+  };
+  CascadedShadowMap.prototype.getShadowMap_za3lpa$ = function (map) {
+    return this.subMaps_0[map].getShadowMap_za3lpa$(0);
+  };
+  CascadedShadowMap.prototype.getClipSpaceFarZ_za3lpa$ = function (map) {
+    return this.subMaps_0[map].getClipSpaceFarZ_za3lpa$(0);
   };
   function CascadedShadowMap$Companion() {
     CascadedShadowMap$Companion_instance = this;
   }
   CascadedShadowMap$Companion.prototype.defaultCascadedShadowMap3 = function () {
-    var subMaps = [new ShadowMap(0.0, 0.1), new ShadowMap(0.1, 0.25), new ShadowMap(0.25, 1.0)];
+    var subMaps = [new SimpleShadowMap(0.0, 0.1), new SimpleShadowMap(0.1, 0.25), new SimpleShadowMap(0.25, 1.0)];
     return new CascadedShadowMap(subMaps);
   };
   CascadedShadowMap$Companion.$metadata$ = {
@@ -18737,7 +20401,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   CascadedShadowMap.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'CascadedShadowMap',
-    interfaces: []
+    interfaces: [ShadowMap]
   };
   function transform($receiver, plane) {
     $receiver.transform_w1lst9$(plane.upperLeft);
@@ -19097,6 +20761,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$util.createUint32Buffer_za3lpa$ = createUint32Buffer;
   package$util.createFloat32Buffer_za3lpa$ = createFloat32Buffer;
   package$kool.AssetManager = AssetManager;
+  package$kool.assetTexture_2gt2x8$ = assetTexture;
+  package$kool.assetTexture_513zl8$ = assetTexture_0;
   package$audio.LowPassFilter = LowPassFilter;
   package$audio.HighPassFilter = HighPassFilter;
   Object.defineProperty(MoodFilter, 'Companion', {
@@ -20745,6 +22411,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   KdTree.Node = KdTree$Node;
   package$math.KdTree = KdTree;
+  Object.defineProperty(Mat3f, 'Companion', {
+    get: Mat3f$Companion_getInstance
+  });
+  package$math.Mat3f = Mat3f;
   Object.defineProperty(Mat4f, 'Companion', {
     get: Mat4f$Companion_getInstance
   });
@@ -20761,6 +22431,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Object.defineProperty(package$math, 'RAD_2_DEG', {
     get: function () {
       return RAD_2_DEG;
+    }
+  });
+  Object.defineProperty(package$math, 'FLT_EPSILON', {
+    get: function () {
+      return FLT_EPSILON;
     }
   });
   package$math.toDeg_81szk$ = toDeg;
@@ -20834,6 +22509,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$math.MutableVec4f = MutableVec4f;
   package$kool.MemoryManager = MemoryManager;
   package$kool.MvpState = MvpState;
+  var package$physics = package$kool.physics || (package$kool.physics = {});
+  package$physics.Box_init = Box_init;
+  package$physics.Box = Box;
+  Object.defineProperty(BoxBoxCollision, 'Companion', {
+    get: BoxBoxCollision$Companion_getInstance
+  });
+  package$physics.BoxBoxCollision = BoxBoxCollision;
+  Object.defineProperty(BoxMesh, 'Companion', {
+    get: BoxMesh$Companion_getInstance
+  });
+  package$physics.BoxMesh = BoxMesh;
+  package$physics.CollisionWorld = CollisionWorld;
+  package$physics.ContactPoints = ContactPoints;
+  package$physics.ContactPoint = ContactPoint;
+  package$physics.RigidBody = RigidBody;
+  package$physics.staticBox_czzhiu$ = staticBox;
+  package$physics.staticBox_y2kzbl$ = staticBox_0;
+  package$physics.uniformMassBox_2qa7tb$ = uniformMassBox;
+  package$physics.uniformMassBox_7b5o5w$ = uniformMassBox_0;
   package$kool.formatFloat_vjorfl$ = formatFloat;
   var package$scene = package$kool.scene || (package$kool.scene = {});
   var package$animation = package$scene.animation || (package$scene.animation = {});
@@ -21123,8 +22817,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$kool.TextureData = TextureData;
   package$kool.BufferedTextureData = BufferedTextureData;
   package$kool.Texture = Texture;
-  package$kool.assetTexture_2gt2x8$ = assetTexture;
-  package$kool.assetTexture_513zl8$ = assetTexture_0;
   package$kool.TextureManager = TextureManager;
   Object.defineProperty(Animator, 'Companion', {
     get: Animator$Companion_getInstance
@@ -21158,6 +22850,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   package$util.ColorGradient = ColorGradient;
   package$util.debugOverlay_n8mrtu$ = debugOverlay;
+  package$util.Disposable = Disposable;
   package$util.uiFont_a4r08d$ = uiFont;
   package$util.fontShader_s2xzqe$ = fontShader;
   package$util.FontProps = FontProps;
@@ -21271,10 +22964,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: MeshData$$serializer_getInstance
   });
   package$serialization.MeshData = MeshData_0;
-  Object.defineProperty(ShadowMap, 'Companion', {
-    get: ShadowMap$Companion_getInstance
-  });
   package$util.ShadowMap = ShadowMap;
+  Object.defineProperty(SimpleShadowMap, 'Companion', {
+    get: SimpleShadowMap$Companion_getInstance
+  });
+  package$util.SimpleShadowMap = SimpleShadowMap;
   Object.defineProperty(CascadedShadowMap, 'Companion', {
     get: CascadedShadowMap$Companion_getInstance
   });
@@ -21303,8 +22997,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
   BlankComponentUi.prototype.createUi_aemszp$ = ComponentUi.prototype.createUi_aemszp$;
   BlankComponentUi.prototype.updateUi_aemszp$ = ComponentUi.prototype.updateUi_aemszp$;
-  BlankComponentUi.prototype.disposeUi_aemszp$ = ComponentUi.prototype.disposeUi_aemszp$;
   BlankComponentUi.prototype.onRender_aemszp$ = ComponentUi.prototype.onRender_aemszp$;
+  BlankComponentUi.prototype.dispose_aemszp$ = ComponentUi.prototype.dispose_aemszp$;
   SimpleComponentUi.prototype.onRender_aemszp$ = ComponentUi.prototype.onRender_aemszp$;
   BasicPointShader_init$ObjectLiteral.prototype.vsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.vsHeader_8slwmz$;
   BasicPointShader_init$ObjectLiteral.prototype.vsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.vsStart_jh5913$;
@@ -21661,6 +23355,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   GL_INVALID_FRAMEBUFFER_OPERATION = 1286;
   DEG_2_RAD = math.PI / 180.0;
   RAD_2_DEG = 180.0 / math.PI;
+  FLT_EPSILON = 1.1920929E-7;
   defaultRandomInstance = new Random(numberToInt(now()));
   slerpTmpA = MutableVec4f_init();
   slerpTmpB = MutableVec4f_init();

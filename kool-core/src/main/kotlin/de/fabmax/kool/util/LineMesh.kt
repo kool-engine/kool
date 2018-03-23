@@ -32,13 +32,15 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
     var isXray = false
     var lineWidth = 1f
 
-    fun addLine(point0: Vec3f, color0: Color, point1: Vec3f, color1: Color) {
+    fun addLine(point0: Vec3f, color0: Color, point1: Vec3f, color1: Color): Int {
+        var idx0 = 0
         meshData.batchUpdate {
-            var idx =  addVertex(point0, null, color0, null)
-            addIndex(idx)
-            idx =  addVertex(point1, null, color1, null)
-            addIndex(idx)
+            idx0 = addVertex(point0, null, color0, null)
+            addVertex(point1, null, color1, null)
+            addIndex(idx0)
+            addIndex(idx0 + 1)
         }
+        return idx0
     }
 
     override fun render(ctx: KoolContext) {

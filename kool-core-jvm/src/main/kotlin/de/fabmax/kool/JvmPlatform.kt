@@ -4,6 +4,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.Log
+import de.fabmax.kool.util.SimpleShadowMap
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import java.text.SimpleDateFormat
@@ -49,6 +50,8 @@ internal object DesktopImpl {
                 }
             }
         }
+
+        SimpleShadowMap.defaultMapSize = 2048
 
         // setup an error callback
         GLFWErrorCallback.createPrint(System.err).set()
