@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform
 
+import android.content.Context
 import android.util.Log
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.TextureData
@@ -8,14 +9,14 @@ import de.fabmax.kool.util.FontProps
 import kotlinx.coroutines.experimental.launch
 import java.io.ByteArrayOutputStream
 
-class AndroidAssetManager(val koolActivity: KoolActivity) : AssetManager() {
-    private val fontMapGenerator = FontMapGenerator(koolActivity, 1024, 1024)
+class AndroidAssetManager(val context: Context) : AssetManager() {
+    private val fontMapGenerator = FontMapGenerator(context, 1024, 1024)
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontMapGenerator.createCharMap(fontProps)
 
     override fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
         launch {
-            koolActivity.assets.open(assetPath)?.use {
+            this@AndroidAssetManager.context.assets.open(assetPath)?.use {
                 val t = System.nanoTime()
                 val data = ByteArrayOutputStream()
                 val buf = ByteArray(128 * 1024)
@@ -31,6 +32,6 @@ class AndroidAssetManager(val koolActivity: KoolActivity) : AssetManager() {
         }
     }
 
-    override fun loadTextureAsset(assetPath: String): TextureData = ImageTextureData(assetPath, koolActivity)
+    override fun loadTextureAsset(assetPath: String): TextureData = ImageTextureData(assetPath, context)
 
 }

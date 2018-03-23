@@ -65,7 +65,8 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
     private fun bindToActiveTexUnit(texRes: TextureResource?) {
         boundTextures[activeTexUnit]?.texUnit = -1
 
-        glBindTexture(GL_TEXTURE_2D, texRes)
+        val target = texRes?.target ?: GL_TEXTURE_2D
+        glBindTexture(target, texRes)
         texRes?.texUnit = activeTexUnit
         boundTextures[activeTexUnit] = texRes
     }
@@ -92,7 +93,7 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
     }
 
     override fun createResource(key: TextureProps, ctx: KoolContext): TextureResource {
-        val texRes = TextureResource.create(GL_TEXTURE_2D, key, ctx)
+        val texRes = TextureResource.create(key.target, key, ctx)
         bindToActiveTexUnit(texRes)
         return texRes
     }

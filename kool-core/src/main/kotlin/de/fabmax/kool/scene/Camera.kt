@@ -144,8 +144,8 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     var near = -10.0f
     var far = 10.0f
 
-    var clipToViewport = false
-    var keepAspectRatio = true
+    var isClipToViewport = false
+    var isKeepAspectRatio = true
 
     private val tmpNodeCenter = MutableVec3f()
     private val tmpNodeExtent = MutableVec3f()
@@ -165,13 +165,13 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     }
 
     override fun updateProjectionMatrix(ctx: KoolContext) {
-        if (clipToViewport) {
+        if (isClipToViewport) {
             left = 0f
             right = ctx.viewport.width.toFloat()
             bottom = 0f
             top = ctx.viewport.height.toFloat()
 
-        } else if (keepAspectRatio) {
+        } else if (isKeepAspectRatio) {
             val h = top - bottom
             val w = aspectRatio * h
             val xCenter = left + (right - left) * 0.5f

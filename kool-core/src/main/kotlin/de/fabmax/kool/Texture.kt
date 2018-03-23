@@ -17,7 +17,8 @@ data class TextureProps(
         val magFilter: Int,
         val xWrapping: Int,
         val yWrapping: Int,
-        val anisotropy: Int) {
+        val anisotropy: Int,
+        val target: Int = GL_TEXTURE_2D) {
 
     constructor(id: String, filter: Int, wrapping: Int) :
             this(id, minFilter(filter), magFilter(filter), wrapping, wrapping, 16)

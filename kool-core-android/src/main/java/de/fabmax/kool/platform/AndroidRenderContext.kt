@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.opengl.EGL14
@@ -7,6 +8,8 @@ import android.opengl.GLES11Ext
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
 import android.util.Log
+import android.view.MotionEvent
+import android.view.View
 import de.fabmax.kool.*
 import de.fabmax.kool.gl.*
 import javax.microedition.khronos.egl.EGL10
@@ -19,12 +22,12 @@ import javax.microedition.khronos.opengles.GL10
 /**
  * Android specific implementation of Kool's RenderContext
  */
-class AndroidRenderContext(private val koolActivity: KoolActivity) :
-        KoolContext(), GLSurfaceView.Renderer, GLSurfaceView.EGLContextFactory {
+class AndroidRenderContext(val context: Context, val glView: GLSurfaceView, val onKoolContextCreated: (AndroidRenderContext) -> Unit) :
+        KoolContext(), GLSurfaceView.Renderer, GLSurfaceView.EGLContextFactory, View.OnTouchListener {
 
     override var glCapabilities: GlCapabilities = GlCapabilities.UNKNOWN_CAPABILITIES
 
-    override val assetMgr = AndroidAssetManager(koolActivity)
+    override val assetMgr = AndroidAssetManager(context)
 
     override var windowWidth = 0
         private set
@@ -34,20 +37,47 @@ class AndroidRenderContext(private val koolActivity: KoolActivity) :
     private var isGLES30Context = false
 
     private var prevRenderTime = System.nanoTime()
+    private var isCreated = false
+
+    constructor(context: Context, onKoolContextCreated: (AndroidRenderContext) -> Unit) :
+            this(context, GLSurfaceView(context), onKoolContextCreated)
 
     init {
-        val dispMetrics = koolActivity.resources.displayMetrics
+        // install logging handler
+        de.fabmax.kool.util.Log.printer = { lvl, tag, message ->
+            var t = tag ?: "Kool"
+            if (t.length > 23) {
+                t = t.substring(0..22)
+            }
+            when (lvl) {
+                de.fabmax.kool.util.Log.Level.TRACE -> Log.d(t, message)
+                de.fabmax.kool.util.Log.Level.DEBUG -> Log.d(t, message)
+                de.fabmax.kool.util.Log.Level.INFO -> Log.i(t, message)
+                de.fabmax.kool.util.Log.Level.WARN -> Log.w(t, message)
+                de.fabmax.kool.util.Log.Level.ERROR -> Log.e(t, message)
+                else -> { }
+            }
+        }
+
+        // get screen resolution
+        val dispMetrics = context.resources.displayMetrics
         val scale = 0.66f
         screenDpi = (dispMetrics.xdpi + dispMetrics.ydpi) / 2 * scale
+
+        // setup GLSurfaceView
+        glView.setOnTouchListener(this)
+        glView.setEGLContextFactory(this)
+        glView.setRenderer(this)
+        glView.preserveEGLContextOnPause = true
     }
 
     //
-    // Functions overriden from KoolContext
+    // Functions overridden from KoolContext
     //
 
     override fun openUrl(url: String) {
         val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        koolActivity.startActivity(browserIntent)
+        context.startActivity(browserIntent)
     }
 
     override fun run() {
@@ -58,8 +88,16 @@ class AndroidRenderContext(private val koolActivity: KoolActivity) :
         // for now, we silently ignore this (if app is closing everything is deleted anyway...)
     }
 
+    fun onPause() {
+        glView.onPause()
+    }
+
+    fun onResume() {
+        glView.onResume()
+    }
+
     //
-    // Functions overriden from GLSurfaceView.EGLContextFactory
+    // Functions overridden from GLSurfaceView.EGLContextFactory
     //
 
     override fun destroyContext(egl: EGL10, display: EGLDisplay, context: EGLContext) {
@@ -92,7 +130,7 @@ class AndroidRenderContext(private val koolActivity: KoolActivity) :
     }
 
     //
-    // Functions overriden from GLSurfaceView.Renderer
+    // Functions overridden from GLSurfaceView.Renderer
     //
 
     override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
@@ -142,12 +180,18 @@ class AndroidRenderContext(private val koolActivity: KoolActivity) :
                     anisotropicTexFilterInfo = anisotropicTexFilterInfo)
         }
 
-        koolActivity.onKoolContextCreated(this)
+        // don't call onKoolContextCreated() yet, we first wan't to know how big our viewport is
+        //onKoolContextCreated(this)
     }
 
     override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
         windowWidth = width
         windowHeight = height
+
+        if (!isCreated) {
+            isCreated = true
+            onKoolContextCreated(this)
+        }
     }
 
     override fun onDrawFrame(gl: GL10) {
@@ -158,6 +202,34 @@ class AndroidRenderContext(private val koolActivity: KoolActivity) :
 
         // render engine content
         render(dt)
+    }
+
+    //
+    // View.OnTouchListener
+    //
+
+    override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
+        val action = motionEvent.actionMasked
+
+        for (i in 0 until motionEvent.pointerCount) {
+            val pointerId = motionEvent.getPointerId(i)
+            val x = motionEvent.getX(i)
+            val y = motionEvent.getY(i)
+
+            val ptrAction = when {
+                action == MotionEvent.ACTION_POINTER_DOWN && i == motionEvent.actionIndex -> MotionEvent.ACTION_DOWN
+                action == MotionEvent.ACTION_POINTER_UP && i == motionEvent.actionIndex -> MotionEvent.ACTION_UP
+                else -> action
+            }
+
+            when (ptrAction) {
+                MotionEvent.ACTION_DOWN -> inputMgr.handleTouchStart(pointerId, x, y)
+                MotionEvent.ACTION_UP -> inputMgr.handleTouchEnd(pointerId)
+                MotionEvent.ACTION_CANCEL -> inputMgr.handleTouchCancel(pointerId)
+                else -> inputMgr.handleTouchMove(pointerId, x, y)
+            }
+        }
+        return true
     }
 
     companion object {
