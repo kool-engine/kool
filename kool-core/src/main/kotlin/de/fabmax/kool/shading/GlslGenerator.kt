@@ -156,7 +156,7 @@ open class GlslGenerator {
             text.append("$vsOut vec4 $V_COLOR;\n")
         }
 
-        if (shaderProps.numBones > 0) {
+        if (shaderProps.numBones > 0 && ctx.glCapabilities.shaderIntAttribs) {
             text.append("$vsIn ivec4 ${Armature.BONE_INDICES.name};\n")
             text.append("$vsIn vec4 ${Armature.BONE_WEIGHTS.name};\n")
             text.append("uniform mat4 $U_BONES[${shaderProps.numBones}];\n")
@@ -192,7 +192,7 @@ open class GlslGenerator {
 
         injectors.forEach { it.vsBeforeProj(shaderProps, text, ctx) }
 
-        if (shaderProps.numBones > 0) {
+        if (shaderProps.numBones > 0 && ctx.glCapabilities.shaderIntAttribs) {
             text.append("mat4 boneT = $U_BONES[${Armature.BONE_INDICES}[0]] * ${Armature.BONE_WEIGHTS}[0];\n")
             text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[1]] * ${Armature.BONE_WEIGHTS}[1];\n")
             text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[2]] * ${Armature.BONE_WEIGHTS}[2];\n")

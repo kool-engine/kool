@@ -541,11 +541,28 @@ open class Mat4f {
         this[3, col] = value.w
     }
 
-    fun getColVec(col: Int, result: MutableVec4f) {
+    fun getColVec(col: Int, result: MutableVec4f): MutableVec4f {
         result.x = this[0, col]
         result.y = this[1, col]
         result.z = this[2, col]
         result.w = this[3, col]
+        return result
+    }
+
+    fun getOrientation(result: Mat3f): Mat3f {
+        result[0, 0] = this[0, 0]
+        result[0, 1] = this[0, 1]
+        result[0, 2] = this[0, 2]
+
+        result[1, 0] = this[1, 0]
+        result[1, 1] = this[1, 1]
+        result[1, 2] = this[1, 2]
+
+        result[2, 0] = this[2, 0]
+        result[2, 1] = this[2, 1]
+        result[2, 2] = this[2, 2]
+
+        return result
     }
 
     fun toBuffer(buffer: Float32Buffer): Float32Buffer {

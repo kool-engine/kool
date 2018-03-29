@@ -103,7 +103,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         if (props.isNormalMapped) {
             attributes.add(Attribute.TANGENTS)
         }
-        if (props.numBones > 0) {
+        if (props.numBones > 0 && ctx.glCapabilities.shaderIntAttribs) {
             attributes.add(Armature.BONE_INDICES)
             attributes.add(Armature.BONE_WEIGHTS)
         }

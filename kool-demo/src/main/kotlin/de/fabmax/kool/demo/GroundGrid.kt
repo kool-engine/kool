@@ -10,7 +10,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.lineMesh
 
-fun makeGroundGrid(cells: Int, shadows: ShadowMap?) = group {
+fun makeGroundGrid(cells: Int, shadows: ShadowMap? = null, y: Float = 0f) = group {
     val groundExt = cells / 2
 
     +colorMesh {
@@ -20,7 +20,7 @@ fun makeGroundGrid(cells: Int, shadows: ShadowMap?) = group {
                 rotate(-90f, Vec3f.X_AXIS)
                 color = Color.LIGHT_GRAY.withAlpha(0.2f)
                 rect {
-                    origin.set(-groundExt.toFloat(), -groundExt.toFloat(), 0f)
+                    origin.set(-groundExt.toFloat(), -groundExt.toFloat(), y)
                     width = groundExt * 2f
                     height = groundExt * 2f
                 }
@@ -37,10 +37,10 @@ fun makeGroundGrid(cells: Int, shadows: ShadowMap?) = group {
         isXray = true
         for (i in -groundExt..groundExt) {
             val color = Color.LIGHT_GRAY.withAlpha(0.5f)
-            addLine(Vec3f(i.toFloat(), 0f, -groundExt.toFloat()), color,
-                    Vec3f(i.toFloat(), 0f, groundExt.toFloat()), color)
-            addLine(Vec3f(-groundExt.toFloat(), 0f, i.toFloat()), color,
-                    Vec3f(groundExt.toFloat(), 0f, i.toFloat()), color)
+            addLine(Vec3f(i.toFloat(), y, -groundExt.toFloat()), color,
+                    Vec3f(i.toFloat(), y, groundExt.toFloat()), color)
+            addLine(Vec3f(-groundExt.toFloat(), y, i.toFloat()), color,
+                    Vec3f(groundExt.toFloat(), y, i.toFloat()), color)
         }
         shader = basicShader {
             lightModel = LightModel.NO_LIGHTING

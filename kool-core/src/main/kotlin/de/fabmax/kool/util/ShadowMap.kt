@@ -23,7 +23,7 @@ interface ShadowMap : Disposable {
     fun getClipSpaceFarZ(map: Int): Float
 }
 
-class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val texSize: Int = 1024) : ShadowMap {
+class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val texSize: Int = defaultMapSize) : ShadowMap {
     override val numMaps = 1
     override val shadowMvp = createFloat32Buffer(16)
 
@@ -107,6 +107,8 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val tex
 
     companion object {
         private val BIAS_MATRIX = Mat4f()
+
+        var defaultMapSize = 1024
 
         init {
             BIAS_MATRIX.setIdentity()
