@@ -23,7 +23,7 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         }
     }
 
-    fun bindTexture(texture: Texture, ctx: KoolContext): Int {
+    fun bindTexture(texture: Texture, ctx: KoolContext, makeActive: Boolean = false): Int {
         if (!texture.isValid) {
             nextTexUnit()
             texture.onCreate(ctx)
@@ -33,7 +33,10 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         if (texRes.texUnit < 0) {
             nextTexUnit()
             bindToActiveTexUnit(texture.res)
+        } else if (makeActive) {
+            activateTexUnit(texRes.texUnit)
         }
+
         // upload texture data to GPU if that hasn't happened yet
         if (!texRes.isLoaded) {
             loadTexture(texture, ctx)
