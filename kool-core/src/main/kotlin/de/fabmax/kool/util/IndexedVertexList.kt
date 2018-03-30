@@ -240,103 +240,63 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         }
 
         inner class Vec2fView(private val attribOffset: Int) : MutableVec2f() {
-            override var x: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset] = value }
+            override operator fun get(i: Int): Float {
+                return if (attribOffset >= 0 && i in 0..1) {
+                    dataF[offsetF + attribOffset + i]
+                } else {
+                    0f
                 }
-            override var y: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 1] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 1] = value }
+            }
+            override operator fun set(i: Int, v: Float) {
+                if (attribOffset >= 0 && i in 0..1) {
+                    dataF[offsetF + attribOffset + i] = v
                 }
+            }
         }
 
         inner class Vec3fView(val attribOffset: Int) : MutableVec3f() {
-            override var x: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset] = value }
+            override operator fun get(i: Int): Float {
+                return if (attribOffset >= 0 && i in 0..2) {
+                    dataF[offsetF + attribOffset + i]
+                } else {
+                    0f
                 }
-            override var y: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 1] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 1] = value }
+            }
+            override operator fun set(i: Int, v: Float) {
+                if (attribOffset >= 0 && i in 0..2) {
+                    dataF[offsetF + attribOffset + i] = v
                 }
-            override var z: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 2] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 2] = value }
-                }
+            }
         }
 
         inner class Vec4fView(val attribOffset: Int) : MutableVec4f() {
-            override var x: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset] = value }
+            override operator fun get(i: Int): Float {
+                return if (attribOffset >= 0 && i in 0..3) {
+                    dataF[offsetF + attribOffset + i]
+                } else {
+                    0f
                 }
-            override var y: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 1] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 1] = value }
+            }
+            override operator fun set(i: Int, v: Float) {
+                if (attribOffset >= 0 && i in 0..3) {
+                    dataF[offsetF + attribOffset + i] = v
                 }
-            override var z: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 2] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 2] = value }
-                }
-            override var w: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 3] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 3] = value }
-                }
+            }
         }
 
         inner class ColorView(val attribOffset: Int) : MutableColor() {
-            override var r: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset] = value }
+            override operator fun get(i: Int): Float {
+                return if (attribOffset >= 0 && i in 0..3) {
+                    dataF[offsetF + attribOffset + i]
+                } else {
+                    0f
                 }
-            override var x: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset] = value }
+            }
+            override operator fun set(i: Int, v: Float) {
+                if (attribOffset >= 0 && i in 0..3) {
+                    dataF[offsetF + attribOffset + i] = v
                 }
-
-            override var g: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 1] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 1] = value }
-                }
-            override var y: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 1] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 1] = value }
-                }
-
-            override var b: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 2] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 2] = value }
-                }
-            override var z: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 2] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 2] = value }
-                }
-
-            override var a: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 3] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 3] = value }
-                }
-            override var w: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset + 3] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset + 3] = value }
-                }
+            }
         }
 
         inner class IntView(private val attribOffset: Int) {

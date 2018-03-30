@@ -1,6 +1,5 @@
 package de.fabmax.kool.math
 
-import de.fabmax.kool.KoolException
 import kotlin.math.*
 
 /**
@@ -58,16 +57,18 @@ fun slerp(quatA: Vec4f, quatB: Vec4f, f: Float, result: MutableVec4f): MutableVe
 
 open class Vec2f(x: Float, y: Float) {
 
-    // backing fields for properties are declared individual, otherwise overriding the properties and using
-    // the super field in mutable sub-class is super-slow in javascript
-    protected var xField = x
-    protected var yField = y
+    protected val fields = FloatArray(2)
 
-    open val x get() = xField
-    open val y get() = yField
+    open val x get() = this[0]
+    open val y get() = this[1]
 
     constructor(f: Float) : this(f, f)
     constructor(v: Vec2f) : this(v.x, v.y)
+
+    init {
+        fields[0] = x
+        fields[1] = y
+    }
 
     fun add(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).add(other)
 
@@ -102,13 +103,7 @@ open class Vec2f(x: Float, y: Float) {
 
     fun subtract(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).subtract(other)
 
-    operator fun get(i: Int): Float {
-        return when (i) {
-            0 -> x
-            1 -> y
-            else -> throw KoolException("Invalid index: " + i)
-        }
-    }
+    open operator fun get(i: Int): Float = fields[i]
 
     operator fun times(other: Vec2f): Float = dot(other)
 
@@ -146,11 +141,11 @@ open class Vec2f(x: Float, y: Float) {
 open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
 
     override var x
-        get() = xField
-        set(value) { xField = value }
+        get() = this[0]
+        set(value) { this[0] = value }
     override var y
-        get() = yField
-        set(value) { yField = value }
+        get() = this[1]
+        set(value) { this[1] = value }
 
     constructor() : this(0f, 0f)
     constructor(f: Float) : this(f, f)
@@ -211,31 +206,27 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
 
     operator fun plusAssign(other: Vec2f) { add(other) }
 
-    operator fun set(i: Int, v: Float) {
-        when (i) {
-            0 -> x = v
-            1 -> y = v
-            else -> throw KoolException("Invalid index: " + i)
-        }
-    }
+    open operator fun set(i: Int, v: Float) { fields[i] = v }
 
     operator fun timesAssign(factor : Float) { scale(factor) }
 }
 
 open class Vec3f(x: Float, y: Float, z: Float) {
 
-    // backing fields for properties are declared individual, otherwise overriding the properties and using
-    // the super field in mutable sub-class is super-slow in javascript
-    protected var xField = x
-    protected var yField = y
-    protected var zField = z
+    protected val fields = FloatArray(3)
 
-    open val x get() = xField
-    open val y get() = yField
-    open val z get() = zField
+    open val x get() = this[0]
+    open val y get() = this[1]
+    open val z get() = this[2]
 
     constructor(f: Float) : this(f, f, f)
     constructor(v: Vec3f) : this(v.x, v.y, v.z)
+
+    init {
+        fields[0] = x
+        fields[1] = y
+        fields[2] = z
+    }
 
     fun add(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).add(other)
 
@@ -308,14 +299,7 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     fun subtract(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).subtract(other)
 
-    operator fun get(i: Int): Float {
-        return when (i) {
-            0 -> x
-            1 -> y
-            2 -> z
-            else -> throw KoolException("Invalid index: " + i)
-        }
-    }
+    open operator fun get(i: Int) = fields[i]
 
     operator fun times(other: Vec3f): Float = dot(other)
 
@@ -357,14 +341,14 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
 
     override var x
-        get() = xField
-        set(value) { xField = value }
+        get() = this[0]
+        set(value) { this[0] = value }
     override var y
-        get() = yField
-        set(value) { yField = value }
+        get() = this[1]
+        set(value) { this[1] = value }
     override var z
-        get() = zField
-        set(value) { zField = value }
+        get() = this[2]
+        set(value) { this[2] = value }
 
     constructor() : this(0f, 0f, 0f)
     constructor(f: Float) : this(f, f, f)
@@ -437,35 +421,30 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
 
     operator fun plusAssign(other: Vec3f) { add(other) }
 
-    operator fun set(i: Int, v: Float) {
-        when (i) {
-            0 -> x = v
-            1 -> y = v
-            2 -> z = v
-            else -> throw KoolException("Invalid index: " + i)
-        }
-    }
+    open operator fun set(i: Int, v: Float) { fields[i] = v }
 
     operator fun timesAssign(factor : Float) { scale(factor) }
 }
 
 open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
-    // backing fields for properties are declared individual, otherwise overriding the properties and using
-    // the super field in mutable sub-class is super-slow in javascript
-    protected var xField = x
-    protected var yField = y
-    protected var zField = z
-    protected var wField = w
+    protected val fields = FloatArray(4)
 
-    open val x get() = xField
-    open val y get() = yField
-    open val z get() = zField
-    open val w get() = wField
+    open val x get() = this[0]
+    open val y get() = this[1]
+    open val z get() = this[2]
+    open val w get() = this[3]
 
     constructor(f: Float) : this(f, f, f, f)
     constructor(xyz: Vec3f, w: Float) : this(xyz.x, xyz.y, xyz.z, w)
     constructor(v: Vec4f) : this(v.x, v.y, v.z, v.w)
+
+    init {
+        fields[0] = x
+        fields[1] = y
+        fields[2] = z
+        fields[3] = w
+    }
 
     fun add(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).add(other)
 
@@ -515,15 +494,7 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
         return result
     }
 
-    operator fun get(i: Int): Float {
-        return when (i) {
-            0 -> x
-            1 -> y
-            2 -> z
-            3 -> w
-            else -> throw KoolException("Invalid index: " + i)
-        }
-    }
+    open operator fun get(i: Int): Float = fields[i]
 
     operator fun times(other: Vec4f): Float = dot(other)
 
@@ -569,17 +540,17 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z, w) {
 
     override var x
-        get() = xField
-        set(value) { xField = value }
+        get() = this[0]
+        set(value) { this[0] = value }
     override var y
-        get() = yField
-        set(value) { yField = value }
+        get() = this[1]
+        set(value) { this[1] = value }
     override var z
-        get() = zField
-        set(value) { zField = value }
+        get() = this[2]
+        set(value) { this[2] = value }
     override var w
-        get() = wField
-        set(value) { wField = value }
+        get() = this[3]
+        set(value) { this[3] = value }
 
     constructor() : this(0f, 0f, 0f, 0f)
     constructor(f: Float) : this(f, f, f, f)
@@ -657,13 +628,5 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
 
     operator fun minusAssign(other: Vec4f) { subtract(other) }
 
-    operator fun set(i: Int, v: Float) {
-        when (i) {
-            0 -> x = v
-            1 -> y = v
-            2 -> z = v
-            3 -> w = v
-            else -> throw KoolException("Invalid index: " + i)
-        }
-    }
+    open operator fun set(i: Int, v: Float) { fields[i] = v }
 }

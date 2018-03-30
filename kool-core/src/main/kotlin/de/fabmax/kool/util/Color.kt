@@ -9,10 +9,10 @@ import de.fabmax.kool.math.Vec4f
 @Suppress("unused")
 open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a) {
 
-    open val r get() = xField
-    open val g get() = yField
-    open val b get() = zField
-    open val a get() = wField
+    open val r get() = this[0]
+    open val g get() = this[1]
+    open val b get() = this[2]
+    open val a get() = this[3]
 
     fun withAlpha(alpha: Float): MutableColor {
         return MutableColor(r, g, b, alpha)
@@ -344,20 +344,19 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
 open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b, a) {
 
     override var r
-        get() = xField
-        set(value) { xField = value }
+        get() = this[0]
+        set(value) { this[0] = value }
     override var g
-        get() = yField
-        set(value) { yField = value }
+        get() = this[1]
+        set(value) { this[1] = value }
     override var b
-        get() = zField
-        set(value) { zField = value }
+        get() = this[2]
+        set(value) { this[2] = value }
     override var a
-        get() = wField
-        set(value) { wField = value }
+        get() = this[3]
+        set(value) { this[3] = value }
 
     constructor() : this(0f, 0f, 0f, 1f)
-
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)
 
     fun add(other: Color): MutableColor {
@@ -412,6 +411,8 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
         a = other.a
         return this
     }
+
+    open operator fun set(i: Int, v: Float) { fields[i] = v }
 
     fun setHsv(h: Float, s: Float, v: Float, a: Float): MutableColor {
         var hue = h % 360f
