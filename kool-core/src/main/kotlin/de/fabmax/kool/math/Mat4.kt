@@ -338,7 +338,7 @@ open class Mat4f {
             matrix[offset + 10] = 1f
         } else {
             val len = sqrt((x*x + y*y + z*z).toDouble()).toFloat()
-            if (!isEqual(len, 1f)) {
+            if (!isFuzzyEqual(len, 1f)) {
                 val recipLen = 1.0f / len
                 x *= recipLen
                 y *= recipLen
@@ -549,6 +549,13 @@ open class Mat4f {
         return result
     }
 
+    fun getOrigin(result: MutableVec3f): MutableVec3f {
+        result.x = this[0, 3]
+        result.y = this[1, 3]
+        result.z = this[2, 3]
+        return result
+    }
+
     fun getOrientation(result: Mat3f): Mat3f {
         result[0, 0] = this[0, 0]
         result[0, 1] = this[0, 1]
@@ -562,6 +569,54 @@ open class Mat4f {
         result[2, 1] = this[2, 1]
         result[2, 2] = this[2, 2]
 
+        return result
+    }
+
+    fun getOrientationTransposed(result: Mat3f): Mat3f {
+        result[0, 0] = this[0, 0]
+        result[0, 1] = this[1, 0]
+        result[0, 2] = this[2, 0]
+
+        result[1, 0] = this[0, 1]
+        result[1, 1] = this[1, 1]
+        result[1, 2] = this[2, 1]
+
+        result[2, 0] = this[0, 2]
+        result[2, 1] = this[1, 2]
+        result[2, 2] = this[2, 2]
+
+        return result
+    }
+
+    fun getRotation(result: MutableVec4f): MutableVec4f {
+        val trace = this[0, 0] + this[1, 1] + this[2, 2]
+
+        if (trace > 0f) {
+            var s = sqrt(trace + 1f)
+            result.w = s * 0.5f
+            s = 0.5f / s
+
+            result.x = (this[2, 1] - this[1, 2]) * s
+            result.y = (this[0, 2] - this[2, 0]) * s
+            result.z = (this[1, 0] - this[0, 1]) * s
+
+        } else {
+            val i = if (this[0, 0] < this[1, 1]) {
+                if (this[1, 1] < this[2, 2]) { 2 } else { 1 }
+            } else {
+                if (this[0, 0] < this[2, 2]) { 2 } else { 0 }
+            }
+            val j = (i + 1) % 3
+            val k = (i + 2) % 3
+
+            var s = sqrt(this[i, i] - this[j, j] - this[k, k] + 1f)
+            result[i] = s * 0.5f
+            s = 0.5f / s
+
+            result.w = (this[k, j] - this[j, k]) * s
+            result[j] = (this[j, i] + this[i, j]) * s
+            result[k] = (this[k, i] + this[i, k]) * s
+        }
         return result
     }
 

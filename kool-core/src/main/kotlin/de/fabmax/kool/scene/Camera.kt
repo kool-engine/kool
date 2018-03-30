@@ -105,7 +105,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     fun project(world: Vec3f, result: MutableVec3f): Boolean {
         tmpVec4.set(world.x, world.y, world.z, 1f)
         mvp.transform(tmpVec4)
-        if (tmpVec4.w.isZero()) {
+        if (tmpVec4.w.isFuzzyZero()) {
             return false
         }
         result.set(tmpVec4.x, tmpVec4.y, tmpVec4.z).scale(1f / tmpVec4.w)

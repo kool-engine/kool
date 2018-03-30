@@ -26,7 +26,7 @@ class BoundingBox() {
     val size: Vec3f = mutSize
     val center: Vec3f = mutCenter
 
-    var batchUpdate = false
+    var isBatchUpdate = false
         set(value) {
             field = value
             updateSizeAndCenter()
@@ -39,7 +39,7 @@ class BoundingBox() {
     }
 
     private fun updateSizeAndCenter() {
-        if (!batchUpdate) {
+        if (!isBatchUpdate) {
             // size = max - min
             mutMax.subtract(mutMin, mutSize)
             // center = min + size * 0.5
@@ -63,13 +63,14 @@ class BoundingBox() {
     }
 
     inline fun batchUpdate(block: BoundingBox.() -> Unit) {
-        batchUpdate = true
+        val wasBatchUpdate = isBatchUpdate
+        isBatchUpdate = true
         block()
-        batchUpdate = false
+        isBatchUpdate = wasBatchUpdate
     }
 
     fun isEqual(other: BoundingBox): Boolean {
-        return isEmpty == other.isEmpty && min.isEqual(other.min) && max.isEqual(other.max)
+        return isEmpty == other.isEmpty && min.isFuzzyEqual(other.min) && max.isFuzzyEqual(other.max)
     }
 
     fun clear() {

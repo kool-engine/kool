@@ -272,10 +272,11 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
 
     inline fun batchUpdate(block: MeshData.() -> Unit) {
         synchronized(vertexList) {
+            val wasBatchUpdate = isBatchUpdate
             isBatchUpdate = true
             block()
             isSyncRequired = true
-            isBatchUpdate = false
+            isBatchUpdate = wasBatchUpdate
         }
     }
 
@@ -406,11 +407,11 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
                         for (i in 0..(vertexList.indices.position - 1)) {
                             uint16Buffer.put(vertexList.indices[i].toShort())
                         }
-                        indexBuffer?.setData(uint16Buffer, usage, ctx)
                         indexType = GL_UNSIGNED_SHORT
+                        indexBuffer?.setData(uint16Buffer, usage, ctx)
                     } else {
-                        indexBuffer?.setData(vertexList.indices, usage, ctx)
                         indexType = GL_UNSIGNED_INT
+                        indexBuffer?.setData(vertexList.indices, usage, ctx)
                     }
                     dataBufferF?.setData(vertexList.dataF, usage, ctx)
                     dataBufferI?.setData(vertexList.dataI, usage, ctx)

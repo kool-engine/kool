@@ -2,7 +2,7 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.math.isZero
+import de.fabmax.kool.math.isFuzzyZero
 import kotlin.math.PI
 import kotlin.math.cos
 
@@ -22,7 +22,7 @@ abstract class Animator<V, out T: InterpolatedValue<V>>(val value: T) {
     var progress = 0f
 
     open fun tick(ctx: KoolContext): V {
-        if (!speed.isZero()) {
+        if (!speed.isFuzzyZero()) {
             progress += ctx.deltaT * speed / duration
             if (progress >= 1f && speed > 0) {
                 when (repeating) {

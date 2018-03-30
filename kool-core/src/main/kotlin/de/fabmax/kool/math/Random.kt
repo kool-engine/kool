@@ -20,22 +20,26 @@ open class Random(seed: Int) {
     private var z = 521288629
     private var c = 7654321
 
-    private val lock = Any()
-
+    /**
+     * Implements 32-bit KISS RNG
+     * https://de.wikipedia.org/wiki/KISS_(Zufallszahlengenerator)
+     */
     open fun randomI(): Int {
-        return synchronized(lock) {
-            x = 69069 * x + 12345
+        // linear congruential generator
+        x = 69069 * x + 12345
 
-            y = y xor (y shl 13)
-            y = y xor (y shr 17)
-            y = y xor (y shl 5)
+        // xorshift
+        y = y xor (y shl 13)
+        y = y xor (y shr 17)
+        y = y xor (y shl 5)
 
-            val t = 698769069L * z + c
-            c = (t shr 32).toInt()
-            z = t.toInt()
+        // multiply with carry
+        // t is a Long which is slow in javascript (because it must be emulated)
+        val t = 698769069L * z + c
+        c = (t shr 32).toInt()
+        z = t.toInt()
 
-            x + y + z
-        }
+        return x + y + z
     }
     fun randomI(min: Int, max: Int): Int = abs(randomI()) % (max - min + 1) + min
 

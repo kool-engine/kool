@@ -3,6 +3,7 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 
+@Deprecated("todo: use bullet's contact point")
 class ContactPoints {
 
     private val pointCache = mutableListOf<ContactPoint>()

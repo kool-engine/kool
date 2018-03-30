@@ -21,7 +21,7 @@ class Plane {
      */
     fun intersectionPoint(result: MutableVec3f, ray: Ray): Boolean {
         val denom = n.dot(ray.direction)
-        if (!denom.isZero()) {
+        if (!denom.isFuzzyZero()) {
             val t = p.subtract(ray.origin, result).dot(n) / denom
             result.set(ray.direction).scale(t).add(ray.origin)
             return t >= 0

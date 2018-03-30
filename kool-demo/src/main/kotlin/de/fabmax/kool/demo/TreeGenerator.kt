@@ -201,7 +201,7 @@ class TreeGenerator(val distribution: PointDistribution,
 
         fun containsChild(node: TreeNode): Boolean {
             for (c in children) {
-                if (c.isEqual(node)) {
+                if (c.isFuzzyEqual(node)) {
                     return true
                 }
             }

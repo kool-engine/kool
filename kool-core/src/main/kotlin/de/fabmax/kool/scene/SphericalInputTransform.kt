@@ -72,7 +72,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     var smoothness: Float = 0f
         set(value) {
             field = value
-            if (!value.isZero()) {
+            if (!value.isFuzzyZero()) {
                 stiffness = 50.0f / value
                 damping = 2f * sqrt(stiffness.toDouble()).toFloat()
             }
@@ -149,7 +149,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             pointerHit.set(scene.camera.globalLookAt)
         }
 
-        if (!deltaScroll.isZero()) {
+        if (!deltaScroll.isFuzzyZero()) {
             zoom *= 1f - deltaScroll / 10f
             deltaScroll = 0f
         }
@@ -167,7 +167,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
         val oldZ = zoomAnimator.actual
         val z = zoomAnimator.animate(ctx.deltaT)
-        if (!isEqual(oldZ, z) && zoomMethod == ZoomMethod.ZOOM_TRANSLATE) {
+        if (!isFuzzyEqual(oldZ, z) && zoomMethod == ZoomMethod.ZOOM_TRANSLATE) {
             computeZoomTranslationPerspective(scene, oldZ, z)
         }
 
@@ -258,7 +258,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         }
 
         fun animate(deltaT: Float): Float {
-            if (smoothness.isZero() || deltaT > 0.2f) {
+            if (smoothness.isFuzzyZero() || deltaT > 0.2f) {
                 // don't care about smoothing on low frame rates
                 actual = desired
                 return actual

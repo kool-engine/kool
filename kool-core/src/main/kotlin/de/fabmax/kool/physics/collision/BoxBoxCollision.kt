@@ -1,6 +1,8 @@
-package de.fabmax.kool.physics
+package de.fabmax.kool.physics.collision
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.Box
+import de.fabmax.kool.physics.ContactPoints
 import kotlin.math.abs
 import kotlin.math.sign
 import kotlin.math.sqrt

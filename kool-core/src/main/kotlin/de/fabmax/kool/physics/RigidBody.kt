@@ -1,16 +1,24 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.math.*
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 
-class RigidBody(val shape: Box, var mass: Float, inertiaVec: Vec3f) {
+class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
 
-    val transform: Mat4f
+    var name = "RigidBody-${nInstances++}"
+
+    val worldTransform: Mat4f
         get() = shape.transform
+    private val unpredictedWorldTransform = Mat4f()
+
     val centerOfMass: MutableVec3f
         get() = shape.center
+    val invInertiaTensor = Mat3f()
+    private val tmpMat3 = Mat3f()
 
-    private val inertiaT = Mat3f()
-    private val invOrientation = Mat3f()
+    val invMass = if (mass > 0) 1f / mass else 0f
 
     val velocity = MutableVec3f()
     val acceleration: Vec3f
@@ -29,24 +37,23 @@ class RigidBody(val shape: Box, var mass: Float, inertiaVec: Vec3f) {
 
     private val tmpVec = MutableVec3f()
     private val tmpPosLocal = MutableVec3f()
-    private val tmpForceLocal = MutableVec3f()
+    private val tmpQuat1 = MutableVec4f()
+    private val tmpQuat2 = MutableVec4f()
 
     var isInCollision = false
 
     init {
-        inertiaT.scale(inertiaVec)
+        updateInertiaTensor()
     }
 
     fun stepSimulation(dt: Float, world: CollisionWorld) {
-        if (mass > 0) {
-            // apply gravity (acts on center of mass, applies no torque)
-            tmpVec.set(world.gravity).scale(mass)
-            force.add(tmpVec)
+        if (invMass > 0) {
+            worldTransform.set(unpredictedWorldTransform)
 
-            // compute linear acceleration caused by applied force
+            // compute linear acceleration caused by applied force and gravity
             tmpVec.set(force).subtract(prevForce).scale(0.5f).add(prevForce)
             prevForce.set(force)
-            tmpVec.scale(1f / mass)
+            tmpVec.scale(invMass).add(world.gravity)
             mutAcceleration.set(tmpVec)
 
             // update linear velocity
@@ -54,44 +61,88 @@ class RigidBody(val shape: Box, var mass: Float, inertiaVec: Vec3f) {
             velocity.set(tmpVec)
 
             // update position based on velocity and time step
-            // don't use transform.translate() here because velocity vector always is in global orientation
+            // don't use worldTransform.translate() here because velocity vector always is in global orientation
             tmpVec.scale(dt)
-            //transform.translate(tmpVec)
             centerOfMass.add(tmpVec)
+            tmpPosLocal.set(centerOfMass)
 
-            // compute angular acceleration caused by applied torque
-            tmpVec.set(torque).subtract(prevTorque).scale(0.5f).add(prevTorque)
-            prevTorque.set(torque)
-            inertiaT.transform(tmpVec)
-            mutAngularAcceleration.set(tmpVec)
+//            // compute angular acceleration caused by applied torque
+//            tmpVec.set(torque).subtract(prevTorque).scale(0.5f).add(prevTorque)
+//            prevTorque.set(torque)
+//            invInertiaTensor.transform(tmpVec)
+//            mutAngularAcceleration.set(tmpVec)
+//
+//            // update angular velocity (and apply some constant damping factor)
+//            tmpVec.scale(dt).add(angularVelocity).scale(ANGULAR_DAMPING)
+//            angularVelocity.set(tmpVec)
+//
+//            // update rotation based on angular velocity and time step
+//            tmpVec.scale(dt * RAD_2_DEG.toFloat())
+//            // todo: use faster quaternion transform
+//            worldTransform.rotate(tmpVec.x, Vec3f.X_AXIS)
+//            worldTransform.rotate(tmpVec.y, Vec3f.Y_AXIS)
+//            worldTransform.rotate(tmpVec.z, Vec3f.Z_AXIS)
 
-            // update angular velocity (and apply some constant damping factor)
-            tmpVec.scale(dt).add(angularVelocity).scale(0.98f)
-            angularVelocity.set(tmpVec)
 
-            // update rotation based on angular velocity and time step
-            tmpVec.scale(dt * RAD_2_DEG.toFloat())
-            transform.rotate(tmpVec.x, Vec3f.X_AXIS)
-            transform.rotate(tmpVec.y, Vec3f.Y_AXIS)
-            transform.rotate(tmpVec.z, Vec3f.Z_AXIS)
+            var fAngle = angularVelocity.length()
+            // limit the angular motion
+            if (fAngle * dt > ANGULAR_MOTION_THRESHOLD) {
+                fAngle = ANGULAR_MOTION_THRESHOLD / dt
+            }
 
-            // get inverse orientation (orientation is a orthonormal rotation matrix -> transpose == inverse)
-            transform.getOrientation(invOrientation).transpose()
+            // determine rotation axis, tmoVec1
+            if (fAngle < 0.001f) {
+                // use Taylor's expansions of sync function
+                tmpVec.set(angularVelocity).scale(0.5f * dt - dt * dt * dt * 0.020833333333f * fAngle * fAngle)
+            } else {
+                tmpVec.set(angularVelocity).scale(sin(0.5f * fAngle * dt) / fAngle)
+            }
+            tmpQuat1.set(tmpVec, cos(fAngle * dt * 0.5f))
+            worldTransform.getRotation(tmpQuat2)
+            tmpQuat1.quatProduct(tmpQuat2).norm()
+
+            worldTransform.setRotate(tmpQuat1)
+            centerOfMass.set(tmpPosLocal)
+
+            updateInertiaTensor()
         }
 
         force.set(Vec3f.ZERO)
         torque.set(Vec3f.ZERO)
     }
 
-    fun getVelocityInLocalPoint(pos: MutableVec3f): MutableVec3f =
-        pos.set(angularVelocity.cross(pos, tmpVec)).add(velocity)
+    fun predictIntegratedTransform(timeStep: Float) {
+        if (invMass > 0) {
+            unpredictedWorldTransform.set(worldTransform)
+
+            tmpVec.set(velocity).scale(timeStep)
+            centerOfMass += tmpVec
+
+            tmpVec.set(angularVelocity).scale(timeStep * RAD_2_DEG.toFloat())
+            // todo: use faster quaternion transform
+            worldTransform.rotate(tmpVec.x, Vec3f.X_AXIS)
+            worldTransform.rotate(tmpVec.y, Vec3f.Y_AXIS)
+            worldTransform.rotate(tmpVec.z, Vec3f.Z_AXIS)
+        }
+    }
+
+    /**
+     * Computes the inertia tensor for the current orientation.
+     */
+    fun updateInertiaTensor() {
+//        worldTransform.getOrientationTransposed(invInertiaTensor).scale(inertiaVec)
+        worldTransform.getOrientation(tmpMat3)
+        invInertiaTensor.set(tmpMat3).scale(inertiaVec).mul(tmpMat3.transpose())
+    }
+
+    fun getVelocityInLocalPoint(pos: Vec3f, result: MutableVec3f): MutableVec3f =
+        result.set(angularVelocity.cross(pos, tmpVec)).add(velocity)
 
     /**
      * Applies the given force vector (global orientation) at the specified position relative to center of mass.
      */
     fun applyForceRelative(position: Vec3f, force: Vec3f) {
-        invOrientation.transform(tmpForceLocal.set(force))
-        this.torque.add(position.cross(tmpForceLocal, tmpVec))
+        this.torque.add(position.cross(force, tmpVec))
         this.force.add(force)
     }
 
@@ -100,7 +151,6 @@ class RigidBody(val shape: Box, var mass: Float, inertiaVec: Vec3f) {
      */
     fun applyForceGlobal(position: Vec3f, force: Vec3f) {
         tmpPosLocal.set(position).subtract(centerOfMass)
-        invOrientation.transform(tmpPosLocal)
         applyForceRelative(tmpPosLocal, force)
     }
 
@@ -109,10 +159,9 @@ class RigidBody(val shape: Box, var mass: Float, inertiaVec: Vec3f) {
      */
     fun applyImpulseRelative(position: Vec3f, impulse: Vec3f) {
         // impulse immediately changes (angular) velocity
-        velocity.add(tmpVec.set(impulse).scale(1f / mass))
+        velocity.add(tmpVec.set(impulse).scale(invMass))
 
-        invOrientation.transform(tmpForceLocal.set(impulse))
-        inertiaT.transform(position.cross(tmpForceLocal, tmpVec))
+        invInertiaTensor.transform(position.cross(impulse, tmpVec))
         angularVelocity.add(tmpVec)
     }
 
@@ -121,8 +170,18 @@ class RigidBody(val shape: Box, var mass: Float, inertiaVec: Vec3f) {
      */
     fun applyImpulseGlobal(position: Vec3f, impulse: Vec3f) {
         tmpPosLocal.set(position).subtract(centerOfMass)
-        invOrientation.transform(tmpPosLocal)
         applyImpulseRelative(tmpPosLocal, impulse)
+    }
+
+    override fun toString(): String {
+        return name
+    }
+
+    companion object {
+        const val ANGULAR_DAMPING = 0.98f
+        const val ANGULAR_MOTION_THRESHOLD = PI.toFloat() / 4f
+
+        private var nInstances = 1
     }
 }
 

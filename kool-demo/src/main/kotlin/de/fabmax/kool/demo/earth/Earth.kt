@@ -354,7 +354,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
                 l.scale(d.toFloat(), tmpVec).add(o)
 
                 tmpVec.norm()
-                if (tmpVec.isEqual(tmpVecY)) {
+                if (tmpVec.isFuzzyEqual(tmpVecY)) {
                     return false
                 }
                 tmpVecY.cross(tmpVec, tmpVecRt).norm()

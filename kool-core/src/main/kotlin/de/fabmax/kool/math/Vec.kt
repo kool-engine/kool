@@ -1,10 +1,7 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.KoolException
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 /**
  * @author fabmax
@@ -70,7 +67,6 @@ open class Vec2f(x: Float, y: Float) {
     open val y get() = yField
 
     constructor(f: Float) : this(f, f)
-
     constructor(v: Vec2f) : this(v.x, v.y)
 
     fun add(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).add(other)
@@ -79,7 +75,12 @@ open class Vec2f(x: Float, y: Float) {
 
     fun dot(other: Vec2f): Float = x * other.x + y * other.y
 
-    fun isEqual(other: Vec2f): Boolean = isEqual(x, other.x) && isEqual(y, other.y)
+    /**
+     * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
+     * have a difference less or equal [eps].
+     */
+    fun isFuzzyEqual(other: Vec2f, eps: Float = FUZZY_EQ_F): Boolean =
+            isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps)
 
     fun length(): Float = sqrt(sqrLength())
 
@@ -113,6 +114,26 @@ open class Vec2f(x: Float, y: Float) {
 
     override fun toString(): String = "($x, $y)"
 
+    /**
+     * Checks vector components for equality (using '==' operator). For better numeric stability consider using
+     * [isFuzzyEqual].
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Vec4f) return false
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = x.hashCode()
+        result = 31 * result + y.hashCode()
+        return result
+    }
+
     companion object {
         val ZERO = Vec2f(0f)
         val X_AXIS = Vec2f(1f, 0f)
@@ -132,7 +153,7 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
         set(value) { yField = value }
 
     constructor() : this(0f, 0f)
-
+    constructor(f: Float) : this(f, f)
     constructor(v: Vec2f) : this(v.x, v.y)
 
     fun add(other: Vec2f): MutableVec2f {
@@ -214,7 +235,6 @@ open class Vec3f(x: Float, y: Float, z: Float) {
     open val z get() = zField
 
     constructor(f: Float) : this(f, f, f)
-
     constructor(v: Vec3f) : this(v.x, v.y, v.z)
 
     fun add(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).add(other)
@@ -230,14 +250,44 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     fun dot(other: Vec3f): Float = x * other.x + y * other.y + z * other.z
 
-    fun isEqual(other: Vec3f): Boolean =
-            isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z)
+    /**
+     * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
+     * have a difference less or equal [eps].
+     */
+    fun isFuzzyEqual(other: Vec3f, eps: Float = FUZZY_EQ_F): Boolean =
+            isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps) && isFuzzyEqual(z, other.z, eps)
 
     fun length(): Float = sqrt(sqrLength())
 
     fun mul(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).mul(other)
 
     fun norm(result: MutableVec3f): MutableVec3f = result.set(this).norm()
+
+    fun planeSpace(p: MutableVec3f, q: MutableVec3f) {
+        if (abs(z) > SQRT_1_2) {
+            // choose p in y-z plane
+            val a = y*y + z*z
+            val k = 1f / sqrt(a)
+            p.x = 0f
+            p.y = -z * k
+            p.z = y * k
+            // q = this x p
+            q.x = a * k
+            q.y = -x * p.z
+            q.z = x * p.y
+        } else {
+            // choose p in x-y plane
+            val a = x*x + y*y
+            val k = 1f / sqrt(a)
+            p.x = -y * k
+            p.y = x * k
+            p.z = 0f
+            // q = this x p
+            q.x = -z * p.y
+            q.y = z * p.x
+            q.z = a * k
+        }
+    }
 
     fun rotate(angleDeg: Float, axisX: Float, axisY: Float, axisZ: Float, result: MutableVec3f): MutableVec3f =
         result.set(this).rotate(angleDeg, axisX, axisY, axisZ)
@@ -271,6 +321,28 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     override fun toString(): String = "($x, $y, $z)"
 
+    /**
+     * Checks vector components for equality (using '==' operator). For better numeric stability consider using
+     * [isFuzzyEqual].
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Vec4f) return false
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+        if (z != other.z) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = x.hashCode()
+        result = 31 * result + y.hashCode()
+        result = 31 * result + z.hashCode()
+        return result
+    }
+
     companion object {
         val ZERO = Vec3f(0f)
         val X_AXIS = Vec3f(1f, 0f, 0f)
@@ -295,7 +367,7 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
         set(value) { zField = value }
 
     constructor() : this(0f, 0f, 0f)
-
+    constructor(f: Float) : this(f, f, f)
     constructor(v: Vec3f) : this(v.x, v.y, v.z)
 
     fun add(other: Vec3f): MutableVec3f {
@@ -392,7 +464,7 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
     open val w get() = wField
 
     constructor(f: Float) : this(f, f, f, f)
-
+    constructor(xyz: Vec3f, w: Float) : this(xyz.x, xyz.y, xyz.z, w)
     constructor(v: Vec4f) : this(v.x, v.y, v.z, v.w)
 
     fun add(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).add(other)
@@ -401,14 +473,26 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
     fun dot(other: Vec4f): Float = x * other.x + y * other.y + z * other.z + w * other.w
 
-    fun isEqual(other: Vec4f): Boolean =
-        isEqual(x, other.x) && isEqual(y, other.y) && isEqual(z, other.z) && isEqual(w, other.w)
+    /**
+     * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
+     * have a difference less or equal [eps].
+     */
+    fun isFuzzyEqual(other: Vec4f, eps: Float = FUZZY_EQ_F): Boolean =
+        isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps) && isFuzzyEqual(z, other.z, eps) && isFuzzyEqual(w, other.w, eps)
 
     fun length(): Float = sqrt(sqrLength())
 
     fun mul(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).mul(other)
 
     fun norm(result: MutableVec4f): MutableVec4f = result.set(this).norm()
+
+    fun quatProduct(otherQuat: Vec4f, result: MutableVec4f): MutableVec4f {
+        result.x = w * otherQuat.x + x * otherQuat.w + y * otherQuat.z - z * otherQuat.y
+        result.y = w * otherQuat.y + y * otherQuat.w + z * otherQuat.x - x * otherQuat.z
+        result.z = w * otherQuat.z + z * otherQuat.w + x * otherQuat.y - y * otherQuat.x
+        result.w = w * otherQuat.w - x * otherQuat.x - y * otherQuat.y - z * otherQuat.z
+        return result
+    }
 
     fun scale(factor: Float, result: MutableVec4f): MutableVec4f = result.set(this).scale(factor)
 
@@ -424,6 +508,13 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
     fun subtract(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).subtract(other)
 
+    fun getXyz(result: MutableVec3f): MutableVec3f {
+        result.x = x
+        result.y = y
+        result.z = z
+        return result
+    }
+
     operator fun get(i: Int): Float {
         return when (i) {
             0 -> x
@@ -434,7 +525,33 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
         }
     }
 
+    operator fun times(other: Vec4f): Float = dot(other)
+
     override fun toString(): String = "($x, $y, $z, $w)"
+
+    /**
+     * Checks vector components for equality (using '==' operator). For better numeric stability consider using
+     * [isFuzzyEqual].
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Vec4f) return false
+
+        if (x != other.x) return false
+        if (y != other.y) return false
+        if (z != other.z) return false
+        if (w != other.w) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = x.hashCode()
+        result = 31 * result + y.hashCode()
+        result = 31 * result + z.hashCode()
+        result = 31 * result + w.hashCode()
+        return result
+    }
 
     companion object {
         val ZERO = Vec4f(0f)
@@ -465,7 +582,8 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
         set(value) { wField = value }
 
     constructor() : this(0f, 0f, 0f, 0f)
-
+    constructor(f: Float) : this(f, f, f, f)
+    constructor(xyz: Vec3f, w: Float) : this(xyz.x, xyz.y, xyz.z, w)
     constructor(other: Vec4f) : this(other.x, other.y, other.z, other.w)
 
     fun add(other: Vec4f): MutableVec4f {
@@ -485,6 +603,15 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
     }
 
     fun norm(): MutableVec4f = scale(1f / length())
+
+    fun quatProduct(otherQuat: Vec4f): MutableVec4f {
+        val px = w * otherQuat.x + x * otherQuat.w + y * otherQuat.z - z * otherQuat.y
+        val py = w * otherQuat.y + y * otherQuat.w + z * otherQuat.x - x * otherQuat.z
+        val pz = w * otherQuat.z + z * otherQuat.w + x * otherQuat.y - y * otherQuat.x
+        val pw = w * otherQuat.w - x * otherQuat.x - y * otherQuat.y - z * otherQuat.z
+        set(px, py, pz, pw)
+        return this
+    }
 
     fun scale(factor : Float): MutableVec4f {
         x *= factor
@@ -507,6 +634,14 @@ open class MutableVec4f(x: Float, y: Float, z: Float, w: Float) : Vec4f(x, y, z,
         y = other.y
         z = other.z
         w = other.w
+        return this
+    }
+
+    fun set(xyz: Vec3f, w: Float = 0f): MutableVec4f {
+        x = xyz.x
+        y = xyz.y
+        z = xyz.z
+        this.w = w
         return this
     }
 

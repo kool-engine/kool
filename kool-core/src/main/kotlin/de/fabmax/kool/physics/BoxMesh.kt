@@ -36,7 +36,7 @@ class BoxMesh(val world: CollisionWorld) : LineMesh() {
         for (i in 0..7) {
             vert.index = idx + i
             vert.color.set(color)
-            body.transform.transform(vert.position.set(body.shape.halfExtents).mul(SIGNS[i]))
+            body.worldTransform.transform(vert.position.set(body.shape.halfExtents).mul(SIGNS[i]))
         }
         meshData.isSyncRequired = true
     }

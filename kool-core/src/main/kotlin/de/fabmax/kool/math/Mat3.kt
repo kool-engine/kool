@@ -20,7 +20,7 @@ class Mat3f {
         var aY = axY
         var aZ = axZ
         val len = sqrt(aX * aX + aY * aY + aZ * aZ)
-        if (!(1.0 - len).isZero()) {
+        if (!(1.0 - len).isFuzzyZero()) {
             val recipLen = 1f / len
             aX *= recipLen
             aY *= recipLen
@@ -228,6 +228,38 @@ class Mat3f {
         this[2, 2] = 1 - 2*s*(i*i + j*j)
 
         return this
+    }
+
+    fun getRotation(result: MutableVec4f): MutableVec4f {
+        val trace = this[0, 0] + this[1, 1] + this[2, 2]
+
+        if (trace > 0f) {
+            var s = sqrt(trace + 1f)
+            result.w = s * 0.5f
+            s = 0.5f / s
+
+            result.x = (this[2, 1] - this[1, 2]) * s
+            result.y = (this[0, 2] - this[2, 0]) * s
+            result.z = (this[1, 0] - this[0, 1]) * s
+
+        } else {
+            val i = if (this[0, 0] < this[1, 1]) {
+                if (this[1, 1] < this[2, 2]) { 2 } else { 1 }
+            } else {
+                if (this[0, 0] < this[2, 2]) { 2 } else { 0 }
+            }
+            val j = (i + 1) % 3
+            val k = (i + 2) % 3
+
+            var s = sqrt(this[i, i] - this[j, j] - this[k, k] + 1f)
+            result[i] = s * 0.5f
+            s = 0.5f / s
+
+            result.w = (this[k, j] - this[j, k]) * s
+            result[j] = (this[j, i] + this[i, j]) * s
+            result[k] = (this[k, i] + this[i, k]) * s
+        }
+        return result
     }
 
     operator fun get(i: Int): Float = matrix[i]

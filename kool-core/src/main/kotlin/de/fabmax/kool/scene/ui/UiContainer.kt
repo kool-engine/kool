@@ -63,7 +63,7 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 
     protected open fun applyBounds(bounds: BoundingBox, ctx: KoolContext) {
-        if (!bounds.size.isEqual(contentBounds.size) || !bounds.min.isEqual(contentBounds.min)) {
+        if (!bounds.size.isFuzzyEqual(contentBounds.size) || !bounds.min.isFuzzyEqual(contentBounds.min)) {
             posInParent.set(bounds.min)
             setIdentity().translate(bounds.min)
             contentBounds.set(Vec3f.ZERO, bounds.size)

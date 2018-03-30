@@ -19,25 +19,25 @@ class VecTest {
     @Test
     fun vec3Len() {
         val t = Vec3f(2f, 3f, 4f)
-        testAssert(isEqual(t.sqrLength(), 29f), "sqrLen failed")
-        testAssert(isEqual(t.length(), sqrt(29f)), "length failed")
-        testAssert(isEqual(t.norm(MutableVec3f()).length(), 1f), "norm failed")
+        testAssert(isFuzzyEqual(t.sqrLength(), 29f), "sqrLen failed")
+        testAssert(isFuzzyEqual(t.length(), sqrt(29f)), "length failed")
+        testAssert(isFuzzyEqual(t.norm(MutableVec3f()).length(), 1f), "norm failed")
     }
 
     @Test
-    fun vec3Add() = testAssert(add(Vec3f(1f, 2f, 3f), Vec3f(2f, 3f, 4f)).isEqual(Vec3f(3f, 5f, 7f)))
+    fun vec3Add() = testAssert(add(Vec3f(1f, 2f, 3f), Vec3f(2f, 3f, 4f)).isFuzzyEqual(Vec3f(3f, 5f, 7f)))
 
     @Test
-    fun vec3Sub() = testAssert(subtract(Vec3f(2f, 3f, 4f), Vec3f(1f, 2f, 3f)).isEqual(Vec3f(1f, 1f, 1f)))
+    fun vec3Sub() = testAssert(subtract(Vec3f(2f, 3f, 4f), Vec3f(1f, 2f, 3f)).isFuzzyEqual(Vec3f(1f, 1f, 1f)))
 
     @Test
     fun vec3Scale() {
-        testAssert(scale(Vec3f(1f, 2f, 3f), 2f).isEqual(Vec3f(2f, 4f, 6f)))
+        testAssert(scale(Vec3f(1f, 2f, 3f), 2f).isFuzzyEqual(Vec3f(2f, 4f, 6f)))
     }
 
     @Test
     fun vec3Dist() {
-        testAssert(isEqual(Vec3f(1f, 2f, 3f).distance(Vec3f.ZERO), Vec3f(1f, 2f, 3f).length()))
+        testAssert(isFuzzyEqual(Vec3f(1f, 2f, 3f).distance(Vec3f.ZERO), Vec3f(1f, 2f, 3f).length()))
     }
 
     @Test
@@ -54,19 +54,19 @@ class VecTest {
     @Test
     fun vec3Cross() {
         // dot prod
-        testAssert(cross(Vec3f.X_AXIS, Vec3f.Y_AXIS).isEqual(Vec3f.Z_AXIS), "x * y != z")
-        testAssert(cross(Vec3f.Z_AXIS, Vec3f.X_AXIS).isEqual(Vec3f.Y_AXIS), "z * x != y")
-        testAssert(cross(Vec3f.Y_AXIS, Vec3f.Z_AXIS).isEqual(Vec3f.X_AXIS), "y * z != x")
+        testAssert(cross(Vec3f.X_AXIS, Vec3f.Y_AXIS).isFuzzyEqual(Vec3f.Z_AXIS), "x * y != z")
+        testAssert(cross(Vec3f.Z_AXIS, Vec3f.X_AXIS).isFuzzyEqual(Vec3f.Y_AXIS), "z * x != y")
+        testAssert(cross(Vec3f.Y_AXIS, Vec3f.Z_AXIS).isFuzzyEqual(Vec3f.X_AXIS), "y * z != x")
     }
 
     @Test
     fun vec3Rotate() {
         // dot prod
-        testAssert(Vec3f.X_AXIS.rotate(90f, Vec3f.Z_AXIS, MutableVec3f()).isEqual(Vec3f.Y_AXIS),
+        testAssert(Vec3f.X_AXIS.rotate(90f, Vec3f.Z_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Y_AXIS),
                 "x.rot(90, z) != y")
-        testAssert(Vec3f.Y_AXIS.rotate(90f, Vec3f.X_AXIS, MutableVec3f()).isEqual(Vec3f.Z_AXIS),
+        testAssert(Vec3f.Y_AXIS.rotate(90f, Vec3f.X_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.Z_AXIS),
                 "y.rot(90, z) != z")
-        testAssert(Vec3f.Z_AXIS.rotate(90f, Vec3f.Y_AXIS, MutableVec3f()).isEqual(Vec3f.X_AXIS),
+        testAssert(Vec3f.Z_AXIS.rotate(90f, Vec3f.Y_AXIS, MutableVec3f()).isFuzzyEqual(Vec3f.X_AXIS),
                 "z.rot(90, y) != x")
     }
 }
