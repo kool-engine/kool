@@ -2,7 +2,7 @@ package de.fabmax.kool.physics.collision
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.Box
-import de.fabmax.kool.physics.ContactPoints
+import de.fabmax.kool.physics.RigidBody
 import kotlin.math.abs
 import kotlin.math.sign
 import kotlin.math.sqrt
@@ -34,7 +34,6 @@ import kotlin.math.sqrt
  * 3. This notice may not be removed or altered from any source distribution.
  */
 class BoxBoxCollision {
-
     private val normal = MutableVec3f()
     private var depth = 0f
 
@@ -53,30 +52,29 @@ class BoxBoxCollision {
     private val nr = MutableVec3f()
     private val anr = MutableVec3f()
     private val faceCenter = MutableVec3f()
-    private val quad = Array(4) { MutableVec2f() }
-    private val rect = MutableVec2f()
     private val rectIntersector = QuadRectIntersector()
     private val quadPt = MutableVec3f()
+    private val tmpVec1 = MutableVec3f()
 
     /**
      * Tests the two given boxes for intersection. Returns the number of generated contact points (0 in case the
      * boxes do not penetrate each other).
      */
-    fun testForCollision(box1: Box, box2: Box, result: ContactPoints): Int {
-        val satAxis = performSat(box1, box2)
+    fun testForCollision(bodyA: RigidBody, bodyB: RigidBody, result: Contacts): Int {
+        val satAxis = performSat(bodyA.shape, bodyB.shape)
 
         return when {
             // an edge from box 1 touches an edge from box 2
-            satAxis > 6 -> computeEdgeEdgeIntersection(box1, box2, satAxis, result)
+            satAxis > 6 -> computeEdgeEdgeIntersection(bodyA, bodyB, satAxis, result)
 
             // we have a face-something intersection (because the separating
             // axis is perpendicular to a face). define face 'a' to be the reference
             // face (i.e. the normal vector is perpendicular to this) and face 'b' to be
             // the incident face (the closest face of the other box).
             satAxis > 0 -> {
-                val boxA = if (satAxis <= 3) box1 else box2
-                val boxB = if (satAxis <= 3) box2 else box1
-                computeFaceSthIntersection(boxA, boxB, satAxis, result)
+                val body1 = if (satAxis < 4) bodyA else bodyB
+                val body2 = if (satAxis < 4) bodyB else bodyA
+                computeFaceSthIntersection(body1, body2, satAxis, result)
             }
 
             // boxes do not intersect
@@ -182,7 +180,10 @@ class BoxBoxCollision {
     /**
      * Computes the one and only intersection point in case of an edge-edge collision.
      */
-    private fun computeEdgeEdgeIntersection(box1: Box, box2: Box, satAxis: Int, result: ContactPoints): Int {
+    private fun computeEdgeEdgeIntersection(bodyA: RigidBody, bodyB: RigidBody, satAxis: Int, result: Contacts): Int {
+        val box1 = bodyA.shape
+        val box2 = bodyB.shape
+
         // find a point pa on the intersecting edge of box 1
         pa.set(box1.center)
         for (i in 0 .. 2) {
@@ -207,7 +208,11 @@ class BoxBoxCollision {
         val ub = box2.base((satAxis - 7) % 3)
         lineClosestApproach(pa, ua, pb, ub)
 
-        result.addContactPoint(normal.scale(-1f), pb, -depth)
+//        result.addContactPoint(normal.scale(-1f), pb, -depth)
+        result.addContact(bodyA, bodyB) {
+            worldNormalOnB.set(normal).scale(-1f)
+            worldPosB += result.newWorldPosVec(pb, -depth)
+        }
         return 1
     }
 
@@ -236,7 +241,10 @@ class BoxBoxCollision {
      * Computes the intersection points in case of a face-something collision. There can be up to eight intersection
      * points.
      */
-    private fun computeFaceSthIntersection(box1: Box, box2: Box, satAxis: Int, result: ContactPoints): Int {
+    private fun computeFaceSthIntersection(bodyA: RigidBody, bodyB: RigidBody, satAxis: Int, result: Contacts): Int {
+        val box1 = bodyA.shape
+        val box2 = bodyB.shape
+
         // nr = normal vector of reference face dotted with axes of incident box.
         // anr = absolute values of nr.
         normal2.set(normal)
@@ -282,13 +290,13 @@ class BoxBoxCollision {
         var k2 = m21 * box2.halfExtents[a1]
         val k3 = m12 * box2.halfExtents[a2]
         val k4 = m22 * box2.halfExtents[a2]
-        quad[0].set(c1 - k1 - k3, c2 - k2 - k4)
-        quad[1].set(c1 - k1 + k3, c2 - k2 + k4)
-        quad[2].set(c1 + k1 + k3, c2 + k2 + k4)
-        quad[3].set(c1 + k1 - k3, c2 + k2 - k4)
+        rectIntersector.quad[0].set(c1 - k1 - k3, c2 - k2 - k4)
+        rectIntersector.quad[1].set(c1 - k1 + k3, c2 - k2 + k4)
+        rectIntersector.quad[2].set(c1 + k1 + k3, c2 + k2 + k4)
+        rectIntersector.quad[3].set(c1 + k1 - k3, c2 + k2 - k4)
 
-        rect.set(box1.halfExtents[code1], box1.halfExtents[code2])
-        val n = rectIntersector.intersectRectQuad2(rect, quad)
+        rectIntersector.rect.set(box1.halfExtents[code1], box1.halfExtents[code2])
+        val n = rectIntersector.intersectRectQuad2()
         val quadInterPts = rectIntersector.resultPoints
 
         // convert the intersection points into reference-face coordinates,
@@ -302,6 +310,8 @@ class BoxBoxCollision {
         m22 *= det1
 
         var cNum = 0
+        var cont: Contact? = null
+        var swapBodies = false
         for (j in 0 until n) {
             k1 = m22 * (quadInterPts[j].x - c1) - m12 * (quadInterPts[j].y - c2)
             k2 = -m21 * (quadInterPts[j].x - c1) + m11 * (quadInterPts[j].y - c2)
@@ -310,13 +320,19 @@ class BoxBoxCollision {
             quadPt.z = faceCenter.z + k1 * box2.base(a1).z + k2 * box2.base(a2).z
             val depth = box1.halfExtents[codeN] - normal2 * quadPt
             if (depth >= 0) {
-                val contactPt = result.addContactPoint(normal, quadPt, -depth)
-                contactPt.normalOnBInWorld.scale(-1f)
-                if (satAxis < 4) {
-                    contactPt.pointInWorld.add(box1.center)
-                } else {
-                    contactPt.pointInWorld.add(box1.center).subtract(quadPt.set(normal).scale(depth))
+                tmpVec1.set(quadPt).add(box1.center)
+                if (satAxis >= 4) {
+                    // contact bodies are swapped
+                    swapBodies = true
+                    tmpVec1.subtract(quadPt.set(normal).scale(depth))
                 }
+
+                val c = cont ?: result.addContact(if (swapBodies) bodyB else bodyA, if (swapBodies) bodyA else bodyB) {
+                    cont = this
+                    worldNormalOnB.set(normal).scale(-1f)
+                }
+                c.worldPosB += result.newWorldPosVec(tmpVec1, -depth)
+
                 cNum++
             }
         }
@@ -353,6 +369,10 @@ class BoxBoxCollision {
      * terrible...). It might be a good idea to rewrite this code to something one can actually understand...
      */
     private class QuadRectIntersector {
+        // input points
+        val quad = Array(4) { MutableVec2f() }
+        val rect = MutableVec2f()
+
         // temporary points needed during computation
         private val bufferPoints = Array(8) { MutableVec2f() }
 
@@ -370,7 +390,7 @@ class BoxBoxCollision {
          * the number of intersection points is returned by the function (this will
          * be in the range 0 to 8).
          */
-        fun intersectRectQuad2(rect: Vec2f, quad: Array<MutableVec2f>): Int {
+        fun intersectRectQuad2(): Int {
             // q (and r) contain nq (and nr) coordinate points for the current (and chopped) polygons
             var nq = 4
             resultPointCnt = 0

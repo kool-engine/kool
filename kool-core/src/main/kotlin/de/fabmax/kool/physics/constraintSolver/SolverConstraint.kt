@@ -26,10 +26,13 @@ import de.fabmax.kool.math.Vec3f
  *    software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-class SolverConstraint {
+abstract class SolverConstraint {
+    lateinit var solverBodyA: SolverBody
+    lateinit var solverBodyB: SolverBody
+
+    val contactNormal = MutableVec3f()
     val relPosACrossNormal = MutableVec3f()
     val relPosBCrossNormal = MutableVec3f()
-    val contactNormal = MutableVec3f()
 
     val angularComponentA = MutableVec3f()
     val angularComponentB = MutableVec3f()
@@ -43,42 +46,35 @@ class SolverConstraint {
 
     var lowerLimit = 0f
     var upperLimit = 0f
-    var rhsPenetration = 0f
 
-    // fixme: use dedicated (sub-)classes for contact, friction and rolling-friction constraints
-    // fixme: for friction and rolling-friction constraints this points to the parent contact constraint
-    var contactConstraint: SolverConstraint? = null
-    // fixme: for contact constraints these point to the child friction constraints
+    protected val tmpVec1 = MutableVec3f()
+    protected val tmpVec2 = MutableVec3f()
+}
+
+class ContactConstraint : SolverConstraint() {
     var frictionConstraint1: SolverConstraint? = null
     var frictionConstraint2: SolverConstraint? = null
 
-    var originalContactPoint: ContactPoint? = null
+    lateinit var originalContactPoint: ContactPoint
 
-    lateinit var solverBodyA: SolverBody
-    lateinit var solverBodyB: SolverBody
-
-    // those are only needed for contact constraints
     val relPosA = MutableVec3f()
     val relPosB = MutableVec3f()
     val velocity = MutableVec3f()
     var relaxation = 0f
     var relVelocity = 0f
-
-    private val tmpVec1 = MutableVec3f()
-    private val tmpVec2 = MutableVec3f()
+    var rhsPenetration = 0f
 
     fun setupContactConstraint(cp: ContactPoint, bodyA: SolverBody, bodyB: SolverBody, solverInfo: ContactSolverInfo) {
         originalContactPoint = cp
         solverBodyA = bodyA
         solverBodyB = bodyB
+        relaxation = 1f
 
         val rbA = bodyA.originalBody
         val rbB = bodyB.originalBody
 
         relPosA.set(cp.positionWorldOnA).subtract(bodyA.worldTransform.getOrigin(tmpVec1))
         relPosB.set(cp.positionWorldOnB).subtract(bodyB.worldTransform.getOrigin(tmpVec1))
-
-        relaxation = 1f
 
         relPosA.cross(cp.normalWorldOnB, relPosACrossNormal)
         angularComponentA.set(rbA.invInertiaTensor.transform(relPosACrossNormal, tmpVec1))
@@ -151,44 +147,41 @@ class SolverConstraint {
         cfm = 0f
         lowerLimit = 0f
         upperLimit = 1e10f
-
-        //println("n=$contactNormal, pene=$penetration, relV=$relVelocity, rhs=$rhs")
-
     }
 
-    fun setupFrictionConstraint(normalAxis: Vec3f, contactConstraint: SolverConstraint, desiredVelocity: Float, cfmSlip: Float) {
+    private fun restitutionCurve(relVel: Float, restitution: Float) = restitution * -relVel
+}
+
+class FrictionConstraint : SolverConstraint() {
+    lateinit var contactConstraint: ContactConstraint
+
+    fun setupFrictionConstraint(normalAxis: Vec3f, contactConstraint: ContactConstraint, desiredVelocity: Float, cfmSlip: Float) {
+        this.contactConstraint = contactConstraint
+
         contactNormal.set(normalAxis)
         solverBodyA = contactConstraint.solverBodyA
         solverBodyB = contactConstraint.solverBodyB
-        originalContactPoint = null
+        friction = contactConstraint.originalContactPoint.combinedFriction
+        appliedImpulse = 0f
+        appliedPushImpulse = 0f
 
         val bodyA = solverBodyA
         val bodyB = solverBodyB
         val rbA = bodyA.originalBody
         val rbB = bodyB.originalBody
 
-        friction = contactConstraint.originalContactPoint?.combinedFriction ?: 0f
-        originalContactPoint = null
-
-        appliedImpulse = 0f
-        appliedPushImpulse = 0f
-
-        relPosA.set(contactConstraint.relPosA)
-        relPosA.cross(contactNormal, relPosACrossNormal)
+        contactConstraint.relPosA.cross(contactNormal, relPosACrossNormal)
         angularComponentA.set(Vec3f.ZERO)
         rbA.invInertiaTensor.transform(relPosACrossNormal, angularComponentA)
 
-        relPosB.set(contactConstraint.relPosB)
-        contactNormal.cross(relPosB, relPosBCrossNormal)
+        contactNormal.cross(contactConstraint.relPosB, relPosBCrossNormal)
         angularComponentB.set(Vec3f.ZERO)
         rbB.invInertiaTensor.transform(relPosBCrossNormal, angularComponentB)
 
-        val denomA = rbA.invMass + normalAxis * angularComponentA.cross(relPosA, tmpVec1)
-        val denomB = rbB.invMass + normalAxis * relPosB.cross(angularComponentB, tmpVec1)
+        val denomA = rbA.invMass + normalAxis * angularComponentA.cross(contactConstraint.relPosA, tmpVec1)
+        val denomB = rbB.invMass + normalAxis * contactConstraint.relPosB.cross(angularComponentB, tmpVec1)
 
-        relaxation = contactConstraint.relaxation
-        val scaledDenom = relaxation / (denomA + denomB)
-        jacDiagABInv = scaledDenom
+        jacDiagABInv = contactConstraint.relaxation / (denomA + denomB)
 
         val velADotN = contactNormal * bodyA.linearVelocity + relPosACrossNormal * bodyA.angularVelocity
         val velBDotN = -(contactNormal * bodyB.linearVelocity) + relPosBCrossNormal * bodyB.angularVelocity
@@ -196,36 +189,36 @@ class SolverConstraint {
         val relVel = velADotN + velBDotN
 
         val velocityError = desiredVelocity - relVel
-        val velocityImpulse = velocityError * scaledDenom
+        val velocityImpulse = velocityError * jacDiagABInv
         rhs = velocityImpulse
         cfm = cfmSlip
         lowerLimit = 0f
         upperLimit = 1e10f
     }
+}
 
-    fun setupRollingFrictionConstraint(normalAxis: Vec3f, contactConstraint: SolverConstraint, desiredVelocity: Float, cfmSlip: Float) {
+class RollingFrictionConstraint : SolverConstraint() {
+    lateinit var contactConstraint: ContactConstraint
+
+    fun setupRollingFrictionConstraint(normalAxis: Vec3f, contactConstraint: ContactConstraint, desiredVelocity: Float, cfmSlip: Float) {
+        this.contactConstraint = contactConstraint
+
         contactNormal.set(normalAxis)
         solverBodyA = contactConstraint.solverBodyA
         solverBodyB = contactConstraint.solverBodyB
-        originalContactPoint = null
+        friction = contactConstraint.originalContactPoint.combinedRollingFriction
+        appliedImpulse = 0f
+        appliedPushImpulse = 0f
 
         val bodyA = solverBodyA
         val bodyB = solverBodyB
         val rbA = bodyA.originalBody
         val rbB = bodyB.originalBody
 
-        friction = contactConstraint.originalContactPoint?.combinedRollingFriction ?: 0f
-        originalContactPoint = null
-
-        appliedImpulse = 0f
-        appliedPushImpulse = 0f
-
-        relPosA.set(contactConstraint.relPosA)
         normalAxis.scale(-1f, relPosACrossNormal)
         angularComponentA.set(Vec3f.ZERO)
         rbA.invInertiaTensor.transform(relPosACrossNormal, angularComponentA)
 
-        relPosB.set(contactConstraint.relPosB)
         relPosBCrossNormal.set(normalAxis)
         angularComponentB.set(Vec3f.ZERO)
         rbB.invInertiaTensor.transform(relPosBCrossNormal, angularComponentB)
@@ -235,7 +228,6 @@ class SolverConstraint {
         // iMJaB
         rbB.invInertiaTensor.transform(relPosBCrossNormal, tmpVec2)
         jacDiagABInv = 1f / (tmpVec1 * relPosACrossNormal + tmpVec2 * relPosBCrossNormal)
-        relaxation = contactConstraint.relaxation
 
 
         val velADotN = contactNormal * bodyA.linearVelocity + relPosACrossNormal * bodyA.angularVelocity
@@ -250,6 +242,4 @@ class SolverConstraint {
         lowerLimit = 0f
         upperLimit = 1e10f
     }
-
-    private fun restitutionCurve(relVel: Float, restitution: Float) = restitution * -relVel
 }

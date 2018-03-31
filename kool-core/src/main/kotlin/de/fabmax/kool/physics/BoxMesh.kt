@@ -28,11 +28,12 @@ class BoxMesh(val world: CollisionWorld) : LineMesh() {
     }
 
     private fun updateBoxVerts(body: RigidBody, idx: Int) {
-        val color = if (body.isInCollision) {
-            Color.MD_RED
-        } else {
-            Color.MD_GREEN
+        val color = when {
+            body.isStaticOrKinematic -> Color.MD_AMBER
+            body.isInCollision -> Color.MD_RED
+            else -> Color.MD_GREEN
         }
+
         for (i in 0..7) {
             vert.index = idx + i
             vert.color.set(color)

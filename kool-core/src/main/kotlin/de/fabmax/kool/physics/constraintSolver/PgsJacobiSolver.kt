@@ -1,6 +1,9 @@
 package de.fabmax.kool.physics.constraintSolver
 
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.FLT_EPSILON
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.isFuzzyZero
 import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.physics.collision.Contact
 import de.fabmax.kool.util.ObjectRecycler
@@ -32,23 +35,19 @@ import kotlin.math.sqrt
  */
 class PgsJacobiSolver {
 
-    private val usePgs = true
     private var maxOverrideNumSolverIterations = 0
-    private val numSplitImpulseRecoveries = 0
-    private var solveCnt = 0
 
     private val infoGlobal = ContactSolverInfo()
 
     private val contactPointPool = ObjectPool { ContactPoint() }
     private val solverBodyPool = ObjectPool { SolverBody() }
-    private val contactConstraintPool = ObjectPool { SolverConstraint() }
-    private val contactFrictionConstraintPool = ObjectPool { SolverConstraint() }
-    private val contactRollingConstraintPool = ObjectPool { SolverConstraint() }
+    private val contactConstraintPool = ObjectPool { ContactConstraint() }
+    private val contactFrictionConstraintPool = ObjectPool { FrictionConstraint() }
+    private val contactRollingConstraintPool = ObjectPool { RollingFrictionConstraint() }
 
     private val tmpVec1 = MutableVec3f()
     private val tmpVec2 = MutableVec3f()
     private val tmpVec3 = MutableVec3f()
-    private val tmpMat3 = Mat3f()
 
     init {
         infoGlobal.splitImpulse = false
@@ -58,9 +57,6 @@ class PgsJacobiSolver {
     }
 
     fun solveContacts(bodies: List<RigidBody>, contacts: List<Contact>) {
-        solveCnt++
-        //println("solver run $solveCnt, vA=${contacts[0].bodyA!!.velocity}, vB=${contacts[0].bodyB!!.velocity}")
-
         solveGroupSetup(bodies, contacts)
         solveGroupIterations()
         solveGroupFinish()
@@ -75,13 +71,13 @@ class PgsJacobiSolver {
     }
 
     private fun convertContact(contact: Contact) {
-        if (contact.bodyA?.mass?.isFuzzyZero() == true && contact.bodyB?.mass?.isFuzzyZero() == true) {
+        if (contact.bodyA.mass.isFuzzyZero() && contact.bodyB.mass.isFuzzyZero()) {
             // don't do collision between two static objects
             return
         }
 
-        val solverBodyA = solverBodyPool.get().initSolverBody(contact.bodyA!!)
-        val solverBodyB = solverBodyPool.get().initSolverBody(contact.bodyB!!)
+        val solverBodyA = solverBodyPool.get().initSolverBody(contact.bodyA)
+        val solverBodyB = solverBodyPool.get().initSolverBody(contact.bodyB)
 
         var rollingFrictionCnt = 1
         for (i in contact.worldPosB.indices) {
@@ -169,25 +165,25 @@ class PgsJacobiSolver {
         }
     }
 
-    private fun addFrictionConstraint(normalAxis: Vec3f, contactConstraint: SolverConstraint, desiredVelocity: Float = 0f, cfmSlip: Float = 0f): SolverConstraint {
+    private fun addFrictionConstraint(normalAxis: Vec3f, contactConstraint: ContactConstraint, desiredVelocity: Float = 0f, cfmSlip: Float = 0f): SolverConstraint {
         val frictionConstraint = contactFrictionConstraintPool.get()
         frictionConstraint.contactConstraint = contactConstraint
         frictionConstraint.setupFrictionConstraint(normalAxis, contactConstraint, desiredVelocity, cfmSlip)
         return frictionConstraint
     }
 
-    private fun addRollingFrictionConstraint(normalAxis: Vec3f, contactConstraint: SolverConstraint, desiredVelocity: Float = 0f, cfmSlip: Float = 0f): SolverConstraint {
+    private fun addRollingFrictionConstraint(normalAxis: Vec3f, contactConstraint: ContactConstraint, desiredVelocity: Float = 0f, cfmSlip: Float = 0f): SolverConstraint {
         val frictionConstraint = contactRollingConstraintPool.get()
         frictionConstraint.contactConstraint = contactConstraint
         frictionConstraint.setupRollingFrictionConstraint(normalAxis, contactConstraint, desiredVelocity, cfmSlip)
         return frictionConstraint
     }
 
-    private fun setFrictionConstraintImpulse(contactConstraint: SolverConstraint) {
+    private fun setFrictionConstraintImpulse(contactConstraint: ContactConstraint) {
         val bodyA = contactConstraint.solverBodyA
         val bodyB = contactConstraint.solverBodyB
 
-        val cp = contactConstraint.originalContactPoint!!
+        val cp = contactConstraint.originalContactPoint
         val frictionConstraint1 = contactConstraint.frictionConstraint1!!
         if (infoGlobal.isSolverMode(ContactSolverInfo.SOLVER_USE_WARMSTARTING)) {
             frictionConstraint1.appliedImpulse = cp.appliedImpulseLateral1 * infoGlobal.warmstartingFactor
@@ -223,7 +219,6 @@ class PgsJacobiSolver {
 
     private fun getContactProcessingThreshold(contact: Contact): Float = 0.02f
 
-
     private fun solveGroupIterations() {
         // this is a special step to resolve penetrations (just for contacts)
         solveGroupSplitImpulseIterations()
@@ -245,9 +240,10 @@ class PgsJacobiSolver {
     }
 
     private fun solveSingleIteration(iteration: Int) {
-        if (infoGlobal.isSolverMode(ContactSolverInfo.SOLVER_RANDOMIZE_ORDER)) {
-            TODO("randomize constraint order - not yet implemented")
-        }
+//        // todo:
+//        if (infoGlobal.isSolverMode(ContactSolverInfo.SOLVER_RANDOMIZE_ORDER)) {
+//            TODO("randomize constraint order - not yet implemented")
+//        }
 
         // todo: solve all joint constraints
 
@@ -260,7 +256,7 @@ class PgsJacobiSolver {
             // solve all friction constraints
             for (j in 0 until contactFrictionConstraintPool.size) {
                 val constraint = contactFrictionConstraintPool[j]
-                val totalImpulse = constraint.contactConstraint!!.appliedImpulse
+                val totalImpulse = constraint.contactConstraint.appliedImpulse
                 if (totalImpulse > 0) {
                     constraint.lowerLimit = constraint.friction * -totalImpulse
                     constraint.upperLimit = constraint.friction * totalImpulse
@@ -272,7 +268,7 @@ class PgsJacobiSolver {
             // solve all rolling friction constraints
             for (j in 0 until contactRollingConstraintPool.size) {
                 val constraint = contactFrictionConstraintPool[j]
-                val totalImpulse = constraint.contactConstraint!!.appliedImpulse
+                val totalImpulse = constraint.contactConstraint.appliedImpulse
                 if (totalImpulse > 0) {
                     var rollingFrictionMagnitude = constraint.friction * totalImpulse
                     if (rollingFrictionMagnitude > constraint.friction) {
@@ -293,7 +289,7 @@ class PgsJacobiSolver {
 
         var deltaImpulse = contConst.rhs - contConst.appliedImpulse * contConst.cfm
         val deltaVelADotn = contConst.contactNormal * bodyA.deltaLinearVelocity + contConst.relPosACrossNormal * bodyA.deltaAngularVelocity
-        val deltaVelBDotn = contConst.contactNormal * bodyB.deltaLinearVelocity + contConst.relPosBCrossNormal * bodyB.deltaAngularVelocity
+        val deltaVelBDotn = -(contConst.contactNormal * bodyB.deltaLinearVelocity) + contConst.relPosBCrossNormal * bodyB.deltaAngularVelocity
 
         deltaImpulse -= deltaVelADotn * contConst.jacDiagABInv
         deltaImpulse -= deltaVelBDotn * contConst.jacDiagABInv
@@ -310,7 +306,7 @@ class PgsJacobiSolver {
         //println("deltaImp=${contConst.appliedImpulse}, deltaVelADotn=$deltaVelADotn, deltaVelBDotn=$deltaVelBDotn, va=${bodyA.deltaLinearVelocity}, vb=${bodyB.deltaLinearVelocity}")
 
         bodyA.internalApplyImpulse(tmpVec1.set(contConst.contactNormal).mul(bodyA.invMass), contConst.angularComponentA, deltaImpulse)
-        bodyB.internalApplyImpulse(tmpVec1.set(contConst.contactNormal).mul(bodyB.invMass), contConst.angularComponentB, deltaImpulse)
+        bodyB.internalApplyImpulse(tmpVec1.set(contConst.contactNormal).scale(-1f).mul(bodyB.invMass), contConst.angularComponentB, deltaImpulse)
     }
 
     private fun resolveSingleConstraintRowGeneric(contConst: SolverConstraint) {
@@ -319,7 +315,7 @@ class PgsJacobiSolver {
 
         var deltaImpulse = contConst.rhs - contConst.appliedImpulse * contConst.cfm
         val deltaVelADotn = contConst.contactNormal * bodyA.deltaLinearVelocity + contConst.relPosACrossNormal * bodyA.deltaAngularVelocity
-        val deltaVelBDotn = contConst.contactNormal * bodyB.deltaLinearVelocity + contConst.relPosBCrossNormal * bodyB.deltaAngularVelocity
+        val deltaVelBDotn = -(contConst.contactNormal * bodyB.deltaLinearVelocity) + contConst.relPosBCrossNormal * bodyB.deltaAngularVelocity
 
         deltaImpulse -= deltaVelADotn * contConst.jacDiagABInv
         deltaImpulse -= deltaVelBDotn * contConst.jacDiagABInv
@@ -342,17 +338,17 @@ class PgsJacobiSolver {
         //println("deltaAngV=${bodyA.deltaAngularVelocity} deltaI=$deltaImpulse, deltaVelADotn=$deltaVelADotn, ${contConst.relPosACrossNormal}")
 
         bodyA.internalApplyImpulse(tmpVec1.set(contConst.contactNormal).mul(bodyA.invMass), contConst.angularComponentA, deltaImpulse)
-        bodyB.internalApplyImpulse(tmpVec1.set(contConst.contactNormal).mul(bodyB.invMass), contConst.angularComponentB, deltaImpulse)
+        bodyB.internalApplyImpulse(tmpVec1.set(contConst.contactNormal).scale(-1f).mul(bodyB.invMass), contConst.angularComponentB, deltaImpulse)
     }
 
-    private fun resolveSplitPenetrationImpulse(contConst: SolverConstraint) {
+    private fun resolveSplitPenetrationImpulse(contConst: ContactConstraint) {
         if (contConst.rhsPenetration != 0f) {
             val bodyA = contConst.solverBodyA
             val bodyB = contConst.solverBodyB
 
             var deltaImpulse = contConst.rhsPenetration - contConst.appliedPushImpulse * contConst.cfm
             val deltaVelADotn = contConst.contactNormal * bodyA.pushVelocity + contConst.relPosACrossNormal * bodyA.turnVelocity
-            val deltaVelBDotn = contConst.contactNormal * bodyB.pushVelocity + contConst.relPosBCrossNormal * bodyB.turnVelocity
+            val deltaVelBDotn = -(contConst.contactNormal * bodyB.pushVelocity) + contConst.relPosBCrossNormal * bodyB.turnVelocity
 
             deltaImpulse -= deltaVelADotn * contConst.jacDiagABInv
             deltaImpulse -= deltaVelBDotn * contConst.jacDiagABInv
@@ -367,7 +363,7 @@ class PgsJacobiSolver {
             }
 
             bodyA.internalApplyPushImpulse(tmpVec1.set(contConst.contactNormal).mul(bodyA.invMass), contConst.angularComponentA, deltaImpulse)
-            bodyB.internalApplyPushImpulse(tmpVec1.set(contConst.contactNormal).mul(bodyB.invMass), contConst.angularComponentB, deltaImpulse)
+            bodyB.internalApplyPushImpulse(tmpVec1.set(contConst.contactNormal).scale(-1f).mul(bodyB.invMass), contConst.angularComponentB, deltaImpulse)
         }
     }
 
@@ -375,7 +371,7 @@ class PgsJacobiSolver {
         if (infoGlobal.isSolverMode(ContactSolverInfo.SOLVER_USE_WARMSTARTING)) {
             for (i in 0 until contactConstraintPool.size) {
                 val constraint = contactConstraintPool[i]
-                val cp = constraint.originalContactPoint!!
+                val cp = constraint.originalContactPoint
 
                 cp.appliedImpulse = constraint.appliedImpulse
                 cp.appliedImpulseLateral1 = constraint.frictionConstraint1!!.appliedImpulse

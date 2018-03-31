@@ -9,16 +9,17 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
 
     var name = "RigidBody-${nInstances++}"
 
+    val isStaticOrKinematic: Boolean
+        get() = mass == 0f
+
     val worldTransform: Mat4f
         get() = shape.transform
-    private val unpredictedWorldTransform = Mat4f()
-
     val centerOfMass: MutableVec3f
         get() = shape.center
-    val invInertiaTensor = Mat3f()
-    private val tmpMat3 = Mat3f()
+    private val unpredictedWorldTransform = Mat4f()
 
-    val invMass = if (mass > 0) 1f / mass else 0f
+    val invInertiaTensor = Mat3f()
+    val invMass = if (!isStaticOrKinematic) 1f / mass else 0f
 
     val velocity = MutableVec3f()
     val acceleration: Vec3f
@@ -39,6 +40,7 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
     private val tmpPosLocal = MutableVec3f()
     private val tmpQuat1 = MutableVec4f()
     private val tmpQuat2 = MutableVec4f()
+    private val tmpMat3 = Mat3f()
 
     var isInCollision = false
 
@@ -65,24 +67,6 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
             tmpVec.scale(dt)
             centerOfMass.add(tmpVec)
             tmpPosLocal.set(centerOfMass)
-
-//            // compute angular acceleration caused by applied torque
-//            tmpVec.set(torque).subtract(prevTorque).scale(0.5f).add(prevTorque)
-//            prevTorque.set(torque)
-//            invInertiaTensor.transform(tmpVec)
-//            mutAngularAcceleration.set(tmpVec)
-//
-//            // update angular velocity (and apply some constant damping factor)
-//            tmpVec.scale(dt).add(angularVelocity).scale(ANGULAR_DAMPING)
-//            angularVelocity.set(tmpVec)
-//
-//            // update rotation based on angular velocity and time step
-//            tmpVec.scale(dt * RAD_2_DEG.toFloat())
-//            // todo: use faster quaternion transform
-//            worldTransform.rotate(tmpVec.x, Vec3f.X_AXIS)
-//            worldTransform.rotate(tmpVec.y, Vec3f.Y_AXIS)
-//            worldTransform.rotate(tmpVec.z, Vec3f.Z_AXIS)
-
 
             var fAngle = angularVelocity.length()
             // limit the angular motion
@@ -111,18 +95,28 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
         torque.set(Vec3f.ZERO)
     }
 
-    fun predictIntegratedTransform(timeStep: Float) {
+    fun predictIntegratedTransform(dt: Float) {
         if (invMass > 0) {
             unpredictedWorldTransform.set(worldTransform)
 
-            tmpVec.set(velocity).scale(timeStep)
-            centerOfMass += tmpVec
+            tmpVec.set(velocity).scale(dt).add(centerOfMass)
 
-            tmpVec.set(angularVelocity).scale(timeStep * RAD_2_DEG.toFloat())
-            // todo: use faster quaternion transform
-            worldTransform.rotate(tmpVec.x, Vec3f.X_AXIS)
-            worldTransform.rotate(tmpVec.y, Vec3f.Y_AXIS)
-            worldTransform.rotate(tmpVec.z, Vec3f.Z_AXIS)
+            var fAngle = angularVelocity.length()
+            // limit the angular motion
+            if (fAngle * dt > ANGULAR_MOTION_THRESHOLD) {
+                fAngle = ANGULAR_MOTION_THRESHOLD / dt
+            }
+
+            // determine rotation axis, tmoVec1
+            if (fAngle < 0.001f) {
+                // use Taylor's expansions of sync function
+                tmpVec.set(angularVelocity).scale(0.5f * dt - dt * dt * dt * 0.020833333333f * fAngle * fAngle)
+            } else {
+                tmpVec.set(angularVelocity).scale(sin(0.5f * fAngle * dt) / fAngle)
+            }
+            tmpQuat1.set(tmpVec, cos(fAngle * dt * 0.5f))
+            worldTransform.getRotation(tmpQuat2)
+            tmpQuat1.quatProduct(tmpQuat2).norm()
         }
     }
 

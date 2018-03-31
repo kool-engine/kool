@@ -2,7 +2,9 @@ package de.fabmax.kool.physics.collision
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.RigidBody
+import de.fabmax.kool.util.ObjectRecycler
 
 /**
  * Ported version of b3Contact4
@@ -24,7 +26,7 @@ import de.fabmax.kool.physics.RigidBody
  *    software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-class Contact {
+class Contact internal constructor(){
     // w component of world pos holds penetration depth
     val worldPosB = mutableListOf<MutableVec4f>()
     val worldNormalOnB = MutableVec3f()
@@ -32,6 +34,74 @@ class Contact {
     var frictionCoeff = 0f
     var batchIdx = 0
 
-    var bodyA: RigidBody? = null
-    var bodyB: RigidBody? = null
+    lateinit var bodyA: RigidBody
+    lateinit var bodyB: RigidBody
+
+    fun initContact(bodyA: RigidBody, bodyB: RigidBody): Contact {
+        this.bodyA = bodyA
+        this.bodyB = bodyB
+        worldNormalOnB.set(Vec3f.ZERO)
+        restitutionCoeff = 0f
+        frictionCoeff = 0.7f
+        batchIdx = 0
+
+        if (!worldPosB.isEmpty()) {
+            // this shouldn't happen
+            worldPosB.clear()
+        }
+
+        return this
+    }
+}
+
+/**
+ * Container class for [Contact]s. Recycles all objects for less GC load.
+ */
+class Contacts {
+    private val contactRecycler = ObjectRecycler { Contact() }
+    private val vec4Recycler = ObjectRecycler { MutableVec4f() }
+    private val liveContacts = mutableListOf<Contact>()
+
+    val contacts: List<Contact>
+        get() = liveContacts
+
+    fun addNewContact(bodyA: RigidBody, bodyB: RigidBody): Contact {
+        val c = contactRecycler.get().initContact(bodyA, bodyB)
+        liveContacts += c
+        return c
+    }
+
+    inline fun addContact(bodyA: RigidBody, bodyB: RigidBody, block: Contact.() -> Unit): Contact {
+        val c = addNewContact(bodyA, bodyB)
+        c.block()
+        return c
+    }
+
+    fun newWorldPosVec(pos: Vec3f, depth: Float): MutableVec4f {
+        val vec4 = vec4Recycler.get()
+        vec4.set(pos, depth)
+        return vec4
+    }
+
+    fun clearContacts() {
+        for (i in liveContacts.indices) {
+            val c = liveContacts[i]
+            for (j in c.worldPosB.indices) {
+                vec4Recycler.recycle(c.worldPosB[j])
+            }
+            c.worldPosB.clear()
+            contactRecycler.recycle(c)
+        }
+        liveContacts.clear()
+    }
+
+    fun dumpContacts() {
+        println("${contacts.size} contacts:")
+        for (c in contacts) {
+            println("a: ${c.bodyA}, b: ${c.bodyB}, normal = ${c.worldNormalOnB}")
+            for (pt in c.worldPosB) {
+                println("  $pt")
+            }
+        }
+    }
 }
