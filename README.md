@@ -9,11 +9,15 @@ Android build can be disabled by removing the two android modules from settings.
 
 For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo).
-
 The hamburger-button in the upper-left corner triggers the demo chooser menu. Code for
-all demos is available in kool-demo sub-project. 
+all demos is available in kool-demo sub-project.
+
+I started to port a few parts of [Bullet Physics](https://github.com/bulletphysics/bullet3). However, it's work in
+progress and still in a super early state: Only supported shape are boxes, no joints and there is no real broadphase
+yet. That's fine for [three boxes](https://fabmax.github.io/kool/kool-js/?demo=boxDemo) but probably not much more.
 
 ## Features / Noticeable stuff:
+- Some super-primitive [Physics Simulation](https://fabmax.github.io/kool/kool-js/?demo=boxDemo)
 - Full support of all features on all platforms
 - Multi-touch support (on Android and Javascript / WebGL)
 - New procedural [Tree Demo](https://fabmax.github.io/kool/kool-js/?demo=treeDemo)
@@ -120,4 +124,4 @@ fun main(args: Array<String>) {
 
 - [Bullet Physics](https://github.com/bulletphysics/bullet3)
 
-  Ported some Bullet code for box-box collision detection
+  Awesome open-source physics engine. Ported some parts of it.

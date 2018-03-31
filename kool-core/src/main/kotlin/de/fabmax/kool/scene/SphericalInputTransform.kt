@@ -86,6 +86,10 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         smoothness = 0.5f
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
+
+        onPreRender += { ctx ->
+            doCamTransform(ctx)
+        }
     }
 
     fun setMouseRotation(vertical: Float, horizontal: Float) {
@@ -122,7 +126,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
     }
 
-    override fun render(ctx: KoolContext) {
+    private fun doCamTransform(ctx: KoolContext) {
         val scene = this.scene ?: return
 
         if (panMethod.computePanPoint(pointerHit, scene, ptrPos, ctx)) {
@@ -279,16 +283,14 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 }
 
 abstract class PanBase {
-    abstract fun computePanPoint(result: MutableVec3f,
-                                 scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean
+    abstract fun computePanPoint(result: MutableVec3f, scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean
 }
 
 class CameraOrthogonalPan : PanBase() {
     val panPlane = Plane()
     private val pointerRay = Ray()
 
-    override fun computePanPoint(result: MutableVec3f,
-                                 scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
+    override fun computePanPoint(result: MutableVec3f, scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
         panPlane.p.set(scene.camera.globalLookAt)
         panPlane.n.set(scene.camera.globalLookDir)
         return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, ctx) &&
@@ -304,8 +306,7 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
         panPlane.n.set(planeNormal)
     }
 
-    override fun computePanPoint(result: MutableVec3f,
-                                 scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
+    override fun computePanPoint(result: MutableVec3f, scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
         panPlane.p.set(scene.camera.globalLookAt)
         return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, ctx) &&
                 panPlane.intersectionPoint(result, pointerRay)

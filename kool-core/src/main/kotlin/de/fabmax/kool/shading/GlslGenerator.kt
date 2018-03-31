@@ -352,7 +352,7 @@ open class GlslGenerator {
         if (shadowMap != null) {
             fun addSample(x: Int, y: Int) {
                 text.append("shadowMapDepth = $texSampler(shadowTex, projPos.xy + vec2(float($x) * off, float($y) * off)).x;\n")
-                text.append("factor += clamp((shadowMapDepth - (projPos.z - accLvl)) * 1e6, 0.0, 1.0);\n")
+                text.append("factor += step(projPos.z + accLvl, shadowMapDepth);\n")
             }
 
             text.append("float calcShadowFactor(sampler2D shadowTex, vec3 projPos, float off, float accLvl) {\n")
@@ -415,7 +415,7 @@ open class GlslGenerator {
                 text.append("if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[$i]) {\n")
                 text.append("  vec3 projPos = $V_POSITION_LIGHTSPACE[$i].xyz / $V_POSITION_LIGHTSPACE[$i].w;\n")
                 text.append("  float off = 1.0 / float($U_SHADOW_TEX_SZ[$i]);\n")
-                text.append("  shadowFactor = calcShadowFactor(${U_SHADOW_TEX}_$i, projPos, off, ${i+1}.0 * 0.001);\n")
+                text.append("  shadowFactor = calcShadowFactor(${U_SHADOW_TEX}_$i, projPos, off, 0.0005);\n")
                 text.append("}\n")
                 if (i < shadowMap.numMaps - 1) {
                     text.append("else ")

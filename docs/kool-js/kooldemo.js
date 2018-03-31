@@ -3,7 +3,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var createContext = $module$kool.de.fabmax.kool.createContext;
   var split = Kotlin.kotlin.text.split_ip8yn$;
+  var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var Unit = Kotlin.kotlin.Unit;
+  var sphericalInputTransform = $module$kool.de.fabmax.kool.scene.sphericalInputTransform_6sxffc$;
+  var CollisionWorld = $module$kool.de.fabmax.kool.physics.CollisionWorld;
+  var uniformMassBox = $module$kool.de.fabmax.kool.physics.uniformMassBox_7b5o5w$;
+  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
+  var staticBox = $module$kool.de.fabmax.kool.physics.staticBox_y2kzbl$;
+  var BoxMesh = $module$kool.de.fabmax.kool.physics.BoxMesh;
+  var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
+  var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
+  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
   var UiTheme = $module$kool.de.fabmax.kool.scene.ui.UiTheme;
   var BlankComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlankComponentUi;
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
@@ -23,10 +33,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   var ToggleButtonUi = $module$kool.de.fabmax.kool.scene.ui.ToggleButtonUi;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
-  var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
-  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
   var Color = $module$kool.de.fabmax.kool.util.Color;
-  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
   var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
   var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
@@ -48,7 +55,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var InputManager$DragHandler = $module$kool.de.fabmax.kool.InputManager.DragHandler;
   var SphericalInputTransform$DragMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.DragMethod;
   var SphericalInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.ZoomMethod;
-  var sphericalInputTransform = $module$kool.de.fabmax.kool.scene.sphericalInputTransform_6sxffc$;
   var ensureNotNull = Kotlin.ensureNotNull;
   var throwUPAE = Kotlin.throwUPAE;
   var Font = $module$kool.de.fabmax.kool.util.Font;
@@ -64,11 +70,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
-  var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
   var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
   var lineMesh = $module$kool.de.fabmax.kool.util.lineMesh_6a24eg$;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
-  var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var loadMesh = $module$kool.de.fabmax.kool.util.serialization.loadMesh_fqrh44$;
   var Armature = $module$kool.de.fabmax.kool.scene.animation.Armature;
   var Label = $module$kool.de.fabmax.kool.scene.ui.Label;
@@ -180,6 +184,63 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     return params;
   }
+  function collisionDemo$lambda$lambda(this$) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(this$.camera);
+      return Unit;
+    };
+  }
+  function collisionDemo(ctx) {
+    var $receiver = new Scene(null);
+    $receiver.light.direction.set_y2kzbl$(1.0, 0.8, 0.4);
+    $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
+    $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, collisionDemo$lambda$lambda($receiver)));
+    $receiver.unaryPlus_uv0sim$(makeGroundGrid(10, $receiver.defaultShadowMap, -1.99, false, false));
+    $receiver.unaryPlus_uv0sim$(twoBoxes($receiver.defaultShadowMap));
+    return $receiver;
+  }
+  function twoBoxes$lambda$lambda(closure$sceneShadowMap) {
+    return function ($receiver) {
+      $receiver.colorModel = ColorModel.VERTEX_COLOR;
+      $receiver.lightModel = LightModel.PHONG_LIGHTING;
+      $receiver.shadowMap = closure$sceneShadowMap;
+      return Unit;
+    };
+  }
+  function twoBoxes$lambda$lambda_0(closure$world, this$) {
+    return function ($receiver, ctx) {
+      closure$world.stepSimulation_mx4ult$(ctx.deltaT);
+      this$.updateBoxes();
+      return Unit;
+    };
+  }
+  function twoBoxes(sceneShadowMap) {
+    var world = new CollisionWorld();
+    world.gravity.set_y2kzbl$(0.0, -1.0, 0.0);
+    var box1 = uniformMassBox(1.0, 1.0, 1.0, 1.0);
+    box1.name = 'smallBox';
+    var $receiver = box1.shape;
+    $receiver.center.set_y2kzbl$(1.0, 1.0, 0.0);
+    $receiver.transform.rotate_ad55pp$(-5.0, Vec3f.Companion.Z_AXIS);
+    $receiver.transform.rotate_ad55pp$(-5.0, Vec3f.Companion.Y_AXIS);
+    var box2 = uniformMassBox(2.5, 1.0, 3.0, 7.5);
+    box2.name = 'bigBox';
+    var $receiver_0 = box2.shape;
+    $receiver_0.center.set_y2kzbl$(0.0, -0.5, 0.0);
+    $receiver_0.transform.rotate_ad55pp$(5.0, Vec3f.Companion.X_AXIS);
+    $receiver_0.transform.rotate_ad55pp$(10.0, Vec3f.Companion.Z_AXIS);
+    world.bodies.add_11rb$(box1);
+    world.bodies.add_11rb$(box2);
+    var tmp$ = world.bodies;
+    var $receiver_1 = staticBox(10.0, 0.2, 10.0);
+    $receiver_1.centerOfMass.set_y2kzbl$(0.0, -2.1, 0.0);
+    $receiver_1.name = 'Ground';
+    tmp$.add_11rb$($receiver_1);
+    var $receiver_2 = new BoxMesh(world);
+    $receiver_2.shader = basicShader(twoBoxes$lambda$lambda(sceneShadowMap));
+    $receiver_2.onPreRender.add_11rb$(twoBoxes$lambda$lambda_0(world, $receiver_2));
+    return $receiver_2;
+  }
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
   var Map = Kotlin.kotlin.collections.Map;
   function Demo(ctx, startScene) {
@@ -189,7 +250,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('Simple Demo', Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('simpleDemo', this.defaultScene_0), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda)), to('pointDemo', new Demo$DemoEntry('Point Cloud Demo', Demo$demos$lambda_0)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_1)), to('earthDemo', new Demo$DemoEntry('Earth Demo', Demo$demos$lambda_2)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_4))]);
+    this.demos_0 = mutableMapOf([to('simpleDemo', this.defaultScene_0), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda)), to('pointDemo', new Demo$DemoEntry('Point Cloud Demo', Demo$demos$lambda_0)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_1)), to('earthDemo', new Demo$DemoEntry('Earth Demo', Demo$demos$lambda_2)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_4)), to('boxDemo', new Demo$DemoEntry('Physics Demo', Demo$demos$lambda_5))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.demoOverlay_0(ctx);
@@ -371,6 +432,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function Demo$demos$lambda_4($receiver, it) {
     $receiver.addAll_brywnq$(treeScene(it));
+    return Unit;
+  }
+  function Demo$demos$lambda_5($receiver, it) {
+    $receiver.add_11rb$(collisionDemo(it));
     return Unit;
   }
   Demo.$metadata$ = {
@@ -899,7 +964,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var d = -ldo - Math_0.sqrt(sqr);
         l.scale_749b8l$(d, this.tmpVec_0).add_czzhiu$(o);
         this.tmpVec_0.norm();
-        if (this.tmpVec_0.isEqual_czzhiu$(this.tmpVecY_0)) {
+        if (this.tmpVec_0.isFuzzyEqual_2qa7tb$(this.tmpVecY_0)) {
           return false;
         }
         this.tmpVecY_0.cross_2gj7b4$(this.tmpVec_0, this.tmpVecRt_0).norm();
@@ -1180,7 +1245,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return cos < 0.1;
     }
      else if (!this.isTexLoaded) {
-      ctx.textureMgr.bindTexture_dletmp$(tex, ctx);
+      ctx.textureMgr.bindTexture_xyx3x4$(tex, ctx);
     }
     return false;
   };
@@ -1428,14 +1493,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function makeGroundGrid$lambda$lambda_0(closure$groundExt, closure$y, closure$shadows) {
+  function makeGroundGrid$lambda$lambda_0(closure$xRayLines, closure$groundExt, closure$y, closure$shadows) {
     return function ($receiver) {
       var tmp$;
       $receiver.isCastingShadow = false;
-      $receiver.isXray = true;
+      $receiver.isXray = closure$xRayLines;
       tmp$ = closure$groundExt;
       for (var i = -closure$groundExt | 0; i <= tmp$; i++) {
-        var color = Color.Companion.LIGHT_GRAY.withAlpha_mx4ult$(0.5);
+        var color = Color.Companion.MD_GREY_600;
         $receiver.addLine_b8opkg$(new Vec3f(i, closure$y, -closure$groundExt), color, new Vec3f(i, closure$y, closure$groundExt), color);
         $receiver.addLine_b8opkg$(new Vec3f(-closure$groundExt, closure$y, i), color, new Vec3f(closure$groundExt, closure$y, i), color);
       }
@@ -1443,20 +1508,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function makeGroundGrid$lambda(closure$cells, closure$y, closure$shadows) {
+  function makeGroundGrid$lambda(closure$cells, closure$solid, closure$y, closure$shadows, closure$xRayLines) {
     return function ($receiver) {
       var groundExt = closure$cells / 2 | 0;
-      $receiver.unaryPlus_uv0sim$(colorMesh(void 0, makeGroundGrid$lambda$lambda(groundExt, closure$y, closure$shadows)));
-      $receiver.unaryPlus_uv0sim$(lineMesh(void 0, makeGroundGrid$lambda$lambda_0(groundExt, closure$y, closure$shadows)));
+      if (closure$solid) {
+        $receiver.unaryPlus_uv0sim$(colorMesh(void 0, makeGroundGrid$lambda$lambda(groundExt, closure$y, closure$shadows)));
+      }
+      $receiver.unaryPlus_uv0sim$(lineMesh(void 0, makeGroundGrid$lambda$lambda_0(closure$xRayLines, groundExt, closure$y, closure$shadows)));
       return Unit;
     };
   }
-  function makeGroundGrid(cells, shadows, y) {
+  function makeGroundGrid(cells, shadows, y, solid, xRayLines) {
     if (shadows === void 0)
       shadows = null;
     if (y === void 0)
       y = 0.0;
-    return group(void 0, makeGroundGrid$lambda(cells, y, shadows));
+    if (solid === void 0)
+      solid = true;
+    if (xRayLines === void 0)
+      xRayLines = true;
+    return group(void 0, makeGroundGrid$lambda(cells, solid, y, shadows, xRayLines));
   }
   function modelScene$lambda$lambda$lambda$lambda(this$, closure$mesh) {
     return function ($receiver) {
@@ -2833,6 +2904,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       if ((tmp$ = closure$trunkMesh.v) != null) {
         var closure$treeGen_0 = closure$treeGen;
         var $this = tmp$.meshData;
+        var wasBatchUpdate = $this.isBatchUpdate;
         $this.isBatchUpdate = true;
         $this.clear();
         var builder = new MeshBuilder($this);
@@ -2848,11 +2920,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           $this_0.printer(level, tag, 'Generated ' + ($this.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + formatDouble(now() - t, 3) + ' ms');
         }
         $this.isSyncRequired = true;
-        $this.isBatchUpdate = false;
+        $this.isBatchUpdate = wasBatchUpdate;
       }
       if ((tmp$_0 = closure$leafMesh.v) != null) {
         var closure$treeGen_1 = closure$treeGen;
         var $this_1 = tmp$_0.meshData;
+        var wasBatchUpdate_0 = $this_1.isBatchUpdate;
         $this_1.isBatchUpdate = true;
         $this_1.clear();
         var builder_0 = new MeshBuilder($this_1);
@@ -2868,7 +2941,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           $this_2.printer(level_0, tag_0, 'Generated ' + ($this_1.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + formatDouble(now() - t_0, 3) + ' ms');
         }
         $this_1.isSyncRequired = true;
-        $this_1.isBatchUpdate = false;
+        $this_1.isBatchUpdate = wasBatchUpdate_0;
       }
       return Unit;
     };
@@ -3208,7 +3281,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     tmp$ = this.children.iterator();
     while (tmp$.hasNext()) {
       var c = tmp$.next();
-      if (c.isEqual_czzhiu$(node)) {
+      if (c.isFuzzyEqual_2qa7tb$(node)) {
         return true;
       }
     }
@@ -3623,12 +3696,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   _.main = main;
   _.getParams = getParams;
+  $$importsForInline$$.kool = $module$kool;
   var package$de = _.de || (_.de = {});
   var package$fabmax = package$de.fabmax || (package$de.fabmax = {});
   var package$kool = package$fabmax.kool || (package$fabmax.kool = {});
   var package$demo = package$kool.demo || (package$kool.demo = {});
+  package$demo.collisionDemo_aemszp$ = collisionDemo;
+  package$demo.twoBoxes_2x728q$ = twoBoxes;
   package$demo.Demo = Demo;
-  $$importsForInline$$.kool = $module$kool;
   package$demo.MenuButtonUi = MenuButtonUi;
   Object.defineProperty(Earth, 'Companion', {
     get: Earth$Companion_getInstance
@@ -3646,7 +3721,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   });
   package$earth.TileName = TileName;
   package$earth.LatLon = LatLon;
-  package$demo.makeGroundGrid_26v3kb$ = makeGroundGrid;
+  package$demo.makeGroundGrid_pbw97v$ = makeGroundGrid;
   package$demo.modelScene_aemszp$ = modelScene;
   package$demo.multiScene_aemszp$ = multiScene;
   package$demo.pointScene = pointScene;

@@ -42,7 +42,7 @@ class Contact internal constructor(){
         this.bodyB = bodyB
         worldNormalOnB.set(Vec3f.ZERO)
         restitutionCoeff = 0f
-        frictionCoeff = 0.7f
+        frictionCoeff = 1f
         batchIdx = 0
 
         if (!worldPosB.isEmpty()) {

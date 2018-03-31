@@ -10,5 +10,5 @@ include 'kool-demo-js'
 
 // if android modules are present, IntelliJ can't start jvm target anymore?
 // anyway comment-out next two lines in case you experience issues with jvm / js build and uncomment to also build android version
-include 'kool-core-android'
-include 'kool-demo-android'
+//include 'kool-core-android'
+//include 'kool-demo-android'

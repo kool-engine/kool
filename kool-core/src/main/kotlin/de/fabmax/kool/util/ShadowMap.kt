@@ -5,6 +5,7 @@ import de.fabmax.kool.RenderPass
 import de.fabmax.kool.Texture
 import de.fabmax.kool.gl.Framebuffer
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
+import de.fabmax.kool.gl.GL_FRONT
 import de.fabmax.kool.gl.glClear
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec4f
@@ -86,7 +87,13 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val tex
         ctx.renderPass = RenderPass.SHADOW
         scene.camera = depthCam
 
+        ctx.pushAttributes()
+        ctx.cullFace = GL_FRONT
+        ctx.applyAttributes()
+
         nodeToRender.render(ctx)
+
+        ctx.popAttributes()
 
         scene.camera = camera
         ctx.renderPass = prevRenderPass

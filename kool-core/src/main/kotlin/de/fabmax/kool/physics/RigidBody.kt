@@ -48,14 +48,21 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
         updateInertiaTensor()
     }
 
+    fun applyGravity(dt: Float, world: CollisionWorld) {
+        if (!isStaticOrKinematic) {
+            world.gravity.scale(dt, tmpVec)
+            velocity += tmpVec
+        }
+    }
+
     fun stepSimulation(dt: Float, world: CollisionWorld) {
-        if (invMass > 0) {
+        if (!isStaticOrKinematic) {
             worldTransform.set(unpredictedWorldTransform)
 
             // compute linear acceleration caused by applied force and gravity
             tmpVec.set(force).subtract(prevForce).scale(0.5f).add(prevForce)
             prevForce.set(force)
-            tmpVec.scale(invMass).add(world.gravity)
+            tmpVec.scale(invMass)
             mutAcceleration.set(tmpVec)
 
             // update linear velocity
@@ -96,10 +103,10 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
     }
 
     fun predictIntegratedTransform(dt: Float) {
-        if (invMass > 0) {
+        if (!isStaticOrKinematic) {
             unpredictedWorldTransform.set(worldTransform)
 
-            tmpVec.set(velocity).scale(dt).add(centerOfMass)
+            tmpPosLocal.set(velocity).scale(dt).add(centerOfMass)
 
             var fAngle = angularVelocity.length()
             // limit the angular motion
@@ -117,6 +124,9 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
             tmpQuat1.set(tmpVec, cos(fAngle * dt * 0.5f))
             worldTransform.getRotation(tmpQuat2)
             tmpQuat1.quatProduct(tmpQuat2).norm()
+
+            worldTransform.setRotate(tmpQuat1)
+            centerOfMass.set(tmpPosLocal)
         }
     }
 

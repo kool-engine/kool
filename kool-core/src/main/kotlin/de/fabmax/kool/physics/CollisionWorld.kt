@@ -15,16 +15,24 @@ class CollisionWorld {
     private val solver = PgsJacobiSolver()
     private val contacts = Contacts()
 
-    var stop = false
+    private var realTime = 0.0
+    private var simTime = 0.0
+
+    private var timeStep = 1 / 90f
 
     fun stepSimulation(dt: Float) {
-        val timeStep = 1/60f
+        realTime += dt
 
-        if (!stop) {
+        while (simTime < realTime) {
+            simTime += timeStep
+
             for (i in bodies.indices) {
+                bodies[i].applyGravity(timeStep, this)
                 bodies[i].predictIntegratedTransform(timeStep)
             }
+
             broadPhase()
+
             for (i in bodies.indices) {
                 bodies[i].stepSimulation(timeStep, this)
             }
@@ -32,24 +40,21 @@ class CollisionWorld {
     }
 
     fun broadPhase() {
+        for (i in bodies.indices) {
+            bodies[i].isInCollision = false
+        }
+
         // it's super effective!
         for (i in bodies.indices) {
-            // only check non-static bodies for collisions
-            if (!bodies[i].isStaticOrKinematic) {
-                bodies[i].isInCollision = false
-                for (j in bodies.indices) {
-                    if (i != j) {
-                        val coll = collisionChecker.testForCollision(bodies[i], bodies[j], contacts) > 0
-                        bodies[i].isInCollision = bodies[i].isInCollision || coll
-                    }
-                }
+            for (j in i+1 until bodies.size) {
+                val coll = collisionChecker.testForCollision(bodies[i], bodies[j], contacts) > 0
+                bodies[i].isInCollision = bodies[i].isInCollision || coll
+                bodies[j].isInCollision = bodies[j].isInCollision || coll
             }
         }
 
         if (!contacts.contacts.isEmpty()) {
-            if (stop) {
-                contacts.dumpContacts()
-            }
+            //contacts.dumpContacts()
 
             // we got contacts, solve them!
             solver.solveContacts(bodies, contacts.contacts)
