@@ -4,6 +4,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.physics.collision.BoxBoxCollision
 import de.fabmax.kool.physics.collision.Contacts
 import de.fabmax.kool.physics.constraintSolver.PgsJacobiSolver
+import kotlin.math.min
 
 class CollisionWorld {
 
@@ -21,7 +22,8 @@ class CollisionWorld {
     private var timeStep = 1 / 90f
 
     fun stepSimulation(dt: Float) {
-        realTime += dt
+        // limit max step time to 0.1 secs, i.e. if fram rate goes below 10 fps, real time is not achieved anymore
+        realTime += min(dt, 0.1f)
 
         while (simTime < realTime) {
             simTime += timeStep

@@ -92,9 +92,7 @@ abstract class KoolContext {
 
         inputMgr.onNewFrame(this)
         textureMgr.onNewFrame(this)
-
-        // force re-binding shader, otherwise delayed loaded resources (e.g. textures) might not be loaded at all
-        shaderMgr.bindShader(null, this)
+        shaderMgr.onNewFrame(this)
 
         // by default the viewport covers the full window
         viewport = Viewport(0, 0, windowWidth, windowHeight)

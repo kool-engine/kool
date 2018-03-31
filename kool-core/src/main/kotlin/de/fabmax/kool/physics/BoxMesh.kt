@@ -7,7 +7,8 @@ import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.util.Color
 
 
-class BoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS)) {
+class BoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS,
+        Attribute.TEXTURE_COORDS, Attribute.TANGENTS), "BoxMesh") {
 
     private val boxMeshIdcs = mutableMapOf<RigidBody, Int>()
     private val vert = meshData[0]
@@ -20,7 +21,7 @@ class BoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, At
         if (boxMeshIdcs.size != world.bodies.size) {
             for (i in world.bodies.indices) {
                 if (!boxMeshIdcs.containsKey(world.bodies[i])) {
-                    boxMeshIdcs[world.bodies[i]] = addBoxVerts()
+                    boxMeshIdcs[world.bodies[i]] = addBoxVerts(world.bodies[i])
                 }
             }
         }
@@ -28,6 +29,7 @@ class BoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, At
         boxMeshIdcs.forEach { (body, idx) ->
             updateBoxVerts(body, boxI++, idx)
         }
+        meshData.generateTangents()
     }
 
     private fun updateBoxVerts(body: RigidBody, boxIdx: Int, vertIdx: Int) {
@@ -36,13 +38,6 @@ class BoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, At
             1 -> Color.MD_PINK
             else -> Color.MD_ORANGE
         }
-
-        // box wireframe
-//        for (i in 0..7) {
-//            vert.index = idx + i
-//            vert.color.set(color)
-//            body.worldTransform.transform(vert.position.set(body.shape.halfExtents).mul(WIREFRAME_SIGNS[i]))
-//        }
 
         // solid box
         for (i in 0..23) {
@@ -56,27 +51,33 @@ class BoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, At
         meshData.isSyncRequired = true
     }
 
-    private fun addBoxVerts(): Int {
+    private fun addBoxVerts(rigidBody: RigidBody): Int {
         var startIdx = 0
         meshData.batchUpdate {
-            startIdx = addVertex {
-                normal.set(SOLID_NORMALS[0])
-            }
-
-            // box wireframe
-//            for (i in 1..7) {
-//                addVertex { }
-//            }
-//            for (i in 0..3) {
-//                addIndices(startIdx + i, startIdx + (i + 1) % 4)
-//                addIndices(startIdx + i + 4, startIdx + (i + 1) % 4 + 4)
-//                addIndices(startIdx + i, startIdx + i + 4)
-//            }
-
             // solid box
-            for (i in 1..23) {
-                addVertex {
-                    normal.set(SOLID_NORMALS[i/4])
+            for (i in 0..23) {
+                val w = when (i / 8) {
+                    0 -> rigidBody.shape.halfExtents.z * 2
+                    1 -> rigidBody.shape.halfExtents.x * 2
+                    else -> rigidBody.shape.halfExtents.x * 2
+                }
+                val h = when (i / 8) {
+                    0 -> rigidBody.shape.halfExtents.y * 2
+                    1 -> rigidBody.shape.halfExtents.z * 2
+                    else -> rigidBody.shape.halfExtents.y * 2
+                }
+
+                val idx = addVertex {
+                    when (i % 4) {
+                        0 -> texCoord.set(0f, 0f)
+                        1 -> texCoord.set(0f, h)
+                        2 -> texCoord.set(w, h)
+                        3 -> texCoord.set(w, 0f)
+                    }
+                }
+
+                if (i == 0) {
+                    startIdx = idx
                 }
             }
             for (i in 0..5) {
@@ -88,17 +89,6 @@ class BoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, At
     }
 
     companion object {
-        private val WIREFRAME_SIGNS = listOf(
-                Vec3f(1f, 1f, 1f),
-                Vec3f(1f, 1f, -1f),
-                Vec3f(1f, -1f, -1f),
-                Vec3f(1f, -1f, 1f),
-                Vec3f(-1f, 1f, 1f),
-                Vec3f(-1f, 1f, -1f),
-                Vec3f(-1f, -1f, -1f),
-                Vec3f(-1f, -1f, 1f)
-        )
-
         private val SOLID_SIGNS = listOf(
                 // right
                 Vec3f(1f, 1f, 1f),
@@ -125,16 +115,16 @@ class BoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, At
                 Vec3f(1f, -1f, -1f),
 
                 // front
+                Vec3f(1f, -1f, 1f),
                 Vec3f(1f, 1f, 1f),
                 Vec3f(-1f, 1f, 1f),
                 Vec3f(-1f, -1f, 1f),
-                Vec3f(1f, -1f, 1f),
 
                 // back
+                Vec3f(-1f, 1f, -1f),
                 Vec3f(1f, 1f, -1f),
                 Vec3f(1f, -1f, -1f),
-                Vec3f(-1f, -1f, -1f),
-                Vec3f(-1f, 1f, -1f)
+                Vec3f(-1f, -1f, -1f)
         )
 
         private val SOLID_NORMALS = listOf(

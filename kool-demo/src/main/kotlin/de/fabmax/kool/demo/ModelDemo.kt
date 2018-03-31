@@ -22,7 +22,7 @@ import kotlin.math.sqrt
 fun modelScene(ctx: KoolContext): Scene = scene {
     defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-    +makeGroundGrid(40, defaultShadowMap)
+    +makeGroundGrid(40, ctx, defaultShadowMap)
 
     // add animated character model
     +transformGroup {

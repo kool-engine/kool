@@ -41,7 +41,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     val treeScene = scene {
         defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-        +makeGroundGrid(40, defaultShadowMap)
+        +makeGroundGrid(40, ctx, defaultShadowMap)
 
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {
@@ -97,9 +97,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             maxZoom = 25f
             // panning / camera translation is limited to a certain area
             translationBounds = BoundingBox(Vec3f(-10f, -10f, -10f), Vec3f(10f, 10f, 10f))
-
-            zoomMethod = SphericalInputTransform.ZoomMethod.ZOOM_CENTER
-            rightDragMethod = SphericalInputTransform.DragMethod.NONE
 
             translate(0f, 2f, 0f)
         }

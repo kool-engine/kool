@@ -20,6 +20,12 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
     var shadingHints = ShadingHints(PreferredLightModel.PHONG, PreferredShadowMethod.NO_SHADOW)
         // TODO: set(value) { updateAllShaders() }
 
+    fun onNewFrame(ctx: KoolContext) {
+        // force re-binding shader on new frame, otherwise delayed loaded
+        // resources (e.g. textures) might not be loaded at all
+        bindShader(null, ctx)
+    }
+
     fun bindShader(shader: Shader?, ctx: KoolContext) {
         if (shader != null) {
             if (!shader.isValid) {

@@ -4159,7 +4159,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.fps = this.frameTimes_6eiyeg$_0.length / sum * 0.1 + this.fps * 0.9;
     this.inputMgr.onNewFrame_cwprtu$(this);
     this.textureMgr.onNewFrame_aemszp$(this);
-    this.shaderMgr.bindShader_gt83r0$(null, this);
+    this.shaderMgr.onNewFrame_aemszp$(this);
     this.viewport = new KoolContext$Viewport(0, 0, this.windowWidth, this.windowHeight);
     this.applyAttributes();
     tmp$_0 = this.onRender;
@@ -7242,7 +7242,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function BoxMesh(world) {
     BoxMesh$Companion_getInstance();
-    Mesh.call(this, MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().NORMALS]));
+    Mesh.call(this, MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().TEXTURE_COORDS, Attribute$Companion_getInstance().TANGENTS]), 'BoxMesh');
     this.world = world;
     this.boxMeshIdcs_0 = LinkedHashMap_init();
     this.vert_0 = this.meshData.get_za3lpa$(0);
@@ -7256,7 +7256,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         if (!this.boxMeshIdcs_0.containsKey_11rb$(this.world.bodies.get_za3lpa$(i))) {
           var $receiver = this.boxMeshIdcs_0;
           var key = this.world.bodies.get_za3lpa$(i);
-          var value = this.addBoxVerts_0();
+          var value = this.addBoxVerts_0(this.world.bodies.get_za3lpa$(i));
           $receiver.put_xwzc9p$(key, value);
         }
       }
@@ -7271,6 +7271,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var tmp$_1;
       this.updateBoxVerts_0(body, (tmp$_1 = boxI.v, boxI.v = tmp$_1 + 1 | 0, tmp$_1), idx);
     }
+    this.meshData.generateTangents();
   };
   BoxMesh.prototype.updateBoxVerts_0 = function (body, boxIdx, vertIdx) {
     var tmp$;
@@ -7293,24 +7294,58 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     this.meshData.isSyncRequired = true;
   };
-  function BoxMesh$addBoxVerts$lambda$lambda($receiver) {
-    $receiver.normal.set_czzhiu$(BoxMesh$Companion_getInstance().SOLID_NORMALS_0.get_za3lpa$(0));
-    return Unit;
-  }
-  function BoxMesh$addBoxVerts$lambda$lambda_0(closure$i) {
+  function BoxMesh$addBoxVerts$lambda$lambda(closure$i, closure$h, closure$w) {
     return function ($receiver) {
-      $receiver.normal.set_czzhiu$(BoxMesh$Companion_getInstance().SOLID_NORMALS_0.get_za3lpa$(closure$i / 4 | 0));
+      switch (closure$i % 4) {
+        case 0:
+          $receiver.texCoord.set_dleff0$(0.0, 0.0);
+          break;
+        case 1:
+          $receiver.texCoord.set_dleff0$(0.0, closure$h);
+          break;
+        case 2:
+          $receiver.texCoord.set_dleff0$(closure$w, closure$h);
+          break;
+        case 3:
+          $receiver.texCoord.set_dleff0$(closure$w, 0.0);
+          break;
+      }
       return Unit;
     };
   }
-  BoxMesh.prototype.addBoxVerts_0 = function () {
+  BoxMesh.prototype.addBoxVerts_0 = function (rigidBody) {
     var startIdx = {v: 0};
     var $this = this.meshData;
     var wasBatchUpdate = $this.isBatchUpdate;
     $this.isBatchUpdate = true;
-    startIdx.v = $this.addVertex_hvwyd1$(BoxMesh$addBoxVerts$lambda$lambda);
-    for (var i = 1; i <= 23; i++) {
-      $this.addVertex_hvwyd1$(BoxMesh$addBoxVerts$lambda$lambda_0(i));
+    var tmp$, tmp$_0;
+    for (var i = 0; i <= 23; i++) {
+      switch (i / 8 | 0) {
+        case 0:
+          tmp$ = rigidBody.shape.halfExtents.z * 2;
+          break;
+        case 1:
+          tmp$ = rigidBody.shape.halfExtents.x * 2;
+          break;
+        default:tmp$ = rigidBody.shape.halfExtents.x * 2;
+          break;
+      }
+      var w = tmp$;
+      switch (i / 8 | 0) {
+        case 0:
+          tmp$_0 = rigidBody.shape.halfExtents.y * 2;
+          break;
+        case 1:
+          tmp$_0 = rigidBody.shape.halfExtents.z * 2;
+          break;
+        default:tmp$_0 = rigidBody.shape.halfExtents.y * 2;
+          break;
+      }
+      var h = tmp$_0;
+      var idx = $this.addVertex_hvwyd1$(BoxMesh$addBoxVerts$lambda$lambda(i, h, w));
+      if (i === 0) {
+        startIdx.v = idx;
+      }
     }
     for (var i_0 = 0; i_0 <= 5; i_0++) {
       $this.addTriIndices_qt1dr2$(startIdx.v + (i_0 * 4 | 0) | 0, startIdx.v + (i_0 * 4 | 0) + 1 | 0, startIdx.v + (i_0 * 4 | 0) + 2 | 0);
@@ -7322,8 +7357,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function BoxMesh$Companion() {
     BoxMesh$Companion_instance = this;
-    this.WIREFRAME_SIGNS_0 = listOf([new Vec3f(1.0, 1.0, 1.0), new Vec3f(1.0, 1.0, -1.0), new Vec3f(1.0, -1.0, -1.0), new Vec3f(1.0, -1.0, 1.0), new Vec3f(-1.0, 1.0, 1.0), new Vec3f(-1.0, 1.0, -1.0), new Vec3f(-1.0, -1.0, -1.0), new Vec3f(-1.0, -1.0, 1.0)]);
-    this.SOLID_SIGNS_0 = listOf([new Vec3f(1.0, 1.0, 1.0), new Vec3f(1.0, -1.0, 1.0), new Vec3f(1.0, -1.0, -1.0), new Vec3f(1.0, 1.0, -1.0), new Vec3f(-1.0, 1.0, 1.0), new Vec3f(-1.0, 1.0, -1.0), new Vec3f(-1.0, -1.0, -1.0), new Vec3f(-1.0, -1.0, 1.0), new Vec3f(1.0, 1.0, 1.0), new Vec3f(1.0, 1.0, -1.0), new Vec3f(-1.0, 1.0, -1.0), new Vec3f(-1.0, 1.0, 1.0), new Vec3f(1.0, -1.0, 1.0), new Vec3f(-1.0, -1.0, 1.0), new Vec3f(-1.0, -1.0, -1.0), new Vec3f(1.0, -1.0, -1.0), new Vec3f(1.0, 1.0, 1.0), new Vec3f(-1.0, 1.0, 1.0), new Vec3f(-1.0, -1.0, 1.0), new Vec3f(1.0, -1.0, 1.0), new Vec3f(1.0, 1.0, -1.0), new Vec3f(1.0, -1.0, -1.0), new Vec3f(-1.0, -1.0, -1.0), new Vec3f(-1.0, 1.0, -1.0)]);
+    this.SOLID_SIGNS_0 = listOf([new Vec3f(1.0, 1.0, 1.0), new Vec3f(1.0, -1.0, 1.0), new Vec3f(1.0, -1.0, -1.0), new Vec3f(1.0, 1.0, -1.0), new Vec3f(-1.0, 1.0, 1.0), new Vec3f(-1.0, 1.0, -1.0), new Vec3f(-1.0, -1.0, -1.0), new Vec3f(-1.0, -1.0, 1.0), new Vec3f(1.0, 1.0, 1.0), new Vec3f(1.0, 1.0, -1.0), new Vec3f(-1.0, 1.0, -1.0), new Vec3f(-1.0, 1.0, 1.0), new Vec3f(1.0, -1.0, 1.0), new Vec3f(-1.0, -1.0, 1.0), new Vec3f(-1.0, -1.0, -1.0), new Vec3f(1.0, -1.0, -1.0), new Vec3f(1.0, -1.0, 1.0), new Vec3f(1.0, 1.0, 1.0), new Vec3f(-1.0, 1.0, 1.0), new Vec3f(-1.0, -1.0, 1.0), new Vec3f(-1.0, 1.0, -1.0), new Vec3f(1.0, 1.0, -1.0), new Vec3f(1.0, -1.0, -1.0), new Vec3f(-1.0, -1.0, -1.0)]);
     this.SOLID_NORMALS_0 = listOf([Vec3f$Companion_getInstance().X_AXIS, Vec3f$Companion_getInstance().NEG_X_AXIS, Vec3f$Companion_getInstance().Y_AXIS, Vec3f$Companion_getInstance().NEG_Y_AXIS, Vec3f$Companion_getInstance().Z_AXIS, Vec3f$Companion_getInstance().NEG_Z_AXIS]);
   }
   BoxMesh$Companion.$metadata$ = {
@@ -9904,7 +9938,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return mesh;
     };
   }));
-  var mesh_0 = defineInlineFunction('kool.de.fabmax.kool.scene.mesh_tok25s$', wrapFunction(function () {
+  var mesh_0 = defineInlineFunction('kool.de.fabmax.kool.scene.mesh_wye01q$', wrapFunction(function () {
     var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
     var MeshData_init = _.de.fabmax.kool.scene.MeshData;
     var Mesh_init = _.de.fabmax.kool.scene.Mesh;
@@ -9933,7 +9967,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         return Unit;
       };
     }
-    return function (name, attributes, block) {
+    return function (attributes, name, block) {
       if (name === void 0)
         name = null;
       var attributes_0 = toHashSet(attributes);
@@ -9944,7 +9978,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return mesh;
     };
   }));
-  var mesh_1 = defineInlineFunction('kool.de.fabmax.kool.scene.mesh_w2gyes$', wrapFunction(function () {
+  var mesh_1 = defineInlineFunction('kool.de.fabmax.kool.scene.mesh_ajiltw$', wrapFunction(function () {
     var MeshData_init = _.de.fabmax.kool.scene.MeshData;
     var Mesh_init = _.de.fabmax.kool.scene.Mesh;
     var Attribute = _.de.fabmax.kool.shading.Attribute;
@@ -9972,7 +10006,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         return Unit;
       };
     }
-    return function (name, attributes, block) {
+    return function (attributes, name, block) {
       if (name === void 0)
         name = null;
       var mesh = new Mesh_init(new MeshData_init(attributes), name);
@@ -13720,6 +13754,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.boundShader_u35sjq$_0 = boundShader;
     }
   });
+  ShaderManager.prototype.onNewFrame_aemszp$ = function (ctx) {
+    this.bindShader_gt83r0$(null, ctx);
+  };
   ShaderManager.prototype.bindShader_gt83r0$ = function (shader, ctx) {
     var tmp$, tmp$_0, tmp$_1;
     if (shader != null) {
@@ -14780,7 +14817,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         text.append_gw00v9$(this.vsOut_gj894f$_0 + ' vec3 ' + GlslGenerator$Companion_getInstance().V_SPECULAR_LIGHT_COLOR + ';' + '\n');
       }
     }
-    if (shaderProps.isTextureColor) {
+    if (shaderProps.isTextureColor || shaderProps.isNormalMapped) {
       text.append_gw00v9$(this.vsIn_5467de$_0 + ' vec2 ' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + ';' + '\n');
       text.append_gw00v9$(this.vsOut_gj894f$_0 + ' vec2 ' + GlslGenerator$Companion_getInstance().V_TEX_COORD + ';' + '\n');
     }
@@ -14855,7 +14892,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
       text.append_gw00v9$('vPositionWorldspace = (uModelMatrix * position).xyz;\n');
     }
-    if (shaderProps.isTextureColor) {
+    if (shaderProps.isTextureColor || shaderProps.isNormalMapped) {
       text.append_gw00v9$(GlslGenerator$Companion_getInstance().V_TEX_COORD + ' = ' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + ';' + '\n');
     }
     if (shaderProps.isVertexColor) {
@@ -14916,6 +14953,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     if (shaderProps.isTextureColor) {
       text.append_gw00v9$('uniform sampler2D uTexture0;\n');
+      text.append_gw00v9$(this.fsIn_4vdhvm$_0 + ' vec2 ' + GlslGenerator$Companion_getInstance().V_TEX_COORD + ';' + '\n');
+    }
+     else if (shaderProps.isNormalMapped) {
       text.append_gw00v9$(this.fsIn_4vdhvm$_0 + ' vec2 ' + GlslGenerator$Companion_getInstance().V_TEX_COORD + ';' + '\n');
     }
     if (shaderProps.isVertexColor) {
@@ -16125,16 +16165,24 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.allowedTexLoads_0 = this.maxTextureLoadsPerFrame;
   }
   TextureManager.prototype.onNewFrame_aemszp$ = function (ctx) {
+    var tmp$;
     this.allowedTexLoads_0 = this.maxTextureLoadsPerFrame;
     if (this.boundTextures_0.length !== ctx.glCapabilities.maxTexUnits) {
       var array = Array_0(ctx.glCapabilities.maxTexUnits);
-      var tmp$;
-      tmp$ = array.length - 1 | 0;
-      for (var i = 0; i <= tmp$; i++) {
+      var tmp$_0;
+      tmp$_0 = array.length - 1 | 0;
+      for (var i = 0; i <= tmp$_0; i++) {
         array[i] = null;
       }
       this.boundTextures_0 = array;
     }
+    tmp$ = this.boundTextures_0;
+    for (var i_0 = 0; i_0 !== tmp$.length; ++i_0) {
+      var tmp$_1;
+      (tmp$_1 = this.boundTextures_0[i_0]) != null ? (tmp$_1.texUnit = -1) : null;
+      this.boundTextures_0[i_0] = null;
+    }
+    this.activeTexUnit_0 = this.boundTextures_0.length - 1 | 0;
   };
   TextureManager.prototype.bindTexture_xyx3x4$ = function (texture, ctx, makeActive) {
     if (makeActive === void 0)
@@ -21419,6 +21467,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ctx.mvpState.popMatrices();
     ctx.mvpState.update_aemszp$(ctx);
     this.fbo_0.unbind_aemszp$(ctx);
+    ctx.shaderMgr.bindShader_gt83r0$(null, ctx);
   };
   SimpleShadowMap.prototype.dispose_aemszp$ = function (ctx) {
     this.fbo_0.dispose_aemszp$(ctx);
@@ -23710,9 +23759,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$scene.Light = Light;
   var package$shading = package$kool.shading || (package$kool.shading = {});
   package$shading.Attribute = Attribute;
-  package$scene.mesh_w2gyes$ = mesh_1;
+  package$scene.mesh_ajiltw$ = mesh_1;
   package$scene.mesh_ki35ir$ = mesh;
-  package$scene.mesh_tok25s$ = mesh_0;
+  package$scene.mesh_wye01q$ = mesh_0;
   package$shading.LightModel = LightModel;
   package$shading.ColorModel = ColorModel;
   package$shading.basicShader_n50u2h$ = basicShader;

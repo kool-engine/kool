@@ -24,14 +24,14 @@ inline fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolea
     if (withTexCoords) {
         attributes += Attribute.TEXTURE_COORDS
     }
-    return mesh(name, attributes, block)
+    return mesh(attributes, name, block)
 }
 
-inline fun mesh(name: String? = null, vararg attributes: Attribute, block: Mesh.() -> Unit): Mesh {
-    return mesh(name, attributes.toHashSet(), block)
+inline fun mesh(vararg attributes: Attribute, name: String? = null, block: Mesh.() -> Unit): Mesh {
+    return mesh(attributes.toHashSet(), name, block)
 }
 
-inline fun mesh(name: String? = null, attributes: Set<Attribute>, block: Mesh.() -> Unit): Mesh {
+inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(MeshData(attributes), name)
 
     mesh.shader = basicShader {
@@ -74,7 +74,7 @@ fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate:
     if (isNormalMapped) {
         attributes += Attribute.TANGENTS
     }
-    val mesh = mesh(name, attributes, generate)
+    val mesh = mesh(attributes, name, generate)
     if (isNormalMapped) {
         mesh.meshData.generateTangents()
     }

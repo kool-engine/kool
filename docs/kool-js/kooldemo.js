@@ -6,14 +6,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var Unit = Kotlin.kotlin.Unit;
   var sphericalInputTransform = $module$kool.de.fabmax.kool.scene.sphericalInputTransform_6sxffc$;
-  var CollisionWorld = $module$kool.de.fabmax.kool.physics.CollisionWorld;
-  var uniformMassBox = $module$kool.de.fabmax.kool.physics.uniformMassBox_7b5o5w$;
-  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
-  var staticBox = $module$kool.de.fabmax.kool.physics.staticBox_y2kzbl$;
-  var BoxMesh = $module$kool.de.fabmax.kool.physics.BoxMesh;
   var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
   var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
+  var gl = $module$kool.de.fabmax.kool.gl;
+  var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_3m52m6$;
+  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_513zl8$;
   var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
+  var Color = $module$kool.de.fabmax.kool.util.Color;
+  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
+  var lineMesh = $module$kool.de.fabmax.kool.util.lineMesh_6a24eg$;
+  var CollisionWorld = $module$kool.de.fabmax.kool.physics.CollisionWorld;
+  var uniformMassBox = $module$kool.de.fabmax.kool.physics.uniformMassBox_7b5o5w$;
+  var staticBox = $module$kool.de.fabmax.kool.physics.staticBox_y2kzbl$;
+  var BoxMesh = $module$kool.de.fabmax.kool.physics.BoxMesh;
   var UiTheme = $module$kool.de.fabmax.kool.scene.ui.UiTheme;
   var BlankComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlankComponentUi;
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
@@ -33,7 +38,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   var ToggleButtonUi = $module$kool.de.fabmax.kool.scene.ui.ToggleButtonUi;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
-  var Color = $module$kool.de.fabmax.kool.util.Color;
   var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
   var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
@@ -46,7 +50,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
-  var gl = $module$kool.de.fabmax.kool.gl;
   var Group = $module$kool.de.fabmax.kool.scene.Group;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
@@ -62,7 +65,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Margin = $module$kool.de.fabmax.kool.scene.ui.Margin;
   var color = $module$kool.de.fabmax.kool.util.color_61zpoe$;
   var formatDouble = $module$kool.de.fabmax.kool.formatDouble_12fank$;
-  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_2gt2x8$;
+  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_2gt2x8$;
   var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
   var Attribute = $module$kool.de.fabmax.kool.shading.Attribute;
   var MeshData_init = $module$kool.de.fabmax.kool.scene.MeshData_init_j0mu7e$;
@@ -70,8 +73,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
-  var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
-  var lineMesh = $module$kool.de.fabmax.kool.util.lineMesh_6a24eg$;
+  var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var loadMesh = $module$kool.de.fabmax.kool.util.serialization.loadMesh_fqrh44$;
   var Armature = $module$kool.de.fabmax.kool.scene.animation.Armature;
@@ -96,8 +98,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Animator = $module$kool.de.fabmax.kool.util.Animator;
   var BasicShader = $module$kool.de.fabmax.kool.shading.BasicShader;
   var throwCCE = Kotlin.throwCCE;
-  var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var LinearAnimator = $module$kool.de.fabmax.kool.util.LinearAnimator;
+  var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
   var equals = Kotlin.equals;
@@ -117,8 +119,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Kick = $module$kool.de.fabmax.kool.audio.Kick;
   var Pad = $module$kool.de.fabmax.kool.audio.Pad;
   var AudioGenerator = $module$kool.de.fabmax.kool.audio.AudioGenerator;
-  var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
-  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_513zl8$;
+  var TextureProps_init_0 = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
   var CullMethod = $module$kool.de.fabmax.kool.scene.CullMethod;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
@@ -187,6 +188,40 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function collisionDemo$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
+      $receiver.setMouseRotation_dleff0$(20.0, -20.0);
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda(this$, closure$ctx) {
+    return function ($receiver) {
+      $receiver.colorModel = ColorModel.VERTEX_COLOR;
+      $receiver.lightModel = LightModel.PHONG_LIGHTING;
+      $receiver.shadowMap = this$.defaultShadowMap;
+      $receiver.isNormalMapped = true;
+      $receiver.specularIntensity = 0.25;
+      var props = TextureProps_init('perlin_nrm.png', gl.GL_LINEAR, gl.GL_REPEAT);
+      $receiver.normalMap = assetTexture(props, closure$ctx);
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda_0(this$) {
+    return function ($receiver) {
+      $receiver.lightModel = LightModel.NO_LIGHTING;
+      $receiver.colorModel = ColorModel.VERTEX_COLOR;
+      $receiver.shadowMap = this$.defaultShadowMap;
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda_0(this$) {
+    return function ($receiver) {
+      $receiver.isCastingShadow = false;
+      for (var i = -5; i <= 5; i++) {
+        var color = Color.Companion.MD_GREY_600.withAlpha_mx4ult$(0.5);
+        var y = -1.995;
+        $receiver.addLine_b8opkg$(new Vec3f(i, y, -5.0), color, new Vec3f(i, y, 5.0), color);
+        $receiver.addLine_b8opkg$(new Vec3f(-5.0, y, i), color, new Vec3f(5.0, y, i), color);
+      }
+      $receiver.shader = basicShader(collisionDemo$lambda$lambda$lambda_0(this$));
       return Unit;
     };
   }
@@ -195,38 +230,32 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.light.direction.set_y2kzbl$(1.0, 0.8, 0.4);
     $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, collisionDemo$lambda$lambda($receiver)));
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(10, $receiver.defaultShadowMap, -1.99, false, false));
-    $receiver.unaryPlus_uv0sim$(twoBoxes($receiver.defaultShadowMap));
+    var $receiver_0 = twoBoxes();
+    $receiver_0.shader = basicShader(collisionDemo$lambda$lambda$lambda($receiver, ctx));
+    $receiver.unaryPlus_uv0sim$($receiver_0);
+    $receiver.unaryPlus_uv0sim$(lineMesh(void 0, collisionDemo$lambda$lambda_0($receiver)));
     return $receiver;
   }
-  function twoBoxes$lambda$lambda(closure$sceneShadowMap) {
-    return function ($receiver) {
-      $receiver.colorModel = ColorModel.VERTEX_COLOR;
-      $receiver.lightModel = LightModel.PHONG_LIGHTING;
-      $receiver.shadowMap = closure$sceneShadowMap;
-      return Unit;
-    };
-  }
-  function twoBoxes$lambda$lambda_0(closure$world, this$) {
+  function twoBoxes$lambda$lambda(closure$world, this$) {
     return function ($receiver, ctx) {
       closure$world.stepSimulation_mx4ult$(ctx.deltaT);
       this$.updateBoxes();
       return Unit;
     };
   }
-  function twoBoxes(sceneShadowMap) {
+  function twoBoxes() {
     var world = new CollisionWorld();
     world.gravity.set_y2kzbl$(0.0, -1.0, 0.0);
     var box1 = uniformMassBox(1.0, 1.0, 1.0, 1.0);
     box1.name = 'smallBox';
     var $receiver = box1.shape;
-    $receiver.center.set_y2kzbl$(1.0, 1.0, 0.0);
-    $receiver.transform.rotate_ad55pp$(-5.0, Vec3f.Companion.Z_AXIS);
+    $receiver.center.set_y2kzbl$(0.75, 3.0, 0.0);
+    $receiver.transform.rotate_ad55pp$(-10.0, Vec3f.Companion.Z_AXIS);
     $receiver.transform.rotate_ad55pp$(-5.0, Vec3f.Companion.Y_AXIS);
     var box2 = uniformMassBox(2.5, 1.0, 3.0, 7.5);
     box2.name = 'bigBox';
     var $receiver_0 = box2.shape;
-    $receiver_0.center.set_y2kzbl$(0.0, -0.5, 0.0);
+    $receiver_0.center.set_y2kzbl$(0.0, 1.5, 0.0);
     $receiver_0.transform.rotate_ad55pp$(5.0, Vec3f.Companion.X_AXIS);
     $receiver_0.transform.rotate_ad55pp$(10.0, Vec3f.Companion.Z_AXIS);
     world.bodies.add_11rb$(box1);
@@ -237,8 +266,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_1.name = 'Ground';
     tmp$.add_11rb$($receiver_1);
     var $receiver_2 = new BoxMesh(world);
-    $receiver_2.shader = basicShader(twoBoxes$lambda$lambda(sceneShadowMap));
-    $receiver_2.onPreRender.add_11rb$(twoBoxes$lambda$lambda_0(world, $receiver_2));
+    $receiver_2.onPreRender.add_11rb$(twoBoxes$lambda$lambda(world, $receiver_2));
     return $receiver_2;
   }
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
@@ -1209,7 +1237,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
   });
   TileMesh.prototype.loadTileTex_0 = function (x, y, z, ctx) {
-    this.tileShader_0.texture = assetTexture('http://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png', ctx);
+    this.tileShader_0.texture = assetTexture_0('http://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png', ctx);
   };
   TileMesh.prototype.render_aemszp$ = function (ctx) {
     var targetAlpha = 1.0;
@@ -1464,70 +1492,52 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_0.origin.set_y2kzbl$(-closure$groundExt_0, -closure$groundExt_0, closure$y_0);
       $receiver_0.width = closure$groundExt_0 * 2.0;
       $receiver_0.height = closure$groundExt_0 * 2.0;
+      var uv = closure$groundExt_0 / 2;
+      $receiver_0.texCoordUpperLeft.set_dleff0$(-uv, -uv);
+      $receiver_0.texCoordUpperRight.set_dleff0$(uv, -uv);
+      $receiver_0.texCoordLowerLeft.set_dleff0$(-uv, uv);
+      $receiver_0.texCoordLowerRight.set_dleff0$(uv, uv);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
+      $receiver.meshData.generateTangents();
       return Unit;
     };
   }
-  function makeGroundGrid$lambda$lambda$lambda_0(closure$shadows) {
+  function makeGroundGrid$lambda$lambda$lambda_0(closure$shadows, closure$ctx) {
     return function ($receiver) {
       $receiver.lightModel = LightModel.PHONG_LIGHTING;
-      $receiver.colorModel = ColorModel.VERTEX_COLOR;
+      $receiver.colorModel = ColorModel.TEXTURE_COLOR;
       $receiver.shadowMap = closure$shadows;
+      $receiver.isNormalMapped = true;
+      $receiver.specularIntensity = 0.25;
+      var props = TextureProps_init('ground_nrm.png', gl.GL_LINEAR, gl.GL_REPEAT);
+      $receiver.normalMap = assetTexture(props, closure$ctx);
+      var colorProps = TextureProps_init('ground_color.png', gl.GL_LINEAR, gl.GL_REPEAT);
+      $receiver.texture = assetTexture(colorProps, closure$ctx);
       return Unit;
     };
   }
-  function makeGroundGrid$lambda$lambda(closure$groundExt, closure$y, closure$shadows) {
+  function makeGroundGrid$lambda$lambda(closure$groundExt, closure$y, closure$shadows, closure$ctx) {
     return function ($receiver) {
       $receiver.isCastingShadow = false;
       $receiver.generator = makeGroundGrid$lambda$lambda$lambda(closure$groundExt, closure$y);
-      $receiver.shader = basicShader(makeGroundGrid$lambda$lambda$lambda_0(closure$shadows));
+      $receiver.shader = basicShader(makeGroundGrid$lambda$lambda$lambda_0(closure$shadows, closure$ctx));
       return Unit;
     };
   }
-  function makeGroundGrid$lambda$lambda$lambda_1(closure$shadows) {
-    return function ($receiver) {
-      $receiver.lightModel = LightModel.NO_LIGHTING;
-      $receiver.colorModel = ColorModel.VERTEX_COLOR;
-      $receiver.shadowMap = closure$shadows;
-      return Unit;
-    };
-  }
-  function makeGroundGrid$lambda$lambda_0(closure$xRayLines, closure$groundExt, closure$y, closure$shadows) {
-    return function ($receiver) {
-      var tmp$;
-      $receiver.isCastingShadow = false;
-      $receiver.isXray = closure$xRayLines;
-      tmp$ = closure$groundExt;
-      for (var i = -closure$groundExt | 0; i <= tmp$; i++) {
-        var color = Color.Companion.MD_GREY_600;
-        $receiver.addLine_b8opkg$(new Vec3f(i, closure$y, -closure$groundExt), color, new Vec3f(i, closure$y, closure$groundExt), color);
-        $receiver.addLine_b8opkg$(new Vec3f(-closure$groundExt, closure$y, i), color, new Vec3f(closure$groundExt, closure$y, i), color);
-      }
-      $receiver.shader = basicShader(makeGroundGrid$lambda$lambda$lambda_1(closure$shadows));
-      return Unit;
-    };
-  }
-  function makeGroundGrid$lambda(closure$cells, closure$solid, closure$y, closure$shadows, closure$xRayLines) {
+  function makeGroundGrid$lambda(closure$cells, closure$y, closure$shadows, closure$ctx) {
     return function ($receiver) {
       var groundExt = closure$cells / 2 | 0;
-      if (closure$solid) {
-        $receiver.unaryPlus_uv0sim$(colorMesh(void 0, makeGroundGrid$lambda$lambda(groundExt, closure$y, closure$shadows)));
-      }
-      $receiver.unaryPlus_uv0sim$(lineMesh(void 0, makeGroundGrid$lambda$lambda_0(closure$xRayLines, groundExt, closure$y, closure$shadows)));
+      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, makeGroundGrid$lambda$lambda(groundExt, closure$y, closure$shadows, closure$ctx)));
       return Unit;
     };
   }
-  function makeGroundGrid(cells, shadows, y, solid, xRayLines) {
+  function makeGroundGrid(cells, ctx, shadows, y) {
     if (shadows === void 0)
       shadows = null;
     if (y === void 0)
       y = 0.0;
-    if (solid === void 0)
-      solid = true;
-    if (xRayLines === void 0)
-      xRayLines = true;
-    return group(void 0, makeGroundGrid$lambda(cells, solid, y, shadows, xRayLines));
+    return group(void 0, makeGroundGrid$lambda(cells, y, shadows, ctx));
   }
   function modelScene$lambda$lambda$lambda$lambda(this$, closure$mesh) {
     return function ($receiver) {
@@ -1712,7 +1722,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function modelScene(ctx) {
     var $receiver = new Scene(null);
     $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, $receiver.defaultShadowMap));
+    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, ctx, $receiver.defaultShadowMap));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, modelScene$lambda$lambda(ctx, $receiver)));
     return $receiver;
   }
@@ -1929,7 +1939,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       var tmp$;
       $receiver.generator = simpleShapesScene$lambda$lambda$lambda$lambda;
-      (Kotlin.isType(tmp$ = $receiver.shader, BasicShader) ? tmp$ : throwCCE()).texture = assetTexture('world.jpg', closure$ctx);
+      (Kotlin.isType(tmp$ = $receiver.shader, BasicShader) ? tmp$ : throwCCE()).texture = assetTexture_0('world.jpg', closure$ctx);
       return Unit;
     };
   }
@@ -2675,10 +2685,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.shadowMap = this$.defaultShadowMap;
       $receiver.isNormalMapped = true;
       $receiver.specularIntensity = 0.25;
-      var textureProps = TextureProps_init('tree_bark.png', gl.GL_LINEAR, gl.GL_REPEAT, 16);
-      var nrmMapProps = TextureProps_init('tree_bark_nrm.png', gl.GL_LINEAR, gl.GL_REPEAT, 16);
-      $receiver.texture = assetTexture_0(textureProps, closure$ctx);
-      $receiver.normalMap = assetTexture_0(nrmMapProps, closure$ctx);
+      var textureProps = TextureProps_init_0('tree_bark.png', gl.GL_LINEAR, gl.GL_REPEAT, 16);
+      var nrmMapProps = TextureProps_init_0('tree_bark_nrm.png', gl.GL_LINEAR, gl.GL_REPEAT, 16);
+      $receiver.texture = assetTexture(textureProps, closure$ctx);
+      $receiver.normalMap = assetTexture(nrmMapProps, closure$ctx);
       return Unit;
     };
   }
@@ -2711,7 +2721,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.shadowMap = this$.defaultShadowMap;
       $receiver.specularIntensity = 0.1;
       $receiver.isDiscardTranslucent = true;
-      $receiver.texture = assetTexture('leaf.png', closure$ctx);
+      $receiver.texture = assetTexture_0('leaf.png', closure$ctx);
       return Unit;
     };
   }
@@ -2730,8 +2740,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.minZoom = 1.0;
       $receiver.maxZoom = 25.0;
       $receiver.translationBounds = BoundingBox_init(new Vec3f(-10.0, -10.0, -10.0), new Vec3f(10.0, 10.0, 10.0));
-      $receiver.zoomMethod = SphericalInputTransform$ZoomMethod.ZOOM_CENTER;
-      $receiver.rightDragMethod = SphericalInputTransform$DragMethod.NONE;
       $receiver.translate_y2kzbl$(0.0, 2.0, 0.0);
       return Unit;
     };
@@ -3021,7 +3029,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var leafMesh = {v: null};
     var $receiver = new Scene(null);
     $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, $receiver.defaultShadowMap));
+    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, ctx, $receiver.defaultShadowMap));
     trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, $receiver, ctx));
     leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, $receiver, ctx));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
@@ -3702,7 +3710,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var package$kool = package$fabmax.kool || (package$fabmax.kool = {});
   var package$demo = package$kool.demo || (package$kool.demo = {});
   package$demo.collisionDemo_aemszp$ = collisionDemo;
-  package$demo.twoBoxes_2x728q$ = twoBoxes;
+  package$demo.twoBoxes = twoBoxes;
   package$demo.Demo = Demo;
   package$demo.MenuButtonUi = MenuButtonUi;
   Object.defineProperty(Earth, 'Companion', {
@@ -3721,7 +3729,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   });
   package$earth.TileName = TileName;
   package$earth.LatLon = LatLon;
-  package$demo.makeGroundGrid_pbw97v$ = makeGroundGrid;
+  package$demo.makeGroundGrid_l8pxk$ = makeGroundGrid;
   package$demo.modelScene_aemszp$ = modelScene;
   package$demo.multiScene_aemszp$ = multiScene;
   package$demo.pointScene = pointScene;

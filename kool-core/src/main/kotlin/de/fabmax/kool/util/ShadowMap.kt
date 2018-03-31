@@ -100,6 +100,9 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val tex
         ctx.mvpState.popMatrices()
         ctx.mvpState.update(ctx)
         fbo.unbind(ctx)
+
+        // force re-binding shaders
+        ctx.shaderMgr.bindShader(null, ctx)
     }
 
     override fun dispose(ctx: KoolContext) {

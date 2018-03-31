@@ -144,7 +144,7 @@ open class GlslGenerator {
         }
 
         // add color dependent attributes
-        if (shaderProps.isTextureColor) {
+        if (shaderProps.isTextureColor || shaderProps.isNormalMapped) {
             // texture color
             text.append("$vsIn vec2 ${Attribute.TEXTURE_COORDS.name};\n")
             text.append("$vsOut vec2 $V_TEX_COORD;\n")
@@ -224,7 +224,7 @@ open class GlslGenerator {
             text.append("$V_POSITION_WORLDSPACE = ($U_MODEL_MATRIX * position).xyz;\n")
         }
 
-        if (shaderProps.isTextureColor) {
+        if (shaderProps.isTextureColor || shaderProps.isNormalMapped) {
             // interpolate vertex texture coordinate for usage in fragment shader
             text.append("$V_TEX_COORD = ${Attribute.TEXTURE_COORDS.name};\n")
 
@@ -308,6 +308,8 @@ open class GlslGenerator {
         if (shaderProps.isTextureColor) {
             // texture color
             text.append("uniform sampler2D $U_TEXTURE_0;\n")
+            text.append("$fsIn vec2 $V_TEX_COORD;\n")
+        } else if (shaderProps.isNormalMapped) {
             text.append("$fsIn vec2 $V_TEX_COORD;\n")
         }
         if (shaderProps.isVertexColor) {

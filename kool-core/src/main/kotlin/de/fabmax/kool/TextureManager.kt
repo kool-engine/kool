@@ -21,6 +21,16 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         if (boundTextures.size != ctx.glCapabilities.maxTexUnits) {
             boundTextures = Array(ctx.glCapabilities.maxTexUnits, { null })
         }
+
+        // safety first: clear all bound textures
+        for (i in boundTextures.indices) {
+            boundTextures[i]?.texUnit = -1
+            boundTextures[i] = null
+        }
+
+        // set activeTexUnit, so that nextTextUnit() will choose unit 0 (some GL implementations don't like
+        // tex unit 0 to be left out...)
+        activeTexUnit = boundTextures.size-1
     }
 
     fun bindTexture(texture: Texture, ctx: KoolContext, makeActive: Boolean = false): Int {
