@@ -9,9 +9,9 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
 
     var maxTextureLoadsPerFrame = 5
 
-    private var activeTexUnit = 0
     private var boundTextures = Array<TextureResource?>(16, { null })
     private val loadingTextures: MutableMap<String, TextureData> = mutableMapOf()
+    private var activeTexUnit = 0
 
     private var allowedTexLoads = maxTextureLoadsPerFrame
 
@@ -20,17 +20,25 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
 
         if (boundTextures.size != ctx.glCapabilities.maxTexUnits) {
             boundTextures = Array(ctx.glCapabilities.maxTexUnits, { null })
-        }
 
-        // safety first: clear all bound textures
-        for (i in boundTextures.indices) {
-            boundTextures[i]?.texUnit = -1
-            boundTextures[i] = null
+            // set activeTexUnit, so that nextTextUnit() will choose unit 0 (some GL implementations don't like
+            // tex unit 0 to be left out...)
+            activeTexUnit = boundTextures.size-1
         }
+    }
 
-        // set activeTexUnit, so that nextTextUnit() will choose unit 0 (some GL implementations don't like
-        // tex unit 0 to be left out...)
-        activeTexUnit = boundTextures.size-1
+    fun unbindTexture(texture: Texture?, ctx: KoolContext) {
+        texture ?: return
+
+        if (texture.isValid) {
+            val texRes = texture.res ?: throw KoolException("TextureResource is null although it was created")
+            if (texRes.texUnit >= 0) {
+                activateTexUnit(texRes.texUnit)
+                glBindTexture(GL_TEXTURE_2D, null)
+                boundTextures[texRes.texUnit] = null
+                texRes.texUnit = -1
+            }
+        }
     }
 
     fun bindTexture(texture: Texture, ctx: KoolContext, makeActive: Boolean = false): Int {

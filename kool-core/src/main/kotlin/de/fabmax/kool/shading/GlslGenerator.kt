@@ -423,7 +423,7 @@ open class GlslGenerator {
                     text.append("else ")
                 }
             }
-            text.append("$fsOutBody.xyz *= shadowFactor / 2.0 + 0.5;\n")
+            text.append("$fsOutBody.rgb *= shadowFactor / 2.0 + 0.5;\n")
         }
 
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {

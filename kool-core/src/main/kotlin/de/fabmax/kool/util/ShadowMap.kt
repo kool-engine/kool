@@ -41,6 +41,10 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val tex
 
     private var clipSpaceFarZ = 0f
 
+    init {
+        depthCam.isKeepAspectRatio = false
+    }
+
     override fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
         if (!ctx.glCapabilities.depthTextures) {
             // depth textures are not supported on current platform, there's no point in going ahead
@@ -72,6 +76,9 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val tex
         depthCam.far = -bounds.min.z
 
         fbo.bind(ctx)
+
+        // make sure depth texture is not currently bound
+        ctx.textureMgr.unbindTexture(fbo.depthAttachment, ctx)
 
         glClear(GL_DEPTH_BUFFER_BIT)
 
@@ -158,8 +165,8 @@ class CascadedShadowMap(private val subMaps: Array<SimpleShadowMap>) : ShadowMap
         fun defaultCascadedShadowMap3(): CascadedShadowMap {
             val subMaps = arrayOf(
                     SimpleShadowMap(0f, 0.1f),
-                    SimpleShadowMap(0.1f, 0.25f),
-                    SimpleShadowMap(0.25f, 1f)
+                    SimpleShadowMap(0.1f, 0.3f),
+                    SimpleShadowMap(0.3f, 1f)
             )
             return CascadedShadowMap(subMaps)
         }

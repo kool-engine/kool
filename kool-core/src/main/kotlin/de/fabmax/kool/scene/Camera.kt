@@ -303,4 +303,11 @@ class FrustumPlane {
     val upperRight = MutableVec3f()
     val lowerLeft = MutableVec3f()
     val lowerRight = MutableVec3f()
+
+    fun set(other: FrustumPlane) {
+        upperLeft.set(other.upperLeft)
+        upperRight.set(other.upperRight)
+        lowerLeft.set(other.lowerLeft)
+        lowerRight.set(other.lowerRight)
+    }
 }

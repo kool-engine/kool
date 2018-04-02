@@ -1,14 +1,71 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
+import de.fabmax.kool.shading.ColorModel
+import de.fabmax.kool.shading.LightModel
+import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.ShadowMap
 
 
-class BoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS,
-        Attribute.TEXTURE_COORDS, Attribute.TANGENTS), "BoxMesh") {
+class BoxMesh(val box: RigidBody, boxColor: Color = Color.MD_GREY, sceneShadows: ShadowMap? = null) :
+        Mesh(MeshData(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS), box.name) {
+
+    private val boundsMin = MutableVec3f()
+    private val boundsMax = MutableVec3f()
+    private val radius: Float = box.shape.halfExtents.length()
+
+    init {
+        MeshBuilder(meshData).apply {
+            color = boxColor
+            cube {
+                size.set(box.shape.halfExtents).scale(2f)
+                centerOrigin()
+            }
+        }
+
+        shader = basicShader {
+            colorModel = ColorModel.VERTEX_COLOR
+            lightModel = LightModel.PHONG_LIGHTING
+            shadowMap = sceneShadows
+        }
+    }
+
+    override fun preRender(ctx: KoolContext) {
+        box.worldTransform.getOrigin(boundsMin)
+        boundsMax.set(boundsMin)
+
+        boundsMin.x -= radius
+        boundsMin.y -= radius
+        boundsMin.z -= radius
+        boundsMax.x += radius
+        boundsMax.y += radius
+        boundsMax.z += radius
+
+        bounds.set(boundsMin, boundsMax)
+        super.preRender(ctx)
+    }
+
+    override fun render(ctx: KoolContext) {
+        ctx.mvpState.modelMatrix.push()
+        ctx.mvpState.modelMatrix.mul(box.worldTransform)
+        ctx.mvpState.update(ctx)
+
+        super.render(ctx)
+
+        ctx.mvpState.modelMatrix.pop()
+        ctx.mvpState.update(ctx)
+    }
+}
+
+class MultiBoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS,
+        Attribute.TEXTURE_COORDS, Attribute.TANGENTS)) {
 
     private val boxMeshIdcs = mutableMapOf<RigidBody, Int>()
     private val vert = meshData[0]

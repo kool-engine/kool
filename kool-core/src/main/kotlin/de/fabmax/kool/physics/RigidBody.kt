@@ -42,8 +42,6 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
     private val tmpQuat2 = MutableVec4f()
     private val tmpMat3 = Mat3f()
 
-    var isInCollision = false
-
     init {
         updateInertiaTensor()
     }

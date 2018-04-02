@@ -37,10 +37,7 @@ class BoxBoxCollision {
     private val normal = MutableVec3f()
     private var depth = 0f
 
-    // temp variables needed by performSat
-    private val satP = MutableVec3f()
-    private val satPp = MutableVec3f()
-    private val satNormalC = MutableVec3f()
+    private val satTest = SatTest()
 
     // temp vars for edge edge intersection point computation
     private val pa = MutableVec3f()
@@ -61,7 +58,7 @@ class BoxBoxCollision {
      * boxes do not penetrate each other).
      */
     fun testForCollision(bodyA: RigidBody, bodyB: RigidBody, result: Contacts): Int {
-        val satAxis = performSat(bodyA.shape, bodyB.shape)
+        val satAxis = satTest.performSat(bodyA.shape, bodyB.shape)
 
         return when {
             // an edge from box 1 touches an edge from box 2
@@ -80,101 +77,6 @@ class BoxBoxCollision {
             // boxes do not intersect
             else -> 0
         }
-    }
-
-    /**
-     * Performs an separating axis test on two boxes. Returns the axis code of the deepest penetrating axis (1 .. 15)
-     * or 0 if the boxes do not penetrate each other. Also sets [normal] and [depth].
-     */
-    private fun performSat(box1: Box, box2: Box): Int {
-        box2.center.subtract(box1.center, satP)
-        box1.transform.transformTransposed(satPp.set(satP))
-
-        val r11 = box1.bX * box2.bX;    val r12 = box1.bX * box2.bY;    val r13 = box1.bX * box2.bZ
-        val r21 = box1.bY * box2.bX;    val r22 = box1.bY * box2.bY;    val r23 = box1.bY * box2.bZ
-        val r31 = box1.bZ * box2.bX;    val r32 = box1.bZ * box2.bY;    val r33 = box1.bZ * box2.bZ
-
-        var q11 = abs(r11);     var q12 = abs(r12);     var q13 = abs(r13)
-        var q21 = abs(r21);     var q22 = abs(r22);     var q23 = abs(r23)
-        var q31 = abs(r31);     var q32 = abs(r32);     var q33 = abs(r33)
-
-        var s = -Float.MAX_VALUE
-        var normalR: Vec3f? = null
-        var invertNormal = false
-        var code = 0
-
-        fun tstBase(expr1: Float, expr2: Float, norm: Vec3f, cc: Int): Boolean {
-            val s2 = abs(expr1) - expr2
-            if (s2 > 0) {
-                return false
-            } else if (s2 > s) {
-                s = s2
-                normalR = norm
-                invertNormal = expr1 < 0
-                code = cc
-            }
-            return true
-        }
-
-        // separating axis = box1.bX, box1.bY, box1.bZ
-        if (!tstBase(satPp.x, box1.eX + box2.eX*q11 + box2.eY*q12 + box2.eZ*q13, box1.bX, 1)) { return 0 }
-        if (!tstBase(satPp.y, box1.eY + box2.eX*q21 + box2.eY*q22 + box2.eZ*q23, box1.bY, 2)) { return 0 }
-        if (!tstBase(satPp.z, box1.eZ + box2.eX*q31 + box2.eY*q32 + box2.eZ*q33, box1.bZ, 3)) { return 0 }
-
-        // separating axis = box2.bX, box2.bY, box2.bZ
-        if (!tstBase(box2.bX*satP, box1.eX*q11 + box1.eY*q21 + box1.eZ*q31 + box2.eX, box2.bX, 4)) { return 0 }
-        if (!tstBase(box2.bY*satP, box1.eX*q12 + box1.eY*q22 + box1.eZ*q32 + box2.eY, box2.bY, 5)) { return 0 }
-        if (!tstBase(box2.bZ*satP, box1.eX*q13 + box1.eY*q23 + box1.eZ*q33 + box2.eZ, box2.bZ, 6)) { return 0 }
-
-        fun tstBaseX(expr1: Float, expr2: Float, n1: Float, n2: Float, n3: Float, cc: Int): Boolean {
-            var s2 = abs(expr1) - expr2
-            if (s2 > FLT_EPSILON) {
-                return false
-            }
-            val l = sqrt(n1*n1 + n2*n2 + n3*n3)
-            if (l > FLT_EPSILON) {
-                s2 /= l
-                if (s2 * FUDGE_FACTOR > s) {
-                    s = s2
-                    normalR = null
-                    satNormalC.set(n1, n2, n3).scale(1f / l)
-                    invertNormal = expr1 < 0
-                    code = cc
-                }
-            }
-            return true
-        }
-
-        q11 += FUDGE_2; q12 += FUDGE_2; q13 += FUDGE_2
-        q21 += FUDGE_2; q22 += FUDGE_2; q23 += FUDGE_2
-        q31 += FUDGE_2; q32 += FUDGE_2; q33 += FUDGE_2
-
-        // separating axis = box1.bX x (box2.bX, box2.bY, box2.bZ)
-        if (!tstBaseX(satPp.z*r21 - satPp.y*r31, box1.eY*q31 + box1.eZ*q21 + box2.eY*q13 + box2.eZ*q12, 0f, -r31, r21, 7)) { return 0 }
-        if (!tstBaseX(satPp.z*r22 - satPp.y*r32, box1.eY*q32 + box1.eZ*q22 + box2.eX*q13 + box2.eZ*q11, 0f, -r32, r22, 8)) { return 0 }
-        if (!tstBaseX(satPp.z*r23 - satPp.y*r33, box1.eY*q33 + box1.eZ*q23 + box2.eX*q12 + box2.eY*q11, 0f, -r33, r23, 9)) { return 0 }
-
-        // separating axis = box1.bY x (box2.bX, box2.bY, box2.bZ)
-        if (!tstBaseX(satPp.x*r31 - satPp.z*r11, box1.eX*q31 + box1.eZ*q11 + box2.eY*q23 + box2.eZ*q22, r31, 0f, -r11, 10)) { return 0 }
-        if (!tstBaseX(satPp.x*r32 - satPp.z*r12, box1.eX*q32 + box1.eZ*q12 + box2.eX*q23 + box2.eZ*q21, r32, 0f, -r12, 11)) { return 0 }
-        if (!tstBaseX(satPp.x*r33 - satPp.z*r13, box1.eX*q33 + box1.eZ*q13 + box2.eX*q22 + box2.eY*q21, r33, 0f, -r13, 12)) { return 0 }
-
-        // separating axis = box1.bZ x (box2.bX, box2.bY, box2.bZ)
-        if (!tstBaseX(satPp.y*r11 - satPp.x*r21, box1.eX*q21 + box1.eY*q11 + box2.eY*q33 + box2.eZ*q32, -r21, r11, 0f, 13)) { return 0 }
-        if (!tstBaseX(satPp.y*r12 - satPp.x*r22, box1.eX*q22 + box1.eY*q12 + box2.eX*q33 + box2.eZ*q31, -r22, r12, 0f, 14)) { return 0 }
-        if (!tstBaseX(satPp.y*r13 - satPp.x*r23, box1.eX*q23 + box1.eY*q13 + box2.eX*q32 + box2.eY*q31, -r23, r13, 0f, 15)) { return 0 }
-
-        // if we get to this point, the boxes interpenetrate. compute the normal in global coordinates.
-        normal.set(normalR ?: satNormalC)
-        if (normalR == null) {
-            box1.transform.transform(normal, 0f)
-        }
-        if (invertNormal) {
-            normal.scale(-1f)
-        }
-        depth = -s
-
-        return code
     }
 
     /**
@@ -339,13 +241,6 @@ class BoxBoxCollision {
         return cNum
     }
 
-    private fun Mat4f.transformTransposed(vec: MutableVec3f): MutableVec3f {
-        val x = vec.x * this[0, 0] + vec.y * this[1, 0] + vec.z * this[2, 0]
-        val y = vec.x * this[0, 1] + vec.y * this[1, 1] + vec.z * this[2, 1]
-        val z = vec.x * this[0, 2] + vec.y * this[1, 2] + vec.z * this[2, 2]
-        return vec.set(x, y, z)
-    }
-
     private fun Vec3f.largestComponentIdx(): Int = when {
         x > y && x > z -> 0
         y > x && y > z -> 1
@@ -361,6 +256,112 @@ class BoxBoxCollision {
     companion object {
         private const val FUDGE_FACTOR = 1.05f
         private const val FUDGE_2 = 1e-5f
+    }
+
+    /**
+     * Performs an separating axis test on two boxes. Returns the axis code of the deepest penetrating axis (1 .. 15)
+     * or 0 if the boxes do not penetrate each other. Also sets [normal] and [depth].
+     */
+    private inner class SatTest {
+        private val satP = MutableVec3f()
+        private val satPp = MutableVec3f()
+        private val satNormalC = MutableVec3f()
+
+        private var s = -Float.MAX_VALUE
+        private var normalR: Vec3f? = null
+        private var invertNormal = false
+        private var code = 0
+
+        fun performSat(box1: Box, box2: Box): Int {
+            box2.center.subtract(box1.center, satP)
+            box1.transform.transformTransposed(satPp.set(satP))
+
+            val r11 = box1.bX * box2.bX;    val r12 = box1.bX * box2.bY;    val r13 = box1.bX * box2.bZ
+            val r21 = box1.bY * box2.bX;    val r22 = box1.bY * box2.bY;    val r23 = box1.bY * box2.bZ
+            val r31 = box1.bZ * box2.bX;    val r32 = box1.bZ * box2.bY;    val r33 = box1.bZ * box2.bZ
+
+            var q11 = abs(r11);     var q12 = abs(r12);     var q13 = abs(r13)
+            var q21 = abs(r21);     var q22 = abs(r22);     var q23 = abs(r23)
+            var q31 = abs(r31);     var q32 = abs(r32);     var q33 = abs(r33)
+
+            s = -Float.MAX_VALUE
+            normalR = null
+            invertNormal = false
+            code = 0
+
+            // separating axis = box1.bX, box1.bY, box1.bZ
+            if (!tstBase(satPp.x, box1.eX + box2.eX*q11 + box2.eY*q12 + box2.eZ*q13, box1.bX, 1)) { return 0 }
+            if (!tstBase(satPp.y, box1.eY + box2.eX*q21 + box2.eY*q22 + box2.eZ*q23, box1.bY, 2)) { return 0 }
+            if (!tstBase(satPp.z, box1.eZ + box2.eX*q31 + box2.eY*q32 + box2.eZ*q33, box1.bZ, 3)) { return 0 }
+
+            // separating axis = box2.bX, box2.bY, box2.bZ
+            if (!tstBase(box2.bX*satP, box1.eX*q11 + box1.eY*q21 + box1.eZ*q31 + box2.eX, box2.bX, 4)) { return 0 }
+            if (!tstBase(box2.bY*satP, box1.eX*q12 + box1.eY*q22 + box1.eZ*q32 + box2.eY, box2.bY, 5)) { return 0 }
+            if (!tstBase(box2.bZ*satP, box1.eX*q13 + box1.eY*q23 + box1.eZ*q33 + box2.eZ, box2.bZ, 6)) { return 0 }
+
+            q11 += FUDGE_2; q12 += FUDGE_2; q13 += FUDGE_2
+            q21 += FUDGE_2; q22 += FUDGE_2; q23 += FUDGE_2
+            q31 += FUDGE_2; q32 += FUDGE_2; q33 += FUDGE_2
+
+            // separating axis = box1.bX x (box2.bX, box2.bY, box2.bZ)
+            if (!tstBaseXBase(satPp.z*r21 - satPp.y*r31, box1.eY*q31 + box1.eZ*q21 + box2.eY*q13 + box2.eZ*q12, 0f, -r31, r21, 7)) { return 0 }
+            if (!tstBaseXBase(satPp.z*r22 - satPp.y*r32, box1.eY*q32 + box1.eZ*q22 + box2.eX*q13 + box2.eZ*q11, 0f, -r32, r22, 8)) { return 0 }
+            if (!tstBaseXBase(satPp.z*r23 - satPp.y*r33, box1.eY*q33 + box1.eZ*q23 + box2.eX*q12 + box2.eY*q11, 0f, -r33, r23, 9)) { return 0 }
+
+            // separating axis = box1.bY x (box2.bX, box2.bY, box2.bZ)
+            if (!tstBaseXBase(satPp.x*r31 - satPp.z*r11, box1.eX*q31 + box1.eZ*q11 + box2.eY*q23 + box2.eZ*q22, r31, 0f, -r11, 10)) { return 0 }
+            if (!tstBaseXBase(satPp.x*r32 - satPp.z*r12, box1.eX*q32 + box1.eZ*q12 + box2.eX*q23 + box2.eZ*q21, r32, 0f, -r12, 11)) { return 0 }
+            if (!tstBaseXBase(satPp.x*r33 - satPp.z*r13, box1.eX*q33 + box1.eZ*q13 + box2.eX*q22 + box2.eY*q21, r33, 0f, -r13, 12)) { return 0 }
+
+            // separating axis = box1.bZ x (box2.bX, box2.bY, box2.bZ)
+            if (!tstBaseXBase(satPp.y*r11 - satPp.x*r21, box1.eX*q21 + box1.eY*q11 + box2.eY*q33 + box2.eZ*q32, -r21, r11, 0f, 13)) { return 0 }
+            if (!tstBaseXBase(satPp.y*r12 - satPp.x*r22, box1.eX*q22 + box1.eY*q12 + box2.eX*q33 + box2.eZ*q31, -r22, r12, 0f, 14)) { return 0 }
+            if (!tstBaseXBase(satPp.y*r13 - satPp.x*r23, box1.eX*q23 + box1.eY*q13 + box2.eX*q32 + box2.eY*q31, -r23, r13, 0f, 15)) { return 0 }
+
+            // if we get to this point, the boxes interpenetrate. compute the normal in global coordinates.
+            normal.set(normalR ?: satNormalC)
+            if (normalR == null) {
+                box1.transform.transform(normal, 0f)
+            }
+            if (invertNormal) {
+                normal.scale(-1f)
+            }
+            depth = -s
+
+            return code
+        }
+
+        fun tstBase(expr1: Float, expr2: Float, norm: Vec3f, cc: Int): Boolean {
+            val s2 = abs(expr1) - expr2
+            if (s2 > 0) {
+                return false
+            } else if (s2 > s) {
+                s = s2
+                normalR = norm
+                invertNormal = expr1 < 0
+                code = cc
+            }
+            return true
+        }
+
+        fun tstBaseXBase(expr1: Float, expr2: Float, n1: Float, n2: Float, n3: Float, cc: Int): Boolean {
+            var s2 = abs(expr1) - expr2
+            if (s2 > FLT_EPSILON) {
+                return false
+            }
+            val l = sqrt(n1*n1 + n2*n2 + n3*n3)
+            if (l > FLT_EPSILON) {
+                s2 /= l
+                if (s2 * FUDGE_FACTOR > s) {
+                    s = s2
+                    normalR = null
+                    satNormalC.set(n1, n2, n3).scale(1f / l)
+                    invertNormal = expr1 < 0
+                    code = cc
+                }
+            }
+            return true
+        }
     }
 
     /**
@@ -443,4 +444,11 @@ class BoxBoxCollision {
             return resultPointCnt
         }
     }
+}
+
+private fun Mat4f.transformTransposed(vec: MutableVec3f): MutableVec3f {
+    val x = vec.x * this[0, 0] + vec.y * this[1, 0] + vec.z * this[2, 0]
+    val y = vec.x * this[0, 1] + vec.y * this[1, 1] + vec.z * this[2, 1]
+    val z = vec.x * this[0, 2] + vec.y * this[1, 2] + vec.z * this[2, 2]
+    return vec.set(x, y, z)
 }

@@ -126,7 +126,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             layoutSpec.setSize(pcs(100f), dps(150f), zero())
             ui.setCustom(SimpleComponentUi(this))
 
-
             +label("Grow Distance:") {
                 layoutSpec.setOrigin(dps(0f, true), dps(110f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())

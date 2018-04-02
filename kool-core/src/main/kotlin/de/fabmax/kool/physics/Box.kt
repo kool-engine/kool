@@ -6,7 +6,7 @@ import de.fabmax.kool.math.Vec3f
 import kotlin.math.abs
 
 class Box(sizeX: Float, sizeY: Float, sizeZ: Float) {
-    val halfExtents = MutableVec3f(sizeX * 0.5f, sizeY * 0.5f, sizeZ * 0.5f)
+    val halfExtents = Vec3f(sizeX * 0.5f, sizeY * 0.5f, sizeZ * 0.5f)
     val eX: Float get() = halfExtents.x
     val eY: Float get() = halfExtents.y
     val eZ: Float get() = halfExtents.z
@@ -18,8 +18,6 @@ class Box(sizeX: Float, sizeY: Float, sizeZ: Float) {
     val center: MutableVec3f = ColVecView(3)
 
     private val tmpD = MutableVec3f()
-
-    constructor() : this(1f, 1f, 1f)
 
     /**
      * Tests this and another oriented bounding box for intersection. This function performs a separating axis test

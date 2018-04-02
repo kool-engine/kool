@@ -6,33 +6,38 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var Unit = Kotlin.kotlin.Unit;
   var sphericalInputTransform = $module$kool.de.fabmax.kool.scene.sphericalInputTransform_6sxffc$;
-  var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
-  var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
-  var gl = $module$kool.de.fabmax.kool.gl;
-  var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_3m52m6$;
-  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_513zl8$;
-  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
+  var ensureNotNull = Kotlin.ensureNotNull;
   var Color = $module$kool.de.fabmax.kool.util.Color;
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
+  var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
+  var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
+  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
   var lineMesh = $module$kool.de.fabmax.kool.util.lineMesh_6a24eg$;
-  var CollisionWorld = $module$kool.de.fabmax.kool.physics.CollisionWorld;
-  var uniformMassBox = $module$kool.de.fabmax.kool.physics.uniformMassBox_7b5o5w$;
-  var staticBox = $module$kool.de.fabmax.kool.physics.staticBox_y2kzbl$;
-  var BoxMesh = $module$kool.de.fabmax.kool.physics.BoxMesh;
   var UiTheme = $module$kool.de.fabmax.kool.scene.ui.UiTheme;
   var BlankComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlankComponentUi;
-  var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
-  var getCallableRef = Kotlin.getCallableRef;
   var theme = $module$kool.de.fabmax.kool.scene.ui.theme_vvurn$;
-  var dps = $module$kool.de.fabmax.kool.scene.ui.dps_8ca0d4$;
   var zero = $module$kool.de.fabmax.kool.scene.ui.zero;
-  var pcs = $module$kool.de.fabmax.kool.scene.ui.pcs_8ca0d4$;
+  var dps = $module$kool.de.fabmax.kool.scene.ui.dps_8ca0d4$;
+  var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
+  var numberToInt = Kotlin.numberToInt;
+  var plus = Kotlin.kotlin.collections.plus_qloxvw$;
+  var formatFloat = $module$kool.de.fabmax.kool.formatFloat_vjorfl$;
   var Alignment = $module$kool.de.fabmax.kool.scene.ui.Alignment;
   var Gravity = $module$kool.de.fabmax.kool.scene.ui.Gravity;
-  var titleFont = $module$kool.de.fabmax.kool.scene.ui.titleFont_mt8j6u$;
-  var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
   var uiScene = $module$kool.de.fabmax.kool.scene.ui.uiScene_7c31we$;
+  var uniformMassBox = $module$kool.de.fabmax.kool.physics.uniformMassBox_7b5o5w$;
+  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
+  var BoxMesh = $module$kool.de.fabmax.kool.physics.BoxMesh;
+  var staticBox = $module$kool.de.fabmax.kool.physics.staticBox_y2kzbl$;
+  var Group = $module$kool.de.fabmax.kool.scene.Group;
+  var CollisionWorld = $module$kool.de.fabmax.kool.physics.CollisionWorld;
+  var Random = $module$kool.de.fabmax.kool.math.Random;
+  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var Kind_CLASS = Kotlin.Kind.CLASS;
+  var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
+  var getCallableRef = Kotlin.getCallableRef;
+  var pcs = $module$kool.de.fabmax.kool.scene.ui.pcs_8ca0d4$;
+  var titleFont = $module$kool.de.fabmax.kool.scene.ui.titleFont_mt8j6u$;
   var debugOverlay = $module$kool.de.fabmax.kool.util.debugOverlay_n8mrtu$;
   var to = Kotlin.kotlin.to_ujzrz7$;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
@@ -44,13 +49,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var math = Kotlin.kotlin.math;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var round = Kotlin.kotlin.math.round_14dthe$;
-  var numberToInt = Kotlin.numberToInt;
   var kotlin_js_internal_IntCompanionObject = Kotlin.kotlin.js.internal.IntCompanionObject;
   var abs = Kotlin.kotlin.math.abs_za3lpa$;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
-  var Group = $module$kool.de.fabmax.kool.scene.Group;
+  var gl = $module$kool.de.fabmax.kool.gl;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
   var Ray = $module$kool.de.fabmax.kool.math.Ray;
@@ -58,34 +62,31 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var InputManager$DragHandler = $module$kool.de.fabmax.kool.InputManager.DragHandler;
   var SphericalInputTransform$DragMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.DragMethod;
   var SphericalInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.ZoomMethod;
-  var ensureNotNull = Kotlin.ensureNotNull;
   var throwUPAE = Kotlin.throwUPAE;
   var Font = $module$kool.de.fabmax.kool.util.Font;
   var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
   var Margin = $module$kool.de.fabmax.kool.scene.ui.Margin;
   var color = $module$kool.de.fabmax.kool.util.color_61zpoe$;
   var formatDouble = $module$kool.de.fabmax.kool.formatDouble_12fank$;
-  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_2gt2x8$;
+  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_2gt2x8$;
   var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
   var Attribute = $module$kool.de.fabmax.kool.shading.Attribute;
   var MeshData_init = $module$kool.de.fabmax.kool.scene.MeshData_init_j0mu7e$;
   var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
-  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
+  var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_3m52m6$;
+  var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_513zl8$;
   var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var loadMesh = $module$kool.de.fabmax.kool.util.serialization.loadMesh_fqrh44$;
   var Armature = $module$kool.de.fabmax.kool.scene.animation.Armature;
   var Label = $module$kool.de.fabmax.kool.scene.ui.Label;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
-  var formatFloat = $module$kool.de.fabmax.kool.formatFloat_vjorfl$;
   var Slider = $module$kool.de.fabmax.kool.scene.ui.Slider;
-  var plus = Kotlin.kotlin.collections.plus_qloxvw$;
   var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_o1x1d9$;
   var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
   var KoolContext$Viewport = $module$kool.de.fabmax.kool.KoolContext.Viewport;
-  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var InRadiusTraverser_init = $module$kool.de.fabmax.kool.math.InRadiusTraverser_init_34hdy3$;
   var BillboardMesh = $module$kool.de.fabmax.kool.util.BillboardMesh;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
@@ -131,6 +132,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var ToggleButton = $module$kool.de.fabmax.kool.scene.ui.ToggleButton;
   var TextField = $module$kool.de.fabmax.kool.scene.ui.TextField;
+  BoxWorld.prototype = Object.create(Group.prototype);
+  BoxWorld.prototype.constructor = BoxWorld;
   MenuButtonUi.prototype = Object.create(ToggleButtonUi.prototype);
   MenuButtonUi.prototype.constructor = MenuButtonUi;
   Earth$TileGroup.prototype = Object.create(Group.prototype);
@@ -188,23 +191,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function collisionDemo$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.setMouseRotation_dleff0$(20.0, -20.0);
+      $receiver.maxZoom = 50.0;
+      $receiver.resetZoom_mx4ult$(50.0);
+      $receiver.setMouseRotation_dleff0$(45.0, -30.0);
       return Unit;
     };
   }
-  function collisionDemo$lambda$lambda$lambda(this$, closure$ctx) {
-    return function ($receiver) {
-      $receiver.colorModel = ColorModel.VERTEX_COLOR;
-      $receiver.lightModel = LightModel.PHONG_LIGHTING;
-      $receiver.shadowMap = this$.defaultShadowMap;
-      $receiver.isNormalMapped = true;
-      $receiver.specularIntensity = 0.25;
-      var props = TextureProps_init('perlin_nrm.png', gl.GL_LINEAR, gl.GL_REPEAT);
-      $receiver.normalMap = assetTexture(props, closure$ctx);
-      return Unit;
-    };
-  }
-  function collisionDemo$lambda$lambda$lambda_0(this$) {
+  function collisionDemo$lambda$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.lightModel = LightModel.NO_LIGHTING;
       $receiver.colorModel = ColorModel.VERTEX_COLOR;
@@ -214,62 +207,245 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function collisionDemo$lambda$lambda_0(this$) {
     return function ($receiver) {
-      $receiver.isCastingShadow = false;
-      for (var i = -5; i <= 5; i++) {
+      var sz = 25;
+      var y = 0.005;
+      for (var i = -25; i <= sz; i++) {
         var color = Color.Companion.MD_GREY_600.withAlpha_mx4ult$(0.5);
-        var y = -1.995;
-        $receiver.addLine_b8opkg$(new Vec3f(i, y, -5.0), color, new Vec3f(i, y, 5.0), color);
-        $receiver.addLine_b8opkg$(new Vec3f(-5.0, y, i), color, new Vec3f(5.0, y, i), color);
+        $receiver.addLine_b8opkg$(new Vec3f(i, y, -sz), color, new Vec3f(i, y, sz), color);
+        $receiver.addLine_b8opkg$(new Vec3f(-sz, y, i), color, new Vec3f(sz, y, i), color);
       }
-      $receiver.shader = basicShader(collisionDemo$lambda$lambda$lambda_0(this$));
+      $receiver.isCastingShadow = false;
+      $receiver.shader = basicShader(collisionDemo$lambda$lambda$lambda(this$));
       return Unit;
     };
   }
+  function collisionDemo$lambda$lambda$lambda_0(it) {
+    return new BlankComponentUi();
+  }
+  function collisionDemo$lambda$lambda$lambda_1(it) {
+    return new BlankComponentUi();
+  }
+  function collisionDemo$lambda$lambda_1($receiver) {
+    $receiver.componentUi_mloaa0$(collisionDemo$lambda$lambda$lambda_0);
+    $receiver.containerUi_2t3ptw$(collisionDemo$lambda$lambda$lambda_1);
+    return Unit;
+  }
+  function collisionDemo$lambda$disableCamDrag$lambda(closure$boxScene) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$boxScene.isPickingEnabled = false;
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$disableCamDrag$lambda_0(closure$boxScene) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$boxScene.isPickingEnabled = true;
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$disableCamDrag(closure$boxScene) {
+    return function ($receiver) {
+      var $receiver_0 = $receiver.onHoverEnter;
+      var element = collisionDemo$lambda$disableCamDrag$lambda(closure$boxScene);
+      $receiver_0.add_11rb$(element);
+      var $receiver_1 = $receiver.onHoverExit;
+      var element_0 = collisionDemo$lambda$disableCamDrag$lambda_0(closure$boxScene);
+      $receiver_1.add_11rb$(element_0);
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda_2($receiver) {
+    $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(75.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(80.0, true), dps(35.0, true), zero());
+    return Unit;
+  }
+  function collisionDemo$lambda$lambda$lambda_3(closure$boxCnt) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(210.0, true), dps(75.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
+      $receiver.text = closure$boxCnt.v.toString();
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda$lambda(closure$boxCnt, closure$boxCntLbl) {
+    return function ($receiver, value) {
+      closure$boxCnt.v = numberToInt(value);
+      closure$boxCntLbl.text = closure$boxCnt.v.toString();
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda_4(closure$disableCamDrag, closure$boxCnt, closure$boxCntLbl) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(80.0, true), dps(75.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), zero());
+      closure$disableCamDrag($receiver);
+      $receiver.onValueChanged = plus($receiver.onValueChanged, collisionDemo$lambda$lambda$lambda$lambda(closure$boxCnt, closure$boxCntLbl));
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda_5($receiver) {
+    $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(40.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(80.0, true), dps(35.0, true), zero());
+    return Unit;
+  }
+  function collisionDemo$lambda$lambda$lambda_6(closure$boxWorld) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(210.0, true), dps(40.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
+      $receiver.text = formatFloat(ensureNotNull(closure$boxWorld.v).world.gravity.length(), 2);
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda$lambda_0(closure$boxWorld, closure$gravityLbl) {
+    return function ($receiver, value) {
+      var grav = ensureNotNull(closure$boxWorld.v).world.gravity;
+      grav.set_y2kzbl$(0.0, -value, 0.0);
+      closure$gravityLbl.text = formatFloat(grav.length(), 2);
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda_7(closure$disableCamDrag, closure$boxWorld, closure$gravityLbl) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(80.0, true), dps(40.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), zero());
+      closure$disableCamDrag($receiver);
+      $receiver.onValueChanged = plus($receiver.onValueChanged, collisionDemo$lambda$lambda$lambda$lambda_0(closure$boxWorld, closure$gravityLbl));
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda$lambda_1(closure$boxWorld, closure$boxCnt) {
+    return function ($receiver, f, f_0, ctx) {
+      ensureNotNull(closure$boxWorld.v).clearBoxes_aemszp$(ctx);
+      ensureNotNull(closure$boxWorld.v).createBoxes_za3lpa$(closure$boxCnt.v);
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda$lambda_8(closure$boxWorld, closure$boxCnt) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(5.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), zero());
+      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
+      var $receiver_0 = $receiver.onClick;
+      var element = collisionDemo$lambda$lambda$lambda$lambda_1(closure$boxWorld, closure$boxCnt);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda$lambda_2(this$, closure$boxCnt, closure$disableCamDrag, closure$boxWorld) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(280.0), dps(115.0), zero());
+      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Boxes:', collisionDemo$lambda$lambda$lambda_2));
+      var boxCntLbl = this$.label_tokfmu$('boxCntLbl', collisionDemo$lambda$lambda$lambda_3(closure$boxCnt));
+      $receiver.unaryPlus_uv0sim$(boxCntLbl);
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('boxCnt', 1.0, 200.0, 40.0, collisionDemo$lambda$lambda$lambda_4(closure$disableCamDrag, closure$boxCnt, boxCntLbl)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Gravity:', collisionDemo$lambda$lambda$lambda_5));
+      var gravityLbl = this$.label_tokfmu$('gravityLbl', collisionDemo$lambda$lambda$lambda_6(closure$boxWorld));
+      $receiver.unaryPlus_uv0sim$(gravityLbl);
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('gravity', 0.0, 10.0, ensureNotNull(closure$boxWorld.v).world.gravity.length(), collisionDemo$lambda$lambda$lambda_7(closure$disableCamDrag, closure$boxWorld, gravityLbl)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Reset Boxes!', collisionDemo$lambda$lambda$lambda_8(closure$boxWorld, closure$boxCnt)));
+      return Unit;
+    };
+  }
+  function collisionDemo$lambda(closure$boxScene, closure$boxCnt, closure$boxWorld) {
+    return function ($receiver) {
+      $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, collisionDemo$lambda$lambda_1);
+      var disableCamDrag = collisionDemo$lambda$disableCamDrag(closure$boxScene);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', collisionDemo$lambda$lambda_2($receiver, closure$boxCnt, disableCamDrag, closure$boxWorld)));
+      return Unit;
+    };
+  }
+  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
   function collisionDemo(ctx) {
+    var boxWorld = {v: null};
+    var scenes = ArrayList_init();
+    var boxCnt = {v: 40};
     var $receiver = new Scene(null);
     $receiver.light.direction.set_y2kzbl$(1.0, 0.8, 0.4);
     $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, collisionDemo$lambda$lambda($receiver)));
-    var $receiver_0 = twoBoxes();
-    $receiver_0.shader = basicShader(collisionDemo$lambda$lambda$lambda($receiver, ctx));
-    $receiver.unaryPlus_uv0sim$($receiver_0);
+    boxWorld.v = new BoxWorld($receiver.defaultShadowMap);
+    ensureNotNull(boxWorld.v).createBoxes_za3lpa$(boxCnt.v);
+    $receiver.unaryPlus_uv0sim$(ensureNotNull(boxWorld.v));
     $receiver.unaryPlus_uv0sim$(lineMesh(void 0, collisionDemo$lambda$lambda_0($receiver)));
-    return $receiver;
+    var boxScene = $receiver;
+    scenes.add_11rb$(boxScene);
+    var element = uiScene(ctx.screenDpi, void 0, collisionDemo$lambda(boxScene, boxCnt, boxWorld));
+    scenes.add_11rb$(element);
+    return scenes;
   }
-  function twoBoxes$lambda$lambda(closure$world, this$) {
+  function BoxWorld(shadowMap) {
+    Group.call(this);
+    this.shadowMap_0 = shadowMap;
+    this.world = new CollisionWorld();
+    this.rand_0 = new Random(17);
+    this.colors_0 = listOf([Color.Companion.MD_AMBER_500, Color.Companion.MD_BLUE_500, Color.Companion.MD_BROWN_500, Color.Companion.MD_CYAN_500, Color.Companion.MD_GREEN_500, Color.Companion.MD_INDIGO_500, Color.Companion.MD_LIME_500, Color.Companion.MD_ORANGE_500, Color.Companion.MD_PINK_500, Color.Companion.MD_PURPLE_500, Color.Companion.MD_RED_500, Color.Companion.MD_TEAL_500, Color.Companion.MD_YELLOW_500, Color.Companion.MD_DEEP_ORANGE_500, Color.Companion.MD_DEEP_PURPLE_500, Color.Companion.MD_LIGHT_BLUE_500, Color.Companion.MD_LIGHT_GREEN_500]);
+    this.world.gravity.set_y2kzbl$(0.0, -2.5, 0.0);
+    this.onPreRender.add_11rb$(BoxWorld_init$lambda(this));
+  }
+  BoxWorld.prototype.clearBoxes_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.children.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.dispose_aemszp$(ctx);
+    }
+    this.children.clear();
+    this.world.bodies.clear();
+  };
+  BoxWorld.prototype.createBoxes_za3lpa$ = function (n) {
+    var tmp$;
+    tmp$ = n - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      var x = this.rand_0.randomF_dleff0$(1.0, 2.0);
+      var y = this.rand_0.randomF_dleff0$(1.0, 2.0);
+      var z = this.rand_0.randomF_dleff0$(1.0, 2.0);
+      var $receiver = uniformMassBox(x, y, z, x * y * z);
+      $receiver.centerOfMass.set_y2kzbl$(this.rand_0.randomF_dleff0$(-1.0, 1.0), 5 + (n - i | 0) * 2.75, this.rand_0.randomF_dleff0$(-1.0, 1.0));
+      $receiver.worldTransform.rotate_ad55pp$(this.rand_0.randomF_dleff0$(0.0, 360.0), (new MutableVec3f(this.rand_0.randomF_dleff0$(-1.0, 1.0), this.rand_0.randomF_dleff0$(-1.0, 1.0), this.rand_0.randomF_dleff0$(-1.0, 1.0))).norm());
+      var box = $receiver;
+      this.world.bodies.add_11rb$(box);
+      this.plusAssign_f1kmr1$(new BoxMesh(box, this.colors_0.get_za3lpa$(i % this.colors_0.size), this.shadowMap_0));
+    }
+    this.createGround_0();
+  };
+  BoxWorld.prototype.createGround_0 = function () {
+    var $receiver = staticBox(50.0, 1.0, 50.0);
+    $receiver.centerOfMass.set_y2kzbl$(0.0, -0.5, 0.0);
+    var groundBox = $receiver;
+    this.world.bodies.add_11rb$(groundBox);
+    this.plusAssign_f1kmr1$(new BoxMesh(groundBox, Color.Companion.MD_GREY, this.shadowMap_0));
+    var $receiver_0 = staticBox(1.0, 4.0, 50.0);
+    $receiver_0.centerOfMass.set_y2kzbl$(-25.5, 2.0, 0.0);
+    var borderLt = $receiver_0;
+    this.world.bodies.add_11rb$(borderLt);
+    this.plusAssign_f1kmr1$(new BoxMesh(borderLt, Color.Companion.MD_ORANGE, this.shadowMap_0));
+    var $receiver_1 = staticBox(1.0, 4.0, 50.0);
+    $receiver_1.centerOfMass.set_y2kzbl$(25.5, 2.0, 0.0);
+    var borderRt = $receiver_1;
+    this.world.bodies.add_11rb$(borderRt);
+    this.plusAssign_f1kmr1$(new BoxMesh(borderRt, Color.Companion.MD_ORANGE, this.shadowMap_0));
+    var $receiver_2 = staticBox(52.0, 4.0, 1.0);
+    $receiver_2.centerOfMass.set_y2kzbl$(0.0, 2.0, -25.5);
+    var borderBk = $receiver_2;
+    this.world.bodies.add_11rb$(borderBk);
+    this.plusAssign_f1kmr1$(new BoxMesh(borderBk, Color.Companion.MD_ORANGE, this.shadowMap_0));
+    var $receiver_3 = staticBox(52.0, 4.0, 1.0);
+    $receiver_3.centerOfMass.set_y2kzbl$(0.0, 2.0, 25.5);
+    var borderFt = $receiver_3;
+    this.world.bodies.add_11rb$(borderFt);
+    this.plusAssign_f1kmr1$(new BoxMesh(borderFt, Color.Companion.MD_ORANGE, this.shadowMap_0));
+  };
+  function BoxWorld_init$lambda(this$BoxWorld) {
     return function ($receiver, ctx) {
-      closure$world.stepSimulation_mx4ult$(ctx.deltaT);
-      this$.updateBoxes();
+      this$BoxWorld.world.stepSimulation_mx4ult$(ctx.deltaT);
       return Unit;
     };
   }
-  function twoBoxes() {
-    var world = new CollisionWorld();
-    world.gravity.set_y2kzbl$(0.0, -1.0, 0.0);
-    var box1 = uniformMassBox(1.0, 1.0, 1.0, 1.0);
-    box1.name = 'smallBox';
-    var $receiver = box1.shape;
-    $receiver.center.set_y2kzbl$(0.75, 3.0, 0.0);
-    $receiver.transform.rotate_ad55pp$(-10.0, Vec3f.Companion.Z_AXIS);
-    $receiver.transform.rotate_ad55pp$(-5.0, Vec3f.Companion.Y_AXIS);
-    var box2 = uniformMassBox(2.5, 1.0, 3.0, 7.5);
-    box2.name = 'bigBox';
-    var $receiver_0 = box2.shape;
-    $receiver_0.center.set_y2kzbl$(0.0, 1.5, 0.0);
-    $receiver_0.transform.rotate_ad55pp$(5.0, Vec3f.Companion.X_AXIS);
-    $receiver_0.transform.rotate_ad55pp$(10.0, Vec3f.Companion.Z_AXIS);
-    world.bodies.add_11rb$(box1);
-    world.bodies.add_11rb$(box2);
-    var tmp$ = world.bodies;
-    var $receiver_1 = staticBox(10.0, 0.2, 10.0);
-    $receiver_1.centerOfMass.set_y2kzbl$(0.0, -2.1, 0.0);
-    $receiver_1.name = 'Ground';
-    tmp$.add_11rb$($receiver_1);
-    var $receiver_2 = new BoxMesh(world);
-    $receiver_2.onPreRender.add_11rb$(twoBoxes$lambda$lambda(world, $receiver_2));
-    return $receiver_2;
-  }
-  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
+  BoxWorld.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'BoxWorld',
+    interfaces: [Group]
+  };
   var Map = Kotlin.kotlin.collections.Map;
   function Demo(ctx, startScene) {
     if (startScene === void 0)
@@ -463,7 +639,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function Demo$demos$lambda_5($receiver, it) {
-    $receiver.add_11rb$(collisionDemo(it));
+    $receiver.addAll_brywnq$(collisionDemo(it));
     return Unit;
   }
   Demo.$metadata$ = {
@@ -1237,7 +1413,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
   });
   TileMesh.prototype.loadTileTex_0 = function (x, y, z, ctx) {
-    this.tileShader_0.texture = assetTexture_0('http://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png', ctx);
+    this.tileShader_0.texture = assetTexture('http://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png', ctx);
   };
   TileMesh.prototype.render_aemszp$ = function (ctx) {
     var targetAlpha = 1.0;
@@ -1511,9 +1687,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.isNormalMapped = true;
       $receiver.specularIntensity = 0.25;
       var props = TextureProps_init('ground_nrm.png', gl.GL_LINEAR, gl.GL_REPEAT);
-      $receiver.normalMap = assetTexture(props, closure$ctx);
+      $receiver.normalMap = assetTexture_0(props, closure$ctx);
       var colorProps = TextureProps_init('ground_color.png', gl.GL_LINEAR, gl.GL_REPEAT);
-      $receiver.texture = assetTexture(colorProps, closure$ctx);
+      $receiver.texture = assetTexture_0(colorProps, closure$ctx);
       return Unit;
     };
   }
@@ -1939,7 +2115,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       var tmp$;
       $receiver.generator = simpleShapesScene$lambda$lambda$lambda$lambda;
-      (Kotlin.isType(tmp$ = $receiver.shader, BasicShader) ? tmp$ : throwCCE()).texture = assetTexture_0('world.jpg', closure$ctx);
+      (Kotlin.isType(tmp$ = $receiver.shader, BasicShader) ? tmp$ : throwCCE()).texture = assetTexture('world.jpg', closure$ctx);
       return Unit;
     };
   }
@@ -2687,8 +2863,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.specularIntensity = 0.25;
       var textureProps = TextureProps_init_0('tree_bark.png', gl.GL_LINEAR, gl.GL_REPEAT, 16);
       var nrmMapProps = TextureProps_init_0('tree_bark_nrm.png', gl.GL_LINEAR, gl.GL_REPEAT, 16);
-      $receiver.texture = assetTexture(textureProps, closure$ctx);
-      $receiver.normalMap = assetTexture(nrmMapProps, closure$ctx);
+      $receiver.texture = assetTexture_0(textureProps, closure$ctx);
+      $receiver.normalMap = assetTexture_0(nrmMapProps, closure$ctx);
       return Unit;
     };
   }
@@ -2721,7 +2897,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.shadowMap = this$.defaultShadowMap;
       $receiver.specularIntensity = 0.1;
       $receiver.isDiscardTranslucent = true;
-      $receiver.texture = assetTexture_0('leaf.png', closure$ctx);
+      $receiver.texture = assetTexture('leaf.png', closure$ctx);
       return Unit;
     };
   }
@@ -3710,7 +3886,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var package$kool = package$fabmax.kool || (package$fabmax.kool = {});
   var package$demo = package$kool.demo || (package$kool.demo = {});
   package$demo.collisionDemo_aemszp$ = collisionDemo;
-  package$demo.twoBoxes = twoBoxes;
+  package$demo.BoxWorld = BoxWorld;
   package$demo.Demo = Demo;
   package$demo.MenuButtonUi = MenuButtonUi;
   Object.defineProperty(Earth, 'Companion', {

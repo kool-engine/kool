@@ -32,7 +32,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "earthDemo" to DemoEntry("Earth Demo") { addAll(earthScene(it)) },
             "modelDemo" to DemoEntry("Model Demo") { add(modelScene(it)) },
             "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
-            "boxDemo" to DemoEntry("Physics Demo") { add(collisionDemo(it)) }
+            "boxDemo" to DemoEntry("Physics Demo") { addAll(collisionDemo(it)) }
     )
 
     init {

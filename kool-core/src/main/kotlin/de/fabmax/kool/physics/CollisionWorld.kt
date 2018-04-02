@@ -25,7 +25,7 @@ class CollisionWorld {
         // limit max step time to 0.1 secs, i.e. if fram rate goes below 10 fps, real time is not achieved anymore
         realTime += min(dt, 0.1f)
 
-        while (simTime < realTime) {
+        while ((realTime - simTime) > timeStep / 2) {
             simTime += timeStep
 
             for (i in bodies.indices) {
@@ -42,16 +42,12 @@ class CollisionWorld {
     }
 
     fun broadPhase() {
-        for (i in bodies.indices) {
-            bodies[i].isInCollision = false
-        }
-
         // it's super effective!
         for (i in bodies.indices) {
             for (j in i+1 until bodies.size) {
-                val coll = collisionChecker.testForCollision(bodies[i], bodies[j], contacts) > 0
-                bodies[i].isInCollision = bodies[i].isInCollision || coll
-                bodies[j].isInCollision = bodies[j].isInCollision || coll
+                if (!bodies[i].isStaticOrKinematic || !bodies[j].isStaticOrKinematic) {
+                    collisionChecker.testForCollision(bodies[i], bodies[j], contacts)
+                }
             }
         }
 
