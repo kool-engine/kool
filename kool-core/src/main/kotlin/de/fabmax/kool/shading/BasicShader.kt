@@ -43,11 +43,11 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     protected val uShadowTex = mutableListOf<UniformTexture2D>()
 
     var shininess: Float
-        get() = uShininess.value
-        set(value) { uShininess.value = value }
+        get() = uShininess.value[0]
+        set(value) { uShininess.value[0] = value }
     var specularIntensity: Float
-        get() = uSpecularIntensity.value
-        set(value) { uSpecularIntensity.value = value }
+        get() = uSpecularIntensity.value[0]
+        set(value) { uSpecularIntensity.value[0] = value }
     var staticColor: MutableVec4f
         get() = uStaticColor.value
         set(value) { uStaticColor.value.set(value) }
@@ -58,11 +58,11 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         get() = uNormalMap.value
         set(value) { uNormalMap.value = value }
     var alpha: Float
-        get() = uAlpha.value
-        set(value) { uAlpha.value = value }
+        get() = uAlpha.value[0]
+        set(value) { uAlpha.value[0] = value }
     var saturation: Float
-        get() = uSaturation.value
-        set(value) { uSaturation.value = value }
+        get() = uSaturation.value[0]
+        set(value) { uSaturation.value[0] = value }
     var bones: Float32Buffer?
         get() = uBones.value
         set(value) { uBones.value = value }
@@ -191,8 +191,8 @@ open class BasicPointShader internal constructor(props: ShaderProps, generator: 
 
     protected val uPointSz = addUniform(Uniform1f(U_POINT_SIZE))
     var pointSize: Float
-        get() = uPointSz.value
-        set(value) { uPointSz.value = value }
+        get() = uPointSz.value[0]
+        set(value) { uPointSz.value[0] = value }
 
     init {
         generator.customUniforms += uPointSz

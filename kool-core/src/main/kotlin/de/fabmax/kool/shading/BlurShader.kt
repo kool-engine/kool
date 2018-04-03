@@ -32,8 +32,8 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
 
     var blurHelper: BlurredBackgroundHelper? = null
     var colorMix: Float
-        get() = uColorMix.value
-        set(value) { uColorMix.value = value }
+        get() = uColorMix.value[0]
+        set(value) { uColorMix.value[0] = value }
 
     init {
         colorMix = 0f

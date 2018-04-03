@@ -149,7 +149,7 @@ open class Scene(name: String? = null) : Group(name) {
             }
         }
 
-        for (i in dragHandlers.lastIndex-1 downTo 0) {
+        for (i in dragHandlers.lastIndex downTo 0) {
             val result = dragHandlers[i].handleDrag(dragPtrs, ctx)
             if (result and InputManager.DragHandler.REMOVE_HANDLER != 0) {
                 dragHandlers.removeAt(i)

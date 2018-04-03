@@ -399,7 +399,8 @@ class BoxBoxCollision {
             var r = resultPoints
             dirLoop@ for (dir in 0..1) {
                 // direction notation: xy[0] = x axis, xy[1] = y axis
-                for (sign in -1..1 step 2) {
+                var sign = -1
+                while (sign < 1) {
                     // chop q along the line xy[dir] = sign*h[dir]
                     var pq = 0
                     var pr = 0
@@ -434,6 +435,7 @@ class BoxBoxCollision {
                     q = r
                     r = if (q === resultPoints) bufferPoints else resultPoints
                     nq = resultPointCnt
+                    sign += 2
                 }
             }
             if (q !== resultPoints) {

@@ -20,11 +20,22 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
 
         if (boundTextures.size != ctx.glCapabilities.maxTexUnits) {
             boundTextures = Array(ctx.glCapabilities.maxTexUnits, { null })
-
-            // set activeTexUnit, so that nextTextUnit() will choose unit 0 (some GL implementations don't like
-            // tex unit 0 to be left out...)
-            activeTexUnit = boundTextures.size-1
         }
+
+        // safety first: unbind all textures
+        for (i in boundTextures.indices) {
+            val tex = boundTextures[i]
+            if (tex != null) {
+                glActiveTexture(GL_TEXTURE0 + i)
+                glBindTexture(GL_TEXTURE_2D, null)
+                tex.texUnit = -1
+                boundTextures[i] = null
+            }
+        }
+
+        // set activeTexUnit, so that nextTextUnit() will choose unit 0 (some GL implementations don't like
+        // tex unit 0 to be left out...)
+        activeTexUnit = boundTextures.size-1
     }
 
     fun unbindTexture(texture: Texture?, ctx: KoolContext) {

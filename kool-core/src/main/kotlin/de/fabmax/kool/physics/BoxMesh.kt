@@ -34,6 +34,7 @@ class BoxMesh(val box: RigidBody, boxColor: Color = Color.MD_GREY, sceneShadows:
             colorModel = ColorModel.VERTEX_COLOR
             lightModel = LightModel.PHONG_LIGHTING
             shadowMap = sceneShadows
+            specularIntensity = 0.4f
         }
     }
 

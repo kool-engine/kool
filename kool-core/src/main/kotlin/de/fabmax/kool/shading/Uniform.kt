@@ -63,13 +63,11 @@ class UniformTexture2Dv(name: String, size: Int) : Uniform<Array<Texture?>>(name
     }
 }
 
-class Uniform1i(name: String) : Uniform<Int>(name, 0) {
+class Uniform1i(name: String) : Uniform<IntArray>(name, IntArray(1)) {
     override val type = "int"
-    override var value = 0
-        public set      // explicit public is needed to overwrite protected set from super
 
     override fun doBind(ctx: KoolContext) {
-        glUniform1i(location, value)
+        glUniform1i(location, value[0])
     }
 }
 
@@ -81,13 +79,11 @@ class Uniform1iv(name: String, size: Int) : Uniform<IntArray>(name, IntArray(siz
     }
 }
 
-class Uniform1f(name: String) : Uniform<Float>(name, 0f) {
+class Uniform1f(name: String) : Uniform<FloatArray>(name, FloatArray(1)) {
     override val type = "float"
-    override var value = 0f
-        public set      // explicit public is needed to overwrite protected set from super
 
     override fun doBind(ctx: KoolContext) {
-        glUniform1f(location, value)
+        glUniform1f(location, value[0])
     }
 }
 

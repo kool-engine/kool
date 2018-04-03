@@ -8,7 +8,7 @@ import kotlin.math.*
  */
 
 fun <T: Vec3f> pointTree(items: List<T>, bucketSz: Int = 20): KdTree<T> {
-    return KdTree(items, { x }, { y }, { z }, { 0f }, { 0f }, { 0f }, bucketSz)
+    return KdTree(items, KdTree.VEC3F_HELPER, bucketSz)
 }
 
 interface KdTreeTraverser<T> {
@@ -64,9 +64,9 @@ class InRadiusTraverser<T>() : KdTreeTraverser<T> {
     override fun traverseLeaf(tree: KdTree<T>, leaf: KdTree<T>.Node) {
         for (i in leaf.indices) {
             val it = tree.items[i]
-            val dx = tree.getX.invoke(it) - center.x
-            val dy = tree.getY.invoke(it) - center.y
-            val dz = tree.getZ.invoke(it) - center.z
+            val dx = tree.helper.getX(it) - center.x
+            val dy = tree.helper.getY(it) - center.y
+            val dz = tree.helper.getZ(it) - center.z
             if (dx*dx + dy*dy + dz*dz < radiusSqr) {
                 result.add(it)
             }
@@ -74,9 +74,17 @@ class InRadiusTraverser<T>() : KdTreeTraverser<T> {
     }
 }
 
+interface TreeHelper<in T> {
+    fun getX(elem: T): Float
+    fun getY(elem: T): Float
+    fun getZ(elem: T): Float
+    fun getSzX(elem: T): Float = 0f
+    fun getSzY(elem: T): Float = 0f
+    fun getSzZ(elem: T): Float = 0f
+}
+
 class KdTree<T>(items: List<T>,
-                val getX: T.() -> Float, val getY: T.() -> Float, val getZ: T.() -> Float,
-                val getSzX: T.() -> Float, val getSzY: T.() -> Float, val getSzZ: T.() -> Float,
+                val helper: TreeHelper<T>,
                 bucketSz: Int = 20) {
 
     val items: List<T> get() = mutItems
@@ -84,9 +92,9 @@ class KdTree<T>(items: List<T>,
 
     private val mutItems: MutableList<T> = mutableListOf()
 
-    private val cmpX: (T, T) -> Int = { a, b -> a.getX().compareTo(b.getX()) }
-    private val cmpY: (T, T) -> Int = { a, b -> a.getY().compareTo(b.getY()) }
-    private val cmpZ: (T, T) -> Int = { a, b -> a.getZ().compareTo(b.getZ()) }
+    private val cmpX: (T, T) -> Int = { a, b -> helper.getX(a).compareTo(helper.getX(b)) }
+    private val cmpY: (T, T) -> Int = { a, b -> helper.getY(a).compareTo(helper.getY(b)) }
+    private val cmpZ: (T, T) -> Int = { a, b -> helper.getZ(a).compareTo(helper.getZ(b)) }
 
     companion object {
         const val TRAV_NO_PREFERENCE = 0
@@ -95,6 +103,12 @@ class KdTree<T>(items: List<T>,
         const val TRAV_RIGHT_FIRST = 3
         const val TRAV_RIGHT_ONLY = 4
         const val TRAV_NONE = 5
+
+        val VEC3F_HELPER = object : TreeHelper<Vec3f> {
+            override fun getX(elem: Vec3f): Float = elem.x
+            override fun getY(elem: Vec3f): Float = elem.y
+            override fun getZ(elem: Vec3f): Float = elem.z
+        }
     }
 
     init {
@@ -120,10 +134,10 @@ class KdTree<T>(items: List<T>,
             bounds.batchUpdate {
                 for (i in indices) {
                     val it = mutItems[i]
-                    add(tmpVec.set(it.getX(), it.getY(), it.getZ()))
-                    tmpVec.x += it.getSzX()
-                    tmpVec.y += it.getSzY()
-                    tmpVec.z += it.getSzZ()
+                    add(tmpVec.set(helper.getX(it), helper.getY(it), helper.getZ(it)))
+                    tmpVec.x += helper.getSzX(it)
+                    tmpVec.y += helper.getSzY(it)
+                    tmpVec.z += helper.getSzZ(it)
                     add(tmpVec)
                 }
             }

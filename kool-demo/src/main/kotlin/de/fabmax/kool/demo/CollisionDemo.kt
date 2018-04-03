@@ -2,9 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.formatFloat
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Random
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.BoxMesh
 import de.fabmax.kool.physics.CollisionWorld
 import de.fabmax.kool.physics.staticBox
@@ -147,12 +145,12 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
 
 class BoxWorld(private val shadowMap: ShadowMap?): Group() {
     val world = CollisionWorld()
-    private val rand = Random(17)
+    private val rand = Random(20)
 
     private val colors = listOf(Color.MD_AMBER_500, Color.MD_BLUE_500, Color.MD_BROWN_500, Color.MD_CYAN_500,
             Color.MD_GREEN_500, Color.MD_INDIGO_500, Color.MD_LIME_500, Color.MD_ORANGE_500, Color.MD_PINK_500,
             Color.MD_PURPLE_500, Color.MD_RED_500, Color.MD_TEAL_500, Color.MD_YELLOW_500, Color.MD_DEEP_ORANGE_500,
-            Color.MD_DEEP_PURPLE_500, Color.MD_LIGHT_BLUE_500, Color.MD_LIGHT_GREEN_500)
+            Color.MD_DEEP_PURPLE_500, Color.MD_LIGHT_BLUE_500, Color.MD_LIGHT_GREEN_500, Color.MD_BLUE_GREY_500)
 
     init {
         world.gravity.set(0f, -2.5f, 0f)
@@ -170,19 +168,46 @@ class BoxWorld(private val shadowMap: ShadowMap?): Group() {
     }
 
     fun createBoxes(n: Int) {
+        val stacks = n / 50 + 1
+        val centers = makeCenters(stacks)
+
         for (i in 0..(n-1)) {
             val x = rand.randomF(1f, 2f)
             val y = rand.randomF(1f, 2f)
             val z = rand.randomF(1f, 2f)
             val box = uniformMassBox(x, y, z, x*y*z).apply {
-                centerOfMass.set(rand.randomF(-1f, 1f), 5 + (n-i)*2.75f, rand.randomF(-1f, 1f))
+                centerOfMass.x = centers[i%centers.size].x + rand.randomF(-.5f, .5f)
+                centerOfMass.z = centers[i%centers.size].y + rand.randomF(-.5f, .5f)
+                centerOfMass.y = (n - i) / stacks * 3f + 3
+
                 worldTransform.rotate(rand.randomF(0f, 360f),
                         MutableVec3f(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), rand.randomF(-1f, 1f)).norm())
             }
             world.bodies += box
-            this += BoxMesh(box, colors[i % colors.size], shadowMap)
+            this += BoxMesh(box, colors[rand.randomI(0, colors.size-1)], shadowMap)
         }
         createGround()
+    }
+
+    private fun makeCenters(stacks: Int): List<Vec2f> {
+        val dir = MutableVec2f(4f, 0f)
+        val centers = mutableListOf(Vec2f(0f, 0f))
+        var j = 0
+        var steps = 1
+        var stepsSteps = 1
+        while (j < stacks-1) {
+            for (i in 1..steps) {
+                centers += MutableVec2f(centers.last()).add(dir)
+                j++
+            }
+            dir.rotate(90f)
+            if (stepsSteps++ == 2) {
+                stepsSteps = 1
+                steps++
+            }
+        }
+
+        return centers
     }
 
     private fun createGround() {

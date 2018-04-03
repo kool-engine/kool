@@ -137,8 +137,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         ctx.shaderMgr.bindShader(shader, ctx)
 
         // setup shader for mesh rendering, the active shader is not necessarily mMeshShader
-        val boundShader = ctx.shaderMgr.boundShader
-        if (boundShader != null) {
+        ctx.shaderMgr.boundShader?.also { boundShader ->
             // bind this mesh as input to the used shader
             boundShader.bindMesh(this, ctx)
 

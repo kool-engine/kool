@@ -77,9 +77,6 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val tex
 
         fbo.bind(ctx)
 
-        // make sure depth texture is not currently bound
-        ctx.textureMgr.unbindTexture(fbo.depthAttachment, ctx)
-
         glClear(GL_DEPTH_BUFFER_BIT)
 
         ctx.mvpState.pushMatrices()

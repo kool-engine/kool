@@ -6,7 +6,7 @@ package de.fabmax.kool.util
  *
  * @author fabmax
  */
-interface Buffer<T> {
+interface Buffer {
     var limit: Int
     var position: Int
     val remaining: Int
@@ -14,13 +14,6 @@ interface Buffer<T> {
 
     fun flip()
     fun clear()
-
-    fun put(value: T): Buffer<T>
-    fun put(data: Buffer<T>): Buffer<T>
-    operator fun get(i: Int): T
-    operator fun set(i: Int, value: T)
-    operator fun plusAssign(value: T) { put(value) }
-
 }
 
 /**
@@ -28,10 +21,15 @@ interface Buffer<T> {
  *
  * @author fabmax
  */
-interface Uint8Buffer : Buffer<Byte> {
+interface Uint8Buffer : Buffer {
+    operator fun get(i: Int): Byte
+    operator fun set(i: Int, value: Byte)
+    operator fun plusAssign(value: Byte) { put(value) }
+
+    fun put(value: Byte): Uint8Buffer
     fun put(data: ByteArray): Uint8Buffer = put(data, 0, data.size)
     fun put(data: ByteArray, offset: Int, len: Int): Uint8Buffer
-    override fun put(value: Byte): Uint8Buffer
+    fun put(data: Uint8Buffer): Uint8Buffer
 }
 
 /**
@@ -39,10 +37,15 @@ interface Uint8Buffer : Buffer<Byte> {
  *
  * @author fabmax
  */
-interface Uint16Buffer : Buffer<Short> {
+interface Uint16Buffer : Buffer {
+    operator fun get(i: Int): Short
+    operator fun set(i: Int, value: Short)
+    operator fun plusAssign(value: Short) { put(value) }
+
+    fun put(value: Short): Uint16Buffer
     fun put(data: ShortArray): Uint16Buffer = put(data, 0, data.size)
     fun put(data: ShortArray, offset: Int, len: Int): Uint16Buffer
-    override fun put(value: Short): Uint16Buffer
+    fun put(data: Uint16Buffer): Uint16Buffer
 }
 
 /**
@@ -50,10 +53,15 @@ interface Uint16Buffer : Buffer<Short> {
  *
  * @author fabmax
  */
-interface Uint32Buffer : Buffer<Int> {
+interface Uint32Buffer : Buffer {
+    operator fun get(i: Int): Int
+    operator fun set(i: Int, value: Int)
+    operator fun plusAssign(value: Int) { put(value) }
+
+    fun put(value: Int): Uint32Buffer
     fun put(data: IntArray): Uint32Buffer = put(data, 0, data.size)
     fun put(data: IntArray, offset: Int, len: Int): Uint32Buffer
-    override fun put(value: Int): Uint32Buffer
+    fun put(data: Uint32Buffer): Uint32Buffer
 }
 
 /**
@@ -61,10 +69,15 @@ interface Uint32Buffer : Buffer<Int> {
  *
  * @author fabmax
  */
-interface Float32Buffer : Buffer<Float> {
+interface Float32Buffer : Buffer {
+    operator fun get(i: Int): Float
+    operator fun set(i: Int, value: Float)
+    operator fun plusAssign(value: Float) { put(value) }
+
+    fun put(value: Float): Float32Buffer
     fun put(data: FloatArray): Float32Buffer = put(data, 0, data.size)
     fun put(data: FloatArray, offset: Int, len: Int): Float32Buffer
-    override fun put(value: Float): Float32Buffer
+    fun put(data: Float32Buffer): Float32Buffer
 }
 
 expect fun createUint8Buffer(capacity: Int): Uint8Buffer

@@ -28,6 +28,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var uniformMassBox = $module$kool.de.fabmax.kool.physics.uniformMassBox_7b5o5w$;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var BoxMesh = $module$kool.de.fabmax.kool.physics.BoxMesh;
+  var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
+  var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
+  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
+  var last = Kotlin.kotlin.collections.last_2p1efm$;
+  var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init_czzhjp$;
   var staticBox = $module$kool.de.fabmax.kool.physics.staticBox_y2kzbl$;
   var Group = $module$kool.de.fabmax.kool.scene.Group;
   var CollisionWorld = $module$kool.de.fabmax.kool.physics.CollisionWorld;
@@ -58,7 +63,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
   var Ray = $module$kool.de.fabmax.kool.math.Ray;
-  var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
+  var MutableVec2f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
   var InputManager$DragHandler = $module$kool.de.fabmax.kool.InputManager.DragHandler;
   var SphericalInputTransform$DragMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.DragMethod;
   var SphericalInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.ZoomMethod;
@@ -73,7 +78,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Attribute = $module$kool.de.fabmax.kool.shading.Attribute;
   var MeshData_init = $module$kool.de.fabmax.kool.scene.MeshData_init_j0mu7e$;
   var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
-  var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
   var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_3m52m6$;
   var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_513zl8$;
@@ -129,7 +133,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var math_0 = $module$kool.de.fabmax.kool.math;
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
-  var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var ToggleButton = $module$kool.de.fabmax.kool.scene.ui.ToggleButton;
   var TextField = $module$kool.de.fabmax.kool.scene.ui.TextField;
   BoxWorld.prototype = Object.create(Group.prototype);
@@ -377,8 +380,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     Group.call(this);
     this.shadowMap_0 = shadowMap;
     this.world = new CollisionWorld();
-    this.rand_0 = new Random(17);
-    this.colors_0 = listOf([Color.Companion.MD_AMBER_500, Color.Companion.MD_BLUE_500, Color.Companion.MD_BROWN_500, Color.Companion.MD_CYAN_500, Color.Companion.MD_GREEN_500, Color.Companion.MD_INDIGO_500, Color.Companion.MD_LIME_500, Color.Companion.MD_ORANGE_500, Color.Companion.MD_PINK_500, Color.Companion.MD_PURPLE_500, Color.Companion.MD_RED_500, Color.Companion.MD_TEAL_500, Color.Companion.MD_YELLOW_500, Color.Companion.MD_DEEP_ORANGE_500, Color.Companion.MD_DEEP_PURPLE_500, Color.Companion.MD_LIGHT_BLUE_500, Color.Companion.MD_LIGHT_GREEN_500]);
+    this.rand_0 = new Random(20);
+    this.colors_0 = listOf([Color.Companion.MD_AMBER_500, Color.Companion.MD_BLUE_500, Color.Companion.MD_BROWN_500, Color.Companion.MD_CYAN_500, Color.Companion.MD_GREEN_500, Color.Companion.MD_INDIGO_500, Color.Companion.MD_LIME_500, Color.Companion.MD_ORANGE_500, Color.Companion.MD_PINK_500, Color.Companion.MD_PURPLE_500, Color.Companion.MD_RED_500, Color.Companion.MD_TEAL_500, Color.Companion.MD_YELLOW_500, Color.Companion.MD_DEEP_ORANGE_500, Color.Companion.MD_DEEP_PURPLE_500, Color.Companion.MD_LIGHT_BLUE_500, Color.Companion.MD_LIGHT_GREEN_500, Color.Companion.MD_BLUE_GREY_500]);
     this.world.gravity.set_y2kzbl$(0.0, -2.5, 0.0);
     this.onPreRender.add_11rb$(BoxWorld_init$lambda(this));
   }
@@ -394,19 +397,45 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   BoxWorld.prototype.createBoxes_za3lpa$ = function (n) {
     var tmp$;
+    var stacks = (n / 50 | 0) + 1 | 0;
+    var centers = this.makeCenters_0(stacks);
     tmp$ = n - 1 | 0;
     for (var i = 0; i <= tmp$; i++) {
       var x = this.rand_0.randomF_dleff0$(1.0, 2.0);
       var y = this.rand_0.randomF_dleff0$(1.0, 2.0);
       var z = this.rand_0.randomF_dleff0$(1.0, 2.0);
       var $receiver = uniformMassBox(x, y, z, x * y * z);
-      $receiver.centerOfMass.set_y2kzbl$(this.rand_0.randomF_dleff0$(-1.0, 1.0), 5 + (n - i | 0) * 2.75, this.rand_0.randomF_dleff0$(-1.0, 1.0));
+      $receiver.centerOfMass.x = centers.get_za3lpa$(i % centers.size).x + this.rand_0.randomF_dleff0$(-0.5, 0.5);
+      $receiver.centerOfMass.z = centers.get_za3lpa$(i % centers.size).y + this.rand_0.randomF_dleff0$(-0.5, 0.5);
+      $receiver.centerOfMass.y = ((n - i | 0) / stacks | 0) * 3.0 + 3;
       $receiver.worldTransform.rotate_ad55pp$(this.rand_0.randomF_dleff0$(0.0, 360.0), (new MutableVec3f(this.rand_0.randomF_dleff0$(-1.0, 1.0), this.rand_0.randomF_dleff0$(-1.0, 1.0), this.rand_0.randomF_dleff0$(-1.0, 1.0))).norm());
       var box = $receiver;
       this.world.bodies.add_11rb$(box);
-      this.plusAssign_f1kmr1$(new BoxMesh(box, this.colors_0.get_za3lpa$(i % this.colors_0.size), this.shadowMap_0));
+      this.plusAssign_f1kmr1$(new BoxMesh(box, this.colors_0.get_za3lpa$(this.rand_0.randomI_vux9f0$(0, this.colors_0.size - 1 | 0)), this.shadowMap_0));
     }
     this.createGround_0();
+  };
+  BoxWorld.prototype.makeCenters_0 = function (stacks) {
+    var tmp$, tmp$_0;
+    var dir = new MutableVec2f(4.0, 0.0);
+    var centers = mutableListOf([new Vec2f(0.0, 0.0)]);
+    var j = 0;
+    var steps = 1;
+    var stepsSteps = 1;
+    while (j < (stacks - 1 | 0)) {
+      tmp$ = steps;
+      for (var i = 1; i <= tmp$; i++) {
+        var element = MutableVec2f_init(last(centers)).add_czzhjp$(dir);
+        centers.add_11rb$(element);
+        j = j + 1 | 0;
+      }
+      dir.rotate_mx4ult$(90.0);
+      if ((tmp$_0 = stepsSteps, stepsSteps = tmp$_0 + 1 | 0, tmp$_0) === 2) {
+        stepsSteps = 1;
+        steps = steps + 1 | 0;
+      }
+    }
+    return centers;
   };
   BoxWorld.prototype.createGround_0 = function () {
     var $receiver = staticBox(50.0, 1.0, 50.0);
@@ -764,7 +793,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.tmpVecRt_0 = MutableVec3f_init();
     this.tmpVecUp_0 = MutableVec3f_init();
     this.tmpVecY_0 = MutableVec3f_init();
-    this.steadyScreenPt_0 = MutableVec2f_init();
+    this.steadyScreenPt_0 = MutableVec2f_init_0();
     this.steadyScreenPtMode_0 = Earth$Companion_getInstance().STEADY_SCREEN_PT_OFF_0;
     this.center_0 = new TileName(0, 0, 1);
     this.prevCamHeight_0 = 0.0;
@@ -3657,11 +3686,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.random_0 = random;
     this.borders_0 = ArrayList_init();
     this.tmpPt1_0 = MutableVec3f_init();
-    this.tmpPt2_0 = MutableVec2f_init();
-    this.e00_0 = MutableVec2f_init();
-    this.e01_0 = MutableVec2f_init();
-    this.e10_0 = MutableVec2f_init();
-    this.e11_0 = MutableVec2f_init();
+    this.tmpPt2_0 = MutableVec2f_init_0();
+    this.e00_0 = MutableVec2f_init_0();
+    this.e01_0 = MutableVec2f_init_0();
+    this.e10_0 = MutableVec2f_init_0();
+    this.e11_0 = MutableVec2f_init_0();
     var tmp$;
     for (var j = 1; j <= 8; j++) {
       var spline = new BSplineVec2f(3);
@@ -3687,7 +3716,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var pts = ArrayList_init();
       var m = 20;
       for (var i_0 = 0; i_0 <= m; i_0++) {
-        var element_0 = spline.evaluate_f6p79m$(i_0 / m, MutableVec2f_init());
+        var element_0 = spline.evaluate_f6p79m$(i_0 / m, MutableVec2f_init_0());
         pts.add_11rb$(element_0);
       }
       this.borders_0.add_11rb$(pts);

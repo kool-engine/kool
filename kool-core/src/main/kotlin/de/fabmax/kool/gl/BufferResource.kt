@@ -9,6 +9,9 @@ import de.fabmax.kool.util.Uint8Buffer
 class BufferResource private constructor(glRef: Any, val target: Int, ctx: KoolContext) :
         GlResource(glRef, Type.BUFFER, ctx) {
 
+    // target is used as a map key, avoid auto-boxing it into an object int every time it is used...
+    private val targetKeyAsObject: Int? = target
+
     companion object {
         fun create(target: Int, ctx: KoolContext): BufferResource {
             return BufferResource(glCreateBuffer(), target, ctx)
@@ -21,9 +24,9 @@ class BufferResource private constructor(glRef: Any, val target: Int, ctx: KoolC
     }
 
     fun bind(ctx: KoolContext) {
-        if (ctx.boundBuffers[target] != this) {
+        if (ctx.boundBuffers[targetKeyAsObject!!] != this) {
             glBindBuffer(target, this)
-            ctx.boundBuffers[target] = this
+            ctx.boundBuffers[targetKeyAsObject] = this
         }
     }
 

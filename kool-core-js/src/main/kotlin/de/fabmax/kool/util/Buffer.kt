@@ -6,7 +6,7 @@ import org.khronos.webgl.*
 /**
  * @author fabmax
  */
-internal abstract class GenericBuffer<out B: ArrayBufferView, T>(capacity: Int, create: () -> B) : Buffer<T> {
+internal abstract class GenericBuffer<out B: ArrayBufferView>(capacity: Int, create: () -> B) : Buffer {
     val buffer = create()
 
     override val capacity = capacity
@@ -41,9 +41,17 @@ internal abstract class GenericBuffer<out B: ArrayBufferView, T>(capacity: Int, 
 /**
  * ByteBuffer buffer implementation
  */
-internal class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<Uint8Array, Byte>(capacity, {
+internal class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<Uint8Array>(capacity, {
     Uint8Array(capacity)
 }) {
+    override fun get(i: Int): Byte {
+        return buffer[i]
+    }
+
+    override fun set(i: Int, value: Byte) {
+        buffer[i] = value
+    }
+
     override fun put(data: ByteArray, offset: Int, len: Int): Uint8Buffer {
         for (i in offset..(offset + len - 1)) {
             buffer[position++] = data[i]
@@ -56,28 +64,28 @@ internal class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<Uint8
         return this
     }
 
-    override fun put(data: de.fabmax.kool.util.Buffer<Byte>): Uint8Buffer {
+    override fun put(data: Uint8Buffer): Uint8Buffer {
         for (i in data.position until data.limit) {
             put(data[i])
         }
         return this
-    }
-
-    override fun get(i: Int): Byte {
-        return buffer[i]
-    }
-
-    override fun set(i: Int, value: Byte) {
-        buffer[i] = value
     }
 }
 
 /**
  * ShortBuffer buffer implementation
  */
-internal class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Uint16Array, Short>(capacity, {
+internal class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Uint16Array>(capacity, {
     Uint16Array(capacity)
 }) {
+    override fun get(i: Int): Short {
+        return buffer[i]
+    }
+
+    override fun set(i: Int, value: Short) {
+        buffer[i] = value
+    }
+
     override fun put(data: ShortArray, offset: Int, len: Int): Uint16Buffer {
         for (i in offset..(offset + len - 1)) {
             buffer[position++] = data[i]
@@ -90,28 +98,28 @@ internal class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Uin
         return this
     }
 
-    override fun put(data: de.fabmax.kool.util.Buffer<Short>): Uint16Buffer {
+    override fun put(data: Uint16Buffer): Uint16Buffer {
         for (i in data.position until data.limit) {
             put(data[i])
         }
         return this
-    }
-
-    override fun get(i: Int): Short {
-        return buffer[i]
-    }
-
-    override fun set(i: Int, value: Short) {
-        buffer[i] = value
     }
 }
 
 /**
  * IntBuffer buffer implementation
  */
-internal class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Uint32Array, Int>(capacity, {
+internal class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Uint32Array>(capacity, {
     Uint32Array(capacity)
 }) {
+    override fun get(i: Int): Int {
+        return buffer[i]
+    }
+
+    override fun set(i: Int, value: Int) {
+        buffer[i] = value
+    }
+
     override fun put(data: IntArray, offset: Int, len: Int): Uint32Buffer {
         for (i in offset..(offset + len - 1)) {
             buffer[position++] = data[i]
@@ -124,28 +132,28 @@ internal class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Uin
         return this
     }
 
-    override fun put(data: de.fabmax.kool.util.Buffer<Int>): Uint32Buffer {
+    override fun put(data: Uint32Buffer): Uint32Buffer {
         for (i in data.position until data.limit) {
             put(data[i])
         }
         return this
-    }
-
-    override fun get(i: Int): Int {
-        return buffer[i]
-    }
-
-    override fun set(i: Int, value: Int) {
-        buffer[i] = value
     }
 }
 
 /**
  * FloatBuffer buffer implementation
  */
-internal class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<Float32Array, Float>(capacity, {
+internal class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<Float32Array>(capacity, {
     Float32Array(capacity)
 }) {
+    override fun get(i: Int): Float {
+        return buffer[i]
+    }
+
+    override fun set(i: Int, value: Float) {
+        buffer[i] = value
+    }
+
     override fun put(data: FloatArray, offset: Int, len: Int): Float32Buffer {
         for (i in offset..(offset + len - 1)) {
             buffer[position++] = data[i]
@@ -158,20 +166,13 @@ internal class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<F
         return this
     }
 
-    override fun put(data: de.fabmax.kool.util.Buffer<Float>): Float32Buffer {
+    override fun put(data: Float32Buffer): Float32Buffer {
         for (i in data.position until data.limit) {
             put(data[i])
         }
         return this
     }
 
-    override fun get(i: Int): Float {
-        return buffer[i]
-    }
-
-    override fun set(i: Int, value: Float) {
-        buffer[i] = value
-    }
 }
 
 actual fun createUint8Buffer(capacity: Int): Uint8Buffer {
