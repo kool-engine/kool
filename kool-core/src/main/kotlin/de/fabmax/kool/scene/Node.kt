@@ -99,7 +99,9 @@ abstract class Node(val name: String? = null) : Disposable {
      * use this method to update their bounds, animation states, etc.
      */
     open fun preRender(ctx: KoolContext) {
-        onPreRender.forEach { it(ctx) }
+        for (i in onPreRender.indices) {
+            onPreRender[i](ctx)
+        }
 
         // update global center and radius
         globalCenterMut.set(bounds.center)
@@ -132,7 +134,9 @@ abstract class Node(val name: String? = null) : Disposable {
      * Called after a frame was rendered.
      */
     open fun postRender(ctx: KoolContext) {
-        onPostRender.forEach { it(ctx) }
+        for (i in onPostRender.indices) {
+            onPostRender[i](ctx)
+        }
     }
 
     /**

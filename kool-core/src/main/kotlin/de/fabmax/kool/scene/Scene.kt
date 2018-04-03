@@ -58,7 +58,9 @@ open class Scene(name: String? = null) : Group(name) {
 
     override fun preRender(ctx: KoolContext) {
         synchronized(disposables) {
-            disposables.forEach { it.dispose(ctx) }
+            for (i in disposables.indices) {
+                disposables[i].dispose(ctx)
+            }
             disposables.clear()
         }
         super.preRender(ctx)
@@ -147,16 +149,14 @@ open class Scene(name: String? = null) : Group(name) {
             }
         }
 
-        var handlerIdx = dragHandlers.lastIndex
-        while (handlerIdx >= 0) {
-            val result = dragHandlers[handlerIdx].handleDrag(dragPtrs, ctx)
+        for (i in dragHandlers.lastIndex-1 downTo 0) {
+            val result = dragHandlers[i].handleDrag(dragPtrs, ctx)
             if (result and InputManager.DragHandler.REMOVE_HANDLER != 0) {
-                dragHandlers.removeAt(handlerIdx)
+                dragHandlers.removeAt(i)
             }
             if (result and InputManager.DragHandler.HANDLED != 0) {
                 break
             }
-            handlerIdx--
         }
     }
 

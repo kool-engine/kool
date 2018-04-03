@@ -37,15 +37,32 @@ class InputManager internal constructor() {
 
     fun getActivePointers(result: MutableList<Pointer>) {
         result.clear()
-        pointers.filter { it.isValid }.forEach { result.add(it) }
+        // nicer but produces heap garbage: pointers.filter { it.isValid }.forEach { result.add(it) }
+        for (i in pointers.indices) {
+            if (pointers[i].isValid) {
+                result.add(pointers[i])
+            }
+        }
     }
 
     private fun getFreeInputPointer(): BufferedPointerInput? {
-        return inputPointers.firstOrNull { !it.isValid }
+        // nicer but produces heap garbage: return inputPointers.firstOrNull { !it.isValid }
+        for (i in inputPointers.indices) {
+            if (!inputPointers[i].isValid) {
+                return inputPointers[i]
+            }
+        }
+        return null
     }
 
     private fun findInputPointer(pointerId: Int): BufferedPointerInput? {
-        return inputPointers.firstOrNull { it.isValid && it.id == pointerId }
+        // nicer but produces heap garbage: return inputPointers.firstOrNull { it.isValid && it.id == pointerId }
+        for (i in inputPointers.indices) {
+            if (inputPointers[i].isValid && inputPointers[i].id == pointerId) {
+                return inputPointers[i]
+            }
+        }
+        return null
     }
 
     internal fun onNewFrame(ctx: KoolContext) {

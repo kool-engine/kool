@@ -95,8 +95,10 @@ abstract class KoolContext {
         shaderMgr.onNewFrame(this)
 
         // by default the viewport covers the full window
-        viewport = Viewport(0, 0, windowWidth, windowHeight)
-        applyAttributes()
+        if (windowWidth != viewport.width || windowHeight != viewport.height) {
+            viewport = Viewport(0, 0, windowWidth, windowHeight)
+            applyAttributes()
+        }
 
         for (i in onRender.indices) {
             onRender[i](this)

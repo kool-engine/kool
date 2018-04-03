@@ -178,8 +178,6 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         vertRotAnimator.animate(ctx.deltaT)
         horiRotAnimator.animate(ctx.deltaT)
         updateTransform()
-
-        super.render(ctx)
     }
 
     /**

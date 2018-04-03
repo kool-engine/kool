@@ -286,9 +286,10 @@ open class Mat4f {
         for (i in 1..15) {
             matrix[offset + i] = 0f
         }
-        for (i in 0..15 step 5) {
-            matrix[offset + i] = 1f
-        }
+        matrix[offset] = 1f
+        matrix[offset + 5] = 1f
+        matrix[offset + 10] = 1f
+        matrix[offset + 15] = 1f
         return this
     }
 
