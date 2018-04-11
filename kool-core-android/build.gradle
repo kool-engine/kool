@@ -36,3 +36,7 @@ dependencies {
 
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }
+
+clean {
+    delete new File("$projectDir/../build")
+}

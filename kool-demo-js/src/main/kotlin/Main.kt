@@ -1,12 +1,20 @@
 import de.fabmax.kool.createContext
 import de.fabmax.kool.demo.Demo
 import kotlin.browser.window
+import kotlin.collections.set
 
 /**
  * @author fabmax
  */
 fun main() {
-    Demo(createContext(), getParams()["demo"])
+    // create KoolContext
+    val ctx = createContext()
+
+    // this assumes that the server directory is in docs/kool-js, assets are located next to it
+    ctx.assetMgr.assetsBaseDir = "../assets"
+
+    // launch demo
+    Demo(ctx, getParams()["demo"])
 }
 
 fun getParams(): Map<String, String> {

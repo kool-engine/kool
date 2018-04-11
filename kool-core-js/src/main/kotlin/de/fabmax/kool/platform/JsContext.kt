@@ -16,7 +16,7 @@ import kotlin.browser.window
 class JsContext internal constructor(val props: InitProps) : KoolContext() {
     override val glCapabilities: GlCapabilities
 
-    override val assetMgr = JsAssetManager()
+    override val assetMgr = JsAssetManager(props.assetsBaseDir)
 
     override var windowWidth = 0
         private set
@@ -261,6 +261,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     class InitProps {
         var canvasName = "glCanvas"
         val excludedKeyCodes: MutableSet<String> = mutableSetOf("F5")
+
+        var assetsBaseDir = "./assets"
     }
 
     companion object {

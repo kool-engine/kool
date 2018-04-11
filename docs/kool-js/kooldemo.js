@@ -1,12 +1,24 @@
-define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
+define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], function (_, Kotlin, $module$kool, $module$kotlinx_serialization_runtime_js) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var createContext = $module$kool.de.fabmax.kool.createContext;
   var split = Kotlin.kotlin.text.split_ip8yn$;
-  var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var Unit = Kotlin.kotlin.Unit;
-  var sphericalInputTransform = $module$kool.de.fabmax.kool.scene.sphericalInputTransform_6sxffc$;
+  var throwCCE = Kotlin.throwCCE;
+  var util = $module$kool.de.fabmax.kool.util;
+  var JSON_0 = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.json.JSON;
+  var MeshData = $module$kool.de.fabmax.kool.util.serialization.MeshData;
   var ensureNotNull = Kotlin.ensureNotNull;
+  var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
+  var toString = Kotlin.toString;
+  var PointMesh = $module$kool.de.fabmax.kool.util.PointMesh;
+  var sphericalInputTransform = $module$kool.de.fabmax.kool.scene.sphericalInputTransform_6sxffc$;
+  var Kind_CLASS = Kotlin.Kind.CLASS;
+  var CollisionWorld = $module$kool.de.fabmax.kool.physics.CollisionWorld;
+  var staticBox = $module$kool.de.fabmax.kool.physics.staticBox_y2kzbl$;
+  var BoxMesh = $module$kool.de.fabmax.kool.physics.BoxMesh;
+  var uniformMassBox = $module$kool.de.fabmax.kool.physics.uniformMassBox_7b5o5w$;
+  var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var Color = $module$kool.de.fabmax.kool.util.Color;
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
   var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
@@ -25,20 +37,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Alignment = $module$kool.de.fabmax.kool.scene.ui.Alignment;
   var Gravity = $module$kool.de.fabmax.kool.scene.ui.Gravity;
   var uiScene = $module$kool.de.fabmax.kool.scene.ui.uiScene_7c31we$;
-  var uniformMassBox = $module$kool.de.fabmax.kool.physics.uniformMassBox_7b5o5w$;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
-  var BoxMesh = $module$kool.de.fabmax.kool.physics.BoxMesh;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var last = Kotlin.kotlin.collections.last_2p1efm$;
   var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init_czzhjp$;
-  var staticBox = $module$kool.de.fabmax.kool.physics.staticBox_y2kzbl$;
   var Group = $module$kool.de.fabmax.kool.scene.Group;
-  var CollisionWorld = $module$kool.de.fabmax.kool.physics.CollisionWorld;
   var Random = $module$kool.de.fabmax.kool.math.Random;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
-  var Kind_CLASS = Kotlin.Kind.CLASS;
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
   var getCallableRef = Kotlin.getCallableRef;
   var pcs = $module$kool.de.fabmax.kool.scene.ui.pcs_8ca0d4$;
@@ -102,12 +109,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Pair = Kotlin.kotlin.Pair;
   var Animator = $module$kool.de.fabmax.kool.util.Animator;
   var BasicShader = $module$kool.de.fabmax.kool.shading.BasicShader;
-  var throwCCE = Kotlin.throwCCE;
   var LinearAnimator = $module$kool.de.fabmax.kool.util.LinearAnimator;
   var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
-  var equals = Kotlin.equals;
   var UiContainer = $module$kool.de.fabmax.kool.scene.ui.UiContainer;
   var SampleNode = $module$kool.de.fabmax.kool.audio.SampleNode;
   var Wave = $module$kool.de.fabmax.kool.audio.Wave;
@@ -135,6 +140,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
   var ToggleButton = $module$kool.de.fabmax.kool.scene.ui.ToggleButton;
   var TextField = $module$kool.de.fabmax.kool.scene.ui.TextField;
+  var equals = Kotlin.equals;
   BoxWorld.prototype = Object.create(Group.prototype);
   BoxWorld.prototype.constructor = BoxWorld;
   MenuButtonUi.prototype = Object.create(ToggleButtonUi.prototype);
@@ -168,7 +174,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   TreeTopPointDistribution.prototype = Object.create(PointDistribution.prototype);
   TreeTopPointDistribution.prototype.constructor = TreeTopPointDistribution;
   function main() {
-    new Demo(createContext(), getParams().get_11rb$('demo'));
+    var ctx = createContext();
+    ctx.assetMgr.assetsBaseDir = '../assets';
+    new Demo(ctx, getParams().get_11rb$('demo'));
   }
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   function getParams() {
@@ -190,6 +198,200 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
     }
     return params;
+  }
+  function wsTest$lambda(closure$socket) {
+    return function (it) {
+      closure$socket.send('Hello Server');
+      return Unit;
+    };
+  }
+  var getKClass = Kotlin.getKClass;
+  var serializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.serializer_1yb8b7$;
+  var klassSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.klassSerializer_yop3xi$;
+  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
+  var now = $module$kool.de.fabmax.kool.now;
+  function wsTest$lambda_0(closure$pointScene) {
+    return function (evt) {
+      var tmp$, tmp$_0;
+      Kotlin.isType(tmp$ = evt, MessageEvent) ? tmp$ : throwCCE();
+      if (typeof evt.data === 'string') {
+        var text = typeof (tmp$_0 = evt.data) === 'string' ? tmp$_0 : throwCCE();
+        var $this = util.Log;
+        var tag = 'WebSocket';
+        var level = Log$Level.INFO;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Got text from server');
+        }
+        var $this_0 = util.Log;
+        var tag_0 = 'WebSocket';
+        var level_0 = Log$Level.INFO;
+        if (level_0.level >= $this_0.level.level) {
+          $this_0.printer(level_0, tag_0, 'got ' + text.length + ' bytes');
+        }
+        var message = 'Parsing message took';
+        var tag_1;
+        var level_1;
+        tag_1 = 'PerfTimer';
+        level_1 = Log$Level.INFO;
+        var t = now();
+        closure$pointScene.addPoints_gs472g$(JSON_0.Companion.parse_67noqb$(serializer(getKClass(MeshData)), text));
+        var ret = Unit;
+        var $this_1 = util.Log;
+        if (level_1.level >= $this_1.level.level) {
+          $this_1.printer(level_1, tag_1, message + ' ' + formatDouble(now() - t, 3) + ' ms');
+        }
+      }
+       else if (Kotlin.isType(evt.data, ArrayBuffer)) {
+        var $this_2 = util.Log;
+        var tag_2 = 'WebSocket';
+        var level_2 = Log$Level.INFO;
+        if (level_2.level >= $this_2.level.level) {
+          $this_2.printer(level_2, tag_2, 'Got ArrayBuffer from server');
+        }
+        var bytes = {v: null};
+        var message_0 = 'Loading ArrayBuffer took';
+        var tag_3;
+        var level_3;
+        tag_3 = 'PerfTimer';
+        level_3 = Log$Level.INFO;
+        var t_0 = now();
+        var tmp$_1, tmp$_2;
+        var array = new Uint8Array(Kotlin.isType(tmp$_1 = evt.data, ArrayBuffer) ? tmp$_1 : throwCCE());
+        bytes.v = new Int8Array(array.length);
+        tmp$_2 = array.length;
+        for (var i = 0; i < tmp$_2; i++) {
+          ensureNotNull(bytes.v)[i] = array[i];
+        }
+        var ret_0 = Unit;
+        var $this_3 = util.Log;
+        if (level_3.level >= $this_3.level.level) {
+          $this_3.printer(level_3, tag_3, message_0 + ' ' + formatDouble(now() - t_0, 3) + ' ms');
+        }
+        var $this_4 = util.Log;
+        var tag_4 = 'WebSocket';
+        var level_4 = Log$Level.INFO;
+        if (level_4.level >= $this_4.level.level) {
+          $this_4.printer(level_4, tag_4, 'got ' + ensureNotNull(bytes.v).length + ' bytes');
+        }
+        var message_1 = 'Parsing message took';
+        var tag_5;
+        var level_5;
+        tag_5 = 'PerfTimer';
+        level_5 = Log$Level.INFO;
+        var t_1 = now();
+        var tmp$_3 = closure$pointScene;
+        var $this_5 = ProtoBuf.Companion;
+        var raw = ensureNotNull(bytes.v);
+        var $this_6 = $this_5.plain;
+        tmp$_3.addPoints_gs472g$($this_6.load_8dtdds$(klassSerializer($this_6.context, getKClass(MeshData)), raw));
+        var ret_1 = Unit;
+        var $this_7 = util.Log;
+        if (level_5.level >= $this_7.level.level) {
+          $this_7.printer(level_5, tag_5, message_1 + ' ' + formatDouble(now() - t_1, 3) + ' ms');
+        }
+      }
+       else {
+        var $this_8 = util.Log;
+        var tag_6 = 'WebSocket';
+        var level_6 = Log$Level.WARN;
+        if (level_6.level >= $this_8.level.level) {
+          $this_8.printer(level_6, tag_6, 'unknown data type ' + toString(evt.data));
+        }
+      }
+      return Unit;
+    };
+  }
+  function wsTest() {
+    var ctx = createContext();
+    var pointScene = new PointScene(ctx);
+    var socket = new WebSocket('ws://localhost:8887');
+    socket.binaryType = 'arraybuffer';
+    socket.onopen = wsTest$lambda(socket);
+    socket.onmessage = wsTest$lambda_0(pointScene);
+    ctx.run();
+  }
+  function PointScene(ctx) {
+    this.points_0 = new PointMesh();
+    var tmp$ = ctx.scenes;
+    var $receiver = new Scene(null);
+    $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, PointScene_init$lambda$lambda($receiver)));
+    $receiver.unaryPlus_uv0sim$(this.points_0);
+    this.points_0.pointSize = 4.0;
+    tmp$.add_11rb$($receiver);
+  }
+  function PointScene$addPoints$lambda(closure$positions, closure$i, closure$colors) {
+    return function ($receiver) {
+      $receiver.position.set_y2kzbl$(closure$positions.get_za3lpa$(closure$i * 3 | 0), closure$positions.get_za3lpa$((closure$i * 3 | 0) + 1 | 0), closure$positions.get_za3lpa$((closure$i * 3 | 0) + 2 | 0));
+      $receiver.color.set_7b5o5w$(closure$colors.get_za3lpa$(closure$i * 4 | 0), closure$colors.get_za3lpa$((closure$i * 4 | 0) + 1 | 0), closure$colors.get_za3lpa$((closure$i * 4 | 0) + 2 | 0), closure$colors.get_za3lpa$((closure$i * 4 | 0) + 3 | 0));
+      return Unit;
+    };
+  }
+  PointScene.prototype.addPoints_gs472g$ = function (pointData) {
+    var tmp$;
+    var positions = ensureNotNull(pointData.attributes.get_11rb$(MeshData.Companion.ATTRIB_POSITIONS));
+    var colors = ensureNotNull(pointData.attributes.get_11rb$(MeshData.Companion.ATTRIB_COLORS));
+    tmp$ = pointData.numVertices;
+    for (var i = 0; i < tmp$; i++) {
+      this.points_0.addPoint_hvwyd1$(PointScene$addPoints$lambda(positions, i, colors));
+    }
+  };
+  function PointScene_init$lambda$lambda(this$) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(this$.camera);
+      return Unit;
+    };
+  }
+  PointScene.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PointScene',
+    interfaces: []
+  };
+  function basicCollisionDemo$lambda$lambda(this$) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(this$.camera);
+      $receiver.maxZoom = 50.0;
+      $receiver.resetZoom_mx4ult$(4.0);
+      $receiver.setMouseRotation_dleff0$(45.0, -30.0);
+      return Unit;
+    };
+  }
+  function basicCollisionDemo$lambda$lambda_0(closure$world) {
+    return function ($receiver, ctx) {
+      closure$world.stepSimulation_mx4ult$(ctx.deltaT);
+      return Unit;
+    };
+  }
+  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
+  function basicCollisionDemo(ctx) {
+    var scenes = ArrayList_init();
+    var ARRAY_SIZE_Y = 2;
+    var ARRAY_SIZE_X = 1;
+    var ARRAY_SIZE_Z = 1;
+    var $receiver = new Scene(null);
+    $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, basicCollisionDemo$lambda$lambda($receiver)));
+    var world = new CollisionWorld();
+    world.gravity.set_y2kzbl$(0.0, -10.0, 0.0);
+    $receiver.onPreRender.add_11rb$(basicCollisionDemo$lambda$lambda_0(world));
+    var tmp$ = world.bodies;
+    var $receiver_0 = staticBox(100.0, 100.0, 100.0);
+    $receiver_0.centerOfMass.set_y2kzbl$(0.0, -50.0, 0.0);
+    $receiver.plusAssign_f1kmr1$(new BoxMesh($receiver_0));
+    tmp$.add_11rb$($receiver_0);
+    var c = {v: 0};
+    for (var k = 0; k < ARRAY_SIZE_Y; k++) {
+      for (var i = 0; i < ARRAY_SIZE_X; i++) {
+        for (var j = 0; j < ARRAY_SIZE_Z; j++) {
+          var tmp$_0 = world.bodies;
+          var $receiver_1 = uniformMassBox(0.2, 0.2, 0.2, 1.0);
+          $receiver_1.centerOfMass.set_y2kzbl$(0.2 * i, 2 + 0.2 * k, 0.2 * j);
+          var tmp$_1;
+          $receiver.plusAssign_f1kmr1$(new BoxMesh($receiver_1, BOX_COLORS.get_za3lpa$((tmp$_1 = c.v, c.v = tmp$_1 + 1 | 0, tmp$_1) % BOX_COLORS.size)));
+          tmp$_0.add_11rb$($receiver_1);
+        }
+      }
+    }
+    scenes.add_11rb$($receiver);
+    return scenes;
   }
   function collisionDemo$lambda$lambda(this$) {
     return function ($receiver) {
@@ -357,7 +559,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
   function collisionDemo(ctx) {
     var boxWorld = {v: null};
     var scenes = ArrayList_init();
@@ -381,7 +582,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.shadowMap_0 = shadowMap;
     this.world = new CollisionWorld();
     this.rand_0 = new Random(20);
-    this.colors_0 = listOf([Color.Companion.MD_AMBER_500, Color.Companion.MD_BLUE_500, Color.Companion.MD_BROWN_500, Color.Companion.MD_CYAN_500, Color.Companion.MD_GREEN_500, Color.Companion.MD_INDIGO_500, Color.Companion.MD_LIME_500, Color.Companion.MD_ORANGE_500, Color.Companion.MD_PINK_500, Color.Companion.MD_PURPLE_500, Color.Companion.MD_RED_500, Color.Companion.MD_TEAL_500, Color.Companion.MD_YELLOW_500, Color.Companion.MD_DEEP_ORANGE_500, Color.Companion.MD_DEEP_PURPLE_500, Color.Companion.MD_LIGHT_BLUE_500, Color.Companion.MD_LIGHT_GREEN_500, Color.Companion.MD_BLUE_GREY_500]);
     this.world.gravity.set_y2kzbl$(0.0, -2.5, 0.0);
     this.onPreRender.add_11rb$(BoxWorld_init$lambda(this));
   }
@@ -411,7 +611,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.worldTransform.rotate_ad55pp$(this.rand_0.randomF_dleff0$(0.0, 360.0), (new MutableVec3f(this.rand_0.randomF_dleff0$(-1.0, 1.0), this.rand_0.randomF_dleff0$(-1.0, 1.0), this.rand_0.randomF_dleff0$(-1.0, 1.0))).norm());
       var box = $receiver;
       this.world.bodies.add_11rb$(box);
-      this.plusAssign_f1kmr1$(new BoxMesh(box, this.colors_0.get_za3lpa$(this.rand_0.randomI_vux9f0$(0, this.colors_0.size - 1 | 0)), this.shadowMap_0));
+      this.plusAssign_f1kmr1$(new BoxMesh(box, BOX_COLORS.get_za3lpa$(i % BOX_COLORS.size), this.shadowMap_0));
     }
     this.createGround_0();
   };
@@ -475,6 +675,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'BoxWorld',
     interfaces: [Group]
   };
+  var BOX_COLORS;
   var Map = Kotlin.kotlin.collections.Map;
   function Demo(ctx, startScene) {
     if (startScene === void 0)
@@ -1965,8 +2166,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     rightScene.onPostRender.add_11rb$(multiScene$lambda_2);
     return listOf([leftScene, rightScene]);
   }
-  var util = $module$kool.de.fabmax.kool.util;
-  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   function pointScene$lambda$lambda(closure$frameCnt, closure$data, closure$trav, closure$ptVertCnt, closure$tree) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2;
@@ -2065,7 +2264,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  var now = $module$kool.de.fabmax.kool.now;
   function makePointMesh() {
     var points = ArrayList_init();
     var mesh = pointMesh(void 0, makePointMesh$lambda(points));
@@ -2470,11 +2668,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     UiContainer.call(this, name, root);
   }
   VerticalLayout.prototype.doLayout_sq5703$ = function (bounds, ctx) {
-    if (!equals(bounds, this.contentBounds)) {
+    if (!(bounds != null ? bounds.equals(this.contentBounds) : null)) {
       this.contentBounds.clear();
     }
     UiContainer.prototype.doLayout_sq5703$.call(this, bounds, ctx);
-    if (!equals(bounds, this.contentBounds)) {
+    if (!(bounds != null ? bounds.equals(this.contentBounds) : null)) {
       this.translate_y2kzbl$(-this.posInParent.x, -this.posInParent.y, -this.posInParent.z);
       this.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
       this.translate_y2kzbl$(this.posInParent.y, -this.posInParent.x, this.posInParent.z);
@@ -3910,10 +4108,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   _.main = main;
   _.getParams = getParams;
   $$importsForInline$$.kool = $module$kool;
+  $$importsForInline$$['kotlinx-serialization-runtime-js'] = $module$kotlinx_serialization_runtime_js;
+  _.wsTest = wsTest;
+  _.PointScene = PointScene;
   var package$de = _.de || (_.de = {});
   var package$fabmax = package$de.fabmax || (package$de.fabmax = {});
   var package$kool = package$fabmax.kool || (package$fabmax.kool = {});
   var package$demo = package$kool.demo || (package$kool.demo = {});
+  package$demo.basicCollisionDemo_aemszp$ = basicCollisionDemo;
   package$demo.collisionDemo_aemszp$ = collisionDemo;
   package$demo.BoxWorld = BoxWorld;
   package$demo.Demo = Demo;
@@ -3948,6 +4150,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$demo.TreeTopPointDistribution = TreeTopPointDistribution;
   package$demo.uiDemoScene = uiDemoScene;
   package$demo.uiDemoContent_d6jo3u$ = uiDemoContent;
+  BOX_COLORS = listOf([Color.Companion.MD_YELLOW, Color.Companion.MD_AMBER, Color.Companion.MD_ORANGE, Color.Companion.MD_DEEP_ORANGE, Color.Companion.MD_RED, Color.Companion.MD_PINK, Color.Companion.MD_PURPLE, Color.Companion.MD_DEEP_PURPLE, Color.Companion.MD_INDIGO, Color.Companion.MD_BLUE, Color.Companion.MD_LIGHT_BLUE, Color.Companion.MD_CYAN, Color.Companion.MD_TEAL, Color.Companion.MD_GREEN, Color.Companion.MD_LIGHT_GREEN, Color.Companion.MD_LIME]);
   Kotlin.defineModule('kooldemo', _);
   return _;
 });

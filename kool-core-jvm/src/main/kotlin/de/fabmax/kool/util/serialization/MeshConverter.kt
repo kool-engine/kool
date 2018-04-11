@@ -2,6 +2,7 @@ package de.fabmax.kool.util.serialization
 
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.shading.AttributeType
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
 
@@ -22,13 +23,23 @@ object MeshConverter {
             val normalList = mutableListOf<Float>()
             val uvList = mutableListOf<Float>()
             val colorList = mutableListOf<Float>()
-            val triList = makeTriangles(aiMesh)
+            val indices = makeTriangleIndices(aiMesh)
             val armature = makeArmature(aiMesh, nodes)
             val animations = makeAnimations(aiScene)
 
             makeVertices(aiMesh, posList, normalList, uvList, colorList)
 
-            meshes += MeshData(meshName, triList, posList, normalList, uvList, colorList, armature, animations)
+            val attribs = mutableMapOf(MeshData.ATTRIB_POSITIONS to AttributeList(AttributeType.VEC_3F, posList))
+            if (!normalList.isEmpty()) {
+                attribs[MeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
+            }
+            if (!uvList.isEmpty()) {
+                attribs[MeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(AttributeType.VEC_2F, uvList)
+            }
+            if (!colorList.isEmpty()) {
+                attribs[MeshData.ATTRIB_COLORS] = AttributeList(AttributeType.COLOR_4F, colorList)
+            }
+            meshes += MeshData(meshName, PrimitiveType.TRIANGLES, indices, attribs, armature, animations)
         }
 
         return meshes
@@ -36,7 +47,7 @@ object MeshConverter {
 
     /**
      * fixme: method currently takes all animations in the scene instead of only the ones relevant for the current
-     * mesh. Not good if there are more than one mesh in the scene
+     * mesh. Not good if there is more than one mesh in the scene
      */
     private fun makeAnimations(aiScene: AIScene): List<AnimationData> {
         val animations = mutableListOf<AnimationData>()
@@ -115,7 +126,7 @@ object MeshConverter {
         return armature
     }
 
-    private fun makeTriangles(aiMesh: AIMesh): List<Int> {
+    private fun makeTriangleIndices(aiMesh: AIMesh): List<Int> {
         val triList = mutableListOf<Int>()
 
         for (face in aiMesh.mFaces()) {

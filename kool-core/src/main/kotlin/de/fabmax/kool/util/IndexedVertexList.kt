@@ -133,6 +133,12 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         }
     }
 
+    fun addIndices(indices: List<Int>) {
+        for (idx in indices.indices) {
+            addIndex(indices[idx])
+        }
+    }
+
     fun clear() {
         size = 0
 

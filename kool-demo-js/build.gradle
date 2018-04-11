@@ -18,7 +18,7 @@ compileKotlin2Js {
 }
 
 clean {
-    delete new File("${projectDir}/$webPath")
+    delete new File("$projectDir/$webPath")
 }
 
 build.doLast {
@@ -37,6 +37,6 @@ build.doLast {
 
     copy {
         from sourceSets.main.resources.srcDirs
-        into "${projectDir}/$webPath"
+        into "$projectDir/$webPath"
     }
 }

@@ -5,6 +5,8 @@ import de.fabmax.kool.util.FontProps
 
 abstract class AssetManager {
 
+    abstract var assetsBaseDir: String
+
     abstract fun createCharMap(fontProps: FontProps): CharMap
 
     abstract fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit)

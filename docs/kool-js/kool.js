@@ -156,8 +156,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   BoxMesh.prototype.constructor = BoxMesh;
   MultiBoxMesh.prototype = Object.create(Mesh.prototype);
   MultiBoxMesh.prototype.constructor = MultiBoxMesh;
-  PgsJacobiSolver$ObjectPool.prototype = Object.create(ObjectRecycler.prototype);
-  PgsJacobiSolver$ObjectPool.prototype.constructor = PgsJacobiSolver$ObjectPool;
   ContactConstraint.prototype = Object.create(SolverConstraint.prototype);
   ContactConstraint.prototype.constructor = ContactConstraint;
   FrictionConstraint.prototype = Object.create(SolverConstraint.prototype);
@@ -316,10 +314,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   LineMesh.prototype.constructor = LineMesh;
   Log$Level.prototype = Object.create(Enum.prototype);
   Log$Level.prototype.constructor = Log$Level;
+  ObjectPool.prototype = Object.create(ObjectRecycler.prototype);
+  ObjectPool.prototype.constructor = ObjectPool;
   AutoRecycler.prototype = Object.create(ObjectRecycler.prototype);
   AutoRecycler.prototype.constructor = AutoRecycler;
   PointMesh.prototype = Object.create(Mesh.prototype);
   PointMesh.prototype.constructor = PointMesh;
+  PrimitiveType.prototype = Object.create(Enum.prototype);
+  PrimitiveType.prototype.constructor = PrimitiveType;
   function AudioGenerator(ctx, generatorFun) {
     this.audioCtx_0 = new (window.AudioContext || window.webkitAudioContext)();
     this.sampleRate = this.audioCtx_0.sampleRate;
@@ -805,7 +807,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   JsImpl.prototype.createContext_s8od96$ = function (props) {
     if (this.ctx != null) {
-      throw new KoolException('Context was already creates (multi-context is currently not supported in js');
+      throw new KoolException('Context was already created (multi-context is currently not supported in js');
     }
     this.ctx = new JsContext(props);
     return ensureNotNull(this.ctx);
@@ -944,11 +946,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'ImageTextureData',
     interfaces: [TextureData]
   };
-  function JsAssetManager() {
+  function JsAssetManager(assetsBaseDir) {
     JsAssetManager$Companion_getInstance();
     AssetManager.call(this);
+    this.assetsBaseDir_quoclz$_0 = assetsBaseDir;
     this.fontGenerator_0 = new FontMapGenerator(JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_WIDTH_0, JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_HEIGHT_0);
   }
+  Object.defineProperty(JsAssetManager.prototype, 'assetsBaseDir', {
+    get: function () {
+      return this.assetsBaseDir_quoclz$_0;
+    },
+    set: function (assetsBaseDir) {
+      this.assetsBaseDir_quoclz$_0 = assetsBaseDir;
+    }
+  });
   function JsAssetManager$loadAsset$lambda(closure$req, closure$onLoad) {
     return function (evt) {
       var tmp$, tmp$_0;
@@ -964,7 +975,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   JsAssetManager.prototype.loadAsset_jrww91$ = function (assetPath, onLoad) {
     var req = new XMLHttpRequest();
-    req.open('GET', assetPath);
+    req.open('GET', this.assetsBaseDir + '/' + assetPath);
     req.responseType = 'arraybuffer';
     req.onload = JsAssetManager$loadAsset$lambda(req, onLoad);
     req.send();
@@ -973,7 +984,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var img = new Image();
     var data = new ImageTextureData(img);
     img.crossOrigin = '';
-    img.src = assetPath;
+    img.src = this.assetsBaseDir + '/' + assetPath;
     return data;
   };
   JsAssetManager.prototype.createCharMap_ttufcy$ = function (fontProps) {
@@ -1006,7 +1017,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     KoolContext.call(this);
     this.props = props;
     this.glCapabilities_4q43mj$_0 = null;
-    this.assetMgr_z54vt4$_0 = new JsAssetManager();
+    this.assetMgr_z54vt4$_0 = new JsAssetManager(this.props.assetsBaseDir);
     this.windowWidth_7sdnb6$_0 = 0;
     this.windowHeight_xsf9ux$_0 = 0;
     this.canvas_8be2vx$ = null;
@@ -1197,6 +1208,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function JsContext$InitProps() {
     this.canvasName = 'glCanvas';
     this.excludedKeyCodes = mutableSetOf(['F5']);
+    this.assetsBaseDir = './assets';
   }
   JsContext$InitProps.$metadata$ = {
     kind: Kind_CLASS,
@@ -7865,6 +7877,646 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var z = vec.x * $receiver.get_vux9f0$(0, 2) + vec.y * $receiver.get_vux9f0$(1, 2) + vec.z * $receiver.get_vux9f0$(2, 2);
     return vec.set_y2kzbl$(x, y, z);
   }
+  function BroadphaseInterface() {
+  }
+  BroadphaseInterface.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'BroadphaseInterface',
+    interfaces: []
+  };
+  function BroadphaseProxy() {
+  }
+  BroadphaseProxy.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'BroadphaseProxy',
+    interfaces: []
+  };
+  function Dbvt() {
+    Dbvt$Companion_getInstance();
+    this.root_91uddb$_0 = null;
+    this.lookAhead = -1;
+    this.leaves_agng8l$_0 = 0;
+    this.opath_0 = 0;
+    this.nodes_0 = ObjectRecycler_init(Dbvt$nodes$lambda);
+    this.tmpVec_0 = MutableVec3f_init();
+    this.tmpVolume_0 = new BoundingBox();
+    this.tmpLeaves_0 = ArrayList_init();
+  }
+  Object.defineProperty(Dbvt.prototype, 'root', {
+    get: function () {
+      return this.root_91uddb$_0;
+    },
+    set: function (root) {
+      this.root_91uddb$_0 = root;
+    }
+  });
+  Object.defineProperty(Dbvt.prototype, 'leaves', {
+    get: function () {
+      return this.leaves_agng8l$_0;
+    },
+    set: function (leaves) {
+      this.leaves_agng8l$_0 = leaves;
+    }
+  });
+  Dbvt.prototype.clear = function () {
+    if (this.root != null) {
+      this.recurseDeleteNode_0(ensureNotNull(this.root));
+    }
+    this.lookAhead = -1;
+    this.leaves = 0;
+    this.opath_0 = 0;
+  };
+  Dbvt.prototype.insert_lb6qlj$ = function (volume, data) {
+    var leaf = this.createNode_0(null, volume, data);
+    this.insertLeaf_0(this.root, leaf);
+    this.leaves = this.leaves + 1 | 0;
+    return leaf;
+  };
+  Dbvt.prototype.remove_f1gn84$ = function (leaf) {
+    this.removeLeaf_0(leaf);
+    this.deleteNode_0(leaf);
+    this.leaves = this.leaves - 1 | 0;
+  };
+  Dbvt.prototype.extractLeaves_85m6ik$ = function (leaves) {
+    var tmp$;
+    if ((tmp$ = this.root) != null) {
+      this.extractLeaves_0(tmp$, leaves);
+    }
+  };
+  Dbvt.prototype.optimizeBottomUp = function () {
+    if (this.root != null) {
+      this.tmpLeaves_0.clear();
+      this.fetchLeaves_0(ensureNotNull(this.root), this.tmpLeaves_0);
+      this.bottomUp_0(this.tmpLeaves_0, get_indices(this.tmpLeaves_0));
+      this.root = this.tmpLeaves_0.get_za3lpa$(0);
+      this.tmpLeaves_0.clear();
+    }
+  };
+  Dbvt.prototype.optimizeTopDown_za3lpa$ = function (buThreshold) {
+    if (buThreshold === void 0)
+      buThreshold = 128;
+    if (this.root != null) {
+      this.tmpLeaves_0.clear();
+      this.fetchLeaves_0(ensureNotNull(this.root), this.tmpLeaves_0);
+      this.root = this.topDown_0(this.tmpLeaves_0, get_indices(this.tmpLeaves_0), buThreshold);
+      this.tmpLeaves_0.clear();
+    }
+  };
+  Dbvt.prototype.optimizeIncremental_za3lpa$ = function (passes) {
+    var tmp$;
+    var nPasses = passes < 0 ? this.leaves : passes;
+    if (this.root != null && nPasses > 0) {
+      while ((tmp$ = nPasses, nPasses = tmp$ - 1 | 0, tmp$) > 0) {
+        var node = ensureNotNull(this.root);
+        var bit = 0;
+        while (!node.isLeaf) {
+          node = this.sort_0(node).getChild_kcn2v3$(this.opath_0 >> bit & 1);
+          bit = bit + 1 & 31;
+        }
+        this.update_3zdjt6$(node);
+        this.opath_0 = this.opath_0 + 1 | 0;
+      }
+    }
+  };
+  Dbvt.prototype.update_3zdjt6$ = function (leaf, lookAhead) {
+    if (lookAhead === void 0)
+      lookAhead = -1;
+    var tmp$;
+    var root = this.removeLeaf_0(leaf);
+    if (root != null) {
+      if (lookAhead >= 0) {
+        for (var i = 0; i < lookAhead; i++) {
+          tmp$ = ensureNotNull(root).parent;
+          if (tmp$ == null) {
+            break;
+          }
+          root = tmp$;
+        }
+      }
+       else {
+        root = this.root;
+      }
+    }
+    this.insertLeaf_0(root, leaf);
+  };
+  Dbvt.prototype.update_soehzg$ = function (leaf, volume) {
+    var tmp$, tmp$_0;
+    var root = this.removeLeaf_0(leaf);
+    if (root != null) {
+      if (this.lookAhead >= 0) {
+        tmp$ = this.lookAhead;
+        for (var i = 0; i < tmp$; i++) {
+          tmp$_0 = ensureNotNull(root).parent;
+          if (tmp$_0 == null) {
+            break;
+          }
+          root = tmp$_0;
+        }
+      }
+       else {
+        root = this.root;
+      }
+    }
+    leaf.volume.set_ea4od8$(volume);
+    this.insertLeaf_0(root, leaf);
+  };
+  Dbvt.prototype.update_o9c7j5$ = function (leaf, volume, velocity, margin) {
+    if (leaf.volume.isIncluding_ea4od8$(volume)) {
+      return false;
+    }
+    volume.expand_czzhiu$(this.tmpVec_0.set_y2kzbl$(margin, margin, margin)).signedExpand_czzhiu$(velocity);
+    this.update_soehzg$(leaf, volume);
+    return true;
+  };
+  Dbvt.prototype.update_brm73e$ = function (leaf, volume, velocity) {
+    if (leaf.volume.isIncluding_ea4od8$(volume)) {
+      return false;
+    }
+    volume.signedExpand_czzhiu$(velocity);
+    this.update_soehzg$(leaf, volume);
+    return true;
+  };
+  Dbvt.prototype.update_kqg8xr$ = function (leaf, volume, margin) {
+    if (leaf.volume.isIncluding_ea4od8$(volume)) {
+      return false;
+    }
+    volume.expand_czzhiu$(this.tmpVec_0.set_y2kzbl$(margin, margin, margin));
+    this.update_soehzg$(leaf, volume);
+    return true;
+  };
+  Dbvt.prototype.sort_0 = function (n) {
+    var p = n.parent;
+    if (p != null && p.id_8be2vx$ > n.id_8be2vx$) {
+      var i = n.getIndexInParent_8be2vx$();
+      var j = 1 - i | 0;
+      var s = p.getChild_kcn2v3$(j);
+      var q = p.parent;
+      if (q != null) {
+        q.replaceChild_708qx5$(p, n);
+      }
+       else {
+        this.root = n;
+      }
+      s.parent = n;
+      p.parent = n;
+      n.parent = q;
+      p.left = n.left;
+      p.right = n.right;
+      ensureNotNull(n.left).parent = p;
+      ensureNotNull(n.right).parent = p;
+      n.setChild_jdhrhb$(i, p);
+      n.setChild_jdhrhb$(j, s);
+      this.tmpVolume_0.set_ea4od8$(p.volume);
+      p.volume.set_ea4od8$(n.volume);
+      n.volume.set_ea4od8$(this.tmpVolume_0);
+      return p;
+    }
+    return n;
+  };
+  Dbvt.prototype.insertLeaf_0 = function (root, leaf) {
+    if (this.root == null) {
+      this.root = leaf;
+      leaf.parent = null;
+    }
+     else {
+      var rt = root;
+      while (!ensureNotNull(rt).isLeaf) {
+        rt = rt.selectChild_d0340p$(leaf.volume);
+      }
+      var prev = rt.parent;
+      var node = {v: this.createNode_1(prev, leaf.volume, rt.volume, null)};
+      if (prev != null) {
+        prev.replaceChild_708qx5$(rt, node.v);
+        var tmp$ = node.v;
+        var $receiver = rt;
+        $receiver.parent = node.v;
+        tmp$.left = $receiver;
+        var tmp$_0 = node.v;
+        leaf.parent = node.v;
+        tmp$_0.right = leaf;
+        while (prev != null) {
+          if (!prev.volume.isIncluding_ea4od8$(node.v.volume)) {
+            prev.volume.setMerged_hnxjto$(ensureNotNull(prev.left).volume, ensureNotNull(prev.right).volume);
+          }
+           else {
+            break;
+          }
+          node.v = prev;
+          prev = node.v.parent;
+        }
+      }
+       else {
+        var tmp$_1 = node.v;
+        var $receiver_0 = rt;
+        $receiver_0.parent = node.v;
+        tmp$_1.left = $receiver_0;
+        var tmp$_2 = node.v;
+        leaf.parent = node.v;
+        tmp$_2.right = leaf;
+        this.root = node.v;
+      }
+    }
+  };
+  Dbvt.prototype.removeLeaf_0 = function (leaf) {
+    var tmp$, tmp$_0;
+    if (leaf === this.root) {
+      this.root = null;
+      return null;
+    }
+     else {
+      var parent = ensureNotNull(leaf.parent);
+      var prev = parent.parent;
+      var sibling = parent.sibling_bydhpt$(leaf);
+      if (prev != null) {
+        prev.replaceChild_708qx5$(parent, sibling);
+        sibling.parent = prev;
+        this.deleteNode_0(parent);
+        while (prev != null) {
+          this.tmpVolume_0.set_ea4od8$(prev.volume);
+          prev.volume.setMerged_hnxjto$(ensureNotNull(prev.left).volume, ensureNotNull(prev.right).volume);
+          if (!((tmp$ = prev.volume) != null ? tmp$.equals(this.tmpVolume_0) : null)) {
+            prev = prev.parent;
+          }
+           else {
+            break;
+          }
+        }
+        if (prev != null) {
+          tmp$_0 = prev;
+        }
+         else {
+          tmp$_0 = this.root;
+        }
+        return tmp$_0;
+      }
+       else {
+        sibling.parent = null;
+        this.root = sibling;
+        this.deleteNode_0(parent);
+        return this.root;
+      }
+    }
+  };
+  Dbvt.prototype.bottomUp_0 = function (leaves, indices) {
+    var tmp$, tmp$_0;
+    var first = indices.first;
+    var last = indices.last;
+    while ((last - first + 1 | 0) > 1) {
+      var minSize = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+      var minIdx0 = -1;
+      var minIdx1 = -1;
+      tmp$ = last;
+      for (var i = first; i <= tmp$; i++) {
+        tmp$_0 = last;
+        for (var j = i + 1 | 0; j <= tmp$_0; j++) {
+          this.tmpVolume_0.setMerged_hnxjto$(leaves.get_za3lpa$(i).volume, leaves.get_za3lpa$(j).volume);
+          var sz = this.sizeMetric_0(this.tmpVolume_0);
+          if (sz < minSize) {
+            minSize = sz;
+            minIdx0 = i;
+            minIdx1 = j;
+          }
+        }
+      }
+      var n0 = leaves.get_za3lpa$(minIdx0);
+      var n1 = leaves.get_za3lpa$(minIdx1);
+      var p = this.createNode_1(null, n0.volume, n1.volume, null);
+      n0.parent = p;
+      p.left = n0;
+      n1.parent = p;
+      p.right = n1;
+      leaves.set_wxm5ur$(minIdx0, p);
+      leaves.set_wxm5ur$(minIdx1, leaves.get_za3lpa$(last));
+      last = last - 1 | 0;
+    }
+  };
+  Dbvt.prototype.topDown_0 = function (leaves, indices, buThreshold) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var size = indices.last - indices.first + 1 | 0;
+    if (size > 1) {
+      if (size > buThreshold) {
+        this.tmpVolume_0.set_ea4od8$(leaves.get_za3lpa$(indices.start).volume);
+        var $this = this.tmpVolume_0;
+        var wasBatchUpdate = $this.isBatchUpdate;
+        $this.isBatchUpdate = true;
+        var tmp$_3, tmp$_4;
+        tmp$_3 = indices.start + 1 | 0;
+        tmp$_4 = indices.last;
+        for (var i = tmp$_3; i <= tmp$_4; i++) {
+          this.tmpVolume_0.add_ea4od8$(leaves.get_za3lpa$(i).volume);
+        }
+        $this.isBatchUpdate = wasBatchUpdate;
+        var splitCnt00 = 0;
+        var splitCnt01 = 0;
+        var splitCnt10 = 0;
+        var splitCnt11 = 0;
+        var splitCnt20 = 0;
+        var splitCnt21 = 0;
+        tmp$ = indices.first;
+        tmp$_0 = indices.last;
+        tmp$_1 = indices.step;
+        for (var i_0 = tmp$; i_0 <= tmp$_0; i_0 += tmp$_1) {
+          leaves.get_za3lpa$(i_0).volume.center.subtract_2gj7b4$(this.tmpVolume_0.center, this.tmpVec_0);
+          if (this.tmpVec_0.times_czzhiu$(Dbvt$Companion_getInstance().AXIS_0[0]) > 0) {
+            splitCnt01 = splitCnt01 + 1 | 0;
+          }
+           else {
+            splitCnt00 = splitCnt00 + 1 | 0;
+          }
+          if (this.tmpVec_0.times_czzhiu$(Dbvt$Companion_getInstance().AXIS_0[1]) > 0) {
+            splitCnt11 = splitCnt11 + 1 | 0;
+          }
+           else {
+            splitCnt10 = splitCnt10 + 1 | 0;
+          }
+          if (this.tmpVec_0.times_czzhiu$(Dbvt$Companion_getInstance().AXIS_0[2]) > 0) {
+            splitCnt21 = splitCnt21 + 1 | 0;
+          }
+           else {
+            splitCnt20 = splitCnt20 + 1 | 0;
+          }
+        }
+        var bestMidp = indices.last - indices.start + 1 | 0;
+        var bestAxis = -1;
+        if (splitCnt00 > 0 && splitCnt01 > 0) {
+          var midp = abs(splitCnt00 - splitCnt01 | 0);
+          if (midp < bestMidp) {
+            bestMidp = midp;
+            bestAxis = 0;
+          }
+        }
+        if (splitCnt10 > 0 && splitCnt11 > 0) {
+          var midp_0 = abs(splitCnt10 - splitCnt11 | 0);
+          if (midp_0 < bestMidp) {
+            bestMidp = midp_0;
+            bestAxis = 1;
+          }
+        }
+        if (splitCnt20 > 0 && splitCnt21 > 0) {
+          var midp_1 = abs(splitCnt20 - splitCnt21 | 0);
+          if (midp_1 < bestMidp) {
+            bestAxis = 2;
+          }
+        }
+        if (bestAxis >= 0) {
+          tmp$_2 = this.split_0(leaves, indices, this.tmpVolume_0.center, Dbvt$Companion_getInstance().AXIS_0[bestAxis]);
+        }
+         else {
+          tmp$_2 = ((indices.last - indices.start + 1 | 0) / 2 | 0) + 1 | 0;
+        }
+        var partition = tmp$_2;
+        var node = this.createNode_2(this.tmpVolume_0);
+        var $receiver = this.topDown_0(leaves, until(indices.start, partition), buThreshold);
+        $receiver.parent = node;
+        node.left = $receiver;
+        var $receiver_0 = this.topDown_0(leaves, new IntRange(partition, indices.last), buThreshold);
+        $receiver_0.parent = node;
+        node.right = $receiver_0;
+        return node;
+      }
+       else {
+        this.bottomUp_0(leaves, indices);
+        return leaves.get_za3lpa$(indices.start);
+      }
+    }
+    return leaves.get_za3lpa$(indices.start);
+  };
+  Dbvt.prototype.split_0 = function (leaves, indices, origin, axis) {
+    var begin = indices.start;
+    var end = indices.last + 1 | 0;
+    while (true) {
+      while (begin !== end && this.isLeftOfAxis_0(leaves.get_za3lpa$(begin), origin, axis)) {
+        begin = begin + 1 | 0;
+      }
+      if (begin === end) {
+        break;
+      }
+      while (begin !== end && !this.isLeftOfAxis_0(leaves.get_za3lpa$(end - 1 | 0), origin, axis)) {
+        end = end - 1 | 0;
+      }
+      if (begin === end) {
+        break;
+      }
+      end = end - 1 | 0;
+      var temp = leaves.get_za3lpa$(begin);
+      leaves.set_wxm5ur$(begin, leaves.get_za3lpa$(end));
+      leaves.set_wxm5ur$(end, temp);
+      begin = begin + 1 | 0;
+    }
+    return begin;
+  };
+  Dbvt.prototype.isLeftOfAxis_0 = function (node, origin, axis) {
+    return axis.x * (node.volume.center.x - origin.x) + axis.y * (node.volume.center.y - origin.y) + axis.z * (node.volume.center.z - origin.z) <= 0;
+  };
+  Dbvt.prototype.extractLeaves_0 = function (root, leaves) {
+    if (!root.isLeaf) {
+      this.extractLeaves_0(ensureNotNull(root.left), leaves);
+      this.extractLeaves_0(ensureNotNull(root.right), leaves);
+    }
+     else {
+      leaves.add_11rb$(root);
+    }
+  };
+  Dbvt.prototype.fetchLeaves_0 = function (root, leaves, depth) {
+    if (depth === void 0)
+      depth = -1;
+    if (!root.isLeaf && depth !== 0) {
+      this.fetchLeaves_0(ensureNotNull(root.left), leaves, depth - 1 | 0);
+      this.fetchLeaves_0(ensureNotNull(root.right), leaves, depth - 1 | 0);
+      this.deleteNode_0(root);
+    }
+     else {
+      leaves.add_11rb$(root);
+    }
+  };
+  Dbvt.prototype.sizeMetric_0 = function (volume) {
+    return volume.size.x * volume.size.y * volume.size.z + volume.size.x + volume.size.y + volume.size.z;
+  };
+  Dbvt.prototype.deleteNode_0 = function (node) {
+    this.nodes_0.recycle_trkh7z$(node);
+  };
+  Dbvt.prototype.recurseDeleteNode_0 = function (node) {
+    if (!node.isLeaf) {
+      this.recurseDeleteNode_0(ensureNotNull(node.left));
+      this.recurseDeleteNode_0(ensureNotNull(node.right));
+    }
+    if (equals(node, this.root)) {
+      this.root = null;
+    }
+    this.deleteNode_0(node);
+  };
+  Dbvt.prototype.createNode_2 = function (volume) {
+    var $receiver = this.nodes_0.get();
+    $receiver.parent = null;
+    $receiver.volume.set_ea4od8$(volume);
+    $receiver.data = null;
+    return $receiver;
+  };
+  Dbvt.prototype.createNode_0 = function (parent, volume, data) {
+    var $receiver = this.nodes_0.get();
+    $receiver.parent = parent;
+    $receiver.volume.set_ea4od8$(volume);
+    $receiver.data = data;
+    return $receiver;
+  };
+  Dbvt.prototype.createNode_1 = function (parent, volume0, volume1, data) {
+    var $receiver = this.nodes_0.get();
+    $receiver.parent = parent;
+    $receiver.volume.setMerged_hnxjto$(volume0, volume1);
+    $receiver.data = data;
+    return $receiver;
+  };
+  function Dbvt$DbvtNode() {
+    Dbvt$DbvtNode$Companion_getInstance();
+    this.parent = null;
+    this.volume = new BoundingBox();
+    this.data = null;
+    this.left_eik42c$_0 = null;
+    this.right_kw5twb$_0 = null;
+    this.id_8be2vx$ = Dbvt$DbvtNode$Companion_getInstance().nextId_0();
+  }
+  Object.defineProperty(Dbvt$DbvtNode.prototype, 'left', {
+    get: function () {
+      return this.left_eik42c$_0;
+    },
+    set: function (left) {
+      this.left_eik42c$_0 = left;
+    }
+  });
+  Object.defineProperty(Dbvt$DbvtNode.prototype, 'right', {
+    get: function () {
+      return this.right_kw5twb$_0;
+    },
+    set: function (right) {
+      this.right_kw5twb$_0 = right;
+    }
+  });
+  Object.defineProperty(Dbvt$DbvtNode.prototype, 'isLeaf', {
+    get: function () {
+      return this.left === null;
+    }
+  });
+  Dbvt$DbvtNode.prototype.getChild_kcn2v3$ = function (i) {
+    if (i === 0)
+      return ensureNotNull(this.left);
+    else
+      return ensureNotNull(this.right);
+  };
+  Dbvt$DbvtNode.prototype.setChild_jdhrhb$ = function (i, c) {
+    if (i === 0)
+      this.left = c;
+    else
+      this.right = c;
+  };
+  Dbvt$DbvtNode.prototype.getIndexInParent_8be2vx$ = function () {
+    if (equals(this, ensureNotNull(this.parent).left)) {
+      return 0;
+    }
+     else {
+      return 1;
+    }
+  };
+  Dbvt$DbvtNode.prototype.replaceChild_708qx5$ = function (existing, new_0) {
+    if (existing === this.left) {
+      this.left = new_0;
+    }
+     else {
+      this.right = new_0;
+    }
+  };
+  Dbvt$DbvtNode.prototype.selectChild_d0340p$ = function (forVolume) {
+    var tmp$;
+    var lt = ensureNotNull(this.left);
+    var rt = ensureNotNull(this.right);
+    var x = lt.volume.min.x + lt.volume.max.x - (forVolume.min.x + forVolume.max.x);
+    var dxLt = Math_0.abs(x);
+    var x_0 = lt.volume.min.y + lt.volume.max.y - (forVolume.min.y + forVolume.max.y);
+    var dyLt = Math_0.abs(x_0);
+    var x_1 = lt.volume.min.z + lt.volume.max.z - (forVolume.min.z + forVolume.max.z);
+    var dzLt = Math_0.abs(x_1);
+    var dLt = dxLt + dyLt + dzLt;
+    var x_2 = rt.volume.min.x + rt.volume.max.x - (forVolume.min.x + forVolume.max.x);
+    var dxRt = Math_0.abs(x_2);
+    var x_3 = rt.volume.min.y + rt.volume.max.y - (forVolume.min.y + forVolume.max.y);
+    var dyRt = Math_0.abs(x_3);
+    var x_4 = rt.volume.min.z + rt.volume.max.z - (forVolume.min.z + forVolume.max.z);
+    var dzRt = Math_0.abs(x_4);
+    var dRt = dxRt + dyRt + dzRt;
+    if (dLt < dRt) {
+      tmp$ = lt;
+    }
+     else {
+      tmp$ = rt;
+    }
+    return tmp$;
+  };
+  Dbvt$DbvtNode.prototype.sibling_bydhpt$ = function (child) {
+    var tmp$;
+    if (child === this.left) {
+      tmp$ = ensureNotNull(this.right);
+    }
+     else {
+      tmp$ = ensureNotNull(this.left);
+    }
+    return tmp$;
+  };
+  function Dbvt$DbvtNode$Companion() {
+    Dbvt$DbvtNode$Companion_instance = this;
+    this.ID_LOCK_0 = new Any();
+    this.idCnt_0 = 0;
+  }
+  Dbvt$DbvtNode$Companion.prototype.nextId_0 = function () {
+    this.ID_LOCK_0;
+    return this.idCnt_0 = this.idCnt_0 + 1 | 0, this.idCnt_0;
+  };
+  Dbvt$DbvtNode$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Dbvt$DbvtNode$Companion_instance = null;
+  function Dbvt$DbvtNode$Companion_getInstance() {
+    if (Dbvt$DbvtNode$Companion_instance === null) {
+      new Dbvt$DbvtNode$Companion();
+    }
+    return Dbvt$DbvtNode$Companion_instance;
+  }
+  Dbvt$DbvtNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DbvtNode',
+    interfaces: []
+  };
+  function Dbvt$Companion() {
+    Dbvt$Companion_instance = this;
+    this.AXIS_0 = [Vec3f$Companion_getInstance().X_AXIS, Vec3f$Companion_getInstance().Y_AXIS, Vec3f$Companion_getInstance().Z_AXIS];
+  }
+  Dbvt$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Dbvt$Companion_instance = null;
+  function Dbvt$Companion_getInstance() {
+    if (Dbvt$Companion_instance === null) {
+      new Dbvt$Companion();
+    }
+    return Dbvt$Companion_instance;
+  }
+  function Dbvt$nodes$lambda() {
+    return new Dbvt$DbvtNode();
+  }
+  Dbvt.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Dbvt',
+    interfaces: []
+  };
+  function OverlappingPairCache() {
+  }
+  OverlappingPairCache.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'OverlappingPairCache',
+    interfaces: []
+  };
   function Contact() {
     this.worldPosB = ArrayList_init();
     this.worldNormalOnB = MutableVec3f_init();
@@ -7976,15 +8628,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'Contacts',
     interfaces: []
   };
+  function Dispatcher() {
+  }
+  Dispatcher.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Dispatcher',
+    interfaces: []
+  };
   function CollisionWorld() {
     this.bodies = ArrayList_init();
     this.gravity = new MutableVec3f(0.0, -9.81, 0.0);
     this.collisionChecker_0 = new BoxBoxCollision();
-    this.solver_0 = new PgsJacobiSolver();
+    this.solver_0 = new SequentialImpulseConstraintSolver();
     this.contacts_0 = new Contacts();
     this.realTime_0 = 0.0;
     this.simTime_0 = 0.0;
-    this.timeStep_0 = 1 / 90.0;
+    this.timeStep_0 = 1 / 60.0;
   }
   CollisionWorld.prototype.stepSimulation_mx4ult$ = function (dt) {
     var tmp$, tmp$_0;
@@ -8015,10 +8674,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         }
       }
     }
-    if (!this.contacts_0.contacts.isEmpty()) {
-      this.solver_0.solveContacts_fr66qz$(this.bodies, this.contacts_0.contacts);
-      this.contacts_0.clearContacts();
-    }
+    this.solver_0.solveContacts_fr66qz$(this.bodies, this.contacts_0.contacts);
+    this.contacts_0.clearContacts();
   };
   CollisionWorld.$metadata$ = {
     kind: Kind_CLASS,
@@ -8122,34 +8779,35 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'ContactSolverInfo',
     interfaces: []
   };
-  function PgsJacobiSolver() {
+  function SequentialImpulseConstraintSolver() {
     this.maxOverrideNumSolverIterations_0 = 0;
     this.infoGlobal_0 = new ContactSolverInfo();
-    this.contactPointPool_0 = new PgsJacobiSolver$ObjectPool(PgsJacobiSolver$contactPointPool$lambda);
-    this.solverBodyPool_0 = new PgsJacobiSolver$ObjectPool(PgsJacobiSolver$solverBodyPool$lambda);
-    this.contactConstraintPool_0 = new PgsJacobiSolver$ObjectPool(PgsJacobiSolver$contactConstraintPool$lambda);
-    this.contactFrictionConstraintPool_0 = new PgsJacobiSolver$ObjectPool(PgsJacobiSolver$contactFrictionConstraintPool$lambda);
-    this.contactRollingConstraintPool_0 = new PgsJacobiSolver$ObjectPool(PgsJacobiSolver$contactRollingConstraintPool$lambda);
+    this.contactPointPool_0 = new ObjectPool(SequentialImpulseConstraintSolver$contactPointPool$lambda);
+    this.solverBodyPool_0 = new ObjectPool(SequentialImpulseConstraintSolver$solverBodyPool$lambda);
+    this.contactConstraintPool_0 = new ObjectPool(SequentialImpulseConstraintSolver$contactConstraintPool$lambda);
+    this.contactFrictionConstraintPool_0 = new ObjectPool(SequentialImpulseConstraintSolver$contactFrictionConstraintPool$lambda);
+    this.contactRollingConstraintPool_0 = new ObjectPool(SequentialImpulseConstraintSolver$contactRollingConstraintPool$lambda);
     this.tmpVec1_0 = MutableVec3f_init();
     this.tmpVec2_0 = MutableVec3f_init();
     this.tmpVec3_0 = MutableVec3f_init();
+    this.n_0 = 0;
     this.infoGlobal_0.splitImpulse = false;
     this.infoGlobal_0.timeStep = 1.0 / 60.0;
     this.infoGlobal_0.numIterations = 4;
     this.infoGlobal_0.solverMode = this.infoGlobal_0.solverMode | ContactSolverInfo$Companion_getInstance().SOLVER_USE_2_FRICTION_DIRECTIONS;
   }
-  PgsJacobiSolver.prototype.solveContacts_fr66qz$ = function (bodies, contacts) {
+  SequentialImpulseConstraintSolver.prototype.solveContacts_fr66qz$ = function (bodies, contacts) {
     this.solveGroupSetup_0(bodies, contacts);
     this.solveGroupIterations_0();
     this.solveGroupFinish_0();
   };
-  PgsJacobiSolver.prototype.solveGroupSetup_0 = function (bodies, contacts) {
+  SequentialImpulseConstraintSolver.prototype.solveGroupSetup_0 = function (bodies, contacts) {
     this.maxOverrideNumSolverIterations_0 = 0;
     for (var i = 0; i !== contacts.size; ++i) {
       this.convertContact_0(contacts.get_za3lpa$(i));
     }
   };
-  PgsJacobiSolver.prototype.convertContact_0 = function (contact) {
+  SequentialImpulseConstraintSolver.prototype.convertContact_0 = function (contact) {
     var tmp$;
     var $receiver = contact.bodyA.mass;
     var eps;
@@ -8224,7 +8882,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   };
-  PgsJacobiSolver.prototype.addFrictionConstraint_0 = function (normalAxis, contactConstraint, desiredVelocity, cfmSlip) {
+  SequentialImpulseConstraintSolver.prototype.addFrictionConstraint_0 = function (normalAxis, contactConstraint, desiredVelocity, cfmSlip) {
     if (desiredVelocity === void 0)
       desiredVelocity = 0.0;
     if (cfmSlip === void 0)
@@ -8234,7 +8892,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     frictionConstraint.setupFrictionConstraint_f92cdv$(normalAxis, contactConstraint, desiredVelocity, cfmSlip);
     return frictionConstraint;
   };
-  PgsJacobiSolver.prototype.addRollingFrictionConstraint_0 = function (normalAxis, contactConstraint, desiredVelocity, cfmSlip) {
+  SequentialImpulseConstraintSolver.prototype.addRollingFrictionConstraint_0 = function (normalAxis, contactConstraint, desiredVelocity, cfmSlip) {
     if (desiredVelocity === void 0)
       desiredVelocity = 0.0;
     if (cfmSlip === void 0)
@@ -8244,7 +8902,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     frictionConstraint.setupRollingFrictionConstraint_f92cdv$(normalAxis, contactConstraint, desiredVelocity, cfmSlip);
     return frictionConstraint;
   };
-  PgsJacobiSolver.prototype.setFrictionConstraintImpulse_0 = function (contactConstraint) {
+  SequentialImpulseConstraintSolver.prototype.setFrictionConstraintImpulse_0 = function (contactConstraint) {
     var bodyA = contactConstraint.solverBodyA;
     var bodyB = contactConstraint.solverBodyB;
     var cp = contactConstraint.originalContactPoint;
@@ -8277,10 +8935,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   };
-  PgsJacobiSolver.prototype.getContactProcessingThreshold_0 = function (contact) {
+  SequentialImpulseConstraintSolver.prototype.getContactProcessingThreshold_0 = function (contact) {
     return 0.02;
   };
-  PgsJacobiSolver.prototype.solveGroupIterations_0 = function () {
+  SequentialImpulseConstraintSolver.prototype.solveGroupIterations_0 = function () {
     this.solveGroupSplitImpulseIterations_0();
     var a = this.maxOverrideNumSolverIterations_0;
     var b = this.infoGlobal_0.numIterations;
@@ -8289,7 +8947,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.solveSingleIteration_0(iteration);
     }
   };
-  PgsJacobiSolver.prototype.solveGroupSplitImpulseIterations_0 = function () {
+  SequentialImpulseConstraintSolver.prototype.solveGroupSplitImpulseIterations_0 = function () {
     var tmp$, tmp$_0;
     if (this.infoGlobal_0.splitImpulse) {
       tmp$ = this.infoGlobal_0.numIterations;
@@ -8301,7 +8959,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   };
-  PgsJacobiSolver.prototype.solveSingleIteration_0 = function (iteration) {
+  SequentialImpulseConstraintSolver.prototype.solveSingleIteration_0 = function (iteration) {
     var tmp$, tmp$_0, tmp$_1;
     if (iteration < this.infoGlobal_0.numIterations) {
       tmp$ = this.contactConstraintPool_0.size;
@@ -8334,7 +8992,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
   };
-  PgsJacobiSolver.prototype.resolveSingleConstraintRowLowerLimit_0 = function (contConst) {
+  SequentialImpulseConstraintSolver.prototype.resolveSingleConstraintRowLowerLimit_0 = function (contConst) {
     var tmp$;
     var bodyA = contConst.solverBodyA;
     var bodyB = contConst.solverBodyB;
@@ -8354,7 +9012,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     bodyA.internalApplyImpulse_lqfte8$(this.tmpVec1_0.set_czzhiu$(contConst.contactNormal).mul_czzhiu$(bodyA.invMass), contConst.angularComponentA, deltaImpulse);
     bodyB.internalApplyImpulse_lqfte8$(this.tmpVec1_0.set_czzhiu$(contConst.contactNormal).scale_mx4ult$(-1.0).mul_czzhiu$(bodyB.invMass), contConst.angularComponentB, deltaImpulse);
   };
-  PgsJacobiSolver.prototype.resolveSingleConstraintRowGeneric_0 = function (contConst) {
+  SequentialImpulseConstraintSolver.prototype.resolveSingleConstraintRowGeneric_0 = function (contConst) {
     var tmp$;
     var bodyA = contConst.solverBodyA;
     var bodyB = contConst.solverBodyB;
@@ -8378,7 +9036,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     bodyA.internalApplyImpulse_lqfte8$(this.tmpVec1_0.set_czzhiu$(contConst.contactNormal).mul_czzhiu$(bodyA.invMass), contConst.angularComponentA, deltaImpulse);
     bodyB.internalApplyImpulse_lqfte8$(this.tmpVec1_0.set_czzhiu$(contConst.contactNormal).scale_mx4ult$(-1.0).mul_czzhiu$(bodyB.invMass), contConst.angularComponentB, deltaImpulse);
   };
-  PgsJacobiSolver.prototype.resolveSplitPenetrationImpulse_0 = function (contConst) {
+  SequentialImpulseConstraintSolver.prototype.resolveSplitPenetrationImpulse_0 = function (contConst) {
     var tmp$;
     if (contConst.rhsPenetration !== 0.0) {
       var bodyA = contConst.solverBodyA;
@@ -8400,7 +9058,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       bodyB.internalApplyPushImpulse_lqfte8$(this.tmpVec1_0.set_czzhiu$(contConst.contactNormal).scale_mx4ult$(-1.0).mul_czzhiu$(bodyB.invMass), contConst.angularComponentB, deltaImpulse);
     }
   };
-  PgsJacobiSolver.prototype.solveGroupFinish_0 = function () {
+  SequentialImpulseConstraintSolver.prototype.solveGroupFinish_0 = function () {
     var tmp$, tmp$_0;
     if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_WARMSTARTING)) {
       tmp$ = this.contactConstraintPool_0.size;
@@ -8436,54 +9094,24 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.contactFrictionConstraintPool_0.recycleAll();
     this.contactRollingConstraintPool_0.recycleAll();
   };
-  function PgsJacobiSolver$ObjectPool(factory) {
-    ObjectRecycler_init(factory, this);
-    this.liveObjects_0 = ArrayList_init();
-  }
-  Object.defineProperty(PgsJacobiSolver$ObjectPool.prototype, 'size', {
-    get: function () {
-      return this.liveObjects_0.size;
-    }
-  });
-  PgsJacobiSolver$ObjectPool.prototype.get_za3lpa$ = function (index) {
-    return this.liveObjects_0.get_za3lpa$(index);
-  };
-  PgsJacobiSolver$ObjectPool.prototype.get = function () {
-    var obj = ObjectRecycler.prototype.get.call(this);
-    this.liveObjects_0.add_11rb$(obj);
-    return obj;
-  };
-  PgsJacobiSolver$ObjectPool.prototype.recycleAll = function () {
-    var tmp$;
-    tmp$ = this.liveObjects_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.recycle_trkh7z$(this.liveObjects_0.get_za3lpa$(i));
-    }
-    this.liveObjects_0.clear();
-  };
-  PgsJacobiSolver$ObjectPool.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ObjectPool',
-    interfaces: [ObjectRecycler]
-  };
-  function PgsJacobiSolver$contactPointPool$lambda() {
+  function SequentialImpulseConstraintSolver$contactPointPool$lambda() {
     return new ContactPoint();
   }
-  function PgsJacobiSolver$solverBodyPool$lambda() {
+  function SequentialImpulseConstraintSolver$solverBodyPool$lambda() {
     return new SolverBody();
   }
-  function PgsJacobiSolver$contactConstraintPool$lambda() {
+  function SequentialImpulseConstraintSolver$contactConstraintPool$lambda() {
     return new ContactConstraint();
   }
-  function PgsJacobiSolver$contactFrictionConstraintPool$lambda() {
+  function SequentialImpulseConstraintSolver$contactFrictionConstraintPool$lambda() {
     return new FrictionConstraint();
   }
-  function PgsJacobiSolver$contactRollingConstraintPool$lambda() {
+  function SequentialImpulseConstraintSolver$contactRollingConstraintPool$lambda() {
     return new RollingFrictionConstraint();
   }
-  PgsJacobiSolver.$metadata$ = {
+  SequentialImpulseConstraintSolver.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'PgsJacobiSolver',
+    simpleName: 'SequentialImpulseConstraintSolver',
     interfaces: []
   };
   function SolverBody() {
@@ -10464,6 +11092,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   MeshData.prototype.addIndices_pmhfmb$ = function (indices) {
     this.vertexList.addIndices_q5rwfd$(indices);
+    this.isSyncRequired = true;
+  };
+  MeshData.prototype.addIndices_pqoyrt$ = function (indices) {
+    this.vertexList.addIndices_pqoyrt$(indices);
     this.isSyncRequired = true;
   };
   MeshData.prototype.clear = function () {
@@ -13111,7 +13743,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
   };
   UiComponent.prototype.doLayout_sq5703$ = function (bounds, ctx) {
-    if (!this.contentBounds.isEqual_ea4od8$(bounds)) {
+    if (!this.contentBounds.isFuzzyEqual_ea4od8$(bounds)) {
       this.contentBounds.set_ea4od8$(bounds);
       this.requestUiUpdate();
     }
@@ -16573,7 +17205,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     },
     set: function (value) {
       this.isBatchUpdate_4nlnat$_0 = value;
-      this.updateSizeAndCenter_0();
+      if (!value) {
+        this.updateSizeAndCenter_0();
+      }
     }
   });
   BoundingBox.prototype.updateSizeAndCenter_0 = function () {
@@ -16615,7 +17249,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     block(this);
     this.isBatchUpdate = wasBatchUpdate;
   });
-  BoundingBox.prototype.isEqual_ea4od8$ = function (other) {
+  BoundingBox.prototype.isFuzzyEqual_ea4od8$ = function (other) {
     return this.isEmpty === other.isEmpty && this.min.isFuzzyEqual_2qa7tb$(other.min) && this.max.isFuzzyEqual_2qa7tb$(other.max);
   };
   BoundingBox.prototype.clear = function () {
@@ -16623,13 +17257,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.mutMin_0.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
     this.mutMax_0.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
     this.updateSizeAndCenter_0();
+    return this;
   };
   BoundingBox.prototype.add_czzhiu$ = function (point) {
     this.addPoint_0(point);
     this.updateSizeAndCenter_0();
+    return this;
   };
   BoundingBox.prototype.add_uqk38n$ = function (points) {
     this.add_3y53ni$(points, get_indices(points));
+    return this;
   };
   BoundingBox.prototype.add_3y53ni$ = function (points, range) {
     var tmp$, tmp$_0, tmp$_1;
@@ -16640,6 +17277,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.addPoint_0(points.get_za3lpa$(i));
     }
     this.updateSizeAndCenter_0();
+    return this;
   };
   BoundingBox.prototype.add_ea4od8$ = function (aabb) {
     if (!aabb.isEmpty) {
@@ -16647,6 +17285,35 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.addPoint_0(aabb.max);
       this.updateSizeAndCenter_0();
     }
+    return this;
+  };
+  BoundingBox.prototype.expand_czzhiu$ = function (e) {
+    if (this.isEmpty) {
+      throw new KoolException('Empty BoundingBox cannot be expanded');
+    }
+    this.mutMin_0.minusAssign_czzhiu$(e);
+    this.mutMax_0.plusAssign_czzhiu$(e);
+    this.updateSizeAndCenter_0();
+    return this;
+  };
+  BoundingBox.prototype.signedExpand_czzhiu$ = function (e) {
+    if (this.isEmpty) {
+      throw new KoolException('Empty BoundingBox cannot be expanded');
+    }
+    if (e.x > 0)
+      this.mutMax_0.x = this.mutMax_0.x + e.x;
+    else
+      this.mutMin_0.x = this.mutMin_0.x + e.x;
+    if (e.y > 0)
+      this.mutMax_0.y = this.mutMax_0.y + e.y;
+    else
+      this.mutMin_0.y = this.mutMin_0.y + e.y;
+    if (e.z > 0)
+      this.mutMax_0.z = this.mutMax_0.z + e.z;
+    else
+      this.mutMin_0.z = this.mutMin_0.z + e.z;
+    this.updateSizeAndCenter_0();
+    return this;
   };
   BoundingBox.prototype.set_ea4od8$ = function (other) {
     this.mutMin_0.set_czzhiu$(other.min);
@@ -16654,21 +17321,84 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.mutSize_0.set_czzhiu$(other.size);
     this.mutCenter_0.set_czzhiu$(other.center);
     this.isEmpty = other.isEmpty;
+    return this;
   };
   BoundingBox.prototype.set_4lfkt4$ = function (min, max) {
     this.isEmpty = false;
     this.mutMin_0.set_czzhiu$(min);
     this.mutMax_0.set_czzhiu$(max);
     this.updateSizeAndCenter_0();
+    return this;
   };
   BoundingBox.prototype.set_w8lrqs$ = function (minX, minY, minZ, maxX, maxY, maxZ) {
     this.isEmpty = false;
     this.mutMin_0.set_y2kzbl$(minX, minY, minZ);
     this.mutMax_0.set_y2kzbl$(maxX, maxY, maxZ);
     this.updateSizeAndCenter_0();
+    return this;
+  };
+  BoundingBox.prototype.setMerged_hnxjto$ = function (aabb1, aabb2) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10;
+    tmp$_0 = this.mutMin_0;
+    if (aabb1.min.x < aabb2.min.x) {
+      tmp$ = aabb1.min.x;
+    }
+     else {
+      tmp$ = aabb2.min.x;
+    }
+    tmp$_0.x = tmp$;
+    tmp$_2 = this.mutMin_0;
+    if (aabb1.min.y < aabb2.min.y) {
+      tmp$_1 = aabb1.min.y;
+    }
+     else {
+      tmp$_1 = aabb2.min.y;
+    }
+    tmp$_2.y = tmp$_1;
+    tmp$_4 = this.mutMin_0;
+    if (aabb1.min.z < aabb2.min.z) {
+      tmp$_3 = aabb1.min.z;
+    }
+     else {
+      tmp$_3 = aabb2.min.z;
+    }
+    tmp$_4.z = tmp$_3;
+    tmp$_6 = this.mutMax_0;
+    if (aabb1.max.x > aabb2.max.x) {
+      tmp$_5 = aabb1.max.x;
+    }
+     else {
+      tmp$_5 = aabb2.max.x;
+    }
+    tmp$_6.x = tmp$_5;
+    tmp$_8 = this.mutMax_0;
+    if (aabb1.max.y > aabb2.max.y) {
+      tmp$_7 = aabb1.max.y;
+    }
+     else {
+      tmp$_7 = aabb2.max.y;
+    }
+    tmp$_8.y = tmp$_7;
+    tmp$_10 = this.mutMax_0;
+    if (aabb1.max.z > aabb2.max.z) {
+      tmp$_9 = aabb1.max.z;
+    }
+     else {
+      tmp$_9 = aabb2.max.z;
+    }
+    tmp$_10.z = tmp$_9;
+    this.isEmpty = false;
+    this.updateSizeAndCenter_0();
+    return this;
   };
   BoundingBox.prototype.isIncluding_czzhiu$ = function (point) {
     return point.x >= this.min.x && point.x <= this.max.x && point.y >= this.min.y && point.y <= this.max.y && point.z >= this.min.z && point.z <= this.max.z;
+  };
+  BoundingBox.prototype.isIncluding_ea4od8$ = function (aabb) {
+    return this.isIncluding_czzhiu$(aabb.min) && this.isIncluding_czzhiu$(aabb.max);
+  };
+  BoundingBox.prototype.isIntersecting_ea4od8$ = function (aabb) {
+    return this.min.x <= aabb.max.x && this.max.x >= aabb.min.x && this.min.y <= aabb.max.y && this.max.y >= aabb.min.y && this.min.z <= aabb.max.z && this.max.z >= aabb.min.z;
   };
   BoundingBox.prototype.clampToBounds_5s4mqq$ = function (point) {
     var $receiver = point.x;
@@ -16834,6 +17564,26 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       tmp$ = '[min=' + this.min + ', max=' + this.max + ']';
     }
     return tmp$;
+  };
+  BoundingBox.prototype.equals = function (other) {
+    var tmp$, tmp$_0;
+    if (this === other)
+      return true;
+    if (!Kotlin.isType(other, BoundingBox))
+      return false;
+    if (this.isEmpty !== other.isEmpty)
+      return false;
+    if (!((tmp$ = this.min) != null ? tmp$.equals(other.min) : null))
+      return false;
+    if (!((tmp$_0 = this.max) != null ? tmp$_0.equals(other.max) : null))
+      return false;
+    return true;
+  };
+  BoundingBox.prototype.hashCode = function () {
+    var result = hashCode(this.isEmpty);
+    result = (31 * result | 0) + this.min.hashCode() | 0;
+    result = (31 * result | 0) + this.max.hashCode() | 0;
+    return result;
   };
   BoundingBox.$metadata$ = {
     kind: Kind_CLASS,
@@ -18347,7 +19097,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     this.tmpVertex_0.index = (tmp$_1 = this.size, this.size = tmp$_1 + 1 | 0, tmp$_1);
     block(this.tmpVertex_0);
-    updateBounds != null ? (updateBounds.add_czzhiu$(this.tmpVertex_0.position), Unit) : null;
+    updateBounds != null ? updateBounds.add_czzhiu$(this.tmpVertex_0.position) : null;
     return this.size - 1 | 0;
   };
   function IndexedVertexList$addVertex$lambda(closure$position, closure$normal, closure$color, closure$texCoord) {
@@ -18383,6 +19133,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   IndexedVertexList.prototype.addIndices_q5rwfd$ = function (indices) {
     for (var idx = 0; idx !== indices.length; ++idx) {
       this.addIndex_za3lpa$(indices[idx]);
+    }
+  };
+  IndexedVertexList.prototype.addIndices_pqoyrt$ = function (indices) {
+    for (var idx = 0; idx !== indices.size; ++idx) {
+      this.addIndex_za3lpa$(indices.get_za3lpa$(idx));
     }
   };
   IndexedVertexList.prototype.clear = function () {
@@ -18925,6 +19680,78 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     $this.isSyncRequired = true;
     $this.isBatchUpdate = wasBatchUpdate;
     return idx0.v;
+  };
+  function LineMesh$addBoundingBox$lambda$lambda(closure$aabb, closure$color) {
+    return function ($receiver) {
+      $receiver.position.set_y2kzbl$(closure$aabb.min.x, closure$aabb.min.y, closure$aabb.min.z);
+      $receiver.color.set_d7aj7k$(closure$color);
+      return Unit;
+    };
+  }
+  function LineMesh$addBoundingBox$lambda$lambda_0(closure$aabb, closure$color) {
+    return function ($receiver) {
+      $receiver.position.set_y2kzbl$(closure$aabb.min.x, closure$aabb.min.y, closure$aabb.max.z);
+      $receiver.color.set_d7aj7k$(closure$color);
+      return Unit;
+    };
+  }
+  function LineMesh$addBoundingBox$lambda$lambda_1(closure$aabb, closure$color) {
+    return function ($receiver) {
+      $receiver.position.set_y2kzbl$(closure$aabb.min.x, closure$aabb.max.y, closure$aabb.max.z);
+      $receiver.color.set_d7aj7k$(closure$color);
+      return Unit;
+    };
+  }
+  function LineMesh$addBoundingBox$lambda$lambda_2(closure$aabb, closure$color) {
+    return function ($receiver) {
+      $receiver.position.set_y2kzbl$(closure$aabb.min.x, closure$aabb.max.y, closure$aabb.min.z);
+      $receiver.color.set_d7aj7k$(closure$color);
+      return Unit;
+    };
+  }
+  function LineMesh$addBoundingBox$lambda$lambda_3(closure$aabb, closure$color) {
+    return function ($receiver) {
+      $receiver.position.set_y2kzbl$(closure$aabb.max.x, closure$aabb.min.y, closure$aabb.min.z);
+      $receiver.color.set_d7aj7k$(closure$color);
+      return Unit;
+    };
+  }
+  function LineMesh$addBoundingBox$lambda$lambda_4(closure$aabb, closure$color) {
+    return function ($receiver) {
+      $receiver.position.set_y2kzbl$(closure$aabb.max.x, closure$aabb.min.y, closure$aabb.max.z);
+      $receiver.color.set_d7aj7k$(closure$color);
+      return Unit;
+    };
+  }
+  function LineMesh$addBoundingBox$lambda$lambda_5(closure$aabb, closure$color) {
+    return function ($receiver) {
+      $receiver.position.set_y2kzbl$(closure$aabb.max.x, closure$aabb.max.y, closure$aabb.max.z);
+      $receiver.color.set_d7aj7k$(closure$color);
+      return Unit;
+    };
+  }
+  function LineMesh$addBoundingBox$lambda$lambda_6(closure$aabb, closure$color) {
+    return function ($receiver) {
+      $receiver.position.set_y2kzbl$(closure$aabb.max.x, closure$aabb.max.y, closure$aabb.min.z);
+      $receiver.color.set_d7aj7k$(closure$color);
+      return Unit;
+    };
+  }
+  LineMesh.prototype.addBoundingBox_j1pmtk$ = function (aabb, color) {
+    var $this = this.meshData;
+    var wasBatchUpdate = $this.isBatchUpdate;
+    $this.isBatchUpdate = true;
+    var i0 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda(aabb, color));
+    var i1 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_0(aabb, color));
+    var i2 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_1(aabb, color));
+    var i3 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_2(aabb, color));
+    var i4 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_3(aabb, color));
+    var i5 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_4(aabb, color));
+    var i6 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_5(aabb, color));
+    var i7 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_6(aabb, color));
+    $this.addIndices_pmhfmb$(new Int32Array([i0, i1, i1, i2, i2, i3, i3, i0, i4, i5, i5, i6, i6, i7, i7, i4, i0, i4, i1, i5, i2, i6, i3, i7]));
+    $this.isSyncRequired = true;
+    $this.isBatchUpdate = wasBatchUpdate;
   };
   LineMesh.prototype.render_aemszp$ = function (ctx) {
     ctx.pushAttributes();
@@ -19985,6 +20812,36 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ObjectRecycler.call($this, ObjectRecycler$Companion_getInstance().DEFAULT_MAX_SIZE, factory);
     return $this;
   }
+  function ObjectPool(factory) {
+    ObjectRecycler_init(factory, this);
+    this.liveObjects_0 = ArrayList_init();
+  }
+  Object.defineProperty(ObjectPool.prototype, 'size', {
+    get: function () {
+      return this.liveObjects_0.size;
+    }
+  });
+  ObjectPool.prototype.get_za3lpa$ = function (index) {
+    return this.liveObjects_0.get_za3lpa$(index);
+  };
+  ObjectPool.prototype.get = function () {
+    var obj = ObjectRecycler.prototype.get.call(this);
+    this.liveObjects_0.add_11rb$(obj);
+    return obj;
+  };
+  ObjectPool.prototype.recycleAll = function () {
+    var tmp$;
+    tmp$ = this.liveObjects_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.recycle_trkh7z$(this.liveObjects_0.get_za3lpa$(i));
+    }
+    this.liveObjects_0.clear();
+  };
+  ObjectPool.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ObjectPool',
+    interfaces: [ObjectRecycler]
+  };
   function AutoRecycler(maxSize, factory) {
     if (maxSize === void 0)
       maxSize = ObjectRecycler$Companion_getInstance().DEFAULT_MAX_SIZE;
@@ -21105,134 +21962,206 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var $this = ProtoBuf.Companion.plain;
     return loadMesh_0($this.load_8dtdds$(klassSerializer($this.context, getKClass(MeshData_0)), data));
   }
-  function loadMesh$lambda(closure$data, closure$i) {
+  function loadMesh$lambda(closure$positions, closure$i, closure$normals, closure$texCoords, closure$colors, closure$tangents) {
     return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$data.positions.get_za3lpa$(closure$i * 3 | 0), closure$data.positions.get_za3lpa$((closure$i * 3 | 0) + 1 | 0), closure$data.positions.get_za3lpa$((closure$i * 3 | 0) + 2 | 0));
-      if (closure$data.hasNormals()) {
-        $receiver.normal.set_y2kzbl$(closure$data.normals.get_za3lpa$(closure$i * 3 | 0), closure$data.normals.get_za3lpa$((closure$i * 3 | 0) + 1 | 0), closure$data.normals.get_za3lpa$((closure$i * 3 | 0) + 2 | 0));
+      $receiver.position.set_y2kzbl$(closure$positions.get_za3lpa$(closure$i * 3 | 0), closure$positions.get_za3lpa$((closure$i * 3 | 0) + 1 | 0), closure$positions.get_za3lpa$((closure$i * 3 | 0) + 2 | 0));
+      if (closure$normals != null) {
+        $receiver.normal.set_y2kzbl$(closure$normals.get_za3lpa$(closure$i * 3 | 0), closure$normals.get_za3lpa$((closure$i * 3 | 0) + 1 | 0), closure$normals.get_za3lpa$((closure$i * 3 | 0) + 2 | 0));
       }
-      if (closure$data.hasTexCoords()) {
-        $receiver.texCoord.set_dleff0$(closure$data.uvs.get_za3lpa$(closure$i * 2 | 0), closure$data.uvs.get_za3lpa$((closure$i * 2 | 0) + 1 | 0));
+      if (closure$texCoords != null) {
+        $receiver.texCoord.set_dleff0$(closure$texCoords.get_za3lpa$(closure$i * 2 | 0), closure$texCoords.get_za3lpa$((closure$i * 2 | 0) + 1 | 0));
       }
-      if (closure$data.hasColors()) {
-        $receiver.color.set_7b5o5w$(closure$data.colors.get_za3lpa$(closure$i * 4 | 0), closure$data.colors.get_za3lpa$((closure$i * 4 | 0) + 1 | 0), closure$data.colors.get_za3lpa$((closure$i * 4 | 0) + 2 | 0), closure$data.colors.get_za3lpa$((closure$i * 4 | 0) + 3 | 0));
+      if (closure$colors != null) {
+        $receiver.color.set_7b5o5w$(closure$colors.get_za3lpa$(closure$i * 4 | 0), closure$colors.get_za3lpa$((closure$i * 4 | 0) + 1 | 0), closure$colors.get_za3lpa$((closure$i * 4 | 0) + 2 | 0), closure$colors.get_za3lpa$((closure$i * 4 | 0) + 3 | 0));
+      }
+      if (closure$tangents != null) {
+        $receiver.tangent.set_y2kzbl$(closure$tangents.get_za3lpa$(closure$i * 3 | 0), closure$tangents.get_za3lpa$((closure$i * 3 | 0) + 1 | 0), closure$tangents.get_za3lpa$((closure$i * 3 | 0) + 2 | 0));
       }
       return Unit;
     };
   }
   function loadMesh_0(data) {
-    var tmp$, tmp$_0;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
     var attributes = mutableSetOf([Attribute$Companion_getInstance().POSITIONS]);
-    if (data.hasNormals()) {
+    if (data.hasNormals) {
       var element = Attribute$Companion_getInstance().NORMALS;
       attributes.add_11rb$(element);
     }
-    if (data.hasColors()) {
+    if (data.hasColors) {
       var element_0 = Attribute$Companion_getInstance().COLORS;
       attributes.add_11rb$(element_0);
     }
-    if (data.hasTexCoords()) {
+    if (data.hasTexCoords) {
       var element_1 = Attribute$Companion_getInstance().TEXTURE_COORDS;
       attributes.add_11rb$(element_1);
     }
+    if (data.hasTangents) {
+      var element_2 = Attribute$Companion_getInstance().TANGENTS;
+      attributes.add_11rb$(element_2);
+    }
     var meshData = new MeshData(attributes);
-    if (!data.armature.isEmpty()) {
-      meshData.usage = GL_DYNAMIC_DRAW;
+    tmp$ = data.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_POSITIONS);
+    if (tmp$ == null) {
+      throw new KoolException('Mesh has no positions');
     }
-    tmp$ = data.positions.size / 3 | 0;
-    for (var i = 0; i < tmp$; i++) {
-      meshData.addVertex_hvwyd1$(loadMesh$lambda(data, i));
+    var positions = tmp$;
+    var normals = data.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_NORMALS);
+    var texCoords = data.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_TEXTURE_COORDS);
+    var colors = data.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_COLORS);
+    var tangents = data.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_TANGENTS);
+    tmp$_0 = positions.size / 3 | 0;
+    for (var i = 0; i < tmp$_0; i++) {
+      meshData.addVertex_hvwyd1$(loadMesh$lambda(positions, i, normals, texCoords, colors, tangents));
     }
-    tmp$_0 = data.triangles.size;
-    for (var i_0 = 0; i_0 < tmp$_0; i_0 += 3) {
-      meshData.addTriIndices_qt1dr2$(data.triangles.get_za3lpa$(i_0), data.triangles.get_za3lpa$(i_0 + 1 | 0), data.triangles.get_za3lpa$(i_0 + 2 | 0));
-    }
-    var mesh;
-    if (!data.armature.isEmpty()) {
-      mesh = new Armature(meshData, data.name);
-      var tmp$_1;
-      tmp$_1 = data.armature.iterator();
-      while (tmp$_1.hasNext()) {
-        var element_2 = tmp$_1.next();
-        var closure$mesh = mesh;
-        var tmp$_2;
-        var bone = new Bone(element_2.name, element_2.vertexIds.size);
-        var $receiver = closure$mesh.bones;
-        var key = bone.name;
-        $receiver.put_xwzc9p$(key, bone);
-        bone.offsetMatrix.set_hcyabg$(element_2.offsetMatrix);
-        tmp$_2 = element_2.vertexIds;
-        for (var i_1 = 0; i_1 !== tmp$_2.size; ++i_1) {
-          bone.vertexIds[i_1] = element_2.vertexIds.get_za3lpa$(i_1);
-          bone.vertexWeights[i_1] = element_2.vertexWeights.get_za3lpa$(i_1);
-        }
-      }
-      var tmp$_3;
-      tmp$_3 = data.armature.iterator();
-      while (tmp$_3.hasNext()) {
-        var element_3 = tmp$_3.next();
-        var closure$mesh_0 = mesh;
-        var bone_0 = ensureNotNull(closure$mesh_0.bones.get_11rb$(element_3.name));
-        bone_0.parent = closure$mesh_0.bones.get_11rb$(element_3.parent);
-        if (bone_0.parent == null) {
-          closure$mesh_0.rootBones.add_11rb$(bone_0);
-        }
-        var tmp$_4;
-        tmp$_4 = element_3.children.iterator();
-        while (tmp$_4.hasNext()) {
-          var element_4 = tmp$_4.next();
-          var child = closure$mesh_0.bones.get_11rb$(element_4);
-          if (child != null) {
-            bone_0.children.add_11rb$(child);
-          }
-        }
-      }
-      mesh.updateBones();
-      var tmp$_5;
-      tmp$_5 = data.animations.iterator();
-      while (tmp$_5.hasNext()) {
-        var element_5 = tmp$_5.next();
-        var closure$mesh_1 = mesh;
-        closure$mesh_1.addAnimation_z5ltv$(element_5.name, element_5.getAnimation_wev6wz$(closure$mesh_1.bones));
+    if (data.indices.isEmpty()) {
+      tmp$_1 = data.numVertices;
+      for (var i_0 = 0; i_0 < tmp$_1; i_0++) {
+        meshData.addIndex_za3lpa$(i_0);
       }
     }
      else {
-      mesh = new Mesh(meshData, data.name);
+      meshData.addIndices_pqoyrt$(data.indices);
+    }
+    if (!data.armature.isEmpty()) {
+      tmp$_2 = buildAramature(meshData, data);
+    }
+     else {
+      tmp$_2 = new Mesh(meshData, data.name);
+    }
+    return tmp$_2;
+  }
+  function buildAramature(meshData, data) {
+    var mesh = new Armature(meshData, data.name);
+    var tmp$;
+    tmp$ = data.armature.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var tmp$_0;
+      var bone = new Bone(element.name, element.vertexIds.size);
+      var $receiver = mesh.bones;
+      var key = bone.name;
+      $receiver.put_xwzc9p$(key, bone);
+      bone.offsetMatrix.set_hcyabg$(element.offsetMatrix);
+      tmp$_0 = element.vertexIds;
+      for (var i = 0; i !== tmp$_0.size; ++i) {
+        bone.vertexIds[i] = element.vertexIds.get_za3lpa$(i);
+        bone.vertexWeights[i] = element.vertexWeights.get_za3lpa$(i);
+      }
+    }
+    var tmp$_1;
+    tmp$_1 = data.armature.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_0 = tmp$_1.next();
+      var bone_0 = ensureNotNull(mesh.bones.get_11rb$(element_0.name));
+      bone_0.parent = mesh.bones.get_11rb$(element_0.parent);
+      if (bone_0.parent == null) {
+        mesh.rootBones.add_11rb$(bone_0);
+      }
+      var tmp$_2;
+      tmp$_2 = element_0.children.iterator();
+      while (tmp$_2.hasNext()) {
+        var element_1 = tmp$_2.next();
+        var child = mesh.bones.get_11rb$(element_1);
+        if (child != null) {
+          bone_0.children.add_11rb$(child);
+        }
+      }
+    }
+    mesh.updateBones();
+    var tmp$_3;
+    tmp$_3 = data.animations.iterator();
+    while (tmp$_3.hasNext()) {
+      var element_2 = tmp$_3.next();
+      mesh.addAnimation_z5ltv$(element_2.name, element_2.getAnimation_wev6wz$(mesh.bones));
     }
     return mesh;
   }
-  function MeshData_0(name, triangles, positions, normals, uvs, colors, armature, animations) {
+  function MeshData_0(name, primitiveType, indices, attributes, armature, animations) {
     MeshData$Companion_getInstance();
-    if (normals === void 0)
-      normals = emptyList();
-    if (uvs === void 0)
-      uvs = emptyList();
-    if (colors === void 0)
-      colors = emptyList();
+    if (indices === void 0)
+      indices = emptyList();
     if (armature === void 0)
       armature = emptyList();
     if (animations === void 0)
       animations = emptyList();
     this.name = name;
-    this.triangles = triangles;
-    this.positions = positions;
-    this.normals = normals;
-    this.uvs = uvs;
-    this.colors = colors;
+    this.primitiveType = primitiveType;
+    this.indices = indices;
+    this.attributes = attributes;
     this.armature = armature;
     this.animations = animations;
+    this.numVertices_ugf8mp$_0 = 0;
+    this.hasNormals_d3n5ua$_0 = false;
+    this.hasTexCoords_2f31yx$_0 = false;
+    this.hasColors_xn17wm$_0 = false;
+    this.hasTangents_p4qxco$_0 = false;
+    var tmp$, tmp$_0;
+    tmp$ = this.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_POSITIONS);
+    if (tmp$ == null) {
+      throw new KoolException('MeshData does not contain positions');
+    }
+    this.numVertices = tmp$.size / 3 | 0;
+    this.hasNormals = this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_NORMALS);
+    this.hasTexCoords = this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_TEXTURE_COORDS);
+    this.hasColors = this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_COLORS);
+    this.hasTangents = this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_TANGENTS);
+    tmp$_0 = this.attributes.entries.iterator();
+    while (tmp$_0.hasNext()) {
+      var tmp$_1 = tmp$_0.next();
+      var name_1 = tmp$_1.key;
+      var attrib_0 = tmp$_1.value;
+      if ((attrib_0.size / attrib_0.type.size | 0) !== this.numVertices) {
+        throw new KoolException('Mesh attribute ' + name_1 + ' has wrong value count: ' + attrib_0.size + ' (should be ' + Kotlin.imul(this.numVertices, attrib_0.type.size) + ', type: ' + attrib_0.type + ')');
+      }
+    }
   }
-  MeshData_0.prototype.hasNormals = function () {
-    return !this.normals.isEmpty();
-  };
-  MeshData_0.prototype.hasTexCoords = function () {
-    return !this.uvs.isEmpty();
-  };
-  MeshData_0.prototype.hasColors = function () {
-    return !this.colors.isEmpty();
-  };
+  Object.defineProperty(MeshData_0.prototype, 'numVertices', {
+    get: function () {
+      return this.numVertices_ugf8mp$_0;
+    },
+    set: function (numVertices) {
+      this.numVertices_ugf8mp$_0 = numVertices;
+    }
+  });
+  Object.defineProperty(MeshData_0.prototype, 'hasNormals', {
+    get: function () {
+      return this.hasNormals_d3n5ua$_0;
+    },
+    set: function (hasNormals) {
+      this.hasNormals_d3n5ua$_0 = hasNormals;
+    }
+  });
+  Object.defineProperty(MeshData_0.prototype, 'hasTexCoords', {
+    get: function () {
+      return this.hasTexCoords_2f31yx$_0;
+    },
+    set: function (hasTexCoords) {
+      this.hasTexCoords_2f31yx$_0 = hasTexCoords;
+    }
+  });
+  Object.defineProperty(MeshData_0.prototype, 'hasColors', {
+    get: function () {
+      return this.hasColors_xn17wm$_0;
+    },
+    set: function (hasColors) {
+      this.hasColors_xn17wm$_0 = hasColors;
+    }
+  });
+  Object.defineProperty(MeshData_0.prototype, 'hasTangents', {
+    get: function () {
+      return this.hasTangents_p4qxco$_0;
+    },
+    set: function (hasTangents) {
+      this.hasTangents_p4qxco$_0 = hasTangents;
+    }
+  });
   function MeshData$Companion() {
     MeshData$Companion_instance = this;
+    this.ATTRIB_POSITIONS = 'positions';
+    this.ATTRIB_NORMALS = 'normals';
+    this.ATTRIB_TEXTURE_COORDS = 'textureCoords';
+    this.ATTRIB_COLORS = 'colors';
+    this.ATTRIB_TANGENTS = 'tangents';
   }
   MeshData$Companion.prototype.serializer = function () {
     return _.de.fabmax.kool.util.serialization.MeshData.$serializer;
@@ -21253,20 +22182,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.serialClassDesc_qzcrd9$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.MeshData');
     this.serialClassDesc.addElement_61zpoe$('name');
     this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('triangles');
+    this.serialClassDesc.addElement_61zpoe$('primitiveType');
     this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('positions');
+    this.serialClassDesc.addElement_61zpoe$('indices');
     this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('normals');
+    this.serialClassDesc.addElement_61zpoe$('attributes');
     this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(4));
-    this.serialClassDesc.addElement_61zpoe$('uvs');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(5));
-    this.serialClassDesc.addElement_61zpoe$('colors');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(6));
     this.serialClassDesc.addElement_61zpoe$('armature');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(7));
+    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(5));
     this.serialClassDesc.addElement_61zpoe$('animations');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(8));
+    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(6));
     MeshData$$serializer_instance = this;
   }
   Object.defineProperty(MeshData$$serializer.prototype, 'serialClassDesc', {
@@ -21277,13 +22202,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MeshData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
     var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
     output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer), obj.triangles);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), obj.positions);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), obj.normals);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), obj.uvs);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), obj.colors);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 6, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.BoneData.$serializer), obj.armature);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 7, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.AnimationData.$serializer), obj.animations);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.util.serialization.PrimitiveType)), obj.primitiveType);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer), obj.indices);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.StringSerializer, _.de.fabmax.kool.util.serialization.AttributeList.$serializer), obj.attributes);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.BoneData.$serializer), obj.armature);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.AnimationData.$serializer), obj.animations);
     output.writeEnd_f6e2p$(this.serialClassDesc);
   };
   MeshData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
@@ -21294,9 +22217,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     , local2
     , local3
     , local4
-    , local5
-    , local6
-    , local7;
+    , local5;
     var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
     loopLabel: while (true) {
       index = input.readElement_f6e2p$(this.serialClassDesc);
@@ -21309,38 +22230,28 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.util.serialization.PrimitiveType))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.util.serialization.PrimitiveType)), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.StringSerializer, _.de.fabmax.kool.util.serialization.AttributeList.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.StringSerializer, _.de.fabmax.kool.util.serialization.AttributeList.$serializer), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), local4);
+          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.BoneData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.BoneData.$serializer), local4);
           bitMask0 |= 16;
           if (!readAll)
             break;
         case 5:
-          local5 = (bitMask0 & 32) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), local5);
+          local5 = (bitMask0 & 32) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.AnimationData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.AnimationData.$serializer), local5);
           bitMask0 |= 32;
-          if (!readAll)
-            break;
-        case 6:
-          local6 = (bitMask0 & 64) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 6, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.BoneData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 6, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.BoneData.$serializer), local6);
-          bitMask0 |= 64;
-          if (!readAll)
-            break;
-        case 7:
-          local7 = (bitMask0 & 128) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 7, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.AnimationData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 7, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.AnimationData.$serializer), local7);
-          bitMask0 |= 128;
           if (!readAll)
             break;
         case -1:
@@ -21349,7 +22260,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
     input.readEnd_f6e2p$(this.serialClassDesc);
-    return MeshData_init_0(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, null);
+    return MeshData_init_0(bitMask0, local0, local1, local2, local3, local4, local5, null);
   };
   MeshData$$serializer.$metadata$ = {
     kind: Kind_OBJECT,
@@ -21363,40 +22274,56 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return MeshData$$serializer_instance;
   }
-  function MeshData_init_0(seen, name, triangles, positions, normals, uvs, colors, armature, animations, serializationConstructorMarker) {
+  function MeshData_init_0(seen, name, primitiveType, indices, attributes, armature, animations, serializationConstructorMarker) {
+    var tmp$, tmp$_0;
     var $this = Object.create(_.de.fabmax.kool.util.serialization.MeshData.prototype);
     if ((seen & 1) === 0)
       throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('name');
     else
       $this.name = name;
     if ((seen & 2) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('triangles');
+      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('primitiveType');
     else
-      $this.triangles = triangles;
+      $this.primitiveType = primitiveType;
     if ((seen & 4) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('positions');
+      $this.indices = emptyList();
     else
-      $this.positions = positions;
+      $this.indices = indices;
     if ((seen & 8) === 0)
-      $this.normals = emptyList();
+      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('attributes');
     else
-      $this.normals = normals;
+      $this.attributes = attributes;
     if ((seen & 16) === 0)
-      $this.uvs = emptyList();
-    else
-      $this.uvs = uvs;
-    if ((seen & 32) === 0)
-      $this.colors = emptyList();
-    else
-      $this.colors = colors;
-    if ((seen & 64) === 0)
       $this.armature = emptyList();
     else
       $this.armature = armature;
-    if ((seen & 128) === 0)
+    if ((seen & 32) === 0)
       $this.animations = emptyList();
     else
       $this.animations = animations;
+    $this.numVertices_ugf8mp$_0 = 0;
+    $this.hasNormals_d3n5ua$_0 = false;
+    $this.hasTexCoords_2f31yx$_0 = false;
+    $this.hasColors_xn17wm$_0 = false;
+    $this.hasTangents_p4qxco$_0 = false;
+    tmp$ = $this.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_POSITIONS);
+    if (tmp$ == null) {
+      throw new KoolException('MeshData does not contain positions');
+    }
+    $this.numVertices = tmp$.size / 3 | 0;
+    $this.hasNormals = $this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_NORMALS);
+    $this.hasTexCoords = $this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_TEXTURE_COORDS);
+    $this.hasColors = $this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_COLORS);
+    $this.hasTangents = $this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_TANGENTS);
+    tmp$_0 = $this.attributes.entries.iterator();
+    while (tmp$_0.hasNext()) {
+      var tmp$_1 = tmp$_0.next();
+      var name_1 = tmp$_1.key;
+      var attrib_0 = tmp$_1.value;
+      if ((attrib_0.size / attrib_0.type.size | 0) !== $this.numVertices) {
+        throw new KoolException('Mesh attribute ' + name_1 + ' has wrong value count: ' + attrib_0.size + ' (should be ' + Kotlin.imul($this.numVertices, attrib_0.type.size) + ', type: ' + attrib_0.type + ')');
+      }
+    }
     return $this;
   }
   MeshData_0.$metadata$ = {
@@ -21408,46 +22335,212 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return this.name;
   };
   MeshData_0.prototype.component2 = function () {
-    return this.triangles;
+    return this.primitiveType;
   };
   MeshData_0.prototype.component3 = function () {
-    return this.positions;
+    return this.indices;
   };
   MeshData_0.prototype.component4 = function () {
-    return this.normals;
+    return this.attributes;
   };
   MeshData_0.prototype.component5 = function () {
-    return this.uvs;
-  };
-  MeshData_0.prototype.component6 = function () {
-    return this.colors;
-  };
-  MeshData_0.prototype.component7 = function () {
     return this.armature;
   };
-  MeshData_0.prototype.component8 = function () {
+  MeshData_0.prototype.component6 = function () {
     return this.animations;
   };
-  MeshData_0.prototype.copy_6syyd3$ = function (name, triangles, positions, normals, uvs, colors, armature, animations) {
-    return new MeshData_0(name === void 0 ? this.name : name, triangles === void 0 ? this.triangles : triangles, positions === void 0 ? this.positions : positions, normals === void 0 ? this.normals : normals, uvs === void 0 ? this.uvs : uvs, colors === void 0 ? this.colors : colors, armature === void 0 ? this.armature : armature, animations === void 0 ? this.animations : animations);
+  MeshData_0.prototype.copy_perg9x$ = function (name, primitiveType, indices, attributes, armature, animations) {
+    return new MeshData_0(name === void 0 ? this.name : name, primitiveType === void 0 ? this.primitiveType : primitiveType, indices === void 0 ? this.indices : indices, attributes === void 0 ? this.attributes : attributes, armature === void 0 ? this.armature : armature, animations === void 0 ? this.animations : animations);
   };
   MeshData_0.prototype.toString = function () {
-    return 'MeshData(name=' + Kotlin.toString(this.name) + (', triangles=' + Kotlin.toString(this.triangles)) + (', positions=' + Kotlin.toString(this.positions)) + (', normals=' + Kotlin.toString(this.normals)) + (', uvs=' + Kotlin.toString(this.uvs)) + (', colors=' + Kotlin.toString(this.colors)) + (', armature=' + Kotlin.toString(this.armature)) + (', animations=' + Kotlin.toString(this.animations)) + ')';
+    return 'MeshData(name=' + Kotlin.toString(this.name) + (', primitiveType=' + Kotlin.toString(this.primitiveType)) + (', indices=' + Kotlin.toString(this.indices)) + (', attributes=' + Kotlin.toString(this.attributes)) + (', armature=' + Kotlin.toString(this.armature)) + (', animations=' + Kotlin.toString(this.animations)) + ')';
   };
   MeshData_0.prototype.hashCode = function () {
     var result = 0;
     result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    result = result * 31 + Kotlin.hashCode(this.triangles) | 0;
-    result = result * 31 + Kotlin.hashCode(this.positions) | 0;
-    result = result * 31 + Kotlin.hashCode(this.normals) | 0;
-    result = result * 31 + Kotlin.hashCode(this.uvs) | 0;
-    result = result * 31 + Kotlin.hashCode(this.colors) | 0;
+    result = result * 31 + Kotlin.hashCode(this.primitiveType) | 0;
+    result = result * 31 + Kotlin.hashCode(this.indices) | 0;
+    result = result * 31 + Kotlin.hashCode(this.attributes) | 0;
     result = result * 31 + Kotlin.hashCode(this.armature) | 0;
     result = result * 31 + Kotlin.hashCode(this.animations) | 0;
     return result;
   };
   MeshData_0.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.triangles, other.triangles) && Kotlin.equals(this.positions, other.positions) && Kotlin.equals(this.normals, other.normals) && Kotlin.equals(this.uvs, other.uvs) && Kotlin.equals(this.colors, other.colors) && Kotlin.equals(this.armature, other.armature) && Kotlin.equals(this.animations, other.animations)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.primitiveType, other.primitiveType) && Kotlin.equals(this.indices, other.indices) && Kotlin.equals(this.attributes, other.attributes) && Kotlin.equals(this.armature, other.armature) && Kotlin.equals(this.animations, other.animations)))));
+  };
+  function PrimitiveType(name, ordinal) {
+    Enum.call(this);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function PrimitiveType_initFields() {
+    PrimitiveType_initFields = function () {
+    };
+    PrimitiveType$LINES_instance = new PrimitiveType('LINES', 0);
+    PrimitiveType$POINTS_instance = new PrimitiveType('POINTS', 1);
+    PrimitiveType$TRIANGLES_instance = new PrimitiveType('TRIANGLES', 2);
+  }
+  var PrimitiveType$LINES_instance;
+  function PrimitiveType$LINES_getInstance() {
+    PrimitiveType_initFields();
+    return PrimitiveType$LINES_instance;
+  }
+  var PrimitiveType$POINTS_instance;
+  function PrimitiveType$POINTS_getInstance() {
+    PrimitiveType_initFields();
+    return PrimitiveType$POINTS_instance;
+  }
+  var PrimitiveType$TRIANGLES_instance;
+  function PrimitiveType$TRIANGLES_getInstance() {
+    PrimitiveType_initFields();
+    return PrimitiveType$TRIANGLES_instance;
+  }
+  PrimitiveType.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PrimitiveType',
+    interfaces: [Enum]
+  };
+  function PrimitiveType$values() {
+    return [PrimitiveType$LINES_getInstance(), PrimitiveType$POINTS_getInstance(), PrimitiveType$TRIANGLES_getInstance()];
+  }
+  PrimitiveType.values = PrimitiveType$values;
+  function PrimitiveType$valueOf(name) {
+    switch (name) {
+      case 'LINES':
+        return PrimitiveType$LINES_getInstance();
+      case 'POINTS':
+        return PrimitiveType$POINTS_getInstance();
+      case 'TRIANGLES':
+        return PrimitiveType$TRIANGLES_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.util.serialization.PrimitiveType.' + name);
+    }
+  }
+  PrimitiveType.valueOf_61zpoe$ = PrimitiveType$valueOf;
+  function AttributeList(type, values) {
+    AttributeList$Companion_getInstance();
+    this.type = type;
+    this.values = values;
+    this.size = this.values.size;
+  }
+  AttributeList.prototype.get_za3lpa$ = function (i) {
+    return this.values.get_za3lpa$(i);
+  };
+  function AttributeList$Companion() {
+    AttributeList$Companion_instance = this;
+  }
+  AttributeList$Companion.prototype.serializer = function () {
+    return _.de.fabmax.kool.util.serialization.AttributeList.$serializer;
+  };
+  AttributeList$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var AttributeList$Companion_instance = null;
+  function AttributeList$Companion_getInstance() {
+    if (AttributeList$Companion_instance === null) {
+      new AttributeList$Companion();
+    }
+    return AttributeList$Companion_instance;
+  }
+  function AttributeList$$serializer() {
+    this.serialClassDesc_rr7bde$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.AttributeList');
+    this.serialClassDesc.addElement_61zpoe$('type');
+    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(1));
+    this.serialClassDesc.addElement_61zpoe$('values');
+    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(2));
+    AttributeList$$serializer_instance = this;
+  }
+  Object.defineProperty(AttributeList$$serializer.prototype, 'serialClassDesc', {
+    get: function () {
+      return this.serialClassDesc_rr7bde$_0;
+    }
+  });
+  AttributeList$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
+    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 0, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.shading.AttributeType)), obj.type);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), obj.values);
+    output.writeEnd_f6e2p$(this.serialClassDesc);
+  };
+  AttributeList$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+    var index, readAll = false;
+    var bitMask0 = 0;
+    var local0
+    , local1;
+    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    loopLabel: while (true) {
+      index = input.readElement_f6e2p$(this.serialClassDesc);
+      switch (index) {
+        case -2:
+          readAll = true;
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.shading.AttributeType))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 0, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.shading.AttributeType)), local0);
+          bitMask0 |= 1;
+          if (!readAll)
+            break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), local1);
+          bitMask0 |= 2;
+          if (!readAll)
+            break;
+        case -1:
+          break loopLabel;
+        default:throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException(index);
+      }
+    }
+    input.readEnd_f6e2p$(this.serialClassDesc);
+    return AttributeList_init(bitMask0, local0, local1, null);
+  };
+  AttributeList$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [KSerializer]
+  };
+  var AttributeList$$serializer_instance = null;
+  function AttributeList$$serializer_getInstance() {
+    if (AttributeList$$serializer_instance === null) {
+      new AttributeList$$serializer();
+    }
+    return AttributeList$$serializer_instance;
+  }
+  function AttributeList_init(seen, type, values, serializationConstructorMarker) {
+    var $this = Object.create(_.de.fabmax.kool.util.serialization.AttributeList.prototype);
+    if ((seen & 1) === 0)
+      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('type');
+    else
+      $this.type = type;
+    if ((seen & 2) === 0)
+      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('values');
+    else
+      $this.values = values;
+    $this.size = $this.values.size;
+    return $this;
+  }
+  AttributeList.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AttributeList',
+    interfaces: []
+  };
+  AttributeList.prototype.component1 = function () {
+    return this.type;
+  };
+  AttributeList.prototype.component2 = function () {
+    return this.values;
+  };
+  AttributeList.prototype.copy_j00qf3$ = function (type, values) {
+    return new AttributeList(type === void 0 ? this.type : type, values === void 0 ? this.values : values);
+  };
+  AttributeList.prototype.toString = function () {
+    return 'AttributeList(type=' + Kotlin.toString(this.type) + (', values=' + Kotlin.toString(this.values)) + ')';
+  };
+  AttributeList.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.type) | 0;
+    result = result * 31 + Kotlin.hashCode(this.values) | 0;
+    return result;
+  };
+  AttributeList.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.type, other.type) && Kotlin.equals(this.values, other.values)))));
   };
   function ShadowMap() {
   }
@@ -23780,8 +24873,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   var package$collision = package$physics.collision || (package$physics.collision = {});
   package$collision.BoxBoxCollision = BoxBoxCollision;
+  var package$broadphase = package$collision.broadphase || (package$collision.broadphase = {});
+  package$broadphase.BroadphaseInterface = BroadphaseInterface;
+  package$broadphase.BroadphaseProxy = BroadphaseProxy;
+  Object.defineProperty(Dbvt$DbvtNode, 'Companion', {
+    get: Dbvt$DbvtNode$Companion_getInstance
+  });
+  Dbvt.DbvtNode = Dbvt$DbvtNode;
+  Object.defineProperty(Dbvt, 'Companion', {
+    get: Dbvt$Companion_getInstance
+  });
+  package$broadphase.Dbvt = Dbvt;
+  package$broadphase.OverlappingPairCache = OverlappingPairCache;
   package$collision.Contact = Contact;
   package$collision.Contacts = Contacts;
+  var package$dispatch = package$collision.dispatch || (package$collision.dispatch = {});
+  package$dispatch.Dispatcher = Dispatcher;
   package$physics.CollisionWorld = CollisionWorld;
   var package$constraintSolver = package$physics.constraintSolver || (package$physics.constraintSolver = {});
   package$constraintSolver.ContactPoint = ContactPoint;
@@ -23789,7 +24896,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: ContactSolverInfo$Companion_getInstance
   });
   package$constraintSolver.ContactSolverInfo = ContactSolverInfo;
-  package$constraintSolver.PgsJacobiSolver = PgsJacobiSolver;
+  package$constraintSolver.SequentialImpulseConstraintSolver = SequentialImpulseConstraintSolver;
   Object.defineProperty(SolverBody, 'Companion', {
     get: SolverBody$Companion_getInstance
   });
@@ -24193,6 +25300,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   package$util.ObjectRecycler_init_9ce4rd$ = ObjectRecycler_init;
   package$util.ObjectRecycler = ObjectRecycler;
+  package$util.ObjectPool = ObjectPool;
   AutoRecycler.Context = AutoRecycler$Context;
   package$util.AutoRecycler = AutoRecycler;
   package$util.PerfTimer = PerfTimer;
@@ -24249,6 +25357,23 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: MeshData$$serializer_getInstance
   });
   package$serialization.MeshData = MeshData_0;
+  Object.defineProperty(PrimitiveType, 'LINES', {
+    get: PrimitiveType$LINES_getInstance
+  });
+  Object.defineProperty(PrimitiveType, 'POINTS', {
+    get: PrimitiveType$POINTS_getInstance
+  });
+  Object.defineProperty(PrimitiveType, 'TRIANGLES', {
+    get: PrimitiveType$TRIANGLES_getInstance
+  });
+  package$serialization.PrimitiveType = PrimitiveType;
+  Object.defineProperty(AttributeList, 'Companion', {
+    get: AttributeList$Companion_getInstance
+  });
+  Object.defineProperty(AttributeList, '$serializer', {
+    get: AttributeList$$serializer_getInstance
+  });
+  package$serialization.AttributeList = AttributeList;
   package$util.ShadowMap = ShadowMap;
   Object.defineProperty(SimpleShadowMap, 'Companion', {
     get: SimpleShadowMap$Companion_getInstance
@@ -24333,6 +25458,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Vec4KeyData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   BoneData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   MeshData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  AttributeList$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   GL_ACTIVE_TEXTURE = 34016;
   GL_DEPTH_BUFFER_BIT = 256;
   GL_STENCIL_BUFFER_BIT = 1024;

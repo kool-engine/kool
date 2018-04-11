@@ -9,17 +9,18 @@ import kotlinx.coroutines.experimental.launch
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 
-class JvmAssetManager : AssetManager() {
+class JvmAssetManager internal constructor(override var assetsBaseDir: String) : AssetManager() {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     override fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
         launch {
+            val path = "$assetsBaseDir/$assetPath"
             // try to load asset from resources
-            var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
+            var inStream = ClassLoader.getSystemResourceAsStream(path)
             if (inStream == null) {
                 // if asset wasn't found in resources try to load it from file system
-                inStream = FileInputStream(assetPath)
+                inStream = FileInputStream(path)
             }
 
             inStream.use {
@@ -34,7 +35,7 @@ class JvmAssetManager : AssetManager() {
         }
     }
 
-    override fun loadTextureAsset(assetPath: String): TextureData  = ImageTextureData(assetPath)
+    override fun loadTextureAsset(assetPath: String): TextureData  = ImageTextureData("$assetsBaseDir/$assetPath")
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
 

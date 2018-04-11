@@ -61,7 +61,7 @@ internal object JsImpl {
 
     fun createContext(props: JsContext.InitProps): KoolContext {
         if (ctx != null) {
-            throw KoolException("Context was already creates (multi-context is currently not supported in js")
+            throw KoolException("Context was already created (multi-context is currently not supported in js")
         }
         ctx = JsContext(props)
         return ctx!!

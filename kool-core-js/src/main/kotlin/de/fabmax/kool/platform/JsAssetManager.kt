@@ -11,13 +11,13 @@ import org.w3c.xhr.ARRAYBUFFER
 import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 
-class JsAssetManager : AssetManager() {
+class JsAssetManager internal constructor(override var assetsBaseDir: String)  : AssetManager() {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     override fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
         val req = XMLHttpRequest()
-        req.open("GET", assetPath)
+        req.open("GET", "$assetsBaseDir/$assetPath")
         req.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
         req.onload = { evt ->
             val array = Uint8Array(req.response as ArrayBuffer)
@@ -34,7 +34,7 @@ class JsAssetManager : AssetManager() {
         val img = js("new Image();")
         val data = ImageTextureData(img)
         img.crossOrigin = ""
-        img.src = assetPath
+        img.src = "$assetsBaseDir/$assetPath"
         return data
     }
 

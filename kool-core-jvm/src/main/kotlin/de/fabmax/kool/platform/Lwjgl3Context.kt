@@ -24,7 +24,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
     override val glCapabilities: GlCapabilities
 
-    override val assetMgr = JvmAssetManager()
+    override val assetMgr = JvmAssetManager(props.assetsBaseDir)
 
     val window: Long
 
@@ -198,6 +198,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var share = 0L
 
         var msaaSamples = 8
+
+        var assetsBaseDir = "./assets"
 
         init {
             init()

@@ -323,6 +323,13 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         }
     }
 
+    fun addIndices(indices: List<Int>) {
+        synchronized(vertexList) {
+            vertexList.addIndices(indices)
+            isSyncRequired = true
+        }
+    }
+
     fun clear() {
         synchronized(vertexList) {
             vertexList.clear()
