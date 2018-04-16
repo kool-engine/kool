@@ -84,6 +84,12 @@ open class Scene(name: String? = null) : Group(name) {
         postRender(ctx)
     }
 
+    fun dispose(disposable: Disposable) {
+        synchronized(disposables) {
+            disposables += disposable
+        }
+    }
+
     override fun dispose(ctx: KoolContext) {
         synchronized(disposables) {
             disposables.forEach { it.dispose(ctx) }

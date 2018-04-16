@@ -21,15 +21,15 @@ data class MeshData(
     @SerialId(2) val primitiveType: PrimitiveType,
 
     /**
-     * List of vertex indices. If empty each n vertices form a primitive with n = 1 (points), 2 (lines), 3 (triangles)
-     */
-    @SerialId(3) @Optional val indices: List<Int> = emptyList(),
-
-    /**
      * Map of vertex attributes. Must at least contain [ATTRIB_POSITIONS]. Can also contain custom attributes with
      * arbitrary names.
      */
-    @SerialId(4) val attributes: Map<String, AttributeList>,
+    @SerialId(3) val attributes: Map<String, AttributeList>,
+
+    /**
+     * List of vertex indices. If empty each n vertices form a primitive with n = 1 (points), 2 (lines), 3 (triangles)
+     */
+    @SerialId(4) @Optional val indices: List<Int> = emptyList(),
 
     /**
      * List of bones forming the mesh armature. Might be empty.
@@ -92,7 +92,7 @@ data class AttributeList(
         /**
          * Attribute values. There are [type].size values per vertex
          */
-        @SerialId(2) val values: List<Float>
+        @SerialId(2) val values: MutableList<Float>
 ) {
     @Transient val size: Int = values.size
 

@@ -33,6 +33,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     protected val globalRightMut = MutableVec3f()
     protected val globalLookDirMut = MutableVec3f()
 
+    protected val proj = Mat4f()
     protected val view = Mat4f()
     protected val invView = Mat4f()
     protected val mvp = Mat4f()
@@ -42,36 +43,37 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
 
-    fun updateCamera(ctx: KoolContext) {
+    open fun updateCamera(ctx: KoolContext) {
         aspectRatio = ctx.viewport.aspectRatio
 
-        updateViewMatrix(ctx)
-        updateProjectionMatrix(ctx)
+        updateViewMatrix()
+        updateProjectionMatrix()
 
+        ctx.mvpState.viewMatrix.set(view)
+        ctx.mvpState.projMatrix.set(proj)
         ctx.mvpState.update(ctx)
+
         mvp.set(ctx.mvpState.mvpMatrix)
         mvp.invert(invMvp)
     }
 
-    protected open fun updateViewMatrix(ctx: KoolContext) {
+    protected open fun updateViewMatrix() {
         toGlobalCoords(globalPosMut.set(position))
         toGlobalCoords(globalLookAtMut.set(lookAt))
         toGlobalCoords(globalUpMut.set(up), 0f).norm()
 
         globalLookDirMut.set(globalLookAtMut).subtract(globalPosMut)
         globalRange = globalLookDirMut.length()
-        //globalLookDirMut.scale(1f / globalRange)
-        globalLookDirMut.norm()
+        globalLookDirMut.scale(1f / globalRange)
 
         globalLookDirMut.cross(globalUpMut, globalRightMut).norm()
         globalRightMut.cross(globalLookDirMut, globalUpMut).norm()
 
         view.setLookAt(globalPosMut, globalLookAtMut, globalUpMut)
         view.invert(invView)
-        ctx.mvpState.viewMatrix.set(view)
     }
 
-    abstract protected fun updateProjectionMatrix(ctx: KoolContext)
+    abstract protected fun updateProjectionMatrix()
 
     fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, ctx: KoolContext): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.x, ptr.y, ctx)
@@ -100,7 +102,14 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     abstract fun computeFrustumPlane(z: Float, result: FrustumPlane)
 
-    abstract fun isInFrustum(node: Node): Boolean
+    /**
+     * Tests if the node is inside the view frustum of this camera. For performance reasons the node's bounding sphere
+     * is used instead of the bounding box. [Node.globalCenter] and [Node.globalRadius] properties of the tested node
+     * must be valid.
+     */
+    open fun isInFrustum(node: Node): Boolean = isInFrustum(node.globalCenter, node.globalRadius)
+
+    abstract fun isInFrustum(globalCenter: Vec3f, globalRadius: Float): Boolean
 
     fun project(world: Vec3f, result: MutableVec3f): Boolean {
         tmpVec4.set(world.x, world.y, world.z, 1f)
@@ -136,7 +145,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 }
 
-class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
+open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     var left = -10.0f
     var right = 10.0f
     var bottom = -10.0f
@@ -148,7 +157,6 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     var isKeepAspectRatio = true
 
     private val tmpNodeCenter = MutableVec3f()
-    private val tmpNodeExtent = MutableVec3f()
 
     fun setCentered(height: Float, near: Float, far: Float) {
         top = height * 0.5f
@@ -159,12 +167,7 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         this.far = far
     }
 
-    override fun updateViewMatrix(ctx: KoolContext) {
-        super.updateViewMatrix(ctx)
-        globalLookDir
-    }
-
-    override fun updateProjectionMatrix(ctx: KoolContext) {
+    override fun updateCamera(ctx: KoolContext) {
         if (isClipToViewport) {
             left = 0f
             right = ctx.viewport.width.toFloat()
@@ -173,13 +176,17 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
 
         } else if (isKeepAspectRatio) {
             val h = top - bottom
-            val w = aspectRatio * h
+            val w = ctx.viewport.aspectRatio * h
             val xCenter = left + (right - left) * 0.5f
             left = xCenter - w * 0.5f
             right = xCenter + w * 0.5f
         }
+        super.updateCamera(ctx)
+    }
+
+    override fun updateProjectionMatrix() {
         if (left != right && bottom != top && near != far) {
-            ctx.mvpState.projMatrix.setOrthographic(left, right, bottom, top, near, far)
+            proj.setOrthographic(left, right, bottom, top, near, far)
         }
     }
 
@@ -192,28 +199,27 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     }
 
     /**
-     * Tests whether a node intersects this camera's view frustum.
+     * Tests whether a bounding sphere intersects this camera's view frustum.
      * Similar approach as for perspective camera, but even simpler because no perspective is involved.
      */
-    override fun isInFrustum(node: Node): Boolean {
-        val nodeRadius = node.globalRadius
-        tmpNodeCenter.set(node.globalCenter)
+    override fun isInFrustum(globalCenter: Vec3f, globalRadius: Float): Boolean {
+        tmpNodeCenter.set(globalCenter)
         tmpNodeCenter.subtract(globalPos)
 
         val x = tmpNodeCenter.dot(globalRight)
-        if (x > right + nodeRadius || x < left - nodeRadius) {
+        if (x > right + globalRadius || x < left - globalRadius) {
             // node's bounding sphere is either left or right of frustum
             return false
         }
 
         val y = tmpNodeCenter.dot(globalUp)
-        if (y > top + nodeRadius || y < bottom - nodeRadius) {
+        if (y > top + globalRadius || y < bottom - globalRadius) {
             // node's bounding sphere is either above or below frustum
             return false
         }
 
         val z = tmpNodeCenter.dot(globalLookDir)
-        if (z > far + nodeRadius || z < near - nodeRadius) {
+        if (z > far + globalRadius || z < near - globalRadius) {
             // node's bounding sphere is either in front of near or behind far plane
             return false
         }
@@ -221,7 +227,7 @@ class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     }
 }
 
-class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
+open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     var clipNear = 0.1f
     var clipFar = 100.0f
 
@@ -237,8 +243,9 @@ class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
     private val tmpNodeExtent = MutableVec3f()
 
-    override fun updateProjectionMatrix(ctx: KoolContext) {
-        ctx.mvpState.projMatrix.setPerspective(fovy, aspectRatio, clipNear, clipFar)
+    override fun updateProjectionMatrix() {
+        //ctx.mvpState.projMatrix.setPerspective(fovy, aspectRatio, clipNear, clipFar)
+        proj.setPerspective(fovy, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling
         val angY = fovy.toRad() / 2f
@@ -263,23 +270,21 @@ class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     }
 
     /**
-     * Tests whether a node intersects this camera's view frustum. For performance reasons the node's bounding sphere
-     * is used instead of the bounding box.
+     * Tests whether a bounding sphere intersects this camera's view frustum.
      * Implements the radar approach from http://www.lighthouse3d.com/tutorials/view-frustum-culling/
      */
-    override fun isInFrustum(node: Node): Boolean {
-        val nodeRadius = node.globalRadius
-        tmpNodeCenter.set(node.globalCenter)
+    override fun isInFrustum(globalCenter: Vec3f, globalRadius: Float): Boolean {
+        tmpNodeCenter.set(globalCenter)
         tmpNodeCenter.subtract(globalPos)
 
         var z = tmpNodeCenter.dot(globalLookDir)
-        if (z > clipFar + nodeRadius || z < clipNear - nodeRadius) {
+        if (z > clipFar + globalRadius || z < clipNear - globalRadius) {
             // node's bounding sphere is either in front of near or behind far plane
             return false
         }
 
         val y = tmpNodeCenter.dot(globalUp)
-        var d = nodeRadius * speherFacY
+        var d = globalRadius * speherFacY
         z *= tangY
         if (y > z + d || y < -z - d) {
             // node's bounding sphere is either above or below view frustum
@@ -287,7 +292,7 @@ class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
         }
 
         val x = tmpNodeCenter.dot(globalRight)
-        d = nodeRadius * sphereFacX
+        d = globalRadius * sphereFacX
         z *= aspectRatio
         if (x > z + d || x < -z - d) {
             // node's bounding sphere is either left or right of view frustum

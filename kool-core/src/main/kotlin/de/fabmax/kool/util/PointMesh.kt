@@ -14,7 +14,7 @@ fun pointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
     return PointMesh(name = name).apply(block)
 }
 
-class PointMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
+open class PointMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
         Mesh(data, name) {
     init {
         primitiveType = GL_POINTS

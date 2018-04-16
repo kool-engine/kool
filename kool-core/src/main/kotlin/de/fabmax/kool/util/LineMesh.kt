@@ -43,6 +43,46 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
         return idx0
     }
 
+    fun addBoundingBox(aabb: BoundingBox, color: Color) {
+        meshData.batchUpdate {
+            val i0 = addVertex {
+                this.position.set(aabb.min.x, aabb.min.y, aabb.min.z)
+                this.color.set(color)
+            }
+            val i1 = addVertex {
+                this.position.set(aabb.min.x, aabb.min.y, aabb.max.z)
+                this.color.set(color)
+            }
+            val i2 = addVertex {
+                this.position.set(aabb.min.x, aabb.max.y, aabb.max.z)
+                this.color.set(color)
+            }
+            val i3 = addVertex {
+                this.position.set(aabb.min.x, aabb.max.y, aabb.min.z)
+                this.color.set(color)
+            }
+            val i4 = addVertex {
+                this.position.set(aabb.max.x, aabb.min.y, aabb.min.z)
+                this.color.set(color)
+            }
+            val i5 = addVertex {
+                this.position.set(aabb.max.x, aabb.min.y, aabb.max.z)
+                this.color.set(color)
+            }
+            val i6 = addVertex {
+                this.position.set(aabb.max.x, aabb.max.y, aabb.max.z)
+                this.color.set(color)
+            }
+            val i7 = addVertex {
+                this.position.set(aabb.max.x, aabb.max.y, aabb.min.z)
+                this.color.set(color)
+            }
+            addIndices(i0, i1, i1, i2, i2, i3, i3, i0,
+                    i4, i5, i5, i6, i6, i7, i7, i4,
+                    i0, i4, i1, i5, i2, i6, i3, i7)
+        }
+    }
+
     override fun render(ctx: KoolContext) {
         ctx.pushAttributes()
         ctx.lineWidth = lineWidth

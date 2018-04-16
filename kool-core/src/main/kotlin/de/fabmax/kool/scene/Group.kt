@@ -19,6 +19,8 @@ open class Group(name: String? = null) : Node(name) {
     protected val children: MutableList<Node> = mutableListOf()
     protected val tmpBounds = BoundingBox()
 
+    val size: Int get() = children.size
+
     override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
         super.onSceneChanged(oldScene, newScene)
         for (i in children.indices) {

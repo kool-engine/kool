@@ -1,6 +1,7 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.ObjectPool
 import kotlin.math.*
 
 /**
@@ -11,8 +12,9 @@ fun <T: Vec3f> pointTree(items: List<T>, bucketSz: Int = 20): KdTree<T> {
     return KdTree(items, KdTree.VEC3F_HELPER, bucketSz)
 }
 
-interface KdTreeTraverser<T> {
+interface KdTreeTraverser<T: Any> {
     fun onStart(tree: KdTree<T>) { }
+    fun onFinish(tree: KdTree<T>) { }
 
     fun traversalOrder(tree: KdTree<T>, left: KdTree<T>.Node, right: KdTree<T>.Node): Int {
         return KdTree.TRAV_NO_PREFERENCE
@@ -21,8 +23,7 @@ interface KdTreeTraverser<T> {
     fun traverseLeaf(tree: KdTree<T>, leaf: KdTree<T>.Node)
 }
 
-class InRadiusTraverser<T>() : KdTreeTraverser<T> {
-
+class InRadiusTraverser<T: Any>() : KdTreeTraverser<T> {
     val result: MutableList<T> = mutableListOf()
     val center = MutableVec3f()
     var radius = 1f
@@ -33,8 +34,7 @@ class InRadiusTraverser<T>() : KdTreeTraverser<T> {
     private var radiusSqr = 1f
 
     constructor(center: Vec3f, radius: Float) : this() {
-        this.center.set(center)
-        this.radius = radius
+        reset(center, radius)
     }
 
     fun reset(center: Vec3f, radius: Float): InRadiusTraverser<T> {
@@ -51,14 +51,12 @@ class InRadiusTraverser<T>() : KdTreeTraverser<T> {
         val dLeft = left.bounds.pointDistanceSqr(center)
         val dRight = right.bounds.pointDistanceSqr(center)
 
-        if (dLeft > radiusSqr && dRight > radiusSqr) {
-            return KdTree.TRAV_NONE
-        } else if (dLeft > radiusSqr) {
-            return KdTree.TRAV_RIGHT_ONLY
-        } else if (dRight > radiusSqr) {
-            return KdTree.TRAV_LEFT_ONLY
+        return when {
+            dLeft > radiusSqr && dRight > radiusSqr -> KdTree.TRAV_NONE
+            dLeft > radiusSqr -> KdTree.TRAV_RIGHT_ONLY
+            dRight > radiusSqr -> KdTree.TRAV_LEFT_ONLY
+            else -> KdTree.TRAV_NO_PREFERENCE
         }
-        return KdTree.TRAV_NO_PREFERENCE
     }
 
     override fun traverseLeaf(tree: KdTree<T>, leaf: KdTree<T>.Node) {
@@ -74,6 +72,107 @@ class InRadiusTraverser<T>() : KdTreeTraverser<T> {
     }
 }
 
+class KNearestTraverser<T: Any>() : KdTreeTraverser<T> {
+    val result = mutableListOf<T>()
+    val center = MutableVec3f()
+    var k = 10
+    var maxRadius = 1e9f
+        set(value) {
+            field = value
+            radiusSqr = value * value
+        }
+    private var radiusSqr = 1e18f
+    private var maxDSqr = 0f
+
+    private val itemRecycler = ObjectPool { Item<T>() }
+    private val items = mutableListOf<Item<T>>()
+
+    constructor(center: Vec3f, k: Int, maxRadius: Float = 1e9f) : this() {
+        reset(center, k, maxRadius)
+    }
+
+    fun reset(center: Vec3f, k: Int, maxRadius: Float = 1e9f): KNearestTraverser<T> {
+        this.center.set(center)
+        this.k = k
+        this.maxRadius = maxRadius
+        return this
+    }
+
+    override fun onStart(tree: KdTree<T>) {
+        result.clear()
+        maxDSqr = 0f
+    }
+
+    override fun onFinish(tree: KdTree<T>) {
+        for (i in items.indices) {
+            result += items[i].item
+        }
+        items.clear()
+        itemRecycler.recycleAll()
+        maxRadius = sqrt(maxDSqr)
+    }
+
+    override fun traversalOrder(tree: KdTree<T>, left: KdTree<T>.Node, right: KdTree<T>.Node): Int {
+        val dLeft = left.bounds.pointDistanceSqr(center)
+        val dRight = right.bounds.pointDistanceSqr(center)
+
+        return when {
+            dLeft > maxDSqr && dRight > maxDSqr -> KdTree.TRAV_NONE
+            dLeft < dRight -> KdTree.TRAV_LEFT_FIRST
+            else -> KdTree.TRAV_RIGHT_FIRST
+        }
+    }
+
+    override fun traverseLeaf(tree: KdTree<T>, leaf: KdTree<T>.Node) {
+        for (i in leaf.indices) {
+            val it = tree.items[i]
+            val dx = tree.helper.getX(it) - center.x
+            val dy = tree.helper.getY(it) - center.y
+            val dz = tree.helper.getZ(it) - center.z
+            val dSqr = dx*dx + dy*dy + dz*dz
+            if (dSqr < radiusSqr && (items.size < k || dSqr < maxDSqr)) {
+                insert(tree.items[i], dSqr)
+            }
+        }
+    }
+
+    private fun insert(value: T, dSqr: Float) {
+        if (dSqr >= maxDSqr) {
+            if (items.size < k) {
+                items += itemRecycler.get().set(value, dSqr)
+                maxDSqr = dSqr
+            } else {
+                return
+            }
+        } else {
+            // fixme: not very efficient, priority queue would be better but small k should be find
+            items += itemRecycler.get().set(value, dSqr)
+            for (i in items.lastIndex downTo 1) {
+                if (items[i].dSqr < items[i-1].dSqr) {
+                    items[i] = items[i-1].also { items[i-1] = items[i] }
+                } else {
+                    break
+                }
+            }
+            if (items.size > k) {
+                items.removeAt(items.lastIndex)
+                maxDSqr = items.last().dSqr
+            }
+        }
+    }
+
+    private class Item<T: Any> {
+        lateinit var item: T
+        var dSqr: Float = 0f
+
+        fun set(item: T, dSqr: Float): Item<T> {
+            this.item = item
+            this.dSqr = dSqr
+            return this
+        }
+    }
+}
+
 interface TreeHelper<in T> {
     fun getX(elem: T): Float
     fun getY(elem: T): Float
@@ -83,7 +182,7 @@ interface TreeHelper<in T> {
     fun getSzZ(elem: T): Float = 0f
 }
 
-class KdTree<T>(items: List<T>,
+class KdTree<T: Any>(items: List<T>,
                 val helper: TreeHelper<T>,
                 bucketSz: Int = 20) {
 
@@ -119,6 +218,7 @@ class KdTree<T>(items: List<T>,
     fun traverse(traverser: KdTreeTraverser<T>) {
         traverser.onStart(this)
         root.traverse(traverser)
+        traverser.onFinish(this)
     }
 
     inner class Node(val indices: IntRange, val depth: Int, bucketSz: Int) {

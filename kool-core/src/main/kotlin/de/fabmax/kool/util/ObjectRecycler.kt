@@ -20,7 +20,7 @@ open class ObjectRecycler<T: Any>(private val maxSize: Int, private val factory:
      */
     open fun get(): T =
         if (recyclingStack.isNotEmpty()) {
-            recyclingStack.removeAt(recyclingStack.size - 1)
+            recyclingStack.removeAt(recyclingStack.lastIndex)
         } else {
             factory()
         }
@@ -40,6 +40,33 @@ open class ObjectRecycler<T: Any>(private val maxSize: Int, private val factory:
 
     companion object {
         const val DEFAULT_MAX_SIZE = 10000
+    }
+}
+
+class ObjectPool<T: Any>(factory: () -> T) : ObjectRecycler<T>(factory) {
+    private val liveObjects = mutableListOf<T>()
+
+    val size: Int
+        get() = liveObjects.size
+
+    operator fun get(index: Int): T = liveObjects[index]
+
+    override fun get(): T {
+        val obj = super.get()
+        liveObjects += obj
+        return obj
+    }
+
+    override fun recycle(obj: T): ObjectRecycler<T> {
+        liveObjects -= obj
+        return super.recycle(obj)
+    }
+
+    fun recycleAll() {
+        for (i in liveObjects.indices) {
+            super.recycle(liveObjects[i])
+        }
+        liveObjects.clear()
     }
 }
 

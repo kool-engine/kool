@@ -99,9 +99,9 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         get() = meshData.generator
         set(value) { meshData.generator = value }
 
-    open var shader: Shader? = null
-    open var primitiveType = GL_TRIANGLES
-    open var cullMethod = CullMethod.DEFAULT
+    var shader: Shader? = null
+    var primitiveType = GL_TRIANGLES
+    var cullMethod = CullMethod.DEFAULT
 
     override val bounds: BoundingBox
         get() = meshData.bounds

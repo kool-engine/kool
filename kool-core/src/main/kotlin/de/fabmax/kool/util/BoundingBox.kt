@@ -1,5 +1,6 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
@@ -29,7 +30,9 @@ class BoundingBox() {
     var isBatchUpdate = false
         set(value) {
             field = value
-            updateSizeAndCenter()
+            if (!value) {
+                updateSizeAndCenter()
+            }
         }
 
     constructor(min: Vec3f, max: Vec3f): this() {
@@ -67,67 +70,121 @@ class BoundingBox() {
         isBatchUpdate = wasBatchUpdate
     }
 
-    fun isEqual(other: BoundingBox): Boolean {
+    fun isFuzzyEqual(other: BoundingBox): Boolean {
         return isEmpty == other.isEmpty && min.isFuzzyEqual(other.min) && max.isFuzzyEqual(other.max)
     }
 
-    fun clear() {
+    fun clear(): BoundingBox {
         isEmpty = true
         mutMin.set(Vec3f.ZERO)
         mutMax.set(Vec3f.ZERO)
         updateSizeAndCenter()
+        return this
     }
 
-    fun add(point: Vec3f) {
+    fun add(point: Vec3f): BoundingBox {
         addPoint(point)
         updateSizeAndCenter()
+        return this
     }
 
-    fun add(points: List<Vec3f>) {
+    fun add(points: List<Vec3f>): BoundingBox {
         add(points, points.indices)
+        return this
     }
 
-    fun add(points: List<Vec3f>, range: IntRange) {
+    fun add(points: List<Vec3f>, range: IntRange): BoundingBox {
         for (i in range) {
             addPoint(points[i])
         }
         updateSizeAndCenter()
+        return this
     }
 
-    fun add(aabb: BoundingBox) {
+    fun add(aabb: BoundingBox): BoundingBox {
         if (!aabb.isEmpty) {
             addPoint(aabb.min)
             addPoint(aabb.max)
             updateSizeAndCenter()
         }
+        return this
     }
 
-    fun set(other: BoundingBox) {
+    fun expand(e: Vec3f): BoundingBox {
+        if (isEmpty) {
+            throw KoolException("Empty BoundingBox cannot be expanded")
+        }
+        mutMin -= e
+        mutMax += e
+        updateSizeAndCenter()
+        return this
+    }
+
+    fun signedExpand(e: Vec3f): BoundingBox {
+        if (isEmpty) {
+            throw KoolException("Empty BoundingBox cannot be expanded")
+        }
+        if (e.x > 0) mutMax.x += e.x else mutMin.x += e.x
+        if (e.y > 0) mutMax.y += e.y else mutMin.y += e.y
+        if (e.z > 0) mutMax.z += e.z else mutMin.z += e.z
+        updateSizeAndCenter()
+        return this
+    }
+
+    fun set(other: BoundingBox): BoundingBox {
         mutMin.set(other.min)
         mutMax.set(other.max)
         mutSize.set(other.size)
         mutCenter.set(other.center)
         isEmpty = other.isEmpty
+        return this
     }
 
-    fun set(min: Vec3f, max: Vec3f) {
+    fun set(min: Vec3f, max: Vec3f): BoundingBox {
         isEmpty = false
         mutMin.set(min)
         mutMax.set(max)
         updateSizeAndCenter()
+        return this
     }
 
-    fun set(minX: Float, minY: Float, minZ: Float, maxX: Float, maxY: Float, maxZ: Float) {
+    fun set(minX: Float, minY: Float, minZ: Float, maxX: Float, maxY: Float, maxZ: Float): BoundingBox {
         isEmpty = false
         mutMin.set(minX, minY, minZ)
         mutMax.set(maxX, maxY, maxZ)
         updateSizeAndCenter()
+        return this
+    }
+
+    fun setMerged(aabb1: BoundingBox, aabb2: BoundingBox): BoundingBox {
+        // manual if is faster than min() and max()
+        mutMin.x = if (aabb1.min.x < aabb2.min.x) { aabb1.min.x } else { aabb2.min.x }
+        mutMin.y = if (aabb1.min.y < aabb2.min.y) { aabb1.min.y } else { aabb2.min.y }
+        mutMin.z = if (aabb1.min.z < aabb2.min.z) { aabb1.min.z } else { aabb2.min.z }
+
+        mutMax.x = if (aabb1.max.x > aabb2.max.x) { aabb1.max.x } else { aabb2.max.x }
+        mutMax.y = if (aabb1.max.y > aabb2.max.y) { aabb1.max.y } else { aabb2.max.y }
+        mutMax.z = if (aabb1.max.z > aabb2.max.z) { aabb1.max.z } else { aabb2.max.z }
+
+        isEmpty = false
+        updateSizeAndCenter()
+        return this
     }
 
     fun isIncluding(point: Vec3f): Boolean {
         return point.x >= min.x && point.x <= max.x &&
                 point.y >= min.y && point.y <= max.y &&
                 point.z >= min.z && point.z <= max.z
+    }
+
+    fun isIncluding(aabb: BoundingBox): Boolean {
+        return isIncluding(aabb.min) && isIncluding(aabb.max)
+    }
+
+    fun isIntersecting(aabb: BoundingBox): Boolean {
+        return min.x <= aabb.max.x && max.x >= aabb.min.x &&
+                min.y <= aabb.max.y && max.y >= aabb.min.y &&
+                min.z <= aabb.max.z && max.z >= aabb.min.z
     }
 
     fun clampToBounds(point: MutableVec3f) {
@@ -288,5 +345,27 @@ class BoundingBox() {
         } else {
             "[min=$min, max=$max]"
         }
+    }
+
+    /**
+     * Checks aabb components for equality (using '==' operator). For better numeric stability consider using
+     * [isFuzzyEqual].
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is BoundingBox) return false
+
+        if (isEmpty != other.isEmpty) return false
+        if (min != other.min) return false
+        if (max != other.max) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = isEmpty.hashCode()
+        result = 31 * result + min.hashCode()
+        result = 31 * result + max.hashCode()
+        return result
     }
 }

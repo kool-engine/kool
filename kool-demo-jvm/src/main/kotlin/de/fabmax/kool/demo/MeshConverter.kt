@@ -6,8 +6,8 @@ import java.io.FileOutputStream
 
 
 fun main(args: Array<String>) {
-    val meshes = MeshConverter.convertMeshes("player.fbx")
-    FileOutputStream("player.kmf").use { out ->
+    val meshes = MeshConverter.convertMeshes("docs/assets/player.fbx")
+    FileOutputStream("docs/assets/player.kmf").use { out ->
         out.write(ProtoBuf.dump(meshes[0]))
     }
 }

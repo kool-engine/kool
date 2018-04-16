@@ -1,9 +1,5 @@
 apply plugin: 'kotlin-platform-jvm'
 
-sourceSets {
-    main.kotlin.srcDirs += "src/main/kotlin"
-}
-
 dependencies {
     expectedBy project(":kool-demo")
 

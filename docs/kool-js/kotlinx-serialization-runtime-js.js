@@ -22,11 +22,11 @@
   var Annotation = Kotlin.kotlin.Annotation;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
+  var RuntimeException_init = Kotlin.kotlin.RuntimeException_init_pdl1vj$;
   var RuntimeException = Kotlin.kotlin.RuntimeException;
   var Any = Object;
   var throwCCE = Kotlin.throwCCE;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
-  var equals = Kotlin.equals;
   var toBoxedChar = Kotlin.toBoxedChar;
   var unboxChar = Kotlin.unboxChar;
   var Unit = Kotlin.kotlin.Unit;
@@ -37,6 +37,7 @@
   var singleOrNull = Kotlin.kotlin.collections.singleOrNull_2p1efm$;
   var kotlin = Kotlin.kotlin;
   var getValue = Kotlin.kotlin.collections.getValue_t9ocha$;
+  var equals = Kotlin.equals;
   var toByte = Kotlin.toByte;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var contains = Kotlin.kotlin.ranges.contains_8sy4e8$;
@@ -44,9 +45,9 @@
   var toShort = Kotlin.toShort;
   var kotlin_js_internal_ShortCompanionObject = Kotlin.kotlin.js.internal.ShortCompanionObject;
   var kotlin_js_internal_IntCompanionObject = Kotlin.kotlin.js.internal.IntCompanionObject;
-  var IllegalArgumentException = Kotlin.kotlin.IllegalArgumentException;
+  var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init;
   var toChar = Kotlin.toChar;
-  var IllegalStateException = Kotlin.kotlin.IllegalStateException;
+  var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
   var asList = Kotlin.kotlin.collections.asList_us0mfu$;
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_mqih57$;
   var ArrayList = Kotlin.kotlin.collections.ArrayList;
@@ -67,6 +68,7 @@
   var Triple = Kotlin.kotlin.Triple;
   var toList = Kotlin.kotlin.collections.toList_7wnvza$;
   var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
+  var IllegalArgumentException_init_0 = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var CharRange = Kotlin.kotlin.ranges.CharRange;
   var StringBuilder_init = Kotlin.kotlin.text.StringBuilder_init_za3lpa$;
   var trimStart = Kotlin.kotlin.text.trimStart_wqw3xr$;
@@ -81,9 +83,10 @@
   var StringBuilder = Kotlin.kotlin.text.StringBuilder;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var single_0 = Kotlin.kotlin.collections.single_2p1efm$;
+  var Exception_init = Kotlin.kotlin.Exception_init_pdl1vj$;
   var Exception = Kotlin.kotlin.Exception;
-  var IndexOutOfBoundsException = Kotlin.kotlin.IndexOutOfBoundsException;
-  var NullPointerException = Kotlin.kotlin.NullPointerException;
+  var IndexOutOfBoundsException_init = Kotlin.kotlin.IndexOutOfBoundsException_init;
+  var NullPointerException_init = Kotlin.kotlin.NullPointerException_init;
   var toList_0 = Kotlin.kotlin.text.toList_gw00vp$;
   var toCharArray = Kotlin.kotlin.collections.toCharArray_rr68x$;
   var slice = Kotlin.kotlin.collections.slice_bq4su$;
@@ -562,7 +565,7 @@
     interfaces: []
   };
   function SerializationException(s) {
-    RuntimeException.call(this, s);
+    RuntimeException_init(s, this);
     this.name = 'SerializationException';
   }
   SerializationException.$metadata$ = {
@@ -747,17 +750,20 @@
     return this.updateNullableSerializableValue_2rkmol$(loader, desc, old);
   };
   KInput.prototype.updateSerializableValue_3jm06w$ = function (loader, desc, old) {
-    var tmp$, tmp$_0;
-    tmp$ = this.updateMode;
-    if (equals(tmp$, UpdateMode$BANNED_getInstance()))
-      throw new UpdateNotSupportedException(desc.name);
-    else if (equals(tmp$, UpdateMode$OVERWRITE_getInstance()))
-      tmp$_0 = this.readSerializableValue_rf0fz3$(loader);
-    else if (equals(tmp$, UpdateMode$UPDATE_getInstance()))
-      tmp$_0 = loader.update_qkk2oh$(this, old);
-    else
-      tmp$_0 = Kotlin.noWhenBranchMatched();
-    return tmp$_0;
+    var tmp$;
+    switch (this.updateMode.name) {
+      case 'BANNED':
+        throw new UpdateNotSupportedException(desc.name);
+      case 'OVERWRITE':
+        tmp$ = this.readSerializableValue_rf0fz3$(loader);
+        break;
+      case 'UPDATE':
+        tmp$ = loader.update_qkk2oh$(this, old);
+        break;
+      default:tmp$ = Kotlin.noWhenBranchMatched();
+        break;
+    }
+    return tmp$;
   };
   KInput.prototype.updateNullableSerializableValue_2rkmol$ = function (loader, desc, old) {
     var tmp$;
@@ -1859,8 +1865,8 @@
     var r = block();
     if (!this.flag_expvl5$_0) {
       this.popTag_c7udbg$_0();
-      this.flag_expvl5$_0 = false;
     }
+    this.flag_expvl5$_0 = false;
     return r;
   };
   Object.defineProperty(TaggedInput.prototype, 'currentTag', {
@@ -1963,6 +1969,9 @@
   });
   Mapper$OutMapper.prototype.writeTaggedValue_dpg7wc$ = function (tag, value) {
     this._map_0.put_xwzc9p$(tag, value);
+  };
+  Mapper$OutMapper.prototype.writeTaggedNull_11rb$ = function (tag) {
+    throw new SerializationException('null is not supported. use Mapper.mapNullable()/OutNullableMapper instead');
   };
   Mapper$OutMapper.$metadata$ = {
     kind: Kind_CLASS,
@@ -2128,17 +2137,22 @@
     this.encoder.startMap();
   };
   CBOR$CBORWriter.prototype.writeBegin_276rha$ = function (desc, typeParams) {
-    var tmp$, tmp$_0;
-    tmp$ = desc.kind;
-    if (equals(tmp$, KSerialClassKind$LIST_getInstance()) || equals(tmp$, KSerialClassKind$SET_getInstance()))
-      tmp$_0 = new CBOR$CBORListWriter(this.$outer, this.encoder);
-    else if (equals(tmp$, KSerialClassKind$MAP_getInstance()))
-      tmp$_0 = new CBOR$CBORMapWriter(this.$outer, this.encoder);
-    else if (equals(tmp$, KSerialClassKind$ENTRY_getInstance()))
-      tmp$_0 = new CBOR$CBOREntryWriter(this.$outer, this.encoder);
-    else
-      tmp$_0 = new CBOR$CBORWriter(this.$outer, this.encoder);
-    var writer = tmp$_0;
+    var tmp$;
+    switch (desc.kind.name) {
+      case 'LIST':
+      case 'SET':
+        tmp$ = new CBOR$CBORListWriter(this.$outer, this.encoder);
+        break;
+      case 'MAP':
+        tmp$ = new CBOR$CBORMapWriter(this.$outer, this.encoder);
+        break;
+      case 'ENTRY':
+        tmp$ = new CBOR$CBOREntryWriter(this.$outer, this.encoder);
+        break;
+      default:tmp$ = new CBOR$CBORWriter(this.$outer, this.encoder);
+        break;
+    }
+    var writer = tmp$;
     writer.writeBeginToken();
     return writer;
   };
@@ -2212,9 +2226,7 @@
   CBOR$CBOREncoder.prototype.encodeString_61zpoe$ = function (value) {
     var data = toUtf8Bytes(value);
     var header = this.composeNumber_0(Kotlin.Long.fromInt(data.length));
-    var $receiver = header[0];
-    var other = CBOR$Companion_getInstance().HEADER_STRING_0;
-    header[0] = Kotlin.toByte($receiver | other);
+    header[0] = toByte(header[0] | CBOR$Companion_getInstance().HEADER_STRING_0);
     this.output.write_fqrh44$(header);
     this.output.write_fqrh44$(data);
   };
@@ -2238,17 +2250,20 @@
       return ByteBuffer$Companion_getInstance().allocate_za3lpa$(3).put_s8j3t7$(toByte(25)).putShort_mq22fl$(toShort(value.toInt())).array();
     else if (contains(new IntRange(kotlin_js_internal_ShortCompanionObject.MAX_VALUE + 1, kotlin_js_internal_IntCompanionObject.MAX_VALUE), value))
       return ByteBuffer$Companion_getInstance().allocate_za3lpa$(5).put_s8j3t7$(toByte(26)).putInt_za3lpa$(value.toInt()).array();
-    else if ((new Kotlin.Long(-2147483648, 0)).rangeTo(new Kotlin.Long(-1, 2147483647)).contains_mef7kx$(value))
-      return ByteBuffer$Companion_getInstance().allocate_za3lpa$(9).put_s8j3t7$(toByte(27)).putLong_s8cxhz$(value).array();
-    else
-      throw new IllegalArgumentException();
+    else {
+      var tmp$, tmp$_0;
+      tmp$ = new Kotlin.Long(-2147483648, 0);
+      tmp$_0 = new Kotlin.Long(-1, 2147483647);
+      if (tmp$.lessThanOrEqual(value) && value.lessThanOrEqual(tmp$_0))
+        return ByteBuffer$Companion_getInstance().allocate_za3lpa$(9).put_s8j3t7$(toByte(27)).putLong_s8cxhz$(value).array();
+      else
+        throw IllegalArgumentException_init();
+    }
   };
   CBOR$CBOREncoder.prototype.composeNegative_0 = function (value) {
     var aVal = equals(value, new Kotlin.Long(0, -2147483648)) ? new Kotlin.Long(-1, 2147483647) : Kotlin.Long.fromInt(-1).subtract(value);
     var data = this.composePositive_0(aVal);
-    var $receiver = data[0];
-    var other = CBOR$Companion_getInstance().HEADER_NEGATIVE_0;
-    data[0] = Kotlin.toByte($receiver | other);
+    data[0] = toByte(data[0] | CBOR$Companion_getInstance().HEADER_NEGATIVE_0);
     return data;
   };
   CBOR$CBOREncoder.$metadata$ = {
@@ -2266,14 +2281,14 @@
   CBOR$CBOREntryReader.prototype.readEnd_f6e2p$ = function (desc) {
   };
   CBOR$CBOREntryReader.prototype.readElement_f6e2p$ = function (desc) {
-    var tmp$, tmp$_0;
-    tmp$_0 = (tmp$ = this.ind_0, this.ind_0 = tmp$ + 1 | 0, tmp$);
-    if (tmp$_0 === 0)
-      return 0;
-    else if (tmp$_0 === 1)
-      return 1;
-    else
-      return KInput$Companion_getInstance().READ_DONE;
+    var tmp$;
+    switch (tmp$ = this.ind_0, this.ind_0 = tmp$ + 1 | 0, tmp$) {
+      case 0:
+        return 0;
+      case 1:
+        return 1;
+      default:return KInput$Companion_getInstance().READ_DONE;
+    }
   };
   CBOR$CBOREntryReader.$metadata$ = {
     kind: Kind_CLASS,
@@ -2333,17 +2348,22 @@
     this.decoder.startMap();
   };
   CBOR$CBORReader.prototype.readBegin_276rha$ = function (desc, typeParams) {
-    var tmp$, tmp$_0;
-    tmp$ = desc.kind;
-    if (equals(tmp$, KSerialClassKind$LIST_getInstance()) || equals(tmp$, KSerialClassKind$SET_getInstance()))
-      tmp$_0 = new CBOR$CBORListReader(this.$outer, this.decoder);
-    else if (equals(tmp$, KSerialClassKind$MAP_getInstance()))
-      tmp$_0 = new CBOR$CBORMapReader(this.$outer, this.decoder);
-    else if (equals(tmp$, KSerialClassKind$ENTRY_getInstance()))
-      tmp$_0 = new CBOR$CBOREntryReader(this.$outer, this.decoder);
-    else
-      tmp$_0 = new CBOR$CBORReader(this.$outer, this.decoder);
-    var re = tmp$_0;
+    var tmp$;
+    switch (desc.kind.name) {
+      case 'LIST':
+      case 'SET':
+        tmp$ = new CBOR$CBORListReader(this.$outer, this.decoder);
+        break;
+      case 'MAP':
+        tmp$ = new CBOR$CBORMapReader(this.$outer, this.decoder);
+        break;
+      case 'ENTRY':
+        tmp$ = new CBOR$CBOREntryReader(this.$outer, this.decoder);
+        break;
+      default:tmp$ = new CBOR$CBORReader(this.$outer, this.decoder);
+        break;
+    }
+    var re = tmp$;
     re.skipBeginToken();
     return re;
   };
@@ -2419,15 +2439,17 @@
     return null;
   };
   CBOR$CBORDecoder.prototype.nextBoolean = function () {
-    var tmp$, tmp$_0;
-    tmp$ = this.curByte_0;
-    if (tmp$ === CBOR$Companion_getInstance().TRUE_0)
-      tmp$_0 = true;
-    else if (tmp$ === CBOR$Companion_getInstance().FALSE_0)
-      tmp$_0 = false;
-    else
-      throw new CBORParsingException('Expected boolean value');
-    var ans = tmp$_0;
+    var tmp$;
+    switch (this.curByte_0) {
+      case 245:
+        tmp$ = true;
+        break;
+      case 244:
+        tmp$ = false;
+        break;
+      default:throw new CBORParsingException('Expected boolean value');
+    }
+    var ans = tmp$;
     this.readByte_0();
     return ans;
   };
@@ -2469,16 +2491,22 @@
     var tmp$, tmp$_0;
     var value = this.curByte_0 & 31;
     var negative = (this.curByte_0 & 224) === CBOR$Companion_getInstance().HEADER_NEGATIVE_0;
-    if (value === 24)
-      tmp$ = 1;
-    else if (value === 25)
-      tmp$ = 2;
-    else if (value === 26)
-      tmp$ = 4;
-    else if (value === 27)
-      tmp$ = 8;
-    else
-      tmp$ = 0;
+    switch (value) {
+      case 24:
+        tmp$ = 1;
+        break;
+      case 25:
+        tmp$ = 2;
+        break;
+      case 26:
+        tmp$ = 4;
+        break;
+      case 27:
+        tmp$ = 8;
+        break;
+      default:tmp$ = 0;
+        break;
+    }
     var bytesToRead = tmp$;
     if (bytesToRead === 0) {
       if (negative)
@@ -2487,16 +2515,21 @@
         return Kotlin.Long.fromInt(value);
     }
     var buf = readToByteBuffer(this.input, bytesToRead);
-    if (bytesToRead === 1)
-      tmp$_0 = Kotlin.Long.fromInt(getUnsignedByte(buf));
-    else if (bytesToRead === 2)
-      tmp$_0 = Kotlin.Long.fromInt(getUnsignedShort(buf));
-    else if (bytesToRead === 4)
-      tmp$_0 = getUnsignedInt(buf);
-    else if (bytesToRead === 8)
-      tmp$_0 = buf.getLong();
-    else
-      throw new IllegalArgumentException();
+    switch (bytesToRead) {
+      case 1:
+        tmp$_0 = Kotlin.Long.fromInt(getUnsignedByte(buf));
+        break;
+      case 2:
+        tmp$_0 = Kotlin.Long.fromInt(getUnsignedShort(buf));
+        break;
+      case 4:
+        tmp$_0 = getUnsignedInt(buf);
+        break;
+      case 8:
+        tmp$_0 = buf.getLong();
+        break;
+      default:throw IllegalArgumentException_init();
+    }
     var res = tmp$_0;
     if (negative)
       return res.add(Kotlin.Long.fromInt(1)).unaryMinus();
@@ -2661,10 +2694,10 @@
     }
   });
   PrimitiveDesc.prototype.getElementName_za3lpa$ = function (index) {
-    throw new IllegalStateException('Primitives do not have fields');
+    throw IllegalStateException_init('Primitives do not have fields');
   };
   PrimitiveDesc.prototype.getElementIndex_61zpoe$ = function (name) {
-    throw new IllegalStateException('Primitives do not have fields');
+    throw IllegalStateException_init('Primitives do not have fields');
   };
   PrimitiveDesc.$metadata$ = {
     kind: Kind_CLASS,
@@ -2956,10 +2989,10 @@
     }
   });
   EnumDesc.prototype.getElementName_za3lpa$ = function (index) {
-    throw new IllegalStateException('Primitives does not have fields');
+    throw IllegalStateException_init('Primitives does not have fields');
   };
   EnumDesc.prototype.getElementIndex_61zpoe$ = function (name) {
-    throw new IllegalStateException('Primitives does not have fields');
+    throw IllegalStateException_init('Primitives does not have fields');
   };
   EnumDesc.$metadata$ = {
     kind: Kind_CLASS,
@@ -3057,16 +3090,18 @@
     var input_0 = input.readBegin_276rha$(this.serialClassDesc, this.typeParams.slice());
     mainLoop: while (true) {
       var index = input_0.readElement_f6e2p$(this.serialClassDesc);
-      if (index === KInput$Companion_getInstance().READ_ALL) {
-        this.readAll_18i1yb$_0(input_0, builder, startIndex);
-        break mainLoop;
+      switch (index) {
+        case -2:
+          this.readAll_18i1yb$_0(input_0, builder, startIndex);
+          break mainLoop;
+        case -1:
+          break mainLoop;
+        case 0:
+          this.readSize_os2y47$_0(input_0, builder);
+          break;
+        default:this.readItem_ieea3b$(input_0, startIndex + index | 0, builder);
+          break;
       }
-       else if (index === KInput$Companion_getInstance().READ_DONE)
-        break mainLoop;
-      else if (index === SIZE_INDEX)
-        this.readSize_os2y47$_0(input_0, builder);
-      else
-        this.readItem_ieea3b$(input_0, startIndex + index | 0, builder);
     }
     input_0.readEnd_f6e2p$(this.serialClassDesc);
     return this.toResult_wili$(builder);
@@ -3366,40 +3401,39 @@
     output_0.writeEnd_f6e2p$(this.serialClassDesc);
   };
   KeyValueSerializer.prototype.load_ljkqvg$ = function (input) {
-    var tmp$, tmp$_0, tmp$_1;
+    var tmp$, tmp$_0;
     var input_0 = input.readBegin_276rha$(this.serialClassDesc, [this.kSerializer, this.vSerializer]);
     var kSet = false;
     var vSet = false;
     var k = null;
     var v = null;
     mainLoop: while (true) {
-      tmp$ = input_0.readElement_f6e2p$(this.serialClassDesc);
-      if (tmp$ === KInput$Companion_getInstance().READ_ALL) {
-        k = this.readKey_ljkqvg$(input_0);
-        kSet = true;
-        v = this.readValue_2qvvsx$(input_0, k, kSet);
-        vSet = true;
-        break mainLoop;
+      switch (input_0.readElement_f6e2p$(this.serialClassDesc)) {
+        case -2:
+          k = this.readKey_ljkqvg$(input_0);
+          kSet = true;
+          v = this.readValue_2qvvsx$(input_0, k, kSet);
+          vSet = true;
+          break mainLoop;
+        case -1:
+          break mainLoop;
+        case 0:
+          k = this.readKey_ljkqvg$(input_0);
+          kSet = true;
+          break;
+        case 1:
+          v = this.readValue_2qvvsx$(input_0, k, kSet);
+          vSet = true;
+          break;
+        default:throw new SerializationException('Invalid index');
       }
-       else if (tmp$ === KInput$Companion_getInstance().READ_DONE)
-        break mainLoop;
-      else if (tmp$ === KEY_INDEX) {
-        k = this.readKey_ljkqvg$(input_0);
-        kSet = true;
-      }
-       else if (tmp$ === VALUE_INDEX) {
-        v = this.readValue_2qvvsx$(input_0, k, kSet);
-        vSet = true;
-      }
-       else
-        throw new SerializationException('Invalid index');
     }
     input_0.readEnd_f6e2p$(this.serialClassDesc);
     if (!kSet)
       throw new SerializationException('Required key is missing');
     if (!vSet)
       throw new SerializationException('Required value is missing');
-    return this.toResult_xwzc9p$((tmp$_0 = k) == null || Kotlin.isType(tmp$_0, Any) ? tmp$_0 : throwCCE(), (tmp$_1 = v) == null || Kotlin.isType(tmp$_1, Any) ? tmp$_1 : throwCCE());
+    return this.toResult_xwzc9p$((tmp$ = k) == null || Kotlin.isType(tmp$, Any) ? tmp$ : throwCCE(), (tmp$_0 = v) == null || Kotlin.isType(tmp$_0, Any) ? tmp$_0 : throwCCE());
   };
   KeyValueSerializer.prototype.readKey_ljkqvg$ = function (input) {
     return input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, KEY_INDEX, this.kSerializer);
@@ -3786,7 +3820,7 @@
     output_0.writeEnd_f6e2p$(this.serialClassDesc);
   };
   TripleSerializer.prototype.load_ljkqvg$ = function (input) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var tmp$, tmp$_0, tmp$_1;
     var input_0 = input.readBegin_276rha$(this.serialClassDesc, [this.aSerializer_0, this.bSerializer_0, this.cSerializer_0]);
     var aSet = false;
     var bSet = false;
@@ -3795,32 +3829,31 @@
     var b = null;
     var c = null;
     mainLoop: while (true) {
-      tmp$ = input_0.readElement_f6e2p$(this.serialClassDesc);
-      if (tmp$ === KInput$Companion_getInstance().READ_ALL) {
-        a = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, this.aSerializer_0);
-        aSet = true;
-        b = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, this.bSerializer_0);
-        bSet = true;
-        c = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, this.cSerializer_0);
-        cSet = true;
-        break mainLoop;
+      switch (input_0.readElement_f6e2p$(this.serialClassDesc)) {
+        case -2:
+          a = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, this.aSerializer_0);
+          aSet = true;
+          b = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, this.bSerializer_0);
+          bSet = true;
+          c = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, this.cSerializer_0);
+          cSet = true;
+          break mainLoop;
+        case -1:
+          break mainLoop;
+        case 0:
+          a = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, this.aSerializer_0);
+          aSet = true;
+          break;
+        case 1:
+          b = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, this.bSerializer_0);
+          bSet = true;
+          break;
+        case 2:
+          c = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, this.cSerializer_0);
+          cSet = true;
+          break;
+        default:throw new SerializationException('Invalid index');
       }
-       else if (tmp$ === KInput$Companion_getInstance().READ_DONE)
-        break mainLoop;
-      else if (tmp$ === 0) {
-        a = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, this.aSerializer_0);
-        aSet = true;
-      }
-       else if (tmp$ === 1) {
-        b = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, this.bSerializer_0);
-        bSet = true;
-      }
-       else if (tmp$ === 2) {
-        c = input_0.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, this.cSerializer_0);
-        cSet = true;
-      }
-       else
-        throw new SerializationException('Invalid index');
     }
     input_0.readEnd_f6e2p$(this.serialClassDesc);
     if (!aSet)
@@ -3829,7 +3862,7 @@
       throw new SerializationException('Required second is missing');
     if (!cSet)
       throw new SerializationException('Required third is missing');
-    return new Triple((tmp$_0 = a) == null || Kotlin.isType(tmp$_0, Any) ? tmp$_0 : throwCCE(), (tmp$_1 = b) == null || Kotlin.isType(tmp$_1, Any) ? tmp$_1 : throwCCE(), (tmp$_2 = c) == null || Kotlin.isType(tmp$_2, Any) ? tmp$_2 : throwCCE());
+    return new Triple((tmp$ = a) == null || Kotlin.isType(tmp$, Any) ? tmp$ : throwCCE(), (tmp$_0 = b) == null || Kotlin.isType(tmp$_0, Any) ? tmp$_0 : throwCCE(), (tmp$_1 = c) == null || Kotlin.isType(tmp$_1, Any) ? tmp$_1 : throwCCE());
   };
   TripleSerializer.$metadata$ = {
     kind: Kind_CLASS,
@@ -3898,14 +3931,13 @@
     interfaces: [KSerialClassDesc]
   };
   function onlySingleOrNull($receiver) {
-    var tmp$;
-    tmp$ = $receiver.size;
-    if (tmp$ === 0)
-      return null;
-    else if (tmp$ === 1)
-      return $receiver.get_za3lpa$(0);
-    else
-      throw new IllegalStateException('Too much arguments in list');
+    switch ($receiver.size) {
+      case 0:
+        return null;
+      case 1:
+        return $receiver.get_za3lpa$(0);
+      default:throw IllegalStateException_init('Too much arguments in list');
+    }
   }
   function readExactNBytes($receiver, bytes) {
     var array = new Int8Array(bytes);
@@ -3931,7 +3963,7 @@
   HexConverter.prototype.parseHexBinary_61zpoe$ = function (s) {
     var len = s.length;
     if (len % 2 !== 0) {
-      throw new IllegalArgumentException('hexBinary needs to be even-length: ' + s);
+      throw IllegalArgumentException_init_0('hexBinary needs to be even-length: ' + s);
     }
     var out = new Int8Array(len / 2 | 0);
     var i = 0;
@@ -3939,7 +3971,7 @@
       var h = this.hexToBin_0(s.charCodeAt(i));
       var l = this.hexToBin_0(s.charCodeAt(i + 1 | 0));
       if (h === -1 || l === -1) {
-        throw new IllegalArgumentException('contains illegal character for hexBinary: ' + s);
+        throw IllegalArgumentException_init_0('contains illegal character for hexBinary: ' + s);
       }
       out[i / 2 | 0] = toByte((h * 16 | 0) + l | 0);
       i = i + 2 | 0;
@@ -4034,7 +4066,7 @@
     var result = input.read_rf0fz3$(loader);
     if (!(parser.curTc === JSON$Companion_getInstance().TC_EOF_0)) {
       var message = 'Shall parse complete string';
-      throw new IllegalStateException(message.toString());
+      throw IllegalStateException_init(message.toString());
     }
     return result;
   };
@@ -4173,27 +4205,26 @@
     return toBoxedChar(d < 10 ? toChar(d + (48 | 0) | 0) : toChar(d - 10 + (97 | 0) | 0));
   };
   JSON$Companion.prototype.switchMode_0 = function (mode, desc, typeParams) {
-    var tmp$;
-    tmp$ = desc.kind;
-    if (equals(tmp$, KSerialClassKind$POLYMORPHIC_getInstance()))
-      return JSON$Mode$POLY_getInstance();
-    else if (equals(tmp$, KSerialClassKind$LIST_getInstance()) || equals(tmp$, KSerialClassKind$SET_getInstance()))
-      return JSON$Mode$LIST_getInstance();
-    else if (equals(tmp$, KSerialClassKind$MAP_getInstance())) {
-      var keyKind = typeParams[0].serialClassDesc.kind;
-      return keyKind === KSerialClassKind$PRIMITIVE_getInstance() || keyKind === KSerialClassKind$ENUM_getInstance() ? JSON$Mode$MAP_getInstance() : JSON$Mode$LIST_getInstance();
+    switch (desc.kind.name) {
+      case 'POLYMORPHIC':
+        return JSON$Mode$POLY_getInstance();
+      case 'LIST':
+      case 'SET':
+        return JSON$Mode$LIST_getInstance();
+      case 'MAP':
+        var keyKind = typeParams[0].serialClassDesc.kind;
+        return keyKind === KSerialClassKind$PRIMITIVE_getInstance() || keyKind === KSerialClassKind$ENUM_getInstance() ? JSON$Mode$MAP_getInstance() : JSON$Mode$LIST_getInstance();
+      case 'ENTRY':
+        return mode === JSON$Mode$MAP_getInstance() ? JSON$Mode$ENTRY_getInstance() : JSON$Mode$OBJ_getInstance();
+      default:return JSON$Mode$OBJ_getInstance();
     }
-     else if (equals(tmp$, KSerialClassKind$ENTRY_getInstance()))
-      return mode === JSON$Mode$MAP_getInstance() ? JSON$Mode$ENTRY_getInstance() : JSON$Mode$OBJ_getInstance();
-    else
-      return JSON$Mode$OBJ_getInstance();
   };
   JSON$Companion.prototype.require_0 = function (condition, pos, msg) {
     if (!condition)
       this.fail_0(pos, msg());
   };
   JSON$Companion.prototype.fail_0 = function (pos, msg) {
-    throw new IllegalArgumentException('JSON at ' + pos + ': ' + msg);
+    throw IllegalArgumentException_init_0('JSON at ' + pos + ': ' + msg);
   };
   JSON$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -4209,8 +4240,8 @@
   }
   function JSON$Mode(name, ordinal, begin, end) {
     Enum.call(this);
-    this.begin = begin;
-    this.end = end;
+    this.begin = toBoxedChar(begin);
+    this.end = toBoxedChar(end);
     this.name$ = name;
     this.ordinal$ = ordinal;
     this.beginTc = JSON$Companion_getInstance().c2tc_za3lpa$(unboxChar(this.begin) | 0);
@@ -4299,31 +4330,33 @@
     }
   };
   JSON$JsonOutput.prototype.writeElement_xvmgof$ = function (desc, index) {
-    var tmp$;
-    tmp$ = this.mode;
-    if (equals(tmp$, JSON$Mode$LIST_getInstance()) || equals(tmp$, JSON$Mode$MAP_getInstance())) {
-      if (index === 0)
-        return false;
-      if (index > 1)
-        this.w.print_s8itvh$(JSON$Companion_getInstance().COMMA_0);
-      this.w.nextItem();
-    }
-     else if (equals(tmp$, JSON$Mode$ENTRY_getInstance()) || equals(tmp$, JSON$Mode$POLY_getInstance())) {
-      if (index === 0)
-        this.forceStr_0 = true;
-      if (index === 1) {
-        this.w.print_s8itvh$(this.mode === JSON$Mode$ENTRY_getInstance() ? JSON$Companion_getInstance().COLON_0 : JSON$Companion_getInstance().COMMA_0);
+    switch (this.mode.name) {
+      case 'LIST':
+      case 'MAP':
+        if (index === 0)
+          return false;
+        if (index > 1)
+          this.w.print_s8itvh$(JSON$Companion_getInstance().COMMA_0);
+        this.w.nextItem();
+        break;
+      case 'ENTRY':
+      case 'POLY':
+        if (index === 0)
+          this.forceStr_0 = true;
+        if (index === 1) {
+          this.w.print_s8itvh$(this.mode === JSON$Mode$ENTRY_getInstance() ? JSON$Companion_getInstance().COLON_0 : JSON$Companion_getInstance().COMMA_0);
+          this.w.space();
+          this.forceStr_0 = false;
+        }
+
+        break;
+      default:if (index > 0)
+          this.w.print_s8itvh$(JSON$Companion_getInstance().COMMA_0);
+        this.w.nextItem();
+        this.writeStringValue_61zpoe$(desc.getElementName_za3lpa$(index));
+        this.w.print_s8itvh$(JSON$Companion_getInstance().COLON_0);
         this.w.space();
-        this.forceStr_0 = false;
-      }
-    }
-     else {
-      if (index > 0)
-        this.w.print_s8itvh$(JSON$Companion_getInstance().COMMA_0);
-      this.w.nextItem();
-      this.writeStringValue_61zpoe$(desc.getElementName_za3lpa$(index));
-      this.w.print_s8itvh$(JSON$Companion_getInstance().COLON_0);
-      this.w.space();
+        break;
     }
     return true;
   };
@@ -4386,20 +4419,22 @@
     while (tmp$.hasNext()) {
       var c = unboxChar(tmp$.next());
       var esc = unboxChar(JSON$Companion_getInstance().c2esc_s8itvh$(c));
-      if (esc === JSON$Companion_getInstance().INVALID_0)
-        this.w.print_s8itvh$(c);
-      else if (esc === JSON$Companion_getInstance().UNICODE_ESC_0) {
-        this.w.print_s8itvh$(JSON$Companion_getInstance().STRING_ESC_0);
-        this.w.print_s8itvh$(JSON$Companion_getInstance().UNICODE_ESC_0);
-        var code = c | 0;
-        this.w.print_s8itvh$(unboxChar(JSON$Companion_getInstance().hex_za3lpa$(code >> 12)));
-        this.w.print_s8itvh$(unboxChar(JSON$Companion_getInstance().hex_za3lpa$(code >> 8)));
-        this.w.print_s8itvh$(unboxChar(JSON$Companion_getInstance().hex_za3lpa$(code >> 4)));
-        this.w.print_s8itvh$(unboxChar(JSON$Companion_getInstance().hex_za3lpa$(code)));
-      }
-       else {
-        this.w.print_s8itvh$(JSON$Companion_getInstance().STRING_ESC_0);
-        this.w.print_s8itvh$(esc);
+      switch (esc) {
+        case 0:
+          this.w.print_s8itvh$(c);
+          break;
+        case 117:
+          this.w.print_s8itvh$(JSON$Companion_getInstance().STRING_ESC_0);
+          this.w.print_s8itvh$(JSON$Companion_getInstance().UNICODE_ESC_0);
+          var code = c | 0;
+          this.w.print_s8itvh$(unboxChar(JSON$Companion_getInstance().hex_za3lpa$(code >> 12)));
+          this.w.print_s8itvh$(unboxChar(JSON$Companion_getInstance().hex_za3lpa$(code >> 8)));
+          this.w.print_s8itvh$(unboxChar(JSON$Companion_getInstance().hex_za3lpa$(code >> 4)));
+          this.w.print_s8itvh$(unboxChar(JSON$Companion_getInstance().hex_za3lpa$(code)));
+          break;
+        default:this.w.print_s8itvh$(JSON$Companion_getInstance().STRING_ESC_0);
+          this.w.print_s8itvh$(esc);
+          break;
       }
     }
     this.w.print_s8itvh$(JSON$Companion_getInstance().STRING_0);
@@ -4428,9 +4463,7 @@
       this.println();
       var times = this.level;
       this.$outer;
-      var tmp$;
-      tmp$ = times - 1 | 0;
-      for (var index = 0; index <= tmp$; index++) {
+      for (var index = 0; index < times; index++) {
         this.print_61zpoe$(this.$outer.indent_0);
       }
     }
@@ -4470,10 +4503,15 @@
       JSON$Companion_getInstance().require_0(this.p.curTc === newMode.beginTc, this.p.tokenPos, JSON$JsonInput$readBegin$lambda(newMode, desc));
       this.p.nextToken();
     }
-    if (equals(newMode, JSON$Mode$LIST_getInstance()) || equals(newMode, JSON$Mode$MAP_getInstance()) || equals(newMode, JSON$Mode$POLY_getInstance()))
-      tmp$ = new JSON$JsonInput(this.$outer, newMode, this.p);
-    else
-      tmp$ = this.mode === newMode ? this : new JSON$JsonInput(this.$outer, newMode, this.p);
+    switch (newMode.name) {
+      case 'LIST':
+      case 'MAP':
+      case 'POLY':
+        tmp$ = new JSON$JsonInput(this.$outer, newMode, this.p);
+        break;
+      default:tmp$ = this.mode === newMode ? this : new JSON$JsonInput(this.$outer, newMode, this.p);
+        break;
+    }
     return tmp$;
   };
   function JSON$JsonInput$readEnd$lambda(this$JsonInput) {
@@ -4505,54 +4543,51 @@
     return "Expected ':'";
   }
   JSON$JsonInput.prototype.readElement_f6e2p$ = function (desc) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    var tmp$, tmp$_0;
     while (true) {
       if (this.p.curTc === JSON$Companion_getInstance().TC_COMMA_0)
         this.p.nextToken();
-      tmp$ = this.mode;
-      if (equals(tmp$, JSON$Mode$LIST_getInstance()) || equals(tmp$, JSON$Mode$MAP_getInstance())) {
-        if (!this.p.canBeginValue)
-          return KInput$Companion_getInstance().READ_DONE;
-        return this.curIndex = this.curIndex + 1 | 0, this.curIndex;
-      }
-       else if (equals(tmp$, JSON$Mode$POLY_getInstance())) {
-        tmp$_1 = (tmp$_0 = this.entryIndex, this.entryIndex = tmp$_0 + 1 | 0, tmp$_0);
-        if (tmp$_1 === 0)
-          return 0;
-        else if (tmp$_1 === 1)
-          return 1;
-        else {
-          this.entryIndex = 0;
-          return KInput$Companion_getInstance().READ_DONE;
-        }
-      }
-       else if (equals(tmp$, JSON$Mode$ENTRY_getInstance())) {
-        tmp$_3 = (tmp$_2 = this.entryIndex, this.entryIndex = tmp$_2 + 1 | 0, tmp$_2);
-        if (tmp$_3 === 0)
-          return 0;
-        else if (tmp$_3 === 1) {
-          JSON$Companion_getInstance().require_0(this.p.curTc === JSON$Companion_getInstance().TC_COLON_0, this.p.tokenPos, JSON$JsonInput$readElement$lambda);
+      switch (this.mode.name) {
+        case 'LIST':
+        case 'MAP':
+          if (!this.p.canBeginValue)
+            return KInput$Companion_getInstance().READ_DONE;
+          return this.curIndex = this.curIndex + 1 | 0, this.curIndex;
+        case 'POLY':
+          switch (tmp$ = this.entryIndex, this.entryIndex = tmp$ + 1 | 0, tmp$) {
+            case 0:
+              return 0;
+            case 1:
+              return 1;
+            default:this.entryIndex = 0;
+              return KInput$Companion_getInstance().READ_DONE;
+          }
+
+        case 'ENTRY':
+          switch (tmp$_0 = this.entryIndex, this.entryIndex = tmp$_0 + 1 | 0, tmp$_0) {
+            case 0:
+              return 0;
+            case 1:
+              JSON$Companion_getInstance().require_0(this.p.curTc === JSON$Companion_getInstance().TC_COLON_0, this.p.tokenPos, JSON$JsonInput$readElement$lambda);
+              this.p.nextToken();
+              return 1;
+            default:this.entryIndex = 0;
+              return KInput$Companion_getInstance().READ_DONE;
+          }
+
+        default:if (!this.p.canBeginValue)
+            return KInput$Companion_getInstance().READ_DONE;
+          var key = this.p.takeStr();
+          JSON$Companion_getInstance().require_0(this.p.curTc === JSON$Companion_getInstance().TC_COLON_0, this.p.tokenPos, JSON$JsonInput$readElement$lambda_0);
           this.p.nextToken();
-          return 1;
-        }
-         else {
-          this.entryIndex = 0;
-          return KInput$Companion_getInstance().READ_DONE;
-        }
-      }
-       else {
-        if (!this.p.canBeginValue)
-          return KInput$Companion_getInstance().READ_DONE;
-        var key = this.p.takeStr();
-        JSON$Companion_getInstance().require_0(this.p.curTc === JSON$Companion_getInstance().TC_COLON_0, this.p.tokenPos, JSON$JsonInput$readElement$lambda_0);
-        this.p.nextToken();
-        var ind = desc.getElementIndex_61zpoe$(key);
-        if (ind !== KInput$Companion_getInstance().UNKNOWN_NAME)
-          return ind;
-        if (!this.$outer.nonstrict_8be2vx$)
-          throw new SerializationException('Strict JSON encountered unknown key: ' + key);
-        else
-          this.p.skipElement_8be2vx$();
+          var ind = desc.getElementIndex_61zpoe$(key);
+          if (ind !== KInput$Companion_getInstance().UNKNOWN_NAME)
+            return ind;
+          if (!this.$outer.nonstrict_8be2vx$)
+            throw new SerializationException('Strict JSON encountered unknown key: ' + key);
+          else
+            this.p.skipElement_8be2vx$();
+          break;
       }
     }
   };
@@ -4604,12 +4639,15 @@
   }
   Object.defineProperty(JSON$Parser.prototype, 'canBeginValue', {
     get: function () {
-      var tmp$;
-      tmp$ = this.curTc;
-      if (tmp$ === JSON$Companion_getInstance().TC_BEGIN_LIST_0 || tmp$ === JSON$Companion_getInstance().TC_BEGIN_OBJ_0 || tmp$ === JSON$Companion_getInstance().TC_OTHER_0 || tmp$ === JSON$Companion_getInstance().TC_STRING_0 || tmp$ === JSON$Companion_getInstance().TC_NULL_0)
-        return true;
-      else
-        return false;
+      switch (this.curTc) {
+        case 8:
+        case 6:
+        case 0:
+        case 10:
+        case 12:
+          return true;
+        default:return false;
+      }
     }
   });
   JSON$Parser.prototype.takeStr = function () {
@@ -4619,25 +4657,22 @@
     return prevStr;
   };
   JSON$Parser.prototype.nextToken = function () {
-    var tmp$;
     while (true) {
       this.tokenPos = this.charPos;
       this.curTc = JSON$Companion_getInstance().c2tc_za3lpa$(this.curChar);
-      tmp$ = this.curTc;
-      if (tmp$ === JSON$Companion_getInstance().TC_WS_0)
-        this.nextChar_0();
-      else if (tmp$ === JSON$Companion_getInstance().TC_OTHER_0) {
-        this.nextLiteral_0();
-        return;
-      }
-       else if (tmp$ === JSON$Companion_getInstance().TC_STRING_0) {
-        this.nextString_0();
-        return;
-      }
-       else {
-        this.nextChar_0();
-        this.curStr = null;
-        return;
+      switch (this.curTc) {
+        case 3:
+          this.nextChar_0();
+          break;
+        case 0:
+          this.nextLiteral_0();
+          return;
+        case 10:
+          this.nextString_0();
+          return;
+        default:this.nextChar_0();
+          this.curStr = null;
+          return;
       }
     }
   };
@@ -4671,31 +4706,32 @@
     };
   }
   JSON$Parser.prototype.nextString_0 = function () {
-    var tmp$;
     this.sb = new StringBuilder();
     parse: while (true) {
       this.nextChar_0();
-      tmp$ = JSON$Companion_getInstance().c2tc_za3lpa$(this.curChar);
-      if (tmp$ === JSON$Companion_getInstance().TC_EOF_0)
-        JSON$Companion_getInstance().fail_0(this.charPos, 'Unexpected end in string');
-      else if (tmp$ === JSON$Companion_getInstance().TC_STRING_0) {
-        this.nextChar_0();
-        break parse;
+      switch (JSON$Companion_getInstance().c2tc_za3lpa$(this.curChar)) {
+        case 1:
+          JSON$Companion_getInstance().fail_0(this.charPos, 'Unexpected end in string');
+          break;
+        case 10:
+          this.nextChar_0();
+          break parse;
+        case 11:
+          this.nextChar_0();
+          JSON$Companion_getInstance().require_0(this.curChar >= 0, this.charPos, JSON$Parser$nextString$lambda);
+          if (this.curChar === (JSON$Companion_getInstance().UNICODE_ESC_0 | 0)) {
+            this.sb.append_s8itvh$(toChar((this.hex_0() << 12) + (this.hex_0() << 8) + (this.hex_0() << 4) + this.hex_0() | 0));
+          }
+           else {
+            var c = unboxChar(JSON$Companion_getInstance().esc2c_za3lpa$(this.curChar));
+            JSON$Companion_getInstance().require_0(c !== JSON$Companion_getInstance().INVALID_0, this.charPos, JSON$Parser$nextString$lambda_0(this));
+            this.sb.append_s8itvh$(c);
+          }
+
+          break;
+        default:this.sb.append_s8itvh$(toChar(this.curChar));
+          break;
       }
-       else if (tmp$ === JSON$Companion_getInstance().TC_STRING_ESC_0) {
-        this.nextChar_0();
-        JSON$Companion_getInstance().require_0(this.curChar >= 0, this.charPos, JSON$Parser$nextString$lambda);
-        if (this.curChar === (JSON$Companion_getInstance().UNICODE_ESC_0 | 0)) {
-          this.sb.append_s8itvh$(toChar((this.hex_0() << 12) + (this.hex_0() << 8) + (this.hex_0() << 4) + this.hex_0() | 0));
-        }
-         else {
-          var c = unboxChar(JSON$Companion_getInstance().esc2c_za3lpa$(this.curChar));
-          JSON$Companion_getInstance().require_0(c !== JSON$Companion_getInstance().INVALID_0, this.charPos, JSON$Parser$nextString$lambda_0(this));
-          this.sb.append_s8itvh$(c);
-        }
-      }
-       else
-        this.sb.append_s8itvh$(toChar(this.curChar));
     }
     this.curStr = this.sb.toString();
     this.curTc = JSON$Companion_getInstance().TC_STRING_0;
@@ -4722,25 +4758,27 @@
     return 'Parser(charPos=' + this.charPos + ', curChar=' + this.curChar + ', tokenPos=' + this.tokenPos + ', curTc=' + this.curTc + ', curStr=' + toString(this.curStr) + ')';
   };
   JSON$Parser.prototype.skipElement_8be2vx$ = function () {
-    var tmp$;
     if (this.curTc !== JSON$Companion_getInstance().TC_BEGIN_OBJ_0 && this.curTc !== JSON$Companion_getInstance().TC_BEGIN_LIST_0) {
       this.nextToken();
       return;
     }
     var tokenStack = ArrayList_init_0();
     do {
-      tmp$ = this.curTc;
-      if (tmp$ === JSON$Companion_getInstance().TC_BEGIN_LIST_0 || tmp$ === JSON$Companion_getInstance().TC_BEGIN_OBJ_0)
-        tokenStack.add_11rb$(this.curTc);
-      else if (tmp$ === JSON$Companion_getInstance().TC_END_LIST_0) {
-        if (last(tokenStack) !== JSON$Companion_getInstance().TC_BEGIN_LIST_0)
-          throw new SerializationException('Invalid JSON at ' + this.charPos + ': found ] instead of }');
-        tokenStack.removeAt_za3lpa$(tokenStack.size - 1 | 0);
-      }
-       else if (tmp$ === JSON$Companion_getInstance().TC_END_OBJ_0) {
-        if (last(tokenStack) !== JSON$Companion_getInstance().TC_BEGIN_OBJ_0)
-          throw new SerializationException('Invalid JSON at ' + this.charPos + ': found } instead of ]');
-        tokenStack.removeAt_za3lpa$(tokenStack.size - 1 | 0);
+      switch (this.curTc) {
+        case 8:
+        case 6:
+          tokenStack.add_11rb$(this.curTc);
+          break;
+        case 9:
+          if (last(tokenStack) !== JSON$Companion_getInstance().TC_BEGIN_LIST_0)
+            throw new SerializationException('Invalid JSON at ' + this.charPos + ': found ] instead of }');
+          tokenStack.removeAt_za3lpa$(tokenStack.size - 1 | 0);
+          break;
+        case 7:
+          if (last(tokenStack) !== JSON$Companion_getInstance().TC_BEGIN_OBJ_0)
+            throw new SerializationException('Invalid JSON at ' + this.charPos + ': found } instead of ]');
+          tokenStack.removeAt_za3lpa$(tokenStack.size - 1 | 0);
+          break;
       }
       this.nextToken();
       var isNotEmpty$result;
@@ -4871,16 +4909,20 @@
     this.context = this.$outer.context;
   }
   ProtoBuf$ProtobufWriter.prototype.writeBegin_276rha$ = function (desc, typeParams) {
-    var tmp$;
-    tmp$ = desc.kind;
-    if (equals(tmp$, KSerialClassKind$LIST_getInstance()) || equals(tmp$, KSerialClassKind$MAP_getInstance()) || equals(tmp$, KSerialClassKind$SET_getInstance()))
-      return new ProtoBuf$RepeatedWriter(this.$outer, this.encoder, this.currentTag);
-    else if (equals(tmp$, KSerialClassKind$CLASS_getInstance()) || equals(tmp$, KSerialClassKind$OBJECT_getInstance()) || equals(tmp$, KSerialClassKind$SEALED_getInstance()) || equals(tmp$, KSerialClassKind$POLYMORPHIC_getInstance()))
-      return new ProtoBuf$ObjectWriter(this.$outer, this.currentTagOrNull, this.encoder);
-    else if (equals(tmp$, KSerialClassKind$ENTRY_getInstance()))
-      return new ProtoBuf$MapEntryWriter(this.$outer, this.currentTagOrNull, this.encoder);
-    else
-      throw new SerializationException('Primitives are not supported at top-level');
+    switch (desc.kind.name) {
+      case 'LIST':
+      case 'MAP':
+      case 'SET':
+        return new ProtoBuf$RepeatedWriter(this.$outer, this.encoder, this.currentTag);
+      case 'CLASS':
+      case 'OBJECT':
+      case 'SEALED':
+      case 'POLYMORPHIC':
+        return new ProtoBuf$ObjectWriter(this.$outer, this.currentTagOrNull, this.encoder);
+      case 'ENTRY':
+        return new ProtoBuf$MapEntryWriter(this.$outer, this.currentTagOrNull, this.encoder);
+      default:throw new SerializationException('Primitives are not supported at top-level');
+    }
   };
   ProtoBuf$ProtobufWriter.prototype.writeTaggedInt_dpg1yx$ = function (tag, value) {
     this.encoder.writeInt_hp6twd$(value, tag.first, tag.second);
@@ -5019,26 +5061,28 @@
   ProtoBuf$ProtobufEncoder.prototype.encode32_0 = function (number, format) {
     if (format === void 0)
       format = ProtoNumberType$DEFAULT_getInstance();
-    if (equals(format, ProtoNumberType$FIXED_getInstance()))
-      return ByteBuffer$Companion_getInstance().allocate_za3lpa$(4).order_w2g0y3$(ByteOrder$LITTLE_ENDIAN_getInstance()).putInt_za3lpa$(number).array();
-    else if (equals(format, ProtoNumberType$DEFAULT_getInstance()))
-      return ProtoBuf$Varint_getInstance().encodeVarint_8e33dg$(Kotlin.Long.fromInt(number));
-    else if (equals(format, ProtoNumberType$SIGNED_getInstance()))
-      return ProtoBuf$Varint_getInstance().encodeVarint_kcn2v3$(number << 1 ^ number >> 31);
-    else
-      return Kotlin.noWhenBranchMatched();
+    switch (format.name) {
+      case 'FIXED':
+        return ByteBuffer$Companion_getInstance().allocate_za3lpa$(4).order_w2g0y3$(ByteOrder$LITTLE_ENDIAN_getInstance()).putInt_za3lpa$(number).array();
+      case 'DEFAULT':
+        return ProtoBuf$Varint_getInstance().encodeVarint_8e33dg$(Kotlin.Long.fromInt(number));
+      case 'SIGNED':
+        return ProtoBuf$Varint_getInstance().encodeVarint_kcn2v3$(number << 1 ^ number >> 31);
+      default:return Kotlin.noWhenBranchMatched();
+    }
   };
   ProtoBuf$ProtobufEncoder.prototype.encode64_0 = function (number, format) {
     if (format === void 0)
       format = ProtoNumberType$DEFAULT_getInstance();
-    if (equals(format, ProtoNumberType$FIXED_getInstance()))
-      return ByteBuffer$Companion_getInstance().allocate_za3lpa$(8).order_w2g0y3$(ByteOrder$LITTLE_ENDIAN_getInstance()).putLong_s8cxhz$(number).array();
-    else if (equals(format, ProtoNumberType$DEFAULT_getInstance()))
-      return ProtoBuf$Varint_getInstance().encodeVarint_8e33dg$(number);
-    else if (equals(format, ProtoNumberType$SIGNED_getInstance()))
-      return ProtoBuf$Varint_getInstance().encodeVarint_8e33dg$(number.shiftLeft(1).xor(number.shiftRight(63)));
-    else
-      return Kotlin.noWhenBranchMatched();
+    switch (format.name) {
+      case 'FIXED':
+        return ByteBuffer$Companion_getInstance().allocate_za3lpa$(8).order_w2g0y3$(ByteOrder$LITTLE_ENDIAN_getInstance()).putLong_s8cxhz$(number).array();
+      case 'DEFAULT':
+        return ProtoBuf$Varint_getInstance().encodeVarint_8e33dg$(number);
+      case 'SIGNED':
+        return ProtoBuf$Varint_getInstance().encodeVarint_8e33dg$(number.shiftLeft(1).xor(number.shiftRight(63)));
+      default:return Kotlin.noWhenBranchMatched();
+    }
   };
   ProtoBuf$ProtobufEncoder.$metadata$ = {
     kind: Kind_CLASS,
@@ -5072,26 +5116,29 @@
     return (tmp$ = firstOrNull$result) != null ? tmp$ : -1;
   };
   ProtoBuf$ProtobufReader.prototype.readBegin_276rha$ = function (desc, typeParams) {
-    var tmp$;
-    tmp$ = desc.kind;
-    if (equals(tmp$, KSerialClassKind$LIST_getInstance()) || equals(tmp$, KSerialClassKind$MAP_getInstance()) || equals(tmp$, KSerialClassKind$SET_getInstance()))
-      return new ProtoBuf$RepeatedReader(this.$outer, this.decoder, this.currentTag);
-    else if (equals(tmp$, KSerialClassKind$CLASS_getInstance()) || equals(tmp$, KSerialClassKind$OBJECT_getInstance()) || equals(tmp$, KSerialClassKind$SEALED_getInstance()) || equals(tmp$, KSerialClassKind$POLYMORPHIC_getInstance()))
-      return new ProtoBuf$ProtobufReader(this.$outer, ProtoBuf$Companion_getInstance().makeDelimited_0(this.decoder, this.currentTagOrNull));
-    else if (equals(tmp$, KSerialClassKind$ENTRY_getInstance()))
-      return new ProtoBuf$MapEntryReader(this.$outer, ProtoBuf$Companion_getInstance().makeDelimited_0(this.decoder, this.currentTagOrNull), this.currentTagOrNull);
-    else
-      throw new SerializationException('Primitives are not supported at top-level');
+    switch (desc.kind.name) {
+      case 'LIST':
+      case 'MAP':
+      case 'SET':
+        return new ProtoBuf$RepeatedReader(this.$outer, this.decoder, this.currentTag);
+      case 'CLASS':
+      case 'OBJECT':
+      case 'SEALED':
+      case 'POLYMORPHIC':
+        return new ProtoBuf$ProtobufReader(this.$outer, ProtoBuf$Companion_getInstance().makeDelimited_0(this.decoder, this.currentTagOrNull));
+      case 'ENTRY':
+        return new ProtoBuf$MapEntryReader(this.$outer, ProtoBuf$Companion_getInstance().makeDelimited_0(this.decoder, this.currentTagOrNull), this.currentTagOrNull);
+      default:throw new SerializationException('Primitives are not supported at top-level');
+    }
   };
   ProtoBuf$ProtobufReader.prototype.readTaggedBoolean_11rb$ = function (tag) {
-    var tmp$;
-    tmp$ = this.decoder.nextInt_bmwen1$(ProtoNumberType$DEFAULT_getInstance());
-    if (tmp$ === 0)
-      return false;
-    else if (tmp$ === 1)
-      return true;
-    else
-      throw new ProtobufDecodingException('Expected boolean value');
+    switch (this.decoder.nextInt_bmwen1$(ProtoNumberType$DEFAULT_getInstance())) {
+      case 0:
+        return false;
+      case 1:
+        return true;
+      default:throw new ProtobufDecodingException('Expected boolean value');
+    }
   };
   ProtoBuf$ProtobufReader.prototype.readTaggedByte_11rb$ = function (tag) {
     return toByte(this.decoder.nextInt_bmwen1$(tag.second));
@@ -5212,16 +5259,20 @@
     return this.curTag_0;
   };
   ProtoBuf$ProtobufDecoder.prototype.skipElement = function () {
-    var tmp$;
-    tmp$ = this.curTag_0.second;
-    if (tmp$ === ProtoBuf$Companion_getInstance().VARINT_0)
-      this.nextInt_bmwen1$(ProtoNumberType$DEFAULT_getInstance());
-    else if (tmp$ === ProtoBuf$Companion_getInstance().i64_0)
-      this.nextLong_bmwen1$(ProtoNumberType$FIXED_getInstance());
-    else if (tmp$ === ProtoBuf$Companion_getInstance().SIZE_DELIMITED_0)
-      this.nextObject();
-    else if (tmp$ === ProtoBuf$Companion_getInstance().i32_0)
-      this.nextInt_bmwen1$(ProtoNumberType$FIXED_getInstance());
+    switch (this.curTag_0.second) {
+      case 0:
+        this.nextInt_bmwen1$(ProtoNumberType$DEFAULT_getInstance());
+        break;
+      case 1:
+        this.nextLong_bmwen1$(ProtoNumberType$FIXED_getInstance());
+        break;
+      case 2:
+        this.nextObject();
+        break;
+      case 5:
+        this.nextInt_bmwen1$(ProtoNumberType$FIXED_getInstance());
+        break;
+    }
     this.readTag_0();
   };
   ProtoBuf$ProtobufDecoder.prototype.nextObject = function () {
@@ -5230,7 +5281,7 @@
     var len = this.decode32_0();
     if (!(len >= 0)) {
       var message = 'Check failed.';
-      throw new IllegalStateException(message.toString());
+      throw IllegalStateException_init(message.toString());
     }
     var ans = readExactNBytes(this.inp, len);
     this.readTag_0();
@@ -5275,26 +5326,28 @@
       format = ProtoNumberType$DEFAULT_getInstance();
     if (eofAllowed === void 0)
       eofAllowed = false;
-    if (equals(format, ProtoNumberType$DEFAULT_getInstance()))
-      return ProtoBuf$Varint_getInstance().decodeVarint_pwta7l$(this.inp, 64, eofAllowed).toInt();
-    else if (equals(format, ProtoNumberType$SIGNED_getInstance()))
-      return ProtoBuf$Varint_getInstance().decodeSignedVarintInt_wq5eom$(this.inp);
-    else if (equals(format, ProtoNumberType$FIXED_getInstance()))
-      return readToByteBuffer(this.inp, 4).order_w2g0y3$(ByteOrder$LITTLE_ENDIAN_getInstance()).getInt();
-    else
-      return Kotlin.noWhenBranchMatched();
+    switch (format.name) {
+      case 'DEFAULT':
+        return ProtoBuf$Varint_getInstance().decodeVarint_pwta7l$(this.inp, 64, eofAllowed).toInt();
+      case 'SIGNED':
+        return ProtoBuf$Varint_getInstance().decodeSignedVarintInt_wq5eom$(this.inp);
+      case 'FIXED':
+        return readToByteBuffer(this.inp, 4).order_w2g0y3$(ByteOrder$LITTLE_ENDIAN_getInstance()).getInt();
+      default:return Kotlin.noWhenBranchMatched();
+    }
   };
   ProtoBuf$ProtobufDecoder.prototype.decode64_0 = function (format) {
     if (format === void 0)
       format = ProtoNumberType$DEFAULT_getInstance();
-    if (equals(format, ProtoNumberType$DEFAULT_getInstance()))
-      return ProtoBuf$Varint_getInstance().decodeVarint_pwta7l$(this.inp, 64);
-    else if (equals(format, ProtoNumberType$SIGNED_getInstance()))
-      return ProtoBuf$Varint_getInstance().decodeSignedVarintLong_wq5eom$(this.inp);
-    else if (equals(format, ProtoNumberType$FIXED_getInstance()))
-      return readToByteBuffer(this.inp, 8).order_w2g0y3$(ByteOrder$LITTLE_ENDIAN_getInstance()).getLong();
-    else
-      return Kotlin.noWhenBranchMatched();
+    switch (format.name) {
+      case 'DEFAULT':
+        return ProtoBuf$Varint_getInstance().decodeVarint_pwta7l$(this.inp, 64);
+      case 'SIGNED':
+        return ProtoBuf$Varint_getInstance().decodeSignedVarintLong_wq5eom$(this.inp);
+      case 'FIXED':
+        return readToByteBuffer(this.inp, 8).order_w2g0y3$(ByteOrder$LITTLE_ENDIAN_getInstance()).getLong();
+      default:return Kotlin.noWhenBranchMatched();
+    }
   };
   ProtoBuf$ProtobufDecoder.$metadata$ = {
     kind: Kind_CLASS,
@@ -5537,7 +5590,7 @@
     this.capacity = capacity;
     if (!(this.capacity >= 0)) {
       var message = 'Failed requirement.';
-      throw new IllegalArgumentException(message.toString());
+      throw IllegalArgumentException_init_0(message.toString());
     }
     this.dw_0 = new DataView(new ArrayBuffer(this.capacity), 0, this.capacity);
     this.limit_62obw4$_0 = this.capacity;
@@ -5549,9 +5602,11 @@
       return this.limit_62obw4$_0;
     },
     set: function (value) {
-      if (!(new IntRange(0, this.capacity)).contains_mef7kx$(value)) {
+      var tmp$;
+      tmp$ = this.capacity;
+      if (!(0 <= value && value <= tmp$)) {
         var message = 'Failed requirement.';
-        throw new IllegalArgumentException(message.toString());
+        throw IllegalArgumentException_init_0(message.toString());
       }
       this.limit_62obw4$_0 = value;
       if (this.position > value) {
@@ -5564,9 +5619,11 @@
       return this.position_r0m5ac$_0;
     },
     set: function (newPosition) {
-      if (!(new IntRange(0, this.limit)).contains_mef7kx$(newPosition)) {
+      var tmp$;
+      tmp$ = this.limit;
+      if (!(0 <= newPosition && newPosition <= tmp$)) {
         var message = 'Failed requirement.';
-        throw new IllegalArgumentException(message.toString());
+        throw IllegalArgumentException_init_0(message.toString());
       }
       this.position_r0m5ac$_0 = newPosition;
     }
@@ -5609,7 +5666,7 @@
       tmp$ = index;
     var i = tmp$;
     if (i > this.limit)
-      throw new IllegalArgumentException();
+      throw IllegalArgumentException_init();
     return i;
   };
   ByteBuffer.prototype.get = function () {
@@ -5790,7 +5847,7 @@
     return $this;
   }
   function IOException(message) {
-    Exception.call(this, message);
+    Exception_init(message, this);
     this.name = 'IOException';
   }
   IOException.$metadata$ = {
@@ -5817,10 +5874,10 @@
   InputStream.prototype.read_mj6st8$ = function (b, offset, len) {
     var tmp$;
     if (offset > b.length || offset < 0) {
-      throw new IndexOutOfBoundsException();
+      throw IndexOutOfBoundsException_init();
     }
     if (len < 0 || len > (b.length - offset | 0)) {
-      throw new IndexOutOfBoundsException();
+      throw IndexOutOfBoundsException_init();
     }
     tmp$ = len - 1 | 0;
     for (var i = 0; i <= tmp$; i++) {
@@ -5912,10 +5969,10 @@
   };
   ByteArrayInputStream.prototype.read_nzv2aj$ = function (b, offset, len) {
     if (b == null) {
-      throw new NullPointerException();
+      throw NullPointerException_init();
     }
     if (offset < 0 || offset > b.length || len < 0 || len > (b.length - offset | 0)) {
-      throw new IndexOutOfBoundsException();
+      throw IndexOutOfBoundsException_init();
     }
     if (this.pos_0 >= this.count_0) {
       return -1;
@@ -5972,7 +6029,7 @@
   OutputStream.prototype.write_mj6st8$ = function (buffer, offset, count) {
     var tmp$;
     if (offset > buffer.length || offset < 0 || count < 0 || count > (buffer.length - offset | 0)) {
-      throw new IndexOutOfBoundsException();
+      throw IndexOutOfBoundsException_init();
     }
     tmp$ = offset + count - 1 | 0;
     for (var i = offset; i <= tmp$; i++) {
@@ -6006,7 +6063,7 @@
   };
   ByteArrayOutputStream.prototype.write_mj6st8$ = function (buffer, offset, count) {
     if (offset < 0 || offset > buffer.length || count < 0 || count > (buffer.length - offset | 0)) {
-      throw new IndexOutOfBoundsException();
+      throw IndexOutOfBoundsException_init();
     }
     if (count === 0) {
       return;
@@ -6045,7 +6102,7 @@
       $this.buf_0 = new Int8Array(size);
     }
      else {
-      throw new IllegalArgumentException();
+      throw IllegalArgumentException_init();
     }
     return $this;
   }
@@ -6276,18 +6333,23 @@
     return o != null;
   };
   DynamicObjectParser$DynamicInput.prototype.readBegin_276rha$ = function (desc, typeParams) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var tmp$, tmp$_0, tmp$_1;
     var curObj = (tmp$_0 = (tmp$ = this.currentTagOrNull) != null ? this.obj[tmp$] : null) != null ? tmp$_0 : this.obj;
-    tmp$_1 = desc.kind;
-    if (equals(tmp$_1, KSerialClassKind$LIST_getInstance()) || equals(tmp$_1, KSerialClassKind$SET_getInstance()))
-      tmp$_2 = new DynamicObjectParser$DynamicListInput(this.$outer, curObj);
-    else if (equals(tmp$_1, KSerialClassKind$MAP_getInstance()))
-      tmp$_2 = new DynamicObjectParser$DynamicMapInput(this.$outer, curObj);
-    else if (equals(tmp$_1, KSerialClassKind$ENTRY_getInstance()))
-      tmp$_2 = new DynamicObjectParser$DynamicMapValueInput(this.$outer, curObj, this.currentTag);
-    else
-      tmp$_2 = new DynamicObjectParser$DynamicInput(this.$outer, curObj);
-    return tmp$_2;
+    switch (desc.kind.name) {
+      case 'LIST':
+      case 'SET':
+        tmp$_1 = new DynamicObjectParser$DynamicListInput(this.$outer, curObj);
+        break;
+      case 'MAP':
+        tmp$_1 = new DynamicObjectParser$DynamicMapInput(this.$outer, curObj);
+        break;
+      case 'ENTRY':
+        tmp$_1 = new DynamicObjectParser$DynamicMapValueInput(this.$outer, curObj, this.currentTag);
+        break;
+      default:tmp$_1 = new DynamicObjectParser$DynamicInput(this.$outer, curObj);
+        break;
+    }
+    return tmp$_1;
   };
   DynamicObjectParser$DynamicInput.$metadata$ = {
     kind: Kind_CLASS,
@@ -6378,9 +6440,9 @@
   };
   function serializer($receiver) {
     var tmp$, tmp$_0;
-    tmp$_0 = Kotlin.isType(tmp$ = get_js($receiver).$serializer, KSerializer) ? tmp$ : null;
+    tmp$_0 = Kotlin.isType(tmp$ = get_js($receiver).Companion.serializer(), KSerializer) ? tmp$ : null;
     if (tmp$_0 == null) {
-      throw new SerializationException("Can't locate companion serializer for class " + $receiver);
+      throw new SerializationException("Can't locate default serializer for class " + $receiver);
     }
     return tmp$_0;
   }

@@ -102,7 +102,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     }
 
     open fun doLayout(bounds: BoundingBox, ctx: KoolContext) {
-        if (!contentBounds.isEqual(bounds)) {
+        if (!contentBounds.isFuzzyEqual(bounds)) {
             contentBounds.set(bounds)
             requestUiUpdate()
         }

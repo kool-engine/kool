@@ -31,6 +31,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var Exception = Kotlin.kotlin.Exception;
   var first = Kotlin.kotlin.collections.first_2p1efm$;
   var last = Kotlin.kotlin.collections.last_2p1efm$;
+  var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
+  var throwUPAE = Kotlin.throwUPAE;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
   var Any = Object;
@@ -43,11 +45,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var hashCode = Kotlin.hashCode;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
-  var throwUPAE = Kotlin.throwUPAE;
   var println = Kotlin.kotlin.io.println_s8jyv4$;
   var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
   var toShort = Kotlin.toShort;
-  var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
   var StringBuilder = Kotlin.kotlin.text.StringBuilder;
@@ -55,10 +55,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var toString = Kotlin.toString;
   var get_indices_0 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
+  var ArrayListSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer;
+  var UnknownFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException;
   var SerialClassDescImpl = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.SerialClassDescImpl;
+  var SerialId = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId;
   var KSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.KSerializer;
+  var MissingFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException;
+  var internal = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
+  var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
+  var LinkedHashMapSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer;
   var removeAll = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   ImageTextureData.prototype = Object.create(TextureData.prototype);
   ImageTextureData.prototype.constructor = ImageTextureData;
@@ -4499,9 +4506,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function KdTreeTraverser() {
   }
-  KdTreeTraverser.prototype.onStart_xuddlr$ = function (tree) {
+  KdTreeTraverser.prototype.onStart_dizmqh$ = function (tree) {
   };
-  KdTreeTraverser.prototype.traversalOrder_b90i4h$ = function (tree, left, right) {
+  KdTreeTraverser.prototype.onFinish_dizmqh$ = function (tree) {
+  };
+  KdTreeTraverser.prototype.traversalOrder_sdmibr$ = function (tree, left, right) {
     return KdTree$Companion_getInstance().TRAV_NO_PREFERENCE;
   };
   KdTreeTraverser.$metadata$ = {
@@ -4529,24 +4538,24 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.radius = radius;
     return this;
   };
-  InRadiusTraverser.prototype.onStart_xuddlr$ = function (tree) {
+  InRadiusTraverser.prototype.onStart_dizmqh$ = function (tree) {
     this.result.clear();
   };
-  InRadiusTraverser.prototype.traversalOrder_b90i4h$ = function (tree, left, right) {
+  InRadiusTraverser.prototype.traversalOrder_sdmibr$ = function (tree, left, right) {
+    var tmp$;
     var dLeft = left.bounds.pointDistanceSqr_czzhiu$(this.center);
     var dRight = right.bounds.pointDistanceSqr_czzhiu$(this.center);
-    if (dLeft > this.radiusSqr_0 && dRight > this.radiusSqr_0) {
-      return KdTree$Companion_getInstance().TRAV_NONE;
-    }
-     else if (dLeft > this.radiusSqr_0) {
-      return KdTree$Companion_getInstance().TRAV_RIGHT_ONLY;
-    }
-     else if (dRight > this.radiusSqr_0) {
-      return KdTree$Companion_getInstance().TRAV_LEFT_ONLY;
-    }
-    return KdTree$Companion_getInstance().TRAV_NO_PREFERENCE;
+    if (dLeft > this.radiusSqr_0 && dRight > this.radiusSqr_0)
+      tmp$ = KdTree$Companion_getInstance().TRAV_NONE;
+    else if (dLeft > this.radiusSqr_0)
+      tmp$ = KdTree$Companion_getInstance().TRAV_RIGHT_ONLY;
+    else if (dRight > this.radiusSqr_0)
+      tmp$ = KdTree$Companion_getInstance().TRAV_LEFT_ONLY;
+    else
+      tmp$ = KdTree$Companion_getInstance().TRAV_NO_PREFERENCE;
+    return tmp$;
   };
-  InRadiusTraverser.prototype.traverseLeaf_pyxcm4$ = function (tree, leaf) {
+  InRadiusTraverser.prototype.traverseLeaf_pp9zpw$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     tmp$ = leaf.indices;
     tmp$_0 = tmp$.first;
@@ -4570,8 +4579,153 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function InRadiusTraverser_init(center, radius, $this) {
     $this = $this || Object.create(InRadiusTraverser.prototype);
     InRadiusTraverser.call($this);
-    $this.center.set_czzhiu$(center);
-    $this.radius = radius;
+    $this.reset_2qa7tb$(center, radius);
+    return $this;
+  }
+  function KNearestTraverser() {
+    this.result = ArrayList_init();
+    this.center = MutableVec3f_init();
+    this.k = 10;
+    this.maxRadius_bp29wi$_0 = 1.0E9;
+    this.radiusSqr_0 = 9.9999998E17;
+    this.maxDSqr_0 = 0.0;
+    this.itemRecycler_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
+    this.items_0 = ArrayList_init();
+  }
+  Object.defineProperty(KNearestTraverser.prototype, 'maxRadius', {
+    get: function () {
+      return this.maxRadius_bp29wi$_0;
+    },
+    set: function (value) {
+      this.maxRadius_bp29wi$_0 = value;
+      this.radiusSqr_0 = value * value;
+    }
+  });
+  KNearestTraverser.prototype.reset_w8bw21$ = function (center, k, maxRadius) {
+    if (maxRadius === void 0)
+      maxRadius = 1.0E9;
+    this.center.set_czzhiu$(center);
+    this.k = k;
+    this.maxRadius = maxRadius;
+    return this;
+  };
+  KNearestTraverser.prototype.onStart_dizmqh$ = function (tree) {
+    this.result.clear();
+    this.maxDSqr_0 = 0.0;
+  };
+  KNearestTraverser.prototype.onFinish_dizmqh$ = function (tree) {
+    var tmp$;
+    tmp$ = this.items_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var $receiver = this.result;
+      var element = this.items_0.get_za3lpa$(i).item;
+      $receiver.add_11rb$(element);
+    }
+    this.items_0.clear();
+    this.itemRecycler_0.recycleAll();
+    var x = this.maxDSqr_0;
+    this.maxRadius = Math_0.sqrt(x);
+  };
+  KNearestTraverser.prototype.traversalOrder_sdmibr$ = function (tree, left, right) {
+    var tmp$;
+    var dLeft = left.bounds.pointDistanceSqr_czzhiu$(this.center);
+    var dRight = right.bounds.pointDistanceSqr_czzhiu$(this.center);
+    if (dLeft > this.maxDSqr_0 && dRight > this.maxDSqr_0)
+      tmp$ = KdTree$Companion_getInstance().TRAV_NONE;
+    else if (dLeft < dRight)
+      tmp$ = KdTree$Companion_getInstance().TRAV_LEFT_FIRST;
+    else
+      tmp$ = KdTree$Companion_getInstance().TRAV_RIGHT_FIRST;
+    return tmp$;
+  };
+  KNearestTraverser.prototype.traverseLeaf_pp9zpw$ = function (tree, leaf) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    tmp$ = leaf.indices;
+    tmp$_0 = tmp$.first;
+    tmp$_1 = tmp$.last;
+    tmp$_2 = tmp$.step;
+    for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
+      var it = tree.items.get_za3lpa$(i);
+      var dx = tree.helper.getX_11rb$(it) - this.center.x;
+      var dy = tree.helper.getY_11rb$(it) - this.center.y;
+      var dz = tree.helper.getZ_11rb$(it) - this.center.z;
+      var dSqr = dx * dx + dy * dy + dz * dz;
+      if (dSqr < this.radiusSqr_0 && (this.items_0.size < this.k || dSqr < this.maxDSqr_0)) {
+        this.insert_0(tree.items.get_za3lpa$(i), dSqr);
+      }
+    }
+  };
+  KNearestTraverser.prototype.insert_0 = function (value, dSqr) {
+    if (dSqr >= this.maxDSqr_0) {
+      if (this.items_0.size < this.k) {
+        var $receiver = this.items_0;
+        var element = this.itemRecycler_0.get().set_mv9gn0$(value, dSqr);
+        $receiver.add_11rb$(element);
+        this.maxDSqr_0 = dSqr;
+      }
+       else {
+        return;
+      }
+    }
+     else {
+      var $receiver_0 = this.items_0;
+      var element_0 = this.itemRecycler_0.get().set_mv9gn0$(value, dSqr);
+      $receiver_0.add_11rb$(element_0);
+      for (var i = get_lastIndex(this.items_0); i >= 1; i--) {
+        if (this.items_0.get_za3lpa$(i).dSqr < this.items_0.get_za3lpa$(i - 1 | 0).dSqr) {
+          var tmp$ = this.items_0;
+          var $receiver_1 = this.items_0.get_za3lpa$(i - 1 | 0);
+          this.items_0.set_wxm5ur$(i - 1 | 0, this.items_0.get_za3lpa$(i));
+          tmp$.set_wxm5ur$(i, $receiver_1);
+        }
+         else {
+          break;
+        }
+      }
+      if (this.items_0.size > this.k) {
+        this.items_0.removeAt_za3lpa$(get_lastIndex(this.items_0));
+        this.maxDSqr_0 = last(this.items_0).dSqr;
+      }
+    }
+  };
+  function KNearestTraverser$Item() {
+    this.item_omeqq2$_0 = this.item_omeqq2$_0;
+    this.dSqr = 0.0;
+  }
+  Object.defineProperty(KNearestTraverser$Item.prototype, 'item', {
+    get: function () {
+      if (this.item_omeqq2$_0 == null)
+        return throwUPAE('item');
+      return this.item_omeqq2$_0;
+    },
+    set: function (item) {
+      this.item_omeqq2$_0 = item;
+    }
+  });
+  KNearestTraverser$Item.prototype.set_mv9gn0$ = function (item, dSqr) {
+    this.item = item;
+    this.dSqr = dSqr;
+    return this;
+  };
+  KNearestTraverser$Item.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Item',
+    interfaces: []
+  };
+  function KNearestTraverser$itemRecycler$lambda() {
+    return new KNearestTraverser$Item();
+  }
+  KNearestTraverser.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'KNearestTraverser',
+    interfaces: [KdTreeTraverser]
+  };
+  function KNearestTraverser_init(center, k, maxRadius, $this) {
+    if (maxRadius === void 0)
+      maxRadius = 1.0E9;
+    $this = $this || Object.create(KNearestTraverser.prototype);
+    KNearestTraverser.call($this);
+    $this.reset_w8bw21$(center, k, maxRadius);
     return $this;
   }
   function TreeHelper() {
@@ -4645,9 +4799,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return KdTree$Companion_instance;
   }
-  KdTree.prototype.traverse_vqgpt3$ = function (traverser) {
-    traverser.onStart_xuddlr$(this);
-    this.root.traverse_vqhcsm$(traverser);
+  KdTree.prototype.traverse_klhj8v$ = function (traverser) {
+    traverser.onStart_dizmqh$(this);
+    this.root.traverse_w9gz3l$(traverser);
+    traverser.onFinish_dizmqh$(this);
   };
   function KdTree$Node($outer, indices, depth, bucketSz) {
     this.$outer = $outer;
@@ -4697,27 +4852,27 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.right = new KdTree$Node(this.$outer, new IntRange(k + 1 | 0, this.indices.last), this.depth + 1 | 0, bucketSz);
     }
   }
-  KdTree$Node.prototype.traverse_vqhcsm$ = function (traverser) {
+  KdTree$Node.prototype.traverse_w9gz3l$ = function (traverser) {
     if (this.isLeaf) {
-      traverser.traverseLeaf_pyxcm4$(this.$outer, this);
+      traverser.traverseLeaf_pp9zpw$(this.$outer, this);
     }
      else {
-      var pref = traverser.traversalOrder_b90i4h$(this.$outer, ensureNotNull(this.left), ensureNotNull(this.right));
+      var pref = traverser.traversalOrder_sdmibr$(this.$outer, ensureNotNull(this.left), ensureNotNull(this.right));
       switch (pref) {
         case 5:
           return;
         case 2:
-          this.left.traverse_vqhcsm$(traverser);
+          this.left.traverse_w9gz3l$(traverser);
           break;
         case 4:
-          this.right.traverse_vqhcsm$(traverser);
+          this.right.traverse_w9gz3l$(traverser);
           break;
         case 3:
-          this.right.traverse_vqhcsm$(traverser);
-          this.left.traverse_vqhcsm$(traverser);
+          this.right.traverse_w9gz3l$(traverser);
+          this.left.traverse_w9gz3l$(traverser);
           break;
-        default:this.left.traverse_vqhcsm$(traverser);
-          this.right.traverse_vqhcsm$(traverser);
+        default:this.left.traverse_w9gz3l$(traverser);
+          this.right.traverse_w9gz3l$(traverser);
           break;
       }
     }
@@ -6201,7 +6356,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Vec2f.prototype.equals = function (other) {
     if (this === other)
       return true;
-    if (!Kotlin.isType(other, Vec4f))
+    if (!Kotlin.isType(other, Vec2f))
       return false;
     if (this.x !== other.x)
       return false;
@@ -6466,7 +6621,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Vec3f.prototype.equals = function (other) {
     if (this === other)
       return true;
-    if (!Kotlin.isType(other, Vec4f))
+    if (!Kotlin.isType(other, Vec3f))
       return false;
     if (this.x !== other.x)
       return false;
@@ -10140,6 +10295,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.globalUpMut = MutableVec3f_init();
     this.globalRightMut = MutableVec3f_init();
     this.globalLookDirMut = MutableVec3f_init();
+    this.proj = new Mat4f();
     this.view = new Mat4f();
     this.invView = new Mat4f();
     this.mvp = new Mat4f();
@@ -10190,24 +10346,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   Camera.prototype.updateCamera_aemszp$ = function (ctx) {
     this.aspectRatio = ctx.viewport.aspectRatio;
-    this.updateViewMatrix_aemszp$(ctx);
-    this.updateProjectionMatrix_aemszp$(ctx);
+    this.updateViewMatrix();
+    this.updateProjectionMatrix();
+    ctx.mvpState.viewMatrix.set_d4zu6j$(this.view);
+    ctx.mvpState.projMatrix.set_d4zu6j$(this.proj);
     ctx.mvpState.update_aemszp$(ctx);
     this.mvp.set_d4zu6j$(ctx.mvpState.mvpMatrix);
     this.mvp.invert_d4zu6j$(this.invMvp);
   };
-  Camera.prototype.updateViewMatrix_aemszp$ = function (ctx) {
+  Camera.prototype.updateViewMatrix = function () {
     this.toGlobalCoords_w1lst9$(this.globalPosMut.set_czzhiu$(this.position));
     this.toGlobalCoords_w1lst9$(this.globalLookAtMut.set_czzhiu$(this.lookAt));
     this.toGlobalCoords_w1lst9$(this.globalUpMut.set_czzhiu$(this.up), 0.0).norm();
     this.globalLookDirMut.set_czzhiu$(this.globalLookAtMut).subtract_czzhiu$(this.globalPosMut);
     this.globalRange = this.globalLookDirMut.length();
-    this.globalLookDirMut.norm();
+    this.globalLookDirMut.scale_mx4ult$(1.0 / this.globalRange);
     this.globalLookDirMut.cross_2gj7b4$(this.globalUpMut, this.globalRightMut).norm();
     this.globalRightMut.cross_2gj7b4$(this.globalLookDirMut, this.globalUpMut).norm();
     this.view.setLookAt_n440fu$(this.globalPosMut, this.globalLookAtMut, this.globalUpMut);
     this.view.invert_d4zu6j$(this.invView);
-    ctx.mvpState.viewMatrix.set_d4zu6j$(this.view);
   };
   Camera.prototype.computePickRay_qhyfdh$ = function (pickRay, ptr, ctx) {
     return ptr.isValid && this.computePickRay_jker1g$(pickRay, ptr.x, ptr.y, ctx);
@@ -10227,6 +10384,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Camera.prototype.initRayTes_ezjm2a$ = function (rayTest, screenX, screenY, ctx) {
     rayTest.clear();
     return this.computePickRay_jker1g$(rayTest.ray, screenX, screenY, ctx);
+  };
+  Camera.prototype.isInFrustum_f1kmr1$ = function (node) {
+    return this.isInFrustum_2qa7tb$(node.globalCenter, node.globalRadius);
   };
   Camera.prototype.project_2gj7b4$ = function (world, result) {
     this.tmpVec4_txabq9$_0.set_7b5o5w$(world.x, world.y, world.z, 1.0);
@@ -10278,8 +10438,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.far = 10.0;
     this.isClipToViewport = false;
     this.isKeepAspectRatio = true;
-    this.tmpNodeCenter_0 = MutableVec3f_init();
-    this.tmpNodeExtent_0 = MutableVec3f_init();
+    this.tmpNodeCenter_dwzowq$_0 = MutableVec3f_init();
   }
   OrthographicCamera.prototype.setCentered_y2kzbl$ = function (height, near, far) {
     this.top = height * 0.5;
@@ -10289,11 +10448,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.near = near;
     this.far = far;
   };
-  OrthographicCamera.prototype.updateViewMatrix_aemszp$ = function (ctx) {
-    Camera.prototype.updateViewMatrix_aemszp$.call(this, ctx);
-    this.globalLookDir;
-  };
-  OrthographicCamera.prototype.updateProjectionMatrix_aemszp$ = function (ctx) {
+  OrthographicCamera.prototype.updateCamera_aemszp$ = function (ctx) {
     if (this.isClipToViewport) {
       this.left = 0.0;
       this.right = ctx.viewport.width;
@@ -10302,13 +10457,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
      else if (this.isKeepAspectRatio) {
       var h = this.top - this.bottom;
-      var w = this.aspectRatio * h;
+      var w = ctx.viewport.aspectRatio * h;
       var xCenter = this.left + (this.right - this.left) * 0.5;
       this.left = xCenter - w * 0.5;
       this.right = xCenter + w * 0.5;
     }
+    Camera.prototype.updateCamera_aemszp$.call(this, ctx);
+  };
+  OrthographicCamera.prototype.updateProjectionMatrix = function () {
     if (this.left !== this.right && this.bottom !== this.top && this.near !== this.far) {
-      ctx.mvpState.projMatrix.setOrthographic_w8lrqs$(this.left, this.right, this.bottom, this.top, this.near, this.far);
+      this.proj.setOrthographic_w8lrqs$(this.left, this.right, this.bottom, this.top, this.near, this.far);
     }
   };
   OrthographicCamera.prototype.computeFrustumPlane_jwr40o$ = function (z, result) {
@@ -10318,20 +10476,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.invView.transform_w1lst9$(result.lowerLeft.set_y2kzbl$(this.left, this.bottom, -zd));
     this.invView.transform_w1lst9$(result.lowerRight.set_y2kzbl$(this.right, this.bottom, -zd));
   };
-  OrthographicCamera.prototype.isInFrustum_f1kmr1$ = function (node) {
-    var nodeRadius = node.globalRadius;
-    this.tmpNodeCenter_0.set_czzhiu$(node.globalCenter);
-    this.tmpNodeCenter_0.subtract_czzhiu$(this.globalPos);
-    var x = this.tmpNodeCenter_0.dot_czzhiu$(this.globalRight);
-    if (x > this.right + nodeRadius || x < this.left - nodeRadius) {
+  OrthographicCamera.prototype.isInFrustum_2qa7tb$ = function (globalCenter, globalRadius) {
+    this.tmpNodeCenter_dwzowq$_0.set_czzhiu$(globalCenter);
+    this.tmpNodeCenter_dwzowq$_0.subtract_czzhiu$(this.globalPos);
+    var x = this.tmpNodeCenter_dwzowq$_0.dot_czzhiu$(this.globalRight);
+    if (x > this.right + globalRadius || x < this.left - globalRadius) {
       return false;
     }
-    var y = this.tmpNodeCenter_0.dot_czzhiu$(this.globalUp);
-    if (y > this.top + nodeRadius || y < this.bottom - nodeRadius) {
+    var y = this.tmpNodeCenter_dwzowq$_0.dot_czzhiu$(this.globalUp);
+    if (y > this.top + globalRadius || y < this.bottom - globalRadius) {
       return false;
     }
-    var z = this.tmpNodeCenter_0.dot_czzhiu$(this.globalLookDir);
-    if (z > this.far + nodeRadius || z < this.near - nodeRadius) {
+    var z = this.tmpNodeCenter_dwzowq$_0.dot_czzhiu$(this.globalLookDir);
+    if (z > this.far + globalRadius || z < this.near - globalRadius) {
       return false;
     }
     return true;
@@ -10349,12 +10506,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.clipFar = 100.0;
     this.fovy = 60.0;
     this.fovX_7k9npl$_0 = 0.0;
-    this.sphereFacX_0 = 1.0;
-    this.speherFacY_0 = 1.0;
-    this.tangX_0 = 1.0;
-    this.tangY_0 = 1.0;
-    this.tmpNodeCenter_0 = MutableVec3f_init();
-    this.tmpNodeExtent_0 = MutableVec3f_init();
+    this.sphereFacX_87yued$_0 = 1.0;
+    this.speherFacY_ae9ss$_0 = 1.0;
+    this.tangX_ey6fwg$_0 = 1.0;
+    this.tangY_ey6fvl$_0 = 1.0;
+    this.tmpNodeCenter_hw7d0$_0 = MutableVec3f_init();
+    this.tmpNodeExtent_w3j375$_0 = MutableVec3f_init();
   }
   Object.defineProperty(PerspectiveCamera.prototype, 'fovX', {
     get: function () {
@@ -10364,42 +10521,41 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.fovX_7k9npl$_0 = fovX;
     }
   });
-  PerspectiveCamera.prototype.updateProjectionMatrix_aemszp$ = function (ctx) {
-    ctx.mvpState.projMatrix.setPerspective_7b5o5w$(this.fovy, this.aspectRatio, this.clipNear, this.clipFar);
+  PerspectiveCamera.prototype.updateProjectionMatrix = function () {
+    this.proj.setPerspective_7b5o5w$(this.fovy, this.aspectRatio, this.clipNear, this.clipFar);
     var angY = this.fovy * package$math.DEG_2_RAD / 2.0;
-    this.speherFacY_0 = 1.0 / Math_0.cos(angY);
-    this.tangY_0 = Math_0.tan(angY);
-    var x = this.tangY_0 * this.aspectRatio;
+    this.speherFacY_ae9ss$_0 = 1.0 / Math_0.cos(angY);
+    this.tangY_ey6fvl$_0 = Math_0.tan(angY);
+    var x = this.tangY_ey6fvl$_0 * this.aspectRatio;
     var angX = Math_0.atan(x);
-    this.sphereFacX_0 = 1.0 / Math_0.cos(angX);
-    this.tangX_0 = Math_0.tan(angX);
+    this.sphereFacX_87yued$_0 = 1.0 / Math_0.cos(angX);
+    this.tangX_ey6fwg$_0 = Math_0.tan(angX);
     this.fovX = angX * 2 * package$math.RAD_2_DEG;
   };
   PerspectiveCamera.prototype.computeFrustumPlane_jwr40o$ = function (z, result) {
     var zd = this.clipNear + (this.clipFar - this.clipNear) * z;
-    var x = zd * this.tangX_0;
-    var y = zd * this.tangY_0;
+    var x = zd * this.tangX_ey6fwg$_0;
+    var y = zd * this.tangY_ey6fvl$_0;
     this.invView.transform_w1lst9$(result.upperLeft.set_y2kzbl$(-x, y, -zd));
     this.invView.transform_w1lst9$(result.upperRight.set_y2kzbl$(x, y, -zd));
     this.invView.transform_w1lst9$(result.lowerLeft.set_y2kzbl$(-x, -y, -zd));
     this.invView.transform_w1lst9$(result.lowerRight.set_y2kzbl$(x, -y, -zd));
   };
-  PerspectiveCamera.prototype.isInFrustum_f1kmr1$ = function (node) {
-    var nodeRadius = node.globalRadius;
-    this.tmpNodeCenter_0.set_czzhiu$(node.globalCenter);
-    this.tmpNodeCenter_0.subtract_czzhiu$(this.globalPos);
-    var z = this.tmpNodeCenter_0.dot_czzhiu$(this.globalLookDir);
-    if (z > this.clipFar + nodeRadius || z < this.clipNear - nodeRadius) {
+  PerspectiveCamera.prototype.isInFrustum_2qa7tb$ = function (globalCenter, globalRadius) {
+    this.tmpNodeCenter_hw7d0$_0.set_czzhiu$(globalCenter);
+    this.tmpNodeCenter_hw7d0$_0.subtract_czzhiu$(this.globalPos);
+    var z = this.tmpNodeCenter_hw7d0$_0.dot_czzhiu$(this.globalLookDir);
+    if (z > this.clipFar + globalRadius || z < this.clipNear - globalRadius) {
       return false;
     }
-    var y = this.tmpNodeCenter_0.dot_czzhiu$(this.globalUp);
-    var d = nodeRadius * this.speherFacY_0;
-    z *= this.tangY_0;
+    var y = this.tmpNodeCenter_hw7d0$_0.dot_czzhiu$(this.globalUp);
+    var d = globalRadius * this.speherFacY_ae9ss$_0;
+    z *= this.tangY_ey6fvl$_0;
     if (y > z + d || y < -z - d) {
       return false;
     }
-    var x = this.tmpNodeCenter_0.dot_czzhiu$(this.globalRight);
-    d = nodeRadius * this.sphereFacX_0;
+    var x = this.tmpNodeCenter_hw7d0$_0.dot_czzhiu$(this.globalRight);
+    d = globalRadius * this.sphereFacX_87yued$_0;
     z *= this.aspectRatio;
     if (x > z + d || x < -z - d) {
       return false;
@@ -10442,6 +10598,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.children = ArrayList_init();
     this.tmpBounds = new BoundingBox();
   }
+  Object.defineProperty(Group.prototype, 'size', {
+    get: function () {
+      return this.children.size;
+    }
+  });
   Group.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
     var tmp$;
     Node.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
@@ -10866,9 +11027,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       name = null;
     Node.call(this, name);
     this.meshData = meshData;
-    this.shader_cdun6p$_0 = null;
-    this.primitiveType_5at6b3$_0 = GL_TRIANGLES;
-    this.cullMethod_4r2xn5$_0 = CullMethod$DEFAULT_getInstance();
+    this.shader = null;
+    this.primitiveType = GL_TRIANGLES;
+    this.cullMethod = CullMethod$DEFAULT_getInstance();
     this.meshData.incrementReferenceCount();
   }
   Object.defineProperty(Mesh.prototype, 'generator', {
@@ -10877,30 +11038,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     },
     set: function (value) {
       this.meshData.generator = value;
-    }
-  });
-  Object.defineProperty(Mesh.prototype, 'shader', {
-    get: function () {
-      return this.shader_cdun6p$_0;
-    },
-    set: function (shader) {
-      this.shader_cdun6p$_0 = shader;
-    }
-  });
-  Object.defineProperty(Mesh.prototype, 'primitiveType', {
-    get: function () {
-      return this.primitiveType_5at6b3$_0;
-    },
-    set: function (primitiveType) {
-      this.primitiveType_5at6b3$_0 = primitiveType;
-    }
-  });
-  Object.defineProperty(Mesh.prototype, 'cullMethod', {
-    get: function () {
-      return this.cullMethod_4r2xn5$_0;
-    },
-    set: function (cullMethod) {
-      this.cullMethod_4r2xn5$_0 = cullMethod;
     }
   });
   Object.defineProperty(Mesh.prototype, 'bounds', {
@@ -11553,6 +11690,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.render_aemszp$(ctx);
     this.postRender_aemszp$(ctx);
   };
+  Scene.prototype.dispose_ipew3$ = function (disposable) {
+    this.disposables_mcwga4$_0.add_11rb$(disposable);
+  };
   Scene.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
     tmp$ = this.disposables_mcwga4$_0.iterator();
@@ -12017,7 +12157,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       t += dt + 0.001;
       var err = this.desired - this.actual;
       this.speed += (err * this.$outer.stiffness_u0yfe3$_0 - this.speed * this.$outer.damping_nsq0tu$_0) * dt;
-      this.actual += this.speed * dt;
+      var delta = this.speed * dt;
+      if (Math_0.abs(delta) > 0.001) {
+        this.actual += delta;
+      }
     }
     return this.actual;
   };
@@ -20766,7 +20909,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   ObjectRecycler.prototype.get = function () {
     if (!this.recyclingStack_cbi09h$_0.isEmpty()) {
-      return this.recyclingStack_cbi09h$_0.removeAt_za3lpa$(this.recyclingStack_cbi09h$_0.size - 1 | 0);
+      return this.recyclingStack_cbi09h$_0.removeAt_za3lpa$(get_lastIndex(this.recyclingStack_cbi09h$_0));
     }
      else {
       return this.factory_vv2li5$_0();
@@ -20829,11 +20972,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.liveObjects_0.add_11rb$(obj);
     return obj;
   };
+  ObjectPool.prototype.recycle_trkh7z$ = function (obj) {
+    this.liveObjects_0.remove_11rb$(obj);
+    return ObjectRecycler.prototype.recycle_trkh7z$.call(this, obj);
+  };
   ObjectPool.prototype.recycleAll = function () {
     var tmp$;
     tmp$ = this.liveObjects_0;
     for (var i = 0; i !== tmp$.size; ++i) {
-      this.recycle_trkh7z$(this.liveObjects_0.get_za3lpa$(i));
+      ObjectRecycler.prototype.recycle_trkh7z$.call(this, this.liveObjects_0.get_za3lpa$(i));
     }
     this.liveObjects_0.clear();
   };
@@ -21106,7 +21253,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     AnimationData$Companion_instance = this;
   }
   AnimationData$Companion.prototype.serializer = function () {
-    return _.de.fabmax.kool.util.serialization.AnimationData.$serializer;
+    return AnimationData$$serializer_getInstance();
   };
   AnimationData$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -21123,11 +21270,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function AnimationData$$serializer() {
     this.serialClassDesc_lcp80u$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.AnimationData');
     this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(1));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
     this.serialClassDesc.addElement_61zpoe$('duration');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(2));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
     this.serialClassDesc.addElement_61zpoe$('channels');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(3));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
     AnimationData$$serializer_instance = this;
   }
   Object.defineProperty(AnimationData$$serializer.prototype, 'serialClassDesc', {
@@ -21139,7 +21286,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
     output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
     output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 1, obj.duration);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.NodeAnimationData.$serializer), obj.channels);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(NodeAnimationData$$serializer_getInstance()), obj.channels);
     output.writeEnd_f6e2p$(this.serialClassDesc);
   };
   AnimationData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
@@ -21165,13 +21312,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.NodeAnimationData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.NodeAnimationData.$serializer), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(NodeAnimationData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(NodeAnimationData$$serializer_getInstance()), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case -1:
           break loopLabel;
-        default:throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException(index);
+        default:throw new UnknownFieldException(index);
       }
     }
     input.readEnd_f6e2p$(this.serialClassDesc);
@@ -21190,17 +21337,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return AnimationData$$serializer_instance;
   }
   function AnimationData_init(seen, name, duration, channels, serializationConstructorMarker) {
-    var $this = Object.create(_.de.fabmax.kool.util.serialization.AnimationData.prototype);
+    var $this = Object.create(AnimationData.prototype);
     if ((seen & 1) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('name');
+      throw new MissingFieldException('name');
     else
       $this.name = name;
     if ((seen & 2) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('duration');
+      throw new MissingFieldException('duration');
     else
       $this.duration = duration;
     if ((seen & 4) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('channels');
+      throw new MissingFieldException('channels');
     else
       $this.channels = channels;
     return $this;
@@ -21274,7 +21421,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     NodeAnimationData$Companion_instance = this;
   }
   NodeAnimationData$Companion.prototype.serializer = function () {
-    return _.de.fabmax.kool.util.serialization.NodeAnimationData.$serializer;
+    return NodeAnimationData$$serializer_getInstance();
   };
   NodeAnimationData$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -21291,13 +21438,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function NodeAnimationData$$serializer() {
     this.serialClassDesc_vnv9c0$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.NodeAnimationData');
     this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(1));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
     this.serialClassDesc.addElement_61zpoe$('positionKeys');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(2));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
     this.serialClassDesc.addElement_61zpoe$('rotationKeys');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(3));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
     this.serialClassDesc.addElement_61zpoe$('scalingKeys');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(4));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
     NodeAnimationData$$serializer_instance = this;
   }
   Object.defineProperty(NodeAnimationData$$serializer.prototype, 'serialClassDesc', {
@@ -21308,9 +21455,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   NodeAnimationData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
     var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
     output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.Vec3KeyData.$serializer), obj.positionKeys);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.Vec4KeyData.$serializer), obj.rotationKeys);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.Vec3KeyData.$serializer), obj.scalingKeys);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), obj.positionKeys);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(Vec4KeyData$$serializer_getInstance()), obj.rotationKeys);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), obj.scalingKeys);
     output.writeEnd_f6e2p$(this.serialClassDesc);
   };
   NodeAnimationData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
@@ -21332,23 +21479,23 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.Vec3KeyData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.Vec3KeyData.$serializer), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.Vec4KeyData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.Vec4KeyData.$serializer), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(Vec4KeyData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(Vec4KeyData$$serializer_getInstance()), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.Vec3KeyData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.Vec3KeyData.$serializer), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case -1:
           break loopLabel;
-        default:throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException(index);
+        default:throw new UnknownFieldException(index);
       }
     }
     input.readEnd_f6e2p$(this.serialClassDesc);
@@ -21367,21 +21514,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return NodeAnimationData$$serializer_instance;
   }
   function NodeAnimationData_init(seen, name, positionKeys, rotationKeys, scalingKeys, serializationConstructorMarker) {
-    var $this = Object.create(_.de.fabmax.kool.util.serialization.NodeAnimationData.prototype);
+    var $this = Object.create(NodeAnimationData.prototype);
     if ((seen & 1) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('name');
+      throw new MissingFieldException('name');
     else
       $this.name = name;
     if ((seen & 2) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('positionKeys');
+      throw new MissingFieldException('positionKeys');
     else
       $this.positionKeys = positionKeys;
     if ((seen & 4) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('rotationKeys');
+      throw new MissingFieldException('rotationKeys');
     else
       $this.rotationKeys = rotationKeys;
     if ((seen & 8) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('scalingKeys');
+      throw new MissingFieldException('scalingKeys');
     else
       $this.scalingKeys = scalingKeys;
     return $this;
@@ -21437,7 +21584,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     Vec3KeyData$Companion_instance = this;
   }
   Vec3KeyData$Companion.prototype.serializer = function () {
-    return _.de.fabmax.kool.util.serialization.Vec3KeyData.$serializer;
+    return Vec3KeyData$$serializer_getInstance();
   };
   Vec3KeyData$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -21454,13 +21601,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function Vec3KeyData$$serializer() {
     this.serialClassDesc_m4yowu$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.Vec3KeyData');
     this.serialClassDesc.addElement_61zpoe$('time');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(1));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
     this.serialClassDesc.addElement_61zpoe$('x');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(2));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
     this.serialClassDesc.addElement_61zpoe$('y');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(3));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
     this.serialClassDesc.addElement_61zpoe$('z');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(4));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
     Vec3KeyData$$serializer_instance = this;
   }
   Object.defineProperty(Vec3KeyData$$serializer.prototype, 'serialClassDesc', {
@@ -21511,7 +21658,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
             break;
         case -1:
           break loopLabel;
-        default:throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException(index);
+        default:throw new UnknownFieldException(index);
       }
     }
     input.readEnd_f6e2p$(this.serialClassDesc);
@@ -21530,21 +21677,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return Vec3KeyData$$serializer_instance;
   }
   function Vec3KeyData_init(seen, time, x, y, z, serializationConstructorMarker) {
-    var $this = Object.create(_.de.fabmax.kool.util.serialization.Vec3KeyData.prototype);
+    var $this = Object.create(Vec3KeyData.prototype);
     if ((seen & 1) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('time');
+      throw new MissingFieldException('time');
     else
       $this.time = time;
     if ((seen & 2) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('x');
+      throw new MissingFieldException('x');
     else
       $this.x = x;
     if ((seen & 4) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('y');
+      throw new MissingFieldException('y');
     else
       $this.y = y;
     if ((seen & 8) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('z');
+      throw new MissingFieldException('z');
     else
       $this.z = z;
     return $this;
@@ -21598,7 +21745,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     Vec4KeyData$Companion_instance = this;
   }
   Vec4KeyData$Companion.prototype.serializer = function () {
-    return _.de.fabmax.kool.util.serialization.Vec4KeyData.$serializer;
+    return Vec4KeyData$$serializer_getInstance();
   };
   Vec4KeyData$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -21615,15 +21762,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function Vec4KeyData$$serializer() {
     this.serialClassDesc_gomo0t$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.Vec4KeyData');
     this.serialClassDesc.addElement_61zpoe$('time');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(1));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
     this.serialClassDesc.addElement_61zpoe$('x');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(2));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
     this.serialClassDesc.addElement_61zpoe$('y');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(3));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
     this.serialClassDesc.addElement_61zpoe$('z');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(4));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
     this.serialClassDesc.addElement_61zpoe$('w');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(5));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
     Vec4KeyData$$serializer_instance = this;
   }
   Object.defineProperty(Vec4KeyData$$serializer.prototype, 'serialClassDesc', {
@@ -21681,7 +21828,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
             break;
         case -1:
           break loopLabel;
-        default:throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException(index);
+        default:throw new UnknownFieldException(index);
       }
     }
     input.readEnd_f6e2p$(this.serialClassDesc);
@@ -21700,25 +21847,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return Vec4KeyData$$serializer_instance;
   }
   function Vec4KeyData_init(seen, time, x, y, z, w, serializationConstructorMarker) {
-    var $this = Object.create(_.de.fabmax.kool.util.serialization.Vec4KeyData.prototype);
+    var $this = Object.create(Vec4KeyData.prototype);
     if ((seen & 1) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('time');
+      throw new MissingFieldException('time');
     else
       $this.time = time;
     if ((seen & 2) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('x');
+      throw new MissingFieldException('x');
     else
       $this.x = x;
     if ((seen & 4) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('y');
+      throw new MissingFieldException('y');
     else
       $this.y = y;
     if ((seen & 8) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('z');
+      throw new MissingFieldException('z');
     else
       $this.z = z;
     if ((seen & 16) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('w');
+      throw new MissingFieldException('w');
     else
       $this.w = w;
     return $this;
@@ -21776,7 +21923,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     BoneData$Companion_instance = this;
   }
   BoneData$Companion.prototype.serializer = function () {
-    return _.de.fabmax.kool.util.serialization.BoneData.$serializer;
+    return BoneData$$serializer_getInstance();
   };
   BoneData$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -21793,17 +21940,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function BoneData$$serializer() {
     this.serialClassDesc_t0qu10$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.BoneData');
     this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(1));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
     this.serialClassDesc.addElement_61zpoe$('parent');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(2));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
     this.serialClassDesc.addElement_61zpoe$('children');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(3));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
     this.serialClassDesc.addElement_61zpoe$('offsetMatrix');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(4));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
     this.serialClassDesc.addElement_61zpoe$('vertexIds');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(5));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
     this.serialClassDesc.addElement_61zpoe$('vertexWeights');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(6));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(6));
     BoneData$$serializer_instance = this;
   }
   Object.defineProperty(BoneData$$serializer.prototype, 'serialClassDesc', {
@@ -21815,10 +21962,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
     output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
     output.writeStringElementValue_k4mjep$(this.serialClassDesc, 1, obj.parent);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.StringSerializer), obj.children);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), obj.offsetMatrix);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer), obj.vertexIds);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), obj.vertexWeights);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(internal.StringSerializer), obj.children);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(internal.FloatSerializer), obj.offsetMatrix);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new ArrayListSerializer(internal.IntSerializer), obj.vertexIds);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 5, new ArrayListSerializer(internal.FloatSerializer), obj.vertexWeights);
     output.writeEnd_f6e2p$(this.serialClassDesc);
   };
   BoneData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
@@ -21847,28 +21994,28 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.StringSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.StringSerializer), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(internal.StringSerializer), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(internal.FloatSerializer), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer), local4);
+          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new ArrayListSerializer(internal.IntSerializer), local4);
           bitMask0 |= 16;
           if (!readAll)
             break;
         case 5:
-          local5 = (bitMask0 & 32) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), local5);
+          local5 = (bitMask0 & 32) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 5, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 5, new ArrayListSerializer(internal.FloatSerializer), local5);
           bitMask0 |= 32;
           if (!readAll)
             break;
         case -1:
           break loopLabel;
-        default:throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException(index);
+        default:throw new UnknownFieldException(index);
       }
     }
     input.readEnd_f6e2p$(this.serialClassDesc);
@@ -21887,13 +22034,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return BoneData$$serializer_instance;
   }
   function BoneData_init(seen, name, parent, children, offsetMatrix, vertexIds, vertexWeights, serializationConstructorMarker) {
-    var $this = Object.create(_.de.fabmax.kool.util.serialization.BoneData.prototype);
+    var $this = Object.create(BoneData.prototype);
     if ((seen & 1) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('name');
+      throw new MissingFieldException('name');
     else
       $this.name = name;
     if ((seen & 2) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('parent');
+      throw new MissingFieldException('parent');
     else
       $this.parent = parent;
     if ((seen & 4) === 0)
@@ -21901,15 +22048,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     else
       $this.children = children;
     if ((seen & 8) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('offsetMatrix');
+      throw new MissingFieldException('offsetMatrix');
     else
       $this.offsetMatrix = offsetMatrix;
     if ((seen & 16) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('vertexIds');
+      throw new MissingFieldException('vertexIds');
     else
       $this.vertexIds = vertexIds;
     if ((seen & 32) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('vertexWeights');
+      throw new MissingFieldException('vertexWeights');
     else
       $this.vertexWeights = vertexWeights;
     return $this;
@@ -22076,7 +22223,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return mesh;
   }
-  function MeshData_0(name, primitiveType, indices, attributes, armature, animations) {
+  function MeshData_0(name, primitiveType, attributes, indices, armature, animations) {
     MeshData$Companion_getInstance();
     if (indices === void 0)
       indices = emptyList();
@@ -22086,8 +22233,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       animations = emptyList();
     this.name = name;
     this.primitiveType = primitiveType;
-    this.indices = indices;
     this.attributes = attributes;
+    this.indices = indices;
     this.armature = armature;
     this.animations = animations;
     this.numVertices_ugf8mp$_0 = 0;
@@ -22164,7 +22311,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.ATTRIB_TANGENTS = 'tangents';
   }
   MeshData$Companion.prototype.serializer = function () {
-    return _.de.fabmax.kool.util.serialization.MeshData.$serializer;
+    return MeshData$$serializer_getInstance();
   };
   MeshData$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -22181,17 +22328,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function MeshData$$serializer() {
     this.serialClassDesc_qzcrd9$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.MeshData');
     this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(1));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
     this.serialClassDesc.addElement_61zpoe$('primitiveType');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('indices');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(3));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
     this.serialClassDesc.addElement_61zpoe$('attributes');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(4));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
+    this.serialClassDesc.addElement_61zpoe$('indices');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
     this.serialClassDesc.addElement_61zpoe$('armature');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(5));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
     this.serialClassDesc.addElement_61zpoe$('animations');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(6));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(6));
     MeshData$$serializer_instance = this;
   }
   Object.defineProperty(MeshData$$serializer.prototype, 'serialClassDesc', {
@@ -22202,11 +22349,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MeshData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
     var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
     output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.util.serialization.PrimitiveType)), obj.primitiveType);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer), obj.indices);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.StringSerializer, _.de.fabmax.kool.util.serialization.AttributeList.$serializer), obj.attributes);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.BoneData.$serializer), obj.armature);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.AnimationData.$serializer), obj.animations);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new EnumSerializer(Kotlin.getKClass(PrimitiveType)), obj.primitiveType);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance()), obj.attributes);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer), obj.indices);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new ArrayListSerializer(BoneData$$serializer_getInstance()), obj.armature);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 5, new ArrayListSerializer(AnimationData$$serializer_getInstance()), obj.animations);
     output.writeEnd_f6e2p$(this.serialClassDesc);
   };
   MeshData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
@@ -22230,33 +22377,33 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.util.serialization.PrimitiveType))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.util.serialization.PrimitiveType)), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new EnumSerializer(Kotlin.getKClass(PrimitiveType))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new EnumSerializer(Kotlin.getKClass(PrimitiveType)), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.IntSerializer), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance()), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.StringSerializer, _.de.fabmax.kool.util.serialization.AttributeList.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.StringSerializer, _.de.fabmax.kool.util.serialization.AttributeList.$serializer), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.BoneData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.BoneData.$serializer), local4);
+          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new ArrayListSerializer(BoneData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new ArrayListSerializer(BoneData$$serializer_getInstance()), local4);
           bitMask0 |= 16;
           if (!readAll)
             break;
         case 5:
-          local5 = (bitMask0 & 32) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.AnimationData.$serializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 5, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer(_.de.fabmax.kool.util.serialization.AnimationData.$serializer), local5);
+          local5 = (bitMask0 & 32) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 5, new ArrayListSerializer(AnimationData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 5, new ArrayListSerializer(AnimationData$$serializer_getInstance()), local5);
           bitMask0 |= 32;
           if (!readAll)
             break;
         case -1:
           break loopLabel;
-        default:throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException(index);
+        default:throw new UnknownFieldException(index);
       }
     }
     input.readEnd_f6e2p$(this.serialClassDesc);
@@ -22274,25 +22421,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return MeshData$$serializer_instance;
   }
-  function MeshData_init_0(seen, name, primitiveType, indices, attributes, armature, animations, serializationConstructorMarker) {
+  function MeshData_init_0(seen, name, primitiveType, attributes, indices, armature, animations, serializationConstructorMarker) {
     var tmp$, tmp$_0;
-    var $this = Object.create(_.de.fabmax.kool.util.serialization.MeshData.prototype);
+    var $this = Object.create(MeshData_0.prototype);
     if ((seen & 1) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('name');
+      throw new MissingFieldException('name');
     else
       $this.name = name;
     if ((seen & 2) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('primitiveType');
+      throw new MissingFieldException('primitiveType');
     else
       $this.primitiveType = primitiveType;
     if ((seen & 4) === 0)
+      throw new MissingFieldException('attributes');
+    else
+      $this.attributes = attributes;
+    if ((seen & 8) === 0)
       $this.indices = emptyList();
     else
       $this.indices = indices;
-    if ((seen & 8) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('attributes');
-    else
-      $this.attributes = attributes;
     if ((seen & 16) === 0)
       $this.armature = emptyList();
     else
@@ -22338,10 +22485,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return this.primitiveType;
   };
   MeshData_0.prototype.component3 = function () {
-    return this.indices;
+    return this.attributes;
   };
   MeshData_0.prototype.component4 = function () {
-    return this.attributes;
+    return this.indices;
   };
   MeshData_0.prototype.component5 = function () {
     return this.armature;
@@ -22349,24 +22496,24 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MeshData_0.prototype.component6 = function () {
     return this.animations;
   };
-  MeshData_0.prototype.copy_perg9x$ = function (name, primitiveType, indices, attributes, armature, animations) {
-    return new MeshData_0(name === void 0 ? this.name : name, primitiveType === void 0 ? this.primitiveType : primitiveType, indices === void 0 ? this.indices : indices, attributes === void 0 ? this.attributes : attributes, armature === void 0 ? this.armature : armature, animations === void 0 ? this.animations : animations);
+  MeshData_0.prototype.copy_jtw0pt$ = function (name, primitiveType, attributes, indices, armature, animations) {
+    return new MeshData_0(name === void 0 ? this.name : name, primitiveType === void 0 ? this.primitiveType : primitiveType, attributes === void 0 ? this.attributes : attributes, indices === void 0 ? this.indices : indices, armature === void 0 ? this.armature : armature, animations === void 0 ? this.animations : animations);
   };
   MeshData_0.prototype.toString = function () {
-    return 'MeshData(name=' + Kotlin.toString(this.name) + (', primitiveType=' + Kotlin.toString(this.primitiveType)) + (', indices=' + Kotlin.toString(this.indices)) + (', attributes=' + Kotlin.toString(this.attributes)) + (', armature=' + Kotlin.toString(this.armature)) + (', animations=' + Kotlin.toString(this.animations)) + ')';
+    return 'MeshData(name=' + Kotlin.toString(this.name) + (', primitiveType=' + Kotlin.toString(this.primitiveType)) + (', attributes=' + Kotlin.toString(this.attributes)) + (', indices=' + Kotlin.toString(this.indices)) + (', armature=' + Kotlin.toString(this.armature)) + (', animations=' + Kotlin.toString(this.animations)) + ')';
   };
   MeshData_0.prototype.hashCode = function () {
     var result = 0;
     result = result * 31 + Kotlin.hashCode(this.name) | 0;
     result = result * 31 + Kotlin.hashCode(this.primitiveType) | 0;
-    result = result * 31 + Kotlin.hashCode(this.indices) | 0;
     result = result * 31 + Kotlin.hashCode(this.attributes) | 0;
+    result = result * 31 + Kotlin.hashCode(this.indices) | 0;
     result = result * 31 + Kotlin.hashCode(this.armature) | 0;
     result = result * 31 + Kotlin.hashCode(this.animations) | 0;
     return result;
   };
   MeshData_0.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.primitiveType, other.primitiveType) && Kotlin.equals(this.indices, other.indices) && Kotlin.equals(this.attributes, other.attributes) && Kotlin.equals(this.armature, other.armature) && Kotlin.equals(this.animations, other.animations)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.primitiveType, other.primitiveType) && Kotlin.equals(this.attributes, other.attributes) && Kotlin.equals(this.indices, other.indices) && Kotlin.equals(this.armature, other.armature) && Kotlin.equals(this.animations, other.animations)))));
   };
   function PrimitiveType(name, ordinal) {
     Enum.call(this);
@@ -22429,7 +22576,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     AttributeList$Companion_instance = this;
   }
   AttributeList$Companion.prototype.serializer = function () {
-    return _.de.fabmax.kool.util.serialization.AttributeList.$serializer;
+    return AttributeList$$serializer_getInstance();
   };
   AttributeList$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -22446,9 +22593,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function AttributeList$$serializer() {
     this.serialClassDesc_rr7bde$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.AttributeList');
     this.serialClassDesc.addElement_61zpoe$('type');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(1));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
     this.serialClassDesc.addElement_61zpoe$('values');
-    this.serialClassDesc.pushAnnotation_yj921w$(new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId(2));
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
     AttributeList$$serializer_instance = this;
   }
   Object.defineProperty(AttributeList$$serializer.prototype, 'serialClassDesc', {
@@ -22458,8 +22605,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   AttributeList$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
     var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 0, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.shading.AttributeType)), obj.type);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), obj.values);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 0, new EnumSerializer(Kotlin.getKClass(AttributeType)), obj.type);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer), obj.values);
     output.writeEnd_f6e2p$(this.serialClassDesc);
   };
   AttributeList$$serializer.prototype.load_ljkqvg$ = function (input_0) {
@@ -22474,18 +22621,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         case -2:
           readAll = true;
         case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.shading.AttributeType))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 0, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer(Kotlin.getKClass(_.de.fabmax.kool.shading.AttributeType)), local0);
+          local0 = (bitMask0 & 1) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, new EnumSerializer(Kotlin.getKClass(AttributeType))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 0, new EnumSerializer(Kotlin.getKClass(AttributeType)), local0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer($module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.FloatSerializer), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case -1:
           break loopLabel;
-        default:throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException(index);
+        default:throw new UnknownFieldException(index);
       }
     }
     input.readEnd_f6e2p$(this.serialClassDesc);
@@ -22504,13 +22651,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return AttributeList$$serializer_instance;
   }
   function AttributeList_init(seen, type, values, serializationConstructorMarker) {
-    var $this = Object.create(_.de.fabmax.kool.util.serialization.AttributeList.prototype);
+    var $this = Object.create(AttributeList.prototype);
     if ((seen & 1) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('type');
+      throw new MissingFieldException('type');
     else
       $this.type = type;
     if ((seen & 2) === 0)
-      throw new $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException('values');
+      throw new MissingFieldException('values');
     else
       $this.values = values;
     $this.size = $this.values.size;
@@ -22527,7 +22674,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   AttributeList.prototype.component2 = function () {
     return this.values;
   };
-  AttributeList.prototype.copy_j00qf3$ = function (type, values) {
+  AttributeList.prototype.copy_x00bkk$ = function (type, values) {
     return new AttributeList(type === void 0 ? this.type : type, values === void 0 ? this.values : values);
   };
   AttributeList.prototype.toString = function () {
@@ -24735,8 +24882,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$math.BSplineVec3f = BSplineVec3f;
   package$math.pointTree_ffk80x$ = pointTree;
   package$math.KdTreeTraverser = KdTreeTraverser;
-  package$math.InRadiusTraverser_init_34hdy3$ = InRadiusTraverser_init;
+  package$math.InRadiusTraverser_init_h816bs$ = InRadiusTraverser_init;
   package$math.InRadiusTraverser = InRadiusTraverser;
+  package$math.KNearestTraverser_init_dlq9u$ = KNearestTraverser_init;
+  package$math.KNearestTraverser = KNearestTraverser;
   package$math.TreeHelper = TreeHelper;
   Object.defineProperty(KdTree, 'Companion', {
     get: KdTree$Companion_getInstance
@@ -25399,6 +25548,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Uint32BufferImpl.prototype.plusAssign_za3lpa$ = Uint32Buffer.prototype.plusAssign_za3lpa$;
   Float32BufferImpl.prototype.put_q3cr5i$ = Float32Buffer.prototype.put_q3cr5i$;
   Float32BufferImpl.prototype.plusAssign_mx4ult$ = Float32Buffer.prototype.plusAssign_mx4ult$;
+  InRadiusTraverser.prototype.onFinish_dizmqh$ = KdTreeTraverser.prototype.onFinish_dizmqh$;
   KdTree$Companion$VEC3F_HELPER$ObjectLiteral.prototype.getSzX_11rb$ = TreeHelper.prototype.getSzX_11rb$;
   KdTree$Companion$VEC3F_HELPER$ObjectLiteral.prototype.getSzY_11rb$ = TreeHelper.prototype.getSzY_11rb$;
   KdTree$Companion$VEC3F_HELPER$ObjectLiteral.prototype.getSzZ_11rb$ = TreeHelper.prototype.getSzZ_11rb$;

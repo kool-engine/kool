@@ -115,7 +115,7 @@ open class Vec2f(x: Float, y: Float) {
      */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Vec4f) return false
+        if (other !is Vec2f) return false
 
         if (x != other.x) return false
         if (y != other.y) return false
@@ -311,7 +311,7 @@ open class Vec3f(x: Float, y: Float, z: Float) {
      */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Vec4f) return false
+        if (other !is Vec3f) return false
 
         if (x != other.x) return false
         if (y != other.y) return false

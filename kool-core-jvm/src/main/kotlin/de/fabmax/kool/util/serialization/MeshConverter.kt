@@ -3,6 +3,8 @@ package de.fabmax.kool.util.serialization
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.shading.AttributeType
+import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logI
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
 
@@ -16,18 +18,28 @@ object MeshConverter {
 
         val nodes = mutableMapOf<String, SceneNode>()
         traverseSceneGraph(aiScene.mRootNode(), null, nodes)
+        logI { "Loaded scene: ${nodes.size} nodes" }
 
         aiScene.mMeshes().meshes().forEach { aiMesh ->
+            logD { "Loading mesh ${aiMesh.mName().asString()}" }
+
             val meshName = aiMesh.mName().asString()
             val posList = mutableListOf<Float>()
             val normalList = mutableListOf<Float>()
             val uvList = mutableListOf<Float>()
             val colorList = mutableListOf<Float>()
-            val indices = makeTriangleIndices(aiMesh)
             val armature = makeArmature(aiMesh, nodes)
             val animations = makeAnimations(aiScene)
 
             makeVertices(aiMesh, posList, normalList, uvList, colorList)
+
+            logD { "  primitive type: ${aiMesh.mPrimitiveTypes()}" }
+            val indices = when (aiMesh.mPrimitiveTypes()) {
+                Assimp.aiPrimitiveType_TRIANGLE -> makeTriangleIndices(aiMesh)
+                Assimp.aiPrimitiveType_POLYGON -> makeTriangleIndices(aiMesh)
+                else -> emptyList()
+            }
+            logD { "  ${posList.size/3} verts, ${indices.size} indices" }
 
             val attribs = mutableMapOf(MeshData.ATTRIB_POSITIONS to AttributeList(AttributeType.VEC_3F, posList))
             if (!normalList.isEmpty()) {
@@ -39,7 +51,7 @@ object MeshConverter {
             if (!colorList.isEmpty()) {
                 attribs[MeshData.ATTRIB_COLORS] = AttributeList(AttributeType.COLOR_4F, colorList)
             }
-            meshes += MeshData(meshName, PrimitiveType.TRIANGLES, indices, attribs, armature, animations)
+            meshes += MeshData(meshName, PrimitiveType.TRIANGLES, attribs, indices, armature, animations)
         }
 
         return meshes
@@ -127,29 +139,29 @@ object MeshConverter {
     }
 
     private fun makeTriangleIndices(aiMesh: AIMesh): List<Int> {
-        val triList = mutableListOf<Int>()
+        val indices = mutableListOf<Int>()
 
         for (face in aiMesh.mFaces()) {
             val idcs = face.mIndices()
             when (face.mNumIndices()) {
                 3 -> {
-                    triList += idcs[0]
-                    triList += idcs[1]
-                    triList += idcs[2]
+                    indices += idcs[0]
+                    indices += idcs[1]
+                    indices += idcs[2]
                 }
                 4 -> {
-                    triList += idcs[0]
-                    triList += idcs[1]
-                    triList += idcs[2]
+                    indices += idcs[0]
+                    indices += idcs[1]
+                    indices += idcs[2]
 
-                    triList += idcs[0]
-                    triList += idcs[2]
-                    triList += idcs[3]
+                    indices += idcs[0]
+                    indices += idcs[2]
+                    indices += idcs[3]
                 }
                 else -> throw IllegalArgumentException("Invalid number of face vertices: ${face.mNumIndices()}")
             }
         }
-        return triList
+        return indices
     }
 
     private fun makeVertices(aiMesh: AIMesh, posList: MutableList<Float>, normalList: MutableList<Float>,

@@ -4,6 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.BoundingBox
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -273,7 +274,10 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
                 val err = desired - actual
                 speed += (err * stiffness - speed * damping) * dt
-                actual += speed * dt
+                val delta = speed * dt
+                if (abs(delta) > 0.001f) {
+                    actual += delta
+                }
             }
             return actual
         }
