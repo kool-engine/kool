@@ -1,7 +1,7 @@
 apply plugin: 'kotlin-platform-jvm'
 
 dependencies {
-    expectedBy project(":kool-demo")
+    expectedBy project(":kool-demo-common")
 
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile project(":kool-core-jvm")

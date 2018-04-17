@@ -8,7 +8,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlin_version"
     compile project(":kool-core-js")
 
-    expectedBy project(":kool-demo")
+    expectedBy project(":kool-demo-common")
 }
 
 compileKotlin2Js {

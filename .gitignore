@@ -4,3 +4,4 @@
 build
 *.kjsm
 /local.properties
+/publishing.gradle

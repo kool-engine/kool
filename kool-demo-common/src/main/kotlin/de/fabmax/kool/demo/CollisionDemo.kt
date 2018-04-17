@@ -21,6 +21,49 @@ import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.lineMesh
 
 
+fun basicCollisionDemo(ctx: KoolContext): List<Scene> {
+    val scenes = mutableListOf<Scene>()
+
+    val ARRAY_SIZE_Y = 2
+    val ARRAY_SIZE_X = 1
+    val ARRAY_SIZE_Z = 1
+
+    scenes += scene {
+        +sphericalInputTransform {
+            +camera
+            maxZoom = 50f
+            resetZoom(4f)
+            setMouseRotation(45f, -30f)
+        }
+
+        val world = CollisionWorld()
+        world.gravity.set(0f, -10f, 0f)
+        onPreRender += { ctx ->
+            world.stepSimulation(ctx.deltaT)
+        }
+
+        world.bodies += staticBox(100f, 100f, 100f).apply {
+            centerOfMass.set(0f, -50f, 0f)
+            this@scene += BoxMesh(this)
+        }
+
+        var c = 0
+        for (k in 0 until ARRAY_SIZE_Y) {
+            for (i in 0 until ARRAY_SIZE_X) {
+                for (j in 0 until ARRAY_SIZE_Z) {
+                    world.bodies += uniformMassBox(.2f, .2f, .2f, 1f).apply {
+                        centerOfMass.set(0.2f * i, 2 + 0.2f*k, 0.2f * j)
+                        this@scene += BoxMesh(this, BOX_COLORS[c++ % BOX_COLORS.size])
+                    }
+                }
+            }
+        }
+
+    }
+
+    return scenes
+}
+
 fun collisionDemo(ctx: KoolContext): List<Scene> {
     var boxWorld: BoxWorld? = null
     val scenes = mutableListOf<Scene>()
@@ -147,11 +190,6 @@ class BoxWorld(private val shadowMap: ShadowMap?): Group() {
     val world = CollisionWorld()
     private val rand = Random(20)
 
-    private val colors = listOf(Color.MD_AMBER_500, Color.MD_BLUE_500, Color.MD_BROWN_500, Color.MD_CYAN_500,
-            Color.MD_GREEN_500, Color.MD_INDIGO_500, Color.MD_LIME_500, Color.MD_ORANGE_500, Color.MD_PINK_500,
-            Color.MD_PURPLE_500, Color.MD_RED_500, Color.MD_TEAL_500, Color.MD_YELLOW_500, Color.MD_DEEP_ORANGE_500,
-            Color.MD_DEEP_PURPLE_500, Color.MD_LIGHT_BLUE_500, Color.MD_LIGHT_GREEN_500, Color.MD_BLUE_GREY_500)
-
     init {
         world.gravity.set(0f, -2.5f, 0f)
         onPreRender += { ctx ->
@@ -175,7 +213,7 @@ class BoxWorld(private val shadowMap: ShadowMap?): Group() {
             val x = rand.randomF(1f, 2f)
             val y = rand.randomF(1f, 2f)
             val z = rand.randomF(1f, 2f)
-            val box = uniformMassBox(x, y, z, x*y*z).apply {
+            val box = uniformMassBox(x, y, z, x * y * z).apply {
                 centerOfMass.x = centers[i%centers.size].x + rand.randomF(-.5f, .5f)
                 centerOfMass.z = centers[i%centers.size].y + rand.randomF(-.5f, .5f)
                 centerOfMass.y = (n - i) / stacks * 3f + 3
@@ -184,7 +222,8 @@ class BoxWorld(private val shadowMap: ShadowMap?): Group() {
                         MutableVec3f(rand.randomF(-1f, 1f), rand.randomF(-1f, 1f), rand.randomF(-1f, 1f)).norm())
             }
             world.bodies += box
-            this += BoxMesh(box, colors[rand.randomI(0, colors.size-1)], shadowMap)
+            //this += BoxMesh(box, BOX_COLORS[rand.randomI(0, BOX_COLORS.size-1)], shadowMap)
+            this += BoxMesh(box, BOX_COLORS[i % BOX_COLORS.size], shadowMap)
         }
         createGround()
     }
@@ -242,3 +281,13 @@ class BoxWorld(private val shadowMap: ShadowMap?): Group() {
         this += BoxMesh(borderFt, Color.MD_ORANGE, shadowMap)
     }
 }
+
+
+private val BOX_COLORS = listOf(Color.MD_YELLOW, Color.MD_AMBER, Color.MD_ORANGE, Color.MD_DEEP_ORANGE, Color.MD_RED,
+        Color.MD_PINK, Color.MD_PURPLE, Color.MD_DEEP_PURPLE, Color.MD_INDIGO, Color.MD_BLUE,
+        Color.MD_LIGHT_BLUE, Color.MD_CYAN, Color.MD_TEAL, Color.MD_GREEN, Color.MD_LIGHT_GREEN, Color.MD_LIME)
+
+//private val BOX_COLORS = listOf(Color.MD_AMBER_500, Color.MD_BLUE_500, Color.MD_BROWN_500, Color.MD_CYAN_500,
+//        Color.MD_GREEN_500, Color.MD_INDIGO_500, Color.MD_LIME_500, Color.MD_ORANGE_500, Color.MD_PINK_500,
+//        Color.MD_PURPLE_500, Color.MD_RED_500, Color.MD_TEAL_500, Color.MD_YELLOW_500, Color.MD_DEEP_ORANGE_500,
+//        Color.MD_DEEP_PURPLE_500, Color.MD_LIGHT_BLUE_500, Color.MD_LIGHT_GREEN_500, Color.MD_BLUE_GREY_500)

@@ -1,4 +1,5 @@
 # Kotlin + OpenGL = kool
+[ ![Download](https://api.bintray.com/packages/fabmax/kool/kool/images/download.svg) ](https://bintray.com/fabmax/kool/kool/_latestVersion)
 
 A simple OpenGL based graphics engine that works on Desktop Java, Android and
 in browsers with Javascript / WebGL.
@@ -99,6 +100,20 @@ fun main(args: Array<String>) {
     
     // Finally run the whole thing
     ctx.run()
+}
+```
+
+## Try it
+Library is published on bintray. Use it with gradle:
+```gradle
+repositories {
+    maven { url 'https://dl.bintray.com/fabmax/kool/' }
+}
+
+dependencies {
+    compile 'de.fabmax:kool-core-jvm:0.1.0'     // for a JVM project
+    compile 'de.fabmax:kool-core-js:0.1.0'      // for a Javascript project
+    compile 'de.fabmax:kool-core-common:0.1.0'  // for common module of a multi-platform project
 }
 ```
 

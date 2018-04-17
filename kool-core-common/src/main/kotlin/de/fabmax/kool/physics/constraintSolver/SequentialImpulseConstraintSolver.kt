@@ -6,7 +6,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.isFuzzyZero
 import de.fabmax.kool.physics.RigidBody
 import de.fabmax.kool.physics.collision.Contact
-import de.fabmax.kool.util.ObjectRecycler
+import de.fabmax.kool.util.ObjectPool
 import kotlin.math.max
 import kotlin.math.sqrt
 
@@ -33,7 +33,7 @@ import kotlin.math.sqrt
  *    software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-class PgsJacobiSolver {
+class SequentialImpulseConstraintSolver {
 
     private var maxOverrideNumSolverIterations = 0
 
@@ -49,6 +49,8 @@ class PgsJacobiSolver {
     private val tmpVec2 = MutableVec3f()
     private val tmpVec3 = MutableVec3f()
 
+    private var n = 0
+
     init {
         infoGlobal.splitImpulse = false
         infoGlobal.timeStep = 1f / 60f
@@ -57,6 +59,8 @@ class PgsJacobiSolver {
     }
 
     fun solveContacts(bodies: List<RigidBody>, contacts: List<Contact>) {
+//        println("${n++}: num manifolds: ${contacts.size}:")
+
         solveGroupSetup(bodies, contacts)
         solveGroupIterations()
         solveGroupFinish()
@@ -400,32 +404,18 @@ class PgsJacobiSolver {
             }
         }
 
+//        if (contactPointPool.size > 0) {
+//            println("  num contacts: ${contactPointPool.size}")
+//            for (i in 0 until contactPointPool.size) {
+//                val c = contactPointPool[i]
+//                println("    ${c.positionWorldOnB} ${c.distance} applImp: ${c.appliedImpulse}")
+//            }
+//        }
+
         contactPointPool.recycleAll()
         solverBodyPool.recycleAll()
         contactConstraintPool.recycleAll()
         contactFrictionConstraintPool.recycleAll()
         contactRollingConstraintPool.recycleAll()
-    }
-
-    private class ObjectPool<T: Any>(factory: () -> T) : ObjectRecycler<T>(factory) {
-        private val liveObjects = mutableListOf<T>()
-
-        val size: Int
-            get() = liveObjects.size
-
-        operator fun get(index: Int): T = liveObjects[index]
-
-        override fun get(): T {
-            val obj = super.get()
-            liveObjects += obj
-            return obj
-        }
-
-        fun recycleAll() {
-            for (i in liveObjects.indices) {
-                recycle(liveObjects[i])
-            }
-            liveObjects.clear()
-        }
     }
 }

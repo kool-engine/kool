@@ -3,7 +3,7 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.physics.collision.BoxBoxCollision
 import de.fabmax.kool.physics.collision.Contacts
-import de.fabmax.kool.physics.constraintSolver.PgsJacobiSolver
+import de.fabmax.kool.physics.constraintSolver.SequentialImpulseConstraintSolver
 import kotlin.math.min
 
 class CollisionWorld {
@@ -13,13 +13,13 @@ class CollisionWorld {
     val gravity = MutableVec3f(0f, -9.81f, 0f)
 
     private val collisionChecker = BoxBoxCollision()
-    private val solver = PgsJacobiSolver()
+    private val solver = SequentialImpulseConstraintSolver()
     private val contacts = Contacts()
 
     private var realTime = 0.0
     private var simTime = 0.0
 
-    private var timeStep = 1 / 90f
+    private var timeStep = 1 / 60f
 
     fun stepSimulation(dt: Float) {
         // limit max step time to 0.1 secs, i.e. if fram rate goes below 10 fps, real time is not achieved anymore
@@ -51,13 +51,13 @@ class CollisionWorld {
             }
         }
 
-        if (!contacts.contacts.isEmpty()) {
+        //if (!contacts.contacts.isEmpty()) {
             //contacts.dumpContacts()
 
             // we got contacts, solve them!
             solver.solveContacts(bodies, contacts.contacts)
             // recycle all contact points
             contacts.clearContacts()
-        }
+        //}
     }
 }

@@ -13,14 +13,18 @@ dependencies {
     compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version"
     testCompile "org.jetbrains.kotlin:kotlin-test-js:$kotlin_version"
 
-    expectedBy project(":kool-core")
+    expectedBy project(":kool-core-common")
 }
 
 // generate a pom file with dependencies
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        KoolCoreJs(MavenPublication) {
             from components.java
         }
     }
+}
+
+if (publishingAvailable) {
+    apply from: "../publishing.gradle"
 }

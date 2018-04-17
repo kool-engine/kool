@@ -2,5 +2,5 @@ apply plugin: 'kotlin-platform-common'
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile project(":kool-core")
+    compile project(":kool-core-common")
 }

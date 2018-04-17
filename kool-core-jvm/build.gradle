@@ -30,7 +30,7 @@ compileTestKotlin {
 kotlin { experimental { coroutines 'enable' } }
 
 dependencies {
-    expectedBy project(":kool-core")
+    expectedBy project(":kool-core-common")
 
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
@@ -57,8 +57,12 @@ dependencies {
 // generate a pom file with dependencies
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        KoolCoreJvm(MavenPublication) {
             from components.java
         }
     }
+}
+
+if (publishingAvailable) {
+    apply from: "../publishing.gradle"
 }
