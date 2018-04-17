@@ -18,6 +18,14 @@ buildscript {
 
 apply plugin: 'kotlin-platform-jvm'
 apply plugin: 'kotlinx-serialization'
+apply plugin: 'maven-publish'
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
 
 kotlin { experimental { coroutines 'enable' } }
 
@@ -46,8 +54,11 @@ dependencies {
     runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions {
-        jvmTarget = "1.8"
+// generate a pom file with dependencies
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
     }
 }

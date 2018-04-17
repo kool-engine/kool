@@ -12,7 +12,7 @@ dependencies {
 }
 
 compileKotlin2Js {
-    kotlinOptions.outputFile = "${projectDir}/$webPath/kooldemo.js"
+    kotlinOptions.outputFile = "${buildDir}/web/kooldemo.js"
     kotlinOptions.moduleKind = "amd"
     kotlinOptions.sourceMap = false
 }
@@ -32,6 +32,16 @@ build.doLast {
                 def path = fileTreeElement.path
                 path.endsWith(".js") && (path.startsWith("META-INF/resources/") || !path.startsWith("META-INF/"))
             }
+        }
+    }
+
+    copy {
+        includeEmptyDirs = false
+
+        from "${buildDir}/web"
+        into "${projectDir}/$webPath"
+        include { fileTreeElement ->
+            fileTreeElement.path.endsWith(".js")
         }
     }
 
