@@ -1,6 +1,5 @@
 apply plugin: 'kotlin-platform-js'
 apply plugin: 'kotlinx-serialization'
-apply plugin: 'maven-publish'
 
 compileKotlin2Js {
     kotlinOptions.outputFile = "${buildDir}/web/kool.js"
@@ -14,15 +13,6 @@ dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-test-js:$kotlin_version"
 
     expectedBy project(":kool-core-common")
-}
-
-// generate a pom file with dependencies
-publishing {
-    publications {
-        KoolCoreJs(MavenPublication) {
-            from components.java
-        }
-    }
 }
 
 if (publishingAvailable) {

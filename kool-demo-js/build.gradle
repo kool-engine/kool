@@ -18,11 +18,11 @@ compileKotlin2Js {
 }
 
 clean {
-    delete new File("$projectDir/$webPath")
+    delete "$projectDir/$webPath"
 }
 
 build.doLast {
-    configurations.compile.each { File file ->
+    configurations.compile.each { file ->
         copy {
             includeEmptyDirs = false
 

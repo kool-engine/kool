@@ -1,6 +1,5 @@
 apply plugin: 'kotlin-platform-common'
 apply plugin: 'kotlinx-serialization'
-apply plugin: 'maven-publish'
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlin_version"
@@ -8,15 +7,6 @@ dependencies {
 
     testCompile "org.jetbrains.kotlin:kotlin-test-common:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlin_version"
-}
-
-// generate a pom file with dependencies
-publishing {
-    publications {
-        KoolCoreCommon(MavenPublication) {
-            from components.java
-        }
-    }
 }
 
 if (publishingAvailable) {
