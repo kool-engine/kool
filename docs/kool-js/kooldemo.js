@@ -1,8 +1,6 @@
 define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
-  var createContext = $module$kool.de.fabmax.kool.createContext;
-  var split = Kotlin.kotlin.text.split_ip8yn$;
   var Unit = Kotlin.kotlin.Unit;
   var sphericalInputTransform = $module$kool.de.fabmax.kool.scene.sphericalInputTransform_6sxffc$;
   var CollisionWorld = $module$kool.de.fabmax.kool.physics.CollisionWorld;
@@ -135,6 +133,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var ToggleButton = $module$kool.de.fabmax.kool.scene.ui.ToggleButton;
   var TextField = $module$kool.de.fabmax.kool.scene.ui.TextField;
   var equals = Kotlin.equals;
+  var createContext = $module$kool.de.fabmax.kool.createContext;
+  var split = Kotlin.kotlin.text.split_ip8yn$;
   BoxWorld.prototype = Object.create(Group.prototype);
   BoxWorld.prototype.constructor = BoxWorld;
   MenuButtonUi.prototype = Object.create(ToggleButtonUi.prototype);
@@ -167,32 +167,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   TreeGenerator$TreeNode.prototype.constructor = TreeGenerator$TreeNode;
   TreeTopPointDistribution.prototype = Object.create(PointDistribution.prototype);
   TreeTopPointDistribution.prototype.constructor = TreeTopPointDistribution;
-  function main() {
-    var ctx = createContext();
-    ctx.assetMgr.assetsBaseDir = '../assets';
-    new Demo(ctx, getParams().get_11rb$('demo'));
-  }
-  var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
-  function getParams() {
-    var tmp$;
-    var params = LinkedHashMap_init();
-    if (window.location.search.length > 1) {
-      var vars = split(window.location.search.substring(1), ['&']);
-      tmp$ = vars.iterator();
-      while (tmp$.hasNext()) {
-        var pair = tmp$.next();
-        var keyVal = split(pair, ['=']);
-        if (keyVal.size === 2) {
-          var keyEnc = keyVal.get_za3lpa$(0);
-          var valEnc = keyVal.get_za3lpa$(1);
-          var key = decodeURIComponent(keyEnc).toString();
-          var value = decodeURIComponent(valEnc).toString();
-          params.put_xwzc9p$(key, value);
-        }
-      }
-    }
-    return params;
-  }
   function basicCollisionDemo$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
@@ -812,6 +786,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'MenuButtonUi',
     interfaces: [ToggleButtonUi]
   };
+  var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   function Earth(name) {
     Earth$Companion_getInstance();
@@ -2701,12 +2676,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.length = length;
     this.quads = colorMesh(void 0, SynthieScene$Heightmap$quads$lambda(this));
     this.quadV = this.quads.meshData.get_za3lpa$(0);
-    this.zPos = -10000.0;
+    this.zPos = -1000.0;
     this.sampleInterval = 0.05;
     this.nextSample = 0.0;
     this.unaryPlus_uv0sim$(this.quads);
+    this.onPreRender.add_11rb$(SynthieScene$SynthieScene$Heightmap_init$lambda(this));
   }
-  SynthieScene$Heightmap.prototype.render_aemszp$ = function (ctx) {
+  SynthieScene$Heightmap.prototype.updateQuads_aemszp$ = function (ctx) {
     var tmp$;
     this.nextSample -= ctx.deltaT;
     if (this.nextSample <= 0) {
@@ -2757,15 +2733,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         this.quadV.index = 0;
       }
       this.zPos += 1.0;
-      if (this.zPos > 10000) {
-        this.zPos = -10000.0;
+      if (this.zPos > 1000) {
+        this.zPos = -1000.0;
       }
       this.quads.meshData.isSyncRequired = true;
+      this.quads.bounds.set_w8lrqs$((-this.width | 0) / 2.0, 0.0, this.zPos - this.length, this.width / 2.0, 50.0, this.zPos);
     }
     this.setIdentity();
     this.scale_y2kzbl$(1.0 / 32.0, 1.0 / 32.0, 1.0 / 32.0);
     this.translate_y2kzbl$(0.0, -32.0, -this.zPos + this.length / 5.0);
-    TransformGroup.prototype.render_aemszp$.call(this, ctx);
   };
   function SynthieScene$Heightmap$quads$lambda$lambda$lambda($receiver) {
     $receiver.normal.set_czzhiu$(Vec3f.Companion.Y_AXIS);
@@ -2791,6 +2767,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.isFrustumChecked = false;
       $receiver.meshData.usage = gl.GL_DYNAMIC_DRAW;
       $receiver.generator = SynthieScene$Heightmap$quads$lambda$lambda(this$Heightmap);
+      return Unit;
+    };
+  }
+  function SynthieScene$SynthieScene$Heightmap_init$lambda(this$Heightmap) {
+    return function ($receiver, ctx) {
+      this$Heightmap.updateQuads_aemszp$(ctx);
       return Unit;
     };
   }
@@ -3955,8 +3937,31 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_4.onClick.add_11rb$(uiDemoContent$lambda$lambda_0(uiRoot));
     $receiver.unaryPlus_uv0sim$($receiver_4);
   }
-  _.main = main;
-  _.getParams = getParams;
+  function main() {
+    var ctx = createContext();
+    ctx.assetMgr.assetsBaseDir = '../assets';
+    new Demo(ctx, getParams().get_11rb$('demo'));
+  }
+  function getParams() {
+    var tmp$;
+    var params = LinkedHashMap_init();
+    if (window.location.search.length > 1) {
+      var vars = split(window.location.search.substring(1), ['&']);
+      tmp$ = vars.iterator();
+      while (tmp$.hasNext()) {
+        var pair = tmp$.next();
+        var keyVal = split(pair, ['=']);
+        if (keyVal.size === 2) {
+          var keyEnc = keyVal.get_za3lpa$(0);
+          var valEnc = keyVal.get_za3lpa$(1);
+          var key = decodeURIComponent(keyEnc).toString();
+          var value = decodeURIComponent(valEnc).toString();
+          params.put_xwzc9p$(key, value);
+        }
+      }
+    }
+    return params;
+  }
   $$importsForInline$$.kool = $module$kool;
   var package$de = _.de || (_.de = {});
   var package$fabmax = package$de.fabmax || (package$de.fabmax = {});
@@ -3997,6 +4002,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   package$demo.TreeTopPointDistribution = TreeTopPointDistribution;
   package$demo.uiDemoScene = uiDemoScene;
   package$demo.uiDemoContent_d6jo3u$ = uiDemoContent;
+  _.main = main;
+  _.getParams = getParams;
   BOX_COLORS = listOf([Color.Companion.MD_YELLOW, Color.Companion.MD_AMBER, Color.Companion.MD_ORANGE, Color.Companion.MD_DEEP_ORANGE, Color.Companion.MD_RED, Color.Companion.MD_PINK, Color.Companion.MD_PURPLE, Color.Companion.MD_DEEP_PURPLE, Color.Companion.MD_INDIGO, Color.Companion.MD_BLUE, Color.Companion.MD_LIGHT_BLUE, Color.Companion.MD_CYAN, Color.Companion.MD_TEAL, Color.Companion.MD_GREEN, Color.Companion.MD_LIGHT_GREEN, Color.Companion.MD_LIME]);
   Kotlin.defineModule('kooldemo', _);
   return _;

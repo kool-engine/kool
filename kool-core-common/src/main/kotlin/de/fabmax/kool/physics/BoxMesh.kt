@@ -72,7 +72,7 @@ class MultiBoxMesh(val world: CollisionWorld) : Mesh(MeshData(Attribute.POSITION
     private val vert = meshData[0]
 
     init {
-        meshData.rebuildBoundsOnSync = true
+        meshData.isRebuildBoundsOnSync = true
     }
 
     fun updateBoxes() {

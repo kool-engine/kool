@@ -1,30 +1,21 @@
 define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, Kotlin, $module$kotlinx_serialization_runtime_js) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
-  var throwCCE = Kotlin.throwCCE;
-  var Unit = Kotlin.kotlin.Unit;
   var Kind_CLASS = Kotlin.Kind.CLASS;
-  var ensureNotNull = Kotlin.ensureNotNull;
-  var round = Kotlin.kotlin.math.round_14dthe$;
-  var until = Kotlin.kotlin.ranges.until_dqglrj$;
-  var substring = Kotlin.kotlin.text.substring_fc3b62$;
-  var Kind_OBJECT = Kotlin.Kind.OBJECT;
-  var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
-  var toBoxedChar = Kotlin.toBoxedChar;
-  var unboxChar = Kotlin.unboxChar;
-  var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
-  var mutableSetOf = Kotlin.kotlin.collections.mutableSetOf_i5x0yv$;
-  var to = Kotlin.kotlin.to_ujzrz7$;
-  var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
-  var getCallableRef = Kotlin.getCallableRef;
   var math = Kotlin.kotlin.math;
+  var Kind_OBJECT = Kotlin.Kind.OBJECT;
+  var Unit = Kotlin.kotlin.Unit;
   var numberToInt = Kotlin.numberToInt;
+  var ensureNotNull = Kotlin.ensureNotNull;
   var equals = Kotlin.equals;
   var Enum = Kotlin.kotlin.Enum;
   var throwISE = Kotlin.throwISE;
   var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
+  var toBoxedChar = Kotlin.toBoxedChar;
+  var unboxChar = Kotlin.unboxChar;
   var toChar = Kotlin.toChar;
   var PropertyMetadata = Kotlin.PropertyMetadata;
+  var throwCCE = Kotlin.throwCCE;
   var RuntimeException_init = Kotlin.kotlin.RuntimeException_init_pdl1vj$;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var Exception_init = Kotlin.kotlin.Exception_init_pdl1vj$;
@@ -45,16 +36,23 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var hashCode = Kotlin.hashCode;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
+  var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var println = Kotlin.kotlin.io.println_s8jyv4$;
+  var mutableSetOf = Kotlin.kotlin.collections.mutableSetOf_i5x0yv$;
   var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
   var toShort = Kotlin.toShort;
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
+  var getCallableRef = Kotlin.getCallableRef;
   var StringBuilder = Kotlin.kotlin.text.StringBuilder;
   var toInt = Kotlin.kotlin.text.toInt_6ic1pp$;
+  var to = Kotlin.kotlin.to_ujzrz7$;
+  var first_0 = Kotlin.kotlin.collections.first_us0mfu$;
+  var last_0 = Kotlin.kotlin.collections.last_us0mfu$;
   var toString = Kotlin.toString;
   var get_indices_0 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
+  var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
   var ArrayListSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer;
   var UnknownFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException;
   var SerialClassDescImpl = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.SerialClassDescImpl;
@@ -67,20 +65,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
   var LinkedHashMapSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer;
   var removeAll = Kotlin.kotlin.collections.removeAll_uhyeqt$;
-  ImageTextureData.prototype = Object.create(TextureData.prototype);
-  ImageTextureData.prototype.constructor = ImageTextureData;
-  JsAssetManager.prototype = Object.create(AssetManager.prototype);
-  JsAssetManager.prototype.constructor = JsAssetManager;
-  JsContext.prototype = Object.create(KoolContext.prototype);
-  JsContext.prototype.constructor = JsContext;
-  Uint8BufferImpl.prototype = Object.create(GenericBuffer.prototype);
-  Uint8BufferImpl.prototype.constructor = Uint8BufferImpl;
-  Uint16BufferImpl.prototype = Object.create(GenericBuffer.prototype);
-  Uint16BufferImpl.prototype.constructor = Uint16BufferImpl;
-  Uint32BufferImpl.prototype = Object.create(GenericBuffer.prototype);
-  Uint32BufferImpl.prototype.constructor = Uint32BufferImpl;
-  Float32BufferImpl.prototype = Object.create(GenericBuffer.prototype);
-  Float32BufferImpl.prototype.constructor = Float32BufferImpl;
+  var round = Kotlin.kotlin.math.round_14dthe$;
+  var substring = Kotlin.kotlin.text.substring_fc3b62$;
+  var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
+  var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   LowPassFilter.prototype = Object.create(SampleNode.prototype);
   LowPassFilter.prototype.constructor = LowPassFilter;
   HighPassFilter.prototype = Object.create(SampleNode.prototype);
@@ -329,1269 +317,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   PointMesh.prototype.constructor = PointMesh;
   PrimitiveType.prototype = Object.create(Enum.prototype);
   PrimitiveType.prototype.constructor = PrimitiveType;
-  function AudioGenerator(ctx, generatorFun) {
-    this.audioCtx_0 = new (window.AudioContext || window.webkitAudioContext)();
-    this.sampleRate = this.audioCtx_0.sampleRate;
-    this.isPaused_p8nrgy$_0 = false;
-    this.source_0 = null;
-    this.scriptNode_0 = null;
-    this.analyserNode_0 = null;
-    var tmp$;
-    this.powerSpectrum_0 = Kotlin.isType(tmp$ = createFloat32Buffer(1), Float32BufferImpl) ? tmp$ : throwCCE();
-    this.dt_0 = 1.0 / this.sampleRate;
-    this.scriptNode_0 = this.audioCtx_0.createScriptProcessor(4096, 1, 1);
-    var buffer = this.audioCtx_0.createBuffer(1, this.scriptNode_0.bufferSize, this.sampleRate);
-    this.scriptNode_0.onaudioprocess = AudioGenerator_init$lambda(generatorFun, this);
-    this.analyserNode_0 = null;
-    this.source_0 = this.audioCtx_0.createBufferSource();
-    this.source_0.buffer = buffer;
-    this.source_0.loop = true;
-    this.source_0.connect(this.scriptNode_0);
-    this.scriptNode_0.connect(this.audioCtx_0.destination);
-    this.source_0.start();
-  }
-  Object.defineProperty(AudioGenerator.prototype, 'isPaused', {
-    get: function () {
-      return this.isPaused_p8nrgy$_0;
-    },
-    set: function (value) {
-      if (this.isPaused_p8nrgy$_0 !== value) {
-        this.isPaused_p8nrgy$_0 = value;
-        if (value) {
-          this.source_0.stop();
-        }
-         else {
-          this.source_0.start();
-        }
-      }
-    }
-  });
-  AudioGenerator.prototype.stop = function () {
-    this.scriptNode_0.disconnect();
-    this.source_0.loop = false;
-    this.source_0.disconnect();
-    this.source_0.stop();
-  };
-  AudioGenerator.prototype.enableFftComputation_za3lpa$ = function (nSamples) {
-    var tmp$, tmp$_0;
-    if (nSamples <= 0) {
-      (tmp$ = this.analyserNode_0) != null ? tmp$.disconnect() : null;
-      this.analyserNode_0 = null;
-    }
-     else {
-      if (this.analyserNode_0 == null) {
-        this.analyserNode_0 = this.audioCtx_0.createAnalyser();
-        this.analyserNode_0.minDecibels = -90;
-        this.analyserNode_0.maxDecibels = 0;
-        this.analyserNode_0.smoothingTimeConstant = 0.5;
-        this.scriptNode_0.connect(this.analyserNode_0);
-      }
-      this.analyserNode_0.fftSize = nSamples;
-      this.powerSpectrum_0 = Kotlin.isType(tmp$_0 = createFloat32Buffer(this.analyserNode_0.frequencyBinCount), Float32BufferImpl) ? tmp$_0 : throwCCE();
-    }
-  };
-  AudioGenerator.prototype.getPowerSpectrum = function () {
-    this.analyserNode_0.getFloatFrequencyData(this.powerSpectrum_0.buffer);
-    return this.powerSpectrum_0;
-  };
-  function AudioGenerator_init$lambda(closure$generatorFun, this$AudioGenerator) {
-    return function (ev) {
-      var tmp$;
-      var outputBuffer = ev.outputBuffer;
-      var data = outputBuffer.getChannelData(0);
-      tmp$ = outputBuffer.length;
-      for (var i = 0; i < tmp$; i++) {
-        data[i] = closure$generatorFun(this$AudioGenerator, this$AudioGenerator.dt_0);
-      }
-      return Unit;
-    };
-  }
-  AudioGenerator.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'AudioGenerator',
-    interfaces: []
-  };
-  function glActiveTexture(texture) {
-    JsImpl_getInstance().gl.activeTexture(texture);
-  }
-  function glAttachShader(program, shader) {
-    var tmp$, tmp$_0;
-    JsImpl_getInstance().gl.attachShader(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE(), Kotlin.isType(tmp$_0 = shader.glRef, WebGLShader) ? tmp$_0 : throwCCE());
-  }
-  function glBindBuffer(target, buffer) {
-    var tmp$;
-    JsImpl_getInstance().gl.bindBuffer(target, (tmp$ = buffer != null ? buffer.glRef : null) == null || Kotlin.isType(tmp$, WebGLBuffer) ? tmp$ : throwCCE());
-  }
-  function glBindFramebuffer(target, framebuffer) {
-    var tmp$;
-    JsImpl_getInstance().gl.bindFramebuffer(target, (tmp$ = framebuffer != null ? framebuffer.glRef : null) == null || Kotlin.isType(tmp$, WebGLFramebuffer) ? tmp$ : throwCCE());
-  }
-  function glBindRenderbuffer(target, renderbuffer) {
-    var tmp$;
-    JsImpl_getInstance().gl.bindRenderbuffer(target, (tmp$ = renderbuffer != null ? renderbuffer.glRef : null) == null || Kotlin.isType(tmp$, WebGLRenderbuffer) ? tmp$ : throwCCE());
-  }
-  function glBindTexture(target, texture) {
-    var tmp$;
-    JsImpl_getInstance().gl.bindTexture(target, (tmp$ = texture != null ? texture.glRef : null) == null || Kotlin.isType(tmp$, WebGLTexture) ? tmp$ : throwCCE());
-  }
-  function glBlendFunc(sfactor, dfactor) {
-    JsImpl_getInstance().gl.blendFunc(sfactor, dfactor);
-  }
-  function glBufferData(target, data, usage) {
-    var tmp$;
-    JsImpl_getInstance().gl.bufferData(target, (Kotlin.isType(tmp$ = data, Uint8BufferImpl) ? tmp$ : throwCCE()).buffer, usage);
-  }
-  function glBufferData_0(target, data, usage) {
-    var tmp$;
-    JsImpl_getInstance().gl.bufferData(target, (Kotlin.isType(tmp$ = data, Uint16BufferImpl) ? tmp$ : throwCCE()).buffer, usage);
-  }
-  function glBufferData_1(target, data, usage) {
-    var tmp$;
-    JsImpl_getInstance().gl.bufferData(target, (Kotlin.isType(tmp$ = data, Uint32BufferImpl) ? tmp$ : throwCCE()).buffer, usage);
-  }
-  function glBufferData_2(target, data, usage) {
-    var tmp$;
-    JsImpl_getInstance().gl.bufferData(target, (Kotlin.isType(tmp$ = data, Float32BufferImpl) ? tmp$ : throwCCE()).buffer, usage);
-  }
-  function glCheckFramebufferStatus(target) {
-    return JsImpl_getInstance().gl.checkFramebufferStatus(target);
-  }
-  function glClear(mask) {
-    JsImpl_getInstance().gl.clear(mask);
-  }
-  function glClearColor(red, green, blue, alpha) {
-    JsImpl_getInstance().gl.clearColor(red, green, blue, alpha);
-  }
-  function glCompileShader(shader) {
-    var tmp$;
-    JsImpl_getInstance().gl.compileShader(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE());
-  }
-  function glCopyTexImage2D(target, level, internalformat, x, y, width, height, border) {
-    JsImpl_getInstance().gl.copyTexImage2D(target, level, internalformat, x, y, width, height, border);
-  }
-  function glCreateBuffer() {
-    return ensureNotNull(JsImpl_getInstance().gl.createBuffer());
-  }
-  function glCreateFramebuffer() {
-    return ensureNotNull(JsImpl_getInstance().gl.createFramebuffer());
-  }
-  function glCreateRenderbuffer() {
-    return ensureNotNull(JsImpl_getInstance().gl.createRenderbuffer());
-  }
-  function glCreateProgram() {
-    return ensureNotNull(JsImpl_getInstance().gl.createProgram());
-  }
-  function glCreateShader(type) {
-    return ensureNotNull(JsImpl_getInstance().gl.createShader(type));
-  }
-  function glCreateTexture() {
-    return ensureNotNull(JsImpl_getInstance().gl.createTexture());
-  }
-  function glCullFace(mode) {
-    JsImpl_getInstance().gl.cullFace(mode);
-  }
-  function glDeleteBuffer(buffer) {
-    var tmp$;
-    JsImpl_getInstance().gl.deleteBuffer(Kotlin.isType(tmp$ = buffer.glRef, WebGLBuffer) ? tmp$ : throwCCE());
-  }
-  function glDeleteFramebuffer(framebuffer) {
-    var tmp$;
-    JsImpl_getInstance().gl.deleteFramebuffer(Kotlin.isType(tmp$ = framebuffer.glRef, WebGLFramebuffer) ? tmp$ : throwCCE());
-  }
-  function glDeleteProgram(program) {
-    var tmp$;
-    JsImpl_getInstance().gl.deleteProgram(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE());
-  }
-  function glDeleteRenderbuffer(renderbuffer) {
-    var tmp$;
-    JsImpl_getInstance().gl.deleteRenderbuffer(Kotlin.isType(tmp$ = renderbuffer.glRef, WebGLRenderbuffer) ? tmp$ : throwCCE());
-  }
-  function glDeleteShader(shader) {
-    var tmp$;
-    JsImpl_getInstance().gl.deleteShader(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE());
-  }
-  function glDeleteTexture(texture) {
-    var tmp$;
-    JsImpl_getInstance().gl.deleteTexture(Kotlin.isType(tmp$ = texture.glRef, WebGLTexture) ? tmp$ : throwCCE());
-  }
-  function glDepthFunc(func) {
-    JsImpl_getInstance().gl.depthFunc(func);
-  }
-  function glDepthMask(enabled) {
-    JsImpl_getInstance().gl.depthMask(enabled);
-  }
-  function glDisable(cap) {
-    JsImpl_getInstance().gl.disable(cap);
-  }
-  function glDisableVertexAttribArray(index) {
-    JsImpl_getInstance().gl.disableVertexAttribArray(index);
-  }
-  function glDrawBuffer(buf) {
-    var tmp$;
-    if (JsImpl_getInstance().isWebGl2Context) {
-      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).drawBuffers(new Int32Array([buf]));
-    }
-  }
-  function glDrawElements(mode, count, type, offset) {
-    JsImpl_getInstance().gl.drawElements(mode, count, type, offset);
-  }
-  function glDrawElementsInstanced(mode, count, type, indicesOffset, instanceCount) {
-    var tmp$;
-    if (JsImpl_getInstance().isWebGl2Context) {
-      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).drawElementsInstanced(mode, count, type, indicesOffset, instanceCount);
-    }
-     else {
-      throw new KoolException('This function requires WebGL2 support');
-    }
-  }
-  function glEnable(cap) {
-    JsImpl_getInstance().gl.enable(cap);
-  }
-  function glEnableVertexAttribArray(index) {
-    JsImpl_getInstance().gl.enableVertexAttribArray(index);
-  }
-  function glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer) {
-    var tmp$;
-    JsImpl_getInstance().gl.framebufferRenderbuffer(target, attachment, renderbuffertarget, Kotlin.isType(tmp$ = renderbuffer.glRef, WebGLRenderbuffer) ? tmp$ : throwCCE());
-  }
-  function glFramebufferTexture2D(target, attachment, textarget, texture, level) {
-    var tmp$;
-    JsImpl_getInstance().gl.framebufferTexture2D(target, attachment, textarget, Kotlin.isType(tmp$ = texture.glRef, WebGLTexture) ? tmp$ : throwCCE(), level);
-  }
-  function glGenerateMipmap(target) {
-    JsImpl_getInstance().gl.generateMipmap(target);
-  }
-  function glGetAttribLocation(program, name) {
-    var tmp$;
-    return JsImpl_getInstance().gl.getAttribLocation(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE(), name);
-  }
-  function glGetError() {
-    return JsImpl_getInstance().gl.getError();
-  }
-  function glGetProgrami(program, pname) {
-    var tmp$, tmp$_0, tmp$_1;
-    var res = JsImpl_getInstance().gl.getProgramParameter(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE(), pname);
-    if (pname === GL_LINK_STATUS) {
-      if (typeof (tmp$_0 = res) === 'boolean' ? tmp$_0 : throwCCE()) {
-        tmp$_1 = GL_TRUE;
-      }
-       else {
-        tmp$_1 = GL_FALSE;
-      }
-      return tmp$_1;
-    }
-    return 0;
-  }
-  function glGetShaderi(shader, pname) {
-    var tmp$, tmp$_0, tmp$_1;
-    var res = JsImpl_getInstance().gl.getShaderParameter(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE(), pname);
-    if (pname === GL_COMPILE_STATUS) {
-      if (typeof (tmp$_0 = res) === 'boolean' ? tmp$_0 : throwCCE()) {
-        tmp$_1 = GL_TRUE;
-      }
-       else {
-        tmp$_1 = GL_FALSE;
-      }
-      return tmp$_1;
-    }
-    return 0;
-  }
-  function glGetProgramInfoLog(program) {
-    var tmp$, tmp$_0;
-    return (tmp$_0 = JsImpl_getInstance().gl.getProgramInfoLog(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE())) != null ? tmp$_0 : '';
-  }
-  function glGetShaderInfoLog(shader) {
-    var tmp$, tmp$_0;
-    return (tmp$_0 = JsImpl_getInstance().gl.getShaderInfoLog(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE())) != null ? tmp$_0 : '';
-  }
-  function glGetUniformLocation(program, name) {
-    var tmp$;
-    return JsImpl_getInstance().gl.getUniformLocation(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE(), name);
-  }
-  function glLineWidth(width) {
-    JsImpl_getInstance().gl.lineWidth(width);
-  }
-  function glLinkProgram(program) {
-    var tmp$;
-    JsImpl_getInstance().gl.linkProgram(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE());
-  }
-  function glPointSize(size) {
-  }
-  function glReadBuffer(src) {
-    var tmp$;
-    if (JsImpl_getInstance().isWebGl2Context) {
-      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).readBuffer(src);
-    }
-  }
-  function glRenderbufferStorage(target, internalformat, width, height) {
-    JsImpl_getInstance().gl.renderbufferStorage(target, internalformat, width, height);
-  }
-  function glRenderbufferStorageMultisample(target, samples, internalformat, width, height) {
-    var tmp$;
-    if (JsImpl_getInstance().isWebGl2Context) {
-      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).renderbufferStorageMultisample(target, samples, internalformat, width, height);
-    }
-     else {
-      throw new KoolException('This function requires WebGL2 support');
-    }
-  }
-  function glShaderSource(shader, source) {
-    var tmp$;
-    JsImpl_getInstance().gl.shaderSource(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE(), source);
-  }
-  function glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels) {
-    var tmp$, tmp$_0;
-    JsImpl_getInstance().gl.texImage2D(target, level, internalformat, width, height, border, format, type, (tmp$_0 = (tmp$ = pixels) == null || Kotlin.isType(tmp$, Uint8BufferImpl) ? tmp$ : throwCCE()) != null ? tmp$_0.buffer : null);
-  }
-  function glTexImage2D_0(target, level, internalformat, format, type, pixels) {
-    var tmp$;
-    JsImpl_getInstance().gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, GL_TRUE);
-    JsImpl_getInstance().gl.texImage2D(target, level, internalformat, format, type, (tmp$ = pixels) == null || Kotlin.isType(tmp$, HTMLImageElement) ? tmp$ : throwCCE());
-    JsImpl_getInstance().gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, GL_FALSE);
-  }
-  function glTexParameteri(target, pname, param) {
-    JsImpl_getInstance().gl.texParameteri(target, pname, param);
-  }
-  function glUniform1f(location, x) {
-    var tmp$;
-    JsImpl_getInstance().gl.uniform1f((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x);
-  }
-  var Array_0 = Array;
-  function glUniform1fv(location, x) {
-    var tmp$;
-    var array = Array_0(x.length);
-    var tmp$_0;
-    tmp$_0 = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$_0; i++) {
-      array[i] = x[i];
-    }
-    var tmp = array;
-    JsImpl_getInstance().gl.uniform1fv((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), tmp);
-  }
-  function glUniform1i(location, x) {
-    var tmp$;
-    JsImpl_getInstance().gl.uniform1i((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x);
-  }
-  function glUniform1iv(location, x) {
-    var tmp$;
-    var array = Array_0(x.length);
-    var tmp$_0;
-    tmp$_0 = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$_0; i++) {
-      array[i] = x[i];
-    }
-    var tmp = array;
-    JsImpl_getInstance().gl.uniform1iv((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), tmp);
-  }
-  function glUniform2f(location, x, y) {
-    var tmp$;
-    JsImpl_getInstance().gl.uniform2f((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x, y);
-  }
-  function glUniform3f(location, x, y, z) {
-    var tmp$;
-    JsImpl_getInstance().gl.uniform3f((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x, y, z);
-  }
-  function glUniform4f(location, x, y, z, w) {
-    var tmp$;
-    JsImpl_getInstance().gl.uniform4f((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x, y, z, w);
-  }
-  function glUniformMatrix4fv(location, transpose, value) {
-    var tmp$, tmp$_0;
-    JsImpl_getInstance().gl.uniformMatrix4fv((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), transpose, (Kotlin.isType(tmp$_0 = value, Float32BufferImpl) ? tmp$_0 : throwCCE()).buffer);
-  }
-  function glUseProgram(program) {
-    var tmp$;
-    JsImpl_getInstance().gl.useProgram((tmp$ = program != null ? program.glRef : null) == null || Kotlin.isType(tmp$, WebGLProgram) ? tmp$ : throwCCE());
-  }
-  function glVertexAttribDivisor(index, divisor) {
-    var tmp$;
-    if (JsImpl_getInstance().isWebGl2Context) {
-      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).vertexAttribDivisor(index, divisor);
-    }
-     else {
-      throw new KoolException('This function requires WebGL2 support');
-    }
-  }
-  function glVertexAttribPointer(index, size, type, normalized, stride, offset) {
-    JsImpl_getInstance().gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
-  }
-  function glVertexAttribIPointer(index, size, type, stride, offset) {
-    var tmp$;
-    if (JsImpl_getInstance().isWebGl2Context) {
-      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).vertexAttribIPointer(index, size, type, stride, offset);
-    }
-     else {
-      throw new KoolException('This function requires WebGL2 support');
-    }
-  }
-  function glViewport(x, y, width, height) {
-    JsImpl_getInstance().gl.viewport(x, y, width, height);
-  }
-  function isValidUniformLocation(location) {
-    return location != null && Kotlin.isType(location, WebGLUniformLocation);
-  }
-  function createContext() {
-    return createContext_0(new JsContext$InitProps());
-  }
-  function createContext_0(props) {
-    return JsImpl_getInstance().createContext_s8od96$(props);
-  }
-  function now() {
-    return performance.now();
-  }
-  function getMemoryInfo() {
-    return '';
-  }
-  var Math_0 = Math;
-  function formatDouble(d, precision) {
-    var clamp$result;
-    if (precision < 0) {
-      clamp$result = 0;
-    }
-     else if (precision > 12) {
-      clamp$result = 12;
-    }
-     else {
-      clamp$result = precision;
-    }
-    var p = clamp$result;
-    if (p === 0) {
-      return Kotlin.Long.fromNumber(round(d)).toString();
-    }
-    var shifted = Kotlin.Long.fromNumber(round(d * Math_0.pow(10.0, p)));
-    var str = shifted.toString();
-    var i = str.length - precision | 0;
-    while (i < 1) {
-      str = '0' + str;
-      i = i + 1 | 0;
-    }
-    var tmp$ = substring(str, until(0, i)) + '.';
-    var $receiver = str;
-    var startIndex = i;
-    return tmp$ + $receiver.substring(startIndex);
-  }
-  function JsImpl() {
-    JsImpl_instance = this;
-    this.isWebGl2Context = false;
-    this.dpi = 0;
-    this.ctx = null;
-    var tmp$;
-    var measure = document.getElementById('dpiMeasure');
-    if (measure == null) {
-      var $this = package$util.Log;
-      var level = Log$Level.WARN;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'dpiMeasure element not found, falling back to 96 dpi');
-      }
-      var $this_0 = package$util.Log;
-      var level_0 = Log$Level.WARN;
-      var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level_0.level >= $this_0.level.level) {
-        $this_0.printer(level_0, tag_0, 'Add this hidden div to your html:');
-      }
-      var $this_1 = package$util.Log;
-      var level_1 = Log$Level.WARN;
-      var tag_1 = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level_1.level >= $this_1.level.level) {
-        $this_1.printer(level_1, tag_1, '<div id="dpiMeasure" style="height: 1in; width: 1in; left: 100%; position: fixed; top: 100%;"><\/div>');
-      }
-      this.dpi = 96.0;
-    }
-     else {
-      this.dpi = (Kotlin.isType(tmp$ = measure, HTMLDivElement) ? tmp$ : throwCCE()).offsetWidth;
-    }
-  }
-  Object.defineProperty(JsImpl.prototype, 'gl', {
-    get: function () {
-      var tmp$, tmp$_0;
-      tmp$_0 = (tmp$ = this.ctx) != null ? tmp$.gl_8be2vx$ : null;
-      if (tmp$_0 == null) {
-        throw new KoolException('Platform.createContext() not called');
-      }
-      return tmp$_0;
-    }
-  });
-  JsImpl.prototype.createContext_s8od96$ = function (props) {
-    if (this.ctx != null) {
-      throw new KoolException('Context was already created (multi-context is currently not supported in js');
-    }
-    this.ctx = new JsContext(props);
-    return ensureNotNull(this.ctx);
-  };
-  JsImpl.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'JsImpl',
-    interfaces: []
-  };
-  var JsImpl_instance = null;
-  function JsImpl_getInstance() {
-    if (JsImpl_instance === null) {
-      new JsImpl();
-    }
-    return JsImpl_instance;
-  }
-  function FontMapGenerator(maxWidth, maxHeight) {
-    this.maxWidth = maxWidth;
-    this.maxHeight = maxHeight;
-    var tmp$, tmp$_0;
-    this.canvas_0 = Kotlin.isType(tmp$ = document.createElement('canvas'), HTMLCanvasElement) ? tmp$ : throwCCE();
-    this.canvasCtx_0 = null;
-    this.canvas_0.width = this.maxWidth;
-    this.canvas_0.height = this.maxHeight;
-    this.canvasCtx_0 = Kotlin.isType(tmp$_0 = this.canvas_0.getContext('2d'), CanvasRenderingContext2D) ? tmp$_0 : throwCCE();
-  }
-  var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
-  FontMapGenerator.prototype.createCharMap_ttufcy$ = function (fontProps) {
-    var tmp$;
-    this.canvasCtx_0.clearRect(0.0, 0.0, this.maxWidth, this.maxHeight);
-    var style = 'lighter ';
-    if ((fontProps.style & Font$Companion_getInstance().BOLD) !== 0) {
-      style = 'bold ';
-    }
-    if ((fontProps.style & Font$Companion_getInstance().ITALIC) !== 0) {
-      style += 'italic ';
-    }
-    var metrics = LinkedHashMap_init();
-    var texHeight = this.makeMap_0(fontProps, style, metrics);
-    var data = this.canvasCtx_0.getImageData(0.0, 0.0, this.maxWidth, texHeight);
-    var buffer = createUint8Buffer(Kotlin.imul(this.maxWidth, texHeight));
-    tmp$ = buffer.capacity;
-    for (var i = 0; i < tmp$; i++) {
-      buffer.put_s8j3t7$(data.data[(i * 4 | 0) + 3 | 0]);
-    }
-    return new CharMap(new BufferedTextureData(buffer, this.maxWidth, texHeight, GL_ALPHA), metrics, fontProps);
-  };
-  FontMapGenerator.prototype.makeMap_0 = function (fontProps, style, map) {
-    var tmp$, tmp$_0;
-    this.canvasCtx_0.font = style + fontProps.sizePts + 'px ' + fontProps.family;
-    this.canvasCtx_0.fillStyle = '#ffffff';
-    var padding = 3.0;
-    var hab = round(fontProps.sizePts * 1.1);
-    var hbb = round(fontProps.sizePts * 0.5);
-    var height = round(fontProps.sizePts * 1.6);
-    this.canvasCtx_0.beginPath();
-    this.canvasCtx_0.moveTo(0.5, 0.0);
-    this.canvasCtx_0.lineTo(0.5, 1.0);
-    this.canvasCtx_0.stroke();
-    var x = 1.0;
-    var y = hab;
-    tmp$ = iterator(fontProps.chars);
-    while (tmp$.hasNext()) {
-      var c = unboxChar(tmp$.next());
-      if (c === 106) {
-        x += fontProps.sizePts * 0.1;
-      }
-      var txt = String.fromCharCode(c);
-      var charW = round(this.canvasCtx_0.measureText(txt).width);
-      var paddedWidth = round(charW + padding * 2);
-      if (x + paddedWidth > this.maxWidth) {
-        x = 0.0;
-        y += height + 10;
-        if (y + hbb > this.maxHeight) {
-          break;
-        }
-      }
-      var widthPx = charW;
-      var heightPx = height;
-      var metrics = new CharMetrics();
-      metrics.width = widthPx * fontProps.sizeUnits / fontProps.sizePts;
-      metrics.height = heightPx * fontProps.sizeUnits / fontProps.sizePts;
-      metrics.xOffset = 0.0;
-      metrics.yBaseline = hab * fontProps.sizeUnits / fontProps.sizePts;
-      metrics.advance = metrics.width;
-      metrics.uvMin.set_dleff0$(x + padding, y - hab);
-      metrics.uvMax.set_dleff0$(x + padding + widthPx, y - hab + heightPx);
-      map.put_xwzc9p$(toBoxedChar(c), metrics);
-      this.canvasCtx_0.fillText(txt, x + padding, y);
-      x += paddedWidth;
-    }
-    var texW = this.maxWidth;
-    var texH = this.nextPow2_0(y + hbb);
-    tmp$_0 = map.values.iterator();
-    while (tmp$_0.hasNext()) {
-      var cm = tmp$_0.next();
-      cm.uvMin.x = cm.uvMin.x / texW;
-      cm.uvMin.y = cm.uvMin.y / texH;
-      cm.uvMax.x = cm.uvMax.x / texW;
-      cm.uvMax.y = cm.uvMax.y / texH;
-    }
-    return texH;
-  };
-  FontMapGenerator.prototype.nextPow2_0 = function (value) {
-    var pow2 = 16;
-    while (pow2 < value && pow2 < this.maxHeight) {
-      pow2 = pow2 << 1;
-    }
-    return pow2;
-  };
-  FontMapGenerator.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'FontMapGenerator',
-    interfaces: []
-  };
-  function ImageTextureData(image) {
-    TextureData.call(this);
-    this.image = image;
-  }
-  Object.defineProperty(ImageTextureData.prototype, 'isAvailable', {
-    get: function () {
-      return this.image.complete;
-    },
-    set: function (value) {
-    }
-  });
-  ImageTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
-    JsImpl_getInstance().gl.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, this.image);
-    this.width = this.image.width;
-    this.height = this.image.height;
-    var size = Kotlin.imul(this.width, this.height) * 4 | 0;
-    ctx.memoryMgr.memoryAllocated_927jj9$(ensureNotNull(texture.res), size);
-  };
-  ImageTextureData.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ImageTextureData',
-    interfaces: [TextureData]
-  };
-  function JsAssetManager(assetsBaseDir) {
-    JsAssetManager$Companion_getInstance();
-    AssetManager.call(this);
-    this.assetsBaseDir_quoclz$_0 = assetsBaseDir;
-    this.fontGenerator_0 = new FontMapGenerator(JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_WIDTH_0, JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_HEIGHT_0);
-  }
-  Object.defineProperty(JsAssetManager.prototype, 'assetsBaseDir', {
-    get: function () {
-      return this.assetsBaseDir_quoclz$_0;
-    },
-    set: function (assetsBaseDir) {
-      this.assetsBaseDir_quoclz$_0 = assetsBaseDir;
-    }
-  });
-  function JsAssetManager$loadAsset$lambda(closure$req, closure$onLoad) {
-    return function (evt) {
-      var tmp$, tmp$_0;
-      var array = new Uint8Array(Kotlin.isType(tmp$ = closure$req.response, ArrayBuffer) ? tmp$ : throwCCE());
-      var bytes = new Int8Array(array.length);
-      tmp$_0 = array.length;
-      for (var i = 0; i < tmp$_0; i++) {
-        bytes[i] = array[i];
-      }
-      closure$onLoad(bytes);
-      return Unit;
-    };
-  }
-  JsAssetManager.prototype.loadAsset_jrww91$ = function (assetPath, onLoad) {
-    var req = new XMLHttpRequest();
-    req.open('GET', this.assetsBaseDir + '/' + assetPath);
-    req.responseType = 'arraybuffer';
-    req.onload = JsAssetManager$loadAsset$lambda(req, onLoad);
-    req.send();
-  };
-  JsAssetManager.prototype.loadTextureAsset_61zpoe$ = function (assetPath) {
-    var img = new Image();
-    var data = new ImageTextureData(img);
-    img.crossOrigin = '';
-    img.src = this.assetsBaseDir + '/' + assetPath;
-    return data;
-  };
-  JsAssetManager.prototype.createCharMap_ttufcy$ = function (fontProps) {
-    return this.fontGenerator_0.createCharMap_ttufcy$(fontProps);
-  };
-  function JsAssetManager$Companion() {
-    JsAssetManager$Companion_instance = this;
-    this.MAX_GENERATED_TEX_WIDTH_0 = 1024;
-    this.MAX_GENERATED_TEX_HEIGHT_0 = 1024;
-  }
-  JsAssetManager$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var JsAssetManager$Companion_instance = null;
-  function JsAssetManager$Companion_getInstance() {
-    if (JsAssetManager$Companion_instance === null) {
-      new JsAssetManager$Companion();
-    }
-    return JsAssetManager$Companion_instance;
-  }
-  JsAssetManager.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'JsAssetManager',
-    interfaces: [AssetManager]
-  };
-  function JsContext(props) {
-    JsContext$Companion_getInstance();
-    KoolContext.call(this);
-    this.props = props;
-    this.glCapabilities_4q43mj$_0 = null;
-    this.assetMgr_z54vt4$_0 = new JsAssetManager(this.props.assetsBaseDir);
-    this.windowWidth_7sdnb6$_0 = 0;
-    this.windowHeight_xsf9ux$_0 = 0;
-    this.canvas_8be2vx$ = null;
-    this.gl_8be2vx$ = null;
-    this.animationMillis_0 = 0.0;
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
-    this.canvas_8be2vx$ = Kotlin.isType(tmp$ = document.getElementById(this.props.canvasName), HTMLCanvasElement) ? tmp$ : throwCCE();
-    var webGlCtx = this.canvas_8be2vx$.getContext('webgl2');
-    if (webGlCtx == null) {
-      webGlCtx = this.canvas_8be2vx$.getContext('experimental-webgl2');
-    }
-    JsImpl_getInstance().isWebGl2Context = webGlCtx != null;
-    var uint32Indices;
-    var depthTextures;
-    var maxTexUnits;
-    var shaderIntAttribs = false;
-    var depthComponentIntFormat = GL_DEPTH_COMPONENT;
-    var depthFilterMethod = GL_NEAREST;
-    var anisotropicTexFilterInfo = AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED;
-    var glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_100;
-    var glVersion = new GlVersion('WebGL', 1, 0);
-    if (webGlCtx != null) {
-      this.gl_8be2vx$ = Kotlin.isType(tmp$_0 = webGlCtx, WebGL2RenderingContext) ? tmp$_0 : throwCCE();
-      uint32Indices = true;
-      depthTextures = true;
-      shaderIntAttribs = true;
-      depthComponentIntFormat = GL_DEPTH_COMPONENT24;
-      glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_300_ES;
-      glVersion = new GlVersion('WebGL', 2, 0);
-      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
-    }
-     else {
-      webGlCtx = this.canvas_8be2vx$.getContext('webgl');
-      if (webGlCtx == null) {
-        webGlCtx = this.canvas_8be2vx$.getContext('experimental-webgl');
-      }
-      if (webGlCtx == null) {
-        alert('Unable to initialize WebGL. Your browser may not support it.');
-      }
-      this.gl_8be2vx$ = Kotlin.isType(tmp$_1 = webGlCtx, WebGLRenderingContext) ? tmp$_1 : throwCCE();
-      uint32Indices = this.gl_8be2vx$.getExtension('OES_element_index_uint') != null;
-      depthTextures = this.gl_8be2vx$.getExtension('WEBGL_depth_texture') != null;
-      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
-    }
-    var extAnisotropic = (tmp$_3 = (tmp$_2 = this.gl_8be2vx$.getExtension('EXT_texture_filter_anisotropic')) != null ? tmp$_2 : this.gl_8be2vx$.getExtension('MOZ_EXT_texture_filter_anisotropic')) != null ? tmp$_3 : this.gl_8be2vx$.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
-    if (extAnisotropic != null) {
-      var max = typeof (tmp$_4 = this.gl_8be2vx$.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) === 'number' ? tmp$_4 : throwCCE();
-      anisotropicTexFilterInfo = new AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT);
-    }
-    this.glCapabilities_4q43mj$_0 = new GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
-    this.screenDpi = JsImpl_getInstance().dpi;
-    this.windowWidth = this.canvas_8be2vx$.clientWidth;
-    this.windowHeight = this.canvas_8be2vx$.clientHeight;
-    this.canvas_8be2vx$.oncontextmenu = getCallableRef('preventDefault', function ($receiver) {
-      return $receiver.preventDefault(), Unit;
-    });
-    this.canvas_8be2vx$.onmousemove = JsContext_init$lambda(this);
-    this.canvas_8be2vx$.onmousedown = JsContext_init$lambda_0(this);
-    this.canvas_8be2vx$.onmouseup = JsContext_init$lambda_1(this);
-    this.canvas_8be2vx$.onmouseleave = JsContext_init$lambda_2(this);
-    this.canvas_8be2vx$.onwheel = JsContext_init$lambda_3(this);
-    this.canvas_8be2vx$.addEventListener('touchstart', JsContext_init$lambda_4(this), false);
-    this.canvas_8be2vx$.addEventListener('touchend', JsContext_init$lambda_5(this), false);
-    this.canvas_8be2vx$.addEventListener('touchcancel', JsContext_init$lambda_6(this), false);
-    this.canvas_8be2vx$.addEventListener('touchmove', JsContext_init$lambda_7(this), false);
-    document.onkeydown = JsContext_init$lambda_8(this);
-    document.onkeyup = JsContext_init$lambda_9(this);
-  }
-  Object.defineProperty(JsContext.prototype, 'glCapabilities', {
-    get: function () {
-      return this.glCapabilities_4q43mj$_0;
-    }
-  });
-  Object.defineProperty(JsContext.prototype, 'assetMgr', {
-    get: function () {
-      return this.assetMgr_z54vt4$_0;
-    }
-  });
-  Object.defineProperty(JsContext.prototype, 'windowWidth', {
-    get: function () {
-      return this.windowWidth_7sdnb6$_0;
-    },
-    set: function (windowWidth) {
-      this.windowWidth_7sdnb6$_0 = windowWidth;
-    }
-  });
-  Object.defineProperty(JsContext.prototype, 'windowHeight', {
-    get: function () {
-      return this.windowHeight_xsf9ux$_0;
-    },
-    set: function (windowHeight) {
-      this.windowHeight_xsf9ux$_0 = windowHeight;
-    }
-  });
-  JsContext.prototype.handleKeyDown_0 = function (ev) {
-    var code = this.translateKeyCode_0(ev.code);
-    if (code !== 0) {
-      var mods = 0;
-      if (ev.altKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_ALT;
-      }
-      if (ev.ctrlKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_CTRL;
-      }
-      if (ev.shiftKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SHIFT;
-      }
-      if (ev.metaKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SUPER;
-      }
-      var event = InputManager$Companion_getInstance().KEY_EV_DOWN;
-      if (ev.repeat) {
-        event = event | InputManager$Companion_getInstance().KEY_EV_REPEATED;
-      }
-      this.inputMgr.keyEvent_qt1dr2$(code, mods, event);
-    }
-    if (ev.key.length === 1) {
-      this.inputMgr.charTyped_s8itvh$(ev.key.charCodeAt(0));
-    }
-    if (!this.props.excludedKeyCodes.contains_11rb$(ev.code)) {
-      ev.preventDefault();
-    }
-  };
-  JsContext.prototype.handleKeyUp_0 = function (ev) {
-    var code = this.translateKeyCode_0(ev.code);
-    if (code !== 0) {
-      var mods = 0;
-      if (ev.altKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_ALT;
-      }
-      if (ev.ctrlKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_CTRL;
-      }
-      if (ev.shiftKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SHIFT;
-      }
-      if (ev.metaKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SUPER;
-      }
-      this.inputMgr.keyEvent_qt1dr2$(code, mods, InputManager$Companion_getInstance().KEY_EV_UP);
-    }
-    if (!this.props.excludedKeyCodes.contains_11rb$(ev.code)) {
-      ev.preventDefault();
-    }
-  };
-  JsContext.prototype.translateKeyCode_0 = function (code) {
-    var tmp$;
-    if (code.length === 4 && startsWith(code, 'Key')) {
-      return code.charCodeAt(3) | 0;
-    }
-     else {
-      return (tmp$ = JsContext$Companion_getInstance().KEY_CODE_MAP.get_11rb$(code)) != null ? tmp$ : 0;
-    }
-  };
-  function JsContext$renderFrame$lambda(this$JsContext) {
-    return function (t) {
-      this$JsContext.renderFrame_0(t);
-      return Unit;
-    };
-  }
-  JsContext.prototype.renderFrame_0 = function (time) {
-    var dt = (time - this.animationMillis_0) / 1000.0;
-    this.animationMillis_0 = time;
-    this.windowWidth = this.canvas_8be2vx$.clientWidth;
-    this.windowHeight = this.canvas_8be2vx$.clientHeight;
-    if (this.windowWidth !== this.canvas_8be2vx$.width || this.windowHeight !== this.canvas_8be2vx$.height) {
-      this.canvas_8be2vx$.width = this.windowWidth;
-      this.canvas_8be2vx$.height = this.windowHeight;
-    }
-    this.render_14dthe$(dt);
-    this.gl_8be2vx$.finish();
-    window.requestAnimationFrame(JsContext$renderFrame$lambda(this));
-  };
-  JsContext.prototype.openUrl_61zpoe$ = function (url) {
-    window.open(url);
-  };
-  function JsContext$run$lambda(this$JsContext) {
-    return function (t) {
-      this$JsContext.renderFrame_0(t);
-      return Unit;
-    };
-  }
-  JsContext.prototype.run = function () {
-    window.requestAnimationFrame(JsContext$run$lambda(this));
-  };
-  JsContext.prototype.destroy = function () {
-  };
-  function JsContext$InitProps() {
-    this.canvasName = 'glCanvas';
-    this.excludedKeyCodes = mutableSetOf(['F5']);
-    this.assetsBaseDir = './assets';
-  }
-  JsContext$InitProps.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'InitProps',
-    interfaces: []
-  };
-  function JsContext$Companion() {
-    JsContext$Companion_instance = this;
-    this.KEY_CODE_MAP = mutableMapOf([to('ControlLeft', InputManager$Companion_getInstance().KEY_CTRL_LEFT), to('ControlRight', InputManager$Companion_getInstance().KEY_CTRL_RIGHT), to('ShiftLeft', InputManager$Companion_getInstance().KEY_SHIFT_LEFT), to('ShiftRight', InputManager$Companion_getInstance().KEY_SHIFT_RIGHT), to('AltLeft', InputManager$Companion_getInstance().KEY_ALT_LEFT), to('AltRight', InputManager$Companion_getInstance().KEY_ALT_RIGHT), to('MetaLeft', InputManager$Companion_getInstance().KEY_SUPER_LEFT), to('MetaRight', InputManager$Companion_getInstance().KEY_SUPER_RIGHT), to('Escape', InputManager$Companion_getInstance().KEY_ESC), to('ContextMenu', InputManager$Companion_getInstance().KEY_MENU), to('Enter', InputManager$Companion_getInstance().KEY_ENTER), to('NumpadEnter', InputManager$Companion_getInstance().KEY_NP_ENTER), to('NumpadDivide', InputManager$Companion_getInstance().KEY_NP_DIV), to('NumpadMultiply', InputManager$Companion_getInstance().KEY_NP_MUL), to('NumpadAdd', InputManager$Companion_getInstance().KEY_NP_PLUS), to('NumpadSubtract', InputManager$Companion_getInstance().KEY_NP_MINUS), to('Backspace', InputManager$Companion_getInstance().KEY_BACKSPACE), to('Tab', InputManager$Companion_getInstance().KEY_TAB), to('Delete', InputManager$Companion_getInstance().KEY_DEL), to('Insert', InputManager$Companion_getInstance().KEY_INSERT), to('Home', InputManager$Companion_getInstance().KEY_HOME), to('End', InputManager$Companion_getInstance().KEY_END), to('PageUp', InputManager$Companion_getInstance().KEY_PAGE_UP), to('PageDown', InputManager$Companion_getInstance().KEY_PAGE_DOWN), to('ArrowLeft', InputManager$Companion_getInstance().KEY_CURSOR_LEFT), to('ArrowRight', InputManager$Companion_getInstance().KEY_CURSOR_RIGHT), to('ArrowUp', InputManager$Companion_getInstance().KEY_CURSOR_UP), to('ArrowDown', InputManager$Companion_getInstance().KEY_CURSOR_DOWN), to('F1', InputManager$Companion_getInstance().KEY_F1), to('F2', InputManager$Companion_getInstance().KEY_F2), to('F3', InputManager$Companion_getInstance().KEY_F3), to('F4', InputManager$Companion_getInstance().KEY_F4), to('F5', InputManager$Companion_getInstance().KEY_F5), to('F6', InputManager$Companion_getInstance().KEY_F6), to('F7', InputManager$Companion_getInstance().KEY_F7), to('F8', InputManager$Companion_getInstance().KEY_F8), to('F9', InputManager$Companion_getInstance().KEY_F9), to('F10', InputManager$Companion_getInstance().KEY_F10), to('F11', InputManager$Companion_getInstance().KEY_F11), to('F12', InputManager$Companion_getInstance().KEY_F12), to('Space', 32 | 0)]);
-  }
-  JsContext$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var JsContext$Companion_instance = null;
-  function JsContext$Companion_getInstance() {
-    if (JsContext$Companion_instance === null) {
-      new JsContext$Companion();
-    }
-    return JsContext$Companion_instance;
-  }
-  function JsContext_init$lambda(this$JsContext) {
-    return function (ev) {
-      var tmp$;
-      Kotlin.isType(tmp$ = ev, MouseEvent) ? tmp$ : throwCCE();
-      var bounds = this$JsContext.canvas_8be2vx$.getBoundingClientRect();
-      var x = ev.clientX - bounds.left;
-      var y = ev.clientY - bounds.top;
-      this$JsContext.inputMgr.handleMouseMove_dleff0$(x, y);
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_0(this$JsContext) {
-    return function (ev) {
-      var tmp$;
-      Kotlin.isType(tmp$ = ev, MouseEvent) ? tmp$ : throwCCE();
-      this$JsContext.inputMgr.handleMouseButtonStates_za3lpa$(ev.buttons);
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_1(this$JsContext) {
-    return function (ev) {
-      var tmp$;
-      Kotlin.isType(tmp$ = ev, MouseEvent) ? tmp$ : throwCCE();
-      this$JsContext.inputMgr.handleMouseButtonStates_za3lpa$(ev.buttons);
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_2(this$JsContext) {
-    return function (it) {
-      this$JsContext.inputMgr.handleMouseExit();
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_3(this$JsContext) {
-    return function (ev) {
-      var tmp$;
-      Kotlin.isType(tmp$ = ev, WheelEvent) ? tmp$ : throwCCE();
-      var ticks = -ev.deltaY / 3.0;
-      if (ev.deltaMode === 0) {
-        ticks /= 30.0;
-      }
-      this$JsContext.inputMgr.handleMouseScroll_mx4ult$(ticks);
-      ev.preventDefault();
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_4(this$JsContext) {
-    return function (ev) {
-      var tmp$, tmp$_0;
-      ev.preventDefault();
-      var changedTouches = (Kotlin.isType(tmp$ = ev, TouchEvent) ? tmp$ : throwCCE()).changedTouches;
-      tmp$_0 = changedTouches.length;
-      for (var i = 0; i < tmp$_0; i++) {
-        var touch = changedTouches.item(i);
-        this$JsContext.inputMgr.handleTouchStart_nhq4am$(touch.identifier, get_elementX(touch), get_elementY(touch));
-      }
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_5(this$JsContext) {
-    return function (ev) {
-      var tmp$, tmp$_0;
-      ev.preventDefault();
-      var changedTouches = (Kotlin.isType(tmp$ = ev, TouchEvent) ? tmp$ : throwCCE()).changedTouches;
-      tmp$_0 = changedTouches.length;
-      for (var i = 0; i < tmp$_0; i++) {
-        var touch = changedTouches.item(i);
-        this$JsContext.inputMgr.handleTouchEnd_za3lpa$(touch.identifier);
-      }
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_6(this$JsContext) {
-    return function (ev) {
-      var tmp$, tmp$_0;
-      ev.preventDefault();
-      var changedTouches = (Kotlin.isType(tmp$ = ev, TouchEvent) ? tmp$ : throwCCE()).changedTouches;
-      tmp$_0 = changedTouches.length;
-      for (var i = 0; i < tmp$_0; i++) {
-        var touch = changedTouches.item(i);
-        this$JsContext.inputMgr.handleTouchCancel_za3lpa$(touch.identifier);
-      }
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_7(this$JsContext) {
-    return function (ev) {
-      var tmp$, tmp$_0;
-      ev.preventDefault();
-      var changedTouches = (Kotlin.isType(tmp$ = ev, TouchEvent) ? tmp$ : throwCCE()).changedTouches;
-      tmp$_0 = changedTouches.length;
-      for (var i = 0; i < tmp$_0; i++) {
-        var touch = changedTouches.item(i);
-        this$JsContext.inputMgr.handleTouchMove_nhq4am$(touch.identifier, get_elementX(touch), get_elementY(touch));
-      }
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_8(this$JsContext) {
-    return function (ev) {
-      var tmp$, tmp$_0;
-      tmp$_0 = Kotlin.isType(tmp$ = ev, KeyboardEvent) ? tmp$ : throwCCE();
-      this$JsContext.handleKeyDown_0(tmp$_0);
-      return Unit;
-    };
-  }
-  function JsContext_init$lambda_9(this$JsContext) {
-    return function (ev) {
-      var tmp$, tmp$_0;
-      tmp$_0 = Kotlin.isType(tmp$ = ev, KeyboardEvent) ? tmp$ : throwCCE();
-      this$JsContext.handleKeyUp_0(tmp$_0);
-      return Unit;
-    };
-  }
-  JsContext.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'JsContext',
-    interfaces: [KoolContext]
-  };
-  function get_elementX($receiver) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    return $receiver.clientX - ((tmp$_2 = (tmp$_1 = (tmp$_0 = Kotlin.isType(tmp$ = $receiver.target, HTMLCanvasElement) ? tmp$ : null) != null ? tmp$_0.clientLeft : null) != null ? tmp$_1 : null) != null ? tmp$_2 : 0.0);
-  }
-  function get_elementY($receiver) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    return $receiver.clientY - ((tmp$_2 = (tmp$_1 = (tmp$_0 = Kotlin.isType(tmp$ = $receiver.target, HTMLCanvasElement) ? tmp$ : null) != null ? tmp$_0.clientTop : null) != null ? tmp$_1 : null) != null ? tmp$_2 : 0.0);
-  }
-  function GenericBuffer(capacity, create) {
-    this.buffer = create();
-    this.capacity_tfbtga$_0 = capacity;
-    this.limit_wr5sjr$_0 = capacity;
-    this.position_xkur2v$_0 = 0;
-  }
-  Object.defineProperty(GenericBuffer.prototype, 'capacity', {
-    get: function () {
-      return this.capacity_tfbtga$_0;
-    }
-  });
-  Object.defineProperty(GenericBuffer.prototype, 'limit', {
-    get: function () {
-      return this.limit_wr5sjr$_0;
-    },
-    set: function (value) {
-      if (value < 0 || value > this.capacity) {
-        throw new KoolException('Limit is out of bounds: ' + value + ' (capacity: ' + this.capacity + ')');
-      }
-      this.limit_wr5sjr$_0 = value;
-      if (this.position > value) {
-        this.position = value;
-      }
-    }
-  });
-  Object.defineProperty(GenericBuffer.prototype, 'position', {
-    get: function () {
-      return this.position_xkur2v$_0;
-    },
-    set: function (position) {
-      this.position_xkur2v$_0 = position;
-    }
-  });
-  Object.defineProperty(GenericBuffer.prototype, 'remaining', {
-    get: function () {
-      return this.limit - this.position | 0;
-    }
-  });
-  GenericBuffer.prototype.flip = function () {
-    this.limit = this.position;
-    this.position = 0;
-  };
-  GenericBuffer.prototype.clear = function () {
-    this.limit = this.capacity;
-    this.position = 0;
-  };
-  GenericBuffer.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'GenericBuffer',
-    interfaces: [Buffer]
-  };
-  function Uint8BufferImpl(capacity) {
-    GenericBuffer.call(this, capacity, Uint8BufferImpl_init$lambda(capacity));
-  }
-  Uint8BufferImpl.prototype.get_za3lpa$ = function (i) {
-    return this.buffer[i];
-  };
-  Uint8BufferImpl.prototype.set_6t1wet$ = function (i, value) {
-    this.buffer[i] = value;
-  };
-  Uint8BufferImpl.prototype.put_mj6st8$ = function (data, offset, len) {
-    var tmp$, tmp$_0;
-    tmp$ = offset + len - 1 | 0;
-    for (var i = offset; i <= tmp$; i++) {
-      this.buffer[tmp$_0 = this.position, this.position = tmp$_0 + 1 | 0, tmp$_0] = data[i];
-    }
-    return this;
-  };
-  Uint8BufferImpl.prototype.put_s8j3t7$ = function (value) {
-    var tmp$;
-    this.buffer[tmp$ = this.position, this.position = tmp$ + 1 | 0, tmp$] = value;
-    return this;
-  };
-  Uint8BufferImpl.prototype.put_ay2i3f$ = function (data) {
-    var tmp$, tmp$_0;
-    tmp$ = data.position;
-    tmp$_0 = data.limit;
-    for (var i = tmp$; i < tmp$_0; i++) {
-      this.put_s8j3t7$(data.get_za3lpa$(i));
-    }
-    return this;
-  };
-  function Uint8BufferImpl_init$lambda(closure$capacity) {
-    return function () {
-      return new Uint8Array(closure$capacity);
-    };
-  }
-  Uint8BufferImpl.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Uint8BufferImpl',
-    interfaces: [GenericBuffer, Uint8Buffer]
-  };
-  function Uint16BufferImpl(capacity) {
-    GenericBuffer.call(this, capacity, Uint16BufferImpl_init$lambda(capacity));
-  }
-  Uint16BufferImpl.prototype.get_za3lpa$ = function (i) {
-    return this.buffer[i];
-  };
-  Uint16BufferImpl.prototype.set_2bqt6h$ = function (i, value) {
-    this.buffer[i] = value;
-  };
-  Uint16BufferImpl.prototype.put_359eei$ = function (data, offset, len) {
-    var tmp$, tmp$_0;
-    tmp$ = offset + len - 1 | 0;
-    for (var i = offset; i <= tmp$; i++) {
-      this.buffer[tmp$_0 = this.position, this.position = tmp$_0 + 1 | 0, tmp$_0] = data[i];
-    }
-    return this;
-  };
-  Uint16BufferImpl.prototype.put_mq22fl$ = function (value) {
-    var tmp$;
-    this.buffer[tmp$ = this.position, this.position = tmp$ + 1 | 0, tmp$] = value;
-    return this;
-  };
-  Uint16BufferImpl.prototype.put_8k344i$ = function (data) {
-    var tmp$, tmp$_0;
-    tmp$ = data.position;
-    tmp$_0 = data.limit;
-    for (var i = tmp$; i < tmp$_0; i++) {
-      this.put_mq22fl$(data.get_za3lpa$(i));
-    }
-    return this;
-  };
-  function Uint16BufferImpl_init$lambda(closure$capacity) {
-    return function () {
-      return new Uint16Array(closure$capacity);
-    };
-  }
-  Uint16BufferImpl.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Uint16BufferImpl',
-    interfaces: [GenericBuffer, Uint16Buffer]
-  };
-  function Uint32BufferImpl(capacity) {
-    GenericBuffer.call(this, capacity, Uint32BufferImpl_init$lambda(capacity));
-  }
-  Uint32BufferImpl.prototype.get_za3lpa$ = function (i) {
-    return this.buffer[i];
-  };
-  Uint32BufferImpl.prototype.set_vux9f0$ = function (i, value) {
-    this.buffer[i] = value;
-  };
-  Uint32BufferImpl.prototype.put_nd5v6f$ = function (data, offset, len) {
-    var tmp$, tmp$_0;
-    tmp$ = offset + len - 1 | 0;
-    for (var i = offset; i <= tmp$; i++) {
-      this.buffer[tmp$_0 = this.position, this.position = tmp$_0 + 1 | 0, tmp$_0] = data[i];
-    }
-    return this;
-  };
-  Uint32BufferImpl.prototype.put_za3lpa$ = function (value) {
-    var tmp$;
-    this.buffer[tmp$ = this.position, this.position = tmp$ + 1 | 0, tmp$] = value;
-    return this;
-  };
-  Uint32BufferImpl.prototype.put_7hqxcs$ = function (data) {
-    var tmp$, tmp$_0;
-    tmp$ = data.position;
-    tmp$_0 = data.limit;
-    for (var i = tmp$; i < tmp$_0; i++) {
-      this.put_za3lpa$(data.get_za3lpa$(i));
-    }
-    return this;
-  };
-  function Uint32BufferImpl_init$lambda(closure$capacity) {
-    return function () {
-      return new Uint32Array(closure$capacity);
-    };
-  }
-  Uint32BufferImpl.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Uint32BufferImpl',
-    interfaces: [GenericBuffer, Uint32Buffer]
-  };
-  function Float32BufferImpl(capacity) {
-    GenericBuffer.call(this, capacity, Float32BufferImpl_init$lambda(capacity));
-  }
-  Float32BufferImpl.prototype.get_za3lpa$ = function (i) {
-    return this.buffer[i];
-  };
-  Float32BufferImpl.prototype.set_24o109$ = function (i, value) {
-    this.buffer[i] = value;
-  };
-  Float32BufferImpl.prototype.put_kgymra$ = function (data, offset, len) {
-    var tmp$, tmp$_0;
-    tmp$ = offset + len - 1 | 0;
-    for (var i = offset; i <= tmp$; i++) {
-      this.buffer[tmp$_0 = this.position, this.position = tmp$_0 + 1 | 0, tmp$_0] = data[i];
-    }
-    return this;
-  };
-  Float32BufferImpl.prototype.put_mx4ult$ = function (value) {
-    var tmp$;
-    this.buffer[tmp$ = this.position, this.position = tmp$ + 1 | 0, tmp$] = value;
-    return this;
-  };
-  Float32BufferImpl.prototype.put_he122g$ = function (data) {
-    var tmp$, tmp$_0;
-    tmp$ = data.position;
-    tmp$_0 = data.limit;
-    for (var i = tmp$; i < tmp$_0; i++) {
-      this.put_mx4ult$(data.get_za3lpa$(i));
-    }
-    return this;
-  };
-  function Float32BufferImpl_init$lambda(closure$capacity) {
-    return function () {
-      return new Float32Array(closure$capacity);
-    };
-  }
-  Float32BufferImpl.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Float32BufferImpl',
-    interfaces: [GenericBuffer, Float32Buffer]
-  };
-  function createUint8Buffer(capacity) {
-    return new Uint8BufferImpl(capacity);
-  }
-  function createUint16Buffer(capacity) {
-    return new Uint16BufferImpl(capacity);
-  }
-  function createUint32Buffer(capacity) {
-    return new Uint32BufferImpl(capacity);
-  }
-  function createFloat32Buffer(capacity) {
-    return new Float32BufferImpl(capacity);
-  }
+  ImageTextureData.prototype = Object.create(TextureData.prototype);
+  ImageTextureData.prototype.constructor = ImageTextureData;
+  JsAssetManager.prototype = Object.create(AssetManager.prototype);
+  JsAssetManager.prototype.constructor = JsAssetManager;
+  JsContext.prototype = Object.create(KoolContext.prototype);
+  JsContext.prototype.constructor = JsContext;
+  Uint8BufferImpl.prototype = Object.create(GenericBuffer.prototype);
+  Uint8BufferImpl.prototype.constructor = Uint8BufferImpl;
+  Uint16BufferImpl.prototype = Object.create(GenericBuffer.prototype);
+  Uint16BufferImpl.prototype.constructor = Uint16BufferImpl;
+  Uint32BufferImpl.prototype = Object.create(GenericBuffer.prototype);
+  Uint32BufferImpl.prototype.constructor = Uint32BufferImpl;
+  Float32BufferImpl.prototype = Object.create(GenericBuffer.prototype);
+  Float32BufferImpl.prototype.constructor = Float32BufferImpl;
   function AssetManager() {
   }
   AssetManager.$metadata$ = {
@@ -1672,6 +411,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.res = res;
     return this.filter_dleff0$(input, dt);
   };
+  var Math_0 = Math;
   MoodFilter.prototype.filter_dleff0$ = function (input, dt) {
     var cut = 2 * this.cutoff * dt;
     var p = cut * (MoodFilter$Companion_getInstance().C1_0 - MoodFilter$Companion_getInstance().C2_0 * cut);
@@ -1892,6 +632,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.sample = this.generate_mx4ult$(dt) * this.gain;
     return this.sample;
   };
+  var Array_0 = Array;
   function SampleNode$Companion() {
     SampleNode$Companion_instance = this;
     var array = Array_0(15);
@@ -3992,6 +2733,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'InputManager',
     interfaces: []
   };
+  var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   function KoolContext() {
     this.screenDpi = 96.0;
     this.inputMgr = new InputManager();
@@ -7454,7 +6196,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.world = world;
     this.boxMeshIdcs_0 = LinkedHashMap_init();
     this.vert_0 = this.meshData.get_za3lpa$(0);
-    this.meshData.rebuildBoundsOnSync = true;
+    this.meshData.isRebuildBoundsOnSync = true;
   }
   MultiBoxMesh.prototype.updateBoxes = function () {
     var tmp$;
@@ -11113,7 +9855,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.dataBufferF = null;
     this.dataBufferI = null;
     this.indexBuffer = null;
-    this.rebuildBoundsOnSync = false;
+    this.isRebuildBoundsOnSync = false;
     this.isSyncRequired = false;
     this.isBatchUpdate_ubntbn$_0 = false;
     this.vertexIt_0 = this.vertexList.get_za3lpa$(0);
@@ -11302,7 +10044,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (this.isSyncRequired && !this.isBatchUpdate) {
       var tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
       if (!this.isBatchUpdate) {
-        if (this.rebuildBoundsOnSync) {
+        if (this.isRebuildBoundsOnSync) {
           this.rebuildBounds();
         }
         if (!ctx.glCapabilities.uint32Indices) {
@@ -18324,193 +17066,57 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return new Color(r, g, b, a);
   }
-  function ColorGradient(colors) {
+  var sortWith = Kotlin.kotlin.collections.sortWith_iwcb0m$;
+  var compareBy$lambda = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  var Comparator = Kotlin.kotlin.Comparator;
+  function Comparator$ObjectLiteral(closure$comparison) {
+    this.closure$comparison = closure$comparison;
+  }
+  Comparator$ObjectLiteral.prototype.compare = function (a, b) {
+    return this.closure$comparison(a, b);
+  };
+  Comparator$ObjectLiteral.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  function ColorGradient(colors, n) {
     ColorGradient$Companion_getInstance();
-    this.gradient_0 = null;
-    var len = colors.length;
-    var steps = 0;
-    var stepsn = new Int32Array(len - 1 | 0);
-    for (var i = 1; i < len; i++) {
-      var c1 = colors[i - 1 | 0];
-      var c2 = colors[i];
-      var x = c1.a - c2.a;
-      var $receiver = Math_0.abs(x);
-      var clamp$result;
-      if ($receiver < 0.0) {
-        clamp$result = 0.0;
-      }
-       else if ($receiver > 1.0) {
-        clamp$result = 1.0;
-      }
-       else {
-        clamp$result = $receiver;
-      }
-      var da = round(clamp$result * 255.0);
-      var x_0 = c1.r - c2.r;
-      var $receiver_0 = Math_0.abs(x_0);
-      var clamp$result_0;
-      if ($receiver_0 < 0.0) {
-        clamp$result_0 = 0.0;
-      }
-       else if ($receiver_0 > 1.0) {
-        clamp$result_0 = 1.0;
-      }
-       else {
-        clamp$result_0 = $receiver_0;
-      }
-      var dr = round(clamp$result_0 * 255.0);
-      var x_1 = c1.g - c2.g;
-      var $receiver_1 = Math_0.abs(x_1);
-      var clamp$result_1;
-      if ($receiver_1 < 0.0) {
-        clamp$result_1 = 0.0;
-      }
-       else if ($receiver_1 > 1.0) {
-        clamp$result_1 = 1.0;
-      }
-       else {
-        clamp$result_1 = $receiver_1;
-      }
-      var dg = round(clamp$result_1 * 255.0);
-      var x_2 = c1.b - c2.b;
-      var $receiver_2 = Math_0.abs(x_2);
-      var clamp$result_2;
-      if ($receiver_2 < 0.0) {
-        clamp$result_2 = 0.0;
-      }
-       else if ($receiver_2 > 1.0) {
-        clamp$result_2 = 1.0;
-      }
-       else {
-        clamp$result_2 = $receiver_2;
-      }
-      var db = round(clamp$result_2 * 255.0);
-      var m = Math_0.max(da, dr);
-      var a = m;
-      m = Math_0.max(a, dg);
-      var a_0 = m;
-      m = Math_0.max(a_0, db);
-      steps = steps + numberToInt(m) | 0;
-      stepsn[i - 1 | 0] = numberToInt(m);
-    }
-    var array = Array_0(steps);
+    if (n === void 0)
+      n = ColorGradient$Companion_getInstance().DEFAULT_N;
+    var array = Array_0(n);
     var tmp$;
     tmp$ = array.length - 1 | 0;
-    for (var i_0 = 0; i_0 <= tmp$; i_0++) {
-      array[i_0] = MutableColor_init();
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = MutableColor_init();
     }
     this.gradient_0 = array;
-    var n = 0;
-    for (var i_1 = 0; i_1 !== stepsn.length; ++i_1) {
-      var $receiver_3 = colors[i_1].a;
-      var clamp$result_3;
-      if ($receiver_3 < 0.0) {
-        clamp$result_3 = 0.0;
+    var tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    if (colors.length < 2) {
+      throw new KoolException('ColorGradient requires at least two colors');
+    }
+    if (colors.length > 1) {
+      sortWith(colors, new Comparator$ObjectLiteral(compareBy$lambda(ColorGradient_init$lambda)));
+    }
+    var mi = first_0(colors).first;
+    var mx = last_0(colors).first;
+    var pi = 0;
+    var p0 = colors[tmp$_0 = pi, pi = tmp$_0 + 1 | 0, tmp$_0];
+    var p1 = colors[tmp$_1 = pi, pi = tmp$_1 + 1 | 0, tmp$_1];
+    tmp$_2 = n;
+    for (var i_0 = 0; i_0 < tmp$_2; i_0++) {
+      var p = i_0 / (n - 1.0) * (mx - mi) + mi;
+      while (p > p1.first) {
+        p0 = p1;
+        var a = (tmp$_3 = pi, pi = tmp$_3 + 1 | 0, tmp$_3);
+        p1 = colors[Math_0.min(a, colors.length)];
       }
-       else if ($receiver_3 > 1.0) {
-        clamp$result_3 = 1.0;
-      }
-       else {
-        clamp$result_3 = $receiver_3;
-      }
-      var a0 = round(clamp$result_3 * 255.0);
-      var $receiver_4 = colors[i_1].r;
-      var clamp$result_4;
-      if ($receiver_4 < 0.0) {
-        clamp$result_4 = 0.0;
-      }
-       else if ($receiver_4 > 1.0) {
-        clamp$result_4 = 1.0;
-      }
-       else {
-        clamp$result_4 = $receiver_4;
-      }
-      var r0 = round(clamp$result_4 * 255.0);
-      var $receiver_5 = colors[i_1].g;
-      var clamp$result_5;
-      if ($receiver_5 < 0.0) {
-        clamp$result_5 = 0.0;
-      }
-       else if ($receiver_5 > 1.0) {
-        clamp$result_5 = 1.0;
-      }
-       else {
-        clamp$result_5 = $receiver_5;
-      }
-      var g0 = round(clamp$result_5 * 255.0);
-      var $receiver_6 = colors[i_1].b;
-      var clamp$result_6;
-      if ($receiver_6 < 0.0) {
-        clamp$result_6 = 0.0;
-      }
-       else if ($receiver_6 > 1.0) {
-        clamp$result_6 = 1.0;
-      }
-       else {
-        clamp$result_6 = $receiver_6;
-      }
-      var b0 = round(clamp$result_6 * 255.0);
-      var $receiver_7 = colors[i_1 + 1 | 0].a;
-      var clamp$result_7;
-      if ($receiver_7 < 0.0) {
-        clamp$result_7 = 0.0;
-      }
-       else if ($receiver_7 > 1.0) {
-        clamp$result_7 = 1.0;
-      }
-       else {
-        clamp$result_7 = $receiver_7;
-      }
-      var a1 = round(clamp$result_7 * 255.0);
-      var $receiver_8 = colors[i_1 + 1 | 0].r;
-      var clamp$result_8;
-      if ($receiver_8 < 0.0) {
-        clamp$result_8 = 0.0;
-      }
-       else if ($receiver_8 > 1.0) {
-        clamp$result_8 = 1.0;
-      }
-       else {
-        clamp$result_8 = $receiver_8;
-      }
-      var r1 = round(clamp$result_8 * 255.0);
-      var $receiver_9 = colors[i_1 + 1 | 0].g;
-      var clamp$result_9;
-      if ($receiver_9 < 0.0) {
-        clamp$result_9 = 0.0;
-      }
-       else if ($receiver_9 > 1.0) {
-        clamp$result_9 = 1.0;
-      }
-       else {
-        clamp$result_9 = $receiver_9;
-      }
-      var g1 = round(clamp$result_9 * 255.0);
-      var $receiver_10 = colors[i_1 + 1 | 0].b;
-      var clamp$result_10;
-      if ($receiver_10 < 0.0) {
-        clamp$result_10 = 0.0;
-      }
-       else if ($receiver_10 > 1.0) {
-        clamp$result_10 = 1.0;
-      }
-       else {
-        clamp$result_10 = $receiver_10;
-      }
-      var b1 = round(clamp$result_10 * 255.0);
-      var da_0 = (a1 - a0) / stepsn[i_1];
-      var dr_0 = (r1 - r0) / stepsn[i_1];
-      var dg_0 = (g1 - g0) / stepsn[i_1];
-      var db_0 = (b1 - b0) / stepsn[i_1];
-      var j = 0;
-      while (j < stepsn[i_1]) {
-        this.gradient_0[n].a = (a0 + round(da_0 * j)) / 255.0;
-        this.gradient_0[n].r = (r0 + round(dr_0 * j)) / 255.0;
-        this.gradient_0[n].g = (g0 + round(dg_0 * j)) / 255.0;
-        this.gradient_0[n].b = (b0 + round(db_0 * j)) / 255.0;
-        j = j + 1 | 0;
-        n = n + 1 | 0;
-      }
+      var w0 = 1.0 - (p - p0.first) / (p1.first - p0.first);
+      this.gradient_0[i_0].set_d7aj7k$(p0.second).scale_mx4ult$(w0).add_y83vuj$(p1.second, 1.0 - w0);
     }
   }
   ColorGradient.prototype.getColor_y2kzbl$ = function (value, min, max) {
@@ -18518,6 +17124,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       min = 0.0;
     if (max === void 0)
       max = 1.0;
+    var tmp$ = this.gradient_0;
     var $receiver = numberToInt((value - min) / (max - min) * this.gradient_0.length);
     var max_0 = this.gradient_0.length - 1 | 0;
     var clamp$result;
@@ -18530,16 +17137,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
      else {
       clamp$result = $receiver;
     }
-    var i = clamp$result;
-    return this.gradient_0[i];
+    return tmp$[clamp$result];
   };
   function ColorGradient$Companion() {
     ColorGradient$Companion_instance = this;
-    this.AMPEL = new ColorGradient([Color$Companion_getInstance().RED, Color$Companion_getInstance().YELLOW, Color$Companion_getInstance().GREEN]);
-    this.BLUE_WHITE_RED = new ColorGradient([new Color(0.35, 0.0, 0.0, 1.0), new Color(1.0, 0.5, 0.0, 1.0), Color$Companion_getInstance().WHITE, new Color(0.0, 0.5, 1.0, 1.0), new Color(0.0, 45 / 255.0, 120 / 255.0, 1.0)]);
-    this.JET = new ColorGradient([Color$Companion_getInstance().BLUE, Color$Companion_getInstance().CYAN, Color$Companion_getInstance().GREEN, Color$Companion_getInstance().YELLOW, Color$Companion_getInstance().RED, Color$Companion_getInstance().MAGENTA]);
-    this.PLASMA = new ColorGradient([new Color(0.050383214, 0.029802898, 0.5279749, 1.0), new Color(0.06353636, 0.028425973, 0.5331237, 1.0), new Color(0.07535312, 0.027206372, 0.538007, 1.0), new Color(0.0862218, 0.026125321, 0.5426577, 1.0), new Color(0.09637861, 0.025165098, 0.54710346, 1.0), new Color(0.1059797, 0.024309244, 0.5513679, 1.0), new Color(0.115123644, 0.02355625, 0.5554677, 1.0), new Color(0.1239029, 0.022878101, 0.5594235, 1.0), new Color(0.13238072, 0.022258377, 0.5632501, 1.0), new Color(0.14060308, 0.021686668, 0.5669595, 1.0), new Color(0.14860652, 0.021153588, 0.5705617, 1.0), new Color(0.15642065, 0.020650716, 0.57406545, 1.0), new Color(0.16406973, 0.020170532, 0.57747805, 1.0), new Color(0.17157392, 0.019706342, 0.5808059, 1.0), new Color(0.1789502, 0.019252224, 0.58405423, 1.0), new Color(0.18621296, 0.018802976, 0.58722764, 1.0), new Color(0.19337445, 0.01835406, 0.59032995, 1.0), new Color(0.20044526, 0.017901551, 0.5933643, 1.0), new Color(0.20743455, 0.017442109, 0.5963333, 1.0), new Color(0.2143503, 0.016972927, 0.59923923, 1.0), new Color(0.22119676, 0.016497048, 0.6020833, 1.0), new Color(0.22798297, 0.016007151, 0.6048674, 1.0), new Color(0.23471454, 0.015501507, 0.60759246, 1.0), new Color(0.24139625, 0.0149791045, 0.6102591, 1.0), new Color(0.24803238, 0.014439358, 0.6128678, 1.0), new Color(0.2546267, 0.013882092, 0.61541855, 1.0), new Color(0.26118258, 0.0133075155, 0.6179114, 1.0), new Color(0.267703, 0.012716216, 0.620346, 1.0), new Color(0.27419066, 0.012109143, 0.6227219, 1.0), new Color(0.28064796, 0.011487591, 0.62503844, 1.0), new Color(0.28707606, 0.010855487, 0.62729496, 1.0), new Color(0.29347768, 0.010212885, 0.6294905, 1.0), new Color(0.2998551, 0.0095607955, 0.6316239, 1.0), new Color(0.30620983, 0.008901853, 0.6336941, 1.0), new Color(0.31254312, 0.008239007, 0.63569975, 1.0), new Color(0.31885618, 0.0075755105, 0.6376395, 1.0), new Color(0.32515, 0.0069149174, 0.639512, 1.0), new Color(0.33142555, 0.006261074, 0.64131564, 1.0), new Color(0.33768344, 0.0056183087, 0.64304894, 1.0), new Color(0.34392458, 0.0049905307, 0.6447102, 1.0), new Color(0.3501497, 0.0043820255, 0.6462977, 1.0), new Color(0.3563592, 0.0037978175, 0.64780974, 1.0), new Color(0.36255348, 0.0032431958, 0.64924467, 1.0), new Color(0.36873275, 0.0027237071, 0.65060055, 1.0), new Color(0.37489727, 0.0022451489, 0.65187573, 1.0), new Color(0.38104713, 0.001813562, 0.6530685, 1.0), new Color(0.38718265, 0.0014344692, 0.6541768, 1.0), new Color(0.39330402, 0.0011138826, 0.65519875, 1.0), new Color(0.3994108, 8.594208E-4, 0.6561328, 1.0), new Color(0.40550292, 6.7809154E-4, 0.6569773, 1.0), new Color(0.4115801, 5.771017E-4, 0.6577304, 1.0), new Color(0.41764206, 5.638475E-4, 0.65839046, 1.0), new Color(0.42368856, 6.4590276E-4, 0.658956, 1.0), new Color(0.42971918, 8.310082E-4, 0.6594254, 1.0), new Color(0.4357336, 0.0011270588, 0.6597971, 1.0), new Color(0.4417321, 0.0015398478, 0.660069, 1.0), new Color(0.4477136, 0.0020795474, 0.66024035, 1.0), new Color(0.4536774, 0.002754703, 0.66031, 1.0), new Color(0.45962295, 0.003573744, 0.66027665, 1.0), new Color(0.46554962, 0.004545181, 0.6601394, 1.0), new Color(0.47145686, 0.005677588, 0.6598972, 1.0), new Color(0.47734392, 0.0069795875, 0.6595493, 1.0), new Color(0.4832102, 0.008459835, 0.659095, 1.0), new Color(0.48905495, 0.010127, 0.6585337, 1.0), new Color(0.49487746, 0.011989749, 0.6578649, 1.0), new Color(0.5006777, 0.014055064, 0.65708756, 1.0), new Color(0.50645417, 0.016333343, 0.6562023, 1.0), new Color(0.512206, 0.018833224, 0.65520924, 1.0), new Color(0.5179326, 0.021563191, 0.6541085, 1.0), new Color(0.523633, 0.024531648, 0.65290064, 1.0), new Color(0.5293065, 0.027746873, 0.651586, 1.0), new Color(0.5349522, 0.03121703, 0.6501654, 1.0), new Color(0.5405695, 0.03495013, 0.6486397, 1.0), new Color(0.5461575, 0.038954034, 0.6470099, 1.0), new Color(0.55171543, 0.04313648, 0.64527726, 1.0), new Color(0.5572425, 0.04733076, 0.6434432, 1.0), new Color(0.5627381, 0.051544808, 0.6415094, 1.0), new Color(0.56820136, 0.05577767, 0.63947743, 1.0), new Color(0.5736319, 0.060028136, 0.63734883, 1.0), new Color(0.57902867, 0.06429555, 0.6351261, 1.0), new Color(0.5843911, 0.068579026, 0.6328116, 1.0), new Color(0.5897186, 0.072877586, 0.63040775, 1.0), new Color(0.5950105, 0.07719029, 0.627917, 1.0), new Color(0.6002663, 0.08151619, 0.6253421, 1.0), new Color(0.60548544, 0.085854374, 0.62268573, 1.0), new Color(0.61066747, 0.09020393, 0.61995083, 1.0), new Color(0.615812, 0.09456398, 0.61714035, 1.0), new Color(0.6209186, 0.098933674, 0.61425745, 1.0), new Color(0.6259869, 0.10331216, 0.6113052, 1.0), new Color(0.6310166, 0.10769864, 0.6082868, 1.0), new Color(0.63600755, 0.11209234, 0.6052055, 1.0), new Color(0.64095944, 0.116492495, 0.6020646, 1.0), new Color(0.6458722, 0.1208984, 0.5988674, 1.0), new Color(0.6507456, 0.12530938, 0.5956173, 1.0), new Color(0.6555796, 0.12972479, 0.5923175, 1.0), new Color(0.6603743, 0.134144, 0.5889713, 1.0), new Color(0.6651295, 0.13856643, 0.5855823, 1.0), new Color(0.6698454, 0.14299154, 0.58215356, 1.0), new Color(0.67452204, 0.14741884, 0.57868826, 1.0), new Color(0.67915964, 0.15184785, 0.5751894, 1.0), new Color(0.6837584, 0.15627816, 0.57166016, 1.0), new Color(0.68831843, 0.16070938, 0.5681034, 1.0), new Color(0.6928401, 0.16514118, 0.56452197, 1.0), new Color(0.6973236, 0.16957322, 0.5609187, 1.0), new Color(0.70176935, 0.17400524, 0.55729616, 1.0), new Color(0.7061776, 0.178437, 0.553657, 1.0), new Color(0.71054876, 0.1828683, 0.5500036, 1.0), new Color(0.7148832, 0.18729898, 0.5463383, 1.0), new Color(0.71918136, 0.1917289, 0.54266334, 1.0), new Color(0.7234436, 0.19615796, 0.5389808, 1.0), new Color(0.72767043, 0.20058608, 0.5352926, 1.0), new Color(0.73186225, 0.20501317, 0.531601, 1.0), new Color(0.73601943, 0.20943907, 0.52790844, 1.0), new Color(0.7401426, 0.21386397, 0.5242155, 1.0), new Color(0.7442321, 0.2182879, 0.5205238, 1.0), new Color(0.7482885, 0.22271094, 0.5168345, 1.0), new Color(0.7523123, 0.22713318, 0.51314896, 1.0), new Color(0.75630397, 0.23155475, 0.5094683, 1.0), new Color(0.76026386, 0.23597577, 0.5057936, 1.0), new Color(0.7641925, 0.2403964, 0.5021256, 1.0), new Color(0.76809037, 0.24481681, 0.4984653, 1.0), new Color(0.77195793, 0.24923722, 0.49481335, 1.0), new Color(0.7757955, 0.2536578, 0.49117053, 1.0), new Color(0.7796036, 0.2580784, 0.4875391, 1.0), new Color(0.78338265, 0.26249966, 0.48391774, 1.0), new Color(0.787133, 0.26692185, 0.4803067, 1.0), new Color(0.790855, 0.27134526, 0.47670633, 1.0), new Color(0.7945491, 0.2757702, 0.4731168, 1.0), new Color(0.79821557, 0.2801969, 0.46953827, 1.0), new Color(0.8018547, 0.28462574, 0.46597087, 1.0), new Color(0.80546695, 0.28905705, 0.4624146, 1.0), new Color(0.8090524, 0.29349113, 0.45886958, 1.0), new Color(0.8126115, 0.29792786, 0.45533755, 1.0), new Color(0.8161444, 0.30236813, 0.45181638, 1.0), new Color(0.81965125, 0.3068123, 0.44830588, 1.0), new Color(0.82313234, 0.3112607, 0.44480577, 1.0), new Color(0.8265877, 0.3157138, 0.4413159, 1.0), new Color(0.83001757, 0.32017192, 0.43783596, 1.0), new Color(0.83342206, 0.3246355, 0.43436563, 1.0), new Color(0.83680123, 0.32910484, 0.43090504, 1.0), new Color(0.8401553, 0.3335801, 0.42745483, 1.0), new Color(0.8434841, 0.3380621, 0.42401305, 1.0), new Color(0.84678775, 0.34255126, 0.42057934, 1.0), new Color(0.8500661, 0.347048, 0.41715327, 1.0), new Color(0.8533193, 0.3515528, 0.41373444, 1.0), new Color(0.8565471, 0.35606608, 0.41032246, 1.0), new Color(0.8597495, 0.36058822, 0.40691698, 1.0), new Color(0.86292654, 0.3651194, 0.4035188, 1.0), new Color(0.8660779, 0.36966044, 0.40012604, 1.0), new Color(0.86920345, 0.3742118, 0.3967382, 1.0), new Color(0.8723029, 0.3787739, 0.39335495, 1.0), new Color(0.87537616, 0.38334724, 0.38997585, 1.0), new Color(0.8784229, 0.38793224, 0.38660046, 1.0), new Color(0.8814429, 0.39252934, 0.38322863, 1.0), new Color(0.884436, 0.39713886, 0.37986025, 1.0), new Color(0.8874017, 0.4017615, 0.37649423, 1.0), new Color(0.8903397, 0.4063977, 0.37313023, 1.0), new Color(0.89324963, 0.41104788, 0.3697679, 1.0), new Color(0.8961312, 0.41571248, 0.36640692, 1.0), new Color(0.89898396, 0.42039198, 0.36304697, 1.0), new Color(0.9018074, 0.4250868, 0.35968775, 1.0), new Color(0.9046013, 0.42979744, 0.3563288, 1.0), new Color(0.907365, 0.43452433, 0.35296977, 1.0), new Color(0.9100981, 0.4392679, 0.34961048, 1.0), new Color(0.9128001, 0.4440286, 0.34625065, 1.0), new Color(0.91547054, 0.44880673, 0.34289014, 1.0), new Color(0.9181088, 0.45360282, 0.33952877, 1.0), new Color(0.9207144, 0.45841742, 0.33616558, 1.0), new Color(0.9232867, 0.46325082, 0.33280084, 1.0), new Color(0.9258251, 0.46810338, 0.3294345, 1.0), new Color(0.9283293, 0.47297546, 0.32606655, 1.0), new Color(0.9307985, 0.47786742, 0.32269686, 1.0), new Color(0.9332321, 0.4827796, 0.31932545, 1.0), new Color(0.93562967, 0.48771235, 0.3159522, 1.0), new Color(0.93799, 0.49266654, 0.31257543, 1.0), new Color(0.9403129, 0.49764204, 0.30919662, 1.0), new Color(0.94259775, 0.5026392, 0.30581582, 1.0), new Color(0.9448439, 0.5076582, 0.3024331, 1.0), new Color(0.9470507, 0.51269937, 0.29904854, 1.0), new Color(0.94921744, 0.5177631, 0.2956623, 1.0), new Color(0.95134354, 0.5228495, 0.2922745, 1.0), new Color(0.95342773, 0.5279595, 0.28888345, 1.0), new Color(0.95546967, 0.5330931, 0.2854904, 1.0), new Color(0.95746875, 0.53825015, 0.28209615, 1.0), new Color(0.95942444, 0.54343104, 0.27870098, 1.0), new Color(0.96133596, 0.5486359, 0.2753052, 1.0), new Color(0.9632026, 0.55386496, 0.27190915, 1.0), new Color(0.96502364, 0.55911833, 0.2685132, 1.0), new Color(0.9667985, 0.5643963, 0.26511776, 1.0), new Color(0.96852565, 0.56969965, 0.2617215, 1.0), new Color(0.9702046, 0.57502824, 0.25832543, 1.0), new Color(0.971835, 0.580382, 0.25493124, 1.0), new Color(0.97341615, 0.585761, 0.25153962, 1.0), new Color(0.9749473, 0.5911654, 0.2481512, 1.0), new Color(0.9764276, 0.5965953, 0.24476677, 1.0), new Color(0.9778564, 0.6020508, 0.24138719, 1.0), new Color(0.9792329, 0.6075321, 0.23801336, 1.0), new Color(0.98055637, 0.6130392, 0.23464632, 1.0), new Color(0.9818259, 0.61857224, 0.23128718, 1.0), new Color(0.98304075, 0.6241314, 0.22793715, 1.0), new Color(0.9841989, 0.6297175, 0.22459501, 1.0), new Color(0.9853008, 0.6353299, 0.22126488, 1.0), new Color(0.9863454, 0.6409685, 0.21794845, 1.0), new Color(0.98733205, 0.64663345, 0.21464753, 1.0), new Color(0.98825985, 0.65232486, 0.21136412, 1.0), new Color(0.9891279, 0.6580426, 0.20810042, 1.0), new Color(0.98993534, 0.6637869, 0.20485885, 1.0), new Color(0.9906813, 0.6695577, 0.20164205, 1.0), new Color(0.9913648, 0.6753551, 0.1984529, 1.0), new Color(0.99198496, 0.68117905, 0.19529457, 1.0), new Color(0.99254096, 0.68702954, 0.1921705, 1.0), new Color(0.9930317, 0.69290674, 0.18908446, 1.0), new Color(0.9934563, 0.69881046, 0.18604054, 1.0), new Color(0.9938138, 0.7047409, 0.18304318, 1.0), new Color(0.99410325, 0.7106978, 0.1800972, 1.0), new Color(0.9943236, 0.71668136, 0.17720783, 1.0), new Color(0.99447393, 0.72269136, 0.17438066, 1.0), new Color(0.99455327, 0.7287279, 0.17162174, 1.0), new Color(0.9945606, 0.7347908, 0.16893752, 1.0), new Color(0.994495, 0.74088, 0.16633491, 1.0), new Color(0.99435544, 0.74699545, 0.16382125, 1.0), new Color(0.994141, 0.75313693, 0.16140422, 1.0), new Color(0.99385077, 0.7593044, 0.15909198, 1.0), new Color(0.9934822, 0.7654986, 0.15689063, 1.0), new Color(0.99303323, 0.7717198, 0.15480758, 1.0), new Color(0.9925052, 0.7779668, 0.15285486, 1.0), new Color(0.9918973, 0.7842391, 0.15104158, 1.0), new Color(0.9912087, 0.7905366, 0.14937688, 1.0), new Color(0.9904388, 0.7968588, 0.14786981, 1.0), new Color(0.98958707, 0.8032053, 0.14652912, 1.0), new Color(0.98864776, 0.8095786, 0.14535728, 1.0), new Color(0.98762053, 0.81597793, 0.14436264, 1.0), new Color(0.9865094, 0.8224006, 0.14355668, 1.0), new Color(0.9853142, 0.828846, 0.14294511, 1.0), new Color(0.98403114, 0.83531535, 0.14252838, 1.0), new Color(0.98265284, 0.8418117, 0.14230265, 1.0), new Color(0.9811904, 0.8483289, 0.14227861, 1.0), new Color(0.97964364, 0.85486645, 0.14245343, 1.0), new Color(0.9779949, 0.8614323, 0.14280818, 1.0), new Color(0.97626495, 0.868016, 0.14335094, 1.0), new Color(0.974443, 0.87462217, 0.14406116, 1.0), new Color(0.97253, 0.8812501, 0.14492291, 1.0), new Color(0.97053295, 0.8878961, 0.14591867, 1.0), new Color(0.96844345, 0.894564, 0.14701444, 1.0), new Color(0.9662712, 0.90124935, 0.14817964, 1.0), new Color(0.9640211, 0.9079504, 0.14937043, 1.0), new Color(0.9616815, 0.9146725, 0.15052034, 1.0), new Color(0.95927566, 0.9214065, 0.15156601, 1.0), new Color(0.9568081, 0.9281521, 0.1524095, 1.0), new Color(0.9542868, 0.93490773, 0.15292116, 1.0), new Color(0.9517261, 0.9416706, 0.15292536, 1.0), new Color(0.94915056, 0.9484349, 0.1521776, 1.0), new Color(0.9466023, 0.9551899, 0.15032795, 1.0), new Color(0.94415176, 0.9619165, 0.1468608, 1.0), new Color(0.94189614, 0.96858984, 0.14095561, 1.0), new Color(0.9400151, 0.97515833, 0.13132551, 1.0)]);
-    this.VIRIDIS = new ColorGradient([new Color(0.267004, 0.00487433, 0.3294152, 1.0), new Color(0.2685105, 0.00960483, 0.3354265, 1.0), new Color(0.26994383, 0.01462494, 0.34137896, 1.0), new Color(0.27130488, 0.01994186, 0.3472686, 1.0), new Color(0.27259383, 0.02556309, 0.35309303, 1.0), new Color(0.27380934, 0.03149748, 0.35885257, 1.0), new Color(0.2749524, 0.03775181, 0.36454323, 1.0), new Color(0.27602237, 0.04416723, 0.3701642, 1.0), new Color(0.2770184, 0.05034437, 0.3757145, 1.0), new Color(0.27794144, 0.05632444, 0.38119075, 1.0), new Color(0.27879068, 0.06214536, 0.38659203, 1.0), new Color(0.2795655, 0.06783587, 0.39191723, 1.0), new Color(0.28026658, 0.07341724, 0.39716348, 1.0), new Color(0.2808936, 0.07890703, 0.40232944, 1.0), new Color(0.2814458, 0.0843197, 0.40741405, 1.0), new Color(0.2819236, 0.08966622, 0.4124152, 1.0), new Color(0.28232738, 0.09495545, 0.41733086, 1.0), new Color(0.28265634, 0.10019576, 0.42216033, 1.0), new Color(0.2829105, 0.10539345, 0.42690203, 1.0), new Color(0.28309095, 0.11055307, 0.43155375, 1.0), new Color(0.28319705, 0.11567966, 0.43611482, 1.0), new Color(0.2832288, 0.12077701, 0.44058403, 1.0), new Color(0.28318685, 0.125848, 0.44496, 1.0), new Color(0.283072, 0.13089477, 0.44924128, 1.0), new Color(0.28288388, 0.13592005, 0.45342734, 1.0), new Color(0.28262296, 0.14092556, 0.45751727, 1.0), new Color(0.28229037, 0.14591233, 0.46150994, 1.0), new Color(0.28188676, 0.15088147, 0.46540475, 1.0), new Color(0.28141227, 0.15583424, 0.46920127, 1.0), new Color(0.28086773, 0.16077133, 0.47289908, 1.0), new Color(0.2802547, 0.16569272, 0.47649762, 1.0), new Color(0.27957398, 0.17059883, 0.47999674, 1.0), new Color(0.27882618, 0.1754902, 0.48339653, 1.0), new Color(0.27801237, 0.18036684, 0.48669702, 1.0), new Color(0.27713436, 0.18522836, 0.48989832, 1.0), new Color(0.27619377, 0.19007447, 0.49300075, 1.0), new Color(0.27519116, 0.1949054, 0.49600488, 1.0), new Color(0.27412802, 0.19972086, 0.49891132, 1.0), new Color(0.27300596, 0.2045205, 0.5017208, 1.0), new Color(0.27182811, 0.20930307, 0.5044341, 1.0), new Color(0.27059472, 0.214069, 0.5070524, 1.0), new Color(0.26930755, 0.21881782, 0.5095768, 1.0), new Color(0.26796845, 0.22354911, 0.5120084, 1.0), new Color(0.26657984, 0.2282621, 0.5143487, 1.0), new Color(0.2651445, 0.23295593, 0.5165993, 1.0), new Color(0.2636632, 0.23763078, 0.51876163, 1.0), new Color(0.262138, 0.24228619, 0.52083737, 1.0), new Color(0.26057103, 0.2469217, 0.5228282, 1.0), new Color(0.2589645, 0.25153685, 0.5247361, 1.0), new Color(0.25732243, 0.2561304, 0.52656335, 1.0), new Color(0.2556452, 0.26070285, 0.5283115, 1.0), new Color(0.25393498, 0.26525384, 0.52998275, 1.0), new Color(0.25219405, 0.26978305, 0.5315791, 1.0), new Color(0.25042462, 0.27429023, 0.53310263, 1.0), new Color(0.24862899, 0.2787751, 0.5345556, 1.0), new Color(0.2468114, 0.28323662, 0.53594095, 1.0), new Color(0.24497208, 0.28767547, 0.5372602, 1.0), new Color(0.24311323, 0.29209155, 0.5385156, 1.0), new Color(0.24123707, 0.2964847, 0.53970945, 1.0), new Color(0.23934574, 0.30085495, 0.54084396, 1.0), new Color(0.23744138, 0.30520222, 0.5419214, 1.0), new Color(0.23552606, 0.30952656, 0.54294395, 1.0), new Color(0.23360278, 0.31382772, 0.54391426, 1.0), new Color(0.2316735, 0.3181058, 0.54483443, 1.0), new Color(0.22973926, 0.32236126, 0.54570633, 1.0), new Color(0.22780192, 0.32659432, 0.546532, 1.0), new Color(0.2258633, 0.33080515, 0.5473135, 1.0), new Color(0.22392514, 0.334994, 0.5480529, 1.0), new Color(0.22198915, 0.33916113, 0.5487521, 1.0), new Color(0.2200569, 0.34330687, 0.549413, 1.0), new Color(0.21812995, 0.34743154, 0.55003756, 1.0), new Color(0.21620971, 0.35153547, 0.5506274, 1.0), new Color(0.21429756, 0.35561907, 0.5511844, 1.0), new Color(0.21239477, 0.35968274, 0.5517101, 1.0), new Color(0.2105031, 0.3637267, 0.55220646, 1.0), new Color(0.20862342, 0.3677515, 0.5526749, 1.0), new Color(0.20675628, 0.37175775, 0.5531165, 1.0), new Color(0.20490257, 0.3757459, 0.55353284, 1.0), new Color(0.20306309, 0.37971643, 0.55392504, 1.0), new Color(0.20123854, 0.38366988, 0.5542944, 1.0), new Color(0.1994295, 0.38760677, 0.554642, 1.0), new Color(0.1976365, 0.39152762, 0.5549691, 1.0), new Color(0.19585992, 0.39543298, 0.5552764, 1.0), new Color(0.1941001, 0.39932337, 0.55556494, 1.0), new Color(0.1923572, 0.40319934, 0.5558356, 1.0), new Color(0.19063134, 0.4070615, 0.55608904, 1.0), new Color(0.18892258, 0.41091034, 0.55632603, 1.0), new Color(0.18723083, 0.41474646, 0.55654716, 1.0), new Color(0.18555593, 0.4185704, 0.5567529, 1.0), new Color(0.18389763, 0.42238274, 0.5569438, 1.0), new Color(0.18225561, 0.42618406, 0.5571201, 1.0), new Color(0.18062949, 0.42997485, 0.5572822, 1.0), new Color(0.1790188, 0.43375573, 0.5574303, 1.0), new Color(0.17742299, 0.4375272, 0.5575647, 1.0), new Color(0.17584148, 0.4412898, 0.55768526, 1.0), new Color(0.17427363, 0.4450441, 0.5577922, 1.0), new Color(0.17271876, 0.4487906, 0.55788535, 1.0), new Color(0.17117615, 0.4525298, 0.5579646, 1.0), new Color(0.16964573, 0.45626208, 0.55803037, 1.0), new Color(0.1681264, 0.45998803, 0.558082, 1.0), new Color(0.1666171, 0.46370813, 0.5581191, 1.0), new Color(0.16511703, 0.4674229, 0.5581414, 1.0), new Color(0.16362543, 0.47113279, 0.55814844, 1.0), new Color(0.16214155, 0.4748382, 0.5581397, 1.0), new Color(0.16066466, 0.47853962, 0.55811465, 1.0), new Color(0.15919413, 0.4822374, 0.5580728, 1.0), new Color(0.15772933, 0.48593196, 0.5580135, 1.0), new Color(0.15626973, 0.4896237, 0.557936, 1.0), new Color(0.15481488, 0.49331293, 0.5578397, 1.0), new Color(0.15336445, 0.49700004, 0.5577237, 1.0), new Color(0.1519182, 0.5006853, 0.5575873, 1.0), new Color(0.15047605, 0.504369, 0.5574297, 1.0), new Color(0.14903918, 0.50805134, 0.5572505, 1.0), new Color(0.14760731, 0.51173264, 0.5570486, 1.0), new Color(0.14618026, 0.51541317, 0.5568227, 1.0), new Color(0.14475863, 0.5190932, 0.5565718, 1.0), new Color(0.14334327, 0.5227729, 0.5562949, 1.0), new Color(0.14193527, 0.52645254, 0.555991, 1.0), new Color(0.140536, 0.5301322, 0.55565894, 1.0), new Color(0.13914707, 0.533812, 0.55529773, 1.0), new Color(0.13777047, 0.53749216, 0.55490625, 1.0), new Color(0.1364085, 0.5411726, 0.5544834, 1.0), new Color(0.13506562, 0.5448533, 0.55402905, 1.0), new Color(0.13374299, 0.5485346, 0.55354106, 1.0), new Color(0.13244401, 0.55221635, 0.5530183, 1.0), new Color(0.1311725, 0.5558987, 0.5524595, 1.0), new Color(0.1299327, 0.55958164, 0.55186355, 1.0), new Color(0.12872937, 0.563265, 0.5512293, 1.0), new Color(0.12756771, 0.5669489, 0.5505555, 1.0), new Color(0.12645338, 0.5706332, 0.5498411, 1.0), new Color(0.12539382, 0.5743175, 0.5490856, 1.0), new Color(0.12439474, 0.57800204, 0.5482874, 1.0), new Color(0.12346281, 0.5816866, 0.547445, 1.0), new Color(0.12260562, 0.5853711, 0.54655725, 1.0), new Color(0.12183122, 0.5890552, 0.545623, 1.0), new Color(0.12114807, 0.59273887, 0.54464114, 1.0), new Color(0.12056501, 0.5964219, 0.5436106, 1.0), new Color(0.12009154, 0.60010386, 0.5425304, 1.0), new Color(0.11973756, 0.60378456, 0.5414, 1.0), new Color(0.11951163, 0.6074639, 0.5402175, 1.0), new Color(0.11942341, 0.61114144, 0.5389819, 1.0), new Color(0.11948255, 0.614817, 0.5376922, 1.0), new Color(0.11969858, 0.6184903, 0.5363473, 1.0), new Color(0.12008079, 0.6221608, 0.5349463, 1.0), new Color(0.12063824, 0.6258283, 0.53348833, 1.0), new Color(0.12137972, 0.6294924, 0.53197277, 1.0), new Color(0.12231244, 0.6331528, 0.5303981, 1.0), new Color(0.12344358, 0.636809, 0.5287634, 1.0), new Color(0.12477953, 0.64046067, 0.5270679, 1.0), new Color(0.12632582, 0.64410746, 0.5253107, 1.0), new Color(0.12808703, 0.6477488, 0.5234909, 1.0), new Color(0.13006689, 0.65138435, 0.52160794, 1.0), new Color(0.13226797, 0.6550136, 0.51966083, 1.0), new Color(0.13469183, 0.6586362, 0.5176488, 1.0), new Color(0.1373392, 0.6622516, 0.515571, 1.0), new Color(0.14020991, 0.6658593, 0.5134268, 1.0), new Color(0.1433029, 0.6694588, 0.5112155, 1.0), new Color(0.1466164, 0.6730497, 0.50893646, 1.0), new Color(0.15014783, 0.6766314, 0.5065889, 1.0), new Color(0.15389405, 0.68020344, 0.50417215, 1.0), new Color(0.15785146, 0.68376523, 0.50168574, 1.0), new Color(0.16201597, 0.6873163, 0.49912906, 1.0), new Color(0.1663832, 0.6908561, 0.49650162, 1.0), new Color(0.1709484, 0.69438404, 0.49380293, 1.0), new Color(0.17570671, 0.6978996, 0.4910325, 1.0), new Color(0.18065314, 0.70140225, 0.48818937, 1.0), new Color(0.18578266, 0.7048913, 0.48527327, 1.0), new Color(0.19109018, 0.70836633, 0.48228395, 1.0), new Color(0.19657063, 0.7118267, 0.47922108, 1.0), new Color(0.20221902, 0.7152718, 0.47608432, 1.0), new Color(0.20803045, 0.71870095, 0.4728733, 1.0), new Color(0.21400015, 0.7221137, 0.46958774, 1.0), new Color(0.22012381, 0.72550946, 0.46622637, 1.0), new Color(0.2263969, 0.72888756, 0.46278933, 1.0), new Color(0.23281498, 0.73224735, 0.45927674, 1.0), new Color(0.2393739, 0.73558825, 0.4556884, 1.0), new Color(0.24606968, 0.7389097, 0.45202404, 1.0), new Color(0.2528985, 0.74221104, 0.44828355, 1.0), new Color(0.25985676, 0.7454916, 0.44446674, 1.0), new Color(0.26694128, 0.74875087, 0.44057283, 1.0), new Color(0.2741492, 0.75198805, 0.4366009, 1.0), new Color(0.2814768, 0.75520265, 0.43255207, 1.0), new Color(0.28892103, 0.758394, 0.42842627, 1.0), new Color(0.296479, 0.7615614, 0.42422342, 1.0), new Color(0.30414796, 0.76470435, 0.41994345, 1.0), new Color(0.31192535, 0.7678221, 0.41558638, 1.0), new Color(0.3198086, 0.770914, 0.41115215, 1.0), new Color(0.3277958, 0.77397954, 0.4066401, 1.0), new Color(0.33588538, 0.7770179, 0.40204918, 1.0), new Color(0.3440741, 0.7800285, 0.39738104, 1.0), new Color(0.35235986, 0.78301084, 0.3926358, 1.0), new Color(0.36074054, 0.7859642, 0.38781354, 1.0), new Color(0.3692142, 0.7888879, 0.3829144, 1.0), new Color(0.37777892, 0.7917815, 0.3779385, 1.0), new Color(0.38643283, 0.7946442, 0.37288606, 1.0), new Color(0.3951741, 0.7974754, 0.36775726, 1.0), new Color(0.404001, 0.8002746, 0.36255223, 1.0), new Color(0.4129135, 0.803041, 0.35726893, 1.0), new Color(0.42190814, 0.8057741, 0.35191008, 1.0), new Color(0.43098316, 0.8084734, 0.34647608, 1.0), new Color(0.4401369, 0.81113833, 0.3409673, 1.0), new Color(0.44936764, 0.8137683, 0.33538425, 1.0), new Color(0.45867363, 0.81636286, 0.3297275, 1.0), new Color(0.46805313, 0.81892145, 0.32399762, 1.0), new Color(0.47750446, 0.8214435, 0.31819528, 1.0), new Color(0.4870258, 0.8239286, 0.31232134, 1.0), new Color(0.49661535, 0.8263763, 0.3063766, 1.0), new Color(0.5062713, 0.8287862, 0.3003621, 1.0), new Color(0.5159918, 0.83115786, 0.2942789, 1.0), new Color(0.5257762, 0.83349067, 0.2881265, 1.0), new Color(0.5356211, 0.8357845, 0.28190833, 1.0), new Color(0.5455244, 0.83803916, 0.27562603, 1.0), new Color(0.555484, 0.84025437, 0.26928148, 1.0), new Color(0.5654976, 0.8424299, 0.26287684, 1.0), new Color(0.57556295, 0.84456563, 0.25641456, 1.0), new Color(0.58567774, 0.8466614, 0.24989748, 1.0), new Color(0.5958393, 0.8487172, 0.24332878, 1.0), new Color(0.6060453, 0.8507331, 0.23671214, 1.0), new Color(0.61629283, 0.8527091, 0.23005179, 1.0), new Color(0.6265792, 0.85464543, 0.22335258, 1.0), new Color(0.63690156, 0.8565423, 0.21662012, 1.0), new Color(0.64725685, 0.8583999, 0.20986086, 1.0), new Color(0.65764195, 0.86021876, 0.2030823, 1.0), new Color(0.6680537, 0.86199933, 0.19629307, 1.0), new Color(0.6784887, 0.8637421, 0.18950327, 1.0), new Color(0.6889435, 0.8654478, 0.18272455, 1.0), new Color(0.6994146, 0.8671171, 0.17597055, 1.0), new Color(0.7098984, 0.86875093, 0.16925712, 1.0), new Color(0.72039115, 0.8703501, 0.16260272, 1.0), new Color(0.730889, 0.8719158, 0.15602894, 1.0), new Color(0.741388, 0.8734492, 0.149561, 1.0), new Color(0.75188416, 0.8749514, 0.14322828, 1.0), new Color(0.76237345, 0.8764239, 0.13706449, 1.0), new Color(0.7728518, 0.87786806, 0.13110864, 1.0), new Color(0.78331536, 0.87928545, 0.12540539, 1.0), new Color(0.79375994, 0.88067764, 0.12000532, 1.0), new Color(0.8041816, 0.88204634, 0.11496505, 1.0), new Color(0.8145763, 0.8833933, 0.11034678, 1.0), new Color(0.82494026, 0.8847204, 0.10621724, 1.0), new Color(0.8352696, 0.8860294, 0.1026459, 1.0), new Color(0.84556055, 0.8873224, 0.09970219, 1.0), new Color(0.8558096, 0.88860136, 0.09745186, 1.0), new Color(0.8660132, 0.88986814, 0.09595277, 1.0), new Color(0.87616825, 0.89112484, 0.09525046, 1.0), new Color(0.8862715, 0.8923735, 0.09537439, 1.0), new Color(0.89632004, 0.89361614, 0.09633538, 1.0), new Color(0.9063112, 0.89485466, 0.09812496, 1.0), new Color(0.9162421, 0.8960913, 0.1007168, 1.0), new Color(0.9261058, 0.89732975, 0.10407067, 1.0), new Color(0.93590444, 0.8985704, 0.10813094, 1.0), new Color(0.9456363, 0.899815, 0.11283773, 1.0), new Color(0.95529974, 0.90106535, 0.11812832, 1.0), new Color(0.9648935, 0.9023231, 0.12394051, 1.0), new Color(0.9744167, 0.9035899, 0.13021494, 1.0), new Color(0.9838683, 0.90486723, 0.13689671, 1.0), new Color(0.99324787, 0.9061566, 0.1439362, 1.0)]);
+    this.DEFAULT_N = 256;
+    this.JET = ColorGradient_init([Color$Companion_getInstance().BLUE, Color$Companion_getInstance().CYAN, Color$Companion_getInstance().GREEN, Color$Companion_getInstance().YELLOW, Color$Companion_getInstance().RED, Color$Companion_getInstance().MAGENTA]);
+    this.JET_MD = ColorGradient_init([Color$Companion_getInstance().MD_BLUE, Color$Companion_getInstance().MD_CYAN, Color$Companion_getInstance().MD_GREEN, Color$Companion_getInstance().MD_YELLOW, Color$Companion_getInstance().MD_RED, Color$Companion_getInstance().MD_PURPLE]);
+    this.RED_YELLOW_GREEN = ColorGradient_init([Color$Companion_getInstance().RED, Color$Companion_getInstance().YELLOW, Color$Companion_getInstance().GREEN]);
+    this.RED_YELLOW_GREEN_MD = ColorGradient_init([Color$Companion_getInstance().MD_RED, Color$Companion_getInstance().MD_YELLOW, Color$Companion_getInstance().MD_GREEN]);
+    this.RED_WHITE_BLUE = new ColorGradient([to(0.0, new Color(0.35, 0.0, 0.0, 1.0)), to(0.35, new Color(0.81, 0.39, 0.0, 1.0)), to(0.5, Color$Companion_getInstance().WHITE), to(0.75, new Color(0.0, 0.5, 1.0, 1.0)), to(1.0, new Color(0.0, 0.18, 0.47, 1.0))]);
+    this.PLASMA = ColorGradient_init([new Color(0.0504, 0.0298, 0.528, 1.0), new Color(0.1324, 0.0223, 0.5633, 1.0), new Color(0.1934, 0.0184, 0.5903, 1.0), new Color(0.2546, 0.0139, 0.6154, 1.0), new Color(0.3062, 0.0089, 0.6337, 1.0), new Color(0.3564, 0.0038, 0.6478, 1.0), new Color(0.4055, 7.0E-4, 0.657, 1.0), new Color(0.4596, 0.0036, 0.6603, 1.0), new Color(0.5065, 0.0163, 0.6562, 1.0), new Color(0.5517, 0.0431, 0.6453, 1.0), new Color(0.595, 0.0772, 0.6279, 1.0), new Color(0.636, 0.1121, 0.6052, 1.0), new Color(0.6792, 0.1518, 0.5752, 1.0), new Color(0.7149, 0.1873, 0.5463, 1.0), new Color(0.7483, 0.2227, 0.5168, 1.0), new Color(0.7796, 0.2581, 0.4875, 1.0), new Color(0.8126, 0.2979, 0.4553, 1.0), new Color(0.8402, 0.3336, 0.4275, 1.0), new Color(0.8661, 0.3697, 0.4001, 1.0), new Color(0.8903, 0.4064, 0.3731, 1.0), new Color(0.9155, 0.4488, 0.3429, 1.0), new Color(0.9356, 0.4877, 0.316, 1.0), new Color(0.9534, 0.528, 0.2889, 1.0), new Color(0.9685, 0.5697, 0.2617, 1.0), new Color(0.9806, 0.613, 0.2346, 1.0), new Color(0.9899, 0.6638, 0.2049, 1.0), new Color(0.9941, 0.7107, 0.1801, 1.0), new Color(0.9939, 0.7593, 0.1591, 1.0), new Color(0.9886, 0.8096, 0.1454, 1.0), new Color(0.9763, 0.868, 0.1434, 1.0), new Color(0.9593, 0.9214, 0.1516, 1.0), new Color(0.94, 0.9752, 0.1313, 1.0)]);
+    this.VIRIDIS = ColorGradient_init([new Color(0.267, 0.0049, 0.3294, 1.0), new Color(0.277, 0.0503, 0.3757, 1.0), new Color(0.2823, 0.095, 0.4173, 1.0), new Color(0.2826, 0.1409, 0.4575, 1.0), new Color(0.278, 0.1804, 0.4867, 1.0), new Color(0.2693, 0.2188, 0.5096, 1.0), new Color(0.2573, 0.2561, 0.5266, 1.0), new Color(0.2412, 0.2965, 0.5397, 1.0), new Color(0.2259, 0.3308, 0.5473, 1.0), new Color(0.2105, 0.3637, 0.5522, 1.0), new Color(0.1959, 0.3954, 0.5553, 1.0), new Color(0.1823, 0.4262, 0.5571, 1.0), new Color(0.1681, 0.46, 0.5581, 1.0), new Color(0.1563, 0.4896, 0.5579, 1.0), new Color(0.1448, 0.5191, 0.5566, 1.0), new Color(0.1337, 0.5485, 0.5535, 1.0), new Color(0.1235, 0.5817, 0.5474, 1.0), new Color(0.1194, 0.6111, 0.539, 1.0), new Color(0.1248, 0.6405, 0.5271, 1.0), new Color(0.1433, 0.6695, 0.5112, 1.0), new Color(0.1807, 0.7014, 0.4882, 1.0), new Color(0.2264, 0.7289, 0.4628, 1.0), new Color(0.2815, 0.7552, 0.4326, 1.0), new Color(0.3441, 0.78, 0.3974, 1.0), new Color(0.4129, 0.803, 0.3573, 1.0), new Color(0.4966, 0.8264, 0.3064, 1.0), new Color(0.5756, 0.8446, 0.2564, 1.0), new Color(0.6576, 0.8602, 0.2031, 1.0), new Color(0.7414, 0.8734, 0.1496, 1.0), new Color(0.8353, 0.886, 0.1026, 1.0), new Color(0.9162, 0.8961, 0.1007, 1.0), new Color(0.9932, 0.9062, 0.1439, 1.0)]);
   }
   ColorGradient$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -18553,11 +17162,27 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return ColorGradient$Companion_instance;
   }
+  function ColorGradient_init$lambda(it) {
+    return it.first;
+  }
   ColorGradient.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ColorGradient',
     interfaces: []
   };
+  function ColorGradient_init(colors, n, $this) {
+    if (n === void 0)
+      n = ColorGradient$Companion_getInstance().DEFAULT_N;
+    $this = $this || Object.create(ColorGradient.prototype);
+    var array = Array_0(colors.length);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = to(i, colors[i]);
+    }
+    ColorGradient.call($this, array.slice(), n);
+    return $this;
+  }
   function debugOverlay$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
   }
@@ -23127,120 +21752,1273 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return UniqueId_instance;
   }
+  function AudioGenerator(ctx, generatorFun) {
+    this.audioCtx_0 = new (window.AudioContext || window.webkitAudioContext)();
+    this.sampleRate = this.audioCtx_0.sampleRate;
+    this.isPaused_p8nrgy$_0 = false;
+    this.source_0 = null;
+    this.scriptNode_0 = null;
+    this.analyserNode_0 = null;
+    var tmp$;
+    this.powerSpectrum_0 = Kotlin.isType(tmp$ = createFloat32Buffer(1), Float32BufferImpl) ? tmp$ : throwCCE();
+    this.dt_0 = 1.0 / this.sampleRate;
+    this.scriptNode_0 = this.audioCtx_0.createScriptProcessor(4096, 1, 1);
+    var buffer = this.audioCtx_0.createBuffer(1, this.scriptNode_0.bufferSize, this.sampleRate);
+    this.scriptNode_0.onaudioprocess = AudioGenerator_init$lambda(generatorFun, this);
+    this.analyserNode_0 = null;
+    this.source_0 = this.audioCtx_0.createBufferSource();
+    this.source_0.buffer = buffer;
+    this.source_0.loop = true;
+    this.source_0.connect(this.scriptNode_0);
+    this.scriptNode_0.connect(this.audioCtx_0.destination);
+    this.source_0.start();
+  }
+  Object.defineProperty(AudioGenerator.prototype, 'isPaused', {
+    get: function () {
+      return this.isPaused_p8nrgy$_0;
+    },
+    set: function (value) {
+      if (this.isPaused_p8nrgy$_0 !== value) {
+        this.isPaused_p8nrgy$_0 = value;
+        if (value) {
+          this.source_0.stop();
+        }
+         else {
+          this.source_0.start();
+        }
+      }
+    }
+  });
+  AudioGenerator.prototype.stop = function () {
+    this.scriptNode_0.disconnect();
+    this.source_0.loop = false;
+    this.source_0.disconnect();
+    this.source_0.stop();
+  };
+  AudioGenerator.prototype.enableFftComputation_za3lpa$ = function (nSamples) {
+    var tmp$, tmp$_0;
+    if (nSamples <= 0) {
+      (tmp$ = this.analyserNode_0) != null ? tmp$.disconnect() : null;
+      this.analyserNode_0 = null;
+    }
+     else {
+      if (this.analyserNode_0 == null) {
+        this.analyserNode_0 = this.audioCtx_0.createAnalyser();
+        this.analyserNode_0.minDecibels = -90;
+        this.analyserNode_0.maxDecibels = 0;
+        this.analyserNode_0.smoothingTimeConstant = 0.5;
+        this.scriptNode_0.connect(this.analyserNode_0);
+      }
+      this.analyserNode_0.fftSize = nSamples;
+      this.powerSpectrum_0 = Kotlin.isType(tmp$_0 = createFloat32Buffer(this.analyserNode_0.frequencyBinCount), Float32BufferImpl) ? tmp$_0 : throwCCE();
+    }
+  };
+  AudioGenerator.prototype.getPowerSpectrum = function () {
+    this.analyserNode_0.getFloatFrequencyData(this.powerSpectrum_0.buffer);
+    return this.powerSpectrum_0;
+  };
+  function AudioGenerator_init$lambda(closure$generatorFun, this$AudioGenerator) {
+    return function (ev) {
+      var tmp$;
+      var outputBuffer = ev.outputBuffer;
+      var data = outputBuffer.getChannelData(0);
+      tmp$ = outputBuffer.length;
+      for (var i = 0; i < tmp$; i++) {
+        data[i] = closure$generatorFun(this$AudioGenerator, this$AudioGenerator.dt_0);
+      }
+      return Unit;
+    };
+  }
+  AudioGenerator.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AudioGenerator',
+    interfaces: []
+  };
+  function glActiveTexture(texture) {
+    JsImpl_getInstance().gl.activeTexture(texture);
+  }
+  function glAttachShader(program, shader) {
+    var tmp$, tmp$_0;
+    JsImpl_getInstance().gl.attachShader(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE(), Kotlin.isType(tmp$_0 = shader.glRef, WebGLShader) ? tmp$_0 : throwCCE());
+  }
+  function glBindBuffer(target, buffer) {
+    var tmp$;
+    JsImpl_getInstance().gl.bindBuffer(target, (tmp$ = buffer != null ? buffer.glRef : null) == null || Kotlin.isType(tmp$, WebGLBuffer) ? tmp$ : throwCCE());
+  }
+  function glBindFramebuffer(target, framebuffer) {
+    var tmp$;
+    JsImpl_getInstance().gl.bindFramebuffer(target, (tmp$ = framebuffer != null ? framebuffer.glRef : null) == null || Kotlin.isType(tmp$, WebGLFramebuffer) ? tmp$ : throwCCE());
+  }
+  function glBindRenderbuffer(target, renderbuffer) {
+    var tmp$;
+    JsImpl_getInstance().gl.bindRenderbuffer(target, (tmp$ = renderbuffer != null ? renderbuffer.glRef : null) == null || Kotlin.isType(tmp$, WebGLRenderbuffer) ? tmp$ : throwCCE());
+  }
+  function glBindTexture(target, texture) {
+    var tmp$;
+    JsImpl_getInstance().gl.bindTexture(target, (tmp$ = texture != null ? texture.glRef : null) == null || Kotlin.isType(tmp$, WebGLTexture) ? tmp$ : throwCCE());
+  }
+  function glBlendFunc(sfactor, dfactor) {
+    JsImpl_getInstance().gl.blendFunc(sfactor, dfactor);
+  }
+  function glBufferData(target, data, usage) {
+    var tmp$;
+    JsImpl_getInstance().gl.bufferData(target, (Kotlin.isType(tmp$ = data, Uint8BufferImpl) ? tmp$ : throwCCE()).buffer, usage);
+  }
+  function glBufferData_0(target, data, usage) {
+    var tmp$;
+    JsImpl_getInstance().gl.bufferData(target, (Kotlin.isType(tmp$ = data, Uint16BufferImpl) ? tmp$ : throwCCE()).buffer, usage);
+  }
+  function glBufferData_1(target, data, usage) {
+    var tmp$;
+    JsImpl_getInstance().gl.bufferData(target, (Kotlin.isType(tmp$ = data, Uint32BufferImpl) ? tmp$ : throwCCE()).buffer, usage);
+  }
+  function glBufferData_2(target, data, usage) {
+    var tmp$;
+    JsImpl_getInstance().gl.bufferData(target, (Kotlin.isType(tmp$ = data, Float32BufferImpl) ? tmp$ : throwCCE()).buffer, usage);
+  }
+  function glCheckFramebufferStatus(target) {
+    return JsImpl_getInstance().gl.checkFramebufferStatus(target);
+  }
+  function glClear(mask) {
+    JsImpl_getInstance().gl.clear(mask);
+  }
+  function glClearColor(red, green, blue, alpha) {
+    JsImpl_getInstance().gl.clearColor(red, green, blue, alpha);
+  }
+  function glCompileShader(shader) {
+    var tmp$;
+    JsImpl_getInstance().gl.compileShader(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE());
+  }
+  function glCopyTexImage2D(target, level, internalformat, x, y, width, height, border) {
+    JsImpl_getInstance().gl.copyTexImage2D(target, level, internalformat, x, y, width, height, border);
+  }
+  function glCreateBuffer() {
+    return ensureNotNull(JsImpl_getInstance().gl.createBuffer());
+  }
+  function glCreateFramebuffer() {
+    return ensureNotNull(JsImpl_getInstance().gl.createFramebuffer());
+  }
+  function glCreateRenderbuffer() {
+    return ensureNotNull(JsImpl_getInstance().gl.createRenderbuffer());
+  }
+  function glCreateProgram() {
+    return ensureNotNull(JsImpl_getInstance().gl.createProgram());
+  }
+  function glCreateShader(type) {
+    return ensureNotNull(JsImpl_getInstance().gl.createShader(type));
+  }
+  function glCreateTexture() {
+    return ensureNotNull(JsImpl_getInstance().gl.createTexture());
+  }
+  function glCullFace(mode) {
+    JsImpl_getInstance().gl.cullFace(mode);
+  }
+  function glDeleteBuffer(buffer) {
+    var tmp$;
+    JsImpl_getInstance().gl.deleteBuffer(Kotlin.isType(tmp$ = buffer.glRef, WebGLBuffer) ? tmp$ : throwCCE());
+  }
+  function glDeleteFramebuffer(framebuffer) {
+    var tmp$;
+    JsImpl_getInstance().gl.deleteFramebuffer(Kotlin.isType(tmp$ = framebuffer.glRef, WebGLFramebuffer) ? tmp$ : throwCCE());
+  }
+  function glDeleteProgram(program) {
+    var tmp$;
+    JsImpl_getInstance().gl.deleteProgram(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE());
+  }
+  function glDeleteRenderbuffer(renderbuffer) {
+    var tmp$;
+    JsImpl_getInstance().gl.deleteRenderbuffer(Kotlin.isType(tmp$ = renderbuffer.glRef, WebGLRenderbuffer) ? tmp$ : throwCCE());
+  }
+  function glDeleteShader(shader) {
+    var tmp$;
+    JsImpl_getInstance().gl.deleteShader(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE());
+  }
+  function glDeleteTexture(texture) {
+    var tmp$;
+    JsImpl_getInstance().gl.deleteTexture(Kotlin.isType(tmp$ = texture.glRef, WebGLTexture) ? tmp$ : throwCCE());
+  }
+  function glDepthFunc(func) {
+    JsImpl_getInstance().gl.depthFunc(func);
+  }
+  function glDepthMask(enabled) {
+    JsImpl_getInstance().gl.depthMask(enabled);
+  }
+  function glDisable(cap) {
+    JsImpl_getInstance().gl.disable(cap);
+  }
+  function glDisableVertexAttribArray(index) {
+    JsImpl_getInstance().gl.disableVertexAttribArray(index);
+  }
+  function glDrawBuffer(buf) {
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).drawBuffers(new Int32Array([buf]));
+    }
+  }
+  function glDrawElements(mode, count, type, offset) {
+    JsImpl_getInstance().gl.drawElements(mode, count, type, offset);
+  }
+  function glDrawElementsInstanced(mode, count, type, indicesOffset, instanceCount) {
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).drawElementsInstanced(mode, count, type, indicesOffset, instanceCount);
+    }
+     else {
+      throw new KoolException('This function requires WebGL2 support');
+    }
+  }
+  function glEnable(cap) {
+    JsImpl_getInstance().gl.enable(cap);
+  }
+  function glEnableVertexAttribArray(index) {
+    JsImpl_getInstance().gl.enableVertexAttribArray(index);
+  }
+  function glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer) {
+    var tmp$;
+    JsImpl_getInstance().gl.framebufferRenderbuffer(target, attachment, renderbuffertarget, Kotlin.isType(tmp$ = renderbuffer.glRef, WebGLRenderbuffer) ? tmp$ : throwCCE());
+  }
+  function glFramebufferTexture2D(target, attachment, textarget, texture, level) {
+    var tmp$;
+    JsImpl_getInstance().gl.framebufferTexture2D(target, attachment, textarget, Kotlin.isType(tmp$ = texture.glRef, WebGLTexture) ? tmp$ : throwCCE(), level);
+  }
+  function glGenerateMipmap(target) {
+    JsImpl_getInstance().gl.generateMipmap(target);
+  }
+  function glGetAttribLocation(program, name) {
+    var tmp$;
+    return JsImpl_getInstance().gl.getAttribLocation(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE(), name);
+  }
+  function glGetError() {
+    return JsImpl_getInstance().gl.getError();
+  }
+  function glGetProgrami(program, pname) {
+    var tmp$, tmp$_0, tmp$_1;
+    var res = JsImpl_getInstance().gl.getProgramParameter(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE(), pname);
+    if (pname === GL_LINK_STATUS) {
+      if (typeof (tmp$_0 = res) === 'boolean' ? tmp$_0 : throwCCE()) {
+        tmp$_1 = GL_TRUE;
+      }
+       else {
+        tmp$_1 = GL_FALSE;
+      }
+      return tmp$_1;
+    }
+    return 0;
+  }
+  function glGetShaderi(shader, pname) {
+    var tmp$, tmp$_0, tmp$_1;
+    var res = JsImpl_getInstance().gl.getShaderParameter(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE(), pname);
+    if (pname === GL_COMPILE_STATUS) {
+      if (typeof (tmp$_0 = res) === 'boolean' ? tmp$_0 : throwCCE()) {
+        tmp$_1 = GL_TRUE;
+      }
+       else {
+        tmp$_1 = GL_FALSE;
+      }
+      return tmp$_1;
+    }
+    return 0;
+  }
+  function glGetProgramInfoLog(program) {
+    var tmp$, tmp$_0;
+    return (tmp$_0 = JsImpl_getInstance().gl.getProgramInfoLog(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE())) != null ? tmp$_0 : '';
+  }
+  function glGetShaderInfoLog(shader) {
+    var tmp$, tmp$_0;
+    return (tmp$_0 = JsImpl_getInstance().gl.getShaderInfoLog(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE())) != null ? tmp$_0 : '';
+  }
+  function glGetUniformLocation(program, name) {
+    var tmp$;
+    return JsImpl_getInstance().gl.getUniformLocation(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE(), name);
+  }
+  function glLineWidth(width) {
+    JsImpl_getInstance().gl.lineWidth(width);
+  }
+  function glLinkProgram(program) {
+    var tmp$;
+    JsImpl_getInstance().gl.linkProgram(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE());
+  }
+  function glPointSize(size) {
+  }
+  function glReadBuffer(src) {
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).readBuffer(src);
+    }
+  }
+  function glRenderbufferStorage(target, internalformat, width, height) {
+    JsImpl_getInstance().gl.renderbufferStorage(target, internalformat, width, height);
+  }
+  function glRenderbufferStorageMultisample(target, samples, internalformat, width, height) {
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).renderbufferStorageMultisample(target, samples, internalformat, width, height);
+    }
+     else {
+      throw new KoolException('This function requires WebGL2 support');
+    }
+  }
+  function glShaderSource(shader, source) {
+    var tmp$;
+    JsImpl_getInstance().gl.shaderSource(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE(), source);
+  }
+  function glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels) {
+    var tmp$, tmp$_0;
+    JsImpl_getInstance().gl.texImage2D(target, level, internalformat, width, height, border, format, type, (tmp$_0 = (tmp$ = pixels) == null || Kotlin.isType(tmp$, Uint8BufferImpl) ? tmp$ : throwCCE()) != null ? tmp$_0.buffer : null);
+  }
+  function glTexImage2D_0(target, level, internalformat, format, type, pixels) {
+    var tmp$;
+    JsImpl_getInstance().gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, GL_TRUE);
+    JsImpl_getInstance().gl.texImage2D(target, level, internalformat, format, type, (tmp$ = pixels) == null || Kotlin.isType(tmp$, HTMLImageElement) ? tmp$ : throwCCE());
+    JsImpl_getInstance().gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, GL_FALSE);
+  }
+  function glTexParameteri(target, pname, param) {
+    JsImpl_getInstance().gl.texParameteri(target, pname, param);
+  }
+  function glUniform1f(location, x) {
+    var tmp$;
+    JsImpl_getInstance().gl.uniform1f((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x);
+  }
+  function glUniform1fv(location, x) {
+    var tmp$;
+    var array = Array_0(x.length);
+    var tmp$_0;
+    tmp$_0 = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$_0; i++) {
+      array[i] = x[i];
+    }
+    var tmp = array;
+    JsImpl_getInstance().gl.uniform1fv((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), tmp);
+  }
+  function glUniform1i(location, x) {
+    var tmp$;
+    JsImpl_getInstance().gl.uniform1i((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x);
+  }
+  function glUniform1iv(location, x) {
+    var tmp$;
+    var array = Array_0(x.length);
+    var tmp$_0;
+    tmp$_0 = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$_0; i++) {
+      array[i] = x[i];
+    }
+    var tmp = array;
+    JsImpl_getInstance().gl.uniform1iv((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), tmp);
+  }
+  function glUniform2f(location, x, y) {
+    var tmp$;
+    JsImpl_getInstance().gl.uniform2f((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x, y);
+  }
+  function glUniform3f(location, x, y, z) {
+    var tmp$;
+    JsImpl_getInstance().gl.uniform3f((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x, y, z);
+  }
+  function glUniform4f(location, x, y, z, w) {
+    var tmp$;
+    JsImpl_getInstance().gl.uniform4f((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), x, y, z, w);
+  }
+  function glUniformMatrix4fv(location, transpose, value) {
+    var tmp$, tmp$_0;
+    JsImpl_getInstance().gl.uniformMatrix4fv((tmp$ = location) == null || Kotlin.isType(tmp$, WebGLUniformLocation) ? tmp$ : throwCCE(), transpose, (Kotlin.isType(tmp$_0 = value, Float32BufferImpl) ? tmp$_0 : throwCCE()).buffer);
+  }
+  function glUseProgram(program) {
+    var tmp$;
+    JsImpl_getInstance().gl.useProgram((tmp$ = program != null ? program.glRef : null) == null || Kotlin.isType(tmp$, WebGLProgram) ? tmp$ : throwCCE());
+  }
+  function glVertexAttribDivisor(index, divisor) {
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).vertexAttribDivisor(index, divisor);
+    }
+     else {
+      throw new KoolException('This function requires WebGL2 support');
+    }
+  }
+  function glVertexAttribPointer(index, size, type, normalized, stride, offset) {
+    JsImpl_getInstance().gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
+  }
+  function glVertexAttribIPointer(index, size, type, stride, offset) {
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).vertexAttribIPointer(index, size, type, stride, offset);
+    }
+     else {
+      throw new KoolException('This function requires WebGL2 support');
+    }
+  }
+  function glViewport(x, y, width, height) {
+    JsImpl_getInstance().gl.viewport(x, y, width, height);
+  }
+  function isValidUniformLocation(location) {
+    return location != null && Kotlin.isType(location, WebGLUniformLocation);
+  }
+  function createContext() {
+    return createContext_0(new JsContext$InitProps());
+  }
+  function createContext_0(props) {
+    return JsImpl_getInstance().createContext_s8od96$(props);
+  }
+  function now() {
+    return performance.now();
+  }
+  function getMemoryInfo() {
+    return '';
+  }
+  function formatDouble(d, precision) {
+    var clamp$result;
+    if (precision < 0) {
+      clamp$result = 0;
+    }
+     else if (precision > 12) {
+      clamp$result = 12;
+    }
+     else {
+      clamp$result = precision;
+    }
+    var p = clamp$result;
+    if (p === 0) {
+      return Kotlin.Long.fromNumber(round(d)).toString();
+    }
+    var shifted = Kotlin.Long.fromNumber(round(d * Math_0.pow(10.0, p)));
+    var str = shifted.toString();
+    var i = str.length - precision | 0;
+    while (i < 1) {
+      str = '0' + str;
+      i = i + 1 | 0;
+    }
+    var tmp$ = substring(str, until(0, i)) + '.';
+    var $receiver = str;
+    var startIndex = i;
+    return tmp$ + $receiver.substring(startIndex);
+  }
+  function JsImpl() {
+    JsImpl_instance = this;
+    this.isWebGl2Context = false;
+    this.dpi = 0;
+    this.ctx = null;
+    var tmp$;
+    var measure = document.getElementById('dpiMeasure');
+    if (measure == null) {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'dpiMeasure element not found, falling back to 96 dpi');
+      }
+      var $this_0 = package$util.Log;
+      var level_0 = Log$Level.WARN;
+      var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_0.level >= $this_0.level.level) {
+        $this_0.printer(level_0, tag_0, 'Add this hidden div to your html:');
+      }
+      var $this_1 = package$util.Log;
+      var level_1 = Log$Level.WARN;
+      var tag_1 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_1.level >= $this_1.level.level) {
+        $this_1.printer(level_1, tag_1, '<div id="dpiMeasure" style="height: 1in; width: 1in; left: 100%; position: fixed; top: 100%;"><\/div>');
+      }
+      this.dpi = 96.0;
+    }
+     else {
+      this.dpi = (Kotlin.isType(tmp$ = measure, HTMLDivElement) ? tmp$ : throwCCE()).offsetWidth;
+    }
+  }
+  Object.defineProperty(JsImpl.prototype, 'gl', {
+    get: function () {
+      var tmp$, tmp$_0;
+      tmp$_0 = (tmp$ = this.ctx) != null ? tmp$.gl_8be2vx$ : null;
+      if (tmp$_0 == null) {
+        throw new KoolException('Platform.createContext() not called');
+      }
+      return tmp$_0;
+    }
+  });
+  JsImpl.prototype.createContext_s8od96$ = function (props) {
+    if (this.ctx != null) {
+      throw new KoolException('Context was already created (multi-context is currently not supported in js');
+    }
+    this.ctx = new JsContext(props);
+    return ensureNotNull(this.ctx);
+  };
+  JsImpl.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'JsImpl',
+    interfaces: []
+  };
+  var JsImpl_instance = null;
+  function JsImpl_getInstance() {
+    if (JsImpl_instance === null) {
+      new JsImpl();
+    }
+    return JsImpl_instance;
+  }
+  function FontMapGenerator(maxWidth, maxHeight) {
+    this.maxWidth = maxWidth;
+    this.maxHeight = maxHeight;
+    var tmp$, tmp$_0;
+    this.canvas_0 = Kotlin.isType(tmp$ = document.createElement('canvas'), HTMLCanvasElement) ? tmp$ : throwCCE();
+    this.canvasCtx_0 = null;
+    this.canvas_0.width = this.maxWidth;
+    this.canvas_0.height = this.maxHeight;
+    this.canvasCtx_0 = Kotlin.isType(tmp$_0 = this.canvas_0.getContext('2d'), CanvasRenderingContext2D) ? tmp$_0 : throwCCE();
+  }
+  FontMapGenerator.prototype.createCharMap_ttufcy$ = function (fontProps) {
+    var tmp$;
+    this.canvasCtx_0.clearRect(0.0, 0.0, this.maxWidth, this.maxHeight);
+    var style = 'lighter ';
+    if ((fontProps.style & Font$Companion_getInstance().BOLD) !== 0) {
+      style = 'bold ';
+    }
+    if ((fontProps.style & Font$Companion_getInstance().ITALIC) !== 0) {
+      style += 'italic ';
+    }
+    var metrics = LinkedHashMap_init();
+    var texHeight = this.makeMap_0(fontProps, style, metrics);
+    var data = this.canvasCtx_0.getImageData(0.0, 0.0, this.maxWidth, texHeight);
+    var buffer = createUint8Buffer(Kotlin.imul(this.maxWidth, texHeight));
+    tmp$ = buffer.capacity;
+    for (var i = 0; i < tmp$; i++) {
+      buffer.put_s8j3t7$(data.data[(i * 4 | 0) + 3 | 0]);
+    }
+    return new CharMap(new BufferedTextureData(buffer, this.maxWidth, texHeight, GL_ALPHA), metrics, fontProps);
+  };
+  FontMapGenerator.prototype.makeMap_0 = function (fontProps, style, map) {
+    var tmp$, tmp$_0;
+    this.canvasCtx_0.font = style + fontProps.sizePts + 'px ' + fontProps.family;
+    this.canvasCtx_0.fillStyle = '#ffffff';
+    var padding = 3.0;
+    var hab = round(fontProps.sizePts * 1.1);
+    var hbb = round(fontProps.sizePts * 0.5);
+    var height = round(fontProps.sizePts * 1.6);
+    this.canvasCtx_0.beginPath();
+    this.canvasCtx_0.moveTo(0.5, 0.0);
+    this.canvasCtx_0.lineTo(0.5, 1.0);
+    this.canvasCtx_0.stroke();
+    var x = 1.0;
+    var y = hab;
+    tmp$ = iterator(fontProps.chars);
+    while (tmp$.hasNext()) {
+      var c = unboxChar(tmp$.next());
+      if (c === 106) {
+        x += fontProps.sizePts * 0.1;
+      }
+      var txt = String.fromCharCode(c);
+      var charW = round(this.canvasCtx_0.measureText(txt).width);
+      var paddedWidth = round(charW + padding * 2);
+      if (x + paddedWidth > this.maxWidth) {
+        x = 0.0;
+        y += height + 10;
+        if (y + hbb > this.maxHeight) {
+          break;
+        }
+      }
+      var widthPx = charW;
+      var heightPx = height;
+      var metrics = new CharMetrics();
+      metrics.width = widthPx * fontProps.sizeUnits / fontProps.sizePts;
+      metrics.height = heightPx * fontProps.sizeUnits / fontProps.sizePts;
+      metrics.xOffset = 0.0;
+      metrics.yBaseline = hab * fontProps.sizeUnits / fontProps.sizePts;
+      metrics.advance = metrics.width;
+      metrics.uvMin.set_dleff0$(x + padding, y - hab);
+      metrics.uvMax.set_dleff0$(x + padding + widthPx, y - hab + heightPx);
+      map.put_xwzc9p$(toBoxedChar(c), metrics);
+      this.canvasCtx_0.fillText(txt, x + padding, y);
+      x += paddedWidth;
+    }
+    var texW = this.maxWidth;
+    var texH = this.nextPow2_0(y + hbb);
+    tmp$_0 = map.values.iterator();
+    while (tmp$_0.hasNext()) {
+      var cm = tmp$_0.next();
+      cm.uvMin.x = cm.uvMin.x / texW;
+      cm.uvMin.y = cm.uvMin.y / texH;
+      cm.uvMax.x = cm.uvMax.x / texW;
+      cm.uvMax.y = cm.uvMax.y / texH;
+    }
+    return texH;
+  };
+  FontMapGenerator.prototype.nextPow2_0 = function (value) {
+    var pow2 = 16;
+    while (pow2 < value && pow2 < this.maxHeight) {
+      pow2 = pow2 << 1;
+    }
+    return pow2;
+  };
+  FontMapGenerator.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'FontMapGenerator',
+    interfaces: []
+  };
+  function ImageTextureData(image) {
+    TextureData.call(this);
+    this.image = image;
+  }
+  Object.defineProperty(ImageTextureData.prototype, 'isAvailable', {
+    get: function () {
+      return this.image.complete;
+    },
+    set: function (value) {
+    }
+  });
+  ImageTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
+    JsImpl_getInstance().gl.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, this.image);
+    this.width = this.image.width;
+    this.height = this.image.height;
+    var size = Kotlin.imul(this.width, this.height) * 4 | 0;
+    ctx.memoryMgr.memoryAllocated_927jj9$(ensureNotNull(texture.res), size);
+  };
+  ImageTextureData.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ImageTextureData',
+    interfaces: [TextureData]
+  };
+  function JsAssetManager(assetsBaseDir) {
+    JsAssetManager$Companion_getInstance();
+    AssetManager.call(this);
+    this.assetsBaseDir_quoclz$_0 = assetsBaseDir;
+    this.fontGenerator_0 = new FontMapGenerator(JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_WIDTH_0, JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_HEIGHT_0);
+  }
+  Object.defineProperty(JsAssetManager.prototype, 'assetsBaseDir', {
+    get: function () {
+      return this.assetsBaseDir_quoclz$_0;
+    },
+    set: function (assetsBaseDir) {
+      this.assetsBaseDir_quoclz$_0 = assetsBaseDir;
+    }
+  });
+  function JsAssetManager$loadAsset$lambda(closure$req, closure$onLoad) {
+    return function (evt) {
+      var tmp$, tmp$_0;
+      var array = new Uint8Array(Kotlin.isType(tmp$ = closure$req.response, ArrayBuffer) ? tmp$ : throwCCE());
+      var bytes = new Int8Array(array.length);
+      tmp$_0 = array.length;
+      for (var i = 0; i < tmp$_0; i++) {
+        bytes[i] = array[i];
+      }
+      closure$onLoad(bytes);
+      return Unit;
+    };
+  }
+  JsAssetManager.prototype.loadAsset_jrww91$ = function (assetPath, onLoad) {
+    var req = new XMLHttpRequest();
+    req.open('GET', this.assetsBaseDir + '/' + assetPath);
+    req.responseType = 'arraybuffer';
+    req.onload = JsAssetManager$loadAsset$lambda(req, onLoad);
+    req.send();
+  };
+  JsAssetManager.prototype.loadTextureAsset_61zpoe$ = function (assetPath) {
+    var img = new Image();
+    var data = new ImageTextureData(img);
+    img.crossOrigin = '';
+    img.src = this.assetsBaseDir + '/' + assetPath;
+    return data;
+  };
+  JsAssetManager.prototype.createCharMap_ttufcy$ = function (fontProps) {
+    return this.fontGenerator_0.createCharMap_ttufcy$(fontProps);
+  };
+  function JsAssetManager$Companion() {
+    JsAssetManager$Companion_instance = this;
+    this.MAX_GENERATED_TEX_WIDTH_0 = 1024;
+    this.MAX_GENERATED_TEX_HEIGHT_0 = 1024;
+  }
+  JsAssetManager$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var JsAssetManager$Companion_instance = null;
+  function JsAssetManager$Companion_getInstance() {
+    if (JsAssetManager$Companion_instance === null) {
+      new JsAssetManager$Companion();
+    }
+    return JsAssetManager$Companion_instance;
+  }
+  JsAssetManager.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'JsAssetManager',
+    interfaces: [AssetManager]
+  };
+  function JsContext(props) {
+    JsContext$Companion_getInstance();
+    KoolContext.call(this);
+    this.props = props;
+    this.glCapabilities_4q43mj$_0 = null;
+    this.assetMgr_z54vt4$_0 = new JsAssetManager(this.props.assetsBaseDir);
+    this.windowWidth_7sdnb6$_0 = 0;
+    this.windowHeight_xsf9ux$_0 = 0;
+    this.canvas_8be2vx$ = null;
+    this.gl_8be2vx$ = null;
+    this.animationMillis_0 = 0.0;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
+    this.canvas_8be2vx$ = Kotlin.isType(tmp$ = document.getElementById(this.props.canvasName), HTMLCanvasElement) ? tmp$ : throwCCE();
+    var webGlCtx = this.canvas_8be2vx$.getContext('webgl2');
+    if (webGlCtx == null) {
+      webGlCtx = this.canvas_8be2vx$.getContext('experimental-webgl2');
+    }
+    JsImpl_getInstance().isWebGl2Context = webGlCtx != null;
+    var uint32Indices;
+    var depthTextures;
+    var maxTexUnits;
+    var shaderIntAttribs = false;
+    var depthComponentIntFormat = GL_DEPTH_COMPONENT;
+    var depthFilterMethod = GL_NEAREST;
+    var anisotropicTexFilterInfo = AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED;
+    var glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_100;
+    var glVersion = new GlVersion('WebGL', 1, 0);
+    if (webGlCtx != null) {
+      this.gl_8be2vx$ = Kotlin.isType(tmp$_0 = webGlCtx, WebGL2RenderingContext) ? tmp$_0 : throwCCE();
+      uint32Indices = true;
+      depthTextures = true;
+      shaderIntAttribs = true;
+      depthComponentIntFormat = GL_DEPTH_COMPONENT24;
+      glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_300_ES;
+      glVersion = new GlVersion('WebGL', 2, 0);
+      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
+    }
+     else {
+      webGlCtx = this.canvas_8be2vx$.getContext('webgl');
+      if (webGlCtx == null) {
+        webGlCtx = this.canvas_8be2vx$.getContext('experimental-webgl');
+      }
+      if (webGlCtx == null) {
+        alert('Unable to initialize WebGL. Your browser may not support it.');
+      }
+      this.gl_8be2vx$ = Kotlin.isType(tmp$_1 = webGlCtx, WebGLRenderingContext) ? tmp$_1 : throwCCE();
+      uint32Indices = this.gl_8be2vx$.getExtension('OES_element_index_uint') != null;
+      depthTextures = this.gl_8be2vx$.getExtension('WEBGL_depth_texture') != null;
+      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
+    }
+    var extAnisotropic = (tmp$_3 = (tmp$_2 = this.gl_8be2vx$.getExtension('EXT_texture_filter_anisotropic')) != null ? tmp$_2 : this.gl_8be2vx$.getExtension('MOZ_EXT_texture_filter_anisotropic')) != null ? tmp$_3 : this.gl_8be2vx$.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
+    if (extAnisotropic != null) {
+      var max = typeof (tmp$_4 = this.gl_8be2vx$.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) === 'number' ? tmp$_4 : throwCCE();
+      anisotropicTexFilterInfo = new AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT);
+    }
+    this.glCapabilities_4q43mj$_0 = new GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
+    this.screenDpi = JsImpl_getInstance().dpi;
+    this.windowWidth = this.canvas_8be2vx$.clientWidth;
+    this.windowHeight = this.canvas_8be2vx$.clientHeight;
+    this.canvas_8be2vx$.oncontextmenu = getCallableRef('preventDefault', function ($receiver) {
+      return $receiver.preventDefault(), Unit;
+    });
+    this.canvas_8be2vx$.onmousemove = JsContext_init$lambda(this);
+    this.canvas_8be2vx$.onmousedown = JsContext_init$lambda_0(this);
+    this.canvas_8be2vx$.onmouseup = JsContext_init$lambda_1(this);
+    this.canvas_8be2vx$.onmouseleave = JsContext_init$lambda_2(this);
+    this.canvas_8be2vx$.onwheel = JsContext_init$lambda_3(this);
+    this.canvas_8be2vx$.addEventListener('touchstart', JsContext_init$lambda_4(this), false);
+    this.canvas_8be2vx$.addEventListener('touchend', JsContext_init$lambda_5(this), false);
+    this.canvas_8be2vx$.addEventListener('touchcancel', JsContext_init$lambda_6(this), false);
+    this.canvas_8be2vx$.addEventListener('touchmove', JsContext_init$lambda_7(this), false);
+    document.onkeydown = JsContext_init$lambda_8(this);
+    document.onkeyup = JsContext_init$lambda_9(this);
+  }
+  Object.defineProperty(JsContext.prototype, 'glCapabilities', {
+    get: function () {
+      return this.glCapabilities_4q43mj$_0;
+    }
+  });
+  Object.defineProperty(JsContext.prototype, 'assetMgr', {
+    get: function () {
+      return this.assetMgr_z54vt4$_0;
+    }
+  });
+  Object.defineProperty(JsContext.prototype, 'windowWidth', {
+    get: function () {
+      return this.windowWidth_7sdnb6$_0;
+    },
+    set: function (windowWidth) {
+      this.windowWidth_7sdnb6$_0 = windowWidth;
+    }
+  });
+  Object.defineProperty(JsContext.prototype, 'windowHeight', {
+    get: function () {
+      return this.windowHeight_xsf9ux$_0;
+    },
+    set: function (windowHeight) {
+      this.windowHeight_xsf9ux$_0 = windowHeight;
+    }
+  });
+  JsContext.prototype.handleKeyDown_0 = function (ev) {
+    var code = this.translateKeyCode_0(ev.code);
+    if (code !== 0) {
+      var mods = 0;
+      if (ev.altKey) {
+        mods = mods | InputManager$Companion_getInstance().KEY_MOD_ALT;
+      }
+      if (ev.ctrlKey) {
+        mods = mods | InputManager$Companion_getInstance().KEY_MOD_CTRL;
+      }
+      if (ev.shiftKey) {
+        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SHIFT;
+      }
+      if (ev.metaKey) {
+        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SUPER;
+      }
+      var event = InputManager$Companion_getInstance().KEY_EV_DOWN;
+      if (ev.repeat) {
+        event = event | InputManager$Companion_getInstance().KEY_EV_REPEATED;
+      }
+      this.inputMgr.keyEvent_qt1dr2$(code, mods, event);
+    }
+    if (ev.key.length === 1) {
+      this.inputMgr.charTyped_s8itvh$(ev.key.charCodeAt(0));
+    }
+    if (!this.props.excludedKeyCodes.contains_11rb$(ev.code)) {
+      ev.preventDefault();
+    }
+  };
+  JsContext.prototype.handleKeyUp_0 = function (ev) {
+    var code = this.translateKeyCode_0(ev.code);
+    if (code !== 0) {
+      var mods = 0;
+      if (ev.altKey) {
+        mods = mods | InputManager$Companion_getInstance().KEY_MOD_ALT;
+      }
+      if (ev.ctrlKey) {
+        mods = mods | InputManager$Companion_getInstance().KEY_MOD_CTRL;
+      }
+      if (ev.shiftKey) {
+        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SHIFT;
+      }
+      if (ev.metaKey) {
+        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SUPER;
+      }
+      this.inputMgr.keyEvent_qt1dr2$(code, mods, InputManager$Companion_getInstance().KEY_EV_UP);
+    }
+    if (!this.props.excludedKeyCodes.contains_11rb$(ev.code)) {
+      ev.preventDefault();
+    }
+  };
+  JsContext.prototype.translateKeyCode_0 = function (code) {
+    var tmp$;
+    if (code.length === 4 && startsWith(code, 'Key')) {
+      return code.charCodeAt(3) | 0;
+    }
+     else {
+      return (tmp$ = JsContext$Companion_getInstance().KEY_CODE_MAP.get_11rb$(code)) != null ? tmp$ : 0;
+    }
+  };
+  function JsContext$renderFrame$lambda(this$JsContext) {
+    return function (t) {
+      this$JsContext.renderFrame_0(t);
+      return Unit;
+    };
+  }
+  JsContext.prototype.renderFrame_0 = function (time) {
+    var dt = (time - this.animationMillis_0) / 1000.0;
+    this.animationMillis_0 = time;
+    this.windowWidth = this.canvas_8be2vx$.clientWidth;
+    this.windowHeight = this.canvas_8be2vx$.clientHeight;
+    if (this.windowWidth !== this.canvas_8be2vx$.width || this.windowHeight !== this.canvas_8be2vx$.height) {
+      this.canvas_8be2vx$.width = this.windowWidth;
+      this.canvas_8be2vx$.height = this.windowHeight;
+    }
+    this.render_14dthe$(dt);
+    this.gl_8be2vx$.finish();
+    window.requestAnimationFrame(JsContext$renderFrame$lambda(this));
+  };
+  JsContext.prototype.openUrl_61zpoe$ = function (url) {
+    window.open(url);
+  };
+  function JsContext$run$lambda(this$JsContext) {
+    return function (t) {
+      this$JsContext.renderFrame_0(t);
+      return Unit;
+    };
+  }
+  JsContext.prototype.run = function () {
+    window.requestAnimationFrame(JsContext$run$lambda(this));
+  };
+  JsContext.prototype.destroy = function () {
+  };
+  function JsContext$InitProps() {
+    this.canvasName = 'glCanvas';
+    this.excludedKeyCodes = mutableSetOf(['F5']);
+    this.assetsBaseDir = './assets';
+  }
+  JsContext$InitProps.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'InitProps',
+    interfaces: []
+  };
+  function JsContext$Companion() {
+    JsContext$Companion_instance = this;
+    this.KEY_CODE_MAP = mutableMapOf([to('ControlLeft', InputManager$Companion_getInstance().KEY_CTRL_LEFT), to('ControlRight', InputManager$Companion_getInstance().KEY_CTRL_RIGHT), to('ShiftLeft', InputManager$Companion_getInstance().KEY_SHIFT_LEFT), to('ShiftRight', InputManager$Companion_getInstance().KEY_SHIFT_RIGHT), to('AltLeft', InputManager$Companion_getInstance().KEY_ALT_LEFT), to('AltRight', InputManager$Companion_getInstance().KEY_ALT_RIGHT), to('MetaLeft', InputManager$Companion_getInstance().KEY_SUPER_LEFT), to('MetaRight', InputManager$Companion_getInstance().KEY_SUPER_RIGHT), to('Escape', InputManager$Companion_getInstance().KEY_ESC), to('ContextMenu', InputManager$Companion_getInstance().KEY_MENU), to('Enter', InputManager$Companion_getInstance().KEY_ENTER), to('NumpadEnter', InputManager$Companion_getInstance().KEY_NP_ENTER), to('NumpadDivide', InputManager$Companion_getInstance().KEY_NP_DIV), to('NumpadMultiply', InputManager$Companion_getInstance().KEY_NP_MUL), to('NumpadAdd', InputManager$Companion_getInstance().KEY_NP_PLUS), to('NumpadSubtract', InputManager$Companion_getInstance().KEY_NP_MINUS), to('Backspace', InputManager$Companion_getInstance().KEY_BACKSPACE), to('Tab', InputManager$Companion_getInstance().KEY_TAB), to('Delete', InputManager$Companion_getInstance().KEY_DEL), to('Insert', InputManager$Companion_getInstance().KEY_INSERT), to('Home', InputManager$Companion_getInstance().KEY_HOME), to('End', InputManager$Companion_getInstance().KEY_END), to('PageUp', InputManager$Companion_getInstance().KEY_PAGE_UP), to('PageDown', InputManager$Companion_getInstance().KEY_PAGE_DOWN), to('ArrowLeft', InputManager$Companion_getInstance().KEY_CURSOR_LEFT), to('ArrowRight', InputManager$Companion_getInstance().KEY_CURSOR_RIGHT), to('ArrowUp', InputManager$Companion_getInstance().KEY_CURSOR_UP), to('ArrowDown', InputManager$Companion_getInstance().KEY_CURSOR_DOWN), to('F1', InputManager$Companion_getInstance().KEY_F1), to('F2', InputManager$Companion_getInstance().KEY_F2), to('F3', InputManager$Companion_getInstance().KEY_F3), to('F4', InputManager$Companion_getInstance().KEY_F4), to('F5', InputManager$Companion_getInstance().KEY_F5), to('F6', InputManager$Companion_getInstance().KEY_F6), to('F7', InputManager$Companion_getInstance().KEY_F7), to('F8', InputManager$Companion_getInstance().KEY_F8), to('F9', InputManager$Companion_getInstance().KEY_F9), to('F10', InputManager$Companion_getInstance().KEY_F10), to('F11', InputManager$Companion_getInstance().KEY_F11), to('F12', InputManager$Companion_getInstance().KEY_F12), to('Space', 32 | 0)]);
+  }
+  JsContext$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var JsContext$Companion_instance = null;
+  function JsContext$Companion_getInstance() {
+    if (JsContext$Companion_instance === null) {
+      new JsContext$Companion();
+    }
+    return JsContext$Companion_instance;
+  }
+  function JsContext_init$lambda(this$JsContext) {
+    return function (ev) {
+      var tmp$;
+      Kotlin.isType(tmp$ = ev, MouseEvent) ? tmp$ : throwCCE();
+      var bounds = this$JsContext.canvas_8be2vx$.getBoundingClientRect();
+      var x = ev.clientX - bounds.left;
+      var y = ev.clientY - bounds.top;
+      this$JsContext.inputMgr.handleMouseMove_dleff0$(x, y);
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_0(this$JsContext) {
+    return function (ev) {
+      var tmp$;
+      Kotlin.isType(tmp$ = ev, MouseEvent) ? tmp$ : throwCCE();
+      this$JsContext.inputMgr.handleMouseButtonStates_za3lpa$(ev.buttons);
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_1(this$JsContext) {
+    return function (ev) {
+      var tmp$;
+      Kotlin.isType(tmp$ = ev, MouseEvent) ? tmp$ : throwCCE();
+      this$JsContext.inputMgr.handleMouseButtonStates_za3lpa$(ev.buttons);
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_2(this$JsContext) {
+    return function (it) {
+      this$JsContext.inputMgr.handleMouseExit();
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_3(this$JsContext) {
+    return function (ev) {
+      var tmp$;
+      Kotlin.isType(tmp$ = ev, WheelEvent) ? tmp$ : throwCCE();
+      var ticks = -ev.deltaY / 3.0;
+      if (ev.deltaMode === 0) {
+        ticks /= 30.0;
+      }
+      this$JsContext.inputMgr.handleMouseScroll_mx4ult$(ticks);
+      ev.preventDefault();
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_4(this$JsContext) {
+    return function (ev) {
+      var tmp$, tmp$_0;
+      ev.preventDefault();
+      var changedTouches = (Kotlin.isType(tmp$ = ev, TouchEvent) ? tmp$ : throwCCE()).changedTouches;
+      tmp$_0 = changedTouches.length;
+      for (var i = 0; i < tmp$_0; i++) {
+        var touch = changedTouches.item(i);
+        this$JsContext.inputMgr.handleTouchStart_nhq4am$(touch.identifier, get_elementX(touch), get_elementY(touch));
+      }
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_5(this$JsContext) {
+    return function (ev) {
+      var tmp$, tmp$_0;
+      ev.preventDefault();
+      var changedTouches = (Kotlin.isType(tmp$ = ev, TouchEvent) ? tmp$ : throwCCE()).changedTouches;
+      tmp$_0 = changedTouches.length;
+      for (var i = 0; i < tmp$_0; i++) {
+        var touch = changedTouches.item(i);
+        this$JsContext.inputMgr.handleTouchEnd_za3lpa$(touch.identifier);
+      }
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_6(this$JsContext) {
+    return function (ev) {
+      var tmp$, tmp$_0;
+      ev.preventDefault();
+      var changedTouches = (Kotlin.isType(tmp$ = ev, TouchEvent) ? tmp$ : throwCCE()).changedTouches;
+      tmp$_0 = changedTouches.length;
+      for (var i = 0; i < tmp$_0; i++) {
+        var touch = changedTouches.item(i);
+        this$JsContext.inputMgr.handleTouchCancel_za3lpa$(touch.identifier);
+      }
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_7(this$JsContext) {
+    return function (ev) {
+      var tmp$, tmp$_0;
+      ev.preventDefault();
+      var changedTouches = (Kotlin.isType(tmp$ = ev, TouchEvent) ? tmp$ : throwCCE()).changedTouches;
+      tmp$_0 = changedTouches.length;
+      for (var i = 0; i < tmp$_0; i++) {
+        var touch = changedTouches.item(i);
+        this$JsContext.inputMgr.handleTouchMove_nhq4am$(touch.identifier, get_elementX(touch), get_elementY(touch));
+      }
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_8(this$JsContext) {
+    return function (ev) {
+      var tmp$, tmp$_0;
+      tmp$_0 = Kotlin.isType(tmp$ = ev, KeyboardEvent) ? tmp$ : throwCCE();
+      this$JsContext.handleKeyDown_0(tmp$_0);
+      return Unit;
+    };
+  }
+  function JsContext_init$lambda_9(this$JsContext) {
+    return function (ev) {
+      var tmp$, tmp$_0;
+      tmp$_0 = Kotlin.isType(tmp$ = ev, KeyboardEvent) ? tmp$ : throwCCE();
+      this$JsContext.handleKeyUp_0(tmp$_0);
+      return Unit;
+    };
+  }
+  JsContext.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'JsContext',
+    interfaces: [KoolContext]
+  };
+  function get_elementX($receiver) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    return $receiver.clientX - ((tmp$_2 = (tmp$_1 = (tmp$_0 = Kotlin.isType(tmp$ = $receiver.target, HTMLCanvasElement) ? tmp$ : null) != null ? tmp$_0.clientLeft : null) != null ? tmp$_1 : null) != null ? tmp$_2 : 0.0);
+  }
+  function get_elementY($receiver) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    return $receiver.clientY - ((tmp$_2 = (tmp$_1 = (tmp$_0 = Kotlin.isType(tmp$ = $receiver.target, HTMLCanvasElement) ? tmp$ : null) != null ? tmp$_0.clientTop : null) != null ? tmp$_1 : null) != null ? tmp$_2 : 0.0);
+  }
+  function GenericBuffer(capacity, create) {
+    this.buffer = create();
+    this.capacity_tfbtga$_0 = capacity;
+    this.limit_wr5sjr$_0 = capacity;
+    this.position_xkur2v$_0 = 0;
+  }
+  Object.defineProperty(GenericBuffer.prototype, 'capacity', {
+    get: function () {
+      return this.capacity_tfbtga$_0;
+    }
+  });
+  Object.defineProperty(GenericBuffer.prototype, 'limit', {
+    get: function () {
+      return this.limit_wr5sjr$_0;
+    },
+    set: function (value) {
+      if (value < 0 || value > this.capacity) {
+        throw new KoolException('Limit is out of bounds: ' + value + ' (capacity: ' + this.capacity + ')');
+      }
+      this.limit_wr5sjr$_0 = value;
+      if (this.position > value) {
+        this.position = value;
+      }
+    }
+  });
+  Object.defineProperty(GenericBuffer.prototype, 'position', {
+    get: function () {
+      return this.position_xkur2v$_0;
+    },
+    set: function (position) {
+      this.position_xkur2v$_0 = position;
+    }
+  });
+  Object.defineProperty(GenericBuffer.prototype, 'remaining', {
+    get: function () {
+      return this.limit - this.position | 0;
+    }
+  });
+  GenericBuffer.prototype.flip = function () {
+    this.limit = this.position;
+    this.position = 0;
+  };
+  GenericBuffer.prototype.clear = function () {
+    this.limit = this.capacity;
+    this.position = 0;
+  };
+  GenericBuffer.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GenericBuffer',
+    interfaces: [Buffer]
+  };
+  function Uint8BufferImpl(capacity) {
+    GenericBuffer.call(this, capacity, Uint8BufferImpl_init$lambda(capacity));
+  }
+  Uint8BufferImpl.prototype.get_za3lpa$ = function (i) {
+    return this.buffer[i];
+  };
+  Uint8BufferImpl.prototype.set_6t1wet$ = function (i, value) {
+    this.buffer[i] = value;
+  };
+  Uint8BufferImpl.prototype.put_mj6st8$ = function (data, offset, len) {
+    var tmp$, tmp$_0;
+    tmp$ = offset + len - 1 | 0;
+    for (var i = offset; i <= tmp$; i++) {
+      this.buffer[tmp$_0 = this.position, this.position = tmp$_0 + 1 | 0, tmp$_0] = data[i];
+    }
+    return this;
+  };
+  Uint8BufferImpl.prototype.put_s8j3t7$ = function (value) {
+    var tmp$;
+    this.buffer[tmp$ = this.position, this.position = tmp$ + 1 | 0, tmp$] = value;
+    return this;
+  };
+  Uint8BufferImpl.prototype.put_ay2i3f$ = function (data) {
+    var tmp$, tmp$_0;
+    tmp$ = data.position;
+    tmp$_0 = data.limit;
+    for (var i = tmp$; i < tmp$_0; i++) {
+      this.put_s8j3t7$(data.get_za3lpa$(i));
+    }
+    return this;
+  };
+  function Uint8BufferImpl_init$lambda(closure$capacity) {
+    return function () {
+      return new Uint8Array(closure$capacity);
+    };
+  }
+  Uint8BufferImpl.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Uint8BufferImpl',
+    interfaces: [GenericBuffer, Uint8Buffer]
+  };
+  function Uint16BufferImpl(capacity) {
+    GenericBuffer.call(this, capacity, Uint16BufferImpl_init$lambda(capacity));
+  }
+  Uint16BufferImpl.prototype.get_za3lpa$ = function (i) {
+    return this.buffer[i];
+  };
+  Uint16BufferImpl.prototype.set_2bqt6h$ = function (i, value) {
+    this.buffer[i] = value;
+  };
+  Uint16BufferImpl.prototype.put_359eei$ = function (data, offset, len) {
+    var tmp$, tmp$_0;
+    tmp$ = offset + len - 1 | 0;
+    for (var i = offset; i <= tmp$; i++) {
+      this.buffer[tmp$_0 = this.position, this.position = tmp$_0 + 1 | 0, tmp$_0] = data[i];
+    }
+    return this;
+  };
+  Uint16BufferImpl.prototype.put_mq22fl$ = function (value) {
+    var tmp$;
+    this.buffer[tmp$ = this.position, this.position = tmp$ + 1 | 0, tmp$] = value;
+    return this;
+  };
+  Uint16BufferImpl.prototype.put_8k344i$ = function (data) {
+    var tmp$, tmp$_0;
+    tmp$ = data.position;
+    tmp$_0 = data.limit;
+    for (var i = tmp$; i < tmp$_0; i++) {
+      this.put_mq22fl$(data.get_za3lpa$(i));
+    }
+    return this;
+  };
+  function Uint16BufferImpl_init$lambda(closure$capacity) {
+    return function () {
+      return new Uint16Array(closure$capacity);
+    };
+  }
+  Uint16BufferImpl.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Uint16BufferImpl',
+    interfaces: [GenericBuffer, Uint16Buffer]
+  };
+  function Uint32BufferImpl(capacity) {
+    GenericBuffer.call(this, capacity, Uint32BufferImpl_init$lambda(capacity));
+  }
+  Uint32BufferImpl.prototype.get_za3lpa$ = function (i) {
+    return this.buffer[i];
+  };
+  Uint32BufferImpl.prototype.set_vux9f0$ = function (i, value) {
+    this.buffer[i] = value;
+  };
+  Uint32BufferImpl.prototype.put_nd5v6f$ = function (data, offset, len) {
+    var tmp$, tmp$_0;
+    tmp$ = offset + len - 1 | 0;
+    for (var i = offset; i <= tmp$; i++) {
+      this.buffer[tmp$_0 = this.position, this.position = tmp$_0 + 1 | 0, tmp$_0] = data[i];
+    }
+    return this;
+  };
+  Uint32BufferImpl.prototype.put_za3lpa$ = function (value) {
+    var tmp$;
+    this.buffer[tmp$ = this.position, this.position = tmp$ + 1 | 0, tmp$] = value;
+    return this;
+  };
+  Uint32BufferImpl.prototype.put_7hqxcs$ = function (data) {
+    var tmp$, tmp$_0;
+    tmp$ = data.position;
+    tmp$_0 = data.limit;
+    for (var i = tmp$; i < tmp$_0; i++) {
+      this.put_za3lpa$(data.get_za3lpa$(i));
+    }
+    return this;
+  };
+  function Uint32BufferImpl_init$lambda(closure$capacity) {
+    return function () {
+      return new Uint32Array(closure$capacity);
+    };
+  }
+  Uint32BufferImpl.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Uint32BufferImpl',
+    interfaces: [GenericBuffer, Uint32Buffer]
+  };
+  function Float32BufferImpl(capacity) {
+    GenericBuffer.call(this, capacity, Float32BufferImpl_init$lambda(capacity));
+  }
+  Float32BufferImpl.prototype.get_za3lpa$ = function (i) {
+    return this.buffer[i];
+  };
+  Float32BufferImpl.prototype.set_24o109$ = function (i, value) {
+    this.buffer[i] = value;
+  };
+  Float32BufferImpl.prototype.put_kgymra$ = function (data, offset, len) {
+    var tmp$, tmp$_0;
+    tmp$ = offset + len - 1 | 0;
+    for (var i = offset; i <= tmp$; i++) {
+      this.buffer[tmp$_0 = this.position, this.position = tmp$_0 + 1 | 0, tmp$_0] = data[i];
+    }
+    return this;
+  };
+  Float32BufferImpl.prototype.put_mx4ult$ = function (value) {
+    var tmp$;
+    this.buffer[tmp$ = this.position, this.position = tmp$ + 1 | 0, tmp$] = value;
+    return this;
+  };
+  Float32BufferImpl.prototype.put_he122g$ = function (data) {
+    var tmp$, tmp$_0;
+    tmp$ = data.position;
+    tmp$_0 = data.limit;
+    for (var i = tmp$; i < tmp$_0; i++) {
+      this.put_mx4ult$(data.get_za3lpa$(i));
+    }
+    return this;
+  };
+  function Float32BufferImpl_init$lambda(closure$capacity) {
+    return function () {
+      return new Float32Array(closure$capacity);
+    };
+  }
+  Float32BufferImpl.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Float32BufferImpl',
+    interfaces: [GenericBuffer, Float32Buffer]
+  };
+  function createUint8Buffer(capacity) {
+    return new Uint8BufferImpl(capacity);
+  }
+  function createUint16Buffer(capacity) {
+    return new Uint16BufferImpl(capacity);
+  }
+  function createUint32Buffer(capacity) {
+    return new Uint32BufferImpl(capacity);
+  }
+  function createFloat32Buffer(capacity) {
+    return new Float32BufferImpl(capacity);
+  }
   var package$de = _.de || (_.de = {});
   var package$fabmax = package$de.fabmax || (package$de.fabmax = {});
   var package$kool = package$fabmax.kool || (package$fabmax.kool = {});
-  var package$audio = package$kool.audio || (package$kool.audio = {});
-  package$audio.AudioGenerator = AudioGenerator;
-  var package$gl = package$kool.gl || (package$kool.gl = {});
-  package$gl.glActiveTexture_za3lpa$ = glActiveTexture;
-  package$gl.glAttachShader_c10c6r$ = glAttachShader;
-  package$gl.glBindBuffer_4ablaf$ = glBindBuffer;
-  package$gl.glBindFramebuffer_7zhe8e$ = glBindFramebuffer;
-  package$gl.glBindRenderbuffer_r7ndcf$ = glBindRenderbuffer;
-  package$gl.glBindTexture_hhrqcg$ = glBindTexture;
-  package$gl.glBlendFunc_vux9f0$ = glBlendFunc;
-  package$gl.glBufferData_i0kgf1$ = glBufferData;
-  package$gl.glBufferData_wta2e6$ = glBufferData_0;
-  package$gl.glBufferData_57ow2w$ = glBufferData_1;
-  package$gl.glBufferData_d9f8rk$ = glBufferData_2;
-  package$gl.glCheckFramebufferStatus_za3lpa$ = glCheckFramebufferStatus;
-  package$gl.glClear_za3lpa$ = glClear;
-  package$gl.glClearColor_7b5o5w$ = glClearColor;
-  package$gl.glCompileShader_4nv1hv$ = glCompileShader;
-  package$gl.glCopyTexImage2D_wrdw30$ = glCopyTexImage2D;
-  package$gl.glCreateBuffer = glCreateBuffer;
-  package$gl.glCreateFramebuffer = glCreateFramebuffer;
-  package$gl.glCreateRenderbuffer = glCreateRenderbuffer;
-  package$gl.glCreateProgram = glCreateProgram;
-  package$gl.glCreateShader_za3lpa$ = glCreateShader;
-  package$gl.glCreateTexture = glCreateTexture;
-  package$gl.glCullFace_za3lpa$ = glCullFace;
-  package$gl.glDeleteBuffer_yyg71q$ = glDeleteBuffer;
-  package$gl.glDeleteFramebuffer_e3u3vp$ = glDeleteFramebuffer;
-  package$gl.glDeleteProgram_nzjype$ = glDeleteProgram;
-  package$gl.glDeleteRenderbuffer_puextw$ = glDeleteRenderbuffer;
-  package$gl.glDeleteShader_4nv1hv$ = glDeleteShader;
-  package$gl.glDeleteTexture_r3jlzd$ = glDeleteTexture;
-  package$gl.glDepthFunc_za3lpa$ = glDepthFunc;
-  package$gl.glDepthMask_6taknv$ = glDepthMask;
-  package$gl.glDisable_za3lpa$ = glDisable;
-  package$gl.glDisableVertexAttribArray_za3lpa$ = glDisableVertexAttribArray;
-  package$gl.glDrawBuffer_za3lpa$ = glDrawBuffer;
-  package$gl.glDrawElements_tjonv8$ = glDrawElements;
-  package$gl.glDrawElementsInstanced_4qozqa$ = glDrawElementsInstanced;
-  package$gl.glEnable_za3lpa$ = glEnable;
-  package$gl.glEnableVertexAttribArray_za3lpa$ = glEnableVertexAttribArray;
-  package$gl.glFramebufferRenderbuffer_h0cs4y$ = glFramebufferRenderbuffer;
-  package$gl.glFramebufferTexture2D_4b5mi7$ = glFramebufferTexture2D;
-  package$gl.glGenerateMipmap_za3lpa$ = glGenerateMipmap;
-  package$gl.glGetAttribLocation_xq0tfo$ = glGetAttribLocation;
-  package$gl.glGetError = glGetError;
-  package$gl.glGetProgrami_it7c4k$ = glGetProgrami;
-  package$gl.glGetShaderi_dwrjj9$ = glGetShaderi;
-  package$gl.glGetProgramInfoLog_nzjype$ = glGetProgramInfoLog;
-  package$gl.glGetShaderInfoLog_4nv1hv$ = glGetShaderInfoLog;
-  package$gl.glGetUniformLocation_xq0tfo$ = glGetUniformLocation;
-  package$gl.glLineWidth_mx4ult$ = glLineWidth;
-  package$gl.glLinkProgram_nzjype$ = glLinkProgram;
-  package$gl.glPointSize_mx4ult$ = glPointSize;
-  package$gl.glReadBuffer_za3lpa$ = glReadBuffer;
-  package$gl.glRenderbufferStorage_tjonv8$ = glRenderbufferStorage;
-  package$gl.glRenderbufferStorageMultisample_4qozqa$ = glRenderbufferStorageMultisample;
-  package$gl.glShaderSource_24lj51$ = glShaderSource;
-  package$gl.glTexImage2D_ffh0n8$ = glTexImage2D;
-  package$gl.glTexImage2D_ikbj0q$ = glTexImage2D_0;
-  package$gl.glTexParameteri_qt1dr2$ = glTexParameteri;
-  package$gl.glUniform1f_s9wk91$ = glUniform1f;
-  package$gl.glUniform1fv_oyoqla$ = glUniform1fv;
-  package$gl.glUniform1i_cypnoy$ = glUniform1i;
-  package$gl.glUniform1iv_d3jnx1$ = glUniform1iv;
-  package$gl.glUniform2f_ig41i8$ = glUniform2f;
-  package$gl.glUniform3f_w792mz$ = glUniform3f;
-  package$gl.glUniform4f_eixcow$ = glUniform4f;
-  package$gl.glUniformMatrix4fv_ugl0b7$ = glUniformMatrix4fv;
-  package$gl.glUseProgram_xb2c5p$ = glUseProgram;
-  package$gl.glVertexAttribDivisor_vux9f0$ = glVertexAttribDivisor;
-  package$gl.glVertexAttribPointer_owihk5$ = glVertexAttribPointer;
-  package$gl.glVertexAttribIPointer_4qozqa$ = glVertexAttribIPointer;
-  package$gl.glViewport_tjonv8$ = glViewport;
-  package$gl.isValidUniformLocation_s8jyv4$ = isValidUniformLocation;
-  package$kool.createContext = createContext;
-  package$kool.createContext_s8od96$ = createContext_0;
-  package$kool.now = now;
-  package$kool.getMemoryInfo = getMemoryInfo;
-  $$importsForInline$$.kool = _;
-  package$kool.formatDouble_12fank$ = formatDouble;
-  Object.defineProperty(package$kool, 'JsImpl', {
-    get: JsImpl_getInstance
-  });
-  var package$platform = package$kool.platform || (package$kool.platform = {});
-  package$platform.FontMapGenerator = FontMapGenerator;
-  package$platform.ImageTextureData = ImageTextureData;
-  Object.defineProperty(JsAssetManager, 'Companion', {
-    get: JsAssetManager$Companion_getInstance
-  });
-  package$platform.JsAssetManager = JsAssetManager;
-  JsContext.InitProps = JsContext$InitProps;
-  Object.defineProperty(JsContext, 'Companion', {
-    get: JsContext$Companion_getInstance
-  });
-  package$platform.JsContext = JsContext;
-  package$platform.get_elementX_wgrwqm$ = get_elementX;
-  package$platform.get_elementY_wgrwqm$ = get_elementY;
-  var package$util = package$kool.util || (package$kool.util = {});
-  package$util.GenericBuffer = GenericBuffer;
-  package$util.Uint8BufferImpl = Uint8BufferImpl;
-  package$util.Uint16BufferImpl = Uint16BufferImpl;
-  package$util.Uint32BufferImpl = Uint32BufferImpl;
-  package$util.Float32BufferImpl = Float32BufferImpl;
-  package$util.createUint8Buffer_za3lpa$ = createUint8Buffer;
-  package$util.createUint16Buffer_za3lpa$ = createUint16Buffer;
-  package$util.createUint32Buffer_za3lpa$ = createUint32Buffer;
-  package$util.createFloat32Buffer_za3lpa$ = createFloat32Buffer;
   package$kool.AssetManager = AssetManager;
   package$kool.assetTexture_2gt2x8$ = assetTexture;
   package$kool.assetTexture_513zl8$ = assetTexture_0;
+  var package$audio = package$kool.audio || (package$kool.audio = {});
   package$audio.LowPassFilter = LowPassFilter;
   package$audio.HighPassFilter = HighPassFilter;
   Object.defineProperty(MoodFilter, 'Companion', {
@@ -23250,6 +23028,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$audio.HiHat = HiHat;
   package$audio.Kick = Kick;
   package$audio.Melody = Melody;
+  $$importsForInline$$.kool = _;
   package$audio.Oscillator = Oscillator;
   package$audio.Pad = Pad;
   Object.defineProperty(SampleNode, 'Companion', {
@@ -23262,6 +23041,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: Wave$Companion_getInstance
   });
   package$audio.Wave = Wave;
+  var package$gl = package$kool.gl || (package$kool.gl = {});
   Object.defineProperty(package$gl, 'GL_ACTIVE_TEXTURE', {
     get: function () {
       return GL_ACTIVE_TEXTURE;
@@ -25355,6 +25135,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Object.defineProperty(Animator, 'Companion', {
     get: Animator$Companion_getInstance
   });
+  var package$util = package$kool.util || (package$kool.util = {});
   package$util.Animator = Animator;
   package$util.LinearAnimator = LinearAnimator;
   package$util.CosAnimator = CosAnimator;
@@ -25382,6 +25163,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Object.defineProperty(ColorGradient, 'Companion', {
     get: ColorGradient$Companion_getInstance
   });
+  package$util.ColorGradient_init_5tenyj$ = ColorGradient_init;
   package$util.ColorGradient = ColorGradient;
   package$util.debugOverlay_n8mrtu$ = debugOverlay;
   package$util.Disposable = Disposable;
@@ -25453,6 +25235,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   AutoRecycler.Context = AutoRecycler$Context;
   package$util.AutoRecycler = AutoRecycler;
   package$util.PerfTimer = PerfTimer;
+  package$kool.now = now;
+  package$kool.formatDouble_12fank$ = formatDouble;
   package$util.timedMs_9vqa9e$ = timedMs;
   package$util.timedMs_v0aq7q$ = timedMs_0;
   package$util.timedMs_sky27l$ = timedMs_1;
@@ -25540,14 +25324,108 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Object.defineProperty(package$util, 'UniqueId', {
     get: UniqueId_getInstance
   });
-  Uint8BufferImpl.prototype.put_fqrh44$ = Uint8Buffer.prototype.put_fqrh44$;
-  Uint8BufferImpl.prototype.plusAssign_s8j3t7$ = Uint8Buffer.prototype.plusAssign_s8j3t7$;
-  Uint16BufferImpl.prototype.put_gmedm2$ = Uint16Buffer.prototype.put_gmedm2$;
-  Uint16BufferImpl.prototype.plusAssign_mq22fl$ = Uint16Buffer.prototype.plusAssign_mq22fl$;
-  Uint32BufferImpl.prototype.put_q5rwfd$ = Uint32Buffer.prototype.put_q5rwfd$;
-  Uint32BufferImpl.prototype.plusAssign_za3lpa$ = Uint32Buffer.prototype.plusAssign_za3lpa$;
-  Float32BufferImpl.prototype.put_q3cr5i$ = Float32Buffer.prototype.put_q3cr5i$;
-  Float32BufferImpl.prototype.plusAssign_mx4ult$ = Float32Buffer.prototype.plusAssign_mx4ult$;
+  package$audio.AudioGenerator = AudioGenerator;
+  package$gl.glActiveTexture_za3lpa$ = glActiveTexture;
+  package$gl.glAttachShader_c10c6r$ = glAttachShader;
+  package$gl.glBindBuffer_4ablaf$ = glBindBuffer;
+  package$gl.glBindFramebuffer_7zhe8e$ = glBindFramebuffer;
+  package$gl.glBindRenderbuffer_r7ndcf$ = glBindRenderbuffer;
+  package$gl.glBindTexture_hhrqcg$ = glBindTexture;
+  package$gl.glBlendFunc_vux9f0$ = glBlendFunc;
+  package$gl.glBufferData_i0kgf1$ = glBufferData;
+  package$gl.glBufferData_wta2e6$ = glBufferData_0;
+  package$gl.glBufferData_57ow2w$ = glBufferData_1;
+  package$gl.glBufferData_d9f8rk$ = glBufferData_2;
+  package$gl.glCheckFramebufferStatus_za3lpa$ = glCheckFramebufferStatus;
+  package$gl.glClear_za3lpa$ = glClear;
+  package$gl.glClearColor_7b5o5w$ = glClearColor;
+  package$gl.glCompileShader_4nv1hv$ = glCompileShader;
+  package$gl.glCopyTexImage2D_wrdw30$ = glCopyTexImage2D;
+  package$gl.glCreateBuffer = glCreateBuffer;
+  package$gl.glCreateFramebuffer = glCreateFramebuffer;
+  package$gl.glCreateRenderbuffer = glCreateRenderbuffer;
+  package$gl.glCreateProgram = glCreateProgram;
+  package$gl.glCreateShader_za3lpa$ = glCreateShader;
+  package$gl.glCreateTexture = glCreateTexture;
+  package$gl.glCullFace_za3lpa$ = glCullFace;
+  package$gl.glDeleteBuffer_yyg71q$ = glDeleteBuffer;
+  package$gl.glDeleteFramebuffer_e3u3vp$ = glDeleteFramebuffer;
+  package$gl.glDeleteProgram_nzjype$ = glDeleteProgram;
+  package$gl.glDeleteRenderbuffer_puextw$ = glDeleteRenderbuffer;
+  package$gl.glDeleteShader_4nv1hv$ = glDeleteShader;
+  package$gl.glDeleteTexture_r3jlzd$ = glDeleteTexture;
+  package$gl.glDepthFunc_za3lpa$ = glDepthFunc;
+  package$gl.glDepthMask_6taknv$ = glDepthMask;
+  package$gl.glDisable_za3lpa$ = glDisable;
+  package$gl.glDisableVertexAttribArray_za3lpa$ = glDisableVertexAttribArray;
+  package$gl.glDrawBuffer_za3lpa$ = glDrawBuffer;
+  package$gl.glDrawElements_tjonv8$ = glDrawElements;
+  package$gl.glDrawElementsInstanced_4qozqa$ = glDrawElementsInstanced;
+  package$gl.glEnable_za3lpa$ = glEnable;
+  package$gl.glEnableVertexAttribArray_za3lpa$ = glEnableVertexAttribArray;
+  package$gl.glFramebufferRenderbuffer_h0cs4y$ = glFramebufferRenderbuffer;
+  package$gl.glFramebufferTexture2D_4b5mi7$ = glFramebufferTexture2D;
+  package$gl.glGenerateMipmap_za3lpa$ = glGenerateMipmap;
+  package$gl.glGetAttribLocation_xq0tfo$ = glGetAttribLocation;
+  package$gl.glGetError = glGetError;
+  package$gl.glGetProgrami_it7c4k$ = glGetProgrami;
+  package$gl.glGetShaderi_dwrjj9$ = glGetShaderi;
+  package$gl.glGetProgramInfoLog_nzjype$ = glGetProgramInfoLog;
+  package$gl.glGetShaderInfoLog_4nv1hv$ = glGetShaderInfoLog;
+  package$gl.glGetUniformLocation_xq0tfo$ = glGetUniformLocation;
+  package$gl.glLineWidth_mx4ult$ = glLineWidth;
+  package$gl.glLinkProgram_nzjype$ = glLinkProgram;
+  package$gl.glPointSize_mx4ult$ = glPointSize;
+  package$gl.glReadBuffer_za3lpa$ = glReadBuffer;
+  package$gl.glRenderbufferStorage_tjonv8$ = glRenderbufferStorage;
+  package$gl.glRenderbufferStorageMultisample_4qozqa$ = glRenderbufferStorageMultisample;
+  package$gl.glShaderSource_24lj51$ = glShaderSource;
+  package$gl.glTexImage2D_ffh0n8$ = glTexImage2D;
+  package$gl.glTexImage2D_ikbj0q$ = glTexImage2D_0;
+  package$gl.glTexParameteri_qt1dr2$ = glTexParameteri;
+  package$gl.glUniform1f_s9wk91$ = glUniform1f;
+  package$gl.glUniform1fv_oyoqla$ = glUniform1fv;
+  package$gl.glUniform1i_cypnoy$ = glUniform1i;
+  package$gl.glUniform1iv_d3jnx1$ = glUniform1iv;
+  package$gl.glUniform2f_ig41i8$ = glUniform2f;
+  package$gl.glUniform3f_w792mz$ = glUniform3f;
+  package$gl.glUniform4f_eixcow$ = glUniform4f;
+  package$gl.glUniformMatrix4fv_ugl0b7$ = glUniformMatrix4fv;
+  package$gl.glUseProgram_xb2c5p$ = glUseProgram;
+  package$gl.glVertexAttribDivisor_vux9f0$ = glVertexAttribDivisor;
+  package$gl.glVertexAttribPointer_owihk5$ = glVertexAttribPointer;
+  package$gl.glVertexAttribIPointer_4qozqa$ = glVertexAttribIPointer;
+  package$gl.glViewport_tjonv8$ = glViewport;
+  package$gl.isValidUniformLocation_s8jyv4$ = isValidUniformLocation;
+  package$kool.createContext = createContext;
+  package$kool.createContext_s8od96$ = createContext_0;
+  package$kool.getMemoryInfo = getMemoryInfo;
+  Object.defineProperty(package$kool, 'JsImpl', {
+    get: JsImpl_getInstance
+  });
+  var package$platform = package$kool.platform || (package$kool.platform = {});
+  package$platform.FontMapGenerator = FontMapGenerator;
+  package$platform.ImageTextureData = ImageTextureData;
+  Object.defineProperty(JsAssetManager, 'Companion', {
+    get: JsAssetManager$Companion_getInstance
+  });
+  package$platform.JsAssetManager = JsAssetManager;
+  JsContext.InitProps = JsContext$InitProps;
+  Object.defineProperty(JsContext, 'Companion', {
+    get: JsContext$Companion_getInstance
+  });
+  package$platform.JsContext = JsContext;
+  package$platform.get_elementX_wgrwqm$ = get_elementX;
+  package$platform.get_elementY_wgrwqm$ = get_elementY;
+  package$util.GenericBuffer = GenericBuffer;
+  package$util.Uint8BufferImpl = Uint8BufferImpl;
+  package$util.Uint16BufferImpl = Uint16BufferImpl;
+  package$util.Uint32BufferImpl = Uint32BufferImpl;
+  package$util.Float32BufferImpl = Float32BufferImpl;
+  package$util.createUint8Buffer_za3lpa$ = createUint8Buffer;
+  package$util.createUint16Buffer_za3lpa$ = createUint16Buffer;
+  package$util.createUint32Buffer_za3lpa$ = createUint32Buffer;
+  package$util.createFloat32Buffer_za3lpa$ = createFloat32Buffer;
   InRadiusTraverser.prototype.onFinish_dizmqh$ = KdTreeTraverser.prototype.onFinish_dizmqh$;
   KdTree$Companion$VEC3F_HELPER$ObjectLiteral.prototype.getSzX_11rb$ = TreeHelper.prototype.getSzX_11rb$;
   KdTree$Companion$VEC3F_HELPER$ObjectLiteral.prototype.getSzY_11rb$ = TreeHelper.prototype.getSzY_11rb$;
@@ -25609,6 +25487,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   BoneData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   MeshData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   AttributeList$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  Uint8BufferImpl.prototype.put_fqrh44$ = Uint8Buffer.prototype.put_fqrh44$;
+  Uint8BufferImpl.prototype.plusAssign_s8j3t7$ = Uint8Buffer.prototype.plusAssign_s8j3t7$;
+  Uint16BufferImpl.prototype.put_gmedm2$ = Uint16Buffer.prototype.put_gmedm2$;
+  Uint16BufferImpl.prototype.plusAssign_mq22fl$ = Uint16Buffer.prototype.plusAssign_mq22fl$;
+  Uint32BufferImpl.prototype.put_q5rwfd$ = Uint32Buffer.prototype.put_q5rwfd$;
+  Uint32BufferImpl.prototype.plusAssign_za3lpa$ = Uint32Buffer.prototype.plusAssign_za3lpa$;
+  Float32BufferImpl.prototype.put_q3cr5i$ = Float32Buffer.prototype.put_q3cr5i$;
+  Float32BufferImpl.prototype.plusAssign_mx4ult$ = Float32Buffer.prototype.plusAssign_mx4ult$;
   GL_ACTIVE_TEXTURE = 34016;
   GL_DEPTH_BUFFER_BIT = 256;
   GL_STENCIL_BUFFER_BIT = 1024;

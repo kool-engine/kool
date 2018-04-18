@@ -201,7 +201,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     val numVertices: Int
         get() = vertexList.size
 
-    var rebuildBoundsOnSync = false
+    var isRebuildBoundsOnSync = false
     var isSyncRequired = false
     var isBatchUpdate = false
         set(value) {
@@ -342,7 +342,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
      * Rebuilds the bounding box for this mesh data. Rebuilding requires to iterate over all vertices, which can be
      * very slow for large meshes. However, rebuilding mesh bounds is only required if positions of existing vertices
      * were changed, or vertices were removed.
-     * If [rebuildBoundsOnSync] is true, this function is called automatically whenever mesh data buffers are
+     * If [isRebuildBoundsOnSync] is true, this function is called automatically whenever mesh data buffers are
      * synchronized.
      */
     fun rebuildBounds() {
@@ -404,7 +404,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         if (isSyncRequired && !isBatchUpdate) {
             synchronized(vertexList) {
                 if (!isBatchUpdate) {
-                    if (rebuildBoundsOnSync) {
+                    if (isRebuildBoundsOnSync) {
                         rebuildBounds()
                     }
                     if (!ctx.glCapabilities.uint32Indices) {

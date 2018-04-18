@@ -307,16 +307,18 @@ private class SynthieScene(ctx: KoolContext): Scene() {
             }
         }
         val quadV = quads.meshData[0]
-        var zPos = -10000f
+        var zPos = -1000f
 
         val sampleInterval = .05f
         var nextSample = 0f
 
         init {
             +quads
+
+            onPreRender += { ctx -> updateQuads(ctx)}
         }
 
-        override fun render(ctx: KoolContext) {
+        fun updateQuads(ctx: KoolContext) {
             nextSample -= ctx.deltaT
 
             if (nextSample <= 0) {
@@ -349,17 +351,18 @@ private class SynthieScene(ctx: KoolContext): Scene() {
                     quadV.index = 0
                 }
                 zPos += 1f
-                if (zPos > 10000) {
-                    zPos = -10000f
+                if (zPos > 1000) {
+                    zPos = -1000f
                 }
                 quads.meshData.isSyncRequired = true
+
+                // set spectrum bounding box to avoid mesh being frustum clipped
+                quads.bounds.set(-width/2f, 0f, zPos - length, width/2f, 50f, zPos)
             }
 
             setIdentity()
             scale(1f / 32f, 1f / 32f, 1f / 32f)
             translate(0f, -32f, -zPos + length / 5f)
-
-            super.render(ctx)
         }
     }
 
