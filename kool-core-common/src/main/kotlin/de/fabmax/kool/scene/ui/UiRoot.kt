@@ -175,9 +175,16 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
 
     operator fun Node.unaryPlus() = content.addNode(this)
 
+    operator fun DrawerMenu.unaryPlus() {
+        content.addNode(this)
+        content.addNode(menuButton)
+    }
+
     fun component(name: String, block: UiComponent.() -> Unit) = UiComponent(name, this).apply(block)
 
     fun container(name: String, block: UiContainer.() -> Unit) = UiContainer(name, this).apply(block)
+
+    fun drawerMenu(name: String, title: String? = null, width: SizeSpec = dps(250f, true), block: DrawerMenu.() -> Unit) = DrawerMenu(width, title, name, this).apply(block)
 
     fun button(name: String, block: Button.() -> Unit) = Button(name, this).apply(block)
 
