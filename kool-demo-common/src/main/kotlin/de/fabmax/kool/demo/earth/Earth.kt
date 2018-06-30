@@ -340,7 +340,7 @@ class Earth(name: String? = null) : TransformGroup(name), InputManager.DragHandl
     }
 
     private fun computePointOrientation(screenX: Float, screenY: Float, ctx: KoolContext): Boolean {
-        if (scene?.camera?.computePickRay(pickRay, screenX, screenY, ctx) ?: false) {
+        if (scene?.camera?.computePickRay(pickRay, screenX, screenY, ctx) == true) {
             val o = pickRay.origin
             val l = pickRay.direction
             toLocalCoords(pickRay.origin)

@@ -21,6 +21,15 @@ fun sphericalInputTransform(name: String? = null, block: SphericalInputTransform
     return sit
 }
 
+fun Scene.defaultCamTransform() {
+    +sphericalInputTransform {
+        // Set some initial rotation so that we look down on the scene
+        setMouseRotation(20f, -30f)
+        // Add camera to the transform group
+        +camera
+    }
+}
+
 open class SphericalInputTransform(name: String? = null) : TransformGroup(name), InputManager.DragHandler {
 
     var leftDragMethod = DragMethod.ROTATE

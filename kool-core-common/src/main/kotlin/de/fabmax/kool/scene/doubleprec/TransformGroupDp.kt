@@ -1,28 +1,42 @@
-package de.fabmax.kool.scene
+package de.fabmax.kool.scene.doubleprec
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.RenderPass
+import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.BoundingBox
 
-/**
- * @author fabmax
- */
-
-fun transformGroup(name: String? = null, block: TransformGroup.() -> Unit): TransformGroup {
-    val tg = TransformGroup(name)
+fun transformGroupDp(name: String? = null, block: TransformGroupDp.() -> Unit): TransformGroupDp {
+    val tg = TransformGroupDp(name)
     tg.block()
     return tg
 }
 
-open class TransformGroup(name: String? = null) : Group(name) {
-    protected val transform = Mat4f()
-    protected val invTransform = Mat4f()
+open class TransformGroupDp(name: String? = null) : NodeDp(name) {
+
+    protected val children: MutableList<NodeDp> = mutableListOf()
+    protected val tmpBounds = BoundingBox()
+
+    protected val globalTransform = Mat4d()
+    protected val transform = Mat4d()
+    protected val invTransform = Mat4d()
     protected var isIdentity = false
     protected var isDirty = false
 
     private val tmpTransformVec = MutableVec3f()
+
+    val size: Int get() = children.size
+
+    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
+        super.onSceneChanged(oldScene, newScene)
+        for (i in children.indices) {
+            children[i].scene = newScene
+        }
+    }
 
     protected fun checkInverse() {
         if (isDirty) {
@@ -36,23 +50,23 @@ open class TransformGroup(name: String? = null) : Group(name) {
         isIdentity = false
     }
 
-    override fun preRender(ctx: KoolContext) {
+    override fun preRenderDp(ctx: KoolContext, modelMatDp: Mat4dStack) {
         // apply transformation
         val wasIdentity = isIdentity
         if (!wasIdentity) {
-            ctx.mvpState.modelMatrix.push()
-            ctx.mvpState.modelMatrix.mul(transform)
+            modelMatDp.push().mul(transform)
+            globalTransform.set(modelMatDp)
+            ctx.mvpState.modelMatrix.set(modelMatDp)
             ctx.mvpState.update(ctx)
         }
 
-        // compute global position and size based on group bounds and current model transform
-        super.preRender(ctx)
-
-        // Something to think about: In case transform changes during preRender (e.g. because a onPreRender listener
-        // is animating this transform group) the computed bounds will not match the actual bounds during
-        // render (because of the changed transform matrix). This could be solved by caching the transform used now
-        // and reuse it in render, but that would also introduce an delay of one frame before changed transform
-        // becomes visible. In most cases mismatch between bounds shouldn't be harmful.
+        // call preRender on all children and update group bounding box
+        tmpBounds.clear()
+        for (i in children.indices) {
+            children[i].preRenderDp(ctx, modelMatDp)
+            tmpBounds.add(children[i].bounds)
+        }
+        bounds.set(tmpBounds)
 
         // transform group bounds
         if (!bounds.isEmpty && !wasIdentity) {
@@ -70,9 +84,13 @@ open class TransformGroup(name: String? = null) : Group(name) {
 
         // clear transformation
         if (!wasIdentity) {
-            ctx.mvpState.modelMatrix.pop()
+            modelMatDp.pop()
+            ctx.mvpState.modelMatrix.set(modelMatDp)
             ctx.mvpState.update(ctx)
         }
+
+        // compute global position and size based on group bounds and current model transform
+        super.preRender(ctx)
     }
 
     override fun render(ctx: KoolContext) {
@@ -81,12 +99,19 @@ open class TransformGroup(name: String? = null) : Group(name) {
             val wasIdentity = isIdentity
             if (!wasIdentity) {
                 ctx.mvpState.modelMatrix.push()
-                ctx.mvpState.modelMatrix.mul(transform)
+                ctx.mvpState.modelMatrix.set(globalTransform)
                 ctx.mvpState.update(ctx)
             }
 
             // draw all child nodes
             super.render(ctx)
+            if (isRendered) {
+                for (i in children.indices) {
+                    if (ctx.renderPass != RenderPass.SHADOW || children[i].isCastingShadow) {
+                        children[i].render(ctx)
+                    }
+                }
+            }
 
             // clear transformation
             if (!wasIdentity) {
@@ -130,47 +155,77 @@ open class TransformGroup(name: String? = null) : Group(name) {
         }
     }
 
-    fun translate(t: Vec3f): TransformGroup {
-        return translate(t.x, t.y, t.z)
-    }
-
-    fun translate(tx: Float, ty: Float, tz: Float): TransformGroup {
+    fun translate(tx: Double, ty: Double, tz: Double): TransformGroupDp {
         transform.translate(tx, ty, tz)
         setDirty()
         return this
     }
 
-    fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
-
-    fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): TransformGroup {
+    fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double): TransformGroupDp {
         transform.rotate(angleDeg, axX, axY, axZ)
         setDirty()
         return this
     }
 
-    fun scale(sx: Float, sy: Float, sz: Float): TransformGroup {
+    fun scale(sx: Double, sy: Double, sz: Double): TransformGroupDp {
         transform.scale(sx, sy, sz)
         setDirty()
         return this
     }
 
-    fun mul(mat: Mat4f): TransformGroup {
+    fun mul(mat: Mat4d): TransformGroupDp {
         transform.mul(mat)
         setDirty()
         return this
     }
 
-    fun set(mat: Mat4f): TransformGroup {
+    fun set(mat: Mat4d): TransformGroupDp {
         transform.set(mat)
         setDirty()
         return this
     }
 
-    fun setIdentity(): TransformGroup {
+    fun setIdentity(): TransformGroupDp {
         transform.setIdentity()
         invTransform.setIdentity()
         isDirty = false
         isIdentity = true
         return this
+    }
+
+    open fun addNode(node: NodeDp, index: Int = -1) {
+        if (index >= 0) {
+            children.add(index, node)
+        } else {
+            children.add(node)
+        }
+        node.parent = this
+        bounds.add(node.bounds)
+    }
+
+    open fun removeNode(node: NodeDp): Boolean {
+        if (children.remove(node)) {
+            node.parent = null
+            return true
+        }
+        return false
+    }
+
+    open fun containsNode(node: NodeDp): Boolean = children.contains(node)
+
+    operator fun plusAssign(node: NodeDp) {
+        addNode(node)
+    }
+
+    operator fun minusAssign(node: NodeDp) {
+        removeNode(node)
+    }
+
+    operator fun NodeDp.unaryPlus() {
+        addNode(this)
+    }
+
+    operator fun Node.unaryPlus() {
+        addNode(NodeProxy(this))
     }
 }

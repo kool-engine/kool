@@ -279,13 +279,12 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         }
     }
 
-    fun addVertex(block: IndexedVertexList.Vertex.() -> Unit): Int {
+    inline fun addVertex(block: IndexedVertexList.Vertex.() -> Unit): Int {
         var idx = 0
         synchronized(vertexList) {
             isSyncRequired = true
             idx = vertexList.addVertex(bounds, block)
         }
-        // return must be outside of synchronized block for successful javascript transpiling
         return idx
     }
 
@@ -293,10 +292,9 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         var idx = 0
         synchronized(vertexList) {
             isSyncRequired = true
-            idx = vertexList.addVertex(position, normal, color, texCoord)
             bounds.add(position)
+            idx = vertexList.addVertex(position, normal, color, texCoord)
         }
-        // return must be outside of synchronized block for successful javascript transpiling
         return idx
     }
 

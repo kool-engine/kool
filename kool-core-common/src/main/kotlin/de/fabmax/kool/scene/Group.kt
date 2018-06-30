@@ -100,7 +100,6 @@ open class Group(name: String? = null) : Node(name) {
         }
         node.parent = this
         bounds.add(node.bounds)
-        bounds.add(node.bounds)
     }
 
     open fun removeNode(node: Node): Boolean {

@@ -19,7 +19,6 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
     val strideBytesI: Int
 
     var size = 0
-        private set
     val lastIndex
         get() = size - 1
 
@@ -32,7 +31,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
     val attributeOffsets: Map<Attribute, Int>
 
-    private val tmpVertex: Vertex
+    val vertexIt: Vertex
 
     init {
         var cntF = 0
@@ -57,7 +56,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
         dataF = createFloat32Buffer(cntF * INITIAL_SIZE)
         dataI = createUint32Buffer(cntI * INITIAL_SIZE)
-        tmpVertex = Vertex(0)
+        vertexIt = Vertex(0)
     }
 
     private fun increaseDataSizeF() {
@@ -81,13 +80,17 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         indices = newIdxs
     }
 
-    fun addVertex(updateBounds: BoundingBox? = null, block: Vertex.() -> Unit): Int {
+    fun checkBufferSizes() {
         if (dataF.remaining < vertexSizeF) {
             increaseDataSizeF()
         }
         if (dataI.remaining < vertexSizeI) {
             increaseDataSizeI()
         }
+    }
+
+    inline fun addVertex(updateBounds: BoundingBox? = null, block: Vertex.() -> Unit): Int {
+        checkBufferSizes()
 
         // initialize all vertex values with 0
         for (i in 1..vertexSizeF) {
@@ -97,10 +100,10 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
             dataI += 0
         }
 
-        tmpVertex.index = size++
-        tmpVertex.block()
+        vertexIt.index = size++
+        vertexIt.block()
 
-        updateBounds?.add(tmpVertex.position)
+        updateBounds?.add(vertexIt.position)
 
         return size - 1
     }

@@ -19,6 +19,27 @@ fun lineMesh(name: String? = null, block: LineMesh.() -> Unit): LineMesh {
     return LineMesh(name = name).apply(block)
 }
 
+fun wireframeMesh(triMesh: MeshData): LineMesh {
+    val lines = LineMesh()
+
+    val v = triMesh[0]
+    for (i in 0 until triMesh.numVertices) {
+        v.index = i
+        lines.meshData.addVertex {
+            position.set(v.position)
+            color.set(v.color)
+        }
+    }
+    for (i in 0 until triMesh.numIndices step 3) {
+        val i1 = triMesh.vertexList.indices[i]
+        val i2 = triMesh.vertexList.indices[i + 1]
+        val i3 = triMesh.vertexList.indices[i + 2]
+        lines.meshData.addIndices(i1, i2, i2, i3, i3, i1)
+    }
+
+    return lines
+}
+
 open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
         Mesh(data, name) {
     init {

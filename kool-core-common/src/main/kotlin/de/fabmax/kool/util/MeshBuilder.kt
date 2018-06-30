@@ -24,6 +24,7 @@ open class MeshBuilder(val meshData: MeshData) {
     val circleProps = CircleProps()
     val cubeProps = CubeProps()
     val cylinderProps = CylinderProps()
+    val gridProps = GridProps()
     val rectProps = RectProps()
     val sphereProps = SphereProps()
     var textProps: TextProps? = null
@@ -36,7 +37,7 @@ open class MeshBuilder(val meshData: MeshData) {
             color.set(this@MeshBuilder.color)
 
             transform.transform(position)
-            if (hasNormals) {
+            if (hasNormals && normal.sqrLength() != 0f) {
                 transform.transform(normal, 0f)
                 normal.norm()
             }
@@ -73,9 +74,7 @@ open class MeshBuilder(val meshData: MeshData) {
 
     fun rotate(angleDeg: Float, axis: Vec3f) = transform.rotate(angleDeg, axis)
 
-    fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float)  = transform.rotate(angleDeg, axX, axY, axZ)
-
-    //fun rotateEuler(xDeg: Float, yDeg: Float, zDeg: Float)  = transform.rotateEuler(xDeg, yDeg, zDeg)
+    fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float) = transform.rotate(angleDeg, axX, axY, axZ)
 
     fun scale(x: Float, y: Float, z: Float) = transform.scale(x, y, z)
 
@@ -451,6 +450,67 @@ open class MeshBuilder(val meshData: MeshData) {
         }
     }
 
+    inline fun grid(props: GridProps.() -> Unit) {
+        gridProps.defaults().props()
+        grid(gridProps)
+    }
+
+    fun grid(props: GridProps) {
+        val bx = -props.sizeX / 2
+        val by = -props.sizeY / 2
+        val sx = props.sizeX / props.stepsX
+        val sy = props.sizeY / props.stepsY
+        val nx = props.stepsX + 1
+        props.xDir.cross(props.yDir, tmpNrm).norm()
+
+        for (y in 0 .. props.stepsY) {
+            for (x in 0 .. props.stepsX) {
+                val px = bx + x * sx
+                val py = by + y * sy
+                val h = props.heightFun(x, y)
+                tmpPos.set(props.center)
+                tmpPos.x += props.xDir.x * px + props.yDir.x * py + tmpNrm.x * h
+                tmpPos.y += props.xDir.y * px + props.yDir.y * py + tmpNrm.y * h
+                tmpPos.z += props.xDir.z * px + props.yDir.z * py + tmpNrm.z * h
+
+                val idx = vertex(tmpPos, Vec3f.ZERO)
+                if (x > 0 && y > 0) {
+                    if (y % 2 == 0) {
+                        meshData.addTriIndices(idx - nx - 1, idx, idx - 1)
+                        meshData.addTriIndices(idx - nx, idx, idx - nx - 1)
+                    } else {
+                        meshData.addTriIndices(idx - nx, idx, idx - 1)
+                        meshData.addTriIndices(idx - nx, idx - 1, idx - nx - 1)
+                    }
+                }
+            }
+        }
+
+        val iTri = meshData.numIndices - props.stepsX * props.stepsY * 6
+        val e1 = MutableVec3f()
+        val e2 = MutableVec3f()
+        val v1 = meshData[0]
+        val v2 = meshData[0]
+        val v3 = meshData[0]
+        for (i in iTri until meshData.numIndices step 3) {
+            v1.index = meshData.vertexList.indices[i]
+            v2.index = meshData.vertexList.indices[i+1]
+            v3.index = meshData.vertexList.indices[i+2]
+            v2.position.subtract(v1.position, e1).norm()
+            v3.position.subtract(v1.position, e2).norm()
+            e1.cross(e2, tmpNrm).norm()
+            v1.normal.add(tmpNrm)
+            v2.normal.add(tmpNrm)
+            v3.normal.add(tmpNrm)
+        }
+
+        val iVert = meshData.numVertices - (props.stepsX + 1) * (props.stepsY + 1)
+        for (i in iVert until meshData.numVertices) {
+            v1.index = i
+            v1.normal.norm()
+        }
+    }
+
     inline fun text(font: Font, block: TextProps.() -> Unit) {
         val props = textProps ?: TextProps(font).apply { textProps = this}
         props.defaults()
@@ -516,6 +576,36 @@ class CircleProps {
     fun fullTexCoords() {
         uvCenter.set(0.5f, 0.5f)
         uvRadius = 0.5f
+    }
+}
+
+class GridProps {
+    val center = MutableVec3f()
+    val xDir = MutableVec3f()
+    val yDir = MutableVec3f()
+    var sizeX = 0f
+    var sizeY = 0f
+    var stepsX = 0
+    var stepsY = 0
+    var heightFun: (Int, Int) -> Float = ZERO_HEIGHT
+
+    init {
+        defaults()
+    }
+
+    fun defaults(): GridProps {
+        center.set(Vec3f.ZERO)
+        xDir.set(Vec3f.X_AXIS)
+        yDir.set(Vec3f.NEG_Z_AXIS)
+        sizeX = 10f
+        sizeY = 10f
+        stepsX = 10
+        stepsY = 10
+        return this
+    }
+
+    companion object {
+        val ZERO_HEIGHT: (Int, Int) -> Float = { _, _ -> 0f }
     }
 }
 
