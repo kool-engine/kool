@@ -130,6 +130,8 @@ open class TransformGroup(name: String? = null) : Group(name) {
         }
     }
 
+    fun getTransform(result: Mat4f): Mat4f = result.set(transform)
+
     fun translate(t: Vec3f): TransformGroup {
         return translate(t.x, t.y, t.z)
     }

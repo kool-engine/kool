@@ -32,7 +32,7 @@ class ImageTextureData(assetPath: String, context: Context) : TextureData() {
 
         launch(HttpCache.assetLoadingCtx) {
             try {
-                val inputStream = if (assetPath.startsWith("http")) {
+                val inputStream = if (assetPath.startsWith("http", true)) {
                     FileInputStream(HttpCache.loadHttpResource(assetPath))
                 } else {
                     context.assets.open(assetPath)

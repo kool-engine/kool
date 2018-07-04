@@ -5,8 +5,20 @@ import kotlin.math.abs
 
 val defaultRandomInstance = Random(now().toInt())
 
+/**
+ * Returns a random integer in range of [Int.MIN_VALUE] .. [Int.MAX_VALUE]
+ */
 fun randomI(): Int = defaultRandomInstance.randomI()
+
+/**
+ * Returns a random integer in range of [min] .. [max] (inclusive)
+ */
 fun randomI(min: Int, max: Int): Int = defaultRandomInstance.randomI(min, max)
+
+/**
+ * Returns a random integer in the given range.
+ */
+fun randomI(rng: IntRange): Int = defaultRandomInstance.randomI(rng.first, rng.last)
 
 fun randomD(): Double = defaultRandomInstance.randomD()
 fun randomD(min: Double, max: Double): Double = defaultRandomInstance.randomD(min, max)

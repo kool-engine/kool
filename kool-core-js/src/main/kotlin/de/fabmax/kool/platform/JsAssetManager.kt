@@ -17,7 +17,11 @@ class JsAssetManager internal constructor(override var assetsBaseDir: String)  :
 
     override fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
         val req = XMLHttpRequest()
-        req.open("GET", "$assetsBaseDir/$assetPath")
+        if (assetPath.startsWith("http", true)) {
+            req.open("GET", assetPath)
+        } else {
+            req.open("GET", "$assetsBaseDir/$assetPath")
+        }
         req.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
         req.onload = { evt ->
             val array = Uint8Array(req.response as ArrayBuffer)
@@ -34,7 +38,11 @@ class JsAssetManager internal constructor(override var assetsBaseDir: String)  :
         val img = js("new Image();")
         val data = ImageTextureData(img)
         img.crossOrigin = ""
-        img.src = "$assetsBaseDir/$assetPath"
+        if (assetPath.startsWith("http", true)) {
+            img.src = assetPath
+        } else {
+            img.src = "$assetsBaseDir/$assetPath"
+        }
         return data
     }
 

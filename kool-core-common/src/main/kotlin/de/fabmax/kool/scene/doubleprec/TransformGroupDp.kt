@@ -2,10 +2,7 @@ package de.fabmax.kool.scene.doubleprec
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
-import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.math.Mat4dStack
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BoundingBox
@@ -21,7 +18,6 @@ open class TransformGroupDp(name: String? = null) : NodeDp(name) {
     protected val children: MutableList<NodeDp> = mutableListOf()
     protected val tmpBounds = BoundingBox()
 
-    protected val globalTransform = Mat4d()
     protected val transform = Mat4d()
     protected val invTransform = Mat4d()
     protected var isIdentity = false
@@ -55,7 +51,6 @@ open class TransformGroupDp(name: String? = null) : NodeDp(name) {
         val wasIdentity = isIdentity
         if (!wasIdentity) {
             modelMatDp.push().mul(transform)
-            globalTransform.set(modelMatDp)
             ctx.mvpState.modelMatrix.set(modelMatDp)
             ctx.mvpState.update(ctx)
         }
@@ -90,32 +85,33 @@ open class TransformGroupDp(name: String? = null) : NodeDp(name) {
         }
 
         // compute global position and size based on group bounds and current model transform
-        super.preRender(ctx)
+        super.preRenderDp(ctx, modelMatDp)
     }
 
-    override fun render(ctx: KoolContext) {
+    override fun renderDp(ctx: KoolContext, modelMatDp: Mat4dStack) {
         if (isVisible) {
             // apply transformation
             val wasIdentity = isIdentity
             if (!wasIdentity) {
-                ctx.mvpState.modelMatrix.push()
-                ctx.mvpState.modelMatrix.set(globalTransform)
+                modelMatDp.push().mul(transform)
+                ctx.mvpState.modelMatrix.set(modelMatDp)
                 ctx.mvpState.update(ctx)
             }
 
             // draw all child nodes
-            super.render(ctx)
+            super.renderDp(ctx, modelMatDp)
             if (isRendered) {
                 for (i in children.indices) {
                     if (ctx.renderPass != RenderPass.SHADOW || children[i].isCastingShadow) {
-                        children[i].render(ctx)
+                        children[i].renderDp(ctx, modelMatDp)
                     }
                 }
             }
 
             // clear transformation
             if (!wasIdentity) {
-                ctx.mvpState.modelMatrix.pop()
+                modelMatDp.pop()
+                ctx.mvpState.modelMatrix.set(modelMatDp)
                 ctx.mvpState.update(ctx)
             }
         }
@@ -130,6 +126,23 @@ open class TransformGroupDp(name: String? = null) : NodeDp(name) {
 
     override fun toLocalCoords(vec: MutableVec3f, w: Float): MutableVec3f {
         super.toLocalCoords(vec, w)
+        if (!isIdentity) {
+            checkInverse()
+            return invTransform.transform(vec, w)
+        } else {
+            return vec
+        }
+    }
+
+    override fun toGlobalCoordsDp(vec: MutableVec3d, w: Double): MutableVec3d {
+        if (!isIdentity) {
+            transform.transform(vec, w)
+        }
+        return super.toGlobalCoordsDp(vec, w)
+    }
+
+    override fun toLocalCoordsDp(vec: MutableVec3d, w: Double): MutableVec3d {
+        super.toLocalCoordsDp(vec, w)
         if (!isIdentity) {
             checkInverse()
             return invTransform.transform(vec, w)
@@ -155,11 +168,19 @@ open class TransformGroupDp(name: String? = null) : NodeDp(name) {
         }
     }
 
+    fun getTransform(result: Mat4d): Mat4d = result.set(transform)
+
+    fun translate(t: Vec3d): TransformGroupDp {
+        return translate(t.x, t.y, t.z)
+    }
+
     fun translate(tx: Double, ty: Double, tz: Double): TransformGroupDp {
         transform.translate(tx, ty, tz)
         setDirty()
         return this
     }
+
+    fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double): TransformGroupDp {
         transform.rotate(angleDeg, axX, axY, axZ)

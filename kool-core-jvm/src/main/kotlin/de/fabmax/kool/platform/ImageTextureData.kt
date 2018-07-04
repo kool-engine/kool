@@ -16,7 +16,7 @@ import java.io.IOException
 import javax.imageio.ImageIO
 import kotlin.math.round
 
-class ImageTextureData(val assetPath: String) : TextureData() {
+class ImageTextureData(val assetBaseDir: String, val assetPath: String) : TextureData() {
     private var buffer: Uint8Buffer? = null
     private var format = 0
 
@@ -27,10 +27,10 @@ class ImageTextureData(val assetPath: String) : TextureData() {
         launch(HttpCache.assetLoadingCtx) {
             try {
                 // todo: use a less naive distinction between http and local textures
-                val file = if (assetPath.startsWith("http")) {
+                val file = if (assetPath.startsWith("http", true)) {
                     HttpCache.loadHttpResource(assetPath)
                 } else {
-                    File(assetPath)
+                    File("$assetBaseDir/$assetPath")
                 }
 
                 val image = ImageIO.read(file)

@@ -118,10 +118,18 @@ class HttpCache private constructor(val cacheDir: File) {
 
     suspend fun loadHttpResource(url: String): File? {
         val req = URL(url)
+
+        // use host-name as cache directory name, sub-domain components are dropped
+        // e.g. a.tile.openstreetmap.org and b.tile.openstreetmap.org should share the same cache dir
+        var host = req.host
+        while (host.count { it == '.' } > 1) {
+            host = host.substring(host.indexOf('.') + 1)
+        }
+
         val file = if (req.query != null) {
-            File(cacheDir, "/${req.host}/${req.path}_${req.query}")
+            File(cacheDir, "/$host/${req.path}_${req.query}")
         } else {
-            File(cacheDir, "/${req.host}/${req.path}")
+            File(cacheDir, "/$host/${req.path}")
         }
 
         var load = false

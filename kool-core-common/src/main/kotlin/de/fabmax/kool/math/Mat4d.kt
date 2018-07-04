@@ -23,7 +23,7 @@ open class Mat4d {
         return this
     }
 
-    fun translate(t: Vec3f): Mat4d = translate(t.x.toDouble(), t.y.toDouble(), t.z.toDouble())
+    fun translate(t: Vec3d): Mat4d = translate(t.x, t.y, t.z)
 
     fun translate(tx: Double, ty: Double, tz: Double, result: Mat4d): Mat4d {
         for (i in 0..11) {
@@ -45,7 +45,7 @@ open class Mat4d {
         return this
     }
 
-    fun rotate(angleDeg: Double, axis: Vec3f) = rotate(angleDeg, axis.x.toDouble(), axis.y.toDouble(), axis.z.toDouble())
+    fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double, result: Mat4d): Mat4d {
         synchronized(tmpMatLock) {
@@ -55,7 +55,7 @@ open class Mat4d {
         return result
     }
 
-    fun rotate(angleDeg: Double, axis: Vec3f, result: Mat4d) = rotate(angleDeg, axis.x.toDouble(), axis.y.toDouble(), axis.z.toDouble(), result)
+    fun rotate(angleDeg: Double, axis: Vec3d, result: Mat4d) = rotate(angleDeg, axis.x, axis.y, axis.z, result)
 
     fun scale(sx: Double, sy: Double, sz: Double): Mat4d {
         for (i in 0..3) {
@@ -67,7 +67,7 @@ open class Mat4d {
         return this
     }
 
-    fun scale(scale: Vec3f): Mat4d = scale(scale.x.toDouble(), scale.y.toDouble(), scale.z.toDouble())
+    fun scale(scale: Vec3d): Mat4d = scale(scale.x, scale.y, scale.z)
 
     fun scale(sx: Double, sy: Double, sz: Double, result: Mat4d): Mat4d {
         for (i in 0..3) {
@@ -214,14 +214,14 @@ open class Mat4d {
         return true
     }
 
-    fun transform(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
+    fun transform(vec: MutableVec3f, w: Float = 1.0f): MutableVec3f {
         val x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + w * this[0, 3]
         val y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + w * this[1, 3]
         val z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + w * this[2, 3]
         return vec.set(x.toFloat(), y.toFloat(), z.toFloat())
     }
 
-    fun transform(vec: Vec3f, w: Float = 1f, result: MutableVec3f): MutableVec3f {
+    fun transform(vec: Vec3f, w: Float = 1.0f, result: MutableVec3f): MutableVec3f {
         result.x = (vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + w * this[0, 3]).toFloat()
         result.y = (vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + w * this[1, 3]).toFloat()
         result.z = (vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + w * this[2, 3]).toFloat()
@@ -241,6 +241,36 @@ open class Mat4d {
         result.y = (vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + vec.w * this[1, 3]).toFloat()
         result.z = (vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + vec.w * this[2, 3]).toFloat()
         result.w = (vec.x * this[3, 0] + vec.y * this[3, 1] + vec.z * this[3, 2] + vec.w * this[3, 3]).toFloat()
+        return result
+    }
+
+    fun transform(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
+        val x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + w * this[0, 3]
+        val y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + w * this[1, 3]
+        val z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + w * this[2, 3]
+        return vec.set(x, y, z)
+    }
+
+    fun transform(vec: Vec3d, w: Double = 1.0, result: MutableVec3d): MutableVec3d {
+        result.x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + w * this[0, 3]
+        result.y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + w * this[1, 3]
+        result.z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + w * this[2, 3]
+        return result
+    }
+
+    fun transform(vec: MutableVec4d): MutableVec4d {
+        val x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + vec.w * this[0, 3]
+        val y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + vec.w * this[1, 3]
+        val z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + vec.w * this[2, 3]
+        val w = vec.x * this[3, 0] + vec.y * this[3, 1] + vec.z * this[3, 2] + vec.w * this[3, 3]
+        return vec.set(x, y, z, w)
+    }
+
+    fun transform(vec: Vec4d, result: MutableVec4d): MutableVec4d {
+        result.x = vec.x * this[0, 0] + vec.y * this[0, 1] + vec.z * this[0, 2] + vec.w * this[0, 3]
+        result.y = vec.x * this[1, 0] + vec.y * this[1, 1] + vec.z * this[1, 2] + vec.w * this[1, 3]
+        result.z = vec.x * this[2, 0] + vec.y * this[2, 1] + vec.z * this[2, 2] + vec.w * this[2, 3]
+        result.w = vec.x * this[3, 0] + vec.y * this[3, 1] + vec.z * this[3, 2] + vec.w * this[3, 3]
         return result
     }
 
@@ -369,14 +399,14 @@ open class Mat4d {
         return this
     }
 
-    fun setRotate(quaternion: Vec4f): Mat4d {
+    fun setRotate(quaternion: Vec4d): Mat4d {
         val r = quaternion.w
         val i = quaternion.x
         val j = quaternion.y
         val k = quaternion.z
 
         var s = sqrt(r*r + i*i + j*j + k*k)
-        s = 1f / (s * s)
+        s = 1.0 / (s * s)
 
         this[0, 0] = 1.0 - 2*s*(j*j + k*k)
         this[0, 1] = 2.0*s*(i*j - k*r)
@@ -401,12 +431,12 @@ open class Mat4d {
         return this
     }
 
-    fun setLookAt(position: Vec3f, lookAt: Vec3f, up: Vec3f): Mat4d {
+    fun setLookAt(position: Vec3d, lookAt: Vec3d, up: Vec3d): Mat4d {
         // See the OpenGL GLUT documentation for gluLookAt for a description
         // of the algorithm. We implement it in a straightforward way:
-        var fx = lookAt.x - position.x.toDouble()
-        var fy = lookAt.y - position.y.toDouble()
-        var fz = lookAt.z - position.z.toDouble()
+        var fx = lookAt.x - position.x
+        var fy = lookAt.y - position.y
+        var fz = lookAt.z - position.z
 
         // Normalize f
         val rlf = 1.0 / sqrt(fx*fx + fy*fy + fz*fz)
@@ -450,7 +480,7 @@ open class Mat4d {
         matrix[offset + 14] = 0.0
         matrix[offset + 15] = 1.0
 
-        return translate(-position.x.toDouble(), -position.y.toDouble(), -position.z.toDouble())
+        return translate(-position.x, -position.y, -position.z)
     }
 
     fun setOrthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double): Mat4d {
@@ -532,32 +562,32 @@ open class Mat4d {
         matrix[offset + col * 4 + row] = value
     }
 
-    fun setColVec(col: Int, vec: Vec3f, w: Float) {
-        this[0, col] = vec.x.toDouble()
-        this[1, col] = vec.y.toDouble()
-        this[2, col] = vec.z.toDouble()
-        this[3, col] = w.toDouble()
+    fun setColVec(col: Int, vec: Vec3d, w: Double) {
+        this[0, col] = vec.x
+        this[1, col] = vec.y
+        this[2, col] = vec.z
+        this[3, col] = w
     }
 
-    fun setColVec(col: Int, value: Vec4f) {
-        this[0, col] = value.x.toDouble()
-        this[1, col] = value.y.toDouble()
-        this[2, col] = value.z.toDouble()
-        this[3, col] = value.w.toDouble()
+    fun setColVec(col: Int, value: Vec4d) {
+        this[0, col] = value.x
+        this[1, col] = value.y
+        this[2, col] = value.z
+        this[3, col] = value.w
     }
 
-    fun getColVec(col: Int, result: MutableVec4f): MutableVec4f {
-        result.x = this[0, col].toFloat()
-        result.y = this[1, col].toFloat()
-        result.z = this[2, col].toFloat()
-        result.w = this[3, col].toFloat()
+    fun getColVec(col: Int, result: MutableVec4d): MutableVec4d {
+        result.y = this[1, col]
+        result.x = this[0, col]
+        result.z = this[2, col]
+        result.w = this[3, col]
         return result
     }
 
-    fun getOrigin(result: MutableVec3f): MutableVec3f {
-        result.x = this[0, 3].toFloat()
-        result.y = this[1, 3].toFloat()
-        result.z = this[2, 3].toFloat()
+    fun getOrigin(result: MutableVec3d): MutableVec3d {
+        result.x = this[0, 3]
+        result.y = this[1, 3]
+        result.z = this[2, 3]
         return result
     }
 
@@ -593,17 +623,17 @@ open class Mat4d {
 //        return result
 //    }
 
-    fun getRotation(result: MutableVec4f): MutableVec4f {
+    fun getRotation(result: MutableVec4d): MutableVec4d {
         val trace = this[0, 0] + this[1, 1] + this[2, 2]
 
         if (trace > 0f) {
             var s = sqrt(trace + 1f)
-            result.w = (s * 0.5).toFloat()
+            result.w = s * 0.5
             s = 0.5f / s
 
-            result.x = ((this[2, 1] - this[1, 2]) * s).toFloat()
-            result.y = ((this[0, 2] - this[2, 0]) * s).toFloat()
-            result.z = ((this[1, 0] - this[0, 1]) * s).toFloat()
+            result.x = (this[2, 1] - this[1, 2]) * s
+            result.y = (this[0, 2] - this[2, 0]) * s
+            result.z = (this[1, 0] - this[0, 1]) * s
 
         } else {
             val i = if (this[0, 0] < this[1, 1]) {
@@ -615,12 +645,12 @@ open class Mat4d {
             val k = (i + 2) % 3
 
             var s = sqrt(this[i, i] - this[j, j] - this[k, k] + 1f)
-            result[i] = (s * 0.5f).toFloat()
+            result[i] = s * 0.5f
             s = 0.5f / s
 
-            result.w = ((this[k, j] - this[j, k]) * s).toFloat()
-            result[j] = ((this[j, i] + this[i, j]) * s).toFloat()
-            result[k] = ((this[k, i] + this[i, k]) * s).toFloat()
+            result.w = (this[k, j] - this[j, k]) * s
+            result[j] = (this[j, i] + this[i, j]) * s
+            result[k] = (this[k, i] + this[i, k]) * s
         }
         return result
     }

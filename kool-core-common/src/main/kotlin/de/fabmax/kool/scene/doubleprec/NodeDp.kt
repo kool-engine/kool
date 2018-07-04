@@ -2,6 +2,7 @@ package de.fabmax.kool.scene.doubleprec
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4dStack
+import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Node
@@ -14,6 +15,25 @@ abstract class NodeDp(name: String? = null) : Node(name) {
         preRender(ctx)
     }
 
+    open fun renderDp(ctx: KoolContext, modelMatDp: Mat4dStack) {
+        render(ctx)
+    }
+
+    open fun toGlobalCoordsDp(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
+        val p = parent ?: return vec
+        if (p is NodeDp) {
+            p.toGlobalCoordsDp(vec, w)
+        }
+        return vec
+    }
+
+    open fun toLocalCoordsDp(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
+        val p = parent ?: return vec
+        if (p is NodeDp) {
+            p.toLocalCoordsDp(vec, w)
+        }
+        return vec
+    }
 }
 
 class NodeProxy(val node: Node) : NodeDp(node.name) {

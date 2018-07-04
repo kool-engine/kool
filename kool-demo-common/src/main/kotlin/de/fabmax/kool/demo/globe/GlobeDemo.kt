@@ -1,10 +1,11 @@
-package de.fabmax.kool.demo.earth
+package de.fabmax.kool.demo.globe
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.formatDouble
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.SphericalInputTransform
+import de.fabmax.kool.scene.doubleprec.DoublePrecisionRoot
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.scene.ui.*
@@ -14,12 +15,12 @@ import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.color
 
 /**
- * Earth demo: Show an OSM map on a sphere.
+ * Globe demo: Show an OSM map on a sphere.
  */
 
-fun earthScene(ctx: KoolContext): List<Scene> {
+fun globeScene(ctx: KoolContext): List<Scene> {
     val scenes = mutableListOf<Scene>()
-    var earth: Earth? = null
+    var globe: Globe? = null
 
     scenes += scene {
         +sphericalInputTransform {
@@ -44,23 +45,28 @@ fun earthScene(ctx: KoolContext): List<Scene> {
             +camera
         }
 
-        earth = Earth().apply {
-            translate(0f, 0f, -Earth.EARTH_R.toFloat())
-        }
-        +earth!!
+        val earthRadius = 6_371_000.8
+        globe = Globe(earthRadius)
+        val dpGroup = DoublePrecisionRoot(globe!!)
+        +dpGroup
+
+        registerDragHandler(GlobeDragHandler(globe!!))
     }
 
-    val ui = EarthUi(earth!!, ctx)
+    val ui = GlobeUi(globe!!, ctx)
     scenes += ui.scene
 
     return scenes
 }
 
-class EarthUi(val earth: Earth, val ctx: KoolContext) {
+class GlobeUi(val globe: Globe, val ctx: KoolContext) {
 
     private lateinit var attributionText: Label
     private var attribWidth = 0f
     private var posWidth = 0f
+
+    var attribution = "© OpenStreetMap"
+    var attributionUrl = "http://www.openstreetmap.org/copyright"
 
     val scene = uiScene {
         theme = theme(UiTheme.DARK) {
@@ -75,7 +81,7 @@ class EarthUi(val earth: Earth, val ctx: KoolContext) {
             textColorHovered.setCustom(color("#42A5F5"))
 
             onRender += {
-                text = earth.attribution
+                text = attribution
                 val w = font.apply()?.textWidth(text) ?: 0f
                 if (w != attribWidth) {
                     attribWidth = w
@@ -85,8 +91,8 @@ class EarthUi(val earth: Earth, val ctx: KoolContext) {
             }
 
             onClick += { _,_,_ ->
-                if (!earth.attributionUrl.isEmpty()) {
-                    ctx.openUrl(earth.attributionUrl)
+                if (!attributionUrl.isEmpty()) {
+                    ctx.openUrl(attributionUrl)
                 }
             }
         }
@@ -96,12 +102,12 @@ class EarthUi(val earth: Earth, val ctx: KoolContext) {
             padding = Margin(zero(), zero(), dps(4f, true), dps(0f, true))
 
             onRender += {
-                val lat = formatDouble(earth.centerLat, 5)
-                val lon = formatDouble(earth.centerLon, 5)
-                val hgt = if (earth.cameraHeight > 10000) {
-                    "${formatDouble(earth.cameraHeight / 1000.0, 1)} km"
+                val lat = formatDouble(globe.centerLat, 5)
+                val lon = formatDouble(globe.centerLon, 5)
+                val hgt = if (globe.cameraHeight > 10000) {
+                    "${formatDouble(globe.cameraHeight / 1000.0, 1)} km"
                 } else {
-                    "${formatDouble(earth.cameraHeight, 1)} m"
+                    "${formatDouble(globe.cameraHeight, 1)} m"
                 }
                 text = "$lat°, $lon°  $hgt"
                 val w = font.apply()?.textWidth(text) ?: 0f

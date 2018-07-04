@@ -35,7 +35,7 @@ class JvmAssetManager internal constructor(override var assetsBaseDir: String) :
         }
     }
 
-    override fun loadTextureAsset(assetPath: String): TextureData  = ImageTextureData("$assetsBaseDir/$assetPath")
+    override fun loadTextureAsset(assetPath: String): TextureData  = ImageTextureData(assetsBaseDir, assetPath)
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
 

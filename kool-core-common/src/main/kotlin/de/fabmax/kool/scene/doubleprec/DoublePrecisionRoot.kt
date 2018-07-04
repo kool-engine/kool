@@ -4,21 +4,26 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4dStack
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
 
-fun doublePrecisionTransform(name: String? = null, block: TransformGroupDp.() -> Unit): DoublePrecisionRoot {
-    val root = DoublePrecisionRoot(name)
-    (root.root as TransformGroupDp).block()
+fun doublePrecisionTransform(name: String? = null, block: TransformGroupDp.() -> Unit): DoublePrecisionRoot<TransformGroupDp> {
+    val root = DoublePrecisionRoot(TransformGroupDp("${name ?: "DoublePrecisionRoot"}-rootGroup"), name)
+    root.root.block()
     return root
 }
 
-class DoublePrecisionRoot(name: String? = null) : Node(name) {
+class DoublePrecisionRoot<T: NodeDp>(val root: T, name: String? = null) : Node(name) {
 
     private val modelMatDp = Mat4dStack()
 
-    var root: NodeDp = TransformGroupDp("${name ?: "DoublePrecisionRoot"}-rootGroup")
-
     init {
         modelMatDp.setIdentity()
+        root.parent = this
+    }
+
+    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
+        super.onSceneChanged(oldScene, newScene)
+        root.scene = newScene
     }
 
     override fun preRender(ctx: KoolContext) {
@@ -28,7 +33,8 @@ class DoublePrecisionRoot(name: String? = null) : Node(name) {
     }
 
     override fun render(ctx: KoolContext) {
-        root.render(ctx)
+        modelMatDp.set(ctx.mvpState.modelMatrix)
+        root.renderDp(ctx, modelMatDp)
         super.render(ctx)
     }
 

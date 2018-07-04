@@ -30,9 +30,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var defineInlineFunction = Kotlin.defineInlineFunction;
   var wrapFunction = Kotlin.wrapFunction;
+  var L698769069 = Kotlin.Long.fromInt(698769069);
   var abs = Kotlin.kotlin.math.abs_za3lpa$;
-  var kotlin_js_internal_IntCompanionObject = Kotlin.kotlin.js.internal.IntCompanionObject;
   var abs_0 = Kotlin.kotlin.math.abs_s8cxhz$;
+  var Long$Companion$MAX_VALUE = Kotlin.Long.MAX_VALUE;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var hashCode = Kotlin.hashCode;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
@@ -65,6 +66,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
   var LinkedHashMapSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer;
   var removeAll = Kotlin.kotlin.collections.removeAll_uhyeqt$;
+  var L0 = Kotlin.Long.ZERO;
+  var L1 = Kotlin.Long.ONE;
   var round = Kotlin.kotlin.math.round_14dthe$;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
   var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
@@ -131,6 +134,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   BSplineVec2f.prototype.constructor = BSplineVec2f;
   BSplineVec3f.prototype = Object.create(BSpline.prototype);
   BSplineVec3f.prototype.constructor = BSplineVec3f;
+  Mat4dStack.prototype = Object.create(Mat4d.prototype);
+  Mat4dStack.prototype.constructor = Mat4dStack;
   Mat4fStack.prototype = Object.create(Mat4f.prototype);
   Mat4fStack.prototype.constructor = Mat4fStack;
   CubicPointDistribution.prototype = Object.create(PointDistribution.prototype);
@@ -139,10 +144,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   SphericalPointDistribution.prototype.constructor = SphericalPointDistribution;
   MutableVec2f.prototype = Object.create(Vec2f.prototype);
   MutableVec2f.prototype.constructor = MutableVec2f;
+  MutableVec2d.prototype = Object.create(Vec2d.prototype);
+  MutableVec2d.prototype.constructor = MutableVec2d;
   MutableVec3f.prototype = Object.create(Vec3f.prototype);
   MutableVec3f.prototype.constructor = MutableVec3f;
+  MutableVec3d.prototype = Object.create(Vec3d.prototype);
+  MutableVec3d.prototype.constructor = MutableVec3d;
   MutableVec4f.prototype = Object.create(Vec4f.prototype);
   MutableVec4f.prototype.constructor = MutableVec4f;
+  MutableVec4d.prototype = Object.create(Vec4d.prototype);
+  MutableVec4d.prototype.constructor = MutableVec4d;
   Box$ColVecView.prototype = Object.create(MutableVec3f.prototype);
   Box$ColVecView.prototype.constructor = Box$ColVecView;
   Mesh.prototype = Object.create(Node.prototype);
@@ -171,6 +182,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   OrthographicCamera.prototype.constructor = OrthographicCamera;
   PerspectiveCamera.prototype = Object.create(Camera.prototype);
   PerspectiveCamera.prototype.constructor = PerspectiveCamera;
+  DoublePrecisionRoot.prototype = Object.create(Node.prototype);
+  DoublePrecisionRoot.prototype.constructor = DoublePrecisionRoot;
+  NodeDp.prototype = Object.create(Node.prototype);
+  NodeDp.prototype.constructor = NodeDp;
+  NodeProxy.prototype = Object.create(NodeDp.prototype);
+  NodeProxy.prototype.constructor = NodeProxy;
+  TransformGroupDp.prototype = Object.create(NodeDp.prototype);
+  TransformGroupDp.prototype.constructor = TransformGroupDp;
   Group.prototype = Object.create(Node.prototype);
   Group.prototype.constructor = Group;
   CullMethod.prototype = Object.create(Enum.prototype);
@@ -201,6 +220,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   ButtonUi.prototype.constructor = ButtonUi;
   BlurredComponentUi.prototype = Object.create(SimpleComponentUi.prototype);
   BlurredComponentUi.prototype.constructor = BlurredComponentUi;
+  ToggleButtonUi.prototype = Object.create(ButtonUi.prototype);
+  ToggleButtonUi.prototype.constructor = ToggleButtonUi;
+  DrawerMenu$MenuButtonUi.prototype = Object.create(ToggleButtonUi.prototype);
+  DrawerMenu$MenuButtonUi.prototype.constructor = DrawerMenu$MenuButtonUi;
+  UiContainer.prototype = Object.create(UiComponent.prototype);
+  UiContainer.prototype.constructor = UiContainer;
+  DrawerMenu.prototype = Object.create(UiContainer.prototype);
+  DrawerMenu.prototype.constructor = DrawerMenu;
   SizeUnit.prototype = Object.create(Enum.prototype);
   SizeUnit.prototype.constructor = SizeUnit;
   CombSizeSpec.prototype = Object.create(SizeSpec.prototype);
@@ -215,10 +242,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   TextFieldUi.prototype.constructor = TextFieldUi;
   ToggleButton.prototype = Object.create(Button.prototype);
   ToggleButton.prototype.constructor = ToggleButton;
-  ToggleButtonUi.prototype = Object.create(ButtonUi.prototype);
-  ToggleButtonUi.prototype.constructor = ToggleButtonUi;
-  UiContainer.prototype = Object.create(UiComponent.prototype);
-  UiContainer.prototype.constructor = UiContainer;
   UiRoot.prototype = Object.create(Node.prototype);
   UiRoot.prototype.constructor = UiRoot;
   ThemeBuilder.prototype = Object.create(UiTheme.prototype);
@@ -774,11 +797,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function Wave$Companion() {
     Wave$Companion_instance = this;
     this.DEFAULT_TABLE_SIZE = 2048;
-    this.SINE = new Wave(this.DEFAULT_TABLE_SIZE, Wave$Companion$SINE$lambda);
-    this.SAW = new Wave(this.DEFAULT_TABLE_SIZE, Wave$Companion$SAW$lambda);
-    this.RAMP = new Wave(this.DEFAULT_TABLE_SIZE, Wave$Companion$RAMP$lambda);
-    this.TRIANGLE = new Wave(this.DEFAULT_TABLE_SIZE, Wave$Companion$TRIANGLE$lambda);
-    this.SQUARE = new Wave(this.DEFAULT_TABLE_SIZE, Wave$Companion$SQUARE$lambda);
+    this.SINE = new Wave(2048, Wave$Companion$SINE$lambda);
+    this.SAW = new Wave(2048, Wave$Companion$SAW$lambda);
+    this.RAMP = new Wave(2048, Wave$Companion$RAMP$lambda);
+    this.TRIANGLE = new Wave(2048, Wave$Companion$TRIANGLE$lambda);
+    this.SQUARE = new Wave(2048, Wave$Companion$SQUARE$lambda);
   }
   function Wave$Companion$SINE$lambda(p) {
     var x = p * math.PI * 2;
@@ -1314,32 +1337,32 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     GlResource.prototype.delete_aemszp$.call(this, ctx);
   };
   FramebufferResource.prototype.bind_aemszp$ = function (ctx) {
-    glBindFramebuffer(GL_FRAMEBUFFER, this);
+    glBindFramebuffer(36160, this);
     if (!this.isFbComplete_0) {
       this.isFbComplete_0 = true;
       var color = this.colorAttachment;
       if (color != null) {
         ctx.textureMgr.bindTexture_xyx3x4$(color, ctx);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ensureNotNull(color.res), 0);
+        glFramebufferTexture2D(36160, 36064, 3553, ensureNotNull(color.res), 0);
       }
        else {
-        glDrawBuffer(GL_NONE);
-        glReadBuffer(GL_NONE);
+        glDrawBuffer(0);
+        glReadBuffer(0);
       }
       var depth = this.depthAttachment;
       if (depth != null) {
         ctx.textureMgr.bindTexture_xyx3x4$(depth, ctx);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, ensureNotNull(depth.res), 0);
+        glFramebufferTexture2D(36160, 36096, 3553, ensureNotNull(depth.res), 0);
       }
-      var fbStatus = {v: glCheckFramebufferStatus(GL_FRAMEBUFFER)};
-      if (fbStatus.v !== GL_FRAMEBUFFER_COMPLETE) {
+      var fbStatus = {v: glCheckFramebufferStatus(36160)};
+      if (fbStatus.v !== 36053) {
         if (this.colorAttachment == null && this.depthAttachment != null) {
           this.colorAttachment = FbColorTexData$Companion_getInstance().colorTex_ld7r1l$(this.width, this.height, this.fbId_0);
           ctx.textureMgr.bindTexture_xyx3x4$(ensureNotNull(this.colorAttachment), ctx);
-          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ensureNotNull(ensureNotNull(this.colorAttachment).res), 0);
-          glDrawBuffer(GL_FRONT);
-          glReadBuffer(GL_FRONT);
-          fbStatus.v = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+          glFramebufferTexture2D(36160, 36064, 3553, ensureNotNull(ensureNotNull(this.colorAttachment).res), 0);
+          glDrawBuffer(1028);
+          glReadBuffer(1028);
+          fbStatus.v = glCheckFramebufferStatus(36160);
           var $this = package$util.Log;
           var level = Log$Level.WARN;
           var tag = Kotlin.getKClassFromExpression(this).simpleName;
@@ -1347,7 +1370,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
             $this.printer(level, tag, 'Depth-framebuffer is incomplete without an color attachment, adding one (makes shadow rendering slow)');
           }
         }
-        if (fbStatus.v !== GL_FRAMEBUFFER_COMPLETE) {
+        if (fbStatus.v !== 36053) {
           var $this_0 = package$util.Log;
           var level_0 = Log$Level.ERROR;
           var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
@@ -1362,7 +1385,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ctx.applyAttributes();
   };
   FramebufferResource.prototype.unbind_aemszp$ = function (ctx) {
-    glBindFramebuffer(GL_FRAMEBUFFER, null);
+    glBindFramebuffer(36160, null);
     ctx.popAttributes();
   };
   FramebufferResource.$metadata$ = {
@@ -1378,7 +1401,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.height = height;
   }
   FbColorTexData.prototype.onLoad_dletmp$ = function (texture, ctx) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, this.width, this.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null);
+    glTexImage2D(3553, 0, 6408, this.width, this.height, 0, 6408, 5121, null);
   };
   function FbColorTexData$Companion() {
     FbColorTexData$Companion_instance = this;
@@ -1389,7 +1412,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     };
   }
   FbColorTexData$Companion.prototype.colorTex_ld7r1l$ = function (sizeX, sizeY, fbId) {
-    var colorProps = new TextureProps('framebuffer-' + fbId + '-color', GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0);
+    var colorProps = new TextureProps('framebuffer-' + fbId + '-color', 9729, 9729, 33071, 33071, 0);
     return new Texture(colorProps, FbColorTexData$Companion$colorTex$lambda(sizeX, sizeY));
   };
   FbColorTexData$Companion.$metadata$ = {
@@ -1417,9 +1440,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.height = height;
   }
   FbDepthTexData.prototype.onLoad_dletmp$ = function (texture, ctx) {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, ctx.glCapabilities.depthFilterMethod);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, ctx.glCapabilities.depthFilterMethod);
-    glTexImage2D(GL_TEXTURE_2D, 0, ctx.glCapabilities.depthComponentIntFormat, this.width, this.height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, null);
+    glTexParameteri(3553, 10241, ctx.glCapabilities.depthFilterMethod);
+    glTexParameteri(3553, 10240, ctx.glCapabilities.depthFilterMethod);
+    glTexImage2D(3553, 0, ctx.glCapabilities.depthComponentIntFormat, this.width, this.height, 0, 6402, 5125, null);
   };
   function FbDepthTexData$Companion() {
     FbDepthTexData$Companion_instance = this;
@@ -1430,7 +1453,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     };
   }
   FbDepthTexData$Companion.prototype.depthTex_ld7r1l$ = function (sizeX, sizeY, fbId) {
-    var depthProps = new TextureProps('framebuffer-' + fbId + '-depth', GL_NEAREST, GL_NEAREST, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0);
+    var depthProps = new TextureProps('framebuffer-' + fbId + '-depth', 9728, 9728, 33071, 33071, 0);
     return new Texture(depthProps, FbDepthTexData$Companion$depthTex$lambda(sizeX, sizeY));
   };
   FbDepthTexData$Companion.$metadata$ = {
@@ -1607,7 +1630,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   ProgramResource.prototype.link_aemszp$ = function (ctx) {
     glLinkProgram(this);
-    return glGetProgrami(this, GL_LINK_STATUS) === GL_TRUE;
+    return glGetProgrami(this, 35714) === 1;
   };
   ProgramResource.prototype.getInfoLog_aemszp$ = function (ctx) {
     return glGetProgramInfoLog(this);
@@ -1657,10 +1680,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ShaderResource$Companion_instance = this;
   }
   ShaderResource$Companion.prototype.createFragmentShader_aemszp$ = function (ctx) {
-    return new ShaderResource(glCreateShader(GL_FRAGMENT_SHADER), ctx);
+    return new ShaderResource(glCreateShader(35632), ctx);
   };
   ShaderResource$Companion.prototype.createVertexShader_aemszp$ = function (ctx) {
-    return new ShaderResource(glCreateShader(GL_VERTEX_SHADER), ctx);
+    return new ShaderResource(glCreateShader(35633), ctx);
   };
   ShaderResource$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -1683,7 +1706,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   ShaderResource.prototype.compile_aemszp$ = function (ctx) {
     glCompileShader(this);
-    return glGetShaderi(this, GL_COMPILE_STATUS) === GL_TRUE;
+    return glGetShaderi(this, 35713) === 1;
   };
   ShaderResource.prototype.getInfoLog_aemszp$ = function (ctx) {
     return glGetShaderInfoLog(this);
@@ -1701,10 +1724,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.isLoaded = false;
     this.texUnit_xdyr2s$_0 = -1;
     glBindTexture(this.target, this);
-    glTexParameteri(this.target, GL_TEXTURE_MIN_FILTER, this.props.minFilter);
-    glTexParameteri(this.target, GL_TEXTURE_MAG_FILTER, this.props.magFilter);
-    glTexParameteri(this.target, GL_TEXTURE_WRAP_S, this.props.xWrapping);
-    glTexParameteri(this.target, GL_TEXTURE_WRAP_T, this.props.yWrapping);
+    glTexParameteri(this.target, 10241, this.props.minFilter);
+    glTexParameteri(this.target, 10240, this.props.magFilter);
+    glTexParameteri(this.target, 10242, this.props.xWrapping);
+    glTexParameteri(this.target, 10243, this.props.yWrapping);
     if (this.props.anisotropy > 1 && ctx.glCapabilities.anisotropicTexFilterInfo.isSupported) {
       var a = numberToInt(ctx.glCapabilities.anisotropicTexFilterInfo.maxAnisotropy);
       var b = this.props.anisotropy;
@@ -1990,7 +2013,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   GlslDialect.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.version, other.version) && Kotlin.equals(this.vsIn, other.vsIn) && Kotlin.equals(this.vsOut, other.vsOut) && Kotlin.equals(this.fsIn, other.fsIn) && Kotlin.equals(this.fragColorHead, other.fragColorHead) && Kotlin.equals(this.fragColorBody, other.fragColorBody) && Kotlin.equals(this.texSampler, other.texSampler)))));
   };
-  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
+  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   function InputManager() {
     InputManager$Companion_getInstance();
     this.compatGestureEvaluator_0 = new TouchGestureEvaluator();
@@ -1998,14 +2021,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.queuedKeyEvents_0 = ArrayList_init();
     this.keyEvents = ArrayList_init();
     this.lastPtrInput_0 = 0.0;
-    var array = Array_0(InputManager$Companion_getInstance().MAX_POINTERS);
+    var array = Array_0(10);
     var tmp$;
     tmp$ = array.length - 1 | 0;
     for (var i = 0; i <= tmp$; i++) {
       array[i] = new InputManager$BufferedPointerInput();
     }
     this.inputPointers_0 = array;
-    var array_0 = Array_0(InputManager$Companion_getInstance().MAX_POINTERS);
+    var array_0 = Array_0(10);
     var tmp$_0;
     tmp$_0 = array_0.length - 1 | 0;
     for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
@@ -2090,8 +2113,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           this.primaryPointer.y = this.compatGestureEvaluator_0.currentGesture.centerCurrent.y;
           this.primaryPointer.deltaX = this.compatGestureEvaluator_0.currentGesture.dCenter.x;
           this.primaryPointer.deltaY = this.compatGestureEvaluator_0.currentGesture.dCenter.y;
-          if (this.primaryPointer.buttonMask === InputManager$Companion_getInstance().LEFT_BUTTON_MASK) {
-            this.primaryPointer.buttonMask = InputManager$Companion_getInstance().RIGHT_BUTTON_MASK;
+          if (this.primaryPointer.buttonMask === 1) {
+            this.primaryPointer.buttonMask = 2;
             if (this.compatGestureEvaluator_0.currentGesture.numUpdates > 1) {
               this.primaryPointer.buttonEventMask = 0;
             }
@@ -2113,7 +2136,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   InputManager.prototype.charTyped_s8itvh$ = function (typedChar) {
     var ev = new InputManager$KeyEvent();
-    ev.event = InputManager$Companion_getInstance().KEY_EV_CHAR_TYPED;
+    ev.event = 8;
     ev.typedChar = toBoxedChar(typedChar);
     this.queuedKeyEvents_0.add_11rb$(ev);
   };
@@ -2144,14 +2167,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   InputManager.prototype.handleMouseMove_dleff0$ = function (x, y) {
     var tmp$;
     this.lastPtrInput_0 = now();
-    var mousePtr = this.findInputPointer_0(InputManager$Companion_getInstance().MOUSE_POINTER_ID);
+    var mousePtr = this.findInputPointer_0(-1000000);
     if (mousePtr == null) {
       tmp$ = this.getFreeInputPointer_0();
       if (tmp$ == null) {
         return;
       }
       var startPtr = tmp$;
-      startPtr.startPointer_nhq4am$(InputManager$Companion_getInstance().MOUSE_POINTER_ID, x, y);
+      startPtr.startPointer_nhq4am$(-1000000, x, y);
     }
      else {
       mousePtr.movePointer_dleff0$(x, y);
@@ -2159,7 +2182,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   InputManager.prototype.handleMouseButtonState_fzusl$ = function (button, down) {
     var tmp$;
-    tmp$ = this.findInputPointer_0(InputManager$Companion_getInstance().MOUSE_POINTER_ID);
+    tmp$ = this.findInputPointer_0(-1000000);
     if (tmp$ == null) {
       return;
     }
@@ -2173,7 +2196,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   InputManager.prototype.handleMouseButtonStates_za3lpa$ = function (mask) {
     var tmp$;
-    tmp$ = this.findInputPointer_0(InputManager$Companion_getInstance().MOUSE_POINTER_ID);
+    tmp$ = this.findInputPointer_0(-1000000);
     if (tmp$ == null) {
       return;
     }
@@ -2182,7 +2205,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   InputManager.prototype.handleMouseScroll_mx4ult$ = function (ticks) {
     var tmp$;
-    tmp$ = this.findInputPointer_0(InputManager$Companion_getInstance().MOUSE_POINTER_ID);
+    tmp$ = this.findInputPointer_0(-1000000);
     if (tmp$ == null) {
       return;
     }
@@ -2191,7 +2214,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   InputManager.prototype.handleMouseExit = function () {
     var tmp$;
-    (tmp$ = this.findInputPointer_0(InputManager$Companion_getInstance().MOUSE_POINTER_ID)) != null ? (tmp$.cancelPointer(), Unit) : null;
+    (tmp$ = this.findInputPointer_0(-1000000)) != null ? (tmp$.cancelPointer(), Unit) : null;
   };
   function InputManager$Pointer() {
     this.id_yfac1g$_0 = 0;
@@ -2279,52 +2302,52 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isLeftButtonDown', {
     get: function () {
-      return (this.buttonMask & InputManager$Companion_getInstance().LEFT_BUTTON_MASK) !== 0;
+      return (this.buttonMask & 1) !== 0;
     }
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isRightButtonDown', {
     get: function () {
-      return (this.buttonMask & InputManager$Companion_getInstance().RIGHT_BUTTON_MASK) !== 0;
+      return (this.buttonMask & 2) !== 0;
     }
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isMiddleButtonDown', {
     get: function () {
-      return (this.buttonMask & InputManager$Companion_getInstance().MIDDLE_BUTTON_MASK) !== 0;
+      return (this.buttonMask & 4) !== 0;
     }
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isBackButtonDown', {
     get: function () {
-      return (this.buttonMask & InputManager$Companion_getInstance().BACK_BUTTON_MASK) !== 0;
+      return (this.buttonMask & 8) !== 0;
     }
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isForwardButtonDown', {
     get: function () {
-      return (this.buttonMask & InputManager$Companion_getInstance().FORWARD_BUTTON_MASK) !== 0;
+      return (this.buttonMask & 16) !== 0;
     }
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isLeftButtonEvent', {
     get: function () {
-      return (this.buttonEventMask & InputManager$Companion_getInstance().LEFT_BUTTON_MASK) !== 0;
+      return (this.buttonEventMask & 1) !== 0;
     }
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isRightButtonEvent', {
     get: function () {
-      return (this.buttonEventMask & InputManager$Companion_getInstance().RIGHT_BUTTON_MASK) !== 0;
+      return (this.buttonEventMask & 2) !== 0;
     }
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isMiddleButtonEvent', {
     get: function () {
-      return (this.buttonEventMask & InputManager$Companion_getInstance().MIDDLE_BUTTON_MASK) !== 0;
+      return (this.buttonEventMask & 4) !== 0;
     }
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isBackButtonEvent', {
     get: function () {
-      return (this.buttonEventMask & InputManager$Companion_getInstance().BACK_BUTTON_MASK) !== 0;
+      return (this.buttonEventMask & 8) !== 0;
     }
   });
   Object.defineProperty(InputManager$Pointer.prototype, 'isForwardButtonEvent', {
     get: function () {
-      return (this.buttonEventMask & InputManager$Companion_getInstance().FORWARD_BUTTON_MASK) !== 0;
+      return (this.buttonEventMask & 16) !== 0;
     }
   });
   InputManager$Pointer.prototype.isInViewport_aemszp$ = function (ctx) {
@@ -2610,42 +2633,42 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   Object.defineProperty(InputManager$KeyEvent.prototype, 'isPressed', {
     get: function () {
-      return (this.event & InputManager$Companion_getInstance().KEY_EV_DOWN) !== 0;
+      return (this.event & 2) !== 0;
     }
   });
   Object.defineProperty(InputManager$KeyEvent.prototype, 'isRepeated', {
     get: function () {
-      return (this.event & InputManager$Companion_getInstance().KEY_EV_REPEATED) !== 0;
+      return (this.event & 4) !== 0;
     }
   });
   Object.defineProperty(InputManager$KeyEvent.prototype, 'isReleased', {
     get: function () {
-      return (this.event & InputManager$Companion_getInstance().KEY_EV_UP) !== 0;
+      return (this.event & 1) !== 0;
     }
   });
   Object.defineProperty(InputManager$KeyEvent.prototype, 'isCharTyped', {
     get: function () {
-      return (this.event & InputManager$Companion_getInstance().KEY_EV_CHAR_TYPED) !== 0;
+      return (this.event & 8) !== 0;
     }
   });
   Object.defineProperty(InputManager$KeyEvent.prototype, 'isShiftDown', {
     get: function () {
-      return (this.modifiers & InputManager$Companion_getInstance().KEY_MOD_SHIFT) !== 0;
+      return (this.modifiers & 1) !== 0;
     }
   });
   Object.defineProperty(InputManager$KeyEvent.prototype, 'isCtrlDown', {
     get: function () {
-      return (this.modifiers & InputManager$Companion_getInstance().KEY_MOD_CTRL) !== 0;
+      return (this.modifiers & 2) !== 0;
     }
   });
   Object.defineProperty(InputManager$KeyEvent.prototype, 'isAltDown', {
     get: function () {
-      return (this.modifiers & InputManager$Companion_getInstance().KEY_MOD_ALT) !== 0;
+      return (this.modifiers & 4) !== 0;
     }
   });
   Object.defineProperty(InputManager$KeyEvent.prototype, 'isSuperDown', {
     get: function () {
-      return (this.modifiers & InputManager$Companion_getInstance().KEY_MOD_SUPER) !== 0;
+      return (this.modifiers & 8) !== 0;
     }
   });
   InputManager$KeyEvent.$metadata$ = {
@@ -2928,7 +2951,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.attribs_e3zeo6$_0.apply();
   };
   function KoolContext$Attribs() {
-    this.attribs_0 = mutableListOf([new Property('viewport', new KoolContext$Viewport(0, 0, 0, 0), KoolContext$Attribs$attribs$lambda), new Property('clearColor', new Color(0.05, 0.15, 0.25, 1.0), KoolContext$Attribs$attribs$lambda_0), new Property('cullFace', GL_BACK, KoolContext$Attribs$attribs$lambda_1), new Property('depthFunc', GL_LEQUAL, KoolContext$Attribs$attribs$lambda_2), new Property('isDepthTest', true, KoolContext$Attribs$attribs$lambda_3), new Property('isDepthMask', true, KoolContext$Attribs$attribs$lambda_4), new Property('isCullFace', true, KoolContext$Attribs$attribs$lambda_5), new Property('isBlend', true, KoolContext$Attribs$attribs$lambda_6), new Property('lineWidth', 1.0, KoolContext$Attribs$attribs$lambda_7)]);
+    this.attribs_0 = mutableListOf([new Property('viewport', new KoolContext$Viewport(0, 0, 0, 0), KoolContext$Attribs$attribs$lambda), new Property('clearColor', new Color(0.05, 0.15, 0.25, 1.0), KoolContext$Attribs$attribs$lambda_0), new Property('cullFace', 1029, KoolContext$Attribs$attribs$lambda_1), new Property('depthFunc', 515, KoolContext$Attribs$attribs$lambda_2), new Property('isDepthTest', true, KoolContext$Attribs$attribs$lambda_3), new Property('isDepthMask', true, KoolContext$Attribs$attribs$lambda_4), new Property('isCullFace', true, KoolContext$Attribs$attribs$lambda_5), new Property('isBlend', true, KoolContext$Attribs$attribs$lambda_6), new Property('lineWidth', 1.0, KoolContext$Attribs$attribs$lambda_7)]);
   }
   KoolContext$Attribs.prototype.get_ytbaoo$ = function (name) {
     var tmp$;
@@ -2975,10 +2998,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function KoolContext$Attribs$attribs$lambda_3($receiver) {
     if ($receiver.clear) {
-      glEnable(GL_DEPTH_TEST);
+      glEnable(2929);
     }
      else {
-      glDisable(GL_DEPTH_TEST);
+      glDisable(2929);
     }
     return Unit;
   }
@@ -2988,20 +3011,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function KoolContext$Attribs$attribs$lambda_5($receiver) {
     if ($receiver.clear) {
-      glEnable(GL_CULL_FACE);
+      glEnable(2884);
     }
      else {
-      glDisable(GL_CULL_FACE);
+      glDisable(2884);
     }
     return Unit;
   }
   function KoolContext$Attribs$attribs$lambda_6($receiver) {
     if ($receiver.clear) {
-      glEnable(GL_BLEND);
-      glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+      glEnable(3042);
+      glBlendFunc(1, 771);
     }
      else {
-      glDisable(GL_BLEND);
+      glDisable(3042);
     }
     return Unit;
   }
@@ -3253,7 +3276,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   KdTreeTraverser.prototype.onFinish_dizmqh$ = function (tree) {
   };
   KdTreeTraverser.prototype.traversalOrder_sdmibr$ = function (tree, left, right) {
-    return KdTree$Companion_getInstance().TRAV_NO_PREFERENCE;
+    return 0;
   };
   KdTreeTraverser.$metadata$ = {
     kind: Kind_INTERFACE,
@@ -3288,13 +3311,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var dLeft = left.bounds.pointDistanceSqr_czzhiu$(this.center);
     var dRight = right.bounds.pointDistanceSqr_czzhiu$(this.center);
     if (dLeft > this.radiusSqr_0 && dRight > this.radiusSqr_0)
-      tmp$ = KdTree$Companion_getInstance().TRAV_NONE;
+      tmp$ = 5;
     else if (dLeft > this.radiusSqr_0)
-      tmp$ = KdTree$Companion_getInstance().TRAV_RIGHT_ONLY;
+      tmp$ = 4;
     else if (dRight > this.radiusSqr_0)
-      tmp$ = KdTree$Companion_getInstance().TRAV_LEFT_ONLY;
+      tmp$ = 2;
     else
-      tmp$ = KdTree$Companion_getInstance().TRAV_NO_PREFERENCE;
+      tmp$ = 0;
     return tmp$;
   };
   InRadiusTraverser.prototype.traverseLeaf_pp9zpw$ = function (tree, leaf) {
@@ -3373,11 +3396,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var dLeft = left.bounds.pointDistanceSqr_czzhiu$(this.center);
     var dRight = right.bounds.pointDistanceSqr_czzhiu$(this.center);
     if (dLeft > this.maxDSqr_0 && dRight > this.maxDSqr_0)
-      tmp$ = KdTree$Companion_getInstance().TRAV_NONE;
+      tmp$ = 5;
     else if (dLeft < dRight)
-      tmp$ = KdTree$Companion_getInstance().TRAV_LEFT_FIRST;
+      tmp$ = 1;
     else
-      tmp$ = KdTree$Companion_getInstance().TRAV_RIGHT_FIRST;
+      tmp$ = 3;
     return tmp$;
   };
   KNearestTraverser.prototype.traverseLeaf_pp9zpw$ = function (tree, leaf) {
@@ -3686,17 +3709,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function KdTree$cmpX$lambda(this$KdTree) {
     return function (a, b) {
-      return Kotlin.primitiveCompareTo(this$KdTree.helper.getX_11rb$(a), this$KdTree.helper.getX_11rb$(b));
+      return Kotlin.compareTo(this$KdTree.helper.getX_11rb$(a), this$KdTree.helper.getX_11rb$(b));
     };
   }
   function KdTree$cmpY$lambda(this$KdTree) {
     return function (a, b) {
-      return Kotlin.primitiveCompareTo(this$KdTree.helper.getY_11rb$(a), this$KdTree.helper.getY_11rb$(b));
+      return Kotlin.compareTo(this$KdTree.helper.getY_11rb$(a), this$KdTree.helper.getY_11rb$(b));
     };
   }
   function KdTree$cmpZ$lambda(this$KdTree) {
     return function (a, b) {
-      return Kotlin.primitiveCompareTo(this$KdTree.helper.getZ_11rb$(a), this$KdTree.helper.getZ_11rb$(b));
+      return Kotlin.compareTo(this$KdTree.helper.getZ_11rb$(a), this$KdTree.helper.getZ_11rb$(b));
     };
   }
   KdTree.$metadata$ = {
@@ -3994,6 +4017,671 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'Mat3f',
     interfaces: []
   };
+  function Mat4d() {
+    Mat4d$Companion_getInstance();
+    this.matrix_ntz8bm$_0 = new Float64Array(16);
+    this.offset_7ocvpo$_0 = 0;
+    this.setIdentity();
+  }
+  Object.defineProperty(Mat4d.prototype, 'matrix', {
+    get: function () {
+      return this.matrix_ntz8bm$_0;
+    },
+    set: function (matrix) {
+      this.matrix_ntz8bm$_0 = matrix;
+    }
+  });
+  Object.defineProperty(Mat4d.prototype, 'offset', {
+    get: function () {
+      return this.offset_7ocvpo$_0;
+    },
+    set: function (offset) {
+      this.offset_7ocvpo$_0 = offset;
+    }
+  });
+  Mat4d.prototype.translate_yvo9jy$ = function (tx, ty, tz) {
+    for (var i = 0; i <= 3; i++) {
+      var mi = this.offset + i | 0;
+      this.matrix[12 + mi | 0] = this.matrix[12 + mi | 0] + (this.matrix[mi] * tx + this.matrix[4 + mi | 0] * ty + this.matrix[8 + mi | 0] * tz);
+    }
+    return this;
+  };
+  Mat4d.prototype.translate_czzhiw$ = function (t) {
+    return this.translate_yvo9jy$(t.x, t.y, t.z);
+  };
+  Mat4d.prototype.translate_p4gs15$ = function (tx, ty, tz, result) {
+    for (var i = 0; i <= 11; i++) {
+      result.matrix[result.offset + i | 0] = this.matrix[this.offset + i | 0];
+    }
+    for (var i_0 = 0; i_0 <= 3; i_0++) {
+      var mi = this.offset + i_0 | 0;
+      result.matrix[result.offset + 12 + i_0 | 0] = this.matrix[mi] * tx + this.matrix[4 + mi | 0] * ty + this.matrix[8 + mi | 0] * tz + this.matrix[12 + mi | 0];
+    }
+    return result;
+  };
+  Mat4d.prototype.rotate_6y0v78$ = function (angleDeg, axX, axY, axZ) {
+    Mat4d$Companion_getInstance().tmpMatLock_0;
+    Mat4d$Companion_getInstance().tmpMatA_0.setRotate_6y0v78$(angleDeg, axX, axY, axZ);
+    this.set_d4zu6l$(this.mul_u47j3u$(Mat4d$Companion_getInstance().tmpMatA_0, Mat4d$Companion_getInstance().tmpMatB_0));
+    return this;
+  };
+  Mat4d.prototype.rotate_5820x2$ = function (angleDeg, axis) {
+    return this.rotate_6y0v78$(angleDeg, axis.x, axis.y, axis.z);
+  };
+  Mat4d.prototype.rotate_app323$ = function (angleDeg, axX, axY, axZ, result) {
+    Mat4d$Companion_getInstance().tmpMatLock_0;
+    Mat4d$Companion_getInstance().tmpMatA_0.setRotate_6y0v78$(angleDeg, axX, axY, axZ);
+    this.mul_u47j3u$(Mat4d$Companion_getInstance().tmpMatA_0, result);
+    return result;
+  };
+  Mat4d.prototype.rotate_wwd6w1$ = function (angleDeg, axis, result) {
+    return this.rotate_app323$(angleDeg, axis.x, axis.y, axis.z, result);
+  };
+  Mat4d.prototype.scale_yvo9jy$ = function (sx, sy, sz) {
+    for (var i = 0; i <= 3; i++) {
+      var mi = this.offset + i | 0;
+      this.matrix[mi] = this.matrix[mi] * sx;
+      this.matrix[4 + mi | 0] = this.matrix[4 + mi | 0] * sy;
+      this.matrix[8 + mi | 0] = this.matrix[8 + mi | 0] * sz;
+    }
+    return this;
+  };
+  Mat4d.prototype.scale_czzhiw$ = function (scale) {
+    return this.scale_yvo9jy$(scale.x, scale.y, scale.z);
+  };
+  Mat4d.prototype.scale_p4gs15$ = function (sx, sy, sz, result) {
+    for (var i = 0; i <= 3; i++) {
+      var smi = result.offset + i | 0;
+      var mi = this.offset + i | 0;
+      result.matrix[smi] = this.matrix[mi] * sx;
+      result.matrix[4 + smi | 0] = this.matrix[4 + mi | 0] * sy;
+      result.matrix[8 + smi | 0] = this.matrix[8 + mi | 0] * sz;
+      result.matrix[12 + smi | 0] = this.matrix[12 + mi | 0];
+    }
+    return result;
+  };
+  Mat4d.prototype.transpose = function () {
+    Mat4d$Companion_getInstance().tmpMatLock_0;
+    this.set_d4zu6l$(this.transpose_d4zu6l$(Mat4d$Companion_getInstance().tmpMatA_0));
+    return this;
+  };
+  Mat4d.prototype.transpose_d4zu6l$ = function (result) {
+    for (var i = 0; i <= 3; i++) {
+      var mBase = (i * 4 | 0) + this.offset | 0;
+      result.matrix[i + result.offset | 0] = this.matrix[mBase];
+      result.matrix[i + 4 + result.offset | 0] = this.matrix[mBase + 1 | 0];
+      result.matrix[i + 8 + result.offset | 0] = this.matrix[mBase + 2 | 0];
+      result.matrix[i + 12 + result.offset | 0] = this.matrix[mBase + 3 | 0];
+    }
+    return result;
+  };
+  Mat4d.prototype.invert = function () {
+    var success = {v: false};
+    Mat4d$Companion_getInstance().tmpMatLock_0;
+    success.v = this.invert_d4zu6l$(Mat4d$Companion_getInstance().tmpMatA_0);
+    if (success.v) {
+      this.set_d4zu6l$(Mat4d$Companion_getInstance().tmpMatA_0);
+    }
+    return success.v;
+  };
+  Mat4d.prototype.invert_d4zu6l$ = function (result) {
+    var src0 = this.matrix[this.offset + 0 | 0];
+    var src4 = this.matrix[this.offset + 1 | 0];
+    var src8 = this.matrix[this.offset + 2 | 0];
+    var src12 = this.matrix[this.offset + 3 | 0];
+    var src1 = this.matrix[this.offset + 4 | 0];
+    var src5 = this.matrix[this.offset + 5 | 0];
+    var src9 = this.matrix[this.offset + 6 | 0];
+    var src13 = this.matrix[this.offset + 7 | 0];
+    var src2 = this.matrix[this.offset + 8 | 0];
+    var src6 = this.matrix[this.offset + 9 | 0];
+    var src10 = this.matrix[this.offset + 10 | 0];
+    var src14 = this.matrix[this.offset + 11 | 0];
+    var src3 = this.matrix[this.offset + 12 | 0];
+    var src7 = this.matrix[this.offset + 13 | 0];
+    var src11 = this.matrix[this.offset + 14 | 0];
+    var src15 = this.matrix[this.offset + 15 | 0];
+    var atmp0 = src10 * src15;
+    var atmp1 = src11 * src14;
+    var atmp2 = src9 * src15;
+    var atmp3 = src11 * src13;
+    var atmp4 = src9 * src14;
+    var atmp5 = src10 * src13;
+    var atmp6 = src8 * src15;
+    var atmp7 = src11 * src12;
+    var atmp8 = src8 * src14;
+    var atmp9 = src10 * src12;
+    var atmp10 = src8 * src13;
+    var atmp11 = src9 * src12;
+    var dst0 = atmp0 * src5 + atmp3 * src6 + atmp4 * src7 - (atmp1 * src5 + atmp2 * src6 + atmp5 * src7);
+    var dst1 = atmp1 * src4 + atmp6 * src6 + atmp9 * src7 - (atmp0 * src4 + atmp7 * src6 + atmp8 * src7);
+    var dst2 = atmp2 * src4 + atmp7 * src5 + atmp10 * src7 - (atmp3 * src4 + atmp6 * src5 + atmp11 * src7);
+    var dst3 = atmp5 * src4 + atmp8 * src5 + atmp11 * src6 - (atmp4 * src4 + atmp9 * src5 + atmp10 * src6);
+    var dst4 = atmp1 * src1 + atmp2 * src2 + atmp5 * src3 - (atmp0 * src1 + atmp3 * src2 + atmp4 * src3);
+    var dst5 = atmp0 * src0 + atmp7 * src2 + atmp8 * src3 - (atmp1 * src0 + atmp6 * src2 + atmp9 * src3);
+    var dst6 = atmp3 * src0 + atmp6 * src1 + atmp11 * src3 - (atmp2 * src0 + atmp7 * src1 + atmp10 * src3);
+    var dst7 = atmp4 * src0 + atmp9 * src1 + atmp10 * src2 - (atmp5 * src0 + atmp8 * src1 + atmp11 * src2);
+    var btmp0 = src2 * src7;
+    var btmp1 = src3 * src6;
+    var btmp2 = src1 * src7;
+    var btmp3 = src3 * src5;
+    var btmp4 = src1 * src6;
+    var btmp5 = src2 * src5;
+    var btmp6 = src0 * src7;
+    var btmp7 = src3 * src4;
+    var btmp8 = src0 * src6;
+    var btmp9 = src2 * src4;
+    var btmp10 = src0 * src5;
+    var btmp11 = src1 * src4;
+    var dst8 = btmp0 * src13 + btmp3 * src14 + btmp4 * src15 - (btmp1 * src13 + btmp2 * src14 + btmp5 * src15);
+    var dst9 = btmp1 * src12 + btmp6 * src14 + btmp9 * src15 - (btmp0 * src12 + btmp7 * src14 + btmp8 * src15);
+    var dst10 = btmp2 * src12 + btmp7 * src13 + btmp10 * src15 - (btmp3 * src12 + btmp6 * src13 + btmp11 * src15);
+    var dst11 = btmp5 * src12 + btmp8 * src13 + btmp11 * src14 - (btmp4 * src12 + btmp9 * src13 + btmp10 * src14);
+    var dst12 = btmp2 * src10 + btmp5 * src11 + btmp1 * src9 - (btmp4 * src11 + btmp0 * src9 + btmp3 * src10);
+    var dst13 = btmp8 * src11 + btmp0 * src8 + btmp7 * src10 - (btmp6 * src10 + btmp9 * src11 + btmp1 * src8);
+    var dst14 = btmp6 * src9 + btmp11 * src11 + btmp3 * src8 - (btmp10 * src11 + btmp2 * src8 + btmp7 * src9);
+    var dst15 = btmp10 * src10 + btmp4 * src8 + btmp9 * src9 - (btmp8 * src9 + btmp11 * src10 + btmp5 * src8);
+    var det = src0 * dst0 + src1 * dst1 + src2 * dst2 + src3 * dst3;
+    if (det === 0.0) {
+      return false;
+    }
+    var invdet = 1.0 / det;
+    result.matrix[result.offset] = dst0 * invdet;
+    result.matrix[1 + result.offset | 0] = dst1 * invdet;
+    result.matrix[2 + result.offset | 0] = dst2 * invdet;
+    result.matrix[3 + result.offset | 0] = dst3 * invdet;
+    result.matrix[4 + result.offset | 0] = dst4 * invdet;
+    result.matrix[5 + result.offset | 0] = dst5 * invdet;
+    result.matrix[6 + result.offset | 0] = dst6 * invdet;
+    result.matrix[7 + result.offset | 0] = dst7 * invdet;
+    result.matrix[8 + result.offset | 0] = dst8 * invdet;
+    result.matrix[9 + result.offset | 0] = dst9 * invdet;
+    result.matrix[10 + result.offset | 0] = dst10 * invdet;
+    result.matrix[11 + result.offset | 0] = dst11 * invdet;
+    result.matrix[12 + result.offset | 0] = dst12 * invdet;
+    result.matrix[13 + result.offset | 0] = dst13 * invdet;
+    result.matrix[14 + result.offset | 0] = dst14 * invdet;
+    result.matrix[15 + result.offset | 0] = dst15 * invdet;
+    return true;
+  };
+  Mat4d.prototype.transform_w1lst9$ = function (vec, w) {
+    if (w === void 0)
+      w = 1.0;
+    var x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2) + w * this.get_vux9f0$(0, 3);
+    var y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2) + w * this.get_vux9f0$(1, 3);
+    var z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2) + w * this.get_vux9f0$(2, 3);
+    return vec.set_y2kzbl$(x, y, z);
+  };
+  Mat4d.prototype.transform_a6wx89$ = function (vec, w, result) {
+    if (w === void 0)
+      w = 1.0;
+    result.x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2) + w * this.get_vux9f0$(0, 3);
+    result.y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2) + w * this.get_vux9f0$(1, 3);
+    result.z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2) + w * this.get_vux9f0$(2, 3);
+    return result;
+  };
+  Mat4d.prototype.transform_5s4mpv$ = function (vec) {
+    var x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2) + vec.w * this.get_vux9f0$(0, 3);
+    var y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2) + vec.w * this.get_vux9f0$(1, 3);
+    var z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2) + vec.w * this.get_vux9f0$(2, 3);
+    var w = vec.x * this.get_vux9f0$(3, 0) + vec.y * this.get_vux9f0$(3, 1) + vec.z * this.get_vux9f0$(3, 2) + vec.w * this.get_vux9f0$(3, 3);
+    return vec.set_7b5o5w$(x, y, z, w);
+  };
+  Mat4d.prototype.transform_uzu8ww$ = function (vec, result) {
+    result.x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2) + vec.w * this.get_vux9f0$(0, 3);
+    result.y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2) + vec.w * this.get_vux9f0$(1, 3);
+    result.z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2) + vec.w * this.get_vux9f0$(2, 3);
+    result.w = vec.x * this.get_vux9f0$(3, 0) + vec.y * this.get_vux9f0$(3, 1) + vec.z * this.get_vux9f0$(3, 2) + vec.w * this.get_vux9f0$(3, 3);
+    return result;
+  };
+  Mat4d.prototype.transform_j7uy7i$ = function (vec, w) {
+    if (w === void 0)
+      w = 1.0;
+    var x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2) + w * this.get_vux9f0$(0, 3);
+    var y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2) + w * this.get_vux9f0$(1, 3);
+    var z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2) + w * this.get_vux9f0$(2, 3);
+    return vec.set_yvo9jy$(x, y, z);
+  };
+  Mat4d.prototype.transform_3odno2$ = function (vec, w, result) {
+    if (w === void 0)
+      w = 1.0;
+    result.x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2) + w * this.get_vux9f0$(0, 3);
+    result.y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2) + w * this.get_vux9f0$(1, 3);
+    result.z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2) + w * this.get_vux9f0$(2, 3);
+    return result;
+  };
+  Mat4d.prototype.transform_5s4mpx$ = function (vec) {
+    var x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2) + vec.w * this.get_vux9f0$(0, 3);
+    var y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2) + vec.w * this.get_vux9f0$(1, 3);
+    var z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2) + vec.w * this.get_vux9f0$(2, 3);
+    var w = vec.x * this.get_vux9f0$(3, 0) + vec.y * this.get_vux9f0$(3, 1) + vec.z * this.get_vux9f0$(3, 2) + vec.w * this.get_vux9f0$(3, 3);
+    return vec.set_6y0v78$(x, y, z, w);
+  };
+  Mat4d.prototype.transform_2x9ggw$ = function (vec, result) {
+    result.x = vec.x * this.get_vux9f0$(0, 0) + vec.y * this.get_vux9f0$(0, 1) + vec.z * this.get_vux9f0$(0, 2) + vec.w * this.get_vux9f0$(0, 3);
+    result.y = vec.x * this.get_vux9f0$(1, 0) + vec.y * this.get_vux9f0$(1, 1) + vec.z * this.get_vux9f0$(1, 2) + vec.w * this.get_vux9f0$(1, 3);
+    result.z = vec.x * this.get_vux9f0$(2, 0) + vec.y * this.get_vux9f0$(2, 1) + vec.z * this.get_vux9f0$(2, 2) + vec.w * this.get_vux9f0$(2, 3);
+    result.w = vec.x * this.get_vux9f0$(3, 0) + vec.y * this.get_vux9f0$(3, 1) + vec.z * this.get_vux9f0$(3, 2) + vec.w * this.get_vux9f0$(3, 3);
+    return result;
+  };
+  Mat4d.prototype.mul_d4zu6l$ = function (other) {
+    Mat4d$Companion_getInstance().tmpMatLock_0;
+    this.mul_u47j3u$(other, Mat4d$Companion_getInstance().tmpMatA_0);
+    this.set_d4zu6l$(Mat4d$Companion_getInstance().tmpMatA_0);
+    return this;
+  };
+  Mat4d.prototype.mul_u47j3u$ = function (other, result) {
+    for (var i = 0; i <= 3; i++) {
+      for (var j = 0; j <= 3; j++) {
+        var x = 0.0;
+        for (var k = 0; k <= 3; k++) {
+          x += this.matrix[this.offset + j + (k * 4 | 0) | 0] * other.matrix[other.offset + (i * 4 | 0) + k | 0];
+        }
+        result.matrix[result.offset + (i * 4 | 0) + j | 0] = x;
+      }
+    }
+    return result;
+  };
+  Mat4d.prototype.set_d4zu6l$ = function (other) {
+    for (var i = 0; i <= 15; i++) {
+      this.matrix[this.offset + i | 0] = other.matrix[other.offset + i | 0];
+    }
+    return this;
+  };
+  Mat4d.prototype.set_d4zu6j$ = function (other) {
+    for (var i = 0; i <= 15; i++) {
+      this.matrix[this.offset + i | 0] = other.matrix[other.offset + i | 0];
+    }
+    return this;
+  };
+  Mat4d.prototype.set_d3e2cz$ = function (doubles) {
+    for (var i = 0; i <= 15; i++) {
+      this.matrix[this.offset + i | 0] = doubles.get_za3lpa$(i);
+    }
+    return this;
+  };
+  Mat4d.prototype.setIdentity = function () {
+    for (var i = 1; i <= 15; i++) {
+      this.matrix[this.offset + i | 0] = 0.0;
+    }
+    this.matrix[this.offset] = 1.0;
+    this.matrix[this.offset + 5 | 0] = 1.0;
+    this.matrix[this.offset + 10 | 0] = 1.0;
+    this.matrix[this.offset + 15 | 0] = 1.0;
+    return this;
+  };
+  Mat4d.prototype.setRotate_6y0v78$ = function (rotA, axX, axY, axZ) {
+    var a = rotA * package$math.DEG_2_RAD;
+    var x = axX;
+    var y = axY;
+    var z = axZ;
+    this.matrix[this.offset + 3 | 0] = 0.0;
+    this.matrix[this.offset + 7 | 0] = 0.0;
+    this.matrix[this.offset + 11 | 0] = 0.0;
+    this.matrix[this.offset + 12 | 0] = 0.0;
+    this.matrix[this.offset + 13 | 0] = 0.0;
+    this.matrix[this.offset + 14 | 0] = 0.0;
+    this.matrix[this.offset + 15 | 0] = 1.0;
+    var s = Math_0.sin(a);
+    var c = Math_0.cos(a);
+    if (1.0 === x && 0.0 === y && 0.0 === z) {
+      this.matrix[this.offset + 5 | 0] = c;
+      this.matrix[this.offset + 10 | 0] = c;
+      this.matrix[this.offset + 6 | 0] = s;
+      this.matrix[this.offset + 9 | 0] = -s;
+      this.matrix[this.offset + 1 | 0] = 0.0;
+      this.matrix[this.offset + 2 | 0] = 0.0;
+      this.matrix[this.offset + 4 | 0] = 0.0;
+      this.matrix[this.offset + 8 | 0] = 0.0;
+      this.matrix[this.offset + 0 | 0] = 1.0;
+    }
+     else if (0.0 === x && 1.0 === y && 0.0 === z) {
+      this.matrix[this.offset + 0 | 0] = c;
+      this.matrix[this.offset + 10 | 0] = c;
+      this.matrix[this.offset + 8 | 0] = s;
+      this.matrix[this.offset + 2 | 0] = -s;
+      this.matrix[this.offset + 1 | 0] = 0.0;
+      this.matrix[this.offset + 4 | 0] = 0.0;
+      this.matrix[this.offset + 6 | 0] = 0.0;
+      this.matrix[this.offset + 9 | 0] = 0.0;
+      this.matrix[this.offset + 5 | 0] = 1.0;
+    }
+     else if (0.0 === x && 0.0 === y && 1.0 === z) {
+      this.matrix[this.offset + 0 | 0] = c;
+      this.matrix[this.offset + 5 | 0] = c;
+      this.matrix[this.offset + 1 | 0] = s;
+      this.matrix[this.offset + 4 | 0] = -s;
+      this.matrix[this.offset + 2 | 0] = 0.0;
+      this.matrix[this.offset + 6 | 0] = 0.0;
+      this.matrix[this.offset + 8 | 0] = 0.0;
+      this.matrix[this.offset + 9 | 0] = 0.0;
+      this.matrix[this.offset + 10 | 0] = 1.0;
+    }
+     else {
+      var x_0 = x * x + y * y + z * z;
+      var len = Math_0.sqrt(x_0);
+      var eps;
+      eps = package$math.FUZZY_EQ_D;
+      var $receiver = len - 1.0;
+      if (!(Math_0.abs($receiver) <= eps)) {
+        var recipLen = 1.0 / len;
+        x *= recipLen;
+        y *= recipLen;
+        z *= recipLen;
+      }
+      var nc = 1.0 - c;
+      var xy = x * y;
+      var yz = y * z;
+      var zx = z * x;
+      var xs = x * s;
+      var ys = y * s;
+      var zs = z * s;
+      this.matrix[this.offset + 0 | 0] = x * x * nc + c;
+      this.matrix[this.offset + 4 | 0] = xy * nc - zs;
+      this.matrix[this.offset + 8 | 0] = zx * nc + ys;
+      this.matrix[this.offset + 1 | 0] = xy * nc + zs;
+      this.matrix[this.offset + 5 | 0] = y * y * nc + c;
+      this.matrix[this.offset + 9 | 0] = yz * nc - xs;
+      this.matrix[this.offset + 2 | 0] = zx * nc - ys;
+      this.matrix[this.offset + 6 | 0] = yz * nc + xs;
+      this.matrix[this.offset + 10 | 0] = z * z * nc + c;
+    }
+    return this;
+  };
+  Mat4d.prototype.setRotate_czzhi1$ = function (quaternion) {
+    var r = quaternion.w;
+    var i = quaternion.x;
+    var j = quaternion.y;
+    var k = quaternion.z;
+    var x = r * r + i * i + j * j + k * k;
+    var s = Math_0.sqrt(x);
+    s = 1.0 / (s * s);
+    this.set_224j3y$(0, 0, 1.0 - 2 * s * (j * j + k * k));
+    this.set_224j3y$(0, 1, 2.0 * s * (i * j - k * r));
+    this.set_224j3y$(0, 2, 2.0 * s * (i * k + j * r));
+    this.set_224j3y$(0, 3, 0.0);
+    this.set_224j3y$(1, 0, 2.0 * s * (i * j + k * r));
+    this.set_224j3y$(1, 1, 1.0 - 2 * s * (i * i + k * k));
+    this.set_224j3y$(1, 2, 2.0 * s * (j * k - i * r));
+    this.set_224j3y$(1, 3, 0.0);
+    this.set_224j3y$(2, 0, 2.0 * s * (i * k - j * r));
+    this.set_224j3y$(2, 1, 2.0 * s * (j * k + i * r));
+    this.set_224j3y$(2, 2, 1.0 - 2 * s * (i * i + j * j));
+    this.set_224j3y$(2, 3, 0.0);
+    this.set_224j3y$(3, 0, 0.0);
+    this.set_224j3y$(3, 1, 0.0);
+    this.set_224j3y$(3, 2, 0.0);
+    this.set_224j3y$(3, 3, 1.0);
+    return this;
+  };
+  Mat4d.prototype.setLookAt_8ro9c0$ = function (position, lookAt, up) {
+    var fx = lookAt.x - position.x;
+    var fy = lookAt.y - position.y;
+    var fz = lookAt.z - position.z;
+    var x = fx * fx + fy * fy + fz * fz;
+    var rlf = 1.0 / Math_0.sqrt(x);
+    fx *= rlf;
+    fy *= rlf;
+    fz *= rlf;
+    var sx = fy * up.z - fz * up.y;
+    var sy = fz * up.x - fx * up.z;
+    var sz = fx * up.y - fy * up.x;
+    var x_0 = sx * sx + sy * sy + sz * sz;
+    var rls = 1.0 / Math_0.sqrt(x_0);
+    sx *= rls;
+    sy *= rls;
+    sz *= rls;
+    var ux = sy * fz - sz * fy;
+    var uy = sz * fx - sx * fz;
+    var uz = sx * fy - sy * fx;
+    this.matrix[this.offset + 0 | 0] = sx;
+    this.matrix[this.offset + 1 | 0] = ux;
+    this.matrix[this.offset + 2 | 0] = -fx;
+    this.matrix[this.offset + 3 | 0] = 0.0;
+    this.matrix[this.offset + 4 | 0] = sy;
+    this.matrix[this.offset + 5 | 0] = uy;
+    this.matrix[this.offset + 6 | 0] = -fy;
+    this.matrix[this.offset + 7 | 0] = 0.0;
+    this.matrix[this.offset + 8 | 0] = sz;
+    this.matrix[this.offset + 9 | 0] = uz;
+    this.matrix[this.offset + 10 | 0] = -fz;
+    this.matrix[this.offset + 11 | 0] = 0.0;
+    this.matrix[this.offset + 12 | 0] = 0.0;
+    this.matrix[this.offset + 13 | 0] = 0.0;
+    this.matrix[this.offset + 14 | 0] = 0.0;
+    this.matrix[this.offset + 15 | 0] = 1.0;
+    return this.translate_yvo9jy$(-position.x, -position.y, -position.z);
+  };
+  Mat4d.prototype.setOrthographic_15yvbs$ = function (left, right, bottom, top, near, far) {
+    if (left === right) {
+      throw IllegalArgumentException_init('left == right');
+    }
+    if (bottom === top) {
+      throw IllegalArgumentException_init('bottom == top');
+    }
+    if (near === far) {
+      throw IllegalArgumentException_init('near == far');
+    }
+    var width = 1.0 / (right - left);
+    var height = 1.0 / (top - bottom);
+    var depth = 1.0 / (far - near);
+    var x = 2.0 * width;
+    var y = 2.0 * height;
+    var z = -2.0 * depth;
+    var tx = -(right + left) * width;
+    var ty = -(top + bottom) * height;
+    var tz = -(far + near) * depth;
+    this.matrix[this.offset + 0 | 0] = x;
+    this.matrix[this.offset + 5 | 0] = y;
+    this.matrix[this.offset + 10 | 0] = z;
+    this.matrix[this.offset + 12 | 0] = tx;
+    this.matrix[this.offset + 13 | 0] = ty;
+    this.matrix[this.offset + 14 | 0] = tz;
+    this.matrix[this.offset + 15 | 0] = 1.0;
+    this.matrix[this.offset + 1 | 0] = 0.0;
+    this.matrix[this.offset + 2 | 0] = 0.0;
+    this.matrix[this.offset + 3 | 0] = 0.0;
+    this.matrix[this.offset + 4 | 0] = 0.0;
+    this.matrix[this.offset + 6 | 0] = 0.0;
+    this.matrix[this.offset + 7 | 0] = 0.0;
+    this.matrix[this.offset + 8 | 0] = 0.0;
+    this.matrix[this.offset + 9 | 0] = 0.0;
+    this.matrix[this.offset + 11 | 0] = 0.0;
+    return this;
+  };
+  Mat4d.prototype.setPerspective_6y0v78$ = function (fovy, aspect, near, far) {
+    var x = fovy * (math.PI / 360.0);
+    var f = 1.0 / Math_0.tan(x);
+    var rangeReciprocal = 1.0 / (near - far);
+    this.matrix[this.offset + 0 | 0] = f / aspect;
+    this.matrix[this.offset + 1 | 0] = 0.0;
+    this.matrix[this.offset + 2 | 0] = 0.0;
+    this.matrix[this.offset + 3 | 0] = 0.0;
+    this.matrix[this.offset + 4 | 0] = 0.0;
+    this.matrix[this.offset + 5 | 0] = f;
+    this.matrix[this.offset + 6 | 0] = 0.0;
+    this.matrix[this.offset + 7 | 0] = 0.0;
+    this.matrix[this.offset + 8 | 0] = 0.0;
+    this.matrix[this.offset + 9 | 0] = 0.0;
+    this.matrix[this.offset + 10 | 0] = (far + near) * rangeReciprocal;
+    this.matrix[this.offset + 11 | 0] = -1.0;
+    this.matrix[this.offset + 12 | 0] = 0.0;
+    this.matrix[this.offset + 13 | 0] = 0.0;
+    this.matrix[this.offset + 14 | 0] = 2.0 * far * near * rangeReciprocal;
+    this.matrix[this.offset + 15 | 0] = 0.0;
+    return this;
+  };
+  Mat4d.prototype.get_za3lpa$ = function (i) {
+    return this.matrix[this.offset + i | 0];
+  };
+  Mat4d.prototype.get_vux9f0$ = function (row, col) {
+    return this.matrix[this.offset + (col * 4 | 0) + row | 0];
+  };
+  Mat4d.prototype.set_5wr77w$ = function (i, value) {
+    this.matrix[this.offset + i | 0] = value;
+  };
+  Mat4d.prototype.set_224j3y$ = function (row, col, value) {
+    this.matrix[this.offset + (col * 4 | 0) + row | 0] = value;
+  };
+  Mat4d.prototype.setColVec_umtdzk$ = function (col, vec, w) {
+    this.set_224j3y$(0, col, vec.x);
+    this.set_224j3y$(1, col, vec.y);
+    this.set_224j3y$(2, col, vec.z);
+    this.set_224j3y$(3, col, w);
+  };
+  Mat4d.prototype.setColVec_ky00rh$ = function (col, value) {
+    this.set_224j3y$(0, col, value.x);
+    this.set_224j3y$(1, col, value.y);
+    this.set_224j3y$(2, col, value.z);
+    this.set_224j3y$(3, col, value.w);
+  };
+  Mat4d.prototype.getColVec_8irwu3$ = function (col, result) {
+    result.y = this.get_vux9f0$(1, col);
+    result.x = this.get_vux9f0$(0, col);
+    result.z = this.get_vux9f0$(2, col);
+    result.w = this.get_vux9f0$(3, col);
+    return result;
+  };
+  Mat4d.prototype.getOrigin_5s4mqs$ = function (result) {
+    result.x = this.get_vux9f0$(0, 3);
+    result.y = this.get_vux9f0$(1, 3);
+    result.z = this.get_vux9f0$(2, 3);
+    return result;
+  };
+  Mat4d.prototype.getRotation_5s4mpx$ = function (result) {
+    var tmp$;
+    var trace = this.get_vux9f0$(0, 0) + this.get_vux9f0$(1, 1) + this.get_vux9f0$(2, 2);
+    if (trace > 0.0) {
+      var x = trace + 1.0;
+      var s = Math_0.sqrt(x);
+      result.w = s * 0.5;
+      s = 0.5 / s;
+      result.x = (this.get_vux9f0$(2, 1) - this.get_vux9f0$(1, 2)) * s;
+      result.y = (this.get_vux9f0$(0, 2) - this.get_vux9f0$(2, 0)) * s;
+      result.z = (this.get_vux9f0$(1, 0) - this.get_vux9f0$(0, 1)) * s;
+    }
+     else {
+      if (this.get_vux9f0$(0, 0) < this.get_vux9f0$(1, 1)) {
+        if (this.get_vux9f0$(1, 1) < this.get_vux9f0$(2, 2)) {
+          tmp$ = 2;
+        }
+         else {
+          tmp$ = 1;
+        }
+      }
+       else {
+        if (this.get_vux9f0$(0, 0) < this.get_vux9f0$(2, 2)) {
+          tmp$ = 2;
+        }
+         else {
+          tmp$ = 0;
+        }
+      }
+      var i = tmp$;
+      var j = (i + 1 | 0) % 3;
+      var k = (i + 2 | 0) % 3;
+      var x_0 = this.get_vux9f0$(i, i) - this.get_vux9f0$(j, j) - this.get_vux9f0$(k, k) + 1.0;
+      var s_0 = Math_0.sqrt(x_0);
+      result.set_5wr77w$(i, s_0 * 0.5);
+      s_0 = 0.5 / s_0;
+      result.w = (this.get_vux9f0$(k, j) - this.get_vux9f0$(j, k)) * s_0;
+      result.set_5wr77w$(j, (this.get_vux9f0$(j, i) + this.get_vux9f0$(i, j)) * s_0);
+      result.set_5wr77w$(k, (this.get_vux9f0$(k, i) + this.get_vux9f0$(i, k)) * s_0);
+    }
+    return result;
+  };
+  Mat4d.prototype.toBuffer_he122g$ = function (buffer) {
+    for (var i = 0; i < 16; i++) {
+      buffer.put_mx4ult$(this.matrix[this.offset + i | 0]);
+    }
+    buffer.flip();
+    return buffer;
+  };
+  function Mat4d$Companion() {
+    Mat4d$Companion_instance = this;
+    this.tmpMatLock_0 = new Any();
+    this.tmpMatA_0 = new Mat4d();
+    this.tmpMatB_0 = new Mat4d();
+  }
+  Mat4d$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Mat4d$Companion_instance = null;
+  function Mat4d$Companion_getInstance() {
+    if (Mat4d$Companion_instance === null) {
+      new Mat4d$Companion();
+    }
+    return Mat4d$Companion_instance;
+  }
+  Mat4d.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Mat4d',
+    interfaces: []
+  };
+  function Mat4dStack(stackSize) {
+    Mat4dStack$Companion_getInstance();
+    if (stackSize === void 0)
+      stackSize = 32;
+    Mat4d.call(this);
+    this.stackSize = stackSize;
+    this.stackIndex_51r8af$_0 = 0;
+    this.matrix = new Float64Array(16 * this.stackSize | 0);
+    this.setIdentity();
+  }
+  function Mat4dStack$Companion() {
+    Mat4dStack$Companion_instance = this;
+    this.DEFAULT_STACK_SIZE = 32;
+  }
+  Mat4dStack$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Mat4dStack$Companion_instance = null;
+  function Mat4dStack$Companion_getInstance() {
+    if (Mat4dStack$Companion_instance === null) {
+      new Mat4dStack$Companion();
+    }
+    return Mat4dStack$Companion_instance;
+  }
+  Object.defineProperty(Mat4dStack.prototype, 'stackIndex', {
+    get: function () {
+      return this.stackIndex_51r8af$_0;
+    },
+    set: function (value) {
+      this.stackIndex_51r8af$_0 = value;
+      this.offset = value * 16 | 0;
+    }
+  });
+  Mat4dStack.prototype.push = function () {
+    if (this.stackIndex >= this.stackSize) {
+      throw new KoolException('Matrix stack overflow');
+    }
+    for (var i = 0; i <= 15; i++) {
+      this.matrix[this.offset + 16 + i | 0] = this.matrix[this.offset + i | 0];
+    }
+    this.stackIndex = this.stackIndex + 1 | 0;
+    return this;
+  };
+  Mat4dStack.prototype.pop = function () {
+    if (this.stackIndex <= 0) {
+      throw new KoolException('Matrix stack underflow');
+    }
+    this.stackIndex = this.stackIndex - 1 | 0;
+    return this;
+  };
+  Mat4dStack.prototype.reset = function () {
+    this.stackIndex = 0;
+    this.setIdentity();
+    return this;
+  };
+  Mat4dStack.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Mat4dStack',
+    interfaces: [Mat4d]
+  };
   function Mat4f() {
     Mat4f$Companion_getInstance();
     this.matrix_cl37xc$_0 = new Float32Array(16);
@@ -4235,10 +4923,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return this;
   };
+  Mat4f.prototype.set_d4zu6l$ = function (other) {
+    for (var i = 0; i <= 15; i++) {
+      this.matrix[this.offset + i | 0] = other.matrix[other.offset + i | 0];
+    }
+    return this;
+  };
   Mat4f.prototype.set_hcyabg$ = function (floats) {
     for (var i = 0; i <= 15; i++) {
       this.matrix[this.offset + i | 0] = floats.get_za3lpa$(i);
     }
+    return this;
   };
   Mat4f.prototype.setIdentity = function () {
     for (var i = 1; i <= 15; i++) {
@@ -4585,7 +5280,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function Mat4fStack(stackSize) {
     Mat4fStack$Companion_getInstance();
     if (stackSize === void 0)
-      stackSize = Mat4fStack$Companion_getInstance().DEFAULT_STACK_SIZE;
+      stackSize = 32;
     Mat4f.call(this);
     this.stackSize = stackSize;
     this.stackIndex_rxi7m3$_0 = 0;
@@ -4625,12 +5320,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.matrix[this.offset + 16 + i | 0] = this.matrix[this.offset + i | 0];
     }
     this.stackIndex = this.stackIndex + 1 | 0;
+    return this;
   };
   Mat4fStack.prototype.pop = function () {
     if (this.stackIndex <= 0) {
       throw new KoolException('Matrix stack underflow');
     }
     this.stackIndex = this.stackIndex - 1 | 0;
+    return this;
   };
   Mat4fStack.prototype.reset = function () {
     this.stackIndex = 0;
@@ -4833,6 +5530,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function randomI_0(min, max) {
     return defaultRandomInstance.randomI_vux9f0$(min, max);
   }
+  function randomI_1(rng) {
+    return defaultRandomInstance.randomI_vux9f0$(rng.first, rng.last);
+  }
   function randomD() {
     return defaultRandomInstance.randomD();
   }
@@ -4856,7 +5556,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.y_i5bu9$_0 = this.y_i5bu9$_0 ^ this.y_i5bu9$_0 << 13;
     this.y_i5bu9$_0 = this.y_i5bu9$_0 ^ this.y_i5bu9$_0 >> 17;
     this.y_i5bu9$_0 = this.y_i5bu9$_0 ^ this.y_i5bu9$_0 << 5;
-    var t = Kotlin.Long.fromInt(698769069).multiply(Kotlin.Long.fromInt(this.z_i5bte$_0)).add(Kotlin.Long.fromInt(this.c_i5cd7$_0));
+    var t = L698769069.multiply(Kotlin.Long.fromInt(this.z_i5bte$_0)).add(Kotlin.Long.fromInt(this.c_i5cd7$_0));
     this.c_i5cd7$_0 = t.shiftRight(32).toInt();
     this.z_i5bte$_0 = t.toInt();
     return this.x_i5bv4$_0 + this.y_i5bu9$_0 + this.z_i5bte$_0 | 0;
@@ -4865,14 +5565,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     return abs(this.randomI()) % (max - min + 1 | 0) + min | 0;
   };
   Random.prototype.randomF = function () {
-    return abs(this.randomI()) / kotlin_js_internal_IntCompanionObject.MAX_VALUE;
+    return abs(this.randomI()) / 2147483647;
   };
   Random.prototype.randomF_dleff0$ = function (min, max) {
     return this.randomF() * (max - min) + min;
   };
   Random.prototype.randomD = function () {
     var l = abs_0(Kotlin.Long.fromInt(this.randomI())).shiftLeft(32).or(abs_0(Kotlin.Long.fromInt(this.randomI())));
-    return abs_0(l).toNumber() / (new Kotlin.Long(-1, 2147483647)).toNumber();
+    return abs_0(l).toNumber() / Long$Companion$MAX_VALUE.toNumber();
   };
   Random.prototype.randomD_lu1900$ = function (min, max) {
     return this.randomD() * (max - min) + min;
@@ -4938,90 +5638,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'RayTest',
     interfaces: []
   };
-  function add(a, b) {
-    return a.add_q2ruao$(b, MutableVec2f_init());
-  }
-  function add_0(a, b) {
-    return a.add_2gj7b4$(b, MutableVec3f_init());
-  }
-  function add_1(a, b) {
-    return a.add_uzu8ww$(b, MutableVec4f_init());
-  }
-  function subtract(a, b) {
-    return a.subtract_q2ruao$(b, MutableVec2f_init());
-  }
-  function subtract_0(a, b) {
-    return a.subtract_2gj7b4$(b, MutableVec3f_init());
-  }
-  function subtract_1(a, b) {
-    return a.subtract_uzu8ww$(b, MutableVec4f_init());
-  }
-  function scale(a, fac) {
-    return a.scale_749b9g$(fac, MutableVec2f_init());
-  }
-  function scale_0(a, fac) {
-    return a.scale_749b8l$(fac, MutableVec3f_init());
-  }
-  function scale_1(a, fac) {
-    return a.scale_749b7q$(fac, MutableVec4f_init());
-  }
-  function norm(a) {
-    return a.norm_5s4mrl$(MutableVec2f_init());
-  }
-  function norm_0(a) {
-    return a.norm_5s4mqq$(MutableVec3f_init());
-  }
-  function cross(a, b) {
-    return a.cross_2gj7b4$(b, MutableVec3f_init());
-  }
-  var slerpTmpA;
-  var slerpTmpB;
-  var slerpTmpC;
-  function slerp(quatA, quatB, f, result) {
-    quatA.norm_5s4mpv$(slerpTmpA);
-    quatB.norm_5s4mpv$(slerpTmpB);
-    var clamp$result;
-    if (f < 0.0) {
-      clamp$result = 0.0;
-    }
-     else if (f > 1.0) {
-      clamp$result = 1.0;
-    }
-     else {
-      clamp$result = f;
-    }
-    var t = clamp$result;
-    var $receiver = slerpTmpA.dot_czzhhz$(slerpTmpB);
-    var min = -1.0;
-    var clamp$result_0;
-    if ($receiver < min) {
-      clamp$result_0 = min;
-    }
-     else if ($receiver > 1.0) {
-      clamp$result_0 = 1.0;
-    }
-     else {
-      clamp$result_0 = $receiver;
-    }
-    var dot = clamp$result_0;
-    if (dot < 0) {
-      slerpTmpA.scale_mx4ult$(-1.0);
-      dot = -dot;
-    }
-    if (dot > 0.9995) {
-      slerpTmpB.subtract_uzu8ww$(slerpTmpA, result).scale_mx4ult$(t).add_czzhhz$(slerpTmpA).norm();
-    }
-     else {
-      var x = dot;
-      var theta0 = Math_0.acos(x);
-      var theta = theta0 * t;
-      slerpTmpA.scale_749b7q$(-dot, slerpTmpC).add_czzhhz$(slerpTmpB).norm();
-      slerpTmpA.scale_mx4ult$(Math_0.cos(theta));
-      slerpTmpC.scale_mx4ult$(Math_0.sin(theta));
-      result.set_czzhhz$(slerpTmpA).add_czzhhz$(slerpTmpC);
-    }
-    return result;
-  }
   function Vec2f(x, y) {
     Vec2f$Companion_getInstance();
     this.fields = new Float32Array(2);
@@ -5094,6 +5710,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   Vec2f.prototype.toString = function () {
     return '(' + this.x + ', ' + this.y + ')';
+  };
+  Vec2f.prototype.toVec2d = function () {
+    return new Vec2d(this.x, this.y);
+  };
+  Vec2f.prototype.toMutableVec2d = function () {
+    return this.toMutableVec2d_5s4mrn$(MutableVec2d_init());
+  };
+  Vec2f.prototype.toMutableVec2d_5s4mrn$ = function (result) {
+    return result.set_lu1900$(this.x, this.y);
   };
   Vec2f.prototype.equals = function (other) {
     if (this === other)
@@ -5243,6 +5868,236 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     MutableVec2f.call($this, v.x, v.y);
     return $this;
   }
+  function Vec2d(x, y) {
+    Vec2d$Companion_getInstance();
+    this.fields = new Float64Array(2);
+    this.fields[0] = x;
+    this.fields[1] = y;
+  }
+  Object.defineProperty(Vec2d.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    }
+  });
+  Object.defineProperty(Vec2d.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    }
+  });
+  Vec2d.prototype.add_b18iao$ = function (other, result) {
+    return result.set_czzhjr$(this).add_czzhjr$(other);
+  };
+  Vec2d.prototype.distance_czzhjr$ = function (other) {
+    var x = this.sqrDistance_czzhjr$(other);
+    return Math_0.sqrt(x);
+  };
+  Vec2d.prototype.dot_czzhjr$ = function (other) {
+    return this.x * other.x + this.y * other.y;
+  };
+  Vec2d.prototype.isFuzzyEqual_f3xr3v$ = function (other, eps) {
+    if (eps === void 0)
+      eps = FUZZY_EQ_D;
+    var $receiver = this.x - other.x;
+    var tmp$ = Math_0.abs($receiver) <= eps;
+    if (tmp$) {
+      var $receiver_0 = this.y - other.y;
+      tmp$ = Math_0.abs($receiver_0) <= eps;
+    }
+    return tmp$;
+  };
+  Vec2d.prototype.length = function () {
+    var x = this.sqrLength();
+    return Math_0.sqrt(x);
+  };
+  Vec2d.prototype.mul_b18iao$ = function (other, result) {
+    return result.set_czzhjr$(this).mul_czzhjr$(other);
+  };
+  Vec2d.prototype.norm_5s4mrn$ = function (result) {
+    return result.set_czzhjr$(this).norm();
+  };
+  Vec2d.prototype.rotate_b0flcl$ = function (angleDeg, result) {
+    return result.set_czzhjr$(this).rotate_14dthe$(angleDeg);
+  };
+  Vec2d.prototype.scale_b0flcl$ = function (factor, result) {
+    return result.set_czzhjr$(this).scale_14dthe$(factor);
+  };
+  Vec2d.prototype.sqrDistance_czzhjr$ = function (other) {
+    var dx = this.x - other.x;
+    var dy = this.y - other.y;
+    return dx * dx + dy * dy;
+  };
+  Vec2d.prototype.sqrLength = function () {
+    return this.x * this.x + this.y * this.y;
+  };
+  Vec2d.prototype.subtract_b18iao$ = function (other, result) {
+    return result.set_czzhjr$(this).subtract_czzhjr$(other);
+  };
+  Vec2d.prototype.get_za3lpa$ = function (i) {
+    return this.fields[i];
+  };
+  Vec2d.prototype.times_czzhjr$ = function (other) {
+    return this.dot_czzhjr$(other);
+  };
+  Vec2d.prototype.toString = function () {
+    return '(' + this.x + ', ' + this.y + ')';
+  };
+  Vec2d.prototype.toVec2f = function () {
+    return new Vec2f(this.x, this.y);
+  };
+  Vec2d.prototype.toMutableVec2f = function () {
+    return this.toMutableVec2f_5s4mrl$(MutableVec2f_init());
+  };
+  Vec2d.prototype.toMutableVec2f_5s4mrl$ = function (result) {
+    return result.set_dleff0$(this.x, this.y);
+  };
+  Vec2d.prototype.equals = function (other) {
+    if (this === other)
+      return true;
+    if (!Kotlin.isType(other, Vec2d))
+      return false;
+    if (this.x !== other.x)
+      return false;
+    if (this.y !== other.y)
+      return false;
+    return true;
+  };
+  Vec2d.prototype.hashCode = function () {
+    var result = hashCode(this.x);
+    result = (31 * result | 0) + hashCode(this.y) | 0;
+    return result;
+  };
+  function Vec2d$Companion() {
+    Vec2d$Companion_instance = this;
+    this.ZERO = Vec2d_init(0.0);
+    this.X_AXIS = new Vec2d(1.0, 0.0);
+    this.Y_AXIS = new Vec2d(0.0, 1.0);
+    this.NEG_X_AXIS = new Vec2d(-1.0, 0.0);
+    this.NEG_Y_AXIS = new Vec2d(0.0, -1.0);
+  }
+  Vec2d$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Vec2d$Companion_instance = null;
+  function Vec2d$Companion_getInstance() {
+    if (Vec2d$Companion_instance === null) {
+      new Vec2d$Companion();
+    }
+    return Vec2d$Companion_instance;
+  }
+  Vec2d.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Vec2d',
+    interfaces: []
+  };
+  function Vec2d_init(f, $this) {
+    $this = $this || Object.create(Vec2d.prototype);
+    Vec2d.call($this, f, f);
+    return $this;
+  }
+  function Vec2d_init_0(v, $this) {
+    $this = $this || Object.create(Vec2d.prototype);
+    Vec2d.call($this, v.x, v.y);
+    return $this;
+  }
+  function MutableVec2d(x, y) {
+    Vec2d.call(this, x, y);
+  }
+  Object.defineProperty(MutableVec2d.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    },
+    set: function (value) {
+      this.set_5wr77w$(0, value);
+    }
+  });
+  Object.defineProperty(MutableVec2d.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    },
+    set: function (value) {
+      this.set_5wr77w$(1, value);
+    }
+  });
+  MutableVec2d.prototype.add_czzhjr$ = function (other) {
+    this.x = this.x + other.x;
+    this.y = this.y + other.y;
+    return this;
+  };
+  MutableVec2d.prototype.mul_czzhjr$ = function (other) {
+    this.x = this.x * other.x;
+    this.y = this.y * other.y;
+    return this;
+  };
+  MutableVec2d.prototype.norm = function () {
+    return this.scale_14dthe$(1.0 / this.length());
+  };
+  MutableVec2d.prototype.rotate_14dthe$ = function (angleDeg) {
+    var rad = angleDeg * package$math.DEG_2_RAD;
+    var cos = Math_0.cos(rad);
+    var sin = Math_0.sin(rad);
+    var rx = this.x * cos - this.y * sin;
+    var ry = this.x * sin + this.y * cos;
+    this.x = rx;
+    this.y = ry;
+    return this;
+  };
+  MutableVec2d.prototype.scale_14dthe$ = function (factor) {
+    this.x = this.x * factor;
+    this.y = this.y * factor;
+    return this;
+  };
+  MutableVec2d.prototype.set_lu1900$ = function (x, y) {
+    this.x = x;
+    this.y = y;
+    return this;
+  };
+  MutableVec2d.prototype.set_czzhjr$ = function (other) {
+    this.x = other.x;
+    this.y = other.y;
+    return this;
+  };
+  MutableVec2d.prototype.subtract_czzhjr$ = function (other) {
+    this.x = this.x - other.x;
+    this.y = this.y - other.y;
+    return this;
+  };
+  MutableVec2d.prototype.divAssign_14dthe$ = function (div) {
+    this.scale_14dthe$(1.0 / div);
+  };
+  MutableVec2d.prototype.minusAssign_czzhjr$ = function (other) {
+    this.subtract_czzhjr$(other);
+  };
+  MutableVec2d.prototype.plusAssign_czzhjr$ = function (other) {
+    this.add_czzhjr$(other);
+  };
+  MutableVec2d.prototype.set_5wr77w$ = function (i, v) {
+    this.fields[i] = v;
+  };
+  MutableVec2d.prototype.timesAssign_14dthe$ = function (factor) {
+    this.scale_14dthe$(factor);
+  };
+  MutableVec2d.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MutableVec2d',
+    interfaces: [Vec2d]
+  };
+  function MutableVec2d_init($this) {
+    $this = $this || Object.create(MutableVec2d.prototype);
+    MutableVec2d.call($this, 0.0, 0.0);
+    return $this;
+  }
+  function MutableVec2d_init_0(f, $this) {
+    $this = $this || Object.create(MutableVec2d.prototype);
+    MutableVec2d.call($this, f, f);
+    return $this;
+  }
+  function MutableVec2d_init_1(v, $this) {
+    $this = $this || Object.create(MutableVec2d.prototype);
+    MutableVec2d.call($this, v.x, v.y);
+    return $this;
+  }
   function Vec3f(x, y, z) {
     Vec3f$Companion_getInstance();
     this.fields = new Float32Array(3);
@@ -5359,6 +6214,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   Vec3f.prototype.toString = function () {
     return '(' + this.x + ', ' + this.y + ', ' + this.z + ')';
+  };
+  Vec3f.prototype.toVec3d = function () {
+    return new Vec3d(this.x, this.y, this.z);
+  };
+  Vec3f.prototype.toMutableVec3d = function () {
+    return this.toMutableVec3d_5s4mqs$(MutableVec3d_init());
+  };
+  Vec3f.prototype.toMutableVec3d_5s4mqs$ = function (result) {
+    return result.set_yvo9jy$(this.x, this.y, this.z);
   };
   Vec3f.prototype.equals = function (other) {
     if (this === other)
@@ -5533,6 +6397,305 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     MutableVec3f.call($this, v.x, v.y, v.z);
     return $this;
   }
+  function Vec3d(x, y, z) {
+    Vec3d$Companion_getInstance();
+    this.fields = new Float64Array(3);
+    this.fields[0] = x;
+    this.fields[1] = y;
+    this.fields[2] = z;
+  }
+  Object.defineProperty(Vec3d.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    }
+  });
+  Object.defineProperty(Vec3d.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    }
+  });
+  Object.defineProperty(Vec3d.prototype, 'z', {
+    get: function () {
+      return this.get_za3lpa$(2);
+    }
+  });
+  Vec3d.prototype.add_vgki2o$ = function (other, result) {
+    return result.set_czzhiw$(this).add_czzhiw$(other);
+  };
+  Vec3d.prototype.cross_vgki2o$ = function (other, result) {
+    result.x = this.y * other.z - this.z * other.y;
+    result.y = this.z * other.x - this.x * other.z;
+    result.z = this.x * other.y - this.y * other.x;
+    return result;
+  };
+  Vec3d.prototype.distance_czzhiw$ = function (other) {
+    var x = this.sqrDistance_czzhiw$(other);
+    return Math_0.sqrt(x);
+  };
+  Vec3d.prototype.dot_czzhiw$ = function (other) {
+    return this.x * other.x + this.y * other.y + this.z * other.z;
+  };
+  Vec3d.prototype.isFuzzyEqual_6nz8ey$ = function (other, eps) {
+    if (eps === void 0)
+      eps = FUZZY_EQ_D;
+    var $receiver = this.x - other.x;
+    var tmp$ = Math_0.abs($receiver) <= eps;
+    if (tmp$) {
+      var $receiver_0 = this.y - other.y;
+      tmp$ = Math_0.abs($receiver_0) <= eps;
+    }
+    var tmp$_0 = tmp$;
+    if (tmp$_0) {
+      var $receiver_1 = this.z - other.z;
+      tmp$_0 = Math_0.abs($receiver_1) <= eps;
+    }
+    return tmp$_0;
+  };
+  Vec3d.prototype.length = function () {
+    var x = this.sqrLength();
+    return Math_0.sqrt(x);
+  };
+  Vec3d.prototype.mul_vgki2o$ = function (other, result) {
+    return result.set_czzhiw$(this).mul_czzhiw$(other);
+  };
+  Vec3d.prototype.norm_5s4mqs$ = function (result) {
+    return result.set_czzhiw$(this).norm();
+  };
+  Vec3d.prototype.planeSpace_7vsg4s$ = function (p, q) {
+    var x = this.z;
+    if (Math_0.abs(x) > SQRT_1_2) {
+      var a = this.y * this.y + this.z * this.z;
+      var k = 1.0 / Math_0.sqrt(a);
+      p.x = 0.0;
+      p.y = -this.z * k;
+      p.z = this.y * k;
+      q.x = a * k;
+      q.y = -this.x * p.z;
+      q.z = this.x * p.y;
+    }
+     else {
+      var a_0 = this.x * this.x + this.y * this.y;
+      var k_0 = 1.0 / Math_0.sqrt(a_0);
+      p.x = -this.y * k_0;
+      p.y = this.x * k_0;
+      p.z = 0.0;
+      q.x = -this.z * p.y;
+      q.y = this.z * p.x;
+      q.z = a_0 * k_0;
+    }
+  };
+  Vec3d.prototype.rotate_8uuoh8$ = function (angleDeg, axisX, axisY, axisZ, result) {
+    return result.set_czzhiw$(this).rotate_6y0v78$(angleDeg, axisX, axisY, axisZ);
+  };
+  Vec3d.prototype.rotate_cvw8z2$ = function (angleDeg, axis, result) {
+    return result.set_czzhiw$(this).rotate_6y0v78$(angleDeg, axis.x, axis.y, axis.z);
+  };
+  Vec3d.prototype.scale_b0flbq$ = function (factor, result) {
+    return result.set_czzhiw$(this).scale_14dthe$(factor);
+  };
+  Vec3d.prototype.sqrDistance_czzhiw$ = function (other) {
+    var dx = this.x - other.x;
+    var dy = this.y - other.y;
+    var dz = this.z - other.z;
+    return dx * dx + dy * dy + dz * dz;
+  };
+  Vec3d.prototype.sqrLength = function () {
+    return this.x * this.x + this.y * this.y + this.z * this.z;
+  };
+  Vec3d.prototype.subtract_vgki2o$ = function (other, result) {
+    return result.set_czzhiw$(this).subtract_czzhiw$(other);
+  };
+  Vec3d.prototype.get_za3lpa$ = function (i) {
+    return this.fields[i];
+  };
+  Vec3d.prototype.times_czzhiw$ = function (other) {
+    return this.dot_czzhiw$(other);
+  };
+  Vec3d.prototype.toString = function () {
+    return '(' + this.x + ', ' + this.y + ', ' + this.z + ')';
+  };
+  Vec3d.prototype.toVec3f = function () {
+    return new Vec3f(this.x, this.y, this.z);
+  };
+  Vec3d.prototype.toMutableVec3f = function () {
+    return this.toMutableVec3f_5s4mqq$(MutableVec3f_init());
+  };
+  Vec3d.prototype.toMutableVec3f_5s4mqq$ = function (result) {
+    return result.set_y2kzbl$(this.x, this.y, this.z);
+  };
+  Vec3d.prototype.equals = function (other) {
+    if (this === other)
+      return true;
+    if (!Kotlin.isType(other, Vec3d))
+      return false;
+    if (this.x !== other.x)
+      return false;
+    if (this.y !== other.y)
+      return false;
+    if (this.z !== other.z)
+      return false;
+    return true;
+  };
+  Vec3d.prototype.hashCode = function () {
+    var result = hashCode(this.x);
+    result = (31 * result | 0) + hashCode(this.y) | 0;
+    result = (31 * result | 0) + hashCode(this.z) | 0;
+    return result;
+  };
+  function Vec3d$Companion() {
+    Vec3d$Companion_instance = this;
+    this.ZERO = Vec3d_init(0.0);
+    this.X_AXIS = new Vec3d(1.0, 0.0, 0.0);
+    this.Y_AXIS = new Vec3d(0.0, 1.0, 0.0);
+    this.Z_AXIS = new Vec3d(0.0, 0.0, 1.0);
+    this.NEG_X_AXIS = new Vec3d(-1.0, 0.0, 0.0);
+    this.NEG_Y_AXIS = new Vec3d(0.0, -1.0, 0.0);
+    this.NEG_Z_AXIS = new Vec3d(0.0, 0.0, -1.0);
+  }
+  Vec3d$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Vec3d$Companion_instance = null;
+  function Vec3d$Companion_getInstance() {
+    if (Vec3d$Companion_instance === null) {
+      new Vec3d$Companion();
+    }
+    return Vec3d$Companion_instance;
+  }
+  Vec3d.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Vec3d',
+    interfaces: []
+  };
+  function Vec3d_init(f, $this) {
+    $this = $this || Object.create(Vec3d.prototype);
+    Vec3d.call($this, f, f, f);
+    return $this;
+  }
+  function Vec3d_init_0(v, $this) {
+    $this = $this || Object.create(Vec3d.prototype);
+    Vec3d.call($this, v.x, v.y, v.z);
+    return $this;
+  }
+  function MutableVec3d(x, y, z) {
+    Vec3d.call(this, x, y, z);
+  }
+  Object.defineProperty(MutableVec3d.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    },
+    set: function (value) {
+      this.set_5wr77w$(0, value);
+    }
+  });
+  Object.defineProperty(MutableVec3d.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    },
+    set: function (value) {
+      this.set_5wr77w$(1, value);
+    }
+  });
+  Object.defineProperty(MutableVec3d.prototype, 'z', {
+    get: function () {
+      return this.get_za3lpa$(2);
+    },
+    set: function (value) {
+      this.set_5wr77w$(2, value);
+    }
+  });
+  MutableVec3d.prototype.add_czzhiw$ = function (other) {
+    this.x = this.x + other.x;
+    this.y = this.y + other.y;
+    this.z = this.z + other.z;
+    return this;
+  };
+  MutableVec3d.prototype.mul_czzhiw$ = function (other) {
+    this.x = this.x * other.x;
+    this.y = this.y * other.y;
+    this.z = this.z * other.z;
+    return this;
+  };
+  MutableVec3d.prototype.norm = function () {
+    return this.scale_14dthe$(1.0 / this.length());
+  };
+  MutableVec3d.prototype.rotate_6y0v78$ = function (angleDeg, axisX, axisY, axisZ) {
+    var rad = angleDeg * package$math.DEG_2_RAD;
+    var c = Math_0.cos(rad);
+    var c1 = 1.0 - c;
+    var s = Math_0.sin(rad);
+    var rx = this.x * (axisX * axisX * c1 + c) + this.y * (axisX * axisY * c1 - axisZ * s) + this.z * (axisX * axisZ * c1 + axisY * s);
+    var ry = this.x * (axisY * axisX * c1 + axisZ * s) + this.y * (axisY * axisY * c1 + c) + this.z * (axisY * axisZ * c1 - axisX * s);
+    var rz = this.x * (axisX * axisZ * c1 - axisY * s) + this.y * (axisY * axisZ * c1 + axisX * s) + this.z * (axisZ * axisZ * c1 + c);
+    this.x = rx;
+    this.y = ry;
+    this.z = rz;
+    return this;
+  };
+  MutableVec3d.prototype.rotate_5820x2$ = function (angleDeg, axis) {
+    return this.rotate_6y0v78$(angleDeg, axis.x, axis.y, axis.z);
+  };
+  MutableVec3d.prototype.scale_14dthe$ = function (factor) {
+    this.x = this.x * factor;
+    this.y = this.y * factor;
+    this.z = this.z * factor;
+    return this;
+  };
+  MutableVec3d.prototype.set_yvo9jy$ = function (x, y, z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    return this;
+  };
+  MutableVec3d.prototype.set_czzhiw$ = function (other) {
+    this.x = other.x;
+    this.y = other.y;
+    this.z = other.z;
+    return this;
+  };
+  MutableVec3d.prototype.subtract_czzhiw$ = function (other) {
+    this.x = this.x - other.x;
+    this.y = this.y - other.y;
+    this.z = this.z - other.z;
+    return this;
+  };
+  MutableVec3d.prototype.divAssign_14dthe$ = function (div) {
+    this.scale_14dthe$(1.0 / div);
+  };
+  MutableVec3d.prototype.minusAssign_czzhiw$ = function (other) {
+    this.subtract_czzhiw$(other);
+  };
+  MutableVec3d.prototype.plusAssign_czzhiw$ = function (other) {
+    this.add_czzhiw$(other);
+  };
+  MutableVec3d.prototype.set_5wr77w$ = function (i, v) {
+    this.fields[i] = v;
+  };
+  MutableVec3d.prototype.timesAssign_14dthe$ = function (factor) {
+    this.scale_14dthe$(factor);
+  };
+  MutableVec3d.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MutableVec3d',
+    interfaces: [Vec3d]
+  };
+  function MutableVec3d_init($this) {
+    $this = $this || Object.create(MutableVec3d.prototype);
+    MutableVec3d.call($this, 0.0, 0.0, 0.0);
+    return $this;
+  }
+  function MutableVec3d_init_0(f, $this) {
+    $this = $this || Object.create(MutableVec3d.prototype);
+    MutableVec3d.call($this, f, f, f);
+    return $this;
+  }
+  function MutableVec3d_init_1(v, $this) {
+    $this = $this || Object.create(MutableVec3d.prototype);
+    MutableVec3d.call($this, v.x, v.y, v.z);
+    return $this;
+  }
   function Vec4f(x, y, z, w) {
     Vec4f$Companion_getInstance();
     this.fields = new Float32Array(4);
@@ -5639,6 +6802,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   Vec4f.prototype.toString = function () {
     return '(' + this.x + ', ' + this.y + ', ' + this.z + ', ' + this.w + ')';
+  };
+  Vec4f.prototype.toVec4d = function () {
+    return new Vec4d(this.x, this.y, this.z, this.w);
+  };
+  Vec4f.prototype.toMutableVec4d = function () {
+    return this.toMutableVec4d_5s4mpx$(MutableVec4d_init());
+  };
+  Vec4f.prototype.toMutableVec4d_5s4mpx$ = function (result) {
+    return result.set_6y0v78$(this.x, this.y, this.z, this.w);
   };
   Vec4f.prototype.equals = function (other) {
     if (this === other)
@@ -5836,6 +7008,487 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     $this = $this || Object.create(MutableVec4f.prototype);
     MutableVec4f.call($this, other.x, other.y, other.z, other.w);
     return $this;
+  }
+  function Vec4d(x, y, z, w) {
+    Vec4d$Companion_getInstance();
+    this.fields = new Float64Array(4);
+    this.fields[0] = x;
+    this.fields[1] = y;
+    this.fields[2] = z;
+    this.fields[3] = w;
+  }
+  Object.defineProperty(Vec4d.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    }
+  });
+  Object.defineProperty(Vec4d.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    }
+  });
+  Object.defineProperty(Vec4d.prototype, 'z', {
+    get: function () {
+      return this.get_za3lpa$(2);
+    }
+  });
+  Object.defineProperty(Vec4d.prototype, 'w', {
+    get: function () {
+      return this.get_za3lpa$(3);
+    }
+  });
+  Vec4d.prototype.add_2x9ggw$ = function (other, result) {
+    return result.set_czzhi1$(this).add_czzhi1$(other);
+  };
+  Vec4d.prototype.distance_czzhi1$ = function (other) {
+    var x = this.sqrDistance_czzhi1$(other);
+    return Math_0.sqrt(x);
+  };
+  Vec4d.prototype.dot_czzhi1$ = function (other) {
+    return this.x * other.x + this.y * other.y + this.z * other.z + this.w * other.w;
+  };
+  Vec4d.prototype.isFuzzyEqual_1rza9z$ = function (other, eps) {
+    if (eps === void 0)
+      eps = FUZZY_EQ_D;
+    var $receiver = this.x - other.x;
+    var tmp$ = Math_0.abs($receiver) <= eps;
+    if (tmp$) {
+      var $receiver_0 = this.y - other.y;
+      tmp$ = Math_0.abs($receiver_0) <= eps;
+    }
+    var tmp$_0 = tmp$;
+    if (tmp$_0) {
+      var $receiver_1 = this.z - other.z;
+      tmp$_0 = Math_0.abs($receiver_1) <= eps;
+    }
+    var tmp$_1 = tmp$_0;
+    if (tmp$_1) {
+      var $receiver_2 = this.w - other.w;
+      tmp$_1 = Math_0.abs($receiver_2) <= eps;
+    }
+    return tmp$_1;
+  };
+  Vec4d.prototype.length = function () {
+    var x = this.sqrLength();
+    return Math_0.sqrt(x);
+  };
+  Vec4d.prototype.mul_2x9ggw$ = function (other, result) {
+    return result.set_czzhi1$(this).mul_czzhi1$(other);
+  };
+  Vec4d.prototype.norm_5s4mpx$ = function (result) {
+    return result.set_czzhi1$(this).norm();
+  };
+  Vec4d.prototype.quatProduct_2x9ggw$ = function (otherQuat, result) {
+    result.x = this.w * otherQuat.x + this.x * otherQuat.w + this.y * otherQuat.z - this.z * otherQuat.y;
+    result.y = this.w * otherQuat.y + this.y * otherQuat.w + this.z * otherQuat.x - this.x * otherQuat.z;
+    result.z = this.w * otherQuat.z + this.z * otherQuat.w + this.x * otherQuat.y - this.y * otherQuat.x;
+    result.w = this.w * otherQuat.w - this.x * otherQuat.x - this.y * otherQuat.y - this.z * otherQuat.z;
+    return result;
+  };
+  Vec4d.prototype.scale_b0flav$ = function (factor, result) {
+    return result.set_czzhi1$(this).scale_14dthe$(factor);
+  };
+  Vec4d.prototype.sqrDistance_czzhi1$ = function (other) {
+    var dx = this.x - other.x;
+    var dy = this.y - other.y;
+    var dz = this.z - other.z;
+    var dw = this.z - other.w;
+    return dx * dx + dy * dy + dz * dz + dw * dw;
+  };
+  Vec4d.prototype.sqrLength = function () {
+    return this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+  };
+  Vec4d.prototype.subtract_2x9ggw$ = function (other, result) {
+    return result.set_czzhi1$(this).subtract_czzhi1$(other);
+  };
+  Vec4d.prototype.getXyz_5s4mqs$ = function (result) {
+    result.x = this.x;
+    result.y = this.y;
+    result.z = this.z;
+    return result;
+  };
+  Vec4d.prototype.get_za3lpa$ = function (i) {
+    return this.fields[i];
+  };
+  Vec4d.prototype.times_czzhi1$ = function (other) {
+    return this.dot_czzhi1$(other);
+  };
+  Vec4d.prototype.toString = function () {
+    return '(' + this.x + ', ' + this.y + ', ' + this.z + ', ' + this.w + ')';
+  };
+  Vec4d.prototype.toVec4f = function () {
+    return new Vec4f(this.x, this.y, this.z, this.w);
+  };
+  Vec4d.prototype.toMutableVec4f = function () {
+    return this.toMutableVec4f_5s4mpv$(MutableVec4f_init());
+  };
+  Vec4d.prototype.toMutableVec4f_5s4mpv$ = function (result) {
+    return result.set_7b5o5w$(this.x, this.y, this.z, this.w);
+  };
+  Vec4d.prototype.equals = function (other) {
+    if (this === other)
+      return true;
+    if (!Kotlin.isType(other, Vec4d))
+      return false;
+    if (this.x !== other.x)
+      return false;
+    if (this.y !== other.y)
+      return false;
+    if (this.z !== other.z)
+      return false;
+    if (this.w !== other.w)
+      return false;
+    return true;
+  };
+  Vec4d.prototype.hashCode = function () {
+    var result = hashCode(this.x);
+    result = (31 * result | 0) + hashCode(this.y) | 0;
+    result = (31 * result | 0) + hashCode(this.z) | 0;
+    result = (31 * result | 0) + hashCode(this.w) | 0;
+    return result;
+  };
+  function Vec4d$Companion() {
+    Vec4d$Companion_instance = this;
+    this.ZERO = Vec4d_init(0.0);
+    this.X_AXIS = new Vec4d(1.0, 0.0, 0.0, 0.0);
+    this.Y_AXIS = new Vec4d(0.0, 1.0, 0.0, 0.0);
+    this.Z_AXIS = new Vec4d(0.0, 0.0, 1.0, 0.0);
+    this.W_AXIS = new Vec4d(0.0, 0.0, 0.0, 1.0);
+    this.NEG_X_AXIS = new Vec4d(-1.0, 0.0, 0.0, 0.0);
+    this.NEG_Y_AXIS = new Vec4d(0.0, -1.0, 0.0, 0.0);
+    this.NEG_Z_AXIS = new Vec4d(0.0, 0.0, -1.0, 0.0);
+    this.NEG_W_AXIS = new Vec4d(0.0, 0.0, 0.0, -1.0);
+  }
+  Vec4d$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Vec4d$Companion_instance = null;
+  function Vec4d$Companion_getInstance() {
+    if (Vec4d$Companion_instance === null) {
+      new Vec4d$Companion();
+    }
+    return Vec4d$Companion_instance;
+  }
+  Vec4d.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Vec4d',
+    interfaces: []
+  };
+  function Vec4d_init(f, $this) {
+    $this = $this || Object.create(Vec4d.prototype);
+    Vec4d.call($this, f, f, f, f);
+    return $this;
+  }
+  function Vec4d_init_0(xyz, w, $this) {
+    $this = $this || Object.create(Vec4d.prototype);
+    Vec4d.call($this, xyz.x, xyz.y, xyz.z, w);
+    return $this;
+  }
+  function Vec4d_init_1(v, $this) {
+    $this = $this || Object.create(Vec4d.prototype);
+    Vec4d.call($this, v.x, v.y, v.z, v.w);
+    return $this;
+  }
+  function MutableVec4d(x, y, z, w) {
+    Vec4d.call(this, x, y, z, w);
+  }
+  Object.defineProperty(MutableVec4d.prototype, 'x', {
+    get: function () {
+      return this.get_za3lpa$(0);
+    },
+    set: function (value) {
+      this.set_5wr77w$(0, value);
+    }
+  });
+  Object.defineProperty(MutableVec4d.prototype, 'y', {
+    get: function () {
+      return this.get_za3lpa$(1);
+    },
+    set: function (value) {
+      this.set_5wr77w$(1, value);
+    }
+  });
+  Object.defineProperty(MutableVec4d.prototype, 'z', {
+    get: function () {
+      return this.get_za3lpa$(2);
+    },
+    set: function (value) {
+      this.set_5wr77w$(2, value);
+    }
+  });
+  Object.defineProperty(MutableVec4d.prototype, 'w', {
+    get: function () {
+      return this.get_za3lpa$(3);
+    },
+    set: function (value) {
+      this.set_5wr77w$(3, value);
+    }
+  });
+  MutableVec4d.prototype.add_czzhi1$ = function (other) {
+    this.x = this.x + other.x;
+    this.y = this.y + other.y;
+    this.z = this.z + other.z;
+    this.w = this.w + other.w;
+    return this;
+  };
+  MutableVec4d.prototype.mul_czzhi1$ = function (other) {
+    this.x = this.x * other.x;
+    this.y = this.y * other.y;
+    this.z = this.z * other.z;
+    this.w = this.w * other.w;
+    return this;
+  };
+  MutableVec4d.prototype.norm = function () {
+    return this.scale_14dthe$(1.0 / this.length());
+  };
+  MutableVec4d.prototype.quatProduct_czzhi1$ = function (otherQuat) {
+    var px = this.w * otherQuat.x + this.x * otherQuat.w + this.y * otherQuat.z - this.z * otherQuat.y;
+    var py = this.w * otherQuat.y + this.y * otherQuat.w + this.z * otherQuat.x - this.x * otherQuat.z;
+    var pz = this.w * otherQuat.z + this.z * otherQuat.w + this.x * otherQuat.y - this.y * otherQuat.x;
+    var pw = this.w * otherQuat.w - this.x * otherQuat.x - this.y * otherQuat.y - this.z * otherQuat.z;
+    this.set_6y0v78$(px, py, pz, pw);
+    return this;
+  };
+  MutableVec4d.prototype.scale_14dthe$ = function (factor) {
+    this.x = this.x * factor;
+    this.y = this.y * factor;
+    this.z = this.z * factor;
+    this.w = this.w * factor;
+    return this;
+  };
+  MutableVec4d.prototype.set_6y0v78$ = function (x, y, z, w) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.w = w;
+    return this;
+  };
+  MutableVec4d.prototype.set_czzhi1$ = function (other) {
+    this.x = other.x;
+    this.y = other.y;
+    this.z = other.z;
+    this.w = other.w;
+    return this;
+  };
+  MutableVec4d.prototype.set_6nz8ey$ = function (xyz, w) {
+    if (w === void 0)
+      w = 0.0;
+    this.x = xyz.x;
+    this.y = xyz.y;
+    this.z = xyz.z;
+    this.w = w;
+    return this;
+  };
+  MutableVec4d.prototype.subtract_czzhi1$ = function (other) {
+    this.x = this.x - other.x;
+    this.y = this.y - other.y;
+    this.z = this.z - other.z;
+    this.w = this.w - other.w;
+    return this;
+  };
+  MutableVec4d.prototype.plusAssign_czzhi1$ = function (other) {
+    this.add_czzhi1$(other);
+  };
+  MutableVec4d.prototype.minusAssign_czzhi1$ = function (other) {
+    this.subtract_czzhi1$(other);
+  };
+  MutableVec4d.prototype.set_5wr77w$ = function (i, v) {
+    this.fields[i] = v;
+  };
+  MutableVec4d.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MutableVec4d',
+    interfaces: [Vec4d]
+  };
+  function MutableVec4d_init($this) {
+    $this = $this || Object.create(MutableVec4d.prototype);
+    MutableVec4d.call($this, 0.0, 0.0, 0.0, 0.0);
+    return $this;
+  }
+  function MutableVec4d_init_0(f, $this) {
+    $this = $this || Object.create(MutableVec4d.prototype);
+    MutableVec4d.call($this, f, f, f, f);
+    return $this;
+  }
+  function MutableVec4d_init_1(xyz, w, $this) {
+    $this = $this || Object.create(MutableVec4d.prototype);
+    MutableVec4d.call($this, xyz.x, xyz.y, xyz.z, w);
+    return $this;
+  }
+  function MutableVec4d_init_2(other, $this) {
+    $this = $this || Object.create(MutableVec4d.prototype);
+    MutableVec4d.call($this, other.x, other.y, other.z, other.w);
+    return $this;
+  }
+  function add(a, b) {
+    return a.add_q2ruao$(b, MutableVec2f_init());
+  }
+  function add_0(a, b) {
+    return a.add_2gj7b4$(b, MutableVec3f_init());
+  }
+  function add_1(a, b) {
+    return a.add_uzu8ww$(b, MutableVec4f_init());
+  }
+  function add_2(a, b) {
+    return a.add_b18iao$(b, MutableVec2d_init());
+  }
+  function add_3(a, b) {
+    return a.add_vgki2o$(b, MutableVec3d_init());
+  }
+  function add_4(a, b) {
+    return a.add_2x9ggw$(b, MutableVec4d_init());
+  }
+  function subtract(a, b) {
+    return a.subtract_q2ruao$(b, MutableVec2f_init());
+  }
+  function subtract_0(a, b) {
+    return a.subtract_2gj7b4$(b, MutableVec3f_init());
+  }
+  function subtract_1(a, b) {
+    return a.subtract_uzu8ww$(b, MutableVec4f_init());
+  }
+  function subtract_2(a, b) {
+    return a.subtract_b18iao$(b, MutableVec2d_init());
+  }
+  function subtract_3(a, b) {
+    return a.subtract_vgki2o$(b, MutableVec3d_init());
+  }
+  function subtract_4(a, b) {
+    return a.subtract_2x9ggw$(b, MutableVec4d_init());
+  }
+  function scale(a, fac) {
+    return a.scale_749b9g$(fac, MutableVec2f_init());
+  }
+  function scale_0(a, fac) {
+    return a.scale_749b8l$(fac, MutableVec3f_init());
+  }
+  function scale_1(a, fac) {
+    return a.scale_749b7q$(fac, MutableVec4f_init());
+  }
+  function scale_2(a, fac) {
+    return a.scale_b0flcl$(fac, MutableVec2d_init());
+  }
+  function scale_3(a, fac) {
+    return a.scale_b0flbq$(fac, MutableVec3d_init());
+  }
+  function scale_4(a, fac) {
+    return a.scale_b0flav$(fac, MutableVec4d_init());
+  }
+  function norm(a) {
+    return a.norm_5s4mrl$(MutableVec2f_init());
+  }
+  function norm_0(a) {
+    return a.norm_5s4mqq$(MutableVec3f_init());
+  }
+  function norm_1(a) {
+    return a.norm_5s4mrn$(MutableVec2d_init());
+  }
+  function norm_2(a) {
+    return a.norm_5s4mqs$(MutableVec3d_init());
+  }
+  function cross(a, b) {
+    return a.cross_2gj7b4$(b, MutableVec3f_init());
+  }
+  function cross_0(a, b) {
+    return a.cross_vgki2o$(b, MutableVec3d_init());
+  }
+  var slerpTmpAf;
+  var slerpTmpBf;
+  var slerpTmpCf;
+  function slerp(quatA, quatB, f, result) {
+    quatA.norm_5s4mpv$(slerpTmpAf);
+    quatB.norm_5s4mpv$(slerpTmpBf);
+    var clamp$result;
+    if (f < 0.0) {
+      clamp$result = 0.0;
+    }
+     else if (f > 1.0) {
+      clamp$result = 1.0;
+    }
+     else {
+      clamp$result = f;
+    }
+    var t = clamp$result;
+    var $receiver = slerpTmpAf.dot_czzhhz$(slerpTmpBf);
+    var min = -1.0;
+    var clamp$result_0;
+    if ($receiver < min) {
+      clamp$result_0 = min;
+    }
+     else if ($receiver > 1.0) {
+      clamp$result_0 = 1.0;
+    }
+     else {
+      clamp$result_0 = $receiver;
+    }
+    var dot = clamp$result_0;
+    if (dot < 0) {
+      slerpTmpAf.scale_mx4ult$(-1.0);
+      dot = -dot;
+    }
+    if (dot > 0.9995) {
+      slerpTmpBf.subtract_uzu8ww$(slerpTmpAf, result).scale_mx4ult$(t).add_czzhhz$(slerpTmpAf).norm();
+    }
+     else {
+      var x = dot;
+      var theta0 = Math_0.acos(x);
+      var theta = theta0 * t;
+      slerpTmpAf.scale_749b7q$(-dot, slerpTmpCf).add_czzhhz$(slerpTmpBf).norm();
+      slerpTmpAf.scale_mx4ult$(Math_0.cos(theta));
+      slerpTmpCf.scale_mx4ult$(Math_0.sin(theta));
+      result.set_czzhhz$(slerpTmpAf).add_czzhhz$(slerpTmpCf);
+    }
+    return result;
+  }
+  var slerpTmpAd;
+  var slerpTmpBd;
+  var slerpTmpCd;
+  function slerp_0(quatA, quatB, f, result) {
+    quatA.norm_5s4mpx$(slerpTmpAd);
+    quatB.norm_5s4mpx$(slerpTmpBd);
+    var clamp$result;
+    if (f < 0.0) {
+      clamp$result = 0.0;
+    }
+     else if (f > 1.0) {
+      clamp$result = 1.0;
+    }
+     else {
+      clamp$result = f;
+    }
+    var t = clamp$result;
+    var $receiver = slerpTmpAd.dot_czzhi1$(slerpTmpBd);
+    var min = -1.0;
+    var clamp$result_0;
+    if ($receiver < min) {
+      clamp$result_0 = min;
+    }
+     else if ($receiver > 1.0) {
+      clamp$result_0 = 1.0;
+    }
+     else {
+      clamp$result_0 = $receiver;
+    }
+    var dot = clamp$result_0;
+    if (dot < 0) {
+      slerpTmpAd.scale_14dthe$(-1.0);
+      dot = -dot;
+    }
+    if (dot > 0.9999995) {
+      slerpTmpBd.subtract_2x9ggw$(slerpTmpAd, result).scale_14dthe$(t).add_czzhi1$(slerpTmpAd).norm();
+    }
+     else {
+      var x = dot;
+      var theta0 = Math_0.acos(x);
+      var theta = theta0 * t;
+      slerpTmpAd.scale_b0flav$(-dot, slerpTmpCd).add_czzhi1$(slerpTmpBd).norm();
+      slerpTmpAd.scale_14dthe$(Math_0.cos(theta));
+      slerpTmpCd.scale_14dthe$(Math_0.sin(theta));
+      result.set_czzhi1$(slerpTmpAd).add_czzhi1$(slerpTmpCd);
+    }
+    return result;
   }
   function MemoryManager() {
     this.allocationMap_0 = LinkedHashMap_init();
@@ -6244,25 +7897,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     this.meshData.isSyncRequired = true;
   };
-  function MultiBoxMesh$addBoxVerts$lambda$lambda(closure$i, closure$h, closure$w) {
-    return function ($receiver) {
-      switch (closure$i % 4) {
-        case 0:
-          $receiver.texCoord.set_dleff0$(0.0, 0.0);
-          break;
-        case 1:
-          $receiver.texCoord.set_dleff0$(0.0, closure$h);
-          break;
-        case 2:
-          $receiver.texCoord.set_dleff0$(closure$w, closure$h);
-          break;
-        case 3:
-          $receiver.texCoord.set_dleff0$(closure$w, 0.0);
-          break;
-      }
-      return Unit;
-    };
-  }
   MultiBoxMesh.prototype.addBoxVerts_0 = function (rigidBody) {
     var startIdx = {v: 0};
     var $this = this.meshData;
@@ -6292,14 +7926,46 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           break;
       }
       var h = tmp$_0;
-      var idx = $this.addVertex_hvwyd1$(MultiBoxMesh$addBoxVerts$lambda$lambda(i, h, w));
+      var idx = {v: 0};
+      $this.isSyncRequired = true;
+      var $this_0 = $this.vertexList;
+      var updateBounds = $this.bounds;
+      var tmp$_1, tmp$_2, tmp$_3;
+      $this_0.checkBufferSizes();
+      tmp$_1 = $this_0.vertexSizeF;
+      for (var i_0 = 1; i_0 <= tmp$_1; i_0++) {
+        $this_0.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_2 = $this_0.vertexSizeI;
+      for (var i_1 = 1; i_1 <= tmp$_2; i_1++) {
+        $this_0.dataI.plusAssign_za3lpa$(0);
+      }
+      $this_0.vertexIt.index = (tmp$_3 = $this_0.size, $this_0.size = tmp$_3 + 1 | 0, tmp$_3);
+      var $receiver = $this_0.vertexIt;
+      switch (i % 4) {
+        case 0:
+          $receiver.texCoord.set_dleff0$(0.0, 0.0);
+          break;
+        case 1:
+          $receiver.texCoord.set_dleff0$(0.0, h);
+          break;
+        case 2:
+          $receiver.texCoord.set_dleff0$(w, h);
+          break;
+        case 3:
+          $receiver.texCoord.set_dleff0$(w, 0.0);
+          break;
+      }
+      updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
+      idx.v = $this_0.size - 1 | 0;
+      var idx_0 = idx.v;
       if (i === 0) {
-        startIdx.v = idx;
+        startIdx.v = idx_0;
       }
     }
-    for (var i_0 = 0; i_0 <= 5; i_0++) {
-      $this.addTriIndices_qt1dr2$(startIdx.v + (i_0 * 4 | 0) | 0, startIdx.v + (i_0 * 4 | 0) + 1 | 0, startIdx.v + (i_0 * 4 | 0) + 2 | 0);
-      $this.addTriIndices_qt1dr2$(startIdx.v + (i_0 * 4 | 0) | 0, startIdx.v + (i_0 * 4 | 0) + 2 | 0, startIdx.v + (i_0 * 4 | 0) + 3 | 0);
+    for (var i_2 = 0; i_2 <= 5; i_2++) {
+      $this.addTriIndices_qt1dr2$(startIdx.v + (i_2 * 4 | 0) | 0, startIdx.v + (i_2 * 4 | 0) + 1 | 0, startIdx.v + (i_2 * 4 | 0) + 2 | 0);
+      $this.addTriIndices_qt1dr2$(startIdx.v + (i_2 * 4 | 0) | 0, startIdx.v + (i_2 * 4 | 0) + 2 | 0, startIdx.v + (i_2 * 4 | 0) + 3 | 0);
     }
     $this.isSyncRequired = true;
     $this.isBatchUpdate = wasBatchUpdate;
@@ -7640,7 +9306,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.splitImpulseTurnErp = 0.1;
     this.linearSlop = 0.0;
     this.warmstartingFactor = 0.85;
-    this.solverMode = ContactSolverInfo$Companion_getInstance().SOLVER_USE_WARMSTARTING;
+    this.solverMode = 4;
     this.minimumSolverBatchSize = 128;
     this.maxGyroscopicForce = 100.0;
     this.singleAxisRollingFrictionThreshold = 1.0E30;
@@ -7691,7 +9357,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.infoGlobal_0.splitImpulse = false;
     this.infoGlobal_0.timeStep = 1.0 / 60.0;
     this.infoGlobal_0.numIterations = 4;
-    this.infoGlobal_0.solverMode = this.infoGlobal_0.solverMode | ContactSolverInfo$Companion_getInstance().SOLVER_USE_2_FRICTION_DIRECTIONS;
+    this.infoGlobal_0.solverMode = this.infoGlobal_0.solverMode | 16;
   }
   SequentialImpulseConstraintSolver.prototype.solveContacts_fr66qz$ = function (bodies, contacts) {
     this.solveGroupSetup_0(bodies, contacts);
@@ -7746,12 +9412,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
             }
           }
         }
-        if (!this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_ENABLE_FRICTION_DIRECTION_CACHING) || !cp.lateralFrictionInitialized) {
+        if (!this.infoGlobal_0.isSolverMode_za3lpa$(32) || !cp.lateralFrictionInitialized) {
           cp.lateralFrictionDir1.set_czzhiu$(cp.normalWorldOnB).scale_mx4ult$(-contactConstraint.relVelocity).add_czzhiu$(contactConstraint.velocity);
           var latRelVel = cp.lateralFrictionDir1.sqrLength();
-          if (!this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_DISABLE_VELOCITY_DEPENDENT_FRICTION_DIRECTION) && latRelVel > FLT_EPSILON) {
+          if (!this.infoGlobal_0.isSolverMode_za3lpa$(64) && latRelVel > FLT_EPSILON) {
             cp.lateralFrictionDir1.scale_mx4ult$(1.0 / Math_0.sqrt(latRelVel));
-            if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_2_FRICTION_DIRECTIONS)) {
+            if (this.infoGlobal_0.isSolverMode_za3lpa$(16)) {
               cp.lateralFrictionDir1.cross_2gj7b4$(cp.normalWorldOnB, cp.lateralFrictionDir2);
               cp.lateralFrictionDir2.norm();
               contactConstraint.frictionConstraint2 = this.addFrictionConstraint_0(cp.lateralFrictionDir2, contactConstraint);
@@ -7760,18 +9426,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           }
            else {
             cp.normalWorldOnB.planeSpace_t87wgk$(cp.lateralFrictionDir1, cp.lateralFrictionDir2);
-            if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_2_FRICTION_DIRECTIONS)) {
+            if (this.infoGlobal_0.isSolverMode_za3lpa$(16)) {
               contactConstraint.frictionConstraint2 = this.addFrictionConstraint_0(cp.lateralFrictionDir2, contactConstraint);
             }
             contactConstraint.frictionConstraint1 = this.addFrictionConstraint_0(cp.lateralFrictionDir1, contactConstraint);
-            if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_2_FRICTION_DIRECTIONS) && this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_DISABLE_VELOCITY_DEPENDENT_FRICTION_DIRECTION)) {
+            if (this.infoGlobal_0.isSolverMode_za3lpa$(16) && this.infoGlobal_0.isSolverMode_za3lpa$(64)) {
               cp.lateralFrictionInitialized = true;
             }
           }
         }
          else {
           contactConstraint.frictionConstraint1 = this.addFrictionConstraint_0(cp.lateralFrictionDir1, contactConstraint);
-          if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_2_FRICTION_DIRECTIONS)) {
+          if (this.infoGlobal_0.isSolverMode_za3lpa$(16)) {
             contactConstraint.frictionConstraint2 = this.addFrictionConstraint_0(cp.lateralFrictionDir2, contactConstraint);
           }
           this.setFrictionConstraintImpulse_0(contactConstraint);
@@ -7804,7 +9470,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var bodyB = contactConstraint.solverBodyB;
     var cp = contactConstraint.originalContactPoint;
     var frictionConstraint1 = ensureNotNull(contactConstraint.frictionConstraint1);
-    if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_WARMSTARTING)) {
+    if (this.infoGlobal_0.isSolverMode_za3lpa$(4)) {
       frictionConstraint1.appliedImpulse = cp.appliedImpulseLateral1 * this.infoGlobal_0.warmstartingFactor;
       if (bodyA.originalBody.invMass !== 0.0) {
         bodyA.internalApplyImpulse_lqfte8$(frictionConstraint1.contactNormal.mul_2gj7b4$(bodyA.invMass, this.tmpVec1_0), frictionConstraint1.angularComponentA, frictionConstraint1.appliedImpulse);
@@ -7816,9 +9482,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
      else {
       frictionConstraint1.appliedImpulse = 0.0;
     }
-    if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_2_FRICTION_DIRECTIONS)) {
+    if (this.infoGlobal_0.isSolverMode_za3lpa$(16)) {
       var frictionConstraint2 = ensureNotNull(contactConstraint.frictionConstraint2);
-      if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_WARMSTARTING)) {
+      if (this.infoGlobal_0.isSolverMode_za3lpa$(4)) {
         frictionConstraint2.appliedImpulse = cp.appliedImpulseLateral2 * this.infoGlobal_0.warmstartingFactor;
         if (bodyA.originalBody.invMass !== 0.0) {
           bodyA.internalApplyImpulse_lqfte8$(frictionConstraint2.contactNormal.mul_2gj7b4$(bodyA.invMass, this.tmpVec1_0), frictionConstraint2.angularComponentA, frictionConstraint2.appliedImpulse);
@@ -7957,14 +9623,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   SequentialImpulseConstraintSolver.prototype.solveGroupFinish_0 = function () {
     var tmp$, tmp$_0;
-    if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_WARMSTARTING)) {
+    if (this.infoGlobal_0.isSolverMode_za3lpa$(4)) {
       tmp$ = this.contactConstraintPool_0.size;
       for (var i = 0; i < tmp$; i++) {
         var constraint = this.contactConstraintPool_0.get_za3lpa$(i);
         var cp = constraint.originalContactPoint;
         cp.appliedImpulse = constraint.appliedImpulse;
         cp.appliedImpulseLateral1 = ensureNotNull(constraint.frictionConstraint1).appliedImpulse;
-        if (this.infoGlobal_0.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_2_FRICTION_DIRECTIONS)) {
+        if (this.infoGlobal_0.isSolverMode_za3lpa$(16)) {
           cp.appliedImpulseLateral2 = ensureNotNull(constraint.frictionConstraint2).appliedImpulse;
         }
       }
@@ -8218,7 +9884,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (restitution < 0.0) {
       restitution = 0.0;
     }
-    if (solverInfo.isSolverMode_za3lpa$(ContactSolverInfo$Companion_getInstance().SOLVER_USE_WARMSTARTING)) {
+    if (solverInfo.isSolverMode_za3lpa$(4)) {
       this.appliedImpulse = cp.appliedImpulse * solverInfo.warmstartingFactor;
       this.tmpVec1.set_czzhiu$(this.contactNormal).mul_czzhiu$(bodyA.invMass);
       bodyA.internalApplyImpulse_lqfte8$(this.tmpVec1, this.angularComponentA, this.appliedImpulse);
@@ -8598,11 +10264,30 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     tmp$ = this.originalMeshData_0.numVertices;
     for (var i = 0; i < tmp$; i++) {
       this.origV_0.index = i;
-      this.meshData.addVertex_hvwyd1$(Armature_init$lambda(this));
+      var $this = this.meshData;
+      var idx = {v: 0};
+      $this.isSyncRequired = true;
+      var $this_0 = $this.vertexList;
+      var updateBounds = $this.bounds;
+      var tmp$_1, tmp$_2, tmp$_3;
+      $this_0.checkBufferSizes();
+      tmp$_1 = $this_0.vertexSizeF;
+      for (var i_0 = 1; i_0 <= tmp$_1; i_0++) {
+        $this_0.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_2 = $this_0.vertexSizeI;
+      for (var i_1 = 1; i_1 <= tmp$_2; i_1++) {
+        $this_0.dataI.plusAssign_za3lpa$(0);
+      }
+      $this_0.vertexIt.index = (tmp$_3 = $this_0.size, $this_0.size = tmp$_3 + 1 | 0, tmp$_3);
+      $this_0.vertexIt.set_j5bz6$(this.origV_0);
+      updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
+      idx.v = $this_0.size - 1 | 0;
+      idx.v;
     }
     tmp$_0 = this.originalMeshData_0.numIndices;
-    for (var i_0 = 0; i_0 < tmp$_0; i_0++) {
-      this.meshData.addIndex_za3lpa$(this.originalMeshData_0.vertexList.indices.get_za3lpa$(i_0));
+    for (var i_2 = 0; i_2 < tmp$_0; i_2++) {
+      this.meshData.addIndex_za3lpa$(this.originalMeshData_0.vertexList.indices.get_za3lpa$(i_2));
     }
     this.meshV_0 = this.meshData.get_za3lpa$(0);
   }
@@ -8863,12 +10548,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       new Armature$Companion();
     }
     return Armature$Companion_instance;
-  }
-  function Armature_init$lambda(this$Armature) {
-    return function ($receiver) {
-      $receiver.set_j5bz6$(this$Armature.origV_0);
-      return Unit;
-    };
   }
   Armature.$metadata$ = {
     kind: Kind_CLASS,
@@ -9326,6 +11005,388 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'FrustumPlane',
     interfaces: []
   };
+  function doublePrecisionTransform(name, block) {
+    if (name === void 0)
+      name = null;
+    var root = new DoublePrecisionRoot(new TransformGroupDp((name != null ? name : 'DoublePrecisionRoot') + '-rootGroup'), name);
+    block(root.root);
+    return root;
+  }
+  function DoublePrecisionRoot(root, name) {
+    if (name === void 0)
+      name = null;
+    Node.call(this, name);
+    this.root = root;
+    this.modelMatDp_0 = new Mat4dStack();
+    this.modelMatDp_0.setIdentity();
+    this.root.parent = this;
+  }
+  DoublePrecisionRoot.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
+    Node.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
+    this.root.scene = newScene;
+  };
+  DoublePrecisionRoot.prototype.preRender_aemszp$ = function (ctx) {
+    this.modelMatDp_0.set_d4zu6j$(ctx.mvpState.modelMatrix);
+    this.root.preRenderDp_oxz17o$(ctx, this.modelMatDp_0);
+    Node.prototype.preRender_aemszp$.call(this, ctx);
+  };
+  DoublePrecisionRoot.prototype.render_aemszp$ = function (ctx) {
+    this.modelMatDp_0.set_d4zu6j$(ctx.mvpState.modelMatrix);
+    this.root.renderDp_oxz17o$(ctx, this.modelMatDp_0);
+    Node.prototype.render_aemszp$.call(this, ctx);
+  };
+  DoublePrecisionRoot.prototype.postRender_aemszp$ = function (ctx) {
+    this.root.postRender_aemszp$(ctx);
+    Node.prototype.postRender_aemszp$.call(this, ctx);
+  };
+  DoublePrecisionRoot.prototype.dispose_aemszp$ = function (ctx) {
+    this.root.dispose_aemszp$(ctx);
+    Node.prototype.dispose_aemszp$.call(this, ctx);
+  };
+  DoublePrecisionRoot.prototype.rayTest_jljx4v$ = function (test) {
+    this.root.rayTest_jljx4v$(test);
+    Node.prototype.rayTest_jljx4v$.call(this, test);
+  };
+  DoublePrecisionRoot.prototype.get_61zpoe$ = function (name) {
+    var tmp$;
+    return (tmp$ = Node.prototype.get_61zpoe$.call(this, name)) != null ? tmp$ : this.root.get_61zpoe$(name);
+  };
+  DoublePrecisionRoot.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DoublePrecisionRoot',
+    interfaces: [Node]
+  };
+  function NodeDp(name) {
+    if (name === void 0)
+      name = null;
+    Node.call(this, name);
+  }
+  NodeDp.prototype.preRenderDp_oxz17o$ = function (ctx, modelMatDp) {
+    this.preRender_aemszp$(ctx);
+  };
+  NodeDp.prototype.renderDp_oxz17o$ = function (ctx, modelMatDp) {
+    this.render_aemszp$(ctx);
+  };
+  NodeDp.prototype.toGlobalCoordsDp_j7uy7i$$default = function (vec, w) {
+    var tmp$;
+    tmp$ = this.parent;
+    if (tmp$ == null) {
+      return vec;
+    }
+    var p = tmp$;
+    if (Kotlin.isType(p, NodeDp)) {
+      p.toGlobalCoordsDp_j7uy7i$(vec, w);
+    }
+    return vec;
+  };
+  NodeDp.prototype.toGlobalCoordsDp_j7uy7i$ = function (vec, w, callback$default) {
+    if (w === void 0)
+      w = 1.0;
+    return callback$default ? callback$default(vec, w) : this.toGlobalCoordsDp_j7uy7i$$default(vec, w);
+  };
+  NodeDp.prototype.toLocalCoordsDp_j7uy7i$$default = function (vec, w) {
+    var tmp$;
+    tmp$ = this.parent;
+    if (tmp$ == null) {
+      return vec;
+    }
+    var p = tmp$;
+    if (Kotlin.isType(p, NodeDp)) {
+      p.toLocalCoordsDp_j7uy7i$(vec, w);
+    }
+    return vec;
+  };
+  NodeDp.prototype.toLocalCoordsDp_j7uy7i$ = function (vec, w, callback$default) {
+    if (w === void 0)
+      w = 1.0;
+    return callback$default ? callback$default(vec, w) : this.toLocalCoordsDp_j7uy7i$$default(vec, w);
+  };
+  NodeDp.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'NodeDp',
+    interfaces: [Node]
+  };
+  function NodeProxy(node) {
+    NodeDp.call(this, node.name);
+    this.node = node;
+    this.node.parent = this;
+  }
+  Object.defineProperty(NodeProxy.prototype, 'bounds', {
+    get: function () {
+      return this.node.bounds;
+    }
+  });
+  Object.defineProperty(NodeProxy.prototype, 'globalCenter', {
+    get: function () {
+      return this.node.globalCenter;
+    }
+  });
+  Object.defineProperty(NodeProxy.prototype, 'globalRadius', {
+    get: function () {
+      return this.node.globalRadius;
+    },
+    set: function (f) {
+    }
+  });
+  NodeProxy.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
+    NodeDp.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
+    this.node.scene = newScene;
+  };
+  NodeProxy.prototype.preRender_aemszp$ = function (ctx) {
+    this.node.preRender_aemszp$(ctx);
+    NodeDp.prototype.preRender_aemszp$.call(this, ctx);
+  };
+  NodeProxy.prototype.render_aemszp$ = function (ctx) {
+    this.node.render_aemszp$(ctx);
+    NodeDp.prototype.render_aemszp$.call(this, ctx);
+  };
+  NodeProxy.prototype.postRender_aemszp$ = function (ctx) {
+    this.node.postRender_aemszp$(ctx);
+    NodeDp.prototype.postRender_aemszp$.call(this, ctx);
+  };
+  NodeProxy.prototype.dispose_aemszp$ = function (ctx) {
+    this.node.dispose_aemszp$(ctx);
+    NodeDp.prototype.dispose_aemszp$.call(this, ctx);
+  };
+  NodeProxy.prototype.rayTest_jljx4v$ = function (test) {
+    this.node.rayTest_jljx4v$(test);
+  };
+  NodeProxy.prototype.get_61zpoe$ = function (name) {
+    return this.node.get_61zpoe$(name);
+  };
+  NodeProxy.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'NodeProxy',
+    interfaces: [NodeDp]
+  };
+  function transformGroupDp(name, block) {
+    if (name === void 0)
+      name = null;
+    var tg = new TransformGroupDp(name);
+    block(tg);
+    return tg;
+  }
+  function TransformGroupDp(name) {
+    if (name === void 0)
+      name = null;
+    NodeDp.call(this, name);
+    this.children = ArrayList_init();
+    this.tmpBounds = new BoundingBox();
+    this.transform = new Mat4d();
+    this.invTransform = new Mat4d();
+    this.isIdentity = false;
+    this.isDirty = false;
+    this.tmpTransformVec_fqdmwo$_0 = MutableVec3f_init();
+  }
+  Object.defineProperty(TransformGroupDp.prototype, 'size', {
+    get: function () {
+      return this.children.size;
+    }
+  });
+  TransformGroupDp.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
+    var tmp$;
+    NodeDp.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
+    tmp$ = this.children;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.children.get_za3lpa$(i).scene = newScene;
+    }
+  };
+  TransformGroupDp.prototype.checkInverse = function () {
+    if (this.isDirty) {
+      this.transform.invert_d4zu6l$(this.invTransform);
+      this.isDirty = false;
+    }
+  };
+  TransformGroupDp.prototype.setDirty = function () {
+    this.isDirty = true;
+    this.isIdentity = false;
+  };
+  TransformGroupDp.prototype.preRenderDp_oxz17o$ = function (ctx, modelMatDp) {
+    var tmp$;
+    var wasIdentity = this.isIdentity;
+    if (!wasIdentity) {
+      modelMatDp.push().mul_d4zu6l$(this.transform);
+      ctx.mvpState.modelMatrix.set_d4zu6l$(modelMatDp);
+      ctx.mvpState.update_aemszp$(ctx);
+    }
+    this.tmpBounds.clear();
+    tmp$ = this.children;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.children.get_za3lpa$(i).preRenderDp_oxz17o$(ctx, modelMatDp);
+      this.tmpBounds.add_ea4od8$(this.children.get_za3lpa$(i).bounds);
+    }
+    this.bounds.set_ea4od8$(this.tmpBounds);
+    if (!this.bounds.isEmpty && !wasIdentity) {
+      this.tmpBounds.clear();
+      this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_fqdmwo$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.min.y, this.bounds.min.z), 1.0));
+      this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_fqdmwo$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.min.y, this.bounds.max.z), 1.0));
+      this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_fqdmwo$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.max.y, this.bounds.min.z), 1.0));
+      this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_fqdmwo$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.max.y, this.bounds.max.z), 1.0));
+      this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_fqdmwo$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.min.y, this.bounds.min.z), 1.0));
+      this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_fqdmwo$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.min.y, this.bounds.max.z), 1.0));
+      this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_fqdmwo$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.max.y, this.bounds.min.z), 1.0));
+      this.tmpBounds.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_fqdmwo$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.max.y, this.bounds.max.z), 1.0));
+      this.bounds.set_ea4od8$(this.tmpBounds);
+    }
+    if (!wasIdentity) {
+      modelMatDp.pop();
+      ctx.mvpState.modelMatrix.set_d4zu6l$(modelMatDp);
+      ctx.mvpState.update_aemszp$(ctx);
+    }
+    NodeDp.prototype.preRenderDp_oxz17o$.call(this, ctx, modelMatDp);
+  };
+  TransformGroupDp.prototype.renderDp_oxz17o$ = function (ctx, modelMatDp) {
+    var tmp$;
+    if (this.isVisible) {
+      var wasIdentity = this.isIdentity;
+      if (!wasIdentity) {
+        modelMatDp.push().mul_d4zu6l$(this.transform);
+        ctx.mvpState.modelMatrix.set_d4zu6l$(modelMatDp);
+        ctx.mvpState.update_aemszp$(ctx);
+      }
+      NodeDp.prototype.renderDp_oxz17o$.call(this, ctx, modelMatDp);
+      if (this.isRendered) {
+        tmp$ = this.children;
+        for (var i = 0; i !== tmp$.size; ++i) {
+          if (ctx.renderPass !== RenderPass$SHADOW_getInstance() || this.children.get_za3lpa$(i).isCastingShadow) {
+            this.children.get_za3lpa$(i).renderDp_oxz17o$(ctx, modelMatDp);
+          }
+        }
+      }
+      if (!wasIdentity) {
+        modelMatDp.pop();
+        ctx.mvpState.modelMatrix.set_d4zu6l$(modelMatDp);
+        ctx.mvpState.update_aemszp$(ctx);
+      }
+    }
+  };
+  TransformGroupDp.prototype.toGlobalCoords_w1lst9$$default = function (vec, w) {
+    if (!this.isIdentity) {
+      this.transform.transform_w1lst9$(vec, w);
+    }
+    return this.toGlobalCoords_w1lst9$(vec, w, NodeDp.prototype.toGlobalCoords_w1lst9$$default.bind(this));
+  };
+  TransformGroupDp.prototype.toLocalCoords_w1lst9$$default = function (vec, w) {
+    this.toLocalCoords_w1lst9$(vec, w, NodeDp.prototype.toLocalCoords_w1lst9$$default.bind(this));
+    if (!this.isIdentity) {
+      this.checkInverse();
+      return this.invTransform.transform_w1lst9$(vec, w);
+    }
+     else {
+      return vec;
+    }
+  };
+  TransformGroupDp.prototype.toGlobalCoordsDp_j7uy7i$$default = function (vec, w) {
+    if (!this.isIdentity) {
+      this.transform.transform_j7uy7i$(vec, w);
+    }
+    return this.toGlobalCoordsDp_j7uy7i$(vec, w, NodeDp.prototype.toGlobalCoordsDp_j7uy7i$$default.bind(this));
+  };
+  TransformGroupDp.prototype.toLocalCoordsDp_j7uy7i$$default = function (vec, w) {
+    this.toLocalCoordsDp_j7uy7i$(vec, w, NodeDp.prototype.toLocalCoordsDp_j7uy7i$$default.bind(this));
+    if (!this.isIdentity) {
+      this.checkInverse();
+      return this.invTransform.transform_j7uy7i$(vec, w);
+    }
+     else {
+      return vec;
+    }
+  };
+  TransformGroupDp.prototype.rayTest_jljx4v$ = function (test) {
+    if (!this.isIdentity) {
+      this.checkInverse();
+      this.invTransform.transform_w1lst9$(test.ray.origin, 1.0);
+      this.invTransform.transform_w1lst9$(test.ray.direction, 0.0);
+    }
+    NodeDp.prototype.rayTest_jljx4v$.call(this, test);
+    if (!this.isIdentity) {
+      this.transform.transform_w1lst9$(test.ray.origin, 1.0);
+      this.transform.transform_w1lst9$(test.ray.direction, 0.0);
+    }
+  };
+  TransformGroupDp.prototype.getTransform_d4zu6l$ = function (result) {
+    return result.set_d4zu6l$(this.transform);
+  };
+  TransformGroupDp.prototype.translate_czzhiw$ = function (t) {
+    return this.translate_yvo9jy$(t.x, t.y, t.z);
+  };
+  TransformGroupDp.prototype.translate_yvo9jy$ = function (tx, ty, tz) {
+    this.transform.translate_yvo9jy$(tx, ty, tz);
+    this.setDirty();
+    return this;
+  };
+  TransformGroupDp.prototype.rotate_5820x2$ = function (angleDeg, axis) {
+    return this.rotate_6y0v78$(angleDeg, axis.x, axis.y, axis.z);
+  };
+  TransformGroupDp.prototype.rotate_6y0v78$ = function (angleDeg, axX, axY, axZ) {
+    this.transform.rotate_6y0v78$(angleDeg, axX, axY, axZ);
+    this.setDirty();
+    return this;
+  };
+  TransformGroupDp.prototype.scale_yvo9jy$ = function (sx, sy, sz) {
+    this.transform.scale_yvo9jy$(sx, sy, sz);
+    this.setDirty();
+    return this;
+  };
+  TransformGroupDp.prototype.mul_d4zu6l$ = function (mat) {
+    this.transform.mul_d4zu6l$(mat);
+    this.setDirty();
+    return this;
+  };
+  TransformGroupDp.prototype.set_d4zu6l$ = function (mat) {
+    this.transform.set_d4zu6l$(mat);
+    this.setDirty();
+    return this;
+  };
+  TransformGroupDp.prototype.setIdentity = function () {
+    this.transform.setIdentity();
+    this.invTransform.setIdentity();
+    this.isDirty = false;
+    this.isIdentity = true;
+    return this;
+  };
+  TransformGroupDp.prototype.addNode_mvx38y$$default = function (node, index) {
+    if (index >= 0) {
+      this.children.add_wxm5ur$(index, node);
+    }
+     else {
+      this.children.add_11rb$(node);
+    }
+    node.parent = this;
+    this.bounds.add_ea4od8$(node.bounds);
+  };
+  TransformGroupDp.prototype.addNode_mvx38y$ = function (node, index, callback$default) {
+    if (index === void 0)
+      index = -1;
+    callback$default ? callback$default(node, index) : this.addNode_mvx38y$$default(node, index);
+  };
+  TransformGroupDp.prototype.removeNode_v64n5s$ = function (node) {
+    if (this.children.remove_11rb$(node)) {
+      node.parent = null;
+      return true;
+    }
+    return false;
+  };
+  TransformGroupDp.prototype.containsNode_v64n5s$ = function (node) {
+    return this.children.contains_11rb$(node);
+  };
+  TransformGroupDp.prototype.plusAssign_v64n5s$ = function (node) {
+    this.addNode_mvx38y$(node);
+  };
+  TransformGroupDp.prototype.minusAssign_v64n5s$ = function (node) {
+    this.removeNode_v64n5s$(node);
+  };
+  TransformGroupDp.prototype.unaryPlus_s5ktn5$ = function ($receiver) {
+    this.addNode_mvx38y$($receiver);
+  };
+  TransformGroupDp.prototype.unaryPlus_uv0sim$ = function ($receiver) {
+    this.addNode_mvx38y$(new NodeProxy($receiver));
+  };
+  TransformGroupDp.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TransformGroupDp',
+    interfaces: [NodeDp]
+  };
   function group(name, block) {
     if (name === void 0)
       name = null;
@@ -9427,7 +11488,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.children.add_11rb$(node);
     }
     node.parent = this;
-    this.bounds.add_ea4od8$(node.bounds);
     this.bounds.add_ea4od8$(node.bounds);
   };
   Group.prototype.addNode_xtids1$ = function (node, index, callback$default) {
@@ -9770,7 +11830,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     Node.call(this, name);
     this.meshData = meshData;
     this.shader = null;
-    this.primitiveType = GL_TRIANGLES;
+    this.primitiveType = 4;
     this.cullMethod = CullMethod$DEFAULT_getInstance();
     this.meshData.incrementReferenceCount();
   }
@@ -9812,11 +11872,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         switch (this.cullMethod.name) {
           case 'CULL_BACK_FACES':
             ctx.isCullFace = true;
-            ctx.cullFace = GL_BACK;
+            ctx.cullFace = 1029;
             break;
           case 'CULL_FRONT_FACES':
             ctx.isCullFace = true;
-            ctx.cullFace = GL_FRONT;
+            ctx.cullFace = 1028;
             break;
           default:ctx.isCullFace = false;
             break;
@@ -9850,8 +11910,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.bounds = new BoundingBox();
     this.generator = null;
     this.referenceCount_0 = 0;
-    this.usage = GL_STATIC_DRAW;
-    this.indexType = GL_UNSIGNED_INT;
+    this.usage = 35044;
+    this.indexType = 5125;
     this.dataBufferF = null;
     this.dataBufferI = null;
     this.indexBuffer = null;
@@ -9940,12 +12000,29 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.isBatchUpdate = wasBatchUpdate;
     };
   }));
-  MeshData.prototype.addVertex_hvwyd1$ = function (block) {
-    var idx = {v: 0};
-    this.isSyncRequired = true;
-    idx.v = this.vertexList.addVertex_z2do90$(this.bounds, block);
-    return idx.v;
-  };
+  MeshData.prototype.addVertex_hvwyd1$ = defineInlineFunction('kool.de.fabmax.kool.scene.MeshData.addVertex_hvwyd1$', wrapFunction(function () {
+    return function (block) {
+      var idx = {v: 0};
+      this.isSyncRequired = true;
+      var $this = this.vertexList;
+      var updateBounds = this.bounds;
+      var tmp$, tmp$_0, tmp$_1;
+      $this.checkBufferSizes();
+      tmp$ = $this.vertexSizeF;
+      for (var i = 1; i <= tmp$; i++) {
+        $this.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_0 = $this.vertexSizeI;
+      for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
+        $this.dataI.plusAssign_za3lpa$(0);
+      }
+      $this.vertexIt.index = (tmp$_1 = $this.size, $this.size = tmp$_1 + 1 | 0, tmp$_1);
+      block($this.vertexIt);
+      updateBounds != null ? updateBounds.add_czzhiu$($this.vertexIt.position) : null;
+      idx.v = $this.size - 1 | 0;
+      return idx.v;
+    };
+  }));
   MeshData.prototype.addVertex_lv7vxo$ = function (position, normal, color, texCoord) {
     if (normal === void 0)
       normal = null;
@@ -9955,8 +12032,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       texCoord = null;
     var idx = {v: 0};
     this.isSyncRequired = true;
-    idx.v = this.vertexList.addVertex_lv7vxo$(position, normal, color, texCoord);
     this.bounds.add_czzhiu$(position);
+    idx.v = this.vertexList.addVertex_lv7vxo$(position, normal, color, texCoord);
     return idx.v;
   };
   MeshData.prototype.addIndex_za3lpa$ = function (idx) {
@@ -10011,11 +12088,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MeshData.prototype.checkBuffers_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
     if (this.indexBuffer == null) {
-      this.indexBuffer = BufferResource$Companion_getInstance().create_2shagh$(GL_ELEMENT_ARRAY_BUFFER, ctx);
+      this.indexBuffer = BufferResource$Companion_getInstance().create_2shagh$(34963, ctx);
     }
     var hasIntData = false;
     if (this.dataBufferF == null) {
-      this.dataBufferF = BufferResource$Companion_getInstance().create_2shagh$(GL_ARRAY_BUFFER, ctx);
+      this.dataBufferF = BufferResource$Companion_getInstance().create_2shagh$(34962, ctx);
       tmp$ = this.vertexAttributes.iterator();
       while (tmp$.hasNext()) {
         var vertexAttrib = tmp$.next();
@@ -10030,7 +12107,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
     if (hasIntData && this.dataBufferI == null) {
-      this.dataBufferI = BufferResource$Companion_getInstance().create_2shagh$(GL_ARRAY_BUFFER, ctx);
+      this.dataBufferI = BufferResource$Companion_getInstance().create_2shagh$(34962, ctx);
       tmp$_0 = this.vertexAttributes.iterator();
       while (tmp$_0.hasNext()) {
         var vertexAttrib_0 = tmp$_0.next();
@@ -10053,11 +12130,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           for (var i = 0; i <= tmp$_1; i++) {
             uint16Buffer.put_mq22fl$(toShort(this.vertexList.indices.get_za3lpa$(i)));
           }
-          this.indexType = GL_UNSIGNED_SHORT;
+          this.indexType = 5123;
           (tmp$_2 = this.indexBuffer) != null ? (tmp$_2.setData_34zp6t$(uint16Buffer, this.usage, ctx), Unit) : null;
         }
          else {
-          this.indexType = GL_UNSIGNED_INT;
+          this.indexType = 5125;
           (tmp$_3 = this.indexBuffer) != null ? (tmp$_3.setData_5h48zj$(this.vertexList.indices, this.usage, ctx), Unit) : null;
         }
         (tmp$_4 = this.dataBufferF) != null ? (tmp$_4.setData_wcsk4b$(this.vertexList.dataF, this.usage, ctx), Unit) : null;
@@ -10379,7 +12456,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.camera = new PerspectiveCamera();
     this.light = new Light();
     this.defaultShadowMap_jajs2a$_0 = null;
-    this.clearMask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
+    this.clearMask = 16640;
     this.isPickingEnabled = true;
     this.rayTest_odjp91$_0 = new RayTest();
     this.hoverNode_ab2f3d$_0 = null;
@@ -10502,10 +12579,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     for (var i_0 = get_lastIndex(this.dragHandlers_ipew8g$_0); i_0 >= 0; i_0--) {
       var result = this.dragHandlers_ipew8g$_0.get_za3lpa$(i_0).handleDrag_kin2e3$(this.dragPtrs_mbcqtw$_0, ctx);
-      if ((result & InputManager$DragHandler$Companion_getInstance().REMOVE_HANDLER) !== 0) {
+      if ((result & 2) !== 0) {
         this.dragHandlers_ipew8g$_0.removeAt_za3lpa$(i_0);
       }
-      if ((result & InputManager$DragHandler$Companion_getInstance().HANDLED) !== 0) {
+      if ((result & 1) !== 0) {
         break;
       }
     }
@@ -10535,6 +12612,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var sit = new SphericalInputTransform(name);
     block(sit);
     return sit;
+  }
+  function defaultCamTransform$lambda(this$defaultCamTransform) {
+    return function ($receiver) {
+      $receiver.setMouseRotation_dleff0$(20.0, -30.0);
+      $receiver.unaryPlus_uv0sim$(this$defaultCamTransform.camera);
+      return Unit;
+    };
+  }
+  function defaultCamTransform($receiver) {
+    $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, defaultCamTransform$lambda($receiver)));
   }
   function SphericalInputTransform(name) {
     if (name === void 0)
@@ -11063,6 +13150,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.transform.transform_w1lst9$(test.ray.direction, 0.0);
     }
   };
+  TransformGroup.prototype.getTransform_d4zu6j$ = function (result) {
+    return result.set_d4zu6j$(this.transform);
+  };
   TransformGroup.prototype.translate_czzhiu$ = function (t) {
     return this.translate_y2kzbl$(t.x, t.y, t.z);
   };
@@ -11354,6 +13444,172 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     kind: Kind_CLASS,
     simpleName: 'BlurredComponentUi',
     interfaces: [SimpleComponentUi]
+  };
+  function DrawerMenu(width, title, name, root) {
+    UiContainer.call(this, name, root);
+    this.menuAnimator_0 = new CosAnimator(new InterpolatedFloat(0.0, 1.0));
+    this.menuButton_8be2vx$_2ldp8u$_0 = this.menuButton_8be2vx$_2ldp8u$_0;
+    this.initFont_0 = true;
+    this.menuAnimator_0.duration = 0.25;
+    this.menuAnimator_0.speed = -1.0;
+    this.menuAnimator_0.value.onUpdate = DrawerMenu_init$lambda(this);
+    this.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
+    this.layoutSpec.setSize_4ujscr$(width, pcs(100.0, true), zero());
+    this.alpha = 0.0;
+    if (title != null) {
+      this.unaryPlus_uv0sim$(root.label_tokfmu$('title', DrawerMenu_init$lambda$lambda$lambda(title, root, this)));
+      this.unaryPlus_uv0sim$(root.component_qphi6d$('divider', DrawerMenu_init$lambda$lambda$lambda_0(root)));
+    }
+    root.toggleButton_6j87po$(name + '-menuButton', DrawerMenu_init$lambda$lambda(this));
+  }
+  Object.defineProperty(DrawerMenu.prototype, 'menuButton_8be2vx$', {
+    get: function () {
+      if (this.menuButton_8be2vx$_2ldp8u$_0 == null)
+        return throwUPAE('menuButton');
+      return this.menuButton_8be2vx$_2ldp8u$_0;
+    },
+    set: function (menuButton) {
+      this.menuButton_8be2vx$_2ldp8u$_0 = menuButton;
+    }
+  });
+  Object.defineProperty(DrawerMenu.prototype, 'isOpen', {
+    get: function () {
+      return this.menuButton_8be2vx$.isEnabled;
+    },
+    set: function (value) {
+      this.menuButton_8be2vx$.isEnabled = value;
+    }
+  });
+  function DrawerMenu$MenuButtonUi($outer, tb) {
+    this.$outer = $outer;
+    ToggleButtonUi.call(this, tb, new BlankComponentUi());
+  }
+  function DrawerMenu$MenuButtonUi$createUi$lambda(this$MenuButtonUi, this$DrawerMenu) {
+    return function ($receiver) {
+      this$DrawerMenu.menuAnimator_0.speed = this$MenuButtonUi.tb.isEnabled ? 1.0 : -1.0;
+      return Unit;
+    };
+  }
+  function DrawerMenu$MenuButtonUi$createUi$lambda_0(this$MenuButtonUi) {
+    return function ($receiver) {
+      $receiver.colorModel = ColorModel$VERTEX_COLOR_getInstance();
+      $receiver.lightModel = this$MenuButtonUi.tb.root.shaderLightModel;
+      return Unit;
+    };
+  }
+  DrawerMenu$MenuButtonUi.prototype.createUi_aemszp$ = function (ctx) {
+    ToggleButtonUi.prototype.createUi_aemszp$.call(this, ctx);
+    this.knobAnimator.duration = 0.5;
+    this.knobAnimator.value.onUpdate;
+    var $receiver = this.tb.onStateChange;
+    var element = DrawerMenu$MenuButtonUi$createUi$lambda(this, this.$outer);
+    $receiver.add_11rb$(element);
+    this.mesh.shader = basicShader(DrawerMenu$MenuButtonUi$createUi$lambda_0(this));
+  };
+  DrawerMenu$MenuButtonUi.prototype.onRender_aemszp$ = function (ctx) {
+    ToggleButtonUi.prototype.onRender_aemszp$.call(this, ctx);
+    this.$outer.menuAnimator_0.tick_aemszp$(ctx);
+  };
+  DrawerMenu$MenuButtonUi.prototype.updateUi_aemszp$ = function (ctx) {
+    var hw = this.tb.width * 0.5;
+    var hh = this.tb.height * 0.18;
+    var hx = -hw / 2.0;
+    var ph = dp_0(this.tb, 2.5);
+    this.updateTextColor();
+    this.tb.setupBuilder_84rojv$(this.meshBuilder);
+    var $receiver = this.meshBuilder;
+    $receiver.color = new Color(0.0, 0.0, 0.0, 0.0);
+    var $receiver_0 = $receiver.circleProps.defaults();
+    var a = this.tb.width;
+    var b = this.tb.height;
+    $receiver_0.radius = Math_0.min(a, b) / 2.0;
+    $receiver_0.center.set_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, -4.0);
+    $receiver_0.steps = 30;
+    $receiver.circle_59f34t$($receiver.circleProps);
+    var tx = this.knobAnimator.value.value * -hw * 0.1;
+    var w = hw - this.knobAnimator.value.value * hw * 0.4;
+    $receiver.color = this.textColor;
+    $receiver.translate_y2kzbl$(this.tb.width / 2.0, this.tb.height / 2.0, 0.0);
+    $receiver.rotate_ad55pp$(180.0 - this.knobAnimator.value.value * 180.0, Vec3f$Companion_getInstance().Z_AXIS);
+    $receiver.transform.push();
+    $receiver.translate_y2kzbl$(tx, hh, 0.0);
+    $receiver.rotate_ad55pp$(this.knobAnimator.value.value * 45.0, Vec3f$Companion_getInstance().Z_AXIS);
+    var $receiver_1 = $receiver.rectProps.defaults();
+    $receiver_1.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
+    $receiver_1.size.set_dleff0$(w, ph);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    $receiver.transform.pop();
+    var $receiver_2 = $receiver.rectProps.defaults();
+    $receiver_2.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
+    $receiver_2.size.set_dleff0$(hw, ph);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    $receiver.transform.push();
+    $receiver.translate_y2kzbl$(tx, -hh, 0.0);
+    $receiver.rotate_ad55pp$(this.knobAnimator.value.value * -45.0, Vec3f$Companion_getInstance().Z_AXIS);
+    var $receiver_3 = $receiver.rectProps.defaults();
+    $receiver_3.origin.set_y2kzbl$(hx, -ph / 2.0, 0.0);
+    $receiver_3.size.set_dleff0$(w, ph);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    $receiver.transform.pop();
+  };
+  DrawerMenu$MenuButtonUi.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MenuButtonUi',
+    interfaces: [ToggleButtonUi]
+  };
+  function DrawerMenu_init$lambda(this$DrawerMenu) {
+    return function (v) {
+      this$DrawerMenu.setIdentity();
+      this$DrawerMenu.translate_y2kzbl$(this$DrawerMenu.posInParent.x + dp_0(this$DrawerMenu, -40.0) * (1.0 - v), this$DrawerMenu.posInParent.y, this$DrawerMenu.posInParent.z);
+      this$DrawerMenu.alpha = v;
+      return Unit;
+    };
+  }
+  function DrawerMenu_init$lambda$lambda$lambda$lambda(this$, this$_0) {
+    return function ($receiver, ctx) {
+      if (this$.initFont_0) {
+        this$.initFont_0 = false;
+        this$_0.font.setCustom_11rb$(titleFont(this$_0, ctx));
+      }
+      return Unit;
+    };
+  }
+  function DrawerMenu_init$lambda$lambda$lambda(closure$title, this$, this$_0) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(-50.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(40.0, true), zero());
+      $receiver.textAlignment = new Gravity(Alignment$CENTER_getInstance(), Alignment$CENTER_getInstance());
+      $receiver.text = closure$title;
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      var $receiver_0 = $receiver.onPreRender;
+      var element = DrawerMenu_init$lambda$lambda$lambda$lambda(this$_0, $receiver);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function DrawerMenu_init$lambda$lambda$lambda_0(this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(-60.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
+      var bg = new SimpleComponentUi($receiver);
+      bg.color.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.ui.setCustom_11rb$(bg);
+      return Unit;
+    };
+  }
+  function DrawerMenu_init$lambda$lambda(this$DrawerMenu) {
+    return function ($receiver) {
+      this$DrawerMenu.menuButton_8be2vx$ = $receiver;
+      $receiver.ui.setCustom_11rb$(new DrawerMenu$MenuButtonUi(this$DrawerMenu, $receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(10.0, true), dps(-50.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(40.0, true), dps(40.0, true), zero());
+      return Unit;
+    };
+  }
+  DrawerMenu.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DrawerMenu',
+    interfaces: [UiContainer]
   };
   function Label(name, root) {
     UiComponent.call(this, name, root);
@@ -11958,10 +14214,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Slider.prototype.handleDrag_kin2e3$ = function (dragPtrs, ctx) {
     if (dragPtrs.size === 1 && dragPtrs.get_za3lpa$(0).isValid && dragPtrs.get_za3lpa$(0).isLeftButtonDown) {
       this.value = this.value + this.hitDelta_0.x / this.trackWidth * (this.max - this.min);
-      return InputManager$DragHandler$Companion_getInstance().HANDLED;
+      return 1;
     }
      else {
-      return InputManager$DragHandler$Companion_getInstance().REMOVE_HANDLER;
+      return 2;
     }
   };
   Slider.prototype.setThemeProps_aemszp$ = function (ctx) {
@@ -12093,27 +14349,27 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
                 break;
               case -25:
                 if (e.isCtrlDown) {
-                  this$TextField.editText.moveCaret_fzusl$(EditableText$Companion_getInstance().MOVE_WORD_LEFT, e.isShiftDown);
+                  this$TextField.editText.moveCaret_fzusl$(3, e.isShiftDown);
                 }
                  else {
-                  this$TextField.editText.moveCaret_fzusl$(EditableText$Companion_getInstance().MOVE_LEFT, e.isShiftDown);
+                  this$TextField.editText.moveCaret_fzusl$(1, e.isShiftDown);
                 }
 
                 break;
               case -26:
                 if (e.isCtrlDown) {
-                  this$TextField.editText.moveCaret_fzusl$(EditableText$Companion_getInstance().MOVE_WORD_RIGHT, e.isShiftDown);
+                  this$TextField.editText.moveCaret_fzusl$(4, e.isShiftDown);
                 }
                  else {
-                  this$TextField.editText.moveCaret_fzusl$(EditableText$Companion_getInstance().MOVE_RIGHT, e.isShiftDown);
+                  this$TextField.editText.moveCaret_fzusl$(2, e.isShiftDown);
                 }
 
                 break;
               case -21:
-                this$TextField.editText.moveCaret_fzusl$(EditableText$Companion_getInstance().MOVE_START, e.isShiftDown);
+                this$TextField.editText.moveCaret_fzusl$(5, e.isShiftDown);
                 break;
               case -22:
-                this$TextField.editText.moveCaret_fzusl$(EditableText$Companion_getInstance().MOVE_END, e.isShiftDown);
+                this$TextField.editText.moveCaret_fzusl$(6, e.isShiftDown);
                 break;
             }
           }
@@ -12759,7 +15015,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     $receiver_0.far = 1000.0;
     $receiver.camera = $receiver_0;
     if (overlay) {
-      $receiver.clearMask = GL_DEPTH_BUFFER_BIT;
+      $receiver.clearMask = 256;
     }
     $receiver.unaryPlus_uv0sim$(embeddedUi(null, dpi, uiScene$lambda$lambda(block)));
     return $receiver;
@@ -12911,6 +15167,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   UiRoot.prototype.unaryPlus_uv0sim$ = function ($receiver) {
     this.content.addNode_xtids1$($receiver);
   };
+  UiRoot.prototype.unaryPlus_63m4fk$ = function ($receiver) {
+    this.content.addNode_xtids1$($receiver);
+    this.content.addNode_xtids1$($receiver.menuButton_8be2vx$);
+  };
   UiRoot.prototype.component_qphi6d$ = function (name, block) {
     var $receiver = new UiComponent(name, this);
     block($receiver);
@@ -12918,6 +15178,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   UiRoot.prototype.container_t34sov$ = function (name, block) {
     var $receiver = new UiContainer(name, this);
+    block($receiver);
+    return $receiver;
+  };
+  UiRoot.prototype.drawerMenu_enmky4$ = function (name, title, width, block) {
+    if (title === void 0)
+      title = null;
+    if (width === void 0)
+      width = dps(250.0, true);
+    var $receiver = new DrawerMenu(width, title, name, this);
     block($receiver);
     return $receiver;
   };
@@ -13426,15 +15695,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function AttributeType_initFields() {
     AttributeType_initFields = function () {
     };
-    AttributeType$FLOAT_instance = new AttributeType('FLOAT', 0, 1, false, GL_FLOAT);
-    AttributeType$VEC_2F_instance = new AttributeType('VEC_2F', 1, 2, false, GL_FLOAT);
-    AttributeType$VEC_3F_instance = new AttributeType('VEC_3F', 2, 3, false, GL_FLOAT);
-    AttributeType$VEC_4F_instance = new AttributeType('VEC_4F', 3, 4, false, GL_FLOAT);
-    AttributeType$COLOR_4F_instance = new AttributeType('COLOR_4F', 4, 4, false, GL_FLOAT);
-    AttributeType$INT_instance = new AttributeType('INT', 5, 1, true, GL_INT);
-    AttributeType$VEC_2I_instance = new AttributeType('VEC_2I', 6, 2, true, GL_INT);
-    AttributeType$VEC_3I_instance = new AttributeType('VEC_3I', 7, 3, true, GL_INT);
-    AttributeType$VEC_4I_instance = new AttributeType('VEC_4I', 8, 4, true, GL_INT);
+    AttributeType$FLOAT_instance = new AttributeType('FLOAT', 0, 1, false, 5126);
+    AttributeType$VEC_2F_instance = new AttributeType('VEC_2F', 1, 2, false, 5126);
+    AttributeType$VEC_3F_instance = new AttributeType('VEC_3F', 2, 3, false, 5126);
+    AttributeType$VEC_4F_instance = new AttributeType('VEC_4F', 3, 4, false, 5126);
+    AttributeType$COLOR_4F_instance = new AttributeType('COLOR_4F', 4, 4, false, 5126);
+    AttributeType$INT_instance = new AttributeType('INT', 5, 1, true, 5124);
+    AttributeType$VEC_2I_instance = new AttributeType('VEC_2I', 6, 2, true, 5124);
+    AttributeType$VEC_3I_instance = new AttributeType('VEC_3I', 7, 3, true, 5124);
+    AttributeType$VEC_4I_instance = new AttributeType('VEC_4I', 8, 4, true, 5124);
   }
   var AttributeType$FLOAT_instance;
   function AttributeType$FLOAT_getInstance() {
@@ -13917,7 +16186,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.isInUse_8be2vx$ = true;
     this.numPasses = 2;
     var id = UniqueId_getInstance().nextId();
-    var texProps = new TextureProps('DistortedBackground-' + id, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0);
+    var texProps = new TextureProps('DistortedBackground-' + id, 9729, 9729, 33071, 33071, 0);
     this.copyTex_0 = new Texture(texProps, BlurredBackgroundHelper_init$lambda(this));
     this.texMesh_0 = textureMesh(void 0, void 0, BlurredBackgroundHelper_init$lambda_0);
     this.texMeshFlipped_0 = textureMesh(void 0, void 0, BlurredBackgroundHelper_init$lambda_1);
@@ -14107,7 +16376,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   BlurredBackgroundHelper.prototype.renderFb_0 = function (fb, mesh, shader, ctx) {
     fb.bind_aemszp$(ctx);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(16384);
     mesh.shader = shader;
     mesh.render_aemszp$(ctx);
     fb.unbind_aemszp$(ctx);
@@ -14131,7 +16400,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.height = value;
   };
   BlurredBackgroundHelper$BlurredBgTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
-    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, this.x, this.y, this.width, this.height, 0);
+    glCopyTexImage2D(3553, 0, 6407, this.x, this.y, this.width, this.height, 0);
   };
   BlurredBackgroundHelper$BlurredBgTextureData.$metadata$ = {
     kind: Kind_CLASS,
@@ -15224,7 +17493,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
      else {
-      glUniform1i(this.location, GL_NONE);
+      glUniform1i(this.location, 0);
     }
   };
   UniformTexture2D.$metadata$ = {
@@ -15258,7 +17527,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         tmp$_0 = ctx.textureMgr.bindTexture_xyx3x4$(tex, ctx);
       }
        else {
-        tmp$_0 = GL_NONE;
+        tmp$_0 = 0;
       }
       this.texNames_0[i] = tmp$_0;
     }
@@ -15421,7 +17690,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (offset === void 0)
       offset = 0;
     if (type === void 0)
-      type = GL_FLOAT;
+      type = 5126;
     this.vbo = vbo;
     this.elemSize = elemSize;
     this.strideBytes = strideBytes;
@@ -15430,7 +17699,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   VboBinder.prototype.bindAttribute_2shagh$ = function (target, ctx) {
     this.vbo.bind_aemszp$(ctx);
-    if (this.type === GL_INT || this.type === GL_UNSIGNED_INT) {
+    if (this.type === 5124 || this.type === 5125) {
       glVertexAttribIPointer(target, this.elemSize, this.type, this.strideBytes, this.offset * 4 | 0);
     }
      else {
@@ -15480,12 +17749,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     interfaces: []
   };
   function defaultProps(id) {
-    return TextureProps_init(id, GL_LINEAR, GL_CLAMP_TO_EDGE);
+    return TextureProps_init(id, 9729, 33071);
   }
   function TextureProps(id, minFilter, magFilter, xWrapping, yWrapping, anisotropy, target) {
     TextureProps$Companion_getInstance();
     if (target === void 0)
-      target = GL_TEXTURE_2D;
+      target = 3553;
     this.id = id;
     this.minFilter = minFilter;
     this.magFilter = magFilter;
@@ -15496,20 +17765,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function TextureProps$Companion() {
     TextureProps$Companion_instance = this;
-    this.DEFAULT_MIN = GL_LINEAR_MIPMAP_LINEAR;
-    this.DEFAULT_MAG = GL_LINEAR;
-    this.DEFAULT_X_WRAP = GL_CLAMP_TO_EDGE;
-    this.DEFAULT_Y_WRAP = GL_CLAMP_TO_EDGE;
+    this.DEFAULT_MIN = 9987;
+    this.DEFAULT_MAG = 9729;
+    this.DEFAULT_X_WRAP = 33071;
+    this.DEFAULT_Y_WRAP = 33071;
   }
   TextureProps$Companion.prototype.magFilter_0 = function (filter) {
-    if (filter === GL_NEAREST)
-      return GL_NEAREST;
+    if (filter === 9728)
+      return 9728;
     else
       return this.DEFAULT_MAG;
   };
   TextureProps$Companion.prototype.minFilter_0 = function (filter) {
-    if (filter === GL_NEAREST)
-      return GL_NEAREST;
+    if (filter === 9728)
+      return 9728;
     else
       return this.DEFAULT_MIN;
   };
@@ -15613,7 +17882,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   TextureData.prototype.loadData_wmmari$ = function (texture, ctx) {
     this.onLoad_dletmp$(texture, ctx);
     ensureNotNull(texture.res).isLoaded = true;
-    if (texture.props.minFilter === GL_LINEAR_MIPMAP_LINEAR) {
+    if (texture.props.minFilter === 9987) {
       glGenerateMipmap(ensureNotNull(texture.res).target);
     }
   };
@@ -15640,7 +17909,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var limit = this.buffer.limit;
     var pos = this.buffer.position;
     this.buffer.flip();
-    glTexImage2D(res.target, 0, this.format, this.width, this.height, 0, this.format, GL_UNSIGNED_BYTE, this.buffer);
+    glTexImage2D(res.target, 0, this.format, this.width, this.height, 0, this.format, 5121, this.buffer);
     this.buffer.limit = limit;
     this.buffer.position = pos;
     ctx.memoryMgr.memoryAllocated_927jj9$(res, this.buffer.position);
@@ -15726,8 +17995,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     for (var i_0 = 0; i_0 !== tmp$.length; ++i_0) {
       var tex = this.boundTextures_0[i_0];
       if (tex != null) {
-        glActiveTexture(GL_TEXTURE0 + i_0 | 0);
-        glBindTexture(GL_TEXTURE_2D, null);
+        glActiveTexture(33984 + i_0 | 0);
+        glBindTexture(3553, null);
         tex.texUnit = -1;
         this.boundTextures_0[i_0] = null;
       }
@@ -15746,7 +18015,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var texRes = tmp$;
       if (texRes.texUnit >= 0) {
         this.activateTexUnit_0(texRes.texUnit);
-        glBindTexture(GL_TEXTURE_2D, null);
+        glBindTexture(3553, null);
         this.boundTextures_0[texRes.texUnit] = null;
         texRes.texUnit = -1;
       }
@@ -15791,12 +18060,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   TextureManager.prototype.activateTexUnit_0 = function (unit) {
     this.activeTexUnit_0 = unit;
-    glActiveTexture(GL_TEXTURE0 + unit | 0);
+    glActiveTexture(33984 + unit | 0);
   };
   TextureManager.prototype.bindToActiveTexUnit_0 = function (texRes) {
     var tmp$, tmp$_0;
     (tmp$ = this.boundTextures_0[this.activeTexUnit_0]) != null ? (tmp$.texUnit = -1) : null;
-    var target = (tmp$_0 = texRes != null ? texRes.target : null) != null ? tmp$_0 : GL_TEXTURE_2D;
+    var target = (tmp$_0 = texRes != null ? texRes.target : null) != null ? tmp$_0 : 3553;
     glBindTexture(target, texRes);
     texRes != null ? (texRes.texUnit = this.activeTexUnit_0) : null;
     this.boundTextures_0[this.activeTexUnit_0] = texRes;
@@ -17087,7 +19356,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function ColorGradient(colors, n) {
     ColorGradient$Companion_getInstance();
     if (n === void 0)
-      n = ColorGradient$Companion_getInstance().DEFAULT_N;
+      n = 256;
     var array = Array_0(n);
     var tmp$;
     tmp$ = array.length - 1 | 0;
@@ -17172,7 +19441,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function ColorGradient_init(colors, n, $this) {
     if (n === void 0)
-      n = ColorGradient$Companion_getInstance().DEFAULT_N;
+      n = 256;
     $this = $this || Object.create(ColorGradient.prototype);
     var array = Array_0(colors.length);
     var tmp$;
@@ -17431,7 +19700,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.graphIdx = 0;
     this.prevDeltaT = 0.0;
     this.graphMesh = new Mesh(this.graphData);
-    this.graphMesh.meshData.usage = GL_DYNAMIC_DRAW;
+    this.graphMesh.meshData.usage = 35048;
     this.graphMesh.shader = basicShader(DeltaTGraph_init$lambda);
   }
   DeltaTGraph.prototype.render_aemszp$ = function (ctx) {
@@ -17503,7 +19772,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function uiFont(family, sizeDp, uiDpi, ctx, style, chars) {
     if (style === void 0)
-      style = Font$Companion_getInstance().PLAIN;
+      style = 0;
     if (chars === void 0)
       chars = Font$Companion_getInstance().STD_CHARS;
     var pts = sizeDp * uiDpi / 96.0;
@@ -17541,7 +19810,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function FontProps(family, sizePts, style, sizeUnits, chars) {
     if (style === void 0)
-      style = Font$Companion_getInstance().PLAIN;
+      style = 0;
     if (sizeUnits === void 0)
       sizeUnits = sizePts;
     if (chars === void 0)
@@ -17740,12 +20009,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.strideBytesF = 0;
     this.vertexSizeI = 0;
     this.strideBytesI = 0;
-    this.size_yty8aj$_0 = 0;
+    this.size = 0;
     this.dataF_73lq7w$_0 = null;
     this.dataI_73lqah$_0 = null;
     this.indices_nfuoz3$_0 = createUint32Buffer(IndexedVertexList$Companion_getInstance().INITIAL_SIZE_8be2vx$);
     this.attributeOffsets = null;
-    this.tmpVertex_0 = null;
+    this.vertexIt = null;
     var tmp$;
     var cntF = 0;
     var cntI = 0;
@@ -17771,7 +20040,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.strideBytesI = this.vertexSizeI * 4 | 0;
     this.dataF = createFloat32Buffer(Kotlin.imul(cntF, IndexedVertexList$Companion_getInstance().INITIAL_SIZE_8be2vx$));
     this.dataI = createUint32Buffer(Kotlin.imul(cntI, IndexedVertexList$Companion_getInstance().INITIAL_SIZE_8be2vx$));
-    this.tmpVertex_0 = new IndexedVertexList$Vertex(this, 0);
+    this.vertexIt = new IndexedVertexList$Vertex(this, 0);
   }
   function IndexedVertexList$Companion() {
     IndexedVertexList$Companion_instance = this;
@@ -17790,14 +20059,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return IndexedVertexList$Companion_instance;
   }
-  Object.defineProperty(IndexedVertexList.prototype, 'size', {
-    get: function () {
-      return this.size_yty8aj$_0;
-    },
-    set: function (size) {
-      this.size_yty8aj$_0 = size;
-    }
-  });
   Object.defineProperty(IndexedVertexList.prototype, 'lastIndex', {
     get: function () {
       return this.size - 1 | 0;
@@ -17845,16 +20106,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     newIdxs.put_7hqxcs$(this.indices);
     this.indices = newIdxs;
   };
-  IndexedVertexList.prototype.addVertex_z2do90$ = function (updateBounds, block) {
-    if (updateBounds === void 0)
-      updateBounds = null;
-    var tmp$, tmp$_0, tmp$_1;
+  IndexedVertexList.prototype.checkBufferSizes = function () {
     if (this.dataF.remaining < this.vertexSizeF) {
       this.increaseDataSizeF_0();
     }
     if (this.dataI.remaining < this.vertexSizeI) {
       this.increaseDataSizeI_0();
     }
+  };
+  IndexedVertexList.prototype.addVertex_z2do90$ = defineInlineFunction('kool.de.fabmax.kool.util.IndexedVertexList.addVertex_z2do90$', function (updateBounds, block) {
+    if (updateBounds === void 0)
+      updateBounds = null;
+    var tmp$, tmp$_0, tmp$_1;
+    this.checkBufferSizes();
     tmp$ = this.vertexSizeF;
     for (var i = 1; i <= tmp$; i++) {
       this.dataF.plusAssign_mx4ult$(0.0);
@@ -17863,26 +20127,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
       this.dataI.plusAssign_za3lpa$(0);
     }
-    this.tmpVertex_0.index = (tmp$_1 = this.size, this.size = tmp$_1 + 1 | 0, tmp$_1);
-    block(this.tmpVertex_0);
-    updateBounds != null ? updateBounds.add_czzhiu$(this.tmpVertex_0.position) : null;
+    this.vertexIt.index = (tmp$_1 = this.size, this.size = tmp$_1 + 1 | 0, tmp$_1);
+    block(this.vertexIt);
+    updateBounds != null ? updateBounds.add_czzhiu$(this.vertexIt.position) : null;
     return this.size - 1 | 0;
-  };
-  function IndexedVertexList$addVertex$lambda(closure$position, closure$normal, closure$color, closure$texCoord) {
-    return function ($receiver) {
-      $receiver.position.set_czzhiu$(closure$position);
-      if (closure$normal != null) {
-        $receiver.normal.set_czzhiu$(closure$normal);
-      }
-      if (closure$color != null) {
-        $receiver.color.set_d7aj7k$(closure$color);
-      }
-      if (closure$texCoord != null) {
-        $receiver.texCoord.set_czzhjp$(closure$texCoord);
-      }
-      return Unit;
-    };
-  }
+  });
   IndexedVertexList.prototype.addVertex_lv7vxo$ = function (position, normal, color, texCoord) {
     if (normal === void 0)
       normal = null;
@@ -17890,7 +20139,30 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       color = null;
     if (texCoord === void 0)
       texCoord = null;
-    return this.addVertex_z2do90$(void 0, IndexedVertexList$addVertex$lambda(position, normal, color, texCoord));
+    var tmp$, tmp$_0, tmp$_1;
+    this.checkBufferSizes();
+    tmp$ = this.vertexSizeF;
+    for (var i = 1; i <= tmp$; i++) {
+      this.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_0 = this.vertexSizeI;
+    for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
+      this.dataI.plusAssign_za3lpa$(0);
+    }
+    this.vertexIt.index = (tmp$_1 = this.size, this.size = tmp$_1 + 1 | 0, tmp$_1);
+    var $receiver = this.vertexIt;
+    $receiver.position.set_czzhiu$(position);
+    if (normal != null) {
+      $receiver.normal.set_czzhiu$(normal);
+    }
+    if (color != null) {
+      $receiver.color.set_d7aj7k$(color);
+    }
+    if (texCoord != null) {
+      $receiver.texCoord.set_czzhjp$(texCoord);
+    }
+    null != null ? null.add_czzhiu$(this.vertexIt.position) : null;
+    return this.size - 1 | 0;
   };
   IndexedVertexList.prototype.addIndex_za3lpa$ = function (idx) {
     if (this.indices.remaining === 0) {
@@ -18425,13 +20697,52 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     block($receiver);
     return $receiver;
   }
+  function wireframeMesh(triMesh) {
+    var tmp$, tmp$_0;
+    var lines = new LineMesh();
+    var v = triMesh.get_za3lpa$(0);
+    tmp$ = triMesh.numVertices;
+    for (var i = 0; i < tmp$; i++) {
+      v.index = i;
+      var $this = lines.meshData;
+      var idx = {v: 0};
+      $this.isSyncRequired = true;
+      var $this_0 = $this.vertexList;
+      var updateBounds = $this.bounds;
+      var tmp$_1, tmp$_2, tmp$_3;
+      $this_0.checkBufferSizes();
+      tmp$_1 = $this_0.vertexSizeF;
+      for (var i_0 = 1; i_0 <= tmp$_1; i_0++) {
+        $this_0.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_2 = $this_0.vertexSizeI;
+      for (var i_1 = 1; i_1 <= tmp$_2; i_1++) {
+        $this_0.dataI.plusAssign_za3lpa$(0);
+      }
+      $this_0.vertexIt.index = (tmp$_3 = $this_0.size, $this_0.size = tmp$_3 + 1 | 0, tmp$_3);
+      var $receiver = $this_0.vertexIt;
+      $receiver.position.set_czzhiu$(v.position);
+      $receiver.color.set_d7aj7k$(v.color);
+      updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
+      idx.v = $this_0.size - 1 | 0;
+      idx.v;
+    }
+    tmp$_0 = triMesh.numIndices;
+    for (var i_2 = 0; i_2 < tmp$_0; i_2 += 3) {
+      var i1 = triMesh.vertexList.indices.get_za3lpa$(i_2);
+      var i2 = triMesh.vertexList.indices.get_za3lpa$(i_2 + 1 | 0);
+      var i3 = triMesh.vertexList.indices.get_za3lpa$(i_2 + 2 | 0);
+      lines.meshData.addIndices_pmhfmb$(new Int32Array([i1, i2, i2, i3, i3, i1]));
+    }
+    return lines;
+  }
   function LineMesh(data, name) {
     if (data === void 0)
       data = MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().COLORS]);
     if (name === void 0)
       name = null;
     Mesh.call(this, data, name);
-    this.primitiveType = GL_LINES;
+    this.primitiveType = 1;
     this.shader = basicShader(LineMesh_init$lambda);
     this.isXray = false;
     this.lineWidth = 1.0;
@@ -18449,74 +20760,181 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     $this.isBatchUpdate = wasBatchUpdate;
     return idx0.v;
   };
-  function LineMesh$addBoundingBox$lambda$lambda(closure$aabb, closure$color) {
-    return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$aabb.min.x, closure$aabb.min.y, closure$aabb.min.z);
-      $receiver.color.set_d7aj7k$(closure$color);
-      return Unit;
-    };
-  }
-  function LineMesh$addBoundingBox$lambda$lambda_0(closure$aabb, closure$color) {
-    return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$aabb.min.x, closure$aabb.min.y, closure$aabb.max.z);
-      $receiver.color.set_d7aj7k$(closure$color);
-      return Unit;
-    };
-  }
-  function LineMesh$addBoundingBox$lambda$lambda_1(closure$aabb, closure$color) {
-    return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$aabb.min.x, closure$aabb.max.y, closure$aabb.max.z);
-      $receiver.color.set_d7aj7k$(closure$color);
-      return Unit;
-    };
-  }
-  function LineMesh$addBoundingBox$lambda$lambda_2(closure$aabb, closure$color) {
-    return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$aabb.min.x, closure$aabb.max.y, closure$aabb.min.z);
-      $receiver.color.set_d7aj7k$(closure$color);
-      return Unit;
-    };
-  }
-  function LineMesh$addBoundingBox$lambda$lambda_3(closure$aabb, closure$color) {
-    return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$aabb.max.x, closure$aabb.min.y, closure$aabb.min.z);
-      $receiver.color.set_d7aj7k$(closure$color);
-      return Unit;
-    };
-  }
-  function LineMesh$addBoundingBox$lambda$lambda_4(closure$aabb, closure$color) {
-    return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$aabb.max.x, closure$aabb.min.y, closure$aabb.max.z);
-      $receiver.color.set_d7aj7k$(closure$color);
-      return Unit;
-    };
-  }
-  function LineMesh$addBoundingBox$lambda$lambda_5(closure$aabb, closure$color) {
-    return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$aabb.max.x, closure$aabb.max.y, closure$aabb.max.z);
-      $receiver.color.set_d7aj7k$(closure$color);
-      return Unit;
-    };
-  }
-  function LineMesh$addBoundingBox$lambda$lambda_6(closure$aabb, closure$color) {
-    return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$aabb.max.x, closure$aabb.max.y, closure$aabb.min.z);
-      $receiver.color.set_d7aj7k$(closure$color);
-      return Unit;
-    };
-  }
+  LineMesh.prototype.clear = function () {
+    this.meshData.clear();
+  };
   LineMesh.prototype.addBoundingBox_j1pmtk$ = function (aabb, color) {
     var $this = this.meshData;
     var wasBatchUpdate = $this.isBatchUpdate;
     $this.isBatchUpdate = true;
-    var i0 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda(aabb, color));
-    var i1 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_0(aabb, color));
-    var i2 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_1(aabb, color));
-    var i3 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_2(aabb, color));
-    var i4 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_3(aabb, color));
-    var i5 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_4(aabb, color));
-    var i6 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_5(aabb, color));
-    var i7 = $this.addVertex_hvwyd1$(LineMesh$addBoundingBox$lambda$lambda_6(aabb, color));
+    var idx = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_0 = $this.vertexList;
+    var updateBounds = $this.bounds;
+    var tmp$, tmp$_0, tmp$_1;
+    $this_0.checkBufferSizes();
+    tmp$ = $this_0.vertexSizeF;
+    for (var i = 1; i <= tmp$; i++) {
+      $this_0.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_0 = $this_0.vertexSizeI;
+    for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
+      $this_0.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_0.vertexIt.index = (tmp$_1 = $this_0.size, $this_0.size = tmp$_1 + 1 | 0, tmp$_1);
+    var $receiver = $this_0.vertexIt;
+    $receiver.position.set_y2kzbl$(aabb.min.x, aabb.min.y, aabb.min.z);
+    $receiver.color.set_d7aj7k$(color);
+    updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
+    idx.v = $this_0.size - 1 | 0;
+    var i0 = idx.v;
+    var idx_0 = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_1 = $this.vertexList;
+    var updateBounds_0 = $this.bounds;
+    var tmp$_2, tmp$_3, tmp$_4;
+    $this_1.checkBufferSizes();
+    tmp$_2 = $this_1.vertexSizeF;
+    for (var i_1 = 1; i_1 <= tmp$_2; i_1++) {
+      $this_1.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_3 = $this_1.vertexSizeI;
+    for (var i_2 = 1; i_2 <= tmp$_3; i_2++) {
+      $this_1.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_1.vertexIt.index = (tmp$_4 = $this_1.size, $this_1.size = tmp$_4 + 1 | 0, tmp$_4);
+    var $receiver_0 = $this_1.vertexIt;
+    $receiver_0.position.set_y2kzbl$(aabb.min.x, aabb.min.y, aabb.max.z);
+    $receiver_0.color.set_d7aj7k$(color);
+    updateBounds_0 != null ? updateBounds_0.add_czzhiu$($this_1.vertexIt.position) : null;
+    idx_0.v = $this_1.size - 1 | 0;
+    var i1 = idx_0.v;
+    var idx_1 = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_2 = $this.vertexList;
+    var updateBounds_1 = $this.bounds;
+    var tmp$_5, tmp$_6, tmp$_7;
+    $this_2.checkBufferSizes();
+    tmp$_5 = $this_2.vertexSizeF;
+    for (var i_3 = 1; i_3 <= tmp$_5; i_3++) {
+      $this_2.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_6 = $this_2.vertexSizeI;
+    for (var i_4 = 1; i_4 <= tmp$_6; i_4++) {
+      $this_2.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_2.vertexIt.index = (tmp$_7 = $this_2.size, $this_2.size = tmp$_7 + 1 | 0, tmp$_7);
+    var $receiver_1 = $this_2.vertexIt;
+    $receiver_1.position.set_y2kzbl$(aabb.min.x, aabb.max.y, aabb.max.z);
+    $receiver_1.color.set_d7aj7k$(color);
+    updateBounds_1 != null ? updateBounds_1.add_czzhiu$($this_2.vertexIt.position) : null;
+    idx_1.v = $this_2.size - 1 | 0;
+    var i2 = idx_1.v;
+    var idx_2 = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_3 = $this.vertexList;
+    var updateBounds_2 = $this.bounds;
+    var tmp$_8, tmp$_9, tmp$_10;
+    $this_3.checkBufferSizes();
+    tmp$_8 = $this_3.vertexSizeF;
+    for (var i_5 = 1; i_5 <= tmp$_8; i_5++) {
+      $this_3.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_9 = $this_3.vertexSizeI;
+    for (var i_6 = 1; i_6 <= tmp$_9; i_6++) {
+      $this_3.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_3.vertexIt.index = (tmp$_10 = $this_3.size, $this_3.size = tmp$_10 + 1 | 0, tmp$_10);
+    var $receiver_2 = $this_3.vertexIt;
+    $receiver_2.position.set_y2kzbl$(aabb.min.x, aabb.max.y, aabb.min.z);
+    $receiver_2.color.set_d7aj7k$(color);
+    updateBounds_2 != null ? updateBounds_2.add_czzhiu$($this_3.vertexIt.position) : null;
+    idx_2.v = $this_3.size - 1 | 0;
+    var i3 = idx_2.v;
+    var idx_3 = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_4 = $this.vertexList;
+    var updateBounds_3 = $this.bounds;
+    var tmp$_11, tmp$_12, tmp$_13;
+    $this_4.checkBufferSizes();
+    tmp$_11 = $this_4.vertexSizeF;
+    for (var i_7 = 1; i_7 <= tmp$_11; i_7++) {
+      $this_4.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_12 = $this_4.vertexSizeI;
+    for (var i_8 = 1; i_8 <= tmp$_12; i_8++) {
+      $this_4.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_4.vertexIt.index = (tmp$_13 = $this_4.size, $this_4.size = tmp$_13 + 1 | 0, tmp$_13);
+    var $receiver_3 = $this_4.vertexIt;
+    $receiver_3.position.set_y2kzbl$(aabb.max.x, aabb.min.y, aabb.min.z);
+    $receiver_3.color.set_d7aj7k$(color);
+    updateBounds_3 != null ? updateBounds_3.add_czzhiu$($this_4.vertexIt.position) : null;
+    idx_3.v = $this_4.size - 1 | 0;
+    var i4 = idx_3.v;
+    var idx_4 = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_5 = $this.vertexList;
+    var updateBounds_4 = $this.bounds;
+    var tmp$_14, tmp$_15, tmp$_16;
+    $this_5.checkBufferSizes();
+    tmp$_14 = $this_5.vertexSizeF;
+    for (var i_9 = 1; i_9 <= tmp$_14; i_9++) {
+      $this_5.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_15 = $this_5.vertexSizeI;
+    for (var i_10 = 1; i_10 <= tmp$_15; i_10++) {
+      $this_5.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_5.vertexIt.index = (tmp$_16 = $this_5.size, $this_5.size = tmp$_16 + 1 | 0, tmp$_16);
+    var $receiver_4 = $this_5.vertexIt;
+    $receiver_4.position.set_y2kzbl$(aabb.max.x, aabb.min.y, aabb.max.z);
+    $receiver_4.color.set_d7aj7k$(color);
+    updateBounds_4 != null ? updateBounds_4.add_czzhiu$($this_5.vertexIt.position) : null;
+    idx_4.v = $this_5.size - 1 | 0;
+    var i5 = idx_4.v;
+    var idx_5 = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_6 = $this.vertexList;
+    var updateBounds_5 = $this.bounds;
+    var tmp$_17, tmp$_18, tmp$_19;
+    $this_6.checkBufferSizes();
+    tmp$_17 = $this_6.vertexSizeF;
+    for (var i_11 = 1; i_11 <= tmp$_17; i_11++) {
+      $this_6.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_18 = $this_6.vertexSizeI;
+    for (var i_12 = 1; i_12 <= tmp$_18; i_12++) {
+      $this_6.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_6.vertexIt.index = (tmp$_19 = $this_6.size, $this_6.size = tmp$_19 + 1 | 0, tmp$_19);
+    var $receiver_5 = $this_6.vertexIt;
+    $receiver_5.position.set_y2kzbl$(aabb.max.x, aabb.max.y, aabb.max.z);
+    $receiver_5.color.set_d7aj7k$(color);
+    updateBounds_5 != null ? updateBounds_5.add_czzhiu$($this_6.vertexIt.position) : null;
+    idx_5.v = $this_6.size - 1 | 0;
+    var i6 = idx_5.v;
+    var idx_6 = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_7 = $this.vertexList;
+    var updateBounds_6 = $this.bounds;
+    var tmp$_20, tmp$_21, tmp$_22;
+    $this_7.checkBufferSizes();
+    tmp$_20 = $this_7.vertexSizeF;
+    for (var i_13 = 1; i_13 <= tmp$_20; i_13++) {
+      $this_7.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_21 = $this_7.vertexSizeI;
+    for (var i_14 = 1; i_14 <= tmp$_21; i_14++) {
+      $this_7.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_7.vertexIt.index = (tmp$_22 = $this_7.size, $this_7.size = tmp$_22 + 1 | 0, tmp$_22);
+    var $receiver_6 = $this_7.vertexIt;
+    $receiver_6.position.set_y2kzbl$(aabb.max.x, aabb.max.y, aabb.min.z);
+    $receiver_6.color.set_d7aj7k$(color);
+    updateBounds_6 != null ? updateBounds_6.add_czzhiu$($this_7.vertexIt.position) : null;
+    idx_6.v = $this_7.size - 1 | 0;
+    var i7 = idx_6.v;
     $this.addIndices_pmhfmb$(new Int32Array([i0, i1, i1, i2, i2, i3, i3, i0, i4, i5, i5, i6, i6, i7, i7, i4, i0, i4, i1, i5, i2, i6, i3, i7]));
     $this.isSyncRequired = true;
     $this.isBatchUpdate = wasBatchUpdate;
@@ -18525,7 +20943,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ctx.pushAttributes();
     ctx.lineWidth = this.lineWidth;
     if (this.isXray) {
-      ctx.depthFunc = GL_ALWAYS;
+      ctx.depthFunc = 519;
     }
     ctx.applyAttributes();
     Mesh.prototype.render_aemszp$.call(this, ctx);
@@ -18815,28 +21233,43 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.circleProps = new CircleProps();
     this.cubeProps = new CubeProps();
     this.cylinderProps = new CylinderProps();
+    this.gridProps = new GridProps();
     this.rectProps = new RectProps();
     this.sphereProps = new SphereProps();
     this.textProps = null;
   }
-  function MeshBuilder$vertex$lambda(closure$pos, closure$nrm, closure$uv, this$MeshBuilder) {
-    return function ($receiver) {
-      var tmp$;
-      $receiver.position.set_czzhiu$(closure$pos);
-      $receiver.normal.set_czzhiu$(closure$nrm);
-      $receiver.texCoord.set_czzhjp$(closure$uv);
-      $receiver.color.set_d7aj7k$(this$MeshBuilder.color);
-      this$MeshBuilder.transform.transform_w1lst9$($receiver.position);
-      if (this$MeshBuilder.hasNormals_c51zdn$_0) {
-        this$MeshBuilder.transform.transform_w1lst9$($receiver.normal, 0.0);
-        $receiver.normal.norm();
-      }
-      (tmp$ = this$MeshBuilder.vertexModFun) != null ? tmp$($receiver) : null;
-      return Unit;
-    };
-  }
   MeshBuilder.prototype.vertex_n440gp$$default = function (pos, nrm, uv) {
-    return this.meshData.addVertex_hvwyd1$(MeshBuilder$vertex$lambda(pos, nrm, uv, this));
+    var $this = this.meshData;
+    var idx = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_0 = $this.vertexList;
+    var updateBounds = $this.bounds;
+    var tmp$, tmp$_0, tmp$_1;
+    $this_0.checkBufferSizes();
+    tmp$ = $this_0.vertexSizeF;
+    for (var i = 1; i <= tmp$; i++) {
+      $this_0.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_0 = $this_0.vertexSizeI;
+    for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
+      $this_0.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_0.vertexIt.index = (tmp$_1 = $this_0.size, $this_0.size = tmp$_1 + 1 | 0, tmp$_1);
+    var $receiver = $this_0.vertexIt;
+    var tmp$_2;
+    $receiver.position.set_czzhiu$(pos);
+    $receiver.normal.set_czzhiu$(nrm);
+    $receiver.texCoord.set_czzhjp$(uv);
+    $receiver.color.set_d7aj7k$(this.color);
+    this.transform.transform_w1lst9$($receiver.position);
+    if (this.hasNormals_c51zdn$_0 && $receiver.normal.sqrLength() !== 0.0) {
+      this.transform.transform_w1lst9$($receiver.normal, 0.0);
+      $receiver.normal.norm();
+    }
+    (tmp$_2 = this.vertexModFun) != null ? tmp$_2($receiver) : null;
+    updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
+    idx.v = $this_0.size - 1 | 0;
+    return idx.v;
   };
   MeshBuilder.prototype.vertex_n440gp$ = function (pos, nrm, uv, callback$default) {
     if (uv === void 0)
@@ -19231,6 +21664,67 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       i1 = i3;
     }
   };
+  MeshBuilder.prototype.grid_vs3byi$ = defineInlineFunction('kool.de.fabmax.kool.util.MeshBuilder.grid_vs3byi$', function (props) {
+    props(this.gridProps.defaults());
+    this.grid_gtbnl3$(this.gridProps);
+  });
+  MeshBuilder.prototype.grid_gtbnl3$ = function (props) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var bx = -props.sizeX / 2;
+    var by = -props.sizeY / 2;
+    var sx = props.sizeX / props.stepsX;
+    var sy = props.sizeY / props.stepsY;
+    var nx = props.stepsX + 1 | 0;
+    props.xDir.cross_2gj7b4$(props.yDir, this.tmpNrm_5ueby3$_0).norm();
+    tmp$ = props.stepsY;
+    for (var y = 0; y <= tmp$; y++) {
+      tmp$_0 = props.stepsX;
+      for (var x = 0; x <= tmp$_0; x++) {
+        var px = bx + x * sx;
+        var py = by + y * sy;
+        var h = props.heightFun(x, y);
+        this.tmpPos_5ud41y$_0.set_czzhiu$(props.center);
+        this.tmpPos_5ud41y$_0.x = this.tmpPos_5ud41y$_0.x + (props.xDir.x * px + props.yDir.x * py + this.tmpNrm_5ueby3$_0.x * h);
+        this.tmpPos_5ud41y$_0.y = this.tmpPos_5ud41y$_0.y + (props.xDir.y * px + props.yDir.y * py + this.tmpNrm_5ueby3$_0.y * h);
+        this.tmpPos_5ud41y$_0.z = this.tmpPos_5ud41y$_0.z + (props.xDir.z * px + props.yDir.z * py + this.tmpNrm_5ueby3$_0.z * h);
+        var idx = this.vertex_n440gp$(this.tmpPos_5ud41y$_0, Vec3f$Companion_getInstance().ZERO);
+        if (x > 0 && y > 0) {
+          if (y % 2 === 0) {
+            this.meshData.addTriIndices_qt1dr2$(idx - nx - 1 | 0, idx, idx - 1 | 0);
+            this.meshData.addTriIndices_qt1dr2$(idx - nx | 0, idx, idx - nx - 1 | 0);
+          }
+           else {
+            this.meshData.addTriIndices_qt1dr2$(idx - nx | 0, idx, idx - 1 | 0);
+            this.meshData.addTriIndices_qt1dr2$(idx - nx | 0, idx - 1 | 0, idx - nx - 1 | 0);
+          }
+        }
+      }
+    }
+    var iTri = this.meshData.numIndices - (Kotlin.imul(props.stepsX, props.stepsY) * 6 | 0) | 0;
+    var e1 = MutableVec3f_init();
+    var e2 = MutableVec3f_init();
+    var v1 = this.meshData.get_za3lpa$(0);
+    var v2 = this.meshData.get_za3lpa$(0);
+    var v3 = this.meshData.get_za3lpa$(0);
+    tmp$_1 = this.meshData.numIndices;
+    for (var i = iTri; i < tmp$_1; i += 3) {
+      v1.index = this.meshData.vertexList.indices.get_za3lpa$(i);
+      v2.index = this.meshData.vertexList.indices.get_za3lpa$(i + 1 | 0);
+      v3.index = this.meshData.vertexList.indices.get_za3lpa$(i + 2 | 0);
+      v2.position.subtract_2gj7b4$(v1.position, e1).norm();
+      v3.position.subtract_2gj7b4$(v1.position, e2).norm();
+      e1.cross_2gj7b4$(e2, this.tmpNrm_5ueby3$_0).norm();
+      v1.normal.add_czzhiu$(this.tmpNrm_5ueby3$_0);
+      v2.normal.add_czzhiu$(this.tmpNrm_5ueby3$_0);
+      v3.normal.add_czzhiu$(this.tmpNrm_5ueby3$_0);
+    }
+    var iVert = this.meshData.numVertices - Kotlin.imul(props.stepsX + 1 | 0, props.stepsY + 1 | 0) | 0;
+    tmp$_2 = this.meshData.numVertices;
+    for (var i_0 = iVert; i_0 < tmp$_2; i_0++) {
+      v1.index = i_0;
+      v1.normal.norm();
+    }
+  };
   MeshBuilder.prototype.text_neimsr$ = defineInlineFunction('kool.de.fabmax.kool.util.MeshBuilder.text_neimsr$', wrapFunction(function () {
     var TextProps_init = _.de.fabmax.kool.util.TextProps;
     return function (font, block) {
@@ -19311,6 +21805,52 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   CircleProps.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'CircleProps',
+    interfaces: []
+  };
+  function GridProps() {
+    GridProps$Companion_getInstance();
+    this.center = MutableVec3f_init();
+    this.xDir = MutableVec3f_init();
+    this.yDir = MutableVec3f_init();
+    this.sizeX = 0.0;
+    this.sizeY = 0.0;
+    this.stepsX = 0;
+    this.stepsY = 0;
+    this.heightFun = GridProps$Companion_getInstance().ZERO_HEIGHT;
+    this.defaults();
+  }
+  GridProps.prototype.defaults = function () {
+    this.center.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+    this.xDir.set_czzhiu$(Vec3f$Companion_getInstance().X_AXIS);
+    this.yDir.set_czzhiu$(Vec3f$Companion_getInstance().NEG_Z_AXIS);
+    this.sizeX = 10.0;
+    this.sizeY = 10.0;
+    this.stepsX = 10;
+    this.stepsY = 10;
+    return this;
+  };
+  function GridProps$Companion() {
+    GridProps$Companion_instance = this;
+    this.ZERO_HEIGHT = GridProps$Companion$ZERO_HEIGHT$lambda;
+  }
+  function GridProps$Companion$ZERO_HEIGHT$lambda(f, f_0) {
+    return 0.0;
+  }
+  GridProps$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var GridProps$Companion_instance = null;
+  function GridProps$Companion_getInstance() {
+    if (GridProps$Companion_instance === null) {
+      new GridProps$Companion();
+    }
+    return GridProps$Companion_instance;
+  }
+  GridProps.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GridProps',
     interfaces: []
   };
   function SphereProps() {
@@ -19577,7 +22117,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function ObjectRecycler_init(factory, $this) {
     $this = $this || Object.create(ObjectRecycler.prototype);
-    ObjectRecycler.call($this, ObjectRecycler$Companion_getInstance().DEFAULT_MAX_SIZE, factory);
+    ObjectRecycler.call($this, 10000, factory);
     return $this;
   }
   function ObjectPool(factory) {
@@ -19616,7 +22156,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function AutoRecycler(maxSize, factory) {
     if (maxSize === void 0)
-      maxSize = ObjectRecycler$Companion_getInstance().DEFAULT_MAX_SIZE;
+      maxSize = 10000;
     ObjectRecycler.call(this, maxSize, factory);
     this.contextRecycler = ObjectRecycler_init(AutoRecycler$contextRecycler$lambda(this));
   }
@@ -19763,7 +22303,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (name === void 0)
       name = null;
     Mesh.call(this, data, name);
-    this.primitiveType = GL_POINTS;
+    this.primitiveType = 0;
     this.shader = basicPointShader(PointMesh_init$lambda);
   }
   Object.defineProperty(PointMesh.prototype, 'pointSize', {
@@ -19777,9 +22317,28 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
   });
   PointMesh.prototype.addPoint_hvwyd1$ = function (block) {
-    var idx = this.meshData.addVertex_hvwyd1$(block);
-    this.meshData.addIndex_za3lpa$(idx);
-    return idx;
+    var $this = this.meshData;
+    var idx = {v: 0};
+    $this.isSyncRequired = true;
+    var $this_0 = $this.vertexList;
+    var updateBounds = $this.bounds;
+    var tmp$, tmp$_0, tmp$_1;
+    $this_0.checkBufferSizes();
+    tmp$ = $this_0.vertexSizeF;
+    for (var i = 1; i <= tmp$; i++) {
+      $this_0.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_0 = $this_0.vertexSizeI;
+    for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
+      $this_0.dataI.plusAssign_za3lpa$(0);
+    }
+    $this_0.vertexIt.index = (tmp$_1 = $this_0.size, $this_0.size = tmp$_1 + 1 | 0, tmp$_1);
+    block($this_0.vertexIt);
+    updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
+    idx.v = $this_0.size - 1 | 0;
+    var idx_0 = idx.v;
+    this.meshData.addIndex_za3lpa$(idx_0);
+    return idx_0;
   };
   PointMesh.prototype.addPoint_4sqmhu$ = function (position, color) {
     var idx = this.meshData.addVertex_lv7vxo$(position, null, color, null);
@@ -20734,24 +23293,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var $this = ProtoBuf.Companion.plain;
     return loadMesh_0($this.load_8dtdds$(klassSerializer($this.context, getKClass(MeshData_0)), data));
   }
-  function loadMesh$lambda(closure$positions, closure$i, closure$normals, closure$texCoords, closure$colors, closure$tangents) {
-    return function ($receiver) {
-      $receiver.position.set_y2kzbl$(closure$positions.get_za3lpa$(closure$i * 3 | 0), closure$positions.get_za3lpa$((closure$i * 3 | 0) + 1 | 0), closure$positions.get_za3lpa$((closure$i * 3 | 0) + 2 | 0));
-      if (closure$normals != null) {
-        $receiver.normal.set_y2kzbl$(closure$normals.get_za3lpa$(closure$i * 3 | 0), closure$normals.get_za3lpa$((closure$i * 3 | 0) + 1 | 0), closure$normals.get_za3lpa$((closure$i * 3 | 0) + 2 | 0));
-      }
-      if (closure$texCoords != null) {
-        $receiver.texCoord.set_dleff0$(closure$texCoords.get_za3lpa$(closure$i * 2 | 0), closure$texCoords.get_za3lpa$((closure$i * 2 | 0) + 1 | 0));
-      }
-      if (closure$colors != null) {
-        $receiver.color.set_7b5o5w$(closure$colors.get_za3lpa$(closure$i * 4 | 0), closure$colors.get_za3lpa$((closure$i * 4 | 0) + 1 | 0), closure$colors.get_za3lpa$((closure$i * 4 | 0) + 2 | 0), closure$colors.get_za3lpa$((closure$i * 4 | 0) + 3 | 0));
-      }
-      if (closure$tangents != null) {
-        $receiver.tangent.set_y2kzbl$(closure$tangents.get_za3lpa$(closure$i * 3 | 0), closure$tangents.get_za3lpa$((closure$i * 3 | 0) + 1 | 0), closure$tangents.get_za3lpa$((closure$i * 3 | 0) + 2 | 0));
-      }
-      return Unit;
-    };
-  }
   function loadMesh_0(data) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     var attributes = mutableSetOf([Attribute$Companion_getInstance().POSITIONS]);
@@ -20783,12 +23324,43 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tangents = data.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_TANGENTS);
     tmp$_0 = positions.size / 3 | 0;
     for (var i = 0; i < tmp$_0; i++) {
-      meshData.addVertex_hvwyd1$(loadMesh$lambda(positions, i, normals, texCoords, colors, tangents));
+      var idx = {v: 0};
+      meshData.isSyncRequired = true;
+      var $this = meshData.vertexList;
+      var updateBounds = meshData.bounds;
+      var tmp$_3, tmp$_4, tmp$_5;
+      $this.checkBufferSizes();
+      tmp$_3 = $this.vertexSizeF;
+      for (var i_0 = 1; i_0 <= tmp$_3; i_0++) {
+        $this.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_4 = $this.vertexSizeI;
+      for (var i_1 = 1; i_1 <= tmp$_4; i_1++) {
+        $this.dataI.plusAssign_za3lpa$(0);
+      }
+      $this.vertexIt.index = (tmp$_5 = $this.size, $this.size = tmp$_5 + 1 | 0, tmp$_5);
+      var $receiver = $this.vertexIt;
+      $receiver.position.set_y2kzbl$(positions.get_za3lpa$(i * 3 | 0), positions.get_za3lpa$((i * 3 | 0) + 1 | 0), positions.get_za3lpa$((i * 3 | 0) + 2 | 0));
+      if (normals != null) {
+        $receiver.normal.set_y2kzbl$(normals.get_za3lpa$(i * 3 | 0), normals.get_za3lpa$((i * 3 | 0) + 1 | 0), normals.get_za3lpa$((i * 3 | 0) + 2 | 0));
+      }
+      if (texCoords != null) {
+        $receiver.texCoord.set_dleff0$(texCoords.get_za3lpa$(i * 2 | 0), texCoords.get_za3lpa$((i * 2 | 0) + 1 | 0));
+      }
+      if (colors != null) {
+        $receiver.color.set_7b5o5w$(colors.get_za3lpa$(i * 4 | 0), colors.get_za3lpa$((i * 4 | 0) + 1 | 0), colors.get_za3lpa$((i * 4 | 0) + 2 | 0), colors.get_za3lpa$((i * 4 | 0) + 3 | 0));
+      }
+      if (tangents != null) {
+        $receiver.tangent.set_y2kzbl$(tangents.get_za3lpa$(i * 3 | 0), tangents.get_za3lpa$((i * 3 | 0) + 1 | 0), tangents.get_za3lpa$((i * 3 | 0) + 2 | 0));
+      }
+      updateBounds != null ? updateBounds.add_czzhiu$($this.vertexIt.position) : null;
+      idx.v = $this.size - 1 | 0;
+      idx.v;
     }
     if (data.indices.isEmpty()) {
       tmp$_1 = data.numVertices;
-      for (var i_0 = 0; i_0 < tmp$_1; i_0++) {
-        meshData.addIndex_za3lpa$(i_0);
+      for (var i_2 = 0; i_2 < tmp$_1; i_2++) {
+        meshData.addIndex_za3lpa$(i_2);
       }
     }
      else {
@@ -21382,7 +23954,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.depthCam_0.near = -this.bounds_0.max.z - 10;
     this.depthCam_0.far = -this.bounds_0.min.z;
     this.fbo_0.bind_aemszp$(ctx);
-    glClear(GL_DEPTH_BUFFER_BIT);
+    glClear(256);
     ctx.mvpState.pushMatrices();
     ctx.mvpState.projMatrix.setIdentity();
     ctx.mvpState.viewMatrix.setIdentity();
@@ -21393,7 +23965,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ctx.renderPass = RenderPass$SHADOW_getInstance();
     scene.camera = this.depthCam_0;
     ctx.pushAttributes();
-    ctx.cullFace = GL_FRONT;
+    ctx.cullFace = 1028;
     ctx.applyAttributes();
     nodeToRender.render_aemszp$(ctx);
     ctx.popAttributes();
@@ -21562,7 +24134,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
     }
      else {
-      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().INVALID;
+      this.currentGesture.type = 0;
       this.startPositions.clear();
     }
   };
@@ -21576,7 +24148,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var value = new Vec2f(element.x, element.y);
       $receiver.put_xwzc9p$(key, value);
     }
-    this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().INDETERMINATE;
+    this.currentGesture.type = -1;
   };
   function TouchGestureEvaluator$onDetermineGesture$lambda(closure$pointers) {
     return function (ptrId) {
@@ -21618,9 +24190,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       $receiver.put_xwzc9p$(key, value);
     }
     if (this.isPinch_mcn869$(pointers))
-      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().PINCH;
+      this.currentGesture.type = 1;
     else if (this.isTwoFingerDrag_mcn869$(pointers))
-      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().TWO_FINGER_DRAG;
+      this.currentGesture.type = 2;
   };
   TouchGestureEvaluator.prototype.isPinch_mcn869$ = function (pointers) {
     if (pointers.size === 2) {
@@ -21631,7 +24203,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       if (this.tmpVec1_vwccvm$_0.length() > 5.0 && this.tmpVec2_vwccwh$_0.length() > 5.0 && this.tmpVec1_vwccvm$_0.times_czzhjp$(this.tmpVec2_vwccwh$_0) < 0) {
         this.tmpVec1_vwccvm$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
         this.tmpVec2_vwccwh$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
-        this.currentGesture.init_4s1jvi$(TouchGestureEvaluator$Companion_getInstance().PINCH, this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
+        this.currentGesture.init_4s1jvi$(1, this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
         this.handleGesture_mcn869$(pointers);
         return true;
       }
@@ -21647,7 +24219,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       if (this.tmpVec1_vwccvm$_0.length() > 5.0 && this.tmpVec2_vwccwh$_0.length() > 5.0 && this.tmpVec1_vwccvm$_0.times_czzhjp$(this.tmpVec2_vwccwh$_0) > 0) {
         this.tmpVec1_vwccvm$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(0).id)));
         this.tmpVec2_vwccwh$_0.set_czzhjp$(ensureNotNull(this.startPositions.get_11rb$(pointers.get_za3lpa$(1).id)));
-        this.currentGesture.init_4s1jvi$(TouchGestureEvaluator$Companion_getInstance().TWO_FINGER_DRAG, this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
+        this.currentGesture.init_4s1jvi$(2, this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
         this.handleGesture_mcn869$(pointers);
         return true;
       }
@@ -21661,7 +24233,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.currentGesture.update_enjys2$(this.tmpVec1_vwccvm$_0, this.tmpVec2_vwccwh$_0, this.screenDpi);
     }
      else {
-      this.currentGesture.type = TouchGestureEvaluator$Companion_getInstance().INVALID;
+      this.currentGesture.type = 0;
     }
   };
   function TouchGestureEvaluator$Companion() {
@@ -21691,7 +24263,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.pinchAmountStart = 0.0;
     this.pinchAmountCurrent = 0.0;
     this.dPinchAmount = 0.0;
-    this.type = TouchGestureEvaluator$Companion_getInstance().INVALID;
+    this.type = 0;
     this.numUpdates = 0;
   }
   Object.defineProperty(TouchGestureEvaluator$Gesture.prototype, 'pinchAmountRel', {
@@ -21731,11 +24303,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function UniqueId() {
     UniqueId_instance = this;
-    this.nextId_0 = Kotlin.Long.ONE;
+    this.nextId_0 = L1;
     this.idLock_0 = new Any();
   }
   UniqueId.prototype.nextId = function () {
-    var id = {v: Kotlin.Long.ZERO};
+    var id = {v: L0};
     this.idLock_0;
     id.v = (this.nextId_0 = this.nextId_0.inc(), this.nextId_0);
     return id.v;
@@ -21994,12 +24566,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function glGetProgrami(program, pname) {
     var tmp$, tmp$_0, tmp$_1;
     var res = JsImpl_getInstance().gl.getProgramParameter(Kotlin.isType(tmp$ = program.glRef, WebGLProgram) ? tmp$ : throwCCE(), pname);
-    if (pname === GL_LINK_STATUS) {
+    if (pname === 35714) {
       if (typeof (tmp$_0 = res) === 'boolean' ? tmp$_0 : throwCCE()) {
-        tmp$_1 = GL_TRUE;
+        tmp$_1 = 1;
       }
        else {
-        tmp$_1 = GL_FALSE;
+        tmp$_1 = 0;
       }
       return tmp$_1;
     }
@@ -22008,12 +24580,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   function glGetShaderi(shader, pname) {
     var tmp$, tmp$_0, tmp$_1;
     var res = JsImpl_getInstance().gl.getShaderParameter(Kotlin.isType(tmp$ = shader.glRef, WebGLShader) ? tmp$ : throwCCE(), pname);
-    if (pname === GL_COMPILE_STATUS) {
+    if (pname === 35713) {
       if (typeof (tmp$_0 = res) === 'boolean' ? tmp$_0 : throwCCE()) {
-        tmp$_1 = GL_TRUE;
+        tmp$_1 = 1;
       }
        else {
-        tmp$_1 = GL_FALSE;
+        tmp$_1 = 0;
       }
       return tmp$_1;
     }
@@ -22068,9 +24640,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   function glTexImage2D_0(target, level, internalformat, format, type, pixels) {
     var tmp$;
-    JsImpl_getInstance().gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, GL_TRUE);
+    JsImpl_getInstance().gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
     JsImpl_getInstance().gl.texImage2D(target, level, internalformat, format, type, (tmp$ = pixels) == null || Kotlin.isType(tmp$, HTMLImageElement) ? tmp$ : throwCCE());
-    JsImpl_getInstance().gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, GL_FALSE);
+    JsImpl_getInstance().gl.pixelStorei(WebGLRenderingContext.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
   }
   function glTexParameteri(target, pname, param) {
     JsImpl_getInstance().gl.texParameteri(target, pname, param);
@@ -22266,10 +24838,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     this.canvasCtx_0.clearRect(0.0, 0.0, this.maxWidth, this.maxHeight);
     var style = 'lighter ';
-    if ((fontProps.style & Font$Companion_getInstance().BOLD) !== 0) {
+    if ((fontProps.style & 1) !== 0) {
       style = 'bold ';
     }
-    if ((fontProps.style & Font$Companion_getInstance().ITALIC) !== 0) {
+    if ((fontProps.style & 2) !== 0) {
       style += 'italic ';
     }
     var metrics = LinkedHashMap_init();
@@ -22280,7 +24852,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     for (var i = 0; i < tmp$; i++) {
       buffer.put_s8j3t7$(data.data[(i * 4 | 0) + 3 | 0]);
     }
-    return new CharMap(new BufferedTextureData(buffer, this.maxWidth, texHeight, GL_ALPHA), metrics, fontProps);
+    return new CharMap(new BufferedTextureData(buffer, this.maxWidth, texHeight, 6406), metrics, fontProps);
   };
   FontMapGenerator.prototype.makeMap_0 = function (fontProps, style, map) {
     var tmp$, tmp$_0;
@@ -22362,7 +24934,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
   });
   ImageTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
-    JsImpl_getInstance().gl.texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, this.image);
+    JsImpl_getInstance().gl.texImage2D(3553, 0, 6408, 6408, 5121, this.image);
     this.width = this.image.width;
     this.height = this.image.height;
     var size = Kotlin.imul(this.width, this.height) * 4 | 0;
@@ -22377,7 +24949,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     JsAssetManager$Companion_getInstance();
     AssetManager.call(this);
     this.assetsBaseDir_quoclz$_0 = assetsBaseDir;
-    this.fontGenerator_0 = new FontMapGenerator(JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_WIDTH_0, JsAssetManager$Companion_getInstance().MAX_GENERATED_TEX_HEIGHT_0);
+    this.fontGenerator_0 = new FontMapGenerator(1024, 1024);
   }
   Object.defineProperty(JsAssetManager.prototype, 'assetsBaseDir', {
     get: function () {
@@ -22402,7 +24974,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   JsAssetManager.prototype.loadAsset_jrww91$ = function (assetPath, onLoad) {
     var req = new XMLHttpRequest();
-    req.open('GET', this.assetsBaseDir + '/' + assetPath);
+    if (startsWith(assetPath, 'http', true)) {
+      req.open('GET', assetPath);
+    }
+     else {
+      req.open('GET', this.assetsBaseDir + '/' + assetPath);
+    }
     req.responseType = 'arraybuffer';
     req.onload = JsAssetManager$loadAsset$lambda(req, onLoad);
     req.send();
@@ -22411,7 +24988,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var img = new Image();
     var data = new ImageTextureData(img);
     img.crossOrigin = '';
-    img.src = this.assetsBaseDir + '/' + assetPath;
+    if (startsWith(assetPath, 'http', true)) {
+      img.src = assetPath;
+    }
+     else {
+      img.src = this.assetsBaseDir + '/' + assetPath;
+    }
     return data;
   };
   JsAssetManager.prototype.createCharMap_ttufcy$ = function (fontProps) {
@@ -22461,8 +25043,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var depthTextures;
     var maxTexUnits;
     var shaderIntAttribs = false;
-    var depthComponentIntFormat = GL_DEPTH_COMPONENT;
-    var depthFilterMethod = GL_NEAREST;
+    var depthComponentIntFormat = 6402;
+    var depthFilterMethod = 9728;
     var anisotropicTexFilterInfo = AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED;
     var glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_100;
     var glVersion = new GlVersion('WebGL', 1, 0);
@@ -22471,10 +25053,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       uint32Indices = true;
       depthTextures = true;
       shaderIntAttribs = true;
-      depthComponentIntFormat = GL_DEPTH_COMPONENT24;
+      depthComponentIntFormat = 33190;
       glslDialect = GlslDialect$Companion_getInstance().GLSL_DIALECT_300_ES;
       glVersion = new GlVersion('WebGL', 2, 0);
-      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
+      maxTexUnits = this.gl_8be2vx$.getParameter(34930);
     }
      else {
       webGlCtx = this.canvas_8be2vx$.getContext('webgl');
@@ -22487,7 +25069,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.gl_8be2vx$ = Kotlin.isType(tmp$_1 = webGlCtx, WebGLRenderingContext) ? tmp$_1 : throwCCE();
       uint32Indices = this.gl_8be2vx$.getExtension('OES_element_index_uint') != null;
       depthTextures = this.gl_8be2vx$.getExtension('WEBGL_depth_texture') != null;
-      maxTexUnits = this.gl_8be2vx$.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS);
+      maxTexUnits = this.gl_8be2vx$.getParameter(34930);
     }
     var extAnisotropic = (tmp$_3 = (tmp$_2 = this.gl_8be2vx$.getExtension('EXT_texture_filter_anisotropic')) != null ? tmp$_2 : this.gl_8be2vx$.getExtension('MOZ_EXT_texture_filter_anisotropic')) != null ? tmp$_3 : this.gl_8be2vx$.getExtension('WEBKIT_EXT_texture_filter_anisotropic');
     if (extAnisotropic != null) {
@@ -22544,20 +25126,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (code !== 0) {
       var mods = 0;
       if (ev.altKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_ALT;
+        mods = mods | 4;
       }
       if (ev.ctrlKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_CTRL;
+        mods = mods | 2;
       }
       if (ev.shiftKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SHIFT;
+        mods = mods | 1;
       }
       if (ev.metaKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SUPER;
+        mods = mods | 8;
       }
-      var event = InputManager$Companion_getInstance().KEY_EV_DOWN;
+      var event = 2;
       if (ev.repeat) {
-        event = event | InputManager$Companion_getInstance().KEY_EV_REPEATED;
+        event = event | 4;
       }
       this.inputMgr.keyEvent_qt1dr2$(code, mods, event);
     }
@@ -22573,18 +25155,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (code !== 0) {
       var mods = 0;
       if (ev.altKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_ALT;
+        mods = mods | 4;
       }
       if (ev.ctrlKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_CTRL;
+        mods = mods | 2;
       }
       if (ev.shiftKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SHIFT;
+        mods = mods | 1;
       }
       if (ev.metaKey) {
-        mods = mods | InputManager$Companion_getInstance().KEY_MOD_SUPER;
+        mods = mods | 8;
       }
-      this.inputMgr.keyEvent_qt1dr2$(code, mods, InputManager$Companion_getInstance().KEY_EV_UP);
+      this.inputMgr.keyEvent_qt1dr2$(code, mods, 1);
     }
     if (!this.props.excludedKeyCodes.contains_11rb$(ev.code)) {
       ev.preventDefault();
@@ -22644,7 +25226,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function JsContext$Companion() {
     JsContext$Companion_instance = this;
-    this.KEY_CODE_MAP = mutableMapOf([to('ControlLeft', InputManager$Companion_getInstance().KEY_CTRL_LEFT), to('ControlRight', InputManager$Companion_getInstance().KEY_CTRL_RIGHT), to('ShiftLeft', InputManager$Companion_getInstance().KEY_SHIFT_LEFT), to('ShiftRight', InputManager$Companion_getInstance().KEY_SHIFT_RIGHT), to('AltLeft', InputManager$Companion_getInstance().KEY_ALT_LEFT), to('AltRight', InputManager$Companion_getInstance().KEY_ALT_RIGHT), to('MetaLeft', InputManager$Companion_getInstance().KEY_SUPER_LEFT), to('MetaRight', InputManager$Companion_getInstance().KEY_SUPER_RIGHT), to('Escape', InputManager$Companion_getInstance().KEY_ESC), to('ContextMenu', InputManager$Companion_getInstance().KEY_MENU), to('Enter', InputManager$Companion_getInstance().KEY_ENTER), to('NumpadEnter', InputManager$Companion_getInstance().KEY_NP_ENTER), to('NumpadDivide', InputManager$Companion_getInstance().KEY_NP_DIV), to('NumpadMultiply', InputManager$Companion_getInstance().KEY_NP_MUL), to('NumpadAdd', InputManager$Companion_getInstance().KEY_NP_PLUS), to('NumpadSubtract', InputManager$Companion_getInstance().KEY_NP_MINUS), to('Backspace', InputManager$Companion_getInstance().KEY_BACKSPACE), to('Tab', InputManager$Companion_getInstance().KEY_TAB), to('Delete', InputManager$Companion_getInstance().KEY_DEL), to('Insert', InputManager$Companion_getInstance().KEY_INSERT), to('Home', InputManager$Companion_getInstance().KEY_HOME), to('End', InputManager$Companion_getInstance().KEY_END), to('PageUp', InputManager$Companion_getInstance().KEY_PAGE_UP), to('PageDown', InputManager$Companion_getInstance().KEY_PAGE_DOWN), to('ArrowLeft', InputManager$Companion_getInstance().KEY_CURSOR_LEFT), to('ArrowRight', InputManager$Companion_getInstance().KEY_CURSOR_RIGHT), to('ArrowUp', InputManager$Companion_getInstance().KEY_CURSOR_UP), to('ArrowDown', InputManager$Companion_getInstance().KEY_CURSOR_DOWN), to('F1', InputManager$Companion_getInstance().KEY_F1), to('F2', InputManager$Companion_getInstance().KEY_F2), to('F3', InputManager$Companion_getInstance().KEY_F3), to('F4', InputManager$Companion_getInstance().KEY_F4), to('F5', InputManager$Companion_getInstance().KEY_F5), to('F6', InputManager$Companion_getInstance().KEY_F6), to('F7', InputManager$Companion_getInstance().KEY_F7), to('F8', InputManager$Companion_getInstance().KEY_F8), to('F9', InputManager$Companion_getInstance().KEY_F9), to('F10', InputManager$Companion_getInstance().KEY_F10), to('F11', InputManager$Companion_getInstance().KEY_F11), to('F12', InputManager$Companion_getInstance().KEY_F12), to('Space', 32 | 0)]);
+    this.KEY_CODE_MAP = mutableMapOf([to('ControlLeft', -1), to('ControlRight', -2), to('ShiftLeft', -3), to('ShiftRight', -4), to('AltLeft', -5), to('AltRight', -6), to('MetaLeft', -7), to('MetaRight', -8), to('Escape', -9), to('ContextMenu', -10), to('Enter', -11), to('NumpadEnter', -12), to('NumpadDivide', -13), to('NumpadMultiply', -14), to('NumpadAdd', -15), to('NumpadSubtract', -16), to('Backspace', -17), to('Tab', -18), to('Delete', -19), to('Insert', -20), to('Home', -21), to('End', -22), to('PageUp', -23), to('PageDown', -24), to('ArrowLeft', -25), to('ArrowRight', -26), to('ArrowUp', -27), to('ArrowDown', -28), to('F1', -29), to('F2', -30), to('F3', -31), to('F4', -32), to('F5', -33), to('F6', -34), to('F7', -35), to('F8', -36), to('F9', -37), to('F10', -38), to('F11', -39), to('F12', -40), to('Space', 32)]);
   }
   JsContext$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -24676,6 +27258,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: Mat3f$Companion_getInstance
   });
   package$math.Mat3f = Mat3f;
+  Object.defineProperty(Mat4d, 'Companion', {
+    get: Mat4d$Companion_getInstance
+  });
+  package$math.Mat4d = Mat4d;
+  Object.defineProperty(Mat4dStack, 'Companion', {
+    get: Mat4dStack$Companion_getInstance
+  });
+  package$math.Mat4dStack = Mat4dStack;
   Object.defineProperty(Mat4f, 'Companion', {
     get: Mat4f$Companion_getInstance
   });
@@ -24736,6 +27326,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   package$math.randomI = randomI;
   package$math.randomI_vux9f0$ = randomI_0;
+  package$math.randomI_n8acyv$ = randomI_1;
   package$math.randomD = randomD;
   package$math.randomD_lu1900$ = randomD_0;
   package$math.randomF = randomF;
@@ -24743,19 +27334,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$math.Random = Random;
   package$math.Ray = Ray;
   package$math.RayTest = RayTest;
-  package$math.add_drouu$ = add;
-  package$math.add_4lfkt4$ = add_0;
-  package$math.add_8t3gre$ = add_1;
-  package$math.subtract_drouu$ = subtract;
-  package$math.subtract_4lfkt4$ = subtract_0;
-  package$math.subtract_8t3gre$ = subtract_1;
-  package$math.scale_rnua8g$ = scale;
-  package$math.scale_2qa7tb$ = scale_0;
-  package$math.scale_m79ulu$ = scale_1;
-  package$math.norm_czzhjp$ = norm;
-  package$math.norm_czzhiu$ = norm_0;
-  package$math.cross_4lfkt4$ = cross;
-  package$math.slerp_m26pjg$ = slerp;
   Object.defineProperty(Vec2f, 'Companion', {
     get: Vec2f$Companion_getInstance
   });
@@ -24766,6 +27344,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$math.MutableVec2f_init_mx4ult$ = MutableVec2f_init_0;
   package$math.MutableVec2f_init_czzhjp$ = MutableVec2f_init_1;
   package$math.MutableVec2f = MutableVec2f;
+  Object.defineProperty(Vec2d, 'Companion', {
+    get: Vec2d$Companion_getInstance
+  });
+  package$math.Vec2d_init_14dthe$ = Vec2d_init;
+  package$math.Vec2d_init_czzhjr$ = Vec2d_init_0;
+  package$math.Vec2d = Vec2d;
+  package$math.MutableVec2d_init = MutableVec2d_init;
+  package$math.MutableVec2d_init_14dthe$ = MutableVec2d_init_0;
+  package$math.MutableVec2d_init_czzhjr$ = MutableVec2d_init_1;
+  package$math.MutableVec2d = MutableVec2d;
   Object.defineProperty(Vec3f, 'Companion', {
     get: Vec3f$Companion_getInstance
   });
@@ -24776,6 +27364,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$math.MutableVec3f_init_mx4ult$ = MutableVec3f_init_0;
   package$math.MutableVec3f_init_czzhiu$ = MutableVec3f_init_1;
   package$math.MutableVec3f = MutableVec3f;
+  Object.defineProperty(Vec3d, 'Companion', {
+    get: Vec3d$Companion_getInstance
+  });
+  package$math.Vec3d_init_14dthe$ = Vec3d_init;
+  package$math.Vec3d_init_czzhiw$ = Vec3d_init_0;
+  package$math.Vec3d = Vec3d;
+  package$math.MutableVec3d_init = MutableVec3d_init;
+  package$math.MutableVec3d_init_14dthe$ = MutableVec3d_init_0;
+  package$math.MutableVec3d_init_czzhiw$ = MutableVec3d_init_1;
+  package$math.MutableVec3d = MutableVec3d;
   Object.defineProperty(Vec4f, 'Companion', {
     get: Vec4f$Companion_getInstance
   });
@@ -24788,6 +27386,44 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$math.MutableVec4f_init_2qa7tb$ = MutableVec4f_init_1;
   package$math.MutableVec4f_init_czzhhz$ = MutableVec4f_init_2;
   package$math.MutableVec4f = MutableVec4f;
+  Object.defineProperty(Vec4d, 'Companion', {
+    get: Vec4d$Companion_getInstance
+  });
+  package$math.Vec4d_init_14dthe$ = Vec4d_init;
+  package$math.Vec4d_init_6nz8ey$ = Vec4d_init_0;
+  package$math.Vec4d_init_czzhi1$ = Vec4d_init_1;
+  package$math.Vec4d = Vec4d;
+  package$math.MutableVec4d_init = MutableVec4d_init;
+  package$math.MutableVec4d_init_14dthe$ = MutableVec4d_init_0;
+  package$math.MutableVec4d_init_6nz8ey$ = MutableVec4d_init_1;
+  package$math.MutableVec4d_init_czzhi1$ = MutableVec4d_init_2;
+  package$math.MutableVec4d = MutableVec4d;
+  package$math.add_drouu$ = add;
+  package$math.add_4lfkt4$ = add_0;
+  package$math.add_8t3gre$ = add_1;
+  package$math.add_w6t53u$ = add_2;
+  package$math.add_ymn0x0$ = add_3;
+  package$math.add_uez4yq$ = add_4;
+  package$math.subtract_drouu$ = subtract;
+  package$math.subtract_4lfkt4$ = subtract_0;
+  package$math.subtract_8t3gre$ = subtract_1;
+  package$math.subtract_w6t53u$ = subtract_2;
+  package$math.subtract_ymn0x0$ = subtract_3;
+  package$math.subtract_uez4yq$ = subtract_4;
+  package$math.scale_rnua8g$ = scale;
+  package$math.scale_2qa7tb$ = scale_0;
+  package$math.scale_m79ulu$ = scale_1;
+  package$math.scale_f3xr3v$ = scale_2;
+  package$math.scale_6nz8ey$ = scale_3;
+  package$math.scale_1rza9z$ = scale_4;
+  package$math.norm_czzhjp$ = norm;
+  package$math.norm_czzhiu$ = norm_0;
+  package$math.norm_czzhjr$ = norm_1;
+  package$math.norm_czzhiw$ = norm_2;
+  package$math.cross_4lfkt4$ = cross;
+  package$math.cross_ymn0x0$ = cross_0;
+  package$math.slerp_m26pjg$ = slerp;
+  package$math.slerp_nr5s3x$ = slerp_0;
   package$kool.MemoryManager = MemoryManager;
   package$kool.MvpState = MvpState;
   var package$physics = package$kool.physics || (package$kool.physics = {});
@@ -24861,6 +27497,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$scene.OrthographicCamera = OrthographicCamera;
   package$scene.PerspectiveCamera = PerspectiveCamera;
   package$scene.FrustumPlane = FrustumPlane;
+  var package$doubleprec = package$scene.doubleprec || (package$scene.doubleprec = {});
+  package$doubleprec.doublePrecisionTransform_qrflgl$ = doublePrecisionTransform;
+  package$doubleprec.DoublePrecisionRoot = DoublePrecisionRoot;
+  package$doubleprec.NodeDp = NodeDp;
+  package$doubleprec.NodeProxy = NodeProxy;
+  package$doubleprec.transformGroupDp_qrflgl$ = transformGroupDp;
+  package$doubleprec.TransformGroupDp = TransformGroupDp;
   package$scene.group_2ylazs$ = group;
   package$scene.Group = Group;
   package$scene.Light = Light;
@@ -24897,6 +27540,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$scene.scene_13di2z$ = scene;
   package$scene.Scene = Scene;
   package$scene.sphericalInputTransform_6sxffc$ = sphericalInputTransform;
+  package$scene.defaultCamTransform_v4keia$ = defaultCamTransform;
   Object.defineProperty(SphericalInputTransform$DragMethod, 'NONE', {
     get: SphericalInputTransform$DragMethod$NONE_getInstance
   });
@@ -24931,6 +27575,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$ui.BlankComponentUi = BlankComponentUi;
   package$ui.SimpleComponentUi = SimpleComponentUi;
   package$ui.BlurredComponentUi = BlurredComponentUi;
+  package$ui.DrawerMenu = DrawerMenu;
   package$ui.Label = Label;
   package$ui.LabelUi = LabelUi;
   package$ui.LayoutSpec = LayoutSpec;
@@ -25191,6 +27836,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   IndexedVertexList.Vertex = IndexedVertexList$Vertex;
   package$util.IndexedVertexList = IndexedVertexList;
   package$util.lineMesh_6a24eg$ = lineMesh;
+  package$util.wireframeMesh_3w6cym$ = wireframeMesh;
   package$util.LineMesh = LineMesh;
   Log.prototype.Level = Log$Level;
   Object.defineProperty(Log$Level, 'TRACE', {
@@ -25221,6 +27867,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$util.logE_hbfas6$ = logE;
   package$util.MeshBuilder = MeshBuilder;
   package$util.CircleProps = CircleProps;
+  Object.defineProperty(GridProps, 'Companion', {
+    get: GridProps$Companion_getInstance
+  });
+  package$util.GridProps = GridProps;
   package$util.SphereProps = SphereProps;
   package$util.RectProps = RectProps;
   package$util.CubeProps = CubeProps;
@@ -25805,9 +28455,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   FLT_EPSILON = 1.1920929E-7;
   SQRT_1_2 = 0.70710677;
   defaultRandomInstance = new Random(numberToInt(now()));
-  slerpTmpA = MutableVec4f_init();
-  slerpTmpB = MutableVec4f_init();
-  slerpTmpC = MutableVec4f_init();
+  slerpTmpAf = MutableVec4f_init();
+  slerpTmpBf = MutableVec4f_init();
+  slerpTmpCf = MutableVec4f_init();
+  slerpTmpAd = MutableVec4d_init();
+  slerpTmpBd = MutableVec4d_init();
+  slerpTmpCd = MutableVec4d_init();
   Kotlin.defineModule('kool', _);
   return _;
 });

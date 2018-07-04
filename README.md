@@ -21,6 +21,7 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 200 bodies, js is slower...).
 
 ## Features / Noticeable stuff:
+- Optional double precision transform: Improves geometry resolution in high zoom-levels in [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo)
 - Some super-primitive [Physics Simulation](https://fabmax.github.io/kool/kool-js/?demo=boxDemo)
 - Full support of all features on all platforms
 - Multi-touch support (on Android and Javascript / WebGL)
@@ -28,7 +29,7 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 - Cascaded shadow maps
 - Vertex shader mesh animation: [Model Demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo)
 - Normal mapping
-- OpenStreetMap tile loading: [OSM Earth Demo](https://fabmax.github.io/kool/kool-js/?demo=earthDemo)
+- OpenStreetMap tile loading: [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo)
 - Synthie music: [Synthie Demo](https://fabmax.github.io/kool/kool-js/?demo=synthieDemo), quite CPU intense...
 - Multi-scene / multi-viewport support
 - Some simple UI stuff: Text-Fields, (Toggle-)Buttons, Sliders, Labels

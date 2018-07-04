@@ -1,7 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.earth.earthScene
+import de.fabmax.kool.demo.globe.globeScene
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.debugOverlay
@@ -22,7 +22,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene(it)) },
             "pointDemo" to DemoEntry("Point Cloud Demo") { add(pointScene()) },
             "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
-            "earthDemo" to DemoEntry("Earth Demo") { addAll(earthScene(it)) },
+            "globeDemo" to DemoEntry("Globe Demo") { addAll(globeScene(it)) },
             "modelDemo" to DemoEntry("Model Demo") { add(modelScene(it)) },
             "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
             "boxDemo" to DemoEntry("Physics Demo") { addAll(collisionDemo(it)) }

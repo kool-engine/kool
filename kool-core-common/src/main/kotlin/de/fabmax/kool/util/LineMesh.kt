@@ -64,6 +64,10 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
         return idx0
     }
 
+    fun clear() {
+        meshData.clear()
+    }
+
     fun addBoundingBox(aabb: BoundingBox, color: Color) {
         meshData.batchUpdate {
             val i0 = addVertex {
