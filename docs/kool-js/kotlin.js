@@ -24610,6 +24610,18 @@
     function createCoroutineUnchecked_0($receiver, completion) {
       return $receiver(completion, true).facade;
     }
+    var COROUTINE_SUSPENDED;
+    function CoroutineSuspendedMarker() {
+      CoroutineSuspendedMarker_instance = this;
+    }
+    CoroutineSuspendedMarker.$metadata$ = {kind: Kind_OBJECT, simpleName: 'CoroutineSuspendedMarker', interfaces: []};
+    var CoroutineSuspendedMarker_instance = null;
+    function CoroutineSuspendedMarker_getInstance() {
+      if (CoroutineSuspendedMarker_instance === null) {
+        new CoroutineSuspendedMarker();
+      }
+      return CoroutineSuspendedMarker_instance;
+    }
     var dateLocaleOptions = defineInlineFunction('kotlin.kotlin.js.dateLocaleOptions_49uy1x$', function (init) {
       var result = new Object();
       init(result);
@@ -32793,7 +32805,6 @@
         throw new NotImplementedError_init('Implementation of intercepted is intrinsic');
       };
     }));
-    var COROUTINE_SUSPENDED;
     var and = defineInlineFunction('kotlin.kotlin.experimental.and_buxqzf$', wrapFunction(function () {
       var toByte = Kotlin.toByte;
       return function ($receiver, other) {
@@ -34954,7 +34965,7 @@
     function KotlinVersion$Companion() {
       KotlinVersion$Companion_instance = this;
       this.MAX_COMPONENT_VALUE = 255;
-      this.CURRENT = new KotlinVersion(1, 2, 50);
+      this.CURRENT = new KotlinVersion(1, 2, 51);
     }
     KotlinVersion$Companion.$metadata$ = {kind: Kind_OBJECT, simpleName: 'Companion', interfaces: []};
     var KotlinVersion$Companion_instance = null;
@@ -37258,6 +37269,9 @@
     var package$intrinsics = package$experimental.intrinsics || (package$experimental.intrinsics = {});
     package$intrinsics.createCoroutineUnchecked_uao1qo$ = createCoroutineUnchecked;
     package$intrinsics.createCoroutineUnchecked_xtwlez$ = createCoroutineUnchecked_0;
+    Object.defineProperty(package$intrinsics, 'COROUTINE_SUSPENDED', {get: function () {
+      return COROUTINE_SUSPENDED;
+    }});
     package$js.dateLocaleOptions_49uy1x$ = dateLocaleOptions;
     var package$dom = package$kotlin.dom || (package$kotlin.dom = {});
     package$dom.createElement_7cgwi1$ = createElement;
@@ -37739,9 +37753,6 @@
     package$experimental.createCoroutine_uao1qo$ = createCoroutine;
     package$experimental.createCoroutine_xtwlez$ = createCoroutine_0;
     Object.defineProperty(package$experimental, 'coroutineContext', {get: get_coroutineContext});
-    Object.defineProperty(package$intrinsics, 'COROUTINE_SUSPENDED', {get: function () {
-      return COROUTINE_SUSPENDED;
-    }});
     package$experimental.buildSequence_of7nec$ = buildSequence;
     package$experimental.buildIterator_of7nec$ = buildIterator;
     package$experimental.SequenceBuilder = SequenceBuilder;
@@ -37930,6 +37941,7 @@
     output = isNode ? new NodeJsOutput(process.stdout) : new BufferedOutputToConsoleLog();
     UNDECIDED = new Any();
     RESUMED = new Any();
+    COROUTINE_SUSPENDED = CoroutineSuspendedMarker_getInstance();
     functionClasses = Kotlin.newArray(0, null);
     INT_MAX_POWER_OF_TWO = 1073741824;
     State_NotReady = 0;
@@ -37938,7 +37950,6 @@
     State_Ready = 3;
     State_Done = 4;
     State_Failed = 5;
-    COROUTINE_SUSPENDED = new Any();
     Kotlin.defineModule('kotlin', _);
     
   }());

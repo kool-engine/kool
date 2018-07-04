@@ -508,7 +508,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('Simple Demo', Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('simpleDemo', this.defaultScene_0), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda)), to('pointDemo', new Demo$DemoEntry('Point Cloud Demo', Demo$demos$lambda_0)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_1)), to('earthDemo', new Demo$DemoEntry('Globe Demo', Demo$demos$lambda_2)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_4)), to('boxDemo', new Demo$DemoEntry('Physics Demo', Demo$demos$lambda_5))]);
+    this.demos_0 = mutableMapOf([to('simpleDemo', this.defaultScene_0), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda)), to('pointDemo', new Demo$DemoEntry('Point Cloud Demo', Demo$demos$lambda_0)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_1)), to('globeDemo', new Demo$DemoEntry('Globe Demo', Demo$demos$lambda_2)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_4)), to('boxDemo', new Demo$DemoEntry('Physics Demo', Demo$demos$lambda_5))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.demoOverlay_0(ctx);
@@ -834,7 +834,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var level = Log$Level.DEBUG;
         var tag = Kotlin.getKClassFromExpression(this).simpleName;
         if (level.level >= $this.level.level) {
-          $this.printer(level, tag, 'removed tile frame ' + frame.tileName + ', ' + this.tileFrames_0.size + ' frame remaining');
+          $this.printer(level, tag, 'removed tile frame ' + frame.tileName + ', ' + this.tileFrames_0.size + ' frames remaining');
         }
       }
     }
@@ -1774,7 +1774,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.tileUrls = mutableListOf(['tile.openstreetmap.org']);
   }
   OsmTexImageTileShaderProvider.prototype.getTexture_jjvqbv$ = function (tileName, ctx) {
-    return assetTexture('http://' + this.tileUrls.get_za3lpa$(randomI(get_indices(this.tileUrls))) + '/' + tileName.zoom + '/' + tileName.x + '/' + tileName.y + '.png', ctx);
+    return assetTexture('https://' + this.tileUrls.get_za3lpa$(randomI(get_indices(this.tileUrls))) + '/' + tileName.zoom + '/' + tileName.x + '/' + tileName.y + '.png', ctx);
   };
   OsmTexImageTileShaderProvider.$metadata$ = {
     kind: Kind_CLASS,

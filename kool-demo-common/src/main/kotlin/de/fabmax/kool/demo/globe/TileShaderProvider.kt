@@ -30,5 +30,5 @@ open class OsmTexImageTileShaderProvider : TexImageTileShaderProvider() {
     protected val tileUrls = mutableListOf("tile.openstreetmap.org")
 
     override fun getTexture(tileName: TileName, ctx: KoolContext) =
-            assetTexture("http://${tileUrls[randomI(tileUrls.indices)]}/${tileName.zoom}/${tileName.x}/${tileName.y}.png", ctx)
+            assetTexture("https://${tileUrls[randomI(tileUrls.indices)]}/${tileName.zoom}/${tileName.x}/${tileName.y}.png", ctx)
 }
