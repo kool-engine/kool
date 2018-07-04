@@ -27,29 +27,9 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
         private set
 
     init {
-//        tileShader = basicShader {
-//            colorModel = ColorModel.TEXTURE_COLOR
-//            //colorModel = if (tileName.x % 2 == tileName.y % 2) ColorModel.STATIC_COLOR else ColorModel.TEXTURE_COLOR
-//            //colorModel = ColorModel.STATIC_COLOR
-//            lightModel = LightModel.NO_LIGHTING
-//            isAlpha = true
-//        }
-//        tileShader.alpha = 0f
-//        shader = tileShader
-//        loadTileTex(ctx)
-
         tileShader = globe.tileShaderProvider.getShader(tileName, ctx)
         shader = tileShader
     }
-
-//    private fun loadTileTex(ctx: KoolContext) {
-//        val f = (tileName.zoom - globe.minZoomLvl).toFloat() / (globe.maxZoomLvl - globe.minZoomLvl)
-//        val colorA = ColorGradient.JET_MD.getColor(f)
-//        val colorB = ColorGradient.JET_MD.getColor((f + 0.5f) % 1f)
-//        tileShader.staticColor.set(if (tileName.x % 2 == tileName.y % 2) colorA else colorB)
-//
-//        tileShader.texture = assetTexture("http://tile.openstreetmap.org/${tileName.zoom}/${tileName.x}/${tileName.y}.png", ctx)
-//    }
 
     override fun preRender(ctx: KoolContext) {
         val targetAlpha = 1f

@@ -683,7 +683,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.centerLat_p7ui4s$_0 = 0.0;
     this.centerLon_p7u7w8$_0 = 0.0;
     this.cameraHeight_brtjyi$_0 = 0.0;
-    this.meshGenerator_0 = new FlatTileMeshGenerator();
+    this.meshGenerator = new GridTileMeshGenerator();
     this.tileShaderProvider = new OsmTexImageTileShaderProvider();
     this.tileFrames_0 = LinkedHashMap_init();
     this.zoomGroups_0 = ArrayList_init();
@@ -918,7 +918,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         break;
       }
     }
-    var forceRemoveThresh = numberToInt(this.maxTiles * 1.3);
+    var forceRemoveThresh = numberToInt(this.maxTiles * 1.5);
     if (this.tiles_0.size > forceRemoveThresh) {
       var $receiver = ArrayList_init();
       $receiver.addAll_brywnq$(this.removableTiles_0.values);
@@ -1012,7 +1012,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       }
        else {
         var mesh = new TileMesh(this, new TileName(x, y, zoom), ctx);
-        var parentFrame = this.meshGenerator_0.generateMesh_urq3fk$(this, mesh);
+        var parentFrame = this.meshGenerator.generateMesh_urq3fk$(this, mesh);
         this.tiles_0.put_xwzc9p$(key, mesh);
         this.loadingTiles_0.add_11rb$(key);
         if (parentFrame != null) {
@@ -1081,13 +1081,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var it = this.removableTiles_0.values.iterator();
     while (it.hasNext()) {
       var mesh = it.next();
-      if (mesh.tileName.zoom > tileName.zoom) {
-        var projX = mesh.tileName.x >> mesh.tileName.zoom - tileName.zoom;
-        var projY = mesh.tileName.y >> mesh.tileName.zoom - tileName.zoom;
-        if (projX === tileName.x && projY === tileName.y) {
-          this.removeTileMesh_0(mesh, false);
-          it.remove();
-        }
+      if (mesh.tileName.isSubTileOf_sdbw1w$(tileName)) {
+        this.removeTileMesh_0(mesh, false);
+        it.remove();
       }
     }
   };
@@ -1134,6 +1130,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var globe = {v: null};
     var $receiver = new Scene(null);
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, globeScene$lambda$lambda($receiver)));
+    $receiver.light.color.set_d7aj7k$(Color.Companion.LIGHT_GRAY);
     var earthRadius = 6371000.8;
     globe.v = new Globe(earthRadius);
     var dpGroup = new DoublePrecisionRoot(ensureNotNull(globe.v));
@@ -1386,15 +1383,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     interfaces: [InputManager$DragHandler]
   };
   function TileFrame(tileName, globe) {
-    TileFrame$Companion_getInstance();
     TransformGroupDp.call(this);
     this.tileName = tileName;
     this.globe_0 = globe;
     this.zoomGroups = ArrayList_init();
     this.tileCount_gbn3bp$_0 = 0;
     var tmp$, tmp$_0;
-    this.rotate_6y0v78$(this.tileName.center.lon, 0.0, 1.0, 0.0);
-    this.rotate_6y0v78$(90.0 - this.tileName.center.lat, 1.0, 0.0, 0.0);
+    this.rotate_6y0v78$(this.tileName.lonCenter, 0.0, 1.0, 0.0);
+    this.rotate_6y0v78$(90.0 - this.tileName.latCenter, 1.0, 0.0, 0.0);
     this.translate_yvo9jy$(0.0, this.globe_0.radius, 0.0);
     this.checkInverse();
     tmp$ = this.tileName.zoom;
@@ -1434,31 +1430,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   TileFrame.prototype.getZoomGroup_0 = function (level) {
     return this.zoomGroups.get_za3lpa$(level - this.tileName.zoom | 0);
   };
-  TileFrame.prototype.toLocalPosition_bwm9xk$ = function (latRad, lonRad, result) {
-    return this.transformToLocal.transform_j7uy7i$(TileFrame$Companion_getInstance().latLonToCartesian_dp1656$(latRad, lonRad, this.globe_0.radius, result));
-  };
-  function TileFrame$Companion() {
-    TileFrame$Companion_instance = this;
-  }
-  TileFrame$Companion.prototype.latLonToCartesian_dp1656$ = function (latRad, lonRad, radius, result) {
-    var theta = math.PI * 0.5 - latRad;
-    result.x = Math_0.sin(theta) * Math_0.sin(lonRad) * radius;
-    result.z = Math_0.sin(theta) * Math_0.cos(lonRad) * radius;
-    result.y = Math_0.cos(theta) * radius;
-    return result;
-  };
-  TileFrame$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var TileFrame$Companion_instance = null;
-  function TileFrame$Companion_getInstance() {
-    if (TileFrame$Companion_instance === null) {
-      new TileFrame$Companion();
-    }
-    return TileFrame$Companion_instance;
-  }
   TileFrame.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'TileFrame',
@@ -1553,30 +1524,34 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'TileMeshGenerator',
     interfaces: []
   };
-  function FlatTileMeshGenerator() {
+  function GridTileMeshGenerator(logSteps) {
+    GridTileMeshGenerator$Companion_getInstance();
+    if (logSteps === void 0)
+      logSteps = 4;
+    this.logSteps = logSteps;
   }
-  FlatTileMeshGenerator.prototype.generateMesh_urq3fk$ = function (globe, tileMesh) {
+  GridTileMeshGenerator.prototype.generateMesh_urq3fk$ = function (globe, tileMesh) {
     var tmp$;
     if (tileMesh.tileName.zoom < globe.frameZoomThresh) {
-      this.generateMesh_mc2053$_0(globe, tileMesh, null);
+      this.generateMesh_gepeei$_0(globe, tileMesh, null);
       tmp$ = null;
     }
      else {
-      var div = 1 << tileMesh.tileName.zoom - globe.frameZoomLvl;
-      var frameTile = new TileName(tileMesh.tileName.x / div | 0, tileMesh.tileName.y / div | 0, globe.frameZoomLvl);
-      var frame = globe.getTileFrame_sdbw1w$(frameTile);
-      this.generateMesh_mc2053$_0(globe, tileMesh, frame);
+      var frame = globe.getTileFrame_sdbw1w$(tileMesh.tileName);
+      this.generateMesh_gepeei$_0(globe, tileMesh, frame);
       tmp$ = frame;
     }
     return tmp$;
   };
-  function FlatTileMeshGenerator$generateMesh$lambda(closure$tileMesh, closure$globe, closure$frame) {
+  GridTileMeshGenerator.prototype.getHeightAt_inzc14$ = function (lat, lon, tileName) {
+    return 0.0;
+  };
+  function GridTileMeshGenerator$generateMesh$lambda(this$GridTileMeshGenerator, closure$tileMesh, closure$globe, closure$frame) {
     return function ($receiver) {
       var uvScale = 255.0 / 256.0;
       var uvOff = 0.5 / 256.0;
-      var stepsExp = 4;
-      var steps = 1 << stepsExp;
-      var zoomDiv = 2 * math.PI / (1 << closure$tileMesh.tileName.zoom + stepsExp);
+      var steps = 1 << this$GridTileMeshGenerator.logSteps;
+      var zoomDiv = 2 * math.PI / (1 << closure$tileMesh.tileName.zoom + this$GridTileMeshGenerator.logSteps);
       var pos = MutableVec3d_init();
       var nrm = MutableVec3d_init();
       var posf = MutableVec3f_init();
@@ -1588,7 +1563,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         var lat = Math_0.atan(x_0);
         for (var i = 0; i <= steps; i++) {
           var lon = (Kotlin.imul(closure$tileMesh.tileName.x, steps) + i | 0) * zoomDiv - math.PI;
-          TileFrame$Companion_getInstance().latLonToCartesian_dp1656$(lat, lon, closure$globe.radius, pos);
+          var height = this$GridTileMeshGenerator.getHeightAt_inzc14$(lat * math_0.RAD_2_DEG, lon * math_0.RAD_2_DEG, closure$tileMesh.tileName);
+          GridTileMeshGenerator$Companion_getInstance().latLonToCartesian_dp1656$(lat, lon, closure$globe.radius + height, pos);
           pos.norm_5s4mqs$(nrm);
           if (closure$frame != null) {
             closure$frame.transformToLocal.transform_j7uy7i$(pos, 1.0);
@@ -1605,16 +1581,39 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           }
         }
       }
+      $receiver.meshData.generateNormals();
       return Unit;
     };
   }
-  FlatTileMeshGenerator.prototype.generateMesh_mc2053$_0 = function (globe, tileMesh, frame) {
-    tileMesh.generator = FlatTileMeshGenerator$generateMesh$lambda(tileMesh, globe, frame);
+  GridTileMeshGenerator.prototype.generateMesh_gepeei$_0 = function (globe, tileMesh, frame) {
+    tileMesh.generator = GridTileMeshGenerator$generateMesh$lambda(this, tileMesh, globe, frame);
     tileMesh.generateGeometry();
   };
-  FlatTileMeshGenerator.$metadata$ = {
+  function GridTileMeshGenerator$Companion() {
+    GridTileMeshGenerator$Companion_instance = this;
+  }
+  GridTileMeshGenerator$Companion.prototype.latLonToCartesian_dp1656$ = function (latRad, lonRad, radius, result) {
+    var theta = math.PI * 0.5 - latRad;
+    result.x = Math_0.sin(theta) * Math_0.sin(lonRad) * radius;
+    result.z = Math_0.sin(theta) * Math_0.cos(lonRad) * radius;
+    result.y = Math_0.cos(theta) * radius;
+    return result;
+  };
+  GridTileMeshGenerator$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var GridTileMeshGenerator$Companion_instance = null;
+  function GridTileMeshGenerator$Companion_getInstance() {
+    if (GridTileMeshGenerator$Companion_instance === null) {
+      new GridTileMeshGenerator$Companion();
+    }
+    return GridTileMeshGenerator$Companion_instance;
+  }
+  GridTileMeshGenerator.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'FlatTileMeshGenerator',
+    simpleName: 'GridTileMeshGenerator',
     interfaces: [TileMeshGenerator]
   };
   function TileName(x, y, zoom) {
@@ -1622,29 +1621,55 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.x = x;
     this.y = y;
     this.zoom = zoom;
-    this.ne = null;
-    this.sw = null;
-    this.center = null;
+    this.latN = 0;
+    this.latS = 0;
+    this.lonE = 0;
+    this.lonW = 0;
+    this.latCenter = 0;
+    this.lonCenter = 0;
     this.fusedKey = TileName$Companion_getInstance().fuesdKey_qt1dr2$(this.x, this.y, this.zoom);
     var zp = 1 << this.zoom;
     var x_0 = math.PI - (this.y + 1 | 0) / (1 << this.zoom) * 2 * math.PI;
     var x_1 = Math_0.sinh(x_0);
-    var s = Math_0.atan(x_1) * math_0.RAD_2_DEG;
-    var w = (this.x + 1 | 0) / zp * 360 - 180;
+    this.latS = Math_0.atan(x_1) * math_0.RAD_2_DEG;
+    this.lonW = (this.x + 1 | 0) / zp * 360.0 - 180.0;
     var x_2 = math.PI - this.y / (1 << this.zoom) * 2 * math.PI;
     var x_3 = Math_0.sinh(x_2);
-    var n = Math_0.atan(x_3) * math_0.RAD_2_DEG;
-    var e = this.x / zp * 360 - 180;
-    this.sw = new LatLon(s, w);
-    this.ne = new LatLon(n, e);
-    this.center = new LatLon(this.sw.lat + (this.ne.lat - this.sw.lat) / 2, this.sw.lon + (this.ne.lon - this.sw.lon) / 2);
+    this.latN = Math_0.atan(x_3) * math_0.RAD_2_DEG;
+    this.lonE = this.x / zp * 360.0 - 180.0;
+    this.latCenter = this.latS + (this.latN - this.latS) * 0.5;
+    this.lonCenter = this.lonE + (this.lonW - this.lonE) * 0.5;
   }
+  TileName.prototype.isSubTileOf_sdbw1w$ = function (parent) {
+    var tmp$;
+    if (parent.zoom > this.zoom) {
+      tmp$ = false;
+    }
+     else {
+      var projX = this.x >> this.zoom - parent.zoom;
+      var projY = this.y >> this.zoom - parent.zoom;
+      tmp$ = (projX === parent.x && projY === parent.y);
+    }
+    return tmp$;
+  };
+  TileName.prototype.toString = function () {
+    return this.zoom.toString() + '/' + this.x + '/' + this.y;
+  };
+  TileName.prototype.equals = function (other) {
+    if (this === other)
+      return true;
+    if (!Kotlin.isType(other, TileName))
+      return false;
+    if (!equals(this.fusedKey, other.fusedKey))
+      return false;
+    return true;
+  };
+  TileName.prototype.hashCode = function () {
+    return hashCode(this.fusedKey);
+  };
   function TileName$Companion() {
     TileName$Companion_instance = this;
   }
-  TileName$Companion.prototype.forLatLon_c67stb$ = function (latLon, zoom) {
-    return this.forLatLon_syxxoe$(latLon.lat, latLon.lon, zoom);
-  };
   TileName$Companion.prototype.forLatLon_syxxoe$ = function (lat, lon, zoom) {
     var latRad = lat * math_0.DEG_2_RAD;
     var zp = 1 << zoom;
@@ -1692,55 +1717,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     return TileName$Companion_instance;
   }
-  TileName.prototype.toString = function () {
-    return this.zoom.toString() + '/' + this.x + '/' + this.y;
-  };
-  TileName.prototype.equals = function (other) {
-    if (this === other)
-      return true;
-    if (!Kotlin.isType(other, TileName))
-      return false;
-    if (!equals(this.fusedKey, other.fusedKey))
-      return false;
-    return true;
-  };
-  TileName.prototype.hashCode = function () {
-    return hashCode(this.fusedKey);
-  };
   TileName.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'TileName',
     interfaces: []
-  };
-  function LatLon(lat, lon) {
-    this.lat = lat;
-    this.lon = lon;
-  }
-  LatLon.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LatLon',
-    interfaces: []
-  };
-  LatLon.prototype.component1 = function () {
-    return this.lat;
-  };
-  LatLon.prototype.component2 = function () {
-    return this.lon;
-  };
-  LatLon.prototype.copy_lu1900$ = function (lat, lon) {
-    return new LatLon(lat === void 0 ? this.lat : lat, lon === void 0 ? this.lon : lon);
-  };
-  LatLon.prototype.toString = function () {
-    return 'LatLon(lat=' + Kotlin.toString(this.lat) + (', lon=' + Kotlin.toString(this.lon)) + ')';
-  };
-  LatLon.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.lat) | 0;
-    result = result * 31 + Kotlin.hashCode(this.lon) | 0;
-    return result;
-  };
-  LatLon.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.lat, other.lat) && Kotlin.equals(this.lon, other.lon)))));
   };
   function TileShaderProvider() {
   }
@@ -1754,9 +1734,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function TexImageTileShaderProvider$getShader$lambda(closure$tileName, closure$ctx, this$TexImageTileShaderProvider) {
     return function ($receiver) {
       $receiver.colorModel = ColorModel.TEXTURE_COLOR;
-      $receiver.lightModel = LightModel.NO_LIGHTING;
+      $receiver.lightModel = LightModel.PHONG_LIGHTING;
       $receiver.isAlpha = true;
       $receiver.alpha = 0.0;
+      $receiver.specularIntensity = 0.25;
+      $receiver.shininess = 25.0;
       $receiver.texture = this$TexImageTileShaderProvider.getTexture_jjvqbv$(closure$tileName, closure$ctx);
       return Unit;
     };
@@ -4121,18 +4103,17 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     get: GlobeDragHandler$Companion_getInstance
   });
   package$globe.GlobeDragHandler = GlobeDragHandler;
-  Object.defineProperty(TileFrame, 'Companion', {
-    get: TileFrame$Companion_getInstance
-  });
   package$globe.TileFrame = TileFrame;
   package$globe.TileMesh = TileMesh;
   package$globe.TileMeshGenerator = TileMeshGenerator;
-  package$globe.FlatTileMeshGenerator = FlatTileMeshGenerator;
+  Object.defineProperty(GridTileMeshGenerator, 'Companion', {
+    get: GridTileMeshGenerator$Companion_getInstance
+  });
+  package$globe.GridTileMeshGenerator = GridTileMeshGenerator;
   Object.defineProperty(TileName, 'Companion', {
     get: TileName$Companion_getInstance
   });
   package$globe.TileName = TileName;
-  package$globe.LatLon = LatLon;
   package$globe.TileShaderProvider = TileShaderProvider;
   package$globe.TexImageTileShaderProvider = TexImageTileShaderProvider;
   package$globe.OsmTexImageTileShaderProvider = OsmTexImageTileShaderProvider;

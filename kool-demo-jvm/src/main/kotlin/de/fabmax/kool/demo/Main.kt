@@ -13,5 +13,5 @@ fun main(args: Array<String>) {
     ctx.assetMgr.assetsBaseDir = "./docs/assets"
 
     // launch demo
-    Demo(ctx, "boxDemo")
+    Demo(ctx, "globeDemo")
 }

@@ -170,6 +170,8 @@ open class TransformGroupDp(name: String? = null) : NodeDp(name) {
 
     fun getTransform(result: Mat4d): Mat4d = result.set(transform)
 
+    fun getInverseTransform(result: Mat4d): Mat4d = result.set(invTransform)
+
     fun translate(t: Vec3d): TransformGroupDp {
         return translate(t.x, t.y, t.z)
     }

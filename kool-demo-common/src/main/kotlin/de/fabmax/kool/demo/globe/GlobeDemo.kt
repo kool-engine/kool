@@ -45,6 +45,9 @@ fun globeScene(ctx: KoolContext): List<Scene> {
             +camera
         }
 
+        // dim light
+        light.color.set(Color.LIGHT_GRAY)
+
         val earthRadius = 6_371_000.8
         globe = Globe(earthRadius)
         val dpGroup = DoublePrecisionRoot(globe!!)

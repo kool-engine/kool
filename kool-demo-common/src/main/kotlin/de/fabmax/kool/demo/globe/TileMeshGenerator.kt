@@ -3,15 +3,14 @@ package de.fabmax.kool.demo.globe
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
-import kotlin.math.PI
-import kotlin.math.atan
-import kotlin.math.sinh
+import de.fabmax.kool.math.toDeg
+import kotlin.math.*
 
 interface TileMeshGenerator {
     fun generateMesh(globe: Globe, tileMesh: TileMesh): TileFrame?
 }
 
-open class FlatTileMeshGenerator : TileMeshGenerator {
+open class GridTileMeshGenerator(val logSteps: Int = 4) : TileMeshGenerator {
 
     override fun generateMesh(globe: Globe, tileMesh: TileMesh): TileFrame? {
         return if (tileMesh.tileName.zoom < globe.frameZoomThresh) {
@@ -19,22 +18,21 @@ open class FlatTileMeshGenerator : TileMeshGenerator {
             null
 
         } else {
-            val div = 1 shl (tileMesh.tileName.zoom - globe.frameZoomLvl)
-            val frameTile = TileName(tileMesh.tileName.x / div, tileMesh.tileName.y / div, globe.frameZoomLvl)
-            val frame = globe.getTileFrame(frameTile)
+            val frame = globe.getTileFrame(tileMesh.tileName)
             generateMesh(globe, tileMesh, frame)
             frame
         }
     }
+
+    open fun getHeightAt(lat: Double, lon: Double, tileName: TileName): Double = 0.0
 
     private fun generateMesh(globe: Globe, tileMesh: TileMesh, frame: TileFrame?) {
         tileMesh.generator = {
             val uvScale = 255f / 256f
             val uvOff = 0.5f / 256f
 
-            val stepsExp = 4
-            val steps = 1 shl stepsExp
-            val zoomDiv = 2 * PI / (1 shl (tileMesh.tileName.zoom + stepsExp)).toDouble()
+            val steps = 1 shl logSteps
+            val zoomDiv = 2 * PI / (1 shl (tileMesh.tileName.zoom + logSteps)).toDouble()
 
             val pos = MutableVec3d()
             val nrm = MutableVec3d()
@@ -47,7 +45,8 @@ open class FlatTileMeshGenerator : TileMeshGenerator {
                 for (i in 0..steps) {
                     val lon = (tileMesh.tileName.x * steps + i) * zoomDiv - PI
 
-                    TileFrame.latLonToCartesian(lat, lon, globe.radius, pos)
+                    val height = getHeightAt(lat.toDeg(), lon.toDeg(), tileMesh.tileName)
+                    latLonToCartesian(lat, lon, globe.radius + height, pos)
                     pos.norm(nrm)
                     if (frame != null) {
                         frame.transformToLocal.transform(pos, 1.0)
@@ -68,7 +67,18 @@ open class FlatTileMeshGenerator : TileMeshGenerator {
                     }
                 }
             }
+            meshData.generateNormals()
         }
         tileMesh.generateGeometry()
+    }
+
+    companion object {
+        fun latLonToCartesian(latRad: Double, lonRad: Double, radius: Double, result: MutableVec3d): MutableVec3d {
+            val theta = PI * 0.5 - latRad
+            result.x = sin(theta) * sin(lonRad) * radius
+            result.z = sin(theta) * cos(lonRad) * radius
+            result.y = cos(theta) * radius
+            return result
+        }
     }
 }

@@ -11307,6 +11307,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   TransformGroupDp.prototype.getTransform_d4zu6l$ = function (result) {
     return result.set_d4zu6l$(this.transform);
   };
+  TransformGroupDp.prototype.getInverseTransform_d4zu6l$ = function (result) {
+    return result.set_d4zu6l$(this.invTransform);
+  };
   TransformGroupDp.prototype.translate_czzhiw$ = function (t) {
     return this.translate_yvo9jy$(t.x, t.y, t.z);
   };
@@ -11951,6 +11954,37 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       gen(new MeshBuilder(this));
       this.isSyncRequired = true;
       this.isBatchUpdate = wasBatchUpdate;
+    }
+  };
+  MeshData.prototype.generateNormals = function () {
+    var tmp$, tmp$_0, tmp$_1;
+    var v0 = this.get_za3lpa$(0);
+    var v1 = this.get_za3lpa$(1);
+    var v2 = this.get_za3lpa$(2);
+    var e1 = MutableVec3f_init();
+    var e2 = MutableVec3f_init();
+    var nrm = MutableVec3f_init();
+    tmp$ = this.numVertices;
+    for (var i = 0; i < tmp$; i++) {
+      v0.index = i;
+      v0.normal.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+    }
+    tmp$_0 = this.numIndices;
+    for (var i_0 = 0; i_0 < tmp$_0; i_0 += 3) {
+      v0.index = this.vertexList.indices.get_za3lpa$(i_0);
+      v1.index = this.vertexList.indices.get_za3lpa$(i_0 + 1 | 0);
+      v2.index = this.vertexList.indices.get_za3lpa$(i_0 + 2 | 0);
+      v1.position.subtract_2gj7b4$(v0.position, e1).norm();
+      v2.position.subtract_2gj7b4$(v0.position, e2).norm();
+      e1.cross_2gj7b4$(e2, nrm);
+      v0.normal.plusAssign_czzhiu$(nrm);
+      v1.normal.plusAssign_czzhiu$(nrm);
+      v2.normal.plusAssign_czzhiu$(nrm);
+    }
+    tmp$_1 = this.numVertices;
+    for (var i_1 = 0; i_1 < tmp$_1; i_1++) {
+      v0.index = i_1;
+      v0.normal.norm();
     }
   };
   MeshData.prototype.generateTangents = function () {

@@ -26,8 +26,8 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
     var cameraHeight = 0.0
         private set
 
-    private val meshGenerator = FlatTileMeshGenerator()
-    val tileShaderProvider = OsmTexImageTileShaderProvider()
+    var meshGenerator = GridTileMeshGenerator()
+    var tileShaderProvider = OsmTexImageTileShaderProvider()
 
     private val tileFrames = mutableMapOf<Long, TileFrame>()
     private val zoomGroups = mutableListOf<Group>()
@@ -178,7 +178,7 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
             }
         }
 
-        val forceRemoveThresh = (maxTiles * 1.3).toInt()
+        val forceRemoveThresh = (maxTiles * 1.5).toInt()
         if (tiles.size > forceRemoveThresh) {
             // queue is getting too large, remove stuff even though it might be visible
             val rmQueue = mutableListOf<TileMesh>().apply { addAll(removableTiles.values) }
@@ -308,13 +308,9 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
     private fun removeObsoleteTilesBelow(tileName: TileName) {
         val it = removableTiles.values.iterator()
         for (mesh in it) {
-            if (mesh.tileName.zoom > tileName.zoom) {
-                val projX = mesh.tileName.x shr (mesh.tileName.zoom - tileName.zoom)
-                val projY = mesh.tileName.y shr (mesh.tileName.zoom - tileName.zoom)
-                if (projX == tileName.x && projY == tileName.y) {
-                    removeTileMesh(mesh, false)
-                    it.remove()
-                }
+            if (mesh.tileName.isSubTileOf(tileName)) {
+                removeTileMesh(mesh, false)
+                it.remove()
             }
         }
     }

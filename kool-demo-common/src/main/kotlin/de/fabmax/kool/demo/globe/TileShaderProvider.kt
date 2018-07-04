@@ -16,10 +16,12 @@ interface TileShaderProvider {
 abstract class TexImageTileShaderProvider : TileShaderProvider {
     override fun getShader(tileName: TileName, ctx: KoolContext): BasicShader = basicShader {
         colorModel = ColorModel.TEXTURE_COLOR
-        lightModel = LightModel.NO_LIGHTING
+        lightModel = LightModel.PHONG_LIGHTING
         isAlpha = true
 
         alpha = 0f
+        specularIntensity = 0.25f
+        shininess = 25f
         texture = getTexture(tileName, ctx)
     }
 

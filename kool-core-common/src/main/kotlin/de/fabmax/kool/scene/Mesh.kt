@@ -227,6 +227,39 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         }
     }
 
+    fun generateNormals() {
+        val v0 = this[0]
+        val v1 = this[1]
+        val v2 = this[2]
+        val e1 = MutableVec3f()
+        val e2 = MutableVec3f()
+        val nrm = MutableVec3f()
+
+        for (i in 0 until numVertices) {
+            v0.index = i
+            v0.normal.set(Vec3f.ZERO)
+        }
+
+        for (i in 0 until numIndices step 3) {
+            v0.index = vertexList.indices[i]
+            v1.index = vertexList.indices[i+1]
+            v2.index = vertexList.indices[i+2]
+
+            v1.position.subtract(v0.position, e1).norm()
+            v2.position.subtract(v0.position, e2).norm()
+
+            e1.cross(e2, nrm)
+            v0.normal += nrm
+            v1.normal += nrm
+            v2.normal += nrm
+        }
+
+        for (i in 0 until numVertices) {
+            v0.index = i
+            v0.normal.norm()
+        }
+    }
+
     fun generateTangents() {
         val v0 = this[0]
         val v1 = this[1]
