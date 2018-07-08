@@ -7,12 +7,12 @@ import de.fabmax.kool.TextureData
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.logW
 import kotlinx.coroutines.experimental.launch
 import java.awt.Transparency
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferByte
 import java.io.File
-import java.io.IOException
 import javax.imageio.ImageIO
 import kotlin.math.round
 
@@ -25,23 +25,41 @@ class ImageTextureData(val assetBaseDir: String, val assetPath: String) : Textur
         HttpCache.initCache(File(".httpCache"))
 
         launch(HttpCache.assetLoadingCtx) {
-            try {
-                // todo: use a less naive distinction between http and local textures
-                val file = if (assetPath.startsWith("http", true)) {
-                    HttpCache.loadHttpResource(assetPath)
-                } else {
-                    File("$assetBaseDir/$assetPath")
-                }
+            var tries = 2
 
-                val image = ImageIO.read(file)
-                val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
-                format = if (alpha) GL_RGBA else GL_RGB
-                width = image.width
-                height = image.height
-                buffer = bufferedImageToBuffer(image, format, 0, 0)
-                isAvailable = true
-            } catch (e: IOException) {
-                throw KoolException("Failed to load texture asset: \"$assetPath\"")
+            while (tries > 0) {
+                // todo: use a less naive distinction between http and local textures
+                val isHttp = assetPath.startsWith("http", true)
+                var file: File? = null
+
+                try {
+                    file = if (isHttp) {
+                        HttpCache.loadHttpResource(assetPath)
+                    } else {
+                        File("$assetBaseDir/$assetPath")
+                    }
+
+                    val image = ImageIO.read(file)
+                    val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
+                    format = if (alpha) GL_RGBA else GL_RGB
+                    width = image.width
+                    height = image.height
+                    buffer = bufferedImageToBuffer(image, format, 0, 0)
+                    isAvailable = true
+
+                    // asset loading succeeded, break retry loop
+                    break
+
+                } catch (e: Exception) {
+                    // if exception is caused by a corrupted HTTP cache file, delete it and try again
+                    if (isHttp && --tries > 0) {
+                        logW { "HTTP cache file load failed: $e, retrying" }
+                        file?.delete()
+
+                    } else {
+                        throw KoolException("Failed to load texture asset: \"$assetPath\"", e)
+                    }
+                }
             }
         }
     }

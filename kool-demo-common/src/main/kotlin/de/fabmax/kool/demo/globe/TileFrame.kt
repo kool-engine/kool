@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo.globe
 
 import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.doubleprec.TransformGroupDp
 
@@ -14,8 +15,8 @@ class TileFrame(val tileName: TileName, private val globe: Globe) : TransformGro
         private set
 
     init {
-        rotate(tileName.lonCenter, 0.0, 1.0, 0.0)
-        rotate(90.0 - tileName.latCenter, 1.0, 0.0, 0.0)
+        rotate(tileName.lonCenter, Vec3d.Y_AXIS)
+        rotate(90.0 - tileName.latCenter, Vec3d.X_AXIS)
         translate(0.0, globe.radius, 0.0)
         checkInverse()
 

@@ -7,37 +7,31 @@ import de.fabmax.kool.math.toDeg
 import kotlin.math.*
 
 interface TileMeshGenerator {
-    fun generateMesh(globe: Globe, tileMesh: TileMesh): TileFrame?
+    fun generateMesh(globe: Globe, tileMesh: TileMesh, stepsLog2: Int)
 }
 
-open class GridTileMeshGenerator(val logSteps: Int = 4) : TileMeshGenerator {
+open class GridTileMeshGenerator : TileMeshGenerator {
 
-    override fun generateMesh(globe: Globe, tileMesh: TileMesh): TileFrame? {
-        return if (tileMesh.tileName.zoom < globe.frameZoomThresh) {
-            generateMesh(globe, tileMesh, null)
+    private fun getFrame(globe: Globe, tileName: TileName): TileFrame? {
+        return if (tileName.zoom < globe.frameZoomThresh) {
             null
-
         } else {
-            val frame = globe.getTileFrame(tileMesh.tileName)
-            generateMesh(globe, tileMesh, frame)
-            frame
+            globe.getTileFrame(tileName)
         }
     }
 
-    open fun getHeightAt(lat: Double, lon: Double, tileName: TileName): Double = 0.0
-
-    private fun generateMesh(globe: Globe, tileMesh: TileMesh, frame: TileFrame?) {
+    override fun generateMesh(globe: Globe, tileMesh: TileMesh, stepsLog2: Int) {
+        val frame = getFrame(globe, tileMesh.tileName)
         tileMesh.generator = {
             val uvScale = 255f / 256f
             val uvOff = 0.5f / 256f
 
-            val steps = 1 shl logSteps
-            val zoomDiv = 2 * PI / (1 shl (tileMesh.tileName.zoom + logSteps)).toDouble()
+            val steps = 1 shl stepsLog2
+            val zoomDiv = 2 * PI / (1 shl (tileMesh.tileName.zoom + stepsLog2)).toDouble()
 
             val pos = MutableVec3d()
-            val nrm = MutableVec3d()
+            val nrm = MutableVec3f()
             val posf = MutableVec3f()
-            val nrmf = MutableVec3f()
 
             for (row in 0..steps) {
                 val tys = (tileMesh.tileName.y+1) * steps - row
@@ -45,25 +39,23 @@ open class GridTileMeshGenerator(val logSteps: Int = 4) : TileMeshGenerator {
                 for (i in 0..steps) {
                     val lon = (tileMesh.tileName.x * steps + i) * zoomDiv - PI
 
-                    val height = getHeightAt(lat.toDeg(), lon.toDeg(), tileMesh.tileName)
+                    val latDeg = lat.toDeg()
+                    val lonDeg = lon.toDeg()
+                    val height = globe.heightMap.getHeightAt(latDeg, lonDeg, tileMesh.tileName)
                     latLonToCartesian(lat, lon, globe.radius + height, pos)
-                    pos.norm(nrm)
+                    //globe.heightMap.getNormalAt(latDeg, lonDeg, tileMesh.tileName, nrm)
+                    //nrm.rotate(latDeg.toFloat(), Vec3f.NEG_X_AXIS).rotate(lonDeg.toFloat(), Vec3f.Y_AXIS)
+
                     if (frame != null) {
                         frame.transformToLocal.transform(pos, 1.0)
-                        frame.transformToLocal.transform(nrm, 0.0)
+                        //frame.transformToLocal.transform(nrm, 0f)
                     }
 
                     val uv = Vec2f((i.toFloat() / steps) * uvScale + uvOff, 1f - ((row.toFloat() / steps) * uvScale + uvOff))
-                    val iv = vertex(pos.toMutableVec3f(posf), nrm.toMutableVec3f(nrmf), uv)
-
+                    val iv = vertex(pos.toMutableVec3f(posf), nrm, uv)
                     if (i > 0 && row > 0) {
                         meshData.addTriIndices(iv - steps - 2, iv, iv - 1)
                         meshData.addTriIndices(iv - steps - 2, iv - steps - 1, iv)
-
-                        if (row == steps / 2 && i == steps / 2) {
-                            // normal of center vertex == center normal of tile
-                            nrm.toMutableVec3f(tileMesh.centerNormal)
-                        }
                     }
                 }
             }

@@ -72,5 +72,12 @@ open class TileName(val x: Int, val y: Int, val zoom: Int) {
         fun fuesdKey(tx: Int, ty: Int, tz: Int): Long = (tz.toLong() shl 58) or
                 ((tx and 0x1fffffff).toLong().shl(29)) or
                 (ty and 0x1fffffff).toLong()
+
+        fun fromFusedKey(fusedKey: Long): TileName {
+            val zoom = (fusedKey shr 58).toInt()
+            val x = ((fusedKey shr 29) and 0x1fffffff).toInt()
+            val y = (fusedKey and 0x1fffffff).toInt()
+            return TileName(x, y, zoom)
+        }
     }
 }

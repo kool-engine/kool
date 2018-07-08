@@ -116,6 +116,7 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         // texture data is available (depending on the texture source that might not be the case immediately)
         if (data.isAvailable && (!texture.delayLoading || allowedTexLoads > 0)) {
             if (res.texUnit != activeTexUnit) {
+                //bindToActiveTexUnit(res)
                 activateTexUnit(texture.res!!.texUnit)
             }
             texture.loadData(data, ctx)

@@ -186,7 +186,7 @@ class HttpCache private constructor(val cacheDir: File) {
 
 
     companion object {
-        private const val MAX_CACHE_SIZE = 100L * 1024L * 1024L
+        private const val MAX_CACHE_SIZE = 1024L * 1024L * 1024L
         private var instance: HttpCache? = null
 
         var assetLoadingCtx = CommonPool
