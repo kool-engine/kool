@@ -1,19 +1,20 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolException
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.CompletableDeferred
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.*
 import java.io.*
 import java.net.URL
 import java.util.*
-import kotlin.coroutines.experimental.coroutineContext
+import java.util.concurrent.Executors
 
 class HttpCache private constructor(val cacheDir: File) {
 
     private val cache = mutableMapOf<File, CacheEntry>()
     private var cacheSize = 0L
+
+    private val httpDispatcher = Executors.newFixedThreadPool(MAX_PARALLEL_REQUESTS) { r ->
+        Executors.defaultThreadFactory().newThread(r).apply { isDaemon = true }
+    }.asCoroutineDispatcher()
 
     init {
         try {
@@ -147,8 +148,7 @@ class HttpCache private constructor(val cacheDir: File) {
         }
 
         if (load) {
-//            Log.i("HttpCache", "Loading $url")
-            entry.fileDeferred = async(coroutineContext) {
+            entry.fileDeferred = async(httpDispatcher) {
                 file.parentFile.mkdirs()
                 entry.size = 0L
 
@@ -172,9 +172,6 @@ class HttpCache private constructor(val cacheDir: File) {
             }
             checkCacheSize()
         }
-//        else {
-//            Log.i("HttpCache", "Got from cache: $url")
-//        }
 
         return try {
             entry.fileDeferred?.await().also { entry.lastAccess = System.currentTimeMillis() }
@@ -187,6 +184,7 @@ class HttpCache private constructor(val cacheDir: File) {
 
     companion object {
         private const val MAX_CACHE_SIZE = 1024L * 1024L * 1024L
+        private const val MAX_PARALLEL_REQUESTS = 10
         private var instance: HttpCache? = null
 
         var assetLoadingCtx = CommonPool

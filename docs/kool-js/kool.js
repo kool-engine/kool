@@ -18,7 +18,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var throwCCE = Kotlin.throwCCE;
   var RuntimeException_init = Kotlin.kotlin.RuntimeException_init_pdl1vj$;
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
-  var Exception_init = Kotlin.kotlin.Exception_init_pdl1vj$;
   var Exception = Kotlin.kotlin.Exception;
   var first = Kotlin.kotlin.collections.first_2p1efm$;
   var last = Kotlin.kotlin.collections.last_2p1efm$;
@@ -3131,8 +3130,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
   }
   RenderPass.valueOf_61zpoe$ = RenderPass$valueOf;
-  function KoolException(message) {
-    Exception_init(message, this);
+  function KoolException(message, cause) {
+    Exception.call(this, message, cause);
     this.name = 'KoolException';
   }
   KoolException.$metadata$ = {
@@ -3140,6 +3139,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'KoolException',
     interfaces: [Exception]
   };
+  function KoolException_init(message, $this) {
+    $this = $this || Object.create(KoolException.prototype);
+    KoolException.call($this, message, null);
+    return $this;
+  }
   function BSpline(degree, factory, copy, mix) {
     this.degree = degree;
     this.factory_o8y0vc$_0 = factory;
@@ -3287,7 +3291,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.result = ArrayList_init();
     this.center = MutableVec3f_init();
     this.radius_lr9jnq$_0 = 1.0;
-    this.radiusSqr_0 = 1.0;
+    this.radiusSqr_god0ca$_0 = 1.0;
   }
   Object.defineProperty(InRadiusTraverser.prototype, 'radius', {
     get: function () {
@@ -3295,7 +3299,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     },
     set: function (value) {
       this.radius_lr9jnq$_0 = value;
-      this.radiusSqr_0 = value * value;
+      this.radiusSqr_god0ca$_0 = value * value;
     }
   });
   InRadiusTraverser.prototype.reset_2qa7tb$ = function (center, radius) {
@@ -3310,11 +3314,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     var dLeft = left.bounds.pointDistanceSqr_czzhiu$(this.center);
     var dRight = right.bounds.pointDistanceSqr_czzhiu$(this.center);
-    if (dLeft > this.radiusSqr_0 && dRight > this.radiusSqr_0)
+    if (dLeft > this.radiusSqr_god0ca$_0 && dRight > this.radiusSqr_god0ca$_0)
       tmp$ = 5;
-    else if (dLeft > this.radiusSqr_0)
+    else if (dLeft > this.radiusSqr_god0ca$_0)
       tmp$ = 4;
-    else if (dRight > this.radiusSqr_0)
+    else if (dRight > this.radiusSqr_god0ca$_0)
       tmp$ = 2;
     else
       tmp$ = 0;
@@ -3328,13 +3332,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
       var it = tree.items.get_za3lpa$(i);
-      var dx = tree.helper.getX_11rb$(it) - this.center.x;
-      var dy = tree.helper.getY_11rb$(it) - this.center.y;
-      var dz = tree.helper.getZ_11rb$(it) - this.center.z;
-      if (dx * dx + dy * dy + dz * dz < this.radiusSqr_0) {
+      var dSqr = this.sqrDistance_fo8i5a$(tree, it);
+      if (dSqr < this.radiusSqr_god0ca$_0) {
         this.result.add_11rb$(it);
       }
     }
+  };
+  InRadiusTraverser.prototype.sqrDistance_fo8i5a$ = function (tree, item) {
+    var dx = tree.helper.getX_11rb$(item) - this.center.x;
+    var dy = tree.helper.getY_11rb$(item) - this.center.y;
+    var dz = tree.helper.getZ_11rb$(item) - this.center.z;
+    return dx * dx + dy * dy + dz * dz;
   };
   InRadiusTraverser.$metadata$ = {
     kind: Kind_CLASS,
@@ -3352,10 +3360,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.center = MutableVec3f_init();
     this.k = 10;
     this.maxRadius_bp29wi$_0 = 1.0E9;
-    this.radiusSqr_0 = 9.9999998E17;
-    this.maxDSqr_0 = 0.0;
-    this.itemRecycler_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
-    this.items_0 = ArrayList_init();
+    this.radiusSqr_kn744q$_0 = 9.9999998E17;
+    this.maxDSqr_49ukik$_0 = 0.0;
+    this.itemRecycler_vuuc1i$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
+    this.items_fofvw8$_0 = ArrayList_init();
   }
   Object.defineProperty(KNearestTraverser.prototype, 'maxRadius', {
     get: function () {
@@ -3363,7 +3371,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     },
     set: function (value) {
       this.maxRadius_bp29wi$_0 = value;
-      this.radiusSqr_0 = value * value;
+      this.radiusSqr_kn744q$_0 = value * value;
     }
   });
   KNearestTraverser.prototype.reset_w8bw21$ = function (center, k, maxRadius) {
@@ -3376,26 +3384,26 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   KNearestTraverser.prototype.onStart_dizmqh$ = function (tree) {
     this.result.clear();
-    this.maxDSqr_0 = 0.0;
+    this.maxDSqr_49ukik$_0 = 0.0;
   };
   KNearestTraverser.prototype.onFinish_dizmqh$ = function (tree) {
     var tmp$;
-    tmp$ = this.items_0;
+    tmp$ = this.items_fofvw8$_0;
     for (var i = 0; i !== tmp$.size; ++i) {
       var $receiver = this.result;
-      var element = this.items_0.get_za3lpa$(i).item;
+      var element = this.items_fofvw8$_0.get_za3lpa$(i).item;
       $receiver.add_11rb$(element);
     }
-    this.items_0.clear();
-    this.itemRecycler_0.recycleAll();
-    var x = this.maxDSqr_0;
+    this.items_fofvw8$_0.clear();
+    this.itemRecycler_vuuc1i$_0.recycleAll();
+    var x = this.maxDSqr_49ukik$_0;
     this.maxRadius = Math_0.sqrt(x);
   };
   KNearestTraverser.prototype.traversalOrder_sdmibr$ = function (tree, left, right) {
     var tmp$;
     var dLeft = left.bounds.pointDistanceSqr_czzhiu$(this.center);
     var dRight = right.bounds.pointDistanceSqr_czzhiu$(this.center);
-    if (dLeft > this.maxDSqr_0 && dRight > this.maxDSqr_0)
+    if (dLeft > this.maxDSqr_49ukik$_0 && dRight > this.maxDSqr_49ukik$_0)
       tmp$ = 5;
     else if (dLeft < dRight)
       tmp$ = 1;
@@ -3411,45 +3419,48 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
       var it = tree.items.get_za3lpa$(i);
-      var dx = tree.helper.getX_11rb$(it) - this.center.x;
-      var dy = tree.helper.getY_11rb$(it) - this.center.y;
-      var dz = tree.helper.getZ_11rb$(it) - this.center.z;
-      var dSqr = dx * dx + dy * dy + dz * dz;
-      if (dSqr < this.radiusSqr_0 && (this.items_0.size < this.k || dSqr < this.maxDSqr_0)) {
-        this.insert_0(tree.items.get_za3lpa$(i), dSqr);
+      var dSqr = this.sqrDistance_fo8i5a$(tree, it);
+      if (dSqr < this.radiusSqr_kn744q$_0 && (this.items_fofvw8$_0.size < this.k || dSqr < this.maxDSqr_49ukik$_0)) {
+        this.insert_vdp881$_0(it, dSqr);
       }
     }
   };
-  KNearestTraverser.prototype.insert_0 = function (value, dSqr) {
-    if (dSqr >= this.maxDSqr_0) {
-      if (this.items_0.size < this.k) {
-        var $receiver = this.items_0;
-        var element = this.itemRecycler_0.get().set_mv9gn0$(value, dSqr);
+  KNearestTraverser.prototype.sqrDistance_fo8i5a$ = function (tree, item) {
+    var dx = tree.helper.getX_11rb$(item) - this.center.x;
+    var dy = tree.helper.getY_11rb$(item) - this.center.y;
+    var dz = tree.helper.getZ_11rb$(item) - this.center.z;
+    return dx * dx + dy * dy + dz * dz;
+  };
+  KNearestTraverser.prototype.insert_vdp881$_0 = function (value, dSqr) {
+    if (dSqr >= this.maxDSqr_49ukik$_0) {
+      if (this.items_fofvw8$_0.size < this.k) {
+        var $receiver = this.items_fofvw8$_0;
+        var element = this.itemRecycler_vuuc1i$_0.get().set_mv9gn0$(value, dSqr);
         $receiver.add_11rb$(element);
-        this.maxDSqr_0 = dSqr;
+        this.maxDSqr_49ukik$_0 = dSqr;
       }
        else {
         return;
       }
     }
      else {
-      var $receiver_0 = this.items_0;
-      var element_0 = this.itemRecycler_0.get().set_mv9gn0$(value, dSqr);
+      var $receiver_0 = this.items_fofvw8$_0;
+      var element_0 = this.itemRecycler_vuuc1i$_0.get().set_mv9gn0$(value, dSqr);
       $receiver_0.add_11rb$(element_0);
-      for (var i = get_lastIndex(this.items_0); i >= 1; i--) {
-        if (this.items_0.get_za3lpa$(i).dSqr < this.items_0.get_za3lpa$(i - 1 | 0).dSqr) {
-          var tmp$ = this.items_0;
-          var $receiver_1 = this.items_0.get_za3lpa$(i - 1 | 0);
-          this.items_0.set_wxm5ur$(i - 1 | 0, this.items_0.get_za3lpa$(i));
+      for (var i = get_lastIndex(this.items_fofvw8$_0); i >= 1; i--) {
+        if (this.items_fofvw8$_0.get_za3lpa$(i).dSqr < this.items_fofvw8$_0.get_za3lpa$(i - 1 | 0).dSqr) {
+          var tmp$ = this.items_fofvw8$_0;
+          var $receiver_1 = this.items_fofvw8$_0.get_za3lpa$(i - 1 | 0);
+          this.items_fofvw8$_0.set_wxm5ur$(i - 1 | 0, this.items_fofvw8$_0.get_za3lpa$(i));
           tmp$.set_wxm5ur$(i, $receiver_1);
         }
          else {
           break;
         }
       }
-      if (this.items_0.size > this.k) {
-        this.items_0.removeAt_za3lpa$(get_lastIndex(this.items_0));
-        this.maxDSqr_0 = last(this.items_0).dSqr;
+      if (this.items_fofvw8$_0.size > this.k) {
+        this.items_fofvw8$_0.removeAt_za3lpa$(get_lastIndex(this.items_fofvw8$_0));
+        this.maxDSqr_49ukik$_0 = last(this.items_fofvw8$_0).dSqr;
       }
     }
   };
@@ -4657,7 +4668,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   Mat4dStack.prototype.push = function () {
     if (this.stackIndex >= this.stackSize) {
-      throw new KoolException('Matrix stack overflow');
+      throw KoolException_init('Matrix stack overflow');
     }
     for (var i = 0; i <= 15; i++) {
       this.matrix[this.offset + 16 + i | 0] = this.matrix[this.offset + i | 0];
@@ -4667,7 +4678,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   Mat4dStack.prototype.pop = function () {
     if (this.stackIndex <= 0) {
-      throw new KoolException('Matrix stack underflow');
+      throw KoolException_init('Matrix stack underflow');
     }
     this.stackIndex = this.stackIndex - 1 | 0;
     return this;
@@ -5314,7 +5325,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   Mat4fStack.prototype.push = function () {
     if (this.stackIndex >= this.stackSize) {
-      throw new KoolException('Matrix stack overflow');
+      throw KoolException_init('Matrix stack overflow');
     }
     for (var i = 0; i <= 15; i++) {
       this.matrix[this.offset + 16 + i | 0] = this.matrix[this.offset + i | 0];
@@ -5324,7 +5335,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   Mat4fStack.prototype.pop = function () {
     if (this.stackIndex <= 0) {
-      throw new KoolException('Matrix stack underflow');
+      throw KoolException_init('Matrix stack underflow');
     }
     this.stackIndex = this.stackIndex - 1 | 0;
     return this;
@@ -15670,7 +15681,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       if (level_0.level >= $this_0.level.level) {
         $this_0.printer(level_0, tag_0, 'Shader source: ' + '\n' + key.vertexSrc);
       }
-      throw new KoolException('Vertex shader compilation failed: ' + log);
+      throw KoolException_init('Vertex shader compilation failed: ' + log);
     }
     var fragShader = ShaderResource$Companion_getInstance().createFragmentShader_aemszp$(ctx);
     fragShader.shaderSource_vvp3il$(key.fragmentSrc, ctx);
@@ -15689,7 +15700,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       if (level_2.level >= $this_2.level.level) {
         $this_2.printer(level_2, tag_2, 'Shader source: ' + '\n' + key.fragmentSrc);
       }
-      throw new KoolException('Fragment shader compilation failed: ' + log_0);
+      throw KoolException_init('Fragment shader compilation failed: ' + log_0);
     }
     var prog = ProgramResource$Companion_getInstance().create_aemszp$(ctx);
     prog.attachShader_55k08u$(vertShader, ctx);
@@ -15706,7 +15717,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       if (level_3.level >= $this_3.level.level) {
         $this_3.printer(level_3, tag_3, 'Shader linkage failed: ' + log_1);
       }
-      throw new KoolException('Shader linkage failed: ' + log_1);
+      throw KoolException_init('Shader linkage failed: ' + log_1);
     }
     return prog;
   };
@@ -17133,7 +17144,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var attrib = this.attributeLocations.get_za3lpa$(i);
       tmp$_0 = mesh.meshData.attributeBinders.get_11rb$(attrib.descr);
       if (tmp$_0 == null) {
-        throw new KoolException('Mesh must supply an attribute binder for attribute ' + attrib.descr.name);
+        throw KoolException_init('Mesh must supply an attribute binder for attribute ' + attrib.descr.name);
       }
       var binder = tmp$_0;
       glEnableVertexAttribArray(attrib.location);
@@ -17937,7 +17948,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     tmp$ = texture.res;
     if (tmp$ == null) {
-      throw new KoolException("Texture wasn't created");
+      throw KoolException_init("Texture wasn't created");
     }
     var res = tmp$;
     var limit = this.buffer.limit;
@@ -17988,7 +17999,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   Texture.prototype.loadData_yashag$ = function (texData, ctx) {
     if (!texData.isAvailable) {
-      throw new KoolException('Texture data is not available');
+      throw KoolException_init('Texture data is not available');
     }
     this.width = texData.width;
     this.height = texData.height;
@@ -18044,7 +18055,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (texture.isValid) {
       tmp$ = texture.res;
       if (tmp$ == null) {
-        throw new KoolException('TextureResource is null although it was created');
+        throw KoolException_init('TextureResource is null although it was created');
       }
       var texRes = tmp$;
       if (texRes.texUnit >= 0) {
@@ -18065,7 +18076,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     tmp$ = texture.res;
     if (tmp$ == null) {
-      throw new KoolException('TextureResource is null although it was created');
+      throw KoolException_init('TextureResource is null although it was created');
     }
     var texRes = tmp$;
     if (texRes.texUnit < 0) {
@@ -18108,7 +18119,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$;
     tmp$ = texture.res;
     if (tmp$ == null) {
-      throw new KoolException("Can't load a texture that wasn't created");
+      throw KoolException_init("Can't load a texture that wasn't created");
     }
     var res = tmp$;
     var data = this.loadingTextures_0.get_11rb$(texture.props.id);
@@ -18477,7 +18488,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   BoundingBox.prototype.expand_czzhiu$ = function (e) {
     if (this.isEmpty) {
-      throw new KoolException('Empty BoundingBox cannot be expanded');
+      throw KoolException_init('Empty BoundingBox cannot be expanded');
     }
     this.mutMin_0.minusAssign_czzhiu$(e);
     this.mutMax_0.plusAssign_czzhiu$(e);
@@ -18486,7 +18497,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   BoundingBox.prototype.signedExpand_czzhiu$ = function (e) {
     if (this.isEmpty) {
-      throw new KoolException('Empty BoundingBox cannot be expanded');
+      throw KoolException_init('Empty BoundingBox cannot be expanded');
     }
     if (e.x > 0)
       this.mutMax_0.x = this.mutMax_0.x + e.x;
@@ -19400,7 +19411,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.gradient_0 = array;
     var tmp$_0, tmp$_1, tmp$_2, tmp$_3;
     if (colors.length < 2) {
-      throw new KoolException('ColorGradient requires at least two colors');
+      throw KoolException_init('ColorGradient requires at least two colors');
     }
     if (colors.length > 1) {
       sortWith(colors, new Comparator$ObjectLiteral(compareBy$lambda(ColorGradient_init$lambda)));
@@ -20225,7 +20236,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   IndexedVertexList.prototype.get_za3lpa$ = function (i) {
     if (i < 0 || i >= (this.dataF.capacity / this.vertexSizeF | 0)) {
-      throw new KoolException('Vertex index out of bounds: ' + i);
+      throw KoolException_init('Vertex index out of bounds: ' + i);
     }
     return new IndexedVertexList$Vertex(this, i);
   };
@@ -23349,7 +23360,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var meshData = new MeshData(attributes);
     tmp$ = data.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_POSITIONS);
     if (tmp$ == null) {
-      throw new KoolException('Mesh has no positions');
+      throw KoolException_init('Mesh has no positions');
     }
     var positions = tmp$;
     var normals = data.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_NORMALS);
@@ -23476,7 +23487,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var tmp$, tmp$_0;
     tmp$ = this.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_POSITIONS);
     if (tmp$ == null) {
-      throw new KoolException('MeshData does not contain positions');
+      throw KoolException_init('MeshData does not contain positions');
     }
     this.numVertices = tmp$.size / 3 | 0;
     this.hasNormals = this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_NORMALS);
@@ -23489,7 +23500,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var name_1 = tmp$_1.key;
       var attrib_0 = tmp$_1.value;
       if ((attrib_0.size / attrib_0.type.size | 0) !== this.numVertices) {
-        throw new KoolException('Mesh attribute ' + name_1 + ' has wrong value count: ' + attrib_0.size + ' (should be ' + Kotlin.imul(this.numVertices, attrib_0.type.size) + ', type: ' + attrib_0.type + ')');
+        throw KoolException_init('Mesh attribute ' + name_1 + ' has wrong value count: ' + attrib_0.size + ' (should be ' + Kotlin.imul(this.numVertices, attrib_0.type.size) + ', type: ' + attrib_0.type + ')');
       }
     }
   }
@@ -23686,7 +23697,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     $this.hasTangents_p4qxco$_0 = false;
     tmp$ = $this.attributes.get_11rb$(MeshData$Companion_getInstance().ATTRIB_POSITIONS);
     if (tmp$ == null) {
-      throw new KoolException('MeshData does not contain positions');
+      throw KoolException_init('MeshData does not contain positions');
     }
     $this.numVertices = tmp$.size / 3 | 0;
     $this.hasNormals = $this.attributes.containsKey_11rb$(MeshData$Companion_getInstance().ATTRIB_NORMALS);
@@ -23699,7 +23710,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var name_1 = tmp$_1.key;
       var attrib_0 = tmp$_1.value;
       if ((attrib_0.size / attrib_0.type.size | 0) !== $this.numVertices) {
-        throw new KoolException('Mesh attribute ' + name_1 + ' has wrong value count: ' + attrib_0.size + ' (should be ' + Kotlin.imul($this.numVertices, attrib_0.type.size) + ', type: ' + attrib_0.type + ')');
+        throw KoolException_init('Mesh attribute ' + name_1 + ' has wrong value count: ' + attrib_0.size + ' (should be ' + Kotlin.imul($this.numVertices, attrib_0.type.size) + ', type: ' + attrib_0.type + ')');
       }
     }
     return $this;
@@ -24570,7 +24581,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).drawElementsInstanced(mode, count, type, indicesOffset, instanceCount);
     }
      else {
-      throw new KoolException('This function requires WebGL2 support');
+      throw KoolException_init('This function requires WebGL2 support');
     }
   }
   function glEnable(cap) {
@@ -24661,7 +24672,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).renderbufferStorageMultisample(target, samples, internalformat, width, height);
     }
      else {
-      throw new KoolException('This function requires WebGL2 support');
+      throw KoolException_init('This function requires WebGL2 support');
     }
   }
   function glShaderSource(shader, source) {
@@ -24737,7 +24748,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).vertexAttribDivisor(index, divisor);
     }
      else {
-      throw new KoolException('This function requires WebGL2 support');
+      throw KoolException_init('This function requires WebGL2 support');
     }
   }
   function glVertexAttribPointer(index, size, type, normalized, stride, offset) {
@@ -24749,7 +24760,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).vertexAttribIPointer(index, size, type, stride, offset);
     }
      else {
-      throw new KoolException('This function requires WebGL2 support');
+      throw KoolException_init('This function requires WebGL2 support');
     }
   }
   function glViewport(x, y, width, height) {
@@ -24834,14 +24845,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var tmp$, tmp$_0;
       tmp$_0 = (tmp$ = this.ctx) != null ? tmp$.gl_8be2vx$ : null;
       if (tmp$_0 == null) {
-        throw new KoolException('Platform.createContext() not called');
+        throw KoolException_init('Platform.createContext() not called');
       }
       return tmp$_0;
     }
   });
   JsImpl.prototype.createContext_s8od96$ = function (props) {
     if (this.ctx != null) {
-      throw new KoolException('Context was already created (multi-context is currently not supported in js');
+      throw KoolException_init('Context was already created (multi-context is currently not supported in js');
     }
     this.ctx = new JsContext(props);
     return ensureNotNull(this.ctx);
@@ -25418,7 +25429,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     },
     set: function (value) {
       if (value < 0 || value > this.capacity) {
-        throw new KoolException('Limit is out of bounds: ' + value + ' (capacity: ' + this.capacity + ')');
+        throw KoolException_init('Limit is out of bounds: ' + value + ' (capacity: ' + this.capacity + ')');
       }
       this.limit_wr5sjr$_0 = value;
       if (this.position > value) {
@@ -27271,6 +27282,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     get: RenderPass$SCREEN_getInstance
   });
   package$kool.RenderPass = RenderPass;
+  package$kool.KoolException_init_61zpoe$ = KoolException_init;
   package$kool.KoolException = KoolException;
   var package$math = package$kool.math || (package$kool.math = {});
   package$math.BSpline = BSpline;

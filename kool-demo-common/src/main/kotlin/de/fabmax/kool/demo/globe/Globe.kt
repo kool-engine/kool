@@ -26,9 +26,7 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
     val tileManager = TileManager(this)
     var heightMap: HeightMap = NullHeightMap()
     var meshGenerator = GridTileMeshGenerator()
-    var meshDetailLevelInit = 5
-    var meshDetailLevelRefined = 5
-    var allowedMeshRefinements = 0
+    var meshDetailLevel = 5
     var tileShaderProvider = OsmTexImageTileShaderProvider()
 
     private val tileFrames = mutableMapOf<Long, TileFrame>()
@@ -55,7 +53,9 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
     }
 
     override fun preRenderDp(ctx: KoolContext, modelMatDp: Mat4dStack) {
-        allowedMeshRefinements = ALLOWED_MESH_REFINEMENTS_PER_FRAME
+        // make sure default tile texture is loaded before other tiles block the texture loading queue
+        TileMesh.prepareDefaultTex(ctx)
+
         val cam = scene?.camera
         if (cam != null && cam is PerspectiveCamera) {
             toGlobalCoords(tmpVec.set(Vec3f.ZERO))

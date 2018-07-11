@@ -1,4 +1,4 @@
-define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
+define(['exports', 'kotlin', 'kool', 'kotlinx-coroutines-core'], function (_, Kotlin, $module$kool, $module$kotlinx_coroutines_core) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var Unit = Kotlin.kotlin.Unit;
@@ -47,9 +47,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var math = Kotlin.kotlin.math;
   var TransformGroupDp = $module$kool.de.fabmax.kool.scene.doubleprec.TransformGroupDp;
   var round = Kotlin.kotlin.math.round_14dthe$;
-  var abs = Kotlin.kotlin.math.abs_za3lpa$;
-  var IntRange = Kotlin.kotlin.ranges.IntRange;
-  var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var SphericalInputTransform$DragMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.DragMethod;
@@ -67,16 +64,22 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Ray = $module$kool.de.fabmax.kool.math.Ray;
   var MutableVec3d_init = $module$kool.de.fabmax.kool.math.MutableVec3d_init;
   var InputManager$DragHandler = $module$kool.de.fabmax.kool.InputManager.DragHandler;
+  var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
+  var abs = Kotlin.kotlin.math.abs_za3lpa$;
+  var IntRange = Kotlin.kotlin.ranges.IntRange;
+  var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
+  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_2gt2x8$;
   var Attribute = $module$kool.de.fabmax.kool.shading.Attribute;
   var MeshData_init = $module$kool.de.fabmax.kool.scene.MeshData_init_j0mu7e$;
-  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
-  var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
+  var CoroutineImpl = Kotlin.kotlin.coroutines.experimental.CoroutineImpl;
+  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED;
+  var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.launch_35c74u$;
+  var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
+  var yield_0 = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.yield;
   var equals = Kotlin.equals;
   var hashCode = Kotlin.hashCode;
-  var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
-  var randomI = $module$kool.de.fabmax.kool.math.randomI_n8acyv$;
-  var assetTexture = $module$kool.de.fabmax.kool.assetTexture_2gt2x8$;
+  var L536870911 = Kotlin.Long.fromInt(536870911);
   var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_3m52m6$;
   var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_513zl8$;
   var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
@@ -127,7 +130,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var AudioGenerator = $module$kool.de.fabmax.kool.audio.AudioGenerator;
   var TextureProps_init_0 = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
   var CullMethod = $module$kool.de.fabmax.kool.scene.CullMethod;
-  var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
+  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
   var InRadiusTraverser = $module$kool.de.fabmax.kool.math.InRadiusTraverser;
@@ -667,7 +670,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     interfaces: []
   };
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
-  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   function Globe(radius, name) {
     Globe$Companion_getInstance();
     if (name === void 0)
@@ -675,32 +677,28 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     TransformGroupDp.call(this, name);
     this.radius = radius;
     this.meterPerPxLvl0 = 156000.0;
-    this.maxTiles = 300;
-    this.minZoomLvl = 3;
-    this.maxZoomLvl = 19;
     this.frameZoomLvl = 11;
     this.frameZoomThresh = 14;
     this.centerLat_p7ui4s$_0 = 0.0;
     this.centerLon_p7u7w8$_0 = 0.0;
     this.cameraHeight_brtjyi$_0 = 0.0;
+    this.tileManager = new TileManager(this);
+    this.heightMap = new NullHeightMap();
     this.meshGenerator = new GridTileMeshGenerator();
+    this.meshDetailLevel = 5;
     this.tileShaderProvider = new OsmTexImageTileShaderProvider();
     this.tileFrames_0 = LinkedHashMap_init();
     this.zoomGroups_0 = ArrayList_init();
-    this.tiles_0 = LinkedHashMap_init();
-    this.loadingTiles_0 = LinkedHashSet_init();
-    this.removableTiles_0 = LinkedHashMap_init();
     this.removeTiles_0 = ArrayList_init();
     this.camPosition_0 = MutableVec3f_init();
     this.camDirection_0 = MutableVec3f_init();
-    this.center_0 = new TileName(0, 0, 1);
     this.prevCamHeight_0 = 0.0;
     this.prevLat_0 = 0.0;
     this.prevLon_0 = 0.0;
     this.tmpVec_0 = MutableVec3f_init();
     var tmp$, tmp$_0;
     this.translate_yvo9jy$(0.0, 0.0, -this.radius);
-    tmp$ = this.minZoomLvl;
+    tmp$ = this.tileManager.minZoomLvl;
     tmp$_0 = this.frameZoomThresh;
     for (var i = tmp$; i <= tmp$_0; i++) {
       var grp = new Group();
@@ -708,6 +706,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.unaryPlus_uv0sim$(grp);
     }
   }
+  Object.defineProperty(Globe.prototype, 'minZoomLvl', {
+    get: function () {
+      return this.tileManager.minZoomLvl;
+    }
+  });
+  Object.defineProperty(Globe.prototype, 'maxZoomLvl', {
+    get: function () {
+      return this.tileManager.maxZoomLvl;
+    }
+  });
   Object.defineProperty(Globe.prototype, 'centerLat', {
     get: function () {
       return this.centerLat_p7ui4s$_0;
@@ -732,9 +740,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.cameraHeight_brtjyi$_0 = cameraHeight;
     }
   });
+  var util = $module$kool.de.fabmax.kool.util;
+  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   var Math_0 = Math;
   Globe.prototype.preRenderDp_oxz17o$ = function (ctx, modelMatDp) {
     var tmp$, tmp$_0;
+    TileMesh$Companion_getInstance().prepareDefaultTex_aemszp$(ctx);
     var cam = (tmp$ = this.scene) != null ? tmp$.camera : null;
     if (cam != null && Kotlin.isType(cam, PerspectiveCamera)) {
       this.toGlobalCoords_w1lst9$(this.tmpVec_0.set_czzhiu$(Vec3f.Companion.ZERO));
@@ -794,48 +805,54 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var meterPerPx = camHeight * Math_0.tan(x_3) * 2.0 / (ctx.viewport.height * 96.0 / ctx.screenDpi);
       var centerZoom = this.getBestZoom_0(meterPerPx, lat);
       var newCenter = TileName$Companion_getInstance().forLatLon_syxxoe$(lat * math_0.RAD_2_DEG, lon * math_0.RAD_2_DEG, centerZoom);
-      if (!(newCenter != null ? newCenter.equals(this.center_0) : null) && (this.tiles_0.size < this.maxTiles || !isMoving)) {
-        this.center_0 = newCenter;
-        this.rebuildMesh_0(ctx);
-      }
+      this.tileManager.updateCenter_xptfie$(newCenter, isMoving, ctx);
     }
-    TransformGroupDp.prototype.preRenderDp_oxz17o$.call(this, ctx, modelMatDp);
+    this.tileManager.onPreRender_aemszp$(ctx);
     if (!this.removeTiles_0.isEmpty()) {
       var tmp$_4;
       tmp$_4 = this.removeTiles_0.iterator();
       while (tmp$_4.hasNext()) {
         var element = tmp$_4.next();
-        this.loadingTiles_0.remove_11rb$(element.key);
-        this.tiles_0.remove_11rb$(element.key);
-        this.removableTiles_0.remove_11rb$(element.key);
-        this.deleteTile_0(element);
-        element.dispose_aemszp$(ctx);
+        if (element.isRemovable) {
+          this.tileManager.onTileDeleted_sdcfxe$(element);
+          this.deleteTile_0(element);
+          element.dispose_aemszp$(ctx);
+        }
+         else {
+          var $this = util.Log;
+          var level = Log$Level.DEBUG;
+          var tag = Kotlin.getKClassFromExpression(this).simpleName;
+          if (level.level >= $this.level.level) {
+            $this.printer(level, tag, 'tile is not removable anymore: ' + element.tileName);
+          }
+        }
       }
       this.removeTiles_0.clear();
     }
+    TransformGroupDp.prototype.preRenderDp_oxz17o$.call(this, ctx, modelMatDp);
   };
-  Globe.prototype.renderDp_oxz17o$ = function (ctx, modelMatDp) {
-    ctx.pushAttributes();
-    ctx.depthFunc = 519;
-    ctx.applyAttributes();
-    TransformGroupDp.prototype.renderDp_oxz17o$.call(this, ctx, modelMatDp);
-    ctx.popAttributes();
+  Globe.prototype.addTile_sdcfxe$ = function (mesh) {
+    var parentFrame = this.getTileFrame_sdbw1w$(mesh.tileName);
+    if (parentFrame != null) {
+      parentFrame.addTile_sdcfxe$(mesh);
+    }
+     else {
+      this.getZoomGroup_za3lpa$(mesh.tileName.zoom).plusAssign_f1kmr1$(mesh);
+    }
   };
-  var util = $module$kool.de.fabmax.kool.util;
-  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
+  Globe.prototype.removeTile_sdcfxe$ = function (mesh) {
+    this.removeTiles_0.add_11rb$(mesh);
+  };
+  Globe.prototype.tileLoaded_sdcfxe$ = function (tileMesh) {
+    this.tileManager.onTileLoaded_sdcfxe$(tileMesh);
+  };
   Globe.prototype.deleteTile_0 = function (tile) {
-    if (tile.tileName.zoom >= this.frameZoomThresh) {
-      var frame = this.getTileFrame_sdbw1w$(tile.tileName);
+    var frame = this.getTileFrame_sdbw1w$(tile.tileName);
+    if (frame != null) {
       frame.removeTile_sdcfxe$(tile);
       if (frame.tileCount === 0) {
         this.tileFrames_0.remove_11rb$(frame.tileName.fusedKey);
         this.minusAssign_v64n5s$(frame);
-        var $this = util.Log;
-        var level = Log$Level.DEBUG;
-        var tag = Kotlin.getKClassFromExpression(this).simpleName;
-        if (level.level >= $this.level.level) {
-          $this.printer(level, tag, 'removed tile frame ' + frame.tileName + ', ' + this.tileFrames_0.size + ' frames remaining');
-        }
       }
     }
      else {
@@ -859,237 +876,40 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     return numberToInt(clamp$result);
   };
-  function Globe$rebuildMesh$lambda(this$Globe) {
-    return function (m) {
-      if (!m.isTexLoaded) {
-        return -2147483648;
-      }
-       else {
-        return -abs(m.tileName.zoom - this$Globe.center_0.zoom | 0) | 0;
-      }
-    };
-  }
-  var sortWith = Kotlin.kotlin.collections.sortWith_nqfjgj$;
-  var wrapFunction = Kotlin.wrapFunction;
-  var compareBy$lambda = wrapFunction(function () {
-    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
-    return function (closure$selector) {
-      return function (a, b) {
-        var selector = closure$selector;
-        return compareValues(selector(a), selector(b));
-      };
-    };
-  });
-  var Comparator = Kotlin.kotlin.Comparator;
-  function Comparator$ObjectLiteral(closure$comparison) {
-    this.closure$comparison = closure$comparison;
-  }
-  Comparator$ObjectLiteral.prototype.compare = function (a, b) {
-    return this.closure$comparison(a, b);
-  };
-  Comparator$ObjectLiteral.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  Globe.prototype.rebuildMesh_0 = function (ctx) {
-    var tmp$;
-    this.removableTiles_0.putAll_a2k3zr$(this.tiles_0);
-    var rng = 5;
-    var zoom = this.center_0.zoom;
-    var xStart = this.center_0.x - rng + 1 & -2;
-    var xEnd = (this.center_0.x + rng + 1 & -2) - 1 | 0;
-    var yStart = this.center_0.y - rng + 1 & -2;
-    var yEnd = (this.center_0.y + rng + 1 & -2) - 1 | 0;
-    this.addMeshesWrappingX_0(xStart, xEnd, yStart, yEnd, zoom, ctx);
-    for (var i = 1; i <= 4; i++) {
-      zoom = zoom - 1 | 0;
-      if (zoom >= this.minZoomLvl) {
-        var xStShf = xStart >> 1;
-        var xEdShf = xEnd + 1 >> 1;
-        var yStShf = yStart >> 1;
-        var yEdShf = yEnd + 1 >> 1;
-        xStart = xStShf - 1 & -2;
-        xEnd = (xEdShf & -2) + 1 | 0;
-        yStart = yStShf - 1 & -2;
-        yEnd = (yEdShf & -2) + 1 | 0;
-        this.addMeshesWrappingX_0(xStart, xStShf - 1 | 0, yStart, yEnd, zoom, ctx);
-        this.addMeshesWrappingX_0(xEdShf, xEnd, yStart, yEnd, zoom, ctx);
-        this.addMeshesWrappingX_0(xStShf, xEdShf - 1 | 0, yStart, yStShf - 1 | 0, zoom, ctx);
-        this.addMeshesWrappingX_0(xStShf, xEdShf - 1 | 0, yEdShf, yEnd, zoom, ctx);
-      }
-       else {
-        break;
-      }
-    }
-    var forceRemoveThresh = numberToInt(this.maxTiles * 1.5);
-    if (this.tiles_0.size > forceRemoveThresh) {
-      var $receiver = ArrayList_init();
-      $receiver.addAll_brywnq$(this.removableTiles_0.values);
-      var rmQueue = $receiver;
-      if (rmQueue.size > 1) {
-        sortWith(rmQueue, new Comparator$ObjectLiteral(compareBy$lambda(Globe$rebuildMesh$lambda(this))));
-      }
-      tmp$ = this.tiles_0.size - forceRemoveThresh | 0;
-      for (var i_0 = 0; i_0 <= tmp$; i_0++) {
-        this.removeTileMesh_0(rmQueue.get_za3lpa$(i_0), true);
-      }
-    }
-  };
-  Globe.prototype.addMeshesWrappingX_0 = function (xStart, xEnd, yStart, yEnd, zoom, ctx) {
-    var size = 1 << zoom;
-    var ys = Math_0.max(0, yStart);
-    var a = size - 1 | 0;
-    var ye = Math_0.min(a, yEnd);
-    var tmp$ = Math_0.max(0, xStart);
-    var a_0 = size - 1 | 0;
-    this.addMeshes_0(new IntRange(tmp$, Math_0.min(a_0, xEnd)), new IntRange(ys, ye), zoom, ctx);
-    if (xStart < 0 && xEnd < (size - 1 | 0)) {
-      var a_1 = size + xStart | 0;
-      this.addMeshes_0(until(Math_0.max(a_1, xEnd), size), new IntRange(ys, ye), zoom, ctx);
-    }
-     else if (xStart > 0 && xEnd > (size - 1 | 0)) {
-      var b = xEnd - (size - 1) | 0;
-      this.addMeshes_0(new IntRange(0, Math_0.min(xStart, b)), new IntRange(ys, ye), zoom, ctx);
-    }
-  };
-  Globe.prototype.addMeshes_0 = function (xRng, yRng, zoom, ctx) {
-    if ((xRng.last - xRng.first | 0) > 2 && (yRng.last - yRng.first | 0) > 2) {
-      this.addMeshesCircular_0(xRng, yRng, zoom, ctx);
-    }
-     else {
-      this.addMeshesRectRange_0(xRng, yRng, zoom, ctx);
-    }
-  };
-  Globe.prototype.addMeshesRectRange_0 = function (xRng, yRng, zoom, ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
-    tmp$ = xRng.first;
-    tmp$_0 = xRng.last;
-    tmp$_1 = xRng.step;
-    for (var x = tmp$; x <= tmp$_0; x += tmp$_1) {
-      tmp$_2 = yRng.first;
-      tmp$_3 = yRng.last;
-      tmp$_4 = yRng.step;
-      for (var y = tmp$_2; y <= tmp$_3; y += tmp$_4) {
-        this.addTile_0(x, y, zoom, xRng, yRng, ctx);
-      }
-    }
-  };
-  Globe.prototype.addMeshesCircular_0 = function (xRng, yRng, zoom, ctx) {
-    var tmp$, tmp$_0;
-    var cx = xRng.first + ((xRng.last - xRng.first | 0) / 2 | 0) | 0;
-    var cy = yRng.first + ((yRng.last - yRng.first | 0) / 2 | 0) | 0;
-    var a = cx - xRng.first | 0;
-    var b = xRng.last - cx | 0;
-    var tmp$_1 = Math_0.max(a, b);
-    var a_0 = cy - yRng.first | 0;
-    var b_0 = yRng.last - cy | 0;
-    var b_1 = Math_0.max(a_0, b_0);
-    var r = Math_0.max(tmp$_1, b_1);
-    for (var i = 0; i <= r; i++) {
-      tmp$ = cx + i | 0;
-      for (var x = cx - i | 0; x <= tmp$; x++) {
-        this.addTile_0(x, cy - i | 0, zoom, xRng, yRng, ctx);
-        if (i > 0) {
-          this.addTile_0(x, cy + i | 0, zoom, xRng, yRng, ctx);
-        }
-      }
-      if (i > 0) {
-        tmp$_0 = cy + i - 1 | 0;
-        for (var y = cy - i + 1 | 0; y <= tmp$_0; y++) {
-          this.addTile_0(cx - i | 0, y, zoom, xRng, yRng, ctx);
-          this.addTile_0(cx + i | 0, y, zoom, xRng, yRng, ctx);
-        }
-      }
-    }
-  };
-  Globe.prototype.addTile_0 = function (x, y, zoom, xRng, yRng, ctx) {
-    if (xRng.contains_mef7kx$(x) && yRng.contains_mef7kx$(y)) {
-      var key = TileName$Companion_getInstance().fuesdKey_qt1dr2$(x, y, zoom);
-      var existing = this.tiles_0.get_11rb$(key);
-      if (existing != null) {
-        this.removableTiles_0.remove_11rb$(key);
-        existing.isFadingOut = false;
-        if (!existing.isLoaded) {
-          this.loadingTiles_0.add_11rb$(key);
-        }
-      }
-       else {
-        var mesh = new TileMesh(this, new TileName(x, y, zoom), ctx);
-        var parentFrame = this.meshGenerator.generateMesh_urq3fk$(this, mesh);
-        this.tiles_0.put_xwzc9p$(key, mesh);
-        this.loadingTiles_0.add_11rb$(key);
-        if (parentFrame != null) {
-          parentFrame.addTile_sdcfxe$(mesh);
-        }
-         else {
-          this.getZoomGroup_za3lpa$(zoom).plusAssign_f1kmr1$(mesh);
-        }
-      }
-    }
-  };
-  Globe.prototype.removeTileMesh_0 = function (mesh, forceRemove) {
-    if (mesh.isCurrentlyVisible && !forceRemove) {
-      mesh.isFadingOut = true;
-    }
-     else {
-      this.removeTiles_0.add_11rb$(mesh);
-    }
-  };
   Globe.prototype.getZoomGroup_za3lpa$ = function (level) {
     return this.zoomGroups_0.get_za3lpa$(level - this.minZoomLvl | 0);
   };
   Globe.prototype.getTileFrame_sdbw1w$ = function (tileName) {
-    var div = 1 << tileName.zoom - this.frameZoomLvl;
-    var frameX = tileName.x / div | 0;
-    var frameY = tileName.y / div | 0;
-    var frameKey = TileName$Companion_getInstance().fuesdKey_qt1dr2$(frameX, frameY, this.frameZoomLvl);
-    var $receiver = this.tileFrames_0;
     var tmp$;
-    var value = $receiver.get_11rb$(frameKey);
-    if (value == null) {
-      var frame = new TileFrame(new TileName(frameX, frameY, this.frameZoomLvl), this);
-      this.plusAssign_v64n5s$(frame);
-      var $this = util.Log;
-      var level = Log$Level.DEBUG;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'added tile frame ' + frame.tileName);
-      }
-      var answer = frame;
-      $receiver.put_xwzc9p$(frameKey, answer);
-      tmp$ = answer;
+    if (tileName.zoom < this.frameZoomThresh) {
+      tmp$ = null;
     }
      else {
-      tmp$ = value;
+      var div = 1 << tileName.zoom - this.frameZoomLvl;
+      var frameX = tileName.x / div | 0;
+      var frameY = tileName.y / div | 0;
+      var frameKey = TileName$Companion_getInstance().fuesdKey_qt1dr2$(frameX, frameY, this.frameZoomLvl);
+      var $receiver = this.tileFrames_0;
+      var tmp$_0;
+      var value = $receiver.get_11rb$(frameKey);
+      if (value == null) {
+        var frame = new TileFrame(new TileName(frameX, frameY, this.frameZoomLvl), this);
+        this.plusAssign_v64n5s$(frame);
+        var answer = frame;
+        $receiver.put_xwzc9p$(frameKey, answer);
+        tmp$_0 = answer;
+      }
+       else {
+        tmp$_0 = value;
+      }
+      tmp$ = tmp$_0;
     }
     return tmp$;
-  };
-  Globe.prototype.tileFadedOut_sdcfxe$ = function (tileMesh) {
-    this.removeTileMesh_0(tileMesh, true);
-  };
-  Globe.prototype.tileLoaded_sdcfxe$ = function (tileMesh) {
-    this.removeObsoleteTilesBelow_0(tileMesh.tileName);
-    this.loadingTiles_0.remove_11rb$(tileMesh.key);
-    if (this.loadingTiles_0.isEmpty() && !this.removableTiles_0.isEmpty()) {
-      var tmp$;
-      tmp$ = this.removableTiles_0.values.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        this.removeTileMesh_0(element, false);
-      }
-      this.removableTiles_0.clear();
-    }
-  };
-  Globe.prototype.removeObsoleteTilesBelow_0 = function (tileName) {
-    var it = this.removableTiles_0.values.iterator();
-    while (it.hasNext()) {
-      var mesh = it.next();
-      if (mesh.tileName.isSubTileOf_sdbw1w$(tileName)) {
-        this.removeTileMesh_0(mesh, false);
-        it.remove();
-      }
-    }
   };
   function Globe$Companion() {
     Globe$Companion_instance = this;
     this.RAD_85_0 = 85.0 * math_0.DEG_2_RAD;
+    this.ALLOWED_MESH_REFINEMENTS_PER_FRAME = 1;
   }
   Globe$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -1382,6 +1202,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'GlobeDragHandler',
     interfaces: [InputManager$DragHandler]
   };
+  function HeightMap() {
+  }
+  HeightMap.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'HeightMap',
+    interfaces: []
+  };
+  function NullHeightMap() {
+  }
+  NullHeightMap.prototype.getHeightAt_yvo9jy$ = function (lat, lon, resolutionMas) {
+    return 0.0;
+  };
+  NullHeightMap.prototype.getNormalAt_dp1654$ = function (lat, lon, resolutionMas, result) {
+    return result.set_czzhiu$(Vec3f.Companion.Z_AXIS);
+  };
+  NullHeightMap.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'NullHeightMap',
+    interfaces: [HeightMap]
+  };
   function TileFrame(tileName, globe) {
     TransformGroupDp.call(this);
     this.tileName = tileName;
@@ -1389,8 +1229,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.zoomGroups = ArrayList_init();
     this.tileCount_gbn3bp$_0 = 0;
     var tmp$, tmp$_0;
-    this.rotate_6y0v78$(this.tileName.lonCenter, 0.0, 1.0, 0.0);
-    this.rotate_6y0v78$(90.0 - this.tileName.latCenter, 1.0, 0.0, 0.0);
+    this.rotate_5820x2$(this.tileName.lonCenter, Vec3d.Companion.Y_AXIS);
+    this.rotate_5820x2$(90.0 - this.tileName.latCenter, Vec3d.Companion.X_AXIS);
     this.translate_yvo9jy$(0.0, this.globe_0.radius, 0.0);
     this.checkInverse();
     tmp$ = this.tileName.zoom;
@@ -1435,18 +1275,308 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'TileFrame',
     interfaces: [TransformGroupDp]
   };
+  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
+  function TileManager(globe) {
+    this.globe = globe;
+    this.maxTiles = 300;
+    this.minZoomLvl = 3;
+    this.maxZoomLvl = 19;
+    this.tiles_0 = LinkedHashMap_init();
+    this.loadingTiles_0 = LinkedHashSet_init();
+    this.removingTiles_0 = LinkedHashMap_init();
+    this.center_0 = new TileName(0, 0, 1);
+  }
+  TileManager.prototype.onTileLoaded_sdcfxe$ = function (tile) {
+    var $receiver = this.loadingTiles_0;
+    var element = tile.key;
+    $receiver.remove_11rb$(element);
+    this.removeObsoleteTiles_0(tile);
+  };
+  TileManager.prototype.onTileDeleted_sdcfxe$ = function (tile) {
+    if (!tile.isRemovable) {
+      var $this = util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'removed non removable tile: ' + tile.tileName);
+      }
+    }
+    var $receiver = this.loadingTiles_0;
+    var element = tile.key;
+    $receiver.remove_11rb$(element);
+    var $receiver_0 = this.removingTiles_0;
+    var key = tile.key;
+    $receiver_0.remove_11rb$(key);
+    var $receiver_1 = this.tiles_0;
+    var key_0 = tile.key;
+    $receiver_1.remove_11rb$(key_0);
+  };
+  TileManager.prototype.onPreRender_aemszp$ = function (ctx) {
+    if (this.loadingTiles_0.isEmpty() && !this.removingTiles_0.isEmpty()) {
+      var $this = util.Log;
+      var level = Log$Level.DEBUG;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'all loaded');
+      }
+      var tmp$;
+      tmp$ = this.removingTiles_0.values.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        this.globe.removeTile_sdcfxe$(element);
+      }
+      this.removingTiles_0.clear();
+      var tmp$_0;
+      tmp$_0 = this.tiles_0.values.iterator();
+      while (tmp$_0.hasNext()) {
+        var element_0 = tmp$_0.next();
+        element_0.isVisible = true;
+      }
+    }
+  };
+  TileManager.prototype.updateCenter_xptfie$ = function (newCenter, isMoving, ctx) {
+    if (!(newCenter != null ? newCenter.equals(this.center_0) : null) && (this.tiles_0.size < this.maxTiles || !isMoving)) {
+      this.center_0 = newCenter;
+      this.updateTiles_0(ctx);
+    }
+  };
+  function TileManager$updateTiles$lambda(this$TileManager) {
+    return function (m) {
+      if (!m.isLoaded || !m.isCurrentlyVisible) {
+        return -2147483648;
+      }
+       else {
+        return -abs(m.tileName.zoom - this$TileManager.center_0.zoom | 0) | 0;
+      }
+    };
+  }
+  var sortWith = Kotlin.kotlin.collections.sortWith_nqfjgj$;
+  var wrapFunction = Kotlin.wrapFunction;
+  var compareBy$lambda = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  var Comparator = Kotlin.kotlin.Comparator;
+  function Comparator$ObjectLiteral(closure$comparison) {
+    this.closure$comparison = closure$comparison;
+  }
+  Comparator$ObjectLiteral.prototype.compare = function (a, b) {
+    return this.closure$comparison(a, b);
+  };
+  Comparator$ObjectLiteral.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  TileManager.prototype.updateTiles_0 = function (ctx) {
+    var tmp$;
+    var newTiles = this.computeNeededTileList_0();
+    this.removingTiles_0.putAll_a2k3zr$(this.tiles_0);
+    for (var i = 0; i !== newTiles.size; ++i) {
+      var key = newTiles.get_za3lpa$(i);
+      this.removingTiles_0.remove_11rb$(key);
+      var existing = this.tiles_0.get_11rb$(key);
+      if (existing == null) {
+        var tile = new TileMesh(this.globe, TileName$Companion_getInstance().fromFusedKey_s8cxhz$(key), ctx);
+        this.loadingTiles_0.add_11rb$(key);
+        this.tiles_0.put_xwzc9p$(key, tile);
+        this.globe.addTile_sdcfxe$(tile);
+      }
+       else {
+        existing.isRemovable = false;
+      }
+    }
+    var tmp$_0;
+    tmp$_0 = this.removingTiles_0.values.iterator();
+    while (tmp$_0.hasNext()) {
+      var element = tmp$_0.next();
+      element.isRemovable = true;
+    }
+    var forceRemoveThresh = numberToInt(this.maxTiles * 1.5);
+    if (this.tiles_0.size > forceRemoveThresh) {
+      var $this = util.Log;
+      var level = Log$Level.DEBUG;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'force removing tiles');
+      }
+      var $receiver = ArrayList_init();
+      $receiver.addAll_brywnq$(this.removingTiles_0.values);
+      var rmQueue = $receiver;
+      if (rmQueue.size > 1) {
+        sortWith(rmQueue, new Comparator$ObjectLiteral(compareBy$lambda(TileManager$updateTiles$lambda(this))));
+      }
+      tmp$ = this.tiles_0.size - forceRemoveThresh | 0;
+      for (var i_0 = 0; i_0 <= tmp$; i_0++) {
+        this.globe.removeTile_sdcfxe$(rmQueue.get_za3lpa$(i_0));
+      }
+    }
+  };
+  TileManager.prototype.computeNeededTileList_0 = function () {
+    var tileList = ArrayList_init();
+    var rng = 5;
+    var zoom = this.center_0.zoom;
+    var xStart = this.center_0.x - rng + 1 & -2;
+    var xEnd = (this.center_0.x + rng + 1 & -2) - 1 | 0;
+    var yStart = this.center_0.y - rng + 1 & -2;
+    var yEnd = (this.center_0.y + rng + 1 & -2) - 1 | 0;
+    this.addTilesWrappingX_0(xStart, xEnd, yStart, yEnd, zoom, tileList);
+    for (var i = 1; i <= 4; i++) {
+      zoom = zoom - 1 | 0;
+      if (zoom >= this.minZoomLvl) {
+        var xStShf = xStart >> 1;
+        var xEdShf = xEnd + 1 >> 1;
+        var yStShf = yStart >> 1;
+        var yEdShf = yEnd + 1 >> 1;
+        xStart = xStShf - 1 & -2;
+        xEnd = (xEdShf & -2) + 1 | 0;
+        yStart = yStShf - 1 & -2;
+        yEnd = (yEdShf & -2) + 1 | 0;
+        this.addTilesWrappingX_0(xStart, xStShf - 1 | 0, yStart, yEnd, zoom, tileList);
+        this.addTilesWrappingX_0(xEdShf, xEnd, yStart, yEnd, zoom, tileList);
+        this.addTilesWrappingX_0(xStShf, xEdShf - 1 | 0, yStart, yStShf - 1 | 0, zoom, tileList);
+        this.addTilesWrappingX_0(xStShf, xEdShf - 1 | 0, yEdShf, yEnd, zoom, tileList);
+      }
+       else {
+        break;
+      }
+    }
+    return tileList;
+  };
+  TileManager.prototype.addTilesWrappingX_0 = function (xStart, xEnd, yStart, yEnd, zoom, tiles) {
+    var size = 1 << zoom;
+    var ys = Math_0.max(0, yStart);
+    var a = size - 1 | 0;
+    var ye = Math_0.min(a, yEnd);
+    var tmp$ = Math_0.max(0, xStart);
+    var a_0 = size - 1 | 0;
+    this.addTiles_0(new IntRange(tmp$, Math_0.min(a_0, xEnd)), new IntRange(ys, ye), zoom, tiles);
+    if (xStart < 0 && xEnd < (size - 1 | 0)) {
+      var a_1 = size + xStart | 0;
+      this.addTiles_0(until(Math_0.max(a_1, xEnd), size), new IntRange(ys, ye), zoom, tiles);
+    }
+     else if (xStart > 0 && xEnd > (size - 1 | 0)) {
+      var b = xEnd - (size - 1) | 0;
+      this.addTiles_0(new IntRange(0, Math_0.min(xStart, b)), new IntRange(ys, ye), zoom, tiles);
+    }
+  };
+  TileManager.prototype.addTiles_0 = function (xRng, yRng, zoom, tiles) {
+    if ((xRng.last - xRng.first | 0) > 2 && (yRng.last - yRng.first | 0) > 2) {
+      this.addTilesCircular_0(xRng, yRng, zoom, tiles);
+    }
+     else {
+      this.addTilesRectRange_0(xRng, yRng, zoom, tiles);
+    }
+  };
+  TileManager.prototype.addTilesRectRange_0 = function (xRng, yRng, zoom, tiles) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
+    tmp$ = xRng.first;
+    tmp$_0 = xRng.last;
+    tmp$_1 = xRng.step;
+    for (var x = tmp$; x <= tmp$_0; x += tmp$_1) {
+      tmp$_2 = yRng.first;
+      tmp$_3 = yRng.last;
+      tmp$_4 = yRng.step;
+      for (var y = tmp$_2; y <= tmp$_3; y += tmp$_4) {
+        this.addTile_0(x, y, zoom, xRng, yRng, tiles);
+      }
+    }
+  };
+  TileManager.prototype.addTilesCircular_0 = function (xRng, yRng, zoom, tiles) {
+    var tmp$, tmp$_0;
+    var cx = xRng.first + ((xRng.last - xRng.first | 0) / 2 | 0) | 0;
+    var cy = yRng.first + ((yRng.last - yRng.first | 0) / 2 | 0) | 0;
+    var a = cx - xRng.first | 0;
+    var b = xRng.last - cx | 0;
+    var tmp$_1 = Math_0.max(a, b);
+    var a_0 = cy - yRng.first | 0;
+    var b_0 = yRng.last - cy | 0;
+    var b_1 = Math_0.max(a_0, b_0);
+    var r = Math_0.max(tmp$_1, b_1);
+    for (var i = 0; i <= r; i++) {
+      tmp$ = cx + i | 0;
+      for (var x = cx - i | 0; x <= tmp$; x++) {
+        this.addTile_0(x, cy - i | 0, zoom, xRng, yRng, tiles);
+        if (i > 0) {
+          this.addTile_0(x, cy + i | 0, zoom, xRng, yRng, tiles);
+        }
+      }
+      if (i > 0) {
+        tmp$_0 = cy + i | 0;
+        for (var y = cy - i + 1 | 0; y < tmp$_0; y++) {
+          this.addTile_0(cx - i | 0, y, zoom, xRng, yRng, tiles);
+          this.addTile_0(cx + i | 0, y, zoom, xRng, yRng, tiles);
+        }
+      }
+    }
+  };
+  TileManager.prototype.addTile_0 = function (x, y, zoom, xRng, yRng, tiles) {
+    if (xRng.contains_mef7kx$(x) && yRng.contains_mef7kx$(y)) {
+      var element = TileName$Companion_getInstance().fuesdKey_qt1dr2$(x, y, zoom);
+      tiles.add_11rb$(element);
+    }
+  };
+  TileManager.prototype.removeObsoleteTiles_0 = function (tile) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var makeVisible = true;
+    var it = this.removingTiles_0.values.iterator();
+    while (it.hasNext()) {
+      var mesh = it.next();
+      if (!mesh.isRemovable) {
+        var $this = util.Log;
+        var level = Log$Level.ERROR;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'mesh is not removable!');
+        }
+      }
+      if (mesh.tileName.isSubTileOf_sdbw1w$(tile.tileName)) {
+        this.globe.removeTile_sdcfxe$(mesh);
+        it.remove();
+      }
+       else if (tile.tileName.isSubTileOf_sdbw1w$(mesh.tileName)) {
+        var z = mesh.tileName.zoom + 1 | 0;
+        var subKey1 = TileName$Companion_getInstance().fuesdKey_qt1dr2$(mesh.tileName.x * 2 | 0, mesh.tileName.y * 2 | 0, z);
+        var subKey2 = TileName$Companion_getInstance().fuesdKey_qt1dr2$(mesh.tileName.x * 2 | 0, (mesh.tileName.y * 2 | 0) + 1 | 0, z);
+        var subKey3 = TileName$Companion_getInstance().fuesdKey_qt1dr2$((mesh.tileName.x * 2 | 0) + 1 | 0, mesh.tileName.y * 2 | 0, z);
+        var subKey4 = TileName$Companion_getInstance().fuesdKey_qt1dr2$((mesh.tileName.x * 2 | 0) + 1 | 0, (mesh.tileName.y * 2 | 0) + 1 | 0, z);
+        if (((tmp$ = this.tiles_0.get_11rb$(subKey1)) != null ? tmp$.isLoaded : null) === true && ((tmp$_0 = this.tiles_0.get_11rb$(subKey2)) != null ? tmp$_0.isLoaded : null) === true && ((tmp$_1 = this.tiles_0.get_11rb$(subKey3)) != null ? tmp$_1.isLoaded : null) === true && ((tmp$_2 = this.tiles_0.get_11rb$(subKey4)) != null ? tmp$_2.isLoaded : null) === true) {
+          this.globe.removeTile_sdcfxe$(mesh);
+          it.remove();
+          ensureNotNull(this.tiles_0.get_11rb$(subKey1)).isVisible = true;
+          ensureNotNull(this.tiles_0.get_11rb$(subKey2)).isVisible = true;
+          ensureNotNull(this.tiles_0.get_11rb$(subKey3)).isVisible = true;
+          ensureNotNull(this.tiles_0.get_11rb$(subKey4)).isVisible = true;
+        }
+         else {
+          makeVisible = false;
+        }
+      }
+    }
+    tile.isVisible = makeVisible;
+  };
+  TileManager.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TileManager',
+    interfaces: []
+  };
   function TileMesh(globe, tileName, ctx) {
+    TileMesh$Companion_getInstance();
     Mesh.call(this, MeshData_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS, Attribute.Companion.TEXTURE_COORDS]), tileName.toString());
     this.globe = globe;
     this.tileName = tileName;
-    this.centerNormal = MutableVec3f_init_0(Vec3f.Companion.Z_AXIS);
-    this.tileShader_0 = null;
-    this.tmpVec_0 = MutableVec3f_init();
-    this.isFadingOut = false;
-    this.isLoaded_cknz5n$_0 = false;
-    this.isTexLoaded_393coo$_0 = false;
     this.tileShader_0 = this.globe.tileShaderProvider.getShader_jjvqbv$(this.tileName, ctx);
+    this.tileTex_0 = null;
+    this.createTime_0 = ctx.time;
+    this.generatorJob_0 = null;
+    this.isRemovable = false;
+    this.isLoaded_cknz5n$_0 = false;
+    this.isFallbackTex_0 = false;
     this.shader = this.tileShader_0;
+    this.tileTex_0 = this.tileShader_0.texture;
+    this.isVisible = false;
+    this.generatorJob_0 = launch(void 0, void 0, void 0, void 0, TileMesh_init$lambda(this));
   }
   Object.defineProperty(TileMesh.prototype, 'key', {
     get: function () {
@@ -1466,51 +1596,139 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       this.isLoaded_cknz5n$_0 = isLoaded;
     }
   });
-  Object.defineProperty(TileMesh.prototype, 'isTexLoaded', {
-    get: function () {
-      return this.isTexLoaded_393coo$_0;
-    },
-    set: function (isTexLoaded) {
-      this.isTexLoaded_393coo$_0 = isTexLoaded;
-    }
-  });
   TileMesh.prototype.preRender_aemszp$ = function (ctx) {
-    var targetAlpha = 1.0;
-    if (this.isTexLoaded && !this.isFadingOut && this.tileShader_0.alpha < targetAlpha) {
-      this.tileShader_0.alpha = this.tileShader_0.alpha + ctx.deltaT;
-      if (this.tileShader_0.alpha >= targetAlpha) {
-        this.tileShader_0.alpha = targetAlpha;
-        this.isLoaded = true;
-        this.globe.tileLoaded_sdcfxe$(this);
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var tex = this.tileTex_0;
+    if (tex != null) {
+      if (((tmp$ = tex.res) != null ? tmp$.isLoaded : null) !== true) {
+        ctx.textureMgr.bindTexture_xyx3x4$(tex, ctx);
+      }
+       else if (this.isFallbackTex_0 && ((tmp$_0 = tex.res) != null ? tmp$_0.isLoaded : null) === true) {
+        this.shader = this.tileShader_0;
+        this.isFallbackTex_0 = false;
       }
     }
-     else if (this.isFadingOut && this.tileShader_0.alpha > 0.0) {
-      this.tileShader_0.alpha = this.tileShader_0.alpha - ctx.deltaT;
-      if (this.tileShader_0.alpha <= 0.0) {
-        this.tileShader_0.alpha = 0.0;
-        this.globe.tileFadedOut_sdcfxe$(this);
+    if (!this.generatorJob_0.isCompleted) {
+      return;
+    }
+     else if (this.meshData.vertexList.size === 0) {
+      var $this = util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'mesh is still empty');
       }
+    }
+    if (!this.isLoaded && (((tmp$_2 = (tmp$_1 = this.tileShader_0.texture) != null ? tmp$_1.res : null) != null ? tmp$_2.isLoaded : null) === true || this.isFallbackTex_0)) {
+      this.isLoaded = true;
+      this.globe.tileLoaded_sdcfxe$(this);
+    }
+    if (!this.isLoaded && ctx.time - this.createTime_0 > TileMesh$Companion_getInstance().TILE_TIMEOUT) {
+      this.shader = TileMesh$Companion_getInstance().getFallbackShader_0(ctx);
+      this.isFallbackTex_0 = true;
     }
     Mesh.prototype.preRender_aemszp$.call(this, ctx);
   };
-  TileMesh.prototype.checkIsVisible_aemszp$ = function (ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
-    tmp$ = this.tileShader_0.texture;
-    if (tmp$ == null) {
-      return true;
+  TileMesh.prototype.dispose_aemszp$ = function (ctx) {
+    this.shader = this.tileShader_0;
+    Mesh.prototype.dispose_aemszp$.call(this, ctx);
+  };
+  function TileMesh$Companion() {
+    TileMesh$Companion_instance = this;
+    this.TILE_TIMEOUT = 3.0;
+    this.fallbackShader_0 = null;
+  }
+  function TileMesh$Companion$getFallbackShader$lambda(closure$ctx) {
+    return function ($receiver) {
+      $receiver.colorModel = ColorModel.TEXTURE_COLOR;
+      $receiver.lightModel = LightModel.PHONG_LIGHTING;
+      $receiver.specularIntensity = 0.25;
+      $receiver.shininess = 25.0;
+      $receiver.staticColor = Color.Companion.LIGHT_GRAY;
+      $receiver.texture = assetTexture('tile_empty.png', closure$ctx, false);
+      var $this = util.Log;
+      var level = Log$Level.DEBUG;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'fallback tex created');
+      }
+      return Unit;
+    };
+  }
+  TileMesh$Companion.prototype.getFallbackShader_0 = function (ctx) {
+    if (this.fallbackShader_0 == null) {
+      this.fallbackShader_0 = basicShader(TileMesh$Companion$getFallbackShader$lambda(ctx));
     }
-    var tex = tmp$;
-    this.isTexLoaded = (tmp$_1 = (tmp$_0 = tex.res) != null ? tmp$_0.isLoaded : null) != null ? tmp$_1 : false;
-    var visible = this.isTexLoaded && Mesh.prototype.checkIsVisible_aemszp$.call(this, ctx);
-    if (visible) {
-      this.toGlobalCoords_w1lst9$(this.tmpVec_0.set_czzhiu$(this.centerNormal), 0.0);
-      var cos = (tmp$_5 = (tmp$_4 = (tmp$_3 = (tmp$_2 = this.scene) != null ? tmp$_2.camera : null) != null ? tmp$_3.globalLookDir : null) != null ? tmp$_4.dot_czzhiu$(this.tmpVec_0) : null) != null ? tmp$_5 : 0.0;
-      return cos < 0.1;
+    return ensureNotNull(this.fallbackShader_0);
+  };
+  TileMesh$Companion.prototype.prepareDefaultTex_aemszp$ = function (ctx) {
+    var tmp$;
+    var fbTex = this.getFallbackShader_0(ctx).texture;
+    if (fbTex != null && ((tmp$ = fbTex.res) != null ? tmp$.isLoaded : null) !== true) {
+      ctx.textureMgr.bindTexture_xyx3x4$(fbTex, ctx);
     }
-     else if (!this.isTexLoaded) {
-      ctx.textureMgr.bindTexture_xyx3x4$(tex, ctx);
+  };
+  TileMesh$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var TileMesh$Companion_instance = null;
+  function TileMesh$Companion_getInstance() {
+    if (TileMesh$Companion_instance === null) {
+      new TileMesh$Companion();
     }
-    return false;
+    return TileMesh$Companion_instance;
+  }
+  function TileMesh_init$lambda(this$TileMesh_0) {
+    return function ($receiver, continuation_0, suspended) {
+      var instance = new Coroutine$TileMesh_init$lambda(this$TileMesh_0, $receiver, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$TileMesh_init$lambda(this$TileMesh_0, $receiver, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$TileMesh = this$TileMesh_0;
+  }
+  Coroutine$TileMesh_init$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$TileMesh_init$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$TileMesh_init$lambda.prototype.constructor = Coroutine$TileMesh_init$lambda;
+  Coroutine$TileMesh_init$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$this$TileMesh.globe.meshGenerator.generateMesh_f7o8ry$(this.local$this$TileMesh.globe, this.local$this$TileMesh, this.local$this$TileMesh.globe.meshDetailLevel, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
   };
   TileMesh.$metadata$ = {
     kind: Kind_CLASS,
@@ -1524,70 +1742,129 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     simpleName: 'TileMeshGenerator',
     interfaces: []
   };
-  function GridTileMeshGenerator(logSteps) {
+  function GridTileMeshGenerator() {
     GridTileMeshGenerator$Companion_getInstance();
-    if (logSteps === void 0)
-      logSteps = 4;
-    this.logSteps = logSteps;
   }
-  GridTileMeshGenerator.prototype.generateMesh_urq3fk$ = function (globe, tileMesh) {
+  GridTileMeshGenerator.prototype.getFrame_26grvi$_0 = function (globe, tileName) {
     var tmp$;
-    if (tileMesh.tileName.zoom < globe.frameZoomThresh) {
-      this.generateMesh_gepeei$_0(globe, tileMesh, null);
+    if (tileName.zoom < globe.frameZoomThresh) {
       tmp$ = null;
     }
      else {
-      var frame = globe.getTileFrame_sdbw1w$(tileMesh.tileName);
-      this.generateMesh_gepeei$_0(globe, tileMesh, frame);
-      tmp$ = frame;
+      tmp$ = globe.getTileFrame_sdbw1w$(tileName);
     }
     return tmp$;
   };
-  GridTileMeshGenerator.prototype.getHeightAt_inzc14$ = function (lat, lon, tileName) {
-    return 0.0;
+  GridTileMeshGenerator.prototype.generateMesh_f7o8ry$ = function (globe_0, tileMesh_0, stepsLog2_0, continuation_0, suspended) {
+    var instance = new Coroutine$generateMesh_f7o8ry$(this, globe_0, tileMesh_0, stepsLog2_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   };
-  function GridTileMeshGenerator$generateMesh$lambda(this$GridTileMeshGenerator, closure$tileMesh, closure$globe, closure$frame) {
-    return function ($receiver) {
-      var uvScale = 255.0 / 256.0;
-      var uvOff = 0.5 / 256.0;
-      var steps = 1 << this$GridTileMeshGenerator.logSteps;
-      var zoomDiv = 2 * math.PI / (1 << closure$tileMesh.tileName.zoom + this$GridTileMeshGenerator.logSteps);
-      var pos = MutableVec3d_init();
-      var nrm = MutableVec3d_init();
-      var posf = MutableVec3f_init();
-      var nrmf = MutableVec3f_init();
-      for (var row = 0; row <= steps; row++) {
-        var tys = Kotlin.imul(closure$tileMesh.tileName.y + 1 | 0, steps) - row | 0;
-        var x = math.PI - tys * zoomDiv;
-        var x_0 = Math_0.sinh(x);
-        var lat = Math_0.atan(x_0);
-        for (var i = 0; i <= steps; i++) {
-          var lon = (Kotlin.imul(closure$tileMesh.tileName.x, steps) + i | 0) * zoomDiv - math.PI;
-          var height = this$GridTileMeshGenerator.getHeightAt_inzc14$(lat * math_0.RAD_2_DEG, lon * math_0.RAD_2_DEG, closure$tileMesh.tileName);
-          GridTileMeshGenerator$Companion_getInstance().latLonToCartesian_dp1656$(lat, lon, closure$globe.radius + height, pos);
-          pos.norm_5s4mqs$(nrm);
-          if (closure$frame != null) {
-            closure$frame.transformToLocal.transform_j7uy7i$(pos, 1.0);
-            closure$frame.transformToLocal.transform_j7uy7i$(nrm, 0.0);
-          }
-          var uv = new Vec2f(i / steps * uvScale + uvOff, 1.0 - (row / steps * uvScale + uvOff));
-          var iv = $receiver.vertex_n440gp$(pos.toMutableVec3f_5s4mqq$(posf), nrm.toMutableVec3f_5s4mqq$(nrmf), uv);
-          if (i > 0 && row > 0) {
-            $receiver.meshData.addTriIndices_qt1dr2$(iv - steps - 2 | 0, iv, iv - 1 | 0);
-            $receiver.meshData.addTriIndices_qt1dr2$(iv - steps - 2 | 0, iv - steps - 1 | 0, iv);
-            if (row === (steps / 2 | 0) && i === (steps / 2 | 0)) {
-              nrm.toMutableVec3f_5s4mqq$(closure$tileMesh.centerNormal);
+  function Coroutine$generateMesh_f7o8ry$($this, globe_0, tileMesh_0, stepsLog2_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$frame = void 0;
+    this.local$builder = void 0;
+    this.local$uvScale = void 0;
+    this.local$uvOff = void 0;
+    this.local$steps = void 0;
+    this.local$zoomDiv = void 0;
+    this.local$heightResolution = void 0;
+    this.local$pos = void 0;
+    this.local$nrm = void 0;
+    this.local$posf = void 0;
+    this.local$row = void 0;
+    this.local$globe = globe_0;
+    this.local$tileMesh = tileMesh_0;
+    this.local$stepsLog2 = stepsLog2_0;
+  }
+  Coroutine$generateMesh_f7o8ry$.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$generateMesh_f7o8ry$.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$generateMesh_f7o8ry$.prototype.constructor = Coroutine$generateMesh_f7o8ry$;
+  Coroutine$generateMesh_f7o8ry$.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.local$frame = this.$this.getFrame_26grvi$_0(this.local$globe, this.local$tileMesh.tileName);
+            this.local$builder = new MeshBuilder(this.local$tileMesh.meshData);
+            this.local$tileMesh.meshData.isBatchUpdate = true;
+            this.local$uvScale = 255.0 / 256.0;
+            this.local$uvOff = 0.5 / 256.0;
+            this.local$steps = 1 << this.local$stepsLog2;
+            this.local$zoomDiv = 2 * math.PI / (1 << this.local$tileMesh.tileName.zoom + this.local$stepsLog2);
+            this.local$heightResolution = (this.local$tileMesh.tileName.latN - this.local$tileMesh.tileName.latS) / this.local$steps * 3600 * 1000;
+            this.local$pos = MutableVec3d_init();
+            this.local$nrm = MutableVec3f_init();
+            this.local$posf = MutableVec3f_init();
+            this.local$row = 0;
+            this.state_0 = 2;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            if (this.local$row > this.local$steps) {
+              this.state_0 = 5;
+              continue;
             }
-          }
+
+            var tys = Kotlin.imul(this.local$tileMesh.tileName.y + 1 | 0, this.local$steps) - this.local$row | 0;
+            var x = math.PI - tys * this.local$zoomDiv;
+            var x_0 = Math_0.sinh(x);
+            var lat = Math_0.atan(x_0);
+            for (var i = 0; i <= this.local$steps; i++) {
+              var lon = (Kotlin.imul(this.local$tileMesh.tileName.x, this.local$steps) + i | 0) * this.local$zoomDiv - math.PI;
+              var latDeg = lat * math_0.RAD_2_DEG;
+              var lonDeg = lon * math_0.RAD_2_DEG;
+              var height = this.local$globe.heightMap.getHeightAt_yvo9jy$(latDeg, lonDeg, this.local$heightResolution);
+              GridTileMeshGenerator$Companion_getInstance().latLonToCartesian_dp1656$(lat, lon, this.local$globe.radius + height, this.local$pos);
+              if (this.local$frame != null) {
+                this.local$frame.transformToLocal.transform_j7uy7i$(this.local$pos, 1.0);
+              }
+              var uv = new Vec2f(i / this.local$steps * this.local$uvScale + this.local$uvOff, 1.0 - (this.local$row / this.local$steps * this.local$uvScale + this.local$uvOff));
+              var iv = this.local$builder.vertex_n440gp$(this.local$pos.toMutableVec3f_5s4mqq$(this.local$posf), this.local$nrm, uv);
+              if (i > 0 && this.local$row > 0) {
+                this.local$tileMesh.meshData.addTriIndices_qt1dr2$(iv - this.local$steps - 2 | 0, iv, iv - 1 | 0);
+                this.local$tileMesh.meshData.addTriIndices_qt1dr2$(iv - this.local$steps - 2 | 0, iv - this.local$steps - 1 | 0, iv);
+              }
+            }
+
+            this.state_0 = 3;
+            this.result_0 = yield_0(this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            this.state_0 = 4;
+            continue;
+          case 4:
+            this.local$row++;
+            this.state_0 = 2;
+            continue;
+          case 5:
+            this.local$tileMesh.meshData.generateNormals();
+            this.local$tileMesh.meshData.isBatchUpdate = false;
+            return;
         }
       }
-      $receiver.meshData.generateNormals();
-      return Unit;
-    };
-  }
-  GridTileMeshGenerator.prototype.generateMesh_gepeei$_0 = function (globe, tileMesh, frame) {
-    tileMesh.generator = GridTileMeshGenerator$generateMesh$lambda(this, tileMesh, globe, frame);
-    tileMesh.generateGeometry();
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
   };
   function GridTileMeshGenerator$Companion() {
     GridTileMeshGenerator$Companion_instance = this;
@@ -1705,6 +1982,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   TileName$Companion.prototype.fuesdKey_qt1dr2$ = function (tx, ty, tz) {
     return Kotlin.Long.fromInt(tz).shiftLeft(58).or(Kotlin.Long.fromInt(tx & 536870911).shiftLeft(29)).or(Kotlin.Long.fromInt(ty & 536870911));
   };
+  TileName$Companion.prototype.fromFusedKey_s8cxhz$ = function (fusedKey) {
+    var zoom = fusedKey.shiftRight(58).toInt();
+    var x = fusedKey.shiftRight(29).and(L536870911).toInt();
+    var y = fusedKey.and(L536870911).toInt();
+    return new TileName(x, y, zoom);
+  };
   TileName$Companion.$metadata$ = {
     kind: Kind_OBJECT,
     simpleName: 'Companion',
@@ -1735,8 +2018,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.colorModel = ColorModel.TEXTURE_COLOR;
       $receiver.lightModel = LightModel.PHONG_LIGHTING;
-      $receiver.isAlpha = true;
-      $receiver.alpha = 0.0;
       $receiver.specularIntensity = 0.25;
       $receiver.shininess = 25.0;
       $receiver.texture = this$TexImageTileShaderProvider.getTexture_jjvqbv$(closure$tileName, closure$ctx);
@@ -1753,10 +2034,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   };
   function OsmTexImageTileShaderProvider() {
     TexImageTileShaderProvider.call(this);
-    this.tileUrls = mutableListOf(['tile.openstreetmap.org']);
+    this.tileUrls = mutableListOf(['a.tile.openstreetmap.org', 'b.tile.openstreetmap.org', 'c.tile.openstreetmap.org']);
   }
   OsmTexImageTileShaderProvider.prototype.getTexture_jjvqbv$ = function (tileName, ctx) {
-    return assetTexture('https://' + this.tileUrls.get_za3lpa$(randomI(get_indices(this.tileUrls))) + '/' + tileName.zoom + '/' + tileName.x + '/' + tileName.y + '.png', ctx);
+    var srvIdx = (tileName.x ^ tileName.y ^ tileName.zoom) % this.tileUrls.size;
+    return assetTexture('https://' + this.tileUrls.get_za3lpa$(srvIdx) + '/' + tileName.zoom + '/' + tileName.x + '/' + tileName.y + '.png', ctx);
   };
   OsmTexImageTileShaderProvider.$metadata$ = {
     kind: Kind_CLASS,
@@ -4103,7 +4385,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     get: GlobeDragHandler$Companion_getInstance
   });
   package$globe.GlobeDragHandler = GlobeDragHandler;
+  package$globe.HeightMap = HeightMap;
+  package$globe.NullHeightMap = NullHeightMap;
   package$globe.TileFrame = TileFrame;
+  package$globe.TileManager = TileManager;
+  Object.defineProperty(TileMesh, 'Companion', {
+    get: TileMesh$Companion_getInstance
+  });
   package$globe.TileMesh = TileMesh;
   package$globe.TileMeshGenerator = TileMeshGenerator;
   Object.defineProperty(GridTileMeshGenerator, 'Companion', {

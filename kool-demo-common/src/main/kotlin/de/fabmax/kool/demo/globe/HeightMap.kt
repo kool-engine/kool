@@ -5,13 +5,13 @@ import de.fabmax.kool.math.Vec3f
 
 interface HeightMap {
 
-    fun getHeightAt(lat: Double, lon: Double, tileName: TileName): Double
+    fun getHeightAt(lat: Double, lon: Double, resolutionMas: Double): Double
 
-    fun getNormalAt(lat: Double, lon: Double, tileName: TileName, result: MutableVec3f): MutableVec3f
+    fun getNormalAt(lat: Double, lon: Double, resolutionMas: Double, result: MutableVec3f): MutableVec3f
 }
 
 class NullHeightMap : HeightMap {
-    override fun getHeightAt(lat: Double, lon: Double, tileName: TileName): Double = 0.0
+    override fun getHeightAt(lat: Double, lon: Double, resolutionMas: Double): Double = 0.0
 
-    override fun getNormalAt(lat: Double, lon: Double, tileName: TileName, result: MutableVec3f): MutableVec3f = result.set(Vec3f.Z_AXIS)
+    override fun getNormalAt(lat: Double, lon: Double, resolutionMas: Double, result: MutableVec3f): MutableVec3f = result.set(Vec3f.Z_AXIS)
 }

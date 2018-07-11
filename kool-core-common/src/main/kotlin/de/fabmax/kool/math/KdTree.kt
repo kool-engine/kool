@@ -23,7 +23,7 @@ interface KdTreeTraverser<T: Any> {
     fun traverseLeaf(tree: KdTree<T>, leaf: KdTree<T>.Node)
 }
 
-class InRadiusTraverser<T: Any>() : KdTreeTraverser<T> {
+open class InRadiusTraverser<T: Any>() : KdTreeTraverser<T> {
     val result: MutableList<T> = mutableListOf()
     val center = MutableVec3f()
     var radius = 1f
@@ -62,17 +62,22 @@ class InRadiusTraverser<T: Any>() : KdTreeTraverser<T> {
     override fun traverseLeaf(tree: KdTree<T>, leaf: KdTree<T>.Node) {
         for (i in leaf.indices) {
             val it = tree.items[i]
-            val dx = tree.helper.getX(it) - center.x
-            val dy = tree.helper.getY(it) - center.y
-            val dz = tree.helper.getZ(it) - center.z
-            if (dx*dx + dy*dy + dz*dz < radiusSqr) {
+            val dSqr = sqrDistance(tree, it)
+            if (dSqr < radiusSqr) {
                 result.add(it)
             }
         }
     }
+
+    protected open fun sqrDistance(tree: KdTree<T>, item: T): Float {
+        val dx = tree.helper.getX(item) - center.x
+        val dy = tree.helper.getY(item) - center.y
+        val dz = tree.helper.getZ(item) - center.z
+        return dx*dx + dy*dy + dz*dz
+    }
 }
 
-class KNearestTraverser<T: Any>() : KdTreeTraverser<T> {
+open class KNearestTraverser<T: Any>() : KdTreeTraverser<T> {
     val result = mutableListOf<T>()
     val center = MutableVec3f()
     var k = 10
@@ -126,14 +131,18 @@ class KNearestTraverser<T: Any>() : KdTreeTraverser<T> {
     override fun traverseLeaf(tree: KdTree<T>, leaf: KdTree<T>.Node) {
         for (i in leaf.indices) {
             val it = tree.items[i]
-            val dx = tree.helper.getX(it) - center.x
-            val dy = tree.helper.getY(it) - center.y
-            val dz = tree.helper.getZ(it) - center.z
-            val dSqr = dx*dx + dy*dy + dz*dz
+            val dSqr = sqrDistance(tree, it)
             if (dSqr < radiusSqr && (items.size < k || dSqr < maxDSqr)) {
-                insert(tree.items[i], dSqr)
+                insert(it, dSqr)
             }
         }
+    }
+
+    protected open fun sqrDistance(tree: KdTree<T>, item: T): Float {
+        val dx = tree.helper.getX(item) - center.x
+        val dy = tree.helper.getY(item) - center.y
+        val dz = tree.helper.getZ(item) - center.z
+        return dx*dx + dy*dy + dz*dz
     }
 
     private fun insert(value: T, dSqr: Float) {
@@ -145,7 +154,7 @@ class KNearestTraverser<T: Any>() : KdTreeTraverser<T> {
                 return
             }
         } else {
-            // fixme: not very efficient, priority queue would be better but small k should be find
+            // fixme: not very efficient, priority queue would be better but small k should be fine
             items += itemRecycler.get().set(value, dSqr)
             for (i in items.lastIndex downTo 1) {
                 if (items[i].dSqr < items[i-1].dSqr) {

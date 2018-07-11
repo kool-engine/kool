@@ -1,7 +1,7 @@
 buildscript {
     ext.kotlin_version = '1.2.51'
     ext.serialization_version = '0.5.1'
-    ext.coroutines_version = '0.23.3'
+    ext.coroutines_version = '0.23.4'
 
     ext.assetsDir = "$projectDir/docs/assets"
 
