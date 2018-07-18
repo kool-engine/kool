@@ -1,6 +1,8 @@
 package de.fabmax.kool.demo.globe
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.globe.height.HeightMapProvider
+import de.fabmax.kool.demo.globe.height.NullHeightMap
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.PerspectiveCamera
@@ -24,7 +26,7 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
         private set
 
     val tileManager = TileManager(this)
-    var heightMap: HeightMap = NullHeightMap()
+    var heightMapProvider: HeightMapProvider = NullHeightMap()
     var meshGenerator = GridTileMeshGenerator()
     var meshDetailLevel = 5
     var tileShaderProvider = OsmTexImageTileShaderProvider()

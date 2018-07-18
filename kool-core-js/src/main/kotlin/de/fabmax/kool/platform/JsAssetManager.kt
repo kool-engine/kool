@@ -4,6 +4,7 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.logE
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
@@ -23,13 +24,16 @@ class JsAssetManager internal constructor(override var assetsBaseDir: String)  :
             req.open("GET", "$assetsBaseDir/$assetPath")
         }
         req.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
-        req.onload = { evt ->
+        req.onload = {
             val array = Uint8Array(req.response as ArrayBuffer)
             val bytes = ByteArray(array.length)
             for (i in 0 until array.length) {
                 bytes[i] = array[i]
             }
             onLoad(bytes)
+        }
+        req.onerror = {
+            logE { "Failed loading resource $assetPath: $it" }
         }
         req.send()
     }

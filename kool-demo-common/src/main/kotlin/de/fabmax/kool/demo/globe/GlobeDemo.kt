@@ -1,6 +1,8 @@
 package de.fabmax.kool.demo.globe
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.globe.height.HeightMapHierarchy
+import de.fabmax.kool.demo.globe.height.HeightMapMetaHierarchy
 import de.fabmax.kool.formatDouble
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Scene
@@ -13,6 +15,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.color
+import kotlinx.serialization.protobuf.ProtoBuf
 
 /**
  * Globe demo: Show an OSM map on a sphere.
@@ -20,7 +23,6 @@ import de.fabmax.kool.util.color
 
 fun globeScene(ctx: KoolContext): List<Scene> {
     val scenes = mutableListOf<Scene>()
-    var globe: Globe? = null
 
     scenes += scene {
         +sphericalInputTransform {
@@ -40,24 +42,39 @@ fun globeScene(ctx: KoolContext): List<Scene> {
             minHorizontalRot = 0f
             maxHorizontalRot = 85f
 
-            updateTransform()
-
             +camera
+            updateTransform()
+            camera.updateCamera(ctx)
         }
 
-        // dim light
+        // dim light to avoid over-exposure (OSM tiles are quite bright)
         light.color.set(Color.LIGHT_GRAY)
 
-        val earthRadius = 6_371_000.8
-        globe = Globe(earthRadius)
-        val dpGroup = DoublePrecisionRoot(globe!!)
-        +dpGroup
+        // load height map meta data
+        ctx.assetMgr.loadAsset("globe/heightMapMeta.pb") { data ->
+            // deserialize height map meta data
+            val metaHierarchy: HeightMapMetaHierarchy = ProtoBuf.load(data)
 
-        registerDragHandler(GlobeDragHandler(globe!!))
+            // create globe with earth radius
+            val earth = Globe(6_371_000.8)
+
+            // use loaded height map info to generate tile meshes, tiles will have 2^6 x 2^6 vertices
+            earth.heightMapProvider = HeightMapHierarchy("${ctx.assetMgr.assetsBaseDir}/globe", metaHierarchy)
+            earth.meshDetailLevel = 6
+
+            val dpGroup = DoublePrecisionRoot(earth)
+            +dpGroup
+
+            // register specialized mouse input handler for globe manipulation
+            registerDragHandler(GlobeDragHandler(earth))
+
+            // Add an UI overlay with attribution info and stats
+            val ui = GlobeUi(earth, ctx)
+            scenes += ui.scene
+        }
+
     }
 
-    val ui = GlobeUi(globe!!, ctx)
-    scenes += ui.scene
 
     return scenes
 }

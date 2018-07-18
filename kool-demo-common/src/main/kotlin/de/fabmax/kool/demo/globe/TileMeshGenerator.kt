@@ -1,10 +1,12 @@
 package de.fabmax.kool.demo.globe
 
+import de.fabmax.kool.demo.globe.height.HeightMap
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.util.MeshBuilder
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.yield
 import kotlin.math.*
 
@@ -28,31 +30,40 @@ open class GridTileMeshGenerator : TileMeshGenerator {
 
         tileMesh.meshData.isBatchUpdate = true
 
-        val uvScale = 255f / 256f
-        val uvOff = 0.5f / 256f
-
         val steps = 1 shl stepsLog2
         val zoomDiv = 2 * PI / (1 shl (tileMesh.tileName.zoom + stepsLog2)).toDouble()
-        val heightResolution = (tileMesh.tileName.latN - tileMesh.tileName.latS) / steps * 3600 * 1000
+        val heightResolution = (tileMesh.tileName.latN - tileMesh.tileName.latS) / steps * 3600.0
 
         //println("${tileMesh.tileName} -> res = $heightResolution")
 
         val pos = MutableVec3d()
         val nrm = MutableVec3f()
         val posf = MutableVec3f()
+        var map: HeightMap? = null
 
         for (row in 0..steps) {
             val tys = (tileMesh.tileName.y+1) * steps - row
-            val lat = atan(sinh(PI - tys * zoomDiv))
+            val latRad = atan(sinh(PI - tys * zoomDiv))
             for (i in 0..steps) {
-                val lon = (tileMesh.tileName.x * steps + i) * zoomDiv - PI
+                val lonRad = (tileMesh.tileName.x * steps + i) * zoomDiv - PI
 
-                val latDeg = lat.toDeg()
-                val lonDeg = lon.toDeg()
-                val height = globe.heightMap.getHeightAt(latDeg, lonDeg, heightResolution)
-                latLonToCartesian(lat, lon, globe.radius + height, pos)
+                val lat = latRad.toDeg()
+                val lon = lonRad.toDeg()
 
-                //globe.heightMap.getNormalAt(latDeg, lonDeg, heightResolution, nrm)
+                if (map == null || !map.contains(lat, lon)) {
+                    map = globe.heightMapProvider.getHeightMapAt(lat, lon, heightResolution)
+                }
+                val height = map?.run {
+                    while (!isAvailable) {
+                        // wait a bit while height map data is loading
+                        delay(50)
+                    }
+                    getHeightAt(lat, lon)
+                } ?: 0.0
+
+                latLonToCartesian(latRad, lonRad, globe.radius + height, pos)
+
+                //globe.heightMapProvider.getNormalAt(latDeg, lonDeg, heightResolution, nrm)
                 //nrm.rotate(latDeg.toFloat(), Vec3f.NEG_X_AXIS).rotate(lonDeg.toFloat(), Vec3f.Y_AXIS)
 
                 if (frame != null) {
@@ -60,7 +71,7 @@ open class GridTileMeshGenerator : TileMeshGenerator {
                     //frame.transformToLocal.transform(nrm, 0f)
                 }
 
-                val uv = Vec2f((i.toFloat() / steps) * uvScale + uvOff, 1f - ((row.toFloat() / steps) * uvScale + uvOff))
+                val uv = Vec2f(i.toFloat() / steps, 1f - row.toFloat() / steps)
                 val iv = builder.vertex(pos.toMutableVec3f(posf), nrm, uv)
                 if (i > 0 && row > 0) {
                     tileMesh.meshData.addTriIndices(iv - steps - 2, iv, iv - 1)
