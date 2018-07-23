@@ -3,10 +3,10 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.formatFloat
 import de.fabmax.kool.math.*
-import de.fabmax.kool.physics.BoxMesh
-import de.fabmax.kool.physics.CollisionWorld
-import de.fabmax.kool.physics.staticBox
-import de.fabmax.kool.physics.uniformMassBox
+import de.fabmax.kool.modules.physics.BoxMesh
+import de.fabmax.kool.modules.physics.CollisionWorld
+import de.fabmax.kool.modules.physics.staticBox
+import de.fabmax.kool.modules.physics.uniformMassBox
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
