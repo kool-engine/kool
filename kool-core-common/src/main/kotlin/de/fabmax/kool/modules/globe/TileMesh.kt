@@ -7,7 +7,6 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
@@ -56,6 +55,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
         }
 
         if (!generatorJob.isCompleted) {
+            // wait while mesh is generated in background
             return
         } else if (meshData.vertexList.size == 0) {
             logE { "mesh is still empty" }
@@ -67,15 +67,10 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
         }
 
         if (!isLoaded && ctx.time - createTime > TILE_TIMEOUT) {
-            //logD { "Tile load timeout: $tileName" }
             // set fall back texture
             shader = getFallbackShader(ctx)
             isFallbackTex = true
         }
-
-//        if (isFallbackTex) {
-//            println("fallback tex loaded: ${getFallbackShader(ctx).texture?.res?.isLoaded}")
-//        }
 
         super.preRender(ctx)
     }
@@ -101,7 +96,6 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
                     shininess = 25f
                     staticColor = Color.LIGHT_GRAY
                     texture = assetTexture("tile_empty.png", ctx, false)
-                    logD { "fallback tex created" }
                 }
             }
             return fallbackShader!!

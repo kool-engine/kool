@@ -1,9 +1,11 @@
 package de.fabmax.kool.modules.globe.elevation
 
-class ElevationMapHierarchy(private val baseDir: String, metaHierarchy: ElevationMapMetaHierarchy) : ElevationMapProvider {
+import de.fabmax.kool.AssetManager
+
+class ElevationMapHierarchy(private val baseDir: String, metaHierarchy: ElevationMapMetaHierarchy, private val assetMgr: AssetManager) : ElevationMapProvider {
 
     private val sets = mutableListOf<ResolutionSet>()
-    val loadedMaps = LoadedMapCache(64)
+    private val loadedMaps = LoadedMapCache(64)
 
     init {
         metaHierarchy.maps.forEach { (resolution, metas) ->
@@ -26,7 +28,7 @@ class ElevationMapHierarchy(private val baseDir: String, metaHierarchy: Elevatio
         val meta = bestSet.set.getMetaAt(lat, lon)
         if (meta != null) {
             return synchronized(loadedMaps) {
-                loadedMaps.getOrLoad(baseDir, meta)
+                loadedMaps.getOrLoad(baseDir, meta, assetMgr)
             }
         }
         return null

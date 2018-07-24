@@ -52,17 +52,21 @@ fun globeScene(ctx: KoolContext): List<Scene> {
         // dim light to avoid over-exposure (OSM tiles are quite bright)
         light.color.set(Color.LIGHT_GRAY)
 
-        // load height map meta data
-        ctx.assetMgr.loadAsset("https://s3.eu-central-1.amazonaws.com/fabmax-kool-globe/dem/meta.pb") { data ->
-            // deserialize height map meta data
-            val metaHierarchy: ElevationMapMetaHierarchy = ProtoBuf.load(data)
-
+        // load elevation map meta data
+        // default elevation URL requires elevation map data in path docs/assets/elevation (not the case if pulled from github)
+        val elevationUrl = Demo.getProperty("globe.elevationUrl", "elevation")
+        ctx.assetMgr.loadAsset("$elevationUrl/meta.pb") { data ->
             // create globe with earth radius
             val earth = Globe(6_371_000.8)
 
-            // use loaded height map info to generate tile meshes, tiles will have 2^6 x 2^6 vertices
-            earth.elevationMapProvider = ElevationMapHierarchy("https://s3.eu-central-1.amazonaws.com/fabmax-kool-globe/dem", metaHierarchy)
-            earth.meshDetailLevel = 6
+            if (data != null) {
+                // deserialize elevation map meta data
+                val metaHierarchy: ElevationMapMetaHierarchy = ProtoBuf.load(data)
+
+                // use loaded elevation map info to generate tile meshes, tiles will have 2^6 x 2^6 vertices
+                earth.elevationMapProvider = ElevationMapHierarchy(elevationUrl, metaHierarchy, ctx.assetMgr)
+                earth.meshDetailLevel = 6
+            }
 
             val dpGroup = DoublePrecisionRoot(earth)
             +dpGroup

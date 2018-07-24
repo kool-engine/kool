@@ -43,8 +43,6 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
 
                 } else if (isDragging) {
                     globe.set(startTransform)
-                    // fixme: this is a hack, setting globalInTransform manually is crap
-                    //startTransform.invert(globe.globalInvTransform)
 
                     val valid = computePointOrientation(ptrX, ptrY, ctx)
                     if (valid) {
@@ -71,8 +69,6 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
 
         } else if (steadyScreenPtMode == STEADY_SCREEN_PT_HOLD) {
             globe.set(startTransform)
-            // fixme: this is a hack, setting globalInTransform manually is crap
-            //startTransform.invert(globe.globalInvTransform)
 
             if (computePointOrientation(steadyScreenPt.x, steadyScreenPt.y, ctx)) {
                 ptOrientation.mul(mouseRotationStart)

@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.formatFloat
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
@@ -34,6 +35,10 @@ fun modelScene(ctx: KoolContext): Scene = scene {
         +model
 
         ctx.assetMgr.loadAsset("player.kmf") { data ->
+            if (data == null) {
+                throw KoolException("Fatal: Failed loading model")
+            }
+
             val mesh = loadMesh(data)
             model += mesh
 

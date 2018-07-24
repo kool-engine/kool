@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.globe.elevation
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.math.FUZZY_EQ_F
 import de.fabmax.kool.util.Log
 
@@ -17,12 +18,12 @@ interface BoundedElevationMap : ElevationMap {
 
 }
 
-fun loadHeightMap(baseDir: String, meta: ElevationMapMeta): BoundedElevationMap {
-    Log.d("loadHeightMap") { meta.name }
+fun loadElevationMap(baseDir: String, meta: ElevationMapMeta, assetMgr: AssetManager): BoundedElevationMap {
+    Log.d("loadElevationMap") { meta.name }
     return when (meta.format) {
-        "png_s16_rg" -> loadPngS16ElevationMap(baseDir, meta)
+        "png_s16_rg" -> loadPngS16ElevationMap(baseDir, meta, assetMgr)
         else -> throw NotImplementedError("Unknown format ${meta.format}")
     }
 }
 
-expect fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta): BoundedElevationMap
+expect fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta, assetMgr: AssetManager): BoundedElevationMap

@@ -94,4 +94,16 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     }
 
     private class DemoEntry(val label: String, val loadScene: MutableList<Scene>.(KoolContext) -> Unit)
+
+    companion object {
+        val demoProps = mutableMapOf<String, Any>()
+
+        fun setProperty(key: String, value: Any) {
+            demoProps[key] = value
+        }
+
+        inline fun <reified T> getProperty(key: String, default: T): T {
+            return demoProps[key] as? T ?: default
+        }
+    }
 }

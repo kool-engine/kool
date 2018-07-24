@@ -3,7 +3,6 @@ package de.fabmax.kool.modules.globe
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -86,9 +85,11 @@ class TileManager(val globe: Globe) {
             val rmQueue = mutableListOf<TileMesh>().apply { addAll(removingTiles.values) }
             rmQueue.sortBy { m ->
                 if (!m.isLoaded || !m.isCurrentlyVisible) {
-                    Int.MIN_VALUE
+                    -Double.MAX_VALUE
                 } else {
-                    -abs(m.tileName.zoom - center.zoom)
+                    val dx = m.tileName.lonCenter - center.lonCenter
+                    val dy = m.tileName.latCenter - center.latCenter
+                    -(dx*dx + dy*dy)
                 }
             }
             for (i in 0..(tiles.size - forceRemoveThresh)) {

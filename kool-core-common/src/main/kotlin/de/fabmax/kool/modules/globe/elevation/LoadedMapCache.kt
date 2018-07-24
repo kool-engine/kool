@@ -1,12 +1,14 @@
 package de.fabmax.kool.modules.globe.elevation
 
-class LoadedMapCache(val maxMaps: Int) {
+import de.fabmax.kool.AssetManager
+
+class LoadedMapCache(private val maxMaps: Int) {
 
     private val loadedMaps = mutableMapOf<String, LoadedMap>()
     private var useCnt = 0L
 
-    fun getOrLoad(baseDir: String, meta: ElevationMapMeta): ElevationMap {
-        val loaded = loadedMaps.getOrPut(meta.name) { LoadedMap(0L, meta.name, loadHeightMap(baseDir, meta)) }
+    fun getOrLoad(baseDir: String, meta: ElevationMapMeta, assetMgr: AssetManager): ElevationMap {
+        val loaded = loadedMaps.getOrPut(meta.name) { LoadedMap(0L, meta.name, loadElevationMap(baseDir, meta, assetMgr)) }
         loaded.lastUsed = ++useCnt
 
         if (loadedMaps.size > maxMaps) {

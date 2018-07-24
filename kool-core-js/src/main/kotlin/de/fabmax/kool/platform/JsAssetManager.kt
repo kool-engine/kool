@@ -8,21 +8,18 @@ import de.fabmax.kool.util.logE
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
+import org.w3c.dom.HTMLImageElement
 import org.w3c.xhr.ARRAYBUFFER
 import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
+import kotlin.browser.document
 
-class JsAssetManager internal constructor(override var assetsBaseDir: String)  : AssetManager() {
+class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(assetsBaseDir) {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
-    override fun loadAsset(assetPath: String, onLoad: (ByteArray) -> Unit) {
+    override fun loadHttpAsset(assetPath: String, onLoad: (ByteArray?) -> Unit) {
         val req = XMLHttpRequest()
-        if (assetPath.startsWith("http", true)) {
-            req.open("GET", assetPath)
-        } else {
-            req.open("GET", "$assetsBaseDir/$assetPath")
-        }
         req.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
         req.onload = {
             val array = Uint8Array(req.response as ArrayBuffer)
@@ -33,22 +30,25 @@ class JsAssetManager internal constructor(override var assetsBaseDir: String)  :
             onLoad(bytes)
         }
         req.onerror = {
+            onLoad(null)
             logE { "Failed loading resource $assetPath: $it" }
         }
+        req.open("GET", assetPath)
         req.send()
     }
 
-    override fun loadTextureAsset(assetPath: String): TextureData {
-        val img = js("new Image();")
+    override fun loadHttpTexture(assetPath: String): TextureData {
+        val img = document.createElement("img") as HTMLImageElement
         val data = ImageTextureData(img)
         img.crossOrigin = ""
-        if (assetPath.startsWith("http", true)) {
-            img.src = assetPath
-        } else {
-            img.src = "$assetsBaseDir/$assetPath"
-        }
+        img.src = assetPath
         return data
     }
+
+    // in js everything is http...
+    override fun loadLocalAsset(assetPath: String, onLoad: (ByteArray?) -> Unit) = loadHttpAsset(assetPath, onLoad)
+
+    override fun loadLocalTexture(assetPath: String): TextureData = loadHttpTexture(assetPath)
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
 

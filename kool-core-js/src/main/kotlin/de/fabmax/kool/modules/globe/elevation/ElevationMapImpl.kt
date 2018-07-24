@@ -1,13 +1,15 @@
 package de.fabmax.kool.modules.globe.elevation
 
+import de.fabmax.kool.AssetManager
 import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.HTMLImageElement
 import kotlin.browser.document
 
-actual fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta): BoundedElevationMap = DelayedElevationMap(basePath, meta)
+actual fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta, assetMgr: AssetManager): BoundedElevationMap = DelayedElevationMap(basePath, meta)
 
 private class DelayedElevationMap(basePath: String, val meta: ElevationMapMeta) : BoundedElevationMap {
     override val west: Double
@@ -21,18 +23,21 @@ private class DelayedElevationMap(basePath: String, val meta: ElevationMapMeta) 
 
     override var isAvailable = false
 
-    private lateinit var loadedHeightMap: ElevationMapS16
+    private var loadedHeightMap: ElevationMapS16? = null
 
     init {
         ElevationMapLoader.instance.loadHeightMap("$basePath/${meta.name}") { data ->
-            loadedHeightMap = ElevationMapS16(data, meta)
+            if (data != null) {
+                loadedHeightMap = ElevationMapS16(data, meta)
+            }
             isAvailable = true
         }
     }
 
-    override fun getElevationAt(lat: Double, lon: Double): Double = loadedHeightMap.getElevationAt(lat, lon)
+    override fun getElevationAt(lat: Double, lon: Double): Double = loadedHeightMap?.getElevationAt(lat, lon) ?: 0.0
 
-    override fun getNormalAt(lat: Double, lon: Double, result: MutableVec3f): MutableVec3f = loadedHeightMap.getNormalAt(lat, lon, result)
+    override fun getNormalAt(lat: Double, lon: Double, result: MutableVec3f): MutableVec3f =
+            loadedHeightMap?.getNormalAt(lat, lon, result) ?: result.set(Vec3f.Z_AXIS)
 
 }
 
@@ -46,10 +51,14 @@ private class ElevationMapLoader {
         canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D
     }
 
-    fun loadHeightMap(path: String, onLoaded: (ShortArray) -> Unit) {
+    fun loadHeightMap(path: String, onLoaded: (ShortArray?) -> Unit) {
         val img = document.createElement("img") as HTMLImageElement
         img.src = path
-        img.crossOrigin = "Anonymous"
+        img.crossOrigin = ""
+        img.onerror = { _,_,_,_,_ ->
+            onLoaded(null)
+            true
+        }
         img.onload = {
             canvasCtx.drawImage(img, 0.0, 0.0)
 
@@ -64,7 +73,6 @@ private class ElevationMapLoader {
                 array[i] = h
             }
             onLoaded(array)
-
             true
         }
     }
