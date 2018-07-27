@@ -8590,7 +8590,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
   });
   Globe.prototype.preRenderDp_oxz17o$ = function (ctx, modelMatDp) {
-    var tmp$, tmp$_0, tmp$_1;
+    var tmp$, tmp$_0;
     TileMesh$Companion_getInstance().prepareDefaultTex_aemszp$(ctx);
     var cam = (tmp$ = this.scene) != null ? tmp$.camera : null;
     if (cam != null && Kotlin.isType(cam, PerspectiveCamera)) {
@@ -8611,9 +8611,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       }
       var dh = tmp$_0;
       this.prevCamHeight_0 = camDist;
-      var tmp$_2 = math.PI * 0.5;
+      var tmp$_1 = math.PI * 0.5;
       var x = this.camDirection_0.y;
-      var $receiver = tmp$_2 - Math_0.acos(x);
+      var $receiver = tmp$_1 - Math_0.acos(x);
       var min = -Globe$Companion_getInstance().RAD_85_0;
       var max = Globe$Companion_getInstance().RAD_85_0;
       var clamp$result;
@@ -8630,26 +8630,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       var y = this.camDirection_0.x;
       var x_0 = this.camDirection_0.z;
       var lon = Math_0.atan2(y, x_0);
-      var tmp$_3 = dh < 0.99;
-      if (!tmp$_3) {
+      var tmp$_2 = dh < 0.99;
+      if (!tmp$_2) {
         var x_1 = lat - this.prevLat_0;
-        tmp$_3 = Math_0.abs(x_1) > 1.0E-5;
+        tmp$_2 = Math_0.abs(x_1) > 1.0E-5;
       }
-      var tmp$_4 = tmp$_3;
-      if (!tmp$_4) {
+      var tmp$_3 = tmp$_2;
+      if (!tmp$_3) {
         var x_2 = lon - this.prevLon_0;
-        tmp$_4 = Math_0.abs(x_2) > 1.0E-5;
+        tmp$_3 = Math_0.abs(x_2) > 1.0E-5;
       }
-      var isMoving = tmp$_4;
+      var isMoving = tmp$_3;
       this.prevLat_0 = lat;
       this.prevLon_0 = lon;
       this.centerLat = lat * package$math.RAD_2_DEG;
       this.centerLon = lon * package$math.RAD_2_DEG;
-      if ((tmp$_1 = this.elevationMapProvider.getElevationMapAt_yvo9jy$(this.centerLat, this.centerLon, 0.0)) != null) {
-        if (tmp$_1.isAvailable) {
-          this.cameraHeight = this.cameraHeight - tmp$_1.getElevationAt_lu1900$(this.centerLat, this.centerLon);
-        }
-      }
       this.camDirection_0.scale_mx4ult$(this.radius);
       var camHeight = this.camDirection_0.distance_czzhiu$(this.camPosition_0);
       var x_3 = cam.fovy * package$math.DEG_2_RAD * 0.5;
@@ -8660,10 +8655,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     this.tileManager.onPreRender_aemszp$(ctx);
     if (!this.removeTiles_0.isEmpty()) {
-      var tmp$_5;
-      tmp$_5 = this.removeTiles_0.iterator();
-      while (tmp$_5.hasNext()) {
-        var element = tmp$_5.next();
+      var tmp$_4;
+      tmp$_4 = this.removeTiles_0.iterator();
+      while (tmp$_4.hasNext()) {
+        var element = tmp$_4.next();
         if (element.isRemovable) {
           this.tileManager.onTileDeleted_xadgus$(element);
           this.deleteTile_0(element);
