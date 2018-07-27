@@ -3,6 +3,7 @@ package de.fabmax.kool.platform
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.TextureData
@@ -15,12 +16,12 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 
-class AndroidAssetManager(context: Context, assetsBaseDir: String) : AssetManager(assetsBaseDir) {
+class AndroidAssetManager(private val context: Context, assetsBaseDir: String) : AssetManager(assetsBaseDir) {
     private val fontGenerator = FontMapGenerator(context, MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     init {
         // inits http cache if not already happened
-        HttpCache.initCache(File(".httpCache"))
+        HttpCache.initCache(File(context.cacheDir, ".httpCache"))
     }
 
     override fun loadHttpAsset(assetPath: String, onLoad: (ByteArray?) -> Unit) {
@@ -48,6 +49,7 @@ class AndroidAssetManager(context: Context, assetsBaseDir: String) : AssetManage
     }
 
     override fun loadLocalTexture(assetPath: String): TextureData {
+        Log.e("testo", "load local tex")
         val texData = ImageTextureData()
         loadLocal(assetPath) {
             val opts = BitmapFactory.Options()
@@ -85,6 +87,7 @@ class AndroidAssetManager(context: Context, assetsBaseDir: String) : AssetManage
                 onLoad(openLocalStream(assetUrl))
             } catch (e: Exception) {
                 onError?.invoke(e)
+                Log.e("AndroidAssetManager", "Asset not found: $assetUrl")
                 throw KoolException("Failed to load asset: \"$assetUrl\"", e)
             }
         }
@@ -116,12 +119,12 @@ class AndroidAssetManager(context: Context, assetsBaseDir: String) : AssetManage
     }
 
     private fun openLocalStream(assetPath: String): InputStream {
-        var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
-        if (inStream == null) {
-            // if asset wasn't found in resources try to load it from file system
-            inStream = FileInputStream(assetPath)
+        val path = if (assetPath.startsWith("./")) {
+            assetPath.substring(2)
+        } else {
+            assetPath
         }
-        return inStream
+        return context.assets.open(path)
     }
 
     private fun loadAllBytes(inputStream: InputStream): ByteArray {
