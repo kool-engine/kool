@@ -27,7 +27,7 @@ class AndroidRenderContext(val context: Context, val glView: GLSurfaceView, val 
 
     override var glCapabilities: GlCapabilities = GlCapabilities.UNKNOWN_CAPABILITIES
 
-    override val assetMgr = AndroidAssetManager(context)
+    override val assetMgr = AndroidAssetManager(context, ".")
 
     override var windowWidth = 0
         private set

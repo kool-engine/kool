@@ -52,6 +52,10 @@ open class GridTileMeshGenerator : TileMeshGenerator {
 
                 if (map == null || !map.contains(lat, lon)) {
                     map = globe.elevationMapProvider.getElevationMapAt(lat, lon, heightResolution)
+
+                    map?.meta?.apply {
+                        tileMesh.attributionInfo += TileMesh.AttributionInfo("Elevation-Data: $attr", null)
+                    }
                 }
                 val height = map?.run {
                     while (!isAvailable) {

@@ -3,6 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.util.Position
 import de.fabmax.kool.util.debugOverlay
 
 /**
@@ -11,7 +12,7 @@ import de.fabmax.kool.util.debugOverlay
 
 class Demo(ctx: KoolContext, startScene: String? = null) {
 
-    private val dbgOverlay = debugOverlay(ctx, true)
+    private val dbgOverlay = debugOverlay(ctx, Position.LOWER_LEFT)
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
@@ -28,8 +29,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     )
 
     init {
-        ctx.scenes += demoOverlay(ctx)
         ctx.scenes += dbgOverlay
+        ctx.scenes += demoOverlay(ctx)
         ctx.onRender += this::onRender
 
         //dbgOverlay.isVisible = false

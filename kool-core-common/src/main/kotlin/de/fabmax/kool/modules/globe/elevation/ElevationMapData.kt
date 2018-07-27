@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.globe.elevation
 
+import de.fabmax.kool.AssetManager
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -46,3 +47,12 @@ data class ElevationMapMeta(
 data class ElevationMapMetaHierarchy(
         @SerialId(1) val maps: Map<Double, List<ElevationMapMeta>>
 )
+
+fun loadElevationMap(baseDir: String, meta: ElevationMapMeta, assetMgr: AssetManager): BoundedElevationMap {
+    return when (meta.format) {
+        "png_s16_rg" -> loadPngS16ElevationMap(baseDir, meta, assetMgr)
+        else -> throw NotImplementedError("Unknown format ${meta.format}")
+    }
+}
+
+expect fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta, assetMgr: AssetManager): BoundedElevationMap

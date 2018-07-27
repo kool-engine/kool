@@ -21,7 +21,7 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 200 bodies, js is slower...).
 
 ## Features / Noticeable stuff:
-- Optional double precision transform: Improves geometry resolution in high zoom-levels in [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo)
+- Added elevation mapping in [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo) (Europe only) - Zoom in on the alps!
 - Some super-primitive [Physics Simulation](https://fabmax.github.io/kool/kool-js/?demo=boxDemo)
 - Full support of all features on all platforms
 - Multi-touch support (on Android and Javascript / WebGL)

@@ -19,10 +19,17 @@ import kotlin.math.min
  * @author fabmax
  */
 
-fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
+enum class Position {
+    UPPER_LEFT,
+    UPPER_RIGHT,
+    LOWER_LEFT,
+    LOWER_RIGHT
+}
+
+fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): Scene {
     val dbgOverlay = uiScene(ctx.screenDpi) {
         theme = theme(UiTheme.DARK) {
-            componentUi({ BlankComponentUi() })
+            componentUi { BlankComponentUi() }
             containerUi(::SimpleComponentUi)
             standardFont(FontProps(Font.SYSTEM_FONT, 12f))
         }
@@ -33,10 +40,11 @@ fun debugOverlay(ctx: KoolContext, alignBottom: Boolean = false): Scene {
             val height = if (hasMemInfo) { 168f } else { 150f }
             val width = 130f
 
-            if (alignBottom) {
-                layoutSpec.setOrigin(dps(-width, true), dps(0f, true), zero())
-            } else {
-                layoutSpec.setOrigin(dps(-width, true), dps(-height, true), zero())
+            when (position) {
+                Position.UPPER_LEFT -> layoutSpec.setOrigin(zero(), dps(-height, true), zero())
+                Position.UPPER_RIGHT -> layoutSpec.setOrigin(dps(-width, true), dps(-height, true), zero())
+                Position.LOWER_LEFT -> layoutSpec.setOrigin(zero(), dps(0f, true), zero())
+                Position.LOWER_RIGHT -> layoutSpec.setOrigin(dps(-width, true), dps(0f, true), zero())
             }
             layoutSpec.setSize(dps(width, true), dps(height, true), zero())
 

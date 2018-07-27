@@ -9,6 +9,7 @@ interface ElevationMapProvider {
 
 interface ElevationMap {
     val isAvailable: Boolean
+    val meta: ElevationMapMeta?
 
     fun contains(lat: Double, lon: Double): Boolean
 
@@ -19,6 +20,7 @@ interface ElevationMap {
 
 class NullElevationMap : ElevationMapProvider, ElevationMap {
     override val isAvailable = true
+    override val meta = null
 
     override fun getElevationMapAt(lat: Double, lon: Double, resolution: Double): ElevationMap = this
 

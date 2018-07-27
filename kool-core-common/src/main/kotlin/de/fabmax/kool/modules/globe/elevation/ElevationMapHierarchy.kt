@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.globe.elevation
 
 import de.fabmax.kool.AssetManager
+import de.fabmax.kool.util.logD
 
 class ElevationMapHierarchy(private val baseDir: String, metaHierarchy: ElevationMapMetaHierarchy, private val assetMgr: AssetManager) : ElevationMapProvider {
 
@@ -12,6 +13,7 @@ class ElevationMapHierarchy(private val baseDir: String, metaHierarchy: Elevatio
             sets += ResolutionSet(resolution, ElevationMapSet(metas))
         }
         sets.sortBy { it.resolution }
+        logD { "taking elevation data from: $baseDir" }
     }
 
     override fun getElevationMapAt(lat: Double, lon: Double, resolution: Double): ElevationMap? {

@@ -1,19 +1,18 @@
 package de.fabmax.kool.modules.globe.elevation
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import de.fabmax.kool.AssetManager
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.platform.JvmAssetManager
-import java.awt.image.BufferedImage
-import java.awt.image.DataBufferByte
-import java.awt.image.DataBufferInt
+import de.fabmax.kool.platform.AndroidAssetManager
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import javax.imageio.ImageIO
+import java.nio.IntBuffer
 
 actual fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta, assetMgr: AssetManager): BoundedElevationMap {
-    return DelayedElevationMap(basePath, meta, assetMgr as JvmAssetManager)
+    return DelayedElevationMap(basePath, meta, assetMgr as AndroidAssetManager)
 }
 
 fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta): BoundedElevationMap {
@@ -21,7 +20,7 @@ fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta): BoundedEle
     return ElevationMapS16(data, meta)
 }
 
-private class DelayedElevationMap(basePath: String, override val meta: ElevationMapMeta, assetMgr: JvmAssetManager) : BoundedElevationMap {
+private class DelayedElevationMap(basePath: String, override val meta: ElevationMapMeta, assetMgr: AndroidAssetManager) : BoundedElevationMap {
     override val west: Double
         get() = meta.west
     override val east: Double
@@ -51,7 +50,10 @@ private class DelayedElevationMap(basePath: String, override val meta: Elevation
 }
 
 private fun loadElevationMapData(inputStream: InputStream, meta: ElevationMapMeta): ShortArray {
-    val img = ImageIO.read(inputStream)
+    val opts = BitmapFactory.Options()
+    opts.inPreferredConfig = Bitmap.Config.ARGB_8888
+    val img = BitmapFactory.decodeStream(inputStream, null, opts)
+
     if (img.width != meta.width || img.height != meta.height) {
         throw IllegalStateException("Image size differs from meta info: img: ${img.width} x ${img.height}, meta: ${meta.width} x ${meta.height} [${meta.name}]")
     }
@@ -59,8 +61,9 @@ private fun loadElevationMapData(inputStream: InputStream, meta: ElevationMapMet
     val data = ShortArray(meta.width * meta.height)
     var i = 0
 
-    if (img.type == BufferedImage.TYPE_INT_ARGB || img.type == BufferedImage.TYPE_INT_RGB) {
-        val buf = (img.raster.dataBuffer as DataBufferInt).data
+    if (img.config == Bitmap.Config.ARGB_8888) {
+        val buf = IntBuffer.allocate(img.width * img.height)
+        img.copyPixelsToBuffer(buf)
         for (y in 0 until meta.height) {
             for (x in 0 until meta.width) {
                 data[i] = (buf[i] shr 8).toShort()
@@ -68,20 +71,10 @@ private fun loadElevationMapData(inputStream: InputStream, meta: ElevationMapMet
             }
         }
 
-    } else if (img.type == BufferedImage.TYPE_3BYTE_BGR) {
-        val buf = (img.raster.dataBuffer as DataBufferByte).data
-        for (y in 0 until meta.height) {
-            for (x in 0 until meta.width) {
-                val r = buf[i*3+2].toInt() and 0xff
-                val g = buf[i*3+1].toInt() and 0xff
-                data[i] = ((r shl 8) or g).toShort()
-                i++
-            }
-        }
-
     } else {
-        throw NotImplementedError("Unsupported image type: ${img.type} [${meta.name}]")
+        throw NotImplementedError("Unsupported image type: ${img.config} [${meta.name}]")
     }
 
+    img.recycle()
     return data
 }

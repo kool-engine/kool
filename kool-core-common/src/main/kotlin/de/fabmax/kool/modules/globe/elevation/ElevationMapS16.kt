@@ -4,7 +4,7 @@ import de.fabmax.kool.math.*
 import kotlin.math.cos
 import kotlin.math.sin
 
-class ElevationMapS16(val data: ShortArray, val meta: ElevationMapMeta) : BoundedElevationMap {
+class ElevationMapS16(val data: ShortArray, override val meta: ElevationMapMeta) : BoundedElevationMap {
 
     override val west: Double
         get() = meta.west

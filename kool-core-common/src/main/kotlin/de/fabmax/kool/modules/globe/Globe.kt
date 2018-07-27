@@ -7,7 +7,6 @@ import de.fabmax.kool.modules.globe.elevation.NullElevationMap
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.doubleprec.TransformGroupDp
-import de.fabmax.kool.util.logD
 import kotlin.math.*
 
 class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
@@ -104,9 +103,10 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
                     tileManager.onTileDeleted(it)
                     deleteTile(it)
                     it.dispose(ctx)
-                } else {
-                    logD { "tile is not removable anymore: ${it.tileName}" }
                 }
+//                else {
+//                    logD { "tile is not removable anymore: ${it.tileName}" }
+//                }
             }
             removeTiles.clear()
         }

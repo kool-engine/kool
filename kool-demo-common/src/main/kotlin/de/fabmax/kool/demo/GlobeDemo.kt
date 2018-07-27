@@ -18,6 +18,7 @@ import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.color
 import kotlinx.serialization.protobuf.ProtoBuf
+import kotlin.math.max
 
 /**
  * Globe demo: Show an OSM map on a sphere.
@@ -25,6 +26,9 @@ import kotlinx.serialization.protobuf.ProtoBuf
 
 fun globeScene(ctx: KoolContext): List<Scene> {
     val scenes = mutableListOf<Scene>()
+
+    // Create UI overlay with attribution info and stats (globe is set once it is created)
+    val ui = GlobeUi(null, ctx)
 
     scenes += scene {
         +sphericalInputTransform {
@@ -58,6 +62,7 @@ fun globeScene(ctx: KoolContext): List<Scene> {
         ctx.assetMgr.loadAsset("$elevationUrl/meta.pb") { data ->
             // create globe with earth radius
             val earth = Globe(6_371_000.8)
+            ui!!.globe = earth
 
             if (data != null) {
                 // deserialize elevation map meta data
@@ -73,79 +78,101 @@ fun globeScene(ctx: KoolContext): List<Scene> {
 
             // register specialized mouse input handler for globe manipulation
             registerDragHandler(GlobeDragHandler(earth))
-
-            // Add an UI overlay with attribution info and stats
-            val ui = GlobeUi(earth, ctx)
-            scenes += ui.scene
         }
 
     }
 
-
+    // add ui overlay after globe scene (order matters)
+    scenes += ui.scene
     return scenes
 }
 
-class GlobeUi(val globe: Globe, val ctx: KoolContext) {
+class GlobeUi(var globe: Globe?, val ctx: KoolContext) {
 
-    private lateinit var attributionText: Label
-    private var attribWidth = 0f
-    private var posWidth = 0f
-
-    var attribution = "© OpenStreetMap"
-    var attributionUrl = "http://www.openstreetmap.org/copyright"
+    private var containerWidth = 0f
 
     val scene = uiScene {
         theme = theme(UiTheme.DARK) {
-            componentUi(::SimpleComponentUi)
-            containerUi { BlankComponentUi() }
+            //componentUi(::SimpleComponentUi)
+            //containerUi { BlankComponentUi() }
+            containerUi(::SimpleComponentUi)
+            componentUi { BlankComponentUi() }
             standardFont(FontProps(Font.SYSTEM_FONT, 12f))
         }
+        content.ui.setCustom(BlankComponentUi())
 
-        attributionText = button("attributionText") {
-            padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-            textColor.setCustom(Color.LIME)
-            textColorHovered.setCustom(color("#42A5F5"))
+        val attributions = mutableListOf<Pair<Button, String>>()
+        val maxAttributions = 2
 
-            onRender += {
-                text = attribution
-                val w = font.apply()?.textWidth(text) ?: 0f
-                if (w != attribWidth) {
-                    attribWidth = w
-                    layoutSpec.setSize(dps(w + 8, true), dps(18f), zero())
-                    posWidth = 0f
+        +container("globeUI") {
+
+            val posLbl = label("posLabel") {
+                layoutSpec.setSize(dps(200f, true), dps(18f), zero())
+                layoutSpec.setOrigin(dps(-200f, true), zero(), zero())
+                padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+            }
+            +posLbl
+
+            for (i in 0 until maxAttributions) {
+                val button = button("attributionText_$i") {
+                    layoutSpec.setSize(dps(200f, true), dps(18f), zero())
+                    layoutSpec.setOrigin(dps(-200f, true), dps(18f * (i+1), true), zero())
+                    padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
+                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+                    textColor.setCustom(Color.LIME)
+                    textColorHovered.setCustom(color("#42A5F5"))
+                    text = ""
+
+                    onClick += { _, _, _ ->
+                        if (!attributions[i].second.isEmpty()) {
+                            ctx.openUrl(attributions[i].second)
+                        }
+                    }
                 }
+                attributions += Pair(button, "")
+                +button
             }
 
-            onClick += { _,_,_ ->
-                if (!attributionUrl.isEmpty()) {
-                    ctx.openUrl(attributionUrl)
+            onPreRender += {
+                var width = 0f
+                var lines = 1
+
+                val globe = this@GlobeUi.globe
+                if (globe != null) {
+                    val lat = formatDouble(globe.centerLat, 5)
+                    val lon = formatDouble(globe.centerLon, 5)
+                    val hgt = if (globe.cameraHeight > 10000) {
+                        "${formatDouble(globe.cameraHeight / 1000.0, 1)} km"
+                    } else {
+                        "${formatDouble(globe.cameraHeight, 1)} m"
+                    }
+                    posLbl.text = "Center: $lat°, $lon°  $hgt"
+                    width = posLbl.font.apply()?.textWidth(posLbl.text) ?: 0f
                 }
-            }
-        }
-        +attributionText
 
-        +label("posLabel") {
-            padding = Margin(zero(), zero(), dps(4f, true), dps(0f, true))
-
-            onRender += {
-                val lat = formatDouble(globe.centerLat, 5)
-                val lon = formatDouble(globe.centerLon, 5)
-                val hgt = if (globe.cameraHeight > 10000) {
-                    "${formatDouble(globe.cameraHeight / 1000.0, 1)} km"
-                } else {
-                    "${formatDouble(globe.cameraHeight, 1)} m"
+                globe?.tileManager?.getCenterTile()?.let {
+                    for (i in attributions.indices) {
+                        attributions[i].first.text = ""
+                    }
+                    it.attributionInfo.forEachIndexed { i, attributionInfo ->
+                        if (i < attributions.size) {
+                            attributions[i].first.text = attributionInfo.text
+                            if (attributionInfo.url != attributions[i].second) {
+                                attributions[i].also { attributions[i] = Pair(it.first, it.second) }
+                            }
+                            val w = attributions[i].first.font.apply()?.textWidth(attributions[i].first.text) ?: 0f
+                            width = max(width, w)
+                            lines++
+                        }
+                    }
                 }
-                text = "$lat°, $lon°  $hgt"
-                val w = font.apply()?.textWidth(text) ?: 0f
-                if (w != posWidth) {
-                    posWidth = w
 
-                    val xOri = dps(-w - 8, true)
-                    layoutSpec.setSize(dps(w + 8, true), dps(18f), zero())
-                    layoutSpec.setOrigin(xOri, dps(0f), zero())
-                    attributionText.layoutSpec.setOrigin(xOri - attributionText.layoutSpec.width, zero(), zero())
-
-                    content.requestLayout()
+                if (width != containerWidth) {
+                    containerWidth = width
+                    layoutSpec.setSize(dps(containerWidth + 8, true), dps(18f * lines), zero())
+                    layoutSpec.setOrigin(dps(-containerWidth - 8, true), zero(), zero())
+                    this@uiScene.content.requestLayout()
                 }
             }
         }

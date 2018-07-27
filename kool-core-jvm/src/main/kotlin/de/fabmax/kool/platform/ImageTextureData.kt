@@ -16,50 +16,6 @@ class ImageTextureData : TextureData() {
     private var buffer: Uint8Buffer? = null
     private var format = 0
 
-//    init {
-//        // inits http cache if not already happened
-//        HttpCache.initCache(File(".httpCache"))
-//
-//        launch(HttpCache.assetLoadingCtx) {
-//            var tries = 2
-//
-//            while (tries > 0) {
-//                // todo: use a less naive distinction between http and local textures
-//                val isHttp = assetPath.startsWith("http", true)
-//                var file: File? = null
-//
-//                try {
-//                    file = if (isHttp) {
-//                        HttpCache.loadHttpResource(assetPath)
-//                    } else {
-//                        File("$assetBaseDir/$assetPath")
-//                    }
-//
-//                    val image = ImageIO.read(file)
-//                    val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
-//                    format = if (alpha) GL_RGBA else GL_RGB
-//                    width = image.width
-//                    height = image.height
-//                    buffer = bufferedImageToBuffer(image, format, 0, 0)
-//                    isAvailable = true
-//
-//                    // asset loading succeeded, break retry loop
-//                    break
-//
-//                } catch (e: Exception) {
-//                    // if exception is caused by a corrupted HTTP cache file, delete it and try again
-//                    if (isHttp && --tries > 0) {
-//                        logW { "HTTP cache file load failed: $e, retrying" }
-//                        file?.delete()
-//
-//                    } else {
-//                        throw KoolException("Failed to load texture asset: \"$assetPath\"", e)
-//                    }
-//                }
-//            }
-//        }
-//    }
-
     internal fun setTexImage(image: BufferedImage) {
         val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
         format = if (alpha) GL_RGBA else GL_RGB

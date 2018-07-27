@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.globe
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import kotlin.math.max
 import kotlin.math.min
@@ -36,7 +35,7 @@ class TileManager(val globe: Globe) {
 
     fun onPreRender(ctx: KoolContext) {
         if (loadingTiles.isEmpty() && !removingTiles.isEmpty()) {
-            logD { "all loaded" }
+            //logD { "all loaded" }
             // all loaded, remove obsolete
             removingTiles.values.forEach { globe.removeTile(it) }
             removingTiles.clear()
@@ -51,6 +50,12 @@ class TileManager(val globe: Globe) {
             updateTiles(ctx)
         }
     }
+
+    fun getCenterTile(): TileMesh? = getTile(center)
+
+    fun getTile(tileName: TileName): TileMesh? = getTile(tileName.fusedKey)
+
+    fun getTile(key: Long): TileMesh? = tiles[key]
 
     private fun updateTiles(ctx: KoolContext) {
         // compute list of visible tiles for current center tile
@@ -80,7 +85,7 @@ class TileManager(val globe: Globe) {
         // if there are too many tiles force-remove some
         val forceRemoveThresh = (maxTiles * 1.5).toInt()
         if (tiles.size > forceRemoveThresh) {
-            logD { "force removing tiles" }
+            //logD { "force removing tiles" }
             // queue is getting too large, remove stuff even though it might be visible
             val rmQueue = mutableListOf<TileMesh>().apply { addAll(removingTiles.values) }
             rmQueue.sortBy { m ->

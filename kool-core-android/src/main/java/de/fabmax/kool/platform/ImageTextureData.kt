@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform
 
-import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Log
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.Texture
@@ -15,46 +12,19 @@ import de.fabmax.kool.gl.glTexImage2D
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.createUint8Buffer
-import kotlinx.coroutines.experimental.launch
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
 import java.nio.ByteBuffer
 import kotlin.math.round
 
-class ImageTextureData(assetPath: String, context: Context) : TextureData() {
+class ImageTextureData : TextureData() {
     private var buffer: Uint8Buffer? = null
     private var format = 0
 
-    init {
-        // inits http cache if not already happened
-        HttpCache.initCache(File(context.cacheDir, ".httpCache"))
-
-        launch(HttpCache.assetLoadingCtx) {
-            try {
-                val inputStream = if (assetPath.startsWith("http", true)) {
-                    FileInputStream(HttpCache.loadHttpResource(assetPath))
-                } else {
-                    context.assets.open(assetPath)
-                }
-
-                inputStream.use {
-                    val opts = BitmapFactory.Options()
-                    opts.inPreferredConfig = Bitmap.Config.ARGB_8888
-                    val bitmap = BitmapFactory.decodeStream(it, null, opts)
-                    buffer = convertBitmapToBuffer(bitmap)
-                    format = if (bitmap.hasAlpha()) GL_RGBA else GL_RGB
-                    width = bitmap.width
-                    height = bitmap.height
-                    isAvailable = true
-
-                    bitmap.recycle()
-                }
-
-            } catch (e: IOException) {
-                Log.e("ImageTextureData", "Failed loading image asset", e)
-            }
-        }
+    internal fun setTexImage(bitmap: Bitmap) {
+        buffer = convertBitmapToBuffer(bitmap)
+        format = if (bitmap.hasAlpha()) GL_RGBA else GL_RGB
+        width = bitmap.width
+        height = bitmap.height
+        isAvailable = true
     }
 
     override fun onLoad(texture: Texture, ctx: KoolContext) {

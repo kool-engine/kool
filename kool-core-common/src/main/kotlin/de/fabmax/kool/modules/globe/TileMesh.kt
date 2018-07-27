@@ -18,7 +18,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
 
     val isCurrentlyVisible get() = isRendered
 
-    private var tileShader = globe.tileShaderProvider.getShader(tileName, ctx)
+    private var tileShader: Shader
     private var tileTex: Texture?
 
     private val createTime: Double = ctx.time
@@ -27,11 +27,18 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
     var isRemovable = false
     var isLoaded = false
         private set
-    private var isFallbackTex = false
+    private val isFallbackShader
+        get() = shader === fallbackShader
+
+    val attributionInfo = mutableSetOf<AttributionInfo>()
 
     init {
+        val provShader = globe.tileShaderProvider.getShader(tileName, ctx)
+        tileTex = if (provShader.shader is BasicShader) { provShader.shader.texture } else { null }
+        tileShader = provShader.shader
         shader = tileShader
-        tileTex = tileShader.texture
+        attributionInfo += provShader.attribution
+
         isVisible = false
 
         generatorJob = launch {
@@ -47,10 +54,9 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
                 // tile texture is not yet loaded, trigger / poll texture loading
                 ctx.textureMgr.bindTexture(tex, ctx)
 
-            } else if (isFallbackTex && tex.res?.isLoaded == true) {
+            } else if (isFallbackShader && tex.res?.isLoaded == true) {
                 // fallback texture was set because of load timeout, but correct texture is available now
                 shader = tileShader
-                isFallbackTex = false
             }
         }
 
@@ -61,7 +67,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
             logE { "mesh is still empty" }
         }
 
-        if (!isLoaded && (tileShader.texture?.res?.isLoaded == true || isFallbackTex)) {
+        if (!isLoaded && (tex?.res?.isLoaded == true || isFallbackShader)) {
             isLoaded = true
             globe.tileLoaded(this)
         }
@@ -69,7 +75,6 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
         if (!isLoaded && ctx.time - createTime > TILE_TIMEOUT) {
             // set fall back texture
             shader = getFallbackShader(ctx)
-            isFallbackTex = true
         }
 
         super.preRender(ctx)
@@ -80,6 +85,8 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
         shader = tileShader
         super.dispose(ctx)
     }
+
+    data class AttributionInfo(val text: String, val url: String?)
 
     companion object {
         const val TILE_TIMEOUT = 3.0

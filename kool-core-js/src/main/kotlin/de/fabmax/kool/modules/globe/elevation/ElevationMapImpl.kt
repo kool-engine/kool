@@ -11,7 +11,7 @@ import kotlin.browser.document
 
 actual fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta, assetMgr: AssetManager): BoundedElevationMap = DelayedElevationMap(basePath, meta)
 
-private class DelayedElevationMap(basePath: String, val meta: ElevationMapMeta) : BoundedElevationMap {
+private class DelayedElevationMap(basePath: String, override val meta: ElevationMapMeta) : BoundedElevationMap {
     override val west: Double
         get() = meta.west
     override val east: Double

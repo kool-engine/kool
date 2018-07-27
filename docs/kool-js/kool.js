@@ -1,6 +1,7 @@
-define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, Kotlin, $module$kotlinx_serialization_runtime_js) {
+define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-coroutines-core'], function (_, Kotlin, $module$kotlinx_serialization_runtime_js, $module$kotlinx_coroutines_core) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
+  var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
   var Kind_CLASS = Kotlin.Kind.CLASS;
   var math = Kotlin.kotlin.math;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
@@ -35,9 +36,28 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var Long$Companion$MAX_VALUE = Kotlin.Long.MAX_VALUE;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var hashCode = Kotlin.hashCode;
-  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
-  var until = Kotlin.kotlin.ranges.until_dqglrj$;
+  var rangeTo = Kotlin.kotlin.ranges.rangeTo_38ydlf$;
+  var UnknownFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException;
+  var SerialClassDescImpl = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.SerialClassDescImpl;
+  var SerialId = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId;
+  var KSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.KSerializer;
+  var MissingFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException;
+  var internal = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal;
+  var ArrayListSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer;
+  var LinkedHashMapSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer;
+  var NotImplementedError = Kotlin.kotlin.NotImplementedError;
   var println = Kotlin.kotlin.io.println_s8jyv4$;
+  var L0 = Kotlin.Long.ZERO;
+  var round = Kotlin.kotlin.math.round_14dthe$;
+  var kotlin_js_internal_DoubleCompanionObject = Kotlin.kotlin.js.internal.DoubleCompanionObject;
+  var until = Kotlin.kotlin.ranges.until_dqglrj$;
+  var CoroutineImpl = Kotlin.kotlin.coroutines.experimental.CoroutineImpl;
+  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED;
+  var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.launch_35c74u$;
+  var delay = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.delay_za3lpa$;
+  var yield_0 = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.yield;
+  var L536870911 = Kotlin.Long.fromInt(536870911);
+  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var mutableSetOf = Kotlin.kotlin.collections.mutableSetOf_i5x0yv$;
   var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
   var toShort = Kotlin.toShort;
@@ -53,23 +73,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   var get_indices_0 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
   var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
-  var ArrayListSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer;
-  var UnknownFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException;
-  var SerialClassDescImpl = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.SerialClassDescImpl;
-  var SerialId = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId;
-  var KSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.KSerializer;
-  var MissingFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException;
-  var internal = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
   var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
-  var LinkedHashMapSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer;
   var removeAll = Kotlin.kotlin.collections.removeAll_uhyeqt$;
-  var L0 = Kotlin.Long.ZERO;
   var L1 = Kotlin.Long.ONE;
-  var round = Kotlin.kotlin.math.round_14dthe$;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
-  var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   LowPassFilter.prototype = Object.create(SampleNode.prototype);
   LowPassFilter.prototype.constructor = LowPassFilter;
@@ -153,10 +162,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   MutableVec4f.prototype.constructor = MutableVec4f;
   MutableVec4d.prototype = Object.create(Vec4d.prototype);
   MutableVec4d.prototype.constructor = MutableVec4d;
-  Box$ColVecView.prototype = Object.create(MutableVec3f.prototype);
-  Box$ColVecView.prototype.constructor = Box$ColVecView;
+  NodeDp.prototype = Object.create(Node.prototype);
+  NodeDp.prototype.constructor = NodeDp;
+  TransformGroupDp.prototype = Object.create(NodeDp.prototype);
+  TransformGroupDp.prototype.constructor = TransformGroupDp;
+  Globe.prototype = Object.create(TransformGroupDp.prototype);
+  Globe.prototype.constructor = Globe;
+  TileFrame.prototype = Object.create(TransformGroupDp.prototype);
+  TileFrame.prototype.constructor = TileFrame;
   Mesh.prototype = Object.create(Node.prototype);
   Mesh.prototype.constructor = Mesh;
+  TileMesh.prototype = Object.create(Mesh.prototype);
+  TileMesh.prototype.constructor = TileMesh;
+  OsmTexImageTileShaderProvider.prototype = Object.create(TexImageTileShaderProvider.prototype);
+  OsmTexImageTileShaderProvider.prototype.constructor = OsmTexImageTileShaderProvider;
+  Box$ColVecView.prototype = Object.create(MutableVec3f.prototype);
+  Box$ColVecView.prototype.constructor = Box$ColVecView;
   BoxMesh.prototype = Object.create(Mesh.prototype);
   BoxMesh.prototype.constructor = BoxMesh;
   MultiBoxMesh.prototype = Object.create(Mesh.prototype);
@@ -183,12 +204,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   PerspectiveCamera.prototype.constructor = PerspectiveCamera;
   DoublePrecisionRoot.prototype = Object.create(Node.prototype);
   DoublePrecisionRoot.prototype.constructor = DoublePrecisionRoot;
-  NodeDp.prototype = Object.create(Node.prototype);
-  NodeDp.prototype.constructor = NodeDp;
   NodeProxy.prototype = Object.create(NodeDp.prototype);
   NodeProxy.prototype.constructor = NodeProxy;
-  TransformGroupDp.prototype = Object.create(NodeDp.prototype);
-  TransformGroupDp.prototype.constructor = TransformGroupDp;
   Group.prototype = Object.create(Node.prototype);
   Group.prototype.constructor = Group;
   CullMethod.prototype = Object.create(Enum.prototype);
@@ -315,6 +332,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Color.prototype.constructor = Color;
   MutableColor.prototype = Object.create(Color.prototype);
   MutableColor.prototype.constructor = MutableColor;
+  Position.prototype = Object.create(Enum.prototype);
+  Position.prototype.constructor = Position;
   DeltaTGraph.prototype = Object.create(UiComponent.prototype);
   DeltaTGraph.prototype.constructor = DeltaTGraph;
   Font.prototype = Object.create(Texture.prototype);
@@ -353,8 +372,32 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Uint32BufferImpl.prototype.constructor = Uint32BufferImpl;
   Float32BufferImpl.prototype = Object.create(GenericBuffer.prototype);
   Float32BufferImpl.prototype.constructor = Float32BufferImpl;
-  function AssetManager() {
+  function AssetManager(assetsBaseDir) {
+    this.assetsBaseDir = assetsBaseDir;
   }
+  AssetManager.prototype.loadAsset_us385g$ = function (assetPath, onLoad) {
+    var tmp$;
+    if (this.isHttpAsset_61zpoe$(assetPath)) {
+      tmp$ = this.loadHttpAsset_us385g$(assetPath, onLoad);
+    }
+     else {
+      tmp$ = this.loadLocalAsset_us385g$(this.assetsBaseDir + '/' + assetPath, onLoad);
+    }
+    return tmp$;
+  };
+  AssetManager.prototype.loadTextureAsset_61zpoe$ = function (assetPath) {
+    var tmp$;
+    if (this.isHttpAsset_61zpoe$(assetPath)) {
+      tmp$ = this.loadHttpTexture_61zpoe$(assetPath);
+    }
+     else {
+      tmp$ = this.loadLocalTexture_61zpoe$(this.assetsBaseDir + '/' + assetPath);
+    }
+    return tmp$;
+  };
+  AssetManager.prototype.isHttpAsset_61zpoe$ = function (assetPath) {
+    return startsWith(assetPath, 'http://', true) || startsWith(assetPath, 'https://', true);
+  };
   AssetManager.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'AssetManager',
@@ -7551,67 +7594,2239 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'MemoryManager',
     interfaces: []
   };
-  function MvpState() {
-    this.projMatrix = new Mat4fStack();
-    this.projMatrixBuffer_tikfj5$_0 = createFloat32Buffer(16);
-    this.viewMatrix = new Mat4fStack();
-    this.viewMatrixBuffer_nu8w9l$_0 = createFloat32Buffer(16);
-    this.modelMatrix = new Mat4fStack();
-    this.modelMatrixBuffer_9b4lcl$_0 = createFloat32Buffer(16);
-    this.mvpMatrix = new Mat4f();
-    this.mvpMatrixBuffer_nw2k6l$_0 = createFloat32Buffer(16);
-    this.tempMatrix_0 = new Mat4f();
-    this.reset();
+  function BoundedElevationMap() {
   }
-  Object.defineProperty(MvpState.prototype, 'projMatrixBuffer', {
+  Object.defineProperty(BoundedElevationMap.prototype, 'centerLat', {
     get: function () {
-      this.projMatrix.toBuffer_he122g$(this.projMatrixBuffer_tikfj5$_0);
-      return this.projMatrixBuffer_tikfj5$_0;
+      return (this.north + this.south) / 2.0;
     }
   });
-  Object.defineProperty(MvpState.prototype, 'viewMatrixBuffer', {
+  Object.defineProperty(BoundedElevationMap.prototype, 'centerLon', {
     get: function () {
-      this.viewMatrix.toBuffer_he122g$(this.viewMatrixBuffer_nu8w9l$_0);
-      return this.viewMatrixBuffer_nu8w9l$_0;
+      return (this.east + this.west) / 2.0;
     }
   });
-  Object.defineProperty(MvpState.prototype, 'modelMatrixBuffer', {
-    get: function () {
-      this.modelMatrix.toBuffer_he122g$(this.modelMatrixBuffer_9b4lcl$_0);
-      return this.modelMatrixBuffer_9b4lcl$_0;
-    }
-  });
-  Object.defineProperty(MvpState.prototype, 'mvpMatrixBuffer', {
-    get: function () {
-      this.mvpMatrix.toBuffer_he122g$(this.mvpMatrixBuffer_nw2k6l$_0);
-      return this.mvpMatrixBuffer_nw2k6l$_0;
-    }
-  });
-  MvpState.prototype.reset = function () {
-    this.projMatrix.reset();
-    this.viewMatrix.reset();
-    this.modelMatrix.reset();
-    this.mvpMatrix.setIdentity();
+  BoundedElevationMap.prototype.contains_lu1900$ = function (lat, lon) {
+    return rangeTo(this.south - FUZZY_EQ_F, this.north + FUZZY_EQ_F).contains_mef7kx$(lat) && rangeTo(this.west - FUZZY_EQ_F, this.east + FUZZY_EQ_F).contains_mef7kx$(lon);
   };
-  MvpState.prototype.pushMatrices = function () {
-    this.projMatrix.push();
-    this.viewMatrix.push();
-    this.modelMatrix.push();
+  BoundedElevationMap.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'BoundedElevationMap',
+    interfaces: [ElevationMap]
   };
-  MvpState.prototype.popMatrices = function () {
-    this.projMatrix.pop();
-    this.viewMatrix.pop();
-    this.modelMatrix.pop();
-  };
-  MvpState.prototype.update_aemszp$ = function (ctx) {
-    var tmp$;
-    this.projMatrix.mul_93v2ma$(this.viewMatrix.mul_93v2ma$(this.modelMatrix, this.tempMatrix_0), this.mvpMatrix);
-    (tmp$ = ctx.shaderMgr.boundShader) != null ? (tmp$.onMatrixUpdate_aemszp$(ctx), Unit) : null;
-  };
-  MvpState.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MvpState',
+  function ElevationMapProvider() {
+  }
+  ElevationMapProvider.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'ElevationMapProvider',
     interfaces: []
+  };
+  function ElevationMap() {
+  }
+  ElevationMap.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'ElevationMap',
+    interfaces: []
+  };
+  function NullElevationMap() {
+    this.isAvailable_yiqgjj$_0 = true;
+    this.meta_ga7kfj$_0 = null;
+  }
+  Object.defineProperty(NullElevationMap.prototype, 'isAvailable', {
+    get: function () {
+      return this.isAvailable_yiqgjj$_0;
+    }
+  });
+  Object.defineProperty(NullElevationMap.prototype, 'meta', {
+    get: function () {
+      return this.meta_ga7kfj$_0;
+    }
+  });
+  NullElevationMap.prototype.getElevationMapAt_yvo9jy$ = function (lat, lon, resolution) {
+    return this;
+  };
+  NullElevationMap.prototype.contains_lu1900$ = function (lat, lon) {
+    return true;
+  };
+  NullElevationMap.prototype.getElevationAt_lu1900$ = function (lat, lon) {
+    return 0.0;
+  };
+  NullElevationMap.prototype.getNormalAt_bwm9xi$ = function (lat, lon, result) {
+    return result.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS);
+  };
+  NullElevationMap.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'NullElevationMap',
+    interfaces: [ElevationMap, ElevationMapProvider]
+  };
+  function ElevationMapMeta(name, format, attr, width, height, north, south, east, west, scaleX, scaleY, scaleZ) {
+    ElevationMapMeta$Companion_getInstance();
+    this.name = name;
+    this.format = format;
+    this.attr = attr;
+    this.width = width;
+    this.height = height;
+    this.north = north;
+    this.south = south;
+    this.east = east;
+    this.west = west;
+    this.scaleX = scaleX;
+    this.scaleY = scaleY;
+    this.scaleZ = scaleZ;
+  }
+  Object.defineProperty(ElevationMapMeta.prototype, 'resolutionLat', {
+    get: function () {
+      return (this.north - this.south) * 3600.0 / this.height;
+    }
+  });
+  Object.defineProperty(ElevationMapMeta.prototype, 'resolutionLon', {
+    get: function () {
+      return (this.east - this.west) * 3600.0 / this.height;
+    }
+  });
+  ElevationMapMeta.prototype.contains_lu1900$ = function (lat, lon) {
+    return rangeTo(this.south - this.scaleY, this.north + this.scaleY).contains_mef7kx$(lat) && rangeTo(this.west - this.scaleX, this.east + this.scaleX).contains_mef7kx$(lon);
+  };
+  function ElevationMapMeta$Companion() {
+    ElevationMapMeta$Companion_instance = this;
+  }
+  ElevationMapMeta$Companion.prototype.serializer = function () {
+    return ElevationMapMeta$$serializer_getInstance();
+  };
+  ElevationMapMeta$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var ElevationMapMeta$Companion_instance = null;
+  function ElevationMapMeta$Companion_getInstance() {
+    if (ElevationMapMeta$Companion_instance === null) {
+      new ElevationMapMeta$Companion();
+    }
+    return ElevationMapMeta$Companion_instance;
+  }
+  function ElevationMapMeta$$serializer() {
+    this.serialClassDesc_88tcrf$_0 = new SerialClassDescImpl('de.fabmax.kool.modules.globe.elevation.ElevationMapMeta');
+    this.serialClassDesc.addElement_61zpoe$('name');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
+    this.serialClassDesc.addElement_61zpoe$('format');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
+    this.serialClassDesc.addElement_61zpoe$('attr');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
+    this.serialClassDesc.addElement_61zpoe$('width');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
+    this.serialClassDesc.addElement_61zpoe$('height');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
+    this.serialClassDesc.addElement_61zpoe$('north');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(6));
+    this.serialClassDesc.addElement_61zpoe$('south');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(7));
+    this.serialClassDesc.addElement_61zpoe$('east');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(8));
+    this.serialClassDesc.addElement_61zpoe$('west');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(9));
+    this.serialClassDesc.addElement_61zpoe$('scaleX');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(10));
+    this.serialClassDesc.addElement_61zpoe$('scaleY');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(11));
+    this.serialClassDesc.addElement_61zpoe$('scaleZ');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(12));
+    ElevationMapMeta$$serializer_instance = this;
+  }
+  Object.defineProperty(ElevationMapMeta$$serializer.prototype, 'serialClassDesc', {
+    get: function () {
+      return this.serialClassDesc_88tcrf$_0;
+    }
+  });
+  ElevationMapMeta$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
+    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
+    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
+    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 1, obj.format);
+    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 2, obj.attr);
+    output.writeIntElementValue_j8ubi9$(this.serialClassDesc, 3, obj.width);
+    output.writeIntElementValue_j8ubi9$(this.serialClassDesc, 4, obj.height);
+    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 5, obj.north);
+    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 6, obj.south);
+    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 7, obj.east);
+    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 8, obj.west);
+    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 9, obj.scaleX);
+    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 10, obj.scaleY);
+    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 11, obj.scaleZ);
+    output.writeEnd_f6e2p$(this.serialClassDesc);
+  };
+  ElevationMapMeta$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+    var index, readAll = false;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3
+    , local4
+    , local5
+    , local6
+    , local7
+    , local8
+    , local9
+    , local10
+    , local11;
+    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    loopLabel: while (true) {
+      index = input.readElement_f6e2p$(this.serialClassDesc);
+      switch (index) {
+        case -2:
+          readAll = true;
+        case 0:
+          local0 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 0);
+          bitMask0 |= 1;
+          if (!readAll)
+            break;
+        case 1:
+          local1 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 1);
+          bitMask0 |= 2;
+          if (!readAll)
+            break;
+        case 2:
+          local2 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 2);
+          bitMask0 |= 4;
+          if (!readAll)
+            break;
+        case 3:
+          local3 = input.readIntElementValue_xvmgof$(this.serialClassDesc, 3);
+          bitMask0 |= 8;
+          if (!readAll)
+            break;
+        case 4:
+          local4 = input.readIntElementValue_xvmgof$(this.serialClassDesc, 4);
+          bitMask0 |= 16;
+          if (!readAll)
+            break;
+        case 5:
+          local5 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 5);
+          bitMask0 |= 32;
+          if (!readAll)
+            break;
+        case 6:
+          local6 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 6);
+          bitMask0 |= 64;
+          if (!readAll)
+            break;
+        case 7:
+          local7 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 7);
+          bitMask0 |= 128;
+          if (!readAll)
+            break;
+        case 8:
+          local8 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 8);
+          bitMask0 |= 256;
+          if (!readAll)
+            break;
+        case 9:
+          local9 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 9);
+          bitMask0 |= 512;
+          if (!readAll)
+            break;
+        case 10:
+          local10 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 10);
+          bitMask0 |= 1024;
+          if (!readAll)
+            break;
+        case 11:
+          local11 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 11);
+          bitMask0 |= 2048;
+          if (!readAll)
+            break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.readEnd_f6e2p$(this.serialClassDesc);
+    return ElevationMapMeta_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, null);
+  };
+  ElevationMapMeta$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [KSerializer]
+  };
+  var ElevationMapMeta$$serializer_instance = null;
+  function ElevationMapMeta$$serializer_getInstance() {
+    if (ElevationMapMeta$$serializer_instance === null) {
+      new ElevationMapMeta$$serializer();
+    }
+    return ElevationMapMeta$$serializer_instance;
+  }
+  function ElevationMapMeta_init(seen, name, format, attr, width, height, north, south, east, west, scaleX, scaleY, scaleZ, serializationConstructorMarker) {
+    var $this = Object.create(ElevationMapMeta.prototype);
+    if ((seen & 1) === 0)
+      throw new MissingFieldException('name');
+    else
+      $this.name = name;
+    if ((seen & 2) === 0)
+      throw new MissingFieldException('format');
+    else
+      $this.format = format;
+    if ((seen & 4) === 0)
+      throw new MissingFieldException('attr');
+    else
+      $this.attr = attr;
+    if ((seen & 8) === 0)
+      throw new MissingFieldException('width');
+    else
+      $this.width = width;
+    if ((seen & 16) === 0)
+      throw new MissingFieldException('height');
+    else
+      $this.height = height;
+    if ((seen & 32) === 0)
+      throw new MissingFieldException('north');
+    else
+      $this.north = north;
+    if ((seen & 64) === 0)
+      throw new MissingFieldException('south');
+    else
+      $this.south = south;
+    if ((seen & 128) === 0)
+      throw new MissingFieldException('east');
+    else
+      $this.east = east;
+    if ((seen & 256) === 0)
+      throw new MissingFieldException('west');
+    else
+      $this.west = west;
+    if ((seen & 512) === 0)
+      throw new MissingFieldException('scaleX');
+    else
+      $this.scaleX = scaleX;
+    if ((seen & 1024) === 0)
+      throw new MissingFieldException('scaleY');
+    else
+      $this.scaleY = scaleY;
+    if ((seen & 2048) === 0)
+      throw new MissingFieldException('scaleZ');
+    else
+      $this.scaleZ = scaleZ;
+    return $this;
+  }
+  ElevationMapMeta.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ElevationMapMeta',
+    interfaces: []
+  };
+  ElevationMapMeta.prototype.component1 = function () {
+    return this.name;
+  };
+  ElevationMapMeta.prototype.component2 = function () {
+    return this.format;
+  };
+  ElevationMapMeta.prototype.component3 = function () {
+    return this.attr;
+  };
+  ElevationMapMeta.prototype.component4 = function () {
+    return this.width;
+  };
+  ElevationMapMeta.prototype.component5 = function () {
+    return this.height;
+  };
+  ElevationMapMeta.prototype.component6 = function () {
+    return this.north;
+  };
+  ElevationMapMeta.prototype.component7 = function () {
+    return this.south;
+  };
+  ElevationMapMeta.prototype.component8 = function () {
+    return this.east;
+  };
+  ElevationMapMeta.prototype.component9 = function () {
+    return this.west;
+  };
+  ElevationMapMeta.prototype.component10 = function () {
+    return this.scaleX;
+  };
+  ElevationMapMeta.prototype.component11 = function () {
+    return this.scaleY;
+  };
+  ElevationMapMeta.prototype.component12 = function () {
+    return this.scaleZ;
+  };
+  ElevationMapMeta.prototype.copy_uodd0g$ = function (name, format, attr, width, height, north, south, east, west, scaleX, scaleY, scaleZ) {
+    return new ElevationMapMeta(name === void 0 ? this.name : name, format === void 0 ? this.format : format, attr === void 0 ? this.attr : attr, width === void 0 ? this.width : width, height === void 0 ? this.height : height, north === void 0 ? this.north : north, south === void 0 ? this.south : south, east === void 0 ? this.east : east, west === void 0 ? this.west : west, scaleX === void 0 ? this.scaleX : scaleX, scaleY === void 0 ? this.scaleY : scaleY, scaleZ === void 0 ? this.scaleZ : scaleZ);
+  };
+  ElevationMapMeta.prototype.toString = function () {
+    return 'ElevationMapMeta(name=' + Kotlin.toString(this.name) + (', format=' + Kotlin.toString(this.format)) + (', attr=' + Kotlin.toString(this.attr)) + (', width=' + Kotlin.toString(this.width)) + (', height=' + Kotlin.toString(this.height)) + (', north=' + Kotlin.toString(this.north)) + (', south=' + Kotlin.toString(this.south)) + (', east=' + Kotlin.toString(this.east)) + (', west=' + Kotlin.toString(this.west)) + (', scaleX=' + Kotlin.toString(this.scaleX)) + (', scaleY=' + Kotlin.toString(this.scaleY)) + (', scaleZ=' + Kotlin.toString(this.scaleZ)) + ')';
+  };
+  ElevationMapMeta.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    result = result * 31 + Kotlin.hashCode(this.format) | 0;
+    result = result * 31 + Kotlin.hashCode(this.attr) | 0;
+    result = result * 31 + Kotlin.hashCode(this.width) | 0;
+    result = result * 31 + Kotlin.hashCode(this.height) | 0;
+    result = result * 31 + Kotlin.hashCode(this.north) | 0;
+    result = result * 31 + Kotlin.hashCode(this.south) | 0;
+    result = result * 31 + Kotlin.hashCode(this.east) | 0;
+    result = result * 31 + Kotlin.hashCode(this.west) | 0;
+    result = result * 31 + Kotlin.hashCode(this.scaleX) | 0;
+    result = result * 31 + Kotlin.hashCode(this.scaleY) | 0;
+    result = result * 31 + Kotlin.hashCode(this.scaleZ) | 0;
+    return result;
+  };
+  ElevationMapMeta.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.format, other.format) && Kotlin.equals(this.attr, other.attr) && Kotlin.equals(this.width, other.width) && Kotlin.equals(this.height, other.height) && Kotlin.equals(this.north, other.north) && Kotlin.equals(this.south, other.south) && Kotlin.equals(this.east, other.east) && Kotlin.equals(this.west, other.west) && Kotlin.equals(this.scaleX, other.scaleX) && Kotlin.equals(this.scaleY, other.scaleY) && Kotlin.equals(this.scaleZ, other.scaleZ)))));
+  };
+  function ElevationMapMetaHierarchy(maps) {
+    ElevationMapMetaHierarchy$Companion_getInstance();
+    this.maps = maps;
+  }
+  function ElevationMapMetaHierarchy$Companion() {
+    ElevationMapMetaHierarchy$Companion_instance = this;
+  }
+  ElevationMapMetaHierarchy$Companion.prototype.serializer = function () {
+    return ElevationMapMetaHierarchy$$serializer_getInstance();
+  };
+  ElevationMapMetaHierarchy$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var ElevationMapMetaHierarchy$Companion_instance = null;
+  function ElevationMapMetaHierarchy$Companion_getInstance() {
+    if (ElevationMapMetaHierarchy$Companion_instance === null) {
+      new ElevationMapMetaHierarchy$Companion();
+    }
+    return ElevationMapMetaHierarchy$Companion_instance;
+  }
+  function ElevationMapMetaHierarchy$$serializer() {
+    this.serialClassDesc_v702nw$_0 = new SerialClassDescImpl('de.fabmax.kool.modules.globe.elevation.ElevationMapMetaHierarchy');
+    this.serialClassDesc.addElement_61zpoe$('maps');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
+    ElevationMapMetaHierarchy$$serializer_instance = this;
+  }
+  Object.defineProperty(ElevationMapMetaHierarchy$$serializer.prototype, 'serialClassDesc', {
+    get: function () {
+      return this.serialClassDesc_v702nw$_0;
+    }
+  });
+  ElevationMapMetaHierarchy$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
+    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance())), obj.maps);
+    output.writeEnd_f6e2p$(this.serialClassDesc);
+  };
+  ElevationMapMetaHierarchy$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+    var index, readAll = false;
+    var bitMask0 = 0;
+    var local0;
+    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    loopLabel: while (true) {
+      index = input.readElement_f6e2p$(this.serialClassDesc);
+      switch (index) {
+        case -2:
+          readAll = true;
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance()))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance())), local0);
+          bitMask0 |= 1;
+          if (!readAll)
+            break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.readEnd_f6e2p$(this.serialClassDesc);
+    return ElevationMapMetaHierarchy_init(bitMask0, local0, null);
+  };
+  ElevationMapMetaHierarchy$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [KSerializer]
+  };
+  var ElevationMapMetaHierarchy$$serializer_instance = null;
+  function ElevationMapMetaHierarchy$$serializer_getInstance() {
+    if (ElevationMapMetaHierarchy$$serializer_instance === null) {
+      new ElevationMapMetaHierarchy$$serializer();
+    }
+    return ElevationMapMetaHierarchy$$serializer_instance;
+  }
+  function ElevationMapMetaHierarchy_init(seen, maps, serializationConstructorMarker) {
+    var $this = Object.create(ElevationMapMetaHierarchy.prototype);
+    if ((seen & 1) === 0)
+      throw new MissingFieldException('maps');
+    else
+      $this.maps = maps;
+    return $this;
+  }
+  ElevationMapMetaHierarchy.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ElevationMapMetaHierarchy',
+    interfaces: []
+  };
+  ElevationMapMetaHierarchy.prototype.component1 = function () {
+    return this.maps;
+  };
+  ElevationMapMetaHierarchy.prototype.copy_vy0oiy$ = function (maps) {
+    return new ElevationMapMetaHierarchy(maps === void 0 ? this.maps : maps);
+  };
+  ElevationMapMetaHierarchy.prototype.toString = function () {
+    return 'ElevationMapMetaHierarchy(maps=' + Kotlin.toString(this.maps) + ')';
+  };
+  ElevationMapMetaHierarchy.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.maps) | 0;
+    return result;
+  };
+  ElevationMapMetaHierarchy.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && Kotlin.equals(this.maps, other.maps))));
+  };
+  function loadElevationMap(baseDir, meta, assetMgr) {
+    var tmp$;
+    if (equals(meta.format, 'png_s16_rg'))
+      tmp$ = loadPngS16ElevationMap(baseDir, meta, assetMgr);
+    else
+      throw new NotImplementedError('Unknown format ' + meta.format);
+    return tmp$;
+  }
+  var sortWith = Kotlin.kotlin.collections.sortWith_nqfjgj$;
+  var compareBy$lambda = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  var Comparator = Kotlin.kotlin.Comparator;
+  function Comparator$ObjectLiteral(closure$comparison) {
+    this.closure$comparison = closure$comparison;
+  }
+  Comparator$ObjectLiteral.prototype.compare = function (a, b) {
+    return this.closure$comparison(a, b);
+  };
+  Comparator$ObjectLiteral.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  function ElevationMapHierarchy(baseDir, metaHierarchy, assetMgr) {
+    this.baseDir_0 = baseDir;
+    this.assetMgr_0 = assetMgr;
+    this.sets_0 = ArrayList_init();
+    this.loadedMaps_0 = new LoadedMapCache(64);
+    var tmp$;
+    tmp$ = metaHierarchy.maps.entries.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var resolution = element.key;
+      var metas = element.value;
+      var $receiver = this.sets_0;
+      var element_0 = new ElevationMapHierarchy$ResolutionSet(resolution, new ElevationMapSet(metas));
+      $receiver.add_11rb$(element_0);
+    }
+    var $receiver_0 = this.sets_0;
+    if ($receiver_0.size > 1) {
+      sortWith($receiver_0, new Comparator$ObjectLiteral(compareBy$lambda(ElevationMapHierarchy_init$lambda)));
+    }
+    var $this = package$util.Log;
+    var level = Log$Level.DEBUG;
+    var tag = Kotlin.getKClassFromExpression(this).simpleName;
+    if (level.level >= $this.level.level) {
+      $this.printer(level, tag, 'taking elevation data from: ' + this.baseDir_0);
+    }
+  }
+  ElevationMapHierarchy.prototype.getElevationMapAt_yvo9jy$ = function (lat, lon, resolution) {
+    var tmp$;
+    var bestSet = first(this.sets_0);
+    tmp$ = this.sets_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      if (this.sets_0.get_za3lpa$(i).resolution < resolution) {
+        bestSet = this.sets_0.get_za3lpa$(i);
+      }
+       else {
+        break;
+      }
+    }
+    var meta = bestSet.set.getMetaAt_lu1900$(lat, lon);
+    if (meta != null) {
+      return this.loadedMaps_0.getOrLoad_jn660e$(this.baseDir_0, meta, this.assetMgr_0);
+    }
+    return null;
+  };
+  function ElevationMapHierarchy$ResolutionSet(resolution, set) {
+    this.resolution = resolution;
+    this.set = set;
+  }
+  ElevationMapHierarchy$ResolutionSet.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ResolutionSet',
+    interfaces: []
+  };
+  ElevationMapHierarchy$ResolutionSet.prototype.component1 = function () {
+    return this.resolution;
+  };
+  ElevationMapHierarchy$ResolutionSet.prototype.component2 = function () {
+    return this.set;
+  };
+  ElevationMapHierarchy$ResolutionSet.prototype.copy_kymqdt$ = function (resolution, set) {
+    return new ElevationMapHierarchy$ResolutionSet(resolution === void 0 ? this.resolution : resolution, set === void 0 ? this.set : set);
+  };
+  ElevationMapHierarchy$ResolutionSet.prototype.toString = function () {
+    return 'ResolutionSet(resolution=' + Kotlin.toString(this.resolution) + (', set=' + Kotlin.toString(this.set)) + ')';
+  };
+  ElevationMapHierarchy$ResolutionSet.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.resolution) | 0;
+    result = result * 31 + Kotlin.hashCode(this.set) | 0;
+    return result;
+  };
+  ElevationMapHierarchy$ResolutionSet.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.resolution, other.resolution) && Kotlin.equals(this.set, other.set)))));
+  };
+  function ElevationMapHierarchy_init$lambda(it) {
+    return it.resolution;
+  }
+  ElevationMapHierarchy.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ElevationMapHierarchy',
+    interfaces: [ElevationMapProvider]
+  };
+  function ElevationMapS16(data, meta) {
+    ElevationMapS16$Companion_getInstance();
+    this.data = data;
+    this.meta_hkqm5a$_0 = meta;
+    this.isAvailable_uxhgmq$_0 = true;
+    this.dx_0 = 0;
+    this.dy_0 = 0;
+    this.pixelScaleInv_0 = MutableVec2d_init();
+    var dLat = (this.meta.north - this.meta.south) / this.meta.height;
+    var dLon = (this.meta.east - this.meta.west) / this.meta.width;
+    var x = dLat * package$math.DEG_2_RAD;
+    this.dy_0 = Math_0.sin(x) * ElevationMapS16$Companion_getInstance().EARTH_RADIUS;
+    var x_0 = dLon * package$math.DEG_2_RAD;
+    var tmp$ = Math_0.sin(x_0);
+    var x_1 = (this.meta.north + this.meta.south) * package$math.DEG_2_RAD / 2.0;
+    this.dx_0 = tmp$ * Math_0.cos(x_1) * ElevationMapS16$Companion_getInstance().EARTH_RADIUS;
+    this.pixelScaleInv_0.set_lu1900$(1.0 / this.meta.scaleX, 1.0 / this.meta.scaleY);
+  }
+  Object.defineProperty(ElevationMapS16.prototype, 'meta', {
+    get: function () {
+      return this.meta_hkqm5a$_0;
+    }
+  });
+  Object.defineProperty(ElevationMapS16.prototype, 'west', {
+    get: function () {
+      return this.meta.west;
+    }
+  });
+  Object.defineProperty(ElevationMapS16.prototype, 'east', {
+    get: function () {
+      return this.meta.east;
+    }
+  });
+  Object.defineProperty(ElevationMapS16.prototype, 'south', {
+    get: function () {
+      return this.meta.south;
+    }
+  });
+  Object.defineProperty(ElevationMapS16.prototype, 'north', {
+    get: function () {
+      return this.meta.north;
+    }
+  });
+  Object.defineProperty(ElevationMapS16.prototype, 'isAvailable', {
+    get: function () {
+      return this.isAvailable_uxhgmq$_0;
+    }
+  });
+  ElevationMapS16.prototype.getElevationAt_lu1900$ = function (lat, lon) {
+    var tmp$;
+    if (!this.contains_lu1900$(lat, lon)) {
+      tmp$ = 0.0;
+    }
+     else {
+      var x = (lon - this.meta.west) * this.pixelScaleInv_0.x;
+      var wx = 1.0 - x % 1.0;
+      var y = (lat - this.meta.south) * this.pixelScaleInv_0.y;
+      var wy = 1.0 - y % 1.0;
+      var h00 = this.get_vux9f0$(numberToInt(x), this.meta.height - 1 - numberToInt(y) | 0) * this.meta.scaleZ;
+      var h01 = this.get_vux9f0$(numberToInt(x) + 1 | 0, this.meta.height - 1 - numberToInt(y) | 0) * this.meta.scaleZ;
+      var h10 = this.get_vux9f0$(numberToInt(x), this.meta.height - 2 - numberToInt(y) | 0) * this.meta.scaleZ;
+      var h11 = this.get_vux9f0$(numberToInt(x) + 1 | 0, this.meta.height - 2 - numberToInt(y) | 0) * this.meta.scaleZ;
+      var h = (h00 * wx + h01 * (1 - wx)) * wy + (h10 * wx + h11 * (1 - wx)) * (1 - wy);
+      tmp$ = h;
+    }
+    return tmp$;
+  };
+  ElevationMapS16.prototype.getNormalAt_bwm9xi$ = function (lat, lon, result) {
+    if (!this.contains_lu1900$(lat, lon)) {
+      result.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS);
+    }
+     else {
+      var x = numberToInt((lon - this.meta.west) * this.pixelScaleInv_0.x);
+      var y = numberToInt((lat - this.meta.south) * this.pixelScaleInv_0.y);
+      var h = this.get_vux9f0$(x, y);
+      result.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+      if (x > 0) {
+        result.z = result.z + 1.0;
+        result.x = result.x + (this.get_vux9f0$(x - 1 | 0, this.meta.height - 1 - y | 0) - h) / this.dx_0 * this.meta.scaleZ;
+      }
+      if (x < (this.meta.width - 1 | 0)) {
+        result.z = result.z + 1.0;
+        result.x = result.x - (this.get_vux9f0$(x + 1 | 0, this.meta.height - 1 - y | 0) - h) / this.dx_0 * this.meta.scaleZ;
+      }
+      if (y > 0) {
+        result.z = result.z + 1.0;
+        result.y = result.y - (this.get_vux9f0$(x, this.meta.height - 2 - y | 0) - h) / this.dx_0 * this.meta.scaleZ;
+      }
+      if (y < (this.meta.height - 1 | 0)) {
+        result.z = result.z + 1.0;
+        result.y = result.y + (this.get_vux9f0$(x, this.meta.height - y | 0) - h) / this.dx_0 * this.meta.scaleZ;
+      }
+      result.norm();
+    }
+    return result;
+  };
+  ElevationMapS16.prototype.get_vux9f0$ = function (x, y) {
+    var tmp$ = this.data;
+    var max = this.meta.width - 1 | 0;
+    var clamp$result;
+    if (x < 0) {
+      clamp$result = 0;
+    }
+     else if (x > max) {
+      clamp$result = max;
+    }
+     else {
+      clamp$result = x;
+    }
+    var tmp$_0 = clamp$result;
+    var tmp$_1 = this.meta.width;
+    var max_0 = this.meta.height - 1 | 0;
+    var clamp$result_0;
+    if (y < 0) {
+      clamp$result_0 = 0;
+    }
+     else if (y > max_0) {
+      clamp$result_0 = max_0;
+    }
+     else {
+      clamp$result_0 = y;
+    }
+    return tmp$[tmp$_0 + Kotlin.imul(tmp$_1, clamp$result_0) | 0];
+  };
+  function ElevationMapS16$Companion() {
+    ElevationMapS16$Companion_instance = this;
+    this.EARTH_RADIUS = 6371000.8;
+  }
+  ElevationMapS16$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var ElevationMapS16$Companion_instance = null;
+  function ElevationMapS16$Companion_getInstance() {
+    if (ElevationMapS16$Companion_instance === null) {
+      new ElevationMapS16$Companion();
+    }
+    return ElevationMapS16$Companion_instance;
+  }
+  ElevationMapS16.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ElevationMapS16',
+    interfaces: [BoundedElevationMap]
+  };
+  function ElevationMapSet(metas) {
+    ElevationMapSet$Companion_getInstance();
+    this.subMaps = LinkedHashMap_init();
+    this.tileDegX_0 = 0.0;
+    this.tileDegY_0 = 0.0;
+    var tmp$;
+    tmp$ = metas.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var math = _.de.fabmax.kool.math;
+      var Math_0 = Math;
+      if (this.tileDegX_0 === 0.0) {
+        this.tileDegX_0 = element.east - element.west;
+      }
+       else {
+        var a = this.tileDegX_0;
+        var b = element.east - element.west;
+        var eps;
+        eps = math.FUZZY_EQ_D;
+        var $receiver = a - b;
+        if (!(Math_0.abs($receiver) <= eps)) {
+          throw RuntimeException_init('All tiles in set must be of equal size [' + element.name + ': ' + (element.east - element.west) + ' != ' + this.tileDegX_0 + ']');
+        }
+      }
+      if (this.tileDegY_0 === 0.0) {
+        this.tileDegY_0 = element.north - element.south;
+      }
+       else {
+        var a_0 = this.tileDegY_0;
+        var b_0 = element.north - element.south;
+        var eps_0;
+        eps_0 = math.FUZZY_EQ_D;
+        var $receiver_0 = a_0 - b_0;
+        if (!(Math_0.abs($receiver_0) <= eps_0)) {
+          throw RuntimeException_init('All tiles in set must be of equal size [' + element.name + ': ' + (element.north - element.south) + ' != ' + this.tileDegY_0 + ']');
+        }
+      }
+      var x = ElevationMapSet$Companion_getInstance().lonToX_lu1900$((element.west + element.east) / 2.0, this.tileDegX_0);
+      var y = ElevationMapSet$Companion_getInstance().latToY_lu1900$((element.south + element.north) / 2.0, this.tileDegY_0);
+      var $receiver_1 = this.subMaps;
+      var key = ElevationMapSet$Companion_getInstance().xyToKey_vux9f0$(x, y);
+      $receiver_1.put_xwzc9p$(key, element);
+    }
+  }
+  ElevationMapSet.prototype.getMetaAt_lu1900$ = function (lat, lon) {
+    var tmp$;
+    var tmp$_0;
+    if ((tmp$ = this.getMetaAt_vux9f0$(ElevationMapSet$Companion_getInstance().lonToX_lu1900$(lon, this.tileDegX_0), ElevationMapSet$Companion_getInstance().latToY_lu1900$(lat, this.tileDegY_0))) != null) {
+      if (!tmp$.contains_lu1900$(lat, lon)) {
+        println("map doesn't contain lat/lon!");
+      }
+      tmp$_0 = tmp$;
+    }
+     else
+      tmp$_0 = null;
+    return tmp$_0;
+  };
+  ElevationMapSet.prototype.getMetaAt_vux9f0$ = function (x, y) {
+    return this.subMaps.get_11rb$(ElevationMapSet$Companion_getInstance().xyToKey_vux9f0$(x, y));
+  };
+  function ElevationMapSet$Companion() {
+    ElevationMapSet$Companion_instance = this;
+  }
+  ElevationMapSet$Companion.prototype.lonToX_lu1900$ = function (lon, tileDegX) {
+    var x = (lon + 180.0) / tileDegX;
+    return numberToInt(Math_0.floor(x));
+  };
+  ElevationMapSet$Companion.prototype.latToY_lu1900$ = function (lat, tileDegY) {
+    var x = (lat + 90.0) / tileDegY;
+    return numberToInt(Math_0.floor(x));
+  };
+  ElevationMapSet$Companion.prototype.xyToKey_vux9f0$ = function (x, y) {
+    return y << 16 | x;
+  };
+  ElevationMapSet$Companion.prototype.keyToX_za3lpa$ = function (key) {
+    return key & 65535;
+  };
+  ElevationMapSet$Companion.prototype.keyToY_za3lpa$ = function (key) {
+    return key >> 16;
+  };
+  ElevationMapSet$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var ElevationMapSet$Companion_instance = null;
+  function ElevationMapSet$Companion_getInstance() {
+    if (ElevationMapSet$Companion_instance === null) {
+      new ElevationMapSet$Companion();
+    }
+    return ElevationMapSet$Companion_instance;
+  }
+  ElevationMapSet.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ElevationMapSet',
+    interfaces: []
+  };
+  function LoadedMapCache(maxMaps) {
+    this.maxMaps_0 = maxMaps;
+    this.loadedMaps_0 = LinkedHashMap_init();
+    this.useCnt_0 = L0;
+  }
+  function LoadedMapCache$getOrLoad$lambda(it) {
+    return it.lastUsed;
+  }
+  var sortedWith = Kotlin.kotlin.collections.sortedWith_eknfly$;
+  var compareBy$lambda_0 = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  function Comparator$ObjectLiteral_0(closure$comparison) {
+    this.closure$comparison = closure$comparison;
+  }
+  Comparator$ObjectLiteral_0.prototype.compare = function (a, b) {
+    return this.closure$comparison(a, b);
+  };
+  Comparator$ObjectLiteral_0.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  LoadedMapCache.prototype.getOrLoad_jn660e$ = function (baseDir, meta, assetMgr) {
+    var $receiver = this.loadedMaps_0;
+    var key = meta.name;
+    var tmp$;
+    var value = $receiver.get_11rb$(key);
+    if (value == null) {
+      var answer = new LoadedMapCache$LoadedMap(L0, meta.name, loadElevationMap(baseDir, meta, assetMgr));
+      $receiver.put_xwzc9p$(key, answer);
+      tmp$ = answer;
+    }
+     else {
+      tmp$ = value;
+    }
+    var loaded = tmp$;
+    loaded.lastUsed = (this.useCnt_0 = this.useCnt_0.inc(), this.useCnt_0);
+    if (this.loadedMaps_0.size > this.maxMaps_0) {
+      if (this.loadedMaps_0.size > this.maxMaps_0) {
+        var remCnt = this.loadedMaps_0.size - this.maxMaps_0 | 0;
+        var sorted = sortedWith(this.loadedMaps_0.values, new Comparator$ObjectLiteral_0(compareBy$lambda_0(LoadedMapCache$getOrLoad$lambda)));
+        for (var i = 0; i <= remCnt; i++) {
+          var $receiver_0 = this.loadedMaps_0;
+          var key_0 = sorted.get_za3lpa$(i).key;
+          $receiver_0.remove_11rb$(key_0);
+        }
+      }
+    }
+    return loaded.map;
+  };
+  function LoadedMapCache$LoadedMap(lastUsed, key, map) {
+    this.lastUsed = lastUsed;
+    this.key = key;
+    this.map = map;
+  }
+  LoadedMapCache$LoadedMap.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LoadedMap',
+    interfaces: []
+  };
+  LoadedMapCache$LoadedMap.prototype.component1 = function () {
+    return this.lastUsed;
+  };
+  LoadedMapCache$LoadedMap.prototype.component2 = function () {
+    return this.key;
+  };
+  LoadedMapCache$LoadedMap.prototype.component3 = function () {
+    return this.map;
+  };
+  LoadedMapCache$LoadedMap.prototype.copy_ub8cls$ = function (lastUsed, key, map) {
+    return new LoadedMapCache$LoadedMap(lastUsed === void 0 ? this.lastUsed : lastUsed, key === void 0 ? this.key : key, map === void 0 ? this.map : map);
+  };
+  LoadedMapCache$LoadedMap.prototype.toString = function () {
+    return 'LoadedMap(lastUsed=' + Kotlin.toString(this.lastUsed) + (', key=' + Kotlin.toString(this.key)) + (', map=' + Kotlin.toString(this.map)) + ')';
+  };
+  LoadedMapCache$LoadedMap.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.lastUsed) | 0;
+    result = result * 31 + Kotlin.hashCode(this.key) | 0;
+    result = result * 31 + Kotlin.hashCode(this.map) | 0;
+    return result;
+  };
+  LoadedMapCache$LoadedMap.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.lastUsed, other.lastUsed) && Kotlin.equals(this.key, other.key) && Kotlin.equals(this.map, other.map)))));
+  };
+  LoadedMapCache.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LoadedMapCache',
+    interfaces: []
+  };
+  function Globe(radius, name) {
+    Globe$Companion_getInstance();
+    if (name === void 0)
+      name = null;
+    TransformGroupDp.call(this, name);
+    this.radius = radius;
+    this.meterPerPxLvl0 = 156000.0;
+    this.frameZoomLvl = 11;
+    this.frameZoomThresh = 14;
+    this.centerLat_ikjcua$_0 = 0.0;
+    this.centerLon_ikjn2u$_0 = 0.0;
+    this.cameraHeight_vk4iv0$_0 = 0.0;
+    this.tileManager = new TileManager(this);
+    this.elevationMapProvider = new NullElevationMap();
+    this.meshGenerator = new GridTileMeshGenerator();
+    this.meshDetailLevel = 5;
+    this.tileShaderProvider = new OsmTexImageTileShaderProvider();
+    this.tileFrames_0 = LinkedHashMap_init();
+    this.zoomGroups_0 = ArrayList_init();
+    this.removeTiles_0 = ArrayList_init();
+    this.camPosition_0 = MutableVec3f_init();
+    this.camDirection_0 = MutableVec3f_init();
+    this.prevCamHeight_0 = 0.0;
+    this.prevLat_0 = 0.0;
+    this.prevLon_0 = 0.0;
+    this.tmpVec_0 = MutableVec3f_init();
+    var tmp$, tmp$_0;
+    this.translate_yvo9jy$(0.0, 0.0, -this.radius);
+    tmp$ = this.tileManager.minZoomLvl;
+    tmp$_0 = this.frameZoomThresh;
+    for (var i = tmp$; i <= tmp$_0; i++) {
+      var grp = new Group();
+      this.zoomGroups_0.add_11rb$(grp);
+      this.unaryPlus_uv0sim$(grp);
+    }
+  }
+  Object.defineProperty(Globe.prototype, 'minZoomLvl', {
+    get: function () {
+      return this.tileManager.minZoomLvl;
+    }
+  });
+  Object.defineProperty(Globe.prototype, 'maxZoomLvl', {
+    get: function () {
+      return this.tileManager.maxZoomLvl;
+    }
+  });
+  Object.defineProperty(Globe.prototype, 'centerLat', {
+    get: function () {
+      return this.centerLat_ikjcua$_0;
+    },
+    set: function (centerLat) {
+      this.centerLat_ikjcua$_0 = centerLat;
+    }
+  });
+  Object.defineProperty(Globe.prototype, 'centerLon', {
+    get: function () {
+      return this.centerLon_ikjn2u$_0;
+    },
+    set: function (centerLon) {
+      this.centerLon_ikjn2u$_0 = centerLon;
+    }
+  });
+  Object.defineProperty(Globe.prototype, 'cameraHeight', {
+    get: function () {
+      return this.cameraHeight_vk4iv0$_0;
+    },
+    set: function (cameraHeight) {
+      this.cameraHeight_vk4iv0$_0 = cameraHeight;
+    }
+  });
+  Globe.prototype.preRenderDp_oxz17o$ = function (ctx, modelMatDp) {
+    var tmp$, tmp$_0, tmp$_1;
+    TileMesh$Companion_getInstance().prepareDefaultTex_aemszp$(ctx);
+    var cam = (tmp$ = this.scene) != null ? tmp$.camera : null;
+    if (cam != null && Kotlin.isType(cam, PerspectiveCamera)) {
+      this.toGlobalCoords_w1lst9$(this.tmpVec_0.set_czzhiu$(Vec3f$Companion_getInstance().ZERO));
+      this.tmpVec_0.subtract_czzhiu$(cam.globalPos);
+      this.cameraHeight = this.tmpVec_0.length() - this.radius;
+      var camDist = cam.globalPos.length();
+      this.camPosition_0.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS).scale_mx4ult$(camDist);
+      this.toLocalCoords_w1lst9$(this.camPosition_0);
+      this.camPosition_0.norm_5s4mqq$(this.camDirection_0);
+      cam.clipNear = camDist * 0.05;
+      cam.clipFar = camDist * 10.0;
+      if (camDist > this.prevCamHeight_0) {
+        tmp$_0 = this.prevCamHeight_0 / camDist;
+      }
+       else {
+        tmp$_0 = camDist / this.prevCamHeight_0;
+      }
+      var dh = tmp$_0;
+      this.prevCamHeight_0 = camDist;
+      var tmp$_2 = math.PI * 0.5;
+      var x = this.camDirection_0.y;
+      var $receiver = tmp$_2 - Math_0.acos(x);
+      var min = -Globe$Companion_getInstance().RAD_85_0;
+      var max = Globe$Companion_getInstance().RAD_85_0;
+      var clamp$result;
+      if ($receiver < min) {
+        clamp$result = min;
+      }
+       else if ($receiver > max) {
+        clamp$result = max;
+      }
+       else {
+        clamp$result = $receiver;
+      }
+      var lat = clamp$result;
+      var y = this.camDirection_0.x;
+      var x_0 = this.camDirection_0.z;
+      var lon = Math_0.atan2(y, x_0);
+      var tmp$_3 = dh < 0.99;
+      if (!tmp$_3) {
+        var x_1 = lat - this.prevLat_0;
+        tmp$_3 = Math_0.abs(x_1) > 1.0E-5;
+      }
+      var tmp$_4 = tmp$_3;
+      if (!tmp$_4) {
+        var x_2 = lon - this.prevLon_0;
+        tmp$_4 = Math_0.abs(x_2) > 1.0E-5;
+      }
+      var isMoving = tmp$_4;
+      this.prevLat_0 = lat;
+      this.prevLon_0 = lon;
+      this.centerLat = lat * package$math.RAD_2_DEG;
+      this.centerLon = lon * package$math.RAD_2_DEG;
+      if ((tmp$_1 = this.elevationMapProvider.getElevationMapAt_yvo9jy$(this.centerLat, this.centerLon, 0.0)) != null) {
+        if (tmp$_1.isAvailable) {
+          this.cameraHeight = this.cameraHeight - tmp$_1.getElevationAt_lu1900$(this.centerLat, this.centerLon);
+        }
+      }
+      this.camDirection_0.scale_mx4ult$(this.radius);
+      var camHeight = this.camDirection_0.distance_czzhiu$(this.camPosition_0);
+      var x_3 = cam.fovy * package$math.DEG_2_RAD * 0.5;
+      var meterPerPx = camHeight * Math_0.tan(x_3) * 2.0 / (ctx.viewport.height * 96.0 / ctx.screenDpi);
+      var centerZoom = this.getBestZoom_0(meterPerPx, lat);
+      var newCenter = TileName$Companion_getInstance().forLatLon_syxxoe$(lat * package$math.RAD_2_DEG, lon * package$math.RAD_2_DEG, centerZoom);
+      this.tileManager.updateCenter_6i2c0k$(newCenter, isMoving, ctx);
+    }
+    this.tileManager.onPreRender_aemszp$(ctx);
+    if (!this.removeTiles_0.isEmpty()) {
+      var tmp$_5;
+      tmp$_5 = this.removeTiles_0.iterator();
+      while (tmp$_5.hasNext()) {
+        var element = tmp$_5.next();
+        if (element.isRemovable) {
+          this.tileManager.onTileDeleted_xadgus$(element);
+          this.deleteTile_0(element);
+          element.dispose_aemszp$(ctx);
+        }
+      }
+      this.removeTiles_0.clear();
+    }
+    TransformGroupDp.prototype.preRenderDp_oxz17o$.call(this, ctx, modelMatDp);
+  };
+  Globe.prototype.addTile_xadgus$ = function (mesh) {
+    var parentFrame = this.getTileFrame_xacwza$(mesh.tileName);
+    if (parentFrame != null) {
+      parentFrame.addTile_xadgus$(mesh);
+    }
+     else {
+      this.getZoomGroup_za3lpa$(mesh.tileName.zoom).plusAssign_f1kmr1$(mesh);
+    }
+  };
+  Globe.prototype.removeTile_xadgus$ = function (mesh) {
+    this.removeTiles_0.add_11rb$(mesh);
+  };
+  Globe.prototype.tileLoaded_xadgus$ = function (tileMesh) {
+    this.tileManager.onTileLoaded_xadgus$(tileMesh);
+  };
+  Globe.prototype.deleteTile_0 = function (tile) {
+    var frame = this.getTileFrame_xacwza$(tile.tileName);
+    if (frame != null) {
+      frame.removeTile_xadgus$(tile);
+      if (frame.tileCount === 0) {
+        this.tileFrames_0.remove_11rb$(frame.tileName.fusedKey);
+        this.minusAssign_v64n5s$(frame);
+      }
+    }
+     else {
+      this.getZoomGroup_za3lpa$(tile.tileName.zoom).removeNode_f1kmr1$(tile);
+    }
+  };
+  Globe.prototype.getBestZoom_0 = function (meterPerPx, lat) {
+    var x = this.meterPerPxLvl0 / meterPerPx * Math_0.cos(lat);
+    var $receiver = round(0.2 + Math_0.log2(x));
+    var min = this.minZoomLvl;
+    var max = this.maxZoomLvl;
+    var clamp$result;
+    if ($receiver < min) {
+      clamp$result = min;
+    }
+     else if ($receiver > max) {
+      clamp$result = max;
+    }
+     else {
+      clamp$result = $receiver;
+    }
+    return numberToInt(clamp$result);
+  };
+  Globe.prototype.getZoomGroup_za3lpa$ = function (level) {
+    return this.zoomGroups_0.get_za3lpa$(level - this.minZoomLvl | 0);
+  };
+  Globe.prototype.getTileFrame_xacwza$ = function (tileName) {
+    var tmp$;
+    if (tileName.zoom < this.frameZoomThresh) {
+      tmp$ = null;
+    }
+     else {
+      var div = 1 << tileName.zoom - this.frameZoomLvl;
+      var frameX = tileName.x / div | 0;
+      var frameY = tileName.y / div | 0;
+      var frameKey = TileName$Companion_getInstance().fuesdKey_qt1dr2$(frameX, frameY, this.frameZoomLvl);
+      var $receiver = this.tileFrames_0;
+      var tmp$_0;
+      var value = $receiver.get_11rb$(frameKey);
+      if (value == null) {
+        var frame = new TileFrame(new TileName(frameX, frameY, this.frameZoomLvl), this);
+        this.plusAssign_v64n5s$(frame);
+        var answer = frame;
+        $receiver.put_xwzc9p$(frameKey, answer);
+        tmp$_0 = answer;
+      }
+       else {
+        tmp$_0 = value;
+      }
+      tmp$ = tmp$_0;
+    }
+    return tmp$;
+  };
+  function Globe$Companion() {
+    Globe$Companion_instance = this;
+    this.RAD_85_0 = 85.0 * package$math.DEG_2_RAD;
+    this.ALLOWED_MESH_REFINEMENTS_PER_FRAME = 1;
+  }
+  Globe$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Globe$Companion_instance = null;
+  function Globe$Companion_getInstance() {
+    if (Globe$Companion_instance === null) {
+      new Globe$Companion();
+    }
+    return Globe$Companion_instance;
+  }
+  Globe.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Globe',
+    interfaces: [TransformGroupDp]
+  };
+  function GlobeDragHandler(globe) {
+    GlobeDragHandler$Companion_getInstance();
+    this.globe = globe;
+    this.steadyScreenPt_0 = MutableVec2f_init();
+    this.steadyScreenPtMode_0 = 0;
+    this.startTransform_0 = new Mat4d();
+    this.ptOrientation_0 = new Mat4d();
+    this.mouseRotationStart_0 = new Mat4d();
+    this.isDragging_0 = false;
+    this.pickRay_0 = new Ray();
+    this.tmpVec_0 = MutableVec3d_init();
+    this.tmpVecRt_0 = MutableVec3d_init();
+    this.tmpVecUp_0 = MutableVec3d_init();
+    this.tmpVecY_0 = MutableVec3d_init();
+    this.tmpVecf_0 = MutableVec3f_init();
+    this.tmpRayO_0 = MutableVec3d_init();
+    this.tmpRayL_0 = MutableVec3d_init();
+    this.globe.onPreRender.add_11rb$(GlobeDragHandler_init$lambda(this));
+  }
+  GlobeDragHandler.prototype.handleDrag_kin2e3$ = function (dragPtrs, ctx) {
+    if (dragPtrs.size === 1 && dragPtrs.get_za3lpa$(0).isInViewport_aemszp$(ctx)) {
+      var ptrX = dragPtrs.get_za3lpa$(0).x;
+      var ptrY = dragPtrs.get_za3lpa$(0).y;
+      if (dragPtrs.get_za3lpa$(0).isLeftButtonDown) {
+        this.steadyScreenPtMode_0 = 0;
+        if (dragPtrs.get_za3lpa$(0).isLeftButtonEvent) {
+          this.isDragging_0 = this.computePointOrientation_0(ptrX, ptrY, ctx);
+          this.ptOrientation_0.transpose_d4zu6l$(this.mouseRotationStart_0);
+          this.globe.getTransform_d4zu6l$(this.startTransform_0);
+        }
+         else if (this.isDragging_0) {
+          this.globe.set_d4zu6l$(this.startTransform_0);
+          var valid = this.computePointOrientation_0(ptrX, ptrY, ctx);
+          if (valid) {
+            this.ptOrientation_0.mul_d4zu6l$(this.mouseRotationStart_0);
+          }
+          this.globe.mul_d4zu6l$(this.ptOrientation_0);
+          this.isDragging_0 = valid;
+        }
+      }
+       else if (dragPtrs.get_za3lpa$(0).deltaScroll !== 0.0 || (dragPtrs.get_za3lpa$(0).isRightButtonEvent && dragPtrs.get_za3lpa$(0).isRightButtonDown)) {
+        if (this.steadyScreenPtMode_0 === 0 || ptrX !== this.steadyScreenPt_0.x || ptrY !== this.steadyScreenPt_0.y) {
+          this.setSteadyPoint_0(ptrX, ptrY);
+        }
+      }
+    }
+    return 0;
+  };
+  GlobeDragHandler.prototype.onPreRender_0 = function (ctx) {
+    if (this.steadyScreenPtMode_0 === 1 && this.computePointOrientation_0(this.steadyScreenPt_0.x, this.steadyScreenPt_0.y, ctx)) {
+      this.steadyScreenPtMode_0 = 2;
+      this.ptOrientation_0.transpose_d4zu6l$(this.mouseRotationStart_0);
+      this.globe.getTransform_d4zu6l$(this.startTransform_0);
+    }
+     else if (this.steadyScreenPtMode_0 === 2) {
+      this.globe.set_d4zu6l$(this.startTransform_0);
+      if (this.computePointOrientation_0(this.steadyScreenPt_0.x, this.steadyScreenPt_0.y, ctx)) {
+        this.ptOrientation_0.mul_d4zu6l$(this.mouseRotationStart_0);
+      }
+       else {
+        this.steadyScreenPtMode_0 = 0;
+      }
+      this.globe.mul_d4zu6l$(this.ptOrientation_0);
+    }
+  };
+  GlobeDragHandler.prototype.setSteadyPoint_0 = function (screenX, screenY) {
+    this.steadyScreenPt_0.set_dleff0$(screenX, screenY);
+    this.steadyScreenPtMode_0 = 1;
+  };
+  GlobeDragHandler.prototype.computePointOrientation_0 = function (screenX, screenY, ctx) {
+    var tmp$, tmp$_0;
+    if (((tmp$_0 = (tmp$ = this.globe.scene) != null ? tmp$.camera : null) != null ? tmp$_0.computePickRay_jker1g$(this.pickRay_0, screenX, screenY, ctx) : null) === true) {
+      this.pickRay_0.origin.toMutableVec3d_5s4mqs$(this.tmpRayO_0);
+      this.pickRay_0.direction.toMutableVec3d_5s4mqs$(this.tmpRayL_0);
+      this.globe.toLocalCoordsDp_j7uy7i$(this.tmpRayO_0, 1.0);
+      this.globe.toLocalCoordsDp_j7uy7i$(this.tmpRayL_0, 0.0);
+      this.globe.toLocalCoordsDp_j7uy7i$(this.tmpVecY_0.set_czzhiw$(Vec3d$Companion_getInstance().Y_AXIS), 0.0);
+      var ldo = this.tmpRayL_0.times_czzhiw$(this.tmpRayO_0);
+      var sqr = ldo * ldo - this.tmpRayO_0.sqrLength() + this.globe.radius * this.globe.radius;
+      if (sqr > 0) {
+        var d = -ldo - Math_0.sqrt(sqr);
+        this.tmpRayL_0.scale_b0flbq$(d, this.tmpVec_0).add_czzhiw$(this.tmpRayO_0);
+        this.tmpVec_0.norm();
+        if (this.tmpVec_0.isFuzzyEqual_6nz8ey$(this.tmpVecY_0)) {
+          return false;
+        }
+        this.tmpVecY_0.cross_vgki2o$(this.tmpVec_0, this.tmpVecRt_0).norm();
+        this.tmpVec_0.cross_vgki2o$(this.tmpVecRt_0, this.tmpVecUp_0);
+        this.ptOrientation_0.setColVec_umtdzk$(0, this.tmpVec_0, 0.0);
+        this.ptOrientation_0.setColVec_umtdzk$(1, this.tmpVecRt_0, 0.0);
+        this.ptOrientation_0.setColVec_umtdzk$(2, this.tmpVecUp_0, 0.0);
+        this.ptOrientation_0.setColVec_umtdzk$(3, Vec3d$Companion_getInstance().ZERO, 1.0);
+        return true;
+      }
+    }
+    return false;
+  };
+  function GlobeDragHandler$Companion() {
+    GlobeDragHandler$Companion_instance = this;
+    this.STEADY_SCREEN_PT_OFF_0 = 0;
+    this.STEADY_SCREEN_PT_INIT_0 = 1;
+    this.STEADY_SCREEN_PT_HOLD_0 = 2;
+  }
+  GlobeDragHandler$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var GlobeDragHandler$Companion_instance = null;
+  function GlobeDragHandler$Companion_getInstance() {
+    if (GlobeDragHandler$Companion_instance === null) {
+      new GlobeDragHandler$Companion();
+    }
+    return GlobeDragHandler$Companion_instance;
+  }
+  function GlobeDragHandler_init$lambda(this$GlobeDragHandler) {
+    return function ($receiver, it) {
+      this$GlobeDragHandler.onPreRender_0(it);
+      return Unit;
+    };
+  }
+  GlobeDragHandler.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GlobeDragHandler',
+    interfaces: [InputManager$DragHandler]
+  };
+  function TileFrame(tileName, globe) {
+    TransformGroupDp.call(this);
+    this.tileName = tileName;
+    this.globe_0 = globe;
+    this.zoomGroups = ArrayList_init();
+    this.tileCount_sswiux$_0 = 0;
+    var tmp$, tmp$_0;
+    this.rotate_5820x2$(this.tileName.lonCenter, Vec3d$Companion_getInstance().Y_AXIS);
+    this.rotate_5820x2$(90.0 - this.tileName.latCenter, Vec3d$Companion_getInstance().X_AXIS);
+    this.translate_yvo9jy$(0.0, this.globe_0.radius, 0.0);
+    this.checkInverse();
+    tmp$ = this.tileName.zoom;
+    tmp$_0 = this.globe_0.maxZoomLvl;
+    for (var i = tmp$; i <= tmp$_0; i++) {
+      var grp = new Group();
+      this.zoomGroups.add_11rb$(grp);
+      this.unaryPlus_uv0sim$(grp);
+    }
+  }
+  Object.defineProperty(TileFrame.prototype, 'transformToLocal', {
+    get: function () {
+      return this.invTransform;
+    }
+  });
+  Object.defineProperty(TileFrame.prototype, 'transformToGlobal', {
+    get: function () {
+      return this.transform;
+    }
+  });
+  Object.defineProperty(TileFrame.prototype, 'tileCount', {
+    get: function () {
+      return this.tileCount_sswiux$_0;
+    },
+    set: function (tileCount) {
+      this.tileCount_sswiux$_0 = tileCount;
+    }
+  });
+  TileFrame.prototype.addTile_xadgus$ = function (tile) {
+    this.getZoomGroup_0(tile.tileName.zoom).plusAssign_f1kmr1$(tile);
+    this.tileCount = this.tileCount + 1 | 0;
+  };
+  TileFrame.prototype.removeTile_xadgus$ = function (tile) {
+    this.getZoomGroup_0(tile.tileName.zoom).minusAssign_f1kmr1$(tile);
+    this.tileCount = this.tileCount - 1 | 0;
+  };
+  TileFrame.prototype.getZoomGroup_0 = function (level) {
+    return this.zoomGroups.get_za3lpa$(level - this.tileName.zoom | 0);
+  };
+  TileFrame.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TileFrame',
+    interfaces: [TransformGroupDp]
+  };
+  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
+  function TileManager(globe) {
+    this.globe = globe;
+    this.maxTiles = 300;
+    this.minZoomLvl = 3;
+    this.maxZoomLvl = 19;
+    this.tiles_0 = LinkedHashMap_init();
+    this.loadingTiles_0 = LinkedHashSet_init();
+    this.removingTiles_0 = LinkedHashMap_init();
+    this.center_0 = new TileName(0, 0, 1);
+  }
+  TileManager.prototype.onTileLoaded_xadgus$ = function (tile) {
+    var $receiver = this.loadingTiles_0;
+    var element = tile.key;
+    $receiver.remove_11rb$(element);
+    this.removeObsoleteTiles_0(tile);
+  };
+  TileManager.prototype.onTileDeleted_xadgus$ = function (tile) {
+    if (!tile.isRemovable) {
+      var $this = package$util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'removed non removable tile: ' + tile.tileName);
+      }
+    }
+    var $receiver = this.loadingTiles_0;
+    var element = tile.key;
+    $receiver.remove_11rb$(element);
+    var $receiver_0 = this.removingTiles_0;
+    var key = tile.key;
+    $receiver_0.remove_11rb$(key);
+    var $receiver_1 = this.tiles_0;
+    var key_0 = tile.key;
+    $receiver_1.remove_11rb$(key_0);
+  };
+  TileManager.prototype.onPreRender_aemszp$ = function (ctx) {
+    if (this.loadingTiles_0.isEmpty() && !this.removingTiles_0.isEmpty()) {
+      var tmp$;
+      tmp$ = this.removingTiles_0.values.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        this.globe.removeTile_xadgus$(element);
+      }
+      this.removingTiles_0.clear();
+      var tmp$_0;
+      tmp$_0 = this.tiles_0.values.iterator();
+      while (tmp$_0.hasNext()) {
+        var element_0 = tmp$_0.next();
+        element_0.isVisible = true;
+      }
+    }
+  };
+  TileManager.prototype.updateCenter_6i2c0k$ = function (newCenter, isMoving, ctx) {
+    if (!(newCenter != null ? newCenter.equals(this.center_0) : null) && (this.tiles_0.size < this.maxTiles || !isMoving)) {
+      this.center_0 = newCenter;
+      this.updateTiles_0(ctx);
+    }
+  };
+  TileManager.prototype.getCenterTile = function () {
+    return this.getTile_xacwza$(this.center_0);
+  };
+  TileManager.prototype.getTile_xacwza$ = function (tileName) {
+    return this.getTile_s8cxhz$(tileName.fusedKey);
+  };
+  TileManager.prototype.getTile_s8cxhz$ = function (key) {
+    return this.tiles_0.get_11rb$(key);
+  };
+  function TileManager$updateTiles$lambda(this$TileManager) {
+    return function (m) {
+      if (!m.isLoaded || !m.isCurrentlyVisible) {
+        return -kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
+      }
+       else {
+        var dx = m.tileName.lonCenter - this$TileManager.center_0.lonCenter;
+        var dy = m.tileName.latCenter - this$TileManager.center_0.latCenter;
+        return -(dx * dx + dy * dy);
+      }
+    };
+  }
+  var compareBy$lambda_1 = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  function Comparator$ObjectLiteral_1(closure$comparison) {
+    this.closure$comparison = closure$comparison;
+  }
+  Comparator$ObjectLiteral_1.prototype.compare = function (a, b) {
+    return this.closure$comparison(a, b);
+  };
+  Comparator$ObjectLiteral_1.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  TileManager.prototype.updateTiles_0 = function (ctx) {
+    var tmp$;
+    var newTiles = this.computeNeededTileList_0();
+    this.removingTiles_0.putAll_a2k3zr$(this.tiles_0);
+    for (var i = 0; i !== newTiles.size; ++i) {
+      var key = newTiles.get_za3lpa$(i);
+      this.removingTiles_0.remove_11rb$(key);
+      var existing = this.tiles_0.get_11rb$(key);
+      if (existing == null) {
+        var tile = new TileMesh(this.globe, TileName$Companion_getInstance().fromFusedKey_s8cxhz$(key), ctx);
+        this.loadingTiles_0.add_11rb$(key);
+        this.tiles_0.put_xwzc9p$(key, tile);
+        this.globe.addTile_xadgus$(tile);
+      }
+       else {
+        existing.isRemovable = false;
+      }
+    }
+    var tmp$_0;
+    tmp$_0 = this.removingTiles_0.values.iterator();
+    while (tmp$_0.hasNext()) {
+      var element = tmp$_0.next();
+      element.isRemovable = true;
+    }
+    var forceRemoveThresh = numberToInt(this.maxTiles * 1.5);
+    if (this.tiles_0.size > forceRemoveThresh) {
+      var $receiver = ArrayList_init();
+      $receiver.addAll_brywnq$(this.removingTiles_0.values);
+      var rmQueue = $receiver;
+      if (rmQueue.size > 1) {
+        sortWith(rmQueue, new Comparator$ObjectLiteral_1(compareBy$lambda_1(TileManager$updateTiles$lambda(this))));
+      }
+      tmp$ = this.tiles_0.size - forceRemoveThresh | 0;
+      for (var i_0 = 0; i_0 <= tmp$; i_0++) {
+        this.globe.removeTile_xadgus$(rmQueue.get_za3lpa$(i_0));
+      }
+    }
+  };
+  TileManager.prototype.computeNeededTileList_0 = function () {
+    var tileList = ArrayList_init();
+    var rng = 5;
+    var zoom = this.center_0.zoom;
+    var xStart = this.center_0.x - rng + 1 & -2;
+    var xEnd = (this.center_0.x + rng + 1 & -2) - 1 | 0;
+    var yStart = this.center_0.y - rng + 1 & -2;
+    var yEnd = (this.center_0.y + rng + 1 & -2) - 1 | 0;
+    this.addTilesWrappingX_0(xStart, xEnd, yStart, yEnd, zoom, tileList);
+    for (var i = 1; i <= 4; i++) {
+      zoom = zoom - 1 | 0;
+      if (zoom >= this.minZoomLvl) {
+        var xStShf = xStart >> 1;
+        var xEdShf = xEnd + 1 >> 1;
+        var yStShf = yStart >> 1;
+        var yEdShf = yEnd + 1 >> 1;
+        xStart = xStShf - 1 & -2;
+        xEnd = (xEdShf & -2) + 1 | 0;
+        yStart = yStShf - 1 & -2;
+        yEnd = (yEdShf & -2) + 1 | 0;
+        this.addTilesWrappingX_0(xStart, xStShf - 1 | 0, yStart, yEnd, zoom, tileList);
+        this.addTilesWrappingX_0(xEdShf, xEnd, yStart, yEnd, zoom, tileList);
+        this.addTilesWrappingX_0(xStShf, xEdShf - 1 | 0, yStart, yStShf - 1 | 0, zoom, tileList);
+        this.addTilesWrappingX_0(xStShf, xEdShf - 1 | 0, yEdShf, yEnd, zoom, tileList);
+      }
+       else {
+        break;
+      }
+    }
+    return tileList;
+  };
+  TileManager.prototype.addTilesWrappingX_0 = function (xStart, xEnd, yStart, yEnd, zoom, tiles) {
+    var size = 1 << zoom;
+    var ys = Math_0.max(0, yStart);
+    var a = size - 1 | 0;
+    var ye = Math_0.min(a, yEnd);
+    var tmp$ = Math_0.max(0, xStart);
+    var a_0 = size - 1 | 0;
+    this.addTiles_0(new IntRange(tmp$, Math_0.min(a_0, xEnd)), new IntRange(ys, ye), zoom, tiles);
+    if (xStart < 0 && xEnd < (size - 1 | 0)) {
+      var a_1 = size + xStart | 0;
+      this.addTiles_0(until(Math_0.max(a_1, xEnd), size), new IntRange(ys, ye), zoom, tiles);
+    }
+     else if (xStart > 0 && xEnd > (size - 1 | 0)) {
+      var b = xEnd - (size - 1) | 0;
+      this.addTiles_0(new IntRange(0, Math_0.min(xStart, b)), new IntRange(ys, ye), zoom, tiles);
+    }
+  };
+  TileManager.prototype.addTiles_0 = function (xRng, yRng, zoom, tiles) {
+    if ((xRng.last - xRng.first | 0) > 2 && (yRng.last - yRng.first | 0) > 2) {
+      this.addTilesCircular_0(xRng, yRng, zoom, tiles);
+    }
+     else {
+      this.addTilesRectRange_0(xRng, yRng, zoom, tiles);
+    }
+  };
+  TileManager.prototype.addTilesRectRange_0 = function (xRng, yRng, zoom, tiles) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
+    tmp$ = xRng.first;
+    tmp$_0 = xRng.last;
+    tmp$_1 = xRng.step;
+    for (var x = tmp$; x <= tmp$_0; x += tmp$_1) {
+      tmp$_2 = yRng.first;
+      tmp$_3 = yRng.last;
+      tmp$_4 = yRng.step;
+      for (var y = tmp$_2; y <= tmp$_3; y += tmp$_4) {
+        this.addTile_0(x, y, zoom, xRng, yRng, tiles);
+      }
+    }
+  };
+  TileManager.prototype.addTilesCircular_0 = function (xRng, yRng, zoom, tiles) {
+    var tmp$, tmp$_0;
+    var cx = xRng.first + ((xRng.last - xRng.first | 0) / 2 | 0) | 0;
+    var cy = yRng.first + ((yRng.last - yRng.first | 0) / 2 | 0) | 0;
+    var a = cx - xRng.first | 0;
+    var b = xRng.last - cx | 0;
+    var tmp$_1 = Math_0.max(a, b);
+    var a_0 = cy - yRng.first | 0;
+    var b_0 = yRng.last - cy | 0;
+    var b_1 = Math_0.max(a_0, b_0);
+    var r = Math_0.max(tmp$_1, b_1);
+    for (var i = 0; i <= r; i++) {
+      tmp$ = cx + i | 0;
+      for (var x = cx - i | 0; x <= tmp$; x++) {
+        this.addTile_0(x, cy - i | 0, zoom, xRng, yRng, tiles);
+        if (i > 0) {
+          this.addTile_0(x, cy + i | 0, zoom, xRng, yRng, tiles);
+        }
+      }
+      if (i > 0) {
+        tmp$_0 = cy + i | 0;
+        for (var y = cy - i + 1 | 0; y < tmp$_0; y++) {
+          this.addTile_0(cx - i | 0, y, zoom, xRng, yRng, tiles);
+          this.addTile_0(cx + i | 0, y, zoom, xRng, yRng, tiles);
+        }
+      }
+    }
+  };
+  TileManager.prototype.addTile_0 = function (x, y, zoom, xRng, yRng, tiles) {
+    if (xRng.contains_mef7kx$(x) && yRng.contains_mef7kx$(y)) {
+      var element = TileName$Companion_getInstance().fuesdKey_qt1dr2$(x, y, zoom);
+      tiles.add_11rb$(element);
+    }
+  };
+  TileManager.prototype.removeObsoleteTiles_0 = function (tile) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var makeVisible = true;
+    var it = this.removingTiles_0.values.iterator();
+    while (it.hasNext()) {
+      var mesh = it.next();
+      if (!mesh.isRemovable) {
+        var $this = package$util.Log;
+        var level = Log$Level.ERROR;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'mesh is not removable!');
+        }
+      }
+      if (mesh.tileName.isSubTileOf_xacwza$(tile.tileName)) {
+        this.globe.removeTile_xadgus$(mesh);
+        it.remove();
+      }
+       else if (tile.tileName.isSubTileOf_xacwza$(mesh.tileName)) {
+        var z = mesh.tileName.zoom + 1 | 0;
+        var subKey1 = TileName$Companion_getInstance().fuesdKey_qt1dr2$(mesh.tileName.x * 2 | 0, mesh.tileName.y * 2 | 0, z);
+        var subKey2 = TileName$Companion_getInstance().fuesdKey_qt1dr2$(mesh.tileName.x * 2 | 0, (mesh.tileName.y * 2 | 0) + 1 | 0, z);
+        var subKey3 = TileName$Companion_getInstance().fuesdKey_qt1dr2$((mesh.tileName.x * 2 | 0) + 1 | 0, mesh.tileName.y * 2 | 0, z);
+        var subKey4 = TileName$Companion_getInstance().fuesdKey_qt1dr2$((mesh.tileName.x * 2 | 0) + 1 | 0, (mesh.tileName.y * 2 | 0) + 1 | 0, z);
+        if (((tmp$ = this.tiles_0.get_11rb$(subKey1)) != null ? tmp$.isLoaded : null) === true && ((tmp$_0 = this.tiles_0.get_11rb$(subKey2)) != null ? tmp$_0.isLoaded : null) === true && ((tmp$_1 = this.tiles_0.get_11rb$(subKey3)) != null ? tmp$_1.isLoaded : null) === true && ((tmp$_2 = this.tiles_0.get_11rb$(subKey4)) != null ? tmp$_2.isLoaded : null) === true) {
+          this.globe.removeTile_xadgus$(mesh);
+          it.remove();
+          ensureNotNull(this.tiles_0.get_11rb$(subKey1)).isVisible = true;
+          ensureNotNull(this.tiles_0.get_11rb$(subKey2)).isVisible = true;
+          ensureNotNull(this.tiles_0.get_11rb$(subKey3)).isVisible = true;
+          ensureNotNull(this.tiles_0.get_11rb$(subKey4)).isVisible = true;
+        }
+         else {
+          makeVisible = false;
+        }
+      }
+    }
+    tile.isVisible = makeVisible;
+  };
+  TileManager.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TileManager',
+    interfaces: []
+  };
+  function TileMesh(globe, tileName, ctx) {
+    TileMesh$Companion_getInstance();
+    Mesh.call(this, MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().TEXTURE_COORDS]), tileName.toString());
+    this.globe = globe;
+    this.tileName = tileName;
+    this.tileShader_0 = null;
+    this.tileTex_0 = null;
+    this.createTime_0 = ctx.time;
+    this.generatorJob_0 = null;
+    this.isRemovable = false;
+    this.isLoaded_s14qev$_0 = false;
+    this.attributionInfo = LinkedHashSet_init();
+    var tmp$;
+    var provShader = this.globe.tileShaderProvider.getShader_wqbs4n$(this.tileName, ctx);
+    if (Kotlin.isType(provShader.shader, BasicShader)) {
+      tmp$ = provShader.shader.texture;
+    }
+     else {
+      tmp$ = null;
+    }
+    this.tileTex_0 = tmp$;
+    this.tileShader_0 = provShader.shader;
+    this.shader = this.tileShader_0;
+    var $receiver = this.attributionInfo;
+    var element = provShader.attribution;
+    $receiver.add_11rb$(element);
+    this.isVisible = false;
+    this.generatorJob_0 = launch(void 0, void 0, void 0, void 0, TileMesh_init$lambda(this));
+  }
+  Object.defineProperty(TileMesh.prototype, 'key', {
+    get: function () {
+      return this.tileName.fusedKey;
+    }
+  });
+  Object.defineProperty(TileMesh.prototype, 'isCurrentlyVisible', {
+    get: function () {
+      return this.isRendered;
+    }
+  });
+  Object.defineProperty(TileMesh.prototype, 'isLoaded', {
+    get: function () {
+      return this.isLoaded_s14qev$_0;
+    },
+    set: function (isLoaded) {
+      this.isLoaded_s14qev$_0 = isLoaded;
+    }
+  });
+  Object.defineProperty(TileMesh.prototype, 'isFallbackShader_0', {
+    get: function () {
+      return this.shader === TileMesh$Companion_getInstance().fallbackShader_0;
+    }
+  });
+  TileMesh.prototype.preRender_aemszp$ = function (ctx) {
+    var tmp$, tmp$_0, tmp$_1;
+    var tex = this.tileTex_0;
+    if (tex != null) {
+      if (((tmp$ = tex.res) != null ? tmp$.isLoaded : null) !== true) {
+        ctx.textureMgr.bindTexture_xyx3x4$(tex, ctx);
+      }
+       else if (this.isFallbackShader_0 && ((tmp$_0 = tex.res) != null ? tmp$_0.isLoaded : null) === true) {
+        this.shader = this.tileShader_0;
+      }
+    }
+    if (!this.generatorJob_0.isCompleted) {
+      return;
+    }
+     else if (this.meshData.vertexList.size === 0) {
+      var $this = package$util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'mesh is still empty');
+      }
+    }
+    if (!this.isLoaded && (((tmp$_1 = tex != null ? tex.res : null) != null ? tmp$_1.isLoaded : null) === true || this.isFallbackShader_0)) {
+      this.isLoaded = true;
+      this.globe.tileLoaded_xadgus$(this);
+    }
+    if (!this.isLoaded && ctx.time - this.createTime_0 > TileMesh$Companion_getInstance().TILE_TIMEOUT) {
+      this.shader = TileMesh$Companion_getInstance().getFallbackShader_0(ctx);
+    }
+    Mesh.prototype.preRender_aemszp$.call(this, ctx);
+  };
+  TileMesh.prototype.dispose_aemszp$ = function (ctx) {
+    this.shader = this.tileShader_0;
+    Mesh.prototype.dispose_aemszp$.call(this, ctx);
+  };
+  function TileMesh$AttributionInfo(text, url) {
+    this.text = text;
+    this.url = url;
+  }
+  TileMesh$AttributionInfo.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AttributionInfo',
+    interfaces: []
+  };
+  TileMesh$AttributionInfo.prototype.component1 = function () {
+    return this.text;
+  };
+  TileMesh$AttributionInfo.prototype.component2 = function () {
+    return this.url;
+  };
+  TileMesh$AttributionInfo.prototype.copy_jyasbz$ = function (text, url) {
+    return new TileMesh$AttributionInfo(text === void 0 ? this.text : text, url === void 0 ? this.url : url);
+  };
+  TileMesh$AttributionInfo.prototype.toString = function () {
+    return 'AttributionInfo(text=' + Kotlin.toString(this.text) + (', url=' + Kotlin.toString(this.url)) + ')';
+  };
+  TileMesh$AttributionInfo.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.text) | 0;
+    result = result * 31 + Kotlin.hashCode(this.url) | 0;
+    return result;
+  };
+  TileMesh$AttributionInfo.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.text, other.text) && Kotlin.equals(this.url, other.url)))));
+  };
+  function TileMesh$Companion() {
+    TileMesh$Companion_instance = this;
+    this.TILE_TIMEOUT = 3.0;
+    this.fallbackShader_0 = null;
+  }
+  function TileMesh$Companion$getFallbackShader$lambda(closure$ctx) {
+    return function ($receiver) {
+      $receiver.colorModel = ColorModel$TEXTURE_COLOR_getInstance();
+      $receiver.lightModel = LightModel$PHONG_LIGHTING_getInstance();
+      $receiver.specularIntensity = 0.25;
+      $receiver.shininess = 25.0;
+      $receiver.staticColor = Color$Companion_getInstance().LIGHT_GRAY;
+      $receiver.texture = assetTexture('tile_empty.png', closure$ctx, false);
+      return Unit;
+    };
+  }
+  TileMesh$Companion.prototype.getFallbackShader_0 = function (ctx) {
+    if (this.fallbackShader_0 == null) {
+      this.fallbackShader_0 = basicShader(TileMesh$Companion$getFallbackShader$lambda(ctx));
+    }
+    return ensureNotNull(this.fallbackShader_0);
+  };
+  TileMesh$Companion.prototype.prepareDefaultTex_aemszp$ = function (ctx) {
+    var tmp$;
+    var fbTex = this.getFallbackShader_0(ctx).texture;
+    if (fbTex != null && ((tmp$ = fbTex.res) != null ? tmp$.isLoaded : null) !== true) {
+      ctx.textureMgr.bindTexture_xyx3x4$(fbTex, ctx);
+    }
+  };
+  TileMesh$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var TileMesh$Companion_instance = null;
+  function TileMesh$Companion_getInstance() {
+    if (TileMesh$Companion_instance === null) {
+      new TileMesh$Companion();
+    }
+    return TileMesh$Companion_instance;
+  }
+  function TileMesh_init$lambda(this$TileMesh_0) {
+    return function ($receiver, continuation_0, suspended) {
+      var instance = new Coroutine$TileMesh_init$lambda(this$TileMesh_0, $receiver, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$TileMesh_init$lambda(this$TileMesh_0, $receiver, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$TileMesh = this$TileMesh_0;
+  }
+  Coroutine$TileMesh_init$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$TileMesh_init$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$TileMesh_init$lambda.prototype.constructor = Coroutine$TileMesh_init$lambda;
+  Coroutine$TileMesh_init$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$this$TileMesh.globe.meshGenerator.generateMesh_gyuwlq$(this.local$this$TileMesh.globe, this.local$this$TileMesh, this.local$this$TileMesh.globe.meshDetailLevel, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  TileMesh.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TileMesh',
+    interfaces: [Mesh]
+  };
+  function TileMeshGenerator() {
+  }
+  TileMeshGenerator.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'TileMeshGenerator',
+    interfaces: []
+  };
+  function GridTileMeshGenerator() {
+    GridTileMeshGenerator$Companion_getInstance();
+  }
+  GridTileMeshGenerator.prototype.getFrame_uewq6o$_0 = function (globe, tileName) {
+    var tmp$;
+    if (tileName.zoom < globe.frameZoomThresh) {
+      tmp$ = null;
+    }
+     else {
+      tmp$ = globe.getTileFrame_xacwza$(tileName);
+    }
+    return tmp$;
+  };
+  GridTileMeshGenerator.prototype.generateMesh_gyuwlq$ = function (globe_0, tileMesh_0, stepsLog2_0, continuation_0, suspended) {
+    var instance = new Coroutine$generateMesh_gyuwlq$(this, globe_0, tileMesh_0, stepsLog2_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  };
+  function Coroutine$generateMesh_gyuwlq$($this, globe_0, tileMesh_0, stepsLog2_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$frame = void 0;
+    this.local$builder = void 0;
+    this.local$steps = void 0;
+    this.local$zoomDiv = void 0;
+    this.local$heightResolution = void 0;
+    this.local$pos = void 0;
+    this.local$nrm = void 0;
+    this.local$posf = void 0;
+    this.local$map = void 0;
+    this.local$row = void 0;
+    this.local$latRad = void 0;
+    this.local$i = void 0;
+    this.local$lonRad = void 0;
+    this.local$lat = void 0;
+    this.local$lon = void 0;
+    this.local$tmp$ = void 0;
+    this.local$$receiver = void 0;
+    this.local$globe = globe_0;
+    this.local$tileMesh = tileMesh_0;
+    this.local$stepsLog2 = stepsLog2_0;
+  }
+  Coroutine$generateMesh_gyuwlq$.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$generateMesh_gyuwlq$.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$generateMesh_gyuwlq$.prototype.constructor = Coroutine$generateMesh_gyuwlq$;
+  Coroutine$generateMesh_gyuwlq$.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$, tmp$_0;
+            this.local$frame = this.$this.getFrame_uewq6o$_0(this.local$globe, this.local$tileMesh.tileName);
+            this.local$builder = new MeshBuilder(this.local$tileMesh.meshData);
+            this.local$tileMesh.meshData.isBatchUpdate = true;
+            this.local$steps = 1 << this.local$stepsLog2;
+            this.local$zoomDiv = 2 * math.PI / (1 << this.local$tileMesh.tileName.zoom + this.local$stepsLog2);
+            this.local$heightResolution = (this.local$tileMesh.tileName.latN - this.local$tileMesh.tileName.latS) / this.local$steps * 3600.0;
+            this.local$pos = MutableVec3d_init();
+            this.local$nrm = MutableVec3f_init();
+            this.local$posf = MutableVec3f_init();
+            this.local$map = null;
+            this.local$row = 0;
+            this.state_0 = 2;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            if (this.local$row > this.local$steps) {
+              this.state_0 = 12;
+              continue;
+            }
+
+            var tys = Kotlin.imul(this.local$tileMesh.tileName.y + 1 | 0, this.local$steps) - this.local$row | 0;
+            var x = math.PI - tys * this.local$zoomDiv;
+            var x_0 = Math_0.sinh(x);
+            this.local$latRad = Math_0.atan(x_0);
+            this.local$i = 0;
+            this.state_0 = 3;
+            continue;
+          case 3:
+            if (this.local$i > this.local$steps) {
+              this.state_0 = 9;
+              continue;
+            }
+
+            this.local$lonRad = (Kotlin.imul(this.local$tileMesh.tileName.x, this.local$steps) + this.local$i | 0) * this.local$zoomDiv - math.PI;
+            this.local$lat = this.local$latRad * package$math.RAD_2_DEG;
+            this.local$lon = this.local$lonRad * package$math.RAD_2_DEG;
+            if (this.local$map == null || !this.local$map.contains_lu1900$(this.local$lat, this.local$lon)) {
+              this.local$map = this.local$globe.elevationMapProvider.getElevationMapAt_yvo9jy$(this.local$lat, this.local$lon, this.local$heightResolution);
+              if ((tmp$ = this.local$map != null ? this.local$map.meta : null) != null) {
+                var $receiver = this.local$tileMesh.attributionInfo;
+                var element = new TileMesh$AttributionInfo('Elevation-Data: ' + tmp$.attr, null);
+                $receiver.add_11rb$(element);
+              }
+            }
+
+            if (this.local$map != null) {
+              this.local$$receiver = this.local$map;
+              this.state_0 = 4;
+              continue;
+            }
+             else {
+              this.local$tmp$ = null;
+              this.state_0 = 7;
+              continue;
+            }
+
+          case 4:
+            if (this.local$$receiver.isAvailable) {
+              this.state_0 = 6;
+              continue;
+            }
+
+            this.state_0 = 5;
+            this.result_0 = delay(50, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 5:
+            this.state_0 = 4;
+            continue;
+          case 6:
+            this.local$tmp$ = this.local$$receiver.getElevationAt_lu1900$(this.local$lat, this.local$lon);
+            this.state_0 = 7;
+            continue;
+          case 7:
+            var height = (tmp$_0 = this.local$tmp$) != null ? tmp$_0 : 0.0;
+            GridTileMeshGenerator$Companion_getInstance().latLonToCartesian_dp1656$(this.local$latRad, this.local$lonRad, this.local$globe.radius + height, this.local$pos);
+            if (this.local$frame != null) {
+              this.local$frame.transformToLocal.transform_j7uy7i$(this.local$pos, 1.0);
+            }
+
+            var uv = new Vec2f(this.local$i / this.local$steps, 1.0 - this.local$row / this.local$steps);
+            var iv = this.local$builder.vertex_n440gp$(this.local$pos.toMutableVec3f_5s4mqq$(this.local$posf), this.local$nrm, uv);
+            if (this.local$i > 0 && this.local$row > 0) {
+              this.local$tileMesh.meshData.addTriIndices_qt1dr2$(iv - this.local$steps - 2 | 0, iv, iv - 1 | 0);
+              this.local$tileMesh.meshData.addTriIndices_qt1dr2$(iv - this.local$steps - 2 | 0, iv - this.local$steps - 1 | 0, iv);
+            }
+
+            this.state_0 = 8;
+            continue;
+          case 8:
+            this.local$i++;
+            this.state_0 = 3;
+            continue;
+          case 9:
+            this.state_0 = 10;
+            this.result_0 = yield_0(this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 10:
+            this.state_0 = 11;
+            continue;
+          case 11:
+            this.local$row++;
+            this.state_0 = 2;
+            continue;
+          case 12:
+            this.local$tileMesh.meshData.generateNormals();
+            this.local$tileMesh.meshData.isBatchUpdate = false;
+            return;
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function GridTileMeshGenerator$Companion() {
+    GridTileMeshGenerator$Companion_instance = this;
+  }
+  GridTileMeshGenerator$Companion.prototype.latLonToCartesian_dp1656$ = function (latRad, lonRad, radius, result) {
+    var theta = math.PI * 0.5 - latRad;
+    result.x = Math_0.sin(theta) * Math_0.sin(lonRad) * radius;
+    result.z = Math_0.sin(theta) * Math_0.cos(lonRad) * radius;
+    result.y = Math_0.cos(theta) * radius;
+    return result;
+  };
+  GridTileMeshGenerator$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var GridTileMeshGenerator$Companion_instance = null;
+  function GridTileMeshGenerator$Companion_getInstance() {
+    if (GridTileMeshGenerator$Companion_instance === null) {
+      new GridTileMeshGenerator$Companion();
+    }
+    return GridTileMeshGenerator$Companion_instance;
+  }
+  GridTileMeshGenerator.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GridTileMeshGenerator',
+    interfaces: [TileMeshGenerator]
+  };
+  function TileName(x, y, zoom) {
+    TileName$Companion_getInstance();
+    this.x = x;
+    this.y = y;
+    this.zoom = zoom;
+    this.latN = 0;
+    this.latS = 0;
+    this.lonE = 0;
+    this.lonW = 0;
+    this.latCenter = 0;
+    this.lonCenter = 0;
+    this.fusedKey = TileName$Companion_getInstance().fuesdKey_qt1dr2$(this.x, this.y, this.zoom);
+    var zp = 1 << this.zoom;
+    var x_0 = math.PI - (this.y + 1 | 0) / (1 << this.zoom) * 2 * math.PI;
+    var x_1 = Math_0.sinh(x_0);
+    this.latS = Math_0.atan(x_1) * package$math.RAD_2_DEG;
+    this.lonW = (this.x + 1 | 0) / zp * 360.0 - 180.0;
+    var x_2 = math.PI - this.y / (1 << this.zoom) * 2 * math.PI;
+    var x_3 = Math_0.sinh(x_2);
+    this.latN = Math_0.atan(x_3) * package$math.RAD_2_DEG;
+    this.lonE = this.x / zp * 360.0 - 180.0;
+    this.latCenter = this.latS + (this.latN - this.latS) * 0.5;
+    this.lonCenter = this.lonE + (this.lonW - this.lonE) * 0.5;
+  }
+  TileName.prototype.isSubTileOf_xacwza$ = function (parent) {
+    var tmp$;
+    if (parent.zoom > this.zoom) {
+      tmp$ = false;
+    }
+     else {
+      var projX = this.x >> this.zoom - parent.zoom;
+      var projY = this.y >> this.zoom - parent.zoom;
+      tmp$ = (projX === parent.x && projY === parent.y);
+    }
+    return tmp$;
+  };
+  TileName.prototype.toString = function () {
+    return this.zoom.toString() + '/' + this.x + '/' + this.y;
+  };
+  TileName.prototype.equals = function (other) {
+    if (this === other)
+      return true;
+    if (!Kotlin.isType(other, TileName))
+      return false;
+    if (!equals(this.fusedKey, other.fusedKey))
+      return false;
+    return true;
+  };
+  TileName.prototype.hashCode = function () {
+    return hashCode(this.fusedKey);
+  };
+  function TileName$Companion() {
+    TileName$Companion_instance = this;
+  }
+  TileName$Companion.prototype.forLatLon_syxxoe$ = function (lat, lon, zoom) {
+    var latRad = lat * package$math.DEG_2_RAD;
+    var zp = 1 << zoom;
+    var $receiver = numberToInt((lon + 180.0) / 360 * zp);
+    var max = zp - 1 | 0;
+    var clamp$result;
+    if ($receiver < 0) {
+      clamp$result = 0;
+    }
+     else if ($receiver > max) {
+      clamp$result = max;
+    }
+     else {
+      clamp$result = $receiver;
+    }
+    var x = clamp$result;
+    var x_0 = Math_0.tan(latRad) + 1 / Math_0.cos(latRad);
+    var $receiver_0 = numberToInt((1 - Math_0.log(x_0) / math.PI) / 2 * zp);
+    var max_0 = zp - 1 | 0;
+    var clamp$result_0;
+    if ($receiver_0 < 0) {
+      clamp$result_0 = 0;
+    }
+     else if ($receiver_0 > max_0) {
+      clamp$result_0 = max_0;
+    }
+     else {
+      clamp$result_0 = $receiver_0;
+    }
+    var y = clamp$result_0;
+    return new TileName(x, y, zoom);
+  };
+  TileName$Companion.prototype.fuesdKey_qt1dr2$ = function (tx, ty, tz) {
+    return Kotlin.Long.fromInt(tz).shiftLeft(58).or(Kotlin.Long.fromInt(tx & 536870911).shiftLeft(29)).or(Kotlin.Long.fromInt(ty & 536870911));
+  };
+  TileName$Companion.prototype.fromFusedKey_s8cxhz$ = function (fusedKey) {
+    var zoom = fusedKey.shiftRight(58).toInt();
+    var x = fusedKey.shiftRight(29).and(L536870911).toInt();
+    var y = fusedKey.and(L536870911).toInt();
+    return new TileName(x, y, zoom);
+  };
+  TileName$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var TileName$Companion_instance = null;
+  function TileName$Companion_getInstance() {
+    if (TileName$Companion_instance === null) {
+      new TileName$Companion();
+    }
+    return TileName$Companion_instance;
+  }
+  TileName.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TileName',
+    interfaces: []
+  };
+  function TileShaderProvider() {
+  }
+  TileShaderProvider.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'TileShaderProvider',
+    interfaces: []
+  };
+  function TileShader(shader, attribution) {
+    this.shader = shader;
+    this.attribution = attribution;
+  }
+  TileShader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TileShader',
+    interfaces: []
+  };
+  function TexImageTileShaderProvider() {
+  }
+  function TexImageTileShaderProvider$getShader$lambda(closure$tileName, closure$ctx, this$TexImageTileShaderProvider) {
+    return function ($receiver) {
+      $receiver.colorModel = ColorModel$TEXTURE_COLOR_getInstance();
+      $receiver.lightModel = LightModel$PHONG_LIGHTING_getInstance();
+      $receiver.specularIntensity = 0.25;
+      $receiver.shininess = 25.0;
+      $receiver.texture = this$TexImageTileShaderProvider.getTexture_wqbs4n$(closure$tileName, closure$ctx);
+      return Unit;
+    };
+  }
+  TexImageTileShaderProvider.prototype.getShader_wqbs4n$ = function (tileName, ctx) {
+    var shader = basicShader(TexImageTileShaderProvider$getShader$lambda(tileName, ctx, this));
+    return new TileShader(shader, this.getAttributionInfo_xacwza$(tileName));
+  };
+  TexImageTileShaderProvider.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TexImageTileShaderProvider',
+    interfaces: [TileShaderProvider]
+  };
+  function OsmTexImageTileShaderProvider() {
+    TexImageTileShaderProvider.call(this);
+    this.tileUrls = mutableListOf(['a.tile.openstreetmap.org', 'b.tile.openstreetmap.org', 'c.tile.openstreetmap.org']);
+  }
+  OsmTexImageTileShaderProvider.prototype.getTexture_wqbs4n$ = function (tileName, ctx) {
+    var srvIdx = (tileName.x ^ tileName.y ^ tileName.zoom) % this.tileUrls.size;
+    return assetTexture('https://' + this.tileUrls.get_za3lpa$(srvIdx) + '/' + tileName.zoom + '/' + tileName.x + '/' + tileName.y + '.png', ctx);
+  };
+  OsmTexImageTileShaderProvider.prototype.getAttributionInfo_xacwza$ = function (tileName) {
+    return new TileMesh$AttributionInfo('Imagery: \xA9 OpenStreetMap', 'http://www.openstreetmap.org/copyright');
+  };
+  OsmTexImageTileShaderProvider.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'OsmTexImageTileShaderProvider',
+    interfaces: [TexImageTileShaderProvider]
   };
   function Box(sizeX, sizeY, sizeZ) {
     this.halfExtents = new Vec3f(sizeX * 0.5, sizeY * 0.5, sizeZ * 0.5);
@@ -7637,7 +9852,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.halfExtents.z;
     }
   });
-  Box.prototype.isIntersecting_rt5l8b$ = function (other) {
+  Box.prototype.isIntersecting_ywo8gk$ = function (other) {
     other.center.subtract_2gj7b4$(this.center, this.tmpD_0);
     var rX = this.halfExtents.x + other.halfExtents.x;
     var rY = this.halfExtents.y + other.halfExtents.y;
@@ -8020,9 +10235,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.quadPt_0 = MutableVec3f_init();
     this.tmpVec1_0 = MutableVec3f_init();
   }
-  BoxBoxCollision.prototype.testForCollision_2z91a7$ = function (bodyA, bodyB, result) {
+  BoxBoxCollision.prototype.testForCollision_yvmcey$ = function (bodyA, bodyB, result) {
     var tmp$;
-    var satAxis = this.satTest_0.performSat_7g8iic$(bodyA.shape, bodyB.shape);
+    var satAxis = this.satTest_0.performSat_jzlprg$(bodyA.shape, bodyB.shape);
     if (satAxis > 6)
       tmp$ = this.computeEdgeEdgeIntersection_0(bodyA, bodyB, satAxis, result);
     else if (satAxis > 0) {
@@ -8069,7 +10284,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     var ua = this.base_0(box1, (satAxis - 7 | 0) / 3 | 0);
     var ub = this.base_0(box2, (satAxis - 7 | 0) % 3);
     this.lineClosestApproach_0(this.pa_0, ua, this.pb_0, ub);
-    var c = result.addNewContact_311y5w$(bodyA, bodyB);
+    var c = result.addNewContact_jp95gs$(bodyA, bodyB);
     c.worldNormalOnB.set_czzhiu$(this.normal_0).scale_mx4ult$(-1.0);
     var $receiver = c.worldPosB;
     var element = result.newWorldPosVec_2qa7tb$(this.pb_0, -this.depth_0);
@@ -8168,7 +10383,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
         if ((tmp$ = cont.v) != null)
           tmp$_3 = tmp$;
         else {
-          var c = result.addNewContact_311y5w$(swapBodies ? bodyB : bodyA, swapBodies ? bodyA : bodyB);
+          var c = result.addNewContact_jp95gs$(swapBodies ? bodyB : bodyA, swapBodies ? bodyA : bodyB);
           cont.v = c;
           c.worldNormalOnB.set_czzhiu$(this.normal_0).scale_mx4ult$(-1.0);
           tmp$_3 = c;
@@ -8226,7 +10441,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.invertNormal_0 = false;
     this.code_0 = 0;
   }
-  BoxBoxCollision$SatTest.prototype.performSat_7g8iic$ = function (box1, box2) {
+  BoxBoxCollision$SatTest.prototype.performSat_jzlprg$ = function (box1, box2) {
     var tmp$;
     box2.center.subtract_2gj7b4$(box1.center, this.satP_0);
     transformTransposed(box1.transform, this.satPp_0.set_czzhiu$(this.satP_0));
@@ -8376,14 +10591,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       array_1[i_1] = MutableVec2f_init();
     }
     this.resultPoints = array_1;
-    this.resultPointCnt_9mnrgl$_0 = 0;
+    this.resultPointCnt_bnlmla$_0 = 0;
   }
   Object.defineProperty(BoxBoxCollision$QuadRectIntersector.prototype, 'resultPointCnt', {
     get: function () {
-      return this.resultPointCnt_9mnrgl$_0;
+      return this.resultPointCnt_bnlmla$_0;
     },
     set: function (resultPointCnt) {
-      this.resultPointCnt_9mnrgl$_0 = resultPointCnt;
+      this.resultPointCnt_bnlmla$_0 = resultPointCnt;
     }
   });
   BoxBoxCollision$QuadRectIntersector.prototype.intersectRectQuad2 = function () {
@@ -8467,9 +10682,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function Dbvt() {
     Dbvt$Companion_getInstance();
-    this.root_91uddb$_0 = null;
+    this.root_pbrg7c$_0 = null;
     this.lookAhead = -1;
-    this.leaves_agng8l$_0 = 0;
+    this.leaves_ofw18u$_0 = 0;
     this.opath_0 = 0;
     this.nodes_0 = ObjectRecycler_init(Dbvt$nodes$lambda);
     this.tmpVec_0 = MutableVec3f_init();
@@ -8478,18 +10693,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   Object.defineProperty(Dbvt.prototype, 'root', {
     get: function () {
-      return this.root_91uddb$_0;
+      return this.root_pbrg7c$_0;
     },
     set: function (root) {
-      this.root_91uddb$_0 = root;
+      this.root_pbrg7c$_0 = root;
     }
   });
   Object.defineProperty(Dbvt.prototype, 'leaves', {
     get: function () {
-      return this.leaves_agng8l$_0;
+      return this.leaves_ofw18u$_0;
     },
     set: function (leaves) {
-      this.leaves_agng8l$_0 = leaves;
+      this.leaves_ofw18u$_0 = leaves;
     }
   });
   Dbvt.prototype.clear = function () {
@@ -8506,12 +10721,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.leaves = this.leaves + 1 | 0;
     return leaf;
   };
-  Dbvt.prototype.remove_f1gn84$ = function (leaf) {
+  Dbvt.prototype.remove_3l3fal$ = function (leaf) {
     this.removeLeaf_0(leaf);
     this.deleteNode_0(leaf);
     this.leaves = this.leaves - 1 | 0;
   };
-  Dbvt.prototype.extractLeaves_85m6ik$ = function (leaves) {
+  Dbvt.prototype.extractLeaves_l4st19$ = function (leaves) {
     var tmp$;
     if ((tmp$ = this.root) != null) {
       this.extractLeaves_0(tmp$, leaves);
@@ -8547,12 +10762,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
           node = this.sort_0(node).getChild_kcn2v3$(this.opath_0 >> bit & 1);
           bit = bit + 1 & 31;
         }
-        this.update_3zdjt6$(node);
+        this.update_43dupb$(node);
         this.opath_0 = this.opath_0 + 1 | 0;
       }
     }
   };
-  Dbvt.prototype.update_3zdjt6$ = function (leaf, lookAhead) {
+  Dbvt.prototype.update_43dupb$ = function (leaf, lookAhead) {
     if (lookAhead === void 0)
       lookAhead = -1;
     var tmp$;
@@ -8573,7 +10788,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     this.insertLeaf_0(root, leaf);
   };
-  Dbvt.prototype.update_soehzg$ = function (leaf, volume) {
+  Dbvt.prototype.update_oiz9wb$ = function (leaf, volume) {
     var tmp$, tmp$_0;
     var root = this.removeLeaf_0(leaf);
     if (root != null) {
@@ -8594,28 +10809,28 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     leaf.volume.set_ea4od8$(volume);
     this.insertLeaf_0(root, leaf);
   };
-  Dbvt.prototype.update_o9c7j5$ = function (leaf, volume, velocity, margin) {
+  Dbvt.prototype.update_xxqp3s$ = function (leaf, volume, velocity, margin) {
     if (leaf.volume.isIncluding_ea4od8$(volume)) {
       return false;
     }
     volume.expand_czzhiu$(this.tmpVec_0.set_y2kzbl$(margin, margin, margin)).signedExpand_czzhiu$(velocity);
-    this.update_soehzg$(leaf, volume);
+    this.update_oiz9wb$(leaf, volume);
     return true;
   };
-  Dbvt.prototype.update_brm73e$ = function (leaf, volume, velocity) {
+  Dbvt.prototype.update_z4mtab$ = function (leaf, volume, velocity) {
     if (leaf.volume.isIncluding_ea4od8$(volume)) {
       return false;
     }
     volume.signedExpand_czzhiu$(velocity);
-    this.update_soehzg$(leaf, volume);
+    this.update_oiz9wb$(leaf, volume);
     return true;
   };
-  Dbvt.prototype.update_kqg8xr$ = function (leaf, volume, margin) {
+  Dbvt.prototype.update_ioke9y$ = function (leaf, volume, margin) {
     if (leaf.volume.isIncluding_ea4od8$(volume)) {
       return false;
     }
     volume.expand_czzhiu$(this.tmpVec_0.set_y2kzbl$(margin, margin, margin));
-    this.update_soehzg$(leaf, volume);
+    this.update_oiz9wb$(leaf, volume);
     return true;
   };
   Dbvt.prototype.sort_0 = function (n) {
@@ -8626,7 +10841,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var s = p.getChild_kcn2v3$(j);
       var q = p.parent;
       if (q != null) {
-        q.replaceChild_708qx5$(p, n);
+        q.replaceChild_lb1qxj$(p, n);
       }
        else {
         this.root = n;
@@ -8638,8 +10853,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       p.right = n.right;
       ensureNotNull(n.left).parent = p;
       ensureNotNull(n.right).parent = p;
-      n.setChild_jdhrhb$(i, p);
-      n.setChild_jdhrhb$(j, s);
+      n.setChild_tw79om$(i, p);
+      n.setChild_tw79om$(j, s);
       this.tmpVolume_0.set_ea4od8$(p.volume);
       p.volume.set_ea4od8$(n.volume);
       n.volume.set_ea4od8$(this.tmpVolume_0);
@@ -8660,7 +10875,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       var prev = rt.parent;
       var node = {v: this.createNode_1(prev, leaf.volume, rt.volume, null)};
       if (prev != null) {
-        prev.replaceChild_708qx5$(rt, node.v);
+        prev.replaceChild_lb1qxj$(rt, node.v);
         var tmp$ = node.v;
         var $receiver = rt;
         $receiver.parent = node.v;
@@ -8700,9 +10915,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
      else {
       var parent = ensureNotNull(leaf.parent);
       var prev = parent.parent;
-      var sibling = parent.sibling_bydhpt$(leaf);
+      var sibling = parent.sibling_mb5tva$(leaf);
       if (prev != null) {
-        prev.replaceChild_708qx5$(parent, sibling);
+        prev.replaceChild_lb1qxj$(parent, sibling);
         sibling.parent = prev;
         this.deleteNode_0(parent);
         while (prev != null) {
@@ -8945,24 +11160,24 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.parent = null;
     this.volume = new BoundingBox();
     this.data = null;
-    this.left_eik42c$_0 = null;
-    this.right_kw5twb$_0 = null;
+    this.left_r0omq5$_0 = null;
+    this.right_homfge$_0 = null;
     this.id_8be2vx$ = Dbvt$DbvtNode$Companion_getInstance().nextId_0();
   }
   Object.defineProperty(Dbvt$DbvtNode.prototype, 'left', {
     get: function () {
-      return this.left_eik42c$_0;
+      return this.left_r0omq5$_0;
     },
     set: function (left) {
-      this.left_eik42c$_0 = left;
+      this.left_r0omq5$_0 = left;
     }
   });
   Object.defineProperty(Dbvt$DbvtNode.prototype, 'right', {
     get: function () {
-      return this.right_kw5twb$_0;
+      return this.right_homfge$_0;
     },
     set: function (right) {
-      this.right_kw5twb$_0 = right;
+      this.right_homfge$_0 = right;
     }
   });
   Object.defineProperty(Dbvt$DbvtNode.prototype, 'isLeaf', {
@@ -8976,7 +11191,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     else
       return ensureNotNull(this.right);
   };
-  Dbvt$DbvtNode.prototype.setChild_jdhrhb$ = function (i, c) {
+  Dbvt$DbvtNode.prototype.setChild_tw79om$ = function (i, c) {
     if (i === 0)
       this.left = c;
     else
@@ -8990,7 +11205,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return 1;
     }
   };
-  Dbvt$DbvtNode.prototype.replaceChild_708qx5$ = function (existing, new_0) {
+  Dbvt$DbvtNode.prototype.replaceChild_lb1qxj$ = function (existing, new_0) {
     if (existing === this.left) {
       this.left = new_0;
     }
@@ -9024,7 +11239,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return tmp$;
   };
-  Dbvt$DbvtNode.prototype.sibling_bydhpt$ = function (child) {
+  Dbvt$DbvtNode.prototype.sibling_mb5tva$ = function (child) {
     var tmp$;
     if (child === this.left) {
       tmp$ = ensureNotNull(this.right);
@@ -9097,30 +11312,30 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.restitutionCoeff = 0.0;
     this.frictionCoeff = 0.0;
     this.batchIdx = 0;
-    this.bodyA_79uolx$_0 = this.bodyA_79uolx$_0;
-    this.bodyB_79uoms$_0 = this.bodyB_79uoms$_0;
+    this.bodyA_aortk4$_0 = this.bodyA_aortk4$_0;
+    this.bodyB_aortj9$_0 = this.bodyB_aortj9$_0;
   }
   Object.defineProperty(Contact.prototype, 'bodyA', {
     get: function () {
-      if (this.bodyA_79uolx$_0 == null)
+      if (this.bodyA_aortk4$_0 == null)
         return throwUPAE('bodyA');
-      return this.bodyA_79uolx$_0;
+      return this.bodyA_aortk4$_0;
     },
     set: function (bodyA) {
-      this.bodyA_79uolx$_0 = bodyA;
+      this.bodyA_aortk4$_0 = bodyA;
     }
   });
   Object.defineProperty(Contact.prototype, 'bodyB', {
     get: function () {
-      if (this.bodyB_79uoms$_0 == null)
+      if (this.bodyB_aortj9$_0 == null)
         return throwUPAE('bodyB');
-      return this.bodyB_79uoms$_0;
+      return this.bodyB_aortj9$_0;
     },
     set: function (bodyB) {
-      this.bodyB_79uoms$_0 = bodyB;
+      this.bodyB_aortj9$_0 = bodyB;
     }
   });
-  Contact.prototype.initContact_311y5w$ = function (bodyA, bodyB) {
+  Contact.prototype.initContact_jp95gs$ = function (bodyA, bodyB) {
     this.bodyA = bodyA;
     this.bodyB = bodyB;
     this.worldNormalOnB.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
@@ -9147,13 +11362,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.liveContacts_0;
     }
   });
-  Contacts.prototype.addNewContact_311y5w$ = function (bodyA, bodyB) {
-    var c = this.contactRecycler_0.get().initContact_311y5w$(bodyA, bodyB);
+  Contacts.prototype.addNewContact_jp95gs$ = function (bodyA, bodyB) {
+    var c = this.contactRecycler_0.get().initContact_jp95gs$(bodyA, bodyB);
     this.liveContacts_0.add_11rb$(c);
     return c;
   };
-  Contacts.prototype.addContact_t46yjh$ = defineInlineFunction('kool.de.fabmax.kool.physics.collision.Contacts.addContact_t46yjh$', function (bodyA, bodyB, block) {
-    var c = this.addNewContact_311y5w$(bodyA, bodyB);
+  Contacts.prototype.addContact_ukv0h6$ = defineInlineFunction('kool.de.fabmax.kool.modules.physics.collision.Contacts.addContact_ukv0h6$', function (bodyA, bodyB, block) {
+    var c = this.addNewContact_jp95gs$(bodyA, bodyB);
     block(c);
     return c;
   });
@@ -9226,13 +11441,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       this.simTime_0 += this.timeStep_0;
       tmp$ = this.bodies;
       for (var i = 0; i !== tmp$.size; ++i) {
-        this.bodies.get_za3lpa$(i).applyGravity_fvh5tf$(this.timeStep_0, this);
+        this.bodies.get_za3lpa$(i).applyGravity_kzbnk6$(this.timeStep_0, this);
         this.bodies.get_za3lpa$(i).predictIntegratedTransform_mx4ult$(this.timeStep_0);
       }
       this.broadPhase();
       tmp$_0 = this.bodies;
       for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-        this.bodies.get_za3lpa$(i_0).stepSimulation_fvh5tf$(this.timeStep_0, this);
+        this.bodies.get_za3lpa$(i_0).stepSimulation_kzbnk6$(this.timeStep_0, this);
       }
     }
   };
@@ -9244,11 +11459,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       tmp$_0 = this.bodies.size;
       for (var j = i + 1 | 0; j < tmp$_0; j++) {
         if (!this.bodies.get_za3lpa$(i).isStaticOrKinematic || !this.bodies.get_za3lpa$(j).isStaticOrKinematic) {
-          this.collisionChecker_0.testForCollision_2z91a7$(this.bodies.get_za3lpa$(i), this.bodies.get_za3lpa$(j), this.contacts_0);
+          this.collisionChecker_0.testForCollision_yvmcey$(this.bodies.get_za3lpa$(i), this.bodies.get_za3lpa$(j), this.contacts_0);
         }
       }
     }
-    this.solver_0.solveContacts_fr66qz$(this.bodies, this.contacts_0.contacts);
+    this.solver_0.solveContacts_xs9kvp$(this.bodies, this.contacts_0.contacts);
     this.contacts_0.clearContacts();
   };
   CollisionWorld.$metadata$ = {
@@ -9275,7 +11490,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.contactCFM2 = 0.0;
     this.lateralFrictionInitialized = false;
   }
-  ContactPoint.prototype.initContactPoint_zic88q$ = function (contact, contactIndex) {
+  ContactPoint.prototype.initContactPoint_bqjqrj$ = function (contact, contactIndex) {
     this.appliedImpulse = 0.0;
     this.appliedImpulseLateral1 = 0.0;
     this.appliedImpulseLateral2 = 0.0;
@@ -9370,7 +11585,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.infoGlobal_0.numIterations = 4;
     this.infoGlobal_0.solverMode = this.infoGlobal_0.solverMode | 16;
   }
-  SequentialImpulseConstraintSolver.prototype.solveContacts_fr66qz$ = function (bodies, contacts) {
+  SequentialImpulseConstraintSolver.prototype.solveContacts_xs9kvp$ = function (bodies, contacts) {
     this.solveGroupSetup_0(bodies, contacts);
     this.solveGroupIterations_0();
     this.solveGroupFinish_0();
@@ -9396,15 +11611,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     if (tmp$_0) {
       return;
     }
-    var solverBodyA = this.solverBodyPool_0.get().initSolverBody_m4howt$(contact.bodyA);
-    var solverBodyB = this.solverBodyPool_0.get().initSolverBody_m4howt$(contact.bodyB);
+    var solverBodyA = this.solverBodyPool_0.get().initSolverBody_xkjwdy$(contact.bodyA);
+    var solverBodyB = this.solverBodyPool_0.get().initSolverBody_xkjwdy$(contact.bodyB);
     var rollingFrictionCnt = 1;
     tmp$ = contact.worldPosB;
     for (var i = 0; i !== tmp$.size; ++i) {
-      var cp = this.contactPointPool_0.get().initContactPoint_zic88q$(contact, i);
+      var cp = this.contactPointPool_0.get().initContactPoint_bqjqrj$(contact, i);
       if (cp.distance < this.getContactProcessingThreshold_0(contact)) {
         var contactConstraint = this.contactConstraintPool_0.get();
-        contactConstraint.setupContactConstraint_9xms7v$(cp, solverBodyA, solverBodyB, this.infoGlobal_0);
+        contactConstraint.setupContactConstraint_8cr739$(cp, solverBodyA, solverBodyB, this.infoGlobal_0);
         if (cp.combinedRollingFriction > 0.0 && rollingFrictionCnt > 0) {
           rollingFrictionCnt = rollingFrictionCnt - 1 | 0;
           solverBodyB.angularVelocity.subtract_2gj7b4$(solverBodyA.angularVelocity, this.tmpVec1_0);
@@ -9463,7 +11678,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       cfmSlip = 0.0;
     var frictionConstraint = this.contactFrictionConstraintPool_0.get();
     frictionConstraint.contactConstraint = contactConstraint;
-    frictionConstraint.setupFrictionConstraint_f92cdv$(normalAxis, contactConstraint, desiredVelocity, cfmSlip);
+    frictionConstraint.setupFrictionConstraint_5uhjh0$(normalAxis, contactConstraint, desiredVelocity, cfmSlip);
     return frictionConstraint;
   };
   SequentialImpulseConstraintSolver.prototype.addRollingFrictionConstraint_0 = function (normalAxis, contactConstraint, desiredVelocity, cfmSlip) {
@@ -9473,7 +11688,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       cfmSlip = 0.0;
     var frictionConstraint = this.contactRollingConstraintPool_0.get();
     frictionConstraint.contactConstraint = contactConstraint;
-    frictionConstraint.setupRollingFrictionConstraint_f92cdv$(normalAxis, contactConstraint, desiredVelocity, cfmSlip);
+    frictionConstraint.setupRollingFrictionConstraint_5uhjh0$(normalAxis, contactConstraint, desiredVelocity, cfmSlip);
     return frictionConstraint;
   };
   SequentialImpulseConstraintSolver.prototype.setFrictionConstraintImpulse_0 = function (contactConstraint) {
@@ -9700,7 +11915,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     this.turnVelocity = MutableVec3f_init();
     this.linearVelocity = MutableVec3f_init();
     this.angularVelocity = MutableVec3f_init();
-    this.originalBody_upa1qc$_0 = this.originalBody_upa1qc$_0;
+    this.originalBody_7vi7md$_0 = this.originalBody_7vi7md$_0;
     this.tmpVec1_0 = MutableVec3f_init();
     this.tmpVec2_0 = MutableVec3f_init();
     this.tmpVec3_0 = MutableVec3f_init();
@@ -9709,15 +11924,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   Object.defineProperty(SolverBody.prototype, 'originalBody', {
     get: function () {
-      if (this.originalBody_upa1qc$_0 == null)
+      if (this.originalBody_7vi7md$_0 == null)
         return throwUPAE('originalBody');
-      return this.originalBody_upa1qc$_0;
+      return this.originalBody_7vi7md$_0;
     },
     set: function (originalBody) {
-      this.originalBody_upa1qc$_0 = originalBody;
+      this.originalBody_7vi7md$_0 = originalBody;
     }
   });
-  SolverBody.prototype.initSolverBody_m4howt$ = function (originalBody) {
+  SolverBody.prototype.initSolverBody_xkjwdy$ = function (originalBody) {
     this.originalBody = originalBody;
     this.deltaLinearVelocity.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
     this.deltaAngularVelocity.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
@@ -9802,8 +12017,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     interfaces: []
   };
   function SolverConstraint() {
-    this.solverBodyA_ylsnum$_0 = this.solverBodyA_ylsnum$_0;
-    this.solverBodyB_ylsnvh$_0 = this.solverBodyB_ylsnvh$_0;
+    this.solverBodyA_6k6b5x$_0 = this.solverBodyA_6k6b5x$_0;
+    this.solverBodyB_6k6b6s$_0 = this.solverBodyB_6k6b6s$_0;
     this.contactNormal = MutableVec3f_init();
     this.relPosACrossNormal = MutableVec3f_init();
     this.relPosBCrossNormal = MutableVec3f_init();
@@ -9822,22 +12037,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   Object.defineProperty(SolverConstraint.prototype, 'solverBodyA', {
     get: function () {
-      if (this.solverBodyA_ylsnum$_0 == null)
+      if (this.solverBodyA_6k6b5x$_0 == null)
         return throwUPAE('solverBodyA');
-      return this.solverBodyA_ylsnum$_0;
+      return this.solverBodyA_6k6b5x$_0;
     },
     set: function (solverBodyA) {
-      this.solverBodyA_ylsnum$_0 = solverBodyA;
+      this.solverBodyA_6k6b5x$_0 = solverBodyA;
     }
   });
   Object.defineProperty(SolverConstraint.prototype, 'solverBodyB', {
     get: function () {
-      if (this.solverBodyB_ylsnvh$_0 == null)
+      if (this.solverBodyB_6k6b6s$_0 == null)
         return throwUPAE('solverBodyB');
-      return this.solverBodyB_ylsnvh$_0;
+      return this.solverBodyB_6k6b6s$_0;
     },
     set: function (solverBodyB) {
-      this.solverBodyB_ylsnvh$_0 = solverBodyB;
+      this.solverBodyB_6k6b6s$_0 = solverBodyB;
     }
   });
   SolverConstraint.$metadata$ = {
@@ -9849,7 +12064,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     SolverConstraint.call(this);
     this.frictionConstraint1 = null;
     this.frictionConstraint2 = null;
-    this.originalContactPoint_we4rie$_0 = this.originalContactPoint_we4rie$_0;
+    this.originalContactPoint_wbybi7$_0 = this.originalContactPoint_wbybi7$_0;
     this.relPosA = MutableVec3f_init();
     this.relPosB = MutableVec3f_init();
     this.velocity = MutableVec3f_init();
@@ -9859,15 +12074,15 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   }
   Object.defineProperty(ContactConstraint.prototype, 'originalContactPoint', {
     get: function () {
-      if (this.originalContactPoint_we4rie$_0 == null)
+      if (this.originalContactPoint_wbybi7$_0 == null)
         return throwUPAE('originalContactPoint');
-      return this.originalContactPoint_we4rie$_0;
+      return this.originalContactPoint_wbybi7$_0;
     },
     set: function (originalContactPoint) {
-      this.originalContactPoint_we4rie$_0 = originalContactPoint;
+      this.originalContactPoint_wbybi7$_0 = originalContactPoint;
     }
   });
-  ContactConstraint.prototype.setupContactConstraint_9xms7v$ = function (cp, bodyA, bodyB, solverInfo) {
+  ContactConstraint.prototype.setupContactConstraint_8cr739$ = function (cp, bodyA, bodyB, solverInfo) {
     this.originalContactPoint = cp;
     this.solverBodyA = bodyA;
     this.solverBodyB = bodyB;
@@ -9945,19 +12160,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function FrictionConstraint() {
     SolverConstraint.call(this);
-    this.contactConstraint_3lt2gq$_0 = this.contactConstraint_3lt2gq$_0;
+    this.contactConstraint_vgyjqr$_0 = this.contactConstraint_vgyjqr$_0;
   }
   Object.defineProperty(FrictionConstraint.prototype, 'contactConstraint', {
     get: function () {
-      if (this.contactConstraint_3lt2gq$_0 == null)
+      if (this.contactConstraint_vgyjqr$_0 == null)
         return throwUPAE('contactConstraint');
-      return this.contactConstraint_3lt2gq$_0;
+      return this.contactConstraint_vgyjqr$_0;
     },
     set: function (contactConstraint) {
-      this.contactConstraint_3lt2gq$_0 = contactConstraint;
+      this.contactConstraint_vgyjqr$_0 = contactConstraint;
     }
   });
-  FrictionConstraint.prototype.setupFrictionConstraint_f92cdv$ = function (normalAxis, contactConstraint, desiredVelocity, cfmSlip) {
+  FrictionConstraint.prototype.setupFrictionConstraint_5uhjh0$ = function (normalAxis, contactConstraint, desiredVelocity, cfmSlip) {
     this.contactConstraint = contactConstraint;
     this.contactNormal.set_czzhiu$(normalAxis);
     this.solverBodyA = contactConstraint.solverBodyA;
@@ -9995,19 +12210,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function RollingFrictionConstraint() {
     SolverConstraint.call(this);
-    this.contactConstraint_4smh5p$_0 = this.contactConstraint_4smh5p$_0;
+    this.contactConstraint_6tkcae$_0 = this.contactConstraint_6tkcae$_0;
   }
   Object.defineProperty(RollingFrictionConstraint.prototype, 'contactConstraint', {
     get: function () {
-      if (this.contactConstraint_4smh5p$_0 == null)
+      if (this.contactConstraint_6tkcae$_0 == null)
         return throwUPAE('contactConstraint');
-      return this.contactConstraint_4smh5p$_0;
+      return this.contactConstraint_6tkcae$_0;
     },
     set: function (contactConstraint) {
-      this.contactConstraint_4smh5p$_0 = contactConstraint;
+      this.contactConstraint_6tkcae$_0 = contactConstraint;
     }
   });
-  RollingFrictionConstraint.prototype.setupRollingFrictionConstraint_f92cdv$ = function (normalAxis, contactConstraint, desiredVelocity, cfmSlip) {
+  RollingFrictionConstraint.prototype.setupRollingFrictionConstraint_5uhjh0$ = function (normalAxis, contactConstraint, desiredVelocity, cfmSlip) {
     this.contactConstraint = contactConstraint;
     this.contactNormal.set_czzhiu$(normalAxis);
     this.solverBodyA = contactConstraint.solverBodyA;
@@ -10093,13 +12308,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return this.mutAngularAcceleration_0;
     }
   });
-  RigidBody.prototype.applyGravity_fvh5tf$ = function (dt, world) {
+  RigidBody.prototype.applyGravity_kzbnk6$ = function (dt, world) {
     if (!this.isStaticOrKinematic) {
       world.gravity.scale_749b8l$(dt, this.tmpVec_0);
       this.velocity.plusAssign_czzhiu$(this.tmpVec_0);
     }
   };
-  RigidBody.prototype.stepSimulation_fvh5tf$ = function (dt, world) {
+  RigidBody.prototype.stepSimulation_kzbnk6$ = function (dt, world) {
     if (!this.isStaticOrKinematic) {
       this.worldTransform.set_d4zu6j$(this.unpredictedWorldTransform_0);
       this.tmpVec_0.set_czzhiu$(this.force_0).subtract_czzhiu$(this.prevForce_0).scale_mx4ult$(0.5).add_czzhiu$(this.prevForce_0);
@@ -10229,6 +12444,68 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     inertia.z = 1.0 / (i * (sizeX * sizeX + sizeY * sizeY));
     return new RigidBody(new Box(sizeX, sizeY, sizeZ), mass, inertia);
   }
+  function MvpState() {
+    this.projMatrix = new Mat4fStack();
+    this.projMatrixBuffer_tikfj5$_0 = createFloat32Buffer(16);
+    this.viewMatrix = new Mat4fStack();
+    this.viewMatrixBuffer_nu8w9l$_0 = createFloat32Buffer(16);
+    this.modelMatrix = new Mat4fStack();
+    this.modelMatrixBuffer_9b4lcl$_0 = createFloat32Buffer(16);
+    this.mvpMatrix = new Mat4f();
+    this.mvpMatrixBuffer_nw2k6l$_0 = createFloat32Buffer(16);
+    this.tempMatrix_0 = new Mat4f();
+    this.reset();
+  }
+  Object.defineProperty(MvpState.prototype, 'projMatrixBuffer', {
+    get: function () {
+      this.projMatrix.toBuffer_he122g$(this.projMatrixBuffer_tikfj5$_0);
+      return this.projMatrixBuffer_tikfj5$_0;
+    }
+  });
+  Object.defineProperty(MvpState.prototype, 'viewMatrixBuffer', {
+    get: function () {
+      this.viewMatrix.toBuffer_he122g$(this.viewMatrixBuffer_nu8w9l$_0);
+      return this.viewMatrixBuffer_nu8w9l$_0;
+    }
+  });
+  Object.defineProperty(MvpState.prototype, 'modelMatrixBuffer', {
+    get: function () {
+      this.modelMatrix.toBuffer_he122g$(this.modelMatrixBuffer_9b4lcl$_0);
+      return this.modelMatrixBuffer_9b4lcl$_0;
+    }
+  });
+  Object.defineProperty(MvpState.prototype, 'mvpMatrixBuffer', {
+    get: function () {
+      this.mvpMatrix.toBuffer_he122g$(this.mvpMatrixBuffer_nw2k6l$_0);
+      return this.mvpMatrixBuffer_nw2k6l$_0;
+    }
+  });
+  MvpState.prototype.reset = function () {
+    this.projMatrix.reset();
+    this.viewMatrix.reset();
+    this.modelMatrix.reset();
+    this.mvpMatrix.setIdentity();
+  };
+  MvpState.prototype.pushMatrices = function () {
+    this.projMatrix.push();
+    this.viewMatrix.push();
+    this.modelMatrix.push();
+  };
+  MvpState.prototype.popMatrices = function () {
+    this.projMatrix.pop();
+    this.viewMatrix.pop();
+    this.modelMatrix.pop();
+  };
+  MvpState.prototype.update_aemszp$ = function (ctx) {
+    var tmp$;
+    this.projMatrix.mul_93v2ma$(this.viewMatrix.mul_93v2ma$(this.modelMatrix, this.tempMatrix_0), this.mvpMatrix);
+    (tmp$ = ctx.shaderMgr.boundShader) != null ? (tmp$.onMatrixUpdate_aemszp$(ctx), Unit) : null;
+  };
+  MvpState.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MvpState',
+    interfaces: []
+  };
   function formatFloat(f, precision) {
     return formatDouble(f, precision);
   }
@@ -16993,7 +19270,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     simpleName: 'GlslGenerator',
     interfaces: []
   };
-  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   function Shader() {
     GlObject.call(this);
     this.source_ow0gcj$_0 = new Shader$Source('', '', '');
@@ -19380,8 +21656,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return new Color(r, g, b, a);
   }
-  var sortWith = Kotlin.kotlin.collections.sortWith_iwcb0m$;
-  var compareBy$lambda = wrapFunction(function () {
+  var sortWith_0 = Kotlin.kotlin.collections.sortWith_iwcb0m$;
+  var compareBy$lambda_2 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -19390,14 +21666,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       };
     };
   });
-  var Comparator = Kotlin.kotlin.Comparator;
-  function Comparator$ObjectLiteral(closure$comparison) {
+  function Comparator$ObjectLiteral_2(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_2.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_2.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function ColorGradient(colors, n) {
     ColorGradient$Companion_getInstance();
     if (n === void 0)
@@ -19414,7 +21689,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       throw KoolException_init('ColorGradient requires at least two colors');
     }
     if (colors.length > 1) {
-      sortWith(colors, new Comparator$ObjectLiteral(compareBy$lambda(ColorGradient_init$lambda)));
+      sortWith_0(colors, new Comparator$ObjectLiteral_2(compareBy$lambda_2(ColorGradient_init$lambda)));
     }
     var mi = first_0(colors).first;
     var mx = last_0(colors).first;
@@ -19497,6 +21772,62 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     ColorGradient.call($this, array.slice(), n);
     return $this;
   }
+  function Position(name, ordinal) {
+    Enum.call(this);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function Position_initFields() {
+    Position_initFields = function () {
+    };
+    Position$UPPER_LEFT_instance = new Position('UPPER_LEFT', 0);
+    Position$UPPER_RIGHT_instance = new Position('UPPER_RIGHT', 1);
+    Position$LOWER_LEFT_instance = new Position('LOWER_LEFT', 2);
+    Position$LOWER_RIGHT_instance = new Position('LOWER_RIGHT', 3);
+  }
+  var Position$UPPER_LEFT_instance;
+  function Position$UPPER_LEFT_getInstance() {
+    Position_initFields();
+    return Position$UPPER_LEFT_instance;
+  }
+  var Position$UPPER_RIGHT_instance;
+  function Position$UPPER_RIGHT_getInstance() {
+    Position_initFields();
+    return Position$UPPER_RIGHT_instance;
+  }
+  var Position$LOWER_LEFT_instance;
+  function Position$LOWER_LEFT_getInstance() {
+    Position_initFields();
+    return Position$LOWER_LEFT_instance;
+  }
+  var Position$LOWER_RIGHT_instance;
+  function Position$LOWER_RIGHT_getInstance() {
+    Position_initFields();
+    return Position$LOWER_RIGHT_instance;
+  }
+  Position.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Position',
+    interfaces: [Enum]
+  };
+  function Position$values() {
+    return [Position$UPPER_LEFT_getInstance(), Position$UPPER_RIGHT_getInstance(), Position$LOWER_LEFT_getInstance(), Position$LOWER_RIGHT_getInstance()];
+  }
+  Position.values = Position$values;
+  function Position$valueOf(name) {
+    switch (name) {
+      case 'UPPER_LEFT':
+        return Position$UPPER_LEFT_getInstance();
+      case 'UPPER_RIGHT':
+        return Position$UPPER_RIGHT_getInstance();
+      case 'LOWER_LEFT':
+        return Position$LOWER_LEFT_getInstance();
+      case 'LOWER_RIGHT':
+        return Position$LOWER_RIGHT_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.util.Position.' + name);
+    }
+  }
+  Position.valueOf_61zpoe$ = Position$valueOf;
   function debugOverlay$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
   }
@@ -19678,7 +22009,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda$lambda_0(closure$alignBottom, this$, closure$ctx) {
+  function debugOverlay$lambda$lambda_0(closure$position, this$, closure$ctx) {
     return function ($receiver) {
       var tmp$;
       var hasMemInfo = !(getMemoryInfo().length === 0);
@@ -19690,11 +22021,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       }
       var height = tmp$;
       var width = 130.0;
-      if (closure$alignBottom) {
-        $receiver.layoutSpec.setOrigin_4ujscr$(dps(-width, true), dps(0.0, true), zero());
-      }
-       else {
-        $receiver.layoutSpec.setOrigin_4ujscr$(dps(-width, true), dps(-height, true), zero());
+      switch (closure$position.name) {
+        case 'UPPER_LEFT':
+          $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(-height, true), zero());
+          break;
+        case 'UPPER_RIGHT':
+          $receiver.layoutSpec.setOrigin_4ujscr$(dps(-width, true), dps(-height, true), zero());
+          break;
+        case 'LOWER_LEFT':
+          $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(0.0, true), zero());
+          break;
+        case 'LOWER_RIGHT':
+          $receiver.layoutSpec.setOrigin_4ujscr$(dps(-width, true), dps(0.0, true), zero());
+          break;
       }
       $receiver.layoutSpec.setSize_4ujscr$(dps(width, true), dps(height, true), zero());
       var $receiver_0 = new DeltaTGraph(this$);
@@ -19721,18 +22060,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  function debugOverlay$lambda(closure$alignBottom, closure$ctx) {
+  function debugOverlay$lambda(closure$position, closure$ctx) {
     return function ($receiver) {
       $receiver.theme = theme(UiTheme$Companion_getInstance().DARK, debugOverlay$lambda$lambda);
       $receiver.content.ui.setCustom_11rb$(new BlankComponentUi());
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('dbgPanel', debugOverlay$lambda$lambda_0(closure$alignBottom, $receiver, closure$ctx)));
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('dbgPanel', debugOverlay$lambda$lambda_0(closure$position, $receiver, closure$ctx)));
       return Unit;
     };
   }
-  function debugOverlay(ctx, alignBottom) {
-    if (alignBottom === void 0)
-      alignBottom = false;
-    var dbgOverlay = uiScene(ctx.screenDpi, void 0, debugOverlay$lambda(alignBottom, ctx));
+  function debugOverlay(ctx, position) {
+    if (position === void 0)
+      position = Position$UPPER_RIGHT_getInstance();
+    var dbgOverlay = uiScene(ctx.screenDpi, void 0, debugOverlay$lambda(position, ctx));
     dbgOverlay.isPickingEnabled = false;
     return dbgOverlay;
   }
@@ -24869,6 +27208,131 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
     }
     return JsImpl_instance;
   }
+  function loadPngS16ElevationMap(basePath, meta, assetMgr) {
+    return new DelayedElevationMap(basePath, meta);
+  }
+  function DelayedElevationMap(basePath, meta) {
+    this.meta_r4vgl6$_0 = meta;
+    this.isAvailable_uzeklm$_0 = false;
+    this.loadedHeightMap_0 = null;
+    ElevationMapLoader$Companion_getInstance().instance.loadHeightMap_2u7zf8$(basePath + '/' + this.meta.name, DelayedElevationMap_init$lambda(this));
+  }
+  Object.defineProperty(DelayedElevationMap.prototype, 'meta', {
+    get: function () {
+      return this.meta_r4vgl6$_0;
+    }
+  });
+  Object.defineProperty(DelayedElevationMap.prototype, 'west', {
+    get: function () {
+      return this.meta.west;
+    }
+  });
+  Object.defineProperty(DelayedElevationMap.prototype, 'east', {
+    get: function () {
+      return this.meta.east;
+    }
+  });
+  Object.defineProperty(DelayedElevationMap.prototype, 'south', {
+    get: function () {
+      return this.meta.south;
+    }
+  });
+  Object.defineProperty(DelayedElevationMap.prototype, 'north', {
+    get: function () {
+      return this.meta.north;
+    }
+  });
+  Object.defineProperty(DelayedElevationMap.prototype, 'isAvailable', {
+    get: function () {
+      return this.isAvailable_uzeklm$_0;
+    },
+    set: function (isAvailable) {
+      this.isAvailable_uzeklm$_0 = isAvailable;
+    }
+  });
+  DelayedElevationMap.prototype.getElevationAt_lu1900$ = function (lat, lon) {
+    var tmp$, tmp$_0;
+    return (tmp$_0 = (tmp$ = this.loadedHeightMap_0) != null ? tmp$.getElevationAt_lu1900$(lat, lon) : null) != null ? tmp$_0 : 0.0;
+  };
+  DelayedElevationMap.prototype.getNormalAt_bwm9xi$ = function (lat, lon, result) {
+    var tmp$, tmp$_0;
+    return (tmp$_0 = (tmp$ = this.loadedHeightMap_0) != null ? tmp$.getNormalAt_bwm9xi$(lat, lon, result) : null) != null ? tmp$_0 : result.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS);
+  };
+  function DelayedElevationMap_init$lambda(this$DelayedElevationMap) {
+    return function (data) {
+      if (data != null) {
+        this$DelayedElevationMap.loadedHeightMap_0 = new ElevationMapS16(data, this$DelayedElevationMap.meta);
+      }
+      this$DelayedElevationMap.isAvailable = true;
+      return Unit;
+    };
+  }
+  DelayedElevationMap.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DelayedElevationMap',
+    interfaces: [BoundedElevationMap]
+  };
+  function ElevationMapLoader() {
+    ElevationMapLoader$Companion_getInstance();
+    var tmp$, tmp$_0;
+    this.canvas_0 = Kotlin.isType(tmp$ = document.createElement('canvas'), HTMLCanvasElement) ? tmp$ : throwCCE();
+    this.canvasCtx_0 = null;
+    this.canvas_0.width = 900;
+    this.canvas_0.height = 900;
+    this.canvasCtx_0 = Kotlin.isType(tmp$_0 = this.canvas_0.getContext('2d'), CanvasRenderingContext2D) ? tmp$_0 : throwCCE();
+  }
+  function ElevationMapLoader$loadHeightMap$lambda(closure$onLoaded) {
+    return function (f, f_0, f_1, f_2, f_3) {
+      closure$onLoaded(null);
+      return true;
+    };
+  }
+  function ElevationMapLoader$loadHeightMap$lambda_0(this$ElevationMapLoader, closure$img, closure$onLoaded) {
+    return function (it) {
+      this$ElevationMapLoader.canvasCtx_0.drawImage(closure$img, 0.0, 0.0);
+      var array = new Int16Array(810000);
+      var data = this$ElevationMapLoader.canvasCtx_0.getImageData(0.0, 0.0, 900.0, 900.0).data;
+      for (var i = 0; i < 3240000; i++) {
+        var r = data[i * 4 | 0];
+        var g = data[(i * 4 | 0) + 1 | 0];
+        var h = toShort(r << 8 | g);
+        array[i] = h;
+      }
+      closure$onLoaded(array);
+      return true;
+    };
+  }
+  ElevationMapLoader.prototype.loadHeightMap_2u7zf8$ = function (path, onLoaded) {
+    var tmp$;
+    var img = Kotlin.isType(tmp$ = document.createElement('img'), HTMLImageElement) ? tmp$ : throwCCE();
+    img.src = path;
+    img.crossOrigin = '';
+    img.onerror = ElevationMapLoader$loadHeightMap$lambda(onLoaded);
+    img.onload = ElevationMapLoader$loadHeightMap$lambda_0(this, img, onLoaded);
+  };
+  function ElevationMapLoader$Companion() {
+    ElevationMapLoader$Companion_instance = this;
+    this.MAP_WIDTH = 900;
+    this.MAP_HEIGHT = 900;
+    this.instance = new ElevationMapLoader();
+  }
+  ElevationMapLoader$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var ElevationMapLoader$Companion_instance = null;
+  function ElevationMapLoader$Companion_getInstance() {
+    if (ElevationMapLoader$Companion_instance === null) {
+      new ElevationMapLoader$Companion();
+    }
+    return ElevationMapLoader$Companion_instance;
+  }
+  ElevationMapLoader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ElevationMapLoader',
+    interfaces: []
+  };
   function FontMapGenerator(maxWidth, maxHeight) {
     this.maxWidth = maxWidth;
     this.maxHeight = maxHeight;
@@ -24992,20 +27456,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   };
   function JsAssetManager(assetsBaseDir) {
     JsAssetManager$Companion_getInstance();
-    AssetManager.call(this);
-    this.assetsBaseDir_quoclz$_0 = assetsBaseDir;
+    AssetManager.call(this, assetsBaseDir);
     this.fontGenerator_0 = new FontMapGenerator(1024, 1024);
   }
-  Object.defineProperty(JsAssetManager.prototype, 'assetsBaseDir', {
-    get: function () {
-      return this.assetsBaseDir_quoclz$_0;
-    },
-    set: function (assetsBaseDir) {
-      this.assetsBaseDir_quoclz$_0 = assetsBaseDir;
-    }
-  });
-  function JsAssetManager$loadAsset$lambda(closure$req, closure$onLoad) {
-    return function (evt) {
+  function JsAssetManager$loadHttpAsset$lambda(closure$req, closure$onLoad) {
+    return function (it) {
       var tmp$, tmp$_0;
       var array = new Uint8Array(Kotlin.isType(tmp$ = closure$req.response, ArrayBuffer) ? tmp$ : throwCCE());
       var bytes = new Int8Array(array.length);
@@ -25017,29 +27472,40 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
       return Unit;
     };
   }
-  JsAssetManager.prototype.loadAsset_jrww91$ = function (assetPath, onLoad) {
+  function JsAssetManager$loadHttpAsset$lambda_0(closure$onLoad, closure$assetPath, this$JsAssetManager) {
+    return function (it) {
+      closure$onLoad(null);
+      var $receiver = this$JsAssetManager;
+      var $this = package$util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Failed loading resource ' + closure$assetPath + ': ' + it);
+      }
+      return Unit;
+    };
+  }
+  JsAssetManager.prototype.loadHttpAsset_us385g$ = function (assetPath, onLoad) {
     var req = new XMLHttpRequest();
-    if (startsWith(assetPath, 'http', true)) {
-      req.open('GET', assetPath);
-    }
-     else {
-      req.open('GET', this.assetsBaseDir + '/' + assetPath);
-    }
     req.responseType = 'arraybuffer';
-    req.onload = JsAssetManager$loadAsset$lambda(req, onLoad);
+    req.onload = JsAssetManager$loadHttpAsset$lambda(req, onLoad);
+    req.onerror = JsAssetManager$loadHttpAsset$lambda_0(onLoad, assetPath, this);
+    req.open('GET', assetPath);
     req.send();
   };
-  JsAssetManager.prototype.loadTextureAsset_61zpoe$ = function (assetPath) {
-    var img = new Image();
+  JsAssetManager.prototype.loadHttpTexture_61zpoe$ = function (assetPath) {
+    var tmp$;
+    var img = Kotlin.isType(tmp$ = document.createElement('img'), HTMLImageElement) ? tmp$ : throwCCE();
     var data = new ImageTextureData(img);
     img.crossOrigin = '';
-    if (startsWith(assetPath, 'http', true)) {
-      img.src = assetPath;
-    }
-     else {
-      img.src = this.assetsBaseDir + '/' + assetPath;
-    }
+    img.src = assetPath;
     return data;
+  };
+  JsAssetManager.prototype.loadLocalAsset_us385g$ = function (assetPath, onLoad) {
+    this.loadHttpAsset_us385g$(assetPath, onLoad);
+  };
+  JsAssetManager.prototype.loadLocalTexture_61zpoe$ = function (assetPath) {
+    return this.loadHttpTexture_61zpoe$(assetPath);
   };
   JsAssetManager.prototype.createCharMap_ttufcy$ = function (fontProps) {
     return this.fontGenerator_0.createCharMap_ttufcy$(fontProps);
@@ -27471,8 +29937,67 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$math.slerp_m26pjg$ = slerp;
   package$math.slerp_nr5s3x$ = slerp_0;
   package$kool.MemoryManager = MemoryManager;
-  package$kool.MvpState = MvpState;
-  var package$physics = package$kool.physics || (package$kool.physics = {});
+  var package$modules = package$kool.modules || (package$kool.modules = {});
+  var package$globe = package$modules.globe || (package$modules.globe = {});
+  var package$elevation = package$globe.elevation || (package$globe.elevation = {});
+  package$elevation.BoundedElevationMap = BoundedElevationMap;
+  package$elevation.ElevationMapProvider = ElevationMapProvider;
+  package$elevation.ElevationMap = ElevationMap;
+  package$elevation.NullElevationMap = NullElevationMap;
+  Object.defineProperty(ElevationMapMeta, 'Companion', {
+    get: ElevationMapMeta$Companion_getInstance
+  });
+  Object.defineProperty(ElevationMapMeta, '$serializer', {
+    get: ElevationMapMeta$$serializer_getInstance
+  });
+  package$elevation.ElevationMapMeta = ElevationMapMeta;
+  Object.defineProperty(ElevationMapMetaHierarchy, 'Companion', {
+    get: ElevationMapMetaHierarchy$Companion_getInstance
+  });
+  Object.defineProperty(ElevationMapMetaHierarchy, '$serializer', {
+    get: ElevationMapMetaHierarchy$$serializer_getInstance
+  });
+  package$elevation.ElevationMapMetaHierarchy = ElevationMapMetaHierarchy;
+  package$elevation.loadElevationMap_jn660e$ = loadElevationMap;
+  package$elevation.ElevationMapHierarchy = ElevationMapHierarchy;
+  Object.defineProperty(ElevationMapS16, 'Companion', {
+    get: ElevationMapS16$Companion_getInstance
+  });
+  package$elevation.ElevationMapS16 = ElevationMapS16;
+  Object.defineProperty(ElevationMapSet, 'Companion', {
+    get: ElevationMapSet$Companion_getInstance
+  });
+  package$elevation.ElevationMapSet = ElevationMapSet;
+  package$elevation.LoadedMapCache = LoadedMapCache;
+  Object.defineProperty(Globe, 'Companion', {
+    get: Globe$Companion_getInstance
+  });
+  package$globe.Globe = Globe;
+  Object.defineProperty(GlobeDragHandler, 'Companion', {
+    get: GlobeDragHandler$Companion_getInstance
+  });
+  package$globe.GlobeDragHandler = GlobeDragHandler;
+  package$globe.TileFrame = TileFrame;
+  package$globe.TileManager = TileManager;
+  TileMesh.AttributionInfo = TileMesh$AttributionInfo;
+  Object.defineProperty(TileMesh, 'Companion', {
+    get: TileMesh$Companion_getInstance
+  });
+  package$globe.TileMesh = TileMesh;
+  package$globe.TileMeshGenerator = TileMeshGenerator;
+  Object.defineProperty(GridTileMeshGenerator, 'Companion', {
+    get: GridTileMeshGenerator$Companion_getInstance
+  });
+  package$globe.GridTileMeshGenerator = GridTileMeshGenerator;
+  Object.defineProperty(TileName, 'Companion', {
+    get: TileName$Companion_getInstance
+  });
+  package$globe.TileName = TileName;
+  package$globe.TileShaderProvider = TileShaderProvider;
+  package$globe.TileShader = TileShader;
+  package$globe.TexImageTileShaderProvider = TexImageTileShaderProvider;
+  package$globe.OsmTexImageTileShaderProvider = OsmTexImageTileShaderProvider;
+  var package$physics = package$modules.physics || (package$modules.physics = {});
   package$physics.Box = Box;
   package$physics.BoxMesh = BoxMesh;
   Object.defineProperty(MultiBoxMesh, 'Companion', {
@@ -27524,6 +30049,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   package$physics.staticBox_y2kzbl$ = staticBox_0;
   package$physics.uniformMassBox_2qa7tb$ = uniformMassBox;
   package$physics.uniformMassBox_7b5o5w$ = uniformMassBox_0;
+  package$kool.MvpState = MvpState;
   package$kool.formatFloat_vjorfl$ = formatFloat;
   var package$scene = package$kool.scene || (package$kool.scene = {});
   var package$animation = package$scene.animation || (package$scene.animation = {});
@@ -27856,7 +30382,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   });
   package$util.ColorGradient_init_5tenyj$ = ColorGradient_init;
   package$util.ColorGradient = ColorGradient;
-  package$util.debugOverlay_n8mrtu$ = debugOverlay;
+  Object.defineProperty(Position, 'UPPER_LEFT', {
+    get: Position$UPPER_LEFT_getInstance
+  });
+  Object.defineProperty(Position, 'UPPER_RIGHT', {
+    get: Position$UPPER_RIGHT_getInstance
+  });
+  Object.defineProperty(Position, 'LOWER_LEFT', {
+    get: Position$LOWER_LEFT_getInstance
+  });
+  Object.defineProperty(Position, 'LOWER_RIGHT', {
+    get: Position$LOWER_RIGHT_getInstance
+  });
+  package$util.Position = Position;
+  package$util.debugOverlay_msaor1$ = debugOverlay;
   package$util.Disposable = Disposable;
   package$util.uiFont_a4r08d$ = uiFont;
   package$util.fontShader_s2xzqe$ = fontShader;
@@ -28099,6 +30638,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   Object.defineProperty(package$kool, 'JsImpl', {
     get: JsImpl_getInstance
   });
+  package$elevation.loadPngS16ElevationMap_jn660e$ = loadPngS16ElevationMap;
   var package$platform = package$kool.platform || (package$kool.platform = {});
   package$platform.FontMapGenerator = FontMapGenerator;
   package$platform.ImageTextureData = ImageTextureData;
@@ -28126,6 +30666,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   KdTree$Companion$VEC3F_HELPER$ObjectLiteral.prototype.getSzX_11rb$ = TreeHelper.prototype.getSzX_11rb$;
   KdTree$Companion$VEC3F_HELPER$ObjectLiteral.prototype.getSzY_11rb$ = TreeHelper.prototype.getSzY_11rb$;
   KdTree$Companion$VEC3F_HELPER$ObjectLiteral.prototype.getSzZ_11rb$ = TreeHelper.prototype.getSzZ_11rb$;
+  ElevationMapMeta$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  ElevationMapMetaHierarchy$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  Object.defineProperty(ElevationMapS16.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
+  Object.defineProperty(ElevationMapS16.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
+  ElevationMapS16.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
   BlankComponentUi.prototype.createUi_aemszp$ = ComponentUi.prototype.createUi_aemszp$;
   BlankComponentUi.prototype.updateUi_aemszp$ = ComponentUi.prototype.updateUi_aemszp$;
@@ -28183,6 +30728,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js'], function (_, K
   BoneData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   MeshData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   AttributeList$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  Object.defineProperty(DelayedElevationMap.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
+  Object.defineProperty(DelayedElevationMap.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
+  DelayedElevationMap.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;
   Uint8BufferImpl.prototype.put_fqrh44$ = Uint8Buffer.prototype.put_fqrh44$;
   Uint8BufferImpl.prototype.plusAssign_s8j3t7$ = Uint8Buffer.prototype.plusAssign_s8j3t7$;
   Uint16BufferImpl.prototype.put_gmedm2$ = Uint16Buffer.prototype.put_gmedm2$;
