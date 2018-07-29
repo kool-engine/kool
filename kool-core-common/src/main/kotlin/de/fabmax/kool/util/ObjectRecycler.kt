@@ -74,9 +74,9 @@ class AutoRecycler<T: Any>(maxSize: Int = DEFAULT_MAX_SIZE, factory: () -> T) : 
 
     val contextRecycler = ObjectRecycler { Context() }
 
-    inline fun use(block: Context.() -> Unit) {
+    inline fun use(block: Context.(T) -> Unit) {
         val ctx = contextRecycler.get()
-        ctx.block()
+        ctx.block(ctx.get())
         ctx.free()
         contextRecycler.recycle(ctx)
     }

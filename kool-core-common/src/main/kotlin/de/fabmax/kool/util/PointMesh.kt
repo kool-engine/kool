@@ -17,7 +17,7 @@ fun pointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
 open class PointMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
         Mesh(data, name) {
     init {
-        primitiveType = GL_POINTS
+        data.primitiveType = GL_POINTS
         shader = basicPointShader {
             colorModel = ColorModel.VERTEX_COLOR
             lightModel = LightModel.NO_LIGHTING

@@ -100,7 +100,6 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         set(value) { meshData.generator = value }
 
     var shader: Shader? = null
-    var primitiveType = GL_TRIANGLES
     var cullMethod = CullMethod.DEFAULT
 
     override val bounds: BoundingBox
@@ -159,7 +158,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
             // draw mesh
             meshData.indexBuffer?.bind(ctx)
-            glDrawElements(primitiveType, meshData.numIndices, meshData.indexType, 0)
+            glDrawElements(meshData.primitiveType, meshData.numIndices, meshData.indexType, 0)
             boundShader.unbindMesh(ctx)
 
             if (cullMethod != CullMethod.DEFAULT) {
@@ -191,6 +190,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
 
     var usage = GL_STATIC_DRAW
     var indexType = GL_UNSIGNED_INT
+    var primitiveType = GL_TRIANGLES
 
     var dataBufferF: BufferResource? = null
     var dataBufferI: BufferResource? = null

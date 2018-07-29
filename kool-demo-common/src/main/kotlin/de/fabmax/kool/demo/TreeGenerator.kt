@@ -20,7 +20,7 @@ class TreeGenerator(val distribution: PointDistribution,
         get() = growDistance * killDistance
 
     private val attractionPoints = mutableListOf<AttractionPoint>()
-    private var attractionPointsTree = pointTree(listOf<AttractionPoint>())
+    private var attractionPointsTree = pointKdTree(listOf<AttractionPoint>())
     private val attractionPointTrav = InRadiusTraverser<AttractionPoint>()
     private val treeNodes = mutableListOf<TreeNode>()
 
@@ -66,7 +66,7 @@ class TreeGenerator(val distribution: PointDistribution,
         for (node in treeNodes) {
             node.influencingPts.clear()
             if (!node.isFinished) {
-                attractionPointsTree.traverse(attractionPointTrav.reset(node, radiusOfInfluence))
+                attractionPointsTree.traverse(attractionPointTrav.setup(node, radiusOfInfluence))
                 for (attracPt in attractionPointTrav.result) {
                     if (attracPt.isOpen) {
                         attracPt.checkNearest(node)
@@ -98,7 +98,7 @@ class TreeGenerator(val distribution: PointDistribution,
                     node.addChild(newNode)
                     newNodes += newNode
 
-                    attractionPointsTree.traverse(attractionPointTrav.reset(newNode, actualKillDistance))
+                    attractionPointsTree.traverse(attractionPointTrav.setup(newNode, actualKillDistance))
                     attractionPointTrav.result.forEach { it.isOpen = false }
                     changed = true
                 }
@@ -156,7 +156,7 @@ class TreeGenerator(val distribution: PointDistribution,
         for (pt in distribution.nextPoints(numberOfAttractionPoints)) {
             attractionPoints += AttractionPoint(pt)
         }
-        attractionPointsTree = pointTree(attractionPoints)
+        attractionPointsTree = pointKdTree(attractionPoints)
     }
 
     private class AttractionPoint(pt: Vec3f) : MutableVec3f(pt) {

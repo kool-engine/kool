@@ -43,7 +43,7 @@ fun wireframeMesh(triMesh: MeshData): LineMesh {
 open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
         Mesh(data, name) {
     init {
-        primitiveType = GL_LINES
+        data.primitiveType = GL_LINES
         shader = basicShader {
             colorModel = ColorModel.VERTEX_COLOR
             lightModel = LightModel.NO_LIGHTING

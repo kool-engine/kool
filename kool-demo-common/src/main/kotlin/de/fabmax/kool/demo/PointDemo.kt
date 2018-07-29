@@ -14,6 +14,7 @@ fun pointScene(): Scene {
     //val (pointMesh, tree) = makeBillboardPointMesh()
 
     val trav = InRadiusTraverser<MeshPoint>(Vec3f.ZERO, 1f)
+    //val trav = KNearestTraverser<MeshPoint>(Vec3f.ZERO, 3000, 1f)
     val data = pointMesh.meshData
     val ptVertCnt = if (pointMesh is BillboardMesh) 4 else 1
 
@@ -77,7 +78,7 @@ fun pointScene(): Scene {
     }
 }
 
-fun makePointMesh(): Pair<Mesh, KdTree<MeshPoint>> {
+fun makePointMesh(): Pair<Mesh, SpatialTree<MeshPoint>> {
     val points: MutableList<MeshPoint> = mutableListOf()
     val mesh = pointMesh {
         pointSize = 3f
@@ -92,8 +93,9 @@ fun makePointMesh(): Pair<Mesh, KdTree<MeshPoint>> {
             points.add(MeshPoint(pt.x, pt.y, pt.z, idx))
         }
     }
-    val tree = timedMs("Constructed k-d-Tree with ${points.size} points in ") {
-        pointTree(points)
+    val tree = timedMs("Constructed spatial tree with ${points.size} points in ") {
+        //pointKdTree(points)
+        pointOcTree(points)
     }
     return Pair(mesh, tree)
 }
@@ -113,7 +115,7 @@ fun makeBillboardPointMesh(): Pair<BillboardMesh, KdTree<MeshPoint>> {
     }
 
     val tree = timedMs("Constructed k-d-Tree with ${points.size} points in ") {
-        pointTree(points)
+        pointKdTree(points)
     }
     return Pair(mesh, tree)
 }
