@@ -274,6 +274,13 @@ open class Mat4d {
         return result
     }
 
+    fun add(other: Mat4d): Mat4d {
+        for (i in 0..15) {
+            matrix[offset + i] += other.matrix[other.offset + i]
+        }
+        return this
+    }
+
     fun mul(other: Mat4d): Mat4d {
         synchronized(tmpMatLock) {
             mul(other, tmpMatA)
@@ -312,6 +319,13 @@ open class Mat4d {
     fun set(doubles: List<Double>): Mat4d {
         for (i in 0..15) {
             matrix[offset + i] = doubles[i]
+        }
+        return this
+    }
+
+    fun setZero(): Mat4d {
+        for (i in 0..15) {
+            matrix[offset + i] = 0.0
         }
         return this
     }

@@ -1,18 +1,19 @@
-package de.fabmax.kool.math
+package de.fabmax.kool.util
+
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.partition
 
 /**
  * @author fabmax
  */
 
-fun <T: Vec3f> pointKdTree(items: List<T>, bucketSz: Int = 20): KdTree<T> {
-    return KdTree(items, Vec3fSize, bucketSz)
-}
-
 class KdTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20) : SpatialTree<T>(itemSize) {
 
     override val root: KdNode
+    override val size: Int
+        get() = items.size
 
-    private val items = MutableList<T>(items.size, items::get)
+    private val items = MutableList(items.size, items::get)
 
     private val cmpX: (T, T) -> Int = { a, b -> itemSize.getX(a).compareTo(itemSize.getX(b)) }
     private val cmpY: (T, T) -> Int = { a, b -> itemSize.getY(a).compareTo(itemSize.getY(b)) }
@@ -22,7 +23,22 @@ class KdTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20) 
         root = KdNode(items.indices, 0, bucketSz)
     }
 
-    inner class KdNode(override val nodeRange: IntRange, val depth: Int, bucketSz: Int) : SpatialTree<T>.Node() {
+    override fun contains(element: T) = root.contains(element)
+
+    override fun containsAll(elements: Collection<T>): Boolean {
+        for (elem in elements) {
+            if (!contains(elem)) {
+                return false
+            }
+        }
+        return true
+    }
+
+    override fun isEmpty() = items.isEmpty()
+
+    override fun iterator() = items.iterator()
+
+    inner class KdNode(override val nodeRange: IntRange, depth: Int, bucketSz: Int) : Node(depth) {
         override val children = mutableListOf<KdNode>()
         override val items: List<T>
             get() = this@KdTree.items
@@ -49,6 +65,24 @@ class KdTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20) 
 
                 children.add(KdNode(nodeRange.first..k, depth + 1, bucketSz))
                 children.add(KdNode((k+1)..nodeRange.last, depth + 1, bucketSz))
+            }
+        }
+
+        fun contains(item: T): Boolean {
+            if (isLeaf) {
+                for (i in nodeRange) {
+                    if (items[i] == item) {
+                        return true
+                    }
+                }
+                return false
+
+            } else {
+                return when {
+                    children[0].bounds.isIncluding(itemSize.getX(item), itemSize.getY(item), itemSize.getZ(item)) -> children[0].contains(item)
+                    children[1].bounds.isIncluding(itemSize.getX(item), itemSize.getY(item), itemSize.getZ(item)) -> children[1].contains(item)
+                    else -> false
+                }
             }
         }
     }

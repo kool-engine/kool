@@ -54,6 +54,7 @@ open class Random(seed: Int) {
         return x + y + z
     }
     fun randomI(min: Int, max: Int): Int = abs(randomI()) % (max - min + 1) + min
+    fun randomI(rng: IntRange): Int = randomI(rng.first, rng.last)
 
     fun randomF(): Float = abs(randomI()) / Int.MAX_VALUE.toFloat()
     fun randomF(min: Float, max: Float): Float = randomF() * (max - min) + min

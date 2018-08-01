@@ -1,6 +1,7 @@
-package de.fabmax.kool.math
+package de.fabmax.kool.util
 
-import de.fabmax.kool.util.ObjectPool
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
 import kotlin.math.sqrt
 
 
@@ -68,13 +69,15 @@ open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
     var maxDistance = 0f
 
     private val itemRecycler = ObjectPool { Item<T>() }
-    private val items = mutableListOf<Item<T>>()
 
-    constructor(center: Vec3f, k: Int, maxRadius: Float = 1e9f) : this() {
+    // store items in a priority queue, farthest distance first
+    private val items = PriorityQueue<Item<T>>(Comparator { a, b -> b.dSqr.compareTo(a.dSqr) })
+
+    constructor(center: Vec3f, k: Int, maxRadius: Float = MAX_RADIUS) : this() {
         setup(center, k, maxRadius)
     }
 
-    fun setup(center: Vec3f, k: Int, maxRadius: Float = 1e9f): KNearestTraverser<T> {
+    fun setup(center: Vec3f, k: Int, maxRadius: Float = MAX_RADIUS): KNearestTraverser<T> {
         this.center.set(center)
         this.k = k
         this.radiusSqr = maxRadius * maxRadius
@@ -86,11 +89,10 @@ open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
         maxDistance = 0f
 
         if (!items.isEmpty()) {
-            maxDistance = sqrt(items.last().dSqr)
-            for (i in items.indices) {
-                result += items[i].item
+            maxDistance = sqrt(items.peek().dSqr)
+            while (!items.isEmpty()) {
+                result += items.poll().item
             }
-            items.clear()
         }
         itemRecycler.recycleAll()
     }
@@ -101,7 +103,7 @@ open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
             radiusSqr
         } else {
             // result already contains k items, only traverse nodes nearer than farthest item
-            items[k-1].dSqr
+            items.peek().dSqr
         }
         candidates.removeCandidatesOutOfSqrDist(center, remThresh)
 
@@ -124,7 +126,7 @@ open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
             val dSqr = sqrDistance(tree, it)
-            if (dSqr < radiusSqr && (items.size < k || dSqr < items[k-1].dSqr)) {
+            if (dSqr < radiusSqr && (items.size < k || dSqr < items.peek().dSqr)) {
                 insert(it, dSqr)
             }
         }
@@ -138,32 +140,10 @@ open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
     }
 
     private fun insert(value: T, dSqr: Float) {
-        val maxDSqr = if (items.isEmpty()) {
-            Float.MAX_VALUE
-        } else {
-            items.last().dSqr
+        if (items.size == k) {
+            items.poll()
         }
-
-        if (dSqr >= maxDSqr) {
-            // insert item is further away than previous last item, insert it in the end
-            // assert (items.size < k) {
-            items += itemRecycler.get().set(value, dSqr)
-
-        } else {
-            // insert item, maintaining distance order
-            // fixme: not very efficient, priority queue would be better but small k should be fine
-            items += itemRecycler.get().set(value, dSqr)
-            for (i in items.lastIndex downTo 1) {
-                if (items[i].dSqr < items[i-1].dSqr) {
-                    items[i] = items[i-1].also { items[i-1] = items[i] }
-                } else {
-                    break
-                }
-            }
-            if (items.size > k) {
-                items.removeAt(items.lastIndex)
-            }
-        }
+        items += itemRecycler.get().set(value, dSqr)
     }
 
     private class Item<T: Any> {
@@ -175,6 +155,10 @@ open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
             this.dSqr = dSqr
             return this
         }
+    }
+
+    companion object {
+        const val MAX_RADIUS = 1.8446743E19f     // sqrt(Float.MAX_VALUE)
     }
 }
 

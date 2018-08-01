@@ -177,6 +177,12 @@ class BoundingBox() {
                 point.z >= min.z && point.z <= max.z
     }
 
+    fun isIncluding(x: Float, y: Float, z: Float): Boolean {
+        return x >= min.x && x <= max.x &&
+                y >= min.y && y <= max.y &&
+                z >= min.z && z <= max.z
+    }
+
     fun isIncluding(aabb: BoundingBox): Boolean {
         return isIncluding(aabb.min) && isIncluding(aabb.max)
     }

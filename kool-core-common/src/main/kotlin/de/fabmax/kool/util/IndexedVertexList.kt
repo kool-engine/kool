@@ -13,21 +13,36 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         internal val GROW_FACTOR = 2.0f
     }
 
+    /**
+     * Number of floats per vertex. E.g. a vertex containing only a position consists of 3 floats.
+     */
     val vertexSizeF: Int
+
+    /**
+     * Number of float bytes per vertex. E.g. a vertex containing only a position consists of 3 * 4 = 12 bytes.
+     */
     val strideBytesF: Int
+
+    /**
+     * Number of ints per vertex. E.g. a vertex with 4 bone indices consists of 4 ints.
+     */
     val vertexSizeI: Int
+
+    /**
+     * Number of int byte per vertex. E.g. a vertex with 4 bone indices consists of 4 * 4 = 16 bytes.
+     */
     val strideBytesI: Int
 
+    /**
+     * Number of vertices. Equal to [dataF.position] / [vertexSizeF] and [dataI.position] / [vertexSizeI].
+     */
     var size = 0
     val lastIndex
         get() = size - 1
 
     var dataF: Float32Buffer
-        private set
     var dataI: Uint32Buffer
-        private set
     var indices = createUint32Buffer(INITIAL_SIZE)
-        private set
 
     val attributeOffsets: Map<Attribute, Int>
 
@@ -140,6 +155,29 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         for (idx in indices.indices) {
             addIndex(indices[idx])
         }
+    }
+
+    fun shrinkIndices(newSize: Int) {
+        if (newSize > indices.position) {
+            throw KoolException("new size must be less (or equal) than old size")
+        }
+
+        indices.position = newSize
+        indices.limit = indices.capacity
+    }
+
+    fun shrinkVertices(newSize: Int) {
+        if (newSize > size) {
+            throw KoolException("new size must be less (or equal) than old size")
+        }
+
+        size = newSize
+
+        dataF.position = newSize * vertexSizeF
+        dataF.limit = dataF.capacity
+
+        dataI.position = newSize * vertexSizeI
+        dataI.limit = dataI.capacity
     }
 
     fun clear() {

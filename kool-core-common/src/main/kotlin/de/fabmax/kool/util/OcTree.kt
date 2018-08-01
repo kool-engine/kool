@@ -1,25 +1,29 @@
-package de.fabmax.kool.math
+package de.fabmax.kool.util
 
-import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.KoolException
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
 import kotlin.math.max
 
-fun <T: Vec3f> pointOcTree(items: List<T>, bucketSz: Int = 20): OcTree<T> {
-    return OcTree(items, Vec3fSize, bucketSz)
-}
-
-class OcTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20, padding: Float = 0.1f) : SpatialTree<T>(itemSize) {
+class OcTree<T: Any>(itemSize: ItemSize<T>, items: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), padding: Float = 0.1f, bucketSz: Int = 20) :
+        SpatialTree<T>(itemSize) {
 
     override val root: OcNode
+    override val size: Int
+        get() = root.size
 
     private val emptyItems = mutableListOf<T>()
 
     init {
         // determine bounds of items
-        val bounds = BoundingBox()
         val tmpPt = MutableVec3f()
         items.forEach {
             bounds.add(itemSize.getMin(it, tmpPt))
             bounds.add(itemSize.getMax(it, tmpPt))
+        }
+
+        if (bounds.isEmpty) {
+            throw KoolException("OcTree bounds are empty, specify bounds manually")
         }
 
         // cubify bounds and add padding
@@ -32,13 +36,83 @@ class OcTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20, 
         items.forEach(root::add)
     }
 
-    inner class OcNode(bounds: BoundingBox, val depth: Int, val bucketSz: Int) : SpatialTree<T>.Node() {
+    operator fun plusAssign(item: T) = root.add(item)
+    fun add(item: T) = root.add(item)
+
+    operator fun minusAssign(item: T) { remove(item) }
+    fun remove(item: T): Boolean {
+        val success = root.remove(item)
+        if (!success) {
+            logW { "Failed to remove: $item" }
+            forEach {
+                if (it == item) {
+                    logE { "found in tree!" }
+                }
+            }
+        }
+        return success
+    }
+
+    override fun iterator(): Iterator<T> = object : Iterator<T> {
+        val leafs = mutableListOf<OcTree<T>.OcNode>()
+        val leafIt: Iterator<OcTree<T>.OcNode>
+        var currentLeaf: OcTree<T>.OcNode? = null
+        var i = 0
+
+        init {
+            collectLeafs(root)
+            leafIt = leafs.iterator()
+            if (leafIt.hasNext()) {
+                currentLeaf = leafIt.next()
+            }
+        }
+
+        fun collectLeafs(node: OcTree<T>.OcNode) {
+            if (node.isLeaf) {
+                if (!node.items.isEmpty()) {
+                    leafs += node
+                }
+            } else {
+                for (i in node.children.indices) {
+                    collectLeafs(node.children[i])
+                }
+            }
+        }
+
+        override fun hasNext(): Boolean = leafIt.hasNext() || i < currentLeaf?.size ?: 0
+
+        override fun next(): T {
+            if (currentLeaf == null) {
+                throw NoSuchElementException()
+            }
+            if (i == currentLeaf!!.size) {
+                currentLeaf = leafIt.next()
+                i = 0
+            }
+            return currentLeaf!!.items[i++]
+        }
+    }
+
+    override fun contains(element: T) = root.contains(element)
+
+    override fun containsAll(elements: Collection<T>): Boolean {
+        for (elem in elements) {
+            if (!contains(elem)) {
+                return false
+            }
+        }
+        return true
+    }
+
+    override fun isEmpty(): Boolean = size == 0
+
+    inner class OcNode(bounds: BoundingBox, depth: Int, val bucketSz: Int) : Node(depth) {
         override val children = mutableListOf<OcNode>()
 
         private var mutItems = mutableListOf<T>()
         override val items
             get() = mutItems
-        var numItems = 0
+        var size = 0
             private set
 
         override val nodeRange: IntRange
@@ -51,7 +125,11 @@ class OcTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20, 
         operator fun plusAssign(item: T) = add(item)
 
         fun add(item: T) {
-            numItems++
+            if (!bounds.isIncluding(Vec3f(itemSize.getX(item), itemSize.getY(item), itemSize.getZ(item)))) {
+                logE { "item is out of node bounds:\n  $bounds\n  $item" }
+            }
+
+            size++
             if (isLeaf) {
                 if (mutItems.size < bucketSz) {
                     mutItems.add(item)
@@ -75,11 +153,22 @@ class OcTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20, 
                 children[childIndexForItem(item)].remove(item)
             }
 
-            if (success && --numItems < bucketSz) {
-                merge()
+            if (success) {
+                size--
+                if (!isLeaf && size < bucketSz) {
+                    merge()
+                }
             }
 
             return success
+        }
+
+        fun contains(item: T): Boolean {
+            return if (isLeaf) {
+                mutItems.contains(item)
+            } else {
+                children[childIndexForItem(item)].contains(item)
+            }
         }
 
         private fun addInChild(item: T) {
@@ -116,9 +205,8 @@ class OcTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20, 
 
         private fun merge() {
             mutItems = mutableListOf()
-            children.forEach {
-                // assert(it.isLeaf)
-                mutItems.addAll(it.mutItems)
+            for (i in children.indices) {
+                mutItems.addAll(children[i].mutItems)
             }
             children.clear()
         }

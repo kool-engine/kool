@@ -248,6 +248,13 @@ open class Mat4f {
         return result
     }
 
+    fun add(other: Mat4f): Mat4f {
+        for (i in 0..15) {
+            matrix[offset + i] += other.matrix[other.offset + i]
+        }
+        return this
+    }
+
     fun mul(other: Mat4f): Mat4f {
         synchronized(tmpMatLock) {
             mul(other, tmpMatA)
@@ -286,6 +293,13 @@ open class Mat4f {
     fun set(floats: List<Float>): Mat4f {
         for (i in 0..15) {
             matrix[offset + i] = floats[i]
+        }
+        return this
+    }
+
+    fun setZero(): Mat4f {
+        for (i in 0..15) {
+            matrix[offset + i] = 0f
         }
         return this
     }
