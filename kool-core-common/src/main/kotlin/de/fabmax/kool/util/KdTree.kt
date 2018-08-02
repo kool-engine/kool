@@ -7,7 +7,7 @@ import de.fabmax.kool.math.partition
  * @author fabmax
  */
 
-class KdTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20) : SpatialTree<T>(itemSize) {
+class KdTree<T: Any>(items: List<T>, itemDim: ItemDim<T>, bucketSz: Int = 20) : SpatialTree<T>(itemDim) {
 
     override val root: KdNode
     override val size: Int
@@ -15,9 +15,9 @@ class KdTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20) 
 
     private val items = MutableList(items.size, items::get)
 
-    private val cmpX: (T, T) -> Int = { a, b -> itemSize.getX(a).compareTo(itemSize.getX(b)) }
-    private val cmpY: (T, T) -> Int = { a, b -> itemSize.getY(a).compareTo(itemSize.getY(b)) }
-    private val cmpZ: (T, T) -> Int = { a, b -> itemSize.getZ(a).compareTo(itemSize.getZ(b)) }
+    private val cmpX: (T, T) -> Int = { a, b -> itemDim.getX(a).compareTo(itemDim.getX(b)) }
+    private val cmpY: (T, T) -> Int = { a, b -> itemDim.getY(a).compareTo(itemDim.getY(b)) }
+    private val cmpZ: (T, T) -> Int = { a, b -> itemDim.getZ(a).compareTo(itemDim.getZ(b)) }
 
     init {
         root = KdNode(items.indices, 0, bucketSz)
@@ -40,16 +40,18 @@ class KdTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20) 
 
     inner class KdNode(override val nodeRange: IntRange, depth: Int, bucketSz: Int) : Node(depth) {
         override val children = mutableListOf<KdNode>()
+        override val size: Int
         override val items: List<T>
             get() = this@KdTree.items
 
         init {
             val tmpVec = MutableVec3f()
+            size = nodeRange.last - nodeRange.first + 1
             bounds.batchUpdate {
                 for (i in nodeRange) {
                     val it = items[i]
-                    add(itemSize.getMin(it, tmpVec))
-                    add(itemSize.getMax(it, tmpVec))
+                    add(itemDim.getMin(it, tmpVec))
+                    add(itemDim.getMax(it, tmpVec))
                 }
             }
 
@@ -79,8 +81,8 @@ class KdTree<T: Any>(items: List<T>, itemSize: ItemSize<T>, bucketSz: Int = 20) 
 
             } else {
                 return when {
-                    children[0].bounds.isIncluding(itemSize.getX(item), itemSize.getY(item), itemSize.getZ(item)) -> children[0].contains(item)
-                    children[1].bounds.isIncluding(itemSize.getX(item), itemSize.getY(item), itemSize.getZ(item)) -> children[1].contains(item)
+                    children[0].bounds.isIncluding(itemDim.getX(item), itemDim.getY(item), itemDim.getZ(item)) -> children[0].contains(item)
+                    children[1].bounds.isIncluding(itemDim.getX(item), itemDim.getY(item), itemDim.getZ(item)) -> children[1].contains(item)
                     else -> false
                 }
             }

@@ -29,8 +29,8 @@ actual fun getMemoryInfo(): String {
     return "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB"
 }
 
-actual fun formatDouble(d: Double, precision: Int): String =
-        java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", d)
+actual fun Double.toString(precision: Int): String =
+        java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", this)
 
 internal object DesktopImpl {
     private var ctx: Lwjgl3Context? = null

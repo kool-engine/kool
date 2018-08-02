@@ -23,13 +23,13 @@ actual fun now(): Double = js("performance.now()")
 
 actual fun getMemoryInfo(): String = ""
 
-actual fun formatDouble(d: Double, precision: Int): String {
+actual fun Double.toString(precision: Int): String {
     val p = precision.clamp(0, 12)
     if (p == 0) {
-        return "${round(d).toLong()}"
+        return "${round(this).toLong()}"
     }
 
-    val shifted = round(d * 10.0.pow(p)).toLong()
+    val shifted = round(this * 10.0.pow(p)).toLong()
     var str = "$shifted"
     var i = str.length - precision
     while (i < 1) {

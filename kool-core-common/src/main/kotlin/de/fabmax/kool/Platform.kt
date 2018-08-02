@@ -8,6 +8,6 @@ expect fun now(): Double
 
 expect fun getMemoryInfo(): String
 
-expect fun formatDouble(d: Double, precision: Int): String
+expect fun Double.toString(precision: Int): String
 
-fun formatFloat(f: Float, precision: Int): String = formatDouble(f.toDouble(), precision)
+fun Float.toString(precision: Int): String = this.toDouble().toString(precision)

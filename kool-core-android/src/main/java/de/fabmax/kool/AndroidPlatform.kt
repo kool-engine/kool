@@ -9,8 +9,8 @@ import java.util.*
 
 actual fun now(): Double = System.nanoTime() / 1e6
 
-actual fun formatDouble(d: Double, precision: Int): String =
-        java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", d)
+actual fun Double.toString(precision: Int): String =
+        java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", this)
 
 actual fun getMemoryInfo(): String {
     val rt = Runtime.getRuntime()

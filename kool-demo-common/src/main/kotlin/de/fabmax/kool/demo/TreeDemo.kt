@@ -3,7 +3,6 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.TextureProps
 import de.fabmax.kool.assetTexture
-import de.fabmax.kool.formatFloat
 import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_REPEAT
 import de.fabmax.kool.math.Vec3f
@@ -12,6 +11,7 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.MeshBuilder
@@ -135,7 +135,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 layoutSpec.setOrigin(dps(380f, true), dps(110f, true), zero())
                 layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = formatFloat(treeGen.growDistance, 2)
+                text = treeGen.growDistance.toString(2)
             }
             +growDistVal
             +slider("growDist") {
@@ -145,7 +145,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.growDistance = value
-                    growDistVal.text = formatFloat(value, 2)
+                    growDistVal.text = value.toString(2)
                 }
             }
 
@@ -158,7 +158,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 layoutSpec.setOrigin(dps(380f, true), dps(75f, true), zero())
                 layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = formatFloat(treeGen.killDistance, 2)
+                text = treeGen.killDistance.toString(2)
             }
             +killDistVal
             +slider("killDist") {
@@ -168,7 +168,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.killDistance = value
-                    killDistVal.text = formatFloat(value, 2)
+                    killDistVal.text = value.toString(2)
                 }
             }
 
@@ -204,7 +204,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 layoutSpec.setOrigin(dps(380f, true), dps(5f, true), zero())
                 layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                text = formatFloat(treeGen.radiusOfInfluence, 2)
+                text = treeGen.radiusOfInfluence.toString(2)
             }
             +infRadiusVal
             +slider("killDist") {
@@ -214,7 +214,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.radiusOfInfluence = value
-                    infRadiusVal.text = formatFloat(value, 2)
+                    infRadiusVal.text = value.toString(2)
                 }
             }
 

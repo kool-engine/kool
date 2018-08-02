@@ -5,8 +5,8 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import kotlin.math.max
 
-class OcTree<T: Any>(itemSize: ItemSize<T>, items: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), padding: Float = 0.1f, bucketSz: Int = 20) :
-        SpatialTree<T>(itemSize) {
+class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), padding: Float = 0.1f, bucketSz: Int = 20) :
+        SpatialTree<T>(itemDim) {
 
     override val root: OcNode
     override val size: Int
@@ -18,8 +18,8 @@ class OcTree<T: Any>(itemSize: ItemSize<T>, items: List<T> = emptyList(), bounds
         // determine bounds of items
         val tmpPt = MutableVec3f()
         items.forEach {
-            bounds.add(itemSize.getMin(it, tmpPt))
-            bounds.add(itemSize.getMax(it, tmpPt))
+            bounds.add(itemDim.getMin(it, tmpPt))
+            bounds.add(itemDim.getMax(it, tmpPt))
         }
 
         if (bounds.isEmpty) {
@@ -107,13 +107,13 @@ class OcTree<T: Any>(itemSize: ItemSize<T>, items: List<T> = emptyList(), bounds
     override fun isEmpty(): Boolean = size == 0
 
     inner class OcNode(bounds: BoundingBox, depth: Int, val bucketSz: Int) : Node(depth) {
+        override var size = 0
+            private set
         override val children = mutableListOf<OcNode>()
 
         private var mutItems = mutableListOf<T>()
         override val items
             get() = mutItems
-        var size = 0
-            private set
 
         override val nodeRange: IntRange
             get() = items.indices
@@ -125,7 +125,7 @@ class OcTree<T: Any>(itemSize: ItemSize<T>, items: List<T> = emptyList(), bounds
         operator fun plusAssign(item: T) = add(item)
 
         fun add(item: T) {
-            if (!bounds.isIncluding(Vec3f(itemSize.getX(item), itemSize.getY(item), itemSize.getZ(item)))) {
+            if (!bounds.isIncluding(Vec3f(itemDim.getX(item), itemDim.getY(item), itemDim.getZ(item)))) {
                 logE { "item is out of node bounds:\n  $bounds\n  $item" }
             }
 
@@ -212,9 +212,9 @@ class OcTree<T: Any>(itemSize: ItemSize<T>, items: List<T> = emptyList(), bounds
         }
 
         private fun childIndexForItem(item: T): Int {
-            return if (itemSize.getX(item) < bounds.center.x) { 0 } else { 4 } or
-                    if (itemSize.getY(item) < bounds.center.y) { 0 } else { 2 } or
-                    if (itemSize.getZ(item) < bounds.center.z) { 0 } else { 1 }
+            return if (itemDim.getX(item) < bounds.center.x) { 0 } else { 4 } or
+                    if (itemDim.getY(item) < bounds.center.y) { 0 } else { 2 } or
+                    if (itemDim.getZ(item) < bounds.center.z) { 0 } else { 1 }
         }
     }
 }

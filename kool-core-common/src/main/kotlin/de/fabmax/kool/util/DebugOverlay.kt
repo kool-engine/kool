@@ -1,7 +1,6 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.formatDouble
 import de.fabmax.kool.getMemoryInfo
 import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.gl.GlResource
@@ -13,6 +12,7 @@ import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.toString
 import kotlin.math.min
 
 /**
@@ -63,7 +63,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                 textColor.setCustom(root.theme.accentColor)
 
                 onPreRender += { c ->
-                    text = "${formatDouble(c.fps, 1)} fps"
+                    text = "${c.fps.toString(1)} fps"
                 }
             }
 
@@ -155,7 +155,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
-                        text = "$num Textures: ${formatDouble(mem / (1024.0*1024.0), 1)}M"
+                        text = "$num Textures: ${(mem / (1024.0*1024.0)).toString(1)}M"
                     }
                 }
             }
@@ -175,7 +175,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
-                        text = "$num Buffers: ${formatDouble(mem / (1024.0*1024.0), 1)}M"
+                        text = "$num Buffers: ${(mem / (1024.0*1024.0)).toString(1)}M"
                     }
                 }
             }

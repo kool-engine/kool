@@ -1,7 +1,6 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.formatFloat
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.physics.BoxMesh
 import de.fabmax.kool.modules.physics.CollisionWorld
@@ -15,6 +14,7 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
@@ -155,7 +155,7 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
             val gravityLbl = label("gravityLbl") {
                 layoutSpec.setOrigin(dps(210f, true), dps(40f, true), zero())
                 layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
-                text = formatFloat(boxWorld!!.world.gravity.length(), 2)
+                text = boxWorld!!.world.gravity.length().toString(2)
             }
             +gravityLbl
             +slider("gravity", 0f, 10f,  boxWorld!!.world.gravity.length()) {
@@ -166,7 +166,7 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
                 onValueChanged += { value ->
                     val grav = boxWorld!!.world.gravity
                     grav.set(0f, -value, 0f)
-                    gravityLbl.text = formatFloat(grav.length(), 2)
+                    gravityLbl.text = grav.length().toString(2)
                 }
             }
 

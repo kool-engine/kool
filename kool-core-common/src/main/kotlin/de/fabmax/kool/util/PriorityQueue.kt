@@ -1,11 +1,20 @@
 package de.fabmax.kool.util
 
-class PriorityQueue<T>(private val comparator: Comparator<T>? = null) : Collection<T> {
+class PriorityQueue<T>(comparator: Comparator<T>? = null) : Collection<T> {
 
+    private val comparator: Comparator<T>
     private val elements = mutableListOf<T>()
 
     override val size: Int
         get() = elements.size
+
+    init {
+        this.comparator = comparator ?: Comparator { a, b ->
+            (a as Comparable<T>).compareTo(b)
+        }
+    }
+
+    fun clear() = elements.clear()
 
     fun add(element: T) {
         elements += element
@@ -55,12 +64,7 @@ class PriorityQueue<T>(private val comparator: Comparator<T>? = null) : Collecti
         }
     }
 
-    private fun greater(i: Int, j: Int): Boolean {
-        return when {
-            comparator != null -> comparator.compare(elements[i], elements[j]) > 0
-            else -> (elements[i] as Comparable<T>) > elements[j]
-        }
-    }
+    private fun greater(i: Int, j: Int) = comparator.compare(elements[i], elements[j]) > 0
 
     override fun isEmpty() = elements.isEmpty()
 

@@ -2,7 +2,6 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.formatFloat
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
@@ -11,6 +10,7 @@ import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.serialization.loadMesh
@@ -111,7 +111,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                     layoutSpec.setSize(pcs(25f), dps(35f), uns(0f))
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
-                    text = formatFloat(sqrt(movementSpeed), 2)
+                    text = sqrt(movementSpeed).toString(2)
                 }
                 +speedLabel
                 +Slider("speedSlider", 0.0f, 1f, sqrt(movementSpeed), root).apply {
@@ -127,7 +127,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                                 runWeight > 0f -> 1f - runWeight
                                 else -> 1f - idleWeight
                             }
-                            speedLabel.text = formatFloat(value, 2)
+                            speedLabel.text = value.toString(2)
 
                             armature!!.getAnimation("Armature|idle")?.weight = idleWeight
                             armature!!.getAnimation("Armature|walk")?.weight = walkWeight
@@ -148,7 +148,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                     layoutSpec.setSize(pcs(25f), dps(40f), uns(0f))
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
-                    text = formatFloat(slowMotion, 2)
+                    text = slowMotion.toString(2)
                 }
                 +slowMoLabel
                 +Slider("slowMoSlider", 0.0f, 1f, slowMotion, root).apply {
@@ -156,7 +156,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                     layoutSpec.setSize(pcs(100f), dps(50f), uns(0f))
                     onValueChanged += { value ->
                         slowMotion = value
-                        slowMoLabel.text = formatFloat(slowMotion, 2)
+                        slowMoLabel.text = slowMotion.toString(2)
                     }
                 }
             }

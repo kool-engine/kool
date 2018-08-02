@@ -1,7 +1,6 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.formatDouble
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.globe.Globe
 import de.fabmax.kool.modules.globe.GlobeDragHandler
@@ -13,6 +12,7 @@ import de.fabmax.kool.scene.doubleprec.DoublePrecisionRoot
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
@@ -140,12 +140,12 @@ class GlobeUi(var globe: Globe?, val ctx: KoolContext) {
 
                 val globe = this@GlobeUi.globe
                 if (globe != null) {
-                    val lat = formatDouble(globe.centerLat, 5)
-                    val lon = formatDouble(globe.centerLon, 5)
+                    val lat = globe.centerLat.toString(5)
+                    val lon = globe.centerLon.toString(5)
                     val hgt = if (globe.cameraHeight > 10000) {
-                        "${formatDouble(globe.cameraHeight / 1000.0, 1)} km"
+                        "${(globe.cameraHeight / 1000.0).toString(1)} km"
                     } else {
-                        "${formatDouble(globe.cameraHeight, 1)} m"
+                        "${globe.cameraHeight.toString(1)} m"
                     }
                     posLbl.text = "Center: $lat°, $lon°  $hgt"
                     width = posLbl.font.apply()?.textWidth(posLbl.text) ?: 0f

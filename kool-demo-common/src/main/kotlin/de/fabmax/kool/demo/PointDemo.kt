@@ -1,8 +1,10 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.formatDouble
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.CubicPointDistribution
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.randomF
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 
 /**
@@ -13,8 +15,8 @@ fun pointScene(): Scene {
     val (pointMesh, tree) = makePointMesh()
     //val (pointMesh, tree) = makeBillboardPointMesh()
 
-    val trav = InRadiusTraverser<MeshPoint>(Vec3f.ZERO, 1f)
-    //val trav = KNearestTraverser<MeshPoint>(Vec3f.ZERO, 3000, 1f)
+    //val trav = InRadiusTraverser<MeshPoint>(Vec3f.ZERO, 1f)
+    val trav = KNearestTraverser<MeshPoint>(Vec3f.ZERO, 3000)
     val data = pointMesh.meshData
     val ptVertCnt = if (pointMesh is BillboardMesh) 4 else 1
 
@@ -50,9 +52,9 @@ fun pointScene(): Scene {
                 }
                 val updateT = t.takeMs()
                 logI {
-                    "In-radius search retrieved ${trav.result.size} points, " +
-                            "took ${formatDouble(searchT, 3)} ms; " +
-                            "Point update took ${formatDouble(updateT, 3)} ms"
+                    "Tree traversal search retrieved ${trav.result.size} points, " +
+                            "took ${searchT.toString(3)} ms; " +
+                            "Point update took ${updateT.toString(3)} ms"
                 }
 
                 data.isSyncRequired = true
@@ -94,8 +96,8 @@ fun makePointMesh(): Pair<Mesh, SpatialTree<MeshPoint>> {
         }
     }
     val tree = timedMs("Constructed spatial tree with ${points.size} points in ") {
-        //pointKdTree(points)
-        pointOcTree(points)
+        pointKdTree(points)
+        //pointOcTree(points)
     }
     return Pair(mesh, tree)
 }
