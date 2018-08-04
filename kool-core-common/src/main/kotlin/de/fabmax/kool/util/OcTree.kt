@@ -36,8 +36,13 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
         items.forEach(root::add)
     }
 
-    operator fun plusAssign(item: T) = root.add(item)
-    fun add(item: T) = root.add(item)
+    operator fun plusAssign(item: T) = add(item)
+    fun add(item: T) {
+        if (!root.bounds.isIncluding(itemDim.getX(item), itemDim.getY(item), itemDim.getZ(item))) {
+            throw KoolException("Item not in tree bounds: (${itemDim.getX(item)}, ${itemDim.getY(item)}, ${itemDim.getZ(item)}), bounds: ${root.bounds}")
+        }
+        root.add(item)
+    }
 
     operator fun minusAssign(item: T) { remove(item) }
     fun remove(item: T): Boolean {
@@ -119,19 +124,22 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
             get() = items.indices
 
         init {
+            if (depth > MAX_DEPTH) {
+                throw KoolException("Octree is too deep")
+            }
             this.bounds.set(bounds)
         }
 
         operator fun plusAssign(item: T) = add(item)
 
-        fun add(item: T) {
+        internal fun add(item: T) {
             if (!bounds.isIncluding(Vec3f(itemDim.getX(item), itemDim.getY(item), itemDim.getZ(item)))) {
                 logE { "item is out of node bounds:\n  $bounds\n  $item" }
             }
 
             size++
             if (isLeaf) {
-                if (mutItems.size < bucketSz) {
+                if (mutItems.size < bucketSz || depth == MAX_DEPTH) {
                     mutItems.add(item)
                 } else {
                     split()
@@ -142,11 +150,7 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
             }
         }
 
-        operator fun minusAssign(item: T) {
-            remove(item)
-        }
-
-        fun remove(item: T): Boolean {
+        internal fun remove(item: T): Boolean {
             val success = if (isLeaf) {
                 mutItems.remove(item)
             } else {
@@ -216,5 +220,9 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
                     if (itemDim.getY(item) < bounds.center.y) { 0 } else { 2 } or
                     if (itemDim.getZ(item) < bounds.center.z) { 0 } else { 1 }
         }
+    }
+
+    companion object {
+        const val MAX_DEPTH = 20
     }
 }

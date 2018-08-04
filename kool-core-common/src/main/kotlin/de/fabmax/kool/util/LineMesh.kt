@@ -1,8 +1,10 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.gl.GL_ALWAYS
 import de.fabmax.kool.gl.GL_LINES
+import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
@@ -21,22 +23,7 @@ fun lineMesh(name: String? = null, block: LineMesh.() -> Unit): LineMesh {
 
 fun wireframeMesh(triMesh: MeshData): LineMesh {
     val lines = LineMesh()
-
-    val v = triMesh[0]
-    for (i in 0 until triMesh.numVertices) {
-        v.index = i
-        lines.meshData.addVertex {
-            position.set(v.position)
-            color.set(v.color)
-        }
-    }
-    for (i in 0 until triMesh.numIndices step 3) {
-        val i1 = triMesh.vertexList.indices[i]
-        val i2 = triMesh.vertexList.indices[i + 1]
-        val i3 = triMesh.vertexList.indices[i + 2]
-        lines.meshData.addIndices(i1, i2, i2, i3, i3, i1)
-    }
-
+    lines.addWireframe(triMesh)
     return lines
 }
 
@@ -62,6 +49,27 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
             addIndex(idx0 + 1)
         }
         return idx0
+    }
+
+    fun addWireframe(triMesh: MeshData) {
+        if (triMesh.primitiveType == GL_TRIANGLES) {
+            throw KoolException("Supplied mesh is not a triangle mesh")
+        }
+
+        val v = triMesh[0]
+        for (i in 0 until triMesh.numVertices) {
+            v.index = i
+            meshData.addVertex {
+                position.set(v.position)
+                color.set(v.color)
+            }
+        }
+        for (i in 0 until triMesh.numIndices step 3) {
+            val i1 = triMesh.vertexList.indices[i]
+            val i2 = triMesh.vertexList.indices[i + 1]
+            val i3 = triMesh.vertexList.indices[i + 2]
+            meshData.addIndices(i1, i2, i2, i3, i3, i1)
+        }
     }
 
     fun clear() {

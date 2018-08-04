@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.AttributeType
+import kotlin.math.max
 import kotlin.math.round
 
 class IndexedVertexList(vertexAttributes: Set<Attribute>) {
@@ -74,33 +75,39 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         vertexIt = Vertex(0)
     }
 
-    private fun increaseDataSizeF() {
-        val newData = createFloat32Buffer(round(dataF.capacity * GROW_FACTOR).toInt())
+    private fun increaseDataSizeF(newSize: Int) {
+        val newData = createFloat32Buffer(newSize)
         dataF.flip()
         newData.put(dataF)
         dataF = newData
     }
 
-    private fun increaseDataSizeI() {
-        val newData = createUint32Buffer(round(dataI.capacity * GROW_FACTOR).toInt())
+    private fun increaseDataSizeI(newSize: Int) {
+        val newData = createUint32Buffer(newSize)
         dataI.flip()
         newData.put(dataI)
         dataI = newData
     }
 
-    private fun increaseIndicesSize() {
-        val newIdxs = createUint32Buffer(round(indices.capacity * IndexedVertexList.GROW_FACTOR).toInt())
+    private fun increaseIndicesSize(newSize: Int) {
+        val newIdxs = createUint32Buffer(newSize)
         indices.flip()
         newIdxs.put(indices)
         indices = newIdxs
     }
 
-    fun checkBufferSizes() {
-        if (dataF.remaining < vertexSizeF) {
-            increaseDataSizeF()
+    fun checkBufferSizes(reqSpace: Int = 1) {
+        if (dataF.remaining < vertexSizeF * reqSpace) {
+            increaseDataSizeF(max(round(dataF.capacity * GROW_FACTOR).toInt(), (size + reqSpace) * vertexSizeF))
         }
-        if (dataI.remaining < vertexSizeI) {
-            increaseDataSizeI()
+        if (dataI.remaining < vertexSizeI * reqSpace) {
+            increaseDataSizeI(max(round(dataI.capacity * GROW_FACTOR).toInt(), (size + reqSpace) * vertexSizeI))
+        }
+    }
+
+    fun checkIndexSize(reqSpace: Int = 1) {
+        if (indices.remaining < reqSpace) {
+            increaseIndicesSize(max(round(indices.capacity * GROW_FACTOR).toInt(), size + reqSpace))
         }
     }
 
@@ -123,6 +130,23 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         return size - 1
     }
 
+    fun addVertices(other: IndexedVertexList) {
+        val baseIdx = size
+
+        checkBufferSizes(other.size)
+        for (i in 0 until other.size) {
+            addVertex {
+                other.vertexIt.index = i
+                set(other.vertexIt)
+            }
+        }
+
+        checkIndexSize(other.indices.position)
+        for (i in 0 until other.indices.position) {
+            addIndex(baseIdx + other.indices[i])
+        }
+    }
+
     fun addVertex(position: Vec3f, normal: Vec3f? = null, color: Color? = null, texCoord: Vec2f? = null): Int {
         return addVertex {
             this.position.set(position)
@@ -140,7 +164,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
     fun addIndex(idx: Int) {
         if (indices.remaining == 0) {
-            increaseIndicesSize()
+            checkIndexSize()
         }
         indices += idx
     }
