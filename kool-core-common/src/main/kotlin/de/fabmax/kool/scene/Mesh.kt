@@ -228,6 +228,10 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     }
 
     fun generateNormals() {
+        if (!vertexAttributes.contains(Attribute.NORMALS)) {
+            return
+        }
+
         val v0 = this[0]
         val v1 = this[1]
         val v2 = this[2]
@@ -261,6 +265,10 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     }
 
     fun generateTangents() {
+        if (!vertexAttributes.contains(Attribute.TANGENTS)) {
+            return
+        }
+
         val v0 = this[0]
         val v1 = this[1]
         val v2 = this[2]

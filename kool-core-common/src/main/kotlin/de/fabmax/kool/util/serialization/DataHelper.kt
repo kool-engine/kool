@@ -7,16 +7,16 @@ import de.fabmax.kool.scene.animation.Bone
 import de.fabmax.kool.shading.Attribute
 import kotlinx.serialization.protobuf.ProtoBuf
 
-fun loadMesh(data: ByteArray): Mesh {
-    return loadMesh(ProtoBuf.load<MeshData>(data))
+fun loadMesh(data: ByteArray, generateNormals: Boolean = true, generateTangents: Boolean = false): Mesh {
+    return loadMesh(ProtoBuf.load<MeshData>(data), generateNormals, generateTangents)
 }
 
-fun loadMesh(data: MeshData): Mesh {
+fun loadMesh(data: MeshData, generateNormals: Boolean = true, generateTangents: Boolean = false): Mesh {
     val attributes = mutableSetOf(Attribute.POSITIONS)
-    if (data.hasNormals) { attributes += Attribute.NORMALS }
+    if (data.hasNormals || generateNormals) { attributes += Attribute.NORMALS }
+    if (data.hasTangents || generateTangents) { attributes += Attribute.TANGENTS }
     if (data.hasColors) { attributes += Attribute.COLORS }
     if (data.hasTexCoords) { attributes += Attribute.TEXTURE_COORDS }
-    if (data.hasTangents) { attributes += Attribute.TANGENTS }
 
     val meshData = de.fabmax.kool.scene.MeshData(attributes)
 
@@ -51,6 +51,13 @@ fun loadMesh(data: MeshData): Mesh {
         }
     } else {
         meshData.addIndices(data.indices)
+    }
+
+    if (!data.hasNormals && generateNormals) {
+        meshData.generateNormals()
+    }
+    if (!data.hasTangents && generateTangents) {
+        meshData.generateTangents()
     }
 
     return if (!data.armature.isEmpty()) {

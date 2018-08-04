@@ -10,10 +10,10 @@ import org.lwjgl.assimp.*
 
 object MeshConverter {
 
-    fun convertMeshes(file: String): List<MeshData> =
-            convertMeshes(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices))
+    fun convertMeshes(file: String, invertFaceOrientation: Boolean = false): List<MeshData> =
+            convertMeshes(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices), invertFaceOrientation)
 
-    fun convertMeshes(aiScene: AIScene): List<MeshData> {
+    fun convertMeshes(aiScene: AIScene, invertFaceOrientation: Boolean = false): List<MeshData> {
         val meshes = mutableListOf<MeshData>()
 
         val nodes = mutableMapOf<String, SceneNode>()
@@ -35,8 +35,8 @@ object MeshConverter {
 
             logD { "  primitive type: ${aiMesh.mPrimitiveTypes()}" }
             val indices = when (aiMesh.mPrimitiveTypes()) {
-                Assimp.aiPrimitiveType_TRIANGLE -> makeTriangleIndices(aiMesh)
-                Assimp.aiPrimitiveType_POLYGON -> makeTriangleIndices(aiMesh)
+                Assimp.aiPrimitiveType_TRIANGLE -> makeTriangleIndices(aiMesh, invertFaceOrientation)
+                Assimp.aiPrimitiveType_POLYGON -> makeTriangleIndices(aiMesh, invertFaceOrientation)
                 else -> emptyList()
             }
             logD { "  ${posList.size/3} verts, ${indices.size} indices" }
@@ -138,18 +138,23 @@ object MeshConverter {
         return armature
     }
 
-    private fun makeTriangleIndices(aiMesh: AIMesh): List<Int> {
+    private fun makeTriangleIndices(aiMesh: AIMesh, invertFaceOrientation: Boolean): List<Int> {
         val indices = mutableListOf<Int>()
 
         for (face in aiMesh.mFaces()) {
             val idcs = face.mIndices()
-            when (face.mNumIndices()) {
-                3 -> {
+            when {
+                face.mNumIndices() == 3 && !invertFaceOrientation -> {
                     indices += idcs[0]
                     indices += idcs[1]
                     indices += idcs[2]
                 }
-                4 -> {
+                face.mNumIndices() == 3 && invertFaceOrientation -> {
+                    indices += idcs[2]
+                    indices += idcs[1]
+                    indices += idcs[0]
+                }
+                face.mNumIndices() == 4 && !invertFaceOrientation -> {
                     indices += idcs[0]
                     indices += idcs[1]
                     indices += idcs[2]
@@ -157,6 +162,15 @@ object MeshConverter {
                     indices += idcs[0]
                     indices += idcs[2]
                     indices += idcs[3]
+                }
+                face.mNumIndices() == 4 && invertFaceOrientation -> {
+                    indices += idcs[2]
+                    indices += idcs[1]
+                    indices += idcs[0]
+
+                    indices += idcs[3]
+                    indices += idcs[2]
+                    indices += idcs[0]
                 }
                 else -> throw IllegalArgumentException("Invalid number of face vertices: ${face.mNumIndices()}")
             }
