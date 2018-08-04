@@ -30,6 +30,8 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
     private val tmpVec2 = MutableVec3f()
     private val tmpVec3 = MutableVec3f()
 
+    val vertCount: Int
+        get() = vertices.size
     val faceCount: Int
         get() = edges.size / 3
 

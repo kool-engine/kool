@@ -25,7 +25,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "globeDemo" to DemoEntry("Globe Demo") { addAll(globeScene(it)) },
             "modelDemo" to DemoEntry("Model Demo") { add(modelScene(it)) },
             "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
-            "boxDemo" to DemoEntry("Physics Demo") { addAll(collisionDemo(it)) }
+            "boxDemo" to DemoEntry("Physics Demo") { addAll(collisionDemo(it)) },
+            "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) }
     )
 
     init {

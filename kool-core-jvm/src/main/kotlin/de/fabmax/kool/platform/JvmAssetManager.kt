@@ -76,6 +76,7 @@ class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager
             try {
                 onLoad(openLocalStream(assetUrl))
             } catch (e: Exception) {
+                e.printStackTrace()
                 onError?.invoke(e)
                 throw KoolException("Failed to load asset: \"$assetUrl\"", e)
             }

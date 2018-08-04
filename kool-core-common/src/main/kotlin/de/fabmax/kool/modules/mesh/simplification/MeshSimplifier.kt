@@ -18,7 +18,7 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
 
 
     fun simplifyMesh(mesh: HalfEdgeMesh, generateNormals: Boolean = true, generateTangents: Boolean = true) {
-        logD { "Simplifying mesh: ${mesh.faceCount} faces..." }
+        logD { "Simplifying mesh: ${mesh.faceCount} faces / ${mesh.vertCount} vertices..." }
 
         val perf = PerfTimer()
         rebuildCollapseQueue(mesh)
@@ -28,7 +28,7 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
         var lastError = 0.0f
         while (candidates.isNotEmpty() && candidates.peek().error < Float.MAX_VALUE) {
             if (--rebuildQueue <= 0) {
-                rebuildQueue = max(10, mesh.faceCount / 10)
+                rebuildQueue = max(20, mesh.faceCount / 5)
                 rebuildCollapseQueue(mesh)
             }
 
@@ -40,34 +40,35 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
 
             val q1 = quadrics[candidate.edge.from.index]!!
             val q2 = quadrics[candidate.edge.to.index]!!
-            //println("${q1.vertex}, ${q2.vertex}")
 
             // update error (might has changed because of previous operations)
             candidate.error = collapseStrategy.computeCollapsePosition(q1, q2, tmpVec)
             if (candidate.error > candidates.peek().error) {
                 // update error is greater than next best candidate's error, re-add it to the queue and try next
                 candidates += candidate
-            } else {
+            } else if (candidate.error < Float.MAX_VALUE) {
                 // collapse edge
                 quadrics -= q2.vertex.index
                 q1.consume(q2)
                 mesh.collapseEdge(candidate.edge, 0f)
                 mesh.updatePosition(q1.vertex, tmpVec)
-                lastError = candidates.peek().error
-                //println("error: $lastError")
+                lastError = candidate.error
 
                 if (termCrit.isFinished(mesh, lastError)) {
                     // termination criterion stopped simplification
                     break
                 }
+            } else {
+                break
             }
         }
-
-        logD { "Mesh simplification done! ${mesh.faceCount} faces remain, last error: $lastError, took ${perf.takeSecs().toString(3)} s" }
 
         quadrics.clear()
         candidates.clear()
         mesh.rebuild(generateNormals, generateTangents)
+
+        logD { "Mesh simplification done! ${mesh.faceCount} faces / ${mesh.vertCount} vertices remain, last error: $lastError, took ${perf.takeSecs().toString(3)} s" }
+
     }
 
     fun rebuildCollapseQueue(mesh: HalfEdgeMesh) {

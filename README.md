@@ -21,6 +21,7 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 200 bodies, js is slower...).
 
 ## Features / Noticeable stuff:
+- [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo) module using error quadrics
 - Added elevation mapping in [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo) (Europe only) - Zoom in on the alps!
 - Some super-primitive [Physics Simulation](https://fabmax.github.io/kool/kool-js/?demo=boxDemo)
 - Full support of all features on all platforms
