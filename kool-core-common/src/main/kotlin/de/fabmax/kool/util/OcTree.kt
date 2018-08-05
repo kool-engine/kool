@@ -5,8 +5,8 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import kotlin.math.max
 
-class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), padding: Float = 0.1f, bucketSz: Int = 20) :
-        SpatialTree<T>(itemDim) {
+class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), padding: Float = 0.1f, bucketSz: Int = 20) :
+        SpatialTree<T>(itemAdapter) {
 
     override val root: OcNode
     override val size: Int
@@ -17,9 +17,11 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
     init {
         // determine bounds of items
         val tmpPt = MutableVec3f()
-        items.forEach {
-            bounds.add(itemDim.getMin(it, tmpPt))
-            bounds.add(itemDim.getMax(it, tmpPt))
+        bounds.batchUpdate {
+            for (i in items.indices){
+                bounds.add(itemAdapter.getMin(items[i], tmpPt))
+                bounds.add(itemAdapter.getMax(items[i], tmpPt))
+            }
         }
 
         if (bounds.isEmpty) {
@@ -33,13 +35,18 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
                 bounds.min.x + edLen + pad*2, bounds.min.y + edLen + pad*2, bounds.min.z + edLen + pad*2)
 
         root = OcNode(bounds, 0, bucketSz)
-        items.forEach(root::add)
+        for (i in items.indices) {
+            root.add(items[i])
+        }
     }
 
-    operator fun plusAssign(item: T) = add(item)
+    operator fun plusAssign(item: T) {
+        add(item)
+    }
+
     fun add(item: T) {
-        if (!root.bounds.isIncluding(itemDim.getX(item), itemDim.getY(item), itemDim.getZ(item))) {
-            throw KoolException("Item not in tree bounds: (${itemDim.getX(item)}, ${itemDim.getY(item)}, ${itemDim.getZ(item)}), bounds: ${root.bounds}")
+        if (!root.bounds.isIncluding(itemAdapter.getCenterX(item), itemAdapter.getCenterY(item), itemAdapter.getCenterZ(item))) {
+            throw KoolException("Item not in tree bounds: (${itemAdapter.getX(item)}, ${itemAdapter.getY(item)}, ${itemAdapter.getZ(item)}), bounds: ${root.bounds}")
         }
         root.add(item)
     }
@@ -130,10 +137,8 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
             this.bounds.set(bounds)
         }
 
-        operator fun plusAssign(item: T) = add(item)
-
         internal fun add(item: T) {
-            if (!bounds.isIncluding(Vec3f(itemDim.getX(item), itemDim.getY(item), itemDim.getZ(item)))) {
+            if (!isInNode(itemAdapter.getCenterX(item), itemAdapter.getCenterY(item), itemAdapter.getCenterZ(item))) {
                 logE { "item is out of node bounds:\n  $bounds\n  $item" }
             }
 
@@ -141,12 +146,13 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
             if (isLeaf) {
                 if (mutItems.size < bucketSz || depth == MAX_DEPTH) {
                     mutItems.add(item)
+                    itemAdapter.setNode(item, this)
                 } else {
                     split()
-                    addInChild(item)
+                    children[childIndexForItem(item)].add(item)
                 }
             } else {
-                addInChild(item)
+                children[childIndexForItem(item)].add(item)
             }
         }
 
@@ -175,9 +181,9 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
             }
         }
 
-        private fun addInChild(item: T) {
-            children[childIndexForItem(item)].add(item)
-        }
+        fun isInNode(center: Vec3f) = bounds.isIncluding(center)
+
+        fun isInNode(centerX: Float, centerY: Float, centerZ: Float) = bounds.isIncluding(centerX, centerY, centerZ)
 
         private fun split() {
             val x0 = bounds.min.x
@@ -203,7 +209,9 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
             children += OcNode(BoundingBox(Vec3f(x1, y1, z0), Vec3f(x2, y2, z1)), depth + 1, bucketSz)
             children += OcNode(BoundingBox(Vec3f(x1, y1, z1), Vec3f(x2, y2, z2)), depth + 1, bucketSz)
 
-            mutItems.forEach(this::addInChild)
+            for (i in mutItems.indices) {
+                children[childIndexForItem(mutItems[i])].add(mutItems[i])
+            }
             mutItems = emptyItems
         }
 
@@ -216,9 +224,9 @@ class OcTree<T: Any>(itemDim: ItemDim<T>, items: List<T> = emptyList(), bounds: 
         }
 
         private fun childIndexForItem(item: T): Int {
-            return if (itemDim.getX(item) < bounds.center.x) { 0 } else { 4 } or
-                    if (itemDim.getY(item) < bounds.center.y) { 0 } else { 2 } or
-                    if (itemDim.getZ(item) < bounds.center.z) { 0 } else { 1 }
+            return if (itemAdapter.getCenterX(item) < bounds.center.x) { 0 } else { 4 } or
+                    if (itemAdapter.getCenterY(item) < bounds.center.y) { 0 } else { 2 } or
+                    if (itemAdapter.getCenterZ(item) < bounds.center.z) { 0 } else { 1 }
         }
     }
 

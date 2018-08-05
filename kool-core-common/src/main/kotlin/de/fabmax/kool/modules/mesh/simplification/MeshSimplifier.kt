@@ -51,7 +51,7 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
                 quadrics -= q2.vertex.index
                 q1.consume(q2)
                 mesh.collapseEdge(candidate.edge, 0f)
-                mesh.updatePosition(q1.vertex, tmpVec)
+                q1.vertex.updatePosition(tmpVec)
                 lastError = candidate.error
 
                 if (termCrit.isFinished(mesh, lastError)) {
@@ -73,7 +73,7 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
 
     fun rebuildCollapseQueue(mesh: HalfEdgeMesh) {
         candidates.clear()
-        for (edge in mesh.edges) {
+        for (edge in mesh.edgeTree) {
             // only add one half edge per edge
             if (edge.from.index < edge.to.index) {
                 val q1 = quadrics.getOrPut(edge.from.index) { ErrorQuadric(edge.from) }

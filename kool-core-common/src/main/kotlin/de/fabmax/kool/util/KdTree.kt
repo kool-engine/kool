@@ -7,7 +7,7 @@ import de.fabmax.kool.math.partition
  * @author fabmax
  */
 
-class KdTree<T: Any>(items: List<T>, itemDim: ItemDim<T>, bucketSz: Int = 20) : SpatialTree<T>(itemDim) {
+class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz: Int = 20) : SpatialTree<T>(itemAdapter) {
 
     override val root: KdNode
     override val size: Int
@@ -15,9 +15,9 @@ class KdTree<T: Any>(items: List<T>, itemDim: ItemDim<T>, bucketSz: Int = 20) : 
 
     private val items = MutableList(items.size, items::get)
 
-    private val cmpX: (T, T) -> Int = { a, b -> itemDim.getX(a).compareTo(itemDim.getX(b)) }
-    private val cmpY: (T, T) -> Int = { a, b -> itemDim.getY(a).compareTo(itemDim.getY(b)) }
-    private val cmpZ: (T, T) -> Int = { a, b -> itemDim.getZ(a).compareTo(itemDim.getZ(b)) }
+    private val cmpX: (T, T) -> Int = { a, b -> itemAdapter.getX(a).compareTo(itemAdapter.getX(b)) }
+    private val cmpY: (T, T) -> Int = { a, b -> itemAdapter.getY(a).compareTo(itemAdapter.getY(b)) }
+    private val cmpZ: (T, T) -> Int = { a, b -> itemAdapter.getZ(a).compareTo(itemAdapter.getZ(b)) }
 
     init {
         root = KdNode(items.indices, 0, bucketSz)
@@ -50,8 +50,8 @@ class KdTree<T: Any>(items: List<T>, itemDim: ItemDim<T>, bucketSz: Int = 20) : 
             bounds.batchUpdate {
                 for (i in nodeRange) {
                     val it = items[i]
-                    add(itemDim.getMin(it, tmpVec))
-                    add(itemDim.getMax(it, tmpVec))
+                    add(itemAdapter.getMin(it, tmpVec))
+                    add(itemAdapter.getMax(it, tmpVec))
                 }
             }
 
@@ -67,6 +67,12 @@ class KdTree<T: Any>(items: List<T>, itemDim: ItemDim<T>, bucketSz: Int = 20) : 
 
                 children.add(KdNode(nodeRange.first..k, depth + 1, bucketSz))
                 children.add(KdNode((k+1)..nodeRange.last, depth + 1, bucketSz))
+
+            } else {
+                // this is a leaf node
+                for (i in nodeRange) {
+                    itemAdapter.setNode(items[i], this)
+                }
             }
         }
 
@@ -81,8 +87,8 @@ class KdTree<T: Any>(items: List<T>, itemDim: ItemDim<T>, bucketSz: Int = 20) : 
 
             } else {
                 return when {
-                    children[0].bounds.isIncluding(itemDim.getX(item), itemDim.getY(item), itemDim.getZ(item)) -> children[0].contains(item)
-                    children[1].bounds.isIncluding(itemDim.getX(item), itemDim.getY(item), itemDim.getZ(item)) -> children[1].contains(item)
+                    children[0].bounds.isIncluding(itemAdapter.getX(item), itemAdapter.getY(item), itemAdapter.getZ(item)) -> children[0].contains(item)
+                    children[1].bounds.isIncluding(itemAdapter.getX(item), itemAdapter.getY(item), itemAdapter.getZ(item)) -> children[1].contains(item)
                     else -> false
                 }
             }

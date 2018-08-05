@@ -9463,7 +9463,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     HalfEdgeMesh$Companion_getInstance();
     Mesh.call(this, meshData);
     this.vertices_0 = null;
-    this.edges = null;
+    this.edgeTree = null;
     this.positionOffset_0 = ensureNotNull(meshData.vertexList.attributeOffsets.get_11rb$(Attribute$Companion_getInstance().POSITIONS));
     this.tmpVec1_0 = MutableVec3f_init();
     this.tmpVec2_0 = MutableVec3f_init();
@@ -9479,11 +9479,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     this.vertices_0 = list;
     var edgeList = ArrayList_init();
+    var bounds = new BoundingBox();
     tmp$ = meshData.numIndices;
     for (var i = 0; i < tmp$; i += 3) {
       var v0 = this.vertices_0.get_za3lpa$(meshData.vertexList.indices.get_za3lpa$(i));
       var v1 = this.vertices_0.get_za3lpa$(meshData.vertexList.indices.get_za3lpa$(i + 1 | 0));
       var v2 = this.vertices_0.get_za3lpa$(meshData.vertexList.indices.get_za3lpa$(i + 2 | 0));
+      bounds.add_czzhiu$(v0).add_czzhiu$(v1).add_czzhiu$(v2);
       var e0 = new HalfEdgeMesh$HalfEdge(this, v0, v1);
       var $receiver = new HalfEdgeMesh$HalfEdge(this, v1, v2);
       e0.next = $receiver;
@@ -9520,7 +9522,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       edgeList.add_11rb$(e1);
       edgeList.add_11rb$(e2);
     }
-    this.edges = new OcTree(HalfEdgeMesh$Companion$HalfEdgeDim_getInstance(), edgeList);
+    this.edgeTree = new OcTree(HalfEdgeMesh$Companion$HalfEdgeDim_getInstance(), edgeList, bounds);
   }
   Object.defineProperty(HalfEdgeMesh.prototype, 'vertCount', {
     get: function () {
@@ -9529,7 +9531,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   });
   Object.defineProperty(HalfEdgeMesh.prototype, 'faceCount', {
     get: function () {
-      return this.edges.size / 3 | 0;
+      return this.edgeTree.size / 3 | 0;
     }
   });
   HalfEdgeMesh.prototype.generateWireframe_wuugko$ = function (lineMesh, lineColor) {
@@ -9537,7 +9539,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       lineColor = Color$Companion_getInstance().MD_PINK;
     var v0 = MutableVec3f_init();
     var v1 = MutableVec3f_init();
-    var $receiver = this.edges;
+    var $receiver = this.edgeTree;
     var destination = ArrayList_init();
     var tmp$;
     tmp$ = $receiver.iterator();
@@ -9689,30 +9691,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       var newX = srcVert.x + (delVert.x - srcVert.x) * fraction;
       var newY = srcVert.y + (delVert.y - srcVert.y) * fraction;
       var newZ = srcVert.z + (delVert.z - srcVert.z) * fraction;
-      this.updatePosition_efzdnr$(srcVert, newX, newY, newZ);
-    }
-  };
-  HalfEdgeMesh.prototype.updatePosition_rshfse$ = function (vertex, newPos) {
-    this.updatePosition_efzdnr$(vertex, newPos.x, newPos.y, newPos.z);
-  };
-  HalfEdgeMesh.prototype.updatePosition_efzdnr$ = function (vertex, x, y, z) {
-    var tmp$, tmp$_0;
-    tmp$ = vertex.edges;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      var tmp$_1;
-      this.edges.remove_trkh7z$(vertex.edges.get_za3lpa$(i));
-      if ((tmp$_1 = vertex.edges.get_za3lpa$(i).opp) != null) {
-        this.edges.remove_trkh7z$(tmp$_1);
-      }
-    }
-    vertex.setPosition_eyxpjg$(x, y, z);
-    tmp$_0 = vertex.edges;
-    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-      var tmp$_2;
-      this.edges.plusAssign_trkh7z$(vertex.edges.get_za3lpa$(i_0));
-      if ((tmp$_2 = vertex.edges.get_za3lpa$(i_0).opp) != null) {
-        this.edges.plusAssign_trkh7z$(tmp$_2);
-      }
+      srcVert.updatePosition_y2kzbl$(newX, newY, newZ);
     }
   };
   function HalfEdgeMesh$Companion() {
@@ -9721,32 +9700,45 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function HalfEdgeMesh$Companion$HalfEdgeDim() {
     HalfEdgeMesh$Companion$HalfEdgeDim_instance = this;
   }
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getX_11rb$ = function (item) {
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getX_trkh7z$ = function (item) {
     var a = item.from.x;
     var b = item.to.x;
     return Math_0.min(a, b);
   };
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getY_11rb$ = function (item) {
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getY_trkh7z$ = function (item) {
     var a = item.from.y;
     var b = item.to.y;
     return Math_0.min(a, b);
   };
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getZ_11rb$ = function (item) {
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getZ_trkh7z$ = function (item) {
     var a = item.from.z;
     var b = item.to.z;
     return Math_0.min(a, b);
   };
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getSzX_11rb$ = function (item) {
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getSzX_trkh7z$ = function (item) {
     var x = item.from.x - item.to.x;
     return Math_0.abs(x);
   };
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getSzY_11rb$ = function (item) {
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getSzY_trkh7z$ = function (item) {
     var x = item.from.y - item.to.y;
     return Math_0.abs(x);
   };
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getSzZ_11rb$ = function (item) {
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getSzZ_trkh7z$ = function (item) {
     var x = item.from.z - item.to.z;
     return Math_0.abs(x);
+  };
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getCenterX_trkh7z$ = function (item) {
+    return (item.from.x + item.to.x) * 0.5;
+  };
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getCenterY_trkh7z$ = function (item) {
+    return (item.from.y + item.to.y) * 0.5;
+  };
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getCenterZ_trkh7z$ = function (item) {
+    return (item.from.z + item.to.z) * 0.5;
+  };
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.setNode_bc9457$ = function (item, node) {
+    var tmp$;
+    item.treeNode = Kotlin.isType(tmp$ = node, OcTree$OcNode) ? tmp$ : throwCCE();
   };
   HalfEdgeMesh$Companion$HalfEdgeDim.$metadata$ = {
     kind: Kind_OBJECT,
@@ -9803,7 +9795,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return this.$outer.meshData.vertexList.dataF.get_za3lpa$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 + 2 | 0);
     }
   });
-  HalfEdgeMesh$HalfEdgeVertex.prototype.setPosition_eyxpjg$ = function (x, y, z) {
+  HalfEdgeMesh$HalfEdgeVertex.prototype.setPosition_0 = function (x, y, z) {
     this.$outer.meshData.vertexList.dataF.set_24o109$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 | 0, x);
     this.$outer.meshData.vertexList.dataF.set_24o109$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 + 1 | 0, y);
     this.$outer.meshData.vertexList.dataF.set_24o109$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 + 2 | 0, z);
@@ -9824,6 +9816,42 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     this.isDeleted = true;
   };
+  HalfEdgeMesh$HalfEdgeVertex.prototype.updatePosition_czzhiu$ = function (newPos) {
+    this.updatePosition_y2kzbl$(newPos.x, newPos.y, newPos.z);
+  };
+  HalfEdgeMesh$HalfEdgeVertex.prototype.updatePosition_y2kzbl$ = function (x, y, z) {
+    var tmp$, tmp$_0;
+    tmp$ = this.edges;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var tmp$_1, tmp$_2;
+      var ed = this.edges.get_za3lpa$(i);
+      var newX = (x + ed.to.x) * 0.5;
+      var newY = (y + ed.to.y) * 0.5;
+      var newZ = (z + ed.to.z) * 0.5;
+      if (((tmp$_1 = ed.treeNode) != null ? tmp$_1.isInNode_y2kzbl$(newX, newY, newZ) : null) !== true) {
+        this.$outer.edgeTree.remove_trkh7z$(ed);
+        ed.treeNode = null;
+        if ((tmp$_2 = ed.opp) != null) {
+          this.$outer;
+          this.$outer.edgeTree.remove_trkh7z$(tmp$_2);
+          tmp$_2.treeNode = null;
+        }
+      }
+    }
+    this.setPosition_0(x, y, z);
+    tmp$_0 = this.edges;
+    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+      var tmp$_3;
+      var ed_0 = this.edges.get_za3lpa$(i_0);
+      if (ed_0.treeNode == null) {
+        this.$outer.edgeTree.add_trkh7z$(ed_0);
+        if ((tmp$_3 = this.edges.get_za3lpa$(i_0).opp) != null) {
+          this.$outer;
+          this.$outer.edgeTree.add_trkh7z$(tmp$_3);
+        }
+      }
+    }
+  };
   HalfEdgeMesh$HalfEdgeVertex.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'HalfEdgeVertex',
@@ -9834,6 +9862,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.from_t0m3rm$_0 = from;
     this.to_z50l7l$_0 = to;
     this.isDeleted_tjy89$_0 = false;
+    this.treeNode_u2e3i4$_0 = null;
     this.next_t4scix$_0 = this.next_t4scix$_0;
     this.opp_nuqb1l$_0 = null;
     from.edges.add_11rb$(this);
@@ -9860,6 +9889,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     },
     set: function (isDeleted) {
       this.isDeleted_tjy89$_0 = isDeleted;
+    }
+  });
+  Object.defineProperty(HalfEdgeMesh$HalfEdge.prototype, 'treeNode', {
+    get: function () {
+      return this.treeNode_u2e3i4$_0;
+    },
+    set: function (treeNode) {
+      this.treeNode_u2e3i4$_0 = treeNode;
     }
   });
   Object.defineProperty(HalfEdgeMesh$HalfEdge.prototype, 'id', {
@@ -9932,10 +9969,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var tmp$;
     this.isDeleted = true;
     this.from.edges.remove_11rb$(this);
-    this.$outer.edges.remove_trkh7z$(this);
     if ((tmp$ = this.opp) != null) {
       tmp$.opp = null;
     }
+    this.$outer.edgeTree.remove_trkh7z$(this);
+    this.treeNode = null;
   };
   HalfEdgeMesh$HalfEdge.prototype.deleteTriangle = function () {
     this.deleteEdge_0();
@@ -9943,14 +9981,32 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.next.next.deleteEdge_0();
   };
   HalfEdgeMesh$HalfEdge.prototype.updateFrom_n38rgs$ = function (newFrom) {
-    this.$outer.edges.remove_trkh7z$(this);
-    this.from = newFrom;
-    this.$outer.edges.plusAssign_trkh7z$(this);
+    var tmp$;
+    var newX = (newFrom.x + this.to.x) * 0.5;
+    var newY = (newFrom.y + this.to.y) * 0.5;
+    var newZ = (newFrom.z + this.to.z) * 0.5;
+    if (((tmp$ = this.treeNode) != null ? tmp$.isInNode_y2kzbl$(newX, newY, newZ) : null) === true) {
+      this.from = newFrom;
+    }
+     else {
+      this.$outer.edgeTree.remove_trkh7z$(this);
+      this.from = newFrom;
+      this.$outer.edgeTree.add_trkh7z$(this);
+    }
   };
   HalfEdgeMesh$HalfEdge.prototype.updateTo_n38rgs$ = function (newTo) {
-    this.$outer.edges.remove_trkh7z$(this);
-    this.to = newTo;
-    this.$outer.edges.plusAssign_trkh7z$(this);
+    var tmp$;
+    var newX = (this.from.x + newTo.x) * 0.5;
+    var newY = (this.from.y + newTo.y) * 0.5;
+    var newZ = (this.from.z + newTo.z) * 0.5;
+    if (((tmp$ = this.treeNode) != null ? tmp$.isInNode_y2kzbl$(newX, newY, newZ) : null) === true) {
+      this.to = newTo;
+    }
+     else {
+      this.$outer.edgeTree.remove_trkh7z$(this);
+      this.to = newTo;
+      this.$outer.edgeTree.add_trkh7z$(this);
+    }
   };
   HalfEdgeMesh$HalfEdge.prototype.toString = function () {
     return this.from.toString() + ' -> ' + this.to;
@@ -10160,7 +10216,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         $receiver.remove_11rb$(key);
         q1.consume_zdf47l$(q2);
         mesh.collapseEdge_b49or$(candidate.edge, 0.0);
-        mesh.updatePosition_rshfse$(q1.vertex, this.tmpVec_0);
+        q1.vertex.updatePosition_czzhiu$(this.tmpVec_0);
         lastError.v = candidate.error;
         if (this.termCrit.isFinished_fugc5p$(mesh, lastError.v)) {
           break;
@@ -10183,7 +10239,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   MeshSimplifier.prototype.rebuildCollapseQueue_nbf0q6$ = function (mesh) {
     var tmp$;
     this.candidates_0.clear();
-    tmp$ = mesh.edges.iterator();
+    tmp$ = mesh.edgeTree.iterator();
     while (tmp$.hasNext()) {
       var edge = tmp$.next();
       if (edge.from.index < edge.to.index) {
@@ -23651,8 +23707,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
       var it = this.items.get_za3lpa$(i);
-      $this.add_czzhiu$(this$KdTree.itemDim.getMin_v8nqkd$(it, tmpVec));
-      $this.add_czzhiu$(this$KdTree.itemDim.getMax_v8nqkd$(it, tmpVec));
+      $this.add_czzhiu$(this$KdTree.itemDim.getMin_hm1yd1$(it, tmpVec));
+      $this.add_czzhiu$(this$KdTree.itemDim.getMax_hm1yd1$(it, tmpVec));
     }
     $this.isBatchUpdate = wasBatchUpdate;
     if ((this.nodeRange.last - this.nodeRange.first | 0) > bucketSz) {
@@ -23704,9 +23760,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return false;
     }
      else {
-      if (this.children.get_za3lpa$(0).bounds.isIncluding_y2kzbl$(this.$outer.itemDim.getX_11rb$(item), this.$outer.itemDim.getY_11rb$(item), this.$outer.itemDim.getZ_11rb$(item)))
+      if (this.children.get_za3lpa$(0).bounds.isIncluding_y2kzbl$(this.$outer.itemDim.getX_trkh7z$(item), this.$outer.itemDim.getY_trkh7z$(item), this.$outer.itemDim.getZ_trkh7z$(item)))
         tmp$_3 = this.children.get_za3lpa$(0).contains_uargzz$(item);
-      else if (this.children.get_za3lpa$(1).bounds.isIncluding_y2kzbl$(this.$outer.itemDim.getX_11rb$(item), this.$outer.itemDim.getY_11rb$(item), this.$outer.itemDim.getZ_11rb$(item)))
+      else if (this.children.get_za3lpa$(1).bounds.isIncluding_y2kzbl$(this.$outer.itemDim.getX_trkh7z$(item), this.$outer.itemDim.getY_trkh7z$(item), this.$outer.itemDim.getZ_trkh7z$(item)))
         tmp$_3 = this.children.get_za3lpa$(1).contains_uargzz$(item);
       else
         tmp$_3 = false;
@@ -23720,17 +23776,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   function KdTree$cmpX$lambda(closure$itemDim) {
     return function (a, b) {
-      return Kotlin.compareTo(closure$itemDim.getX_11rb$(a), closure$itemDim.getX_11rb$(b));
+      return Kotlin.compareTo(closure$itemDim.getX_trkh7z$(a), closure$itemDim.getX_trkh7z$(b));
     };
   }
   function KdTree$cmpY$lambda(closure$itemDim) {
     return function (a, b) {
-      return Kotlin.compareTo(closure$itemDim.getY_11rb$(a), closure$itemDim.getY_11rb$(b));
+      return Kotlin.compareTo(closure$itemDim.getY_trkh7z$(a), closure$itemDim.getY_trkh7z$(b));
     };
   }
   function KdTree$cmpZ$lambda(closure$itemDim) {
     return function (a, b) {
-      return Kotlin.compareTo(closure$itemDim.getZ_11rb$(a), closure$itemDim.getZ_11rb$(b));
+      return Kotlin.compareTo(closure$itemDim.getZ_trkh7z$(a), closure$itemDim.getZ_trkh7z$(b));
     };
   }
   KdTree.$metadata$ = {
@@ -25271,8 +25327,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       var closure$bounds = bounds;
-      closure$bounds.add_czzhiu$(itemDim.getMin_v8nqkd$(element, tmpPt));
-      closure$bounds.add_czzhiu$(itemDim.getMax_v8nqkd$(element, tmpPt));
+      closure$bounds.add_czzhiu$(itemDim.getMin_hm1yd1$(element, tmpPt));
+      closure$bounds.add_czzhiu$(itemDim.getMax_hm1yd1$(element, tmpPt));
     }
     if (bounds.isEmpty) {
       throw KoolException_init('OcTree bounds are empty, specify bounds manually');
@@ -25285,15 +25341,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var pad = edLen * padding;
     bounds.set_w8lrqs$(bounds.min.x - pad, bounds.min.y - pad, bounds.min.z - pad, bounds.min.x + edLen + pad * 2, bounds.min.y + edLen + pad * 2, bounds.min.z + edLen + pad * 2);
     this.root_be3r27$_0 = new OcTree$OcNode(this, bounds, 0, bucketSz);
-    var $receiver = items;
-    var action = getCallableRef('add', function ($receiver, item) {
-      return $receiver.add_bzsob0$(item), Unit;
-    }.bind(null, this.root));
-    var tmp$_1;
-    tmp$_1 = $receiver.iterator();
-    while (tmp$_1.hasNext()) {
-      var element_0 = tmp$_1.next();
-      action(element_0);
+    for (var i = 0; i !== items.size; ++i) {
+      this.root.add_bzsob0$(items.get_za3lpa$(i));
     }
   }
   Object.defineProperty(OcTree.prototype, 'root', {
@@ -25310,8 +25359,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.add_trkh7z$(item);
   };
   OcTree.prototype.add_trkh7z$ = function (item) {
-    if (!this.root.bounds.isIncluding_y2kzbl$(this.itemDim.getX_11rb$(item), this.itemDim.getY_11rb$(item), this.itemDim.getZ_11rb$(item))) {
-      throw KoolException_init('Item not in tree bounds: (' + this.itemDim.getX_11rb$(item) + ', ' + this.itemDim.getY_11rb$(item) + ', ' + this.itemDim.getZ_11rb$(item) + '), bounds: ' + this.root.bounds);
+    if (!this.root.bounds.isIncluding_y2kzbl$(this.itemDim.getCenterX_trkh7z$(item), this.itemDim.getCenterY_trkh7z$(item), this.itemDim.getCenterZ_trkh7z$(item))) {
+      throw KoolException_init('Item not in tree bounds: (' + this.itemDim.getX_trkh7z$(item) + ', ' + this.itemDim.getY_trkh7z$(item) + ', ' + this.itemDim.getZ_trkh7z$(item) + '), bounds: ' + this.root.bounds);
     }
     this.root.add_bzsob0$(item);
   };
@@ -25414,7 +25463,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.size_yjj6gq$_0 = 0;
     this.children_oh99z0$_0 = ArrayList_init();
     this.mutItems_0 = ArrayList_init();
-    if (depth >= 100) {
+    if (depth > 20) {
       throw KoolException_init('Octree is too deep');
     }
     this.bounds.set_ea4od8$(bounds);
@@ -25442,11 +25491,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return get_indices(this.items);
     }
   });
-  OcTree$OcNode.prototype.plusAssign_uargzz$ = function (item) {
-    this.add_bzsob0$(item);
-  };
   OcTree$OcNode.prototype.add_bzsob0$ = function (item) {
-    if (!this.bounds.isIncluding_czzhiu$(new Vec3f(this.$outer.itemDim.getX_11rb$(item), this.$outer.itemDim.getY_11rb$(item), this.$outer.itemDim.getZ_11rb$(item)))) {
+    if (!this.isInNode_y2kzbl$(this.$outer.itemDim.getCenterX_trkh7z$(item), this.$outer.itemDim.getCenterY_trkh7z$(item), this.$outer.itemDim.getCenterZ_trkh7z$(item))) {
       var $this = package$util.Log;
       var level = Log$Level.ERROR;
       var tag = Kotlin.getKClassFromExpression(this).simpleName;
@@ -25456,16 +25502,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     this.size = this.size + 1 | 0;
     if (this.isLeaf) {
-      if (this.mutItems_0.size < this.bucketSz || this.depth >= 20) {
+      if (this.mutItems_0.size < this.bucketSz || this.depth === 20) {
         this.mutItems_0.add_11rb$(item);
+        this.$outer.itemDim.setNode_bc9457$(item, this);
       }
        else {
         this.split_0();
-        this.addInChild_0(item);
+        this.children.get_za3lpa$(this.childIndexForItem_0(item)).add_bzsob0$(item);
       }
     }
      else {
-      this.addInChild_0(item);
+      this.children.get_za3lpa$(this.childIndexForItem_0(item)).add_bzsob0$(item);
     }
   };
   OcTree$OcNode.prototype.remove_bzsob0$ = function (item) {
@@ -25495,10 +25542,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     return tmp$;
   };
-  OcTree$OcNode.prototype.addInChild_0 = function (item) {
-    this.children.get_za3lpa$(this.childIndexForItem_0(item)).add_bzsob0$(item);
+  OcTree$OcNode.prototype.isInNode_czzhiu$ = function (center) {
+    return this.bounds.isIncluding_czzhiu$(center);
+  };
+  OcTree$OcNode.prototype.isInNode_y2kzbl$ = function (centerX, centerY, centerZ) {
+    return this.bounds.isIncluding_y2kzbl$(centerX, centerY, centerZ);
   };
   OcTree$OcNode.prototype.split_0 = function () {
+    var tmp$;
     var x0 = this.bounds.min.x;
     var x1 = this.bounds.center.x;
     var x2 = this.bounds.max.x;
@@ -25532,15 +25583,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var $receiver_6 = this.children;
     var element_6 = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x1, y1, z1), new Vec3f(x2, y2, z2)), this.depth + 1 | 0, this.bucketSz);
     $receiver_6.add_11rb$(element_6);
-    var $receiver_7 = this.mutItems_0;
-    var action = getCallableRef('addInChild', function ($receiver, item) {
-      return $receiver.addInChild_0(item), Unit;
-    }.bind(null, this));
-    var tmp$;
-    tmp$ = $receiver_7.iterator();
-    while (tmp$.hasNext()) {
-      var element_7 = tmp$.next();
-      action(element_7);
+    tmp$ = this.mutItems_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.children.get_za3lpa$(this.childIndexForItem_0(this.mutItems_0.get_za3lpa$(i))).add_bzsob0$(this.mutItems_0.get_za3lpa$(i));
     }
     this.mutItems_0 = this.$outer.emptyItems_0;
   };
@@ -25555,19 +25600,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   OcTree$OcNode.prototype.childIndexForItem_0 = function (item) {
     var tmp$, tmp$_0, tmp$_1;
-    if (this.$outer.itemDim.getX_11rb$(item) < this.bounds.center.x) {
+    if (this.$outer.itemDim.getCenterX_trkh7z$(item) < this.bounds.center.x) {
       tmp$ = 0;
     }
      else {
       tmp$ = 4;
     }
-    if (this.$outer.itemDim.getY_11rb$(item) < this.bounds.center.y) {
+    if (this.$outer.itemDim.getCenterY_trkh7z$(item) < this.bounds.center.y) {
       tmp$_0 = 0;
     }
      else {
       tmp$_0 = 2;
     }
-    if (this.$outer.itemDim.getZ_11rb$(item) < this.bounds.center.z) {
+    if (this.$outer.itemDim.getCenterZ_trkh7z$(item) < this.bounds.center.z) {
       tmp$_1 = 0;
     }
      else {
@@ -27638,32 +27683,34 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   }
   function ItemDim() {
   }
-  ItemDim.prototype.getSzX_11rb$ = function (item) {
+  ItemDim.prototype.getSzX_trkh7z$ = function (item) {
     return 0.0;
   };
-  ItemDim.prototype.getSzY_11rb$ = function (item) {
+  ItemDim.prototype.getSzY_trkh7z$ = function (item) {
     return 0.0;
   };
-  ItemDim.prototype.getSzZ_11rb$ = function (item) {
+  ItemDim.prototype.getSzZ_trkh7z$ = function (item) {
     return 0.0;
   };
-  ItemDim.prototype.getCenterX_11rb$ = function (item) {
-    return this.getX_11rb$(item) + this.getSzX_11rb$(item) / 2;
+  ItemDim.prototype.getCenterX_trkh7z$ = function (item) {
+    return this.getX_trkh7z$(item) + this.getSzX_trkh7z$(item) / 2;
   };
-  ItemDim.prototype.getCenterY_11rb$ = function (item) {
-    return this.getY_11rb$(item) + this.getSzY_11rb$(item) / 2;
+  ItemDim.prototype.getCenterY_trkh7z$ = function (item) {
+    return this.getY_trkh7z$(item) + this.getSzY_trkh7z$(item) / 2;
   };
-  ItemDim.prototype.getCenterZ_11rb$ = function (item) {
-    return this.getZ_11rb$(item) + this.getSzZ_11rb$(item) / 2;
+  ItemDim.prototype.getCenterZ_trkh7z$ = function (item) {
+    return this.getZ_trkh7z$(item) + this.getSzZ_trkh7z$(item) / 2;
   };
-  ItemDim.prototype.getMin_v8nqkd$ = function (item, result) {
-    return result.set_y2kzbl$(this.getX_11rb$(item), this.getY_11rb$(item), this.getZ_11rb$(item));
+  ItemDim.prototype.getMin_hm1yd1$ = function (item, result) {
+    return result.set_y2kzbl$(this.getX_trkh7z$(item), this.getY_trkh7z$(item), this.getZ_trkh7z$(item));
   };
-  ItemDim.prototype.getCenter_v8nqkd$ = function (item, result) {
-    return result.set_y2kzbl$(this.getCenterX_11rb$(item), this.getCenterY_11rb$(item), this.getCenterZ_11rb$(item));
+  ItemDim.prototype.getCenter_hm1yd1$ = function (item, result) {
+    return result.set_y2kzbl$(this.getCenterX_trkh7z$(item), this.getCenterY_trkh7z$(item), this.getCenterZ_trkh7z$(item));
   };
-  ItemDim.prototype.getMax_v8nqkd$ = function (item, result) {
-    return result.set_y2kzbl$(this.getX_11rb$(item) + this.getSzX_11rb$(item), this.getY_11rb$(item) + this.getSzY_11rb$(item), this.getZ_11rb$(item) + this.getSzZ_11rb$(item));
+  ItemDim.prototype.getMax_hm1yd1$ = function (item, result) {
+    return result.set_y2kzbl$(this.getX_trkh7z$(item) + this.getSzX_trkh7z$(item), this.getY_trkh7z$(item) + this.getSzY_trkh7z$(item), this.getZ_trkh7z$(item) + this.getSzZ_trkh7z$(item));
+  };
+  ItemDim.prototype.setNode_bc9457$ = function (item, node) {
   };
   ItemDim.$metadata$ = {
     kind: Kind_INTERFACE,
@@ -27673,31 +27720,31 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function Vec3FDim() {
     Vec3FDim_instance = this;
   }
-  Vec3FDim.prototype.getX_11rb$ = function (item) {
+  Vec3FDim.prototype.getX_trkh7z$ = function (item) {
     return item.x;
   };
-  Vec3FDim.prototype.getY_11rb$ = function (item) {
+  Vec3FDim.prototype.getY_trkh7z$ = function (item) {
     return item.y;
   };
-  Vec3FDim.prototype.getZ_11rb$ = function (item) {
+  Vec3FDim.prototype.getZ_trkh7z$ = function (item) {
     return item.z;
   };
-  Vec3FDim.prototype.getCenterX_11rb$ = function (item) {
+  Vec3FDim.prototype.getCenterX_trkh7z$ = function (item) {
     return item.x;
   };
-  Vec3FDim.prototype.getCenterY_11rb$ = function (item) {
+  Vec3FDim.prototype.getCenterY_trkh7z$ = function (item) {
     return item.y;
   };
-  Vec3FDim.prototype.getCenterZ_11rb$ = function (item) {
+  Vec3FDim.prototype.getCenterZ_trkh7z$ = function (item) {
     return item.z;
   };
-  Vec3FDim.prototype.getMin_v8nqkd$ = function (item, result) {
+  Vec3FDim.prototype.getMin_hm1yd1$ = function (item, result) {
     return result.set_czzhiu$(item);
   };
-  Vec3FDim.prototype.getCenter_v8nqkd$ = function (item, result) {
+  Vec3FDim.prototype.getCenter_hm1yd1$ = function (item, result) {
     return result.set_czzhiu$(item);
   };
-  Vec3FDim.prototype.getMax_v8nqkd$ = function (item, result) {
+  Vec3FDim.prototype.getMax_hm1yd1$ = function (item, result) {
     return result.set_czzhiu$(item);
   };
   Vec3FDim.$metadata$ = {
@@ -27837,9 +27884,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
   };
   InRadiusTraverser.prototype.sqrDistance_s78f93$ = function (tree, item) {
-    var dx = tree.itemDim.getCenterX_11rb$(item) - this.center.x;
-    var dy = tree.itemDim.getCenterY_11rb$(item) - this.center.y;
-    var dz = tree.itemDim.getCenterZ_11rb$(item) - this.center.z;
+    var dx = tree.itemDim.getCenterX_trkh7z$(item) - this.center.x;
+    var dy = tree.itemDim.getCenterY_trkh7z$(item) - this.center.y;
+    var dz = tree.itemDim.getCenterZ_trkh7z$(item) - this.center.z;
     return dx * dx + dy * dy + dz * dz;
   };
   InRadiusTraverser.$metadata$ = {
@@ -27953,9 +28000,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
   };
   KNearestTraverser.prototype.sqrDistance_s78f93$ = function (tree, item) {
-    var dx = tree.itemDim.getCenterX_11rb$(item) - this.center.x;
-    var dy = tree.itemDim.getCenterY_11rb$(item) - this.center.y;
-    var dz = tree.itemDim.getCenterZ_11rb$(item) - this.center.z;
+    var dx = tree.itemDim.getCenterX_trkh7z$(item) - this.center.x;
+    var dy = tree.itemDim.getCenterY_trkh7z$(item) - this.center.y;
+    var dz = tree.itemDim.getCenterZ_trkh7z$(item) - this.center.z;
     return dx * dx + dy * dy + dz * dz;
   };
   KNearestTraverser.prototype.insert_2aiobd$_0 = function (value, dSqr) {
@@ -32250,12 +32297,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Object.defineProperty(ElevationMapS16.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
   Object.defineProperty(ElevationMapS16.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
   ElevationMapS16.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getCenterX_11rb$ = ItemDim.prototype.getCenterX_11rb$;
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getCenterY_11rb$ = ItemDim.prototype.getCenterY_11rb$;
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getCenterZ_11rb$ = ItemDim.prototype.getCenterZ_11rb$;
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getMin_v8nqkd$ = ItemDim.prototype.getMin_v8nqkd$;
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getCenter_v8nqkd$ = ItemDim.prototype.getCenter_v8nqkd$;
-  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getMax_v8nqkd$ = ItemDim.prototype.getMax_v8nqkd$;
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getMin_hm1yd1$ = ItemDim.prototype.getMin_hm1yd1$;
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getCenter_hm1yd1$ = ItemDim.prototype.getCenter_hm1yd1$;
+  HalfEdgeMesh$Companion$HalfEdgeDim.prototype.getMax_hm1yd1$ = ItemDim.prototype.getMax_hm1yd1$;
   terminateOnFaceCountAbs$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   terminateOnError$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
@@ -32315,9 +32359,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   BoneData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   MeshData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   AttributeList$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  Vec3FDim.prototype.getSzX_11rb$ = ItemDim.prototype.getSzX_11rb$;
-  Vec3FDim.prototype.getSzY_11rb$ = ItemDim.prototype.getSzY_11rb$;
-  Vec3FDim.prototype.getSzZ_11rb$ = ItemDim.prototype.getSzZ_11rb$;
+  Vec3FDim.prototype.getSzX_trkh7z$ = ItemDim.prototype.getSzX_trkh7z$;
+  Vec3FDim.prototype.getSzY_trkh7z$ = ItemDim.prototype.getSzY_trkh7z$;
+  Vec3FDim.prototype.getSzZ_trkh7z$ = ItemDim.prototype.getSzZ_trkh7z$;
+  Vec3FDim.prototype.setNode_bc9457$ = ItemDim.prototype.setNode_bc9457$;
   InRadiusTraverser.prototype.onFinish_m6hlto$ = SpatialTreeTraverser.prototype.onFinish_m6hlto$;
   KNearestTraverser.prototype.onStart_m6hlto$ = SpatialTreeTraverser.prototype.onStart_m6hlto$;
   Object.defineProperty(DelayedElevationMap.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));

@@ -43,16 +43,15 @@ fun pointScene(): Scene {
                 val searchT = t.takeMs()
 
                 t.reset()
-                val color = Color.fromHsv(randomF(0f, 360f), 1f, 1f, 1f)
-                for (point in trav.result) {
-                    for (i in 0 until ptVertCnt) {
-                        vert.index = point.index + i
-                        vert.color.set(color)
+                for (i in trav.result.indices) {
+                    for (vi in 0 until ptVertCnt) {
+                        vert.index = trav.result[i].index + vi
+                        vert.color.set(ColorGradient.PLASMA.getColor(i / trav.result.size.toFloat()))
                     }
                 }
                 val updateT = t.takeMs()
                 logI {
-                    "Tree traversal search retrieved ${trav.result.size} points, " +
+                    "Tree traversal retrieved ${trav.result.size} points, " +
                             "took ${searchT.toString(3)} ms; " +
                             "Point update took ${updateT.toString(3)} ms"
                 }

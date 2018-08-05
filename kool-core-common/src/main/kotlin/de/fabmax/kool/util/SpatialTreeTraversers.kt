@@ -53,9 +53,9 @@ open class InRadiusTraverser<T: Any>() : SpatialTreeTraverser<T> {
     }
 
     protected open fun sqrDistance(tree: SpatialTree<T>, item: T): Float {
-        val dx = tree.itemDim.getCenterX(item) - center.x
-        val dy = tree.itemDim.getCenterY(item) - center.y
-        val dz = tree.itemDim.getCenterZ(item) - center.z
+        val dx = tree.itemAdapter.getCenterX(item) - center.x
+        val dy = tree.itemAdapter.getCenterY(item) - center.y
+        val dz = tree.itemAdapter.getCenterZ(item) - center.z
         return dx*dx + dy*dy + dz*dz
     }
 }
@@ -133,9 +133,9 @@ open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
     }
 
     protected open fun sqrDistance(tree: SpatialTree<T>, item: T): Float {
-        val dx = tree.itemDim.getCenterX(item) - center.x
-        val dy = tree.itemDim.getCenterY(item) - center.y
-        val dz = tree.itemDim.getCenterZ(item) - center.z
+        val dx = tree.itemAdapter.getCenterX(item) - center.x
+        val dy = tree.itemAdapter.getCenterY(item) - center.y
+        val dz = tree.itemAdapter.getCenterZ(item) - center.z
         return dx*dx + dy*dy + dz*dz
     }
 

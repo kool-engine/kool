@@ -4,14 +4,14 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 
 fun <T: Vec3f> pointKdTree(items: List<T>, bucketSz: Int = 20): KdTree<T> {
-    return KdTree(items, Vec3FDim, bucketSz)
+    return KdTree(items, Vec3fAdapter, bucketSz)
 }
 
 fun <T: Vec3f> pointOcTree(items: List<T> = emptyList(), bucketSz: Int = 20): OcTree<T> {
-    return OcTree(Vec3FDim, items, bucketSz = bucketSz)
+    return OcTree(Vec3fAdapter, items, bucketSz = bucketSz)
 }
 
-interface ItemDim<in T> {
+interface ItemAdapter<in T: Any> {
     fun getX(item: T): Float
     fun getY(item: T): Float
     fun getZ(item: T): Float
@@ -30,9 +30,11 @@ interface ItemDim<in T> {
             result.set(getCenterX(item), getCenterY(item), getCenterZ(item))
     fun getMax(item: T, result: MutableVec3f): MutableVec3f =
             result.set(getX(item) + getSzX(item), getY(item) + getSzY(item), getZ(item) + getSzZ(item))
+
+    fun setNode(item: T, node: SpatialTree<T>.Node) { }
 }
 
-object Vec3FDim : ItemDim<Vec3f> {
+object Vec3fAdapter : ItemAdapter<Vec3f> {
     override fun getX(item: Vec3f): Float = item.x
     override fun getY(item: Vec3f): Float = item.y
     override fun getZ(item: Vec3f): Float = item.z
@@ -46,7 +48,7 @@ object Vec3FDim : ItemDim<Vec3f> {
     override fun getMax(item: Vec3f, result: MutableVec3f): MutableVec3f = result.set(item)
 }
 
-abstract class SpatialTree<T: Any>(val itemDim: ItemDim<T>) : Collection<T> {
+abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection<T> {
 
     protected val candidatesPool = AutoRecycler<MutableList<Node>> { mutableListOf() }
 
