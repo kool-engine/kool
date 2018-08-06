@@ -70,7 +70,7 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
             // error quadric is singular (both vertices lie in a plane), simply join them in the middle
             q2.vertex.subtract(q1.vertex, resultPos).scale(0.5f).add(q1.vertex)
             // error in joining plane vertices is actually 0, but shorter edges should be preferred
-            q1.vertex.distance(q2.vertex) / 1e4f
+            q1.vertex.distance(q2.vertex) / 1e6f
         }
 
         return if (isRejected(q1.vertex, q2.vertex, resultPos) || isRejected(q2.vertex, q1.vertex, resultPos)) {

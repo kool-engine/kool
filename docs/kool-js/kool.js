@@ -10077,7 +10077,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
      else {
       q2.vertex.subtract_2gj7b4$(q1.vertex, resultPos).scale_mx4ult$(0.5).add_czzhiu$(q1.vertex);
-      tmp$_0 = q1.vertex.distance_czzhiu$(q2.vertex) / 10000.0;
+      tmp$_0 = q1.vertex.distance_czzhiu$(q2.vertex) / 1000000.0;
     }
     var err = tmp$_0;
     if (this.isRejected_0(q1.vertex, q2.vertex, resultPos) || this.isRejected_0(q2.vertex, q1.vertex, resultPos)) {

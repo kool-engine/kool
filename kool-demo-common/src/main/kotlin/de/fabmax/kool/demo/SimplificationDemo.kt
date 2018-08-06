@@ -32,6 +32,8 @@ class SimplificationDemo(ctx: KoolContext) {
 
     var simplifcationGrade = 1f
     lateinit var autoRun: ToggleButton
+    lateinit var facesValLbl: Label
+    lateinit var vertsValLbl: Label
     lateinit var timeValLbl: Label
 
     init {
@@ -174,6 +176,30 @@ class SimplificationDemo(ctx: KoolContext) {
                 }
                 +autoRun
                 posY -= 35f
+                +label("Faces:") {
+                    layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                }
+                facesValLbl = label("facesValLbl") {
+                    layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+                    text = ""
+                }
+                +facesValLbl
+                posY -= 35f
+                +label("Vertices:") {
+                    layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                }
+                vertsValLbl = label("verticesValLbl") {
+                    layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+                    text = ""
+                }
+                +vertsValLbl
+                posY -= 35f
                 +label("Time:") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
                     layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
@@ -206,13 +232,15 @@ class SimplificationDemo(ctx: KoolContext) {
                 modelWireframe.clear()
                 heMesh.generateWireframe(modelWireframe, Color.MD_LIGHT_BLUE)
             }
-        }
 
-        val time = pt.takeSecs()
-        if (time > 0.2) {
-            autoRun.isEnabled = false
+            val time = pt.takeSecs()
+            if (time > 0.5) {
+                autoRun.isEnabled = false
+            }
+            facesValLbl.text = "${heMesh.faceCount}"
+            vertsValLbl.text = "${heMesh.vertCount}"
+            timeValLbl.text = "${time.toString(2)} s"
         }
-        timeValLbl.text = "${time.toString(2)} s"
     }
 
     private fun loadModel(name: String, scale: Float, ctx: KoolContext) {
