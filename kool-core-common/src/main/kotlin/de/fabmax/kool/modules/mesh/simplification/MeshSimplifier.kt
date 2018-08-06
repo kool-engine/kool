@@ -59,6 +59,7 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
                     break
                 }
             } else {
+                // no more collapse candidates
                 break
             }
         }
@@ -68,21 +69,20 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
         mesh.rebuild(generateNormals, generateTangents)
 
         logD { "Mesh simplification done! ${mesh.faceCount} faces / ${mesh.vertCount} vertices remain, last error: $lastError, took ${perf.takeSecs().toString(3)} s" }
-
     }
 
     fun rebuildCollapseQueue(mesh: HalfEdgeMesh) {
         candidates.clear()
         for (edge in mesh.edgeTree) {
             // only add one half edge per edge
-            if (edge.from.index < edge.to.index) {
+            if (edge.from.index < edge.to.index || edge.opp == null) {
                 val q1 = quadrics.getOrPut(edge.from.index) { ErrorQuadric(edge.from) }
                 val q2 = quadrics.getOrPut(edge.to.index) { ErrorQuadric(edge.to) }
 
-                if (!isEdgeVertex(q1.vertex) && !isEdgeVertex(q2.vertex)) {
+                //if (!isEdgeVertex(q1.vertex) && !isEdgeVertex(q2.vertex)) {
                     val err = collapseStrategy.computeCollapsePosition(q1, q2, tmpVec)
                     candidates += CollapseCandidate(err, edge)
-                }
+                //}
             }
         }
     }

@@ -27,16 +27,30 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
 
     override fun computeCollapsePosition(q1: ErrorQuadric, q2: ErrorQuadric, resultPos: MutableVec3f): Float {
         // count duplicate 'to' vertices in edges of q1 and q2
-        // -> only 2 are allowed otherwise 2d manifold is destroyed
+        // -> for inner plane vertices there must be 2, otherwise 2d manifold is destroyed
+        // -> for border vertices it can be less
         var duplCnt = 0
+        var q1Border = false
+        var q2Border = false
         for (i in q1.vertex.edges.indices) {
+            val q1e = q1.vertex.edges[i]
+            if (q1e.opp == null) {
+                q1Border = true
+            }
+
             for (j in q2.vertex.edges.indices) {
-                if (q1.vertex.edges[i].to === q2.vertex.edges[j].to) {
+                val q2e = q2.vertex.edges[j]
+                if (q2e.opp == null) {
+                    q2Border = true
+                }
+
+                if (q1e.to === q2e.to) {
                     duplCnt++
                 }
             }
         }
-        if (duplCnt != 2) {
+
+        if (duplCnt > 2 || duplCnt < if (q1Border || q2Border) 0 else 2) {
             return Float.MAX_VALUE
         }
 

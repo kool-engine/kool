@@ -1,8 +1,6 @@
 package de.fabmax.kool.modules.mesh.simplification
 
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec4f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 
 class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
@@ -13,7 +11,28 @@ class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
 
     init {
         for (i in vertex.edges.indices) {
-            addTriPlane(vertex.edges[i])
+            val ed = vertex.edges[i]
+            addPlane(ed.computeTriPlane(tmpVec4))
+
+            if (ed.opp == null) {
+                // border edge, add a virtual orthogonal plane
+                val triNrm = tmpVec4.getXyz(MutableVec3f())
+                val edDir = MutableVec3f(vertex).subtract(ed.to).norm()
+                val nrm = triNrm.cross(edDir, MutableVec3f())
+                tmpVec4.set(nrm, -nrm.dot(vertex))
+                addPlane(tmpVec4)
+            }
+            if (ed.next.next.opp == null) {
+                // border edge to vertex, add a virtual orthogonal plane
+                if (ed.opp == null) {
+                    ed.computeTriPlane(tmpVec4)
+                }
+                val triNrm = tmpVec4.getXyz(MutableVec3f())
+                val edDir = MutableVec3f(ed.next.next.from).subtract(vertex).norm()
+                val nrm = triNrm.cross(edDir, MutableVec3f())
+                tmpVec4.set(nrm, -nrm.dot(vertex))
+                addPlane(tmpVec4)
+            }
         }
     }
 
@@ -26,9 +45,7 @@ class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
         return tmpVec4.x * v.x + tmpVec4.y * v.y + tmpVec4.z * v.z + tmpVec4.w
     }
 
-    private fun addTriPlane(edge: HalfEdgeMesh.HalfEdge) {
-        edge.computeTriPlane(tmpVec4)
-
+    private fun addPlane(planeVec: Vec4f) {
         errQuadric[0, 0] += tmpVec4.x * tmpVec4.x
         errQuadric[1, 0] += tmpVec4.x * tmpVec4.y
         errQuadric[2, 0] += tmpVec4.x * tmpVec4.z

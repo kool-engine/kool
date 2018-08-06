@@ -475,7 +475,7 @@ open class MeshBuilder(val meshData: MeshData) {
 
                 val idx = vertex(tmpPos, Vec3f.ZERO)
                 if (x > 0 && y > 0) {
-                    if (y % 2 == 0) {
+                    if (x % 2 == y % 2) {
                         meshData.addTriIndices(idx - nx - 1, idx, idx - 1)
                         meshData.addTriIndices(idx - nx, idx, idx - nx - 1)
                     } else {

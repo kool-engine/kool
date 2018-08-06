@@ -288,22 +288,27 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
         fun updatePosition(newPos: Vec3f) = updatePosition(newPos.x, newPos.y, newPos.z)
 
         fun updatePosition(x: Float, y: Float, z: Float) {
-            // fixme: if this vertex is 'to'-vertex of an edge without an opp edge, that edge is not considered during update position check
-
             for (i in edges.indices) {
-                val ed = edges[i]
-                val newX = (x + ed.to.x) * 0.5f
-                val newY = (y + ed.to.y) * 0.5f
-                val newZ = (z + ed.to.z) * 0.5f
-
+                // check from this vertex
+                var ed = edges[i]
+                var newX = (x + ed.to.x) * 0.5f
+                var newY = (y + ed.to.y) * 0.5f
+                var newZ = (z + ed.to.z) * 0.5f
                 if (ed.treeNode?.isInNode(newX, newY, newZ) != true) {
                     // full tree update required
                     edgeTree.remove(ed)
                     ed.treeNode = null
-                    ed.opp?.also {
-                        edgeTree.remove(it)
-                        it.treeNode = null
-                    }
+                }
+
+                // check edge to this vertex
+                ed = edges[i].next.next
+                newX = (x + ed.from.x) * 0.5f
+                newY = (y + ed.from.y) * 0.5f
+                newZ = (z + ed.from.z) * 0.5f
+                if (ed.treeNode?.isInNode(newX, newY, newZ) != true) {
+                    // full tree update required
+                    edgeTree.remove(ed)
+                    ed.treeNode = null
                 }
             }
 
@@ -313,7 +318,9 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
                 val ed = edges[i]
                 if (ed.treeNode == null) {
                     edgeTree.add(ed)
-                    edges[i].opp?.also { edgeTree.add(it) }
+                }
+                if (ed.next.next.treeNode == null) {
+                    edgeTree.add(ed.next.next)
                 }
             }
         }
