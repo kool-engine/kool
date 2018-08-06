@@ -79,6 +79,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var BillboardMesh = $module$kool.de.fabmax.kool.util.BillboardMesh;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
+  var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
   var CubicPointDistribution = $module$kool.de.fabmax.kool.math.CubicPointDistribution;
   var pointMesh = $module$kool.de.fabmax.kool.util.pointMesh_h6khem$;
@@ -116,7 +117,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var InterpolatedColor = $module$kool.de.fabmax.kool.util.InterpolatedColor;
   var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var Scene = $module$kool.de.fabmax.kool.scene.Scene;
-  var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var Shaker = $module$kool.de.fabmax.kool.audio.Shaker;
   var Kick = $module$kool.de.fabmax.kool.audio.Kick;
   var Pad = $module$kool.de.fabmax.kool.audio.Pad;
@@ -1160,7 +1160,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   function pointScene$lambda$lambda(closure$frameCnt, closure$data, closure$trav, closure$ptVertCnt, closure$tree) {
     return function ($receiver, it) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2;
+      var tmp$, tmp$_0, tmp$_1;
       if ((closure$frameCnt.v = closure$frameCnt.v - 1 | 0, closure$frameCnt.v) === 0) {
         closure$frameCnt.v = 30;
         var vert = closure$data.get_za3lpa$(0);
@@ -1178,14 +1178,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         closure$tree.traverse_ssbmfa$(closure$trav);
         var searchT = t.takeMs();
         t.reset();
-        var color = Color.Companion.fromHsv_7b5o5w$(randomF(0.0, 360.0), 1.0, 1.0, 1.0);
-        tmp$_1 = closure$trav.result.iterator();
-        while (tmp$_1.hasNext()) {
-          var point_0 = tmp$_1.next();
+        tmp$_1 = closure$trav.result;
+        for (var i_0 = 0; i_0 !== tmp$_1.size; ++i_0) {
+          var tmp$_2;
           tmp$_2 = closure$ptVertCnt;
-          for (var i_0 = 0; i_0 < tmp$_2; i_0++) {
-            vert.index = point_0.index + i_0 | 0;
-            vert.color.set_d7aj7k$(color);
+          for (var vi = 0; vi < tmp$_2; vi++) {
+            vert.index = closure$trav.result.get_za3lpa$(i_0).index + vi | 0;
+            vert.color.set_d7aj7k$(ColorGradient.Companion.PLASMA.getColor_y2kzbl$(i_0 / closure$trav.result.size));
           }
         }
         var updateT = t.takeMs();
@@ -1193,7 +1192,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         var level = Log$Level.INFO;
         var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
         if (level.level >= $this.level.level) {
-          $this.printer(level, tag, 'Tree traversal search retrieved ' + closure$trav.result.size + ' points, ' + ('took ' + toString_0(searchT, 3) + ' ms; ') + ('Point update took ' + toString_0(updateT, 3) + ' ms'));
+          $this.printer(level, tag, 'Tree traversal retrieved ' + closure$trav.result.size + ' points, ' + ('took ' + toString_0(searchT, 3) + ' ms; ') + ('Point update took ' + toString_0(updateT, 3) + ' ms'));
         }
         closure$data.isSyncRequired = true;
       }
