@@ -151,49 +151,111 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
     }
 
     fun splitEdge(edge: HalfEdge, fraction: Float) {
-        TODO()
+        // spawn new vertex
+        val idx = meshData.vertexList.addVertex {
+            position.set(edge.to).subtract(edge.from).scale(fraction).add(edge.from)
+        }
+        val insertV = HalfEdgeVertex(idx)
+        vertices += insertV
+
+        // insert new half edges for right triangle and adjust linkage
+        val prevToR = edge.to
+        edge.updateTo(insertV)
+        edge.next.from.edges -= edge.next
+        edge.next.updateFrom(insertV)
+        insertV.edges += edge.next
+
+        val insertEdR0 = HalfEdge(insertV, prevToR)
+        val insertEdR1 = HalfEdge(prevToR, edge.next.to).apply {
+            insertEdR0.next = this
+            opp = edge.next.opp
+            opp?.opp = this
+        }
+        val insertEdR2 = HalfEdge(edge.next.to, insertV).apply {
+            insertEdR1.next = this
+            next = insertEdR0
+            opp = edge.next
+            edge.next.opp = this
+        }
+
+        edgeTree += insertEdR0
+        edgeTree += insertEdR1
+        edgeTree += insertEdR2
+
+        // insert new half edges for left (opposing) triangle and adjust linkage
+        val edgeOpp = edge.opp
+        if (edgeOpp != null) {
+            val prevToL = edgeOpp.to
+            edgeOpp.updateTo(insertV)
+            edgeOpp.next.from.edges -= edgeOpp.next
+            edgeOpp.next.updateFrom(insertV)
+            insertV.edges += edgeOpp.next
+
+            val insertEdL0 = HalfEdge(insertV, prevToL)
+            val insertEdL1 = HalfEdge(prevToL, edgeOpp.next.to).apply {
+                insertEdL0.next = this
+                opp = edgeOpp.next.opp
+                opp?.opp = this
+            }
+            val insertEdL2 = HalfEdge(edgeOpp.next.to, insertV).apply {
+                insertEdL1.next = this
+                next = insertEdL0
+                opp = edgeOpp.next
+                edgeOpp.next.opp = this
+            }
+
+            insertEdL0.opp = edge
+            edge.opp = insertEdL0
+
+            insertEdR0.opp = edgeOpp
+            edgeOpp.opp = insertEdR0
+
+            edgeTree += insertEdL0
+            edgeTree += insertEdL1
+            edgeTree += insertEdL2
+        }
     }
 
     fun collapseEdge(edge: HalfEdge, fraction: Float) {
         val srcVert = edge.from
         val delVert = edge.to
 
-        val colOppR1 = edge.next.opp
-        if (colOppR1 != null) {
+        val oppR1 = edge.next.opp
+        if (oppR1 != null) {
             // colOppR1 points to delVert
             edge.next.opp = null
-            colOppR1.opp = null
-            colOppR1.updateTo(srcVert)
+            oppR1.opp = null
+            oppR1.updateTo(srcVert)
         }
-        val colOppR2 = edge.next.next.opp
-        if (colOppR2 != null) {
+        val oppR2 = edge.next.next.opp
+        if (oppR2 != null) {
             // colOppR2 points from srcVert to colOppR1.from
             edge.next.next.opp = null
-            colOppR2.opp = colOppR1
-            if (colOppR1 != null) {
-                colOppR1.opp = colOppR2
+            oppR2.opp = oppR1
+            if (oppR1 != null) {
+                oppR1.opp = oppR2
             }
         }
 
         val edgeOpp = edge.opp
         if (edgeOpp != null) {
-            val colOppL1 = edgeOpp.next.opp
-            if (colOppL1 != null) {
+            val oppL1 = edgeOpp.next.opp
+            if (oppL1 != null) {
                 // colOppL1 points to srcVert
                 edgeOpp.next.opp = null
-                colOppL1.opp = null
+                oppL1.opp = null
             }
-            val colOppL2 = edgeOpp.next.next.opp
-            if (colOppL2 != null) {
+            val oppL2 = edgeOpp.next.next.opp
+            if (oppL2 != null) {
                 // colOppL2 points from delVert to colOppL1.from
-                delVert.edges.remove(colOppL2)
-                srcVert.edges.add(colOppL2)
-                colOppL2.updateFrom(srcVert)
-                colOppL2.next.next.updateTo(srcVert)
+                delVert.edges.remove(oppL2)
+                srcVert.edges.add(oppL2)
+                oppL2.updateFrom(srcVert)
+                oppL2.next.next.updateTo(srcVert)
                 edgeOpp.next.next.opp = null
-                colOppL2.opp = colOppL1
-                if (colOppL1 != null) {
-                    colOppL1.opp = colOppL2
+                oppL2.opp = oppL1
+                if (oppL1 != null) {
+                    oppL1.opp = oppL2
                 }
             }
         }

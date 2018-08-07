@@ -21,9 +21,9 @@ fun lineMesh(name: String? = null, block: LineMesh.() -> Unit): LineMesh {
     return LineMesh(name = name).apply(block)
 }
 
-fun wireframeMesh(triMesh: MeshData): LineMesh {
+fun wireframeMesh(triMesh: MeshData, lineColor: Color? = null): LineMesh {
     val lines = LineMesh()
-    lines.addWireframe(triMesh)
+    lines.addWireframe(triMesh, lineColor)
     return lines
 }
 
@@ -51,9 +51,9 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
         return idx0
     }
 
-    fun addWireframe(triMesh: MeshData) {
-        if (triMesh.primitiveType == GL_TRIANGLES) {
-            throw KoolException("Supplied mesh is not a triangle mesh")
+    fun addWireframe(triMesh: MeshData, lineColor: Color? = null) {
+        if (triMesh.primitiveType != GL_TRIANGLES) {
+            throw KoolException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")
         }
 
         val v = triMesh[0]
@@ -61,7 +61,7 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
             v.index = i
             meshData.addVertex {
                 position.set(v.position)
-                color.set(v.color)
+                color.set(lineColor ?: v.color)
             }
         }
         for (i in 0 until triMesh.numIndices step 3) {
