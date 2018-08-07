@@ -1,4 +1,4 @@
-package de.fabmax.kool.audio
+package de.fabmax.kool.modules.audio
 
 import de.fabmax.kool.math.clamp
 

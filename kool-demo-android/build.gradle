@@ -44,6 +44,7 @@ clean {
 build.doFirst {
     copy {
         from "$assetsDir"
+        exclude "elevation", "reserve"
         into "$projectDir/$androidAssetsDir"
     }
 }

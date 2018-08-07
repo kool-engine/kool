@@ -1,4 +1,4 @@
-package de.fabmax.kool.audio
+package de.fabmax.kool.modules.audio
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.util.Float32Buffer

@@ -2,10 +2,10 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.audio.*
 import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.modules.audio.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.BasicShader
@@ -367,8 +367,8 @@ private class SynthieScene(ctx: KoolContext): Scene() {
     }
 
     private inner class Waveform(val points: Int, val sampleRate: Int) : Group() {
-        val lines = Array(5, {
-            LineMesh().apply {
+        val lines = Array(5) {
+            lineMesh {
                 +this
                 for (i in 1..points) {
                     val idx = meshData.addVertex {
@@ -386,8 +386,8 @@ private class SynthieScene(ctx: KoolContext): Scene() {
                 (shader as BasicShader).staticColor.set(Color.LIME)
                 meshData.usage = GL_DYNAMIC_DRAW
             }
-        })
-        val vertices = Array(lines.size, { i -> lines[i].meshData[0] })
+        }
+        val vertices = Array(lines.size) { i -> lines[i].meshData[0] }
 
         val sampleBuf = FloatArray(sampleRate)
         var sampleIdx = 0

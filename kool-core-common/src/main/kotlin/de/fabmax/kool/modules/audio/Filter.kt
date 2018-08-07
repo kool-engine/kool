@@ -1,4 +1,4 @@
-package de.fabmax.kool.audio
+package de.fabmax.kool.modules.audio
 
 import kotlin.math.PI
 import kotlin.math.sin
