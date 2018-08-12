@@ -3,14 +3,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
   var Kind_CLASS = Kotlin.Kind.CLASS;
-  var math = Kotlin.kotlin.math;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
-  var Unit = Kotlin.kotlin.Unit;
-  var numberToInt = Kotlin.numberToInt;
   var ensureNotNull = Kotlin.ensureNotNull;
   var equals = Kotlin.equals;
+  var Unit = Kotlin.kotlin.Unit;
   var Enum = Kotlin.kotlin.Enum;
   var throwISE = Kotlin.throwISE;
+  var numberToInt = Kotlin.numberToInt;
   var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
   var toBoxedChar = Kotlin.toBoxedChar;
   var unboxChar = Kotlin.unboxChar;
@@ -22,6 +21,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var Exception = Kotlin.kotlin.Exception;
   var first = Kotlin.kotlin.collections.first_2p1efm$;
   var last = Kotlin.kotlin.collections.last_2p1efm$;
+  var math = Kotlin.kotlin.math;
   var Any = Object;
   var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var defineInlineFunction = Kotlin.defineInlineFunction;
@@ -55,7 +55,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var delay = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.delay_za3lpa$;
   var yield_0 = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.yield;
   var L536870911 = Kotlin.Long.fromInt(536870911);
+  var Iterable = Kotlin.kotlin.collections.Iterable;
   var throwUPAE = Kotlin.throwUPAE;
+  var removeAll = Kotlin.kotlin.collections.removeAll_qafx1e$;
+  var NoSuchElementException_init = Kotlin.kotlin.NoSuchElementException_init;
+  var Iterator = Kotlin.kotlin.collections.Iterator;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var mutableSetOf = Kotlin.kotlin.collections.mutableSetOf_i5x0yv$;
   var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
@@ -73,36 +77,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var get_indices_0 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
   var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
-  var NoSuchElementException_init = Kotlin.kotlin.NoSuchElementException_init;
-  var Iterator = Kotlin.kotlin.collections.Iterator;
+  var MutableIterator = Kotlin.kotlin.collections.MutableIterator;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
+  var MutableCollection = Kotlin.kotlin.collections.MutableCollection;
   var Collection = Kotlin.kotlin.collections.Collection;
   var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
   var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
-  var removeAll = Kotlin.kotlin.collections.removeAll_uhyeqt$;
+  var removeAll_0 = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   var L1 = Kotlin.Long.ONE;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
-  LowPassFilter.prototype = Object.create(SampleNode.prototype);
-  LowPassFilter.prototype.constructor = LowPassFilter;
-  HighPassFilter.prototype = Object.create(SampleNode.prototype);
-  HighPassFilter.prototype.constructor = HighPassFilter;
-  MoodFilter.prototype = Object.create(SampleNode.prototype);
-  MoodFilter.prototype.constructor = MoodFilter;
-  HiHat.prototype = Object.create(SampleNode.prototype);
-  HiHat.prototype.constructor = HiHat;
-  Kick.prototype = Object.create(SampleNode.prototype);
-  Kick.prototype.constructor = Kick;
-  Melody.prototype = Object.create(SampleNode.prototype);
-  Melody.prototype.constructor = Melody;
-  Oscillator.prototype = Object.create(SampleNode.prototype);
-  Oscillator.prototype.constructor = Oscillator;
-  Pad.prototype = Object.create(SampleNode.prototype);
-  Pad.prototype.constructor = Pad;
-  Shaker.prototype = Object.create(SampleNode.prototype);
-  Shaker.prototype.constructor = Shaker;
-  Snare.prototype = Object.create(SampleNode.prototype);
-  Snare.prototype.constructor = Snare;
   BufferResource.prototype = Object.create(GlResource.prototype);
   BufferResource.prototype.constructor = BufferResource;
   FramebufferResource.prototype = Object.create(GlResource.prototype);
@@ -165,6 +149,26 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   MutableVec4f.prototype.constructor = MutableVec4f;
   MutableVec4d.prototype = Object.create(Vec4d.prototype);
   MutableVec4d.prototype.constructor = MutableVec4d;
+  LowPassFilter.prototype = Object.create(SampleNode.prototype);
+  LowPassFilter.prototype.constructor = LowPassFilter;
+  HighPassFilter.prototype = Object.create(SampleNode.prototype);
+  HighPassFilter.prototype.constructor = HighPassFilter;
+  MoodFilter.prototype = Object.create(SampleNode.prototype);
+  MoodFilter.prototype.constructor = MoodFilter;
+  HiHat.prototype = Object.create(SampleNode.prototype);
+  HiHat.prototype.constructor = HiHat;
+  Kick.prototype = Object.create(SampleNode.prototype);
+  Kick.prototype.constructor = Kick;
+  Melody.prototype = Object.create(SampleNode.prototype);
+  Melody.prototype.constructor = Melody;
+  Oscillator.prototype = Object.create(SampleNode.prototype);
+  Oscillator.prototype.constructor = Oscillator;
+  Pad.prototype = Object.create(SampleNode.prototype);
+  Pad.prototype.constructor = Pad;
+  Shaker.prototype = Object.create(SampleNode.prototype);
+  Shaker.prototype.constructor = Shaker;
+  Snare.prototype = Object.create(SampleNode.prototype);
+  Snare.prototype.constructor = Snare;
   NodeDp.prototype = Object.create(Node.prototype);
   NodeDp.prototype.constructor = NodeDp;
   TransformGroupDp.prototype = Object.create(NodeDp.prototype);
@@ -373,6 +377,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   PointMesh.prototype.constructor = PointMesh;
   PrimitiveType.prototype = Object.create(Enum.prototype);
   PrimitiveType.prototype.constructor = PrimitiveType;
+  InRadiusTraverser.prototype = Object.create(CenterPointTraverser.prototype);
+  InRadiusTraverser.prototype.constructor = InRadiusTraverser;
+  KNearestTraverser.prototype = Object.create(CenterPointTraverser.prototype);
+  KNearestTraverser.prototype.constructor = KNearestTraverser;
   ImageTextureData.prototype = Object.create(TextureData.prototype);
   ImageTextureData.prototype.constructor = ImageTextureData;
   JsAssetManager.prototype = Object.create(AssetManager.prototype);
@@ -434,466 +442,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       delayLoading = true;
     return new Texture(props, assetTexture$lambda(delayLoading, ctx, props));
   }
-  function LowPassFilter(coeff, input) {
-    SampleNode.call(this);
-    this.coeff = coeff;
-    this.input = input;
-  }
-  LowPassFilter.prototype.generate_mx4ult$ = function (dt) {
-    return this.filter_mx4ult$(this.input.next_mx4ult$(dt));
-  };
-  LowPassFilter.prototype.filter_mx4ult$ = function (input) {
-    this.sample = this.sample + (input - this.sample) / this.coeff;
-    return this.sample;
-  };
-  LowPassFilter.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LowPassFilter',
-    interfaces: [SampleNode]
-  };
-  function HighPassFilter(coeff, input) {
-    SampleNode.call(this);
-    this.coeff = coeff;
-    this.input = input;
-  }
-  HighPassFilter.prototype.generate_mx4ult$ = function (dt) {
-    return this.filter_mx4ult$(this.input.next_mx4ult$(dt));
-  };
-  HighPassFilter.prototype.filter_mx4ult$ = function (input) {
-    this.sample = this.sample + (input - this.sample * this.coeff);
-    return this.sample;
-  };
-  HighPassFilter.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'HighPassFilter',
-    interfaces: [SampleNode]
-  };
-  function MoodFilter(input) {
-    MoodFilter$Companion_getInstance();
-    SampleNode.call(this);
-    this.input = input;
-    this.cutoff = 1000.0;
-    this.res = 0.05;
-    this.y1_0 = 0.0;
-    this.y2_0 = 0.0;
-    this.y3_0 = 0.0;
-    this.y4_0 = 0.0;
-    this.oldx_0 = 0.0;
-    this.oldy1_0 = 0.0;
-    this.oldy2_0 = 0.0;
-    this.oldy3_0 = 0.0;
-  }
-  MoodFilter.prototype.generate_mx4ult$ = function (dt) {
-    return this.filter_dleff0$(this.input.current(), dt);
-  };
-  MoodFilter.prototype.filter_7b5o5w$ = function (cutoff, res, input, dt) {
-    this.cutoff = cutoff;
-    this.res = res;
-    return this.filter_dleff0$(input, dt);
-  };
-  var Math_0 = Math;
-  MoodFilter.prototype.filter_dleff0$ = function (input, dt) {
-    var cut = 2 * this.cutoff * dt;
-    var p = cut * (MoodFilter$Companion_getInstance().C1_0 - MoodFilter$Companion_getInstance().C2_0 * cut);
-    var x = cut * math.PI * 0.5;
-    var k = 2 * Math_0.sin(x) - 1;
-    var t1 = (1 - p) * MoodFilter$Companion_getInstance().C3_0;
-    var t2 = 12 + t1 * t1;
-    var r = this.res * (t2 + 6 * t1) / (t2 - 6 * t1);
-    var x_0 = input - r * this.y4_0;
-    this.y1_0 = x_0 * p + this.oldx_0 * p - k * this.y1_0;
-    this.y2_0 = this.y1_0 * p + this.oldy1_0 * p - k * this.y2_0;
-    this.y3_0 = this.y2_0 * p + this.oldy2_0 * p - k * this.y3_0;
-    this.y4_0 = this.y3_0 * p + this.oldy3_0 * p - k * this.y4_0;
-    this.y4_0 -= this.y4_0 * this.y4_0 * this.y4_0 / 6;
-    this.oldx_0 = x_0;
-    this.oldy1_0 = this.y1_0;
-    this.oldy2_0 = this.y2_0;
-    this.oldy3_0 = this.y3_0;
-    return this.y4_0;
-  };
-  function MoodFilter$Companion() {
-    MoodFilter$Companion_instance = this;
-    this.C1_0 = 1.8;
-    this.C2_0 = 0.8;
-    this.C3_0 = 1.386;
-  }
-  MoodFilter$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var MoodFilter$Companion_instance = null;
-  function MoodFilter$Companion_getInstance() {
-    if (MoodFilter$Companion_instance === null) {
-      new MoodFilter$Companion();
-    }
-    return MoodFilter$Companion_instance;
-  }
-  MoodFilter.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MoodFilter',
-    interfaces: [SampleNode]
-  };
-  function HiHat(bpm) {
-    SampleNode.call(this);
-    this.bpm = bpm;
-    this.highPass_0 = new HighPassFilter(1.7, this);
-  }
-  HiHat.prototype.generate_mx4ult$ = function (dt) {
-    var noise = randomF_0(-1.0, 1.0);
-    var pc2 = this.t % (60.0 / this.bpm);
-    var pc1 = 266.0;
-    if (this.t / 2 % 0.5 > 0.25) {
-      pc1 = 106.0;
-    }
-    return this.highPass_0.filter_mx4ult$(SampleNode$Companion_getInstance().perc_7b5o5w$(noise, pc1, pc2)) * 0.2;
-  };
-  HiHat.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'HiHat',
-    interfaces: [SampleNode]
-  };
-  function Kick(bpm) {
-    SampleNode.call(this);
-    this.bpm = bpm;
-    var $receiver = new Oscillator(Wave$Companion_getInstance().SINE);
-    $receiver.frequency = 50.0;
-    this.osc1_0 = $receiver;
-    var $receiver_0 = new Oscillator(Wave$Companion_getInstance().SAW);
-    $receiver_0.frequency = 10.0;
-    this.osc2_0 = $receiver_0;
-    this.lowPass_0 = new LowPassFilter(240.0, this);
-  }
-  Kick.prototype.generate_mx4ult$ = function (dt) {
-    var osc = SampleNode$Companion_getInstance().clip_dleff0$(SampleNode$Companion_getInstance().clip_dleff0$(this.osc1_0.next_mx4ult$(dt), 0.37) * 2 + SampleNode$Companion_getInstance().clip_dleff0$(this.osc2_0.next_mx4ult$(dt), 0.07) * 4, 0.6);
-    var s = SampleNode$Companion_getInstance().perc_7b5o5w$(osc, 54.0, this.t % (60.0 / this.bpm)) * 2;
-    return this.lowPass_0.filter_mx4ult$(s) + this.click_0(60.0 / this.bpm, this.t) * 0.055;
-  };
-  Kick.prototype.click_0 = function (x, t) {
-    return 1.0 - 2 * (t % x) / x;
-  };
-  Kick.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Kick',
-    interfaces: [SampleNode]
-  };
-  function Melody() {
-    SampleNode.call(this);
-    var $receiver = new Oscillator(Wave$Companion_getInstance().SINE, 1.0 / 32.0);
-    $receiver.gain = 140.0;
-    this.lfo1_0 = $receiver;
-    var $receiver_0 = new Oscillator(Wave$Companion_getInstance().SINE, 0.5);
-    $receiver_0.gain = 0.2;
-    $receiver_0.phaseShift = 0.5;
-    this.lfo2_0 = $receiver_0;
-    var $receiver_1 = new Oscillator(Wave$Companion_getInstance().SAW);
-    $receiver_1.gain = 0.7;
-    this.osc1_0 = $receiver_1;
-    var $receiver_2 = new Oscillator(Wave$Companion_getInstance().SQUARE);
-    $receiver_2.gain = 0.4;
-    this.osc2_0 = $receiver_2;
-    var $receiver_3 = new Oscillator(Wave$Companion_getInstance().SINE);
-    $receiver_3.gain = 0.8;
-    this.osc3_0 = $receiver_3;
-    var $receiver_4 = new Oscillator(Wave$Companion_getInstance().SQUARE);
-    $receiver_4.gain = 1.2;
-    this.osc4_0 = $receiver_4;
-    this.moodFilter_0 = new MoodFilter(this);
-    this.chords_0 = [7, 7, 7, 12, 10, 10, 10, 15, 7, 7, 7, 15, 15, 17, 10, 29, 7, 7, 7, 24, 10, 10, 10, 19, 7, 7, 7, 15, 29, 24, 15, 10];
-  }
-  Melody.prototype.generate_mx4ult$ = function (dt) {
-    var f = SampleNode$Companion_getInstance().note_vux9f0$(this.chords_0[numberToInt(this.t * 4) % this.chords_0.length], 0);
-    var osc = this.osc1_0.next_dleff0$(dt, f) + this.osc2_0.next_dleff0$(dt, f / 2.0) + this.osc3_0.next_dleff0$(dt, f / 2.0) + this.osc4_0.next_dleff0$(dt, f * 3.0);
-    return this.moodFilter_0.filter_7b5o5w$(this.lfo1_0.next_mx4ult$(dt) + 1050, this.lfo2_0.next_mx4ult$(dt), SampleNode$Companion_getInstance().perc_7b5o5w$(osc, 48.0, this.t % 0.125), dt) * 0.25;
-  };
-  Melody.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Melody',
-    interfaces: [SampleNode]
-  };
-  function Oscillator(shape, frequency) {
-    if (frequency === void 0)
-      frequency = 440.0;
-    SampleNode.call(this);
-    this.shape = shape;
-    this.frequency = frequency;
-    this.pos = 0.0;
-    this.phaseShift_nj8deu$_0 = 0.0;
-  }
-  Object.defineProperty(Oscillator.prototype, 'phaseShift', {
-    get: function () {
-      return this.phaseShift_nj8deu$_0;
-    },
-    set: function (value) {
-      var clamp$result;
-      if (value < 0.0) {
-        clamp$result = 0.0;
-      }
-       else if (value > 1.0) {
-        clamp$result = 1.0;
-      }
-       else {
-        clamp$result = value;
-      }
-      this.phaseShift_nj8deu$_0 = clamp$result;
-    }
-  });
-  Oscillator.prototype.generate_mx4ult$ = function (dt) {
-    this.pos += dt * this.frequency;
-    if (this.pos > 1) {
-      this.pos -= 1;
-    }
-    return this.shape.get_mx4ult$(this.pos + this.phaseShift);
-  };
-  Oscillator.prototype.next_dleff0$ = function (dt, freq) {
-    this.frequency = freq;
-    return this.next_mx4ult$(dt);
-  };
-  Oscillator.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Oscillator',
-    interfaces: [SampleNode]
-  };
-  function Pad() {
-    SampleNode.call(this);
-    var $receiver = new Oscillator(Wave$Companion_getInstance().SINE, 2.0);
-    $receiver.gain = 0.2;
-    this.lfo1_0 = $receiver;
-    var $receiver_0 = new Oscillator(Wave$Companion_getInstance().SINE, 2.0);
-    $receiver_0.gain = 150.0;
-    this.lfo2_0 = $receiver_0;
-    var $receiver_1 = new Oscillator(Wave$Companion_getInstance().SAW);
-    $receiver_1.gain = 5.1;
-    this.osc1_0 = $receiver_1;
-    var $receiver_2 = new Oscillator(Wave$Companion_getInstance().SAW);
-    $receiver_2.gain = 3.9;
-    this.osc2_0 = $receiver_2;
-    var $receiver_3 = new Oscillator(Wave$Companion_getInstance().SAW);
-    $receiver_3.gain = 4.0;
-    this.osc3_0 = $receiver_3;
-    var $receiver_4 = new Oscillator(Wave$Companion_getInstance().SQUARE);
-    $receiver_4.gain = 3.0;
-    this.osc4_0 = $receiver_4;
-    this.highPass_0 = new HighPassFilter(0.5, this);
-    this.moodFilter_0 = new MoodFilter(this);
-    this.chords_0 = [new Int32Array([7, 12, 17, 10]), new Int32Array([10, 15, 19, 24])];
-  }
-  Pad.prototype.generate_mx4ult$ = function (dt) {
-    var n = this.chords_0[numberToInt(this.t / 4) % this.chords_0.length];
-    var osc = this.osc1_0.next_dleff0$(dt, SampleNode$Companion_getInstance().note_vux9f0$(n[0], 1)) + this.osc2_0.next_dleff0$(dt, SampleNode$Companion_getInstance().note_vux9f0$(n[1], 2)) + this.osc3_0.next_dleff0$(dt, SampleNode$Companion_getInstance().note_vux9f0$(n[2], 1)) + this.osc4_0.next_dleff0$(dt, SampleNode$Companion_getInstance().note_vux9f0$(n[3], 0)) + SampleNode$Companion_getInstance().noise_mx4ult$(0.7);
-    var s = this.moodFilter_0.filter_7b5o5w$(this.lfo2_0.next_mx4ult$(dt) + 1100, 0.05, osc / 33.0, dt);
-    return (this.lfo1_0.next_mx4ult$(dt) + 0.5) * this.highPass_0.filter_mx4ult$(s) * 0.15;
-  };
-  Pad.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Pad',
-    interfaces: [SampleNode]
-  };
-  function SampleNode() {
-    SampleNode$Companion_getInstance();
-    this.gain = 1.0;
-    this.t_ltenjb$_0 = 0.0;
-    this.sample = 0.0;
-  }
-  Object.defineProperty(SampleNode.prototype, 't', {
-    get: function () {
-      return this.t_ltenjb$_0;
-    },
-    set: function (t) {
-      this.t_ltenjb$_0 = t;
-    }
-  });
-  SampleNode.prototype.current = function () {
-    return this.sample;
-  };
-  SampleNode.prototype.next_mx4ult$ = function (dt) {
-    this.t = this.t + dt;
-    this.sample = this.generate_mx4ult$(dt) * this.gain;
-    return this.sample;
-  };
-  var Array_0 = Array;
-  function SampleNode$Companion() {
-    SampleNode$Companion_instance = this;
-    var array = Array_0(15);
-    var tmp$;
-    tmp$ = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$; i++) {
-      var array_0 = new Float32Array(100);
-      var tmp$_0;
-      tmp$_0 = array_0.length - 1 | 0;
-      for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
-        var Math_0 = Math;
-        var x = ((i_0 - 20 | 0) - 33.0 + 12.0 * (i - 5 | 0)) / 12.0;
-        array_0[i_0] = Math_0.pow(2.0, x) * 440.0;
-      }
-      array[i] = array_0;
-    }
-    this.NOTE_TABLE_0 = array;
-  }
-  SampleNode$Companion.prototype.clip_dleff0$ = function (value, clip) {
-    var min = -clip;
-    var clamp$result;
-    if (value < min) {
-      clamp$result = min;
-    }
-     else if (value > clip) {
-      clamp$result = clip;
-    }
-     else {
-      clamp$result = value;
-    }
-    return clamp$result;
-  };
-  SampleNode$Companion.prototype.noise_mx4ult$ = function (amplitude) {
-    if (amplitude === void 0)
-      amplitude = 1.0;
-    return randomF_0(-amplitude, amplitude);
-  };
-  SampleNode$Companion.prototype.note_vux9f0$ = function (note, octave) {
-    var clamp$result;
-    if (octave < -5) {
-      clamp$result = -5;
-    }
-     else if (octave > 9) {
-      clamp$result = 9;
-    }
-     else {
-      clamp$result = octave;
-    }
-    var o = clamp$result + 5 | 0;
-    var clamp$result_0;
-    if (note < -20) {
-      clamp$result_0 = -20;
-    }
-     else if (note > 79) {
-      clamp$result_0 = 79;
-    }
-     else {
-      clamp$result_0 = note;
-    }
-    var n = clamp$result_0 + 20 | 0;
-    return this.NOTE_TABLE_0[o][n];
-  };
-  SampleNode$Companion.prototype.perc_7b5o5w$ = function (sample, decay, f, c) {
-    if (c === void 0)
-      c = 0.889;
-    var b = c - f * decay / (f * decay + 1);
-    return sample * Math_0.max(0.0, b);
-  };
-  SampleNode$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var SampleNode$Companion_instance = null;
-  function SampleNode$Companion_getInstance() {
-    if (SampleNode$Companion_instance === null) {
-      new SampleNode$Companion();
-    }
-    return SampleNode$Companion_instance;
-  }
-  SampleNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'SampleNode',
-    interfaces: []
-  };
-  function Shaker(bpm) {
-    SampleNode.call(this);
-    this.bpm = bpm;
-    this.highPass_0 = new HighPassFilter(1.5, this);
-  }
-  Shaker.prototype.generate_mx4ult$ = function (dt) {
-    var pc2 = this.t % (60.0 / this.bpm) / 8;
-    var pc1 = 230.0;
-    if ((this.t + 0.5) % 0.5 > 0.25) {
-      pc1 = 150.0;
-    }
-    return this.highPass_0.filter_mx4ult$(SampleNode$Companion_getInstance().perc_7b5o5w$(SampleNode$Companion_getInstance().noise_mx4ult$(), pc1, pc2, 0.95)) * 0.1;
-  };
-  Shaker.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Shaker',
-    interfaces: [SampleNode]
-  };
-  function Snare(bpm) {
-    SampleNode.call(this);
-    this.bpm = bpm;
-    var $receiver = new Oscillator(Wave$Companion_getInstance().SQUARE, 175.0);
-    $receiver.gain = 0.156;
-    this.osc_0 = $receiver;
-    this.lowPass_0 = new LowPassFilter(30.0, this);
-  }
-  Snare.prototype.generate_mx4ult$ = function (dt) {
-    var s = this.osc_0.next_mx4ult$(dt) + SampleNode$Companion_getInstance().noise_mx4ult$(0.73);
-    var pc2 = (this.t + 0.5) % (60.0 / this.bpm);
-    var pc1 = 120.0;
-    if (this.t % 2 > 1) {
-      pc1 = 105.0;
-    }
-    return this.lowPass_0.filter_mx4ult$(SampleNode$Companion_getInstance().perc_7b5o5w$(s, pc1, pc2) * 0.6) * 5;
-  };
-  Snare.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Snare',
-    interfaces: [SampleNode]
-  };
-  function Wave(tableSize, generator) {
-    Wave$Companion_getInstance();
-    this.tableSize = tableSize;
-    this.table_0 = new Float32Array(this.tableSize);
-    var tmp$;
-    tmp$ = this.tableSize;
-    for (var i = 0; i < tmp$; i++) {
-      this.table_0[i] = generator(i / this.tableSize);
-    }
-  }
-  Wave.prototype.get_mx4ult$ = function (index) {
-    return this.table_0[numberToInt(index * this.tableSize) % this.tableSize];
-  };
-  function Wave$Companion() {
-    Wave$Companion_instance = this;
-    this.DEFAULT_TABLE_SIZE = 2048;
-    this.SINE = new Wave(2048, Wave$Companion$SINE$lambda);
-    this.SAW = new Wave(2048, Wave$Companion$SAW$lambda);
-    this.RAMP = new Wave(2048, Wave$Companion$RAMP$lambda);
-    this.TRIANGLE = new Wave(2048, Wave$Companion$TRIANGLE$lambda);
-    this.SQUARE = new Wave(2048, Wave$Companion$SQUARE$lambda);
-  }
-  function Wave$Companion$SINE$lambda(p) {
-    var x = p * math.PI * 2;
-    return Math_0.sin(x);
-  }
-  function Wave$Companion$SAW$lambda(p) {
-    return -2.0 * (p - round(p));
-  }
-  function Wave$Companion$RAMP$lambda(p) {
-    return 2.0 * (p - round(p));
-  }
-  function Wave$Companion$TRIANGLE$lambda(p) {
-    var x = round(p) - p;
-    return 1.0 - 4.0 * Math_0.abs(x);
-  }
-  function Wave$Companion$SQUARE$lambda(p) {
-    return p < 0.5 ? 1.0 : -1.0;
-  }
-  Wave$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Wave$Companion_instance = null;
-  function Wave$Companion_getInstance() {
-    if (Wave$Companion_instance === null) {
-      new Wave$Companion();
-    }
-    return Wave$Companion_instance;
-  }
-  Wave.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Wave',
-    interfaces: []
-  };
   var GL_ACTIVE_TEXTURE;
   var GL_DEPTH_BUFFER_BIT;
   var GL_STENCIL_BUFFER_BIT;
@@ -1773,6 +1321,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simpleName: 'ShaderResource',
     interfaces: [GlResource]
   };
+  var Math_0 = Math;
   function TextureResource(glRef, target, props, ctx) {
     TextureResource$Companion_getInstance();
     GlResource.call(this, glRef, GlResource$Type$TEXTURE_getInstance(), ctx);
@@ -2071,6 +1620,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.version, other.version) && Kotlin.equals(this.vsIn, other.vsIn) && Kotlin.equals(this.vsOut, other.vsOut) && Kotlin.equals(this.fsIn, other.fsIn) && Kotlin.equals(this.fragColorHead, other.fragColorHead) && Kotlin.equals(this.fragColorBody, other.fragColorBody) && Kotlin.equals(this.texSampler, other.texSampler)))));
   };
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
+  var Array_0 = Array;
   function InputManager() {
     InputManager$Companion_getInstance();
     this.compatGestureEvaluator_0 = new TouchGestureEvaluator();
@@ -5283,7 +4833,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.origin.set_czzhiu$(origin);
     this.direction.set_czzhiu$(lookAt).subtract_czzhiu$(origin).norm();
   };
-  Ray.prototype.nearestPointOnRay_ud3oas$ = function (result, point) {
+  Ray.prototype.nearestPointOnRay_2gj7b4$ = function (point, result) {
     var d = (point.dot_czzhiu$(this.direction) - this.origin.dot_czzhiu$(this.direction)) / this.direction.dot_czzhiu$(this.direction);
     if (d > 0) {
       result.set_czzhiu$(this.direction).scale_mx4ult$(d).add_czzhiu$(this.origin);
@@ -5291,6 +4841,32 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
      else {
       result.set_czzhiu$(this.origin);
     }
+    return result;
+  };
+  Ray.prototype.distanceToPoint_czzhiu$ = function (point) {
+    var x = this.sqrDistanceToPoint_czzhiu$(point);
+    return Math_0.sqrt(x);
+  };
+  Ray.prototype.sqrDistanceToPoint_czzhiu$ = function (point) {
+    return this.sqrDistanceToPoint_y2kzbl$(point.x, point.y, point.z);
+  };
+  Ray.prototype.sqrDistanceToPoint_y2kzbl$ = function (x, y, z) {
+    var nx;
+    var ny;
+    var nz;
+    var dot = x * this.direction.x + y * this.direction.y + z * this.direction.z;
+    var d = (dot - this.origin.dot_czzhiu$(this.direction)) / this.direction.dot_czzhiu$(this.direction);
+    if (d > 0) {
+      nx = this.direction.x * d + this.origin.x - x;
+      ny = this.direction.y * d + this.origin.y - y;
+      nz = this.direction.z * d + this.origin.z - z;
+    }
+     else {
+      nx = this.origin.x - x;
+      ny = this.origin.y - y;
+      nz = this.origin.z - z;
+    }
+    return nx * nx + ny * ny + nz * nz;
   };
   Ray.$metadata$ = {
     kind: Kind_CLASS,
@@ -7227,6 +6803,464 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   MemoryManager.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'MemoryManager',
+    interfaces: []
+  };
+  function LowPassFilter(coeff, input) {
+    SampleNode.call(this);
+    this.coeff = coeff;
+    this.input = input;
+  }
+  LowPassFilter.prototype.generate_mx4ult$ = function (dt) {
+    return this.filter_mx4ult$(this.input.next_mx4ult$(dt));
+  };
+  LowPassFilter.prototype.filter_mx4ult$ = function (input) {
+    this.sample = this.sample + (input - this.sample) / this.coeff;
+    return this.sample;
+  };
+  LowPassFilter.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LowPassFilter',
+    interfaces: [SampleNode]
+  };
+  function HighPassFilter(coeff, input) {
+    SampleNode.call(this);
+    this.coeff = coeff;
+    this.input = input;
+  }
+  HighPassFilter.prototype.generate_mx4ult$ = function (dt) {
+    return this.filter_mx4ult$(this.input.next_mx4ult$(dt));
+  };
+  HighPassFilter.prototype.filter_mx4ult$ = function (input) {
+    this.sample = this.sample + (input - this.sample * this.coeff);
+    return this.sample;
+  };
+  HighPassFilter.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'HighPassFilter',
+    interfaces: [SampleNode]
+  };
+  function MoodFilter(input) {
+    MoodFilter$Companion_getInstance();
+    SampleNode.call(this);
+    this.input = input;
+    this.cutoff = 1000.0;
+    this.res = 0.05;
+    this.y1_0 = 0.0;
+    this.y2_0 = 0.0;
+    this.y3_0 = 0.0;
+    this.y4_0 = 0.0;
+    this.oldx_0 = 0.0;
+    this.oldy1_0 = 0.0;
+    this.oldy2_0 = 0.0;
+    this.oldy3_0 = 0.0;
+  }
+  MoodFilter.prototype.generate_mx4ult$ = function (dt) {
+    return this.filter_dleff0$(this.input.current(), dt);
+  };
+  MoodFilter.prototype.filter_7b5o5w$ = function (cutoff, res, input, dt) {
+    this.cutoff = cutoff;
+    this.res = res;
+    return this.filter_dleff0$(input, dt);
+  };
+  MoodFilter.prototype.filter_dleff0$ = function (input, dt) {
+    var cut = 2 * this.cutoff * dt;
+    var p = cut * (MoodFilter$Companion_getInstance().C1_0 - MoodFilter$Companion_getInstance().C2_0 * cut);
+    var x = cut * math.PI * 0.5;
+    var k = 2 * Math_0.sin(x) - 1;
+    var t1 = (1 - p) * MoodFilter$Companion_getInstance().C3_0;
+    var t2 = 12 + t1 * t1;
+    var r = this.res * (t2 + 6 * t1) / (t2 - 6 * t1);
+    var x_0 = input - r * this.y4_0;
+    this.y1_0 = x_0 * p + this.oldx_0 * p - k * this.y1_0;
+    this.y2_0 = this.y1_0 * p + this.oldy1_0 * p - k * this.y2_0;
+    this.y3_0 = this.y2_0 * p + this.oldy2_0 * p - k * this.y3_0;
+    this.y4_0 = this.y3_0 * p + this.oldy3_0 * p - k * this.y4_0;
+    this.y4_0 -= this.y4_0 * this.y4_0 * this.y4_0 / 6;
+    this.oldx_0 = x_0;
+    this.oldy1_0 = this.y1_0;
+    this.oldy2_0 = this.y2_0;
+    this.oldy3_0 = this.y3_0;
+    return this.y4_0;
+  };
+  function MoodFilter$Companion() {
+    MoodFilter$Companion_instance = this;
+    this.C1_0 = 1.8;
+    this.C2_0 = 0.8;
+    this.C3_0 = 1.386;
+  }
+  MoodFilter$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var MoodFilter$Companion_instance = null;
+  function MoodFilter$Companion_getInstance() {
+    if (MoodFilter$Companion_instance === null) {
+      new MoodFilter$Companion();
+    }
+    return MoodFilter$Companion_instance;
+  }
+  MoodFilter.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MoodFilter',
+    interfaces: [SampleNode]
+  };
+  function HiHat(bpm) {
+    SampleNode.call(this);
+    this.bpm = bpm;
+    this.highPass_0 = new HighPassFilter(1.7, this);
+  }
+  HiHat.prototype.generate_mx4ult$ = function (dt) {
+    var noise = randomF_0(-1.0, 1.0);
+    var pc2 = this.t % (60.0 / this.bpm);
+    var pc1 = 266.0;
+    if (this.t / 2 % 0.5 > 0.25) {
+      pc1 = 106.0;
+    }
+    return this.highPass_0.filter_mx4ult$(SampleNode$Companion_getInstance().perc_7b5o5w$(noise, pc1, pc2)) * 0.2;
+  };
+  HiHat.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'HiHat',
+    interfaces: [SampleNode]
+  };
+  function Kick(bpm) {
+    SampleNode.call(this);
+    this.bpm = bpm;
+    var $receiver = new Oscillator(Wave$Companion_getInstance().SINE);
+    $receiver.frequency = 50.0;
+    this.osc1_0 = $receiver;
+    var $receiver_0 = new Oscillator(Wave$Companion_getInstance().SAW);
+    $receiver_0.frequency = 10.0;
+    this.osc2_0 = $receiver_0;
+    this.lowPass_0 = new LowPassFilter(240.0, this);
+  }
+  Kick.prototype.generate_mx4ult$ = function (dt) {
+    var osc = SampleNode$Companion_getInstance().clip_dleff0$(SampleNode$Companion_getInstance().clip_dleff0$(this.osc1_0.next_mx4ult$(dt), 0.37) * 2 + SampleNode$Companion_getInstance().clip_dleff0$(this.osc2_0.next_mx4ult$(dt), 0.07) * 4, 0.6);
+    var s = SampleNode$Companion_getInstance().perc_7b5o5w$(osc, 54.0, this.t % (60.0 / this.bpm)) * 2;
+    return this.lowPass_0.filter_mx4ult$(s) + this.click_0(60.0 / this.bpm, this.t) * 0.055;
+  };
+  Kick.prototype.click_0 = function (x, t) {
+    return 1.0 - 2 * (t % x) / x;
+  };
+  Kick.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Kick',
+    interfaces: [SampleNode]
+  };
+  function Melody() {
+    SampleNode.call(this);
+    var $receiver = new Oscillator(Wave$Companion_getInstance().SINE, 1.0 / 32.0);
+    $receiver.gain = 140.0;
+    this.lfo1_0 = $receiver;
+    var $receiver_0 = new Oscillator(Wave$Companion_getInstance().SINE, 0.5);
+    $receiver_0.gain = 0.2;
+    $receiver_0.phaseShift = 0.5;
+    this.lfo2_0 = $receiver_0;
+    var $receiver_1 = new Oscillator(Wave$Companion_getInstance().SAW);
+    $receiver_1.gain = 0.7;
+    this.osc1_0 = $receiver_1;
+    var $receiver_2 = new Oscillator(Wave$Companion_getInstance().SQUARE);
+    $receiver_2.gain = 0.4;
+    this.osc2_0 = $receiver_2;
+    var $receiver_3 = new Oscillator(Wave$Companion_getInstance().SINE);
+    $receiver_3.gain = 0.8;
+    this.osc3_0 = $receiver_3;
+    var $receiver_4 = new Oscillator(Wave$Companion_getInstance().SQUARE);
+    $receiver_4.gain = 1.2;
+    this.osc4_0 = $receiver_4;
+    this.moodFilter_0 = new MoodFilter(this);
+    this.chords_0 = [7, 7, 7, 12, 10, 10, 10, 15, 7, 7, 7, 15, 15, 17, 10, 29, 7, 7, 7, 24, 10, 10, 10, 19, 7, 7, 7, 15, 29, 24, 15, 10];
+  }
+  Melody.prototype.generate_mx4ult$ = function (dt) {
+    var f = SampleNode$Companion_getInstance().note_vux9f0$(this.chords_0[numberToInt(this.t * 4) % this.chords_0.length], 0);
+    var osc = this.osc1_0.next_dleff0$(dt, f) + this.osc2_0.next_dleff0$(dt, f / 2.0) + this.osc3_0.next_dleff0$(dt, f / 2.0) + this.osc4_0.next_dleff0$(dt, f * 3.0);
+    return this.moodFilter_0.filter_7b5o5w$(this.lfo1_0.next_mx4ult$(dt) + 1050, this.lfo2_0.next_mx4ult$(dt), SampleNode$Companion_getInstance().perc_7b5o5w$(osc, 48.0, this.t % 0.125), dt) * 0.25;
+  };
+  Melody.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Melody',
+    interfaces: [SampleNode]
+  };
+  function Oscillator(shape, frequency) {
+    if (frequency === void 0)
+      frequency = 440.0;
+    SampleNode.call(this);
+    this.shape = shape;
+    this.frequency = frequency;
+    this.pos = 0.0;
+    this.phaseShift_luel7x$_0 = 0.0;
+  }
+  Object.defineProperty(Oscillator.prototype, 'phaseShift', {
+    get: function () {
+      return this.phaseShift_luel7x$_0;
+    },
+    set: function (value) {
+      var clamp$result;
+      if (value < 0.0) {
+        clamp$result = 0.0;
+      }
+       else if (value > 1.0) {
+        clamp$result = 1.0;
+      }
+       else {
+        clamp$result = value;
+      }
+      this.phaseShift_luel7x$_0 = clamp$result;
+    }
+  });
+  Oscillator.prototype.generate_mx4ult$ = function (dt) {
+    this.pos += dt * this.frequency;
+    if (this.pos > 1) {
+      this.pos -= 1;
+    }
+    return this.shape.get_mx4ult$(this.pos + this.phaseShift);
+  };
+  Oscillator.prototype.next_dleff0$ = function (dt, freq) {
+    this.frequency = freq;
+    return this.next_mx4ult$(dt);
+  };
+  Oscillator.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Oscillator',
+    interfaces: [SampleNode]
+  };
+  function Pad() {
+    SampleNode.call(this);
+    var $receiver = new Oscillator(Wave$Companion_getInstance().SINE, 2.0);
+    $receiver.gain = 0.2;
+    this.lfo1_0 = $receiver;
+    var $receiver_0 = new Oscillator(Wave$Companion_getInstance().SINE, 2.0);
+    $receiver_0.gain = 150.0;
+    this.lfo2_0 = $receiver_0;
+    var $receiver_1 = new Oscillator(Wave$Companion_getInstance().SAW);
+    $receiver_1.gain = 5.1;
+    this.osc1_0 = $receiver_1;
+    var $receiver_2 = new Oscillator(Wave$Companion_getInstance().SAW);
+    $receiver_2.gain = 3.9;
+    this.osc2_0 = $receiver_2;
+    var $receiver_3 = new Oscillator(Wave$Companion_getInstance().SAW);
+    $receiver_3.gain = 4.0;
+    this.osc3_0 = $receiver_3;
+    var $receiver_4 = new Oscillator(Wave$Companion_getInstance().SQUARE);
+    $receiver_4.gain = 3.0;
+    this.osc4_0 = $receiver_4;
+    this.highPass_0 = new HighPassFilter(0.5, this);
+    this.moodFilter_0 = new MoodFilter(this);
+    this.chords_0 = [new Int32Array([7, 12, 17, 10]), new Int32Array([10, 15, 19, 24])];
+  }
+  Pad.prototype.generate_mx4ult$ = function (dt) {
+    var n = this.chords_0[numberToInt(this.t / 4) % this.chords_0.length];
+    var osc = this.osc1_0.next_dleff0$(dt, SampleNode$Companion_getInstance().note_vux9f0$(n[0], 1)) + this.osc2_0.next_dleff0$(dt, SampleNode$Companion_getInstance().note_vux9f0$(n[1], 2)) + this.osc3_0.next_dleff0$(dt, SampleNode$Companion_getInstance().note_vux9f0$(n[2], 1)) + this.osc4_0.next_dleff0$(dt, SampleNode$Companion_getInstance().note_vux9f0$(n[3], 0)) + SampleNode$Companion_getInstance().noise_mx4ult$(0.7);
+    var s = this.moodFilter_0.filter_7b5o5w$(this.lfo2_0.next_mx4ult$(dt) + 1100, 0.05, osc / 33.0, dt);
+    return (this.lfo1_0.next_mx4ult$(dt) + 0.5) * this.highPass_0.filter_mx4ult$(s) * 0.15;
+  };
+  Pad.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Pad',
+    interfaces: [SampleNode]
+  };
+  function SampleNode() {
+    SampleNode$Companion_getInstance();
+    this.gain = 1.0;
+    this.t_brvpvk$_0 = 0.0;
+    this.sample = 0.0;
+  }
+  Object.defineProperty(SampleNode.prototype, 't', {
+    get: function () {
+      return this.t_brvpvk$_0;
+    },
+    set: function (t) {
+      this.t_brvpvk$_0 = t;
+    }
+  });
+  SampleNode.prototype.current = function () {
+    return this.sample;
+  };
+  SampleNode.prototype.next_mx4ult$ = function (dt) {
+    this.t = this.t + dt;
+    this.sample = this.generate_mx4ult$(dt) * this.gain;
+    return this.sample;
+  };
+  function SampleNode$Companion() {
+    SampleNode$Companion_instance = this;
+    var array = Array_0(15);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      var array_0 = new Float32Array(100);
+      var tmp$_0;
+      tmp$_0 = array_0.length - 1 | 0;
+      for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
+        var Math_0 = Math;
+        var x = ((i_0 - 20 | 0) - 33.0 + 12.0 * (i - 5 | 0)) / 12.0;
+        array_0[i_0] = Math_0.pow(2.0, x) * 440.0;
+      }
+      array[i] = array_0;
+    }
+    this.NOTE_TABLE_0 = array;
+  }
+  SampleNode$Companion.prototype.clip_dleff0$ = function (value, clip) {
+    var min = -clip;
+    var clamp$result;
+    if (value < min) {
+      clamp$result = min;
+    }
+     else if (value > clip) {
+      clamp$result = clip;
+    }
+     else {
+      clamp$result = value;
+    }
+    return clamp$result;
+  };
+  SampleNode$Companion.prototype.noise_mx4ult$ = function (amplitude) {
+    if (amplitude === void 0)
+      amplitude = 1.0;
+    return randomF_0(-amplitude, amplitude);
+  };
+  SampleNode$Companion.prototype.note_vux9f0$ = function (note, octave) {
+    var clamp$result;
+    if (octave < -5) {
+      clamp$result = -5;
+    }
+     else if (octave > 9) {
+      clamp$result = 9;
+    }
+     else {
+      clamp$result = octave;
+    }
+    var o = clamp$result + 5 | 0;
+    var clamp$result_0;
+    if (note < -20) {
+      clamp$result_0 = -20;
+    }
+     else if (note > 79) {
+      clamp$result_0 = 79;
+    }
+     else {
+      clamp$result_0 = note;
+    }
+    var n = clamp$result_0 + 20 | 0;
+    return this.NOTE_TABLE_0[o][n];
+  };
+  SampleNode$Companion.prototype.perc_7b5o5w$ = function (sample, decay, f, c) {
+    if (c === void 0)
+      c = 0.889;
+    var b = c - f * decay / (f * decay + 1);
+    return sample * Math_0.max(0.0, b);
+  };
+  SampleNode$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var SampleNode$Companion_instance = null;
+  function SampleNode$Companion_getInstance() {
+    if (SampleNode$Companion_instance === null) {
+      new SampleNode$Companion();
+    }
+    return SampleNode$Companion_instance;
+  }
+  SampleNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SampleNode',
+    interfaces: []
+  };
+  function Shaker(bpm) {
+    SampleNode.call(this);
+    this.bpm = bpm;
+    this.highPass_0 = new HighPassFilter(1.5, this);
+  }
+  Shaker.prototype.generate_mx4ult$ = function (dt) {
+    var pc2 = this.t % (60.0 / this.bpm) / 8;
+    var pc1 = 230.0;
+    if ((this.t + 0.5) % 0.5 > 0.25) {
+      pc1 = 150.0;
+    }
+    return this.highPass_0.filter_mx4ult$(SampleNode$Companion_getInstance().perc_7b5o5w$(SampleNode$Companion_getInstance().noise_mx4ult$(), pc1, pc2, 0.95)) * 0.1;
+  };
+  Shaker.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Shaker',
+    interfaces: [SampleNode]
+  };
+  function Snare(bpm) {
+    SampleNode.call(this);
+    this.bpm = bpm;
+    var $receiver = new Oscillator(Wave$Companion_getInstance().SQUARE, 175.0);
+    $receiver.gain = 0.156;
+    this.osc_0 = $receiver;
+    this.lowPass_0 = new LowPassFilter(30.0, this);
+  }
+  Snare.prototype.generate_mx4ult$ = function (dt) {
+    var s = this.osc_0.next_mx4ult$(dt) + SampleNode$Companion_getInstance().noise_mx4ult$(0.73);
+    var pc2 = (this.t + 0.5) % (60.0 / this.bpm);
+    var pc1 = 120.0;
+    if (this.t % 2 > 1) {
+      pc1 = 105.0;
+    }
+    return this.lowPass_0.filter_mx4ult$(SampleNode$Companion_getInstance().perc_7b5o5w$(s, pc1, pc2) * 0.6) * 5;
+  };
+  Snare.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Snare',
+    interfaces: [SampleNode]
+  };
+  function Wave(tableSize, generator) {
+    Wave$Companion_getInstance();
+    this.tableSize = tableSize;
+    this.table_0 = new Float32Array(this.tableSize);
+    var tmp$;
+    tmp$ = this.tableSize;
+    for (var i = 0; i < tmp$; i++) {
+      this.table_0[i] = generator(i / this.tableSize);
+    }
+  }
+  Wave.prototype.get_mx4ult$ = function (index) {
+    return this.table_0[numberToInt(index * this.tableSize) % this.tableSize];
+  };
+  function Wave$Companion() {
+    Wave$Companion_instance = this;
+    this.DEFAULT_TABLE_SIZE = 2048;
+    this.SINE = new Wave(2048, Wave$Companion$SINE$lambda);
+    this.SAW = new Wave(2048, Wave$Companion$SAW$lambda);
+    this.RAMP = new Wave(2048, Wave$Companion$RAMP$lambda);
+    this.TRIANGLE = new Wave(2048, Wave$Companion$TRIANGLE$lambda);
+    this.SQUARE = new Wave(2048, Wave$Companion$SQUARE$lambda);
+  }
+  function Wave$Companion$SINE$lambda(p) {
+    var x = p * math.PI * 2;
+    return Math_0.sin(x);
+  }
+  function Wave$Companion$SAW$lambda(p) {
+    return -2.0 * (p - round(p));
+  }
+  function Wave$Companion$RAMP$lambda(p) {
+    return 2.0 * (p - round(p));
+  }
+  function Wave$Companion$TRIANGLE$lambda(p) {
+    var x = round(p) - p;
+    return 1.0 - 4.0 * Math_0.abs(x);
+  }
+  function Wave$Companion$SQUARE$lambda(p) {
+    return p < 0.5 ? 1.0 : -1.0;
+  }
+  Wave$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Wave$Companion_instance = null;
+  function Wave$Companion_getInstance() {
+    if (Wave$Companion_instance === null) {
+      new Wave$Companion();
+    }
+    return Wave$Companion_instance;
+  }
+  Wave.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Wave',
     interfaces: []
   };
   function BoundedElevationMap() {
@@ -9459,11 +9493,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     interfaces: [TexImageTileShaderProvider]
   };
   var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
-  function HalfEdgeMesh(meshData) {
+  function HalfEdgeMesh(meshData, edgeHandler) {
     HalfEdgeMesh$Companion_getInstance();
+    if (edgeHandler === void 0)
+      edgeHandler = HalfEdgeMesh$HalfEdgeMesh$OcTreeEdgeHandler_init(meshData);
     Mesh.call(this, meshData);
+    this.edgeHandler = edgeHandler;
     this.vertices_0 = null;
-    this.edgeTree = null;
     this.positionOffset_0 = ensureNotNull(meshData.vertexList.attributeOffsets.get_11rb$(Attribute$Companion_getInstance().POSITIONS));
     this.tmpVec1_0 = MutableVec3f_init();
     this.tmpVec2_0 = MutableVec3f_init();
@@ -9478,24 +9514,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       list.add_11rb$(new HalfEdgeMesh$HalfEdgeVertex(this, index));
     }
     this.vertices_0 = list;
-    var edgeList = ArrayList_init();
-    var $receiver = new BoundingBox();
-    $receiver.isBatchUpdate = true;
-    var bounds = $receiver;
     tmp$ = meshData.numIndices;
     for (var i = 0; i < tmp$; i += 3) {
       var v0 = this.vertices_0.get_za3lpa$(meshData.vertexList.indices.get_za3lpa$(i));
       var v1 = this.vertices_0.get_za3lpa$(meshData.vertexList.indices.get_za3lpa$(i + 1 | 0));
       var v2 = this.vertices_0.get_za3lpa$(meshData.vertexList.indices.get_za3lpa$(i + 2 | 0));
-      bounds.add_czzhiu$(v0).add_czzhiu$(v1).add_czzhiu$(v2);
       var e0 = new HalfEdgeMesh$HalfEdge(this, v0, v1);
-      var $receiver_0 = new HalfEdgeMesh$HalfEdge(this, v1, v2);
-      e0.next = $receiver_0;
-      var e1 = $receiver_0;
-      var $receiver_1 = new HalfEdgeMesh$HalfEdge(this, v2, v0);
-      e1.next = $receiver_1;
-      $receiver_1.next = e0;
-      var e2 = $receiver_1;
+      var $receiver = new HalfEdgeMesh$HalfEdge(this, v1, v2);
+      e0.next = $receiver;
+      var e1 = $receiver;
+      var $receiver_0 = new HalfEdgeMesh$HalfEdge(this, v2, v0);
+      e1.next = $receiver_0;
+      $receiver_0.next = e0;
+      var e2 = $receiver_0;
       var tmp$_3;
       if ((tmp$_0 = v1.getEdgeTo_n38rgs$(v0)) != null) {
         tmp$_0.opp = e0;
@@ -9520,12 +9551,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
        else
         tmp$_5 = null;
       e2.opp = tmp$_5;
-      edgeList.add_11rb$(e0);
-      edgeList.add_11rb$(e1);
-      edgeList.add_11rb$(e2);
+      this.edgeHandler.plusAssign_ebe40$(e0);
+      this.edgeHandler.plusAssign_ebe40$(e1);
+      this.edgeHandler.plusAssign_ebe40$(e2);
     }
-    bounds.isBatchUpdate = false;
-    this.edgeTree = new OcTree(HalfEdgeMesh$Companion$HalfEdgeAdapter_getInstance(), edgeList, bounds);
   }
   Object.defineProperty(HalfEdgeMesh.prototype, 'vertCount', {
     get: function () {
@@ -9534,15 +9563,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   });
   Object.defineProperty(HalfEdgeMesh.prototype, 'faceCount', {
     get: function () {
-      return this.edgeTree.size / 3 | 0;
+      return this.edgeHandler.numEdges / 3 | 0;
     }
   });
+  function HalfEdgeMesh$EdgeHandler() {
+  }
+  HalfEdgeMesh$EdgeHandler.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'EdgeHandler',
+    interfaces: [Iterable]
+  };
   HalfEdgeMesh.prototype.generateWireframe_wuugko$ = function (lineMesh, lineColor) {
     if (lineColor === void 0)
       lineColor = Color$Companion_getInstance().MD_PINK;
     var v0 = MutableVec3f_init();
     var v1 = MutableVec3f_init();
-    var $receiver = this.edgeTree;
+    var $receiver = this.edgeHandler;
     var destination = ArrayList_init();
     var tmp$;
     tmp$ = $receiver.iterator();
@@ -9578,6 +9614,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         v.index = (tmp$ = vi, vi = tmp$ + 1 | 0, tmp$);
       }
     }
+    this.edgeHandler.rebuild();
     var strideF = this.meshData.vertexList.vertexSizeF;
     var strideI = this.meshData.vertexList.vertexSizeI;
     var newDataF = createFloat32Buffer(Kotlin.imul(this.vertices_0.size, strideF));
@@ -9632,43 +9669,116 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.meshData.isSyncRequired = true;
   };
   HalfEdgeMesh.prototype.splitEdge_b49or$ = function (edge, fraction) {
-    throw new NotImplementedError();
+    var $this = this.meshData.vertexList;
+    var tmp$, tmp$_0, tmp$_1;
+    $this.checkBufferSizes_za3lpa$();
+    tmp$ = $this.vertexSizeF;
+    for (var i = 1; i <= tmp$; i++) {
+      $this.dataF.plusAssign_mx4ult$(0.0);
+    }
+    tmp$_0 = $this.vertexSizeI;
+    for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
+      $this.dataI.plusAssign_za3lpa$(0);
+    }
+    $this.vertexIt.index = (tmp$_1 = $this.size, $this.size = tmp$_1 + 1 | 0, tmp$_1);
+    $this.vertexIt.position.set_czzhiu$(edge.to).subtract_czzhiu$(edge.from).scale_mx4ult$(fraction).add_czzhiu$(edge.from);
+    null != null ? null.add_czzhiu$($this.vertexIt.position) : null;
+    var idx = $this.size - 1 | 0;
+    var insertV = new HalfEdgeMesh$HalfEdgeVertex(this, idx);
+    this.vertices_0.add_11rb$(insertV);
+    var prevToR = edge.to;
+    edge.updateTo_n38rgs$(insertV);
+    var $receiver = edge.next.from.edges;
+    var element = edge.next;
+    $receiver.remove_11rb$(element);
+    edge.next.updateFrom_n38rgs$(insertV);
+    var $receiver_0 = insertV.edges;
+    var element_0 = edge.next;
+    $receiver_0.add_11rb$(element_0);
+    var insertEdR0 = new HalfEdgeMesh$HalfEdge(this, insertV, prevToR);
+    var $receiver_1 = new HalfEdgeMesh$HalfEdge(this, prevToR, edge.next.to);
+    var tmp$_2;
+    insertEdR0.next = $receiver_1;
+    $receiver_1.opp = edge.next.opp;
+    (tmp$_2 = $receiver_1.opp) != null ? (tmp$_2.opp = $receiver_1) : null;
+    var insertEdR1 = $receiver_1;
+    var $receiver_2 = new HalfEdgeMesh$HalfEdge(this, edge.next.to, insertV);
+    insertEdR1.next = $receiver_2;
+    $receiver_2.next = insertEdR0;
+    $receiver_2.opp = edge.next;
+    edge.next.opp = $receiver_2;
+    var insertEdR2 = $receiver_2;
+    this.edgeHandler.plusAssign_ebe40$(insertEdR0);
+    this.edgeHandler.plusAssign_ebe40$(insertEdR1);
+    this.edgeHandler.plusAssign_ebe40$(insertEdR2);
+    var edgeOpp = edge.opp;
+    if (edgeOpp != null) {
+      var prevToL = edgeOpp.to;
+      edgeOpp.updateTo_n38rgs$(insertV);
+      var $receiver_3 = edgeOpp.next.from.edges;
+      var element_1 = edgeOpp.next;
+      $receiver_3.remove_11rb$(element_1);
+      edgeOpp.next.updateFrom_n38rgs$(insertV);
+      var $receiver_4 = insertV.edges;
+      var element_2 = edgeOpp.next;
+      $receiver_4.add_11rb$(element_2);
+      var insertEdL0 = new HalfEdgeMesh$HalfEdge(this, insertV, prevToL);
+      var $receiver_5 = new HalfEdgeMesh$HalfEdge(this, prevToL, edgeOpp.next.to);
+      var tmp$_3;
+      insertEdL0.next = $receiver_5;
+      $receiver_5.opp = edgeOpp.next.opp;
+      (tmp$_3 = $receiver_5.opp) != null ? (tmp$_3.opp = $receiver_5) : null;
+      var insertEdL1 = $receiver_5;
+      var $receiver_6 = new HalfEdgeMesh$HalfEdge(this, edgeOpp.next.to, insertV);
+      insertEdL1.next = $receiver_6;
+      $receiver_6.next = insertEdL0;
+      $receiver_6.opp = edgeOpp.next;
+      edgeOpp.next.opp = $receiver_6;
+      var insertEdL2 = $receiver_6;
+      insertEdL0.opp = edge;
+      edge.opp = insertEdL0;
+      insertEdR0.opp = edgeOpp;
+      edgeOpp.opp = insertEdR0;
+      this.edgeHandler.plusAssign_ebe40$(insertEdL0);
+      this.edgeHandler.plusAssign_ebe40$(insertEdL1);
+      this.edgeHandler.plusAssign_ebe40$(insertEdL2);
+    }
   };
   HalfEdgeMesh.prototype.collapseEdge_b49or$ = function (edge, fraction) {
     var tmp$;
     var srcVert = edge.from;
     var delVert = edge.to;
-    var colOppR1 = edge.next.opp;
-    if (colOppR1 != null) {
+    var oppR1 = edge.next.opp;
+    if (oppR1 != null) {
       edge.next.opp = null;
-      colOppR1.opp = null;
-      colOppR1.updateTo_n38rgs$(srcVert);
+      oppR1.opp = null;
+      oppR1.updateTo_n38rgs$(srcVert);
     }
-    var colOppR2 = edge.next.next.opp;
-    if (colOppR2 != null) {
+    var oppR2 = edge.next.next.opp;
+    if (oppR2 != null) {
       edge.next.next.opp = null;
-      colOppR2.opp = colOppR1;
-      if (colOppR1 != null) {
-        colOppR1.opp = colOppR2;
+      oppR2.opp = oppR1;
+      if (oppR1 != null) {
+        oppR1.opp = oppR2;
       }
     }
     var edgeOpp = edge.opp;
     if (edgeOpp != null) {
-      var colOppL1 = edgeOpp.next.opp;
-      if (colOppL1 != null) {
+      var oppL1 = edgeOpp.next.opp;
+      if (oppL1 != null) {
         edgeOpp.next.opp = null;
-        colOppL1.opp = null;
+        oppL1.opp = null;
       }
-      var colOppL2 = edgeOpp.next.next.opp;
-      if (colOppL2 != null) {
-        delVert.edges.remove_11rb$(colOppL2);
-        srcVert.edges.add_11rb$(colOppL2);
-        colOppL2.updateFrom_n38rgs$(srcVert);
-        colOppL2.next.next.updateTo_n38rgs$(srcVert);
+      var oppL2 = edgeOpp.next.next.opp;
+      if (oppL2 != null) {
+        delVert.edges.remove_11rb$(oppL2);
+        srcVert.edges.add_11rb$(oppL2);
+        oppL2.updateFrom_n38rgs$(srcVert);
+        oppL2.next.next.updateTo_n38rgs$(srcVert);
         edgeOpp.next.next.opp = null;
-        colOppL2.opp = colOppL1;
-        if (colOppL1 != null) {
-          colOppL1.opp = colOppL2;
+        oppL2.opp = oppL1;
+        if (oppL1 != null) {
+          oppL1.opp = oppL2;
         }
       }
     }
@@ -9703,20 +9813,35 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function HalfEdgeMesh$Companion$HalfEdgeAdapter() {
     HalfEdgeMesh$Companion$HalfEdgeAdapter_instance = this;
   }
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getX_trkh7z$ = function (item) {
+  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMinX_trkh7z$ = function (item) {
     var a = item.from.x;
     var b = item.to.x;
     return Math_0.min(a, b);
   };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getY_trkh7z$ = function (item) {
+  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMinY_trkh7z$ = function (item) {
     var a = item.from.y;
     var b = item.to.y;
     return Math_0.min(a, b);
   };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getZ_trkh7z$ = function (item) {
+  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMinZ_trkh7z$ = function (item) {
     var a = item.from.z;
     var b = item.to.z;
     return Math_0.min(a, b);
+  };
+  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMaxX_trkh7z$ = function (item) {
+    var a = item.from.x;
+    var b = item.to.x;
+    return Math_0.max(a, b);
+  };
+  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMaxY_trkh7z$ = function (item) {
+    var a = item.from.y;
+    var b = item.to.y;
+    return Math_0.max(a, b);
+  };
+  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMaxZ_trkh7z$ = function (item) {
+    var a = item.from.z;
+    var b = item.to.z;
+    return Math_0.max(a, b);
   };
   HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getSzX_trkh7z$ = function (item) {
     var x = item.from.x - item.to.x;
@@ -9798,7 +9923,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return this.$outer.meshData.vertexList.dataF.get_za3lpa$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 + 2 | 0);
     }
   });
-  HalfEdgeMesh$HalfEdgeVertex.prototype.setPosition_0 = function (x, y, z) {
+  HalfEdgeMesh$HalfEdgeVertex.prototype.setPosition_eyxpjg$ = function (x, y, z) {
     this.$outer.meshData.vertexList.dataF.set_24o109$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 | 0, x);
     this.$outer.meshData.vertexList.dataF.set_24o109$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 + 1 | 0, y);
     this.$outer.meshData.vertexList.dataF.set_24o109$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 + 2 | 0, z);
@@ -9823,38 +9948,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.updatePosition_y2kzbl$(newPos.x, newPos.y, newPos.z);
   };
   HalfEdgeMesh$HalfEdgeVertex.prototype.updatePosition_y2kzbl$ = function (x, y, z) {
-    var tmp$, tmp$_0;
-    tmp$ = this.edges;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      var tmp$_1, tmp$_2;
-      var ed = this.edges.get_za3lpa$(i);
-      var newX = (x + ed.to.x) * 0.5;
-      var newY = (y + ed.to.y) * 0.5;
-      var newZ = (z + ed.to.z) * 0.5;
-      if (((tmp$_1 = ed.treeNode) != null ? tmp$_1.isInNode_y2kzbl$(newX, newY, newZ) : null) !== true) {
-        this.$outer.edgeTree.remove_trkh7z$(ed);
-        ed.treeNode = null;
-      }
-      ed = this.edges.get_za3lpa$(i).next.next;
-      newX = (x + ed.from.x) * 0.5;
-      newY = (y + ed.from.y) * 0.5;
-      newZ = (z + ed.from.z) * 0.5;
-      if (((tmp$_2 = ed.treeNode) != null ? tmp$_2.isInNode_y2kzbl$(newX, newY, newZ) : null) !== true) {
-        this.$outer.edgeTree.remove_trkh7z$(ed);
-        ed.treeNode = null;
-      }
-    }
-    this.setPosition_0(x, y, z);
-    tmp$_0 = this.edges;
-    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-      var ed_0 = this.edges.get_za3lpa$(i_0);
-      if (ed_0.treeNode == null) {
-        this.$outer.edgeTree.add_trkh7z$(ed_0);
-      }
-      if (ed_0.next.next.treeNode == null) {
-        this.$outer.edgeTree.add_trkh7z$(ed_0.next.next);
-      }
-    }
+    this.$outer.edgeHandler.checkedUpdateVertexPosition_efzdnr$(this, x, y, z);
   };
   HalfEdgeMesh$HalfEdgeVertex.$metadata$ = {
     kind: Kind_CLASS,
@@ -9976,7 +10070,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if ((tmp$ = this.opp) != null) {
       tmp$.opp = null;
     }
-    this.$outer.edgeTree.remove_trkh7z$(this);
+    this.$outer.edgeHandler.minusAssign_ebe40$(this);
     this.treeNode = null;
   };
   HalfEdgeMesh$HalfEdge.prototype.deleteTriangle = function () {
@@ -9985,32 +10079,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.next.next.deleteEdge_0();
   };
   HalfEdgeMesh$HalfEdge.prototype.updateFrom_n38rgs$ = function (newFrom) {
-    var tmp$;
-    var newX = (newFrom.x + this.to.x) * 0.5;
-    var newY = (newFrom.y + this.to.y) * 0.5;
-    var newZ = (newFrom.z + this.to.z) * 0.5;
-    if (((tmp$ = this.treeNode) != null ? tmp$.isInNode_y2kzbl$(newX, newY, newZ) : null) === true) {
-      this.from = newFrom;
-    }
-     else {
-      this.$outer.edgeTree.remove_trkh7z$(this);
-      this.from = newFrom;
-      this.$outer.edgeTree.add_trkh7z$(this);
-    }
+    this.$outer.edgeHandler.checkedUpdateEdgeFrom_870n7c$(this, newFrom);
   };
   HalfEdgeMesh$HalfEdge.prototype.updateTo_n38rgs$ = function (newTo) {
-    var tmp$;
-    var newX = (this.from.x + newTo.x) * 0.5;
-    var newY = (this.from.y + newTo.y) * 0.5;
-    var newZ = (this.from.z + newTo.z) * 0.5;
-    if (((tmp$ = this.treeNode) != null ? tmp$.isInNode_y2kzbl$(newX, newY, newZ) : null) === true) {
-      this.to = newTo;
-    }
-     else {
-      this.$outer.edgeTree.remove_trkh7z$(this);
-      this.to = newTo;
-      this.$outer.edgeTree.add_trkh7z$(this);
-    }
+    this.$outer.edgeHandler.checkedUpdateEdgeTo_870n7c$(this, newTo);
   };
   HalfEdgeMesh$HalfEdge.prototype.toString = function () {
     return this.from.toString() + ' -> ' + this.to;
@@ -10019,6 +10091,182 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     kind: Kind_CLASS,
     simpleName: 'HalfEdge',
     interfaces: []
+  };
+  function HalfEdgeMesh$OcTreeEdgeHandler(treeBounds) {
+    this.edgeTree = new OcTree(HalfEdgeMesh$Companion$HalfEdgeAdapter_getInstance(), void 0, treeBounds);
+  }
+  Object.defineProperty(HalfEdgeMesh$OcTreeEdgeHandler.prototype, 'numEdges', {
+    get: function () {
+      return this.edgeTree.size;
+    }
+  });
+  HalfEdgeMesh$OcTreeEdgeHandler.prototype.plusAssign_ebe40$ = function (edge) {
+    this.edgeTree.add_11rb$(edge);
+  };
+  HalfEdgeMesh$OcTreeEdgeHandler.prototype.minusAssign_ebe40$ = function (edge) {
+    this.edgeTree.remove_11rb$(edge);
+  };
+  HalfEdgeMesh$OcTreeEdgeHandler.prototype.checkedUpdateEdgeTo_870n7c$ = function (edge, newTo) {
+    var tmp$;
+    var newX = (edge.from.x + newTo.x) * 0.5;
+    var newY = (edge.from.y + newTo.y) * 0.5;
+    var newZ = (edge.from.z + newTo.z) * 0.5;
+    if (((tmp$ = edge.treeNode) != null ? tmp$.isInNode_y2kzbl$(newX, newY, newZ) : null) === true) {
+      edge.to = newTo;
+    }
+     else {
+      this.edgeTree.remove_11rb$(edge);
+      edge.to = newTo;
+      this.edgeTree.add_11rb$(edge);
+    }
+  };
+  HalfEdgeMesh$OcTreeEdgeHandler.prototype.checkedUpdateEdgeFrom_870n7c$ = function (edge, newFrom) {
+    var tmp$;
+    var newX = (newFrom.x + edge.to.x) * 0.5;
+    var newY = (newFrom.y + edge.to.y) * 0.5;
+    var newZ = (newFrom.z + edge.to.z) * 0.5;
+    if (((tmp$ = edge.treeNode) != null ? tmp$.isInNode_y2kzbl$(newX, newY, newZ) : null) === true) {
+      edge.from = newFrom;
+    }
+     else {
+      this.edgeTree.remove_11rb$(edge);
+      edge.from = newFrom;
+      this.edgeTree.add_11rb$(edge);
+    }
+  };
+  HalfEdgeMesh$OcTreeEdgeHandler.prototype.checkedUpdateVertexPosition_efzdnr$ = function (vertex, x, y, z) {
+    var tmp$, tmp$_0;
+    tmp$ = vertex.edges;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var tmp$_1, tmp$_2;
+      var ed = vertex.edges.get_za3lpa$(i);
+      var newX = (x + ed.to.x) * 0.5;
+      var newY = (y + ed.to.y) * 0.5;
+      var newZ = (z + ed.to.z) * 0.5;
+      if (((tmp$_1 = ed.treeNode) != null ? tmp$_1.isInNode_y2kzbl$(newX, newY, newZ) : null) !== true) {
+        this.minusAssign_ebe40$(ed);
+        ed.treeNode = null;
+      }
+      ed = vertex.edges.get_za3lpa$(i).next.next;
+      newX = (x + ed.from.x) * 0.5;
+      newY = (y + ed.from.y) * 0.5;
+      newZ = (z + ed.from.z) * 0.5;
+      if (((tmp$_2 = ed.treeNode) != null ? tmp$_2.isInNode_y2kzbl$(newX, newY, newZ) : null) !== true) {
+        this.minusAssign_ebe40$(ed);
+        ed.treeNode = null;
+      }
+    }
+    vertex.setPosition_eyxpjg$(x, y, z);
+    tmp$_0 = vertex.edges;
+    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+      var ed_0 = vertex.edges.get_za3lpa$(i_0);
+      if (ed_0.treeNode == null) {
+        this.plusAssign_ebe40$(ed_0);
+      }
+      if (ed_0.next.next.treeNode == null) {
+        this.plusAssign_ebe40$(ed_0.next.next);
+      }
+    }
+  };
+  HalfEdgeMesh$OcTreeEdgeHandler.prototype.rebuild = function () {
+  };
+  HalfEdgeMesh$OcTreeEdgeHandler.prototype.iterator = function () {
+    return this.edgeTree.iterator();
+  };
+  HalfEdgeMesh$OcTreeEdgeHandler.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'OcTreeEdgeHandler',
+    interfaces: [HalfEdgeMesh$EdgeHandler]
+  };
+  function HalfEdgeMesh$HalfEdgeMesh$OcTreeEdgeHandler_init(meshData, $this) {
+    $this = $this || Object.create(HalfEdgeMesh$OcTreeEdgeHandler.prototype);
+    var $receiver = new BoundingBox();
+    var wasBatchUpdate = $receiver.isBatchUpdate;
+    $receiver.isBatchUpdate = true;
+    var tmp$;
+    var v = meshData.vertexList.vertexIt;
+    tmp$ = meshData.numVertices;
+    for (var i = 0; i < tmp$; i++) {
+      v.index = i;
+      $receiver.add_czzhiu$(v.position);
+    }
+    $receiver.isBatchUpdate = wasBatchUpdate;
+    HalfEdgeMesh$OcTreeEdgeHandler.call($this, $receiver);
+    return $this;
+  }
+  function HalfEdgeMesh$ListEdgeHandler() {
+    this.edgeList = ArrayList_init();
+    this.numEdges_a9s0c5$_0 = 0;
+  }
+  Object.defineProperty(HalfEdgeMesh$ListEdgeHandler.prototype, 'numEdges', {
+    get: function () {
+      return this.numEdges_a9s0c5$_0;
+    },
+    set: function (numEdges) {
+      this.numEdges_a9s0c5$_0 = numEdges;
+    }
+  });
+  HalfEdgeMesh$ListEdgeHandler.prototype.plusAssign_ebe40$ = function (edge) {
+    if (edge.isDeleted) {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'edge was deleted before');
+      }
+      edge.isDeleted = false;
+      this.rebuild();
+    }
+    this.edgeList.add_11rb$(edge);
+    this.numEdges = this.numEdges + 1 | 0;
+  };
+  HalfEdgeMesh$ListEdgeHandler.prototype.minusAssign_ebe40$ = function (edge) {
+    edge.isDeleted = true;
+    this.numEdges = this.numEdges - 1 | 0;
+  };
+  HalfEdgeMesh$ListEdgeHandler.prototype.checkedUpdateEdgeTo_870n7c$ = function (edge, newTo) {
+    edge.to = newTo;
+  };
+  HalfEdgeMesh$ListEdgeHandler.prototype.checkedUpdateEdgeFrom_870n7c$ = function (edge, newFrom) {
+    edge.from = newFrom;
+  };
+  HalfEdgeMesh$ListEdgeHandler.prototype.checkedUpdateVertexPosition_efzdnr$ = function (vertex, x, y, z) {
+    vertex.setPosition_eyxpjg$(x, y, z);
+  };
+  function HalfEdgeMesh$ListEdgeHandler$rebuild$lambda(it) {
+    return it.isDeleted;
+  }
+  HalfEdgeMesh$ListEdgeHandler.prototype.rebuild = function () {
+    removeAll(this.edgeList, HalfEdgeMesh$ListEdgeHandler$rebuild$lambda);
+  };
+  function HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral(this$ListEdgeHandler) {
+    this.this$ListEdgeHandler = this$ListEdgeHandler;
+    this.i = 0;
+  }
+  HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral.prototype.hasNext = function () {
+    while (this.i < this.this$ListEdgeHandler.edgeList.size && this.this$ListEdgeHandler.edgeList.get_za3lpa$(this.i).isDeleted) {
+      this.i = this.i + 1 | 0;
+    }
+    return this.i < this.this$ListEdgeHandler.edgeList.size;
+  };
+  HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral.prototype.next = function () {
+    var tmp$;
+    if (!this.hasNext()) {
+      throw NoSuchElementException_init();
+    }
+    return this.this$ListEdgeHandler.edgeList.get_za3lpa$((tmp$ = this.i, this.i = tmp$ + 1 | 0, tmp$));
+  };
+  HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral.$metadata$ = {
+    kind: Kind_CLASS,
+    interfaces: [Iterator]
+  };
+  HalfEdgeMesh$ListEdgeHandler.prototype.iterator = function () {
+    return new HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral(this);
+  };
+  HalfEdgeMesh$ListEdgeHandler.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ListEdgeHandler',
+    interfaces: [HalfEdgeMesh$EdgeHandler]
   };
   HalfEdgeMesh.$metadata$ = {
     kind: Kind_CLASS,
@@ -10162,28 +10410,39 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return this.tmpVec4_0.x * v.x + this.tmpVec4_0.y * v.y + this.tmpVec4_0.z * v.z + this.tmpVec4_0.w;
   };
   ErrorQuadric.prototype.addPlane_0 = function (planeVec) {
-    this.errQuadric.set_n0b4r3$(0, 0, this.errQuadric.get_vux9f0$(0, 0) + this.tmpVec4_0.x * this.tmpVec4_0.x);
-    this.errQuadric.set_n0b4r3$(1, 0, this.errQuadric.get_vux9f0$(1, 0) + this.tmpVec4_0.x * this.tmpVec4_0.y);
-    this.errQuadric.set_n0b4r3$(2, 0, this.errQuadric.get_vux9f0$(2, 0) + this.tmpVec4_0.x * this.tmpVec4_0.z);
-    this.errQuadric.set_n0b4r3$(3, 0, this.errQuadric.get_vux9f0$(3, 0) + this.tmpVec4_0.x * this.tmpVec4_0.w);
-    this.errQuadric.set_n0b4r3$(0, 1, this.errQuadric.get_vux9f0$(0, 1) + this.tmpVec4_0.y * this.tmpVec4_0.x);
-    this.errQuadric.set_n0b4r3$(1, 1, this.errQuadric.get_vux9f0$(1, 1) + this.tmpVec4_0.y * this.tmpVec4_0.y);
-    this.errQuadric.set_n0b4r3$(2, 1, this.errQuadric.get_vux9f0$(2, 1) + this.tmpVec4_0.y * this.tmpVec4_0.z);
-    this.errQuadric.set_n0b4r3$(3, 1, this.errQuadric.get_vux9f0$(3, 1) + this.tmpVec4_0.y * this.tmpVec4_0.w);
-    this.errQuadric.set_n0b4r3$(0, 2, this.errQuadric.get_vux9f0$(0, 2) + this.tmpVec4_0.z * this.tmpVec4_0.x);
-    this.errQuadric.set_n0b4r3$(1, 2, this.errQuadric.get_vux9f0$(1, 2) + this.tmpVec4_0.z * this.tmpVec4_0.y);
-    this.errQuadric.set_n0b4r3$(2, 2, this.errQuadric.get_vux9f0$(2, 2) + this.tmpVec4_0.z * this.tmpVec4_0.z);
-    this.errQuadric.set_n0b4r3$(3, 2, this.errQuadric.get_vux9f0$(3, 2) + this.tmpVec4_0.z * this.tmpVec4_0.w);
-    this.errQuadric.set_n0b4r3$(0, 3, this.errQuadric.get_vux9f0$(0, 3) + this.tmpVec4_0.w * this.tmpVec4_0.x);
-    this.errQuadric.set_n0b4r3$(1, 3, this.errQuadric.get_vux9f0$(1, 3) + this.tmpVec4_0.w * this.tmpVec4_0.y);
-    this.errQuadric.set_n0b4r3$(2, 3, this.errQuadric.get_vux9f0$(2, 3) + this.tmpVec4_0.w * this.tmpVec4_0.z);
-    this.errQuadric.set_n0b4r3$(3, 3, this.errQuadric.get_vux9f0$(3, 3) + this.tmpVec4_0.w * this.tmpVec4_0.w);
+    this.errQuadric.set_n0b4r3$(0, 0, this.errQuadric.get_vux9f0$(0, 0) + planeVec.x * planeVec.x);
+    this.errQuadric.set_n0b4r3$(1, 0, this.errQuadric.get_vux9f0$(1, 0) + planeVec.x * planeVec.y);
+    this.errQuadric.set_n0b4r3$(2, 0, this.errQuadric.get_vux9f0$(2, 0) + planeVec.x * planeVec.z);
+    this.errQuadric.set_n0b4r3$(3, 0, this.errQuadric.get_vux9f0$(3, 0) + planeVec.x * planeVec.w);
+    this.errQuadric.set_n0b4r3$(0, 1, this.errQuadric.get_vux9f0$(0, 1) + planeVec.y * planeVec.x);
+    this.errQuadric.set_n0b4r3$(1, 1, this.errQuadric.get_vux9f0$(1, 1) + planeVec.y * planeVec.y);
+    this.errQuadric.set_n0b4r3$(2, 1, this.errQuadric.get_vux9f0$(2, 1) + planeVec.y * planeVec.z);
+    this.errQuadric.set_n0b4r3$(3, 1, this.errQuadric.get_vux9f0$(3, 1) + planeVec.y * planeVec.w);
+    this.errQuadric.set_n0b4r3$(0, 2, this.errQuadric.get_vux9f0$(0, 2) + planeVec.z * planeVec.x);
+    this.errQuadric.set_n0b4r3$(1, 2, this.errQuadric.get_vux9f0$(1, 2) + planeVec.z * planeVec.y);
+    this.errQuadric.set_n0b4r3$(2, 2, this.errQuadric.get_vux9f0$(2, 2) + planeVec.z * planeVec.z);
+    this.errQuadric.set_n0b4r3$(3, 2, this.errQuadric.get_vux9f0$(3, 2) + planeVec.z * planeVec.w);
+    this.errQuadric.set_n0b4r3$(0, 3, this.errQuadric.get_vux9f0$(0, 3) + planeVec.w * planeVec.x);
+    this.errQuadric.set_n0b4r3$(1, 3, this.errQuadric.get_vux9f0$(1, 3) + planeVec.w * planeVec.y);
+    this.errQuadric.set_n0b4r3$(2, 3, this.errQuadric.get_vux9f0$(2, 3) + planeVec.w * planeVec.z);
+    this.errQuadric.set_n0b4r3$(3, 3, this.errQuadric.get_vux9f0$(3, 3) + planeVec.w * planeVec.w);
   };
   ErrorQuadric.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ErrorQuadric',
     interfaces: []
   };
+  function simplify($receiver, termCrit) {
+    simplify_0($receiver.meshData, termCrit);
+  }
+  function simplify_0($receiver, termCrit) {
+    var heMesh = new HalfEdgeMesh($receiver, new HalfEdgeMesh$ListEdgeHandler());
+    simplify_1(heMesh, termCrit);
+  }
+  function simplify_1($receiver, termCrit) {
+    var simplifier = new MeshSimplifier(termCrit);
+    simplifier.simplifyMesh_mnbsaa$($receiver);
+  }
   function Comparator$ObjectLiteral_2(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
@@ -10191,10 +10450,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return this.closure$comparison(a, b);
   };
   Comparator$ObjectLiteral_2.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  function MeshSimplifier(termCrit, collapseStrategy) {
+  function MeshSimplifier(termCrit, quality, collapseStrategy) {
+    if (quality === void 0)
+      quality = 3.0;
     if (collapseStrategy === void 0)
       collapseStrategy = defaultCollapseStrategy();
     this.termCrit = termCrit;
+    this.quality = quality;
     this.collapseStrategy = collapseStrategy;
     this.candidates_0 = new PriorityQueue(new Comparator$ObjectLiteral_2(MeshSimplifier$candidates$lambda));
     this.quadrics_0 = LinkedHashMap_init();
@@ -10223,12 +10485,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var perf = new PerfTimer();
     this.rebuildCollapseQueue_nbf0q6$(mesh);
     this.termCrit.init_nbf0q6$(mesh);
-    var rebuildQueue = mesh.faceCount / 10 | 0;
+    var rebuildQueue = numberToInt(mesh.faceCount / this.quality);
     var lastError = {v: 0.0};
     while (!this.candidates_0.isEmpty() && this.candidates_0.peek().error < kotlin_js_internal_FloatCompanionObject.MAX_VALUE) {
       if ((rebuildQueue = rebuildQueue - 1 | 0, rebuildQueue) <= 0) {
-        var b = mesh.faceCount / 5 | 0;
-        rebuildQueue = Math_0.max(20, b);
+        var b = numberToInt(mesh.faceCount / this.quality);
+        rebuildQueue = Math_0.max(10, b);
         this.rebuildCollapseQueue_nbf0q6$(mesh);
       }
       var candidate = this.candidates_0.poll();
@@ -10254,23 +10516,29 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         }
       }
        else {
+        var $this_0 = package$util.Log;
+        var level_0 = Log$Level.DEBUG;
+        var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level_0.level >= $this_0.level.level) {
+          $this_0.printer(level_0, tag_0, 'No more collapsable edges');
+        }
         break;
       }
     }
     this.quadrics_0.clear();
     this.candidates_0.clear();
     mesh.rebuild_dqye30$(generateNormals, generateTangents);
-    var $this_0 = package$util.Log;
-    var level_0 = Log$Level.DEBUG;
-    var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
-    if (level_0.level >= $this_0.level.level) {
-      $this_0.printer(level_0, tag_0, 'Mesh simplification done! ' + mesh.faceCount + ' faces / ' + mesh.vertCount + ' vertices remain, last error: ' + lastError.v + ', took ' + toString_1(perf.takeSecs(), 3) + ' s');
+    var $this_1 = package$util.Log;
+    var level_1 = Log$Level.DEBUG;
+    var tag_1 = Kotlin.getKClassFromExpression(this).simpleName;
+    if (level_1.level >= $this_1.level.level) {
+      $this_1.printer(level_1, tag_1, 'Mesh simplification done! ' + mesh.faceCount + ' faces / ' + mesh.vertCount + ' vertices remain, last error: ' + lastError.v + ', took ' + toString_1(perf.takeSecs(), 3) + ' s');
     }
   };
   MeshSimplifier.prototype.rebuildCollapseQueue_nbf0q6$ = function (mesh) {
     var tmp$;
     this.candidates_0.clear();
-    tmp$ = mesh.edgeTree.iterator();
+    tmp$ = mesh.edgeHandler.iterator();
     while (tmp$.hasNext()) {
       var edge = tmp$.next();
       if (edge.from.index < edge.to.index || edge.opp == null) {
@@ -13253,7 +13521,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.animations_0.put_xwzc9p$(name, animation);
     this.animationList_0.add_11rb$(animation);
   };
-  var MutableCollection = Kotlin.kotlin.collections.MutableCollection;
   Armature.prototype.removeAnimation_61zpoe$ = function (name) {
     var $receiver = this.animationList_0;
     var element = this.animations_0.remove_11rb$(name);
@@ -23799,9 +24066,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return false;
     }
      else {
-      if (this.children.get_za3lpa$(0).bounds.isIncluding_y2kzbl$(this.$outer.itemAdapter.getX_trkh7z$(item), this.$outer.itemAdapter.getY_trkh7z$(item), this.$outer.itemAdapter.getZ_trkh7z$(item)))
+      if (this.children.get_za3lpa$(0).bounds.isIncluding_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
         tmp$_3 = this.children.get_za3lpa$(0).contains_uargzz$(item);
-      else if (this.children.get_za3lpa$(1).bounds.isIncluding_y2kzbl$(this.$outer.itemAdapter.getX_trkh7z$(item), this.$outer.itemAdapter.getY_trkh7z$(item), this.$outer.itemAdapter.getZ_trkh7z$(item)))
+      else if (this.children.get_za3lpa$(1).bounds.isIncluding_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
         tmp$_3 = this.children.get_za3lpa$(1).contains_uargzz$(item);
       else
         tmp$_3 = false;
@@ -23815,17 +24082,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   function KdTree$cmpX$lambda(closure$itemAdapter) {
     return function (a, b) {
-      return Kotlin.compareTo(closure$itemAdapter.getX_trkh7z$(a), closure$itemAdapter.getX_trkh7z$(b));
+      return Kotlin.compareTo(closure$itemAdapter.getMinX_trkh7z$(a), closure$itemAdapter.getMinX_trkh7z$(b));
     };
   }
   function KdTree$cmpY$lambda(closure$itemAdapter) {
     return function (a, b) {
-      return Kotlin.compareTo(closure$itemAdapter.getY_trkh7z$(a), closure$itemAdapter.getY_trkh7z$(b));
+      return Kotlin.compareTo(closure$itemAdapter.getMinY_trkh7z$(a), closure$itemAdapter.getMinY_trkh7z$(b));
     };
   }
   function KdTree$cmpZ$lambda(closure$itemAdapter) {
     return function (a, b) {
-      return Kotlin.compareTo(closure$itemAdapter.getZ_trkh7z$(a), closure$itemAdapter.getZ_trkh7z$(b));
+      return Kotlin.compareTo(closure$itemAdapter.getMinZ_trkh7z$(a), closure$itemAdapter.getMinZ_trkh7z$(b));
     };
   }
   KdTree.$metadata$ = {
@@ -23840,9 +24107,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     block($receiver);
     return $receiver;
   }
-  function wireframeMesh(triMesh) {
+  function wireframeMesh(triMesh, lineColor) {
+    if (lineColor === void 0)
+      lineColor = null;
     var lines = new LineMesh();
-    lines.addWireframe_3w6cym$(triMesh);
+    lines.addWireframe_tggg7d$(triMesh, lineColor);
     return lines;
   }
   function LineMesh(data, name) {
@@ -23869,10 +24138,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     $this.isBatchUpdate = wasBatchUpdate;
     return idx0.v;
   };
-  LineMesh.prototype.addWireframe_3w6cym$ = function (triMesh) {
+  LineMesh.prototype.addWireframe_tggg7d$ = function (triMesh, lineColor) {
+    if (lineColor === void 0)
+      lineColor = null;
     var tmp$, tmp$_0;
-    if (triMesh.primitiveType === 4) {
-      throw KoolException_init('Supplied mesh is not a triangle mesh');
+    if (triMesh.primitiveType !== 4) {
+      throw KoolException_init('Supplied mesh is not a triangle mesh: ' + triMesh.primitiveType);
     }
     var v = triMesh.get_za3lpa$(0);
     tmp$ = triMesh.numVertices;
@@ -23896,7 +24167,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       $this_0.vertexIt.index = (tmp$_3 = $this_0.size, $this_0.size = tmp$_3 + 1 | 0, tmp$_3);
       var $receiver = $this_0.vertexIt;
       $receiver.position.set_czzhiu$(v.position);
-      $receiver.color.set_d7aj7k$(v.color);
+      $receiver.color.set_d7aj7k$(lineColor != null ? lineColor : v.color);
       updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
       idx.v = $this_0.size - 1 | 0;
       idx.v;
@@ -25347,7 +25618,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simpleName: 'AutoRecycler',
     interfaces: [ObjectRecycler]
   };
-  function OcTree(itemAdapter, items, bounds, padding, bucketSz) {
+  function OcTree(itemAdapter, items, bounds, padding, bucketSz, accurateBounds) {
     OcTree$Companion_getInstance();
     if (items === void 0)
       items = emptyList();
@@ -25357,20 +25628,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       padding = 0.1;
     if (bucketSz === void 0)
       bucketSz = 20;
+    if (accurateBounds === void 0)
+      accurateBounds = true;
     SpatialTree.call(this, itemAdapter);
+    this.accurateBounds = accurateBounds;
     this.root_be3r27$_0 = null;
     this.emptyItems_0 = ArrayList_init();
     var tmpPt = MutableVec3f_init();
-    var $this = bounds;
-    var wasBatchUpdate = $this.isBatchUpdate;
-    $this.isBatchUpdate = true;
-    var closure$items = items;
-    var closure$bounds = bounds;
-    for (var i = 0; i !== closure$items.size; ++i) {
-      closure$bounds.add_czzhiu$(itemAdapter.getMin_hm1yd1$(closure$items.get_za3lpa$(i), tmpPt));
-      closure$bounds.add_czzhiu$(itemAdapter.getMax_hm1yd1$(closure$items.get_za3lpa$(i), tmpPt));
+    if (!items.isEmpty()) {
+      var $this = bounds;
+      var wasBatchUpdate = $this.isBatchUpdate;
+      $this.isBatchUpdate = true;
+      var closure$items = items;
+      var closure$bounds = bounds;
+      for (var i = 0; i !== closure$items.size; ++i) {
+        closure$bounds.add_czzhiu$(itemAdapter.getMin_hm1yd1$(closure$items.get_za3lpa$(i), tmpPt));
+        closure$bounds.add_czzhiu$(itemAdapter.getMax_hm1yd1$(closure$items.get_za3lpa$(i), tmpPt));
+      }
+      $this.isBatchUpdate = wasBatchUpdate;
     }
-    $this.isBatchUpdate = wasBatchUpdate;
     if (bounds.isEmpty) {
       throw KoolException_init('OcTree bounds are empty, specify bounds manually');
     }
@@ -25396,32 +25672,33 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return this.root.size;
     }
   });
-  OcTree.prototype.plusAssign_trkh7z$ = function (item) {
-    this.add_trkh7z$(item);
-  };
-  OcTree.prototype.add_trkh7z$ = function (item) {
-    if (!this.root.bounds.isIncluding_y2kzbl$(this.itemAdapter.getCenterX_trkh7z$(item), this.itemAdapter.getCenterY_trkh7z$(item), this.itemAdapter.getCenterZ_trkh7z$(item))) {
-      throw KoolException_init('Item not in tree bounds: (' + this.itemAdapter.getX_trkh7z$(item) + ', ' + this.itemAdapter.getY_trkh7z$(item) + ', ' + this.itemAdapter.getZ_trkh7z$(item) + '), bounds: ' + this.root.bounds);
+  OcTree.prototype.add_11rb$ = function (element) {
+    if (!this.root.nodeBounds.isIncluding_y2kzbl$(this.itemAdapter.getCenterX_trkh7z$(element), this.itemAdapter.getCenterY_trkh7z$(element), this.itemAdapter.getCenterZ_trkh7z$(element))) {
+      var $this = package$util.Log;
+      var level = Log$Level.ERROR;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Item not in tree bounds: (' + this.itemAdapter.getMinX_trkh7z$(element) + ', ' + this.itemAdapter.getMinY_trkh7z$(element) + ', ' + this.itemAdapter.getMinZ_trkh7z$(element) + '), bounds: ' + this.root.bounds);
+      }
+      return false;
     }
-    this.root.add_bzsob0$(item);
+    this.root.add_bzsob0$(element);
+    return true;
   };
-  OcTree.prototype.minusAssign_trkh7z$ = function (item) {
-    this.remove_trkh7z$(item);
-  };
-  OcTree.prototype.remove_trkh7z$ = function (item) {
-    var success = this.root.remove_bzsob0$(item);
+  OcTree.prototype.remove_11rb$ = function (element) {
+    var success = this.root.remove_4rla3$(element, true);
     if (!success) {
       var $this = package$util.Log;
       var level = Log$Level.WARN;
       var tag = Kotlin.getKClassFromExpression(this).simpleName;
       if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Failed to remove: ' + item);
+        $this.printer(level, tag, 'Failed to remove: ' + element);
       }
       var tmp$;
       tmp$ = this.iterator();
       while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        if (equals(element, item)) {
+        var element_0 = tmp$.next();
+        if (equals(element_0, element)) {
           var $this_0 = package$util.Log;
           var level_0 = Log$Level.ERROR;
           var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
@@ -25434,48 +25711,40 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return success;
   };
   function OcTree$iterator$ObjectLiteral(this$OcTree) {
-    this.leafs = ArrayList_init();
-    this.leafIt = null;
-    this.currentLeaf = null;
-    this.i = 0;
-    this.collectLeafs_witnv0$(this$OcTree.root);
-    this.leafIt = this.leafs.iterator();
-    if (this.leafIt.hasNext()) {
-      this.currentLeaf = this.leafIt.next();
-    }
+    this.this$OcTree = this$OcTree;
+    this.elements = ArrayList_init();
+    this.elemIt = null;
+    this.lastElem = null;
+    this.collectElements_witnv0$(this$OcTree.root);
+    this.elemIt = this.elements.iterator();
   }
-  OcTree$iterator$ObjectLiteral.prototype.collectLeafs_witnv0$ = function (node) {
+  OcTree$iterator$ObjectLiteral.prototype.collectElements_witnv0$ = function (node) {
     var tmp$;
     if (node.isLeaf) {
       if (!node.items.isEmpty()) {
-        this.leafs.add_11rb$(node);
+        this.elements.addAll_brywnq$(node.items);
       }
     }
      else {
       tmp$ = node.children;
       for (var i = 0; i !== tmp$.size; ++i) {
-        this.collectLeafs_witnv0$(node.children.get_za3lpa$(i));
+        this.collectElements_witnv0$(node.children.get_za3lpa$(i));
       }
     }
   };
   OcTree$iterator$ObjectLiteral.prototype.hasNext = function () {
-    var tmp$, tmp$_0;
-    return this.leafIt.hasNext() || this.i < ((tmp$_0 = (tmp$ = this.currentLeaf) != null ? tmp$.size : null) != null ? tmp$_0 : 0);
+    return this.elemIt.hasNext();
   };
   OcTree$iterator$ObjectLiteral.prototype.next = function () {
-    var tmp$;
-    if (this.currentLeaf == null) {
-      throw NoSuchElementException_init();
-    }
-    if (this.i === ensureNotNull(this.currentLeaf).size) {
-      this.currentLeaf = this.leafIt.next();
-      this.i = 0;
-    }
-    return ensureNotNull(this.currentLeaf).items.get_za3lpa$((tmp$ = this.i, this.i = tmp$ + 1 | 0, tmp$));
+    this.lastElem = this.elemIt.next();
+    return ensureNotNull(this.lastElem);
+  };
+  OcTree$iterator$ObjectLiteral.prototype.remove = function () {
+    this.this$OcTree.root.remove_4rla3$(ensureNotNull(this.lastElem), false);
   };
   OcTree$iterator$ObjectLiteral.$metadata$ = {
     kind: Kind_CLASS,
-    interfaces: [Iterator]
+    interfaces: [MutableIterator]
   };
   OcTree.prototype.iterator = function () {
     return new OcTree$iterator$ObjectLiteral(this);
@@ -25497,17 +25766,57 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   OcTree.prototype.isEmpty = function () {
     return this.size === 0;
   };
-  function OcTree$OcNode($outer, bounds, depth, bucketSz) {
+  OcTree.prototype.addAll_brywnq$ = function (elements) {
+    var tmp$;
+    var anyAdded = false;
+    tmp$ = elements.iterator();
+    while (tmp$.hasNext()) {
+      var elem = tmp$.next();
+      anyAdded = anyAdded || this.add_11rb$(elem);
+    }
+    return anyAdded;
+  };
+  OcTree.prototype.clear = function () {
+    this.root.clear_8be2vx$();
+  };
+  OcTree.prototype.removeAll_brywnq$ = function (elements) {
+    var tmp$;
+    var anyRemoved = false;
+    tmp$ = elements.iterator();
+    while (tmp$.hasNext()) {
+      var elem = tmp$.next();
+      anyRemoved = anyRemoved || this.remove_11rb$(elem);
+    }
+    return anyRemoved;
+  };
+  OcTree.prototype.retainAll_brywnq$ = function (elements) {
+    var anyRemoved = false;
+    var retainSet = LinkedHashSet_init();
+    retainSet.addAll_brywnq$(elements);
+    var it = this.iterator();
+    while (it.hasNext()) {
+      if (!retainSet.contains_11rb$(it.next())) {
+        it.remove();
+        anyRemoved = true;
+      }
+    }
+    return anyRemoved;
+  };
+  function OcTree$OcNode($outer, nodeBounds, depth, bucketSz) {
     this.$outer = $outer;
     SpatialTree$Node.call(this, this.$outer, depth);
+    this.nodeBounds = nodeBounds;
     this.bucketSz = bucketSz;
     this.size_yjj6gq$_0 = 0;
     this.children_oh99z0$_0 = ArrayList_init();
+    this.tmpVec_0 = MutableVec3f_init();
     this.mutItems_0 = ArrayList_init();
     if (depth > 20) {
       throw KoolException_init('Octree is too deep');
     }
-    this.bounds.set_ea4od8$(bounds);
+    if (!this.$outer.accurateBounds) {
+      this.bounds.add_ea4od8$(this.nodeBounds);
+    }
   }
   Object.defineProperty(OcTree$OcNode.prototype, 'size', {
     get: function () {
@@ -25532,17 +25841,24 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return get_indices(this.items);
     }
   });
-  OcTree$OcNode.prototype.add_bzsob0$ = function (item) {
-    if (!this.isInNode_y2kzbl$(this.$outer.itemAdapter.getCenterX_trkh7z$(item), this.$outer.itemAdapter.getCenterY_trkh7z$(item), this.$outer.itemAdapter.getCenterZ_trkh7z$(item))) {
-      var $this = package$util.Log;
-      var level = Log$Level.ERROR;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'item is out of node bounds:' + '\n' + '  ' + this.bounds + '\n' + '  ' + item);
-      }
+  OcTree$OcNode.prototype.clear_8be2vx$ = function () {
+    if (this.depth !== 0) {
+      throw KoolException_init('clear() is only allowed for root node');
     }
+    this.mutItems_0.clear();
+    this.children.clear();
+    this.size = 0;
+    if (this.$outer.accurateBounds) {
+      this.bounds.clear();
+    }
+  };
+  OcTree$OcNode.prototype.add_bzsob0$ = function (item) {
     this.size = this.size + 1 | 0;
     if (this.isLeaf) {
+      if (this.$outer.accurateBounds) {
+        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMin_hm1yd1$(item, this.tmpVec_0));
+        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMax_hm1yd1$(item, this.tmpVec_0));
+      }
       if (this.mutItems_0.size < this.bucketSz || this.depth === 20) {
         this.mutItems_0.add_11rb$(item);
         this.$outer.itemAdapter.setNode_bc9457$(item, this);
@@ -25553,25 +25869,60 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       }
     }
      else {
-      this.children.get_za3lpa$(this.childIndexForItem_0(item)).add_bzsob0$(item);
+      var child = this.children.get_za3lpa$(this.childIndexForItem_0(item));
+      child.add_bzsob0$(item);
+      if (this.$outer.accurateBounds) {
+        this.bounds.add_ea4od8$(child.bounds);
+      }
     }
   };
-  OcTree$OcNode.prototype.remove_bzsob0$ = function (item) {
+  OcTree$OcNode.prototype.remove_4rla3$ = function (item, canMerge) {
     var tmp$;
     if (this.isLeaf) {
       tmp$ = this.mutItems_0.remove_11rb$(item);
     }
      else {
-      tmp$ = this.children.get_za3lpa$(this.childIndexForItem_0(item)).remove_bzsob0$(item);
+      tmp$ = this.children.get_za3lpa$(this.childIndexForItem_0(item)).remove_4rla3$(item, canMerge);
     }
     var success = tmp$;
     if (success) {
       this.size = this.size - 1 | 0;
-      if (!this.isLeaf && this.size < this.bucketSz) {
+      if (!this.isLeaf && this.size < this.bucketSz && canMerge) {
         this.merge_0();
+      }
+      if (this.$outer.accurateBounds && this.isBorderItem_0(item)) {
+        this.recomputeBounds_0();
       }
     }
     return success;
+  };
+  OcTree$OcNode.prototype.isBorderItem_0 = function (item) {
+    this.$outer.itemAdapter.getMin_hm1yd1$(item, this.tmpVec_0);
+    if (this.tmpVec_0.x <= this.bounds.min.x || this.tmpVec_0.y <= this.bounds.min.y || this.tmpVec_0.z <= this.bounds.min.z) {
+      return true;
+    }
+    this.$outer.itemAdapter.getMax_hm1yd1$(item, this.tmpVec_0);
+    if (this.tmpVec_0.x >= this.bounds.max.x || this.tmpVec_0.y >= this.bounds.max.y || this.tmpVec_0.z >= this.bounds.max.z) {
+      return true;
+    }
+    return false;
+  };
+  OcTree$OcNode.prototype.recomputeBounds_0 = function () {
+    var tmp$, tmp$_0;
+    this.bounds.clear();
+    if (this.isLeaf) {
+      tmp$ = this.mutItems_0;
+      for (var i = 0; i !== tmp$.size; ++i) {
+        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMin_hm1yd1$(this.mutItems_0.get_za3lpa$(i), this.tmpVec_0));
+        this.bounds.add_czzhiu$(this.$outer.itemAdapter.getMax_hm1yd1$(this.mutItems_0.get_za3lpa$(i), this.tmpVec_0));
+      }
+    }
+     else {
+      tmp$_0 = this.children;
+      for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+        this.bounds.add_ea4od8$(this.children.get_za3lpa$(i_0).bounds);
+      }
+    }
   };
   OcTree$OcNode.prototype.contains_uargzz$ = function (item) {
     var tmp$;
@@ -25584,22 +25935,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return tmp$;
   };
   OcTree$OcNode.prototype.isInNode_czzhiu$ = function (center) {
-    return this.bounds.isIncluding_czzhiu$(center);
+    return this.nodeBounds.isIncluding_czzhiu$(center);
   };
   OcTree$OcNode.prototype.isInNode_y2kzbl$ = function (centerX, centerY, centerZ) {
-    return this.bounds.isIncluding_y2kzbl$(centerX, centerY, centerZ);
+    return this.nodeBounds.isIncluding_y2kzbl$(centerX, centerY, centerZ);
   };
   OcTree$OcNode.prototype.split_0 = function () {
     var tmp$;
-    var x0 = this.bounds.min.x;
-    var x1 = this.bounds.center.x;
-    var x2 = this.bounds.max.x;
-    var y0 = this.bounds.min.y;
-    var y1 = this.bounds.center.y;
-    var y2 = this.bounds.max.y;
-    var z0 = this.bounds.min.z;
-    var z1 = this.bounds.center.z;
-    var z2 = this.bounds.max.z;
+    var x0 = this.nodeBounds.min.x;
+    var x1 = this.nodeBounds.center.x;
+    var x2 = this.nodeBounds.max.x;
+    var y0 = this.nodeBounds.min.y;
+    var y1 = this.nodeBounds.center.y;
+    var y2 = this.nodeBounds.max.y;
+    var z0 = this.nodeBounds.min.z;
+    var z1 = this.nodeBounds.center.z;
+    var z2 = this.nodeBounds.max.z;
     var $receiver = this.children;
     var element = new OcTree$OcNode(this.$outer, BoundingBox_init(new Vec3f(x0, y0, z0), new Vec3f(x1, y1, z1)), this.depth + 1 | 0, this.bucketSz);
     $receiver.add_11rb$(element);
@@ -25641,19 +25992,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   OcTree$OcNode.prototype.childIndexForItem_0 = function (item) {
     var tmp$, tmp$_0, tmp$_1;
-    if (this.$outer.itemAdapter.getCenterX_trkh7z$(item) < this.bounds.center.x) {
+    if (this.$outer.itemAdapter.getCenterX_trkh7z$(item) < this.nodeBounds.center.x) {
       tmp$ = 0;
     }
      else {
       tmp$ = 4;
     }
-    if (this.$outer.itemAdapter.getCenterY_trkh7z$(item) < this.bounds.center.y) {
+    if (this.$outer.itemAdapter.getCenterY_trkh7z$(item) < this.nodeBounds.center.y) {
       tmp$_0 = 0;
     }
      else {
       tmp$_0 = 2;
     }
-    if (this.$outer.itemAdapter.getCenterZ_trkh7z$(item) < this.bounds.center.z) {
+    if (this.$outer.itemAdapter.getCenterZ_trkh7z$(item) < this.nodeBounds.center.z) {
       tmp$_1 = 0;
     }
      else {
@@ -25685,7 +26036,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   OcTree.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'OcTree',
-    interfaces: [SpatialTree]
+    interfaces: [MutableCollection, SpatialTree]
   };
   function PerfTimer() {
     this.tStart_0 = 0.0;
@@ -27724,32 +28075,32 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   }
   function ItemAdapter() {
   }
-  ItemAdapter.prototype.getSzX_trkh7z$ = function (item) {
-    return 0.0;
-  };
-  ItemAdapter.prototype.getSzY_trkh7z$ = function (item) {
-    return 0.0;
-  };
-  ItemAdapter.prototype.getSzZ_trkh7z$ = function (item) {
-    return 0.0;
-  };
   ItemAdapter.prototype.getCenterX_trkh7z$ = function (item) {
-    return this.getX_trkh7z$(item) + this.getSzX_trkh7z$(item) / 2;
+    return (this.getMinX_trkh7z$(item) + this.getMaxX_trkh7z$(item)) * 0.5;
   };
   ItemAdapter.prototype.getCenterY_trkh7z$ = function (item) {
-    return this.getY_trkh7z$(item) + this.getSzY_trkh7z$(item) / 2;
+    return (this.getMinY_trkh7z$(item) + this.getMaxY_trkh7z$(item)) * 0.5;
   };
   ItemAdapter.prototype.getCenterZ_trkh7z$ = function (item) {
-    return this.getZ_trkh7z$(item) + this.getSzZ_trkh7z$(item) / 2;
+    return (this.getMinZ_trkh7z$(item) + this.getMaxZ_trkh7z$(item)) * 0.5;
+  };
+  ItemAdapter.prototype.getSzX_trkh7z$ = function (item) {
+    return this.getMaxX_trkh7z$(item) - this.getMinX_trkh7z$(item);
+  };
+  ItemAdapter.prototype.getSzY_trkh7z$ = function (item) {
+    return this.getMaxY_trkh7z$(item) - this.getMinY_trkh7z$(item);
+  };
+  ItemAdapter.prototype.getSzZ_trkh7z$ = function (item) {
+    return this.getMaxZ_trkh7z$(item) - this.getMinZ_trkh7z$(item);
   };
   ItemAdapter.prototype.getMin_hm1yd1$ = function (item, result) {
-    return result.set_y2kzbl$(this.getX_trkh7z$(item), this.getY_trkh7z$(item), this.getZ_trkh7z$(item));
+    return result.set_y2kzbl$(this.getMinX_trkh7z$(item), this.getMinY_trkh7z$(item), this.getMinZ_trkh7z$(item));
+  };
+  ItemAdapter.prototype.getMax_hm1yd1$ = function (item, result) {
+    return result.set_y2kzbl$(this.getMaxX_trkh7z$(item), this.getMaxY_trkh7z$(item), this.getMaxZ_trkh7z$(item));
   };
   ItemAdapter.prototype.getCenter_hm1yd1$ = function (item, result) {
     return result.set_y2kzbl$(this.getCenterX_trkh7z$(item), this.getCenterY_trkh7z$(item), this.getCenterZ_trkh7z$(item));
-  };
-  ItemAdapter.prototype.getMax_hm1yd1$ = function (item, result) {
-    return result.set_y2kzbl$(this.getX_trkh7z$(item) + this.getSzX_trkh7z$(item), this.getY_trkh7z$(item) + this.getSzY_trkh7z$(item), this.getZ_trkh7z$(item) + this.getSzZ_trkh7z$(item));
   };
   ItemAdapter.prototype.setNode_bc9457$ = function (item, node) {
   };
@@ -27761,13 +28112,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function Vec3fAdapter() {
     Vec3fAdapter_instance = this;
   }
-  Vec3fAdapter.prototype.getX_trkh7z$ = function (item) {
+  Vec3fAdapter.prototype.getMinX_trkh7z$ = function (item) {
     return item.x;
   };
-  Vec3fAdapter.prototype.getY_trkh7z$ = function (item) {
+  Vec3fAdapter.prototype.getMinY_trkh7z$ = function (item) {
     return item.y;
   };
-  Vec3fAdapter.prototype.getZ_trkh7z$ = function (item) {
+  Vec3fAdapter.prototype.getMinZ_trkh7z$ = function (item) {
+    return item.z;
+  };
+  Vec3fAdapter.prototype.getMaxX_trkh7z$ = function (item) {
+    return item.x;
+  };
+  Vec3fAdapter.prototype.getMaxY_trkh7z$ = function (item) {
+    return item.y;
+  };
+  Vec3fAdapter.prototype.getMaxZ_trkh7z$ = function (item) {
     return item.z;
   };
   Vec3fAdapter.prototype.getCenterX_trkh7z$ = function (item) {
@@ -27816,6 +28176,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.$outer = $outer;
     this.depth = depth;
     this.bounds = new BoundingBox();
+    this.traversalOrder = 0.0;
   }
   Object.defineProperty(SpatialTree$Node.prototype, 'isLeaf', {
     get: function () {
@@ -27877,16 +28238,67 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   SpatialTreeTraverser.prototype.onFinish_m6hlto$ = function (tree) {
   };
-  SpatialTreeTraverser.prototype.traversalOrder_6id3hy$ = function (tree, candidates) {
-  };
   SpatialTreeTraverser.$metadata$ = {
     kind: Kind_INTERFACE,
     simpleName: 'SpatialTreeTraverser',
     interfaces: []
   };
-  function InRadiusTraverser() {
-    this.result = ArrayList_init();
+  function PointDistance() {
+  }
+  PointDistance.prototype.nodeDistanceToPoint_m5117s$ = function (node, point) {
+    return node.bounds.pointDistanceSqr_czzhiu$(point);
+  };
+  PointDistance.prototype.itemDistanceToPoint_54x1zp$ = function (tree, item, point) {
+    var dx = tree.itemAdapter.getCenterX_trkh7z$(item) - point.x;
+    var dy = tree.itemAdapter.getCenterY_trkh7z$(item) - point.y;
+    var dz = tree.itemAdapter.getCenterZ_trkh7z$(item) - point.z;
+    return dx * dx + dy * dy + dz * dz;
+  };
+  PointDistance.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'PointDistance',
+    interfaces: []
+  };
+  function RayDistance() {
+  }
+  RayDistance.prototype.nodeDistanceToRay_4lohg5$ = function (node, ray) {
+    var halfExtX = node.bounds.size.x * 0.5;
+    var halfExtY = node.bounds.size.y * 0.5;
+    var halfExtZ = node.bounds.size.z * 0.5;
+    var tmp$ = ray.distanceToPoint_czzhiu$(node.bounds.center);
+    var x = halfExtX * halfExtX + halfExtY * halfExtY + halfExtZ * halfExtZ;
+    var dist = tmp$ - Math_0.sqrt(x);
+    return dist * dist;
+  };
+  RayDistance.prototype.itemDistanceToRay_t0er6w$ = function (tree, item, ray) {
+    return ray.sqrDistanceToPoint_y2kzbl$(tree.itemAdapter.getCenterX_trkh7z$(item), tree.itemAdapter.getCenterY_trkh7z$(item), tree.itemAdapter.getCenterZ_trkh7z$(item));
+  };
+  RayDistance.$metadata$ = {
+    kind: Kind_INTERFACE,
+    simpleName: 'RayDistance',
+    interfaces: []
+  };
+  function CenterPointTraverser() {
     this.center = MutableVec3f_init();
+    this.pointDistance = new CenterPointTraverser$pointDistance$ObjectLiteral();
+  }
+  CenterPointTraverser.prototype.setup_czzhiu$ = function (center) {
+    this.center.set_czzhiu$(center);
+  };
+  function CenterPointTraverser$pointDistance$ObjectLiteral() {
+  }
+  CenterPointTraverser$pointDistance$ObjectLiteral.$metadata$ = {
+    kind: Kind_CLASS,
+    interfaces: [PointDistance]
+  };
+  CenterPointTraverser.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CenterPointTraverser',
+    interfaces: [SpatialTreeTraverser]
+  };
+  function InRadiusTraverser() {
+    CenterPointTraverser.call(this);
+    this.result = ArrayList_init();
     this.radius_45ks74$_0 = 1.0;
     this.radiusSqr_ri3rk0$_0 = 1.0;
   }
@@ -27894,21 +28306,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     get: function () {
       return this.radius_45ks74$_0;
     },
-    set: function (value) {
-      this.radius_45ks74$_0 = value;
-      this.radiusSqr_ri3rk0$_0 = value * value;
+    set: function (radius) {
+      this.radius_45ks74$_0 = radius;
     }
   });
   InRadiusTraverser.prototype.setup_2qa7tb$ = function (center, radius) {
-    this.center.set_czzhiu$(center);
+    CenterPointTraverser.prototype.setup_czzhiu$.call(this, center);
     this.radius = radius;
+    this.radiusSqr_ri3rk0$_0 = radius * radius;
     return this;
   };
   InRadiusTraverser.prototype.onStart_m6hlto$ = function (tree) {
     this.result.clear();
   };
   InRadiusTraverser.prototype.traversalOrder_6id3hy$ = function (tree, candidates) {
-    removeCandidatesOutOfSqrDist(candidates, this.center, this.radiusSqr_ri3rk0$_0);
+    for (var i = 0; i !== candidates.size; ++i) {
+      var nd = candidates.get_za3lpa$(i);
+      nd.traversalOrder = this.pointDistance.nodeDistanceToPoint_m5117s$(nd, this.center);
+    }
+    removeCandidatesOutOfDist(candidates, this.radiusSqr_ri3rk0$_0);
   };
   InRadiusTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
@@ -27918,29 +28334,17 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
       var it = leaf.items.get_za3lpa$(i);
-      var dSqr = this.sqrDistance_s78f93$(tree, it);
+      var dSqr = this.pointDistance.itemDistanceToPoint_54x1zp$(tree, it, this.center);
       if (dSqr < this.radiusSqr_ri3rk0$_0) {
         this.result.add_11rb$(it);
       }
     }
   };
-  InRadiusTraverser.prototype.sqrDistance_s78f93$ = function (tree, item) {
-    var dx = tree.itemAdapter.getCenterX_trkh7z$(item) - this.center.x;
-    var dy = tree.itemAdapter.getCenterY_trkh7z$(item) - this.center.y;
-    var dz = tree.itemAdapter.getCenterZ_trkh7z$(item) - this.center.z;
-    return dx * dx + dy * dy + dz * dz;
-  };
   InRadiusTraverser.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'InRadiusTraverser',
-    interfaces: [SpatialTreeTraverser]
+    interfaces: [CenterPointTraverser]
   };
-  function InRadiusTraverser_init(center, radius, $this) {
-    $this = $this || Object.create(InRadiusTraverser.prototype);
-    InRadiusTraverser.call($this);
-    $this.setup_2qa7tb$(center, radius);
-    return $this;
-  }
   function Comparator$ObjectLiteral_5(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
@@ -27950,21 +28354,48 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Comparator$ObjectLiteral_5.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function KNearestTraverser() {
     KNearestTraverser$Companion_getInstance();
-    this.center = MutableVec3f_init();
-    this.k = 10;
-    this.radiusSqr = 9.9999998E17;
+    CenterPointTraverser.call(this);
+    this.k_lz5t59$_0 = 10;
+    this.radiusSqr_9tgcx0$_0 = 9.9999998E17;
     this.result = ArrayList_init();
-    this.maxDistance = 0.0;
-    this.itemRecycler_b63bes$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
+    this.maxDistance_1d7gth$_0 = 0.0;
     this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_5(KNearestTraverser$items$lambda));
+    this.itemRecycler_b63bes$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
   }
-  KNearestTraverser.prototype.setup_w8bw21$ = function (center, k, maxRadius) {
-    if (maxRadius === void 0)
-      maxRadius = KNearestTraverser$Companion_getInstance().MAX_RADIUS;
-    this.center.set_czzhiu$(center);
+  Object.defineProperty(KNearestTraverser.prototype, 'k', {
+    get: function () {
+      return this.k_lz5t59$_0;
+    },
+    set: function (k) {
+      this.k_lz5t59$_0 = k;
+    }
+  });
+  Object.defineProperty(KNearestTraverser.prototype, 'radiusSqr', {
+    get: function () {
+      return this.radiusSqr_9tgcx0$_0;
+    },
+    set: function (radiusSqr) {
+      this.radiusSqr_9tgcx0$_0 = radiusSqr;
+    }
+  });
+  Object.defineProperty(KNearestTraverser.prototype, 'maxDistance', {
+    get: function () {
+      return this.maxDistance_1d7gth$_0;
+    },
+    set: function (maxDistance) {
+      this.maxDistance_1d7gth$_0 = maxDistance;
+    }
+  });
+  KNearestTraverser.prototype.setup_w8bw21$$default = function (center, k, maxRadius) {
+    CenterPointTraverser.prototype.setup_czzhiu$.call(this, center);
     this.k = k;
     this.radiusSqr = maxRadius * maxRadius;
     return this;
+  };
+  KNearestTraverser.prototype.setup_w8bw21$ = function (center, k, maxRadius, callback$default) {
+    if (maxRadius === void 0)
+      maxRadius = KNearestTraverser$Companion_getInstance().MAX_RADIUS;
+    return callback$default ? callback$default(center, k, maxRadius) : this.setup_w8bw21$$default(center, k, maxRadius);
   };
   KNearestTraverser.prototype.onFinish_m6hlto$ = function (tree) {
     this.result.clear();
@@ -27980,27 +28411,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     this.itemRecycler_b63bes$_0.recycleAll();
   };
-  function KNearestTraverser$traversalOrder$lambda(this$KNearestTraverser) {
-    return function (it) {
-      return it.bounds.pointDistanceSqr_czzhiu$(this$KNearestTraverser.center);
-    };
-  }
-  var compareBy$lambda_3 = wrapFunction(function () {
-    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
-    return function (closure$selector) {
-      return function (a, b) {
-        var selector = closure$selector;
-        return compareValues(selector(a), selector(b));
-      };
-    };
-  });
-  function Comparator$ObjectLiteral_6(closure$comparison) {
-    this.closure$comparison = closure$comparison;
-  }
-  Comparator$ObjectLiteral_6.prototype.compare = function (a, b) {
-    return this.closure$comparison(a, b);
-  };
-  Comparator$ObjectLiteral_6.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   KNearestTraverser.prototype.traversalOrder_6id3hy$ = function (tree, candidates) {
     var tmp$;
     if (this.items_3hjtdu$_0.size < this.k) {
@@ -28010,21 +28420,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       tmp$ = this.items_3hjtdu$_0.peek().dSqr;
     }
     var remThresh = tmp$;
-    removeCandidatesOutOfSqrDist(candidates, this.center, remThresh);
-    if (candidates.size > 1) {
-      if (candidates.size === 2) {
-        if (candidates.get_za3lpa$(1).bounds.pointDistanceSqr_czzhiu$(this.center) < candidates.get_za3lpa$(0).bounds.pointDistanceSqr_czzhiu$(this.center)) {
-          var $receiver = candidates.get_za3lpa$(0);
-          candidates.set_wxm5ur$(0, candidates.get_za3lpa$(1));
-          candidates.set_wxm5ur$(1, $receiver);
-        }
-      }
-       else {
-        if (candidates.size > 1) {
-          sortWith(candidates, new Comparator$ObjectLiteral_6(compareBy$lambda_3(KNearestTraverser$traversalOrder$lambda(this))));
-        }
-      }
+    for (var i = 0; i !== candidates.size; ++i) {
+      var nd = candidates.get_za3lpa$(i);
+      nd.traversalOrder = this.pointDistance.nodeDistanceToPoint_m5117s$(nd, this.center);
     }
+    removeCandidatesOutOfDist(candidates, remThresh);
+    sortByTraversalOrder(candidates);
   };
   KNearestTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
@@ -28034,17 +28435,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
       var it = leaf.items.get_za3lpa$(i);
-      var dSqr = this.sqrDistance_s78f93$(tree, it);
+      var dSqr = this.pointDistance.itemDistanceToPoint_54x1zp$(tree, it, this.center);
       if (dSqr < this.radiusSqr && (this.items_3hjtdu$_0.size < this.k || dSqr < this.items_3hjtdu$_0.peek().dSqr)) {
         this.insert_2aiobd$_0(it, dSqr);
       }
     }
-  };
-  KNearestTraverser.prototype.sqrDistance_s78f93$ = function (tree, item) {
-    var dx = tree.itemAdapter.getCenterX_trkh7z$(item) - this.center.x;
-    var dy = tree.itemAdapter.getCenterY_trkh7z$(item) - this.center.y;
-    var dz = tree.itemAdapter.getCenterZ_trkh7z$(item) - this.center.z;
-    return dx * dx + dy * dy + dz * dz;
   };
   KNearestTraverser.prototype.insert_2aiobd$_0 = function (value, dSqr) {
     if (this.items_3hjtdu$_0.size === this.k) {
@@ -28092,29 +28487,134 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     return KNearestTraverser$Companion_instance;
   }
-  function KNearestTraverser$itemRecycler$lambda() {
-    return new KNearestTraverser$Item();
-  }
   function KNearestTraverser$items$lambda(a, b) {
     return Kotlin.compareTo(b.dSqr, a.dSqr);
+  }
+  function KNearestTraverser$itemRecycler$lambda() {
+    return new KNearestTraverser$Item();
   }
   KNearestTraverser.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'KNearestTraverser',
+    interfaces: [CenterPointTraverser]
+  };
+  function NearestToRayTraverser() {
+    this.ray = new Ray();
+    this.nearest_pgibj6$_0 = null;
+    this.distance_w4zyjn$_0 = 0.0;
+    this.rayDistance = new NearestToRayTraverser$rayDistance$ObjectLiteral();
+    this.sqrDist_i0gtwi$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+  }
+  Object.defineProperty(NearestToRayTraverser.prototype, 'nearest', {
+    get: function () {
+      return this.nearest_pgibj6$_0;
+    },
+    set: function (nearest) {
+      this.nearest_pgibj6$_0 = nearest;
+    }
+  });
+  Object.defineProperty(NearestToRayTraverser.prototype, 'distance', {
+    get: function () {
+      return this.distance_w4zyjn$_0;
+    },
+    set: function (distance) {
+      this.distance_w4zyjn$_0 = distance;
+    }
+  });
+  NearestToRayTraverser.prototype.setup_nvyeur$ = function (ray) {
+    this.ray.set_nvyeur$(ray);
+    this.nearest = null;
+    return this;
+  };
+  NearestToRayTraverser.prototype.onFinish_m6hlto$ = function (tree) {
+    var tmp$;
+    if (this.nearest != null) {
+      var x = this.sqrDist_i0gtwi$_0;
+      tmp$ = Math_0.sqrt(x);
+    }
+     else
+      tmp$ = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+    this.distance = tmp$;
+  };
+  NearestToRayTraverser.prototype.traversalOrder_6id3hy$ = function (tree, candidates) {
+    for (var i = 0; i !== candidates.size; ++i) {
+      var nd = candidates.get_za3lpa$(i);
+      nd.traversalOrder = this.rayDistance.nodeDistanceToRay_4lohg5$(nd, this.ray);
+    }
+    removeCandidatesOutOfDist(candidates, this.sqrDist_i0gtwi$_0);
+    sortByTraversalOrder(candidates);
+  };
+  NearestToRayTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    tmp$ = leaf.nodeRange;
+    tmp$_0 = tmp$.first;
+    tmp$_1 = tmp$.last;
+    tmp$_2 = tmp$.step;
+    for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
+      var it = leaf.items.get_za3lpa$(i);
+      var dSqr = this.rayDistance.itemDistanceToRay_t0er6w$(tree, it, this.ray);
+      if (dSqr < this.sqrDist_i0gtwi$_0) {
+        this.nearest = it;
+        this.sqrDist_i0gtwi$_0 = dSqr;
+      }
+    }
+  };
+  function NearestToRayTraverser$rayDistance$ObjectLiteral() {
+  }
+  NearestToRayTraverser$rayDistance$ObjectLiteral.$metadata$ = {
+    kind: Kind_CLASS,
+    interfaces: [RayDistance]
+  };
+  NearestToRayTraverser.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'NearestToRayTraverser',
     interfaces: [SpatialTreeTraverser]
   };
-  function KNearestTraverser_init(center, k, maxRadius, $this) {
-    if (maxRadius === void 0)
-      maxRadius = KNearestTraverser$Companion_getInstance().MAX_RADIUS;
-    $this = $this || Object.create(KNearestTraverser.prototype);
-    KNearestTraverser.call($this);
-    $this.setup_w8bw21$(center, k, maxRadius);
-    return $this;
-  }
-  function removeCandidatesOutOfSqrDist($receiver, center, sqrDist) {
+  var computeTraversalOrder = defineInlineFunction('kool.de.fabmax.kool.util.computeTraversalOrder_4xxo93$', function ($receiver, distFun) {
+    for (var i = 0; i !== $receiver.size; ++i) {
+      var nd = $receiver.get_za3lpa$(i);
+      nd.traversalOrder = distFun(nd);
+    }
+  });
+  function removeCandidatesOutOfDist($receiver, dist) {
     for (var i = $receiver.size - 1 | 0; i >= 0; i--) {
-      if ($receiver.get_za3lpa$(i).bounds.pointDistanceSqr_czzhiu$(center) > sqrDist) {
+      if ($receiver.get_za3lpa$(i).traversalOrder > dist) {
         $receiver.removeAt_za3lpa$(i);
+      }
+    }
+  }
+  function sortByTraversalOrder$lambda(it) {
+    return it.traversalOrder;
+  }
+  var compareBy$lambda_3 = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  function Comparator$ObjectLiteral_6(closure$comparison) {
+    this.closure$comparison = closure$comparison;
+  }
+  Comparator$ObjectLiteral_6.prototype.compare = function (a, b) {
+    return this.closure$comparison(a, b);
+  };
+  Comparator$ObjectLiteral_6.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  function sortByTraversalOrder($receiver) {
+    if ($receiver.size > 1) {
+      if ($receiver.size === 2) {
+        if ($receiver.get_za3lpa$(1).traversalOrder < $receiver.get_za3lpa$(0).traversalOrder) {
+          var $receiver_0 = $receiver.get_za3lpa$(0);
+          $receiver.set_wxm5ur$(0, $receiver.get_za3lpa$(1));
+          $receiver.set_wxm5ur$(1, $receiver_0);
+        }
+      }
+       else {
+        if ($receiver.size > 1) {
+          sortWith($receiver, new Comparator$ObjectLiteral_6(compareBy$lambda_3(sortByTraversalOrder$lambda)));
+        }
       }
     }
   }
@@ -28192,7 +28692,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     };
   }
   TouchGestureEvaluator.prototype.onDetermineGesture_mcn869$ = function (pointers) {
-    removeAll(this.startPositions.keys, TouchGestureEvaluator$onDetermineGesture$lambda(pointers));
+    removeAll_0(this.startPositions.keys, TouchGestureEvaluator$onDetermineGesture$lambda(pointers));
     var destination = ArrayList_init();
     var tmp$;
     tmp$ = pointers.iterator();
@@ -28345,88 +28845,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     return UniqueId_instance;
   }
-  function AudioGenerator(ctx, generatorFun) {
-    this.audioCtx_0 = new (window.AudioContext || window.webkitAudioContext)();
-    this.sampleRate = this.audioCtx_0.sampleRate;
-    this.isPaused_p8nrgy$_0 = false;
-    this.source_0 = null;
-    this.scriptNode_0 = null;
-    this.analyserNode_0 = null;
-    var tmp$;
-    this.powerSpectrum_0 = Kotlin.isType(tmp$ = createFloat32Buffer(1), Float32BufferImpl) ? tmp$ : throwCCE();
-    this.dt_0 = 1.0 / this.sampleRate;
-    this.scriptNode_0 = this.audioCtx_0.createScriptProcessor(4096, 1, 1);
-    var buffer = this.audioCtx_0.createBuffer(1, this.scriptNode_0.bufferSize, this.sampleRate);
-    this.scriptNode_0.onaudioprocess = AudioGenerator_init$lambda(generatorFun, this);
-    this.analyserNode_0 = null;
-    this.source_0 = this.audioCtx_0.createBufferSource();
-    this.source_0.buffer = buffer;
-    this.source_0.loop = true;
-    this.source_0.connect(this.scriptNode_0);
-    this.scriptNode_0.connect(this.audioCtx_0.destination);
-    this.source_0.start();
-  }
-  Object.defineProperty(AudioGenerator.prototype, 'isPaused', {
-    get: function () {
-      return this.isPaused_p8nrgy$_0;
-    },
-    set: function (value) {
-      if (this.isPaused_p8nrgy$_0 !== value) {
-        this.isPaused_p8nrgy$_0 = value;
-        if (value) {
-          this.source_0.stop();
-        }
-         else {
-          this.source_0.start();
-        }
-      }
-    }
-  });
-  AudioGenerator.prototype.stop = function () {
-    this.scriptNode_0.disconnect();
-    this.source_0.loop = false;
-    this.source_0.disconnect();
-    this.source_0.stop();
-  };
-  AudioGenerator.prototype.enableFftComputation_za3lpa$ = function (nSamples) {
-    var tmp$, tmp$_0;
-    if (nSamples <= 0) {
-      (tmp$ = this.analyserNode_0) != null ? tmp$.disconnect() : null;
-      this.analyserNode_0 = null;
-    }
-     else {
-      if (this.analyserNode_0 == null) {
-        this.analyserNode_0 = this.audioCtx_0.createAnalyser();
-        this.analyserNode_0.minDecibels = -90;
-        this.analyserNode_0.maxDecibels = 0;
-        this.analyserNode_0.smoothingTimeConstant = 0.5;
-        this.scriptNode_0.connect(this.analyserNode_0);
-      }
-      this.analyserNode_0.fftSize = nSamples;
-      this.powerSpectrum_0 = Kotlin.isType(tmp$_0 = createFloat32Buffer(this.analyserNode_0.frequencyBinCount), Float32BufferImpl) ? tmp$_0 : throwCCE();
-    }
-  };
-  AudioGenerator.prototype.getPowerSpectrum = function () {
-    this.analyserNode_0.getFloatFrequencyData(this.powerSpectrum_0.buffer);
-    return this.powerSpectrum_0;
-  };
-  function AudioGenerator_init$lambda(closure$generatorFun, this$AudioGenerator) {
-    return function (ev) {
-      var tmp$;
-      var outputBuffer = ev.outputBuffer;
-      var data = outputBuffer.getChannelData(0);
-      tmp$ = outputBuffer.length;
-      for (var i = 0; i < tmp$; i++) {
-        data[i] = closure$generatorFun(this$AudioGenerator, this$AudioGenerator.dt_0);
-      }
-      return Unit;
-    };
-  }
-  AudioGenerator.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'AudioGenerator',
-    interfaces: []
-  };
   function glActiveTexture(texture) {
     JsImpl_getInstance().gl.activeTexture(texture);
   }
@@ -28845,6 +29263,88 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     return JsImpl_instance;
   }
+  function AudioGenerator(ctx, generatorFun) {
+    this.audioCtx_0 = new (window.AudioContext || window.webkitAudioContext)();
+    this.sampleRate = this.audioCtx_0.sampleRate;
+    this.isPaused_z77g9l$_0 = false;
+    this.source_0 = null;
+    this.scriptNode_0 = null;
+    this.analyserNode_0 = null;
+    var tmp$;
+    this.powerSpectrum_0 = Kotlin.isType(tmp$ = createFloat32Buffer(1), Float32BufferImpl) ? tmp$ : throwCCE();
+    this.dt_0 = 1.0 / this.sampleRate;
+    this.scriptNode_0 = this.audioCtx_0.createScriptProcessor(4096, 1, 1);
+    var buffer = this.audioCtx_0.createBuffer(1, this.scriptNode_0.bufferSize, this.sampleRate);
+    this.scriptNode_0.onaudioprocess = AudioGenerator_init$lambda(generatorFun, this);
+    this.analyserNode_0 = null;
+    this.source_0 = this.audioCtx_0.createBufferSource();
+    this.source_0.buffer = buffer;
+    this.source_0.loop = true;
+    this.source_0.connect(this.scriptNode_0);
+    this.scriptNode_0.connect(this.audioCtx_0.destination);
+    this.source_0.start();
+  }
+  Object.defineProperty(AudioGenerator.prototype, 'isPaused', {
+    get: function () {
+      return this.isPaused_z77g9l$_0;
+    },
+    set: function (value) {
+      if (this.isPaused_z77g9l$_0 !== value) {
+        this.isPaused_z77g9l$_0 = value;
+        if (value) {
+          this.source_0.stop();
+        }
+         else {
+          this.source_0.start();
+        }
+      }
+    }
+  });
+  AudioGenerator.prototype.stop = function () {
+    this.scriptNode_0.disconnect();
+    this.source_0.loop = false;
+    this.source_0.disconnect();
+    this.source_0.stop();
+  };
+  AudioGenerator.prototype.enableFftComputation_za3lpa$ = function (nSamples) {
+    var tmp$, tmp$_0;
+    if (nSamples <= 0) {
+      (tmp$ = this.analyserNode_0) != null ? tmp$.disconnect() : null;
+      this.analyserNode_0 = null;
+    }
+     else {
+      if (this.analyserNode_0 == null) {
+        this.analyserNode_0 = this.audioCtx_0.createAnalyser();
+        this.analyserNode_0.minDecibels = -90;
+        this.analyserNode_0.maxDecibels = 0;
+        this.analyserNode_0.smoothingTimeConstant = 0.5;
+        this.scriptNode_0.connect(this.analyserNode_0);
+      }
+      this.analyserNode_0.fftSize = nSamples;
+      this.powerSpectrum_0 = Kotlin.isType(tmp$_0 = createFloat32Buffer(this.analyserNode_0.frequencyBinCount), Float32BufferImpl) ? tmp$_0 : throwCCE();
+    }
+  };
+  AudioGenerator.prototype.getPowerSpectrum = function () {
+    this.analyserNode_0.getFloatFrequencyData(this.powerSpectrum_0.buffer);
+    return this.powerSpectrum_0;
+  };
+  function AudioGenerator_init$lambda(closure$generatorFun, this$AudioGenerator) {
+    return function (ev) {
+      var tmp$;
+      var outputBuffer = ev.outputBuffer;
+      var data = outputBuffer.getChannelData(0);
+      tmp$ = outputBuffer.length;
+      for (var i = 0; i < tmp$; i++) {
+        data[i] = closure$generatorFun(this$AudioGenerator, this$AudioGenerator.dt_0);
+      }
+      return Unit;
+    };
+  }
+  AudioGenerator.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AudioGenerator',
+    interfaces: []
+  };
   function loadPngS16ElevationMap(basePath, meta, assetMgr) {
     return new DelayedElevationMap(basePath, meta);
   }
@@ -29748,29 +30248,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$kool.AssetManager = AssetManager;
   package$kool.assetTexture_2gt2x8$ = assetTexture;
   package$kool.assetTexture_513zl8$ = assetTexture_0;
-  var package$audio = package$kool.audio || (package$kool.audio = {});
-  package$audio.LowPassFilter = LowPassFilter;
-  package$audio.HighPassFilter = HighPassFilter;
-  Object.defineProperty(MoodFilter, 'Companion', {
-    get: MoodFilter$Companion_getInstance
-  });
-  package$audio.MoodFilter = MoodFilter;
-  package$audio.HiHat = HiHat;
-  package$audio.Kick = Kick;
-  package$audio.Melody = Melody;
-  $$importsForInline$$.kool = _;
-  package$audio.Oscillator = Oscillator;
-  package$audio.Pad = Pad;
-  Object.defineProperty(SampleNode, 'Companion', {
-    get: SampleNode$Companion_getInstance
-  });
-  package$audio.SampleNode = SampleNode;
-  package$audio.Shaker = Shaker;
-  package$audio.Snare = Snare;
-  Object.defineProperty(Wave, 'Companion', {
-    get: Wave$Companion_getInstance
-  });
-  package$audio.Wave = Wave;
   var package$gl = package$kool.gl || (package$kool.gl = {});
   Object.defineProperty(package$gl, 'GL_ACTIVE_TEXTURE', {
     get: function () {
@@ -31295,6 +31772,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Object.defineProperty(FramebufferResource, 'Companion', {
     get: FramebufferResource$Companion_getInstance
   });
+  $$importsForInline$$.kool = _;
   package$gl.FramebufferResource = FramebufferResource;
   package$gl.GlObject = GlObject;
   Object.defineProperty(GlResource$Type, 'BUFFER', {
@@ -31565,6 +32043,28 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$math.slerp_nr5s3x$ = slerp_0;
   package$kool.MemoryManager = MemoryManager;
   var package$modules = package$kool.modules || (package$kool.modules = {});
+  var package$audio = package$modules.audio || (package$modules.audio = {});
+  package$audio.LowPassFilter = LowPassFilter;
+  package$audio.HighPassFilter = HighPassFilter;
+  Object.defineProperty(MoodFilter, 'Companion', {
+    get: MoodFilter$Companion_getInstance
+  });
+  package$audio.MoodFilter = MoodFilter;
+  package$audio.HiHat = HiHat;
+  package$audio.Kick = Kick;
+  package$audio.Melody = Melody;
+  package$audio.Oscillator = Oscillator;
+  package$audio.Pad = Pad;
+  Object.defineProperty(SampleNode, 'Companion', {
+    get: SampleNode$Companion_getInstance
+  });
+  package$audio.SampleNode = SampleNode;
+  package$audio.Shaker = Shaker;
+  package$audio.Snare = Snare;
+  Object.defineProperty(Wave, 'Companion', {
+    get: Wave$Companion_getInstance
+  });
+  package$audio.Wave = Wave;
   var package$globe = package$modules.globe || (package$modules.globe = {});
   var package$elevation = package$globe.elevation || (package$globe.elevation = {});
   package$elevation.BoundedElevationMap = BoundedElevationMap;
@@ -31624,6 +32124,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$globe.TileShader = TileShader;
   package$globe.TexImageTileShaderProvider = TexImageTileShaderProvider;
   package$globe.OsmTexImageTileShaderProvider = OsmTexImageTileShaderProvider;
+  HalfEdgeMesh.EdgeHandler = HalfEdgeMesh$EdgeHandler;
   Object.defineProperty(HalfEdgeMesh$Companion.prototype, 'HalfEdgeAdapter', {
     get: HalfEdgeMesh$Companion$HalfEdgeAdapter_getInstance
   });
@@ -31632,12 +32133,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   });
   HalfEdgeMesh.HalfEdgeVertex = HalfEdgeMesh$HalfEdgeVertex;
   HalfEdgeMesh.HalfEdge = HalfEdgeMesh$HalfEdge;
+  HalfEdgeMesh.OcTreeEdgeHandler_init_3w6cym$ = HalfEdgeMesh$HalfEdgeMesh$OcTreeEdgeHandler_init;
+  HalfEdgeMesh.OcTreeEdgeHandler = HalfEdgeMesh$OcTreeEdgeHandler;
+  HalfEdgeMesh.ListEdgeHandler = HalfEdgeMesh$ListEdgeHandler;
   var package$mesh = package$modules.mesh || (package$modules.mesh = {});
   package$mesh.HalfEdgeMesh = HalfEdgeMesh;
   var package$simplification = package$mesh.simplification || (package$mesh.simplification = {});
   package$simplification.CollapseStrategy = CollapseStrategy;
   package$simplification.defaultCollapseStrategy = defaultCollapseStrategy;
   package$simplification.ErrorQuadric = ErrorQuadric;
+  package$simplification.simplify_rzzwhm$ = simplify;
+  package$simplification.simplify_8igdhs$ = simplify_0;
+  package$simplification.simplify_hd2sc$ = simplify_1;
   package$simplification.MeshSimplifier = MeshSimplifier;
   package$simplification.TermCriterion = TermCriterion;
   package$simplification.terminateOnFaceCountRel_mx4ult$ = terminateOnFaceCountRel;
@@ -32069,7 +32576,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   KdTree.KdNode = KdTree$KdNode;
   package$util.KdTree = KdTree;
   package$util.lineMesh_6a24eg$ = lineMesh;
-  package$util.wireframeMesh_3w6cym$ = wireframeMesh;
+  package$util.wireframeMesh_tggg7d$ = wireframeMesh;
   package$util.LineMesh = LineMesh;
   Log.prototype.Level = Log$Level;
   Object.defineProperty(Log$Level, 'TRACE', {
@@ -32214,14 +32721,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   SpatialTree.Node = SpatialTree$Node;
   package$util.SpatialTree = SpatialTree;
   package$util.SpatialTreeTraverser = SpatialTreeTraverser;
-  package$util.InRadiusTraverser_init_h816bs$ = InRadiusTraverser_init;
+  package$util.PointDistance = PointDistance;
+  package$util.RayDistance = RayDistance;
+  package$util.CenterPointTraverser = CenterPointTraverser;
   package$util.InRadiusTraverser = InRadiusTraverser;
   Object.defineProperty(KNearestTraverser, 'Companion', {
     get: KNearestTraverser$Companion_getInstance
   });
-  package$util.KNearestTraverser_init_dlq9u$ = KNearestTraverser_init;
   package$util.KNearestTraverser = KNearestTraverser;
-  package$util.removeCandidatesOutOfSqrDist_5qqp72$ = removeCandidatesOutOfSqrDist;
+  package$util.NearestToRayTraverser = NearestToRayTraverser;
+  package$util.computeTraversalOrder_4xxo93$ = computeTraversalOrder;
+  package$util.removeCandidatesOutOfDist_w6pp3o$ = removeCandidatesOutOfDist;
+  package$util.sortByTraversalOrder_vme2cj$ = sortByTraversalOrder;
   Object.defineProperty(TouchGestureEvaluator, 'Companion', {
     get: TouchGestureEvaluator$Companion_getInstance
   });
@@ -32230,7 +32741,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Object.defineProperty(package$util, 'UniqueId', {
     get: UniqueId_getInstance
   });
-  package$audio.AudioGenerator = AudioGenerator;
   package$gl.glActiveTexture_za3lpa$ = glActiveTexture;
   package$gl.glAttachShader_c10c6r$ = glAttachShader;
   package$gl.glBindBuffer_4ablaf$ = glBindBuffer;
@@ -32309,6 +32819,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Object.defineProperty(package$kool, 'JsImpl', {
     get: JsImpl_getInstance
   });
+  package$audio.AudioGenerator = AudioGenerator;
   package$elevation.loadPngS16ElevationMap_jn660e$ = loadPngS16ElevationMap;
   var package$platform = package$kool.platform || (package$kool.platform = {});
   package$platform.FontMapGenerator = FontMapGenerator;
@@ -32339,8 +32850,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Object.defineProperty(ElevationMapS16.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
   ElevationMapS16.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;
   HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMin_hm1yd1$ = ItemAdapter.prototype.getMin_hm1yd1$;
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getCenter_hm1yd1$ = ItemAdapter.prototype.getCenter_hm1yd1$;
   HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMax_hm1yd1$ = ItemAdapter.prototype.getMax_hm1yd1$;
+  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getCenter_hm1yd1$ = ItemAdapter.prototype.getCenter_hm1yd1$;
   terminateOnFaceCountAbs$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   terminateOnError$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
@@ -32404,8 +32915,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Vec3fAdapter.prototype.getSzY_trkh7z$ = ItemAdapter.prototype.getSzY_trkh7z$;
   Vec3fAdapter.prototype.getSzZ_trkh7z$ = ItemAdapter.prototype.getSzZ_trkh7z$;
   Vec3fAdapter.prototype.setNode_bc9457$ = ItemAdapter.prototype.setNode_bc9457$;
-  InRadiusTraverser.prototype.onFinish_m6hlto$ = SpatialTreeTraverser.prototype.onFinish_m6hlto$;
-  KNearestTraverser.prototype.onStart_m6hlto$ = SpatialTreeTraverser.prototype.onStart_m6hlto$;
+  CenterPointTraverser$pointDistance$ObjectLiteral.prototype.nodeDistanceToPoint_m5117s$ = PointDistance.prototype.nodeDistanceToPoint_m5117s$;
+  CenterPointTraverser$pointDistance$ObjectLiteral.prototype.itemDistanceToPoint_54x1zp$ = PointDistance.prototype.itemDistanceToPoint_54x1zp$;
+  CenterPointTraverser.prototype.onStart_m6hlto$ = SpatialTreeTraverser.prototype.onStart_m6hlto$;
+  CenterPointTraverser.prototype.onFinish_m6hlto$ = SpatialTreeTraverser.prototype.onFinish_m6hlto$;
+  NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.nodeDistanceToRay_4lohg5$ = RayDistance.prototype.nodeDistanceToRay_4lohg5$;
+  NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.itemDistanceToRay_t0er6w$ = RayDistance.prototype.itemDistanceToRay_t0er6w$;
+  NearestToRayTraverser.prototype.onStart_m6hlto$ = SpatialTreeTraverser.prototype.onStart_m6hlto$;
   Object.defineProperty(DelayedElevationMap.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
   Object.defineProperty(DelayedElevationMap.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
   DelayedElevationMap.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;

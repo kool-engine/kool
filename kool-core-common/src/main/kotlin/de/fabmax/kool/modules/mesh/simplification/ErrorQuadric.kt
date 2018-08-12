@@ -46,24 +46,24 @@ class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
     }
 
     private fun addPlane(planeVec: Vec4f) {
-        errQuadric[0, 0] += tmpVec4.x * tmpVec4.x
-        errQuadric[1, 0] += tmpVec4.x * tmpVec4.y
-        errQuadric[2, 0] += tmpVec4.x * tmpVec4.z
-        errQuadric[3, 0] += tmpVec4.x * tmpVec4.w
+        errQuadric[0, 0] += planeVec.x * planeVec.x
+        errQuadric[1, 0] += planeVec.x * planeVec.y
+        errQuadric[2, 0] += planeVec.x * planeVec.z
+        errQuadric[3, 0] += planeVec.x * planeVec.w
 
-        errQuadric[0, 1] += tmpVec4.y * tmpVec4.x
-        errQuadric[1, 1] += tmpVec4.y * tmpVec4.y
-        errQuadric[2, 1] += tmpVec4.y * tmpVec4.z
-        errQuadric[3, 1] += tmpVec4.y * tmpVec4.w
+        errQuadric[0, 1] += planeVec.y * planeVec.x
+        errQuadric[1, 1] += planeVec.y * planeVec.y
+        errQuadric[2, 1] += planeVec.y * planeVec.z
+        errQuadric[3, 1] += planeVec.y * planeVec.w
 
-        errQuadric[0, 2] += tmpVec4.z * tmpVec4.x
-        errQuadric[1, 2] += tmpVec4.z * tmpVec4.y
-        errQuadric[2, 2] += tmpVec4.z * tmpVec4.z
-        errQuadric[3, 2] += tmpVec4.z * tmpVec4.w
+        errQuadric[0, 2] += planeVec.z * planeVec.x
+        errQuadric[1, 2] += planeVec.z * planeVec.y
+        errQuadric[2, 2] += planeVec.z * planeVec.z
+        errQuadric[3, 2] += planeVec.z * planeVec.w
 
-        errQuadric[0, 3] += tmpVec4.w * tmpVec4.x
-        errQuadric[1, 3] += tmpVec4.w * tmpVec4.y
-        errQuadric[2, 3] += tmpVec4.w * tmpVec4.z
-        errQuadric[3, 3] += tmpVec4.w * tmpVec4.w
+        errQuadric[0, 3] += planeVec.w * planeVec.x
+        errQuadric[1, 3] += planeVec.w * planeVec.y
+        errQuadric[2, 3] += planeVec.w * planeVec.z
+        errQuadric[3, 3] += planeVec.w * planeVec.w
     }
 }

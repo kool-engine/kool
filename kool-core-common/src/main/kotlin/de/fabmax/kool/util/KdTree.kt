@@ -15,9 +15,9 @@ class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz: Int 
 
     private val items = MutableList(items.size, items::get)
 
-    private val cmpX: (T, T) -> Int = { a, b -> itemAdapter.getX(a).compareTo(itemAdapter.getX(b)) }
-    private val cmpY: (T, T) -> Int = { a, b -> itemAdapter.getY(a).compareTo(itemAdapter.getY(b)) }
-    private val cmpZ: (T, T) -> Int = { a, b -> itemAdapter.getZ(a).compareTo(itemAdapter.getZ(b)) }
+    private val cmpX: (T, T) -> Int = { a, b -> itemAdapter.getMinX(a).compareTo(itemAdapter.getMinX(b)) }
+    private val cmpY: (T, T) -> Int = { a, b -> itemAdapter.getMinY(a).compareTo(itemAdapter.getMinY(b)) }
+    private val cmpZ: (T, T) -> Int = { a, b -> itemAdapter.getMinZ(a).compareTo(itemAdapter.getMinZ(b)) }
 
     init {
         root = KdNode(items.indices, 0, bucketSz)
@@ -87,8 +87,8 @@ class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz: Int 
 
             } else {
                 return when {
-                    children[0].bounds.isIncluding(itemAdapter.getX(item), itemAdapter.getY(item), itemAdapter.getZ(item)) -> children[0].contains(item)
-                    children[1].bounds.isIncluding(itemAdapter.getX(item), itemAdapter.getY(item), itemAdapter.getZ(item)) -> children[1].contains(item)
+                    children[0].bounds.isIncluding(itemAdapter.getMinX(item), itemAdapter.getMinY(item), itemAdapter.getMinZ(item)) -> children[0].contains(item)
+                    children[1].bounds.isIncluding(itemAdapter.getMinX(item), itemAdapter.getMinY(item), itemAdapter.getMinZ(item)) -> children[1].contains(item)
                     else -> false
                 }
             }

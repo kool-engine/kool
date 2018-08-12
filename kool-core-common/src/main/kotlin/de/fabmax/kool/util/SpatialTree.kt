@@ -12,32 +12,40 @@ fun <T: Vec3f> pointOcTree(items: List<T> = emptyList(), bucketSz: Int = 20): Oc
 }
 
 interface ItemAdapter<in T: Any> {
-    fun getX(item: T): Float
-    fun getY(item: T): Float
-    fun getZ(item: T): Float
+    fun getMinX(item: T): Float
+    fun getMinY(item: T): Float
+    fun getMinZ(item: T): Float
 
-    fun getSzX(item: T): Float = 0f
-    fun getSzY(item: T): Float = 0f
-    fun getSzZ(item: T): Float = 0f
+    fun getMaxX(item: T): Float
+    fun getMaxY(item: T): Float
+    fun getMaxZ(item: T): Float
 
-    fun getCenterX(item: T): Float = getX(item) + getSzX(item) / 2
-    fun getCenterY(item: T): Float = getY(item) + getSzY(item) / 2
-    fun getCenterZ(item: T): Float = getZ(item) + getSzZ(item) / 2
+    fun getCenterX(item: T): Float = (getMinX(item) + getMaxX(item)) * 0.5f
+    fun getCenterY(item: T): Float = (getMinY(item) + getMaxY(item)) * 0.5f
+    fun getCenterZ(item: T): Float = (getMinZ(item) + getMaxZ(item)) * 0.5f
+
+    fun getSzX(item: T): Float = getMaxX(item) - getMinX(item)
+    fun getSzY(item: T): Float = getMaxY(item) - getMinY(item)
+    fun getSzZ(item: T): Float = getMaxZ(item) - getMinZ(item)
 
     fun getMin(item: T, result: MutableVec3f): MutableVec3f =
-            result.set(getX(item), getY(item), getZ(item))
+            result.set(getMinX(item), getMinY(item), getMinZ(item))
+    fun getMax(item: T, result: MutableVec3f): MutableVec3f =
+            result.set(getMaxX(item), getMaxY(item), getMaxZ(item))
     fun getCenter(item: T, result: MutableVec3f): MutableVec3f =
             result.set(getCenterX(item), getCenterY(item), getCenterZ(item))
-    fun getMax(item: T, result: MutableVec3f): MutableVec3f =
-            result.set(getX(item) + getSzX(item), getY(item) + getSzY(item), getZ(item) + getSzZ(item))
 
     fun setNode(item: T, node: SpatialTree<T>.Node) { }
 }
 
 object Vec3fAdapter : ItemAdapter<Vec3f> {
-    override fun getX(item: Vec3f): Float = item.x
-    override fun getY(item: Vec3f): Float = item.y
-    override fun getZ(item: Vec3f): Float = item.z
+    override fun getMinX(item: Vec3f): Float = item.x
+    override fun getMinY(item: Vec3f): Float = item.y
+    override fun getMinZ(item: Vec3f): Float = item.z
+
+    override fun getMaxX(item: Vec3f): Float = item.x
+    override fun getMaxY(item: Vec3f): Float = item.y
+    override fun getMaxZ(item: Vec3f): Float = item.z
 
     override fun getCenterX(item: Vec3f): Float = item.x
     override fun getCenterY(item: Vec3f): Float = item.y
@@ -70,6 +78,12 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
         val bounds = BoundingBox()
         val isLeaf
             get() = children.isEmpty()
+
+        /**
+         * traversalOrder can be set to arbitrary values (e.g. temporarily computed distance values) during tree
+         * traversal by tree traversers.
+         */
+        var traversalOrder = 0f
 
         /**
          * Item list, depending on implementation the list can be shared between multiple nodes, meaning not all

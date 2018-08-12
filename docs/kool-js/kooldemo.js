@@ -75,7 +75,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_o1x1d9$;
   var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
   var KoolContext$Viewport = $module$kool.de.fabmax.kool.KoolContext.Viewport;
-  var KNearestTraverser_init = $module$kool.de.fabmax.kool.util.KNearestTraverser_init_dlq9u$;
+  var KNearestTraverser = $module$kool.de.fabmax.kool.util.KNearestTraverser;
   var BillboardMesh = $module$kool.de.fabmax.kool.util.BillboardMesh;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
@@ -83,6 +83,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
   var CubicPointDistribution = $module$kool.de.fabmax.kool.math.CubicPointDistribution;
   var pointMesh = $module$kool.de.fabmax.kool.util.pointMesh_h6khem$;
+  var pointOcTree = $module$kool.de.fabmax.kool.util.pointOcTree_ffk80x$;
   var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
   var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
   var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
@@ -96,6 +97,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
   var throwUPAE = Kotlin.throwUPAE;
   var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
+  var HalfEdgeMesh$ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh.ListEdgeHandler;
   var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_mx4ult$;
   var MeshSimplifier = $module$kool.de.fabmax.kool.modules.mesh.simplification.MeshSimplifier;
   var toString_1 = Kotlin.toString;
@@ -108,19 +110,19 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
   var UiContainer = $module$kool.de.fabmax.kool.scene.ui.UiContainer;
-  var SampleNode = $module$kool.de.fabmax.kool.audio.SampleNode;
-  var Wave = $module$kool.de.fabmax.kool.audio.Wave;
-  var Oscillator = $module$kool.de.fabmax.kool.audio.Oscillator;
-  var MoodFilter = $module$kool.de.fabmax.kool.audio.MoodFilter;
+  var SampleNode = $module$kool.de.fabmax.kool.modules.audio.SampleNode;
+  var Wave = $module$kool.de.fabmax.kool.modules.audio.Wave;
+  var Oscillator = $module$kool.de.fabmax.kool.modules.audio.Oscillator;
+  var MoodFilter = $module$kool.de.fabmax.kool.modules.audio.MoodFilter;
   var Button = $module$kool.de.fabmax.kool.scene.ui.Button;
   var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var InterpolatedColor = $module$kool.de.fabmax.kool.util.InterpolatedColor;
   var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var Scene = $module$kool.de.fabmax.kool.scene.Scene;
-  var Shaker = $module$kool.de.fabmax.kool.audio.Shaker;
-  var Kick = $module$kool.de.fabmax.kool.audio.Kick;
-  var Pad = $module$kool.de.fabmax.kool.audio.Pad;
-  var AudioGenerator = $module$kool.de.fabmax.kool.audio.AudioGenerator;
+  var Shaker = $module$kool.de.fabmax.kool.modules.audio.Shaker;
+  var Kick = $module$kool.de.fabmax.kool.modules.audio.Kick;
+  var Pad = $module$kool.de.fabmax.kool.modules.audio.Pad;
+  var AudioGenerator = $module$kool.de.fabmax.kool.modules.audio.AudioGenerator;
   var TextureProps_init_0 = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
   var CullMethod = $module$kool.de.fabmax.kool.scene.CullMethod;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
@@ -1226,7 +1228,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var tmp$ = makePointMesh();
     var pointMesh = tmp$.component1()
     , tree = tmp$.component2();
-    var trav = KNearestTraverser_init(Vec3f.Companion.ZERO, 3000);
+    var trav = (new KNearestTraverser()).setup_w8bw21$(Vec3f.Companion.ZERO, 3000);
     var data = pointMesh.meshData;
     var ptVertCnt = Kotlin.isType(pointMesh, BillboardMesh) ? 4 : 1;
     var frameCnt = {v: 30};
@@ -1265,7 +1267,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     tag = 'PerfTimer';
     level = Log$Level.INFO;
     var t = now();
-    var ret = pointKdTree(points);
+    var ret = pointOcTree(points);
     var $this = util.Log;
     if (level.level >= $this.level.level) {
       $this.printer(level, tag, message + ' ' + toString_0(now() - t, 3) + ' ms');
@@ -1489,29 +1491,31 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.modelWireframe = new LineMesh();
     this.srcModel = null;
     this.dispModel = new Mesh(MeshData_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
+    this.heMesh = null;
     this.simplifcationGrade = 1.0;
     this.autoRun_z6bycc$_0 = this.autoRun_z6bycc$_0;
     this.facesValLbl_1vvnvx$_0 = this.facesValLbl_1vvnvx$_0;
     this.vertsValLbl_bpoadb$_0 = this.vertsValLbl_bpoadb$_0;
     this.timeValLbl_itlx8a$_0 = this.timeValLbl_itlx8a$_0;
     this.dispModel.shader = basicShader(SimplificationDemo_init$lambda);
+    this.srcModel = this.makeCosGrid_0();
+    var $receiver = this.models;
+    var value = this.srcModel;
+    $receiver.put_xwzc9p$('cos', value);
+    this.heMesh = new HalfEdgeMesh(this.srcModel);
     this.loadModel_0('bunny.kmf', 0.05, ctx);
     this.loadModel_0('cow.kmf', 1.0, ctx);
-    var $receiver = new Scene(null);
-    defaultCamTransform($receiver);
-    $receiver.unaryPlus_uv0sim$(this.dispModel);
-    $receiver.unaryPlus_uv0sim$(this.modelWireframe);
-    this.simplificationScene = $receiver;
-    var $receiver_0 = this.scenes;
-    var element = this.simplificationScene;
-    $receiver_0.add_11rb$(element);
+    var $receiver_0 = new Scene(null);
+    defaultCamTransform($receiver_0);
+    $receiver_0.unaryPlus_uv0sim$(this.dispModel);
+    $receiver_0.unaryPlus_uv0sim$(this.modelWireframe);
+    this.simplificationScene = $receiver_0;
     var $receiver_1 = this.scenes;
+    var element = this.simplificationScene;
+    $receiver_1.add_11rb$(element);
+    var $receiver_2 = this.scenes;
     var element_0 = uiScene(ctx.screenDpi, void 0, SimplificationDemo_init$lambda_0(this));
-    $receiver_1.add_11rb$(element_0);
-    this.srcModel = this.makeCosGrid_0();
-    var $receiver_2 = this.models;
-    var value = this.srcModel;
-    $receiver_2.put_xwzc9p$('cos', value);
+    $receiver_2.add_11rb$(element_0);
     this.simplify();
   }
   Object.defineProperty(SimplificationDemo.prototype, 'autoRun', {
@@ -1561,21 +1565,21 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $this.isBatchUpdate = true;
     this.dispModel.meshData.clear();
     this.dispModel.meshData.vertexList.addVertices_r7nl2o$(this.srcModel.vertexList);
-    var heMesh = new HalfEdgeMesh(this.dispModel.meshData);
-    (new MeshSimplifier(terminateOnFaceCountRel(this.simplifcationGrade))).simplifyMesh_mnbsaa$(heMesh);
+    this.heMesh = new HalfEdgeMesh(this.dispModel.meshData, new HalfEdgeMesh$ListEdgeHandler());
+    (new MeshSimplifier(terminateOnFaceCountRel(this.simplifcationGrade))).simplifyMesh_mnbsaa$(this.heMesh);
     var $this_0 = this.modelWireframe.meshData;
     var wasBatchUpdate_0 = $this_0.isBatchUpdate;
     $this_0.isBatchUpdate = true;
     this.modelWireframe.clear();
-    heMesh.generateWireframe_wuugko$(this.modelWireframe, Color.Companion.MD_LIGHT_BLUE);
+    this.heMesh.generateWireframe_wuugko$(this.modelWireframe, Color.Companion.MD_LIGHT_BLUE);
     $this_0.isSyncRequired = true;
     $this_0.isBatchUpdate = wasBatchUpdate_0;
     var time = pt.takeSecs();
     if (time > 0.5) {
       this.autoRun.isEnabled = false;
     }
-    this.facesValLbl.text = heMesh.faceCount.toString();
-    this.vertsValLbl.text = heMesh.vertCount.toString();
+    this.facesValLbl.text = this.heMesh.faceCount.toString();
+    this.vertsValLbl.text = this.heMesh.vertCount.toString();
     this.timeValLbl.text = toString_0(time, 2) + ' s';
     $this.isSyncRequired = true;
     $this.isBatchUpdate = wasBatchUpdate;
@@ -2420,47 +2424,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var tmp$;
     tmp$ = array.length - 1 | 0;
     for (var i = 0; i <= tmp$; i++) {
-      var $receiver = new LineMesh();
-      var tmp$_0, tmp$_1;
-      this.unaryPlus_uv0sim$($receiver);
-      tmp$_0 = this.points;
-      for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
-        var $this = $receiver.meshData;
-        var idx = {v: 0};
-        $this.isSyncRequired = true;
-        var $this_0 = $this.vertexList;
-        var updateBounds = $this.bounds;
-        var tmp$_2, tmp$_0_0, tmp$_1_0;
-        $this_0.checkBufferSizes_za3lpa$();
-        tmp$_2 = $this_0.vertexSizeF;
-        for (var i_1 = 1; i_1 <= tmp$_2; i_1++) {
-          $this_0.dataF.plusAssign_mx4ult$(0.0);
-        }
-        tmp$_0_0 = $this_0.vertexSizeI;
-        for (var i_0_0 = 1; i_0_0 <= tmp$_0_0; i_0_0++) {
-          $this_0.dataI.plusAssign_za3lpa$(0);
-        }
-        $this_0.vertexIt.index = (tmp$_1_0 = $this_0.size, $this_0.size = tmp$_1_0 + 1 | 0, tmp$_1_0);
-        $this_0.vertexIt.position.set_y2kzbl$((i_0 - (this.points / 2 | 0) | 0) / 256.0, 1.0, 0.0);
-        updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
-        idx.v = $this_0.size - 1 | 0;
-        var idx_0 = idx.v;
-        if (i_0 > 1) {
-          $receiver.meshData.addIndices_pmhfmb$(new Int32Array([idx_0 - 1 | 0, idx_0]));
-        }
-      }
-      $receiver.lineWidth = 1.0;
-      $receiver.shader = basicShader(SynthieScene$Waveform$lines$lambda$lambda$lambda);
-      (Kotlin.isType(tmp$_1 = $receiver.shader, BasicShader) ? tmp$_1 : throwCCE()).staticColor.set_czzhhz$(Color.Companion.LIME);
-      $receiver.meshData.usage = 35048;
-      array[i] = $receiver;
+      array[i] = lineMesh(void 0, SynthieScene$Waveform$lines$lambda$lambda(this));
     }
     this.lines = array;
     var array_0 = Array_0(this.lines.length);
-    var tmp$_3;
-    tmp$_3 = array_0.length - 1 | 0;
-    for (var i_2 = 0; i_2 <= tmp$_3; i_2++) {
-      array_0[i_2] = this.lines[i_2].meshData.get_za3lpa$(0);
+    var tmp$_0;
+    tmp$_0 = array_0.length - 1 | 0;
+    for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
+      array_0[i_0] = this.lines[i_0].meshData.get_za3lpa$(0);
     }
     this.vertices = array_0;
     this.sampleBuf = new Float32Array(this.sampleRate);
@@ -2516,6 +2487,44 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.colorModel = ColorModel.STATIC_COLOR;
     $receiver.lightModel = LightModel.NO_LIGHTING;
     return Unit;
+  }
+  function SynthieScene$Waveform$lines$lambda$lambda(this$Waveform) {
+    return function ($receiver) {
+      var tmp$, tmp$_0;
+      this$Waveform.unaryPlus_uv0sim$($receiver);
+      tmp$ = this$Waveform.points;
+      for (var i = 1; i <= tmp$; i++) {
+        var $this = $receiver.meshData;
+        var idx = {v: 0};
+        $this.isSyncRequired = true;
+        var $this_0 = $this.vertexList;
+        var updateBounds = $this.bounds;
+        var tmp$_1, tmp$_0_0, tmp$_1_0;
+        $this_0.checkBufferSizes_za3lpa$();
+        tmp$_1 = $this_0.vertexSizeF;
+        for (var i_0 = 1; i_0 <= tmp$_1; i_0++) {
+          $this_0.dataF.plusAssign_mx4ult$(0.0);
+        }
+        tmp$_0_0 = $this_0.vertexSizeI;
+        for (var i_0_0 = 1; i_0_0 <= tmp$_0_0; i_0_0++) {
+          $this_0.dataI.plusAssign_za3lpa$(0);
+        }
+        $this_0.vertexIt.index = (tmp$_1_0 = $this_0.size, $this_0.size = tmp$_1_0 + 1 | 0, tmp$_1_0);
+        var this$Waveform_0 = this$Waveform;
+        $this_0.vertexIt.position.set_y2kzbl$((i - (this$Waveform_0.points / 2 | 0) | 0) / 256.0, 1.0, 0.0);
+        updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
+        idx.v = $this_0.size - 1 | 0;
+        var idx_0 = idx.v;
+        if (i > 1) {
+          $receiver.meshData.addIndices_pmhfmb$(new Int32Array([idx_0 - 1 | 0, idx_0]));
+        }
+      }
+      $receiver.lineWidth = 1.0;
+      $receiver.shader = basicShader(SynthieScene$Waveform$lines$lambda$lambda$lambda);
+      (Kotlin.isType(tmp$_0 = $receiver.shader, BasicShader) ? tmp$_0 : throwCCE()).staticColor.set_czzhhz$(Color.Companion.LIME);
+      $receiver.meshData.usage = 35048;
+      return Unit;
+    };
   }
   SynthieScene$Waveform.$metadata$ = {
     kind: Kind_CLASS,

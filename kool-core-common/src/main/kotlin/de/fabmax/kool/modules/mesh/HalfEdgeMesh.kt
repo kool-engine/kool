@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.util.*
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -19,10 +20,9 @@ import kotlin.math.sqrt
  *
  * @author fabmax
  */
-class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
+class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdgeHandler(meshData)): Mesh(meshData) {
 
     private val vertices: MutableList<HalfEdgeVertex>
-    val edgeTree: OcTree<HalfEdge>
 
     private val positionOffset = meshData.vertexList.attributeOffsets[Attribute.POSITIONS]!!
 
@@ -33,7 +33,20 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
     val vertCount: Int
         get() = vertices.size
     val faceCount: Int
-        get() = edgeTree.size / 3
+        get() = edgeHandler.numEdges / 3
+
+    interface EdgeHandler : Iterable<HalfEdge> {
+        val numEdges: Int
+
+        operator fun plusAssign(edge: HalfEdge)
+        operator fun minusAssign(edge: HalfEdge)
+
+        fun checkedUpdateEdgeTo(edge: HalfEdge, newTo: HalfEdgeVertex)
+        fun checkedUpdateEdgeFrom(edge: HalfEdge, newFrom: HalfEdgeVertex)
+        fun checkedUpdateVertexPosition(vertex: HalfEdgeVertex, x: Float, y: Float, z: Float)
+
+        fun rebuild()
+    }
 
     init {
         if (meshData.primitiveType != GL_TRIANGLES) {
@@ -41,17 +54,12 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
         }
 
         vertices = MutableList(meshData.numVertices) { HalfEdgeVertex(it) }
-        val edgeList = mutableListOf<HalfEdge>()
-        val bounds = BoundingBox().apply { isBatchUpdate = true }
 
         for (i in 0 until meshData.numIndices step 3) {
             // create triangle vertices
             val v0 = vertices[meshData.vertexList.indices[i]]
             val v1 = vertices[meshData.vertexList.indices[i+1]]
             val v2 = vertices[meshData.vertexList.indices[i+2]]
-
-            // update bounding box
-            bounds.add(v0).add(v1).add(v2)
 
             // create inner half-edges and connect them
             val e0 = HalfEdge(v0, v1)
@@ -64,19 +72,16 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
             e2.opp = v0.getEdgeTo(v2)?.apply { opp = e2 }
 
             // insert newly created edges
-            edgeList += e0
-            edgeList += e1
-            edgeList += e2
+            edgeHandler += e0
+            edgeHandler += e1
+            edgeHandler += e2
         }
-
-        bounds.isBatchUpdate = false
-        edgeTree = OcTree(HalfEdgeAdapter, edgeList, bounds)
     }
 
     fun generateWireframe(lineMesh: LineMesh, lineColor: Color = Color.MD_PINK) {
         val v0 = MutableVec3f()
         val v1 = MutableVec3f()
-        edgeTree.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->
+        edgeHandler.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->
             v0.set(edge.from)
             v1.set(edge.to)
             lineMesh.addLine(v0, lineColor, v1, lineColor)
@@ -98,6 +103,7 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
                 v.index = vi++
             }
         }
+        edgeHandler.rebuild()
 
         // apply new indices to mesh vertex list
         val strideF = meshData.vertexList.vertexSizeF
@@ -178,9 +184,9 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
             edge.next.opp = this
         }
 
-        edgeTree += insertEdR0
-        edgeTree += insertEdR1
-        edgeTree += insertEdR2
+        edgeHandler += insertEdR0
+        edgeHandler += insertEdR1
+        edgeHandler += insertEdR2
 
         // insert new half edges for left (opposing) triangle and adjust linkage
         val edgeOpp = edge.opp
@@ -210,9 +216,9 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
             insertEdR0.opp = edgeOpp
             edgeOpp.opp = insertEdR0
 
-            edgeTree += insertEdL0
-            edgeTree += insertEdL1
-            edgeTree += insertEdL2
+            edgeHandler += insertEdL0
+            edgeHandler += insertEdL1
+            edgeHandler += insertEdL2
         }
     }
 
@@ -289,9 +295,13 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
 
     companion object {
         object HalfEdgeAdapter : ItemAdapter<HalfEdge> {
-            override fun getX(item: HalfEdge): Float = min(item.from.x, item.to.x)
-            override fun getY(item: HalfEdge): Float = min(item.from.y, item.to.y)
-            override fun getZ(item: HalfEdge): Float = min(item.from.z, item.to.z)
+            override fun getMinX(item: HalfEdge): Float = min(item.from.x, item.to.x)
+            override fun getMinY(item: HalfEdge): Float = min(item.from.y, item.to.y)
+            override fun getMinZ(item: HalfEdge): Float = min(item.from.z, item.to.z)
+
+            override fun getMaxX(item: HalfEdge): Float = max(item.from.x, item.to.x)
+            override fun getMaxY(item: HalfEdge): Float = max(item.from.y, item.to.y)
+            override fun getMaxZ(item: HalfEdge): Float = max(item.from.z, item.to.z)
 
             override fun getSzX(item: HalfEdge): Float = abs(item.from.x - item.to.x)
             override fun getSzY(item: HalfEdge): Float = abs(item.from.y - item.to.y)
@@ -324,7 +334,7 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
         override val z: Float
             get() = meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 2]
 
-        private fun setPosition(x: Float, y: Float, z: Float) {
+        internal fun setPosition(x: Float, y: Float, z: Float) {
             meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset] = x
             meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 1] = y
             meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 2] = z
@@ -349,43 +359,7 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
 
         fun updatePosition(newPos: Vec3f) = updatePosition(newPos.x, newPos.y, newPos.z)
 
-        fun updatePosition(x: Float, y: Float, z: Float) {
-            for (i in edges.indices) {
-                // check from this vertex
-                var ed = edges[i]
-                var newX = (x + ed.to.x) * 0.5f
-                var newY = (y + ed.to.y) * 0.5f
-                var newZ = (z + ed.to.z) * 0.5f
-                if (ed.treeNode?.isInNode(newX, newY, newZ) != true) {
-                    // full tree update required
-                    edgeTree.remove(ed)
-                    ed.treeNode = null
-                }
-
-                // check edge to this vertex
-                ed = edges[i].next.next
-                newX = (x + ed.from.x) * 0.5f
-                newY = (y + ed.from.y) * 0.5f
-                newZ = (z + ed.from.z) * 0.5f
-                if (ed.treeNode?.isInNode(newX, newY, newZ) != true) {
-                    // full tree update required
-                    edgeTree.remove(ed)
-                    ed.treeNode = null
-                }
-            }
-
-            setPosition(x, y, z)
-
-            for (i in edges.indices) {
-                val ed = edges[i]
-                if (ed.treeNode == null) {
-                    edgeTree.add(ed)
-                }
-                if (ed.next.next.treeNode == null) {
-                    edgeTree.add(ed.next.next)
-                }
-            }
-        }
+        fun updatePosition(x: Float, y: Float, z: Float) = edgeHandler.checkedUpdateVertexPosition(this, x, y, z)
     }
 
     inner class HalfEdge(from: HalfEdgeVertex, to: HalfEdgeVertex) {
@@ -394,7 +368,7 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
         var to = to
             internal set
         var isDeleted = false
-            private set
+            internal set
         var treeNode: OcTree<HalfEdge>.OcNode? = null
             internal set
 
@@ -452,7 +426,7 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
             isDeleted = true
             from.edges -= this
             opp?.apply { opp = null }
-            edgeTree.remove(this)
+            edgeHandler -= this
             treeNode = null
         }
 
@@ -462,40 +436,169 @@ class HalfEdgeMesh(meshData: MeshData): Mesh(meshData) {
             next.next.deleteEdge()
         }
 
-        fun updateFrom(newFrom: HalfEdgeVertex) {
-            val newX = (newFrom.x + to.x) * 0.5f
-            val newY = (newFrom.y + to.y) * 0.5f
-            val newZ = (newFrom.z + to.z) * 0.5f
+        fun updateFrom(newFrom: HalfEdgeVertex) = edgeHandler.checkedUpdateEdgeFrom(this, newFrom)
 
-            if (treeNode?.isInNode(newX, newY, newZ) == true) {
-                // edge stays in same tree node, no full update required
-                from = newFrom
-            } else {
-                // updated position is in different tree node, full update required
-                edgeTree.remove(this)
-                from = newFrom
-                edgeTree.add(this)
-            }
-        }
-
-        fun updateTo(newTo: HalfEdgeVertex) {
-            val newX = (from.x + newTo.x) * 0.5f
-            val newY = (from.y + newTo.y) * 0.5f
-            val newZ = (from.z + newTo.z) * 0.5f
-
-            if (treeNode?.isInNode(newX, newY, newZ) == true) {
-                // edge stays in same tree node, no full update required
-                to = newTo
-            } else {
-                // updated position is in different tree node, full update required
-                edgeTree.remove(this)
-                to = newTo
-                edgeTree.add(this)
-            }
-        }
+        fun updateTo(newTo: HalfEdgeVertex) = edgeHandler.checkedUpdateEdgeTo(this, newTo)
 
         override fun toString(): String {
             return "$from -> $to"
         }
+    }
+
+    class OcTreeEdgeHandler(treeBounds: BoundingBox) : EdgeHandler {
+        val edgeTree = OcTree(HalfEdgeAdapter, bounds = treeBounds)
+        override val numEdges: Int
+            get() = edgeTree.size
+
+        constructor(meshData: MeshData): this(BoundingBox().apply {
+            batchUpdate {
+                val v = meshData.vertexList.vertexIt
+                for (i in 0 until meshData.numVertices) {
+                    v.index = i
+                    add(v.position)
+                }
+            }
+        })
+
+        override fun plusAssign(edge: HalfEdge) = edgeTree.plusAssign(edge)
+
+        override fun minusAssign(edge: HalfEdge) = edgeTree.minusAssign(edge)
+
+        override fun checkedUpdateEdgeTo(edge: HalfEdge, newTo: HalfEdgeVertex) {
+            edge.apply {
+                val newX = (from.x + newTo.x) * 0.5f
+                val newY = (from.y + newTo.y) * 0.5f
+                val newZ = (from.z + newTo.z) * 0.5f
+
+                if (treeNode?.isInNode(newX, newY, newZ) == true) {
+                    // edge stays in same tree node, no full update required
+                    to = newTo
+                } else {
+                    // updated position is in different tree node, full update required
+                    edgeTree -= this
+                    to = newTo
+                    edgeTree += this
+                }
+            }
+        }
+
+        override fun checkedUpdateEdgeFrom(edge: HalfEdge, newFrom: HalfEdgeVertex) {
+            edge.apply {
+                val newX = (newFrom.x + to.x) * 0.5f
+                val newY = (newFrom.y + to.y) * 0.5f
+                val newZ = (newFrom.z + to.z) * 0.5f
+
+                if (treeNode?.isInNode(newX, newY, newZ) == true) {
+                    // edge stays in same tree node, no full update required
+                    from = newFrom
+                } else {
+                    // updated position is in different tree node, full update required
+                    edgeTree -= this
+                    from = newFrom
+                    edgeTree += this
+                }
+            }
+        }
+
+        override fun checkedUpdateVertexPosition(vertex: HalfEdgeVertex, x: Float, y: Float, z: Float) {
+            vertex.apply {
+                for (i in edges.indices) {
+                    // check from this vertex
+                    var ed = edges[i]
+                    var newX = (x + ed.to.x) * 0.5f
+                    var newY = (y + ed.to.y) * 0.5f
+                    var newZ = (z + ed.to.z) * 0.5f
+                    if (ed.treeNode?.isInNode(newX, newY, newZ) != true) {
+                        // full tree update required
+                        this@OcTreeEdgeHandler -= ed
+                        ed.treeNode = null
+                    }
+
+                    // check edge to this vertex
+                    ed = edges[i].next.next
+                    newX = (x + ed.from.x) * 0.5f
+                    newY = (y + ed.from.y) * 0.5f
+                    newZ = (z + ed.from.z) * 0.5f
+                    if (ed.treeNode?.isInNode(newX, newY, newZ) != true) {
+                        // full tree update required
+                        this@OcTreeEdgeHandler -= ed
+                        ed.treeNode = null
+                    }
+                }
+
+                setPosition(x, y, z)
+
+                for (i in edges.indices) {
+                    val ed = edges[i]
+                    if (ed.treeNode == null) {
+                        this@OcTreeEdgeHandler += ed
+                    }
+                    if (ed.next.next.treeNode == null) {
+                        this@OcTreeEdgeHandler += ed.next.next
+                    }
+                }
+            }
+        }
+
+        override fun rebuild() { }
+
+        override fun iterator(): Iterator<HalfEdge> = edgeTree.iterator()
+    }
+
+    class ListEdgeHandler : EdgeHandler {
+        val edgeList = mutableListOf<HalfEdge>()
+
+        override var numEdges = 0
+            private set
+
+        override fun plusAssign(edge: HalfEdge) {
+            if (edge.isDeleted) {
+                logW { "edge was deleted before" }
+                edge.isDeleted = false
+                rebuild()
+            }
+            edgeList += edge
+            numEdges++
+        }
+
+        override fun minusAssign(edge: HalfEdge) {
+            edge.isDeleted = true
+            numEdges--
+        }
+
+        override fun checkedUpdateEdgeTo(edge: HalfEdge, newTo: HalfEdgeVertex) {
+            edge.to = newTo
+        }
+
+        override fun checkedUpdateEdgeFrom(edge: HalfEdge, newFrom: HalfEdgeVertex) {
+            edge.from = newFrom
+        }
+
+        override fun checkedUpdateVertexPosition(vertex: HalfEdgeVertex, x: Float, y: Float, z: Float) {
+            vertex.setPosition(x, y, z)
+        }
+
+        override fun rebuild() {
+            edgeList.removeAll { it.isDeleted }
+        }
+
+        override fun iterator(): Iterator<HalfEdge> = object : Iterator<HalfEdge> {
+            var i = 0
+
+            override fun hasNext(): Boolean {
+                while (i < edgeList.size && edgeList[i].isDeleted) {
+                    i++
+                }
+                return i < edgeList.size
+            }
+
+            override fun next(): HalfEdge {
+                if (!hasNext()) {
+                    throw NoSuchElementException()
+                }
+                return edgeList[i++]
+            }
+        }
+
     }
 }

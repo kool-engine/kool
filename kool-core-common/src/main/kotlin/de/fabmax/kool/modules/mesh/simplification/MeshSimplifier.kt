@@ -2,13 +2,29 @@ package de.fabmax.kool.modules.mesh.simplification
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.PriorityQueue
 import de.fabmax.kool.util.logD
 import kotlin.math.max
 
-class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: CollapseStrategy = defaultCollapseStrategy()) {
+fun Mesh.simplify(termCrit: TermCriterion) {
+    meshData.simplify(termCrit)
+}
+
+fun MeshData.simplify(termCrit: TermCriterion) {
+    val heMesh = HalfEdgeMesh(this, HalfEdgeMesh.ListEdgeHandler())
+    heMesh.simplify(termCrit)
+}
+
+fun HalfEdgeMesh.simplify(termCrit: TermCriterion) {
+    val simplifier = MeshSimplifier(termCrit)
+    simplifier.simplifyMesh(this)
+}
+
+class MeshSimplifier(val termCrit: TermCriterion, val quality: Float = 3f, val collapseStrategy: CollapseStrategy = defaultCollapseStrategy()) {
 
     private class CollapseCandidate(var error: Float, val edge: HalfEdgeMesh.HalfEdge)
 
@@ -24,11 +40,11 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
         rebuildCollapseQueue(mesh)
         termCrit.init(mesh)
 
-        var rebuildQueue = mesh.faceCount / 10
+        var rebuildQueue = (mesh.faceCount / quality).toInt()
         var lastError = 0.0f
         while (candidates.isNotEmpty() && candidates.peek().error < Float.MAX_VALUE) {
             if (--rebuildQueue <= 0) {
-                rebuildQueue = max(20, mesh.faceCount / 5)
+                rebuildQueue = max(10, (mesh.faceCount / quality).toInt())
                 rebuildCollapseQueue(mesh)
             }
 
@@ -60,6 +76,7 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
                 }
             } else {
                 // no more collapse candidates
+                logD { "No more collapsable edges" }
                 break
             }
         }
@@ -73,7 +90,7 @@ class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Collapse
 
     fun rebuildCollapseQueue(mesh: HalfEdgeMesh) {
         candidates.clear()
-        for (edge in mesh.edgeTree) {
+        for (edge in mesh.edgeHandler) {
             // only add one half edge per edge
             if (edge.from.index < edge.to.index || edge.opp == null) {
                 val q1 = quadrics.getOrPut(edge.from.index) { ErrorQuadric(edge.from) }

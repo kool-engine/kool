@@ -29,6 +29,7 @@ class SimplificationDemo(ctx: KoolContext) {
     val modelWireframe = LineMesh()
     var srcModel: MeshData
     val dispModel = Mesh(MeshData(Attribute.POSITIONS, Attribute.NORMALS))
+    var heMesh: HalfEdgeMesh
 
     var simplifcationGrade = 1f
     lateinit var autoRun: ToggleButton
@@ -43,8 +44,13 @@ class SimplificationDemo(ctx: KoolContext) {
             staticColor = Color.MD_ORANGE
         }
 
+        srcModel = makeCosGrid()
+        models["cos"] = srcModel
+        heMesh = HalfEdgeMesh(srcModel)
+
         loadModel("bunny.kmf", 0.05f, ctx)
         loadModel("cow.kmf", 1f, ctx)
+
 
         simplificationScene = scene {
             defaultCamTransform()
@@ -214,8 +220,6 @@ class SimplificationDemo(ctx: KoolContext) {
             }
         }
 
-        srcModel = makeCosGrid()
-        models["cos"] = srcModel
         simplify()
     }
 
@@ -225,7 +229,7 @@ class SimplificationDemo(ctx: KoolContext) {
             dispModel.meshData.clear()
             dispModel.meshData.vertexList.addVertices(srcModel.vertexList)
 
-            val heMesh = HalfEdgeMesh(dispModel.meshData)
+            heMesh = HalfEdgeMesh(dispModel.meshData, HalfEdgeMesh.ListEdgeHandler())
             MeshSimplifier(terminateOnFaceCountRel(simplifcationGrade)).simplifyMesh(heMesh)
 
             modelWireframe.meshData.batchUpdate {

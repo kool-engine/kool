@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import kotlin.math.sqrt
 
@@ -9,28 +10,56 @@ interface SpatialTreeTraverser<T: Any> {
     fun onStart(tree: SpatialTree<T>) { }
     fun onFinish(tree: SpatialTree<T>) { }
 
-    fun traversalOrder(tree: SpatialTree<T>, candidates: MutableList<SpatialTree<T>.Node>) { }
+    fun traversalOrder(tree: SpatialTree<T>, candidates: MutableList<SpatialTree<T>.Node>)
 
     fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node)
 }
 
-open class InRadiusTraverser<T: Any>() : SpatialTreeTraverser<T> {
-    val result: MutableList<T> = mutableListOf()
-    val center = MutableVec3f()
-    var radius = 1f
-        set(value) {
-            field = value
-            radiusSqr = value * value
-        }
-    private var radiusSqr = 1f
+interface PointDistance<T: Any> {
+    fun nodeDistanceToPoint(node: SpatialTree<T>.Node, point: Vec3f): Float = node.bounds.pointDistanceSqr(point)
 
-    constructor(center: Vec3f, radius: Float) : this() {
-        setup(center, radius)
+    fun itemDistanceToPoint(tree: SpatialTree<T>, item: T, point: Vec3f): Float {
+        val dx = tree.itemAdapter.getCenterX(item) - point.x
+        val dy = tree.itemAdapter.getCenterY(item) - point.y
+        val dz = tree.itemAdapter.getCenterZ(item) - point.z
+        return dx*dx + dy*dy + dz*dz
+    }
+}
+
+interface RayDistance<T: Any> {
+    fun nodeDistanceToRay(node: SpatialTree<T>.Node, ray: Ray): Float {
+        val halfExtX = node.bounds.size.x * 0.5f
+        val halfExtY = node.bounds.size.y * 0.5f
+        val halfExtZ = node.bounds.size.z * 0.5f
+        val dist = ray.distanceToPoint(node.bounds.center) - sqrt(halfExtX*halfExtX + halfExtY*halfExtY + halfExtZ*halfExtZ)
+        return dist * dist
     }
 
-    fun setup(center: Vec3f, radius: Float): InRadiusTraverser<T> {
+    fun itemDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
+        return ray.sqrDistanceToPoint(tree.itemAdapter.getCenterX(item), tree.itemAdapter.getCenterY(item), tree.itemAdapter.getCenterZ(item))
+    }
+}
+
+abstract class CenterPointTraverser<T: Any> : SpatialTreeTraverser<T> {
+    val center = MutableVec3f()
+
+    var pointDistance = object : PointDistance<T> { }
+
+    protected fun setup(center: Vec3f) {
         this.center.set(center)
+    }
+}
+
+open class InRadiusTraverser<T: Any> : CenterPointTraverser<T>() {
+    val result: MutableList<T> = mutableListOf()
+    var radius = 1f
+        protected set
+    private var radiusSqr = 1f
+
+    open fun setup(center: Vec3f, radius: Float): InRadiusTraverser<T> {
+        super.setup(center)
         this.radius = radius
+        this.radiusSqr = radius * radius
         return this
     }
 
@@ -39,46 +68,37 @@ open class InRadiusTraverser<T: Any>() : SpatialTreeTraverser<T> {
     }
 
     override fun traversalOrder(tree: SpatialTree<T>, candidates: MutableList<SpatialTree<T>.Node>) {
-        candidates.removeCandidatesOutOfSqrDist(center, radiusSqr)
+        candidates.computeTraversalOrder { pointDistance.nodeDistanceToPoint(it, center) }
+        candidates.removeCandidatesOutOfDist(radiusSqr)
     }
 
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            val dSqr = sqrDistance(tree, it)
+            val dSqr = pointDistance.itemDistanceToPoint(tree, it, center)
             if (dSqr < radiusSqr) {
                 result.add(it)
             }
         }
     }
-
-    protected open fun sqrDistance(tree: SpatialTree<T>, item: T): Float {
-        val dx = tree.itemAdapter.getCenterX(item) - center.x
-        val dy = tree.itemAdapter.getCenterY(item) - center.y
-        val dz = tree.itemAdapter.getCenterZ(item) - center.z
-        return dx*dx + dy*dy + dz*dz
-    }
 }
 
-open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
-    val center = MutableVec3f()
+open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
     var k = 10
+        protected set
     var radiusSqr = 1e18f
+        protected set
 
     val result = mutableListOf<T>()
     var maxDistance = 0f
-
-    private val itemRecycler = ObjectPool { Item<T>() }
+        protected set
 
     // store items in a priority queue, farthest distance first
     private val items = PriorityQueue<Item<T>>(Comparator { a, b -> b.dSqr.compareTo(a.dSqr) })
+    private val itemRecycler = ObjectPool { Item<T>() }
 
-    constructor(center: Vec3f, k: Int, maxRadius: Float = MAX_RADIUS) : this() {
-        setup(center, k, maxRadius)
-    }
-
-    fun setup(center: Vec3f, k: Int, maxRadius: Float = MAX_RADIUS): KNearestTraverser<T> {
-        this.center.set(center)
+    open fun setup(center: Vec3f, k: Int, maxRadius: Float = MAX_RADIUS): KNearestTraverser<T> {
+        super.setup(center)
         this.k = k
         this.radiusSqr = maxRadius * maxRadius
         return this
@@ -105,38 +125,19 @@ open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
             // result already contains k items, only traverse nodes nearer than farthest item
             items.peek().dSqr
         }
-        candidates.removeCandidatesOutOfSqrDist(center, remThresh)
-
-        if (candidates.size > 1) {
-            // sort candidates by distance (traverse nearest first)
-            if (candidates.size == 2) {
-                // optimization in case there are only two candidates (always true for kd-trees)
-                if (candidates[1].bounds.pointDistanceSqr(center) < candidates[0].bounds.pointDistanceSqr(center)) {
-                    // swap candidates
-                    candidates[1] = candidates[0].also { candidates[0] = candidates[1] }
-                }
-            } else {
-                // more than two candidate nodes, sort them by distance
-                candidates.sortBy { it.bounds.pointDistanceSqr(center) }
-            }
-        }
+        candidates.computeTraversalOrder { pointDistance.nodeDistanceToPoint(it, center) }
+        candidates.removeCandidatesOutOfDist(remThresh)
+        candidates.sortByTraversalOrder()
     }
 
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            val dSqr = sqrDistance(tree, it)
+            val dSqr = pointDistance.itemDistanceToPoint(tree, it, center)
             if (dSqr < radiusSqr && (items.size < k || dSqr < items.peek().dSqr)) {
                 insert(it, dSqr)
             }
         }
-    }
-
-    protected open fun sqrDistance(tree: SpatialTree<T>, item: T): Float {
-        val dx = tree.itemAdapter.getCenterX(item) - center.x
-        val dy = tree.itemAdapter.getCenterY(item) - center.y
-        val dz = tree.itemAdapter.getCenterZ(item) - center.z
-        return dx*dx + dy*dy + dz*dz
     }
 
     private fun insert(value: T, dSqr: Float) {
@@ -162,12 +163,74 @@ open class KNearestTraverser<T: Any>() : SpatialTreeTraverser<T> {
     }
 }
 
-fun <T: Any> MutableList<SpatialTree<T>.Node>.removeCandidatesOutOfSqrDist(center: Vec3f, sqrDist: Float) {
+open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T> {
+    val ray = Ray()
+    var nearest: T? = null
+        protected set
+    var distance = 0f
+        protected set
+
+    var rayDistance = object : RayDistance<T> { }
+
+    private var sqrDist = Float.MAX_VALUE
+
+    open fun setup(ray: Ray): NearestToRayTraverser<T> {
+        this.ray.set(ray)
+        nearest = null
+        return this
+    }
+
+    override fun onFinish(tree: SpatialTree<T>) {
+        distance = if (nearest != null) sqrt(sqrDist) else Float.MAX_VALUE
+    }
+
+    override fun traversalOrder(tree: SpatialTree<T>, candidates: MutableList<SpatialTree<T>.Node>) {
+        candidates.computeTraversalOrder { rayDistance.nodeDistanceToRay(it, ray) }
+        candidates.removeCandidatesOutOfDist(sqrDist)
+        candidates.sortByTraversalOrder()
+    }
+
+    override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
+        for (i in leaf.nodeRange) {
+            val it = leaf.items[i]
+            val dSqr = rayDistance.itemDistanceToRay(tree, it, ray)
+            if (dSqr < sqrDist) {
+                nearest = it
+                sqrDist = dSqr
+            }
+        }
+    }
+}
+
+inline fun <T: Any> MutableList<SpatialTree<T>.Node>.computeTraversalOrder(distFun: (SpatialTree<T>.Node) -> Float) {
+    for (i in indices) {
+        val nd = get(i)
+        nd.traversalOrder = distFun(nd)
+    }
+}
+
+fun <T: Any> MutableList<SpatialTree<T>.Node>.removeCandidatesOutOfDist(dist: Float) {
     // avoid object allocation by not using an iterator...
     for (i in size-1 downTo 0) {
         // remove all candidate nodes with bounds out of search radius
-        if (get(i).bounds.pointDistanceSqr(center) > sqrDist) {
+        if (get(i).traversalOrder > dist) {
             removeAt(i)
+        }
+    }
+}
+
+fun <T: Any> MutableList<SpatialTree<T>.Node>.sortByTraversalOrder() {
+    if (size > 1) {
+        // sort candidates by distance (traverse nearest first)
+        if (size == 2) {
+            // optimization in case there are only two candidates (always true for kd-trees)
+            if (get(1).traversalOrder < get(0).traversalOrder) {
+                // swap candidates
+                this[1] = this[0].also { this[0] = this[1] }
+            }
+        } else {
+            // more than two candidate nodes, sort them by distance
+            sortBy { it.traversalOrder }
         }
     }
 }
