@@ -181,6 +181,24 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         }
     }
 
+    fun clear() {
+        size = 0
+
+        dataF.position = 0
+        dataF.limit = dataF.capacity
+
+        dataI.position = 0
+        dataI.limit = dataI.capacity
+
+        indices.position = 0
+        indices.limit = indices.capacity
+    }
+
+    fun clearIndices() {
+        indices.position = 0
+        indices.limit = indices.capacity
+    }
+
     fun shrinkIndices(newSize: Int) {
         if (newSize > indices.position) {
             throw KoolException("new size must be less (or equal) than old size")
@@ -202,19 +220,6 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
         dataI.position = newSize * vertexSizeI
         dataI.limit = dataI.capacity
-    }
-
-    fun clear() {
-        size = 0
-
-        dataF.position = 0
-        dataF.limit = dataF.capacity
-
-        dataI.position = 0
-        dataI.limit = dataI.capacity
-
-        indices.position = 0
-        indices.limit = indices.capacity
     }
 
     operator fun get(i: Int): Vertex {

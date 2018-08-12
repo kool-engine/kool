@@ -22,7 +22,7 @@ class Ray {
     }
 
     fun nearestPointOnRay(point: Vec3f, result: MutableVec3f): MutableVec3f {
-        val d = (point.dot(direction) - origin.dot(direction)) / direction.dot(direction)
+        val d = (point * direction - origin * direction) / (direction * direction)
         if (d > 0) {
             result.set(direction).scale(d).add(origin)
         } else {
@@ -40,7 +40,7 @@ class Ray {
         val ny: Float
         val nz: Float
         val dot = x * direction.x + y * direction.y + z * direction.z
-        val d = (dot - origin.dot(direction)) / direction.dot(direction)
+        val d = (dot - origin * direction) / (direction * direction)
         if (d > 0) {
             nx = direction.x * d + origin.x - x
             ny = direction.y * d + origin.y - y

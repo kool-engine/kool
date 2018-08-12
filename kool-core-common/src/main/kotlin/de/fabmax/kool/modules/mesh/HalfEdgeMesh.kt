@@ -125,25 +125,24 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
         }
 
         // rebuild triangle index list
-        var writeIdx = 0
+        meshData.vertexList.clearIndices()
         for (i in vertices.indices) {
             val v = vertices[i]
             for (j in v.edges.indices) {
                 val e = v.edges[j]
                 val ei = e.from.index
                 if (ei < e.next.from.index && ei < e.next.next.from.index) {
-                    meshData.vertexList.indices[writeIdx++] = e.from.index
-                    meshData.vertexList.indices[writeIdx++] = e.next.from.index
-                    meshData.vertexList.indices[writeIdx++] = e.next.next.from.index
+                    meshData.vertexList.addIndex(e.from.index)
+                    meshData.vertexList.addIndex(e.next.from.index)
+                    meshData.vertexList.addIndex(e.next.next.from.index)
                 }
             }
         }
 
-        if (writeIdx/3 != faceCount) {
-            logE { "Mesh tris != OcTree tris! in mesh: ${writeIdx/3}, in tree: $faceCount" }
+        if (meshData.numIndices / 3 != faceCount) {
+            logE { "Mesh tris != OcTree tris! in mesh: ${meshData.numIndices / 3}, in tree: $faceCount" }
         }
 
-        meshData.vertexList.shrinkIndices(writeIdx)
         meshData.vertexList.dataF = newDataF
         meshData.vertexList.dataI = newDataI
         meshData.vertexList.size = vertices.size

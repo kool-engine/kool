@@ -15,13 +15,11 @@ fun Mesh.simplify(termCrit: TermCriterion) {
 }
 
 fun MeshData.simplify(termCrit: TermCriterion) {
-    val heMesh = HalfEdgeMesh(this, HalfEdgeMesh.ListEdgeHandler())
-    heMesh.simplify(termCrit)
+    HalfEdgeMesh(this, HalfEdgeMesh.ListEdgeHandler()).simplify(termCrit)
 }
 
 fun HalfEdgeMesh.simplify(termCrit: TermCriterion) {
-    val simplifier = MeshSimplifier(termCrit)
-    simplifier.simplifyMesh(this)
+    MeshSimplifier(termCrit).simplifyMesh(this)
 }
 
 class MeshSimplifier(val termCrit: TermCriterion, val quality: Float = 3f, val collapseStrategy: CollapseStrategy = defaultCollapseStrategy()) {

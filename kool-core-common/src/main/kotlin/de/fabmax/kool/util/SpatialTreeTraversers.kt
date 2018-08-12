@@ -3,6 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.clamp
 import kotlin.math.sqrt
 
 
@@ -31,7 +32,8 @@ interface RayDistance<T: Any> {
         val halfExtX = node.bounds.size.x * 0.5f
         val halfExtY = node.bounds.size.y * 0.5f
         val halfExtZ = node.bounds.size.z * 0.5f
-        val dist = ray.distanceToPoint(node.bounds.center) - sqrt(halfExtX*halfExtX + halfExtY*halfExtY + halfExtZ*halfExtZ)
+        val r = sqrt(halfExtX*halfExtX + halfExtY*halfExtY + halfExtZ*halfExtZ)
+        val dist = (ray.distanceToPoint(node.bounds.center) - r).clamp(0f, Float.MAX_VALUE)
         return dist * dist
     }
 
@@ -177,6 +179,7 @@ open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T> {
     open fun setup(ray: Ray): NearestToRayTraverser<T> {
         this.ray.set(ray)
         nearest = null
+        sqrDist = Float.MAX_VALUE
         return this
     }
 
