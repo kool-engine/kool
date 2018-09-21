@@ -3070,7 +3070,9 @@
     return ensureNotNull(getValue(this.map, tag));
   };
   Mapper$InNullableMapper.prototype.readTaggedNotNullMark_11rb$ = function (tag) {
-    return getValue(this.map, tag) != null;
+    var $receiver = this.map;
+    var tmp$;
+    return !(Kotlin.isType(tmp$ = $receiver, Map) ? tmp$ : throwCCE()).containsKey_11rb$(tag) || getValue(this.map, tag) != null;
   };
   Mapper$InNullableMapper.$metadata$ = {
     kind: Kind_CLASS,

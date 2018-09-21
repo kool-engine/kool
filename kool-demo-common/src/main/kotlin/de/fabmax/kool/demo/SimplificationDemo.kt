@@ -1,8 +1,12 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Ray
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.isFuzzyZero
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
-import de.fabmax.kool.modules.mesh.simplification.MeshSimplifier
+import de.fabmax.kool.modules.mesh.simplification.simplify
 import de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -14,6 +18,7 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.serialization.loadMesh
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.sqrt
 
 fun simplificationDemo(ctx: KoolContext): List<Scene> {
@@ -27,6 +32,9 @@ class SimplificationDemo(ctx: KoolContext) {
     val loadingModels = mutableSetOf<String>()
 
     val modelWireframe = LineMesh()
+    val highlightedEdge = LineMesh().apply { isXray = true; lineWidth = 3f }
+    val highlightedPt = PointMesh().apply { isXray = true; pointSize = 6f }
+
     var srcModel: MeshData
     val dispModel = Mesh(MeshData(Attribute.POSITIONS, Attribute.NORMALS))
     var heMesh: HalfEdgeMesh
@@ -36,6 +44,12 @@ class SimplificationDemo(ctx: KoolContext) {
     lateinit var facesValLbl: Label
     lateinit var vertsValLbl: Label
     lateinit var timeValLbl: Label
+
+    private val pickRay = Ray()
+    private val edgeDistance = EdgeRayDistance()
+    private val nearestEdgeTraverser = NearestToRayTraverser<HalfEdgeMesh.HalfEdge>().apply {
+        rayDistance = edgeDistance
+    }
 
     init {
         dispModel.shader = basicShader {
@@ -57,6 +71,41 @@ class SimplificationDemo(ctx: KoolContext) {
 
             +dispModel
             +modelWireframe
+            +highlightedEdge
+            +highlightedPt
+
+            onPreRender += { ctx ->
+                if (ctx.inputMgr.primaryPointer.isValid) {
+                    val ptr = ctx.inputMgr.primaryPointer
+                    camera.computePickRay(pickRay, ptr, ctx)
+
+                    val ocTree = (heMesh.edgeHandler as HalfEdgeMesh.OcTreeEdgeHandler).edgeTree
+                    ocTree.traverse(nearestEdgeTraverser.setup(pickRay))
+                    val edge = nearestEdgeTraverser.nearest
+
+                    highlightedEdge.clear()
+                    highlightedPt.clear()
+                    if (edge != null) {
+                        highlightedEdge.addLine(edge.from, Color.MD_PINK, edge.to, Color.MD_PINK)
+                        val edgePt = edgeDistance.nearestPointOnEdge(edge, pickRay)
+                        highlightedPt.addPoint {
+                            position.set(edgePt)
+                            color.set(Color.MD_GREEN)
+                        }
+
+                        if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
+                            // left mouse button clicked
+                            val fraction = edge.from.distance(edgePt) / edge.from.distance(edge.to)
+                            heMesh.splitEdge(edge, fraction)
+                            heMesh.rebuild()
+                            modelWireframe.meshData.batchUpdate {
+                                modelWireframe.clear()
+                                heMesh.generateWireframe(modelWireframe, Color.MD_LIGHT_BLUE)
+                            }
+                        }
+                    }
+                }
+            }
         }
         scenes += simplificationScene
 
@@ -229,8 +278,9 @@ class SimplificationDemo(ctx: KoolContext) {
             dispModel.meshData.clear()
             dispModel.meshData.vertexList.addVertices(srcModel.vertexList)
 
-            heMesh = HalfEdgeMesh(dispModel.meshData, HalfEdgeMesh.ListEdgeHandler())
-            MeshSimplifier(terminateOnFaceCountRel(simplifcationGrade)).simplifyMesh(heMesh)
+            //heMesh = HalfEdgeMesh(dispModel.meshData, HalfEdgeMesh.ListEdgeHandler())
+            heMesh = HalfEdgeMesh(dispModel.meshData)
+            heMesh.simplify(terminateOnFaceCountRel(simplifcationGrade))
 
             modelWireframe.meshData.batchUpdate {
                 modelWireframe.clear()
@@ -293,6 +343,45 @@ class SimplificationDemo(ctx: KoolContext) {
             // enable mouse interaction on content scene when pointer leaves menu (and nothing else in this scene
             // is hit instead)
             simplificationScene.isPickingEnabled = true
+        }
+    }
+
+    class EdgeRayDistance : RayDistance<HalfEdgeMesh.HalfEdge> {
+        private val tmpVec1 = MutableVec3f()
+        private val tmpVec2 = MutableVec3f()
+        private val tmpVec3 = MutableVec3f()
+
+        override fun itemDistanceToRay(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, ray: Ray): Float {
+            val pt = nearestPointOnEdge(item, ray)
+            return ray.sqrDistanceToPoint(pt)
+        }
+
+        fun nearestPointOnEdge(edge: HalfEdgeMesh.HalfEdge, ray: Ray): Vec3f {
+            edge.to.subtract(edge.from, tmpVec1).norm()
+            tmpVec2.set(ray.direction)
+
+            val dot = tmpVec1 * tmpVec2
+            val n = 1f - dot * dot
+            if (n.isFuzzyZero()) {
+                // edge and ray are parallel
+                return if (edge.from.sqrDistance(ray.origin) < edge.to.sqrDistance(ray.origin)) {
+                    edge.from
+                } else {
+                    edge.to
+                }
+            }
+
+            ray.origin.subtract(edge.from, tmpVec3)
+            val a = tmpVec3 * tmpVec1
+            val b = tmpVec3 * tmpVec2
+            val l = (a - b * dot) / n
+
+            return if (l > 0) {
+                val d = edge.from.distance(edge.to)
+                tmpVec1.scale(min(l, d)).add(edge.from)
+            } else {
+                edge.from
+            }
         }
     }
 }

@@ -97,16 +97,21 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
   var throwUPAE = Kotlin.throwUPAE;
   var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
-  var HalfEdgeMesh$ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh.ListEdgeHandler;
   var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_mx4ult$;
-  var MeshSimplifier = $module$kool.de.fabmax.kool.modules.mesh.simplification.MeshSimplifier;
+  var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_hd2sc$;
   var toString_1 = Kotlin.toString;
   var Attribute = $module$kool.de.fabmax.kool.shading.Attribute;
   var MeshData_init = $module$kool.de.fabmax.kool.scene.MeshData_init_j0mu7e$;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
+  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
+  var RayDistance = $module$kool.de.fabmax.kool.util.RayDistance;
   var LineMesh = $module$kool.de.fabmax.kool.util.LineMesh;
+  var PointMesh = $module$kool.de.fabmax.kool.util.PointMesh;
   var Mesh = $module$kool.de.fabmax.kool.scene.Mesh;
+  var Ray = $module$kool.de.fabmax.kool.math.Ray;
+  var NearestToRayTraverser = $module$kool.de.fabmax.kool.util.NearestToRayTraverser;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
+  var HalfEdgeMesh$OcTreeEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh.OcTreeEdgeHandler;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
   var UiContainer = $module$kool.de.fabmax.kool.scene.ui.UiContainer;
@@ -125,7 +130,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var AudioGenerator = $module$kool.de.fabmax.kool.modules.audio.AudioGenerator;
   var TextureProps_init_0 = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
   var CullMethod = $module$kool.de.fabmax.kool.scene.CullMethod;
-  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var math = Kotlin.kotlin.math;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
@@ -138,7 +142,20 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var ToggleButton = $module$kool.de.fabmax.kool.scene.ui.ToggleButton;
   var TextField = $module$kool.de.fabmax.kool.scene.ui.TextField;
   var createContext = $module$kool.de.fabmax.kool.createContext;
+  var ProtoBufPacked = $module$kool.de.fabmax.kool.util.serialization.ProtoBufPacked;
+  var println = Kotlin.kotlin.io.println_s8jyv4$;
   var split = Kotlin.kotlin.text.split_ip8yn$;
+  var ArrayListSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer;
+  var UnknownFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException;
+  var SerialClassDescImpl = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.SerialClassDescImpl;
+  var SerialId = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId;
+  var KSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.KSerializer;
+  var MissingFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException;
+  var internal = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal;
+  var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
+  var L0 = Kotlin.Long.ZERO;
+  var Enum = Kotlin.kotlin.Enum;
+  var throwISE = Kotlin.throwISE;
   BoxWorld.prototype = Object.create(Group.prototype);
   BoxWorld.prototype.constructor = BoxWorld;
   MeshPoint.prototype = Object.create(Vec3f.prototype);
@@ -163,6 +180,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   TreeGenerator$TreeNode.prototype.constructor = TreeGenerator$TreeNode;
   TreeTopPointDistribution.prototype = Object.create(PointDistribution.prototype);
   TreeTopPointDistribution.prototype.constructor = TreeTopPointDistribution;
+  GeomType.prototype = Object.create(Enum.prototype);
+  GeomType.prototype.constructor = GeomType;
   function basicCollisionDemo$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
@@ -1489,6 +1508,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.models = LinkedHashMap_init();
     this.loadingModels = LinkedHashSet_init();
     this.modelWireframe = new LineMesh();
+    var $receiver = new LineMesh();
+    $receiver.isXray = true;
+    $receiver.lineWidth = 3.0;
+    this.highlightedEdge = $receiver;
+    var $receiver_0 = new PointMesh();
+    $receiver_0.isXray = true;
+    $receiver_0.pointSize = 6.0;
+    this.highlightedPt = $receiver_0;
     this.srcModel = null;
     this.dispModel = new Mesh(MeshData_init([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
     this.heMesh = null;
@@ -1497,25 +1524,33 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.facesValLbl_1vvnvx$_0 = this.facesValLbl_1vvnvx$_0;
     this.vertsValLbl_bpoadb$_0 = this.vertsValLbl_bpoadb$_0;
     this.timeValLbl_itlx8a$_0 = this.timeValLbl_itlx8a$_0;
+    this.pickRay_0 = new Ray();
+    this.edgeDistance_0 = new SimplificationDemo$EdgeRayDistance();
+    var $receiver_1 = new NearestToRayTraverser();
+    $receiver_1.rayDistance = this.edgeDistance_0;
+    this.nearestEdgeTraverser_0 = $receiver_1;
     this.dispModel.shader = basicShader(SimplificationDemo_init$lambda);
     this.srcModel = this.makeCosGrid_0();
-    var $receiver = this.models;
+    var $receiver_2 = this.models;
     var value = this.srcModel;
-    $receiver.put_xwzc9p$('cos', value);
+    $receiver_2.put_xwzc9p$('cos', value);
     this.heMesh = new HalfEdgeMesh(this.srcModel);
     this.loadModel_0('bunny.kmf', 0.05, ctx);
     this.loadModel_0('cow.kmf', 1.0, ctx);
-    var $receiver_0 = new Scene(null);
-    defaultCamTransform($receiver_0);
-    $receiver_0.unaryPlus_uv0sim$(this.dispModel);
-    $receiver_0.unaryPlus_uv0sim$(this.modelWireframe);
-    this.simplificationScene = $receiver_0;
-    var $receiver_1 = this.scenes;
+    var $receiver_3 = new Scene(null);
+    defaultCamTransform($receiver_3);
+    $receiver_3.unaryPlus_uv0sim$(this.dispModel);
+    $receiver_3.unaryPlus_uv0sim$(this.modelWireframe);
+    $receiver_3.unaryPlus_uv0sim$(this.highlightedEdge);
+    $receiver_3.unaryPlus_uv0sim$(this.highlightedPt);
+    $receiver_3.onPreRender.add_11rb$(SimplificationDemo_init$lambda$lambda($receiver_3, this));
+    this.simplificationScene = $receiver_3;
+    var $receiver_4 = this.scenes;
     var element = this.simplificationScene;
-    $receiver_1.add_11rb$(element);
-    var $receiver_2 = this.scenes;
+    $receiver_4.add_11rb$(element);
+    var $receiver_5 = this.scenes;
     var element_0 = uiScene(ctx.screenDpi, void 0, SimplificationDemo_init$lambda_0(this));
-    $receiver_2.add_11rb$(element_0);
+    $receiver_5.add_11rb$(element_0);
     this.simplify();
   }
   Object.defineProperty(SimplificationDemo.prototype, 'autoRun', {
@@ -1565,8 +1600,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $this.isBatchUpdate = true;
     this.dispModel.meshData.clear();
     this.dispModel.meshData.vertexList.addVertices_r7nl2o$(this.srcModel.vertexList);
-    this.heMesh = new HalfEdgeMesh(this.dispModel.meshData, new HalfEdgeMesh$ListEdgeHandler());
-    (new MeshSimplifier(terminateOnFaceCountRel(this.simplifcationGrade))).simplifyMesh_mnbsaa$(this.heMesh);
+    this.heMesh = new HalfEdgeMesh(this.dispModel.meshData);
+    simplify(this.heMesh, terminateOnFaceCountRel(this.simplifcationGrade));
     var $this_0 = this.modelWireframe.meshData;
     var wasBatchUpdate_0 = $this_0.isBatchUpdate;
     $this_0.isBatchUpdate = true;
@@ -1665,24 +1700,108 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.onHoverEnter.add_11rb$(SimplificationDemo$disableCamDrag$lambda(this));
     $receiver.onHoverExit.add_11rb$(SimplificationDemo$disableCamDrag$lambda_0(this));
   };
+  function SimplificationDemo$EdgeRayDistance() {
+    this.tmpVec1_0 = MutableVec3f_init();
+    this.tmpVec2_0 = MutableVec3f_init();
+    this.tmpVec3_0 = MutableVec3f_init();
+  }
+  SimplificationDemo$EdgeRayDistance.prototype.itemDistanceToRay_t0er6w$ = function (tree, item, ray) {
+    var pt = this.nearestPointOnEdge_agp8x$(item, ray);
+    return ray.sqrDistanceToPoint_czzhiu$(pt);
+  };
+  SimplificationDemo$EdgeRayDistance.prototype.nearestPointOnEdge_agp8x$ = function (edge, ray) {
+    var tmp$, tmp$_0;
+    edge.to.subtract_2gj7b4$(edge.from, this.tmpVec1_0).norm();
+    this.tmpVec2_0.set_czzhiu$(ray.direction);
+    var dot = this.tmpVec1_0.times_czzhiu$(this.tmpVec2_0);
+    var n = 1.0 - dot * dot;
+    var eps;
+    eps = math_0.FUZZY_EQ_F;
+    if (Math_0.abs(n) <= eps) {
+      if (edge.from.sqrDistance_czzhiu$(ray.origin) < edge.to.sqrDistance_czzhiu$(ray.origin)) {
+        tmp$ = edge.from;
+      }
+       else {
+        tmp$ = edge.to;
+      }
+      return tmp$;
+    }
+    ray.origin.subtract_2gj7b4$(edge.from, this.tmpVec3_0);
+    var a = this.tmpVec3_0.times_czzhiu$(this.tmpVec1_0);
+    var b = this.tmpVec3_0.times_czzhiu$(this.tmpVec2_0);
+    var l = (a - b * dot) / n;
+    if (l > 0) {
+      var d = edge.from.distance_czzhiu$(edge.to);
+      tmp$_0 = this.tmpVec1_0.scale_mx4ult$(Math_0.min(l, d)).add_czzhiu$(edge.from);
+    }
+     else {
+      tmp$_0 = edge.from;
+    }
+    return tmp$_0;
+  };
+  SimplificationDemo$EdgeRayDistance.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'EdgeRayDistance',
+    interfaces: [RayDistance]
+  };
   function SimplificationDemo_init$lambda($receiver) {
     $receiver.lightModel = LightModel.PHONG_LIGHTING;
     $receiver.colorModel = ColorModel.STATIC_COLOR;
     $receiver.staticColor = Color.Companion.MD_ORANGE;
     return Unit;
   }
-  function SimplificationDemo_init$lambda$lambda$lambda(it) {
-    return new BlankComponentUi();
+  function SimplificationDemo_init$lambda$lambda$lambda(closure$edgePt) {
+    return function ($receiver) {
+      $receiver.position.set_czzhiu$(closure$edgePt);
+      $receiver.color.set_d7aj7k$(Color.Companion.MD_GREEN);
+      return Unit;
+    };
+  }
+  function SimplificationDemo_init$lambda$lambda(this$, this$SimplificationDemo) {
+    return function ($receiver, ctx) {
+      var tmp$;
+      if (ctx.inputMgr.primaryPointer.isValid) {
+        var ptr = ctx.inputMgr.primaryPointer;
+        this$.camera.computePickRay_qhyfdh$(this$SimplificationDemo.pickRay_0, ptr, ctx);
+        var ocTree = (Kotlin.isType(tmp$ = this$SimplificationDemo.heMesh.edgeHandler, HalfEdgeMesh$OcTreeEdgeHandler) ? tmp$ : throwCCE()).edgeTree;
+        ocTree.traverse_ssbmfa$(this$SimplificationDemo.nearestEdgeTraverser_0.setup_nvyeur$(this$SimplificationDemo.pickRay_0));
+        var edge = this$SimplificationDemo.nearestEdgeTraverser_0.nearest;
+        this$SimplificationDemo.highlightedEdge.clear();
+        this$SimplificationDemo.highlightedPt.clear();
+        if (edge != null) {
+          this$SimplificationDemo.highlightedEdge.addLine_b8opkg$(edge.from, Color.Companion.MD_PINK, edge.to, Color.Companion.MD_PINK);
+          var edgePt = this$SimplificationDemo.edgeDistance_0.nearestPointOnEdge_agp8x$(edge, this$SimplificationDemo.pickRay_0);
+          this$SimplificationDemo.highlightedPt.addPoint_hvwyd1$(SimplificationDemo_init$lambda$lambda$lambda(edgePt));
+          if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
+            var fraction = edge.from.distance_czzhiu$(edgePt) / edge.from.distance_czzhiu$(edge.to);
+            this$SimplificationDemo.heMesh.splitEdge_b49or$(edge, fraction);
+            this$SimplificationDemo.heMesh.rebuild_dqye30$();
+            var $this = this$SimplificationDemo.modelWireframe.meshData;
+            var wasBatchUpdate = $this.isBatchUpdate;
+            $this.isBatchUpdate = true;
+            var this$SimplificationDemo_0 = this$SimplificationDemo;
+            this$SimplificationDemo_0.modelWireframe.clear();
+            this$SimplificationDemo_0.heMesh.generateWireframe_wuugko$(this$SimplificationDemo_0.modelWireframe, Color.Companion.MD_LIGHT_BLUE);
+            $this.isSyncRequired = true;
+            $this.isBatchUpdate = wasBatchUpdate;
+          }
+        }
+      }
+      return Unit;
+    };
   }
   function SimplificationDemo_init$lambda$lambda$lambda_0(it) {
     return new BlankComponentUi();
   }
-  function SimplificationDemo_init$lambda$lambda($receiver) {
-    $receiver.componentUi_mloaa0$(SimplificationDemo_init$lambda$lambda$lambda);
-    $receiver.containerUi_2t3ptw$(SimplificationDemo_init$lambda$lambda$lambda_0);
+  function SimplificationDemo_init$lambda$lambda$lambda_1(it) {
+    return new BlankComponentUi();
+  }
+  function SimplificationDemo_init$lambda$lambda_0($receiver) {
+    $receiver.componentUi_mloaa0$(SimplificationDemo_init$lambda$lambda$lambda_0);
+    $receiver.containerUi_2t3ptw$(SimplificationDemo_init$lambda$lambda$lambda_1);
     return Unit;
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_1(closure$posY, this$) {
+  function SimplificationDemo_init$lambda$lambda$lambda_2(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), zero());
@@ -1690,7 +1809,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_2(closure$posY, this$) {
+  function SimplificationDemo_init$lambda$lambda$lambda_3(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
@@ -1710,7 +1829,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_3(closure$posY, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda$lambda_4(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1731,7 +1850,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_4(closure$posY, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda$lambda_5(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1749,7 +1868,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_5(closure$posY, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda$lambda_6(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1760,7 +1879,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_6(closure$posY, this$) {
+  function SimplificationDemo_init$lambda$lambda$lambda_7(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), zero());
@@ -1768,7 +1887,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_7(closure$posY, this$) {
+  function SimplificationDemo_init$lambda$lambda$lambda_8(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
@@ -1778,7 +1897,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_8(closure$posY) {
+  function SimplificationDemo_init$lambda$lambda$lambda_9(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1786,7 +1905,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_9(closure$posY) {
+  function SimplificationDemo_init$lambda$lambda$lambda_10(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1805,7 +1924,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_10(closure$posY, this$SimplificationDemo, closure$faceCntVal) {
+  function SimplificationDemo_init$lambda$lambda$lambda_11(closure$posY, this$SimplificationDemo, closure$faceCntVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
@@ -1821,7 +1940,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_11(closure$posY, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda$lambda_12(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1832,7 +1951,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_12(closure$posY) {
+  function SimplificationDemo_init$lambda$lambda$lambda_13(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
@@ -1840,19 +1959,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_13(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
-      return Unit;
-    };
-  }
   function SimplificationDemo_init$lambda$lambda$lambda_14(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = '';
       return Unit;
     };
   }
@@ -1860,6 +1970,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = '';
       return Unit;
     };
   }
@@ -1867,8 +1979,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = '';
       return Unit;
     };
   }
@@ -1876,10 +1986,19 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = '';
       return Unit;
     };
   }
   function SimplificationDemo_init$lambda$lambda$lambda_18(closure$posY) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      return Unit;
+    };
+  }
+  function SimplificationDemo_init$lambda$lambda$lambda_19(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
@@ -1888,53 +2007,53 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda_0(this$, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda_1(this$, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), zero(), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), pcs(100.0), zero());
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
       var posY = {v: -45.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Models', SimplificationDemo_init$lambda$lambda$lambda_1(posY, this$)));
-      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_2(posY, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Models', SimplificationDemo_init$lambda$lambda$lambda_2(posY, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_3(posY, this$)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cow', SimplificationDemo_init$lambda$lambda$lambda_3(posY, this$SimplificationDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cow', SimplificationDemo_init$lambda$lambda$lambda_4(posY, this$SimplificationDemo)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Bunny', SimplificationDemo_init$lambda$lambda$lambda_4(posY, this$SimplificationDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Bunny', SimplificationDemo_init$lambda$lambda$lambda_5(posY, this$SimplificationDemo)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cosine Grid', SimplificationDemo_init$lambda$lambda$lambda_5(posY, this$SimplificationDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cosine Grid', SimplificationDemo_init$lambda$lambda$lambda_6(posY, this$SimplificationDemo)));
       posY.v -= 50.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Simplify', SimplificationDemo_init$lambda$lambda$lambda_6(posY, this$)));
-      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_7(posY, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Simplify', SimplificationDemo_init$lambda$lambda$lambda_7(posY, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_8(posY, this$)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ratio:', SimplificationDemo_init$lambda$lambda$lambda_8(posY)));
-      var faceCntVal = this$.label_tokfmu$('faceCntVal', SimplificationDemo_init$lambda$lambda$lambda_9(posY));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ratio:', SimplificationDemo_init$lambda$lambda$lambda_9(posY)));
+      var faceCntVal = this$.label_tokfmu$('faceCntVal', SimplificationDemo_init$lambda$lambda$lambda_10(posY));
       $receiver.unaryPlus_uv0sim$(faceCntVal);
       posY.v -= 25.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('faceCnt', SimplificationDemo_init$lambda$lambda$lambda_10(posY, this$SimplificationDemo, faceCntVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('faceCnt', SimplificationDemo_init$lambda$lambda$lambda_11(posY, this$SimplificationDemo, faceCntVal)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Update Mesh', SimplificationDemo_init$lambda$lambda$lambda_11(posY, this$SimplificationDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Update Mesh', SimplificationDemo_init$lambda$lambda$lambda_12(posY, this$SimplificationDemo)));
       posY.v -= 35.0;
-      this$SimplificationDemo.autoRun = this$.toggleButton_6j87po$('Auto Update', SimplificationDemo_init$lambda$lambda$lambda_12(posY));
+      this$SimplificationDemo.autoRun = this$.toggleButton_6j87po$('Auto Update', SimplificationDemo_init$lambda$lambda$lambda_13(posY));
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.autoRun);
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Faces:', SimplificationDemo_init$lambda$lambda$lambda_13(posY)));
-      this$SimplificationDemo.facesValLbl = this$.label_tokfmu$('facesValLbl', SimplificationDemo_init$lambda$lambda$lambda_14(posY));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Faces:', SimplificationDemo_init$lambda$lambda$lambda_14(posY)));
+      this$SimplificationDemo.facesValLbl = this$.label_tokfmu$('facesValLbl', SimplificationDemo_init$lambda$lambda$lambda_15(posY));
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.facesValLbl);
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Vertices:', SimplificationDemo_init$lambda$lambda$lambda_15(posY)));
-      this$SimplificationDemo.vertsValLbl = this$.label_tokfmu$('verticesValLbl', SimplificationDemo_init$lambda$lambda$lambda_16(posY));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Vertices:', SimplificationDemo_init$lambda$lambda$lambda_16(posY)));
+      this$SimplificationDemo.vertsValLbl = this$.label_tokfmu$('verticesValLbl', SimplificationDemo_init$lambda$lambda$lambda_17(posY));
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.vertsValLbl);
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Time:', SimplificationDemo_init$lambda$lambda$lambda_17(posY)));
-      this$SimplificationDemo.timeValLbl = this$.label_tokfmu$('timeValLbl', SimplificationDemo_init$lambda$lambda$lambda_18(posY));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Time:', SimplificationDemo_init$lambda$lambda$lambda_18(posY)));
+      this$SimplificationDemo.timeValLbl = this$.label_tokfmu$('timeValLbl', SimplificationDemo_init$lambda$lambda$lambda_19(posY));
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.timeValLbl);
       return Unit;
     };
   }
   function SimplificationDemo_init$lambda_0(this$SimplificationDemo) {
     return function ($receiver) {
-      $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, SimplificationDemo_init$lambda$lambda);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', SimplificationDemo_init$lambda$lambda_0($receiver, this$SimplificationDemo)));
+      $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, SimplificationDemo_init$lambda$lambda_0);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', SimplificationDemo_init$lambda$lambda_1($receiver, this$SimplificationDemo)));
       return Unit;
     };
   }
@@ -3644,11 +3763,27 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver_4.onClick.add_11rb$(uiDemoContent$lambda$lambda_0(uiRoot));
     $receiver.unaryPlus_uv0sim$($receiver_4);
   }
+  var klassSerializer_0 = $module$kool.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
+  function main$lambda(bytes) {
+    if (bytes != null) {
+      for (var i = 1; i <= 20; i++) {
+        var t = new PerfTimer();
+        var $this = ProtoBufPacked.Companion.plain;
+        var tile = $this.load_8dtdds$(klassSerializer_0($this.context, getKClass(Tile)), bytes);
+        println('new took ' + t.takeSecs() + ' secs');
+        t.reset();
+        var $this_0 = ProtoBuf.Companion.plain;
+        tile = $this_0.load_8dtdds$(klassSerializer($this_0.context, getKClass(Tile)), bytes);
+        println('old took ' + t.takeSecs() + ' secs');
+      }
+    }
+    return Unit;
+  }
   function main() {
     var ctx = createContext();
     Demo$Companion_getInstance().setProperty_bm4g0d$('globe.elevationUrl', 'https://s3.eu-central-1.amazonaws.com/fabmax-kool-globe/dem');
     ctx.assetMgr.assetsBaseDir = '../assets';
-    new Demo(ctx, getParams().get_11rb$('demo'));
+    ctx.assetMgr.loadAsset_us385g$('14_8798_11010.pbf', main$lambda);
   }
   function getParams() {
     var tmp$;
@@ -3670,6 +3805,744 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     }
     return params;
   }
+  function Tile(layers) {
+    Tile$Companion_getInstance();
+    this.layers = layers;
+  }
+  function Tile$Companion() {
+    Tile$Companion_instance = this;
+  }
+  Tile$Companion.prototype.serializer = function () {
+    return Tile$$serializer_getInstance();
+  };
+  Tile$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Tile$Companion_instance = null;
+  function Tile$Companion_getInstance() {
+    if (Tile$Companion_instance === null) {
+      new Tile$Companion();
+    }
+    return Tile$Companion_instance;
+  }
+  function Tile$$serializer() {
+    this.serialClassDesc_970jvh$_0 = new SerialClassDescImpl('Tile');
+    this.serialClassDesc.addElement_61zpoe$('layers');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
+    Tile$$serializer_instance = this;
+  }
+  Object.defineProperty(Tile$$serializer.prototype, 'serialClassDesc', {
+    get: function () {
+      return this.serialClassDesc_970jvh$_0;
+    }
+  });
+  Tile$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
+    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 0, new ArrayListSerializer(Layer$$serializer_getInstance()), obj.layers);
+    output.writeEnd_f6e2p$(this.serialClassDesc);
+  };
+  Tile$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+    var index, readAll = false;
+    var bitMask0 = 0;
+    var local0;
+    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    loopLabel: while (true) {
+      index = input.readElement_f6e2p$(this.serialClassDesc);
+      switch (index) {
+        case -2:
+          readAll = true;
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, new ArrayListSerializer(Layer$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 0, new ArrayListSerializer(Layer$$serializer_getInstance()), local0);
+          bitMask0 |= 1;
+          if (!readAll)
+            break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.readEnd_f6e2p$(this.serialClassDesc);
+    return Tile_init(bitMask0, local0, null);
+  };
+  Tile$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [KSerializer]
+  };
+  var Tile$$serializer_instance = null;
+  function Tile$$serializer_getInstance() {
+    if (Tile$$serializer_instance === null) {
+      new Tile$$serializer();
+    }
+    return Tile$$serializer_instance;
+  }
+  function Tile_init(seen, layers, serializationConstructorMarker) {
+    var $this = Object.create(Tile.prototype);
+    if ((seen & 1) === 0)
+      throw new MissingFieldException('layers');
+    else
+      $this.layers = layers;
+    return $this;
+  }
+  Tile.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Tile',
+    interfaces: []
+  };
+  Tile.prototype.component1 = function () {
+    return this.layers;
+  };
+  Tile.prototype.copy_42597k$ = function (layers) {
+    return new Tile(layers === void 0 ? this.layers : layers);
+  };
+  Tile.prototype.toString = function () {
+    return 'Tile(layers=' + Kotlin.toString(this.layers) + ')';
+  };
+  Tile.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.layers) | 0;
+    return result;
+  };
+  Tile.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && Kotlin.equals(this.layers, other.layers))));
+  };
+  function Layer(version, name, features, keys, values, extent) {
+    Layer$Companion_getInstance();
+    this.version = version;
+    this.name = name;
+    this.features = features;
+    this.keys = keys;
+    this.values = values;
+    this.extent = extent;
+  }
+  function Layer$Companion() {
+    Layer$Companion_instance = this;
+  }
+  Layer$Companion.prototype.serializer = function () {
+    return Layer$$serializer_getInstance();
+  };
+  Layer$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Layer$Companion_instance = null;
+  function Layer$Companion_getInstance() {
+    if (Layer$Companion_instance === null) {
+      new Layer$Companion();
+    }
+    return Layer$Companion_instance;
+  }
+  function Layer$$serializer() {
+    this.serialClassDesc_pjix9i$_0 = new SerialClassDescImpl('Layer');
+    this.serialClassDesc.addElement_61zpoe$('version');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(15));
+    this.serialClassDesc.addElement_61zpoe$('name');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
+    this.serialClassDesc.addElement_61zpoe$('features');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
+    this.serialClassDesc.addElement_61zpoe$('keys');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
+    this.serialClassDesc.addElement_61zpoe$('values');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
+    this.serialClassDesc.addElement_61zpoe$('extent');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
+    Layer$$serializer_instance = this;
+  }
+  Object.defineProperty(Layer$$serializer.prototype, 'serialClassDesc', {
+    get: function () {
+      return this.serialClassDesc_pjix9i$_0;
+    }
+  });
+  Layer$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
+    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
+    output.writeIntElementValue_j8ubi9$(this.serialClassDesc, 0, obj.version);
+    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 1, obj.name);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(Feature$$serializer_getInstance()), obj.features);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(internal.StringSerializer), obj.keys);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new ArrayListSerializer(Value$$serializer_getInstance()), obj.values);
+    output.writeIntElementValue_j8ubi9$(this.serialClassDesc, 5, obj.extent);
+    output.writeEnd_f6e2p$(this.serialClassDesc);
+  };
+  Layer$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+    var index, readAll = false;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3
+    , local4
+    , local5;
+    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    loopLabel: while (true) {
+      index = input.readElement_f6e2p$(this.serialClassDesc);
+      switch (index) {
+        case -2:
+          readAll = true;
+        case 0:
+          local0 = input.readIntElementValue_xvmgof$(this.serialClassDesc, 0);
+          bitMask0 |= 1;
+          if (!readAll)
+            break;
+        case 1:
+          local1 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 1);
+          bitMask0 |= 2;
+          if (!readAll)
+            break;
+        case 2:
+          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(Feature$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(Feature$$serializer_getInstance()), local2);
+          bitMask0 |= 4;
+          if (!readAll)
+            break;
+        case 3:
+          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(internal.StringSerializer), local3);
+          bitMask0 |= 8;
+          if (!readAll)
+            break;
+        case 4:
+          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new ArrayListSerializer(Value$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new ArrayListSerializer(Value$$serializer_getInstance()), local4);
+          bitMask0 |= 16;
+          if (!readAll)
+            break;
+        case 5:
+          local5 = input.readIntElementValue_xvmgof$(this.serialClassDesc, 5);
+          bitMask0 |= 32;
+          if (!readAll)
+            break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.readEnd_f6e2p$(this.serialClassDesc);
+    return Layer_init(bitMask0, local0, local1, local2, local3, local4, local5, null);
+  };
+  Layer$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [KSerializer]
+  };
+  var Layer$$serializer_instance = null;
+  function Layer$$serializer_getInstance() {
+    if (Layer$$serializer_instance === null) {
+      new Layer$$serializer();
+    }
+    return Layer$$serializer_instance;
+  }
+  function Layer_init(seen, version, name, features, keys, values, extent, serializationConstructorMarker) {
+    var $this = Object.create(Layer.prototype);
+    if ((seen & 1) === 0)
+      throw new MissingFieldException('version');
+    else
+      $this.version = version;
+    if ((seen & 2) === 0)
+      throw new MissingFieldException('name');
+    else
+      $this.name = name;
+    if ((seen & 4) === 0)
+      throw new MissingFieldException('features');
+    else
+      $this.features = features;
+    if ((seen & 8) === 0)
+      throw new MissingFieldException('keys');
+    else
+      $this.keys = keys;
+    if ((seen & 16) === 0)
+      throw new MissingFieldException('values');
+    else
+      $this.values = values;
+    if ((seen & 32) === 0)
+      throw new MissingFieldException('extent');
+    else
+      $this.extent = extent;
+    return $this;
+  }
+  Layer.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Layer',
+    interfaces: []
+  };
+  Layer.prototype.component1 = function () {
+    return this.version;
+  };
+  Layer.prototype.component2 = function () {
+    return this.name;
+  };
+  Layer.prototype.component3 = function () {
+    return this.features;
+  };
+  Layer.prototype.component4 = function () {
+    return this.keys;
+  };
+  Layer.prototype.component5 = function () {
+    return this.values;
+  };
+  Layer.prototype.component6 = function () {
+    return this.extent;
+  };
+  Layer.prototype.copy_p58ocw$ = function (version, name, features, keys, values, extent) {
+    return new Layer(version === void 0 ? this.version : version, name === void 0 ? this.name : name, features === void 0 ? this.features : features, keys === void 0 ? this.keys : keys, values === void 0 ? this.values : values, extent === void 0 ? this.extent : extent);
+  };
+  Layer.prototype.toString = function () {
+    return 'Layer(version=' + Kotlin.toString(this.version) + (', name=' + Kotlin.toString(this.name)) + (', features=' + Kotlin.toString(this.features)) + (', keys=' + Kotlin.toString(this.keys)) + (', values=' + Kotlin.toString(this.values)) + (', extent=' + Kotlin.toString(this.extent)) + ')';
+  };
+  Layer.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.version) | 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    result = result * 31 + Kotlin.hashCode(this.features) | 0;
+    result = result * 31 + Kotlin.hashCode(this.keys) | 0;
+    result = result * 31 + Kotlin.hashCode(this.values) | 0;
+    result = result * 31 + Kotlin.hashCode(this.extent) | 0;
+    return result;
+  };
+  Layer.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.version, other.version) && Kotlin.equals(this.name, other.name) && Kotlin.equals(this.features, other.features) && Kotlin.equals(this.keys, other.keys) && Kotlin.equals(this.values, other.values) && Kotlin.equals(this.extent, other.extent)))));
+  };
+  function Feature(id, tags, type, geometry) {
+    Feature$Companion_getInstance();
+    if (id === void 0)
+      id = L0;
+    if (type === void 0)
+      type = GeomType$UNKNOWN_getInstance();
+    this.id = id;
+    this.tags = tags;
+    this.type = type;
+    this.geometry = geometry;
+  }
+  function Feature$Companion() {
+    Feature$Companion_instance = this;
+  }
+  Feature$Companion.prototype.serializer = function () {
+    return Feature$$serializer_getInstance();
+  };
+  Feature$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Feature$Companion_instance = null;
+  function Feature$Companion_getInstance() {
+    if (Feature$Companion_instance === null) {
+      new Feature$Companion();
+    }
+    return Feature$Companion_instance;
+  }
+  function Feature$$serializer() {
+    this.serialClassDesc_i7v6ad$_0 = new SerialClassDescImpl('Feature');
+    this.serialClassDesc.addElement_61zpoe$('id');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
+    this.serialClassDesc.addElement_61zpoe$('tags');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
+    this.serialClassDesc.addElement_61zpoe$('type');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
+    this.serialClassDesc.addElement_61zpoe$('geometry');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
+    Feature$$serializer_instance = this;
+  }
+  Object.defineProperty(Feature$$serializer.prototype, 'serialClassDesc', {
+    get: function () {
+      return this.serialClassDesc_i7v6ad$_0;
+    }
+  });
+  Feature$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
+    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
+    output.writeLongElementValue_sd5j9w$(this.serialClassDesc, 0, obj.id);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new ArrayListSerializer(internal.IntSerializer), obj.tags);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new EnumSerializer(Kotlin.getKClass(GeomType)), obj.type);
+    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer), obj.geometry);
+    output.writeEnd_f6e2p$(this.serialClassDesc);
+  };
+  Feature$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+    var index, readAll = false;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3;
+    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    loopLabel: while (true) {
+      index = input.readElement_f6e2p$(this.serialClassDesc);
+      switch (index) {
+        case -2:
+          readAll = true;
+        case 0:
+          local0 = input.readLongElementValue_xvmgof$(this.serialClassDesc, 0);
+          bitMask0 |= 1;
+          if (!readAll)
+            break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new ArrayListSerializer(internal.IntSerializer), local1);
+          bitMask0 |= 2;
+          if (!readAll)
+            break;
+        case 2:
+          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new EnumSerializer(Kotlin.getKClass(GeomType))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new EnumSerializer(Kotlin.getKClass(GeomType)), local2);
+          bitMask0 |= 4;
+          if (!readAll)
+            break;
+        case 3:
+          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer), local3);
+          bitMask0 |= 8;
+          if (!readAll)
+            break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.readEnd_f6e2p$(this.serialClassDesc);
+    return Feature_init(bitMask0, local0, local1, local2, local3, null);
+  };
+  Feature$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [KSerializer]
+  };
+  var Feature$$serializer_instance = null;
+  function Feature$$serializer_getInstance() {
+    if (Feature$$serializer_instance === null) {
+      new Feature$$serializer();
+    }
+    return Feature$$serializer_instance;
+  }
+  function Feature_init(seen, id, tags, type, geometry, serializationConstructorMarker) {
+    var $this = Object.create(Feature.prototype);
+    if ((seen & 1) === 0)
+      $this.id = L0;
+    else
+      $this.id = id;
+    if ((seen & 2) === 0)
+      throw new MissingFieldException('tags');
+    else
+      $this.tags = tags;
+    if ((seen & 4) === 0)
+      $this.type = GeomType$UNKNOWN_getInstance();
+    else
+      $this.type = type;
+    if ((seen & 8) === 0)
+      throw new MissingFieldException('geometry');
+    else
+      $this.geometry = geometry;
+    return $this;
+  }
+  Feature.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Feature',
+    interfaces: []
+  };
+  Feature.prototype.component1 = function () {
+    return this.id;
+  };
+  Feature.prototype.component2 = function () {
+    return this.tags;
+  };
+  Feature.prototype.component3 = function () {
+    return this.type;
+  };
+  Feature.prototype.component4 = function () {
+    return this.geometry;
+  };
+  Feature.prototype.copy_2ld4ov$ = function (id, tags, type, geometry) {
+    return new Feature(id === void 0 ? this.id : id, tags === void 0 ? this.tags : tags, type === void 0 ? this.type : type, geometry === void 0 ? this.geometry : geometry);
+  };
+  Feature.prototype.toString = function () {
+    return 'Feature(id=' + Kotlin.toString(this.id) + (', tags=' + Kotlin.toString(this.tags)) + (', type=' + Kotlin.toString(this.type)) + (', geometry=' + Kotlin.toString(this.geometry)) + ')';
+  };
+  Feature.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.id) | 0;
+    result = result * 31 + Kotlin.hashCode(this.tags) | 0;
+    result = result * 31 + Kotlin.hashCode(this.type) | 0;
+    result = result * 31 + Kotlin.hashCode(this.geometry) | 0;
+    return result;
+  };
+  Feature.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.id, other.id) && Kotlin.equals(this.tags, other.tags) && Kotlin.equals(this.type, other.type) && Kotlin.equals(this.geometry, other.geometry)))));
+  };
+  function Value(stringValue, floatValue, doubleValue, intValue, uintValue, sintValue, boolValue) {
+    Value$Companion_getInstance();
+    if (stringValue === void 0)
+      stringValue = null;
+    if (floatValue === void 0)
+      floatValue = null;
+    if (doubleValue === void 0)
+      doubleValue = null;
+    if (intValue === void 0)
+      intValue = null;
+    if (uintValue === void 0)
+      uintValue = null;
+    if (sintValue === void 0)
+      sintValue = null;
+    if (boolValue === void 0)
+      boolValue = null;
+    this.stringValue = stringValue;
+    this.floatValue = floatValue;
+    this.doubleValue = doubleValue;
+    this.intValue = intValue;
+    this.uintValue = uintValue;
+    this.sintValue = sintValue;
+    this.boolValue = boolValue;
+  }
+  function Value$Companion() {
+    Value$Companion_instance = this;
+  }
+  Value$Companion.prototype.serializer = function () {
+    return Value$$serializer_getInstance();
+  };
+  Value$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var Value$Companion_instance = null;
+  function Value$Companion_getInstance() {
+    if (Value$Companion_instance === null) {
+      new Value$Companion();
+    }
+    return Value$Companion_instance;
+  }
+  function Value$$serializer() {
+    this.serialClassDesc_rc1bei$_0 = new SerialClassDescImpl('Value');
+    this.serialClassDesc.addElement_61zpoe$('stringValue');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
+    this.serialClassDesc.addElement_61zpoe$('floatValue');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
+    this.serialClassDesc.addElement_61zpoe$('doubleValue');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
+    this.serialClassDesc.addElement_61zpoe$('intValue');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
+    this.serialClassDesc.addElement_61zpoe$('uintValue');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
+    this.serialClassDesc.addElement_61zpoe$('sintValue');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(6));
+    this.serialClassDesc.addElement_61zpoe$('boolValue');
+    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(7));
+    Value$$serializer_instance = this;
+  }
+  Object.defineProperty(Value$$serializer.prototype, 'serialClassDesc', {
+    get: function () {
+      return this.serialClassDesc_rc1bei$_0;
+    }
+  });
+  Value$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
+    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
+    output.writeNullableSerializableElementValue_874a36$(this.serialClassDesc, 0, internal.StringSerializer, obj.stringValue);
+    output.writeNullableSerializableElementValue_874a36$(this.serialClassDesc, 1, internal.FloatSerializer, obj.floatValue);
+    output.writeNullableSerializableElementValue_874a36$(this.serialClassDesc, 2, internal.DoubleSerializer, obj.doubleValue);
+    output.writeNullableSerializableElementValue_874a36$(this.serialClassDesc, 3, internal.IntSerializer, obj.intValue);
+    output.writeNullableSerializableElementValue_874a36$(this.serialClassDesc, 4, internal.IntSerializer, obj.uintValue);
+    output.writeNullableSerializableElementValue_874a36$(this.serialClassDesc, 5, internal.IntSerializer, obj.sintValue);
+    output.writeNullableSerializableElementValue_874a36$(this.serialClassDesc, 6, internal.BooleanSerializer, obj.boolValue);
+    output.writeEnd_f6e2p$(this.serialClassDesc);
+  };
+  Value$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+    var index, readAll = false;
+    var bitMask0 = 0;
+    var local0
+    , local1
+    , local2
+    , local3
+    , local4
+    , local5
+    , local6;
+    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    loopLabel: while (true) {
+      index = input.readElement_f6e2p$(this.serialClassDesc);
+      switch (index) {
+        case -2:
+          readAll = true;
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.readNullableSerializableElementValue_fcqp7f$(this.serialClassDesc, 0, internal.StringSerializer) : input.updateNullableSerializableElementValue_xspi39$(this.serialClassDesc, 0, internal.StringSerializer, local0);
+          bitMask0 |= 1;
+          if (!readAll)
+            break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.readNullableSerializableElementValue_fcqp7f$(this.serialClassDesc, 1, internal.FloatSerializer) : input.updateNullableSerializableElementValue_xspi39$(this.serialClassDesc, 1, internal.FloatSerializer, local1);
+          bitMask0 |= 2;
+          if (!readAll)
+            break;
+        case 2:
+          local2 = (bitMask0 & 4) === 0 ? input.readNullableSerializableElementValue_fcqp7f$(this.serialClassDesc, 2, internal.DoubleSerializer) : input.updateNullableSerializableElementValue_xspi39$(this.serialClassDesc, 2, internal.DoubleSerializer, local2);
+          bitMask0 |= 4;
+          if (!readAll)
+            break;
+        case 3:
+          local3 = (bitMask0 & 8) === 0 ? input.readNullableSerializableElementValue_fcqp7f$(this.serialClassDesc, 3, internal.IntSerializer) : input.updateNullableSerializableElementValue_xspi39$(this.serialClassDesc, 3, internal.IntSerializer, local3);
+          bitMask0 |= 8;
+          if (!readAll)
+            break;
+        case 4:
+          local4 = (bitMask0 & 16) === 0 ? input.readNullableSerializableElementValue_fcqp7f$(this.serialClassDesc, 4, internal.IntSerializer) : input.updateNullableSerializableElementValue_xspi39$(this.serialClassDesc, 4, internal.IntSerializer, local4);
+          bitMask0 |= 16;
+          if (!readAll)
+            break;
+        case 5:
+          local5 = (bitMask0 & 32) === 0 ? input.readNullableSerializableElementValue_fcqp7f$(this.serialClassDesc, 5, internal.IntSerializer) : input.updateNullableSerializableElementValue_xspi39$(this.serialClassDesc, 5, internal.IntSerializer, local5);
+          bitMask0 |= 32;
+          if (!readAll)
+            break;
+        case 6:
+          local6 = (bitMask0 & 64) === 0 ? input.readNullableSerializableElementValue_fcqp7f$(this.serialClassDesc, 6, internal.BooleanSerializer) : input.updateNullableSerializableElementValue_xspi39$(this.serialClassDesc, 6, internal.BooleanSerializer, local6);
+          bitMask0 |= 64;
+          if (!readAll)
+            break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.readEnd_f6e2p$(this.serialClassDesc);
+    return Value_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, null);
+  };
+  Value$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [KSerializer]
+  };
+  var Value$$serializer_instance = null;
+  function Value$$serializer_getInstance() {
+    if (Value$$serializer_instance === null) {
+      new Value$$serializer();
+    }
+    return Value$$serializer_instance;
+  }
+  function Value_init(seen, stringValue, floatValue, doubleValue, intValue, uintValue, sintValue, boolValue, serializationConstructorMarker) {
+    var $this = Object.create(Value.prototype);
+    if ((seen & 1) === 0)
+      $this.stringValue = null;
+    else
+      $this.stringValue = stringValue;
+    if ((seen & 2) === 0)
+      $this.floatValue = null;
+    else
+      $this.floatValue = floatValue;
+    if ((seen & 4) === 0)
+      $this.doubleValue = null;
+    else
+      $this.doubleValue = doubleValue;
+    if ((seen & 8) === 0)
+      $this.intValue = null;
+    else
+      $this.intValue = intValue;
+    if ((seen & 16) === 0)
+      $this.uintValue = null;
+    else
+      $this.uintValue = uintValue;
+    if ((seen & 32) === 0)
+      $this.sintValue = null;
+    else
+      $this.sintValue = sintValue;
+    if ((seen & 64) === 0)
+      $this.boolValue = null;
+    else
+      $this.boolValue = boolValue;
+    return $this;
+  }
+  Value.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Value',
+    interfaces: []
+  };
+  Value.prototype.component1 = function () {
+    return this.stringValue;
+  };
+  Value.prototype.component2 = function () {
+    return this.floatValue;
+  };
+  Value.prototype.component3 = function () {
+    return this.doubleValue;
+  };
+  Value.prototype.component4 = function () {
+    return this.intValue;
+  };
+  Value.prototype.component5 = function () {
+    return this.uintValue;
+  };
+  Value.prototype.component6 = function () {
+    return this.sintValue;
+  };
+  Value.prototype.component7 = function () {
+    return this.boolValue;
+  };
+  Value.prototype.copy_kebfmb$ = function (stringValue, floatValue, doubleValue, intValue, uintValue, sintValue, boolValue) {
+    return new Value(stringValue === void 0 ? this.stringValue : stringValue, floatValue === void 0 ? this.floatValue : floatValue, doubleValue === void 0 ? this.doubleValue : doubleValue, intValue === void 0 ? this.intValue : intValue, uintValue === void 0 ? this.uintValue : uintValue, sintValue === void 0 ? this.sintValue : sintValue, boolValue === void 0 ? this.boolValue : boolValue);
+  };
+  Value.prototype.toString = function () {
+    return 'Value(stringValue=' + Kotlin.toString(this.stringValue) + (', floatValue=' + Kotlin.toString(this.floatValue)) + (', doubleValue=' + Kotlin.toString(this.doubleValue)) + (', intValue=' + Kotlin.toString(this.intValue)) + (', uintValue=' + Kotlin.toString(this.uintValue)) + (', sintValue=' + Kotlin.toString(this.sintValue)) + (', boolValue=' + Kotlin.toString(this.boolValue)) + ')';
+  };
+  Value.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.stringValue) | 0;
+    result = result * 31 + Kotlin.hashCode(this.floatValue) | 0;
+    result = result * 31 + Kotlin.hashCode(this.doubleValue) | 0;
+    result = result * 31 + Kotlin.hashCode(this.intValue) | 0;
+    result = result * 31 + Kotlin.hashCode(this.uintValue) | 0;
+    result = result * 31 + Kotlin.hashCode(this.sintValue) | 0;
+    result = result * 31 + Kotlin.hashCode(this.boolValue) | 0;
+    return result;
+  };
+  Value.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.stringValue, other.stringValue) && Kotlin.equals(this.floatValue, other.floatValue) && Kotlin.equals(this.doubleValue, other.doubleValue) && Kotlin.equals(this.intValue, other.intValue) && Kotlin.equals(this.uintValue, other.uintValue) && Kotlin.equals(this.sintValue, other.sintValue) && Kotlin.equals(this.boolValue, other.boolValue)))));
+  };
+  function GeomType(name, ordinal) {
+    Enum.call(this);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function GeomType_initFields() {
+    GeomType_initFields = function () {
+    };
+    GeomType$UNKNOWN_instance = new GeomType('UNKNOWN', 0);
+    GeomType$POINT_instance = new GeomType('POINT', 1);
+    GeomType$LINESTRING_instance = new GeomType('LINESTRING', 2);
+    GeomType$POLYGON_instance = new GeomType('POLYGON', 3);
+  }
+  var GeomType$UNKNOWN_instance;
+  function GeomType$UNKNOWN_getInstance() {
+    GeomType_initFields();
+    return GeomType$UNKNOWN_instance;
+  }
+  var GeomType$POINT_instance;
+  function GeomType$POINT_getInstance() {
+    GeomType_initFields();
+    return GeomType$POINT_instance;
+  }
+  var GeomType$LINESTRING_instance;
+  function GeomType$LINESTRING_getInstance() {
+    GeomType_initFields();
+    return GeomType$LINESTRING_instance;
+  }
+  var GeomType$POLYGON_instance;
+  function GeomType$POLYGON_getInstance() {
+    GeomType_initFields();
+    return GeomType$POLYGON_instance;
+  }
+  GeomType.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GeomType',
+    interfaces: [Enum]
+  };
+  function GeomType$values() {
+    return [GeomType$UNKNOWN_getInstance(), GeomType$POINT_getInstance(), GeomType$LINESTRING_getInstance(), GeomType$POLYGON_getInstance()];
+  }
+  GeomType.values = GeomType$values;
+  function GeomType$valueOf(name) {
+    switch (name) {
+      case 'UNKNOWN':
+        return GeomType$UNKNOWN_getInstance();
+      case 'POINT':
+        return GeomType$POINT_getInstance();
+      case 'LINESTRING':
+        return GeomType$LINESTRING_getInstance();
+      case 'POLYGON':
+        return GeomType$POLYGON_getInstance();
+      default:throwISE('No enum constant GeomType.' + name);
+    }
+  }
+  GeomType.valueOf_61zpoe$ = GeomType$valueOf;
   $$importsForInline$$.kool = $module$kool;
   var package$de = _.de || (_.de = {});
   var package$fabmax = package$de.fabmax || (package$de.fabmax = {});
@@ -3695,6 +4568,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   package$demo.MeshPoint = MeshPoint;
   package$demo.simpleShapesScene_aemszp$ = simpleShapesScene;
   package$demo.simplificationDemo_aemszp$ = simplificationDemo;
+  SimplificationDemo.EdgeRayDistance = SimplificationDemo$EdgeRayDistance;
   package$demo.SimplificationDemo = SimplificationDemo;
   package$demo.synthieScene_aemszp$ = synthieScene;
   package$demo.treeScene_aemszp$ = treeScene;
@@ -3704,6 +4578,52 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   package$demo.uiDemoContent_d6jo3u$ = uiDemoContent;
   _.main = main;
   _.getParams = getParams;
+  Object.defineProperty(Tile, 'Companion', {
+    get: Tile$Companion_getInstance
+  });
+  Object.defineProperty(Tile, '$serializer', {
+    get: Tile$$serializer_getInstance
+  });
+  _.Tile = Tile;
+  Object.defineProperty(Layer, 'Companion', {
+    get: Layer$Companion_getInstance
+  });
+  Object.defineProperty(Layer, '$serializer', {
+    get: Layer$$serializer_getInstance
+  });
+  _.Layer = Layer;
+  Object.defineProperty(Feature, 'Companion', {
+    get: Feature$Companion_getInstance
+  });
+  Object.defineProperty(Feature, '$serializer', {
+    get: Feature$$serializer_getInstance
+  });
+  _.Feature = Feature;
+  Object.defineProperty(Value, 'Companion', {
+    get: Value$Companion_getInstance
+  });
+  Object.defineProperty(Value, '$serializer', {
+    get: Value$$serializer_getInstance
+  });
+  _.Value = Value;
+  Object.defineProperty(GeomType, 'UNKNOWN', {
+    get: GeomType$UNKNOWN_getInstance
+  });
+  Object.defineProperty(GeomType, 'POINT', {
+    get: GeomType$POINT_getInstance
+  });
+  Object.defineProperty(GeomType, 'LINESTRING', {
+    get: GeomType$LINESTRING_getInstance
+  });
+  Object.defineProperty(GeomType, 'POLYGON', {
+    get: GeomType$POLYGON_getInstance
+  });
+  _.GeomType = GeomType;
+  SimplificationDemo$EdgeRayDistance.prototype.nodeDistanceToRay_4lohg5$ = RayDistance.prototype.nodeDistanceToRay_4lohg5$;
+  Tile$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  Layer$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  Feature$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  Value$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
   BOX_COLORS = listOf([Color.Companion.MD_YELLOW, Color.Companion.MD_AMBER, Color.Companion.MD_ORANGE, Color.Companion.MD_DEEP_ORANGE, Color.Companion.MD_RED, Color.Companion.MD_PINK, Color.Companion.MD_PURPLE, Color.Companion.MD_DEEP_PURPLE, Color.Companion.MD_INDIGO, Color.Companion.MD_BLUE, Color.Companion.MD_LIGHT_BLUE, Color.Companion.MD_CYAN, Color.Companion.MD_TEAL, Color.Companion.MD_GREEN, Color.Companion.MD_LIGHT_GREEN, Color.Companion.MD_LIME]);
   Kotlin.defineModule('kooldemo', _);
   return _;

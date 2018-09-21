@@ -49,8 +49,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var round = Kotlin.kotlin.math.round_14dthe$;
   var kotlin_js_internal_DoubleCompanionObject = Kotlin.kotlin.js.internal.DoubleCompanionObject;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
-  var CoroutineImpl = Kotlin.kotlin.coroutines.experimental.CoroutineImpl;
   var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED;
+  var CoroutineImpl = Kotlin.kotlin.coroutines.experimental.CoroutineImpl;
   var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.launch_35c74u$;
   var delay = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.delay_za3lpa$;
   var yield_0 = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.yield;
@@ -83,6 +83,28 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var Collection = Kotlin.kotlin.collections.Collection;
   var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
   var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
+  var SerializationException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerializationException;
+  var ProtoNumberType = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoNumberType;
+  var TaggedOutput = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.TaggedOutput;
+  var ByteArrayOutputStream_init = $module$kotlinx_serialization_runtime_js.kotlinx.io.ByteArrayOutputStream_init;
+  var toUtf8Bytes = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.toUtf8Bytes_pdl1vz$;
+  var ByteBuffer = $module$kotlinx_serialization_runtime_js.kotlinx.io.ByteBuffer;
+  var ByteOrder = $module$kotlinx_serialization_runtime_js.kotlinx.io.ByteOrder;
+  var ProtobufDecodingException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtobufDecodingException;
+  var toByte = Kotlin.toByte;
+  var enumFromOrdinal = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.enumFromOrdinal_szifu5$;
+  var TaggedInput = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.TaggedInput;
+  var stringFromUtf8Bytes = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.stringFromUtf8Bytes_fqrh44$;
+  var L_128 = Kotlin.Long.fromInt(-128);
+  var L127 = Kotlin.Long.fromInt(127);
+  var L128 = Kotlin.Long.fromInt(128);
+  var IOException = $module$kotlinx_serialization_runtime_js.kotlinx.io.IOException;
+  var L_1 = Kotlin.Long.NEG_ONE;
+  var L_9223372036854775808 = Kotlin.Long.MIN_VALUE;
+  var onlySingleOrNull = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.onlySingleOrNull_2p1efm$;
+  var ProtoType = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoType;
+  var IndexOutOfBoundsException = Kotlin.kotlin.IndexOutOfBoundsException;
+  var ByteArrayInputStream_init = $module$kotlinx_serialization_runtime_js.kotlinx.io.ByteArrayInputStream_init_fqrh44$;
   var removeAll_0 = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   var L1 = Kotlin.Long.ONE;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
@@ -377,6 +399,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   PointMesh.prototype.constructor = PointMesh;
   PrimitiveType.prototype = Object.create(Enum.prototype);
   PrimitiveType.prototype.constructor = PrimitiveType;
+  ProtoBufPacked$ProtobufWriter.prototype = Object.create(TaggedOutput.prototype);
+  ProtoBufPacked$ProtobufWriter.prototype.constructor = ProtoBufPacked$ProtobufWriter;
+  ProtoBufPacked$ObjectWriter.prototype = Object.create(ProtoBufPacked$ProtobufWriter.prototype);
+  ProtoBufPacked$ObjectWriter.prototype.constructor = ProtoBufPacked$ObjectWriter;
+  ProtoBufPacked$MapEntryWriter.prototype = Object.create(ProtoBufPacked$ObjectWriter.prototype);
+  ProtoBufPacked$MapEntryWriter.prototype.constructor = ProtoBufPacked$MapEntryWriter;
+  ProtoBufPacked$RepeatedWriter.prototype = Object.create(ProtoBufPacked$ProtobufWriter.prototype);
+  ProtoBufPacked$RepeatedWriter.prototype.constructor = ProtoBufPacked$RepeatedWriter;
+  ProtoBufPacked$ProtobufReader.prototype = Object.create(TaggedInput.prototype);
+  ProtoBufPacked$ProtobufReader.prototype.constructor = ProtoBufPacked$ProtobufReader;
+  ProtoBufPacked$RepeatedReader.prototype = Object.create(ProtoBufPacked$ProtobufReader.prototype);
+  ProtoBufPacked$RepeatedReader.prototype.constructor = ProtoBufPacked$RepeatedReader;
+  ProtoBufPacked$MapEntryReader.prototype = Object.create(ProtoBufPacked$ProtobufReader.prototype);
+  ProtoBufPacked$MapEntryReader.prototype.constructor = ProtoBufPacked$MapEntryReader;
   InRadiusTraverser.prototype = Object.create(CenterPointTraverser.prototype);
   InRadiusTraverser.prototype.constructor = InRadiusTraverser;
   KNearestTraverser.prototype = Object.create(CenterPointTraverser.prototype);
@@ -4834,7 +4870,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.direction.set_czzhiu$(lookAt).subtract_czzhiu$(origin).norm();
   };
   Ray.prototype.nearestPointOnRay_2gj7b4$ = function (point, result) {
-    var d = (point.dot_czzhiu$(this.direction) - this.origin.dot_czzhiu$(this.direction)) / this.direction.dot_czzhiu$(this.direction);
+    var d = (point.times_czzhiu$(this.direction) - this.origin.times_czzhiu$(this.direction)) / this.direction.times_czzhiu$(this.direction);
     if (d > 0) {
       result.set_czzhiu$(this.direction).scale_mx4ult$(d).add_czzhiu$(this.origin);
     }
@@ -4855,7 +4891,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var ny;
     var nz;
     var dot = x * this.direction.x + y * this.direction.y + z * this.direction.z;
-    var d = (dot - this.origin.dot_czzhiu$(this.direction)) / this.direction.dot_czzhiu$(this.direction);
+    var d = (dot - this.origin.times_czzhiu$(this.direction)) / this.direction.times_czzhiu$(this.direction);
     if (d > 0) {
       nx = this.direction.x * d + this.origin.x - x;
       ny = this.direction.y * d + this.origin.y - y;
@@ -7092,7 +7128,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       var tmp$_0;
       tmp$_0 = array_0.length - 1 | 0;
       for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
-        var Math_0 = Math;
         var x = ((i_0 - 20 | 0) - 33.0 + 12.0 * (i - 5 | 0)) / 12.0;
         array_0[i_0] = Math_0.pow(2.0, x) * 440.0;
       }
@@ -8007,8 +8042,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     tmp$ = metas.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      var math = _.de.fabmax.kool.math;
-      var Math_0 = Math;
       if (this.tileDegX_0 === 0.0) {
         this.tileDegX_0 = element.east - element.west;
       }
@@ -8016,7 +8049,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         var a = this.tileDegX_0;
         var b = element.east - element.west;
         var eps;
-        eps = math.FUZZY_EQ_D;
+        eps = package$math.FUZZY_EQ_D;
         var $receiver = a - b;
         if (!(Math_0.abs($receiver) <= eps)) {
           throw RuntimeException_init('All tiles in set must be of equal size [' + element.name + ': ' + (element.east - element.west) + ' != ' + this.tileDegX_0 + ']');
@@ -8029,7 +8062,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         var a_0 = this.tileDegY_0;
         var b_0 = element.north - element.south;
         var eps_0;
-        eps_0 = math.FUZZY_EQ_D;
+        eps_0 = package$math.FUZZY_EQ_D;
         var $receiver_0 = a_0 - b_0;
         if (!(Math_0.abs($receiver_0) <= eps_0)) {
           throw RuntimeException_init('All tiles in set must be of equal size [' + element.name + ': ' + (element.north - element.south) + ' != ' + this.tileDegY_0 + ']');
@@ -9090,6 +9123,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
             throw this.exception_0;
           case 2:
             return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
         }
       }
        catch (e) {
@@ -9286,6 +9321,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
             this.local$tileMesh.meshData.generateNormals();
             this.local$tileMesh.meshData.isBatchUpdate = false;
             return;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
         }
       }
        catch (e) {
@@ -9631,32 +9668,30 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         }
       }
     }
-    var writeIdx = {v: 0};
+    this.meshData.vertexList.clearIndices();
     tmp$_1 = this.vertices_0;
     for (var i_0 = 0; i_0 !== tmp$_1.size; ++i_0) {
       var tmp$_2;
       var v_0 = this.vertices_0.get_za3lpa$(i_0);
       tmp$_2 = v_0.edges;
       for (var j_1 = 0; j_1 !== tmp$_2.size; ++j_1) {
-        var tmp$_3, tmp$_4, tmp$_5;
         var e = v_0.edges.get_za3lpa$(j_1);
         var ei = e.from.index;
         if (ei < e.next.from.index && ei < e.next.next.from.index) {
-          this.meshData.vertexList.indices.set_vux9f0$((tmp$_3 = writeIdx.v, writeIdx.v = tmp$_3 + 1 | 0, tmp$_3), e.from.index);
-          this.meshData.vertexList.indices.set_vux9f0$((tmp$_4 = writeIdx.v, writeIdx.v = tmp$_4 + 1 | 0, tmp$_4), e.next.from.index);
-          this.meshData.vertexList.indices.set_vux9f0$((tmp$_5 = writeIdx.v, writeIdx.v = tmp$_5 + 1 | 0, tmp$_5), e.next.next.from.index);
+          this.meshData.vertexList.addIndex_za3lpa$(e.from.index);
+          this.meshData.vertexList.addIndex_za3lpa$(e.next.from.index);
+          this.meshData.vertexList.addIndex_za3lpa$(e.next.next.from.index);
         }
       }
     }
-    if ((writeIdx.v / 3 | 0) !== this.faceCount) {
+    if ((this.meshData.numIndices / 3 | 0) !== this.faceCount) {
       var $this = package$util.Log;
       var level = Log$Level.ERROR;
       var tag = Kotlin.getKClassFromExpression(this).simpleName;
       if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Mesh tris != OcTree tris! in mesh: ' + (writeIdx.v / 3 | 0) + ', in tree: ' + this.faceCount);
+        $this.printer(level, tag, 'Mesh tris != OcTree tris! in mesh: ' + (this.meshData.numIndices / 3 | 0) + ', in tree: ' + this.faceCount);
       }
     }
-    this.meshData.vertexList.shrinkIndices_za3lpa$(writeIdx.v);
     this.meshData.vertexList.dataF = newDataF;
     this.meshData.vertexList.dataI = newDataI;
     this.meshData.vertexList.size = this.vertices_0.size;
@@ -10436,12 +10471,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simplify_0($receiver.meshData, termCrit);
   }
   function simplify_0($receiver, termCrit) {
-    var heMesh = new HalfEdgeMesh($receiver, new HalfEdgeMesh$ListEdgeHandler());
-    simplify_1(heMesh, termCrit);
+    simplify_1(new HalfEdgeMesh($receiver, new HalfEdgeMesh$ListEdgeHandler()), termCrit);
   }
   function simplify_1($receiver, termCrit) {
-    var simplifier = new MeshSimplifier(termCrit);
-    simplifier.simplifyMesh_mnbsaa$($receiver);
+    (new MeshSimplifier(termCrit)).simplifyMesh_mnbsaa$($receiver);
   }
   function Comparator$ObjectLiteral_2(closure$comparison) {
     this.closure$comparison = closure$comparison;
@@ -12812,7 +12845,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   function SolverBody$Companion() {
     SolverBody$Companion_instance = this;
-    this.ANGULAR_MOTION_THRESHOLD_0 = math.PI / 4.0;
+    this.ANGULAR_MOTION_THRESHOLD_0 = 3.1415927 / 4.0;
   }
   SolverBody$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -13222,7 +13255,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function RigidBody$Companion() {
     RigidBody$Companion_instance = this;
     this.ANGULAR_DAMPING = 0.98;
-    this.ANGULAR_MOTION_THRESHOLD = math.PI / 4.0;
+    this.ANGULAR_MOTION_THRESHOLD = 3.1415927 / 4.0;
     this.nInstances_0 = 1;
   }
   RigidBody$Companion.$metadata$ = {
@@ -23407,6 +23440,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       this.addIndex_za3lpa$(indices.get_za3lpa$(idx));
     }
   };
+  IndexedVertexList.prototype.clear = function () {
+    this.size = 0;
+    this.dataF.position = 0;
+    this.dataF.limit = this.dataF.capacity;
+    this.dataI.position = 0;
+    this.dataI.limit = this.dataI.capacity;
+    this.indices.position = 0;
+    this.indices.limit = this.indices.capacity;
+  };
+  IndexedVertexList.prototype.clearIndices = function () {
+    this.indices.position = 0;
+    this.indices.limit = this.indices.capacity;
+  };
   IndexedVertexList.prototype.shrinkIndices_za3lpa$ = function (newSize) {
     if (newSize > this.indices.position) {
       throw KoolException_init('new size must be less (or equal) than old size');
@@ -23423,15 +23469,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.dataF.limit = this.dataF.capacity;
     this.dataI.position = Kotlin.imul(newSize, this.vertexSizeI);
     this.dataI.limit = this.dataI.capacity;
-  };
-  IndexedVertexList.prototype.clear = function () {
-    this.size = 0;
-    this.dataF.position = 0;
-    this.dataF.limit = this.dataF.capacity;
-    this.dataI.position = 0;
-    this.dataI.limit = this.dataI.capacity;
-    this.indices.position = 0;
-    this.indices.limit = this.indices.capacity;
   };
   IndexedVertexList.prototype.get_za3lpa$ = function (i) {
     if (i < 0 || i >= (this.dataF.capacity / this.vertexSizeF | 0)) {
@@ -26145,6 +26182,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     Mesh.call(this, data, name);
     data.primitiveType = 0;
     this.shader = basicPointShader(PointMesh_init$lambda);
+    this.isXray = false;
   }
   Object.defineProperty(PointMesh.prototype, 'pointSize', {
     get: function () {
@@ -26184,6 +26222,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var idx = this.meshData.addVertex_lv7vxo$(position, null, color, null);
     this.meshData.addIndex_za3lpa$(idx);
     return idx;
+  };
+  PointMesh.prototype.clear = function () {
+    this.meshData.clear();
+  };
+  PointMesh.prototype.render_aemszp$ = function (ctx) {
+    ctx.pushAttributes();
+    if (this.isXray) {
+      ctx.depthFunc = 519;
+    }
+    ctx.applyAttributes();
+    Mesh.prototype.render_aemszp$.call(this, ctx);
+    ctx.popAttributes();
   };
   function PointMesh_init$lambda($receiver) {
     $receiver.colorModel = ColorModel$VERTEX_COLOR_getInstance();
@@ -27850,6 +27900,862 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   AttributeList.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.type, other.type) && Kotlin.equals(this.values, other.values)))));
   };
+  function ProtoBufPacked(context) {
+    ProtoBufPacked$Companion_getInstance();
+    if (context === void 0)
+      context = null;
+    this.context = context;
+  }
+  function ProtoBufPacked$ProtobufWriter($outer, encoder) {
+    this.$outer = $outer;
+    TaggedOutput.call(this);
+    this.encoder = encoder;
+    this.context = this.$outer.context;
+  }
+  ProtoBufPacked$ProtobufWriter.prototype.writeBegin_276rha$ = function (desc, typeParams) {
+    switch (desc.kind.name) {
+      case 'LIST':
+      case 'MAP':
+      case 'SET':
+        return new ProtoBufPacked$RepeatedWriter(this.$outer, this.encoder, this.currentTag);
+      case 'CLASS':
+      case 'OBJECT':
+      case 'SEALED':
+      case 'POLYMORPHIC':
+        return new ProtoBufPacked$ObjectWriter(this.$outer, this.currentTagOrNull, this.encoder);
+      case 'ENTRY':
+        return new ProtoBufPacked$MapEntryWriter(this.$outer, this.currentTagOrNull, this.encoder);
+      default:throw new SerializationException('Primitives are not supported at top-level');
+    }
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedInt_dpg1yx$ = function (tag, value) {
+    this.encoder.writeInt_hp6twd$(value, tag.first, tag.second);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedByte_19qe40$ = function (tag, value) {
+    this.encoder.writeInt_hp6twd$(value, tag.first, tag.second);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedShort_veccj0$ = function (tag, value) {
+    this.encoder.writeInt_hp6twd$(value, tag.first, tag.second);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedLong_19wkf8$ = function (tag, value) {
+    this.encoder.writeLong_scxzc4$(value, tag.first, tag.second);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedFloat_vlf4p8$ = function (tag, value) {
+    this.encoder.writeFloat_vjorfl$(value, tag.first);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedDouble_e37ph5$ = function (tag, value) {
+    this.encoder.writeDouble_12fank$(value, tag.first);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedBoolean_iuyhfk$ = function (tag, value) {
+    this.encoder.writeInt_hp6twd$(value ? 1 : 0, tag.first, ProtoNumberType.DEFAULT);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedChar_19qo1q$ = function (tag, value) {
+    this.encoder.writeInt_hp6twd$(value | 0, tag.first, tag.second);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedString_l9l8mx$ = function (tag, value) {
+    this.encoder.writeString_bm4lxs$(value, tag.first);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedEnum_qffkiy$ = function (tag, enumClass, value) {
+    this.encoder.writeInt_hp6twd$(value.ordinal, tag.first, ProtoNumberType.DEFAULT);
+  };
+  ProtoBufPacked$ProtobufWriter.prototype.getTag_fr5t0y$ = function ($receiver, index) {
+    return ProtoBufPacked$Companion_getInstance().getProtoDesc_0($receiver, index);
+  };
+  ProtoBufPacked$ProtobufWriter.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ProtobufWriter',
+    interfaces: [TaggedOutput]
+  };
+  function ProtoBufPacked$ObjectWriter($outer, parentTag, parentEncoder, stream) {
+    this.$outer = $outer;
+    if (stream === void 0)
+      stream = ByteArrayOutputStream_init();
+    ProtoBufPacked$ProtobufWriter.call(this, this.$outer, new ProtoBufPacked$ProtobufEncoder(stream));
+    this.parentTag = parentTag;
+    this.parentEncoder_0 = parentEncoder;
+    this.stream_0 = stream;
+  }
+  ProtoBufPacked$ObjectWriter.prototype.writeFinished_f6e2p$ = function (desc) {
+    if (this.parentTag != null) {
+      this.parentEncoder_0.writeObject_ir89t6$(this.stream_0.toByteArray(), this.parentTag.first);
+    }
+     else {
+      this.parentEncoder_0.out.write_fqrh44$(this.stream_0.toByteArray());
+    }
+  };
+  ProtoBufPacked$ObjectWriter.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ObjectWriter',
+    interfaces: [ProtoBufPacked$ProtobufWriter]
+  };
+  function ProtoBufPacked$MapEntryWriter($outer, parentTag, parentEncoder) {
+    this.$outer = $outer;
+    ProtoBufPacked$ObjectWriter.call(this, this.$outer, parentTag, parentEncoder);
+  }
+  ProtoBufPacked$MapEntryWriter.prototype.getTag_fr5t0y$ = function ($receiver, index) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    if (index === 0) {
+      return to(1, (tmp$_0 = (tmp$ = this.parentTag) != null ? tmp$.second : null) != null ? tmp$_0 : ProtoNumberType.DEFAULT);
+    }
+     else {
+      return to(2, (tmp$_2 = (tmp$_1 = this.parentTag) != null ? tmp$_1.second : null) != null ? tmp$_2 : ProtoNumberType.DEFAULT);
+    }
+  };
+  ProtoBufPacked$MapEntryWriter.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MapEntryWriter',
+    interfaces: [ProtoBufPacked$ObjectWriter]
+  };
+  function ProtoBufPacked$RepeatedWriter($outer, encoder, curTag) {
+    this.$outer = $outer;
+    ProtoBufPacked$ProtobufWriter.call(this, this.$outer, encoder);
+    this.curTag = curTag;
+  }
+  ProtoBufPacked$RepeatedWriter.prototype.getTag_fr5t0y$ = function ($receiver, index) {
+    return this.curTag;
+  };
+  ProtoBufPacked$RepeatedWriter.prototype.shouldWriteElement_6zine4$ = function (desc, tag, index) {
+    return index !== 0;
+  };
+  ProtoBufPacked$RepeatedWriter.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RepeatedWriter',
+    interfaces: [ProtoBufPacked$ProtobufWriter]
+  };
+  function ProtoBufPacked$ProtobufEncoder(out) {
+    this.out = out;
+  }
+  ProtoBufPacked$ProtobufEncoder.prototype.writeObject_ir89t6$ = function (bytes, tag) {
+    var header = this.encode32_0(tag << 3 | 2);
+    var len = this.encode32_0(bytes.length);
+    this.out.write_fqrh44$(header);
+    this.out.write_fqrh44$(len);
+    this.out.write_fqrh44$(bytes);
+  };
+  ProtoBufPacked$ProtobufEncoder.prototype.writeInt_hp6twd$ = function (value, tag, format) {
+    var wireType = format === ProtoNumberType.FIXED ? 5 : 0;
+    var header = this.encode32_0(tag << 3 | wireType);
+    var content = this.encode32_0(value, format);
+    this.out.write_fqrh44$(header);
+    this.out.write_fqrh44$(content);
+  };
+  ProtoBufPacked$ProtobufEncoder.prototype.writeLong_scxzc4$ = function (value, tag, format) {
+    var wireType = format === ProtoNumberType.FIXED ? 1 : 0;
+    var header = this.encode32_0(tag << 3 | wireType);
+    var content = this.encode64_0(value, format);
+    this.out.write_fqrh44$(header);
+    this.out.write_fqrh44$(content);
+  };
+  ProtoBufPacked$ProtobufEncoder.prototype.writeString_bm4lxs$ = function (value, tag) {
+    var bytes = toUtf8Bytes(value);
+    this.writeObject_ir89t6$(bytes, tag);
+  };
+  ProtoBufPacked$ProtobufEncoder.prototype.writeDouble_12fank$ = function (value, tag) {
+    var header = this.encode32_0(tag << 3 | 1);
+    var content = ByteBuffer.Companion.allocate_za3lpa$(8).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).putDouble_14dthe$(value).array();
+    this.out.write_fqrh44$(header);
+    this.out.write_fqrh44$(content);
+  };
+  ProtoBufPacked$ProtobufEncoder.prototype.writeFloat_vjorfl$ = function (value, tag) {
+    var header = this.encode32_0(tag << 3 | 5);
+    var content = ByteBuffer.Companion.allocate_za3lpa$(4).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).putFloat_mx4ult$(value).array();
+    this.out.write_fqrh44$(header);
+    this.out.write_fqrh44$(content);
+  };
+  ProtoBufPacked$ProtobufEncoder.prototype.encode32_0 = function (number, format) {
+    if (format === void 0)
+      format = ProtoNumberType.DEFAULT;
+    switch (format.name) {
+      case 'FIXED':
+        return ByteBuffer.Companion.allocate_za3lpa$(4).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).putInt_za3lpa$(number).array();
+      case 'DEFAULT':
+        return ProtoBufPacked$Varint_getInstance().encodeVarint_8e33dg$(Kotlin.Long.fromInt(number));
+      case 'SIGNED':
+        return ProtoBufPacked$Varint_getInstance().encodeVarint_kcn2v3$(number << 1 ^ number >> 31);
+      default:return Kotlin.noWhenBranchMatched();
+    }
+  };
+  ProtoBufPacked$ProtobufEncoder.prototype.encode64_0 = function (number, format) {
+    if (format === void 0)
+      format = ProtoNumberType.DEFAULT;
+    switch (format.name) {
+      case 'FIXED':
+        return ByteBuffer.Companion.allocate_za3lpa$(8).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).putLong_s8cxhz$(number).array();
+      case 'DEFAULT':
+        return ProtoBufPacked$Varint_getInstance().encodeVarint_8e33dg$(number);
+      case 'SIGNED':
+        return ProtoBufPacked$Varint_getInstance().encodeVarint_8e33dg$(number.shiftLeft(1).xor(number.shiftRight(63)));
+      default:return Kotlin.noWhenBranchMatched();
+    }
+  };
+  ProtoBufPacked$ProtobufEncoder.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ProtobufEncoder',
+    interfaces: []
+  };
+  function ProtoBufPacked$ProtobufReader($outer, decoder) {
+    this.$outer = $outer;
+    TaggedInput.call(this);
+    this.decoder = decoder;
+    this.context = this.$outer.context;
+    this.indexByTag_0 = LinkedHashMap_init();
+  }
+  ProtoBufPacked$ProtobufReader.prototype.findIndexByTag_0 = function (desc, serialId) {
+    var tmp$;
+    var $receiver = until(0, desc.associatedFieldsCount);
+    var firstOrNull$result;
+    firstOrNull$break: do {
+      var tmp$_0;
+      tmp$_0 = $receiver.iterator();
+      while (tmp$_0.hasNext()) {
+        var element = tmp$_0.next();
+        if (this.getTag_fr5t0y$(desc, element).first === serialId) {
+          firstOrNull$result = element;
+          break firstOrNull$break;
+        }
+      }
+      firstOrNull$result = null;
+    }
+     while (false);
+    return (tmp$ = firstOrNull$result) != null ? tmp$ : -1;
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readBegin_276rha$ = function (desc, typeParams) {
+    switch (desc.kind.name) {
+      case 'LIST':
+      case 'MAP':
+      case 'SET':
+        return new ProtoBufPacked$RepeatedReader(this.$outer, this.decoder, this.currentTag);
+      case 'CLASS':
+      case 'OBJECT':
+      case 'SEALED':
+      case 'POLYMORPHIC':
+        return new ProtoBufPacked$ProtobufReader(this.$outer, ProtoBufPacked$Companion_getInstance().makeDelimited_0(this.decoder, this.currentTagOrNull));
+      case 'ENTRY':
+        return new ProtoBufPacked$MapEntryReader(this.$outer, ProtoBufPacked$Companion_getInstance().makeDelimited_0(this.decoder, this.currentTagOrNull), this.currentTagOrNull);
+      default:throw new SerializationException('Primitives are not supported at top-level');
+    }
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedBoolean_11rb$ = function (tag) {
+    switch (this.decoder.nextInt_bmwen1$(ProtoNumberType.DEFAULT)) {
+      case 0:
+        return false;
+      case 1:
+        return true;
+      default:throw new ProtobufDecodingException('Expected boolean value');
+    }
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedByte_11rb$ = function (tag) {
+    return toByte(this.decoder.nextInt_bmwen1$(tag.second));
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedShort_11rb$ = function (tag) {
+    return toShort(this.decoder.nextInt_bmwen1$(tag.second));
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedInt_11rb$ = function (tag) {
+    return this.decoder.nextInt_bmwen1$(tag.second);
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedLong_11rb$ = function (tag) {
+    return this.decoder.nextLong_bmwen1$(tag.second);
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedFloat_11rb$ = function (tag) {
+    return this.decoder.nextFloat();
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedDouble_11rb$ = function (tag) {
+    return this.decoder.nextDouble();
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedChar_11rb$ = function (tag) {
+    return toBoxedChar(toChar(this.decoder.nextInt_bmwen1$(tag.second)));
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedString_11rb$ = function (tag) {
+    return this.decoder.nextString();
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readTaggedEnum_bu9nms$ = function (tag, enumClass) {
+    return enumFromOrdinal(enumClass, this.decoder.nextInt_bmwen1$(ProtoNumberType.DEFAULT));
+  };
+  ProtoBufPacked$ProtobufReader.prototype.getTag_fr5t0y$ = function ($receiver, index) {
+    return ProtoBufPacked$Companion_getInstance().getProtoDesc_0($receiver, index);
+  };
+  ProtoBufPacked$ProtobufReader.prototype.readElement_f6e2p$ = function (desc) {
+    while (true) {
+      if (this.decoder.curId === -1) {
+        this.decoder.endObject();
+        return -1;
+      }
+      var $receiver = this.indexByTag_0;
+      var key = this.decoder.curId;
+      var tmp$;
+      var value = $receiver.get_11rb$(key);
+      if (value == null) {
+        var answer = this.findIndexByTag_0(desc, this.decoder.curId);
+        $receiver.put_xwzc9p$(key, answer);
+        tmp$ = answer;
+      }
+       else {
+        tmp$ = value;
+      }
+      var ind = tmp$;
+      if (ind === -1) {
+        this.decoder.skipElement();
+      }
+       else
+        return ind;
+    }
+  };
+  ProtoBufPacked$ProtobufReader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ProtobufReader',
+    interfaces: [TaggedInput]
+  };
+  function ProtoBufPacked$RepeatedReader($outer, decoder, targetTag) {
+    this.$outer = $outer;
+    ProtoBufPacked$ProtobufReader.call(this, this.$outer, decoder);
+    this.targetTag = targetTag;
+    this.ind_0 = 0;
+    this.remainingSize_8be2vx$ = 0;
+  }
+  ProtoBufPacked$RepeatedReader.prototype.readTaggedInt_11rb$ = function (tag) {
+    return this.decoder.nextRepeatedInt_x3z0la$(this, tag.second);
+  };
+  ProtoBufPacked$RepeatedReader.prototype.readTaggedLong_11rb$ = function (tag) {
+    return this.decoder.nextRepeatedLong_x3z0la$(this, tag.second);
+  };
+  ProtoBufPacked$RepeatedReader.prototype.readElement_f6e2p$ = function (desc) {
+    return this.decoder.curId === this.targetTag.first ? (this.ind_0 = this.ind_0 + 1 | 0, this.ind_0) : -1;
+  };
+  ProtoBufPacked$RepeatedReader.prototype.getTag_fr5t0y$ = function ($receiver, index) {
+    return this.targetTag;
+  };
+  ProtoBufPacked$RepeatedReader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RepeatedReader',
+    interfaces: [ProtoBufPacked$ProtobufReader]
+  };
+  function ProtoBufPacked$MapEntryReader($outer, decoder, parentTag) {
+    this.$outer = $outer;
+    ProtoBufPacked$ProtobufReader.call(this, this.$outer, decoder);
+    this.parentTag = parentTag;
+  }
+  ProtoBufPacked$MapEntryReader.prototype.getTag_fr5t0y$ = function ($receiver, index) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    if (index === 0) {
+      return to(1, (tmp$_0 = (tmp$ = this.parentTag) != null ? tmp$.second : null) != null ? tmp$_0 : ProtoNumberType.DEFAULT);
+    }
+     else {
+      return to(2, (tmp$_2 = (tmp$_1 = this.parentTag) != null ? tmp$_1.second : null) != null ? tmp$_2 : ProtoNumberType.DEFAULT);
+    }
+  };
+  ProtoBufPacked$MapEntryReader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MapEntryReader',
+    interfaces: [ProtoBufPacked$ProtobufReader]
+  };
+  function ProtoBufPacked$ProtobufDecoder(inp) {
+    this.inp = inp;
+    this.curTag = to(-1, -1);
+    this.readTag();
+  }
+  Object.defineProperty(ProtoBufPacked$ProtobufDecoder.prototype, 'curId', {
+    get: function () {
+      return this.curTag.first;
+    }
+  });
+  ProtoBufPacked$ProtobufDecoder.prototype.readTag = function () {
+    var tmp$;
+    var header = this.decode32_0(void 0, true);
+    if (header === -1) {
+      tmp$ = to(-1, -1);
+    }
+     else {
+      var wireType = header & 7;
+      var fieldId = header >>> 3;
+      tmp$ = to(fieldId, wireType);
+    }
+    this.curTag = tmp$;
+    return this.curTag;
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.skipElement = function () {
+    switch (this.curTag.second) {
+      case 0:
+        this.nextInt_bmwen1$(ProtoNumberType.DEFAULT);
+        break;
+      case 1:
+        this.nextLong_bmwen1$(ProtoNumberType.FIXED);
+        break;
+      case 2:
+        this.skipObject_0();
+        break;
+      case 5:
+        this.nextInt_bmwen1$(ProtoNumberType.FIXED);
+        break;
+    }
+    this.readTag();
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.skipObject_0 = function () {
+    this.inp.skip_s8cxhz$(Kotlin.Long.fromInt(this.nextLength_0()));
+  };
+  var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
+  ProtoBufPacked$ProtobufDecoder.prototype.beginObject = function () {
+    if (this.curTag.second !== 2)
+      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
+    var len = this.decode32_0();
+    if (!(len >= 0)) {
+      var message = 'Check failed.';
+      throw IllegalStateException_init(message.toString());
+    }
+    this.inp.pushLimit_za3lpa$(len);
+    this.readTag();
+    return len;
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.endObject = function () {
+    this.inp.skipAllAvailableBytes();
+    this.inp.popLimit();
+    this.readTag();
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.nextInt_bmwen1$ = function (format) {
+    var wireType = format === ProtoNumberType.FIXED ? 5 : 0;
+    if (wireType !== this.curTag.second)
+      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
+    var ans = this.decode32_0(format);
+    this.readTag();
+    return ans;
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.nextLong_bmwen1$ = function (format) {
+    var wireType = format === ProtoNumberType.FIXED ? 1 : 0;
+    if (wireType !== this.curTag.second)
+      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
+    var ans = this.decode64_0(format);
+    this.readTag();
+    return ans;
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.nextRepeatedInt_x3z0la$ = function (reader, format) {
+    if (this.curTag.second !== 2)
+      return this.nextInt_bmwen1$(format);
+    else {
+      if (reader.remainingSize_8be2vx$ === 0) {
+        reader.remainingSize_8be2vx$ = this.nextLength_0();
+      }
+      var availableBefore = this.inp.available();
+      var ans = this.decode32_0(format);
+      reader.remainingSize_8be2vx$ = reader.remainingSize_8be2vx$ - (availableBefore - this.inp.available()) | 0;
+      if (reader.remainingSize_8be2vx$ === 0) {
+        this.readTag();
+      }
+      return ans;
+    }
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.nextRepeatedLong_x3z0la$ = function (reader, format) {
+    if (this.curTag.second !== 2)
+      return this.nextLong_bmwen1$(format);
+    else {
+      if (reader.remainingSize_8be2vx$ === 0) {
+        reader.remainingSize_8be2vx$ = this.nextLength_0();
+      }
+      var availableBefore = this.inp.available();
+      var ans = this.decode64_0(format);
+      reader.remainingSize_8be2vx$ = reader.remainingSize_8be2vx$ - (availableBefore - this.inp.available()) | 0;
+      if (reader.remainingSize_8be2vx$ === 0) {
+        this.readTag();
+      }
+      return ans;
+    }
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.nextFloat = function () {
+    if (this.curTag.second !== 5)
+      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
+    var ans = this.inp.readToByteBuffer_za3lpa$(4).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).getFloat();
+    this.readTag();
+    return ans;
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.nextDouble = function () {
+    if (this.curTag.second !== 1)
+      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
+    var ans = this.inp.readToByteBuffer_za3lpa$(8).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).getDouble();
+    this.readTag();
+    return ans;
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.nextString = function () {
+    var bytes = this.inp.readExactNBytes_za3lpa$(this.nextLength_0());
+    var str = stringFromUtf8Bytes(bytes);
+    this.readTag();
+    return str;
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.nextLength_0 = function () {
+    if (this.curTag.second !== 2)
+      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
+    var len = this.decode32_0();
+    if (!(len >= 0)) {
+      var message = 'Check failed.';
+      throw IllegalStateException_init(message.toString());
+    }
+    return len;
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.decode32_0 = function (format, eofAllowed) {
+    if (format === void 0)
+      format = ProtoNumberType.DEFAULT;
+    if (eofAllowed === void 0)
+      eofAllowed = false;
+    switch (format.name) {
+      case 'DEFAULT':
+        return ProtoBufPacked$Varint_getInstance().decodeVarint_8n4976$(this.inp, eofAllowed);
+      case 'SIGNED':
+        return ProtoBufPacked$Varint_getInstance().decodeSignedVarintInt_huega3$(this.inp);
+      case 'FIXED':
+        return this.inp.readToByteBuffer_za3lpa$(4).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).getInt();
+      default:return Kotlin.noWhenBranchMatched();
+    }
+  };
+  ProtoBufPacked$ProtobufDecoder.prototype.decode64_0 = function (format) {
+    if (format === void 0)
+      format = ProtoNumberType.DEFAULT;
+    switch (format.name) {
+      case 'DEFAULT':
+        return ProtoBufPacked$Varint_getInstance().decodeVarlong_8n4976$(this.inp);
+      case 'SIGNED':
+        return ProtoBufPacked$Varint_getInstance().decodeSignedVarintLong_huega3$(this.inp);
+      case 'FIXED':
+        return this.inp.readToByteBuffer_za3lpa$(8).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).getLong();
+      default:return Kotlin.noWhenBranchMatched();
+    }
+  };
+  ProtoBufPacked$ProtobufDecoder.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ProtobufDecoder',
+    interfaces: []
+  };
+  function ProtoBufPacked$Varint() {
+    ProtoBufPacked$Varint_instance = this;
+  }
+  ProtoBufPacked$Varint.prototype.encodeVarint_kcn2v3$ = function (inp) {
+    var tmp$;
+    var value = inp;
+    var byteArrayList = new Int8Array(10);
+    var i = 0;
+    while ((value & -128) !== 0) {
+      byteArrayList[tmp$ = i, i = tmp$ + 1 | 0, tmp$] = toByte(value & 127 | 128);
+      value = value >>> 7;
+    }
+    byteArrayList[i] = toByte(value & 127);
+    var out = new Int8Array(i + 1 | 0);
+    while (i >= 0) {
+      out[i] = byteArrayList[i];
+      i = i - 1 | 0;
+    }
+    return out;
+  };
+  ProtoBufPacked$Varint.prototype.encodeVarint_8e33dg$ = function (inp) {
+    var tmp$;
+    var value = inp;
+    var byteArrayList = new Int8Array(10);
+    var i = 0;
+    while (!equals(value.and(L_128), L0)) {
+      byteArrayList[tmp$ = i, i = tmp$ + 1 | 0, tmp$] = toByte(value.and(L127).or(L128).toInt());
+      value = value.shiftRightUnsigned(7);
+    }
+    byteArrayList[i] = toByte(value.and(L127).toInt());
+    var out = new Int8Array(i + 1 | 0);
+    while (i >= 0) {
+      out[i] = byteArrayList[i];
+      i = i - 1 | 0;
+    }
+    return out;
+  };
+  ProtoBufPacked$Varint.prototype.decodeVarint_8n4976$ = function (inp, eofOnStartAllowed) {
+    if (eofOnStartAllowed === void 0)
+      eofOnStartAllowed = false;
+    var result = 0;
+    var shift = 0;
+    var b;
+    do {
+      if (shift >= 32) {
+        throw new ProtobufDecodingException('Varint too long');
+      }
+      b = inp.read();
+      if (b === -1) {
+        if (eofOnStartAllowed && shift === 0)
+          return -1;
+        else
+          throw new IOException('Unexpected EOF');
+      }
+      result = result | (b & 127) << shift;
+      shift = shift + 7 | 0;
+    }
+     while ((b & 128) !== 0);
+    return result;
+  };
+  ProtoBufPacked$Varint.prototype.decodeVarlong_8n4976$ = function (inp, eofOnStartAllowed) {
+    if (eofOnStartAllowed === void 0)
+      eofOnStartAllowed = false;
+    var result = L0;
+    var shift = 0;
+    var b;
+    do {
+      if (shift >= 64) {
+        throw new ProtobufDecodingException('Varint too long');
+      }
+      b = inp.read();
+      if (b === -1) {
+        if (eofOnStartAllowed && shift === 0)
+          return L_1;
+        else
+          throw new IOException('Unexpected EOF');
+      }
+      result = result.or(Kotlin.Long.fromInt(b).and(L127).shiftLeft(shift));
+      shift = shift + 7 | 0;
+    }
+     while ((b & 128) !== 0);
+    return result;
+  };
+  ProtoBufPacked$Varint.prototype.decodeSignedVarintInt_huega3$ = function (inp) {
+    var raw = this.decodeVarint_8n4976$(inp);
+    var temp = (raw << 31 >> 31 ^ raw) >> 1;
+    return temp ^ raw & -2147483648;
+  };
+  ProtoBufPacked$Varint.prototype.decodeSignedVarintLong_huega3$ = function (inp) {
+    var raw = this.decodeVarlong_8n4976$(inp);
+    var temp = raw.shiftLeft(63).shiftRight(63).xor(raw).shiftRight(1);
+    return temp.xor(raw.and(L_9223372036854775808));
+  };
+  ProtoBufPacked$Varint.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Varint',
+    interfaces: []
+  };
+  var ProtoBufPacked$Varint_instance = null;
+  function ProtoBufPacked$Varint_getInstance() {
+    if (ProtoBufPacked$Varint_instance === null) {
+      new ProtoBufPacked$Varint();
+    }
+    return ProtoBufPacked$Varint_instance;
+  }
+  function ProtoBufPacked$Companion() {
+    ProtoBufPacked$Companion_instance = this;
+    this.VARINT_0 = 0;
+    this.i64_0 = 1;
+    this.SIZE_DELIMITED_0 = 2;
+    this.i32_0 = 5;
+    this.plain = new ProtoBufPacked();
+  }
+  ProtoBufPacked$Companion.prototype.makeDelimited_0 = function (decoder, parentTag) {
+    if (parentTag != null) {
+      decoder.beginObject();
+    }
+    return decoder;
+  };
+  ProtoBufPacked$Companion.prototype.getProtoDesc_0 = function ($receiver, index) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var $receiver_0 = $receiver.getAnnotationsForIndex_za3lpa$(index);
+    var destination = ArrayList_init();
+    var tmp$_3;
+    tmp$_3 = $receiver_0.iterator();
+    while (tmp$_3.hasNext()) {
+      var element = tmp$_3.next();
+      if (Kotlin.isType(element, SerialId))
+        destination.add_11rb$(element);
+    }
+    var tag = (tmp$_0 = (tmp$ = onlySingleOrNull(destination)) != null ? tmp$.id : null) != null ? tmp$_0 : index;
+    var $receiver_1 = $receiver.getAnnotationsForIndex_za3lpa$(index);
+    var destination_0 = ArrayList_init();
+    var tmp$_4;
+    tmp$_4 = $receiver_1.iterator();
+    while (tmp$_4.hasNext()) {
+      var element_0 = tmp$_4.next();
+      if (Kotlin.isType(element_0, ProtoType))
+        destination_0.add_11rb$(element_0);
+    }
+    var format = (tmp$_2 = (tmp$_1 = onlySingleOrNull(destination_0)) != null ? tmp$_1.type : null) != null ? tmp$_2 : ProtoNumberType.DEFAULT;
+    return to(tag, format);
+  };
+  ProtoBufPacked$Companion.prototype.dump_20fw5n$ = function (saver, obj) {
+    return this.plain.dump_20fw5n$(saver, obj);
+  };
+  ProtoBufPacked$Companion.prototype.dump_issdgt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.Companion.dump_issdgt$', wrapFunction(function () {
+    var getKClass = Kotlin.getKClass;
+    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
+    return function (T_0, isT, obj) {
+      var $this = this.plain;
+      return $this.dump_20fw5n$(klassSerializer($this.context, getKClass(T_0)), obj);
+    };
+  }));
+  ProtoBufPacked$Companion.prototype.dumps_issdgt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.Companion.dumps_issdgt$', wrapFunction(function () {
+    var internal = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.internal;
+    var getKClass = Kotlin.getKClass;
+    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
+    return function (T_0, isT, obj) {
+      var $this = this.plain;
+      return internal.HexConverter.printHexBinary_1fhb37$($this.dump_20fw5n$(klassSerializer($this.context, getKClass(T_0)), obj), true);
+    };
+  }));
+  ProtoBufPacked$Companion.prototype.load_8dtdds$ = function (loader, raw) {
+    return this.plain.load_8dtdds$(loader, raw);
+  };
+  ProtoBufPacked$Companion.prototype.load_5geitx$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.Companion.load_5geitx$', wrapFunction(function () {
+    var getKClass = Kotlin.getKClass;
+    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
+    return function (T_0, isT, raw) {
+      var $this = this.plain;
+      return $this.load_8dtdds$(klassSerializer($this.context, getKClass(T_0)), raw);
+    };
+  }));
+  ProtoBufPacked$Companion.prototype.loads_3zqiyt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.Companion.loads_3zqiyt$', wrapFunction(function () {
+    var internal = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.internal;
+    var getKClass = Kotlin.getKClass;
+    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
+    return function (T_0, isT, hex) {
+      var $this = this.plain;
+      var raw = internal.HexConverter.parseHexBinary_61zpoe$(hex);
+      return $this.load_8dtdds$(klassSerializer($this.context, getKClass(T_0)), raw);
+    };
+  }));
+  ProtoBufPacked$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var ProtoBufPacked$Companion_instance = null;
+  function ProtoBufPacked$Companion_getInstance() {
+    if (ProtoBufPacked$Companion_instance === null) {
+      new ProtoBufPacked$Companion();
+    }
+    return ProtoBufPacked$Companion_instance;
+  }
+  ProtoBufPacked.prototype.dump_20fw5n$ = function (saver, obj) {
+    var output = ByteArrayOutputStream_init();
+    var dumper = new ProtoBufPacked$ProtobufWriter(this, new ProtoBufPacked$ProtobufEncoder(output));
+    dumper.write_jsy488$(saver, obj);
+    return output.toByteArray();
+  };
+  ProtoBufPacked.prototype.dump_issdgt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.dump_issdgt$', wrapFunction(function () {
+    var getKClass = Kotlin.getKClass;
+    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
+    return function (T_0, isT, obj) {
+      return this.dump_20fw5n$(klassSerializer(this.context, getKClass(T_0)), obj);
+    };
+  }));
+  ProtoBufPacked.prototype.dumps_issdgt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.dumps_issdgt$', wrapFunction(function () {
+    var internal = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.internal;
+    var getKClass = Kotlin.getKClass;
+    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
+    return function (T_0, isT, obj) {
+      return internal.HexConverter.printHexBinary_1fhb37$(this.dump_20fw5n$(klassSerializer(this.context, getKClass(T_0)), obj), true);
+    };
+  }));
+  ProtoBufPacked.prototype.load_8dtdds$ = function (loader, raw) {
+    var stream = LimitedByteArrayInputStream_init(raw);
+    var reader = new ProtoBufPacked$ProtobufReader(this, new ProtoBufPacked$ProtobufDecoder(stream));
+    return reader.read_rf0fz3$(loader);
+  };
+  ProtoBufPacked.prototype.load_5geitx$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.load_5geitx$', wrapFunction(function () {
+    var getKClass = Kotlin.getKClass;
+    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
+    return function (T_0, isT, raw) {
+      return this.load_8dtdds$(klassSerializer(this.context, getKClass(T_0)), raw);
+    };
+  }));
+  ProtoBufPacked.prototype.loads_3zqiyt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.loads_3zqiyt$', wrapFunction(function () {
+    var internal = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.internal;
+    var getKClass = Kotlin.getKClass;
+    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
+    return function (T_0, isT, hex) {
+      var raw = internal.HexConverter.parseHexBinary_61zpoe$(hex);
+      return this.load_8dtdds$(klassSerializer(this.context, getKClass(T_0)), raw);
+    };
+  }));
+  ProtoBufPacked.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ProtoBufPacked',
+    interfaces: []
+  };
+  function LimitedByteArrayInputStream(stream) {
+    this.stream = stream;
+    this.pos_0 = 0;
+    this.limitStack_0 = mutableListOf([0, this.stream.available()]);
+  }
+  Object.defineProperty(LimitedByteArrayInputStream.prototype, 'curLimitPos_0', {
+    get: function () {
+      return last(this.limitStack_0);
+    }
+  });
+  LimitedByteArrayInputStream.prototype.pushLimit_za3lpa$ = function (limit) {
+    var pushLimitPos = limit + this.pos_0 | 0;
+    if (pushLimitPos > this.curLimitPos_0) {
+      throw new IndexOutOfBoundsException('New limit exceeds current limit: ' + pushLimitPos + ' > ' + this.curLimitPos_0);
+    }
+    this.limitStack_0.add_11rb$(pushLimitPos);
+  };
+  LimitedByteArrayInputStream.prototype.popLimit = function () {
+    return this.limitStack_0.removeAt_za3lpa$(get_lastIndex(this.limitStack_0));
+  };
+  LimitedByteArrayInputStream.prototype.readExactNBytes_za3lpa$ = function (bytes) {
+    var array = new Int8Array(bytes);
+    var read = 0;
+    while (read < bytes) {
+      var i = this.read_mj6st8$(array, read, bytes - read | 0);
+      if (i === -1)
+        throw new IOException('Unexpected EOF');
+      read = read + i | 0;
+    }
+    return array;
+  };
+  LimitedByteArrayInputStream.prototype.readToByteBuffer_za3lpa$ = function (bytes) {
+    var arr = this.readExactNBytes_za3lpa$(bytes);
+    var buf = ByteBuffer.Companion.allocate_za3lpa$(bytes);
+    buf.put_fqrh44$(arr).flip();
+    return buf;
+  };
+  LimitedByteArrayInputStream.prototype.readAllAvailableBytes = function () {
+    return this.readExactNBytes_za3lpa$(this.available());
+  };
+  LimitedByteArrayInputStream.prototype.skipAllAvailableBytes = function () {
+    var av = this.available();
+    if (av > 0) {
+      this.skip_s8cxhz$(Kotlin.Long.fromInt(av));
+    }
+  };
+  LimitedByteArrayInputStream.prototype.available = function () {
+    return this.curLimitPos_0 - this.pos_0 | 0;
+  };
+  LimitedByteArrayInputStream.prototype.read = function () {
+    var tmp$;
+    if (this.pos_0 < this.curLimitPos_0) {
+      this.pos_0 = this.pos_0 + 1 | 0;
+      tmp$ = this.stream.read();
+    }
+     else {
+      tmp$ = -1;
+    }
+    return tmp$;
+  };
+  LimitedByteArrayInputStream.prototype.read_fqrh44$ = function (b) {
+    var b_0 = this.available();
+    var len = Math_0.min(b.length, b_0);
+    return this.read_mj6st8$(b, 0, len);
+  };
+  LimitedByteArrayInputStream.prototype.read_mj6st8$ = function (b, offset, len) {
+    var b_0 = this.available();
+    var alen = Math_0.min(len, b_0);
+    var read = this.stream.read_mj6st8$(b, offset, len);
+    this.pos_0 = this.pos_0 + read | 0;
+    return read;
+  };
+  LimitedByteArrayInputStream.prototype.skip_s8cxhz$ = function (n) {
+    var a = Kotlin.Long.fromInt(this.available());
+    var an = a.compareTo_11rb$(n) <= 0 ? a : n;
+    var skipped = this.stream.skip_s8cxhz$(an);
+    this.pos_0 = this.pos_0 + skipped.toInt() | 0;
+    return skipped;
+  };
+  LimitedByteArrayInputStream.prototype.close = function () {
+    this.stream.close();
+  };
+  LimitedByteArrayInputStream.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LimitedByteArrayInputStream',
+    interfaces: []
+  };
+  function LimitedByteArrayInputStream_init(buf, $this) {
+    $this = $this || Object.create(LimitedByteArrayInputStream.prototype);
+    LimitedByteArrayInputStream.call($this, ByteArrayInputStream_init(buf));
+    return $this;
+  }
   function ShadowMap() {
   }
   ShadowMap.$metadata$ = {
@@ -28265,9 +29171,21 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var halfExtX = node.bounds.size.x * 0.5;
     var halfExtY = node.bounds.size.y * 0.5;
     var halfExtZ = node.bounds.size.z * 0.5;
-    var tmp$ = ray.distanceToPoint_czzhiu$(node.bounds.center);
     var x = halfExtX * halfExtX + halfExtY * halfExtY + halfExtZ * halfExtZ;
-    var dist = tmp$ - Math_0.sqrt(x);
+    var r = Math_0.sqrt(x);
+    var $receiver = ray.distanceToPoint_czzhiu$(node.bounds.center) - r;
+    var max = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+    var clamp$result;
+    if ($receiver < 0.0) {
+      clamp$result = 0.0;
+    }
+     else if ($receiver > max) {
+      clamp$result = max;
+    }
+     else {
+      clamp$result = $receiver;
+    }
+    var dist = clamp$result;
     return dist * dist;
   };
   RayDistance.prototype.itemDistanceToRay_t0er6w$ = function (tree, item, ray) {
@@ -28524,6 +29442,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   NearestToRayTraverser.prototype.setup_nvyeur$ = function (ray) {
     this.ray.set_nvyeur$(ray);
     this.nearest = null;
+    this.sqrDist_i0gtwi$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     return this;
   };
   NearestToRayTraverser.prototype.onFinish_m6hlto$ = function (tree) {
@@ -32703,6 +33622,23 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     get: AttributeList$$serializer_getInstance
   });
   package$serialization.AttributeList = AttributeList;
+  ProtoBufPacked.ProtobufWriter = ProtoBufPacked$ProtobufWriter;
+  ProtoBufPacked.ObjectWriter = ProtoBufPacked$ObjectWriter;
+  ProtoBufPacked.MapEntryWriter = ProtoBufPacked$MapEntryWriter;
+  ProtoBufPacked.RepeatedWriter = ProtoBufPacked$RepeatedWriter;
+  ProtoBufPacked.ProtobufEncoder = ProtoBufPacked$ProtobufEncoder;
+  ProtoBufPacked.ProtobufReader = ProtoBufPacked$ProtobufReader;
+  ProtoBufPacked.RepeatedReader = ProtoBufPacked$RepeatedReader;
+  ProtoBufPacked.ProtobufDecoder = ProtoBufPacked$ProtobufDecoder;
+  Object.defineProperty(ProtoBufPacked, 'Varint', {
+    get: ProtoBufPacked$Varint_getInstance
+  });
+  Object.defineProperty(ProtoBufPacked, 'Companion', {
+    get: ProtoBufPacked$Companion_getInstance
+  });
+  package$serialization.ProtoBufPacked = ProtoBufPacked;
+  package$serialization.LimitedByteArrayInputStream_init_fqrh44$ = LimitedByteArrayInputStream_init;
+  package$serialization.LimitedByteArrayInputStream = LimitedByteArrayInputStream;
   package$util.ShadowMap = ShadowMap;
   Object.defineProperty(SimpleShadowMap, 'Companion', {
     get: SimpleShadowMap$Companion_getInstance
@@ -33236,8 +34172,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   GL_RENDERBUFFER_BINDING = 36007;
   GL_MAX_RENDERBUFFER_SIZE = 34024;
   GL_INVALID_FRAMEBUFFER_OPERATION = 1286;
-  DEG_2_RAD = math.PI / 180.0;
-  RAD_2_DEG = 180.0 / math.PI;
+  DEG_2_RAD = 3.141592653589793 / 180.0;
+  RAD_2_DEG = 180.0 / 3.141592653589793;
   FUZZY_EQ_F = 1.0E-5;
   FUZZY_EQ_D = 1.0E-10;
   FLT_EPSILON = 1.1920929E-7;
