@@ -3750,6 +3750,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function main() {
     var ctx = createContext();
+    Demo$Companion_getInstance().setProperty_bm4g0d$('globe.elevationUrl', 'https://s3.eu-central-1.amazonaws.com/fabmax-kool-globe/dem');
     ctx.assetMgr.assetsBaseDir = '../assets';
     new Demo(ctx, getParams().get_11rb$('demo'));
   }
