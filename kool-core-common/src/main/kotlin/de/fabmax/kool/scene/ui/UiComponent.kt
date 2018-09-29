@@ -114,8 +114,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
             super.rayTest(test)
             if (hitNode != test.hitNode && test.hitNode !is UiComponent) {
                 // an element of this component (and not a sub-component in case this is a container) was hit!
-                test.hitNode = this
-                test.hitPositionLocal.subtract(contentBounds.min)
+                test.setHit(this, test.hitPosition)
             }
         }
     }

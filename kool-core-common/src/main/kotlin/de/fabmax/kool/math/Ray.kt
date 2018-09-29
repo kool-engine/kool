@@ -58,24 +58,44 @@ class RayTest {
 
     val ray = Ray()
 
-    val hitPosition = MutableVec3f()
-    val hitPositionLocal = MutableVec3f()
+    private val intHitPosition = MutableVec3f()
+    private val intHitPositionLocal = MutableVec3f()
+
+    val hitPosition: Vec3f get() = intHitPosition
+    val hitPositionLocal : Vec3f get() = intHitPositionLocal
     var hitNode: Node? = null
+        private set
     var hitDistanceSqr = Float.MAX_VALUE
+        private set
     val isHit: Boolean
         get() = hitDistanceSqr < Float.MAX_VALUE
 
     fun clear() {
-        hitPosition.set(Vec3f.ZERO)
-        hitPositionLocal.set(Vec3f.ZERO)
+        intHitPosition.set(Vec3f.ZERO)
+        intHitPositionLocal.set(Vec3f.ZERO)
         hitNode = null
         hitDistanceSqr = Float.MAX_VALUE
     }
 
-    fun computeHitPosition() {
+    fun setHit(node: Node, distance: Float) {
+        intHitPosition.set(ray.direction).scale(distance).add(ray.origin)
+        setHit(node, intHitPosition)
+    }
+
+    fun setHit(node: Node, position: Vec3f) {
+        intHitPosition.set(position)
+        intHitPositionLocal.set(position)
+        hitNode = node
+        hitDistanceSqr = hitPosition.sqrDistance(ray.origin)
+    }
+
+    fun transformBy(matrix: Mat4f) {
+        matrix.transform(ray.origin)
+        matrix.transform(ray.direction, 0f)
+        ray.direction.norm()
         if (isHit) {
-            val dist = sqrt(hitDistanceSqr.toDouble()).toFloat()
-            hitPosition.set(ray.direction).norm().scale(dist).add(ray.origin)
+            matrix.transform(intHitPosition)
+            hitDistanceSqr = hitPosition.sqrDistance(ray.origin)
         }
     }
 }

@@ -353,7 +353,7 @@ class SimplificationDemo(ctx: KoolContext) {
         private val tmpVec2 = MutableVec3f()
         private val tmpVec3 = MutableVec3f()
 
-        override fun itemDistanceToRay(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, ray: Ray): Float {
+        override fun itemSqrDistanceToRay(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, ray: Ray): Float {
             val pt = nearestPointOnEdge(item, ray)
             return ray.sqrDistanceToPoint(pt)
         }

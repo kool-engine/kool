@@ -117,16 +117,12 @@ open class TransformGroup(name: String? = null) : Group(name) {
         if (!isIdentity) {
             // transform ray to local coordinates
             checkInverse()
-            invTransform.transform(test.ray.origin, 1f)
-            invTransform.transform(test.ray.direction, 0f)
+            test.transformBy(invTransform)
         }
-
         super.rayTest(test)
-
         if (!isIdentity) {
             // transform ray back to previous coordinates
-            transform.transform(test.ray.origin, 1f)
-            transform.transform(test.ray.direction, 0f)
+            test.transformBy(transform)
         }
     }
 

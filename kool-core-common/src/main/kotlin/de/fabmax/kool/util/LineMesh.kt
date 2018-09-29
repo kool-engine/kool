@@ -63,28 +63,32 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
             throw KoolException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")
         }
 
-        val v = triMesh[0]
-        for (i in 0 until triMesh.numVertices) {
-            v.index = i
-            meshData.addVertex {
-                position.set(v.position)
-                color.set(lineColor ?: v.color)
+        meshData.batchUpdate {
+            val v = triMesh[0]
+            for (i in 0 until triMesh.numVertices) {
+                v.index = i
+                meshData.addVertex {
+                    position.set(v.position)
+                    color.set(lineColor ?: v.color)
+                }
             }
-        }
-        for (i in 0 until triMesh.numIndices step 3) {
-            val i1 = triMesh.vertexList.indices[i]
-            val i2 = triMesh.vertexList.indices[i + 1]
-            val i3 = triMesh.vertexList.indices[i + 2]
-            meshData.addIndices(i1, i2, i2, i3, i3, i1)
+            for (i in 0 until triMesh.numIndices step 3) {
+                val i1 = triMesh.vertexList.indices[i]
+                val i2 = triMesh.vertexList.indices[i + 1]
+                val i3 = triMesh.vertexList.indices[i + 2]
+                meshData.addIndices(i1, i2, i2, i3, i3, i1)
+            }
         }
     }
 
     fun addNormals(meshData: MeshData, lineColor: Color? = null, len: Float = 1f) {
-        val tmpN = MutableVec3f()
-        meshData.vertexList.foreach {
-            tmpN.set(it.normal).scale(len).add(it.position)
-            val color = lineColor ?: it.color
-            addLine(it.position, color, tmpN, color)
+        meshData.batchUpdate {
+            val tmpN = MutableVec3f()
+            meshData.vertexList.foreach {
+                tmpN.set(it.normal).scale(len).add(it.position)
+                val color = lineColor ?: it.color
+                addLine(it.position, color, tmpN, color)
+            }
         }
     }
 

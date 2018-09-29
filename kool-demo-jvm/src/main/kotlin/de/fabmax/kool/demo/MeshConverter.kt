@@ -6,8 +6,9 @@ import java.io.FileOutputStream
 
 
 fun main(args: Array<String>) {
-    val meshes = MeshConverter.convertMeshes("docs/assets/player.fbx")
+    val model = MeshConverter.convertMeshes("docs/assets/player.fbx", false)
+    model.lodRootNode[0].printNodeHierarchy(model)
     FileOutputStream("docs/assets/player.kmf").use { out ->
-        out.write(ProtoBuf.dump(meshes[0]))
+        out.write(ProtoBuf.dump(model))
     }
 }

@@ -60,8 +60,10 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
 
     init {
         onHover += { ptr, rt, ctx ->
-            hitDelta.set(rt.hitPositionLocal.x, rt.hitPositionLocal.y).subtract(prevHit)
-            prevHit.set(rt.hitPositionLocal.x, rt.hitPositionLocal.y)
+            val ptX = rt.hitPositionLocal.x - contentBounds.min.x
+            val ptY = rt.hitPositionLocal.y - contentBounds.min.y
+            hitDelta.set(ptX, ptY).subtract(prevHit)
+            prevHit.set(ptX, ptY)
 
             if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown && isOverKnob(prevHit.x, prevHit.y)) {
                 // register drag handler to handle knob movement

@@ -62,7 +62,7 @@ fun globeScene(ctx: KoolContext): List<Scene> {
         ctx.assetMgr.loadAsset("$elevationUrl/meta.pb") { data ->
             // create globe with earth radius
             val earth = Globe(6_371_000.8)
-            ui!!.globe = earth
+            ui.globe = earth
 
             if (data != null) {
                 // deserialize elevation map meta data

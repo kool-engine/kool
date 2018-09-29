@@ -19,7 +19,7 @@ interface SpatialTreeTraverser<T: Any> {
 interface PointDistance<T: Any> {
     fun nodeDistanceToPoint(node: SpatialTree<T>.Node, point: Vec3f): Float = node.bounds.pointDistanceSqr(point)
 
-    fun itemDistanceToPoint(tree: SpatialTree<T>, item: T, point: Vec3f): Float {
+    fun itemSqrDistanceToPoint(tree: SpatialTree<T>, item: T, point: Vec3f): Float {
         val dx = tree.itemAdapter.getCenterX(item) - point.x
         val dy = tree.itemAdapter.getCenterY(item) - point.y
         val dz = tree.itemAdapter.getCenterZ(item) - point.z
@@ -37,7 +37,7 @@ interface RayDistance<T: Any> {
         return dist * dist
     }
 
-    fun itemDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
+    fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
         return ray.sqrDistanceToPoint(tree.itemAdapter.getCenterX(item), tree.itemAdapter.getCenterY(item), tree.itemAdapter.getCenterZ(item))
     }
 }
@@ -77,7 +77,7 @@ open class InRadiusTraverser<T: Any> : CenterPointTraverser<T>() {
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            val dSqr = pointDistance.itemDistanceToPoint(tree, it, center)
+            val dSqr = pointDistance.itemSqrDistanceToPoint(tree, it, center)
             if (dSqr < radiusSqr) {
                 result.add(it)
             }
@@ -135,7 +135,7 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            val dSqr = pointDistance.itemDistanceToPoint(tree, it, center)
+            val dSqr = pointDistance.itemSqrDistanceToPoint(tree, it, center)
             if (dSqr < radiusSqr && (items.size < k || dSqr < items.peek().dSqr)) {
                 insert(it, dSqr)
             }
@@ -171,35 +171,60 @@ open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T> {
         protected set
     var distance = 0f
         protected set
+    var distanceSqr = Float.MAX_VALUE
+        protected set
 
     var rayDistance = object : RayDistance<T> { }
-
-    private var sqrDist = Float.MAX_VALUE
 
     open fun setup(ray: Ray): NearestToRayTraverser<T> {
         this.ray.set(ray)
         nearest = null
-        sqrDist = Float.MAX_VALUE
+        distanceSqr = Float.MAX_VALUE
         return this
     }
 
     override fun onFinish(tree: SpatialTree<T>) {
-        distance = if (nearest != null) sqrt(sqrDist) else Float.MAX_VALUE
+        distance = if (nearest != null) sqrt(distanceSqr) else Float.MAX_VALUE
     }
 
     override fun traversalOrder(tree: SpatialTree<T>, candidates: MutableList<SpatialTree<T>.Node>) {
         candidates.computeTraversalOrder { rayDistance.nodeDistanceToRay(it, ray) }
-        candidates.removeCandidatesOutOfDist(sqrDist)
+        candidates.removeCandidatesOutOfDist(distanceSqr)
         candidates.sortByTraversalOrder()
     }
 
     override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
-            val dSqr = rayDistance.itemDistanceToRay(tree, it, ray)
-            if (dSqr < sqrDist) {
+            val dSqr = rayDistance.itemSqrDistanceToRay(tree, it, ray)
+            if (dSqr < distanceSqr) {
                 nearest = it
-                sqrDist = dSqr
+                distanceSqr = dSqr
+            }
+        }
+    }
+}
+
+open class NearestEdgeToRayTraverser<T: Edge> : NearestToRayTraverser<T>() {
+    init {
+        rayDistance = object : RayDistance<T> {
+            override fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
+                return item.rayDistanceSqr(ray)
+            }
+        }
+    }
+}
+
+open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
+    init {
+        rayDistance = object : RayDistance<T> {
+            override fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
+                val dist = item.hitDistance(ray)
+                return if (dist < Float.MAX_VALUE) {
+                    dist * dist
+                } else {
+                    return Float.MAX_VALUE
+                }
             }
         }
     }

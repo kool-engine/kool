@@ -116,7 +116,6 @@ open class Scene(name: String? = null) : Group(name) {
         if (isPickingEnabled && ptr.isInViewport(ctx) && camera.initRayTes(rayTest, ptr, ctx)) {
             rayTest(rayTest)
             if (rayTest.isHit) {
-                rayTest.computeHitPosition()
                 hovered = rayTest.hitNode
             }
         }
