@@ -123,7 +123,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         // instance and makes the OpenGL bindings available for use.
         GL.createCapabilities()
 
-        val versionStr = GL11.glGetString(GL_VERSION)
+        val versionStr = GL11.glGetString(GL_VERSION) ?: ""
         var versionMajor = 0
         var versionMinor = 0
         if (versionStr.matches(Regex("^[0-9]\\.[0-9].*"))) {
@@ -134,7 +134,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
         // check for anisotropic texture filtering support
         var anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED
-        supportedExtensions.addAll(GL11.glGetString(GL11.GL_EXTENSIONS).split(" "))
+        supportedExtensions.addAll(GL11.glGetString(GL11.GL_EXTENSIONS)?.split(" ") ?: emptyList())
         if (supportedExtensions.contains("GL_EXT_texture_filter_anisotropic")) {
             val max = GL11.glGetFloat(EXTTextureFilterAnisotropic.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)
             anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, EXTTextureFilterAnisotropic.GL_TEXTURE_MAX_ANISOTROPY_EXT)
@@ -187,7 +187,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
         // terminate GLFW and free the error callback
         glfwTerminate()
-        glfwSetErrorCallback(null).free()
+        glfwSetErrorCallback(null)?.free()
     }
 
     class InitProps(init: InitProps.() -> Unit = {}) {

@@ -16,7 +16,7 @@ import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.serialization.loadMesh
+import de.fabmax.kool.util.serialization.ModelData
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -74,38 +74,38 @@ class SimplificationDemo(ctx: KoolContext) {
             +highlightedEdge
             +highlightedPt
 
-            onPreRender += { ctx ->
-                if (ctx.inputMgr.primaryPointer.isValid) {
-                    val ptr = ctx.inputMgr.primaryPointer
-                    camera.computePickRay(pickRay, ptr, ctx)
-
-                    val ocTree = (heMesh.edgeHandler as HalfEdgeMesh.OcTreeEdgeHandler).edgeTree
-                    ocTree.traverse(nearestEdgeTraverser.setup(pickRay))
-                    val edge = nearestEdgeTraverser.nearest
-
-                    highlightedEdge.clear()
-                    highlightedPt.clear()
-                    if (edge != null) {
-                        highlightedEdge.addLine(edge.from, Color.MD_PINK, edge.to, Color.MD_PINK)
-                        val edgePt = edgeDistance.nearestPointOnEdge(edge, pickRay)
-                        highlightedPt.addPoint {
-                            position.set(edgePt)
-                            color.set(Color.MD_GREEN)
-                        }
-
-                        if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
-                            // left mouse button clicked
-                            val fraction = edge.from.distance(edgePt) / edge.from.distance(edge.to)
-                            heMesh.splitEdge(edge, fraction)
-                            heMesh.rebuild()
-                            modelWireframe.meshData.batchUpdate {
-                                modelWireframe.clear()
-                                heMesh.generateWireframe(modelWireframe, Color.MD_LIGHT_BLUE)
-                            }
-                        }
-                    }
-                }
-            }
+//            onPreRender += { ctx ->
+//                if (ctx.inputMgr.primaryPointer.isValid) {
+//                    val ptr = ctx.inputMgr.primaryPointer
+//                    camera.computePickRay(pickRay, ptr, ctx)
+//
+//                    val ocTree = (heMesh.edgeHandler as HalfEdgeMesh.OcTreeEdgeHandler).edgeTree
+//                    ocTree.traverse(nearestEdgeTraverser.setup(pickRay))
+//                    val edge = nearestEdgeTraverser.nearest
+//
+//                    highlightedEdge.clear()
+//                    highlightedPt.clear()
+//                    if (edge != null) {
+//                        highlightedEdge.addLine(edge.from, Color.MD_PINK, edge.to, Color.MD_PINK)
+//                        val edgePt = edgeDistance.nearestPointOnEdge(edge, pickRay)
+//                        highlightedPt.addPoint {
+//                            position.set(edgePt)
+//                            color.set(Color.MD_GREEN)
+//                        }
+//
+//                        if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
+//                            // left mouse button clicked
+//                            val fraction = edge.from.distance(edgePt) / edge.from.distance(edge.to)
+//                            heMesh.splitEdge(edge, fraction)
+//                            heMesh.rebuild()
+//                            modelWireframe.meshData.batchUpdate {
+//                                modelWireframe.clear()
+//                                heMesh.generateWireframe(modelWireframe, Color.MD_LIGHT_BLUE)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         }
         scenes += simplificationScene
 
@@ -278,9 +278,11 @@ class SimplificationDemo(ctx: KoolContext) {
             dispModel.meshData.clear()
             dispModel.meshData.vertexList.addVertices(srcModel.vertexList)
 
-            //heMesh = HalfEdgeMesh(dispModel.meshData, HalfEdgeMesh.ListEdgeHandler())
-            heMesh = HalfEdgeMesh(dispModel.meshData)
-            heMesh.simplify(terminateOnFaceCountRel(simplifcationGrade))
+            heMesh = HalfEdgeMesh(dispModel.meshData, HalfEdgeMesh.ListEdgeHandler())
+            //heMesh = HalfEdgeMesh(dispModel.meshData)
+            if (simplifcationGrade < 0.999f) {
+                heMesh.simplify(terminateOnFaceCountRel(simplifcationGrade))
+            }
 
             modelWireframe.meshData.batchUpdate {
                 modelWireframe.clear()
@@ -303,7 +305,7 @@ class SimplificationDemo(ctx: KoolContext) {
             if (data == null) {
                 logE { "Fatal: Failed loading model" }
             } else {
-                val mesh = loadMesh(data)
+                val mesh = ModelData.load(data).meshes[0].toMesh()
                 val meshdata = mesh.meshData
                 for (i in 0 until meshdata.numVertices) {
                     meshdata.vertexList.vertexIt.index = i

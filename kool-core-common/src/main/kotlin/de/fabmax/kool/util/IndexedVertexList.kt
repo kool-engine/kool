@@ -229,6 +229,13 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         return Vertex(i)
     }
 
+    inline fun foreach(block: (Vertex) -> Unit) {
+        for (i in 0 until size) {
+            vertexIt.index = i
+            block(vertexIt)
+        }
+    }
+
     inner class Vertex(index: Int) {
         private var offsetF = index * vertexSizeF
         private var offsetI = index * vertexSizeI

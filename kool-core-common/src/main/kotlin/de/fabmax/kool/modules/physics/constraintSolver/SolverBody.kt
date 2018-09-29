@@ -5,6 +5,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.physics.RigidBody
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -125,7 +126,6 @@ class SolverBody {
     }
 
     companion object {
-        // fixme: with 1.2.70 compiler complains about kotlin.math.PI not being constant?
-        private const val ANGULAR_MOTION_THRESHOLD = 3.141592653589793f / 4f
+        private const val ANGULAR_MOTION_THRESHOLD = PI.toFloat() / 4f
     }
 }

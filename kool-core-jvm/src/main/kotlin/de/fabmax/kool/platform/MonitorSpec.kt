@@ -13,7 +13,7 @@ class MonitorSpec(val monitor: Long) {
     val posY: Int
     val dpi: Float
 
-    val vidmode: GLFWVidMode = GLFW.glfwGetVideoMode(monitor)
+    val vidmode: GLFWVidMode = GLFW.glfwGetVideoMode(monitor)!!
 
     init {
         val x = IntArray(1)

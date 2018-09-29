@@ -16,24 +16,25 @@ fun group(name: String? = null, block: Group.() -> Unit): Group {
 }
 
 open class Group(name: String? = null) : Node(name) {
-    protected val children: MutableList<Node> = mutableListOf()
+    private val intChildren = mutableListOf<Node>()
     protected val tmpBounds = BoundingBox()
 
-    val size: Int get() = children.size
+    val children: List<Node> get() = intChildren
+    val size: Int get() = intChildren.size
 
     override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
         super.onSceneChanged(oldScene, newScene)
-        for (i in children.indices) {
-            children[i].scene = newScene
+        for (i in intChildren.indices) {
+            intChildren[i].scene = newScene
         }
     }
 
     override fun preRender(ctx: KoolContext) {
         // call preRender on all children and update group bounding box
         tmpBounds.clear()
-        for (i in children.indices) {
-            children[i].preRender(ctx)
-            tmpBounds.add(children[i].bounds)
+        for (i in intChildren.indices) {
+            intChildren[i].preRender(ctx)
+            tmpBounds.add(intChildren[i].bounds)
         }
         bounds.set(tmpBounds)
 
@@ -45,25 +46,25 @@ open class Group(name: String? = null) : Node(name) {
         super.render(ctx)
 
         if (isRendered) {
-            for (i in children.indices) {
-                if (ctx.renderPass != RenderPass.SHADOW || children[i].isCastingShadow) {
-                    children[i].render(ctx)
+            for (i in intChildren.indices) {
+                if (ctx.renderPass != RenderPass.SHADOW || intChildren[i].isCastingShadow) {
+                    intChildren[i].render(ctx)
                 }
             }
         }
     }
 
     override fun postRender(ctx: KoolContext) {
-        for (i in children.indices) {
-            children[i].postRender(ctx)
+        for (i in intChildren.indices) {
+            intChildren[i].postRender(ctx)
         }
         super.postRender(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
-        for (i in children.indices) {
-            children[i].dispose(ctx)
+        for (i in intChildren.indices) {
+            intChildren[i].dispose(ctx)
         }
     }
 
@@ -71,8 +72,8 @@ open class Group(name: String? = null) : Node(name) {
         if (name == this.name) {
             return this
         }
-        for (i in children.indices) {
-            val node = children[i][name]
+        for (i in intChildren.indices) {
+            val node = intChildren[i][name]
             if (node != null) {
                 return node
             }
@@ -81,9 +82,9 @@ open class Group(name: String? = null) : Node(name) {
     }
 
     override fun rayTest(test: RayTest) {
-        for (i in children.indices) {
-            val child = children[i]
-            if (child.isPickable) {
+        for (i in intChildren.indices) {
+            val child = intChildren[i]
+            if (child.isPickable && child.isVisible) {
                 val d = child.bounds.hitDistanceSqr(test.ray)
                 if (d < Float.MAX_VALUE && d <= test.hitDistanceSqr) {
                     child.rayTest(test)
@@ -94,23 +95,33 @@ open class Group(name: String? = null) : Node(name) {
 
     open fun addNode(node: Node, index: Int = -1) {
         if (index >= 0) {
-            children.add(index, node)
+            intChildren.add(index, node)
         } else {
-            children.add(node)
+            intChildren.add(node)
         }
         node.parent = this
         bounds.add(node.bounds)
     }
 
     open fun removeNode(node: Node): Boolean {
-        if (children.remove(node)) {
+        if (intChildren.remove(node)) {
             node.parent = null
             return true
         }
         return false
     }
 
-    open fun containsNode(node: Node): Boolean = children.contains(node)
+    /**
+     * Removes BUT DOESN'T DISPOSE all children of this group.
+     */
+    open fun removeAllChildren() {
+        for (i in intChildren.indices) {
+            intChildren[i].parent = null
+        }
+        intChildren.clear()
+    }
+
+    open fun containsNode(node: Node): Boolean = intChildren.contains(node)
 
     operator fun plusAssign(node: Node) {
         addNode(node)

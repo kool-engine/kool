@@ -201,7 +201,7 @@ class BoxWorld(private val shadowMap: ShadowMap?): Group() {
         children.forEach {
             it.dispose(ctx)
         }
-        children.clear()
+        removeAllChildren()
         world.bodies.clear()
     }
 

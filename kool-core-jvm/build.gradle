@@ -1,7 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 
 buildscript {
-    ext.lwjglVersion = '3.1.5'
+    ext.lwjglVersion = '3.2.0'
 
     switch (OperatingSystem.current()) {
         case OperatingSystem.WINDOWS:

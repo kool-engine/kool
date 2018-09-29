@@ -572,7 +572,7 @@ class LimitedByteArrayInputStream(val stream: ByteArrayInputStream) {
 
     fun read(b: ByteArray, offset: Int, len: Int): Int {
         val alen = min(len, available())
-        val read = stream.read(b, offset, len)
+        val read = stream.read(b, offset, alen)
         pos += read
         return read
     }

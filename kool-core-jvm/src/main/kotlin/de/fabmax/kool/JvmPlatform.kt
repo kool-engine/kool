@@ -63,7 +63,7 @@ internal object DesktopImpl {
 
         var primMon: MonitorSpec? = null
         val primMonId = GLFW.glfwGetPrimaryMonitor()
-        val mons = GLFW.glfwGetMonitors()
+        val mons = GLFW.glfwGetMonitors()!!
         for (i in 0 until mons.limit()) {
             val spec = MonitorSpec(mons[i])
             monitors += spec

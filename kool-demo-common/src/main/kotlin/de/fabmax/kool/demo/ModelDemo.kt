@@ -13,7 +13,7 @@ import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.serialization.loadMesh
+import de.fabmax.kool.util.serialization.ModelData
 import kotlin.math.sqrt
 
 /**
@@ -39,7 +39,8 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                 throw KoolException("Fatal: Failed loading model")
             }
 
-            val mesh = loadMesh(data)
+            val modelData = ModelData.load(data)
+            val mesh = modelData.meshes[0].toMesh()
             model += mesh
 
             mesh.shader = basicShader {

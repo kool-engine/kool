@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.gl.GL_ALWAYS
 import de.fabmax.kool.gl.GL_LINES
 import de.fabmax.kool.gl.GL_TRIANGLES
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
@@ -24,6 +25,12 @@ fun lineMesh(name: String? = null, block: LineMesh.() -> Unit): LineMesh {
 fun wireframeMesh(triMesh: MeshData, lineColor: Color? = null): LineMesh {
     val lines = LineMesh()
     lines.addWireframe(triMesh, lineColor)
+    return lines
+}
+
+fun normalMesh(meshData: MeshData, lineColor: Color? = null, len: Float = 1f): LineMesh {
+    val lines = LineMesh()
+    lines.addNormals(meshData, lineColor, len)
     return lines
 }
 
@@ -69,6 +76,15 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
             val i2 = triMesh.vertexList.indices[i + 1]
             val i3 = triMesh.vertexList.indices[i + 2]
             meshData.addIndices(i1, i2, i2, i3, i3, i1)
+        }
+    }
+
+    fun addNormals(meshData: MeshData, lineColor: Color? = null, len: Float = 1f) {
+        val tmpN = MutableVec3f()
+        meshData.vertexList.foreach {
+            tmpN.set(it.normal).scale(len).add(it.position)
+            val color = lineColor ?: it.color
+            addLine(it.position, color, tmpN, color)
         }
     }
 

@@ -2,13 +2,11 @@
 
 package de.fabmax.kool.math
 
+import kotlin.math.PI
 import kotlin.math.abs
 
-// fixme: with 1.2.70 compiler complains about kotlin.math.PI not being constant?
-//const val DEG_2_RAD = PI / 180.0
-//const val RAD_2_DEG = 180.0 / PI
-const val DEG_2_RAD = 3.141592653589793 / 180.0
-const val RAD_2_DEG = 180.0 / 3.141592653589793
+const val DEG_2_RAD = PI / 180.0
+const val RAD_2_DEG = 180.0 / PI
 
 const val FUZZY_EQ_F = 1e-5f
 const val FUZZY_EQ_D = 1e-10

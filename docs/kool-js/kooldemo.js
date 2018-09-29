@@ -67,7 +67,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var KoolException_init = $module$kool.de.fabmax.kool.KoolException_init_61zpoe$;
-  var loadMesh = $module$kool.de.fabmax.kool.util.serialization.loadMesh_xwheh0$;
+  var ModelData = $module$kool.de.fabmax.kool.util.serialization.ModelData;
   var Armature = $module$kool.de.fabmax.kool.scene.animation.Armature;
   var Label = $module$kool.de.fabmax.kool.scene.ui.Label;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
@@ -97,6 +97,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
   var throwUPAE = Kotlin.throwUPAE;
   var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
+  var HalfEdgeMesh$ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh.ListEdgeHandler;
   var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_mx4ult$;
   var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_hd2sc$;
   var toString_1 = Kotlin.toString;
@@ -111,7 +112,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Ray = $module$kool.de.fabmax.kool.math.Ray;
   var NearestToRayTraverser = $module$kool.de.fabmax.kool.util.NearestToRayTraverser;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
-  var HalfEdgeMesh$OcTreeEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh.OcTreeEdgeHandler;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
   var UiContainer = $module$kool.de.fabmax.kool.scene.ui.UiContainer;
@@ -413,7 +413,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var element = tmp$.next();
       element.dispose_aemszp$(ctx);
     }
-    this.children.clear();
+    this.removeAllChildren();
     this.world.bodies.clear();
   };
   BoxWorld.prototype.createBoxes_za3lpa$ = function (n) {
@@ -976,7 +976,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       if (data == null) {
         throw KoolException_init('Fatal: Failed loading model');
       }
-      var mesh = loadMesh(data);
+      var modelData = ModelData.Companion.load_fqrh44$(data);
+      var mesh = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$();
       closure$model.plusAssign_f1kmr1$(mesh);
       mesh.shader = basicShader(modelScene$lambda$lambda$lambda$lambda(this$, mesh));
       if (Kotlin.isType(mesh, Armature)) {
@@ -1528,7 +1529,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver_3.unaryPlus_uv0sim$(this.modelWireframe);
     $receiver_3.unaryPlus_uv0sim$(this.highlightedEdge);
     $receiver_3.unaryPlus_uv0sim$(this.highlightedPt);
-    $receiver_3.onPreRender.add_11rb$(SimplificationDemo_init$lambda$lambda($receiver_3, this));
     this.simplificationScene = $receiver_3;
     var $receiver_4 = this.scenes;
     var element = this.simplificationScene;
@@ -1585,8 +1585,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $this.isBatchUpdate = true;
     this.dispModel.meshData.clear();
     this.dispModel.meshData.vertexList.addVertices_r7nl2o$(this.srcModel.vertexList);
-    this.heMesh = new HalfEdgeMesh(this.dispModel.meshData);
-    simplify(this.heMesh, terminateOnFaceCountRel(this.simplifcationGrade));
+    this.heMesh = new HalfEdgeMesh(this.dispModel.meshData, new HalfEdgeMesh$ListEdgeHandler());
+    if (this.simplifcationGrade < 0.999) {
+      simplify(this.heMesh, terminateOnFaceCountRel(this.simplifcationGrade));
+    }
     var $this_0 = this.modelWireframe.meshData;
     var wasBatchUpdate_0 = $this_0.isBatchUpdate;
     $this_0.isBatchUpdate = true;
@@ -1617,7 +1619,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         }
       }
        else {
-        var mesh = loadMesh(data);
+        var mesh = ModelData.Companion.load_fqrh44$(data).meshes.get_za3lpa$(0).toMesh_8p8ifh$();
         var meshdata = mesh.meshData;
         tmp$ = meshdata.numVertices;
         for (var i = 0; i < tmp$; i++) {
@@ -1735,58 +1737,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.staticColor = Color.Companion.MD_ORANGE;
     return Unit;
   }
-  function SimplificationDemo_init$lambda$lambda$lambda(closure$edgePt) {
-    return function ($receiver) {
-      $receiver.position.set_czzhiu$(closure$edgePt);
-      $receiver.color.set_d7aj7k$(Color.Companion.MD_GREEN);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda(this$, this$SimplificationDemo) {
-    return function ($receiver, ctx) {
-      var tmp$;
-      if (ctx.inputMgr.primaryPointer.isValid) {
-        var ptr = ctx.inputMgr.primaryPointer;
-        this$.camera.computePickRay_qhyfdh$(this$SimplificationDemo.pickRay_0, ptr, ctx);
-        var ocTree = (Kotlin.isType(tmp$ = this$SimplificationDemo.heMesh.edgeHandler, HalfEdgeMesh$OcTreeEdgeHandler) ? tmp$ : throwCCE()).edgeTree;
-        ocTree.traverse_ssbmfa$(this$SimplificationDemo.nearestEdgeTraverser_0.setup_nvyeur$(this$SimplificationDemo.pickRay_0));
-        var edge = this$SimplificationDemo.nearestEdgeTraverser_0.nearest;
-        this$SimplificationDemo.highlightedEdge.clear();
-        this$SimplificationDemo.highlightedPt.clear();
-        if (edge != null) {
-          this$SimplificationDemo.highlightedEdge.addLine_b8opkg$(edge.from, Color.Companion.MD_PINK, edge.to, Color.Companion.MD_PINK);
-          var edgePt = this$SimplificationDemo.edgeDistance_0.nearestPointOnEdge_agp8x$(edge, this$SimplificationDemo.pickRay_0);
-          this$SimplificationDemo.highlightedPt.addPoint_hvwyd1$(SimplificationDemo_init$lambda$lambda$lambda(edgePt));
-          if (ptr.isLeftButtonEvent && !ptr.isLeftButtonDown) {
-            var fraction = edge.from.distance_czzhiu$(edgePt) / edge.from.distance_czzhiu$(edge.to);
-            this$SimplificationDemo.heMesh.splitEdge_b49or$(edge, fraction);
-            this$SimplificationDemo.heMesh.rebuild_dqye30$();
-            var $this = this$SimplificationDemo.modelWireframe.meshData;
-            var wasBatchUpdate = $this.isBatchUpdate;
-            $this.isBatchUpdate = true;
-            var this$SimplificationDemo_0 = this$SimplificationDemo;
-            this$SimplificationDemo_0.modelWireframe.clear();
-            this$SimplificationDemo_0.heMesh.generateWireframe_wuugko$(this$SimplificationDemo_0.modelWireframe, Color.Companion.MD_LIGHT_BLUE);
-            $this.isSyncRequired = true;
-            $this.isBatchUpdate = wasBatchUpdate;
-          }
-        }
-      }
-      return Unit;
-    };
+  function SimplificationDemo_init$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
   }
   function SimplificationDemo_init$lambda$lambda$lambda_0(it) {
     return new BlankComponentUi();
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_1(it) {
-    return new BlankComponentUi();
-  }
-  function SimplificationDemo_init$lambda$lambda_0($receiver) {
-    $receiver.componentUi_mloaa0$(SimplificationDemo_init$lambda$lambda$lambda_0);
-    $receiver.containerUi_2t3ptw$(SimplificationDemo_init$lambda$lambda$lambda_1);
+  function SimplificationDemo_init$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(SimplificationDemo_init$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(SimplificationDemo_init$lambda$lambda$lambda_0);
     return Unit;
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_2(closure$posY, this$) {
+  function SimplificationDemo_init$lambda$lambda$lambda_1(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), zero());
@@ -1794,7 +1756,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_3(closure$posY, this$) {
+  function SimplificationDemo_init$lambda$lambda$lambda_2(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
@@ -1814,7 +1776,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_4(closure$posY, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda$lambda_3(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1835,7 +1797,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_5(closure$posY, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda$lambda_4(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1853,7 +1815,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_6(closure$posY, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda$lambda_5(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1864,7 +1826,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_7(closure$posY, this$) {
+  function SimplificationDemo_init$lambda$lambda$lambda_6(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), zero());
@@ -1872,7 +1834,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_8(closure$posY, this$) {
+  function SimplificationDemo_init$lambda$lambda$lambda_7(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
@@ -1882,7 +1844,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_9(closure$posY) {
+  function SimplificationDemo_init$lambda$lambda$lambda_8(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1890,7 +1852,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_10(closure$posY) {
+  function SimplificationDemo_init$lambda$lambda$lambda_9(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1909,7 +1871,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_11(closure$posY, this$SimplificationDemo, closure$faceCntVal) {
+  function SimplificationDemo_init$lambda$lambda$lambda_10(closure$posY, this$SimplificationDemo, closure$faceCntVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
@@ -1925,7 +1887,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_12(closure$posY, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda$lambda_11(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
@@ -1936,7 +1898,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_13(closure$posY) {
+  function SimplificationDemo_init$lambda$lambda$lambda_12(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
@@ -1944,10 +1906,19 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
+  function SimplificationDemo_init$lambda$lambda$lambda_13(closure$posY) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      return Unit;
+    };
+  }
   function SimplificationDemo_init$lambda$lambda$lambda_14(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = '';
       return Unit;
     };
   }
@@ -1955,8 +1926,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = '';
       return Unit;
     };
   }
@@ -1964,6 +1933,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = '';
       return Unit;
     };
   }
@@ -1971,8 +1942,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = '';
       return Unit;
     };
   }
@@ -1980,65 +1949,58 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_19(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
       $receiver.text = '';
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda_1(this$, this$SimplificationDemo) {
+  function SimplificationDemo_init$lambda$lambda_0(this$, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), zero(), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), pcs(100.0), zero());
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
       var posY = {v: -45.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Models', SimplificationDemo_init$lambda$lambda$lambda_2(posY, this$)));
-      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_3(posY, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Models', SimplificationDemo_init$lambda$lambda$lambda_1(posY, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_2(posY, this$)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cow', SimplificationDemo_init$lambda$lambda$lambda_4(posY, this$SimplificationDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cow', SimplificationDemo_init$lambda$lambda$lambda_3(posY, this$SimplificationDemo)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Bunny', SimplificationDemo_init$lambda$lambda$lambda_5(posY, this$SimplificationDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Bunny', SimplificationDemo_init$lambda$lambda$lambda_4(posY, this$SimplificationDemo)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cosine Grid', SimplificationDemo_init$lambda$lambda$lambda_6(posY, this$SimplificationDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cosine Grid', SimplificationDemo_init$lambda$lambda$lambda_5(posY, this$SimplificationDemo)));
       posY.v -= 50.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Simplify', SimplificationDemo_init$lambda$lambda$lambda_7(posY, this$)));
-      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_8(posY, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Simplify', SimplificationDemo_init$lambda$lambda$lambda_6(posY, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_7(posY, this$)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ratio:', SimplificationDemo_init$lambda$lambda$lambda_9(posY)));
-      var faceCntVal = this$.label_tokfmu$('faceCntVal', SimplificationDemo_init$lambda$lambda$lambda_10(posY));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ratio:', SimplificationDemo_init$lambda$lambda$lambda_8(posY)));
+      var faceCntVal = this$.label_tokfmu$('faceCntVal', SimplificationDemo_init$lambda$lambda$lambda_9(posY));
       $receiver.unaryPlus_uv0sim$(faceCntVal);
       posY.v -= 25.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('faceCnt', SimplificationDemo_init$lambda$lambda$lambda_11(posY, this$SimplificationDemo, faceCntVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('faceCnt', SimplificationDemo_init$lambda$lambda$lambda_10(posY, this$SimplificationDemo, faceCntVal)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Update Mesh', SimplificationDemo_init$lambda$lambda$lambda_12(posY, this$SimplificationDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Update Mesh', SimplificationDemo_init$lambda$lambda$lambda_11(posY, this$SimplificationDemo)));
       posY.v -= 35.0;
-      this$SimplificationDemo.autoRun = this$.toggleButton_6j87po$('Auto Update', SimplificationDemo_init$lambda$lambda$lambda_13(posY));
+      this$SimplificationDemo.autoRun = this$.toggleButton_6j87po$('Auto Update', SimplificationDemo_init$lambda$lambda$lambda_12(posY));
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.autoRun);
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Faces:', SimplificationDemo_init$lambda$lambda$lambda_14(posY)));
-      this$SimplificationDemo.facesValLbl = this$.label_tokfmu$('facesValLbl', SimplificationDemo_init$lambda$lambda$lambda_15(posY));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Faces:', SimplificationDemo_init$lambda$lambda$lambda_13(posY)));
+      this$SimplificationDemo.facesValLbl = this$.label_tokfmu$('facesValLbl', SimplificationDemo_init$lambda$lambda$lambda_14(posY));
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.facesValLbl);
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Vertices:', SimplificationDemo_init$lambda$lambda$lambda_16(posY)));
-      this$SimplificationDemo.vertsValLbl = this$.label_tokfmu$('verticesValLbl', SimplificationDemo_init$lambda$lambda$lambda_17(posY));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Vertices:', SimplificationDemo_init$lambda$lambda$lambda_15(posY)));
+      this$SimplificationDemo.vertsValLbl = this$.label_tokfmu$('verticesValLbl', SimplificationDemo_init$lambda$lambda$lambda_16(posY));
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.vertsValLbl);
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Time:', SimplificationDemo_init$lambda$lambda$lambda_18(posY)));
-      this$SimplificationDemo.timeValLbl = this$.label_tokfmu$('timeValLbl', SimplificationDemo_init$lambda$lambda$lambda_19(posY));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Time:', SimplificationDemo_init$lambda$lambda$lambda_17(posY)));
+      this$SimplificationDemo.timeValLbl = this$.label_tokfmu$('timeValLbl', SimplificationDemo_init$lambda$lambda$lambda_18(posY));
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.timeValLbl);
       return Unit;
     };
   }
   function SimplificationDemo_init$lambda_0(this$SimplificationDemo) {
     return function ($receiver) {
-      $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, SimplificationDemo_init$lambda$lambda_0);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', SimplificationDemo_init$lambda$lambda_1($receiver, this$SimplificationDemo)));
+      $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, SimplificationDemo_init$lambda$lambda);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', SimplificationDemo_init$lambda$lambda_0($receiver, this$SimplificationDemo)));
       return Unit;
     };
   }

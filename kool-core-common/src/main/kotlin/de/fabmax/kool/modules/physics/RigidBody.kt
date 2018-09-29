@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.physics
 
 import de.fabmax.kool.math.*
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -180,8 +181,7 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
 
     companion object {
         const val ANGULAR_DAMPING = 0.98f
-        // fixme: with 1.2.70 compiler complains about kotlin.math.PI not being constant?
-        const val ANGULAR_MOTION_THRESHOLD = 3.141592653589793f / 4f
+        const val ANGULAR_MOTION_THRESHOLD = PI.toFloat() / 4f
 
         private var nInstances = 1
     }
