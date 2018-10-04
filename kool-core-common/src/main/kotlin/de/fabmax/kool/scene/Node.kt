@@ -24,6 +24,8 @@ abstract class Node(val name: String? = null) : Disposable {
     val onHover: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
     val onHoverExit: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
 
+    val tags = Tags()
+
     /**
      * Axis-aligned bounds of this node in local coordinates.
      * Implementations should set and refresh their bounds on every frame if applicable.

@@ -102,7 +102,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
                     specularIntensity = 0.25f
                     shininess = 25f
                     staticColor = Color.LIGHT_GRAY
-                    texture = assetTexture("tile_empty.png", ctx, false)
+                    texture = assetTexture("tile_empty.png", false)
                 }
             }
             return fallbackShader!!

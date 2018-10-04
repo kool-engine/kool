@@ -55,7 +55,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
                 }
             }
             // load texture from assets
-            (shader as BasicShader).texture = assetTexture("world.jpg", ctx)
+            (shader as BasicShader).texture = assetTexture("world.jpg")
         }
     }
 

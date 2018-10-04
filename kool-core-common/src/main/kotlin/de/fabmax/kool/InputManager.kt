@@ -1,7 +1,9 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.util.TouchGestureEvaluator
+import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
+import kotlin.math.abs
 
 /**
  * @author fabmax
@@ -34,6 +36,30 @@ class InputManager internal constructor() {
      * false) if the cursor exited the GL surface or if no finger touches the screen.
      */
     val primaryPointer = pointers[0]
+
+    private val keyHandlers = mutableMapOf<Int, KeyEventListener>()
+
+    fun registerKeyListener(char: Char, name: String, filter: (KeyEvent) -> Boolean = { it.isCharTyped }, callback: (KeyEvent) -> Unit): KeyEventListener {
+        return registerKeyListener(char.toInt(), name, filter, callback)
+    }
+
+    fun registerKeyListener(keyCode: Int, name: String, filter: (KeyEvent) -> Boolean = { true }, callback: (KeyEvent) -> Unit): KeyEventListener {
+        val existing = keyHandlers[keyCode]
+        if (existing != null) {
+            logW { "KeyListener \"$name\" replaces existing KexListener \"${existing.name}\"" }
+        }
+        val handler = KeyEventListener(keyCode, name, filter, callback)
+        keyHandlers[keyCode] = handler
+        val keyStr = if (keyCode in 32..126) "${keyCode.toChar()}" else "$keyCode"
+        logD { "Registered key handler: \"$name\" [keyCode=$keyStr]" }
+        return handler
+    }
+
+    fun removeKeyListener(listener: KeyEventListener) {
+        if (keyHandlers[listener.keyCode] === listener) {
+            keyHandlers.remove(listener.keyCode)
+        }
+    }
 
     fun getActivePointers(result: MutableList<Pointer>) {
         result.clear()
@@ -104,6 +130,14 @@ class InputManager internal constructor() {
             keyEvents.addAll(queuedKeyEvents)
             queuedKeyEvents.clear()
         }
+
+        for (i in keyEvents.indices) {
+            val evt = keyEvents[i]
+            val listener = keyHandlers[evt.keyCode]
+            if (listener != null && listener.filter(evt)) {
+                listener.invoke(evt)
+            }
+        }
     }
 
     fun keyEvent(keyCode: Int, modifiers: Int, event: Int) {
@@ -121,6 +155,7 @@ class InputManager internal constructor() {
         val ev = KeyEvent()
         ev.event = KEY_EV_CHAR_TYPED
         ev.typedChar = typedChar
+        ev.keyCode = typedChar.toInt()
 
         synchronized(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
@@ -180,9 +215,9 @@ class InputManager internal constructor() {
         synchronized(inputPointers) {
             val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
             if (down) {
-                ptr.buttonMask = ptr.buttonMask or (1 shl button)
+                ptr.setButtonMask(ptr.buttonMask or (1 shl button))
             } else {
-                ptr.buttonMask = ptr.buttonMask and (1 shl button).inv()
+                ptr.setButtonMask(ptr.buttonMask and (1 shl button).inv())
             }
             // todo: on low frame rates, mouse button events can get lost if button is pressed
             // and released again before a new frame was rendered
@@ -192,7 +227,7 @@ class InputManager internal constructor() {
     fun handleMouseButtonStates(mask: Int) {
         synchronized(inputPointers) {
             val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-            ptr.buttonMask = mask
+            ptr.setButtonMask(mask)
             // todo: on low frame rates, mouse button events can get lost if button is pressed
             // and released again before a new frame was rendered
         }
@@ -224,6 +259,10 @@ class InputManager internal constructor() {
             internal set
         var deltaY = 0f
             internal set
+        var dragDeltaX = 0f
+            internal set
+        var dragDeltaY = 0f
+            internal set
         var deltaScroll = 0f
             internal set
 
@@ -249,6 +288,24 @@ class InputManager internal constructor() {
         val isBackButtonEvent: Boolean get() = (buttonEventMask and BACK_BUTTON_MASK) != 0
         val isForwardButtonEvent: Boolean get() = (buttonEventMask and FORWARD_BUTTON_MASK) != 0
 
+        val isLeftButtonPressed: Boolean get() = isLeftButtonEvent && isLeftButtonDown
+        val isRightButtonPressed: Boolean get() = isRightButtonEvent && isRightButtonDown
+        val isMiddleButtonPressed: Boolean get() = isMiddleButtonEvent && isMiddleButtonDown
+        val isBackButtonPressed: Boolean get() = isBackButtonEvent && isBackButtonDown
+        val isForwardButtonPressed: Boolean get() = isForwardButtonEvent && isForwardButtonDown
+
+        val isLeftButtonReleased: Boolean get() = isLeftButtonEvent && !isLeftButtonDown
+        val isRightButtonReleased: Boolean get() = isRightButtonEvent && !isRightButtonDown
+        val isMiddleButtonReleased: Boolean get() = isMiddleButtonEvent && !isMiddleButtonDown
+        val isBackButtonReleased: Boolean get() = isBackButtonEvent && !isBackButtonDown
+        val isForwardButtonReleased: Boolean get() = isForwardButtonEvent && !isForwardButtonDown
+
+        val isLeftButtonClicked: Boolean get() = isLeftButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
+        val isRightButtonClicked: Boolean get() = isRightButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
+        val isMiddleButtonClicked: Boolean get() = isMiddleButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
+        val isBackButtonClicked: Boolean get() = isBackButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
+        val isForwardButtonClicked: Boolean get() = isForwardButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
+
         /**
          * Usually, if a pointer is outside the viewport, it is not valid. However, they can be
          * outside a viewport and valid, if there is more than one viewport (e.g. split viewport
@@ -268,17 +325,32 @@ class InputManager internal constructor() {
 
         var lastUpdate = 0.0
 
+        fun setButtonMask(mask: Int) {
+            buttonMask = mask
+            if (isLeftButtonPressed || isRightButtonPressed || isMiddleButtonPressed) {
+                dragDeltaX = 0f
+                dragDeltaY = 0f
+            }
+        }
+
         fun startPointer(pointerId: Int, x: Float, y: Float) {
             movePointer(x, y)
             id = pointerId
             deltaX = 0f
             deltaY = 0f
+            dragDeltaX = 0f
+            dragDeltaY = 0f
             deltaScroll = 0f
             updateState = UpdateState.STARTED
             isValid = true
         }
 
         fun movePointer(x: Float, y: Float) {
+            if (buttonMask != 0) {
+                dragDeltaX += x - this.x
+                dragDeltaY += y - this.y
+            }
+
             deltaX += x - this.x
             deltaY += y - this.y
             this.x = x
@@ -308,6 +380,8 @@ class InputManager internal constructor() {
             target.id = id
             target.deltaX = deltaX
             target.deltaY = deltaY
+            target.dragDeltaX = dragDeltaX
+            target.dragDeltaY = dragDeltaY
             target.deltaScroll = deltaScroll
             target.x = x
             target.y = y
@@ -329,6 +403,7 @@ class InputManager internal constructor() {
             deltaX = 0f
             deltaY = 0f
             deltaScroll = 0f
+            buttonEventMask = 0
 
             processedState = updateState
             updateState = updateState.next()
@@ -360,6 +435,10 @@ class InputManager internal constructor() {
 
             abstract fun next(): UpdateState
         }
+    }
+
+    class KeyEventListener(val keyCode: Int, val name: String, val filter: (KeyEvent) -> Boolean = { true }, val callback: (KeyEvent) -> Unit) {
+        fun invoke(evt: KeyEvent) = callback.invoke(evt)
     }
 
     class KeyEvent {

@@ -1,6 +1,10 @@
 package de.fabmax.kool.util.serialization
 
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.TransformGroup
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Optional
 import kotlinx.serialization.SerialId
@@ -28,6 +32,38 @@ data class ModelData(
          */
         @SerialId(4) val materials: List<MaterialData>
 ) {
+
+    fun toModel(lod: Int = 0): TransformGroup = toModel(lod, { TransformGroup(it.name).set(it.getTransformMatrix()) }, { it.toMesh(this) })
+
+    fun <G: Group, M: Node> toModel(lod: Int, nodeMapper: (ModelNodeData) -> G, meshMapper: (MeshData) -> M?): G {
+        return lodRootNode[lod].toGroup(nodeMapper, meshMapper)
+    }
+
+    private fun <G: Group, M: Node> ModelNodeData.toGroup(nodeMapper: (ModelNodeData) -> G, meshMapper: (MeshData) -> M?): G {
+        val group = nodeMapper(this)
+        for (child in children) {
+            group += child.toGroup(nodeMapper, meshMapper)
+        }
+        for (meshIdx in meshes) {
+            if (meshIdx in this@ModelData.meshes.indices) {
+                val mesh = meshMapper(this@ModelData.meshes[meshIdx])
+                if (mesh != null) {
+                    group += mesh
+                }
+            } else {
+                logE { "Invalid mesh index: $meshIdx" }
+            }
+        }
+
+        // add tags
+        if (tags.isNotEmpty()) {
+            tags.forEach {
+                group.tags += it
+            }
+        }
+        return group
+    }
+
     companion object {
         const val VERSION = 1
 
@@ -68,6 +104,7 @@ data class ModelNodeData(
          */
         @SerialId(5) @Optional val tags: List<String> = emptyList()
 ) {
+
     fun getTransformMatrix(result: Mat4f = Mat4f()): Mat4f = result.set(transform)
 
     fun printNodeHierarchy(model: ModelData, indent: String = "") {

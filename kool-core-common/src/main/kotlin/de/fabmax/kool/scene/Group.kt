@@ -103,6 +103,10 @@ open class Group(name: String? = null) : Node(name) {
         bounds.add(node.bounds)
     }
 
+    open fun <R: Comparable<R>> sortChildrenBy(selector: (Node) -> R) {
+        intChildren.sortBy(selector)
+    }
+
     open fun removeNode(node: Node): Boolean {
         if (intChildren.remove(node)) {
             node.parent = null

@@ -677,6 +677,14 @@ open class Mat4d {
         return buffer
     }
 
+    fun toList(): List<Double> {
+        val list = mutableListOf<Double>()
+        for (i in 0..15) {
+            list += matrix[offset + i]
+        }
+        return list
+    }
+
     companion object {
         private val tmpMatLock = Any()
         private val tmpMatA = Mat4d()

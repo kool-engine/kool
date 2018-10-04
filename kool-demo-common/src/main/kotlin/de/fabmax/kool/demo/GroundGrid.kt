@@ -46,9 +46,9 @@ fun makeGroundGrid(cells: Int, ctx: KoolContext, shadows: ShadowMap? = null, y: 
             specularIntensity = 0.25f
 
             val props = TextureProps("ground_nrm.png", GL_LINEAR, GL_REPEAT)
-            normalMap = assetTexture(props, ctx)
+            normalMap = assetTexture(props)
             val colorProps = TextureProps("ground_color.png", GL_LINEAR, GL_REPEAT)
-            texture = assetTexture(colorProps, ctx)
+            texture = assetTexture(colorProps)
         }
     }
 }

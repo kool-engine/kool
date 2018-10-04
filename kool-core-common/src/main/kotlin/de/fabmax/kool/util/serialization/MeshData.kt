@@ -143,6 +143,13 @@ data class MeshData(
             }
         }
 
+        // add tags
+        if (tags.isNotEmpty()) {
+            tags.forEach {
+                mesh.tags += it
+            }
+        }
+
         return mesh
     }
 
@@ -211,7 +218,7 @@ data class AttributeList(
         /**
          * Attribute values. There are [type].size values per vertex
          */
-        @SerialId(2) val values: MutableList<Float>
+        @SerialId(2) val values: List<Float>
 ) {
     @Transient val size: Int = values.size
 

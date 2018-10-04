@@ -229,7 +229,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         return Vertex(i)
     }
 
-    inline fun foreach(block: (Vertex) -> Unit) {
+    inline fun forEach(block: (Vertex) -> Unit) {
         for (i in 0 until size) {
             vertexIt.index = i
             block(vertexIt)

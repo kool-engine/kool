@@ -60,8 +60,8 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
                 val textureProps = TextureProps("tree_bark.png", GL_LINEAR, GL_REPEAT, 16)
                 val nrmMapProps = TextureProps("tree_bark_nrm.png", GL_LINEAR, GL_REPEAT, 16)
-                texture = assetTexture(textureProps, ctx)
-                normalMap = assetTexture(nrmMapProps, ctx)
+                texture = assetTexture(textureProps)
+                normalMap = assetTexture(nrmMapProps)
             }
         }
 
@@ -82,7 +82,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 shadowMap = defaultShadowMap
                 specularIntensity = 0.1f
                 isDiscardTranslucent = true
-                texture = assetTexture("leaf.png", ctx)
+                texture = assetTexture("leaf.png")
             }
         }
 

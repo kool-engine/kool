@@ -37,7 +37,7 @@ open class OsmTexImageTileShaderProvider : TexImageTileShaderProvider() {
 
     override fun getTexture(tileName: TileName, ctx: KoolContext): Texture {
         val srvIdx = (tileName.x xor tileName.y xor tileName.zoom) % tileUrls.size
-        return assetTexture("https://${tileUrls[srvIdx]}/${tileName.zoom}/${tileName.x}/${tileName.y}.png", ctx)
+        return assetTexture("https://${tileUrls[srvIdx]}/${tileName.zoom}/${tileName.x}/${tileName.y}.png")
     }
 
     override fun getAttributionInfo(tileName: TileName): TileMesh.AttributionInfo =

@@ -6,12 +6,12 @@ import de.fabmax.kool.shading.AttributeType
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
 
-object MeshConverter {
+object ModelConverter {
 
-    fun convertMeshes(file: String, invertFaceOrientation: Boolean = false): ModelData =
-            convertMeshes(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices)!!, invertFaceOrientation)
+    fun convertModel(file: String, invertFaceOrientation: Boolean = false): ModelData =
+            convertModel(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices)!!, invertFaceOrientation)
 
-    fun convertMeshes(aiScene: AIScene, invertFaceOrientation: Boolean = false): ModelData {
+    fun convertModel(aiScene: AIScene, invertFaceOrientation: Boolean = false): ModelData {
         val meshes = mutableListOf<MeshData>()
 
         val nodes = mutableMapOf<String, SceneNode>()

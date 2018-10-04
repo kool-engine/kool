@@ -37,12 +37,12 @@ abstract class AssetManager(var assetsBaseDir: String) {
             assetPath.startsWith("https://", true)
 }
 
-fun assetTexture(assetPath: String, ctx: KoolContext, delayLoading: Boolean = true): Texture {
-    return assetTexture(defaultProps(assetPath), ctx, delayLoading)
+fun assetTexture(assetPath: String, delayLoading: Boolean = true): Texture {
+    return assetTexture(defaultProps(assetPath), delayLoading)
 }
 
-fun assetTexture(props: TextureProps, ctx: KoolContext, delayLoading: Boolean = true): Texture {
-    return Texture(props) {
+fun assetTexture(props: TextureProps, delayLoading: Boolean = true): Texture {
+    return Texture(props) { ctx ->
         this.delayLoading = delayLoading
         ctx.assetMgr.loadTextureAsset(props.id)
     }

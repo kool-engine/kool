@@ -649,6 +649,14 @@ open class Mat4f {
         return buffer
     }
 
+    fun toList(): List<Float> {
+        val list = mutableListOf<Float>()
+        for (i in 0..15) {
+            list += matrix[offset + i]
+        }
+        return list
+    }
+
     companion object {
         private val tmpMatLock = Any()
         private val tmpMatA = Mat4f()

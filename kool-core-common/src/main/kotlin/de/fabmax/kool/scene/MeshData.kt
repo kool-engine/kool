@@ -139,13 +139,16 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         }
     }
 
-    inline fun batchUpdate(block: MeshData.() -> Unit) {
+    inline fun batchUpdate(rebuildBounds: Boolean = false, block: MeshData.() -> Unit) {
         synchronized(vertexList) {
             val wasBatchUpdate = isBatchUpdate
             isBatchUpdate = true
             block()
             isSyncRequired = true
             isBatchUpdate = wasBatchUpdate
+        }
+        if (rebuildBounds) {
+            rebuildBounds()
         }
     }
 

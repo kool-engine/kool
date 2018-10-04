@@ -84,7 +84,7 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
     fun addNormals(meshData: MeshData, lineColor: Color? = null, len: Float = 1f) {
         meshData.batchUpdate {
             val tmpN = MutableVec3f()
-            meshData.vertexList.foreach {
+            meshData.vertexList.forEach {
                 tmpN.set(it.normal).scale(len).add(it.position)
                 val color = lineColor ?: it.color
                 addLine(it.position, color, tmpN, color)
@@ -94,6 +94,7 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
 
     fun clear() {
         meshData.clear()
+        bounds.clear()
     }
 
     fun addBoundingBox(aabb: BoundingBox, color: Color) {

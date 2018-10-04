@@ -45,6 +45,7 @@ open class PointMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.CO
 
     fun clear() {
         meshData.clear()
+        bounds.clear()
     }
 
     override fun render(ctx: KoolContext) {
