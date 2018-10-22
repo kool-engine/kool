@@ -10,68 +10,62 @@ import de.fabmax.kool.util.PriorityQueue
 import de.fabmax.kool.util.logD
 import kotlin.math.max
 
-fun Mesh.simplify(termCrit: TermCriterion) {
-    meshData.simplify(termCrit)
+fun Mesh.simplify(termCrit: TermCriterion, keepBorders: Boolean = false) {
+    meshData.simplify(termCrit, keepBorders)
 }
 
-fun MeshData.simplify(termCrit: TermCriterion) {
-    HalfEdgeMesh(this, HalfEdgeMesh.ListEdgeHandler()).simplify(termCrit)
+fun MeshData.simplify(termCrit: TermCriterion, keepBorders: Boolean = false) {
+    HalfEdgeMesh(this, HalfEdgeMesh.ListEdgeHandler()).simplify(termCrit, keepBorders)
 }
 
-fun HalfEdgeMesh.simplify(termCrit: TermCriterion) {
-    MeshSimplifier(termCrit).simplifyMesh(this)
+fun HalfEdgeMesh.simplify(termCrit: TermCriterion, keepBorders: Boolean = false) {
+    MeshSimplifier(termCrit, keepBorders).simplifyMesh(this)
 }
 
-class MeshSimplifier(val termCrit: TermCriterion, val quality: Float = 3f, val collapseStrategy: CollapseStrategy = defaultCollapseStrategy()) {
+class MeshSimplifier(val termCrit: TermCriterion, val keepBorders: Boolean = false, val quality: Float = 3f, val collapseStrategy: CollapseStrategy = defaultCollapseStrategy()) {
 
-    private class CollapseCandidate(var error: Float, val edge: HalfEdgeMesh.HalfEdge)
-
+    val quadrics = mutableMapOf<Int, ErrorQuadric>()
     private val candidates = PriorityQueue<CollapseCandidate>(Comparator { a, b -> a.error.compareTo(b.error) })
-    private val quadrics = mutableMapOf<Int, ErrorQuadric>()
     private val tmpVec = MutableVec3f()
 
+    private lateinit var mesh: HalfEdgeMesh
 
     fun simplifyMesh(mesh: HalfEdgeMesh, generateNormals: Boolean = true, generateTangents: Boolean = true) {
         logD { "Simplifying mesh: ${mesh.faceCount} faces / ${mesh.vertCount} vertices..." }
 
+        quadrics.clear()
+        candidates.clear()
+
         val perf = PerfTimer()
         rebuildCollapseQueue(mesh)
         termCrit.init(mesh)
+        this.mesh = mesh
 
         var rebuildQueue = (mesh.faceCount / quality).toInt()
         var lastError = 0.0f
-        while (candidates.isNotEmpty() && candidates.peek().error < Float.MAX_VALUE) {
+
+        while (candidates.isNotEmpty() && candidates.peek().error < Float.MAX_VALUE && !termCrit.isFinished(mesh, lastError)) {
             if (--rebuildQueue <= 0) {
                 rebuildQueue = max(10, (mesh.faceCount / quality).toInt())
                 rebuildCollapseQueue(mesh)
             }
 
             val candidate = candidates.poll()
-            if (candidate.edge.isDeleted) {
-                // edge was already deleted by previous simplification operations
+            if (candidate.edge.isDeleted || candidate.q1.isDeleted || candidate.q2.isDeleted) {
+                // edge was already modified by previous simplification operations
                 continue
             }
 
-            val q1 = quadrics[candidate.edge.from.index]!!
-            val q2 = quadrics[candidate.edge.to.index]!!
-
             // update error (might has changed because of previous operations)
-            candidate.error = collapseStrategy.computeCollapsePosition(q1, q2, tmpVec)
+            candidate.updateCollapsePosAndError()
             if (candidate.error > candidates.peek().error) {
-                // update error is greater than next best candidate's error, re-add it to the queue and try next
+                // updated error is greater than next best candidate's error, re-insert into queue and try next
                 candidates += candidate
+
             } else if (candidate.error < Float.MAX_VALUE) {
                 // collapse edge
-                quadrics -= q2.vertex.index
-                q1.consume(q2)
-                mesh.collapseEdge(candidate.edge, 0f)
-                q1.vertex.updatePosition(tmpVec)
-                lastError = candidate.error
+                lastError = candidate.collapse()
 
-                if (termCrit.isFinished(mesh, lastError)) {
-                    // termination criterion stopped simplification
-                    break
-                }
             } else {
                 // no more collapse candidates
                 logD { "No more collapsable edges" }
@@ -79,8 +73,6 @@ class MeshSimplifier(val termCrit: TermCriterion, val quality: Float = 3f, val c
             }
         }
 
-        quadrics.clear()
-        candidates.clear()
         mesh.rebuild(generateNormals, generateTangents)
 
         logD { "Mesh simplification done! ${mesh.faceCount} faces / ${mesh.vertCount} vertices remain, last error: $lastError, took ${perf.takeSecs().toString(3)} s" }
@@ -94,20 +86,34 @@ class MeshSimplifier(val termCrit: TermCriterion, val quality: Float = 3f, val c
                 val q1 = quadrics.getOrPut(edge.from.index) { ErrorQuadric(edge.from) }
                 val q2 = quadrics.getOrPut(edge.to.index) { ErrorQuadric(edge.to) }
 
-                //if (!isEdgeVertex(q1.vertex) && !isEdgeVertex(q2.vertex)) {
-                    val err = collapseStrategy.computeCollapsePosition(q1, q2, tmpVec)
-                    candidates += CollapseCandidate(err, edge)
-                //}
+                if (!keepBorders || (!q1.isBorder && !q2.isBorder)) {
+                    candidates += CollapseCandidate(edge, q1, q2)
+                }
             }
         }
     }
 
-    private fun isEdgeVertex(v: HalfEdgeMesh.HalfEdgeVertex): Boolean {
-        for (i in v.edges.indices) {
-            if (v.edges[i].opp == null) {
-                return true
-            }
+    private inner class CollapseCandidate(val edge: HalfEdgeMesh.HalfEdge, val q1: ErrorQuadric, val q2: ErrorQuadric) {
+        var error = 0f
+
+        init {
+            updateCollapsePosAndError()
         }
-        return false
+
+        fun updateCollapsePosAndError() {
+            error = collapseStrategy.computeCollapsePosition(q1, q2, tmpVec)
+        }
+
+        fun collapse(): Float {
+            //quadrics -= q2.vertex.index
+            val rem = quadrics.remove(q2.vertex.index)
+            if (rem !== q2) {
+                throw IllegalStateException("Quadric removal failed!")
+            }
+            q1.consume(q2)
+            mesh.collapseEdge(edge, 0f)
+            q1.vertex.updatePosition(tmpVec)
+            return error
+        }
     }
 }

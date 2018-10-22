@@ -1,7 +1,6 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.scene.Node
-import kotlin.math.sqrt
 
 /**
  * @author fabmax
@@ -21,37 +20,11 @@ class Ray {
         direction.set(lookAt).subtract(origin).norm()
     }
 
-    fun nearestPointOnRay(point: Vec3f, result: MutableVec3f): MutableVec3f {
-        val d = (point * direction - origin * direction) / (direction * direction)
-        if (d > 0) {
-            result.set(direction).scale(d).add(origin)
-        } else {
-            result.set(origin)
-        }
-        return result
-    }
+    fun distanceToPoint(point: Vec3f): Float = point.distanceToRay(origin, direction)
 
-    fun distanceToPoint(point: Vec3f): Float = sqrt(sqrDistanceToPoint(point))
+    fun sqrDistanceToPoint(point: Vec3f): Float = point.sqrDistanceToRay(origin, direction)
 
-    fun sqrDistanceToPoint(point: Vec3f): Float = sqrDistanceToPoint(point.x, point.y, point.z)
-
-    fun sqrDistanceToPoint(x: Float, y: Float, z: Float): Float {
-        val nx: Float
-        val ny: Float
-        val nz: Float
-        val dot = x * direction.x + y * direction.y + z * direction.z
-        val d = (dot - origin * direction) / (direction * direction)
-        if (d > 0) {
-            nx = direction.x * d + origin.x - x
-            ny = direction.y * d + origin.y - y
-            nz = direction.z * d + origin.z - z
-        } else {
-            nx = origin.x - x
-            ny = origin.y - y
-            nz = origin.z - z
-        }
-        return nx*nx + ny*ny + nz*nz
-    }
+    fun sqrDistanceToPoint(x: Float, y: Float, z: Float) = sqrDistancePointToRay(x, y, z, origin, direction)
 }
 
 class RayTest {

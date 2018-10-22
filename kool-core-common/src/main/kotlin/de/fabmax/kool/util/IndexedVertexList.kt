@@ -130,7 +130,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         return size - 1
     }
 
-    fun addVertices(other: IndexedVertexList) {
+    fun addFrom(other: IndexedVertexList) {
         val baseIdx = size
 
         checkBufferSizes(other.size)
@@ -236,7 +236,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         }
     }
 
-    inner class Vertex(index: Int) {
+    inner class Vertex(index: Int) : MutableVec3f() {
         private var offsetF = index * vertexSizeF
         private var offsetI = index * vertexSizeI
 
@@ -258,6 +258,17 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         val texCoord: Vec2fView
 
         private val attributeViews: Map<Attribute, Any>
+
+
+        override var x: Float
+            get() = position.x
+            set(value) { position.x = value}
+        override var y: Float
+            get() = position.y
+            set(value) { position.y = value }
+        override var z: Float
+            get() = position.z
+            set(value) { position.z = value}
 
         init {
             val attribViews = mutableMapOf<Attribute, Any>()

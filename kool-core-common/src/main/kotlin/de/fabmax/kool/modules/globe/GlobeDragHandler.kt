@@ -105,10 +105,10 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
                 tmpVecY.cross(tmpVec, tmpVecRt).norm()
                 tmpVec.cross(tmpVecRt, tmpVecUp)
 
-                ptOrientation.setColVec(0, tmpVec, 0.0)
-                ptOrientation.setColVec(1, tmpVecRt, 0.0)
-                ptOrientation.setColVec(2, tmpVecUp, 0.0)
-                ptOrientation.setColVec(3, Vec3d.ZERO, 1.0)
+                ptOrientation.setCol(0, tmpVec, 0.0)
+                ptOrientation.setCol(1, tmpVecRt, 0.0)
+                ptOrientation.setCol(2, tmpVecUp, 0.0)
+                ptOrientation.setCol(3, Vec3d.ZERO, 1.0)
                 return true
             }
         }

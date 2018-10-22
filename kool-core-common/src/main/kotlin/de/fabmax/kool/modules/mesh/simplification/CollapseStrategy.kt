@@ -1,8 +1,6 @@
 package de.fabmax.kool.modules.mesh.simplification
 
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 
 /**
@@ -19,53 +17,36 @@ interface CollapseStrategy {
 }
 
 fun defaultCollapseStrategy() = object : CollapseStrategy {
-    val tmpQ = Mat4f()
+    val tmpQ = Mat4d()
     val tmpNrm0 = MutableVec3f()
     val tmpNrm1 = MutableVec3f()
     val tmpPos0 = MutableVec3f()
     val tmpPos1 = MutableVec3f()
 
     override fun computeCollapsePosition(q1: ErrorQuadric, q2: ErrorQuadric, resultPos: MutableVec3f): Float {
-        // count duplicate 'to' vertices in edges of q1 and q2
-        // -> for inner plane vertices there must be 2, otherwise 2d manifold is destroyed
-        // -> for border vertices it can be less
-        var duplCnt = 0
-        var q1Border = false
-        var q2Border = false
+        // count number of triangles adjacent to edge between q1 and q2
+        //  -> for inner edges in a 2d manifold (plane mesh) triCnt must be 2
+        //  -> for border edges in a 2d manifold (plane mesh) triCnt can also be 1
+        var triCnt = 0
         for (i in q1.vertex.edges.indices) {
-            val q1e = q1.vertex.edges[i]
-            if (q1e.opp == null) {
-                q1Border = true
-            }
-
-            for (j in q2.vertex.edges.indices) {
-                val q2e = q2.vertex.edges[j]
-                if (q2e.opp == null) {
-                    q2Border = true
-                }
-
-                if (q1e.to === q2e.to) {
-                    duplCnt++
-                }
+            val he = q1.vertex.edges[i]
+            if (he.to === q2.vertex || he.next.to === q2.vertex) {
+                triCnt++
             }
         }
-
-        if (duplCnt > 2 || duplCnt < if (q1Border || q2Border) 0 else 2) {
+        if (triCnt > 2 || triCnt < if (q1.isBorder && q2.isBorder) 1 else 2) {
             return Float.MAX_VALUE
         }
 
         tmpQ.set(q1.errQuadric)
         tmpQ.add(q2.errQuadric)
+        tmpQ.setRow(3, Vec4d.W_AXIS)
 
-        tmpQ[3, 0] = 0f
-        tmpQ[3, 1] = 0f
-        tmpQ[3, 2] = 0f
-        tmpQ[3, 3] = 1f
-
-        val err = if (tmpQ.invert()) {
+        val err = if (tmpQ.invert(FUZZY_EQ_D)) {
             // optimal position is taken from inverted matrix (magic)
-            resultPos.set(tmpQ[0, 3], tmpQ[1, 3], tmpQ[2, 3])
+            resultPos.set(tmpQ[0, 3].toFloat(), tmpQ[1, 3].toFloat(), tmpQ[2, 3].toFloat())
             q1.getError(resultPos) + q2.getError(resultPos)
+
         } else {
             // error quadric is singular (both vertices lie in a plane), simply join them in the middle
             q2.vertex.subtract(q1.vertex, resultPos).scale(0.5f).add(q1.vertex)

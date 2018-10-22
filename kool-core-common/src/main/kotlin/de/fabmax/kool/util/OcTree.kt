@@ -57,9 +57,12 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
         val success = root.remove(element, true)
         if (!success) {
             logW { "Failed to remove: $element" }
-            forEach {
-                if (it == element) {
-                    logE { "found in tree!" }
+            // try brute force removal
+            val it = iterator()
+            while (it.hasNext()) {
+                if (it.next() == element) {
+                    logW { "Removed via brute force" }
+                    it.remove()
                 }
             }
         }
@@ -67,19 +70,22 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
     }
 
     override fun iterator(): MutableIterator<T> = object : MutableIterator<T> {
-        val elements = mutableListOf<T>()
-        val elemIt: MutableIterator<T>
-        var lastElem: T? = null
+        val elementIts = mutableListOf<MutableIterator<T>>()
+        var elemIt: MutableIterator<T>
 
         init {
             collectElements(root)
-            elemIt = elements.iterator()
+            elemIt = if (elementIts.isNotEmpty()) {
+                elementIts.removeAt(elementIts.lastIndex)
+            } else {
+                mutableListOf<T>().iterator()
+            }
         }
 
         fun collectElements(node: OcTree<T>.OcNode) {
             if (node.isLeaf) {
                 if (!node.items.isEmpty()) {
-                    elements.addAll(node.items)
+                    elementIts += node.items.iterator()
                 }
             } else {
                 for (i in node.children.indices) {
@@ -88,15 +94,24 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
             }
         }
 
-        override fun hasNext(): Boolean = elemIt.hasNext()
-
-        override fun next(): T {
-            lastElem = elemIt.next()
-            return lastElem!!
+        override fun hasNext(): Boolean {
+            if (elemIt.hasNext()) {
+                return true
+            } else {
+                while (elementIts.isNotEmpty()) {
+                    elemIt = elementIts.removeAt(elementIts.lastIndex)
+                    if (elemIt.hasNext()) {
+                        return true
+                    }
+                }
+                return false
+            }
         }
 
+        override fun next(): T  = elemIt.next()
+
         override fun remove() {
-            root.remove(lastElem!!, false)
+            elemIt.remove()
         }
     }
 

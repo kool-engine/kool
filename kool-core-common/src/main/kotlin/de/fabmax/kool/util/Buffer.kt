@@ -4,6 +4,8 @@ package de.fabmax.kool.util
  * Super class for platform-dependent buffers. In the JVM these buffers directly map to the corresponding NIO buffers.
  * However, not all operations of NIO buffers are supported.
  *
+ * Notice that Buffer is not generic, so that concrete types remain primitive.
+ *
  * @author fabmax
  */
 interface Buffer {
@@ -14,6 +16,15 @@ interface Buffer {
 
     fun flip()
     fun clear()
+
+    fun removeAt(index: Int) {
+        if (position > index) {
+            position--
+        }
+        if (limit > index) {
+            limit--
+        }
+    }
 }
 
 /**
@@ -30,6 +41,13 @@ interface Uint8Buffer : Buffer {
     fun put(data: ByteArray): Uint8Buffer = put(data, 0, data.size)
     fun put(data: ByteArray, offset: Int, len: Int): Uint8Buffer
     fun put(data: Uint8Buffer): Uint8Buffer
+
+    override fun removeAt(index: Int) {
+        for (i in index until position) {
+            this[i] = this[i+1]
+        }
+        super.removeAt(index)
+    }
 }
 
 /**
@@ -46,6 +64,13 @@ interface Uint16Buffer : Buffer {
     fun put(data: ShortArray): Uint16Buffer = put(data, 0, data.size)
     fun put(data: ShortArray, offset: Int, len: Int): Uint16Buffer
     fun put(data: Uint16Buffer): Uint16Buffer
+
+    override fun removeAt(index: Int) {
+        for (i in index until position) {
+            this[i] = this[i+1]
+        }
+        super.removeAt(index)
+    }
 }
 
 /**
@@ -62,6 +87,13 @@ interface Uint32Buffer : Buffer {
     fun put(data: IntArray): Uint32Buffer = put(data, 0, data.size)
     fun put(data: IntArray, offset: Int, len: Int): Uint32Buffer
     fun put(data: Uint32Buffer): Uint32Buffer
+
+    override fun removeAt(index: Int) {
+        for (i in index until position) {
+            this[i] = this[i+1]
+        }
+        super.removeAt(index)
+    }
 }
 
 /**
@@ -78,6 +110,13 @@ interface Float32Buffer : Buffer {
     fun put(data: FloatArray): Float32Buffer = put(data, 0, data.size)
     fun put(data: FloatArray, offset: Int, len: Int): Float32Buffer
     fun put(data: Float32Buffer): Float32Buffer
+
+    override fun removeAt(index: Int) {
+        for (i in index until position) {
+            this[i] = this[i+1]
+        }
+        super.removeAt(index)
+    }
 }
 
 expect fun createUint8Buffer(capacity: Int): Uint8Buffer

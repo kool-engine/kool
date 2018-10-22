@@ -276,7 +276,7 @@ class SimplificationDemo(ctx: KoolContext) {
         val pt = PerfTimer()
         dispModel.meshData.batchUpdate {
             dispModel.meshData.clear()
-            dispModel.meshData.vertexList.addVertices(srcModel.vertexList)
+            dispModel.meshData.vertexList.addFrom(srcModel.vertexList)
 
             heMesh = HalfEdgeMesh(dispModel.meshData, HalfEdgeMesh.ListEdgeHandler())
             //heMesh = HalfEdgeMesh(dispModel.meshData)

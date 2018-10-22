@@ -49,3 +49,9 @@ inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
     this > max -> max
     else -> this
 }
+
+fun triArea(v1: Vec3f, v2: Vec3f, v3: Vec3f): Float {
+    val b = v2.distance(v3)
+    val h = v1.distanceToLine(v2, v3)
+    return 0.5f * b * h
+}

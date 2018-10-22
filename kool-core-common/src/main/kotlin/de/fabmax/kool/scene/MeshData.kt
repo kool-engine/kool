@@ -1,10 +1,9 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.gl.*
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.VboBinder
 import de.fabmax.kool.util.*
@@ -60,6 +59,9 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         if (!vertexAttributes.contains(Attribute.NORMALS)) {
             return
         }
+        if (primitiveType != GL_TRIANGLES) {
+            throw KoolException("Normal generation is only supported for triangle meshes")
+        }
 
         val v0 = this[0]
         val v1 = this[1]
@@ -78,10 +80,15 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
             v1.index = vertexList.indices[i+1]
             v2.index = vertexList.indices[i+2]
 
+            if (v0.index > vertexList.size || v1.index > vertexList.size || v2.index > vertexList.size) {
+                logE { "index to large ${v0.index}, ${v1.index}, ${v2.index}, sz: ${vertexList.size}" }
+            }
+
             v1.position.subtract(v0.position, e1).norm()
             v2.position.subtract(v0.position, e2).norm()
 
-            e1.cross(e2, nrm)
+            e1.cross(e2, nrm).norm().scale(triArea(v0.position, v1.position, v2.position))
+            //e1.cross(e2, nrm).norm()
             v0.normal += nrm
             v1.normal += nrm
             v2.normal += nrm
@@ -96,6 +103,9 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     fun generateTangents() {
         if (!vertexAttributes.contains(Attribute.TANGENTS)) {
             return
+        }
+        if (primitiveType != GL_TRIANGLES) {
+            throw KoolException("Normal generation is only supported for triangle meshes")
         }
 
         val v0 = this[0]
@@ -136,6 +146,81 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         for (i in 0 until numVertices) {
             v0.index = i
             v0.tangent.norm()
+        }
+    }
+
+    fun joinCloseVertices(eps: Float = FUZZY_EQ_F) {
+        batchUpdate {
+            val verts = mutableListOf<IndexedVertexList.Vertex>()
+            for (i in 0 until numVertices) {
+                verts += get(i)
+            }
+            val tree = pointKdTree(verts)
+            val trav = InRadiusTraverser<IndexedVertexList.Vertex>()
+            val removeVerts = mutableListOf<IndexedVertexList.Vertex>()
+            val replaceIndcs = mutableMapOf<Int, Int>()
+            var requiresRebuildNormals = false
+
+            for (v in verts) {
+                if (v !in removeVerts) {
+                    tree.traverse(trav.setup(v, eps))
+                    trav.result.removeAll { it.index == v.index || it.index in replaceIndcs.keys }
+
+                    if (trav.result.isNotEmpty()) {
+                        for (j in trav.result) {
+                            v.position += j.position
+                            v.normal += j.normal
+
+                            removeVerts += j
+                            replaceIndcs[j.index] = v.index
+                        }
+                        v.position.scale(1f / (1f + trav.result.size))
+
+                        if (hasAttribute(Attribute.NORMALS)) {
+                            v.normal.scale(1f / (1f + trav.result.size))
+                            requiresRebuildNormals = requiresRebuildNormals || v.normal.length().isFuzzyZero()
+                            if (!requiresRebuildNormals) {
+                                v.normal.norm()
+                            }
+                        }
+                    }
+                }
+            }
+
+            logD { "Found ${removeVerts.size} duplicate positions (of $numVertices vertices)" }
+
+            for (r in removeVerts.sortedBy { -it.index }) {
+                // remove int attributes of deleted vertex
+                for (i in r.index * vertexList.vertexSizeI until vertexList.dataI.position - vertexList.vertexSizeI) {
+                    vertexList.dataI[i] = vertexList.dataI[i + vertexList.vertexSizeI]
+                }
+                vertexList.dataI.position -= vertexList.vertexSizeI
+                vertexList.dataI.limit -= vertexList.vertexSizeI
+
+                // remove float attributes of deleted vertex
+                for (i in r.index * vertexList.vertexSizeF until vertexList.dataF.position - vertexList.vertexSizeF) {
+                    vertexList.dataF[i] = vertexList.dataF[i + vertexList.vertexSizeF]
+                }
+                vertexList.dataF.position -= vertexList.vertexSizeF
+                vertexList.dataF.limit -= vertexList.vertexSizeF
+
+                for (i in 0 until vertexList.indices.position) {
+                    if (vertexList.indices[i] == r.index) {
+                        // this index was replaced by a different one
+                        vertexList.indices[i] = replaceIndcs[r.index]!!
+                    } else if (vertexList.indices[i] > r.index) {
+                        vertexList.indices[i]--
+                    }
+                }
+            }
+            vertexList.size -= removeVerts.size
+
+            if (requiresRebuildNormals) {
+                logD { "Normal reconstruction required" }
+                generateNormals()
+            }
+
+            logD { "Removed ${removeVerts.size} duplicate vertices" }
         }
     }
 

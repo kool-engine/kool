@@ -5,7 +5,11 @@ import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 
 class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
 
-    val errQuadric = Mat4f().setZero()
+    val errQuadric = Mat4d().setZero()
+    var isBorder = false
+        private set
+    var isDeleted = false
+        private set
 
     private val tmpVec4 = MutableVec4f()
 
@@ -21,6 +25,7 @@ class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
                 val nrm = triNrm.cross(edDir, MutableVec3f())
                 tmpVec4.set(nrm, -nrm.dot(vertex))
                 addPlane(tmpVec4)
+                isBorder = true
             }
             if (ed.next.next.opp == null) {
                 // border edge to vertex, add a virtual orthogonal plane
@@ -32,12 +37,15 @@ class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
                 val nrm = triNrm.cross(edDir, MutableVec3f())
                 tmpVec4.set(nrm, -nrm.dot(vertex))
                 addPlane(tmpVec4)
+                isBorder = true
             }
         }
     }
 
     fun consume(other: ErrorQuadric) {
+        isBorder = isBorder || other.isBorder
         errQuadric.add(other.errQuadric)
+        other.isDeleted = true
     }
 
     fun getError(v: Vec3f): Float {
@@ -46,24 +54,24 @@ class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
     }
 
     private fun addPlane(planeVec: Vec4f) {
-        errQuadric[0, 0] += planeVec.x * planeVec.x
-        errQuadric[1, 0] += planeVec.x * planeVec.y
-        errQuadric[2, 0] += planeVec.x * planeVec.z
-        errQuadric[3, 0] += planeVec.x * planeVec.w
+        errQuadric[0, 0] += (planeVec.x * planeVec.x).toDouble()
+        errQuadric[1, 0] += (planeVec.x * planeVec.y).toDouble()
+        errQuadric[2, 0] += (planeVec.x * planeVec.z).toDouble()
+        errQuadric[3, 0] += (planeVec.x * planeVec.w).toDouble()
 
-        errQuadric[0, 1] += planeVec.y * planeVec.x
-        errQuadric[1, 1] += planeVec.y * planeVec.y
-        errQuadric[2, 1] += planeVec.y * planeVec.z
-        errQuadric[3, 1] += planeVec.y * planeVec.w
+        errQuadric[0, 1] += (planeVec.y * planeVec.x).toDouble()
+        errQuadric[1, 1] += (planeVec.y * planeVec.y).toDouble()
+        errQuadric[2, 1] += (planeVec.y * planeVec.z).toDouble()
+        errQuadric[3, 1] += (planeVec.y * planeVec.w).toDouble()
 
-        errQuadric[0, 2] += planeVec.z * planeVec.x
-        errQuadric[1, 2] += planeVec.z * planeVec.y
-        errQuadric[2, 2] += planeVec.z * planeVec.z
-        errQuadric[3, 2] += planeVec.z * planeVec.w
+        errQuadric[0, 2] += (planeVec.z * planeVec.x).toDouble()
+        errQuadric[1, 2] += (planeVec.z * planeVec.y).toDouble()
+        errQuadric[2, 2] += (planeVec.z * planeVec.z).toDouble()
+        errQuadric[3, 2] += (planeVec.z * planeVec.w).toDouble()
 
-        errQuadric[0, 3] += planeVec.w * planeVec.x
-        errQuadric[1, 3] += planeVec.w * planeVec.y
-        errQuadric[2, 3] += planeVec.w * planeVec.z
-        errQuadric[3, 3] += planeVec.w * planeVec.w
+        errQuadric[0, 3] += (planeVec.w * planeVec.x).toDouble()
+        errQuadric[1, 3] += (planeVec.w * planeVec.y).toDouble()
+        errQuadric[2, 3] += (planeVec.w * planeVec.z).toDouble()
+        errQuadric[3, 3] += (planeVec.w * planeVec.w).toDouble()
     }
 }

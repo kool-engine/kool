@@ -103,10 +103,10 @@ open class Mat4f {
         return result
     }
 
-    fun invert(): Boolean {
+    fun invert(eps: Float = 0.0f): Boolean {
         var success = false
         synchronized(tmpMatLock) {
-            success = invert(tmpMatA)
+            success = invert(tmpMatA, eps)
             if (success) {
                 set(tmpMatA)
             }
@@ -114,7 +114,7 @@ open class Mat4f {
         return success
     }
 
-    fun invert(result: Mat4f): Boolean {
+    fun invert(result: Mat4f, eps: Float = 0.0f): Boolean {
         // Invert a 4 x 4 matrix using Cramer's Rule
 
         // transpose matrix
@@ -189,7 +189,8 @@ open class Mat4f {
         // calculate determinant
         val det = src0 * dst0 + src1 * dst1 + src2 * dst2 + src3 * dst3
 
-        if (det == 0.0f) {
+        //if (det == 0.0f) {
+        if (det.isFuzzyZero(eps)) {
             return false
         }
 
@@ -550,21 +551,43 @@ open class Mat4f {
         matrix[offset + col * 4 + row] = value
     }
 
-    fun setColVec(col: Int, vec: Vec3f, w: Float) {
+    fun setRow(row: Int, vec: Vec3f, w: Float) {
+        this[row, 0] = vec.x
+        this[row, 1] = vec.y
+        this[row, 2] = vec.z
+        this[row, 3] = w
+    }
+
+    fun setRow(row: Int, value: Vec4f) {
+        this[row, 0] = value.x
+        this[row, 1] = value.y
+        this[row, 2] = value.z
+        this[row, 3] = value.w
+    }
+
+    fun getRow(row: Int, result: MutableVec4f): MutableVec4f {
+        result.x = this[row, 0]
+        result.y = this[row, 1]
+        result.z = this[row, 2]
+        result.w = this[row, 3]
+        return result
+    }
+
+    fun setCol(col: Int, vec: Vec3f, w: Float) {
         this[0, col] = vec.x
         this[1, col] = vec.y
         this[2, col] = vec.z
         this[3, col] = w
     }
 
-    fun setColVec(col: Int, value: Vec4f) {
+    fun setCol(col: Int, value: Vec4f) {
         this[0, col] = value.x
         this[1, col] = value.y
         this[2, col] = value.z
         this[3, col] = value.w
     }
 
-    fun getColVec(col: Int, result: MutableVec4f): MutableVec4f {
+    fun getCol(col: Int, result: MutableVec4f): MutableVec4f {
         result.x = this[0, col]
         result.y = this[1, col]
         result.z = this[2, col]

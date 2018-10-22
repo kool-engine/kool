@@ -22,7 +22,9 @@ import kotlin.math.sqrt
  */
 class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdgeHandler(meshData)): Mesh(meshData) {
 
-    private val vertices: MutableList<HalfEdgeVertex>
+    private val verts: MutableList<HalfEdgeVertex>
+    val vertices: List<HalfEdgeVertex>
+        get() = verts
 
     private val positionOffset = meshData.vertexList.attributeOffsets[Attribute.POSITIONS]!!
 
@@ -31,7 +33,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
     private val tmpVec3 = MutableVec3f()
 
     val vertCount: Int
-        get() = vertices.size
+        get() = verts.size
     val faceCount: Int
         get() = edgeHandler.numEdges / 3
 
@@ -53,13 +55,13 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
             throw KoolException("Supplied meshData must be of primitive type GL_TRIANGLES")
         }
 
-        vertices = MutableList(meshData.numVertices) { HalfEdgeVertex(it) }
+        verts = MutableList(meshData.numVertices) { HalfEdgeVertex(it) }
 
         for (i in 0 until meshData.numIndices step 3) {
             // create triangle vertices
-            val v0 = vertices[meshData.vertexList.indices[i]]
-            val v1 = vertices[meshData.vertexList.indices[i+1]]
-            val v2 = vertices[meshData.vertexList.indices[i+2]]
+            val v0 = verts[meshData.vertexList.indices[i]]
+            val v1 = verts[meshData.vertexList.indices[i+1]]
+            val v2 = verts[meshData.vertexList.indices[i+2]]
 
             // create inner half-edges and connect them
             val e0 = HalfEdge(v0, v1)
@@ -88,71 +90,131 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
         }
     }
 
+    fun sanitize() {
+        // assign new vertex indices
+        val vIt = verts.iterator()
+        var vi = 0
+        for (v in vIt) {
+            if (v.isDeleted) {
+                vIt.remove()
+            } else {
+                v.index = vi++
+            }
+        }
+        val vertCnt = verts.size
+
+        edgeHandler.rebuild()
+
+        // check for invalid edges, fixme: ideally this shouldn't happen but it does sometimes
+        val removeEdges = mutableListOf<HalfEdge>()
+        for (v in verts) {
+            for (he in v.edges) {
+                val i0 = he.from.index
+                val i1 = he.next.from.index
+                val i2 = he.next.next.from.index
+                if (i0 >= vertCnt || i1 >= vertCnt || i2 >= vertCnt) {
+                    logW { "Inconsistent triangle indices: i0=$i0, i1=$i1, i2=$i2, mesh has only $vertCnt vertices" }
+                    removeEdges += he
+                }
+            }
+        }
+        edgeHandler.forEach { he ->
+            if (he.from.isDeleted || he.from.index >= vertCnt || he.to.isDeleted || he.to.index >= vertCnt) {
+                logW { "Inconsistent edge: ${he.from.index} (del=${he.from.isDeleted}) -> ${he.to.index} (del=${he.to.isDeleted}), mesh has only $vertCnt vertices" }
+                removeEdges += he
+            }
+        }
+        removeEdges.forEach { it.deleteTriangle() }
+    }
+
     /**
      * Removes all vertices / triangles marked as deleted
      */
     fun rebuild(generateNormals: Boolean = true, generateTangents: Boolean = true) {
-        // assign new vertex indices
-        val it = vertices.iterator()
-        var vi = 0
-        for (v in it) {
-            if (v.isDeleted) {
-                it.remove()
-            } else {
-                v.oldIndex = v.index
-                v.index = vi++
-            }
-        }
-        edgeHandler.rebuild()
+        sanitize()
 
-        // apply new indices to mesh vertex list
-        val strideF = meshData.vertexList.vertexSizeF
-        val strideI = meshData.vertexList.vertexSizeI
-        val newDataF = createFloat32Buffer(vertices.size * strideF)
-        val newDataI = if (strideI > 0) createUint32Buffer(vertices.size * strideI) else meshData.vertexList.dataI
+        meshData.batchUpdate(true) {
+            // apply new indices to mesh vertex list
+            val strideF = meshData.vertexList.vertexSizeF
+            val strideI = meshData.vertexList.vertexSizeI
+            val vertCnt = verts.size
+            val newDataF = createFloat32Buffer(vertCnt * strideF)
+            val newDataI = if (strideI > 0) createUint32Buffer(vertCnt * strideI) else meshData.vertexList.dataI
 
-        for (i in vertices.indices) {
-            // copy data from previous location
-            val oldIdx = vertices[i].oldIndex
-            for (j in 0 until strideF) {
-                newDataF.put(meshData.vertexList.dataF[oldIdx * strideF + j])
-            }
-            if (strideI > 0) {
-                for (j in 0 until strideI) {
-                    newDataI.put(meshData.vertexList.dataI[oldIdx * strideI + j])
+            for (i in verts.indices) {
+                // copy data from previous location
+                val oldIdx = verts[i].meshDataIndex
+                verts[i].meshDataIndex = verts[i].index
+
+                for (j in 0 until strideF) {
+                    newDataF.put(meshData.vertexList.dataF[oldIdx * strideF + j])
+                }
+                if (strideI > 0) {
+                    for (j in 0 until strideI) {
+                        newDataI.put(meshData.vertexList.dataI[oldIdx * strideI + j])
+                    }
                 }
             }
-        }
 
-        // rebuild triangle index list
-        meshData.vertexList.clearIndices()
-        for (i in vertices.indices) {
-            val v = vertices[i]
-            for (j in v.edges.indices) {
-                val e = v.edges[j]
-                val ei = e.from.index
-                if (ei < e.next.from.index && ei < e.next.next.from.index) {
-                    meshData.vertexList.addIndex(e.from.index)
-                    meshData.vertexList.addIndex(e.next.from.index)
-                    meshData.vertexList.addIndex(e.next.next.from.index)
+            // rebuild triangle index list
+            meshData.vertexList.clearIndices()
+            for (i in verts.indices) {
+                val v = verts[i]
+                for (j in v.edges.indices) {
+                    val e = v.edges[j]
+                    val ei = e.from.index
+                    if (ei < e.next.from.index && ei < e.next.next.from.index) {
+                        meshData.vertexList.addIndex(e.from.index)
+                        meshData.vertexList.addIndex(e.next.from.index)
+                        meshData.vertexList.addIndex(e.next.next.from.index)
+                    }
                 }
             }
-        }
 
-        if (meshData.numIndices / 3 != faceCount) {
-            logE { "Mesh tris != OcTree tris! in mesh: ${meshData.numIndices / 3}, in tree: $faceCount" }
-        }
+            if (meshData.numIndices != faceCount * 3) {
+                logW { "Inconsiatent triangle count! MeshData: ${meshData.numIndices / 3}, HalfEdgeMesh: $faceCount" }
+            }
 
-        meshData.vertexList.dataF = newDataF
-        meshData.vertexList.dataI = newDataI
-        meshData.vertexList.size = vertices.size
-        if (generateNormals) {
-            meshData.generateNormals()
+            meshData.vertexList.dataF = newDataF
+            meshData.vertexList.dataI = newDataI
+            meshData.vertexList.size = vertCnt
+            if (generateNormals) {
+                meshData.generateNormals()
+            }
+            if (generateTangents) {
+                meshData.generateTangents()
+            }
         }
-        if (generateTangents) {
-            meshData.generateTangents()
+    }
+
+    fun subSelect(start: HalfEdge, maxTris: Int = 0): Pair<List<HalfEdge>, List<HalfEdge>> {
+        val selection = mutableListOf<HalfEdge>()
+
+        val borderEdges = mutableSetOf<Long>()
+        val innerEdges = mutableSetOf<Long>()
+        val borderQueue = mutableListOf(start)
+
+        while (borderQueue.isNotEmpty() && (maxTris == 0 || selection.size / 3 < maxTris)) {
+            val he = borderQueue.removeAt(0)
+            if (he.id in innerEdges) {
+                continue
+            }
+
+            selection += he.also { innerEdges += it.id }
+            selection += he.next.also { innerEdges += it.id }
+            selection += he.next.next.also { innerEdges += it.id }
+
+            if (he.opp != null && he.opp!!.id !in innerEdges && he.opp!!.id !in borderEdges) {
+                borderQueue += he.opp!!
+            }
+            if (he.next.opp != null && he.next.opp!!.id !in innerEdges && he.next.opp!!.id !in borderEdges) {
+                borderQueue += he.next.opp!!
+            }
+            if (he.next.next.opp != null && he.next.next.opp!!.id !in innerEdges && he.next.next.opp!!.id !in borderEdges) {
+                borderQueue += he.next.next.opp!!
+            }
         }
-        meshData.isSyncRequired = true
+        return Pair(borderQueue, selection)
     }
 
     fun splitEdge(edge: HalfEdge, fraction: Float) {
@@ -161,7 +223,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
             position.set(edge.to).subtract(edge.from).scale(fraction).add(edge.from)
         }
         val insertV = HalfEdgeVertex(idx)
-        vertices += insertV
+        verts += insertV
 
         // insert new half edges for right triangle and adjust linkage
         val prevToR = edge.to
@@ -292,6 +354,36 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
         }
     }
 
+    fun subMeshOf(edges: List<HalfEdge>): MeshData {
+        val subData = MeshData(meshData.vertexAttributes)
+        val indexMap = mutableMapOf<Int, Int>()
+
+        val v = meshData.vertexList.vertexIt
+        edges.forEach { he ->
+            if (he.from.index !in indexMap.keys) {
+                indexMap[he.from.index] = subData.addVertex {
+                    set(v.apply { index = he.from.index })
+                }
+            }
+            if (he.to.index !in indexMap.keys) {
+                indexMap[he.to.index] = subData.addVertex {
+                    set(v.apply { index = he.to.index })
+                }
+            }
+        }
+
+        val addedHes = mutableSetOf<Long>()
+        edges.forEach { he ->
+            if (he.id !in addedHes) {
+                subData.addTriIndices(indexMap[he.from.index]!!, indexMap[he.next.from.index]!!, indexMap[he.next.next.from.index]!!)
+                addedHes += he.id
+                addedHes += he.next.id
+                addedHes += he.next.next.id
+            }
+        }
+        return subData
+    }
+
     companion object {
         object HalfEdgeAdapter : ItemAdapter<HalfEdge> {
             override fun getMinX(item: HalfEdge): Float = min(item.from.x, item.to.x)
@@ -324,7 +416,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
 
         var isDeleted = false
             private set
-        internal var oldIndex = -1
+        internal var meshDataIndex = index
 
         override val x: Float
             get() = meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset]
@@ -422,11 +514,12 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
         }
 
         private fun deleteEdge() {
+            edgeHandler -= this
             isDeleted = true
             from.edges -= this
             opp?.apply { opp = null }
-            edgeHandler -= this
             treeNode = null
+            opp = null
         }
 
         fun deleteTriangle() {
@@ -440,7 +533,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
         fun updateTo(newTo: HalfEdgeVertex) = edgeHandler.checkedUpdateEdgeTo(this, newTo)
 
         override fun toString(): String {
-            return "$from -> $to"
+            return "${from.index} -> ${to.index}"
         }
     }
 
