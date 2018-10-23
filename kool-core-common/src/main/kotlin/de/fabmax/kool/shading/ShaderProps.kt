@@ -43,6 +43,8 @@ class ShaderProps {
 
     var numBones = 0
 
+    var isInstanced = false
+
     var shadowMap: ShadowMap? = null
 
     var isNormalMapped = false

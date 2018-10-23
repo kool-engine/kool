@@ -328,6 +328,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
             indexBuffer = null
             dataBufferF = null
             dataBufferI = null
+            attributeBinders.clear()
         }
     }
 

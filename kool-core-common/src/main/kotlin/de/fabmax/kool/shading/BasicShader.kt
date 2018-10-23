@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
 import de.fabmax.kool.Texture
 import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.scene.InstancedMesh
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.animation.Armature
@@ -106,6 +107,12 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         if (props.numBones > 0 && ctx.glCapabilities.shaderIntAttribs) {
             attributes.add(Armature.BONE_INDICES)
             attributes.add(Armature.BONE_WEIGHTS)
+        }
+        if (props.isInstanced) {
+            attributes.add(InstancedMesh.MODEL_INSTANCES_0)
+            attributes.add(InstancedMesh.MODEL_INSTANCES_1)
+            attributes.add(InstancedMesh.MODEL_INSTANCES_2)
+            attributes.add(InstancedMesh.MODEL_INSTANCES_3)
         }
     }
 

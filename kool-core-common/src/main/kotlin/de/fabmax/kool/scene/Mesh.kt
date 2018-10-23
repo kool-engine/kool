@@ -28,26 +28,20 @@ inline fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolea
     return mesh(attributes, name, block)
 }
 
-inline fun mesh(vararg attributes: Attribute, name: String? = null, block: Mesh.() -> Unit): Mesh {
-    return mesh(attributes.toHashSet(), name, block)
-}
-
 inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(MeshData(attributes), name)
 
     mesh.shader = basicShader {
-        if (attributes.contains(Attribute.NORMALS)) {
-            lightModel = LightModel.PHONG_LIGHTING
+        lightModel = if (attributes.contains(Attribute.NORMALS)) {
+            LightModel.PHONG_LIGHTING
         } else {
-            lightModel = LightModel.NO_LIGHTING
+            LightModel.NO_LIGHTING
         }
 
-        if (attributes.contains(Attribute.TEXTURE_COORDS)) {
-            colorModel = ColorModel.TEXTURE_COLOR
-        } else if (attributes.contains(Attribute.COLORS)) {
-            colorModel = ColorModel.VERTEX_COLOR
-        } else {
-            colorModel = ColorModel.STATIC_COLOR
+        colorModel = when {
+            attributes.contains(Attribute.TEXTURE_COORDS) -> ColorModel.TEXTURE_COLOR
+            attributes.contains(Attribute.COLORS) -> ColorModel.VERTEX_COLOR
+            else -> ColorModel.STATIC_COLOR
         }
     }
 
@@ -61,11 +55,11 @@ inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.()
 }
 
 fun colorMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
-    return mesh(true, true, false, name, generate)
+    return mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS), name, generate)
 }
 
 fun textMesh(font: Font, name: String? = null, generate: Mesh.() -> Unit): Mesh {
-    val text = mesh(true, true, true, name, generate)
+    val text = mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS), name, generate)
     text.shader = fontShader(font) { lightModel = LightModel.NO_LIGHTING }
     return text
 }
@@ -115,6 +109,8 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         meshData.generateGeometry()
     }
 
+    open fun getAttributeBinder(attrib: Attribute): VboBinder? = meshData.attributeBinders[attrib]
+
     override fun rayTest(test: RayTest) = rayTest.rayTest(test)
 
     /**
@@ -143,7 +139,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         ctx.shaderMgr.bindShader(shader, ctx)
 
         // setup shader for mesh rendering, the active shader is not necessarily mMeshShader
-        ctx.shaderMgr.boundShader?.also { boundShader ->
+        ctx.shaderMgr.boundShader?.let { boundShader ->
             // bind this mesh as input to the used shader
             boundShader.bindMesh(this, ctx)
 
@@ -165,13 +161,17 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
             // draw mesh
             meshData.indexBuffer?.bind(ctx)
-            glDrawElements(meshData.primitiveType, meshData.numIndices, meshData.indexType, 0)
+            drawElements(ctx)
             boundShader.unbindMesh(ctx)
 
             if (cullMethod != CullMethod.DEFAULT) {
                 ctx.popAttributes()
             }
         }
+    }
+
+    protected open fun drawElements(ctx: KoolContext) {
+        glDrawElements(meshData.primitiveType, meshData.numIndices, meshData.indexType, 0)
     }
 }
 

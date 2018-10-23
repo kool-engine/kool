@@ -11,10 +11,11 @@ import de.fabmax.kool.gl.*
  */
 class VboBinder(
         val vbo: BufferResource,
-        var elemSize: Int,
-        var strideBytes: Int,
-        var offset: Int = 0,
-        var type: Int = GL_FLOAT) {
+        val elemSize: Int,
+        val strideBytes: Int,
+        val offset: Int = 0,
+        val type: Int = GL_FLOAT,
+        val divisor: Int = 0) {
 
     /**
      * Is called by the used shader to bind a vertex attribute buffer to the specified target.

@@ -1,6 +1,7 @@
 package de.fabmax.kool.shading
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.scene.InstancedMesh
 import de.fabmax.kool.scene.animation.Armature
 
 /**
@@ -66,12 +67,12 @@ open class GlslGenerator {
     val customUniforms = mutableListOf<Uniform<*>>()
 
     // keywords are set when shader is generated, before glCapabilites might not be initialized
-    private var vsIn = ""
-    private var vsOut = ""
-    private var fsIn = ""
-    private var fsOut = ""
-    private var fsOutBody = ""
-    private var texSampler = ""
+    private lateinit var vsIn: String
+    private lateinit var vsOut: String
+    private lateinit var fsIn: String
+    private lateinit var fsOut: String
+    private lateinit var fsOutBody: String
+    private lateinit var texSampler: String
 
     fun generate(shaderProps: ShaderProps, ctx: KoolContext): Shader.Source {
         vsIn = ctx.glCapabilities.glslDialect.vsIn
@@ -111,15 +112,19 @@ open class GlslGenerator {
     }
 
     private fun generateVertInputCode(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
-        // MVP matrices and vertex position attribute are always needed
-        text.append("$vsIn vec3 ${Attribute.POSITIONS.name};\n")
-        text.append("uniform mat4 $U_MVP_MATRIX;\n")
+        text.append("$vsIn vec3 ${Attribute.POSITIONS.glslSrcName};\n")
         text.append("uniform mat4 $U_MODEL_MATRIX;\n")
         text.append("uniform mat4 $U_VIEW_MATRIX;\n")
+        text.append("uniform mat4 $U_MVP_MATRIX;\n")
+
+        if (shaderProps.isInstanced) {
+            // for instanced meshes there is an additional instance model matrix attribute
+            text.append("$vsIn mat4 ${InstancedMesh.MODEL_INSTANCES_0.glslSrcName};\n")
+        }
 
         // add light dependent uniforms and attributes
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
-            text.append("$vsIn vec3 ${Attribute.NORMALS.name};\n")
+            text.append("$vsIn vec3 ${Attribute.NORMALS.glslSrcName};\n")
             text.append("uniform vec3 $U_LIGHT_DIRECTION;\n")
 
             if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
@@ -129,7 +134,7 @@ open class GlslGenerator {
                 text.append("$vsOut vec3 $V_NORMAL;\n")
 
                 if (shaderProps.isNormalMapped) {
-                    text.append("$vsIn vec3 ${Attribute.TANGENTS.name};\n")
+                    text.append("$vsIn vec3 ${Attribute.TANGENTS.glslSrcName};\n")
                     text.append("$vsOut vec3 $V_TANGENT;\n")
                 }
 
@@ -146,19 +151,19 @@ open class GlslGenerator {
         // add color dependent attributes
         if (shaderProps.isTextureColor || shaderProps.isNormalMapped) {
             // texture color
-            text.append("$vsIn vec2 ${Attribute.TEXTURE_COORDS.name};\n")
+            text.append("$vsIn vec2 ${Attribute.TEXTURE_COORDS.glslSrcName};\n")
             text.append("$vsOut vec2 $V_TEX_COORD;\n")
 
         }
         if (shaderProps.isVertexColor) {
             // vertex color
-            text.append("$vsIn vec4 ${Attribute.COLORS.name};\n")
+            text.append("$vsIn vec4 ${Attribute.COLORS.glslSrcName};\n")
             text.append("$vsOut vec4 $V_COLOR;\n")
         }
 
         if (shaderProps.numBones > 0 && ctx.glCapabilities.shaderIntAttribs) {
-            text.append("$vsIn ivec4 ${Armature.BONE_INDICES.name};\n")
-            text.append("$vsIn vec4 ${Armature.BONE_WEIGHTS.name};\n")
+            text.append("$vsIn ivec4 ${Armature.BONE_INDICES.glslSrcName};\n")
+            text.append("$vsIn vec4 ${Armature.BONE_WEIGHTS.glslSrcName};\n")
             text.append("uniform mat4 $U_BONES[${shaderProps.numBones}];\n")
         }
 
@@ -181,6 +186,15 @@ open class GlslGenerator {
 
     private fun generateVertBodyCode(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
         text.append("\nvoid main() {\n")
+
+        var mvpMat = U_MVP_MATRIX
+        var modelMat = U_MODEL_MATRIX
+        if (shaderProps.isInstanced) {
+            mvpMat = "mvpMatInst"
+            text.append("mat4 $mvpMat = $U_MVP_MATRIX * ${InstancedMesh.MODEL_INSTANCES_0.glslSrcName};\n")
+            modelMat = "modelMatInst"
+            text.append("mat4 $modelMat = $U_MODEL_MATRIX * ${InstancedMesh.MODEL_INSTANCES_0.glslSrcName};\n")
+        }
 
         text.append("vec4 position = vec4(${Attribute.POSITIONS}, 1.0);\n")
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
@@ -208,55 +222,55 @@ open class GlslGenerator {
         }
 
         // output position of the vertex in clip space: MVP * position
-        text.append("gl_Position = $U_MVP_MATRIX * position;\n")
+        text.append("gl_Position = $mvpMat * position;\n")
 
         injectors.forEach { it.vsAfterProj(shaderProps, text, ctx) }
 
         val shadowMap = shaderProps.shadowMap
         if (shadowMap != null) {
             for (i in 0 until shadowMap.numMaps) {
-                text.append("$V_POSITION_LIGHTSPACE[$i] = $U_SHADOW_MVP[$i] * ($U_MODEL_MATRIX * position);\n")
+                text.append("$V_POSITION_LIGHTSPACE[$i] = $U_SHADOW_MVP[$i] * ($modelMat * position);\n")
             }
             text.append("$V_POSITION_CLIPSPACE_Z = gl_Position.z;\n")
         }
 
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
-            text.append("$V_POSITION_WORLDSPACE = ($U_MODEL_MATRIX * position).xyz;\n")
+            text.append("$V_POSITION_WORLDSPACE = ($modelMat * position).xyz;\n")
         }
 
         if (shaderProps.isTextureColor || shaderProps.isNormalMapped) {
             // interpolate vertex texture coordinate for usage in fragment shader
-            text.append("$V_TEX_COORD = ${Attribute.TEXTURE_COORDS.name};\n")
+            text.append("$V_TEX_COORD = ${Attribute.TEXTURE_COORDS.glslSrcName};\n")
 
         }
         if (shaderProps.isVertexColor) {
             // interpolate vertex color for usage in fragment shader
-            text.append("$V_COLOR = ${Attribute.COLORS.name};\n")
+            text.append("$V_COLOR = ${Attribute.COLORS.glslSrcName};\n")
         }
 
         if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
             // vector from vertex to camera, in camera space. In camera space, the camera is at the origin (0, 0, 0).
-            text.append("$V_EYE_DIRECTION = -($U_VIEW_MATRIX * ($U_MODEL_MATRIX * position)).xyz;\n")
+            text.append("$V_EYE_DIRECTION = -($U_VIEW_MATRIX * ($modelMat * position)).xyz;\n")
 
             // light direction, in camera space. M is left out because light position is already in world space.
             text.append("$V_LIGHT_DIRECTION = ($U_VIEW_MATRIX * vec4($U_LIGHT_DIRECTION, 0.0)).xyz;\n")
 
             // normal of the the vertex, in camera space
-            text.append("$V_NORMAL = ($U_VIEW_MATRIX * ($U_MODEL_MATRIX * normal)).xyz;\n")
+            text.append("$V_NORMAL = ($U_VIEW_MATRIX * ($modelMat * normal)).xyz;\n")
 
             if (shaderProps.isNormalMapped) {
-                text.append("$V_TANGENT = ($U_VIEW_MATRIX * ($U_MODEL_MATRIX * tangent)).xyz;\n")
+                text.append("$V_TANGENT = ($U_VIEW_MATRIX * ($modelMat * tangent)).xyz;\n")
             }
 
         } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
             // vector from vertex to camera, in camera space. In camera space, the camera is at the origin (0, 0, 0).
-            text.append("vec3 e = normalize(-($U_VIEW_MATRIX * ($U_MODEL_MATRIX * position)).xyz);\n")
+            text.append("vec3 e = normalize(-($U_VIEW_MATRIX * ($modelMat * position)).xyz);\n")
 
             // light direction, in camera space. M is left out because light position is already in world space.
             text.append("vec3 l = normalize(($U_VIEW_MATRIX * vec4($U_LIGHT_DIRECTION, 0.0)).xyz);\n")
 
             // normal of the the vertex, in camera space
-            text.append("vec3 n = normalize(($U_VIEW_MATRIX * ($U_MODEL_MATRIX * normal)).xyz);\n")
+            text.append("vec3 n = normalize(($U_VIEW_MATRIX * ($modelMat * normal)).xyz);\n")
 
             // cosine of angle between surface normal and light direction
             text.append("float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n")
@@ -276,7 +290,6 @@ open class GlslGenerator {
 
     private fun generateFragInputCode(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
         text.append("precision highp float;\n")
-        text.append("uniform mat4 $U_MODEL_MATRIX;\n")
         text.append("uniform mat4 $U_VIEW_MATRIX;\n")
         if (shaderProps.isAlpha) {
             text.append("uniform float $U_ALPHA;\n")

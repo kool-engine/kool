@@ -19,7 +19,9 @@ abstract class Shader : GlObject<ProgramResource>() {
         constructor(vertexSrc: String, fragmentSrc: String) : this(vertexSrc, "", fragmentSrc)
     }
 
-    protected data class AttributeLocation(val descr: Attribute, val location: Int)
+    protected data class AttributeLocation(val descr: Attribute, val location: Int) {
+        var divisor = 0
+    }
     protected val attributeLocations = mutableListOf<AttributeLocation>()
 
     val attributes = mutableSetOf<Attribute>()
@@ -80,16 +82,11 @@ abstract class Shader : GlObject<ProgramResource>() {
      */
     protected open fun findAttributeLocation(attribName: String, ctx: KoolContext): Int {
         val ref: ProgramResource? = res
-        if (ref != null) {
-            return glGetAttribLocation(ref, attribName)
-        } else {
-            return -1
-        }
+        return if (ref != null) glGetAttribLocation(ref, attribName) else -1
     }
 
     /**
-     * Enables the specified attribute for this shader. This method is called by concrete Shader
-     * implementations to set the vertex attributes used by the implementation. If no attribute with
+     * Enables the specified attribute for this shader. If no attribute with
      * the specified name is found, the attribute is disabled.
      *
      * @param attribute     the attribute to enable, attribute.name must correspond to the attribute
@@ -97,8 +94,10 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @return whether the attribute was enabled (i.e. attribName was found)
      */
     private fun enableAttribute(attribute: Attribute, ctx: KoolContext): Boolean {
-        val location = findAttributeLocation(attribute.name, ctx)
-        enableAttribute(attribute, location, ctx)
+        val location = findAttributeLocation(attribute.glslSrcName, ctx)
+        if (location >= 0) {
+            enableAttribute(attribute, location + attribute.locationOffset, ctx)
+        }
         return location >= 0
     }
 
@@ -154,10 +153,14 @@ abstract class Shader : GlObject<ProgramResource>() {
     open fun bindMesh(mesh: Mesh, ctx: KoolContext) {
         for (i in attributeLocations.indices) {
             val attrib = attributeLocations[i]
-            val binder = mesh.meshData.attributeBinders[attrib.descr] ?:
+            val binder = mesh.getAttributeBinder(attrib.descr) ?:
                     throw KoolException("Mesh must supply an attribute binder for attribute ${attrib.descr.name}")
             glEnableVertexAttribArray(attrib.location)
             binder.bindAttribute(attrib.location, ctx)
+            if (binder.divisor > 0) {
+                attrib.divisor = binder.divisor
+                glVertexAttribDivisor(attrib.location, attrib.divisor)
+            }
         }
     }
 
@@ -168,7 +171,11 @@ abstract class Shader : GlObject<ProgramResource>() {
      */
     open fun unbindMesh(ctx: KoolContext) {
         for (i in attributeLocations.indices) {
-            glDisableVertexAttribArray(attributeLocations[i].location)
+            val attrib = attributeLocations[i]
+            if (attrib.divisor > 0) {
+                glVertexAttribDivisor(attrib.location, 0)
+            }
+            glDisableVertexAttribArray(attrib.location)
         }
     }
 
