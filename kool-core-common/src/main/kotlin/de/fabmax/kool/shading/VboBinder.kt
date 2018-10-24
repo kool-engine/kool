@@ -14,8 +14,7 @@ class VboBinder(
         val elemSize: Int,
         val strideBytes: Int,
         val offset: Int = 0,
-        val type: Int = GL_FLOAT,
-        val divisor: Int = 0) {
+        val type: Int = GL_FLOAT) {
 
     /**
      * Is called by the used shader to bind a vertex attribute buffer to the specified target.

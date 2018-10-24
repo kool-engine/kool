@@ -25,6 +25,7 @@ data class Attribute(val name: String, val type: AttributeType) {
 
     var glslSrcName = name
     var locationOffset = 0
+    var divisor = 0
 
     override fun toString(): String {
         return name

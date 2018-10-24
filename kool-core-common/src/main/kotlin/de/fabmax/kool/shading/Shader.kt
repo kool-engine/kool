@@ -19,9 +19,7 @@ abstract class Shader : GlObject<ProgramResource>() {
         constructor(vertexSrc: String, fragmentSrc: String) : this(vertexSrc, "", fragmentSrc)
     }
 
-    protected data class AttributeLocation(val descr: Attribute, val location: Int) {
-        var divisor = 0
-    }
+    protected data class AttributeLocation(val descr: Attribute, val location: Int)
     protected val attributeLocations = mutableListOf<AttributeLocation>()
 
     val attributes = mutableSetOf<Attribute>()
@@ -157,9 +155,8 @@ abstract class Shader : GlObject<ProgramResource>() {
                     throw KoolException("Mesh must supply an attribute binder for attribute ${attrib.descr.name}")
             glEnableVertexAttribArray(attrib.location)
             binder.bindAttribute(attrib.location, ctx)
-            if (binder.divisor > 0) {
-                attrib.divisor = binder.divisor
-                glVertexAttribDivisor(attrib.location, attrib.divisor)
+            if (attrib.descr.divisor > 0) {
+                glVertexAttribDivisor(attrib.location, attrib.descr.divisor)
             }
         }
     }
@@ -172,7 +169,7 @@ abstract class Shader : GlObject<ProgramResource>() {
     open fun unbindMesh(ctx: KoolContext) {
         for (i in attributeLocations.indices) {
             val attrib = attributeLocations[i]
-            if (attrib.divisor > 0) {
+            if (attrib.descr.divisor > 0) {
                 glVertexAttribDivisor(attrib.location, 0)
             }
             glDisableVertexAttribArray(attrib.location)
