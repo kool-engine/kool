@@ -20,13 +20,14 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val demos = mutableMapOf(
             "simpleDemo" to defaultScene,
             "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene(it)) },
-            "pointDemo" to DemoEntry("Point Cloud Demo") { add(pointScene()) },
+            //"pointDemo" to DemoEntry("Point Cloud Demo") { add(pointScene()) },
             "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
             "globeDemo" to DemoEntry("Globe Demo") { addAll(globeScene(it)) },
             "modelDemo" to DemoEntry("Model Demo") { add(modelScene(it)) },
             "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
             "boxDemo" to DemoEntry("Physics Demo") { addAll(collisionDemo(it)) },
-            "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) }
+            "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) },
+            "instancedDemo" to DemoEntry("Instanced Demo") { add(instancedDemo(it)) }
     )
 
     init {

@@ -11,4 +11,9 @@ class Animation(val duration: Float) {
         }
     }
 
+    fun copy(withNodes: Map<String, AnimatedNode>): Animation {
+        val copy = Animation(duration)
+        channels.forEach { copy.channels += it.copy(withNodes[it.name]!!) }
+        return copy
+    }
 }

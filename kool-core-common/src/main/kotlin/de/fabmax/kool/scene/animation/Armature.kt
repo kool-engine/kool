@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Mat4fStack
 import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.InstancedMesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.AttributeType
@@ -14,7 +14,10 @@ import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.createFloat32Buffer
 import de.fabmax.kool.util.logW
 
-class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
+open class Armature(meshData: MeshData, name: String? = null,
+                    instances: Instances<*> = identityInstance(),
+                    attributes: List<Attribute> = MODEL_INSTANCES) :
+        InstancedMesh(meshData, name, instances, attributes) {
 
     val rootBones = mutableListOf<Bone>()
     val bones = mutableMapOf<String, Bone>()
@@ -28,8 +31,8 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
     // animations are held in map and list, to get index-based list access for less overhead in render loop
     private val animations = mutableMapOf<String, Animation>()
     private val animationList = mutableListOf<Animation>()
-    private var animationPos = 0f
 
+    var animationPos = 0f
     var animationSpeed = 1f
 
     private val transform = Mat4fStack()
@@ -67,6 +70,13 @@ class Armature(meshData: MeshData, name: String?) : Mesh(meshData, name) {
                 break
             }
         }
+    }
+
+    fun copyBonesAndAnimations(other: Armature) {
+        bones += other.bones
+        rootBones += other.rootBones
+        updateBones()
+        other.animations.forEach { (name, anim) -> addAnimation(name, anim.copy(bones)) }
     }
 
     /**

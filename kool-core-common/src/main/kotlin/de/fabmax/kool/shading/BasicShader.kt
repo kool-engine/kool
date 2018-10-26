@@ -114,6 +114,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
             attributes.add(InstancedMesh.MODEL_INSTANCES_2)
             attributes.add(InstancedMesh.MODEL_INSTANCES_3)
         }
+        attributes += generator.customAttributes
     }
 
     override fun onBind(ctx: KoolContext) {

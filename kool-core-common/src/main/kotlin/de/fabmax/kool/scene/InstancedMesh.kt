@@ -9,91 +9,60 @@ import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.AttributeType
 import de.fabmax.kool.shading.VboBinder
 import de.fabmax.kool.util.BoundingBox
+import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.createFloat32Buffer
+import de.fabmax.kool.util.logW
 import kotlin.math.min
 
-class InstancedMesh(meshData: MeshData, val maxInstances: Int, name: String? = null) : Mesh(meshData, name) {
-
-    val instances = mutableListOf<Mat4f>()
-
-    private val instanceBounds = BoundingBox()
-
-    private val instanceMvps = createFloat32Buffer(maxInstances * 16)
-    private var numInstances = 0
+open class InstancedMesh(meshData: MeshData, name: String? = null,
+                         var instances: Instances<*> = identityInstance(),
+                         val attributes: List<Attribute> = MODEL_INSTANCES) :
+        Mesh(meshData, name) {
 
     private var instanceBuffer: BufferResource? = null
-    private val instanceBinders = Array<VboBinder?>(4) { null }
-
-    private val tmpInstanceCenterLocal = MutableVec3f()
-    private val tmpInstanceCenterGlobal = MutableVec3f()
+    private val instanceBinders = mutableMapOf<Attribute, VboBinder>()
+    private val instanceStride: Int
 
     /**
      * Estimated [BoundingBox] containing all instances. Only valid if [isFrustumChecked] is true and individual
      * instance model matrices don't apply scaling.
      */
     override val bounds: BoundingBox
-        get() = instanceBounds
+        get() = instances.bounds
+
+    init {
+        // todo: standard ray test doesn't work for instanced meshes
+        rayTest = MeshRayTest.nopTest()
+
+        // compute instance stride as size of all instance attributes
+        // stride is in bytes, attribute type size is in elements with 4 bytes each
+        instanceStride = attributes.sumBy { it.type.size * 4 }
+
+        attributes.filter { it.divisor == 0 }.forEach { logW { "InstancedMesh attribute ${it.name} has divisor = 0" } }
+    }
 
     override fun preRender(ctx: KoolContext) {
-        instanceBounds.set(meshData.bounds)
-        instanceMvps.clear()
-        numInstances = 0
-
         super.preRender(ctx)
-
-        val cam = scene?.camera
-        if (isFrustumChecked && cam != null) {
-            for (i in instances.indices) {
-                val mat = instances[i]
-                tmpInstanceCenterLocal.set(Vec3f.ZERO)
-                mat.transform(tmpInstanceCenterLocal)
-                tmpInstanceCenterGlobal.set(tmpInstanceCenterLocal)
-                ctx.mvpState.modelMatrix.transform(tmpInstanceCenterGlobal)
-
-                instanceBounds.add(tmpInstanceCenterLocal)
-
-                // this assumes individual instances have all the same size (i.e. no scaling by the individual
-                // instance matrices)
-                if (cam.isInFrustum(tmpInstanceCenterGlobal, globalRadius)) {
-                    instanceMvps.put(mat.matrix)
-                    numInstances++
-                }
-
-                if (numInstances == maxInstances) {
-                    break
-                }
-            }
-
-            if (!instanceBounds.isEmpty) {
-                tmpInstanceCenterGlobal.set(meshData.bounds.size).scale(0.5f)
-                instanceBounds.expand(tmpInstanceCenterGlobal)
-            }
-        } else {
-            for (i in 0 until min(instances.size, maxInstances)) {
-                instanceMvps.put(instances[i].matrix)
-                numInstances++
-            }
-        }
+        instances.setupInstances(this, ctx)
     }
 
-    override fun getAttributeBinder(attrib: Attribute): VboBinder? {
-        return when (attrib) {
-            MODEL_INSTANCES_0 -> instanceBinders[0]
-            MODEL_INSTANCES_1 -> instanceBinders[1]
-            MODEL_INSTANCES_2 -> instanceBinders[2]
-            MODEL_INSTANCES_3 -> instanceBinders[3]
-            else -> super.getAttributeBinder(attrib)
-        }
-    }
+    override fun getAttributeBinder(attrib: Attribute) = instanceBinders[attrib] ?: super.getAttributeBinder(attrib)
 
     override fun render(ctx: KoolContext) {
         if (instanceBuffer == null) {
+            // create buffer object with instance data
             instanceBuffer = BufferResource.create(GL_ARRAY_BUFFER, ctx)
-            for (i in 0..3) {
-                instanceBinders[i] = VboBinder(instanceBuffer!!, 4, 4 * 16, i * 4, GL_FLOAT)
+
+            var pos  = 0
+            attributes.forEach {
+                instanceBinders[it] = VboBinder(instanceBuffer!!, it.type.size, instanceStride, pos, GL_FLOAT)
+                pos += it.type.size
             }
         }
-        instanceBuffer!!.setData(instanceMvps, GL_DYNAMIC_DRAW, ctx)
+        // bind instance data buffer
+        instances.instanceData?.let {
+            instanceBuffer!!.setData(it, GL_DYNAMIC_DRAW, ctx)
+        }
 
         // disable frustum check flag before calling render, standard frustum check doesn't work with InstancedMesh
         val wasFrustumChecked = isFrustumChecked
@@ -104,15 +73,103 @@ class InstancedMesh(meshData: MeshData, val maxInstances: Int, name: String? = n
 
     override fun drawElements(ctx: KoolContext) {
         // todo: possible optimization: use glDrawElementsInstancedBaseVertex
-        glDrawElementsInstanced(meshData.primitiveType, meshData.numIndices, meshData.indexType, 0, numInstances)
+        glDrawElementsInstanced(meshData.primitiveType, meshData.numIndices, meshData.indexType, 0, instances.numInstances)
     }
 
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         instanceBuffer?.delete(ctx)
         instanceBuffer = null
-        for (i in 0..3) {
-            instanceBinders[i] = null
+        instanceBinders.clear()
+    }
+
+    open class Instance(val modelMat: Mat4f) {
+        open fun putCustomAttribs(target: Float32Buffer) { }
+    }
+
+    open class Instances<T: Instance>(maxInstances: Int) {
+        val instances = mutableListOf<T>()
+        val bounds = BoundingBox()
+        var maxInstances = maxInstances
+            set(value) {
+                field = value
+                instanceData = null
+            }
+
+        var instanceData: Float32Buffer? = null
+            private set
+        var numInstances = 0
+            private set
+
+        private val tmpVec1 = MutableVec3f()
+        private val tmpVec2 = MutableVec3f()
+
+        fun setupInstances(mesh: InstancedMesh, ctx: KoolContext) {
+            val data = instanceData ?: createFloat32Buffer(maxInstances * mesh.instanceStride).also {
+                instanceData = it
+            }
+
+            data.clear()
+            bounds.clear()
+            numInstances = 0
+
+            val cam = mesh.scene?.camera
+            if (mesh.isFrustumChecked && cam != null) {
+                val radius = computeGlobalRadius(mesh.meshData.bounds, ctx)
+
+                for (i in instances.indices) {
+                    val mat = instances[i].modelMat
+
+                    // determine local instance center position
+                    tmpVec1.set(Vec3f.ZERO)
+                    mat.transform(tmpVec1)
+                    bounds.add(tmpVec1)
+
+                    // determine global instance center position
+                    ctx.mvpState.modelMatrix.transform(tmpVec1)
+
+                    // this assumes individual instances have all the same size (i.e. no scaling by the individual
+                    // instance matrices)
+                    if (cam.isInFrustum(tmpVec1, radius)) {
+                        putInstance(instances[i], data)
+                    }
+
+                    if (numInstances == maxInstances) {
+                        // maximum buffer size reached
+                        break
+                    }
+                }
+
+                if (!bounds.isEmpty) {
+                    tmpVec1.set(mesh.meshData.bounds.size).scale(0.5f)
+                    bounds.expand(tmpVec1)
+                }
+            } else {
+                for (i in 0 until min(instances.size, maxInstances)) {
+                    putInstance(instances[i], data)
+                }
+            }
+        }
+
+        private fun putInstance(instance: T, target: Float32Buffer) {
+            target.put(instance.modelMat.matrix)
+            instance.putCustomAttribs(target)
+            numInstances++
+        }
+
+        private fun computeGlobalRadius(meshDataBounds: BoundingBox, ctx: KoolContext): Float {
+            // update global center and radius
+            tmpVec1.set(meshDataBounds.center)
+            tmpVec2.set(meshDataBounds.max)
+            ctx.mvpState.modelMatrix.transform(tmpVec1)
+            ctx.mvpState.modelMatrix.transform(tmpVec2)
+            return tmpVec1.distance(tmpVec2)
+        }
+    }
+
+    class SimpleInstances(maxInstances: Int) : Instances<Instance>(maxInstances) {
+        fun addInstance(modelMat: Mat4f) {
+            instances += Instance(modelMat)
         }
     }
 
@@ -136,6 +193,19 @@ class InstancedMesh(meshData: MeshData, val maxInstances: Int, name: String? = n
             glslSrcName = "attrib_model_insts"
             locationOffset = 3
             divisor = 1
+        }
+        val MODEL_INSTANCES = listOf(MODEL_INSTANCES_0, MODEL_INSTANCES_1, MODEL_INSTANCES_2, MODEL_INSTANCES_3)
+
+        fun makeAttributeList(vararg customAttribs: Attribute): List<Attribute> {
+            val attribs = mutableListOf(MODEL_INSTANCES_0, MODEL_INSTANCES_1, MODEL_INSTANCES_2, MODEL_INSTANCES_3)
+            attribs.addAll(customAttribs)
+            return attribs
+        }
+
+        fun identityInstance(): SimpleInstances {
+            return SimpleInstances(1).apply {
+                addInstance(Mat4f().setIdentity())
+            }
         }
     }
 }

@@ -40,8 +40,9 @@ fun modelScene(ctx: KoolContext): Scene = scene {
             }
 
             val modelData = ModelData.load(data)
-            val mesh = modelData.meshes[0].toMesh()
+            val mesh = modelData.meshes[0].toMesh() as Armature
             model += mesh
+            armature = mesh
 
             mesh.shader = basicShader {
                 lightModel = LightModel.PHONG_LIGHTING
@@ -49,24 +50,21 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                 staticColor = Color.GRAY
                 shadowMap = defaultShadowMap
 
-                if (mesh is Armature && !mesh.isCpuAnimated) {
+                if (!mesh.isCpuAnimated) {
                     // do mesh animation on vertex shader if available.
                     // Works with GLSL version 300 and above (OpenGL (ES) 3.0 and WebGL2)
                     numBones = mesh.bones.size
                 }
             }
 
-            if (mesh is Armature) {
-                armature = mesh
-                mesh.getAnimation("Armature|walk")?.weight = 1f
+            mesh.getAnimation("Armature|walk")?.weight = 1f
 
-                mesh.onPreRender += { ctx ->
-                    // translation is in model coordinates -> front direction is -y, not z
-                    val dt = ctx.deltaT.clamp(0.0f, 0.1f)
-                    translate(0f, -dt * movementSpeed * slowMotion * 5f, 0f)
-                    rotate(dt * movementSpeed * slowMotion * 50f, Vec3f.Z_AXIS)
-                    mesh.animationSpeed = slowMotion
-                }
+            mesh.onPreRender += { ctx ->
+                // translation is in model coordinates -> front direction is -y, not z
+                val dt = ctx.deltaT.clamp(0.0f, 0.1f)
+                translate(0f, -dt * movementSpeed * slowMotion * 5f, 0f)
+                rotate(dt * movementSpeed * slowMotion * 50f, Vec3f.Z_AXIS)
+                mesh.animationSpeed = slowMotion
             }
         }
 

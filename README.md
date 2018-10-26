@@ -21,6 +21,7 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 200 bodies, js is slower...).
 
 ## Features / Noticeable stuff:
+- Instanced rendering: [Instanced Mesh Demo](https://fabmax.github.io/kool/kool-js/?demo=instancedDemo)
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo) module using error quadrics
 - Added elevation mapping in [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo) (Europe only) - Zoom in on the alps!
 - Some super-primitive [Physics Simulation](https://fabmax.github.io/kool/kool-js/?demo=boxDemo)
@@ -58,17 +59,8 @@ fun main(args: Array<String>) {
     
     // Create scene contents
     ctx.scenes += scene {
-        // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
-        +sphericalInputTransform {
-            // Set some initial rotation so that we look down on the scene
-            setMouseRotation(20f, -30f)
-            // camera pans in y-plane (y is up-axis, camera can move along x and z axis)
-            panMethod = yPlanePan()
-            // panning / camera translation is limited to a certain area
-            translationBounds = BoundingBox(Vec3f(-50f), Vec3f(50f))
-            // Add camera to the transform group
-            +camera
-        }
+        // Make the camera mouse-controllable
+        defaultCamTransform()
     
         // Add a TransformGroup with a rotating cube
         +transformGroup {

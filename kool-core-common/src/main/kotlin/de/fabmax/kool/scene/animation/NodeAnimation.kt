@@ -44,6 +44,14 @@ class NodeAnimation(val name: String, val node: AnimatedNode) {
         }
         return keys.size - 1
     }
+
+    fun copy(withNode: AnimatedNode): NodeAnimation {
+        val copy = NodeAnimation(name, withNode)
+        rotationKeys.forEach { copy.rotationKeys += it.copy() }
+        positionKeys.forEach { copy.positionKeys += it.copy() }
+        scalingKeys.forEach { copy.scalingKeys += it.copy() }
+        return copy
+    }
 }
 
 abstract class AnimationKey<T>(val time: Float, val value: T) {
@@ -64,6 +72,8 @@ class RotationKey(time: Float, rotation: Vec4f) : AnimationKey<Vec4f>(time, rota
         }
         return result
     }
+
+    fun copy() = RotationKey(time, value)
 }
 
 class PositionKey(time: Float, position: Vec3f) : AnimationKey<Vec3f>(time, position) {
@@ -78,6 +88,8 @@ class PositionKey(time: Float, position: Vec3f) : AnimationKey<Vec3f>(time, posi
         }
         return result
     }
+
+    fun copy() = PositionKey(time, value)
 }
 
 class ScalingKey(time: Float, scaling: Vec3f) : AnimationKey<Vec3f>(time, scaling) {
@@ -92,4 +104,6 @@ class ScalingKey(time: Float, scaling: Vec3f) : AnimationKey<Vec3f>(time, scalin
         }
         return result
     }
+
+    fun copy() = ScalingKey(time, value)
 }

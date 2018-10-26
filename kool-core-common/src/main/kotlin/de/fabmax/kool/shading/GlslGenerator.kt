@@ -65,14 +65,15 @@ open class GlslGenerator {
 
     val injectors = mutableListOf<GlslInjector>()
     val customUniforms = mutableListOf<Uniform<*>>()
+    val customAttributes = mutableListOf<Attribute>()
 
     // keywords are set when shader is generated, before glCapabilites might not be initialized
-    private lateinit var vsIn: String
-    private lateinit var vsOut: String
-    private lateinit var fsIn: String
-    private lateinit var fsOut: String
-    private lateinit var fsOutBody: String
-    private lateinit var texSampler: String
+    lateinit var vsIn: String
+    lateinit var vsOut: String
+    lateinit var fsIn: String
+    lateinit var fsOut: String
+    lateinit var fsOutBody: String
+    lateinit var texSampler: String
 
     fun generate(shaderProps: ShaderProps, ctx: KoolContext): Shader.Source {
         vsIn = ctx.glCapabilities.glslDialect.vsIn
@@ -181,6 +182,9 @@ open class GlslGenerator {
 
         for (uniform in customUniforms) {
             text.append("uniform ${uniform.type} ${uniform.name};\n")
+        }
+        for (attrib in customAttributes) {
+            text.append("$vsIn ${attrib.type.glslTypeName} ${attrib.glslSrcName};\n")
         }
     }
 
