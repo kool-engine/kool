@@ -17,22 +17,20 @@ fun embeddedUi(contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> 
     return ui
 }
 
-fun uiScene(dpi: Float = 96f, overlay: Boolean = true, block: UiRoot.() -> Unit): Scene {
-    return scene {
-        camera = OrthographicCamera().apply {
-            isClipToViewport = true
-            near = -1000f
-            far = 1000f
-        }
+fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, block: UiRoot.() -> Unit) = scene(name) {
+    camera = OrthographicCamera().apply {
+        isClipToViewport = true
+        near = -1000f
+        far = 1000f
+    }
 
-        if (overlay) {
-            clearMask = GL_DEPTH_BUFFER_BIT
-        }
+    if (overlay) {
+        clearMask = GL_DEPTH_BUFFER_BIT
+    }
 
-        +embeddedUi(null, dpi) {
-            isFillViewport = true
-            this.block()
-        }
+    +embeddedUi(null, dpi) {
+        isFillViewport = true
+        this.block()
     }
 }
 

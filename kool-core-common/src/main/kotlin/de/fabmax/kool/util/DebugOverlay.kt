@@ -27,7 +27,7 @@ enum class Position {
 }
 
 fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): Scene {
-    val dbgOverlay = uiScene(ctx.screenDpi) {
+    val dbgOverlay = uiScene(ctx.screenDpi, "debug-overlay") {
         theme = theme(UiTheme.DARK) {
             componentUi { BlankComponentUi() }
             containerUi(::SimpleComponentUi)

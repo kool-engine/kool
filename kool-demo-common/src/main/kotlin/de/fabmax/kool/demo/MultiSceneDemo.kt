@@ -11,7 +11,7 @@ fun multiScene(koolCtx: KoolContext): List<Scene> {
     val leftScene = simpleShapesScene(koolCtx)
     val rightScene = uiDemoScene()
 
-    leftScene.onPreRender += { ctx ->
+    leftScene.onRenderScene += { ctx ->
         val vp = ctx.viewport
         val width = (vp.width * 0.5).toInt()
         ctx.pushAttributes()
@@ -24,7 +24,7 @@ fun multiScene(koolCtx: KoolContext): List<Scene> {
 
     // right scene must not clear the screen (otherwise, left scene is cleared as well)
     rightScene.clearMask = 0
-    rightScene.onPreRender += { ctx ->
+    rightScene.onRenderScene += { ctx ->
         val vp = ctx.viewport
         val width = (vp.width * 0.5).toInt()
         ctx.pushAttributes()

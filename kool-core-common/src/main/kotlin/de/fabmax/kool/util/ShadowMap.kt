@@ -159,11 +159,11 @@ class CascadedShadowMap(private val subMaps: Array<SimpleShadowMap>) : ShadowMap
     override fun getClipSpaceFarZ(map: Int) = subMaps[map].getClipSpaceFarZ(0)
 
     companion object {
-        fun defaultCascadedShadowMap3(): CascadedShadowMap {
+        fun defaultCascadedShadowMap3(texSize: Int = SimpleShadowMap.defaultMapSize): CascadedShadowMap {
             val subMaps = arrayOf(
-                    SimpleShadowMap(0f, 0.1f),
-                    SimpleShadowMap(0.1f, 0.3f),
-                    SimpleShadowMap(0.3f, 1f)
+                    SimpleShadowMap(0f, 0.1f, texSize),
+                    SimpleShadowMap(0.1f, 0.3f, texSize),
+                    SimpleShadowMap(0.3f, 1f, texSize)
             )
             return CascadedShadowMap(subMaps)
         }

@@ -19,6 +19,8 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
 
 open class Scene(name: String? = null) : Group(name) {
 
+    val onRenderScene: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+
     override var isFrustumChecked: Boolean
         get() = false
         set(value) {}
@@ -69,6 +71,10 @@ open class Scene(name: String? = null) : Group(name) {
     fun renderScene(ctx: KoolContext) {
         if (!isVisible) {
             return
+        }
+
+        for (i in onRenderScene.indices) {
+            onRenderScene[i](ctx)
         }
 
         preRender(ctx)
