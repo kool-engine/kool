@@ -1,12 +1,19 @@
 buildscript {
-    ext.kotlin_version = '1.2.71'
-    ext.serialization_version = '0.6.2'
-    ext.coroutines_version = '0.23.4'
+    ext.kotlin_version = '1.3.0'
+    ext.serialization_version = '0.9.0'
+    ext.coroutines_version = '1.0.0'
+    ext.lwjglVersion = '3.2.0'
 
-    ext.assetsDir = "$projectDir/docs/assets"
+    ext.assetsPath = "$projectDir/docs/assets"
+    ext.webPath = '../docs/kool-js'
 
     ext.publishingAvailable = new File("${projectDir}/publishing.gradle").exists()
 
+    ext.experimentalsEnabled = ["-Xuse-experimental=kotlin.Experimental",
+                                "-Xuse-experimental=kotlin.ExperimentalMultiplatform",
+                                "-Xuse-experimental=kotlinx.serialization.ImplicitReflectionSerializer"
+                                ]
+    
     repositories {
         jcenter()
         mavenCentral()
@@ -16,15 +23,19 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "org.jetbrains.kotlinx:kotlinx-gradle-serialization-plugin:$serialization_version"
-        classpath 'com.android.tools.build:gradle:3.1.0'
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
+        //classpath 'com.android.tools.build:gradle:3.2.1'
+        //classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0"
     }
 }
 
 allprojects {
     group 'de.fabmax'
-    version '0.1.2'
+    version '0.1.3'
+
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { task ->
+        task.kotlinOptions.freeCompilerArgs += experimentalsEnabled
+    }
 
     repositories {
         jcenter()

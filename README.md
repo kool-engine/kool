@@ -5,10 +5,6 @@
 A simple OpenGL based graphics engine that works on Desktop Java, Android and
 in browsers with Javascript / WebGL.
 
-Android version is now merged into main branch, but in IntelliJ the kotlin-platform-android plugin still
-behaves a bit odd (IntelliJ 2018.1 EAP).
-Android build can be disabled by removing the two android modules from settings.gradle...
-
 For now this is just an experiment. However, if you are curious
 you can checkout the [javascript demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo).
 The hamburger-button in the upper-left corner triggers the demo chooser menu. Code for
@@ -19,6 +15,22 @@ progress and still in a super early state: Only supported shape are boxes, no jo
 yet. That's fine for [a few boxes](https://fabmax.github.io/kool/kool-js/?demo=boxDemo) but not much more (Actually
 it's surprisingly fast given the fact that there is no intelligent broadphase - JVM implementation handles
 200 bodies, js is slower...).
+
+## Kotlin 1.3 Branch
+This branch uses Kotlin 1.3 with new project structure for multi-platform projects, There are still a few issues:
+- In IntelliJ, JVM main target in kool-demo project doesn't resolve kool-core packages. JVM test and JS main work.
+Gradle build also succeeds.
+
+- Unit-tests in kool-core commonTest fail to resolve kotlin.test package, although dependencies are correctly set (I
+think...). Gradle build fails as well. Tests are commented out for now (not many tests anyway...)
+
+- In IntelliJ ProtoBuf.load() invocations in common code are marked as error if they aren't annotated with @ImplicitReflectionSerializer,
+although corresponding experimental flag is enabled in gradle. For JVM code everything is fine.
+
+- kool-demo js build doesn't collect dependencies from kool-core when copying js files into deployment directory
+(docs/kool-js). I worked around that but it's a bit hacky...
+
+- Android target is disabled for now. I have no idea how to get that running in the new multi-platform environment.
 
 ## Features / Noticeable stuff:
 - Instanced rendering: [Instanced Mesh Demo](https://fabmax.github.io/kool/kool-js/?demo=instancedDemo)
