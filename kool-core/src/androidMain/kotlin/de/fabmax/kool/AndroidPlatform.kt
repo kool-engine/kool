@@ -1,11 +1,16 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.math.clamp
+import java.lang.RuntimeException
 import java.util.*
 
 /**
  * Android specific platform call implementations
  */
+
+actual fun createDefaultContext(): KoolContext {
+    throw RuntimeException("Default context not available on android, use KoolActivity")
+}
 
 actual fun now(): Double = System.nanoTime() / 1e6
 

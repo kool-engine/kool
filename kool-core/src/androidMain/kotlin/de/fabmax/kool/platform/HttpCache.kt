@@ -1,7 +1,7 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolException
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import java.io.*
 import java.net.URL
 import java.util.*
@@ -148,7 +148,7 @@ class HttpCache private constructor(val cacheDir: File) {
         }
 
         if (load) {
-            entry.fileDeferred = async(httpDispatcher) {
+            entry.fileDeferred = GlobalScope.async(httpDispatcher) {
                 file.parentFile.mkdirs()
                 entry.size = 0L
 
@@ -187,8 +187,6 @@ class HttpCache private constructor(val cacheDir: File) {
         private const val MAX_PARALLEL_REQUESTS = 4
         private var instance: HttpCache? = null
 
-        var assetLoadingCtx = CommonPool
-
         fun initCache(cacheDir: File) {
             if (instance == null) {
                 instance = HttpCache(cacheDir)
@@ -201,8 +199,7 @@ class HttpCache private constructor(val cacheDir: File) {
         }
     }
 
-    private class CacheEntry(val file: File, var size: Long, lastAccess: Long) :
-            Serializable, Comparable<CacheEntry> {
+    private class CacheEntry(val file: File, var size: Long, lastAccess: Long) : Serializable, Comparable<CacheEntry> {
 
         var lastAccess = lastAccess
             set(value) {
@@ -216,7 +213,7 @@ class HttpCache private constructor(val cacheDir: File) {
         val isReloadNeeded: Boolean
             get() {
                 val fd = fileDeferred
-                return fd != null && ((fd.isCompleted && !fd.getCompleted().canRead()) || fd.isCompletedExceptionally)
+                return fd != null && ((fd.isCompleted && !fd.getCompleted().canRead()))
             }
 
         override fun compareTo(other: CacheEntry): Int {

@@ -7,12 +7,10 @@ buildscript {
     ext.assetsPath = "$projectDir/docs/assets"
     ext.webPath = '../docs/kool-js'
 
+    // set true, to enable android target. With enabled android target JVM demo won't start anymore...
+    ext.enableAndroid = false
+    
     ext.publishingAvailable = new File("${projectDir}/publishing.gradle").exists()
-
-    ext.experimentalsEnabled = ["-Xuse-experimental=kotlin.Experimental",
-                                "-Xuse-experimental=kotlin.ExperimentalMultiplatform",
-                                "-Xuse-experimental=kotlinx.serialization.ImplicitReflectionSerializer"
-                                ]
     
     repositories {
         jcenter()
@@ -24,7 +22,7 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
-        //classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.2.1'
         //classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0"
     }
 }
@@ -32,10 +30,6 @@ buildscript {
 allprojects {
     group 'de.fabmax'
     version '0.1.3'
-
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { task ->
-        task.kotlinOptions.freeCompilerArgs += experimentalsEnabled
-    }
 
     repositories {
         jcenter()

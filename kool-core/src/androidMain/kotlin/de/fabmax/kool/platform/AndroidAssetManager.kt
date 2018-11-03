@@ -10,7 +10,8 @@ import de.fabmax.kool.TextureData
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logW
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -82,7 +83,7 @@ class AndroidAssetManager(private val context: Context, assetsBaseDir: String) :
     }
 
     private fun loadLocal(assetUrl: String, onError: ((Exception) -> Unit)? = null, onLoad: (InputStream) -> Unit) {
-        launch {
+        GlobalScope.launch {
             try {
                 onLoad(openLocalStream(assetUrl))
             } catch (e: Exception) {
@@ -94,7 +95,7 @@ class AndroidAssetManager(private val context: Context, assetsBaseDir: String) :
     }
 
     private fun loadHttp(assetUrl: String, onError: ((Exception) -> Unit)? = null, onLoad: (InputStream) -> Unit) {
-        launch(HttpCache.assetLoadingCtx) {
+        GlobalScope.launch {
             var tries = 2
             while (tries > 0) {
                 var file: File? = null

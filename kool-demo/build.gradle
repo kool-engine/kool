@@ -15,40 +15,22 @@ buildscript {
 apply plugin: 'kotlin-multiplatform'
 apply plugin: 'kotlinx-serialization'
 
-// fixme: not sure how to setup android platform...
-//apply plugin: 'com.android.application'
-//android {
-//    compileSdkVersion 28
-//    defaultConfig {
-//        applicationId "de.fabmax.kool.demo"
-//        minSdkVersion 18
-//        targetSdkVersion 28
-//        versionCode 1
-//        versionName "1.0"
-//    }
-//
-//    buildTypes {
-//        release {
-//            minifyEnabled false
-//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//        }
-//    }
-//
-//    lintOptions {
-//        // fft library references java.awt via dependencies...
-//        abortOnError = false
-//    }
-//}
+if (enableAndroid) {
+    apply from: 'android.gradle'
+}
 
 kotlin {
     targets {
-        fromPreset(presets.jvm, 'jvm')
-        fromPreset(presets.js, 'js')
-//        fromPreset(presets.jvm, 'android')
+        fromPreset(presets.jvm, 'jvm') {
+            compilations.all {
+                tasks[compileKotlinTaskName].kotlinOptions {
+                    jvmTarget = '1.8'
+                }
+            }
+        }
 
-        js {
+        fromPreset(presets.js, 'js') {
             compilations.main {
-                println name
                 tasks[compileKotlinTaskName].kotlinOptions {
                     outputFile = "${buildDir}/web/kooldemo.js"
                     moduleKind = "amd"
@@ -62,58 +44,38 @@ kotlin {
         // Common
         commonMain {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
-                implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version"
                 implementation project(":kool-core")
+                implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version"
             }
         }
         
         // JVM platform
         jvmMain {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-                implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
                 implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
 
                 // lwjgl native libraries
-                implementation "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
-                implementation "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
-                implementation "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
-                implementation "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
-                implementation "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
-            }
-        }
-        jvmTest {
-            dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test'
-                implementation 'org.jetbrains.kotlin:kotlin-test-junit'
-                
-                implementation "mil.nga:tiff:2.0.0"
-                implementation "org.apache.commons:commons-compress:1.17"
+                runtimeOnly "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
+                runtimeOnly "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
+                runtimeOnly "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
+                runtimeOnly "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
+                runtimeOnly "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
             }
         }
         
         // Javascript platform
         jsMain {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-js'
                 implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version"
             }
         }
-
-        // Android platform
-//        androidMain {
-//            dependencies {
-//                api 'org.jetbrains.kotlin:kotlin-stdlib-common'
-//                implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
-//                implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
-//                implementation 'com.android.support:appcompat-v7:27.0.2'
-//                implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-//
-//                // only needed for fft audio stuff
-//                implementation 'com.github.wendykierp:JTransforms:3.1'
-//            }
-//        }
+        
+        sourceSets.all {
+            languageSettings {
+                progressiveMode = true
+                useExperimentalAnnotation('kotlinx.serialization.ImplicitReflectionSerializer')
+            }
+        }
     }
 }
 
@@ -122,7 +84,7 @@ clean {
 }
 
 build.doLast {
-    // fixme: this is a hack to get the dependencies of core-js as well, need to find a way to define core-js as regular dependency...
+    // fixme: this is a hack to get the dependencies of core-js as well
     def cfgs = [project(":kool-core").configurations.jsMainImplementation, configurations.jsMainImplementation]
     cfgs.each { cfg ->
         cfg.each { file ->

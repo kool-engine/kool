@@ -211,12 +211,10 @@ class HttpCache private constructor(val cacheDir: File) {
         @Transient
         var fileDeferred: Deferred<File>? = null
 
-        @ExperimentalCoroutinesApi
         val isReloadNeeded: Boolean
             get() {
                 val fd = fileDeferred
-                // fixme: adjust to new coroutine api
-                return fd != null && ((fd.isCompleted && !fd.getCompleted().canRead()) /*|| fd.isCompletedExceptionally*/)
+                return fd != null && ((fd.isCompleted && !fd.getCompleted().canRead()))
             }
 
         override fun compareTo(other: CacheEntry): Int {

@@ -18,19 +18,18 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 
 ## Kotlin 1.3 Branch
 This branch uses Kotlin 1.3 with new project structure for multi-platform projects, There are still a few issues:
-- In IntelliJ, JVM main target in kool-demo project doesn't resolve kool-core packages. JVM test and JS main work.
-Gradle build also succeeds.
+- In IntelliJ, JVM main target in kool-demo project doesn't resolve any packages from kool-core. Adding an explicit
+dependsOn commonMain to jvmMain source set doesn't change that. jvmTest and jsMain work as expected. Gradle build also
+succeeds if kool-core packages are referenced (seems to be a kotlin-IntellIJ-plugin thing?).
 
-- Unit-tests in kool-core commonTest fail to resolve kotlin.test package, although dependencies are correctly set (I
-think...). Gradle build fails as well. Tests are commented out for now (not many tests anyway...)
-
-- In IntelliJ ProtoBuf.load() invocations in common code are marked as error if they aren't annotated with @ImplicitReflectionSerializer,
-although corresponding experimental flag is enabled in gradle. For JVM code everything is fine.
-
-- kool-demo js build doesn't collect dependencies from kool-core when copying js files into deployment directory
+- kool-demo js build doesn't collect js-dependencies from kool-core when copying js files into deployment directory
 (docs/kool-js). I worked around that but it's a bit hacky...
 
-- Android target is disabled for now. I have no idea how to get that running in the new multi-platform environment.
+- Android target remains disabled by default. If Android target is enabled, jvmMain doesn't work anymore. Android gradle
+plugin seems to mess JVM related things up.
+
+- Project layout for Android target is a bit messy: Android build plugin expects Manifest and resources at src/main/
+Apparently it's not possible to move that to androidMain.
 
 ## Features / Noticeable stuff:
 - Instanced rendering: [Instanced Mesh Demo](https://fabmax.github.io/kool/kool-js/?demo=instancedDemo)
