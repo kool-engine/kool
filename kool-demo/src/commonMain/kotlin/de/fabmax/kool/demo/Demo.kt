@@ -6,7 +6,6 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.Position
 import de.fabmax.kool.util.debugOverlay
-import kotlinx.serialization.ImplicitReflectionSerializer
 
 /**
  * @author fabmax
@@ -17,13 +16,11 @@ fun demo(startScene: String? = null) {
 
     val assetsBaseDir = Demo.getProperty("assetsBaseDir", "")
     if (assetsBaseDir.isNotEmpty()) {
-        ctx.assetMgr.assetsBaseDir = "./docs/assets"
+        ctx.assetMgr.assetsBaseDir = assetsBaseDir
     }
 
     // launch demo
     Demo(ctx, startScene)
-
-    ctx.run()
 }
 
 class Demo(ctx: KoolContext, startScene: String? = null) {

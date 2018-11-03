@@ -26,7 +26,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var toString = $module$kool.de.fabmax.kool.toString_lcymw2$;
   var Alignment = $module$kool.de.fabmax.kool.scene.ui.Alignment;
   var Gravity = $module$kool.de.fabmax.kool.scene.ui.Gravity;
-  var uiScene = $module$kool.de.fabmax.kool.scene.ui.uiScene_7c31we$;
+  var uiScene = $module$kool.de.fabmax.kool.scene.ui.uiScene_m9o5w1$;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
@@ -37,6 +37,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Random = $module$kool.de.fabmax.kool.math.Random;
   var Kind_CLASS = Kotlin.Kind.CLASS;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
+  var createDefaultContext = $module$kool.de.fabmax.kool.createDefaultContext;
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
   var getCallableRef = Kotlin.getCallableRef;
   var pcs = $module$kool.de.fabmax.kool.scene.ui.pcs_8ca0d4$;
@@ -154,7 +155,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
   var ToggleButton = $module$kool.de.fabmax.kool.scene.ui.ToggleButton;
   var TextField = $module$kool.de.fabmax.kool.scene.ui.TextField;
-  var createContext = $module$kool.de.fabmax.kool.createContext;
   var split = Kotlin.kotlin.text.split_ip8yn$;
   BoxWorld.prototype = Object.create(Group.prototype);
   BoxWorld.prototype.constructor = BoxWorld;
@@ -403,7 +403,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var boxCnt = {v: 40};
     var $receiver = new Scene(null);
     $receiver.light.direction.set_y2kzbl$(1.0, 0.8, 0.4);
-    $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
+    $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3_za3lpa$();
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, collisionDemo$lambda$lambda($receiver)));
     boxWorld.v = new BoxWorld($receiver.defaultShadowMap);
     ensureNotNull(boxWorld.v).createBoxes_za3lpa$(boxCnt.v);
@@ -411,7 +411,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.unaryPlus_uv0sim$(lineMesh(void 0, collisionDemo$lambda$lambda_0($receiver)));
     var boxScene = $receiver;
     scenes.add_11rb$(boxScene);
-    var element = uiScene(ctx.screenDpi, void 0, collisionDemo$lambda(boxScene, boxCnt, boxWorld));
+    var element = uiScene(ctx.screenDpi, void 0, void 0, collisionDemo$lambda(boxScene, boxCnt, boxWorld));
     scenes.add_11rb$(element);
     return scenes;
   }
@@ -514,6 +514,19 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     interfaces: [Group]
   };
   var BOX_COLORS;
+  function demo(startScene) {
+    if (startScene === void 0)
+      startScene = null;
+    var ctx = createDefaultContext();
+    var $this = Demo$Companion_getInstance();
+    var key = 'assetsBaseDir';
+    var tmp$, tmp$_0;
+    var assetsBaseDir = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : '';
+    if (assetsBaseDir.length > 0) {
+      ctx.assetMgr.assetsBaseDir = assetsBaseDir;
+    }
+    new Demo(ctx, startScene);
+  }
   var Map = Kotlin.kotlin.collections.Map;
   function Demo(ctx, startScene) {
     Demo$Companion_getInstance();
@@ -542,6 +555,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     ((tmp$ = (Kotlin.isType(tmp$_0 = $receiver_2, Map) ? tmp$_0 : throwCCE()).get_11rb$(key)) != null ? tmp$ : this.defaultScene_0).loadScene(this.newScenes_0, ctx);
     ctx.run();
   }
+  var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
   Demo.prototype.onRender_0 = function (ctx) {
     if (!this.newScenes_0.isEmpty()) {
       var tmp$;
@@ -557,7 +571,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       tmp$_0 = this.newScenes_0.iterator();
       while (tmp$_0.hasNext()) {
         var item = tmp$_0.next();
-        ctx.scenes.add_wxm5ur$((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0), item);
+        ctx.scenes.add_wxm5ur$(checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0)), item);
         this.currentScenes_0.add_11rb$(item);
       }
       this.newScenes_0.clear();
@@ -633,7 +647,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   Demo.prototype.demoOverlay_0 = function (ctx) {
-    return uiScene(ctx.screenDpi, void 0, Demo$demoOverlay$lambda(this, ctx));
+    return uiScene(ctx.screenDpi, 'demo-overlay', void 0, Demo$demoOverlay$lambda(this, ctx));
   };
   function Demo$DemoEntry(label, loadScene) {
     this.label = label;
@@ -728,14 +742,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   var getKClass = Kotlin.getKClass;
-  var klassSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.klassSerializer_yop3xi$;
+  var getOrDefault = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.context.getOrDefault_6qy6ah$;
   function globeScene$lambda$lambda_0(closure$ui, closure$elevationUrl, closure$ctx, this$) {
     return function (data) {
       var earth = new Globe(6371000.8);
       closure$ui.globe = earth;
       if (data != null) {
-        var $this = ProtoBuf.Companion.plain;
-        var metaHierarchy = $this.load_8dtdds$(klassSerializer($this.context, getKClass(ElevationMapMetaHierarchy)), data);
+        var $receiver = ProtoBuf.Companion;
+        var metaHierarchy = $receiver.load_dntfbn$(getOrDefault($receiver.context, getKClass(ElevationMapMetaHierarchy)), data);
         earth.elevationMapProvider = new ElevationMapHierarchy(closure$elevationUrl, metaHierarchy, closure$ctx.assetMgr);
         earth.meshDetailLevel = 6;
       }
@@ -766,7 +780,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.globe = globe;
     this.ctx = ctx;
     this.containerWidth_0 = 0.0;
-    this.scene = uiScene(void 0, void 0, GlobeUi$scene$lambda(this));
+    this.scene = uiScene(void 0, void 0, void 0, GlobeUi$scene$lambda(this));
   }
   function GlobeUi$scene$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
@@ -839,7 +853,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         tmp$_4 = tmp$_3.attributionInfo.iterator();
         while (tmp$_4.hasNext()) {
           var item = tmp$_4.next();
-          var i_0 = (tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0);
+          var i_0 = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           var tmp$_5, tmp$_6;
           if (i_0 < closure$attributions_0.size) {
             closure$attributions_0.get_za3lpa$(i_0).first.text = item.text;
@@ -1358,7 +1372,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function modelScene(ctx) {
     var $receiver = new Scene(null);
-    $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
+    $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3_za3lpa$();
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, ctx, $receiver.defaultShadowMap));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, modelScene$lambda$lambda(ctx, $receiver)));
     return $receiver;
@@ -1390,10 +1404,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function multiScene(koolCtx) {
     var leftScene = simpleShapesScene(koolCtx);
     var rightScene = uiDemoScene();
-    leftScene.onPreRender.add_11rb$(multiScene$lambda);
+    leftScene.onRenderScene.add_11rb$(multiScene$lambda);
     leftScene.onPostRender.add_11rb$(multiScene$lambda_0);
     rightScene.clearMask = 0;
-    rightScene.onPreRender.add_11rb$(multiScene$lambda_1);
+    rightScene.onRenderScene.add_11rb$(multiScene$lambda_1);
     rightScene.onPostRender.add_11rb$(multiScene$lambda_2);
     return listOf([leftScene, rightScene]);
   }
@@ -1764,7 +1778,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var element = this.simplificationScene;
     $receiver_4.add_11rb$(element);
     var $receiver_5 = this.scenes;
-    var element_0 = uiScene(ctx.screenDpi, void 0, SimplificationDemo_init$lambda_0(this));
+    var element_0 = uiScene(ctx.screenDpi, void 0, void 0, SimplificationDemo_init$lambda_0(this));
     $receiver_5.add_11rb$(element_0);
     this.simplify();
   }
@@ -2422,7 +2436,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   function synthieMenu(content, ctx) {
-    return uiScene(ctx.screenDpi, void 0, synthieMenu$lambda(content));
+    return uiScene(ctx.screenDpi, void 0, void 0, synthieMenu$lambda(content));
   }
   function VerticalLayout(name, root) {
     UiContainer.call(this, name, root);
@@ -3222,7 +3236,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var trunkMesh = {v: null};
     var leafMesh = {v: null};
     var $receiver = new Scene(null);
-    $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3();
+    $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3_za3lpa$();
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, ctx, $receiver.defaultShadowMap));
     trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, $receiver));
     leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, $receiver));
@@ -3232,7 +3246,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var treeScene = $receiver;
     scenes.add_11rb$(treeScene);
     var disableCamDrag = treeScene$disableCamDrag(treeScene);
-    var element = uiScene(ctx.screenDpi, void 0, treeScene$lambda(treeGen, disableCamDrag, trunkMesh, leafMesh));
+    var element = uiScene(ctx.screenDpi, void 0, void 0, treeScene$lambda(treeGen, disableCamDrag, trunkMesh, leafMesh));
     scenes.add_11rb$(element);
     return scenes;
   }
@@ -3953,10 +3967,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.unaryPlus_uv0sim$($receiver_4);
   }
   function main() {
-    var ctx = createContext();
     Demo$Companion_getInstance().setProperty_bm4g0d$('globe.elevationUrl', 'https://s3.eu-central-1.amazonaws.com/fabmax-kool-globe/dem');
-    ctx.assetMgr.assetsBaseDir = '../assets';
-    new Demo(ctx, getParams().get_11rb$('demo'));
+    Demo$Companion_getInstance().setProperty_bm4g0d$('assetsBaseDir', '../assets');
+    demo(getParams().get_11rb$('demo'));
   }
   function getParams() {
     var tmp$;
@@ -3986,11 +3999,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   package$demo.basicCollisionDemo_aemszp$ = basicCollisionDemo;
   package$demo.collisionDemo_aemszp$ = collisionDemo;
   package$demo.BoxWorld = BoxWorld;
+  $$importsForInline$$.kooldemo = _;
+  package$demo.demo_pdl1vj$ = demo;
   Object.defineProperty(Demo, 'Companion', {
     get: Demo$Companion_getInstance
   });
   package$demo.Demo = Demo;
-  $$importsForInline$$.kooldemo = _;
   $$importsForInline$$['kotlinx-serialization-runtime-js'] = $module$kotlinx_serialization_runtime_js;
   package$demo.globeScene_aemszp$ = globeScene;
   package$demo.GlobeUi = GlobeUi;
@@ -4024,6 +4038,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   ModelShader_init$ObjectLiteral.prototype.vsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.vsStart_jh5913$;
   SimplificationDemo$EdgeRayDistance.prototype.nodeDistanceToRay_4lohg5$ = RayDistance.prototype.nodeDistanceToRay_4lohg5$;
   BOX_COLORS = listOf([Color.Companion.MD_YELLOW, Color.Companion.MD_AMBER, Color.Companion.MD_ORANGE, Color.Companion.MD_DEEP_ORANGE, Color.Companion.MD_RED, Color.Companion.MD_PINK, Color.Companion.MD_PURPLE, Color.Companion.MD_DEEP_PURPLE, Color.Companion.MD_INDIGO, Color.Companion.MD_BLUE, Color.Companion.MD_LIGHT_BLUE, Color.Companion.MD_CYAN, Color.Companion.MD_TEAL, Color.Companion.MD_GREEN, Color.Companion.MD_LIGHT_GREEN, Color.Companion.MD_LIME]);
+  main();
   Kotlin.defineModule('kooldemo', _);
   return _;
 });

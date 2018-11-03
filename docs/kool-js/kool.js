@@ -35,9 +35,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var hashCode = Kotlin.hashCode;
   var rangeTo = Kotlin.kotlin.ranges.rangeTo_38ydlf$;
-  var UnknownFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException;
   var SerialClassDescImpl = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.SerialClassDescImpl;
   var SerialId = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId;
+  var UnknownFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException;
   var KSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.KSerializer;
   var MissingFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException;
   var internal = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal;
@@ -49,11 +49,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var round = Kotlin.kotlin.math.round_14dthe$;
   var kotlin_js_internal_DoubleCompanionObject = Kotlin.kotlin.js.internal.DoubleCompanionObject;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
-  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED;
-  var CoroutineImpl = Kotlin.kotlin.coroutines.experimental.CoroutineImpl;
-  var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.launch_35c74u$;
-  var delay = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.delay_za3lpa$;
-  var yield_0 = $module$kotlinx_coroutines_core.kotlinx.coroutines.experimental.yield;
+  var coroutines = $module$kotlinx_coroutines_core.kotlinx.coroutines;
+  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
+  var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
+  var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.launch_s496o7$;
+  var L50 = Kotlin.Long.fromInt(50);
+  var delay = $module$kotlinx_coroutines_core.kotlinx.coroutines.delay_s8cxhz$;
+  var yield_0 = $module$kotlinx_coroutines_core.kotlinx.coroutines.yield;
   var L536870911 = Kotlin.Long.fromInt(536870911);
   var Iterable = Kotlin.kotlin.collections.Iterable;
   var Pair = Kotlin.kotlin.Pair;
@@ -93,28 +95,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var MutableCollection = Kotlin.kotlin.collections.MutableCollection;
   var Collection = Kotlin.kotlin.collections.Collection;
   var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
-  var SerializationException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerializationException;
-  var ProtoNumberType = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoNumberType;
-  var TaggedOutput = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.TaggedOutput;
-  var ByteArrayOutputStream_init = $module$kotlinx_serialization_runtime_js.kotlinx.io.ByteArrayOutputStream_init;
-  var toUtf8Bytes = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.toUtf8Bytes_pdl1vz$;
-  var ByteBuffer = $module$kotlinx_serialization_runtime_js.kotlinx.io.ByteBuffer;
-  var ByteOrder = $module$kotlinx_serialization_runtime_js.kotlinx.io.ByteOrder;
-  var ProtobufDecodingException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtobufDecodingException;
-  var toByte = Kotlin.toByte;
-  var enumFromOrdinal = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.enumFromOrdinal_szifu5$;
-  var TaggedInput = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.TaggedInput;
-  var stringFromUtf8Bytes = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.stringFromUtf8Bytes_fqrh44$;
-  var L_128 = Kotlin.Long.fromInt(-128);
-  var L127 = Kotlin.Long.fromInt(127);
-  var L128 = Kotlin.Long.fromInt(128);
-  var IOException = $module$kotlinx_serialization_runtime_js.kotlinx.io.IOException;
-  var L_1 = Kotlin.Long.NEG_ONE;
-  var L_9223372036854775808 = Kotlin.Long.MIN_VALUE;
-  var onlySingleOrNull = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.onlySingleOrNull_2p1efm$;
-  var ProtoType = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoType;
-  var IndexOutOfBoundsException = Kotlin.kotlin.IndexOutOfBoundsException;
-  var ByteArrayInputStream_init = $module$kotlinx_serialization_runtime_js.kotlinx.io.ByteArrayInputStream_init_fqrh44$;
+  var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
   var removeAll_0 = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   var L1 = Kotlin.Long.ONE;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
@@ -256,16 +237,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   InstancedMesh$SimpleInstances.prototype.constructor = InstancedMesh$SimpleInstances;
   CullMethod.prototype = Object.create(Enum.prototype);
   CullMethod.prototype.constructor = CullMethod;
-  TransformGroup.prototype = Object.create(Group.prototype);
-  TransformGroup.prototype.constructor = TransformGroup;
-  Model.prototype = Object.create(TransformGroup.prototype);
-  Model.prototype.constructor = Model;
   Scene.prototype = Object.create(Group.prototype);
   Scene.prototype.constructor = Scene;
   SphericalInputTransform$DragMethod.prototype = Object.create(Enum.prototype);
   SphericalInputTransform$DragMethod.prototype.constructor = SphericalInputTransform$DragMethod;
   SphericalInputTransform$ZoomMethod.prototype = Object.create(Enum.prototype);
   SphericalInputTransform$ZoomMethod.prototype.constructor = SphericalInputTransform$ZoomMethod;
+  TransformGroup.prototype = Object.create(Group.prototype);
+  TransformGroup.prototype.constructor = TransformGroup;
   SphericalInputTransform.prototype = Object.create(TransformGroup.prototype);
   SphericalInputTransform.prototype.constructor = SphericalInputTransform;
   CameraOrthogonalPan.prototype = Object.create(PanBase.prototype);
@@ -414,20 +393,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   PointMesh.prototype.constructor = PointMesh;
   PrimitiveType.prototype = Object.create(Enum.prototype);
   PrimitiveType.prototype.constructor = PrimitiveType;
-  ProtoBufPacked$ProtobufWriter.prototype = Object.create(TaggedOutput.prototype);
-  ProtoBufPacked$ProtobufWriter.prototype.constructor = ProtoBufPacked$ProtobufWriter;
-  ProtoBufPacked$ObjectWriter.prototype = Object.create(ProtoBufPacked$ProtobufWriter.prototype);
-  ProtoBufPacked$ObjectWriter.prototype.constructor = ProtoBufPacked$ObjectWriter;
-  ProtoBufPacked$MapEntryWriter.prototype = Object.create(ProtoBufPacked$ObjectWriter.prototype);
-  ProtoBufPacked$MapEntryWriter.prototype.constructor = ProtoBufPacked$MapEntryWriter;
-  ProtoBufPacked$RepeatedWriter.prototype = Object.create(ProtoBufPacked$ProtobufWriter.prototype);
-  ProtoBufPacked$RepeatedWriter.prototype.constructor = ProtoBufPacked$RepeatedWriter;
-  ProtoBufPacked$ProtobufReader.prototype = Object.create(TaggedInput.prototype);
-  ProtoBufPacked$ProtobufReader.prototype.constructor = ProtoBufPacked$ProtobufReader;
-  ProtoBufPacked$RepeatedReader.prototype = Object.create(ProtoBufPacked$ProtobufReader.prototype);
-  ProtoBufPacked$RepeatedReader.prototype.constructor = ProtoBufPacked$RepeatedReader;
-  ProtoBufPacked$MapEntryReader.prototype = Object.create(ProtoBufPacked$ProtobufReader.prototype);
-  ProtoBufPacked$MapEntryReader.prototype.constructor = ProtoBufPacked$MapEntryReader;
   InRadiusTraverser.prototype = Object.create(CenterPointTraverser.prototype);
   InRadiusTraverser.prototype.constructor = InRadiusTraverser;
   KNearestTraverser.prototype = Object.create(CenterPointTraverser.prototype);
@@ -1072,7 +1037,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     };
   }
   FbColorTexData$Companion.prototype.colorTex_ld7r1l$ = function (sizeX, sizeY, fbId) {
-    var colorProps = new TextureProps('framebuffer-' + fbId + '-color', 9729, 9729, 33071, 33071, 0);
+    var colorProps = new TextureProps('framebuffer-' + fbId.toString() + '-color', 9729, 9729, 33071, 33071, 0);
     return new Texture(colorProps, FbColorTexData$Companion$colorTex$lambda(sizeX, sizeY));
   };
   FbColorTexData$Companion.$metadata$ = {
@@ -1113,7 +1078,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     };
   }
   FbDepthTexData$Companion.prototype.depthTex_ld7r1l$ = function (sizeX, sizeY, fbId) {
-    var depthProps = new TextureProps('framebuffer-' + fbId + '-depth', 9728, 9728, 33071, 33071, 0);
+    var depthProps = new TextureProps('framebuffer-' + fbId.toString() + '-depth', 9728, 9728, 33071, 33071, 0);
     return new Texture(depthProps, FbDepthTexData$Companion$depthTex$lambda(sizeX, sizeY));
   };
   FbDepthTexData$Companion.$metadata$ = {
@@ -7841,55 +7806,55 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return ElevationMapMeta$Companion_instance;
   }
   function ElevationMapMeta$$serializer() {
-    this.serialClassDesc_88tcrf$_0 = new SerialClassDescImpl('de.fabmax.kool.modules.globe.elevation.ElevationMapMeta');
-    this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('format');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('attr');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('width');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
-    this.serialClassDesc.addElement_61zpoe$('height');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
-    this.serialClassDesc.addElement_61zpoe$('north');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(6));
-    this.serialClassDesc.addElement_61zpoe$('south');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(7));
-    this.serialClassDesc.addElement_61zpoe$('east');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(8));
-    this.serialClassDesc.addElement_61zpoe$('west');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(9));
-    this.serialClassDesc.addElement_61zpoe$('scaleX');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(10));
-    this.serialClassDesc.addElement_61zpoe$('scaleY');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(11));
-    this.serialClassDesc.addElement_61zpoe$('scaleZ');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(12));
+    this.descriptor_cvc8j9$_0 = new SerialClassDescImpl('de.fabmax.kool.modules.globe.elevation.ElevationMapMeta');
+    this.descriptor.addElement_ivxn3r$('name');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('format');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('attr');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor.addElement_ivxn3r$('width');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
+    this.descriptor.addElement_ivxn3r$('height');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(5));
+    this.descriptor.addElement_ivxn3r$('north');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(6));
+    this.descriptor.addElement_ivxn3r$('south');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(7));
+    this.descriptor.addElement_ivxn3r$('east');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(8));
+    this.descriptor.addElement_ivxn3r$('west');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(9));
+    this.descriptor.addElement_ivxn3r$('scaleX');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(10));
+    this.descriptor.addElement_ivxn3r$('scaleY');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(11));
+    this.descriptor.addElement_ivxn3r$('scaleZ');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(12));
     ElevationMapMeta$$serializer_instance = this;
   }
-  Object.defineProperty(ElevationMapMeta$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(ElevationMapMeta$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_88tcrf$_0;
+      return this.descriptor_cvc8j9$_0;
     }
   });
-  ElevationMapMeta$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 1, obj.format);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 2, obj.attr);
-    output.writeIntElementValue_j8ubi9$(this.serialClassDesc, 3, obj.width);
-    output.writeIntElementValue_j8ubi9$(this.serialClassDesc, 4, obj.height);
-    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 5, obj.north);
-    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 6, obj.south);
-    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 7, obj.east);
-    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 8, obj.west);
-    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 9, obj.scaleX);
-    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 10, obj.scaleY);
-    output.writeDoubleElementValue_cy908x$(this.serialClassDesc, 11, obj.scaleZ);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  ElevationMapMeta$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 0, obj.name);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 1, obj.format);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 2, obj.attr);
+    output.encodeIntElement_4wpqag$(this.descriptor, 3, obj.width);
+    output.encodeIntElement_4wpqag$(this.descriptor, 4, obj.height);
+    output.encodeDoubleElement_imzr5k$(this.descriptor, 5, obj.north);
+    output.encodeDoubleElement_imzr5k$(this.descriptor, 6, obj.south);
+    output.encodeDoubleElement_imzr5k$(this.descriptor, 7, obj.east);
+    output.encodeDoubleElement_imzr5k$(this.descriptor, 8, obj.west);
+    output.encodeDoubleElement_imzr5k$(this.descriptor, 9, obj.scaleX);
+    output.encodeDoubleElement_imzr5k$(this.descriptor, 10, obj.scaleY);
+    output.encodeDoubleElement_imzr5k$(this.descriptor, 11, obj.scaleZ);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  ElevationMapMeta$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  ElevationMapMeta$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
@@ -7904,69 +7869,69 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     , local9
     , local10
     , local11;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 1);
+          local1 = input.decodeStringElement_3zr2iy$(this.descriptor, 1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 2);
+          local2 = input.decodeStringElement_3zr2iy$(this.descriptor, 2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = input.readIntElementValue_xvmgof$(this.serialClassDesc, 3);
+          local3 = input.decodeIntElement_3zr2iy$(this.descriptor, 3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case 4:
-          local4 = input.readIntElementValue_xvmgof$(this.serialClassDesc, 4);
+          local4 = input.decodeIntElement_3zr2iy$(this.descriptor, 4);
           bitMask0 |= 16;
           if (!readAll)
             break;
         case 5:
-          local5 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 5);
+          local5 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 5);
           bitMask0 |= 32;
           if (!readAll)
             break;
         case 6:
-          local6 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 6);
+          local6 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 6);
           bitMask0 |= 64;
           if (!readAll)
             break;
         case 7:
-          local7 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 7);
+          local7 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 7);
           bitMask0 |= 128;
           if (!readAll)
             break;
         case 8:
-          local8 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 8);
+          local8 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 8);
           bitMask0 |= 256;
           if (!readAll)
             break;
         case 9:
-          local9 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 9);
+          local9 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 9);
           bitMask0 |= 512;
           if (!readAll)
             break;
         case 10:
-          local10 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 10);
+          local10 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 10);
           bitMask0 |= 1024;
           if (!readAll)
             break;
         case 11:
-          local11 = input.readDoubleElementValue_xvmgof$(this.serialClassDesc, 11);
+          local11 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 11);
           bitMask0 |= 2048;
           if (!readAll)
             break;
@@ -7975,7 +7940,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return ElevationMapMeta_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, null);
   };
   ElevationMapMeta$$serializer.$metadata$ = {
@@ -8131,33 +8096,33 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return ElevationMapMetaHierarchy$Companion_instance;
   }
   function ElevationMapMetaHierarchy$$serializer() {
-    this.serialClassDesc_v702nw$_0 = new SerialClassDescImpl('de.fabmax.kool.modules.globe.elevation.ElevationMapMetaHierarchy');
-    this.serialClassDesc.addElement_61zpoe$('maps');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor_u86u3w$_0 = new SerialClassDescImpl('de.fabmax.kool.modules.globe.elevation.ElevationMapMetaHierarchy');
+    this.descriptor.addElement_ivxn3r$('maps');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
     ElevationMapMetaHierarchy$$serializer_instance = this;
   }
-  Object.defineProperty(ElevationMapMetaHierarchy$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(ElevationMapMetaHierarchy$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_v702nw$_0;
+      return this.descriptor_u86u3w$_0;
     }
   });
-  ElevationMapMetaHierarchy$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance())), obj.maps);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  ElevationMapMetaHierarchy$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeSerializableElement_blecud$(this.descriptor, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance())), obj.maps);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  ElevationMapMetaHierarchy$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  ElevationMapMetaHierarchy$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance()))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance())), local0);
+          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance()))) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance())), local0);
           bitMask0 |= 1;
           if (!readAll)
             break;
@@ -8166,7 +8131,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return ElevationMapMetaHierarchy_init(bitMask0, local0, null);
   };
   ElevationMapMetaHierarchy$$serializer.$metadata$ = {
@@ -9387,7 +9352,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var element = provShader.attribution;
     $receiver.add_11rb$(element);
     this.isVisible = false;
-    this.generatorJob_0 = launch(void 0, void 0, void 0, void 0, TileMesh_init$lambda(this));
+    this.generatorJob_0 = launch(coroutines.GlobalScope, void 0, void 0, TileMesh_init$lambda(this));
   }
   Object.defineProperty(TileMesh.prototype, 'key', {
     get: function () {
@@ -9702,7 +9667,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
             }
 
             this.state_0 = 5;
-            this.result_0 = delay(50, this);
+            this.result_0 = delay(L50, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -12346,8 +12311,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       leaf.parent = null;
     }
      else {
-      var rt = root;
-      while (!ensureNotNull(rt).isLeaf) {
+      var rt = ensureNotNull(root);
+      while (!rt.isLeaf) {
         rt = rt.selectChild_d0340p$(leaf.volume);
       }
       var prev = rt.parent;
@@ -14130,6 +14095,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       this.addAnimation_z5ltv$(name, anim.copy_pb6i6z$(this.bones));
     }
   };
+  var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
   Armature.prototype.updateBones = function () {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     this.indexedBones_emt8o4$_0.clear();
@@ -14154,7 +14120,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     tmp$_5 = this.indexedBones_emt8o4$_0.iterator();
     while (tmp$_5.hasNext()) {
       var item = tmp$_5.next();
-      var boneId = (tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0);
+      var boneId = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
       var tmp$_6;
       item.id = boneId;
       ensureNotNull(this.boneTransforms_8cyf9r$_0).position = boneId * 16 | 0;
@@ -14186,7 +14152,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     tmp$_9 = this.indexedBones_emt8o4$_0.iterator();
     while (tmp$_9.hasNext()) {
       var item_0 = tmp$_9.next();
-      var boneId_0 = (tmp$_0_1 = index_0, index_0 = tmp$_0_1 + 1 | 0, tmp$_0_1);
+      var boneId_0 = checkIndexOverflow((tmp$_0_1 = index_0, index_0 = tmp$_0_1 + 1 | 0, tmp$_0_1));
       var tmp$_10;
       tmp$_10 = item_0.vertexIds;
       for (var i_2 = 0; i_2 !== tmp$_10.length; ++i_2) {
@@ -16527,103 +16493,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simpleName: 'MeshRayTest',
     interfaces: []
   };
-  function Model(name) {
-    TransformGroup.call(this, name);
-    this.geometries_0 = ArrayList_init();
-    this.subModels_0 = ArrayList_init();
-    this.initGeometries_0 = true;
-    this.shaderFab = null;
-    this.shader = null;
-  }
-  Model.prototype.copyInstance = function () {
-    var tmp$;
-    var copy = new Model(this.name);
-    copy.initGeometries_0 = this.initGeometries_0;
-    copy.shaderFab = this.shaderFab;
-    copy.geometries_0.addAll_brywnq$(this.geometries_0);
-    tmp$ = this.subModels_0.iterator();
-    while (tmp$.hasNext()) {
-      var child = tmp$.next();
-      copy.addSubModel_uvkl2a$(child.copyInstance());
-    }
-    return copy;
-  };
-  Model.prototype.addGeometry_wxnge0$ = function (meshData, block) {
-    var tmp$ = this.geometries_0;
-    var $receiver = new Model$Geometry(meshData);
-    block != null ? block($receiver) : null;
-    meshData.generateGeometry();
-    tmp$.add_11rb$($receiver);
-  };
-  Model.prototype.addColorGeometry_fk74jz$ = function (block) {
-    var meshData = MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().COLORS]);
-    this.addGeometry_wxnge0$(meshData, block);
-  };
-  Model.prototype.addTextGeometry_fk74jz$ = function (block) {
-    var meshData = MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().TEXTURE_COORDS]);
-    this.addGeometry_wxnge0$(meshData, block);
-  };
-  Model.prototype.addTextureGeometry_fk74jz$ = function (block) {
-    var meshData = MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().TEXTURE_COORDS]);
-    this.addGeometry_wxnge0$(meshData, block);
-  };
-  Model.prototype.addSubModel_uvkl2a$ = function (child) {
-    this.subModels_0.add_11rb$(child);
-    this.addNode_xtids1$(child);
-  };
-  Model.prototype.render_aemszp$ = function (ctx) {
-    var tmp$;
-    if (this.initGeometries_0) {
-      this.initGeometries_0 = false;
-      if (this.shader == null) {
-        var p = this.parent;
-        var fab = this.shaderFab;
-        if (fab != null) {
-          this.shader = fab();
-        }
-         else if (Kotlin.isType(p, Model)) {
-          this.shader = p.shader;
-        }
-      }
-      tmp$ = this.geometries_0.iterator();
-      while (tmp$.hasNext()) {
-        var geom = tmp$.next();
-        var mesh = geom.makeMesh();
-        if (mesh.shader == null) {
-          mesh.shader = this.shader;
-        }
-        this.addNode_xtids1$(mesh);
-      }
-    }
-    TransformGroup.prototype.render_aemszp$.call(this, ctx);
-  };
-  function Model$Geometry(meshData) {
-    this.meshData = meshData;
-    this.name = null;
-    this.meshFab = Model$Geometry$meshFab$lambda(this);
-    this.shaderFab = null;
-  }
-  Model$Geometry.prototype.makeMesh = function () {
-    var tmp$;
-    var mesh = this.meshFab(this.meshData);
-    mesh.shader = (tmp$ = this.shaderFab) != null ? tmp$() : null;
-    return mesh;
-  };
-  function Model$Geometry$meshFab$lambda(this$Geometry) {
-    return function (meshData) {
-      return new Mesh(meshData, this$Geometry.name);
-    };
-  }
-  Model$Geometry.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Geometry',
-    interfaces: []
-  };
-  Model.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Model',
-    interfaces: [TransformGroup]
-  };
   function Node(name) {
     if (name === void 0)
       name = null;
@@ -16828,6 +16697,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if (name === void 0)
       name = null;
     Group.call(this, name);
+    this.onRenderScene = ArrayList_init();
     this.camera = new PerspectiveCamera();
     this.light = new Light();
     this.defaultShadowMap_jajs2a$_0 = null;
@@ -16872,8 +16742,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     Group.prototype.preRender_aemszp$.call(this, ctx);
   };
   Scene.prototype.renderScene_aemszp$ = function (ctx) {
+    var tmp$;
     if (!this.isVisible) {
       return;
+    }
+    tmp$ = this.onRenderScene;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.onRenderScene.get_za3lpa$(i)(this, ctx);
     }
     this.preRender_aemszp$(ctx);
     this.camera.updateCamera_aemszp$(ctx);
@@ -19572,12 +19447,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return Unit;
     };
   }
-  function uiScene(dpi, overlay, block) {
+  function uiScene(dpi, name, overlay, block) {
     if (dpi === void 0)
       dpi = 96.0;
+    if (name === void 0)
+      name = null;
     if (overlay === void 0)
       overlay = true;
-    var $receiver = new Scene(null);
+    var $receiver = new Scene(name);
     var $receiver_0 = new OrthographicCamera();
     $receiver_0.isClipToViewport = true;
     $receiver_0.near = -1000.0;
@@ -20766,7 +20643,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.isInUse_8be2vx$ = true;
     this.numPasses = 2;
     var id = UniqueId_getInstance().nextId();
-    var texProps = new TextureProps('DistortedBackground-' + id, 9729, 9729, 33071, 33071, 0);
+    var texProps = new TextureProps('DistortedBackground-' + id.toString(), 9729, 9729, 33071, 33071, 0);
     this.copyTex_0 = new Texture(texProps, BlurredBackgroundHelper_init$lambda(this));
     this.texMesh_0 = textureMesh(void 0, void 0, BlurredBackgroundHelper_init$lambda_0);
     this.texMeshFlipped_0 = textureMesh(void 0, void 0, BlurredBackgroundHelper_init$lambda_1);
@@ -24453,7 +24330,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function debugOverlay(ctx, position) {
     if (position === void 0)
       position = Position$UPPER_RIGHT_getInstance();
-    var dbgOverlay = uiScene(ctx.screenDpi, void 0, debugOverlay$lambda(position, ctx));
+    var dbgOverlay = uiScene(ctx.screenDpi, 'debug-overlay', void 0, debugOverlay$lambda(position, ctx));
     dbgOverlay.isPickingEnabled = false;
     return dbgOverlay;
   }
@@ -28076,51 +27953,51 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return AnimationData$Companion_instance;
   }
   function AnimationData$$serializer() {
-    this.serialClassDesc_lcp80u$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.AnimationData');
-    this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('duration');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('channels');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor_kleob2$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.AnimationData');
+    this.descriptor.addElement_ivxn3r$('name');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('duration');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('channels');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
     AnimationData$$serializer_instance = this;
   }
-  Object.defineProperty(AnimationData$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(AnimationData$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_lcp80u$_0;
+      return this.descriptor_kleob2$_0;
     }
   });
-  AnimationData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 1, obj.duration);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(NodeAnimationData$$serializer_getInstance()), obj.channels);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  AnimationData$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 0, obj.name);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 1, obj.duration);
+    output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(NodeAnimationData$$serializer_getInstance()), obj.channels);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  AnimationData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  AnimationData$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
     , local1
     , local2;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 1);
+          local1 = input.decodeFloatElement_3zr2iy$(this.descriptor, 1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(NodeAnimationData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(NodeAnimationData$$serializer_getInstance()), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(NodeAnimationData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(NodeAnimationData$$serializer_getInstance()), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
@@ -28129,7 +28006,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return AnimationData_init(bitMask0, local0, local1, local2, null);
   };
   AnimationData$$serializer.$metadata$ = {
@@ -28244,60 +28121,60 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return NodeAnimationData$Companion_instance;
   }
   function NodeAnimationData$$serializer() {
-    this.serialClassDesc_vnv9c0$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.NodeAnimationData');
-    this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('positionKeys');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('rotationKeys');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('scalingKeys');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
+    this.descriptor_iysw7k$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.NodeAnimationData');
+    this.descriptor.addElement_ivxn3r$('name');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('positionKeys');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('rotationKeys');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor.addElement_ivxn3r$('scalingKeys');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
     NodeAnimationData$$serializer_instance = this;
   }
-  Object.defineProperty(NodeAnimationData$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(NodeAnimationData$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_vnv9c0$_0;
+      return this.descriptor_iysw7k$_0;
     }
   });
-  NodeAnimationData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), obj.positionKeys);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(Vec4KeyData$$serializer_getInstance()), obj.rotationKeys);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), obj.scalingKeys);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  NodeAnimationData$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 0, obj.name);
+    output.encodeSerializableElement_blecud$(this.descriptor, 1, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), obj.positionKeys);
+    output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(Vec4KeyData$$serializer_getInstance()), obj.rotationKeys);
+    output.encodeSerializableElement_blecud$(this.descriptor, 3, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), obj.scalingKeys);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  NodeAnimationData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  NodeAnimationData$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
     , local1
     , local2
     , local3;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 1, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 1, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(Vec4KeyData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(Vec4KeyData$$serializer_getInstance()), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(Vec4KeyData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(Vec4KeyData$$serializer_getInstance()), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 3, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 3, new ArrayListSerializer(Vec3KeyData$$serializer_getInstance()), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
@@ -28306,7 +28183,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return NodeAnimationData_init(bitMask0, local0, local1, local2, local3, null);
   };
   NodeAnimationData$$serializer.$metadata$ = {
@@ -28407,60 +28284,60 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return Vec3KeyData$Companion_instance;
   }
   function Vec3KeyData$$serializer() {
-    this.serialClassDesc_m4yowu$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.Vec3KeyData');
-    this.serialClassDesc.addElement_61zpoe$('time');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('x');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('y');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('z');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
+    this.descriptor_e85keq$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.Vec3KeyData');
+    this.descriptor.addElement_ivxn3r$('time');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('x');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('y');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor.addElement_ivxn3r$('z');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
     Vec3KeyData$$serializer_instance = this;
   }
-  Object.defineProperty(Vec3KeyData$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(Vec3KeyData$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_m4yowu$_0;
+      return this.descriptor_e85keq$_0;
     }
   });
-  Vec3KeyData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 0, obj.time);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 1, obj.x);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 2, obj.y);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 3, obj.z);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  Vec3KeyData$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 0, obj.time);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 1, obj.x);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 2, obj.y);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 3, obj.z);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  Vec3KeyData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  Vec3KeyData$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
     , local1
     , local2
     , local3;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeFloatElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 1);
+          local1 = input.decodeFloatElement_3zr2iy$(this.descriptor, 1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 2);
+          local2 = input.decodeFloatElement_3zr2iy$(this.descriptor, 2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 3);
+          local3 = input.decodeFloatElement_3zr2iy$(this.descriptor, 3);
           bitMask0 |= 8;
           if (!readAll)
             break;
@@ -28469,7 +28346,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return Vec3KeyData_init(bitMask0, local0, local1, local2, local3, null);
   };
   Vec3KeyData$$serializer.$metadata$ = {
@@ -28568,34 +28445,34 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return Vec4KeyData$Companion_instance;
   }
   function Vec4KeyData$$serializer() {
-    this.serialClassDesc_gomo0t$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.Vec4KeyData');
-    this.serialClassDesc.addElement_61zpoe$('time');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('x');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('y');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('z');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
-    this.serialClassDesc.addElement_61zpoe$('w');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
+    this.descriptor_nk6zil$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.Vec4KeyData');
+    this.descriptor.addElement_ivxn3r$('time');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('x');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('y');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor.addElement_ivxn3r$('z');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
+    this.descriptor.addElement_ivxn3r$('w');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(5));
     Vec4KeyData$$serializer_instance = this;
   }
-  Object.defineProperty(Vec4KeyData$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(Vec4KeyData$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_gomo0t$_0;
+      return this.descriptor_nk6zil$_0;
     }
   });
-  Vec4KeyData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 0, obj.time);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 1, obj.x);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 2, obj.y);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 3, obj.z);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 4, obj.w);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  Vec4KeyData$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 0, obj.time);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 1, obj.x);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 2, obj.y);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 3, obj.z);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 4, obj.w);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  Vec4KeyData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  Vec4KeyData$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
@@ -28603,34 +28480,34 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     , local2
     , local3
     , local4;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeFloatElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 1);
+          local1 = input.decodeFloatElement_3zr2iy$(this.descriptor, 1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 2);
+          local2 = input.decodeFloatElement_3zr2iy$(this.descriptor, 2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 3);
+          local3 = input.decodeFloatElement_3zr2iy$(this.descriptor, 3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case 4:
-          local4 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 4);
+          local4 = input.decodeFloatElement_3zr2iy$(this.descriptor, 4);
           bitMask0 |= 16;
           if (!readAll)
             break;
@@ -28639,7 +28516,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return Vec4KeyData_init(bitMask0, local0, local1, local2, local3, local4, null);
   };
   Vec4KeyData$$serializer.$metadata$ = {
@@ -28746,37 +28623,37 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return BoneData$Companion_instance;
   }
   function BoneData$$serializer() {
-    this.serialClassDesc_t0qu10$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.BoneData');
-    this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('parent');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('children');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('offsetMatrix');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
-    this.serialClassDesc.addElement_61zpoe$('vertexIds');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
-    this.serialClassDesc.addElement_61zpoe$('vertexWeights');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(6));
+    this.descriptor_kdtvdg$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.BoneData');
+    this.descriptor.addElement_ivxn3r$('name');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('parent');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('children');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor.addElement_ivxn3r$('offsetMatrix');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
+    this.descriptor.addElement_ivxn3r$('vertexIds');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(5));
+    this.descriptor.addElement_ivxn3r$('vertexWeights');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(6));
     BoneData$$serializer_instance = this;
   }
-  Object.defineProperty(BoneData$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(BoneData$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_t0qu10$_0;
+      return this.descriptor_kdtvdg$_0;
     }
   });
-  BoneData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 1, obj.parent);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(internal.StringSerializer), obj.children);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(internal.FloatSerializer), obj.offsetMatrix);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new ArrayListSerializer(internal.IntSerializer), obj.vertexIds);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 5, new ArrayListSerializer(internal.FloatSerializer), obj.vertexWeights);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  BoneData$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 0, obj.name);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 1, obj.parent);
+    output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(internal.StringSerializer), obj.children);
+    output.encodeSerializableElement_blecud$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer), obj.offsetMatrix);
+    output.encodeSerializableElement_blecud$(this.descriptor, 4, new ArrayListSerializer(internal.IntSerializer), obj.vertexIds);
+    output.encodeSerializableElement_blecud$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), obj.vertexWeights);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  BoneData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  BoneData$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
@@ -28785,39 +28662,39 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     , local3
     , local4
     , local5;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 1);
+          local1 = input.decodeStringElement_3zr2iy$(this.descriptor, 1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(internal.StringSerializer), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(internal.StringSerializer), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(internal.FloatSerializer), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new ArrayListSerializer(internal.IntSerializer), local4);
+          local4 = (bitMask0 & 16) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 4, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 4, new ArrayListSerializer(internal.IntSerializer), local4);
           bitMask0 |= 16;
           if (!readAll)
             break;
         case 5:
-          local5 = (bitMask0 & 32) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 5, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 5, new ArrayListSerializer(internal.FloatSerializer), local5);
+          local5 = (bitMask0 & 32) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 5, new ArrayListSerializer(internal.FloatSerializer), local5);
           bitMask0 |= 32;
           if (!readAll)
             break;
@@ -28826,7 +28703,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return BoneData_init(bitMask0, local0, local1, local2, local3, local4, local5, null);
   };
   BoneData$$serializer.$metadata$ = {
@@ -28983,40 +28860,40 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return MaterialData$Companion_instance;
   }
   function MaterialData$$serializer() {
-    this.serialClassDesc_dp3nrb$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.MaterialData');
-    this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('ambientColor');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('diffuseColor');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('specularColor');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
-    this.serialClassDesc.addElement_61zpoe$('emissiveColor');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
-    this.serialClassDesc.addElement_61zpoe$('shininess');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(6));
-    this.serialClassDesc.addElement_61zpoe$('reflectivity');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(7));
+    this.descriptor_tygdqh$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.MaterialData');
+    this.descriptor.addElement_ivxn3r$('name');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('ambientColor');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('diffuseColor');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor.addElement_ivxn3r$('specularColor');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
+    this.descriptor.addElement_ivxn3r$('emissiveColor');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(5));
+    this.descriptor.addElement_ivxn3r$('shininess');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(6));
+    this.descriptor.addElement_ivxn3r$('reflectivity');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(7));
     MaterialData$$serializer_instance = this;
   }
-  Object.defineProperty(MaterialData$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(MaterialData$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_dp3nrb$_0;
+      return this.descriptor_tygdqh$_0;
     }
   });
-  MaterialData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer), obj.ambientColor);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(internal.FloatSerializer), obj.diffuseColor);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(internal.FloatSerializer), obj.specularColor);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new ArrayListSerializer(internal.FloatSerializer), obj.emissiveColor);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 5, obj.shininess);
-    output.writeFloatElementValue_r1rln8$(this.serialClassDesc, 6, obj.reflectivity);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  MaterialData$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 0, obj.name);
+    output.encodeSerializableElement_blecud$(this.descriptor, 1, new ArrayListSerializer(internal.FloatSerializer), obj.ambientColor);
+    output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(internal.FloatSerializer), obj.diffuseColor);
+    output.encodeSerializableElement_blecud$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer), obj.specularColor);
+    output.encodeSerializableElement_blecud$(this.descriptor, 4, new ArrayListSerializer(internal.FloatSerializer), obj.emissiveColor);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 5, obj.shininess);
+    output.encodeFloatElement_t7qhdx$(this.descriptor, 6, obj.reflectivity);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  MaterialData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  MaterialData$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
@@ -29026,44 +28903,44 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     , local4
     , local5
     , local6;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 1, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 1, new ArrayListSerializer(internal.FloatSerializer), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(internal.FloatSerializer), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(internal.FloatSerializer), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(internal.FloatSerializer), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 3, new ArrayListSerializer(internal.FloatSerializer), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new ArrayListSerializer(internal.FloatSerializer), local4);
+          local4 = (bitMask0 & 16) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 4, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 4, new ArrayListSerializer(internal.FloatSerializer), local4);
           bitMask0 |= 16;
           if (!readAll)
             break;
         case 5:
-          local5 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 5);
+          local5 = input.decodeFloatElement_3zr2iy$(this.descriptor, 5);
           bitMask0 |= 32;
           if (!readAll)
             break;
         case 6:
-          local6 = input.readFloatElementValue_xvmgof$(this.serialClassDesc, 6);
+          local6 = input.decodeFloatElement_3zr2iy$(this.descriptor, 6);
           bitMask0 |= 64;
           if (!readAll)
             break;
@@ -29072,7 +28949,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return MaterialData_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, null);
   };
   MaterialData$$serializer.$metadata$ = {
@@ -29433,43 +29310,43 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return MeshData$Companion_instance;
   }
   function MeshData$$serializer() {
-    this.serialClassDesc_qzcrd9$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.MeshData');
-    this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('primitiveType');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('attributes');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('indices');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
-    this.serialClassDesc.addElement_61zpoe$('armature');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
-    this.serialClassDesc.addElement_61zpoe$('animations');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(6));
-    this.serialClassDesc.addElement_61zpoe$('material');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(7));
-    this.serialClassDesc.addElement_61zpoe$('tags');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(8));
+    this.descriptor_ctxiyr$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.MeshData');
+    this.descriptor.addElement_ivxn3r$('name');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('primitiveType');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('attributes');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor.addElement_ivxn3r$('indices');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
+    this.descriptor.addElement_ivxn3r$('armature');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(5));
+    this.descriptor.addElement_ivxn3r$('animations');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(6));
+    this.descriptor.addElement_ivxn3r$('material');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(7));
+    this.descriptor.addElement_ivxn3r$('tags');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(8));
     MeshData$$serializer_instance = this;
   }
-  Object.defineProperty(MeshData$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(MeshData$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_qzcrd9$_0;
+      return this.descriptor_ctxiyr$_0;
     }
   });
-  MeshData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new EnumSerializer(Kotlin.getKClass(PrimitiveType)), obj.primitiveType);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance()), obj.attributes);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer), obj.indices);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new ArrayListSerializer(BoneData$$serializer_getInstance()), obj.armature);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 5, new ArrayListSerializer(AnimationData$$serializer_getInstance()), obj.animations);
-    output.writeIntElementValue_j8ubi9$(this.serialClassDesc, 6, obj.material);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 7, new ArrayListSerializer(internal.StringSerializer), obj.tags);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  MeshData$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 0, obj.name);
+    output.encodeSerializableElement_blecud$(this.descriptor, 1, new EnumSerializer(Kotlin.getKClass(PrimitiveType)), obj.primitiveType);
+    output.encodeSerializableElement_blecud$(this.descriptor, 2, new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance()), obj.attributes);
+    output.encodeSerializableElement_blecud$(this.descriptor, 3, new ArrayListSerializer(internal.IntSerializer), obj.indices);
+    output.encodeSerializableElement_blecud$(this.descriptor, 4, new ArrayListSerializer(BoneData$$serializer_getInstance()), obj.armature);
+    output.encodeSerializableElement_blecud$(this.descriptor, 5, new ArrayListSerializer(AnimationData$$serializer_getInstance()), obj.animations);
+    output.encodeIntElement_4wpqag$(this.descriptor, 6, obj.material);
+    output.encodeSerializableElement_blecud$(this.descriptor, 7, new ArrayListSerializer(internal.StringSerializer), obj.tags);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  MeshData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  MeshData$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
@@ -29480,49 +29357,49 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     , local5
     , local6
     , local7;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new EnumSerializer(Kotlin.getKClass(PrimitiveType))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new EnumSerializer(Kotlin.getKClass(PrimitiveType)), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 1, new EnumSerializer(Kotlin.getKClass(PrimitiveType))) : input.updateSerializableElement_ehubvl$(this.descriptor, 1, new EnumSerializer(Kotlin.getKClass(PrimitiveType)), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance()), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance()), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 3, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 3, new ArrayListSerializer(internal.IntSerializer), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new ArrayListSerializer(BoneData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new ArrayListSerializer(BoneData$$serializer_getInstance()), local4);
+          local4 = (bitMask0 & 16) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 4, new ArrayListSerializer(BoneData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 4, new ArrayListSerializer(BoneData$$serializer_getInstance()), local4);
           bitMask0 |= 16;
           if (!readAll)
             break;
         case 5:
-          local5 = (bitMask0 & 32) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 5, new ArrayListSerializer(AnimationData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 5, new ArrayListSerializer(AnimationData$$serializer_getInstance()), local5);
+          local5 = (bitMask0 & 32) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 5, new ArrayListSerializer(AnimationData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 5, new ArrayListSerializer(AnimationData$$serializer_getInstance()), local5);
           bitMask0 |= 32;
           if (!readAll)
             break;
         case 6:
-          local6 = input.readIntElementValue_xvmgof$(this.serialClassDesc, 6);
+          local6 = input.decodeIntElement_3zr2iy$(this.descriptor, 6);
           bitMask0 |= 64;
           if (!readAll)
             break;
         case 7:
-          local7 = (bitMask0 & 128) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 7, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 7, new ArrayListSerializer(internal.StringSerializer), local7);
+          local7 = (bitMask0 & 128) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 7, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 7, new ArrayListSerializer(internal.StringSerializer), local7);
           bitMask0 |= 128;
           if (!readAll)
             break;
@@ -29531,7 +29408,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return MeshData_init_0(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, null);
   };
   MeshData$$serializer.$metadata$ = {
@@ -29732,42 +29609,42 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return AttributeList$Companion_instance;
   }
   function AttributeList$$serializer() {
-    this.serialClassDesc_rr7bde$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.AttributeList');
-    this.serialClassDesc.addElement_61zpoe$('type');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('values');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor_4nzata$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.AttributeList');
+    this.descriptor.addElement_ivxn3r$('type');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('values');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
     AttributeList$$serializer_instance = this;
   }
-  Object.defineProperty(AttributeList$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(AttributeList$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_rr7bde$_0;
+      return this.descriptor_4nzata$_0;
     }
   });
-  AttributeList$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 0, new EnumSerializer(Kotlin.getKClass(AttributeType)), obj.type);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer), obj.values);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  AttributeList$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeSerializableElement_blecud$(this.descriptor, 0, new EnumSerializer(Kotlin.getKClass(AttributeType)), obj.type);
+    output.encodeSerializableElement_blecud$(this.descriptor, 1, new ArrayListSerializer(internal.FloatSerializer), obj.values);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  AttributeList$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  AttributeList$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
     , local1;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 0, new EnumSerializer(Kotlin.getKClass(AttributeType))) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 0, new EnumSerializer(Kotlin.getKClass(AttributeType)), local0);
+          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new EnumSerializer(Kotlin.getKClass(AttributeType))) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new EnumSerializer(Kotlin.getKClass(AttributeType)), local0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 1, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 1, new ArrayListSerializer(internal.FloatSerializer), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
@@ -29776,7 +29653,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return AttributeList_init(bitMask0, local0, local1, null);
   };
   AttributeList$$serializer.$metadata$ = {
@@ -29894,16 +29771,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.VERSION = 1;
   }
   var getKClass = Kotlin.getKClass;
-  var klassSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.klassSerializer_yop3xi$;
+  var getOrDefault = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.context.getOrDefault_6qy6ah$;
   ModelData$Companion.prototype.load_fqrh44$ = function (data) {
-    var $this = ProtoBufPacked$Companion_getInstance().plain;
-    var model = $this.load_8dtdds$(klassSerializer($this.context, getKClass(ModelData)), data);
+    var $receiver = ProtoBuf.Companion;
+    var model = $receiver.load_dntfbn$(getOrDefault($receiver.context, getKClass(ModelData)), data);
     if (model.version !== 1) {
-      var $this_0 = package$util.Log;
+      var $this = package$util.Log;
       var level = Log$Level.WARN;
       var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this_0.level.level) {
-        $this_0.printer(level, tag, 'Unsupported model version: ' + model.version + ' (should be ' + '1' + ')');
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Unsupported model version: ' + model.version + ' (should be ' + '1' + ')');
       }
     }
     return model;
@@ -29924,60 +29801,60 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return ModelData$Companion_instance;
   }
   function ModelData$$serializer() {
-    this.serialClassDesc_fx8h95$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.ModelData');
-    this.serialClassDesc.addElement_61zpoe$('version');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('meshes');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('lodRootNode');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('materials');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
+    this.descriptor_mny3o7$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.ModelData');
+    this.descriptor.addElement_ivxn3r$('version');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('meshes');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('lodRootNode');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor.addElement_ivxn3r$('materials');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
     ModelData$$serializer_instance = this;
   }
-  Object.defineProperty(ModelData$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(ModelData$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_fx8h95$_0;
+      return this.descriptor_mny3o7$_0;
     }
   });
-  ModelData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeIntElementValue_j8ubi9$(this.serialClassDesc, 0, obj.version);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new ArrayListSerializer(MeshData$$serializer_getInstance()), obj.meshes);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance()), obj.lodRootNode);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(MaterialData$$serializer_getInstance()), obj.materials);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  ModelData$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeIntElement_4wpqag$(this.descriptor, 0, obj.version);
+    output.encodeSerializableElement_blecud$(this.descriptor, 1, new ArrayListSerializer(MeshData$$serializer_getInstance()), obj.meshes);
+    output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance()), obj.lodRootNode);
+    output.encodeSerializableElement_blecud$(this.descriptor, 3, new ArrayListSerializer(MaterialData$$serializer_getInstance()), obj.materials);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  ModelData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  ModelData$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
     , local1
     , local2
     , local3;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readIntElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeIntElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new ArrayListSerializer(MeshData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new ArrayListSerializer(MeshData$$serializer_getInstance()), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 1, new ArrayListSerializer(MeshData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 1, new ArrayListSerializer(MeshData$$serializer_getInstance()), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance()), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance()), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(MaterialData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(MaterialData$$serializer_getInstance()), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 3, new ArrayListSerializer(MaterialData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 3, new ArrayListSerializer(MaterialData$$serializer_getInstance()), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
@@ -29986,7 +29863,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return ModelData_init(bitMask0, local0, local1, local2, local3, null);
   };
   ModelData$$serializer.$metadata$ = {
@@ -30121,34 +29998,34 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return ModelNodeData$Companion_instance;
   }
   function ModelNodeData$$serializer() {
-    this.serialClassDesc_pyxkeh$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.ModelNodeData');
-    this.serialClassDesc.addElement_61zpoe$('name');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(1));
-    this.serialClassDesc.addElement_61zpoe$('transform');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(2));
-    this.serialClassDesc.addElement_61zpoe$('children');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(3));
-    this.serialClassDesc.addElement_61zpoe$('meshes');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(4));
-    this.serialClassDesc.addElement_61zpoe$('tags');
-    this.serialClassDesc.pushAnnotation_yj921w$(new SerialId(5));
+    this.descriptor_q2xdmh$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.ModelNodeData');
+    this.descriptor.addElement_ivxn3r$('name');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('transform');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    this.descriptor.addElement_ivxn3r$('children');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
+    this.descriptor.addElement_ivxn3r$('meshes');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
+    this.descriptor.addElement_ivxn3r$('tags');
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(5));
     ModelNodeData$$serializer_instance = this;
   }
-  Object.defineProperty(ModelNodeData$$serializer.prototype, 'serialClassDesc', {
+  Object.defineProperty(ModelNodeData$$serializer.prototype, 'descriptor', {
     get: function () {
-      return this.serialClassDesc_pyxkeh$_0;
+      return this.descriptor_q2xdmh$_0;
     }
   });
-  ModelNodeData$$serializer.prototype.save_ejfkry$ = function (output_0, obj) {
-    var output = output_0.writeBegin_276rha$(this.serialClassDesc, []);
-    output.writeStringElementValue_k4mjep$(this.serialClassDesc, 0, obj.name);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer), obj.transform);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance()), obj.children);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer), obj.meshes);
-    output.writeSerializableElementValue_k4al2t$(this.serialClassDesc, 4, new ArrayListSerializer(internal.StringSerializer), obj.tags);
-    output.writeEnd_f6e2p$(this.serialClassDesc);
+  ModelNodeData$$serializer.prototype.serialize_awe97i$ = function (output_0, obj) {
+    var output = output_0.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeStringElement_bgm7zs$(this.descriptor, 0, obj.name);
+    output.encodeSerializableElement_blecud$(this.descriptor, 1, new ArrayListSerializer(internal.FloatSerializer), obj.transform);
+    output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance()), obj.children);
+    output.encodeSerializableElement_blecud$(this.descriptor, 3, new ArrayListSerializer(internal.IntSerializer), obj.meshes);
+    output.encodeSerializableElement_blecud$(this.descriptor, 4, new ArrayListSerializer(internal.StringSerializer), obj.tags);
+    output.endStructure_qatsm0$(this.descriptor);
   };
-  ModelNodeData$$serializer.prototype.load_ljkqvg$ = function (input_0) {
+  ModelNodeData$$serializer.prototype.deserialize_nts5qn$ = function (input_0) {
     var index, readAll = false;
     var bitMask0 = 0;
     var local0
@@ -30156,34 +30033,34 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     , local2
     , local3
     , local4;
-    var input = input_0.readBegin_276rha$(this.serialClassDesc, []);
+    var input = input_0.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
-      index = input.readElement_f6e2p$(this.serialClassDesc);
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
       switch (index) {
         case -2:
           readAll = true;
         case 0:
-          local0 = input.readStringElementValue_xvmgof$(this.serialClassDesc, 0);
+          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
           bitMask0 |= 1;
           if (!readAll)
             break;
         case 1:
-          local1 = (bitMask0 & 2) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 1, new ArrayListSerializer(internal.FloatSerializer), local1);
+          local1 = (bitMask0 & 2) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 1, new ArrayListSerializer(internal.FloatSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 1, new ArrayListSerializer(internal.FloatSerializer), local1);
           bitMask0 |= 2;
           if (!readAll)
             break;
         case 2:
-          local2 = (bitMask0 & 4) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance())) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance()), local2);
+          local2 = (bitMask0 & 4) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 2, new ArrayListSerializer(ModelNodeData$$serializer_getInstance()), local2);
           bitMask0 |= 4;
           if (!readAll)
             break;
         case 3:
-          local3 = (bitMask0 & 8) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 3, new ArrayListSerializer(internal.IntSerializer), local3);
+          local3 = (bitMask0 & 8) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 3, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 3, new ArrayListSerializer(internal.IntSerializer), local3);
           bitMask0 |= 8;
           if (!readAll)
             break;
         case 4:
-          local4 = (bitMask0 & 16) === 0 ? input.readSerializableElementValue_nqb5fm$(this.serialClassDesc, 4, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElementValue_2bgl1k$(this.serialClassDesc, 4, new ArrayListSerializer(internal.StringSerializer), local4);
+          local4 = (bitMask0 & 16) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 4, new ArrayListSerializer(internal.StringSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 4, new ArrayListSerializer(internal.StringSerializer), local4);
           bitMask0 |= 16;
           if (!readAll)
             break;
@@ -30192,7 +30069,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         default:throw new UnknownFieldException(index);
       }
     }
-    input.readEnd_f6e2p$(this.serialClassDesc);
+    input.endStructure_qatsm0$(this.descriptor);
     return ModelNodeData_init(bitMask0, local0, local1, local2, local3, local4, null);
   };
   ModelNodeData$$serializer.$metadata$ = {
@@ -30269,861 +30146,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   ModelNodeData.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.transform, other.transform) && Kotlin.equals(this.children, other.children) && Kotlin.equals(this.meshes, other.meshes) && Kotlin.equals(this.tags, other.tags)))));
   };
-  function ProtoBufPacked(context) {
-    ProtoBufPacked$Companion_getInstance();
-    if (context === void 0)
-      context = null;
-    this.context = context;
-  }
-  function ProtoBufPacked$ProtobufWriter($outer, encoder) {
-    this.$outer = $outer;
-    TaggedOutput.call(this);
-    this.encoder = encoder;
-    this.context = this.$outer.context;
-  }
-  ProtoBufPacked$ProtobufWriter.prototype.writeBegin_276rha$ = function (desc, typeParams) {
-    switch (desc.kind.name) {
-      case 'LIST':
-      case 'MAP':
-      case 'SET':
-        return new ProtoBufPacked$RepeatedWriter(this.$outer, this.encoder, this.currentTag);
-      case 'CLASS':
-      case 'OBJECT':
-      case 'SEALED':
-      case 'POLYMORPHIC':
-        return new ProtoBufPacked$ObjectWriter(this.$outer, this.currentTagOrNull, this.encoder);
-      case 'ENTRY':
-        return new ProtoBufPacked$MapEntryWriter(this.$outer, this.currentTagOrNull, this.encoder);
-      default:throw new SerializationException('Primitives are not supported at top-level');
-    }
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedInt_dpg1yx$ = function (tag, value) {
-    this.encoder.writeInt_hp6twd$(value, tag.first, tag.second);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedByte_19qe40$ = function (tag, value) {
-    this.encoder.writeInt_hp6twd$(value, tag.first, tag.second);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedShort_veccj0$ = function (tag, value) {
-    this.encoder.writeInt_hp6twd$(value, tag.first, tag.second);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedLong_19wkf8$ = function (tag, value) {
-    this.encoder.writeLong_scxzc4$(value, tag.first, tag.second);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedFloat_vlf4p8$ = function (tag, value) {
-    this.encoder.writeFloat_vjorfl$(value, tag.first);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedDouble_e37ph5$ = function (tag, value) {
-    this.encoder.writeDouble_12fank$(value, tag.first);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedBoolean_iuyhfk$ = function (tag, value) {
-    this.encoder.writeInt_hp6twd$(value ? 1 : 0, tag.first, ProtoNumberType.DEFAULT);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedChar_19qo1q$ = function (tag, value) {
-    this.encoder.writeInt_hp6twd$(value | 0, tag.first, tag.second);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedString_l9l8mx$ = function (tag, value) {
-    this.encoder.writeString_bm4lxs$(value, tag.first);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.writeTaggedEnum_qffkiy$ = function (tag, enumClass, value) {
-    this.encoder.writeInt_hp6twd$(value.ordinal, tag.first, ProtoNumberType.DEFAULT);
-  };
-  ProtoBufPacked$ProtobufWriter.prototype.getTag_fr5t0y$ = function ($receiver, index) {
-    return ProtoBufPacked$Companion_getInstance().getProtoDesc_0($receiver, index);
-  };
-  ProtoBufPacked$ProtobufWriter.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ProtobufWriter',
-    interfaces: [TaggedOutput]
-  };
-  function ProtoBufPacked$ObjectWriter($outer, parentTag, parentEncoder, stream) {
-    this.$outer = $outer;
-    if (stream === void 0)
-      stream = ByteArrayOutputStream_init();
-    ProtoBufPacked$ProtobufWriter.call(this, this.$outer, new ProtoBufPacked$ProtobufEncoder(stream));
-    this.parentTag = parentTag;
-    this.parentEncoder_0 = parentEncoder;
-    this.stream_0 = stream;
-  }
-  ProtoBufPacked$ObjectWriter.prototype.writeFinished_f6e2p$ = function (desc) {
-    if (this.parentTag != null) {
-      this.parentEncoder_0.writeObject_ir89t6$(this.stream_0.toByteArray(), this.parentTag.first);
-    }
-     else {
-      this.parentEncoder_0.out.write_fqrh44$(this.stream_0.toByteArray());
-    }
-  };
-  ProtoBufPacked$ObjectWriter.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ObjectWriter',
-    interfaces: [ProtoBufPacked$ProtobufWriter]
-  };
-  function ProtoBufPacked$MapEntryWriter($outer, parentTag, parentEncoder) {
-    this.$outer = $outer;
-    ProtoBufPacked$ObjectWriter.call(this, this.$outer, parentTag, parentEncoder);
-  }
-  ProtoBufPacked$MapEntryWriter.prototype.getTag_fr5t0y$ = function ($receiver, index) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    if (index === 0) {
-      return to(1, (tmp$_0 = (tmp$ = this.parentTag) != null ? tmp$.second : null) != null ? tmp$_0 : ProtoNumberType.DEFAULT);
-    }
-     else {
-      return to(2, (tmp$_2 = (tmp$_1 = this.parentTag) != null ? tmp$_1.second : null) != null ? tmp$_2 : ProtoNumberType.DEFAULT);
-    }
-  };
-  ProtoBufPacked$MapEntryWriter.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MapEntryWriter',
-    interfaces: [ProtoBufPacked$ObjectWriter]
-  };
-  function ProtoBufPacked$RepeatedWriter($outer, encoder, curTag) {
-    this.$outer = $outer;
-    ProtoBufPacked$ProtobufWriter.call(this, this.$outer, encoder);
-    this.curTag = curTag;
-  }
-  ProtoBufPacked$RepeatedWriter.prototype.getTag_fr5t0y$ = function ($receiver, index) {
-    return this.curTag;
-  };
-  ProtoBufPacked$RepeatedWriter.prototype.shouldWriteElement_6zine4$ = function (desc, tag, index) {
-    return index !== 0;
-  };
-  ProtoBufPacked$RepeatedWriter.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'RepeatedWriter',
-    interfaces: [ProtoBufPacked$ProtobufWriter]
-  };
-  function ProtoBufPacked$ProtobufEncoder(out) {
-    this.out = out;
-  }
-  ProtoBufPacked$ProtobufEncoder.prototype.writeObject_ir89t6$ = function (bytes, tag) {
-    var header = this.encode32_0(tag << 3 | 2);
-    var len = this.encode32_0(bytes.length);
-    this.out.write_fqrh44$(header);
-    this.out.write_fqrh44$(len);
-    this.out.write_fqrh44$(bytes);
-  };
-  ProtoBufPacked$ProtobufEncoder.prototype.writeInt_hp6twd$ = function (value, tag, format) {
-    var wireType = format === ProtoNumberType.FIXED ? 5 : 0;
-    var header = this.encode32_0(tag << 3 | wireType);
-    var content = this.encode32_0(value, format);
-    this.out.write_fqrh44$(header);
-    this.out.write_fqrh44$(content);
-  };
-  ProtoBufPacked$ProtobufEncoder.prototype.writeLong_scxzc4$ = function (value, tag, format) {
-    var wireType = format === ProtoNumberType.FIXED ? 1 : 0;
-    var header = this.encode32_0(tag << 3 | wireType);
-    var content = this.encode64_0(value, format);
-    this.out.write_fqrh44$(header);
-    this.out.write_fqrh44$(content);
-  };
-  ProtoBufPacked$ProtobufEncoder.prototype.writeString_bm4lxs$ = function (value, tag) {
-    var bytes = toUtf8Bytes(value);
-    this.writeObject_ir89t6$(bytes, tag);
-  };
-  ProtoBufPacked$ProtobufEncoder.prototype.writeDouble_12fank$ = function (value, tag) {
-    var header = this.encode32_0(tag << 3 | 1);
-    var content = ByteBuffer.Companion.allocate_za3lpa$(8).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).putDouble_14dthe$(value).array();
-    this.out.write_fqrh44$(header);
-    this.out.write_fqrh44$(content);
-  };
-  ProtoBufPacked$ProtobufEncoder.prototype.writeFloat_vjorfl$ = function (value, tag) {
-    var header = this.encode32_0(tag << 3 | 5);
-    var content = ByteBuffer.Companion.allocate_za3lpa$(4).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).putFloat_mx4ult$(value).array();
-    this.out.write_fqrh44$(header);
-    this.out.write_fqrh44$(content);
-  };
-  ProtoBufPacked$ProtobufEncoder.prototype.encode32_0 = function (number, format) {
-    if (format === void 0)
-      format = ProtoNumberType.DEFAULT;
-    switch (format.name) {
-      case 'FIXED':
-        return ByteBuffer.Companion.allocate_za3lpa$(4).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).putInt_za3lpa$(number).array();
-      case 'DEFAULT':
-        return ProtoBufPacked$Varint_getInstance().encodeVarint_8e33dg$(Kotlin.Long.fromInt(number));
-      case 'SIGNED':
-        return ProtoBufPacked$Varint_getInstance().encodeVarint_kcn2v3$(number << 1 ^ number >> 31);
-      default:return Kotlin.noWhenBranchMatched();
-    }
-  };
-  ProtoBufPacked$ProtobufEncoder.prototype.encode64_0 = function (number, format) {
-    if (format === void 0)
-      format = ProtoNumberType.DEFAULT;
-    switch (format.name) {
-      case 'FIXED':
-        return ByteBuffer.Companion.allocate_za3lpa$(8).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).putLong_s8cxhz$(number).array();
-      case 'DEFAULT':
-        return ProtoBufPacked$Varint_getInstance().encodeVarint_8e33dg$(number);
-      case 'SIGNED':
-        return ProtoBufPacked$Varint_getInstance().encodeVarint_8e33dg$(number.shiftLeft(1).xor(number.shiftRight(63)));
-      default:return Kotlin.noWhenBranchMatched();
-    }
-  };
-  ProtoBufPacked$ProtobufEncoder.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ProtobufEncoder',
-    interfaces: []
-  };
-  function ProtoBufPacked$ProtobufReader($outer, decoder) {
-    this.$outer = $outer;
-    TaggedInput.call(this);
-    this.decoder = decoder;
-    this.context = this.$outer.context;
-    this.indexByTag_0 = LinkedHashMap_init();
-  }
-  ProtoBufPacked$ProtobufReader.prototype.findIndexByTag_0 = function (desc, serialId) {
-    var tmp$;
-    var $receiver = until(0, desc.associatedFieldsCount);
-    var firstOrNull$result;
-    firstOrNull$break: do {
-      var tmp$_0;
-      tmp$_0 = $receiver.iterator();
-      while (tmp$_0.hasNext()) {
-        var element = tmp$_0.next();
-        if (this.getTag_fr5t0y$(desc, element).first === serialId) {
-          firstOrNull$result = element;
-          break firstOrNull$break;
-        }
-      }
-      firstOrNull$result = null;
-    }
-     while (false);
-    return (tmp$ = firstOrNull$result) != null ? tmp$ : -1;
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readBegin_276rha$ = function (desc, typeParams) {
-    switch (desc.kind.name) {
-      case 'LIST':
-      case 'MAP':
-      case 'SET':
-        return new ProtoBufPacked$RepeatedReader(this.$outer, this.decoder, this.currentTag);
-      case 'CLASS':
-      case 'OBJECT':
-      case 'SEALED':
-      case 'POLYMORPHIC':
-        return new ProtoBufPacked$ProtobufReader(this.$outer, ProtoBufPacked$Companion_getInstance().makeDelimited_0(this.decoder, this.currentTagOrNull));
-      case 'ENTRY':
-        return new ProtoBufPacked$MapEntryReader(this.$outer, ProtoBufPacked$Companion_getInstance().makeDelimited_0(this.decoder, this.currentTagOrNull), this.currentTagOrNull);
-      default:throw new SerializationException('Primitives are not supported at top-level');
-    }
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedBoolean_11rb$ = function (tag) {
-    switch (this.decoder.nextInt_bmwen1$(ProtoNumberType.DEFAULT)) {
-      case 0:
-        return false;
-      case 1:
-        return true;
-      default:throw new ProtobufDecodingException('Expected boolean value');
-    }
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedByte_11rb$ = function (tag) {
-    return toByte(this.decoder.nextInt_bmwen1$(tag.second));
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedShort_11rb$ = function (tag) {
-    return toShort(this.decoder.nextInt_bmwen1$(tag.second));
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedInt_11rb$ = function (tag) {
-    return this.decoder.nextInt_bmwen1$(tag.second);
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedLong_11rb$ = function (tag) {
-    return this.decoder.nextLong_bmwen1$(tag.second);
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedFloat_11rb$ = function (tag) {
-    return this.decoder.nextFloat();
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedDouble_11rb$ = function (tag) {
-    return this.decoder.nextDouble();
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedChar_11rb$ = function (tag) {
-    return toBoxedChar(toChar(this.decoder.nextInt_bmwen1$(tag.second)));
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedString_11rb$ = function (tag) {
-    return this.decoder.nextString();
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readTaggedEnum_bu9nms$ = function (tag, enumClass) {
-    return enumFromOrdinal(enumClass, this.decoder.nextInt_bmwen1$(ProtoNumberType.DEFAULT));
-  };
-  ProtoBufPacked$ProtobufReader.prototype.getTag_fr5t0y$ = function ($receiver, index) {
-    return ProtoBufPacked$Companion_getInstance().getProtoDesc_0($receiver, index);
-  };
-  ProtoBufPacked$ProtobufReader.prototype.readElement_f6e2p$ = function (desc) {
-    while (true) {
-      if (this.decoder.curId === -1) {
-        this.decoder.endObject();
-        return -1;
-      }
-      var $receiver = this.indexByTag_0;
-      var key = this.decoder.curId;
-      var tmp$;
-      var value = $receiver.get_11rb$(key);
-      if (value == null) {
-        var answer = this.findIndexByTag_0(desc, this.decoder.curId);
-        $receiver.put_xwzc9p$(key, answer);
-        tmp$ = answer;
-      }
-       else {
-        tmp$ = value;
-      }
-      var ind = tmp$;
-      if (ind === -1) {
-        this.decoder.skipElement();
-      }
-       else
-        return ind;
-    }
-  };
-  ProtoBufPacked$ProtobufReader.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ProtobufReader',
-    interfaces: [TaggedInput]
-  };
-  function ProtoBufPacked$RepeatedReader($outer, decoder, targetTag) {
-    this.$outer = $outer;
-    ProtoBufPacked$ProtobufReader.call(this, this.$outer, decoder);
-    this.targetTag = targetTag;
-    this.ind_0 = 0;
-    this.remainingSize_8be2vx$ = 0;
-  }
-  ProtoBufPacked$RepeatedReader.prototype.readTaggedInt_11rb$ = function (tag) {
-    return this.decoder.nextRepeatedInt_x3z0la$(this, tag.second);
-  };
-  ProtoBufPacked$RepeatedReader.prototype.readTaggedLong_11rb$ = function (tag) {
-    return this.decoder.nextRepeatedLong_x3z0la$(this, tag.second);
-  };
-  ProtoBufPacked$RepeatedReader.prototype.readElement_f6e2p$ = function (desc) {
-    return this.decoder.curId === this.targetTag.first ? (this.ind_0 = this.ind_0 + 1 | 0, this.ind_0) : -1;
-  };
-  ProtoBufPacked$RepeatedReader.prototype.getTag_fr5t0y$ = function ($receiver, index) {
-    return this.targetTag;
-  };
-  ProtoBufPacked$RepeatedReader.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'RepeatedReader',
-    interfaces: [ProtoBufPacked$ProtobufReader]
-  };
-  function ProtoBufPacked$MapEntryReader($outer, decoder, parentTag) {
-    this.$outer = $outer;
-    ProtoBufPacked$ProtobufReader.call(this, this.$outer, decoder);
-    this.parentTag = parentTag;
-  }
-  ProtoBufPacked$MapEntryReader.prototype.getTag_fr5t0y$ = function ($receiver, index) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    if (index === 0) {
-      return to(1, (tmp$_0 = (tmp$ = this.parentTag) != null ? tmp$.second : null) != null ? tmp$_0 : ProtoNumberType.DEFAULT);
-    }
-     else {
-      return to(2, (tmp$_2 = (tmp$_1 = this.parentTag) != null ? tmp$_1.second : null) != null ? tmp$_2 : ProtoNumberType.DEFAULT);
-    }
-  };
-  ProtoBufPacked$MapEntryReader.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MapEntryReader',
-    interfaces: [ProtoBufPacked$ProtobufReader]
-  };
-  function ProtoBufPacked$ProtobufDecoder(inp) {
-    this.inp = inp;
-    this.curTag = to(-1, -1);
-    this.readTag();
-  }
-  Object.defineProperty(ProtoBufPacked$ProtobufDecoder.prototype, 'curId', {
-    get: function () {
-      return this.curTag.first;
-    }
-  });
-  ProtoBufPacked$ProtobufDecoder.prototype.readTag = function () {
-    var tmp$;
-    var header = this.decode32_0(void 0, true);
-    if (header === -1) {
-      tmp$ = to(-1, -1);
-    }
-     else {
-      var wireType = header & 7;
-      var fieldId = header >>> 3;
-      tmp$ = to(fieldId, wireType);
-    }
-    this.curTag = tmp$;
-    return this.curTag;
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.skipElement = function () {
-    switch (this.curTag.second) {
-      case 0:
-        this.nextInt_bmwen1$(ProtoNumberType.DEFAULT);
-        break;
-      case 1:
-        this.nextLong_bmwen1$(ProtoNumberType.FIXED);
-        break;
-      case 2:
-        this.skipObject_0();
-        break;
-      case 5:
-        this.nextInt_bmwen1$(ProtoNumberType.FIXED);
-        break;
-    }
-    this.readTag();
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.skipObject_0 = function () {
-    this.inp.skip_s8cxhz$(Kotlin.Long.fromInt(this.nextLength_0()));
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.beginObject = function () {
-    if (this.curTag.second !== 2)
-      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
-    var len = this.decode32_0();
-    if (!(len >= 0)) {
-      var message = 'Check failed.';
-      throw IllegalStateException_init(message.toString());
-    }
-    this.inp.pushLimit_za3lpa$(len);
-    this.readTag();
-    return len;
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.endObject = function () {
-    this.inp.skipAllAvailableBytes();
-    this.inp.popLimit();
-    this.readTag();
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.nextInt_bmwen1$ = function (format) {
-    var wireType = format === ProtoNumberType.FIXED ? 5 : 0;
-    if (wireType !== this.curTag.second)
-      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
-    var ans = this.decode32_0(format);
-    this.readTag();
-    return ans;
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.nextLong_bmwen1$ = function (format) {
-    var wireType = format === ProtoNumberType.FIXED ? 1 : 0;
-    if (wireType !== this.curTag.second)
-      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
-    var ans = this.decode64_0(format);
-    this.readTag();
-    return ans;
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.nextRepeatedInt_x3z0la$ = function (reader, format) {
-    if (this.curTag.second !== 2)
-      return this.nextInt_bmwen1$(format);
-    else {
-      if (reader.remainingSize_8be2vx$ === 0) {
-        reader.remainingSize_8be2vx$ = this.nextLength_0();
-      }
-      var availableBefore = this.inp.available();
-      var ans = this.decode32_0(format);
-      reader.remainingSize_8be2vx$ = reader.remainingSize_8be2vx$ - (availableBefore - this.inp.available()) | 0;
-      if (reader.remainingSize_8be2vx$ === 0) {
-        this.readTag();
-      }
-      return ans;
-    }
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.nextRepeatedLong_x3z0la$ = function (reader, format) {
-    if (this.curTag.second !== 2)
-      return this.nextLong_bmwen1$(format);
-    else {
-      if (reader.remainingSize_8be2vx$ === 0) {
-        reader.remainingSize_8be2vx$ = this.nextLength_0();
-      }
-      var availableBefore = this.inp.available();
-      var ans = this.decode64_0(format);
-      reader.remainingSize_8be2vx$ = reader.remainingSize_8be2vx$ - (availableBefore - this.inp.available()) | 0;
-      if (reader.remainingSize_8be2vx$ === 0) {
-        this.readTag();
-      }
-      return ans;
-    }
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.nextFloat = function () {
-    if (this.curTag.second !== 5)
-      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
-    var ans = this.inp.readToByteBuffer_za3lpa$(4).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).getFloat();
-    this.readTag();
-    return ans;
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.nextDouble = function () {
-    if (this.curTag.second !== 1)
-      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
-    var ans = this.inp.readToByteBuffer_za3lpa$(8).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).getDouble();
-    this.readTag();
-    return ans;
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.nextString = function () {
-    var bytes = this.inp.readExactNBytes_za3lpa$(this.nextLength_0());
-    var str = stringFromUtf8Bytes(bytes);
-    this.readTag();
-    return str;
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.nextLength_0 = function () {
-    if (this.curTag.second !== 2)
-      throw new ProtobufDecodingException('Unexpected wire type: ' + this.curTag.second);
-    var len = this.decode32_0();
-    if (!(len >= 0)) {
-      var message = 'Check failed.';
-      throw IllegalStateException_init(message.toString());
-    }
-    return len;
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.decode32_0 = function (format, eofAllowed) {
-    if (format === void 0)
-      format = ProtoNumberType.DEFAULT;
-    if (eofAllowed === void 0)
-      eofAllowed = false;
-    switch (format.name) {
-      case 'DEFAULT':
-        return ProtoBufPacked$Varint_getInstance().decodeVarint_8n4976$(this.inp, eofAllowed);
-      case 'SIGNED':
-        return ProtoBufPacked$Varint_getInstance().decodeSignedVarintInt_huega3$(this.inp);
-      case 'FIXED':
-        return this.inp.readToByteBuffer_za3lpa$(4).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).getInt();
-      default:return Kotlin.noWhenBranchMatched();
-    }
-  };
-  ProtoBufPacked$ProtobufDecoder.prototype.decode64_0 = function (format) {
-    if (format === void 0)
-      format = ProtoNumberType.DEFAULT;
-    switch (format.name) {
-      case 'DEFAULT':
-        return ProtoBufPacked$Varint_getInstance().decodeVarlong_8n4976$(this.inp);
-      case 'SIGNED':
-        return ProtoBufPacked$Varint_getInstance().decodeSignedVarintLong_huega3$(this.inp);
-      case 'FIXED':
-        return this.inp.readToByteBuffer_za3lpa$(8).order_w2g0y3$(ByteOrder.LITTLE_ENDIAN).getLong();
-      default:return Kotlin.noWhenBranchMatched();
-    }
-  };
-  ProtoBufPacked$ProtobufDecoder.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ProtobufDecoder',
-    interfaces: []
-  };
-  function ProtoBufPacked$Varint() {
-    ProtoBufPacked$Varint_instance = this;
-  }
-  ProtoBufPacked$Varint.prototype.encodeVarint_kcn2v3$ = function (inp) {
-    var tmp$;
-    var value = inp;
-    var byteArrayList = new Int8Array(10);
-    var i = 0;
-    while ((value & -128) !== 0) {
-      byteArrayList[tmp$ = i, i = tmp$ + 1 | 0, tmp$] = toByte(value & 127 | 128);
-      value = value >>> 7;
-    }
-    byteArrayList[i] = toByte(value & 127);
-    var out = new Int8Array(i + 1 | 0);
-    while (i >= 0) {
-      out[i] = byteArrayList[i];
-      i = i - 1 | 0;
-    }
-    return out;
-  };
-  ProtoBufPacked$Varint.prototype.encodeVarint_8e33dg$ = function (inp) {
-    var tmp$;
-    var value = inp;
-    var byteArrayList = new Int8Array(10);
-    var i = 0;
-    while (!equals(value.and(L_128), L0)) {
-      byteArrayList[tmp$ = i, i = tmp$ + 1 | 0, tmp$] = toByte(value.and(L127).or(L128).toInt());
-      value = value.shiftRightUnsigned(7);
-    }
-    byteArrayList[i] = toByte(value.and(L127).toInt());
-    var out = new Int8Array(i + 1 | 0);
-    while (i >= 0) {
-      out[i] = byteArrayList[i];
-      i = i - 1 | 0;
-    }
-    return out;
-  };
-  ProtoBufPacked$Varint.prototype.decodeVarint_8n4976$ = function (inp, eofOnStartAllowed) {
-    if (eofOnStartAllowed === void 0)
-      eofOnStartAllowed = false;
-    var result = 0;
-    var shift = 0;
-    var b;
-    do {
-      if (shift >= 32) {
-        throw new ProtobufDecodingException('Varint too long');
-      }
-      b = inp.read();
-      if (b === -1) {
-        if (eofOnStartAllowed && shift === 0)
-          return -1;
-        else
-          throw new IOException('Unexpected EOF');
-      }
-      result = result | (b & 127) << shift;
-      shift = shift + 7 | 0;
-    }
-     while ((b & 128) !== 0);
-    return result;
-  };
-  ProtoBufPacked$Varint.prototype.decodeVarlong_8n4976$ = function (inp, eofOnStartAllowed) {
-    if (eofOnStartAllowed === void 0)
-      eofOnStartAllowed = false;
-    var result = L0;
-    var shift = 0;
-    var b;
-    do {
-      if (shift >= 64) {
-        throw new ProtobufDecodingException('Varint too long');
-      }
-      b = inp.read();
-      if (b === -1) {
-        if (eofOnStartAllowed && shift === 0)
-          return L_1;
-        else
-          throw new IOException('Unexpected EOF');
-      }
-      result = result.or(Kotlin.Long.fromInt(b).and(L127).shiftLeft(shift));
-      shift = shift + 7 | 0;
-    }
-     while ((b & 128) !== 0);
-    return result;
-  };
-  ProtoBufPacked$Varint.prototype.decodeSignedVarintInt_huega3$ = function (inp) {
-    var raw = this.decodeVarint_8n4976$(inp);
-    var temp = (raw << 31 >> 31 ^ raw) >> 1;
-    return temp ^ raw & -2147483648;
-  };
-  ProtoBufPacked$Varint.prototype.decodeSignedVarintLong_huega3$ = function (inp) {
-    var raw = this.decodeVarlong_8n4976$(inp);
-    var temp = raw.shiftLeft(63).shiftRight(63).xor(raw).shiftRight(1);
-    return temp.xor(raw.and(L_9223372036854775808));
-  };
-  ProtoBufPacked$Varint.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Varint',
-    interfaces: []
-  };
-  var ProtoBufPacked$Varint_instance = null;
-  function ProtoBufPacked$Varint_getInstance() {
-    if (ProtoBufPacked$Varint_instance === null) {
-      new ProtoBufPacked$Varint();
-    }
-    return ProtoBufPacked$Varint_instance;
-  }
-  function ProtoBufPacked$Companion() {
-    ProtoBufPacked$Companion_instance = this;
-    this.VARINT_0 = 0;
-    this.i64_0 = 1;
-    this.SIZE_DELIMITED_0 = 2;
-    this.i32_0 = 5;
-    this.plain = new ProtoBufPacked();
-  }
-  ProtoBufPacked$Companion.prototype.makeDelimited_0 = function (decoder, parentTag) {
-    if (parentTag != null) {
-      decoder.beginObject();
-    }
-    return decoder;
-  };
-  ProtoBufPacked$Companion.prototype.getProtoDesc_0 = function ($receiver, index) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    var $receiver_0 = $receiver.getAnnotationsForIndex_za3lpa$(index);
-    var destination = ArrayList_init();
-    var tmp$_3;
-    tmp$_3 = $receiver_0.iterator();
-    while (tmp$_3.hasNext()) {
-      var element = tmp$_3.next();
-      if (Kotlin.isType(element, SerialId))
-        destination.add_11rb$(element);
-    }
-    var tag = (tmp$_0 = (tmp$ = onlySingleOrNull(destination)) != null ? tmp$.id : null) != null ? tmp$_0 : index;
-    var $receiver_1 = $receiver.getAnnotationsForIndex_za3lpa$(index);
-    var destination_0 = ArrayList_init();
-    var tmp$_4;
-    tmp$_4 = $receiver_1.iterator();
-    while (tmp$_4.hasNext()) {
-      var element_0 = tmp$_4.next();
-      if (Kotlin.isType(element_0, ProtoType))
-        destination_0.add_11rb$(element_0);
-    }
-    var format = (tmp$_2 = (tmp$_1 = onlySingleOrNull(destination_0)) != null ? tmp$_1.type : null) != null ? tmp$_2 : ProtoNumberType.DEFAULT;
-    return to(tag, format);
-  };
-  ProtoBufPacked$Companion.prototype.dump_20fw5n$ = function (saver, obj) {
-    return this.plain.dump_20fw5n$(saver, obj);
-  };
-  ProtoBufPacked$Companion.prototype.dump_issdgt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.Companion.dump_issdgt$', wrapFunction(function () {
-    var getKClass = Kotlin.getKClass;
-    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
-    return function (T_0, isT, obj) {
-      var $this = this.plain;
-      return $this.dump_20fw5n$(klassSerializer($this.context, getKClass(T_0)), obj);
-    };
-  }));
-  ProtoBufPacked$Companion.prototype.dumps_issdgt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.Companion.dumps_issdgt$', wrapFunction(function () {
-    var internal = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.internal;
-    var getKClass = Kotlin.getKClass;
-    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
-    return function (T_0, isT, obj) {
-      var $this = this.plain;
-      return internal.HexConverter.printHexBinary_1fhb37$($this.dump_20fw5n$(klassSerializer($this.context, getKClass(T_0)), obj), true);
-    };
-  }));
-  ProtoBufPacked$Companion.prototype.load_8dtdds$ = function (loader, raw) {
-    return this.plain.load_8dtdds$(loader, raw);
-  };
-  ProtoBufPacked$Companion.prototype.load_5geitx$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.Companion.load_5geitx$', wrapFunction(function () {
-    var getKClass = Kotlin.getKClass;
-    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
-    return function (T_0, isT, raw) {
-      var $this = this.plain;
-      return $this.load_8dtdds$(klassSerializer($this.context, getKClass(T_0)), raw);
-    };
-  }));
-  ProtoBufPacked$Companion.prototype.loads_3zqiyt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.Companion.loads_3zqiyt$', wrapFunction(function () {
-    var internal = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.internal;
-    var getKClass = Kotlin.getKClass;
-    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
-    return function (T_0, isT, hex) {
-      var $this = this.plain;
-      var raw = internal.HexConverter.parseHexBinary_61zpoe$(hex);
-      return $this.load_8dtdds$(klassSerializer($this.context, getKClass(T_0)), raw);
-    };
-  }));
-  ProtoBufPacked$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var ProtoBufPacked$Companion_instance = null;
-  function ProtoBufPacked$Companion_getInstance() {
-    if (ProtoBufPacked$Companion_instance === null) {
-      new ProtoBufPacked$Companion();
-    }
-    return ProtoBufPacked$Companion_instance;
-  }
-  ProtoBufPacked.prototype.dump_20fw5n$ = function (saver, obj) {
-    var output = ByteArrayOutputStream_init();
-    var dumper = new ProtoBufPacked$ProtobufWriter(this, new ProtoBufPacked$ProtobufEncoder(output));
-    dumper.write_jsy488$(saver, obj);
-    return output.toByteArray();
-  };
-  ProtoBufPacked.prototype.dump_issdgt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.dump_issdgt$', wrapFunction(function () {
-    var getKClass = Kotlin.getKClass;
-    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
-    return function (T_0, isT, obj) {
-      return this.dump_20fw5n$(klassSerializer(this.context, getKClass(T_0)), obj);
-    };
-  }));
-  ProtoBufPacked.prototype.dumps_issdgt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.dumps_issdgt$', wrapFunction(function () {
-    var internal = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.internal;
-    var getKClass = Kotlin.getKClass;
-    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
-    return function (T_0, isT, obj) {
-      return internal.HexConverter.printHexBinary_1fhb37$(this.dump_20fw5n$(klassSerializer(this.context, getKClass(T_0)), obj), true);
-    };
-  }));
-  ProtoBufPacked.prototype.load_8dtdds$ = function (loader, raw) {
-    var stream = LimitedByteArrayInputStream_init(raw);
-    var reader = new ProtoBufPacked$ProtobufReader(this, new ProtoBufPacked$ProtobufDecoder(stream));
-    return reader.read_rf0fz3$(loader);
-  };
-  ProtoBufPacked.prototype.load_5geitx$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.load_5geitx$', wrapFunction(function () {
-    var getKClass = Kotlin.getKClass;
-    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
-    return function (T_0, isT, raw) {
-      return this.load_8dtdds$(klassSerializer(this.context, getKClass(T_0)), raw);
-    };
-  }));
-  ProtoBufPacked.prototype.loads_3zqiyt$ = defineInlineFunction('kool.de.fabmax.kool.util.serialization.ProtoBufPacked.loads_3zqiyt$', wrapFunction(function () {
-    var internal = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.internal;
-    var getKClass = Kotlin.getKClass;
-    var klassSerializer = _.$$importsForInline$$['kotlinx-serialization-runtime-js'].kotlinx.serialization.klassSerializer_yop3xi$;
-    return function (T_0, isT, hex) {
-      var raw = internal.HexConverter.parseHexBinary_61zpoe$(hex);
-      return this.load_8dtdds$(klassSerializer(this.context, getKClass(T_0)), raw);
-    };
-  }));
-  ProtoBufPacked.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ProtoBufPacked',
-    interfaces: []
-  };
-  function LimitedByteArrayInputStream(stream) {
-    this.stream = stream;
-    this.pos_0 = 0;
-    this.limitStack_0 = mutableListOf([0, this.stream.available()]);
-  }
-  Object.defineProperty(LimitedByteArrayInputStream.prototype, 'curLimitPos_0', {
-    get: function () {
-      return last(this.limitStack_0);
-    }
-  });
-  LimitedByteArrayInputStream.prototype.pushLimit_za3lpa$ = function (limit) {
-    var pushLimitPos = limit + this.pos_0 | 0;
-    if (pushLimitPos > this.curLimitPos_0) {
-      throw new IndexOutOfBoundsException('New limit exceeds current limit: ' + pushLimitPos + ' > ' + this.curLimitPos_0);
-    }
-    this.limitStack_0.add_11rb$(pushLimitPos);
-  };
-  LimitedByteArrayInputStream.prototype.popLimit = function () {
-    return this.limitStack_0.removeAt_za3lpa$(get_lastIndex(this.limitStack_0));
-  };
-  LimitedByteArrayInputStream.prototype.readExactNBytes_za3lpa$ = function (bytes) {
-    var array = new Int8Array(bytes);
-    var read = 0;
-    while (read < bytes) {
-      var i = this.read_mj6st8$(array, read, bytes - read | 0);
-      if (i === -1)
-        throw new IOException('Unexpected EOF');
-      read = read + i | 0;
-    }
-    return array;
-  };
-  LimitedByteArrayInputStream.prototype.readToByteBuffer_za3lpa$ = function (bytes) {
-    var arr = this.readExactNBytes_za3lpa$(bytes);
-    var buf = ByteBuffer.Companion.allocate_za3lpa$(bytes);
-    buf.put_fqrh44$(arr).flip();
-    return buf;
-  };
-  LimitedByteArrayInputStream.prototype.readAllAvailableBytes = function () {
-    return this.readExactNBytes_za3lpa$(this.available());
-  };
-  LimitedByteArrayInputStream.prototype.skipAllAvailableBytes = function () {
-    var av = this.available();
-    if (av > 0) {
-      this.skip_s8cxhz$(Kotlin.Long.fromInt(av));
-    }
-  };
-  LimitedByteArrayInputStream.prototype.available = function () {
-    return this.curLimitPos_0 - this.pos_0 | 0;
-  };
-  LimitedByteArrayInputStream.prototype.read = function () {
-    var tmp$;
-    if (this.pos_0 < this.curLimitPos_0) {
-      this.pos_0 = this.pos_0 + 1 | 0;
-      tmp$ = this.stream.read();
-    }
-     else {
-      tmp$ = -1;
-    }
-    return tmp$;
-  };
-  LimitedByteArrayInputStream.prototype.read_fqrh44$ = function (b) {
-    var b_0 = this.available();
-    var len = Math_0.min(b.length, b_0);
-    return this.read_mj6st8$(b, 0, len);
-  };
-  LimitedByteArrayInputStream.prototype.read_mj6st8$ = function (b, offset, len) {
-    var b_0 = this.available();
-    var alen = Math_0.min(len, b_0);
-    var read = this.stream.read_mj6st8$(b, offset, alen);
-    this.pos_0 = this.pos_0 + read | 0;
-    return read;
-  };
-  LimitedByteArrayInputStream.prototype.skip_s8cxhz$ = function (n) {
-    var a = Kotlin.Long.fromInt(this.available());
-    var an = a.compareTo_11rb$(n) <= 0 ? a : n;
-    var skipped = this.stream.skip_s8cxhz$(an);
-    this.pos_0 = this.pos_0 + skipped.toInt() | 0;
-    return skipped;
-  };
-  LimitedByteArrayInputStream.prototype.close = function () {
-    this.stream.close();
-  };
-  LimitedByteArrayInputStream.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LimitedByteArrayInputStream',
-    interfaces: []
-  };
-  function LimitedByteArrayInputStream_init(buf, $this) {
-    $this = $this || Object.create(LimitedByteArrayInputStream.prototype);
-    LimitedByteArrayInputStream.call($this, ByteArrayInputStream_init(buf));
-    return $this;
-  }
   function ShadowMap() {
   }
   ShadowMap.$metadata$ = {
@@ -31294,8 +30316,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function CascadedShadowMap$Companion() {
     CascadedShadowMap$Companion_instance = this;
   }
-  CascadedShadowMap$Companion.prototype.defaultCascadedShadowMap3 = function () {
-    var subMaps = [new SimpleShadowMap(0.0, 0.1), new SimpleShadowMap(0.1, 0.3), new SimpleShadowMap(0.3, 1.0)];
+  CascadedShadowMap$Companion.prototype.defaultCascadedShadowMap3_za3lpa$ = function (texSize) {
+    if (texSize === void 0)
+      texSize = SimpleShadowMap$Companion_getInstance().defaultMapSize;
+    var subMaps = [new SimpleShadowMap(0.0, 0.1, texSize), new SimpleShadowMap(0.1, 0.3, texSize), new SimpleShadowMap(0.3, 1.0, texSize)];
     return new CascadedShadowMap(subMaps);
   };
   CascadedShadowMap$Companion.$metadata$ = {
@@ -32823,10 +31847,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function isValidUniformLocation(location) {
     return location != null && Kotlin.isType(location, WebGLUniformLocation);
   }
-  function createContext() {
-    return createContext_0(new JsContext$InitProps());
+  function createDefaultContext() {
+    return createContext(new JsContext$InitProps());
   }
-  function createContext_0(props) {
+  function createContext(props) {
     return JsImpl_getInstance().createContext_s8od96$(props);
   }
   function now() {
@@ -32905,6 +31929,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
   });
   JsImpl.prototype.createContext_s8od96$ = function (props) {
+    println('create context');
     if (this.ctx != null) {
       throw KoolException_init('Context was already created (multi-context is currently not supported in js');
     }
@@ -35945,8 +34970,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     get: MeshRayTest$Companion_getInstance
   });
   package$scene.MeshRayTest = MeshRayTest;
-  Model.Geometry = Model$Geometry;
-  package$scene.Model = Model;
   package$scene.Node = Node;
   package$scene.scene_13di2z$ = scene;
   package$scene.Scene = Scene;
@@ -36049,7 +35072,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$ui.UiComponent = UiComponent;
   package$ui.UiContainer = UiContainer;
   package$ui.embeddedUi_o1x1d9$ = embeddedUi;
-  package$ui.uiScene_7c31we$ = uiScene;
+  package$ui.uiScene_m9o5w1$ = uiScene;
   package$ui.UiRoot = UiRoot;
   Object.defineProperty(UiTheme, 'Companion', {
     get: UiTheme$Companion_getInstance
@@ -36395,6 +35418,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     get: AttributeList$$serializer_getInstance
   });
   package$serialization.AttributeList = AttributeList;
+  $$importsForInline$$['kotlinx-serialization-runtime-js'] = $module$kotlinx_serialization_runtime_js;
   Object.defineProperty(ModelData, 'Companion', {
     get: ModelData$Companion_getInstance
   });
@@ -36409,24 +35433,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     get: ModelNodeData$$serializer_getInstance
   });
   package$serialization.ModelNodeData = ModelNodeData;
-  ProtoBufPacked.ProtobufWriter = ProtoBufPacked$ProtobufWriter;
-  ProtoBufPacked.ObjectWriter = ProtoBufPacked$ObjectWriter;
-  ProtoBufPacked.MapEntryWriter = ProtoBufPacked$MapEntryWriter;
-  ProtoBufPacked.RepeatedWriter = ProtoBufPacked$RepeatedWriter;
-  ProtoBufPacked.ProtobufEncoder = ProtoBufPacked$ProtobufEncoder;
-  ProtoBufPacked.ProtobufReader = ProtoBufPacked$ProtobufReader;
-  ProtoBufPacked.RepeatedReader = ProtoBufPacked$RepeatedReader;
-  ProtoBufPacked.ProtobufDecoder = ProtoBufPacked$ProtobufDecoder;
-  Object.defineProperty(ProtoBufPacked, 'Varint', {
-    get: ProtoBufPacked$Varint_getInstance
-  });
-  Object.defineProperty(ProtoBufPacked, 'Companion', {
-    get: ProtoBufPacked$Companion_getInstance
-  });
-  $$importsForInline$$['kotlinx-serialization-runtime-js'] = $module$kotlinx_serialization_runtime_js;
-  package$serialization.ProtoBufPacked = ProtoBufPacked;
-  package$serialization.LimitedByteArrayInputStream_init_fqrh44$ = LimitedByteArrayInputStream_init;
-  package$serialization.LimitedByteArrayInputStream = LimitedByteArrayInputStream;
   package$util.ShadowMap = ShadowMap;
   Object.defineProperty(SimpleShadowMap, 'Companion', {
     get: SimpleShadowMap$Companion_getInstance
@@ -36559,8 +35565,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$gl.glVertexAttribIPointer_4qozqa$ = glVertexAttribIPointer;
   package$gl.glViewport_tjonv8$ = glViewport;
   package$gl.isValidUniformLocation_s8jyv4$ = isValidUniformLocation;
-  package$kool.createContext = createContext;
-  package$kool.createContext_s8od96$ = createContext_0;
+  package$kool.createDefaultContext = createDefaultContext;
+  package$kool.createContext_s8od96$ = createContext;
   package$kool.getMemoryInfo = getMemoryInfo;
   Object.defineProperty(package$kool, 'JsImpl', {
     get: JsImpl_getInstance
@@ -36590,8 +35596,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$util.createUint16Buffer_za3lpa$ = createUint16Buffer;
   package$util.createUint32Buffer_za3lpa$ = createUint32Buffer;
   package$util.createFloat32Buffer_za3lpa$ = createFloat32Buffer;
-  ElevationMapMeta$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  ElevationMapMetaHierarchy$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  ElevationMapMeta$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  ElevationMapMetaHierarchy$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
   Object.defineProperty(ElevationMapS16.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
   Object.defineProperty(ElevationMapS16.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
   ElevationMapS16.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;
@@ -36651,16 +35657,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   fontShader$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
   fontShader$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
   fontShader$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
-  AnimationData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  NodeAnimationData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  Vec3KeyData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  Vec4KeyData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  BoneData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  MaterialData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  MeshData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  AttributeList$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  ModelData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
-  ModelNodeData$$serializer.prototype.update_qkk2oh$ = KSerializer.prototype.update_qkk2oh$;
+  AnimationData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  NodeAnimationData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  Vec3KeyData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  Vec4KeyData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  BoneData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  MaterialData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  MeshData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  AttributeList$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  ModelData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  ModelNodeData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
   Vec3fAdapter.prototype.setNode_bc9457$ = ItemAdapter.prototype.setNode_bc9457$;
   EdgeAdapter.prototype.getCenterX_trkh7z$ = ItemAdapter.prototype.getCenterX_trkh7z$;
   EdgeAdapter.prototype.getCenterY_trkh7z$ = ItemAdapter.prototype.getCenterY_trkh7z$;

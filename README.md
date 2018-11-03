@@ -16,20 +16,16 @@ yet. That's fine for [a few boxes](https://fabmax.github.io/kool/kool-js/?demo=b
 it's surprisingly fast given the fact that there is no intelligent broadphase - JVM implementation handles
 200 bodies, js is slower...).
 
-## Kotlin 1.3 Branch
-This branch uses Kotlin 1.3 with new project structure for multi-platform projects, There are still a few issues:
+## Updated to Kotlin 1.3
+I updated to Kotlin 1.3 which comes with a new project structure for multi-platform projects. However, there are still
+a few issues:
 - In IntelliJ, JVM main target in kool-demo project doesn't resolve any packages from kool-core. Adding an explicit
 dependsOn commonMain to jvmMain source set doesn't change that. jvmTest and jsMain work as expected. Gradle build also
 succeeds if kool-core packages are referenced (seems to be a kotlin-IntellIJ-plugin thing?).
-
-- kool-demo js build doesn't collect js-dependencies from kool-core when copying js files into deployment directory
-(docs/kool-js). I worked around that but it's a bit hacky...
-
-- Android target remains disabled by default. If Android target is enabled, jvmMain doesn't work anymore. Android gradle
-plugin seems to mess JVM related things up.
-
 - Project layout for Android target is a bit messy: Android build plugin expects Manifest and resources at src/main/
 Apparently it's not possible to move that to androidMain.
+- Android target remains disabled by default. If Android target is enabled, jvmMain doesn't work anymore. Android gradle
+plugin seems to mess JVM related things up.
 
 ## Features / Noticeable stuff:
 - Instanced rendering: [Instanced Mesh Demo](https://fabmax.github.io/kool/kool-js/?demo=instancedDemo)
