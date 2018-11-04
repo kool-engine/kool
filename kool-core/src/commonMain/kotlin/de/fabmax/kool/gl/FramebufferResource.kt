@@ -132,8 +132,9 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
 }
 
 private class FbColorTexData(width: Int, height: Int) : TextureData() {
+    override val isAvailable: Boolean get() = true
+
     init {
-        this.isAvailable = true
         this.width = width
         this.height = height
     }
@@ -155,8 +156,9 @@ private class FbColorTexData(width: Int, height: Int) : TextureData() {
 }
 
 private class FbDepthTexData(width: Int, height: Int) : TextureData() {
+    override val isAvailable: Boolean get() = true
+
     init {
-        this.isAvailable = true
         this.width = width
         this.height = height
     }

@@ -40,6 +40,8 @@ actual fun Double.toString(precision: Int): String {
     return str.substring(0 until i) + "." + str.substring(i)
 }
 
+actual inline fun <R> lock(lock: Any, block: () -> R): R = block()
+
 internal object JsImpl {
     var isWebGl2Context = false
     val dpi: Float

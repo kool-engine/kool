@@ -41,7 +41,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     val treeScene = scene {
         defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-        +makeGroundGrid(40, ctx, defaultShadowMap)
+        +makeGroundGrid(40, defaultShadowMap)
 
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {

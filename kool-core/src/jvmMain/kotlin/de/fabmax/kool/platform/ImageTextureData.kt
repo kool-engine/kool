@@ -13,6 +13,8 @@ import java.awt.image.DataBufferByte
 import kotlin.math.round
 
 class ImageTextureData : TextureData() {
+    override var isAvailable: Boolean = false
+        private set
     private var buffer: Uint8Buffer? = null
     private var format = 0
 

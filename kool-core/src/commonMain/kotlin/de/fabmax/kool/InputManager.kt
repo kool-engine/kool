@@ -92,7 +92,7 @@ class InputManager internal constructor() {
     }
 
     internal fun onNewFrame(ctx: KoolContext) {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             for (i in pointers.indices) {
                 inputPointers[i].update(pointers[i], lastPtrInput)
             }
@@ -125,7 +125,7 @@ class InputManager internal constructor() {
             }
         }
 
-        synchronized(queuedKeyEvents) {
+        lock(queuedKeyEvents) {
             keyEvents.clear()
             keyEvents.addAll(queuedKeyEvents)
             queuedKeyEvents.clear()
@@ -146,7 +146,7 @@ class InputManager internal constructor() {
         ev.event = event
         ev.modifiers = modifiers
 
-        synchronized(queuedKeyEvents) {
+        lock(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
         }
     }
@@ -157,7 +157,7 @@ class InputManager internal constructor() {
         ev.typedChar = typedChar
         ev.keyCode = typedChar.toInt()
 
-        synchronized(queuedKeyEvents) {
+        lock(queuedKeyEvents) {
             queuedKeyEvents.add(ev)
         }
     }
@@ -167,7 +167,7 @@ class InputManager internal constructor() {
     //
 
     fun handleTouchStart(pointerId: Int, x: Float, y: Float) {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             lastPtrInput = now()
             val inPtr = getFreeInputPointer() ?: return
             inPtr.startPointer(pointerId, x, y)
@@ -176,19 +176,19 @@ class InputManager internal constructor() {
     }
 
     fun handleTouchEnd(pointerId: Int) {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             findInputPointer(pointerId)?.endPointer()
         }
     }
 
     fun handleTouchCancel(pointerId: Int) {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             findInputPointer(pointerId)?.cancelPointer()
         }
     }
 
     fun handleTouchMove(pointerId: Int, x: Float, y: Float) {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             lastPtrInput = now()
             findInputPointer(pointerId)?.movePointer(x, y)
         }
@@ -199,7 +199,7 @@ class InputManager internal constructor() {
     //
 
     fun handleMouseMove(x: Float, y: Float) {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             lastPtrInput = now()
             val mousePtr = findInputPointer(MOUSE_POINTER_ID)
             if (mousePtr == null) {
@@ -212,7 +212,7 @@ class InputManager internal constructor() {
     }
 
     fun handleMouseButtonState(button: Int, down: Boolean) {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
             if (down) {
                 ptr.setButtonMask(ptr.buttonMask or (1 shl button))
@@ -225,7 +225,7 @@ class InputManager internal constructor() {
     }
 
     fun handleMouseButtonStates(mask: Int) {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
             ptr.setButtonMask(mask)
             // todo: on low frame rates, mouse button events can get lost if button is pressed
@@ -234,14 +234,14 @@ class InputManager internal constructor() {
     }
 
     fun handleMouseScroll(ticks: Float) {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
             ptr.deltaScroll += ticks
         }
     }
 
     fun handleMouseExit() {
-        synchronized(inputPointers) {
+        lock(inputPointers) {
             findInputPointer(MOUSE_POINTER_ID)?.cancelPointer()
         }
     }

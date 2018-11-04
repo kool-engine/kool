@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.gl.*
+import de.fabmax.kool.lock
 import de.fabmax.kool.math.*
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.VboBinder
@@ -33,7 +34,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     var isSyncRequired = false
     var isBatchUpdate = false
         set(value) {
-            synchronized(vertexList) {
+            lock(vertexList) {
                 field = value
             }
         }
@@ -225,7 +226,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     }
 
     inline fun batchUpdate(rebuildBounds: Boolean = false, block: MeshData.() -> Unit) {
-        synchronized(vertexList) {
+        lock(vertexList) {
             val wasBatchUpdate = isBatchUpdate
             isBatchUpdate = true
             block()
@@ -238,33 +239,29 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     }
 
     inline fun addVertex(block: IndexedVertexList.Vertex.() -> Unit): Int {
-        var idx = 0
-        synchronized(vertexList) {
+        return lock(vertexList) {
             isSyncRequired = true
-            idx = vertexList.addVertex(bounds, block)
+            vertexList.addVertex(bounds, block)
         }
-        return idx
     }
 
     fun addVertex(position: Vec3f, normal: Vec3f? = null, color: Color? = null, texCoord: Vec2f? = null): Int {
-        var idx = 0
-        synchronized(vertexList) {
+        return lock(vertexList) {
             isSyncRequired = true
             bounds.add(position)
-            idx = vertexList.addVertex(position, normal, color, texCoord)
+            vertexList.addVertex(position, normal, color, texCoord)
         }
-        return idx
     }
 
     fun addIndex(idx: Int) {
-        synchronized(vertexList) {
+        lock(vertexList) {
             vertexList.addIndex(idx)
             isSyncRequired = true
         }
     }
 
     fun addTriIndices(i0: Int, i1: Int, i2: Int) {
-        synchronized(vertexList) {
+        lock(vertexList) {
             vertexList.addIndex(i0)
             vertexList.addIndex(i1)
             vertexList.addIndex(i2)
@@ -273,21 +270,21 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
     }
 
     fun addIndices(vararg indices: Int) {
-        synchronized(vertexList) {
+        lock(vertexList) {
             vertexList.addIndices(indices)
             isSyncRequired = true
         }
     }
 
     fun addIndices(indices: List<Int>) {
-        synchronized(vertexList) {
+        lock(vertexList) {
             vertexList.addIndices(indices)
             isSyncRequired = true
         }
     }
 
     fun clear() {
-        synchronized(vertexList) {
+        lock(vertexList) {
             vertexList.clear()
             bounds.clear()
             isSyncRequired = true
@@ -302,7 +299,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
      * synchronized.
      */
     fun rebuildBounds() {
-        synchronized(vertexList) {
+        lock(vertexList) {
             bounds.clear()
             for (i in 0 until numVertices) {
                 vertexIt.index = i
@@ -359,7 +356,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         }
 
         return if (isSyncRequired && !isBatchUpdate) {
-            synchronized(vertexList) {
+            lock(vertexList) {
                 if (!isBatchUpdate) {
                     if (isRebuildBoundsOnSync) {
                         rebuildBounds()

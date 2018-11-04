@@ -1,8 +1,5 @@
-import de.fabmax.kool.createContext
-import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.demo.demo
-import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlin.browser.window
 import kotlin.collections.set
 
@@ -15,6 +12,7 @@ fun main() {
     demo(getParams()["demo"])
 }
 
+@Suppress("UNUSED_VARIABLE")
 fun getParams(): Map<String, String> {
     val params: MutableMap<String, String> = mutableMapOf()
     if (window.location.search.length > 1) {

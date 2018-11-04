@@ -31,12 +31,13 @@ class Property<T>(val name: String, value: T, private val onChange: Property<T>.
     }
 
     fun copy(other: Property<*>, maintainChangeFlag: Boolean) {
-        if (maintainChangeFlag) {
-            valueChanged = other.valueChanged
+        valueChanged = if (maintainChangeFlag) {
+            other.valueChanged
         } else {
-            valueChanged = value != other.value
+            value != other.value
         }
-        value = other.value as T
+        @Suppress("UNCHECKED_CAST")
+        value = other.value as? T ?: value
     }
 
     fun applyIfChanged() {

@@ -59,7 +59,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
     private var hitDelta = MutableVec2f()
 
     init {
-        onHover += { ptr, rt, ctx ->
+        onHover += { ptr, rt, _ ->
             val ptX = rt.hitPositionLocal.x - contentBounds.min.x
             val ptY = rt.hitPositionLocal.y - contentBounds.min.y
             hitDelta.set(ptX, ptY).subtract(prevHit)

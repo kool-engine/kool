@@ -34,6 +34,8 @@ class Contact internal constructor(){
     var frictionCoeff = 0f
     var batchIdx = 0
 
+    val contactProcessingThreshold = 0.02f
+
     lateinit var bodyA: RigidBody
     lateinit var bodyB: RigidBody
 

@@ -39,6 +39,8 @@ class AndroidRenderContext(val context: Context, val glView: GLSurfaceView, val 
     private var prevRenderTime = System.nanoTime()
     private var isCreated = false
 
+    private val glThread = Thread.currentThread()
+
     constructor(context: Context, onKoolContextCreated: (AndroidRenderContext) -> Unit) :
             this(context, GLSurfaceView(context), onKoolContextCreated)
 
@@ -86,6 +88,12 @@ class AndroidRenderContext(val context: Context, val glView: GLSurfaceView, val 
 
     override fun destroy() {
         // for now, we silently ignore this (if app is closing everything is deleted anyway...)
+    }
+
+    override fun checkIsGlThread() {
+        if (Thread.currentThread() !== glThread) {
+            throw KoolException("Not on GL thread")
+        }
     }
 
     fun onPause() {

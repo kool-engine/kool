@@ -46,7 +46,6 @@ open class Random(seed: Int) {
         y = y xor (y shl 5)
 
         // multiply with carry
-        // t is a Long which is slow in javascript (because it must be emulated)
         val t = 698769069L * z + c
         c = (t shr 32).toInt()
         z = t.toInt()

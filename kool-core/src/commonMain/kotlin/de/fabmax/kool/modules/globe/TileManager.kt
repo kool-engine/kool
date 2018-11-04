@@ -33,7 +33,7 @@ class TileManager(val globe: Globe) {
         tiles -= tile.key
     }
 
-    fun onPreRender(ctx: KoolContext) {
+    fun onPreRender(@Suppress("UNUSED_PARAMETER") ctx: KoolContext) {
         if (loadingTiles.isEmpty() && !removingTiles.isEmpty()) {
             //logD { "all loaded" }
             // all loaded, remove obsolete

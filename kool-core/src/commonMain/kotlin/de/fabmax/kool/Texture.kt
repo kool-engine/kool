@@ -45,8 +45,7 @@ data class TextureProps(
 }
 
 abstract class TextureData {
-    open var isAvailable = false
-        protected set
+    open val isAvailable = false
 
     var width = 0
         protected set
@@ -65,8 +64,9 @@ abstract class TextureData {
 }
 
 class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val format: Int) : TextureData() {
+    override val isAvailable: Boolean get() = true
+
     init {
-        this.isAvailable = true
         this.width = width
         this.height = height
     }

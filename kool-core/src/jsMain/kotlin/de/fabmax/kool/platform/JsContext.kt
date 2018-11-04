@@ -258,6 +258,10 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         // nothing to do here...
     }
 
+    override fun checkIsGlThread() {
+        // in JS there is only one thread aka the GL thread
+    }
+
     class InitProps {
         var canvasName = "glCanvas"
         val excludedKeyCodes: MutableSet<String> = mutableSetOf("F5")

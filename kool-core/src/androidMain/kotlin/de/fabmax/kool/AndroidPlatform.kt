@@ -23,3 +23,5 @@ actual fun getMemoryInfo(): String {
     val totalMem = rt.totalMemory()
     return "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB"
 }
+
+actual inline fun <R> lock(lock: Any, block: () -> R): R = synchronized(lock, block)

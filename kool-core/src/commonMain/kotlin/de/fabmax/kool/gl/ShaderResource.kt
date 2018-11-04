@@ -19,20 +19,24 @@ class ShaderResource private constructor(glRef: Any, ctx: KoolContext) :
     }
 
     override fun delete(ctx: KoolContext) {
+        ctx.checkIsGlThread()
         glDeleteShader(this)
         super.delete(ctx)
     }
 
     fun shaderSource(source: String, ctx: KoolContext) {
+        ctx.checkIsGlThread()
         glShaderSource(this, source)
     }
 
     fun compile(ctx: KoolContext): Boolean {
+        ctx.checkIsGlThread()
         glCompileShader(this)
         return glGetShaderi(this, GL_COMPILE_STATUS) == GL_TRUE
     }
 
     fun getInfoLog(ctx: KoolContext): String {
+        ctx.checkIsGlThread()
         return glGetShaderInfoLog(this)
     }
 }

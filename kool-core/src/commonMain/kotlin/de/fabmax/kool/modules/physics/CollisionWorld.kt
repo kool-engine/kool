@@ -36,7 +36,7 @@ class CollisionWorld {
             broadPhase()
 
             for (i in bodies.indices) {
-                bodies[i].stepSimulation(timeStep, this)
+                bodies[i].stepSimulation(timeStep)
             }
         }
     }
@@ -55,7 +55,7 @@ class CollisionWorld {
             //contacts.dumpContacts()
 
             // we got contacts, solve them!
-            solver.solveContacts(bodies, contacts.contacts)
+            solver.solveContacts(contacts.contacts)
             // recycle all contact points
             contacts.clearContacts()
         //}

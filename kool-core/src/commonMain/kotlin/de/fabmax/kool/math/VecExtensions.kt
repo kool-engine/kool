@@ -1,5 +1,6 @@
 package de.fabmax.kool.math
 
+import de.fabmax.kool.lock
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
@@ -41,7 +42,7 @@ private val slerpTmpAf = MutableVec4f()
 private val slerpTmpBf = MutableVec4f()
 private val slerpTmpCf = MutableVec4f()
 fun slerp(quatA: Vec4f, quatB: Vec4f, f: Float, result: MutableVec4f): MutableVec4f {
-    synchronized(slerpTmpAf) {
+    lock(slerpTmpAf) {
         quatA.norm(slerpTmpAf)
         quatB.norm(slerpTmpBf)
 
@@ -73,7 +74,7 @@ private val slerpTmpAd = MutableVec4d()
 private val slerpTmpBd = MutableVec4d()
 private val slerpTmpCd = MutableVec4d()
 fun slerp(quatA: Vec4d, quatB: Vec4d, f: Double, result: MutableVec4d): MutableVec4d {
-    synchronized(slerpTmpAd) {
+    lock(slerpTmpAd) {
         quatA.norm(slerpTmpAd)
         quatB.norm(slerpTmpBd)
 

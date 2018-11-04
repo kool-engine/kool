@@ -4,7 +4,6 @@ import de.fabmax.kool.math.FLT_EPSILON
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.isFuzzyZero
-import de.fabmax.kool.modules.physics.RigidBody
 import de.fabmax.kool.modules.physics.collision.Contact
 import de.fabmax.kool.util.ObjectPool
 import kotlin.math.max
@@ -58,15 +57,15 @@ class SequentialImpulseConstraintSolver {
         infoGlobal.solverMode = infoGlobal.solverMode or ContactSolverInfo.SOLVER_USE_2_FRICTION_DIRECTIONS
     }
 
-    fun solveContacts(bodies: List<RigidBody>, contacts: List<Contact>) {
+    fun solveContacts(contacts: List<Contact>) {
 //        println("${n++}: num manifolds: ${contacts.size}:")
 
-        solveGroupSetup(bodies, contacts)
+        solveGroupSetup(contacts)
         solveGroupIterations()
         solveGroupFinish()
     }
 
-    private fun solveGroupSetup(bodies: List<RigidBody>, contacts: List<Contact>) {
+    private fun solveGroupSetup(contacts: List<Contact>) {
         maxOverrideNumSolverIterations = 0
 
         for (i in contacts.indices) {
@@ -86,7 +85,7 @@ class SequentialImpulseConstraintSolver {
         var rollingFrictionCnt = 1
         for (i in contact.worldPosB.indices) {
             val cp = contactPointPool.get().initContactPoint(contact, i)
-            if (cp.distance < getContactProcessingThreshold(contact)) {
+            if (cp.distance < contact.contactProcessingThreshold) {
                 val contactConstraint = contactConstraintPool.get()
                 contactConstraint.setupContactConstraint(cp, solverBodyA, solverBodyB, infoGlobal)
 
@@ -220,8 +219,6 @@ class SequentialImpulseConstraintSolver {
             }
         }
     }
-
-    private fun getContactProcessingThreshold(contact: Contact): Float = 0.02f
 
     private fun solveGroupIterations() {
         // this is a special step to resolve penetrations (just for contacts)

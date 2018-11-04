@@ -48,15 +48,13 @@ open class GlslGenerator {
     }
 
     interface GlslInjector {
-        fun vsHeader(text: StringBuilder, ctx: KoolContext) { }
-        fun vsStart(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun vsHeader(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun vsAfterInput(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun vsBeforeProj(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun vsEnd(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
 
-        fun fsHeader(text: StringBuilder, ctx: KoolContext) { }
-        fun fsStart(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun fsHeader(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun fsBeforeSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
@@ -89,11 +87,8 @@ open class GlslGenerator {
     private fun generateVertShader(shaderProps: ShaderProps, ctx: KoolContext): String {
         val text = StringBuilder("${ctx.glCapabilities.glslDialect.version}\n")
 
-        injectors.forEach { it.vsHeader(text, ctx) }
-
-        injectors.forEach { it.vsStart(shaderProps, text, ctx) }
+        injectors.forEach { it.vsHeader(shaderProps, text, ctx) }
         generateVertInputCode(shaderProps, text, ctx)
-        injectors.forEach { it.vsAfterInput(shaderProps, text, ctx) }
         generateVertBodyCode(shaderProps, text, ctx)
 
         return text.toString()
@@ -102,11 +97,8 @@ open class GlslGenerator {
     private fun generateFragShader(shaderProps: ShaderProps, ctx: KoolContext): String {
         val text = StringBuilder("${ctx.glCapabilities.glslDialect.version}\n")
 
-        injectors.forEach { it.fsHeader(text, ctx) }
-
-        injectors.forEach { it.fsStart(shaderProps, text, ctx) }
+        injectors.forEach { it.fsHeader(shaderProps, text, ctx) }
         generateFragInputCode(shaderProps, text, ctx)
-        injectors.forEach { it.fsAfterInput(shaderProps, text, ctx) }
         generateFragBodyCode(shaderProps, text, ctx)
 
         return text.toString()
@@ -186,6 +178,8 @@ open class GlslGenerator {
         for (attrib in customAttributes) {
             text.append("$vsIn ${attrib.type.glslTypeName} ${attrib.glslSrcName};\n")
         }
+
+        injectors.forEach { it.vsAfterInput(shaderProps, text, ctx) }
     }
 
     private fun generateVertBodyCode(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
@@ -364,6 +358,8 @@ open class GlslGenerator {
             text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
         text.append(fsOut)
+
+        injectors.forEach { it.fsAfterInput(shaderProps, text, ctx) }
     }
 
     private fun generateFragBodyCode(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {

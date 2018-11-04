@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.gl.GL_COLOR_BUFFER_BIT
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.gl.glClear
+import de.fabmax.kool.lock
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.util.Disposable
 import de.fabmax.kool.util.ShadowMap
@@ -22,15 +23,16 @@ open class Scene(name: String? = null) : Group(name) {
     val onRenderScene: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
 
     override var isFrustumChecked: Boolean
+        // frustum check is force disabled for Scenes
         get() = false
-        set(value) {}
+        set(@Suppress("UNUSED_PARAMETER") value) {}
 
     var camera: Camera = PerspectiveCamera()
     var light = Light()
     var defaultShadowMap: ShadowMap? = null
         set(value) {
             if (field != null) {
-                synchronized(disposables) {
+                lock(disposables) {
                     disposables += field!!
                 }
             }
@@ -59,7 +61,7 @@ open class Scene(name: String? = null) : Group(name) {
     }
 
     override fun preRender(ctx: KoolContext) {
-        synchronized(disposables) {
+        lock(disposables) {
             for (i in disposables.indices) {
                 disposables[i].dispose(ctx)
             }
@@ -91,13 +93,13 @@ open class Scene(name: String? = null) : Group(name) {
     }
 
     fun dispose(disposable: Disposable) {
-        synchronized(disposables) {
+        lock(disposables) {
             disposables += disposable
         }
     }
 
     override fun dispose(ctx: KoolContext) {
-        synchronized(disposables) {
+        lock(disposables) {
             disposables.forEach { it.dispose(ctx) }
             disposables.clear()
         }

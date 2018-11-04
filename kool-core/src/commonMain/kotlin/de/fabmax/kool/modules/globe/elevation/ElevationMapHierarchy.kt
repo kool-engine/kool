@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.globe.elevation
 
 import de.fabmax.kool.AssetManager
+import de.fabmax.kool.lock
 import de.fabmax.kool.util.logD
 
 class ElevationMapHierarchy(private val baseDir: String, metaHierarchy: ElevationMapMetaHierarchy, private val assetMgr: AssetManager) : ElevationMapProvider {
@@ -29,7 +30,7 @@ class ElevationMapHierarchy(private val baseDir: String, metaHierarchy: Elevatio
 
         val meta = bestSet.set.getMetaAt(lat, lon)
         if (meta != null) {
-            return synchronized(loadedMaps) {
+            return lock(loadedMaps) {
                 loadedMaps.getOrLoad(baseDir, meta, assetMgr)
             }
         }

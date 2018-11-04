@@ -8,7 +8,7 @@ package de.fabmax.kool.demo
 //
 //fun main(args: Array<String>) {
 //    val model = ModelConverter.convertModel("docs/assets/player.fbx", false)
-//    model.lodRootNode[0].printNodeHierarchy(model)
+//    model.lodRootNodes[0].printNodeHierarchy(model)
 //    FileOutputStream("docs/assets/player.kmf").use { out ->
 //        out.write(ProtoBuf.dump(model))
 //    }

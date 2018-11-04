@@ -94,7 +94,7 @@ abstract class Shader : GlObject<ProgramResource>() {
     private fun enableAttribute(attribute: Attribute, ctx: KoolContext): Boolean {
         val location = findAttributeLocation(attribute.glslSrcName, ctx)
         if (location >= 0) {
-            enableAttribute(attribute, location + attribute.locationOffset, ctx)
+            enableAttribute(attribute, location + attribute.locationOffset)
         }
         return location >= 0
     }
@@ -106,7 +106,7 @@ abstract class Shader : GlObject<ProgramResource>() {
      * @param attribute    the attribute to enable
      * @param location     attribute location in shader code, if specified with layout (location=...)
      */
-    private fun enableAttribute(attribute: Attribute, location: Int, ctx: KoolContext) {
+    private fun enableAttribute(attribute: Attribute, location: Int) {
         if (location >= 0) {
             attributeLocations.add(AttributeLocation(attribute, location))
         }
@@ -123,7 +123,7 @@ abstract class Shader : GlObject<ProgramResource>() {
         return uniform
     }
 
-    fun <T, U: Uniform<T>> getUniform(name: String): U? = uniforms[name] as? U
+    inline fun <T, reified U: Uniform<T>> getUniform(name: String): U? = uniforms[name] as? U
 
     /**
      * Looks for the specified uniform and returns its location or null if the uniform was not found. The actual type

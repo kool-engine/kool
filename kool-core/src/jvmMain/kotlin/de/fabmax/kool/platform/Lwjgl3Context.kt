@@ -35,6 +35,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
     val supportedExtensions = mutableSetOf<String>()
 
+    private val glThread = Thread.currentThread()
+
     init {
         // configure GLFW
         glfwDefaultWindowHints()
@@ -188,6 +190,12 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         // terminate GLFW and free the error callback
         glfwTerminate()
         glfwSetErrorCallback(null)?.free()
+    }
+
+    override fun checkIsGlThread() {
+        if (Thread.currentThread() !== glThread) {
+            throw KoolException("Not on GL thread")
+        }
     }
 
     class InitProps(init: InitProps.() -> Unit = {}) {

@@ -9,9 +9,8 @@ class PriorityQueue<T>(comparator: Comparator<T>? = null) : Collection<T> {
         get() = elements.size
 
     init {
-        this.comparator = comparator ?: Comparator { a, b ->
-            (a as Comparable<T>).compareTo(b)
-        }
+        @Suppress("UNCHECKED_CAST")
+        this.comparator = comparator ?: Comparator { a, b -> (a as Comparable<T>).compareTo(b) }
     }
 
     fun clear() = elements.clear()

@@ -83,6 +83,8 @@ abstract class KoolContext {
 
     abstract fun destroy()
 
+    abstract fun checkIsGlThread()
+
     protected fun render(dt: Double) {
         this.deltaT = dt.toFloat()
         time += dt
@@ -175,7 +177,9 @@ abstract class KoolContext {
         fun <T> get(name: String): Property<T> {
             for (i in attribs.indices) {
                 if (attribs[i].name == name) {
-                    return attribs[i] as (Property<T>)
+                    // private api, only called from outer class which knows what type belongs to a certain name
+                    @Suppress("UNCHECKED_CAST")
+                    return attribs[i] as Property<T>
                 }
             }
             throw RuntimeException("Attribute not found: $name")

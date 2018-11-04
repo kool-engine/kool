@@ -6,7 +6,10 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
-import kotlinx.serialization.*
+import kotlinx.serialization.Optional
+import kotlinx.serialization.SerialId
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.load
 import kotlinx.serialization.protobuf.ProtoBuf
 
 @Serializable
@@ -24,7 +27,7 @@ data class ModelData(
         /**
          * Root nodes of the model hierarchy. Multiple root nodes correspond to different levels of detail.
          */
-        @SerialId(3) val lodRootNode: List<ModelNodeData>,
+        @SerialId(3) val lodRootNodes: List<ModelNodeData>,
 
         /**
          * List of materials in this model. Materials are references by index from [MeshData]
@@ -35,7 +38,7 @@ data class ModelData(
     fun toModel(lod: Int = 0): TransformGroup = toModel(lod, { TransformGroup(it.name).set(it.getTransformMatrix()) }, { it.toMesh(this) })
 
     fun <G: Group, M: Node> toModel(lod: Int, nodeMapper: (ModelNodeData) -> G, meshMapper: (MeshData) -> M?): G {
-        return lodRootNode[lod].toGroup(nodeMapper, meshMapper)
+        return lodRootNodes[lod].toGroup(nodeMapper, meshMapper)
     }
 
     private fun <G: Group, M: Node> ModelNodeData.toGroup(nodeMapper: (ModelNodeData) -> G, meshMapper: (MeshData) -> M?): G {

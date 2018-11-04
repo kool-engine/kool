@@ -53,7 +53,7 @@ class RigidBody(val shape: Box, val mass: Float, val inertiaVec: Vec3f) {
         }
     }
 
-    fun stepSimulation(dt: Float, world: CollisionWorld) {
+    fun stepSimulation(dt: Float) {
         if (!isStaticOrKinematic) {
             worldTransform.set(unpredictedWorldTransform)
 

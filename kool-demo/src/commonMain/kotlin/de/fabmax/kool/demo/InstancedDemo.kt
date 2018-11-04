@@ -8,7 +8,6 @@ import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.serialization.ModelData
-import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
@@ -40,7 +39,7 @@ fun instancedDemo(ctx: KoolContext): Scene = scene {
             SimpleShadowMap(0.1f, 0.3f)
     ))
 
-    +makeGroundGrid(100, ctx, defaultShadowMap)
+    +makeGroundGrid(100, defaultShadowMap)
 
     +transformGroup {
         // model uses z-axis as up-axis, rotate it accordingly

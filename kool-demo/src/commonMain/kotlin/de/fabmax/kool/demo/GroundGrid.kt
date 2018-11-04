@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.TextureProps
 import de.fabmax.kool.assetTexture
 import de.fabmax.kool.gl.GL_LINEAR
@@ -14,7 +13,7 @@ import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 
-fun makeGroundGrid(cells: Int, ctx: KoolContext, shadows: ShadowMap? = null, y: Float = 0f) = group {
+fun makeGroundGrid(cells: Int, shadows: ShadowMap? = null, y: Float = 0f) = group {
     val groundExt = cells / 2
 
     +textureMesh(isNormalMapped = true) {

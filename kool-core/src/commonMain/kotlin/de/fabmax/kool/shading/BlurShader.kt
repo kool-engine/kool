@@ -257,12 +257,9 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
     }
 
     private class BlurredBgTextureData : TextureData() {
+        override val isAvailable: Boolean get() = true
         var x = 0
         var y = 0
-
-        init {
-            isAvailable = true
-        }
 
         fun setCopyWidth(value: Int) {
             width = value

@@ -42,7 +42,7 @@ class AndroidAssetManager(private val context: Context, assetsBaseDir: String) :
         loadHttp(assetPath) {
             val opts = BitmapFactory.Options()
             opts.inPreferredConfig = Bitmap.Config.ARGB_8888
-            val bitmap = BitmapFactory.decodeStream(it, null, opts)
+            val bitmap = BitmapFactory.decodeStream(it, null, opts)!!
             texData.setTexImage(bitmap)
             bitmap.recycle()
         }
@@ -55,7 +55,7 @@ class AndroidAssetManager(private val context: Context, assetsBaseDir: String) :
         loadLocal(assetPath) {
             val opts = BitmapFactory.Options()
             opts.inPreferredConfig = Bitmap.Config.ARGB_8888
-            val bitmap = BitmapFactory.decodeStream(it, null, opts)
+            val bitmap = BitmapFactory.decodeStream(it, null, opts)!!
             texData.setTexImage(bitmap)
             bitmap.recycle()
         }

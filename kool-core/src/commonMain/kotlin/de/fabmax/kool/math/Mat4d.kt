@@ -1,6 +1,7 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.lock
 import de.fabmax.kool.util.Float32Buffer
 import kotlin.math.*
 
@@ -38,21 +39,19 @@ open class Mat4d {
     }
 
     fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double): Mat4d {
-        synchronized(tmpMatLock) {
+        return lock(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             set(mul(tmpMatA, tmpMatB))
         }
-        return this
     }
 
     fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double, result: Mat4d): Mat4d {
-        synchronized(tmpMatLock) {
+        return lock(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             mul(tmpMatA, result)
         }
-        return result
     }
 
     fun rotate(angleDeg: Double, axis: Vec3d, result: Mat4d) = rotate(angleDeg, axis.x, axis.y, axis.z, result)
@@ -82,10 +81,9 @@ open class Mat4d {
     }
 
     fun transpose(): Mat4d {
-        synchronized(tmpMatLock) {
+        return lock(tmpMatLock) {
             set(transpose(tmpMatA))
         }
-        return this
     }
 
     fun transpose(result: Mat4d): Mat4d {
@@ -100,14 +98,7 @@ open class Mat4d {
     }
 
     fun invert(eps: Double = 0.0): Boolean {
-        var success = false
-        synchronized(tmpMatLock) {
-            success = invert(tmpMatA, eps)
-            if (success) {
-                set(tmpMatA)
-            }
-        }
-        return success
+        return lock(tmpMatLock) { invert(tmpMatA, eps).also { if (it) set(tmpMatA) } }
     }
 
     fun invert(result: Mat4d, eps: Double = 0.0): Boolean {
@@ -283,11 +274,10 @@ open class Mat4d {
     }
 
     fun mul(other: Mat4d): Mat4d {
-        synchronized(tmpMatLock) {
+        return lock(tmpMatLock) {
             mul(other, tmpMatA)
             set(tmpMatA)
         }
-        return this
     }
 
     fun mul(other: Mat4d, result: Mat4d): Mat4d {

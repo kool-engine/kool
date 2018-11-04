@@ -52,7 +52,7 @@ private class DelayedElevationMap(basePath: String, override val meta: Elevation
 private fun loadElevationMapData(inputStream: InputStream, meta: ElevationMapMeta): ShortArray {
     val opts = BitmapFactory.Options()
     opts.inPreferredConfig = Bitmap.Config.ARGB_8888
-    val img = BitmapFactory.decodeStream(inputStream, null, opts)
+    val img = BitmapFactory.decodeStream(inputStream, null, opts)!!
 
     if (img.width != meta.width || img.height != meta.height) {
         throw IllegalStateException("Image size differs from meta info: img: ${img.width} x ${img.height}, meta: ${meta.width} x ${meta.height} [${meta.name}]")

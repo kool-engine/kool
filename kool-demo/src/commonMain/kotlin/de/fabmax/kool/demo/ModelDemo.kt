@@ -14,7 +14,6 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.serialization.ModelData
-import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlin.math.sqrt
 
 /**
@@ -24,7 +23,7 @@ import kotlin.math.sqrt
 fun modelScene(ctx: KoolContext): Scene = scene {
     defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-    +makeGroundGrid(40, ctx, defaultShadowMap)
+    +makeGroundGrid(40, defaultShadowMap)
 
     // add animated character model
     +transformGroup {

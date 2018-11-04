@@ -1,6 +1,7 @@
 package de.fabmax.kool.math
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.lock
 import de.fabmax.kool.util.Float32Buffer
 import kotlin.math.*
 
@@ -42,21 +43,19 @@ open class Mat4f {
     }
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): Mat4f {
-        synchronized(tmpMatLock) {
+        return lock(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             set(mul(tmpMatA, tmpMatB))
         }
-        return this
     }
 
     fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
     fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float, result: Mat4f): Mat4f {
-        synchronized(tmpMatLock) {
+        return lock(tmpMatLock) {
             tmpMatA.setRotate(angleDeg, axX, axY, axZ)
             mul(tmpMatA, result)
         }
-        return result
     }
 
     fun rotate(angleDeg: Float, axis: Vec3f, result: Mat4f) = rotate(angleDeg, axis.x, axis.y, axis.z, result)
@@ -86,10 +85,9 @@ open class Mat4f {
     }
 
     fun transpose(): Mat4f {
-        synchronized(tmpMatLock) {
+        return lock(tmpMatLock) {
             set(transpose(tmpMatA))
         }
-        return this
     }
 
     fun transpose(result: Mat4f): Mat4f {
@@ -104,14 +102,7 @@ open class Mat4f {
     }
 
     fun invert(eps: Float = 0.0f): Boolean {
-        var success = false
-        synchronized(tmpMatLock) {
-            success = invert(tmpMatA, eps)
-            if (success) {
-                set(tmpMatA)
-            }
-        }
-        return success
+        return lock(tmpMatLock) { invert(tmpMatA, eps).also { if (it) set(tmpMatA) } }
     }
 
     fun invert(result: Mat4f, eps: Float = 0.0f): Boolean {
@@ -257,11 +248,10 @@ open class Mat4f {
     }
 
     fun mul(other: Mat4f): Mat4f {
-        synchronized(tmpMatLock) {
+        return lock(tmpMatLock) {
             mul(other, tmpMatA)
             set(tmpMatA)
         }
-        return this
     }
 
     fun mul(other: Mat4f, result: Mat4f): Mat4f {

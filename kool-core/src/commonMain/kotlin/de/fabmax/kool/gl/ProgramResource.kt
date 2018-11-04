@@ -14,20 +14,24 @@ class ProgramResource private constructor(glRef: Any, ctx: KoolContext) : GlReso
     }
 
     override fun delete(ctx: KoolContext) {
+        ctx.checkIsGlThread()
         glDeleteProgram(this)
         super.delete(ctx)
     }
 
     fun attachShader(shader: ShaderResource, ctx: KoolContext) {
+        ctx.checkIsGlThread()
         glAttachShader(this, shader)
     }
 
     fun link(ctx: KoolContext): Boolean {
+        ctx.checkIsGlThread()
         glLinkProgram(this)
         return glGetProgrami(this, GL_LINK_STATUS) == GL_TRUE
     }
 
     fun getInfoLog(ctx: KoolContext): String {
+        ctx.checkIsGlThread()
         return glGetProgramInfoLog(this)
     }
 }

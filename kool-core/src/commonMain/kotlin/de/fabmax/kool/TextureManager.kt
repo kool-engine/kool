@@ -38,7 +38,7 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         activeTexUnit = boundTextures.size-1
     }
 
-    fun unbindTexture(texture: Texture?, ctx: KoolContext) {
+    fun unbindTexture(texture: Texture?, @Suppress("UNUSED_PARAMETER") ctx: KoolContext) {
         texture ?: return
 
         if (texture.isValid) {

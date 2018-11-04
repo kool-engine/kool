@@ -1,5 +1,6 @@
 package de.fabmax.kool.math
 
+import de.fabmax.kool.lock
 import de.fabmax.kool.util.Float32Buffer
 import kotlin.math.PI
 import kotlin.math.cos
@@ -92,14 +93,7 @@ class Mat3f {
     }
 
     fun invert(): Boolean {
-        var success = false
-        synchronized(tmpMatLock) {
-            success = invert(tmpMat)
-            if (success) {
-                set(tmpMat)
-            }
-        }
-        return success
+        return lock(tmpMat) { invert(tmpMat).also { if (it) set(tmpMat) } }
     }
 
     fun invert(result: Mat3f): Boolean {
@@ -137,11 +131,10 @@ class Mat3f {
     }
 
     fun mul(other: Mat3f): Mat3f {
-        synchronized(tmpMatLock) {
+        return lock(tmpMat) {
             mul(other, tmpMat)
             set(tmpMat)
         }
-        return this
     }
 
     fun mul(other: Mat3f, result: Mat3f): Mat3f {
@@ -294,7 +287,6 @@ class Mat3f {
     }
 
     companion object {
-        private val tmpMatLock = Any()
         private val tmpMat = Mat3f()
     }
 }

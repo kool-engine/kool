@@ -76,7 +76,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
 
         if (!isLoaded && ctx.time - createTime > TILE_TIMEOUT) {
             // set fall back texture
-            shader = getFallbackShader(ctx)
+            shader = getFallbackShader()
         }
 
         super.preRender(ctx)
@@ -94,7 +94,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
         const val TILE_TIMEOUT = 3.0
 
         private var fallbackShader: BasicShader? = null
-        private fun getFallbackShader(ctx: KoolContext): BasicShader {
+        private fun getFallbackShader(): BasicShader {
             if (fallbackShader == null) {
                 fallbackShader = basicShader {
                     //colorModel = ColorModel.STATIC_COLOR
@@ -111,7 +111,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
         }
 
         fun prepareDefaultTex(ctx: KoolContext) {
-            val fbTex = getFallbackShader(ctx).texture
+            val fbTex = getFallbackShader().texture
             if (fbTex != null && fbTex.res?.isLoaded != true) {
                 ctx.textureMgr.bindTexture(fbTex, ctx)
             }

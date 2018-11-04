@@ -21,7 +21,7 @@ import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.lineMesh
 
 
-fun basicCollisionDemo(ctx: KoolContext): List<Scene> {
+fun basicCollisionDemo(): List<Scene> {
     val scenes = mutableListOf<Scene>()
 
     val ARRAY_SIZE_Y = 2
