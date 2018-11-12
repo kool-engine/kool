@@ -84,7 +84,13 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
     }
 
     open class Instance(val modelMat: Mat4f) {
-        open fun putCustomAttribs(target: Float32Buffer) { }
+        open fun putInstanceAttributes(target: Float32Buffer) {
+            target.put(modelMat.matrix)
+        }
+
+        open fun getLocalOrigin(result: MutableVec3f) {
+            modelMat.transform(result.set(Vec3f.ZERO))
+        }
     }
 
     open class Instances<T: Instance>(maxInstances: Int) {
@@ -104,6 +110,16 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
         private val tmpVec1 = MutableVec3f()
         private val tmpVec2 = MutableVec3f()
 
+        fun clearInstances() {
+            instances.clear()
+        }
+
+        fun addInstance(instance: T) {
+            instances += instance
+        }
+
+        operator fun plusAssign(instance: T) = addInstance(instance)
+
         fun setupInstances(mesh: InstancedMesh, ctx: KoolContext) {
             val data = instanceData ?: createFloat32Buffer(maxInstances * mesh.instanceStride).also {
                 instanceData = it
@@ -113,16 +129,17 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
             bounds.clear()
             numInstances = 0
 
+            putInstanceData(data, mesh, ctx)
+        }
+
+        protected open fun putInstanceData(target: Float32Buffer, mesh: InstancedMesh, ctx: KoolContext) {
             val cam = mesh.scene?.camera
             if (mesh.isFrustumChecked && cam != null) {
                 val radius = computeGlobalRadius(mesh.meshData.bounds, ctx)
 
                 for (i in instances.indices) {
-                    val mat = instances[i].modelMat
-
                     // determine local instance center position
-                    tmpVec1.set(Vec3f.ZERO)
-                    mat.transform(tmpVec1)
+                    instances[i].getLocalOrigin(tmpVec1)
                     bounds.add(tmpVec1)
 
                     // determine global instance center position
@@ -131,7 +148,7 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
                     // this assumes individual instances have all the same size (i.e. no scaling by the individual
                     // instance matrices)
                     if (cam.isInFrustum(tmpVec1, radius)) {
-                        putInstance(instances[i], data)
+                        putInstance(instances[i], target)
                     }
 
                     if (numInstances == maxInstances) {
@@ -146,18 +163,21 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
                 }
             } else {
                 for (i in 0 until min(instances.size, maxInstances)) {
-                    putInstance(instances[i], data)
+                    putInstance(instances[i], target)
                 }
             }
         }
 
-        private fun putInstance(instance: T, target: Float32Buffer) {
-            target.put(instance.modelMat.matrix)
-            instance.putCustomAttribs(target)
-            numInstances++
+        protected open fun putInstance(instance: T, target: Float32Buffer) {
+            if (numInstances < maxInstances) {
+                instance.putInstanceAttributes(target)
+                numInstances++
+            } else {
+                logW { "Discarding instance: max instance count reached" }
+            }
         }
 
-        private fun computeGlobalRadius(meshDataBounds: BoundingBox, ctx: KoolContext): Float {
+        protected fun computeGlobalRadius(meshDataBounds: BoundingBox, ctx: KoolContext): Float {
             // update global center and radius
             tmpVec1.set(meshDataBounds.center)
             tmpVec2.set(meshDataBounds.max)

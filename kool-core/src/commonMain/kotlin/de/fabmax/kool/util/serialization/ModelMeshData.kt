@@ -2,17 +2,18 @@ package de.fabmax.kool.util.serialization
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.scene.animation.Bone
 import de.fabmax.kool.shading.*
-import de.fabmax.kool.util.serialization.MeshData.Companion.ATTRIB_POSITIONS
+import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_POSITIONS
 import kotlinx.serialization.Optional
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
 @Serializable
-data class MeshData(
+data class ModelMeshData(
     /**
      * Name of the mesh
      */
@@ -67,7 +68,7 @@ data class MeshData(
         private set
 
     init {
-        numVertices = (attributes[ATTRIB_POSITIONS] ?: throw KoolException("MeshData does not contain positions")).size / 3
+        numVertices = (attributes[ATTRIB_POSITIONS] ?: throw KoolException("ModelMeshData does not contain positions")).size / 3
         hasNormals = attributes.containsKey(ATTRIB_NORMALS)
         hasTexCoords = attributes.containsKey(ATTRIB_TEXTURE_COORDS)
         hasColors = attributes.containsKey(ATTRIB_COLORS)
@@ -87,14 +88,14 @@ data class MeshData(
         if (hasColors) { attribs += Attribute.COLORS }
         if (hasTexCoords) { attribs += Attribute.TEXTURE_COORDS }
 
-        val meshData = de.fabmax.kool.scene.MeshData(attribs)
+        val meshData = MeshData(attribs)
 
         // add mesh vertices
         val positions = attributes[ATTRIB_POSITIONS] ?: throw KoolException("Mesh has no positions")
-        val normals = attributes[MeshData.ATTRIB_NORMALS]
-        val texCoords = attributes[MeshData.ATTRIB_TEXTURE_COORDS]
-        val colors = attributes[MeshData.ATTRIB_COLORS]
-        val tangents = attributes[MeshData.ATTRIB_TANGENTS]
+        val normals = attributes[ModelMeshData.ATTRIB_NORMALS]
+        val texCoords = attributes[ModelMeshData.ATTRIB_TEXTURE_COORDS]
+        val colors = attributes[ModelMeshData.ATTRIB_COLORS]
+        val tangents = attributes[ModelMeshData.ATTRIB_TANGENTS]
         for (i in 0 until positions.size / 3) {
             meshData.addVertex {
                 position.set(positions[i*3], positions[i*3+1], positions[i*3+2])

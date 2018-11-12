@@ -55,3 +55,6 @@ fun triArea(v1: Vec3f, v2: Vec3f, v3: Vec3f): Float {
     val h = v1.distanceToLine(v2, v3)
     return 0.5f * b * h
 }
+
+class FloatRange(override val start: Float, override val endInclusive: Float) : ClosedRange<Float>
+operator fun Float.rangeTo(other: Float): FloatRange = FloatRange(this, other)

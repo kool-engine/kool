@@ -346,6 +346,10 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         val MD_BLUE_GREY_900 = color("263238")
         val MD_BLUE_GREY = MD_BLUE_GREY_500
 
+        val MD_COLORS = listOf(MD_RED, MD_PINK, MD_PURPLE, MD_DEEP_PURPLE, MD_INDIGO, MD_BLUE, MD_LIGHT_BLUE, MD_CYAN,
+                MD_TEAL, MD_GREEN, MD_LIGHT_GREEN, MD_LIME, MD_YELLOW, MD_AMBER, MD_ORANGE, MD_DEEP_ORANGE, MD_BROWN,
+                MD_GREY, MD_BLUE_GREY)
+
         fun fromHsv(h: Float, s: Float, v: Float, a: Float): Color {
             val color = MutableColor()
             return color.setHsv(h, s, v, a)

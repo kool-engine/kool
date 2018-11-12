@@ -63,6 +63,16 @@ abstract class TextureData {
     abstract fun onLoad(texture: Texture, ctx: KoolContext)
 }
 
+/**
+ * Byte buffer based texture data. Texture data can be generated and edited procedurally. Layout and format of data
+ * is specified by the format parameter. The buffer size must match the texture size and data format.
+ *
+ * @param buffer texture data buffer, must have a size of width * height * bytes-per-pixel
+ * @param width  width of texture in pixels
+ * @param height height of texture in pixels
+ * @param format texture data format: Any format supported by glTexImage2D, typically [GL_RGBA] (4 byte per pixel)or
+ * [GL_RGB] (3 byte per pixel)
+ */
 class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val format: Int) : TextureData() {
     override val isAvailable: Boolean get() = true
 

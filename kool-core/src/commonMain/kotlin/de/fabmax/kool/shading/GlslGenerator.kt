@@ -42,6 +42,7 @@ open class GlslGenerator {
         const val V_POSITION_CLIPSPACE_Z = "vPositionClipspaceZ"
         const val V_TANGENT = "vTangent"
 
+        const val L_TEX_COORD = "texUV"
         const val L_TEX_COLOR = "texColor"
         const val L_VERTEX_COLOR = "vertColor"
         const val L_STATIC_COLOR = "staticColor"
@@ -399,11 +400,15 @@ open class GlslGenerator {
         text.append("\nvoid main() {\n")
         text.append("float shadowFactor = 1.0;\n")
 
+        if (shaderProps.isTextureColor) {
+            text.append("vec2 $L_TEX_COORD = $V_TEX_COORD;\n")
+        }
+
         injectors.forEach { it.fsBeforeSampling(shaderProps, text, ctx) }
 
         if (shaderProps.isTextureColor) {
             // get base fragment color from texture
-            text.append("vec4 $L_TEX_COLOR = $texSampler($U_TEXTURE_0, $V_TEX_COORD);\n")
+            text.append("vec4 $L_TEX_COLOR = $texSampler($U_TEXTURE_0, $L_TEX_COORD);\n")
             text.append("$fsOutBody = $L_TEX_COLOR;\n")
         }
         if (shaderProps.isVertexColor) {

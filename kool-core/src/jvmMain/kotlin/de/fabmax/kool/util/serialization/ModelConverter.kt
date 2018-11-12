@@ -5,14 +5,15 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.shading.AttributeType
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
+import java.io.File
 
 object ModelConverter {
 
     fun convertModel(file: String, invertFaceOrientation: Boolean = false): ModelData =
-            convertModel(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices)!!, invertFaceOrientation)
+            convertModel(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices)!!, File(file).name, invertFaceOrientation)
 
-    fun convertModel(aiScene: AIScene, invertFaceOrientation: Boolean = false): ModelData {
-        val meshes = mutableListOf<MeshData>()
+    fun convertModel(aiScene: AIScene, modelName: String = "", invertFaceOrientation: Boolean = false): ModelData {
+        val meshes = mutableListOf<ModelMeshData>()
 
         val nodes = mutableMapOf<String, SceneNode>()
         val root = traverseSceneGraph(aiScene.mRootNode()!!, null, nodes)
@@ -38,20 +39,20 @@ object ModelConverter {
                 else -> emptyList()
             }
 
-            val attribs = mutableMapOf(MeshData.ATTRIB_POSITIONS to AttributeList(AttributeType.VEC_3F, posList))
+            val attribs = mutableMapOf(ModelMeshData.ATTRIB_POSITIONS to AttributeList(AttributeType.VEC_3F, posList))
             if (!normalList.isEmpty()) {
-                attribs[MeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
+                attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
             }
             if (!uvList.isEmpty()) {
-                attribs[MeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(AttributeType.VEC_2F, uvList)
+                attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(AttributeType.VEC_2F, uvList)
             }
             if (!colorList.isEmpty()) {
-                attribs[MeshData.ATTRIB_COLORS] = AttributeList(AttributeType.COLOR_4F, colorList)
+                attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(AttributeType.COLOR_4F, colorList)
             }
-            meshes += MeshData(meshName, PrimitiveType.TRIANGLES, attribs, indices, armature, animations, aiMesh.mMaterialIndex())
+            meshes += ModelMeshData(meshName, PrimitiveType.TRIANGLES, attribs, indices, armature, animations, aiMesh.mMaterialIndex())
         }
 
-        return ModelData(ModelData.VERSION, meshes, listOf(convertSceneGraph(root)), materials)
+        return ModelData(ModelData.VERSION, modelName, meshes, listOf(convertSceneGraph(root)), materials)
     }
 
     private fun makeMaterials(aiScene: AIScene): List<MaterialData> {

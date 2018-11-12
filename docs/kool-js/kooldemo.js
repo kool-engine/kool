@@ -80,9 +80,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var InstancedMesh = $module$kool.de.fabmax.kool.scene.InstancedMesh;
   var InstancedMesh$Instances = $module$kool.de.fabmax.kool.scene.InstancedMesh.Instances;
   var randomF_0 = $module$kool.de.fabmax.kool.math.randomF;
+  var InstancedMesh$Instance = $module$kool.de.fabmax.kool.scene.InstancedMesh.Instance;
   var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
-  var InstancedMesh$Instance = $module$kool.de.fabmax.kool.scene.InstancedMesh.Instance;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
@@ -200,7 +200,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
-  function basicCollisionDemo(ctx) {
+  function basicCollisionDemo() {
     var scenes = ArrayList_init();
     var ARRAY_SIZE_Y = 2;
     var ARRAY_SIZE_X = 1;
@@ -962,7 +962,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function makeGroundGrid(cells, ctx, shadows, y) {
+  function makeGroundGrid(cells, shadows, y) {
     if (shadows === void 0)
       shadows = null;
     if (y === void 0)
@@ -1006,7 +1006,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var $receiver = new Scene(null);
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, instancedDemo$lambda$lambda($receiver)));
     $receiver.defaultShadowMap = new CascadedShadowMap([new SimpleShadowMap(0.0, 0.03), new SimpleShadowMap(0.03, 0.1), new SimpleShadowMap(0.1, 0.3)]);
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(100, ctx, $receiver.defaultShadowMap));
+    $receiver.unaryPlus_uv0sim$(makeGroundGrid(100, $receiver.defaultShadowMap));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, instancedDemo$lambda$lambda_0(ctx, $receiver)));
     return $receiver;
   }
@@ -1100,7 +1100,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.color_0 = MutableColor_init();
     this.applyTransform_0();
   }
-  ModelInstance.prototype.putCustomAttribs_he122g$ = function (target) {
+  ModelInstance.prototype.putInstanceAttributes_he122g$ = function (target) {
+    InstancedMesh$Instance.prototype.putInstanceAttributes_he122g$.call(this, target);
     target.put_mx4ult$(this.color_0.r).put_mx4ult$(this.color_0.g).put_mx4ult$(this.color_0.b).put_mx4ult$(this.color_0.a);
   };
   ModelInstance.prototype.animate_aemszp$ = function (ctx) {
@@ -1373,7 +1374,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function modelScene(ctx) {
     var $receiver = new Scene(null);
     $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3_za3lpa$();
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, ctx, $receiver.defaultShadowMap));
+    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, $receiver.defaultShadowMap));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, modelScene$lambda$lambda(ctx, $receiver)));
     return $receiver;
   }
@@ -2811,7 +2812,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       tmp$ = this$Waveform.points;
       for (var i = 1; i <= tmp$; i++) {
         var $this = $receiver.meshData;
-        var idx = {v: 0};
         $this.isSyncRequired = true;
         var $this_0 = $this.vertexList;
         var updateBounds = $this.bounds;
@@ -2829,10 +2829,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         var this$Waveform_0 = this$Waveform;
         $this_0.vertexIt.position.set_y2kzbl$((i - (this$Waveform_0.points / 2 | 0) | 0) / 256.0, 1.0, 0.0);
         updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
-        idx.v = $this_0.size - 1 | 0;
-        var idx_0 = idx.v;
+        var idx = $this_0.size - 1 | 0;
         if (i > 1) {
-          $receiver.meshData.addIndices_pmhfmb$(new Int32Array([idx_0 - 1 | 0, idx_0]));
+          $receiver.meshData.addIndices_pmhfmb$(new Int32Array([idx - 1 | 0, idx]));
         }
       }
       $receiver.lineWidth = 1.0;
@@ -3237,7 +3236,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var leafMesh = {v: null};
     var $receiver = new Scene(null);
     $receiver.defaultShadowMap = CascadedShadowMap.Companion.defaultCascadedShadowMap3_za3lpa$();
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, ctx, $receiver.defaultShadowMap));
+    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40, $receiver.defaultShadowMap));
     trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen, $receiver));
     leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, $receiver));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
@@ -3594,7 +3593,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     if (this.parent != null) {
       if (this.children.isEmpty()) {
         var $this = target.meshData;
-        var idx = {v: 0};
         $this.isSyncRequired = true;
         var $this_0 = $this.vertexList;
         var updateBounds = $this.bounds;
@@ -3614,11 +3612,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         this.subtract_2gj7b4$(ensureNotNull(this.parent), $receiver.normal).norm();
         $receiver.texCoord.set_dleff0$(0.0, this.texV);
         updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
-        idx.v = $this_0.size - 1 | 0;
-        var tipIdx = idx.v;
+        var tipIdx = $this_0.size - 1 | 0;
         for (var i_1 = 0; i_1 <= 8; i_1++) {
           var $this_1 = target.meshData;
-          var idx_0 = {v: 0};
           $this_1.isSyncRequired = true;
           var $this_2 = $this_1.vertexList;
           var updateBounds_0 = $this_1.bounds;
@@ -3638,8 +3634,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
           ensureNotNull(this.parent).circumPts.get_za3lpa$(i_1 % 8).subtract_2gj7b4$(ensureNotNull(this.parent), $receiver_0.normal).norm();
           $receiver_0.texCoord.set_dleff0$(i_1 / 8.0, ensureNotNull(this.parent).texV);
           updateBounds_0 != null ? updateBounds_0.add_czzhiu$($this_2.vertexIt.position) : null;
-          idx_0.v = $this_2.size - 1 | 0;
-          var element = idx_0.v;
+          var element = $this_2.size - 1 | 0;
           idcs.add_11rb$(element);
         }
         for (var i_3 = 0; i_3 < 8; i_3++) {
@@ -3649,7 +3644,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
        else {
         for (var i_4 = 0; i_4 <= 8; i_4++) {
           var $this_3 = target.meshData;
-          var idx_1 = {v: 0};
           $this_3.isSyncRequired = true;
           var $this_4 = $this_3.vertexList;
           var updateBounds_1 = $this_3.bounds;
@@ -3669,11 +3663,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
           this.circumPts.get_za3lpa$(i_4 % 8).subtract_2gj7b4$(this, $receiver_1.normal).norm();
           $receiver_1.texCoord.set_dleff0$(i_4 / 8.0, this.texV);
           updateBounds_1 != null ? updateBounds_1.add_czzhiu$($this_4.vertexIt.position) : null;
-          idx_1.v = $this_4.size - 1 | 0;
-          var element_0 = idx_1.v;
+          var element_0 = $this_4.size - 1 | 0;
           idcs.add_11rb$(element_0);
           var $this_5 = target.meshData;
-          var idx_2 = {v: 0};
           $this_5.isSyncRequired = true;
           var $this_6 = $this_5.vertexList;
           var updateBounds_2 = $this_5.bounds;
@@ -3693,8 +3685,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
           ensureNotNull(this.parent).circumPts.get_za3lpa$(i_4 % 8).subtract_2gj7b4$(ensureNotNull(this.parent), $receiver_2.normal).norm();
           $receiver_2.texCoord.set_dleff0$(i_4 / 8.0, ensureNotNull(this.parent).texV);
           updateBounds_2 != null ? updateBounds_2.add_czzhiu$($this_6.vertexIt.position) : null;
-          idx_2.v = $this_6.size - 1 | 0;
-          var element_1 = idx_2.v;
+          var element_1 = $this_6.size - 1 | 0;
           idcs.add_11rb$(element_1);
         }
         for (var i_7 = 0; i_7 < 8; i_7++) {
@@ -3996,7 +3987,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var package$fabmax = package$de.fabmax || (package$de.fabmax = {});
   var package$kool = package$fabmax.kool || (package$fabmax.kool = {});
   var package$demo = package$kool.demo || (package$kool.demo = {});
-  package$demo.basicCollisionDemo_aemszp$ = basicCollisionDemo;
+  package$demo.basicCollisionDemo = basicCollisionDemo;
   package$demo.collisionDemo_aemszp$ = collisionDemo;
   package$demo.BoxWorld = BoxWorld;
   $$importsForInline$$.kooldemo = _;
@@ -4008,7 +3999,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   $$importsForInline$$['kotlinx-serialization-runtime-js'] = $module$kotlinx_serialization_runtime_js;
   package$demo.globeScene_aemszp$ = globeScene;
   package$demo.GlobeUi = GlobeUi;
-  package$demo.makeGroundGrid_l8pxk$ = makeGroundGrid;
+  package$demo.makeGroundGrid_26v3kb$ = makeGroundGrid;
   package$demo.instancedDemo_aemszp$ = instancedDemo;
   package$demo.modelScene_aemszp$ = modelScene;
   package$demo.multiScene_aemszp$ = multiScene;
@@ -4030,12 +4021,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   _.getParams = getParams;
   ModelShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
   ModelShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
-  ModelShader_init$ObjectLiteral.prototype.fsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.fsHeader_8slwmz$;
-  ModelShader_init$ObjectLiteral.prototype.fsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.fsStart_jh5913$;
+  ModelShader_init$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
   ModelShader_init$ObjectLiteral.prototype.vsAfterProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_jh5913$;
   ModelShader_init$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
-  ModelShader_init$ObjectLiteral.prototype.vsHeader_8slwmz$ = GlslGenerator$GlslInjector.prototype.vsHeader_8slwmz$;
-  ModelShader_init$ObjectLiteral.prototype.vsStart_jh5913$ = GlslGenerator$GlslInjector.prototype.vsStart_jh5913$;
+  ModelShader_init$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
   SimplificationDemo$EdgeRayDistance.prototype.nodeDistanceToRay_4lohg5$ = RayDistance.prototype.nodeDistanceToRay_4lohg5$;
   BOX_COLORS = listOf([Color.Companion.MD_YELLOW, Color.Companion.MD_AMBER, Color.Companion.MD_ORANGE, Color.Companion.MD_DEEP_ORANGE, Color.Companion.MD_RED, Color.Companion.MD_PINK, Color.Companion.MD_PURPLE, Color.Companion.MD_DEEP_PURPLE, Color.Companion.MD_INDIGO, Color.Companion.MD_BLUE, Color.Companion.MD_LIGHT_BLUE, Color.Companion.MD_CYAN, Color.Companion.MD_TEAL, Color.Companion.MD_GREEN, Color.Companion.MD_LIGHT_GREEN, Color.Companion.MD_LIME]);
   main();

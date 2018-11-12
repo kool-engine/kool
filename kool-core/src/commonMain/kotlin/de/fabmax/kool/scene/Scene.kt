@@ -78,10 +78,8 @@ open class Scene(name: String? = null) : Group(name) {
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)
         }
-
-        preRender(ctx)
-
         camera.updateCamera(ctx)
+        preRender(ctx)
         handleInput(ctx)
 
         if (clearMask != 0) {

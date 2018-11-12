@@ -1,17 +1,3 @@
-buildscript {
-    switch (org.gradle.internal.os.OperatingSystem.current()) {
-        case org.gradle.internal.os.OperatingSystem.WINDOWS:
-            ext.lwjglNatives = "natives-windows"
-            break
-        case org.gradle.internal.os.OperatingSystem.LINUX:
-            ext.lwjglNatives = "natives-linux"
-            break
-        case org.gradle.internal.os.OperatingSystem.MAC_OS:
-            ext.lwjglNatives = "natives-macos"
-            break
-    }
-}
-
 apply plugin: 'kotlin-multiplatform'
 apply plugin: 'kotlinx-serialization'
 
@@ -53,13 +39,6 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
-
-                // lwjgl native libraries
-                runtimeOnly "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
-                runtimeOnly "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
-                runtimeOnly "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
-                runtimeOnly "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
-                runtimeOnly "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
             }
         }
         

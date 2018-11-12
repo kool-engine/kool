@@ -20,9 +20,14 @@ data class ModelData(
         @SerialId(1) val version: Int,
 
         /**
+         * Optional model name. Empty if not set.
+         */
+        @SerialId(5) @Optional val name: String = "",
+
+        /**
          * List of meshes in this model. Meshes are referenced by index from [ModelNodeData].
          */
-        @SerialId(2) val meshes: List<MeshData>,
+        @SerialId(2) val meshes: List<ModelMeshData>,
 
         /**
          * Root nodes of the model hierarchy. Multiple root nodes correspond to different levels of detail.
@@ -30,18 +35,18 @@ data class ModelData(
         @SerialId(3) val lodRootNodes: List<ModelNodeData>,
 
         /**
-         * List of materials in this model. Materials are references by index from [MeshData]
+         * List of materials in this model. Materials are references by index from [ModelMeshData]
          */
         @SerialId(4) val materials: List<MaterialData>
 ) {
 
     fun toModel(lod: Int = 0): TransformGroup = toModel(lod, { TransformGroup(it.name).set(it.getTransformMatrix()) }, { it.toMesh(this) })
 
-    fun <G: Group, M: Node> toModel(lod: Int, nodeMapper: (ModelNodeData) -> G, meshMapper: (MeshData) -> M?): G {
+    fun <G: Group, M: Node> toModel(lod: Int, nodeMapper: (ModelNodeData) -> G, meshMapper: (ModelMeshData) -> M?): G {
         return lodRootNodes[lod].toGroup(nodeMapper, meshMapper)
     }
 
-    private fun <G: Group, M: Node> ModelNodeData.toGroup(nodeMapper: (ModelNodeData) -> G, meshMapper: (MeshData) -> M?): G {
+    private fun <G: Group, M: Node> ModelNodeData.toGroup(nodeMapper: (ModelNodeData) -> G, meshMapper: (ModelMeshData) -> M?): G {
         val group = nodeMapper(this)
         for (child in children) {
             group += child.toGroup(nodeMapper, meshMapper)

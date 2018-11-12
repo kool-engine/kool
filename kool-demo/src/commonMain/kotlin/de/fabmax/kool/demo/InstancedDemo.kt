@@ -125,7 +125,8 @@ private class ModelInstance(val movementSpeed: Float) : InstancedMesh.Instance(M
         applyTransform()
     }
 
-    override fun putCustomAttribs(target: Float32Buffer) {
+    override fun putInstanceAttributes(target: Float32Buffer) {
+        super.putInstanceAttributes(target)
         target.put(color.r).put(color.g).put(color.b).put(color.a)
     }
 
