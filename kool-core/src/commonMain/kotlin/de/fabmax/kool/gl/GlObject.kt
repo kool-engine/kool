@@ -8,7 +8,7 @@ import de.fabmax.kool.util.Disposable
  */
 abstract class GlObject<T: GlResource> : Disposable {
     open var res: T? = null
-        protected set
+        internal set
 
     open val isValid: Boolean
         get() = res != null

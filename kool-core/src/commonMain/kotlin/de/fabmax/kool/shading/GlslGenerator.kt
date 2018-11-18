@@ -29,11 +29,14 @@ open class GlslGenerator {
         const val U_SHADOW_TEX_SZ = "uShadowTexSz"
         const val U_CLIP_SPACE_FAR_Z = "uClipSpaceFarZ"
         const val U_NORMAL_MAP_0 = "uNormalMap0"
+        const val U_ENVIRONMENT_MAP = "uEnvironmentMap"
+        const val U_REFLECTIVENESS = "uReflectiveness"
 
         const val V_TEX_COORD = "vTexCoord"
         const val V_EYE_DIRECTION = "vEyeDirection_cameraspace"
         const val V_LIGHT_DIRECTION = "vLightDirection_cameraspace"
         const val V_NORMAL = "vNormal_cameraspace"
+        const val V_NORMAL_WORLDSPACE = "vNormalWorldspace"
         const val V_COLOR = "vFragmentColor"
         const val V_DIFFUSE_LIGHT_COLOR = "vDiffuseLightColor"
         const val V_SPECULAR_LIGHT_COLOR = "vSpecularLightColor"
@@ -46,6 +49,7 @@ open class GlslGenerator {
         const val L_TEX_COLOR = "texColor"
         const val L_VERTEX_COLOR = "vertColor"
         const val L_STATIC_COLOR = "staticColor"
+        const val L_REFLECTIVENESS = "reflectiveness"
     }
 
     interface GlslInjector {
@@ -168,9 +172,14 @@ open class GlslGenerator {
             text.append("$vsOut float $V_POSITION_CLIPSPACE_Z;\n")
         }
 
-        // if fog is enabled, fragment shader needs to know the world position
-        if (shaderProps.fogModel != FogModel.FOG_OFF) {
-            text.append("$vsIn vec3 $V_POSITION_WORLDSPACE;\n")
+        // forward vertex position and / or normal in world space to fragment shader if needed
+        val isFsNeedsWorldPos = shaderProps.fogModel != FogModel.FOG_OFF || shaderProps.isEnvironmentMapped
+        if (isFsNeedsWorldPos) {
+            text.append("$vsOut vec3 $V_POSITION_WORLDSPACE;\n")
+        }
+        val isFsNeedsWorldNormal = shaderProps.isEnvironmentMapped
+        if (isFsNeedsWorldNormal) {
+            text.append("$vsOut vec3 $V_NORMAL_WORLDSPACE;\n")
         }
 
         for (uniform in customUniforms) {
@@ -233,8 +242,14 @@ open class GlslGenerator {
             text.append("$V_POSITION_CLIPSPACE_Z = gl_Position.z;\n")
         }
 
-        if (shaderProps.fogModel != FogModel.FOG_OFF) {
+        // forward vertex position and / or normal in world space to fragment shader if needed
+        val isFsNeedsWorldPos = shaderProps.fogModel != FogModel.FOG_OFF || shaderProps.isEnvironmentMapped
+        if (isFsNeedsWorldPos) {
             text.append("$V_POSITION_WORLDSPACE = ($modelMat * position).xyz;\n")
+        }
+        val isFsNeedsWorldNormal = shaderProps.isEnvironmentMapped
+        if (isFsNeedsWorldNormal) {
+            text.append("$V_NORMAL_WORLDSPACE = ($modelMat * normal).xyz;\n")
         }
 
         if (shaderProps.isTextureColor || shaderProps.isNormalMapped) {
@@ -347,12 +362,27 @@ open class GlslGenerator {
             text.append("uniform float $U_CLIP_SPACE_FAR_Z[${shadowMap.numMaps}];\n")
         }
 
+        val isFsNeedsWorldPos = shaderProps.fogModel != FogModel.FOG_OFF || shaderProps.isEnvironmentMapped
+        if (isFsNeedsWorldPos) {
+            text.append("$fsIn vec3 $V_POSITION_WORLDSPACE;\n")
+        }
+        val isFsNeedsWorldNormal = shaderProps.isEnvironmentMapped
+        if (isFsNeedsWorldNormal) {
+            text.append("$fsIn vec3 $V_NORMAL_WORLDSPACE;\n\n")
+        }
+        val isFsNeedsCamPos = shaderProps.fogModel != FogModel.FOG_OFF || shaderProps.isEnvironmentMapped
+        if (isFsNeedsCamPos) {
+            text.append("uniform vec3 $U_CAMERA_POSITION;\n")
+        }
+        if (shaderProps.isEnvironmentMapped) {
+            text.append("uniform float $U_REFLECTIVENESS;\n")
+            text.append("uniform samplerCube $U_ENVIRONMENT_MAP;\n")
+        }
+
         // add fog uniforms
         if (shaderProps.fogModel != FogModel.FOG_OFF) {
-            text.append("uniform vec3 $U_CAMERA_POSITION;\n")
             text.append("uniform vec4 $U_FOG_COLOR;\n")
             text.append("uniform float $U_FOG_RANGE;\n")
-            text.append("$fsIn vec3 $V_POSITION_WORLDSPACE;\n")
         }
 
         for (uniform in customUniforms) {
@@ -402,6 +432,10 @@ open class GlslGenerator {
 
         if (shaderProps.isTextureColor) {
             text.append("vec2 $L_TEX_COORD = $V_TEX_COORD;\n")
+        }
+
+        if (shaderProps.isEnvironmentMapped) {
+            text.append("float $L_REFLECTIVENESS = $U_REFLECTIVENESS;\n")
         }
 
         injectors.forEach { it.fsBeforeSampling(shaderProps, text, ctx) }
@@ -476,6 +510,12 @@ open class GlslGenerator {
             // compute output color
             text.append("$fsOutBody = vec4(materialAmbientColor + materialDiffuseColor + materialSpecularColor, $fsOutBody.a);\n")
 
+        }
+
+        if (shaderProps.isEnvironmentMapped) {
+            text.append("vec3 eyeDir = normalize($V_POSITION_WORLDSPACE - $U_CAMERA_POSITION);\n")
+            text.append("vec3 reflectedDir = reflect(eyeDir, normalize($V_NORMAL_WORLDSPACE));\n")
+            text.append("$fsOutBody.rgb = mix($fsOutBody.rgb , texture($U_ENVIRONMENT_MAP, reflectedDir).rgb, $L_REFLECTIVENESS);\n")
         }
 
         // add fog code

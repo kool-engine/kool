@@ -54,8 +54,7 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
 
     fun bindTexture(texture: Texture, ctx: KoolContext, makeActive: Boolean = false): Int {
         if (!texture.isValid) {
-            nextTexUnit()
-            texture.onCreate(ctx)
+            texture.res = addReference(texture.props, ctx)
         }
         val texRes = texture.res ?: throw KoolException("TextureResource is null although it was created")
 
@@ -72,10 +71,6 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
         }
 
         return texRes.texUnit
-    }
-
-    internal fun createTexture(props: TextureProps, ctx: KoolContext): TextureResource {
-        return addReference(props, ctx)
     }
 
     internal fun deleteTexture(texture: Texture, ctx: KoolContext) {
@@ -119,14 +114,15 @@ class TextureManager internal constructor() : SharedResManager<TextureProps, Tex
                 //bindToActiveTexUnit(res)
                 activateTexUnit(texture.res!!.texUnit)
             }
-            texture.loadData(data, ctx)
+            texture.load(data, ctx)
             loadingTextures.remove(texture.props.id)
             allowedTexLoads--
         }
     }
 
     override fun createResource(key: TextureProps, ctx: KoolContext): TextureResource {
-        val texRes = TextureResource.create(key.target, key, ctx)
+        val texRes = TextureResource.create(key, ctx)
+        nextTexUnit()
         bindToActiveTexUnit(texRes)
         return texRes
     }

@@ -9,7 +9,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var Unit = Kotlin.kotlin.Unit;
   var Enum = Kotlin.kotlin.Enum;
   var throwISE = Kotlin.throwISE;
-  var numberToInt = Kotlin.numberToInt;
   var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var toChar = Kotlin.toChar;
@@ -22,6 +21,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var Exception = Kotlin.kotlin.Exception;
   var first = Kotlin.kotlin.collections.first_2p1efm$;
   var last = Kotlin.kotlin.collections.last_2p1efm$;
+  var numberToInt = Kotlin.numberToInt;
   var math = Kotlin.kotlin.math;
   var IllegalArgumentException_init = Kotlin.kotlin.IllegalArgumentException_init_pdl1vj$;
   var Any = Object;
@@ -72,6 +72,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var toShort = Kotlin.toShort;
   var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
   var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
+  var setOf_0 = Kotlin.kotlin.collections.setOf_mh5how$;
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
   var toBoolean = Kotlin.kotlin.text.toBoolean_pdl1vz$;
@@ -240,6 +241,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   CullMethod.prototype.constructor = CullMethod;
   Scene.prototype = Object.create(Group.prototype);
   Scene.prototype.constructor = Scene;
+  Skybox$SkyboxCamera.prototype = Object.create(Camera.prototype);
+  Skybox$SkyboxCamera.prototype.constructor = Skybox$SkyboxCamera;
+  Shader.prototype = Object.create(GlObject.prototype);
+  Shader.prototype.constructor = Shader;
+  BasicShader.prototype = Object.create(Shader.prototype);
+  BasicShader.prototype.constructor = BasicShader;
+  Skybox$SkyboxShader.prototype = Object.create(BasicShader.prototype);
+  Skybox$SkyboxShader.prototype.constructor = Skybox$SkyboxShader;
+  Skybox.prototype = Object.create(Scene.prototype);
+  Skybox.prototype.constructor = Skybox;
   SphericalInputTransform$DragMethod.prototype = Object.create(Enum.prototype);
   SphericalInputTransform$DragMethod.prototype.constructor = SphericalInputTransform$DragMethod;
   SphericalInputTransform$ZoomMethod.prototype = Object.create(Enum.prototype);
@@ -292,10 +303,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   ShaderManager.prototype.constructor = ShaderManager;
   AttributeType.prototype = Object.create(Enum.prototype);
   AttributeType.prototype.constructor = AttributeType;
-  Shader.prototype = Object.create(GlObject.prototype);
-  Shader.prototype.constructor = Shader;
-  BasicShader.prototype = Object.create(Shader.prototype);
-  BasicShader.prototype.constructor = BasicShader;
   BasicPointShader.prototype = Object.create(BasicShader.prototype);
   BasicPointShader.prototype.constructor = BasicPointShader;
   BlurShader.prototype = Object.create(BasicShader.prototype);
@@ -320,6 +327,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   UniformTexture2D.prototype.constructor = UniformTexture2D;
   UniformTexture2Dv.prototype = Object.create(Uniform.prototype);
   UniformTexture2Dv.prototype.constructor = UniformTexture2Dv;
+  UniformTextureCubeMap.prototype = Object.create(Uniform.prototype);
+  UniformTextureCubeMap.prototype.constructor = UniformTextureCubeMap;
   Uniform1i.prototype = Object.create(Uniform.prototype);
   Uniform1i.prototype.constructor = Uniform1i;
   Uniform1iv.prototype = Object.create(Uniform.prototype);
@@ -338,8 +347,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   UniformMatrix4.prototype.constructor = UniformMatrix4;
   BufferedTextureData.prototype = Object.create(TextureData.prototype);
   BufferedTextureData.prototype.constructor = BufferedTextureData;
+  CubeMapTextureData.prototype = Object.create(TextureData.prototype);
+  CubeMapTextureData.prototype.constructor = CubeMapTextureData;
   Texture.prototype = Object.create(GlObject.prototype);
   Texture.prototype.constructor = Texture;
+  CubeMapTexture.prototype = Object.create(Texture.prototype);
+  CubeMapTexture.prototype.constructor = CubeMapTexture;
   TextureManager.prototype = Object.create(SharedResManager.prototype);
   TextureManager.prototype.constructor = TextureManager;
   LinearAnimator.prototype = Object.create(Animator.prototype);
@@ -462,6 +475,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if (delayLoading === void 0)
       delayLoading = true;
     return new Texture(props, assetTexture$lambda(delayLoading, props));
+  }
+  function assetTextureCubeMap$lambda(closure$delayLoading, closure$frontPath, closure$backPath, closure$leftPath, closure$rightPath, closure$topPath, closure$bottomPath) {
+    return function ($receiver, ctx) {
+      $receiver.delayLoading = closure$delayLoading;
+      var ft = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$frontPath);
+      var bk = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$backPath);
+      var lt = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$leftPath);
+      var rt = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$rightPath);
+      var up = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$topPath);
+      var dn = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$bottomPath);
+      return new CubeMapTextureData(ft, bk, lt, rt, up, dn);
+    };
+  }
+  function assetTextureCubeMap(frontPath, backPath, leftPath, rightPath, topPath, bottomPath, delayLoading) {
+    if (delayLoading === void 0)
+      delayLoading = true;
+    var id = frontPath + '-' + backPath + '-' + leftPath + '-' + rightPath + '-' + topPath + '-' + bottomPath;
+    var props = new TextureProps(id, 9729, 9729, 33071, 33071, 0, 34067);
+    return new CubeMapTexture(props, assetTextureCubeMap$lambda(delayLoading, frontPath, backPath, leftPath, rightPath, topPath, bottomPath));
   }
   var GL_ACTIVE_TEXTURE;
   var GL_DEPTH_BUFFER_BIT;
@@ -652,6 +684,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var GL_TEXTURE_MIN_FILTER;
   var GL_TEXTURE_WRAP_S;
   var GL_TEXTURE_WRAP_T;
+  var GL_TEXTURE_WRAP_R;
   var GL_TEXTURE;
   var GL_TEXTURE_CUBE_MAP;
   var GL_TEXTURE_BINDING_CUBE_MAP;
@@ -853,13 +886,19 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simpleName: 'BufferResource',
     interfaces: [GlResource]
   };
-  function Framebuffer(width, height) {
+  function Framebuffer(width, height, texTargetColor, texTargetDepth) {
+    if (texTargetColor === void 0)
+      texTargetColor = 3553;
+    if (texTargetDepth === void 0)
+      texTargetDepth = 3553;
     this.width = width;
     this.height = height;
+    this.texTargetColor = texTargetColor;
+    this.texTargetDepth = texTargetDepth;
     this.fbId_0 = UniqueId_getInstance().nextId();
     this.fbResource_iqa21b$_0 = null;
-    this.colorAttachment_5z0qtn$_0 = null;
-    this.depthAttachment_cd2pcl$_0 = null;
+    this.colorAttachment = null;
+    this.depthAttachment = null;
   }
   Object.defineProperty(Framebuffer.prototype, 'fbResource', {
     get: function () {
@@ -867,22 +906,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     },
     set: function (fbResource) {
       this.fbResource_iqa21b$_0 = fbResource;
-    }
-  });
-  Object.defineProperty(Framebuffer.prototype, 'colorAttachment', {
-    get: function () {
-      return this.colorAttachment_5z0qtn$_0;
-    },
-    set: function (colorAttachment) {
-      this.colorAttachment_5z0qtn$_0 = colorAttachment;
-    }
-  });
-  Object.defineProperty(Framebuffer.prototype, 'depthAttachment', {
-    get: function () {
-      return this.depthAttachment_cd2pcl$_0;
-    },
-    set: function (depthAttachment) {
-      this.depthAttachment_cd2pcl$_0 = depthAttachment;
     }
   });
   Framebuffer.prototype.withColor = function () {
@@ -912,7 +935,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if ((tmp$ = this.fbResource) != null)
       tmp$_0 = tmp$;
     else {
-      var $receiver = FramebufferResource$Companion_getInstance().create_w70mbp$(this.width, this.height, ctx);
+      var $receiver = FramebufferResource$Companion_getInstance().create_ys1ghx$(this.width, this.height, this.texTargetColor, this.texTargetDepth, ctx);
       this.fbResource = $receiver;
       $receiver.colorAttachment = this.colorAttachment;
       $receiver.depthAttachment = this.depthAttachment;
@@ -930,11 +953,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simpleName: 'Framebuffer',
     interfaces: [Disposable]
   };
-  function FramebufferResource(glRef, width, height, ctx) {
+  function FramebufferResource(glRef, width, height, texTargetColor, texTargetDepth, ctx) {
     FramebufferResource$Companion_getInstance();
     GlResource.call(this, glRef, GlResource$Type$FRAMEBUFFER_getInstance(), ctx);
     this.width = width;
     this.height = height;
+    this.texTargetColor = texTargetColor;
+    this.texTargetDepth = texTargetDepth;
     this.fbId_0 = UniqueId_getInstance().nextId();
     this.colorAttachment = null;
     this.depthAttachment = null;
@@ -943,8 +968,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function FramebufferResource$Companion() {
     FramebufferResource$Companion_instance = this;
   }
-  FramebufferResource$Companion.prototype.create_w70mbp$ = function (width, height, ctx) {
-    return new FramebufferResource(glCreateFramebuffer(), width, height, ctx);
+  FramebufferResource$Companion.prototype.create_ys1ghx$ = function (width, height, texTargetColor, texTargetDepth, ctx) {
+    return new FramebufferResource(glCreateFramebuffer(), width, height, texTargetColor, texTargetDepth, ctx);
   };
   FramebufferResource$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -969,7 +994,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       var color = this.colorAttachment;
       if (color != null) {
         ctx.textureMgr.bindTexture_xyx3x4$(color, ctx);
-        glFramebufferTexture2D(36160, 36064, 3553, ensureNotNull(color.res), 0);
+        glFramebufferTexture2D(36160, 36064, this.texTargetColor, ensureNotNull(color.res), 0);
       }
        else {
         glDrawBuffer(0);
@@ -978,7 +1003,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       var depth = this.depthAttachment;
       if (depth != null) {
         ctx.textureMgr.bindTexture_xyx3x4$(depth, ctx);
-        glFramebufferTexture2D(36160, 36096, 3553, ensureNotNull(depth.res), 0);
+        glFramebufferTexture2D(36160, 36096, this.texTargetDepth, ensureNotNull(depth.res), 0);
       }
       var fbStatus = {v: glCheckFramebufferStatus(36160)};
       if (fbStatus.v !== 36053) {
@@ -1030,8 +1055,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return true;
     }
   });
-  FbColorTexData.prototype.onLoad_dletmp$ = function (texture, ctx) {
-    glTexImage2D(3553, 0, 6408, this.width, this.height, 0, 6408, 5121, null);
+  FbColorTexData.prototype.onLoad_2jsdat$ = function (texture, target, ctx) {
+    glTexImage2D(target, 0, 6408, this.width, this.height, 0, 6408, 5121, null);
   };
   function FbColorTexData$Companion() {
     FbColorTexData$Companion_instance = this;
@@ -1073,10 +1098,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return true;
     }
   });
-  FbDepthTexData.prototype.onLoad_dletmp$ = function (texture, ctx) {
-    glTexParameteri(3553, 10241, ctx.glCapabilities.depthFilterMethod);
-    glTexParameteri(3553, 10240, ctx.glCapabilities.depthFilterMethod);
-    glTexImage2D(3553, 0, ctx.glCapabilities.depthComponentIntFormat, this.width, this.height, 0, 6402, 5125, null);
+  FbDepthTexData.prototype.onLoad_2jsdat$ = function (texture, target, ctx) {
+    glTexParameteri(target, 10241, ctx.glCapabilities.depthFilterMethod);
+    glTexParameteri(target, 10240, ctx.glCapabilities.depthFilterMethod);
+    glTexImage2D(target, 0, ctx.glCapabilities.depthComponentIntFormat, this.width, this.height, 0, 6402, 5125, null);
   };
   function FbDepthTexData$Companion() {
     FbDepthTexData$Companion_instance = this;
@@ -1358,31 +1383,35 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simpleName: 'ShaderResource',
     interfaces: [GlResource]
   };
-  var Math_0 = Math;
-  function TextureResource(glRef, target, props, ctx) {
+  function TextureResource(glRef, props, ctx) {
     TextureResource$Companion_getInstance();
     GlResource.call(this, glRef, GlResource$Type$TEXTURE_getInstance(), ctx);
-    this.target = target;
     this.props = props;
     this.isLoaded = false;
     this.texUnit_xdyr2s$_0 = -1;
-    glBindTexture(this.target, this);
-    glTexParameteri(this.target, 10241, this.props.minFilter);
-    glTexParameteri(this.target, 10240, this.props.magFilter);
-    glTexParameteri(this.target, 10242, this.props.xWrapping);
-    glTexParameteri(this.target, 10243, this.props.yWrapping);
-    if (this.props.anisotropy > 1 && ctx.glCapabilities.anisotropicTexFilterInfo.isSupported) {
-      var a = numberToInt(ctx.glCapabilities.anisotropicTexFilterInfo.maxAnisotropy);
-      var b = this.props.anisotropy;
-      var anisotropy = Math_0.max(a, b);
-      glTexParameteri(this.target, ctx.glCapabilities.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-    }
   }
+  Object.defineProperty(TextureResource.prototype, 'target', {
+    get: function () {
+      return this.props.target;
+    }
+  });
+  Object.defineProperty(TextureResource.prototype, 'texUnit', {
+    get: function () {
+      return this.texUnit_xdyr2s$_0;
+    },
+    set: function (texUnit) {
+      this.texUnit_xdyr2s$_0 = texUnit;
+    }
+  });
+  TextureResource.prototype.delete_aemszp$ = function (ctx) {
+    glDeleteTexture(this);
+    GlResource.prototype.delete_aemszp$.call(this, ctx);
+  };
   function TextureResource$Companion() {
     TextureResource$Companion_instance = this;
   }
-  TextureResource$Companion.prototype.create_9khcnx$ = function (target, props, ctx) {
-    return new TextureResource(glCreateTexture(), target, props, ctx);
+  TextureResource$Companion.prototype.create_8057hp$ = function (props, ctx) {
+    return new TextureResource(glCreateTexture(), props, ctx);
   };
   TextureResource$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -1396,18 +1425,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     return TextureResource$Companion_instance;
   }
-  Object.defineProperty(TextureResource.prototype, 'texUnit', {
-    get: function () {
-      return this.texUnit_xdyr2s$_0;
-    },
-    set: function (texUnit) {
-      this.texUnit_xdyr2s$_0 = texUnit;
-    }
-  });
-  TextureResource.prototype.delete_aemszp$ = function (ctx) {
-    glDeleteTexture(this);
-    GlResource.prototype.delete_aemszp$.call(this, ctx);
-  };
   TextureResource.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'TextureResource',
@@ -2113,6 +2130,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return this.isForwardButtonEvent && !this.isForwardButtonDown;
     }
   });
+  var Math_0 = Math;
   Object.defineProperty(InputManager$Pointer.prototype, 'isLeftButtonClicked', {
     get: function () {
       var tmp$ = this.isLeftButtonReleased;
@@ -15470,7 +15488,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   InstancedMesh$Instance.prototype.putInstanceAttributes_he122g$ = function (target) {
     target.put_q3cr5i$(this.modelMat.matrix);
   };
-  InstancedMesh$Instance.prototype.localOrigin_5s4mqq$ = function (result) {
+  InstancedMesh$Instance.prototype.getLocalOrigin_5s4mqq$ = function (result) {
     this.modelMat.transform_w1lst9$(result.set_czzhiu$(Vec3f$Companion_getInstance().ZERO));
   };
   InstancedMesh$Instance.$metadata$ = {
@@ -15544,7 +15562,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       var radius = this.computeGlobalRadius_sq5703$(mesh.meshData.bounds, ctx);
       tmp$_0 = this.instances;
       for (var i = 0; i !== tmp$_0.size; ++i) {
-        this.instances.get_za3lpa$(i).localOrigin_5s4mqq$(this.tmpVec1_cs46gd$_0);
+        this.instances.get_za3lpa$(i).getLocalOrigin_5s4mqq$(this.tmpVec1_cs46gd$_0);
         this.bounds.add_czzhiu$(this.tmpVec1_cs46gd$_0);
         ctx.mvpState.modelMatrix.transform_w1lst9$(this.tmpVec1_cs46gd$_0);
         if (cam.isInFrustum_2qa7tb$(this.tmpVec1_cs46gd$_0, radius)) {
@@ -16886,6 +16904,119 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     kind: Kind_CLASS,
     simpleName: 'Scene',
     interfaces: [Group]
+  };
+  function mesh$lambda_0(closure$attributes) {
+    return function ($receiver) {
+      var tmp$, tmp$_0;
+      if (closure$attributes.contains_11rb$(Attribute.Companion.NORMALS)) {
+        tmp$ = LightModel.PHONG_LIGHTING;
+      }
+       else {
+        tmp$ = LightModel.NO_LIGHTING;
+      }
+      $receiver.lightModel = tmp$;
+      if (closure$attributes.contains_11rb$(Attribute.Companion.TEXTURE_COORDS))
+        tmp$_0 = ColorModel.TEXTURE_COLOR;
+      else if (closure$attributes.contains_11rb$(Attribute.Companion.COLORS))
+        tmp$_0 = ColorModel.VERTEX_COLOR;
+      else
+        tmp$_0 = ColorModel.STATIC_COLOR;
+      $receiver.colorModel = tmp$_0;
+      return Unit;
+    };
+  }
+  function Skybox(camera, environmentMap) {
+    Scene.call(this);
+    this.environmentMap = environmentMap;
+    this.camera = new Skybox$SkyboxCamera(camera);
+    this.clearMask = 0;
+    var attributes = setOf_0(Attribute$Companion_getInstance().POSITIONS);
+    var mesh = new Mesh(new MeshData(attributes), 'skybox');
+    mesh.shader = basicShader(mesh$lambda_0(attributes));
+    mesh.isFrustumChecked = false;
+    mesh.generator = Skybox_init$lambda$lambda;
+    mesh.shader = new Skybox$SkyboxShader(this.environmentMap);
+    mesh.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
+    mesh.generateGeometry();
+    this.unaryPlus_uv0sim$(mesh);
+  }
+  function Skybox$SkyboxCamera(mainCam) {
+    Camera.call(this);
+    this.mainCam = mainCam;
+  }
+  Skybox$SkyboxCamera.prototype.updateViewMatrix = function () {
+    this.view.set_d4zu6j$(this.mainCam.view);
+  };
+  Skybox$SkyboxCamera.prototype.updateProjectionMatrix = function () {
+    this.proj.set_d4zu6j$(this.mainCam.proj);
+  };
+  Skybox$SkyboxCamera.prototype.computeFrustumPlane_jwr40o$ = function (z, result) {
+  };
+  Skybox$SkyboxCamera.prototype.isInFrustum_2qa7tb$ = function (globalCenter, globalRadius) {
+    return true;
+  };
+  Skybox$SkyboxCamera.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SkyboxCamera',
+    interfaces: [Camera]
+  };
+  function Skybox$SkyboxShader(environmentMap) {
+    var $receiver = new ShaderProps();
+    $receiver.colorModel = ColorModel$CUSTOM_COLOR_getInstance();
+    $receiver.lightModel = LightModel$NO_LIGHTING_getInstance();
+    $receiver.environmentMap = environmentMap;
+    BasicShader.call(this, $receiver);
+    this.projMatrix_0 = this.addUniform_1ybs2r$(new UniformMatrix4('uProjMatrix'));
+    var $receiver_0 = this.generator.customUniforms;
+    var element = this.projMatrix_0;
+    $receiver_0.add_11rb$(element);
+    var $receiver_1 = this.generator.injectors;
+    var element_0 = new Skybox$Skybox$SkyboxShader_init$ObjectLiteral(this);
+    $receiver_1.add_11rb$(element_0);
+  }
+  Skybox$SkyboxShader.prototype.onMatrixUpdate_aemszp$ = function (ctx) {
+    this.projMatrix_0.value = ctx.mvpState.projMatrixBuffer;
+    this.projMatrix_0.bind_aemszp$(ctx);
+    BasicShader.prototype.onMatrixUpdate_aemszp$.call(this, ctx);
+  };
+  function Skybox$Skybox$SkyboxShader_init$ObjectLiteral(this$SkyboxShader) {
+    this.this$SkyboxShader = this$SkyboxShader;
+  }
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = function (shaderProps, text, ctx) {
+    text.append_gw00v9$(this.this$SkyboxShader.generator.vsOut + ' vec3 texCoord;' + '\n');
+  };
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsAfterProj_jh5913$ = function (shaderProps, text, ctx) {
+    text.append_gw00v9$('texCoord = ' + Attribute$Companion_getInstance().POSITIONS + ';' + '\n');
+    text.append_gw00v9$('vec4 pos = uProjMatrix * mat4(mat3(' + GlslGenerator$Companion_getInstance().U_VIEW_MATRIX + ')) * vec4(' + Attribute$Companion_getInstance().POSITIONS + ', 1.0);' + '\n');
+    text.append_gw00v9$('gl_Position = pos.xyww;\n');
+  };
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = function (shaderProps, text, ctx) {
+    text.append_gw00v9$(this.this$SkyboxShader.generator.fsIn + ' vec3 texCoord;' + '\n');
+    text.append_gw00v9$('uniform samplerCube uEnvironmentMap;\n');
+  };
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = function (shaderProps, text, ctx) {
+    text.append_gw00v9$(this.this$SkyboxShader.generator.fsOutBody + ' = texture(' + GlslGenerator$Companion_getInstance().U_ENVIRONMENT_MAP + ', texCoord);' + '\n');
+  };
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.$metadata$ = {
+    kind: Kind_CLASS,
+    interfaces: [GlslGenerator$GlslInjector]
+  };
+  Skybox$SkyboxShader.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SkyboxShader',
+    interfaces: [BasicShader]
+  };
+  function Skybox_init$lambda$lambda($receiver) {
+    var $receiver_0 = $receiver.cubeProps.defaults();
+    $receiver_0.size.set_y2kzbl$(1.0, 1.0, 1.0);
+    $receiver_0.centerOrigin();
+    $receiver.cube_lhbb6w$($receiver.cubeProps);
+    return Unit;
+  }
+  Skybox.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Skybox',
+    interfaces: [Scene]
   };
   function sphericalInputTransform(name, block) {
     if (name === void 0)
@@ -20022,7 +20153,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   });
   Object.defineProperty(ThemeOrCustomProp.prototype, 'isUpdate', {
     get: function () {
-      return this.isCustom && !equals(this.prop, this.customVal) || (this.isThemeSet && !equals(this.prop, this.themeVal));
+      return this.isCustom && !equals(this.prop, this.customVal) || (!this.isCustom && this.isThemeSet && !equals(this.prop, this.themeVal));
     }
   });
   ThemeOrCustomProp.prototype.setTheme_11rb$ = function (themeVal) {
@@ -20335,9 +20466,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.uCamPosition = this.addUniform_1ybs2r$(new Uniform3f(GlslGenerator$Companion_getInstance().U_CAMERA_POSITION));
     this.uShininess = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_SHININESS));
     this.uSpecularIntensity = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_SPECULAR_INTENSITY));
+    this.uReflectiveness = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_REFLECTIVENESS));
     this.uStaticColor = this.addUniform_1ybs2r$(new Uniform4f(GlslGenerator$Companion_getInstance().U_STATIC_COLOR));
     this.uTexture = this.addUniform_1ybs2r$(new UniformTexture2D(GlslGenerator$Companion_getInstance().U_TEXTURE_0));
     this.uNormalMap = this.addUniform_1ybs2r$(new UniformTexture2D(GlslGenerator$Companion_getInstance().U_NORMAL_MAP_0));
+    this.uEnvironmentMap = this.addUniform_1ybs2r$(new UniformTextureCubeMap(GlslGenerator$Companion_getInstance().U_ENVIRONMENT_MAP));
     this.uAlpha = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_ALPHA));
     this.uSaturation = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_SATURATION));
     this.uFogColor = this.addUniform_1ybs2r$(new Uniform4f(GlslGenerator$Companion_getInstance().U_FOG_COLOR));
@@ -20352,9 +20485,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.scene_i3j15i$_0 = null;
     this.shininess = this.props.shininess;
     this.specularIntensity = this.props.specularIntensity;
+    this.reflectiveness = this.props.reflectiveness;
     this.staticColor.set_czzhhz$(this.props.staticColor);
     this.texture = this.props.texture;
     this.normalMap = this.props.normalMap;
+    this.environmentMap = this.props.environmentMap;
     this.alpha = this.props.alpha;
     this.saturation = this.props.saturation;
     this.shadowMap_6x93ay$_0 = this.props.shadowMap;
@@ -20385,6 +20520,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       this.uSpecularIntensity.value[0] = value;
     }
   });
+  Object.defineProperty(BasicShader.prototype, 'reflectiveness', {
+    get: function () {
+      return this.uReflectiveness.value[0];
+    },
+    set: function (value) {
+      this.uReflectiveness.value[0] = value;
+    }
+  });
   Object.defineProperty(BasicShader.prototype, 'staticColor', {
     get: function () {
       return this.uStaticColor.value;
@@ -20407,6 +20550,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     },
     set: function (value) {
       this.uNormalMap.value = value;
+    }
+  });
+  Object.defineProperty(BasicShader.prototype, 'environmentMap', {
+    get: function () {
+      return this.uEnvironmentMap.value;
+    },
+    set: function (value) {
+      this.uEnvironmentMap.value = value;
     }
   });
   Object.defineProperty(BasicShader.prototype, 'alpha', {
@@ -20465,9 +20616,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.uAlpha.bind_aemszp$(ctx);
     this.uShininess.bind_aemszp$(ctx);
     this.uSpecularIntensity.bind_aemszp$(ctx);
+    this.uReflectiveness.bind_aemszp$(ctx);
     this.uStaticColor.bind_aemszp$(ctx);
     this.uTexture.bind_aemszp$(ctx);
     this.uNormalMap.bind_aemszp$(ctx);
+    this.uEnvironmentMap.bind_aemszp$(ctx);
     this.uBones.bind_aemszp$(ctx);
     if (ctx.glCapabilities.depthTextures && this.shadowMap_6x93ay$_0 != null) {
       if (ctx.renderPass === RenderPass$SHADOW_getInstance()) {
@@ -20892,8 +21045,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   BlurredBackgroundHelper$BlurredBgTextureData.prototype.setCopyHeight_za3lpa$ = function (value) {
     this.height = value;
   };
-  BlurredBackgroundHelper$BlurredBgTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
-    glCopyTexImage2D(3553, 0, 6407, this.x, this.y, this.width, this.height, 0);
+  BlurredBackgroundHelper$BlurredBgTextureData.prototype.onLoad_2jsdat$ = function (texture, target, ctx) {
+    glCopyTexImage2D(target, 0, 6407, this.x, this.y, this.width, this.height, 0);
   };
   BlurredBackgroundHelper$BlurredBgTextureData.$metadata$ = {
     kind: Kind_CLASS,
@@ -21003,10 +21156,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.U_SHADOW_TEX_SZ = 'uShadowTexSz';
     this.U_CLIP_SPACE_FAR_Z = 'uClipSpaceFarZ';
     this.U_NORMAL_MAP_0 = 'uNormalMap0';
+    this.U_ENVIRONMENT_MAP = 'uEnvironmentMap';
+    this.U_REFLECTIVENESS = 'uReflectiveness';
     this.V_TEX_COORD = 'vTexCoord';
     this.V_EYE_DIRECTION = 'vEyeDirection_cameraspace';
     this.V_LIGHT_DIRECTION = 'vLightDirection_cameraspace';
     this.V_NORMAL = 'vNormal_cameraspace';
+    this.V_NORMAL_WORLDSPACE = 'vNormalWorldspace';
     this.V_COLOR = 'vFragmentColor';
     this.V_DIFFUSE_LIGHT_COLOR = 'vDiffuseLightColor';
     this.V_SPECULAR_LIGHT_COLOR = 'vSpecularLightColor';
@@ -21018,6 +21174,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.L_TEX_COLOR = 'texColor';
     this.L_VERTEX_COLOR = 'vertColor';
     this.L_STATIC_COLOR = 'staticColor';
+    this.L_REFLECTIVENESS = 'reflectiveness';
   }
   GlslGenerator$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -21199,8 +21356,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       text.append_gw00v9$(this.vsOut + ' vec4 ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + shadowMap.numMaps + '];' + '\n');
       text.append_gw00v9$(this.vsOut + ' float ' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ';' + '\n');
     }
-    if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
-      text.append_gw00v9$(this.vsIn + ' vec3 ' + GlslGenerator$Companion_getInstance().V_POSITION_WORLDSPACE + ';' + '\n');
+    var isFsNeedsWorldPos = shaderProps.fogModel !== FogModel$FOG_OFF_getInstance() || shaderProps.isEnvironmentMapped;
+    if (isFsNeedsWorldPos) {
+      text.append_gw00v9$(this.vsOut + ' vec3 ' + GlslGenerator$Companion_getInstance().V_POSITION_WORLDSPACE + ';' + '\n');
+    }
+    var isFsNeedsWorldNormal = shaderProps.isEnvironmentMapped;
+    if (isFsNeedsWorldNormal) {
+      text.append_gw00v9$(this.vsOut + ' vec3 ' + GlslGenerator$Companion_getInstance().V_NORMAL_WORLDSPACE + ';' + '\n');
     }
     tmp$ = this.customUniforms.iterator();
     while (tmp$.hasNext()) {
@@ -21271,8 +21433,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       }
       text.append_gw00v9$('vPositionClipspaceZ = gl_Position.z;\n');
     }
-    if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
+    var isFsNeedsWorldPos = shaderProps.fogModel !== FogModel$FOG_OFF_getInstance() || shaderProps.isEnvironmentMapped;
+    if (isFsNeedsWorldPos) {
       text.append_gw00v9$(GlslGenerator$Companion_getInstance().V_POSITION_WORLDSPACE + ' = (' + modelMat + ' * position).xyz;' + '\n');
+    }
+    var isFsNeedsWorldNormal = shaderProps.isEnvironmentMapped;
+    if (isFsNeedsWorldNormal) {
+      text.append_gw00v9$(GlslGenerator$Companion_getInstance().V_NORMAL_WORLDSPACE + ' = (' + modelMat + ' * normal).xyz;' + '\n');
     }
     if (shaderProps.isTextureColor || shaderProps.isNormalMapped) {
       text.append_gw00v9$(GlslGenerator$Companion_getInstance().V_TEX_COORD + ' = ' + Attribute$Companion_getInstance().TEXTURE_COORDS.glslSrcName + ';' + '\n');
@@ -21356,11 +21523,25 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       text.append_gw00v9$('uniform int ' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ + '[' + shadowMap.numMaps + '];' + '\n');
       text.append_gw00v9$('uniform float ' + GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z + '[' + shadowMap.numMaps + '];' + '\n');
     }
-    if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
+    var isFsNeedsWorldPos = shaderProps.fogModel !== FogModel$FOG_OFF_getInstance() || shaderProps.isEnvironmentMapped;
+    if (isFsNeedsWorldPos) {
+      text.append_gw00v9$(this.fsIn + ' vec3 ' + GlslGenerator$Companion_getInstance().V_POSITION_WORLDSPACE + ';' + '\n');
+    }
+    var isFsNeedsWorldNormal = shaderProps.isEnvironmentMapped;
+    if (isFsNeedsWorldNormal) {
+      text.append_gw00v9$(this.fsIn + ' vec3 ' + GlslGenerator$Companion_getInstance().V_NORMAL_WORLDSPACE + ';' + '\n' + '\n');
+    }
+    var isFsNeedsCamPos = shaderProps.fogModel !== FogModel$FOG_OFF_getInstance() || shaderProps.isEnvironmentMapped;
+    if (isFsNeedsCamPos) {
       text.append_gw00v9$('uniform vec3 uCameraPosition;\n');
+    }
+    if (shaderProps.isEnvironmentMapped) {
+      text.append_gw00v9$('uniform float uReflectiveness;\n');
+      text.append_gw00v9$('uniform samplerCube uEnvironmentMap;\n');
+    }
+    if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
       text.append_gw00v9$('uniform vec4 uFogColor;\n');
       text.append_gw00v9$('uniform float uFogRange;\n');
-      text.append_gw00v9$(this.fsIn + ' vec3 ' + GlslGenerator$Companion_getInstance().V_POSITION_WORLDSPACE + ';' + '\n');
     }
     tmp$_0 = this.customUniforms.iterator();
     while (tmp$_0.hasNext()) {
@@ -21413,6 +21594,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     text.append_gw00v9$('float shadowFactor = 1.0;\n');
     if (shaderProps.isTextureColor) {
       text.append_gw00v9$('vec2 texUV = vTexCoord;\n');
+    }
+    if (shaderProps.isEnvironmentMapped) {
+      text.append_gw00v9$('float reflectiveness = uReflectiveness;\n');
     }
     var tmp$_0;
     tmp$_0 = this.injectors.iterator();
@@ -21480,6 +21664,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         text.append_gw00v9$('vec3 materialSpecularColor = ' + GlslGenerator$Companion_getInstance().V_SPECULAR_LIGHT_COLOR + ' * ' + this.fsOutBody + '.a * shadowFactor;' + '\n');
       }
       text.append_gw00v9$(this.fsOutBody + ' = vec4(materialAmbientColor + materialDiffuseColor + materialSpecularColor, ' + this.fsOutBody + '.a);' + '\n');
+    }
+    if (shaderProps.isEnvironmentMapped) {
+      text.append_gw00v9$('vec3 eyeDir = normalize(vPositionWorldspace - uCameraPosition);\n');
+      text.append_gw00v9$('vec3 reflectedDir = reflect(eyeDir, normalize(vNormalWorldspace));\n');
+      text.append_gw00v9$(this.fsOutBody + '.rgb = mix(' + this.fsOutBody + '.rgb , texture(' + GlslGenerator$Companion_getInstance().U_ENVIRONMENT_MAP + ', reflectedDir).rgb, ' + GlslGenerator$Companion_getInstance().L_REFLECTIVENESS + ');' + '\n');
     }
     if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
       text.append_gw00v9$('float d = 1.0 - clamp(length(uCameraPosition - vPositionWorldspace / uFogRange), 0.0, 1.0);\n');
@@ -21743,6 +21932,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     ColorModel$VERTEX_COLOR_instance = new ColorModel('VERTEX_COLOR', 0);
     ColorModel$TEXTURE_COLOR_instance = new ColorModel('TEXTURE_COLOR', 1);
     ColorModel$STATIC_COLOR_instance = new ColorModel('STATIC_COLOR', 2);
+    ColorModel$CUSTOM_COLOR_instance = new ColorModel('CUSTOM_COLOR', 3);
   }
   var ColorModel$VERTEX_COLOR_instance;
   function ColorModel$VERTEX_COLOR_getInstance() {
@@ -21759,13 +21949,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     ColorModel_initFields();
     return ColorModel$STATIC_COLOR_instance;
   }
+  var ColorModel$CUSTOM_COLOR_instance;
+  function ColorModel$CUSTOM_COLOR_getInstance() {
+    ColorModel_initFields();
+    return ColorModel$CUSTOM_COLOR_instance;
+  }
   ColorModel.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ColorModel',
     interfaces: [Enum]
   };
   function ColorModel$values() {
-    return [ColorModel$VERTEX_COLOR_getInstance(), ColorModel$TEXTURE_COLOR_getInstance(), ColorModel$STATIC_COLOR_getInstance()];
+    return [ColorModel$VERTEX_COLOR_getInstance(), ColorModel$TEXTURE_COLOR_getInstance(), ColorModel$STATIC_COLOR_getInstance(), ColorModel$CUSTOM_COLOR_getInstance()];
   }
   ColorModel.values = ColorModel$values;
   function ColorModel$valueOf(name) {
@@ -21776,6 +21971,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         return ColorModel$TEXTURE_COLOR_getInstance();
       case 'STATIC_COLOR':
         return ColorModel$STATIC_COLOR_getInstance();
+      case 'CUSTOM_COLOR':
+        return ColorModel$CUSTOM_COLOR_getInstance();
       default:throwISE('No enum constant de.fabmax.kool.shading.ColorModel.' + name);
     }
   }
@@ -21834,13 +22031,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.isInstanced = false;
     this.shadowMap = null;
     this.isNormalMapped = false;
+    this.isEnvironmentMapped = false;
     this.shininess = 20.0;
     this.specularIntensity = 0.75;
+    this.reflectiveness = 0.5;
     this.staticColor = Color$Companion_getInstance().BLACK;
     this.alpha = 1.0;
     this.saturation = 1.0;
     this.texture = null;
     this.normalMap = null;
+    this.environmentMap = null;
   }
   Object.defineProperty(ShaderProps.prototype, 'colorModel', {
     get: function () {
@@ -21862,6 +22062,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
           this.isVertexColor = false;
           this.isTextureColor = false;
           this.isStaticColor = true;
+          break;
+        case 'CUSTOM_COLOR':
+          this.isVertexColor = false;
+          this.isTextureColor = false;
+          this.isStaticColor = false;
           break;
       }
     }
@@ -22097,6 +22302,41 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   UniformTexture2Dv.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'UniformTexture2Dv',
+    interfaces: [Uniform]
+  };
+  function UniformTextureCubeMap(name) {
+    Uniform.call(this, name, null);
+    this.type_f4ahq3$_0 = 'samplerCube';
+    this.value_t3l3wk$_0 = null;
+  }
+  Object.defineProperty(UniformTextureCubeMap.prototype, 'type', {
+    get: function () {
+      return this.type_f4ahq3$_0;
+    }
+  });
+  Object.defineProperty(UniformTextureCubeMap.prototype, 'value', {
+    get: function () {
+      return this.value_t3l3wk$_0;
+    },
+    set: function (value) {
+      this.value_t3l3wk$_0 = value;
+    }
+  });
+  UniformTextureCubeMap.prototype.doBind_aemszp$ = function (ctx) {
+    var tex = this.value;
+    if (tex != null) {
+      var unit = ctx.textureMgr.bindTexture_xyx3x4$(tex, ctx);
+      if (tex.isValid && ensureNotNull(tex.res).isLoaded) {
+        glUniform1i(this.location, unit);
+      }
+    }
+     else {
+      glUniform1i(this.location, 0);
+    }
+  };
+  UniformTextureCubeMap.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'UniformTextureCubeMap',
     interfaces: [Uniform]
   };
   function Uniform1i(name) {
@@ -22438,8 +22678,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
   });
   TextureData.prototype.loadData_wmmari$ = function (texture, ctx) {
-    this.onLoad_dletmp$(texture, ctx);
-    ensureNotNull(texture.res).isLoaded = true;
+    this.onLoad_2jsdat$(texture, texture.props.target, ctx);
     if (texture.props.minFilter === 9987) {
       glGenerateMipmap(ensureNotNull(texture.res).target);
     }
@@ -22461,7 +22700,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return true;
     }
   });
-  BufferedTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
+  BufferedTextureData.prototype.onLoad_2jsdat$ = function (texture, target, ctx) {
     var tmp$;
     tmp$ = texture.res;
     if (tmp$ == null) {
@@ -22471,7 +22710,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var limit = this.buffer.limit;
     var pos = this.buffer.position;
     this.buffer.flip();
-    glTexImage2D(res.target, 0, this.format, this.width, this.height, 0, this.format, 5121, this.buffer);
+    glTexImage2D(target, 0, this.format, this.width, this.height, 0, this.format, 5121, this.buffer);
     this.buffer.limit = limit;
     this.buffer.position = pos;
     ctx.memoryMgr.memoryAllocated_927jj9$(res, this.buffer.position);
@@ -22479,6 +22718,37 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   BufferedTextureData.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'BufferedTextureData',
+    interfaces: [TextureData]
+  };
+  function CubeMapTextureData(front, back, left, right, top, bottom) {
+    TextureData.call(this);
+    this.front = front;
+    this.back = back;
+    this.left = left;
+    this.right = right;
+    this.top = top;
+    this.bottom = bottom;
+  }
+  Object.defineProperty(CubeMapTextureData.prototype, 'isAvailable', {
+    get: function () {
+      return this.front.isAvailable && this.back.isAvailable && this.left.isAvailable && this.right.isAvailable && this.top.isAvailable && this.bottom.isAvailable;
+    }
+  });
+  CubeMapTextureData.prototype.onLoad_2jsdat$ = function (texture, target, ctx) {
+    if (target !== 34067) {
+      throw KoolException_init('CubeMapTextureData can only be bound to target GL_TEXTURE_CUBE_MAP');
+    }
+    this.front.onLoad_2jsdat$(texture, 34074, ctx);
+    this.back.onLoad_2jsdat$(texture, 34073, ctx);
+    this.left.onLoad_2jsdat$(texture, 34070, ctx);
+    this.right.onLoad_2jsdat$(texture, 34069, ctx);
+    this.top.onLoad_2jsdat$(texture, 34071, ctx);
+    this.bottom.onLoad_2jsdat$(texture, 34072, ctx);
+    glTexParameteri(34067, 32882, 33071);
+  };
+  CubeMapTextureData.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CubeMapTextureData',
     interfaces: [TextureData]
   };
   function Texture(props, generator) {
@@ -22505,27 +22775,52 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       this.height_vdup1l$_0 = height;
     }
   });
-  Texture.prototype.onCreate_cwprtu$ = function (ctx) {
-    this.res = ctx.textureMgr.createTexture_wcl7ao$(this.props, ctx);
-  };
   Texture.prototype.dispose_aemszp$ = function (ctx) {
     if (this.isValid) {
       ctx.textureMgr.deleteTexture_wmmari$(this, ctx);
       this.res = null;
     }
   };
-  Texture.prototype.loadData_yashag$ = function (texData, ctx) {
+  Texture.prototype.load_v0ofbf$ = function (texData, ctx) {
+    var tmp$;
     if (!texData.isAvailable) {
       throw KoolException_init('Texture data is not available');
     }
+    tmp$ = this.res;
+    if (tmp$ == null) {
+      throw KoolException_init("Texture wasn't created");
+    }
+    var res = tmp$;
+    texData.loadData_wmmari$(this, ctx);
     this.width = texData.width;
     this.height = texData.height;
-    texData.loadData_wmmari$(this, ctx);
+    glTexParameteri(res.target, 10241, this.props.minFilter);
+    glTexParameteri(res.target, 10240, this.props.magFilter);
+    glTexParameteri(res.target, 10242, this.props.xWrapping);
+    glTexParameteri(res.target, 10243, this.props.yWrapping);
+    if (this.props.anisotropy > 1 && ctx.glCapabilities.anisotropicTexFilterInfo.isSupported) {
+      var a = numberToInt(ctx.glCapabilities.anisotropicTexFilterInfo.maxAnisotropy);
+      var b = this.props.anisotropy;
+      var anisotropy = Math_0.max(a, b);
+      glTexParameteri(res.target, ctx.glCapabilities.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
+    }
+    res.isLoaded = true;
   };
   Texture.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Texture',
     interfaces: [GlObject]
+  };
+  function CubeMapTexture(props, generator) {
+    Texture.call(this, props, generator);
+    if (props.target !== 34067) {
+      throw KoolException_init('CubeMapTexture must be initialized with TextureProps.target = GL_TEXTURE_CUBE_MAP');
+    }
+  }
+  CubeMapTexture.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CubeMapTexture',
+    interfaces: [Texture]
   };
   function TextureManager() {
     SharedResManager.call(this);
@@ -22588,8 +22883,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       makeActive = false;
     var tmp$;
     if (!texture.isValid) {
-      this.nextTexUnit_0();
-      texture.onCreate_cwprtu$(ctx);
+      texture.res = this.addReference_pl4ufq$(texture.props, ctx);
     }
     tmp$ = texture.res;
     if (tmp$ == null) {
@@ -22607,9 +22901,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       this.loadTexture_0(texture, ctx);
     }
     return texRes.texUnit;
-  };
-  TextureManager.prototype.createTexture_wcl7ao$ = function (props, ctx) {
-    return this.addReference_pl4ufq$(props, ctx);
   };
   TextureManager.prototype.deleteTexture_wmmari$ = function (texture, ctx) {
     var res = texture.res;
@@ -22651,13 +22942,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       if (res.texUnit !== this.activeTexUnit_0) {
         this.activateTexUnit_0(ensureNotNull(texture.res).texUnit);
       }
-      texture.loadData_yashag$(data, ctx);
+      texture.load_v0ofbf$(data, ctx);
       this.loadingTextures_0.remove_11rb$(texture.props.id);
       this.allowedTexLoads_0 = this.allowedTexLoads_0 - 1 | 0;
     }
   };
   TextureManager.prototype.createResource_pl4ufq$ = function (key, ctx) {
-    var texRes = TextureResource$Companion_getInstance().create_9khcnx$(key.target, key, ctx);
+    var texRes = TextureResource$Companion_getInstance().create_8057hp$(key, ctx);
+    this.nextTexUnit_0();
     this.bindToActiveTexUnit_0(texRes);
     return texRes;
   };
@@ -24439,6 +24731,75 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simpleName: 'Disposable',
     interfaces: []
   };
+  function EnvironmentMapRenderer(mapSize) {
+    if (mapSize === void 0)
+      mapSize = 512;
+    this.fboFt_0 = (new Framebuffer(mapSize, mapSize, 34071)).withDepth();
+    this.fboBk_0 = (new Framebuffer(mapSize, mapSize, 34072)).withDepth();
+    this.fboLt_0 = (new Framebuffer(mapSize, mapSize, 34070)).withDepth();
+    this.fboRt_0 = (new Framebuffer(mapSize, mapSize, 34069)).withDepth();
+    this.fboUp_0 = (new Framebuffer(mapSize, mapSize, 34073)).withDepth();
+    this.fboDn_0 = (new Framebuffer(mapSize, mapSize, 34074)).withDepth();
+    var $receiver = new PerspectiveCamera();
+    $receiver.fovy = 90.0;
+    this.envCam_0 = $receiver;
+    this.environmentMap = null;
+    var props = new TextureProps('env-map', 9729, 9729, 33071, 33071, 0, 34067);
+    this.environmentMap = new CubeMapTexture(props, EnvironmentMapRenderer_init$lambda(mapSize));
+    this.fboFt_0.colorAttachment = this.environmentMap;
+    this.fboBk_0.colorAttachment = this.environmentMap;
+    this.fboLt_0.colorAttachment = this.environmentMap;
+    this.fboRt_0.colorAttachment = this.environmentMap;
+    this.fboUp_0.colorAttachment = this.environmentMap;
+    this.fboDn_0.colorAttachment = this.environmentMap;
+  }
+  Object.defineProperty(EnvironmentMapRenderer.prototype, 'origin', {
+    get: function () {
+      return this.envCam_0.position;
+    }
+  });
+  EnvironmentMapRenderer.prototype.update_imm2b7$ = function (nodesToRender, ctx) {
+    var tmp$;
+    tmp$ = nodesToRender.get_za3lpa$(0).scene;
+    if (tmp$ == null) {
+      return;
+    }
+    var scene = tmp$;
+    var camera = scene.camera;
+    scene.camera = this.envCam_0;
+    this.renderView_0(nodesToRender, this.fboFt_0, Vec3f$Companion_getInstance().Y_AXIS, Vec3f$Companion_getInstance().Z_AXIS, ctx);
+    this.renderView_0(nodesToRender, this.fboBk_0, Vec3f$Companion_getInstance().NEG_Y_AXIS, Vec3f$Companion_getInstance().NEG_Z_AXIS, ctx);
+    this.renderView_0(nodesToRender, this.fboLt_0, Vec3f$Companion_getInstance().NEG_X_AXIS, Vec3f$Companion_getInstance().NEG_Y_AXIS, ctx);
+    this.renderView_0(nodesToRender, this.fboRt_0, Vec3f$Companion_getInstance().X_AXIS, Vec3f$Companion_getInstance().NEG_Y_AXIS, ctx);
+    this.renderView_0(nodesToRender, this.fboUp_0, Vec3f$Companion_getInstance().Z_AXIS, Vec3f$Companion_getInstance().NEG_Y_AXIS, ctx);
+    this.renderView_0(nodesToRender, this.fboDn_0, Vec3f$Companion_getInstance().NEG_Z_AXIS, Vec3f$Companion_getInstance().NEG_Y_AXIS, ctx);
+    scene.camera = camera;
+  };
+  EnvironmentMapRenderer.prototype.renderView_0 = function (nodesToRender, target, dir, up, ctx) {
+    target.bind_aemszp$(ctx);
+    glClear(256);
+    ctx.mvpState.pushMatrices();
+    ctx.mvpState.modelMatrix.setIdentity();
+    this.envCam_0.lookAt.set_czzhiu$(this.envCam_0.position).add_czzhiu$(dir);
+    this.envCam_0.up.set_czzhiu$(up);
+    this.envCam_0.updateCamera_aemszp$(ctx);
+    for (var i = 0; i !== nodesToRender.size; ++i) {
+      nodesToRender.get_za3lpa$(i).render_aemszp$(ctx);
+    }
+    ctx.mvpState.popMatrices();
+    ctx.mvpState.update_aemszp$(ctx);
+    target.unbind_aemszp$(ctx);
+  };
+  function EnvironmentMapRenderer_init$lambda(closure$mapSize) {
+    return function ($receiver, it) {
+      return new CubeMapTextureData(new FbColorTexData(closure$mapSize, closure$mapSize), new FbColorTexData(closure$mapSize, closure$mapSize), new FbColorTexData(closure$mapSize, closure$mapSize), new FbColorTexData(closure$mapSize, closure$mapSize), new FbColorTexData(closure$mapSize, closure$mapSize), new FbColorTexData(closure$mapSize, closure$mapSize));
+    };
+  }
+  EnvironmentMapRenderer.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'EnvironmentMapRenderer',
+    interfaces: []
+  };
   function uiFont(family, sizeDp, uiDpi, ctx, style, chars) {
     if (style === void 0)
       style = 0;
@@ -24537,6 +24898,33 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.normHeight = this.fontProps.sizeUnits * 0.7;
     this.charMap = Font$Companion_getInstance().getCharMap_0(this.fontProps, ctx);
   }
+  Font.prototype.textWidth_61zpoe$ = function (string) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var width = 0.0;
+    var maxWidth = 0.0;
+    tmp$ = get_indices_0(string);
+    tmp$_0 = tmp$.first;
+    tmp$_1 = tmp$.last;
+    tmp$_2 = tmp$.step;
+    for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
+      var c = string.charCodeAt(i);
+      width += this.charWidth_s8itvh$(c);
+      if (width > maxWidth) {
+        maxWidth = width;
+      }
+      if (c === 10) {
+        width = 0.0;
+      }
+    }
+    return maxWidth;
+  };
+  Font.prototype.charWidth_s8itvh$ = function (char) {
+    var tmp$, tmp$_0;
+    return (tmp$_0 = (tmp$ = this.charMap.get_11rb$(toBoxedChar(char))) != null ? tmp$.advance : null) != null ? tmp$_0 : 0.0;
+  };
+  Font.prototype.toString = function () {
+    return 'Font(' + this.fontProps.family + ', ' + this.fontProps.sizePts + 'pts, ' + this.fontProps.style + ')';
+  };
   function Font$Companion() {
     Font$Companion_instance = this;
     this.PLAIN = 0;
@@ -24579,33 +24967,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     return Font$Companion_instance;
   }
-  Font.prototype.textWidth_61zpoe$ = function (string) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    var width = 0.0;
-    var maxWidth = 0.0;
-    tmp$ = get_indices_0(string);
-    tmp$_0 = tmp$.first;
-    tmp$_1 = tmp$.last;
-    tmp$_2 = tmp$.step;
-    for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
-      var c = string.charCodeAt(i);
-      width += this.charWidth_s8itvh$(c);
-      if (width > maxWidth) {
-        maxWidth = width;
-      }
-      if (c === 10) {
-        width = 0.0;
-      }
-    }
-    return maxWidth;
-  };
-  Font.prototype.charWidth_s8itvh$ = function (char) {
-    var tmp$, tmp$_0;
-    return (tmp$_0 = (tmp$ = this.charMap.get_11rb$(toBoxedChar(char))) != null ? tmp$.advance : null) != null ? tmp$_0 : 0.0;
-  };
-  Font.prototype.toString = function () {
-    return 'Font(' + this.fontProps.family + ', ' + this.fontProps.sizePts + 'pts, ' + this.fontProps.style + ')';
-  };
   function Font_init$lambda(closure$fontProps) {
     return function ($receiver, it) {
       return Font$Companion_getInstance().getCharMap_0(closure$fontProps, it).textureData;
@@ -32283,8 +32644,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return this.image.complete;
     }
   });
-  ImageTextureData.prototype.onLoad_dletmp$ = function (texture, ctx) {
-    JsImpl_getInstance().gl.texImage2D(3553, 0, 6408, 6408, 5121, this.image);
+  ImageTextureData.prototype.onLoad_2jsdat$ = function (texture, target, ctx) {
+    JsImpl_getInstance().gl.texImage2D(target, 0, 6408, 6408, 5121, this.image);
     this.width = this.image.width;
     this.height = this.image.height;
     var size = Kotlin.imul(this.width, this.height) * 4 | 0;
@@ -32954,6 +33315,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$kool.AssetManager = AssetManager;
   package$kool.assetTexture_ivxn3r$ = assetTexture;
   package$kool.assetTexture_4689t5$ = assetTexture_0;
+  package$kool.assetTextureCubeMap_y2is7l$ = assetTextureCubeMap;
   var package$gl = package$kool.gl || (package$kool.gl = {});
   Object.defineProperty(package$gl, 'GL_ACTIVE_TEXTURE', {
     get: function () {
@@ -33900,6 +34262,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return GL_TEXTURE_WRAP_T;
     }
   });
+  Object.defineProperty(package$gl, 'GL_TEXTURE_WRAP_R', {
+    get: function () {
+      return GL_TEXTURE_WRAP_R;
+    }
+  });
   Object.defineProperty(package$gl, 'GL_TEXTURE', {
     get: function () {
       return GL_TEXTURE;
@@ -34480,6 +34847,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   });
   $$importsForInline$$.kool = _;
   package$gl.FramebufferResource = FramebufferResource;
+  Object.defineProperty(FbColorTexData, 'Companion', {
+    get: FbColorTexData$Companion_getInstance
+  });
+  package$gl.FbColorTexData = FbColorTexData;
+  Object.defineProperty(FbDepthTexData, 'Companion', {
+    get: FbDepthTexData$Companion_getInstance
+  });
+  package$gl.FbDepthTexData = FbDepthTexData;
   package$gl.GlObject = GlObject;
   Object.defineProperty(GlResource$Type, 'BUFFER', {
     get: GlResource$Type$BUFFER_getInstance
@@ -34997,6 +35372,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$scene.Node = Node;
   package$scene.scene_13di2z$ = scene;
   package$scene.Scene = Scene;
+  package$scene.Skybox = Skybox;
   package$scene.sphericalInputTransform_6sxffc$ = sphericalInputTransform;
   package$scene.defaultCamTransform_v4keia$ = defaultCamTransform;
   Object.defineProperty(SphericalInputTransform$DragMethod, 'NONE', {
@@ -35182,6 +35558,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Object.defineProperty(ColorModel, 'STATIC_COLOR', {
     get: ColorModel$STATIC_COLOR_getInstance
   });
+  Object.defineProperty(ColorModel, 'CUSTOM_COLOR', {
+    get: ColorModel$CUSTOM_COLOR_getInstance
+  });
   Object.defineProperty(FogModel, 'FOG_OFF', {
     get: FogModel$FOG_OFF_getInstance
   });
@@ -35214,6 +35593,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$shading.Uniform = Uniform;
   package$shading.UniformTexture2D = UniformTexture2D;
   package$shading.UniformTexture2Dv = UniformTexture2Dv;
+  package$shading.UniformTextureCubeMap = UniformTextureCubeMap;
   package$shading.Uniform1i = Uniform1i;
   package$shading.Uniform1iv = Uniform1iv;
   package$shading.Uniform1f = Uniform1f;
@@ -35234,7 +35614,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$kool.TextureProps = TextureProps;
   package$kool.TextureData = TextureData;
   package$kool.BufferedTextureData = BufferedTextureData;
+  package$kool.CubeMapTextureData = CubeMapTextureData;
   package$kool.Texture = Texture;
+  package$kool.CubeMapTexture = CubeMapTexture;
   package$kool.TextureManager = TextureManager;
   Object.defineProperty(Animator, 'Companion', {
     get: Animator$Companion_getInstance
@@ -35284,6 +35666,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$util.Position = Position;
   package$util.debugOverlay_msaor1$ = debugOverlay;
   package$util.Disposable = Disposable;
+  package$util.EnvironmentMapRenderer = EnvironmentMapRenderer;
   package$util.uiFont_a4r08d$ = uiFont;
   package$util.fontShader_s2xzqe$ = fontShader;
   package$util.FontProps = FontProps;
@@ -35633,6 +36016,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   terminateOnFaceCountAbs$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   terminateOnError$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   MeshRayTest$Companion$nopTest$ObjectLiteral.prototype.onMeshDataChanged_f1jspk$ = MeshRayTest.prototype.onMeshDataChanged_f1jspk$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
   BlankComponentUi.prototype.createUi_aemszp$ = ComponentUi.prototype.createUi_aemszp$;
   BlankComponentUi.prototype.updateUi_aemszp$ = ComponentUi.prototype.updateUi_aemszp$;
@@ -35916,6 +36305,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   GL_TEXTURE_MIN_FILTER = 10241;
   GL_TEXTURE_WRAP_S = 10242;
   GL_TEXTURE_WRAP_T = 10243;
+  GL_TEXTURE_WRAP_R = 32882;
   GL_TEXTURE = 5890;
   GL_TEXTURE_CUBE_MAP = 34067;
   GL_TEXTURE_BINDING_CUBE_MAP = 34068;

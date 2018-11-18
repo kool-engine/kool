@@ -2,8 +2,16 @@ package de.fabmax.kool
 
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.util.Uint8Buffer
+import kotlin.math.max
 
 /**
+ * Texture related classes. Texture stuff is split among several classes:
+ *  - TextureProps define texture properties (filtering, etc)
+ *  - TextureData wraps the actual image source which is loaded lazily
+ *  - Texture wraps the OpenGL texture object and a TextureData generator, one object per texture instance
+ *  - TextureResource represents the OpenGL resource object, single object per texture, can be shared between multiple
+ *    Texture instances.
+ *
  * @author fabmax
  */
 
@@ -53,14 +61,13 @@ abstract class TextureData {
         protected set
 
     internal fun loadData(texture: Texture, ctx: KoolContext) {
-        onLoad(texture, ctx)
-        texture.res!!.isLoaded = true
+        onLoad(texture, texture.props.target, ctx)
         if (texture.props.minFilter == GL_LINEAR_MIPMAP_LINEAR) {
             glGenerateMipmap(texture.res!!.target)
         }
     }
 
-    abstract fun onLoad(texture: Texture, ctx: KoolContext)
+    abstract fun onLoad(texture: Texture, target: Int, ctx: KoolContext)
 }
 
 /**
@@ -81,15 +88,37 @@ class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val 
         this.height = height
     }
 
-    override fun onLoad(texture: Texture, ctx: KoolContext) {
+    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
         val res = texture.res ?: throw KoolException("Texture wasn't created")
         val limit = buffer.limit
         val pos = buffer.position
         buffer.flip()
-        glTexImage2D(res.target, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
+        glTexImage2D(target, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
         buffer.limit = limit
         buffer.position = pos
         ctx.memoryMgr.memoryAllocated(res, buffer.position)
+    }
+}
+
+open class CubeMapTextureData(val front: TextureData, val back: TextureData, val left: TextureData,
+                              val right: TextureData, val top: TextureData, val bottom: TextureData) : TextureData() {
+    override val isAvailable: Boolean get() = front.isAvailable && back.isAvailable && left.isAvailable &&
+            right.isAvailable && top.isAvailable && bottom.isAvailable
+
+    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
+        if (target != GL_TEXTURE_CUBE_MAP) {
+            throw KoolException("CubeMapTextureData can only be bound to target GL_TEXTURE_CUBE_MAP")
+        }
+
+        // load all cube map sides
+        front.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, ctx)
+        back.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, ctx)
+        left.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, ctx)
+        right.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_X, ctx)
+        top.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, ctx)
+        bottom.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, ctx)
+
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
     }
 }
 
@@ -103,10 +132,6 @@ open class Texture(val props: TextureProps, val generator: Texture.(ctx: KoolCon
 
     var delayLoading = false
 
-    internal fun onCreate(ctx: KoolContext) {
-        res = ctx.textureMgr.createTexture(props, ctx)
-    }
-
     override fun dispose(ctx: KoolContext) {
         // do not call super, as this will immediately delete the texture on the GPU. However, texture resource is
         // shared and might be used by other Texture objects...
@@ -116,12 +141,39 @@ open class Texture(val props: TextureProps, val generator: Texture.(ctx: KoolCon
         }
     }
 
-    internal fun loadData(texData: TextureData, ctx: KoolContext) {
+    /**
+     * Called by [TextureManager] once texture data is available. This method is only called once per TextureResource
+     * object; i.e. if TextureResource is shared between multiple Texture objects, this method is only called once.
+     */
+    open fun load(texData: TextureData, ctx: KoolContext) {
         if (!texData.isAvailable) {
             throw KoolException("Texture data is not available")
         }
+        val res = res ?: throw KoolException("Texture wasn't created")
+
+        texData.loadData(this, ctx)
         width = texData.width
         height = texData.height
-        texData.loadData(this, ctx)
+
+        // set filter properties
+        glTexParameteri(res.target, GL_TEXTURE_MIN_FILTER, props.minFilter)
+        glTexParameteri(res.target, GL_TEXTURE_MAG_FILTER, props.magFilter)
+        glTexParameteri(res.target, GL_TEXTURE_WRAP_S, props.xWrapping)
+        glTexParameteri(res.target, GL_TEXTURE_WRAP_T, props.yWrapping)
+        if (props.anisotropy > 1 && ctx.glCapabilities.anisotropicTexFilterInfo.isSupported) {
+            val anisotropy = max(ctx.glCapabilities.anisotropicTexFilterInfo.maxAnisotropy.toInt(), props.anisotropy)
+            glTexParameteri(res.target, ctx.glCapabilities.anisotropicTexFilterInfo.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy)
+        }
+
+        res.isLoaded = true
+    }
+}
+
+open class CubeMapTexture(props: TextureProps, generator: Texture.(ctx: KoolContext) -> CubeMapTextureData) :
+        Texture(props, generator) {
+    init {
+        if (props.target != GL_TEXTURE_CUBE_MAP) {
+            throw KoolException("CubeMapTexture must be initialized with TextureProps.target = GL_TEXTURE_CUBE_MAP")
+        }
     }
 }

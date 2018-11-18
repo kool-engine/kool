@@ -41,7 +41,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
             "boxDemo" to DemoEntry("Physics Demo") { addAll(collisionDemo(it)) },
             "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) },
-            "instancedDemo" to DemoEntry("Instanced Demo") { add(instancedDemo(it)) }
+            "instancedDemo" to DemoEntry("Instanced Demo") { add(instancedDemo(it)) },
+            "reflectionDemo" to DemoEntry("Reflection Demo") { addAll(reflectionDemo(it)) }
     )
 
     init {

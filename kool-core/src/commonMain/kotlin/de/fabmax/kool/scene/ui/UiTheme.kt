@@ -124,7 +124,7 @@ class ThemeOrCustomProp<T>(initVal: T) {
         private set
 
     val isUpdate: Boolean
-        get() = (isCustom && prop != customVal) || (isThemeSet && prop != themeVal)
+        get() = (isCustom && prop != customVal) || (!isCustom && isThemeSet && prop != themeVal)
 
     fun setTheme(themeVal: T): ThemeOrCustomProp<T> {
         this.themeVal = themeVal

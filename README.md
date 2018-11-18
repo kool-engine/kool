@@ -16,18 +16,8 @@ yet. That's fine for [a few boxes](https://fabmax.github.io/kool/kool-js/?demo=b
 it's surprisingly fast given the fact that there is no intelligent broadphase - JVM implementation handles
 200 bodies, js is slower...).
 
-## Updated to Kotlin 1.3
-I updated to Kotlin 1.3 which comes with a new project structure for multi-platform projects. However, there are still
-a few issues:
-- In IntelliJ, JVM main target in kool-demo project doesn't resolve any packages from kool-core. Adding an explicit
-dependsOn commonMain to jvmMain source set doesn't change that. jvmTest and jsMain work as expected. Gradle build also
-succeeds if kool-core packages are referenced (seems to be a kotlin-IntellIJ-plugin thing?).
-- Project layout for Android target is a bit messy: Android build plugin expects Manifest and resources at src/main/
-Apparently it's not possible to move that to androidMain.
-- Android target remains disabled by default. If Android target is enabled, jvmMain doesn't work anymore. Android gradle
-plugin seems to mess JVM related things up.
-
 ## Features / Noticeable stuff:
+- Environment-Mapping for sky-boxes and (dynamic) reflections: [Reflection Demo](https://fabmax.github.io/kool/kool-js/?demo=reflectionDemo)
 - Instanced rendering: [Instanced Mesh Demo](https://fabmax.github.io/kool/kool-js/?demo=instancedDemo)
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo) module using error quadrics
 - Added elevation mapping in [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo) (Europe only) - Zoom in on the alps!
@@ -40,6 +30,7 @@ plugin seems to mess JVM related things up.
 - Normal mapping
 - OpenStreetMap tile loading: [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo)
 - Synthie music: [Synthie Demo](https://fabmax.github.io/kool/kool-js/?demo=synthieDemo), quite CPU intense...
+- Multiplatform support for Desktop JVM, Javascript and Android
 - Multi-scene / multi-viewport support
 - Some simple UI stuff: Text-Fields, (Toggle-)Buttons, Sliders, Labels
 - Meshes with shared geometry
@@ -104,6 +95,13 @@ fun main(args: Array<String>) {
     ctx.run()
 }
 ```
+
+## A few notes on Android
+Multiplatform support for Android still has a few issues:
+- Project layout for Android target is a bit messy: Android build plugin expects Manifest and resources at src/main/
+Apparently it's not possible to move that to androidMain.
+- Android target remains disabled by default. If Android target is enabled, jvmMain doesn't work anymore. Android gradle
+plugin seems to mess JVM related things up.
 
 ## Try it
 Library is published on bintray. Use it with gradle:

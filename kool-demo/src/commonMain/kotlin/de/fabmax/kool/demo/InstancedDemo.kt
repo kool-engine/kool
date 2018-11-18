@@ -90,8 +90,7 @@ private fun spawnMesh(proto: Armature, shadows: ShadowMap?, movementSpeed: Float
     // create shader
     mesh.shader = ModelShader {
         lightModel = LightModel.PHONG_LIGHTING
-        colorModel = ColorModel.STATIC_COLOR
-        staticColor = Color.GRAY
+        colorModel = ColorModel.CUSTOM_COLOR
         shadowMap = shadows
         isInstanced = true
 

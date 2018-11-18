@@ -1,5 +1,6 @@
 package de.fabmax.kool.shading
 
+import de.fabmax.kool.CubeMapTexture
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.gl.*
@@ -60,6 +61,24 @@ class UniformTexture2Dv(name: String, size: Int) : Uniform<Array<Texture?>>(name
             }
         }
         glUniform1iv(location, texNames)
+    }
+}
+
+class UniformTextureCubeMap(name: String) : Uniform<CubeMapTexture?>(name, null) {
+    override val type = "samplerCube"
+    override var value: CubeMapTexture? = null
+        public set      // explicit public is needed to overwrite protected set from super
+
+    override fun doBind(ctx: KoolContext) {
+        val tex = value
+        if (tex != null) {
+            val unit = ctx.textureMgr.bindTexture(tex, ctx)
+            if (tex.isValid && tex.res!!.isLoaded) {
+                glUniform1i(location, unit)
+            }
+        } else {
+            glUniform1i(location, GL_NONE)
+        }
     }
 }
 

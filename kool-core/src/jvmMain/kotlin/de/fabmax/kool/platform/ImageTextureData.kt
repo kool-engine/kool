@@ -27,7 +27,7 @@ class ImageTextureData : TextureData() {
         isAvailable = true
     }
 
-    override fun onLoad(texture: Texture, ctx: KoolContext) {
+    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
         val res = texture.res ?: throw KoolException("Texture wasn't created")
         val limit = buffer!!.limit
         val pos = buffer!!.position
@@ -40,7 +40,7 @@ class ImageTextureData : TextureData() {
 //        }
         val intFormat = format
 
-        glTexImage2D(res.target, 0, intFormat, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
+        glTexImage2D(target, 0, intFormat, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
         buffer!!.limit = limit
         buffer!!.position = pos
         ctx.memoryMgr.memoryAllocated(res, buffer!!.position)

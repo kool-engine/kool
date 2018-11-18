@@ -50,40 +50,6 @@ data class FontProps(
 class Font(val fontProps: FontProps, ctx: KoolContext) :
         Texture(defaultProps(fontProps.toString()), { getCharMap(fontProps, it).textureData }) {
 
-    companion object {
-        const val PLAIN = 0
-        const val BOLD = 1
-        const val ITALIC = 2
-
-        const val SYSTEM_FONT = "-apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
-
-        val STD_CHARS: String
-        val DEFAULT_FONT_PROPS: FontProps
-
-        private val charMaps: MutableMap<FontProps, CharMap> = mutableMapOf()
-
-        init {
-            var str = ""
-            for (i in 32..126) {
-                str += i.toChar()
-            }
-            str += "äÄöÖüÜß°©"
-            STD_CHARS = str
-            DEFAULT_FONT_PROPS = FontProps(SYSTEM_FONT, 12f)
-        }
-
-        fun defaultFont(ctx: KoolContext): Font = Font(Font.DEFAULT_FONT_PROPS, ctx)
-
-        private fun getCharMap(fontProps: FontProps, ctx: KoolContext): CharMap {
-            var map = charMaps[fontProps]
-            if (map == null) {
-                map = ctx.assetMgr.createCharMap(fontProps)
-                charMaps[fontProps] = map
-            }
-            return map
-        }
-    }
-
     val charMap: CharMap
 
     val lineSpace = fontProps.sizeUnits * 1.2f
@@ -116,6 +82,40 @@ class Font(val fontProps: FontProps, ctx: KoolContext) :
 
     override fun toString(): String {
         return "Font(${fontProps.family}, ${fontProps.sizePts}pts, ${fontProps.style})"
+    }
+
+    companion object {
+        const val PLAIN = 0
+        const val BOLD = 1
+        const val ITALIC = 2
+
+        const val SYSTEM_FONT = "-apple-system, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+
+        val STD_CHARS: String
+        val DEFAULT_FONT_PROPS: FontProps
+
+        private val charMaps: MutableMap<FontProps, CharMap> = mutableMapOf()
+
+        init {
+            var str = ""
+            for (i in 32..126) {
+                str += i.toChar()
+            }
+            str += "äÄöÖüÜß°©"
+            STD_CHARS = str
+            DEFAULT_FONT_PROPS = FontProps(SYSTEM_FONT, 12f)
+        }
+
+        fun defaultFont(ctx: KoolContext): Font = Font(Font.DEFAULT_FONT_PROPS, ctx)
+
+        private fun getCharMap(fontProps: FontProps, ctx: KoolContext): CharMap {
+            var map = charMaps[fontProps]
+            if (map == null) {
+                map = ctx.assetMgr.createCharMap(fontProps)
+                charMaps[fontProps] = map
+            }
+            return map
+        }
     }
 }
 

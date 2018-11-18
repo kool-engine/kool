@@ -5,7 +5,7 @@ import de.fabmax.kool.assetTexture
 import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_REPEAT
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.scene.group
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.textureMesh
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
@@ -13,10 +13,10 @@ import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 
-fun makeGroundGrid(cells: Int, shadows: ShadowMap? = null, y: Float = 0f) = group {
+fun makeGroundGrid(cells: Int, shadows: ShadowMap? = null, y: Float = 0f): Node {
     val groundExt = cells / 2
 
-    +textureMesh(isNormalMapped = true) {
+    return textureMesh(isNormalMapped = true) {
         isCastingShadow = false
         generator = {
             withTransform {

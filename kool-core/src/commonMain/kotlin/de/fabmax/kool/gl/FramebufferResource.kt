@@ -9,7 +9,8 @@ import de.fabmax.kool.util.UniqueId
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
-class Framebuffer(val width: Int, val height: Int) : Disposable {
+class Framebuffer(val width: Int, val height: Int, val texTargetColor: Int = GL_TEXTURE_2D,
+                  val texTargetDepth: Int = GL_TEXTURE_2D) : Disposable {
 
     private val fbId = UniqueId.nextId()
 
@@ -17,9 +18,7 @@ class Framebuffer(val width: Int, val height: Int) : Disposable {
         private set
 
     var colorAttachment: Texture? = null
-        private set
     var depthAttachment: Texture? = null
-        private set
 
     fun withColor(): Framebuffer {
         if (colorAttachment == null) {
@@ -46,7 +45,7 @@ class Framebuffer(val width: Int, val height: Int) : Disposable {
     }
 
     fun bind(ctx: KoolContext) {
-        val fb = fbResource ?: FramebufferResource.create(width, height, ctx).apply {
+        val fb = fbResource ?: FramebufferResource.create(width, height, texTargetColor, texTargetDepth, ctx).apply {
             fbResource = this
             colorAttachment = this@Framebuffer.colorAttachment
             depthAttachment = this@Framebuffer.depthAttachment
@@ -59,11 +58,12 @@ class Framebuffer(val width: Int, val height: Int) : Disposable {
     }
 }
 
-class FramebufferResource private constructor(glRef: Any, val width: Int, val height: Int, ctx: KoolContext) :
+class FramebufferResource private constructor(glRef: Any, val width: Int, val height: Int, val texTargetColor: Int,
+                                              val texTargetDepth: Int, ctx: KoolContext) :
         GlResource(glRef, Type.FRAMEBUFFER, ctx) {
     companion object {
-        fun create(width: Int, height: Int, ctx: KoolContext): FramebufferResource {
-            return FramebufferResource(glCreateFramebuffer(), width, height, ctx)
+        fun create(width: Int, height: Int, texTargetColor: Int, texTargetDepth: Int, ctx: KoolContext): FramebufferResource {
+            return FramebufferResource(glCreateFramebuffer(), width, height, texTargetColor, texTargetDepth, ctx)
         }
     }
     private val fbId = UniqueId.nextId()
@@ -85,7 +85,7 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
             val color = colorAttachment
             if (color != null) {
                 ctx.textureMgr.bindTexture(color, ctx)
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color.res!!, 0)
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texTargetColor, color.res!!, 0)
             } else {
                 glDrawBuffer(GL_NONE)
                 glReadBuffer(GL_NONE)
@@ -93,7 +93,7 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
             val depth = depthAttachment
             if (depth != null) {
                 ctx.textureMgr.bindTexture(depth, ctx)
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth.res!!, 0)
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texTargetDepth, depth.res!!, 0)
             }
 
             var fbStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER)
@@ -131,7 +131,7 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
     }
 }
 
-private class FbColorTexData(width: Int, height: Int) : TextureData() {
+class FbColorTexData(width: Int, height: Int) : TextureData() {
     override val isAvailable: Boolean get() = true
 
     init {
@@ -139,9 +139,9 @@ private class FbColorTexData(width: Int, height: Int) : TextureData() {
         this.height = height
     }
 
-    override fun onLoad(texture: Texture, ctx: KoolContext) {
+    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
         // sets up the color attachment texture
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null)
+        glTexImage2D(target, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null)
     }
 
     companion object {
@@ -155,7 +155,7 @@ private class FbColorTexData(width: Int, height: Int) : TextureData() {
     }
 }
 
-private class FbDepthTexData(width: Int, height: Int) : TextureData() {
+class FbDepthTexData(width: Int, height: Int) : TextureData() {
     override val isAvailable: Boolean get() = true
 
     init {
@@ -163,13 +163,13 @@ private class FbDepthTexData(width: Int, height: Int) : TextureData() {
         this.height = height
     }
 
-    override fun onLoad(texture: Texture, ctx: KoolContext) {
+    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
         // make sure correct filter method is set (GLES only supports GL_NEAREST for depth textures)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, ctx.glCapabilities.depthFilterMethod)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, ctx.glCapabilities.depthFilterMethod)
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, ctx.glCapabilities.depthFilterMethod)
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, ctx.glCapabilities.depthFilterMethod)
 
         // sets up the depth attachment texture
-        glTexImage2D(GL_TEXTURE_2D, 0, ctx.glCapabilities.depthComponentIntFormat, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, null)
+        glTexImage2D(target, 0, ctx.glCapabilities.depthComponentIntFormat, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, null)
     }
 
     companion object {

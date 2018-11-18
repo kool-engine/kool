@@ -1,5 +1,6 @@
 package de.fabmax.kool.shading
 
+import de.fabmax.kool.CubeMapTexture
 import de.fabmax.kool.Texture
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
@@ -13,7 +14,8 @@ enum class LightModel {
 enum class ColorModel {
     VERTEX_COLOR,
     TEXTURE_COLOR,
-    STATIC_COLOR
+    STATIC_COLOR,
+    CUSTOM_COLOR
 }
 
 enum class FogModel {
@@ -29,6 +31,7 @@ class ShaderProps {
                 ColorModel.VERTEX_COLOR -> { isVertexColor = true; isTextureColor = false; isStaticColor = false }
                 ColorModel.TEXTURE_COLOR -> { isVertexColor = false; isTextureColor = true; isStaticColor = false }
                 ColorModel.STATIC_COLOR -> { isVertexColor = false; isTextureColor = false; isStaticColor = true }
+                ColorModel.CUSTOM_COLOR -> { isVertexColor = false; isTextureColor = false; isStaticColor = false }
             }
         }
     var fogModel = FogModel.FOG_OFF
@@ -48,13 +51,16 @@ class ShaderProps {
     var shadowMap: ShadowMap? = null
 
     var isNormalMapped = false
+    var isEnvironmentMapped = false
 
     // init values for newly created BasicShader
     var shininess = 20.0f
     var specularIntensity = 0.75f
+    var reflectiveness = 0.5f
     var staticColor = Color.BLACK
     var alpha = 1.0f
     var saturation = 1.0f
     var texture: Texture? = null
     var normalMap: Texture? = null
+    var environmentMap: CubeMapTexture? = null
 }

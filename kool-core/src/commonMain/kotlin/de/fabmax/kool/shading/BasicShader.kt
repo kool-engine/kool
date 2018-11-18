@@ -1,5 +1,6 @@
 package de.fabmax.kool.shading
 
+import de.fabmax.kool.CubeMapTexture
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
 import de.fabmax.kool.Texture
@@ -29,9 +30,11 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     protected val uCamPosition = addUniform(Uniform3f(GlslGenerator.U_CAMERA_POSITION))
     protected val uShininess = addUniform(Uniform1f(GlslGenerator.U_SHININESS))
     protected val uSpecularIntensity = addUniform(Uniform1f(GlslGenerator.U_SPECULAR_INTENSITY))
+    protected val uReflectiveness = addUniform(Uniform1f(GlslGenerator.U_REFLECTIVENESS))
     protected val uStaticColor = addUniform(Uniform4f(GlslGenerator.U_STATIC_COLOR))
     protected val uTexture = addUniform(UniformTexture2D(GlslGenerator.U_TEXTURE_0))
     protected val uNormalMap = addUniform(UniformTexture2D(GlslGenerator.U_NORMAL_MAP_0))
+    protected val uEnvironmentMap = addUniform(UniformTextureCubeMap(GlslGenerator.U_ENVIRONMENT_MAP))
     protected val uAlpha = addUniform(Uniform1f(GlslGenerator.U_ALPHA))
     protected val uSaturation = addUniform(Uniform1f(GlslGenerator.U_SATURATION))
     protected val uFogColor = addUniform(Uniform4f(GlslGenerator.U_FOG_COLOR))
@@ -49,6 +52,9 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     var specularIntensity: Float
         get() = uSpecularIntensity.value[0]
         set(value) { uSpecularIntensity.value[0] = value }
+    var reflectiveness: Float
+        get() = uReflectiveness.value[0]
+        set(value) { uReflectiveness.value[0] = value }
     var staticColor: MutableVec4f
         get() = uStaticColor.value
         set(value) { uStaticColor.value.set(value) }
@@ -58,6 +64,9 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     var normalMap: Texture?
         get() = uNormalMap.value
         set(value) { uNormalMap.value = value }
+    var environmentMap: CubeMapTexture?
+        get() = uEnvironmentMap.value
+        set(value) { uEnvironmentMap.value = value }
     var alpha: Float
         get() = uAlpha.value[0]
         set(value) { uAlpha.value[0] = value }
@@ -75,9 +84,11 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         // set meaningful uniform default values
         shininess = props.shininess
         specularIntensity = props.specularIntensity
+        reflectiveness = props.reflectiveness
         staticColor.set(props.staticColor)
         texture = props.texture
         normalMap = props.normalMap
+        environmentMap = props.environmentMap
         alpha = props.alpha
         saturation = props.saturation
 
@@ -128,9 +139,11 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         uAlpha.bind(ctx)
         uShininess.bind(ctx)
         uSpecularIntensity.bind(ctx)
+        uReflectiveness.bind(ctx)
         uStaticColor.bind(ctx)
         uTexture.bind(ctx)
         uNormalMap.bind(ctx)
+        uEnvironmentMap.bind(ctx)
         uBones.bind(ctx)
 
         if (ctx.glCapabilities.depthTextures && shadowMap != null) {

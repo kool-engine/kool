@@ -269,8 +269,8 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
             height = value
         }
 
-        override fun onLoad(texture: Texture, ctx: KoolContext) {
-            glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, width, height, 0)
+        override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
+            glCopyTexImage2D(target, 0, GL_RGB, x, y, width, height, 0)
         }
     }
 
