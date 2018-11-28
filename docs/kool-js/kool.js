@@ -476,24 +476,24 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       delayLoading = true;
     return new Texture(props, assetTexture$lambda(delayLoading, props));
   }
-  function assetTextureCubeMap$lambda(closure$delayLoading, closure$frontPath, closure$backPath, closure$leftPath, closure$rightPath, closure$topPath, closure$bottomPath) {
+  function assetTextureCubeMap$lambda(closure$delayLoading, closure$frontPath, closure$backPath, closure$leftPath, closure$rightPath, closure$upPath, closure$downPath) {
     return function ($receiver, ctx) {
       $receiver.delayLoading = closure$delayLoading;
       var ft = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$frontPath);
       var bk = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$backPath);
       var lt = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$leftPath);
       var rt = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$rightPath);
-      var up = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$topPath);
-      var dn = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$bottomPath);
+      var up = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$upPath);
+      var dn = ctx.assetMgr.loadTextureAsset_61zpoe$(closure$downPath);
       return new CubeMapTextureData(ft, bk, lt, rt, up, dn);
     };
   }
-  function assetTextureCubeMap(frontPath, backPath, leftPath, rightPath, topPath, bottomPath, delayLoading) {
+  function assetTextureCubeMap(frontPath, backPath, leftPath, rightPath, upPath, downPath, delayLoading) {
     if (delayLoading === void 0)
       delayLoading = true;
-    var id = frontPath + '-' + backPath + '-' + leftPath + '-' + rightPath + '-' + topPath + '-' + bottomPath;
+    var id = frontPath + '-' + backPath + '-' + leftPath + '-' + rightPath + '-' + upPath + '-' + downPath;
     var props = new TextureProps(id, 9729, 9729, 33071, 33071, 0, 34067);
-    return new CubeMapTexture(props, assetTextureCubeMap$lambda(delayLoading, frontPath, backPath, leftPath, rightPath, topPath, bottomPath));
+    return new CubeMapTexture(props, assetTextureCubeMap$lambda(delayLoading, frontPath, backPath, leftPath, rightPath, upPath, downPath));
   }
   var GL_ACTIVE_TEXTURE;
   var GL_DEPTH_BUFFER_BIT;
@@ -1736,21 +1736,43 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function InputManager$registerKeyListener$lambda_0(it) {
     return true;
   }
+  var collectionSizeOrDefault = Kotlin.kotlin.collections.collectionSizeOrDefault_ba2ldo$;
+  var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
   InputManager.prototype.registerKeyListener_aviy8w$ = function (keyCode, name, filter, callback) {
     if (filter === void 0)
       filter = InputManager$registerKeyListener$lambda_0;
-    var existing = this.keyHandlers_0.get_11rb$(keyCode);
-    if (existing != null) {
+    var keyStr = 32 <= keyCode && keyCode <= 126 ? String.fromCharCode(toChar(keyCode)) : keyCode.toString();
+    var $receiver = this.keyHandlers_0;
+    var tmp$;
+    var value = $receiver.get_11rb$(keyCode);
+    if (value == null) {
+      var answer = ArrayList_init();
+      $receiver.put_xwzc9p$(keyCode, answer);
+      tmp$ = answer;
+    }
+     else {
+      tmp$ = value;
+    }
+    var listeners = tmp$;
+    if (!listeners.isEmpty()) {
       var $this = package$util.Log;
       var level = Log$Level.WARN;
       var tag = Kotlin.getKClassFromExpression(this).simpleName;
       if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'KeyListener ' + '"' + name + '"' + ' replaces existing KexListener ' + '"' + existing.name + '"');
+        var tmp$_0 = $this.printer;
+        var tmp$_1 = 'Multiple bindings for key ' + keyStr + ': ';
+        var destination = ArrayList_init_0(collectionSizeOrDefault(listeners, 10));
+        var tmp$_2;
+        tmp$_2 = listeners.iterator();
+        while (tmp$_2.hasNext()) {
+          var item = tmp$_2.next();
+          destination.add_11rb$(item.name);
+        }
+        tmp$_0.call($this, level, tag, tmp$_1 + destination);
       }
     }
     var handler = new InputManager$KeyEventListener(keyCode, name, filter, callback);
-    this.keyHandlers_0.put_xwzc9p$(keyCode, handler);
-    var keyStr = 32 <= keyCode && keyCode <= 126 ? String.fromCharCode(toChar(keyCode)) : keyCode.toString();
+    listeners.add_11rb$(handler);
     var $this_0 = package$util.Log;
     var level_0 = Log$Level.DEBUG;
     var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
@@ -1760,9 +1782,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return handler;
   };
   InputManager.prototype.removeKeyListener_abhb69$ = function (listener) {
-    if (this.keyHandlers_0.get_11rb$(listener.keyCode) === listener) {
-      this.keyHandlers_0.remove_11rb$(listener.keyCode);
+    var tmp$;
+    tmp$ = this.keyHandlers_0.get_11rb$(listener.keyCode);
+    if (tmp$ == null) {
+      return;
     }
+    var listeners = tmp$;
+    listeners.remove_11rb$(listener);
   };
   InputManager.prototype.getActivePointers_mcn869$ = function (result) {
     var tmp$;
@@ -1832,9 +1858,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     tmp$ = this.keyEvents;
     for (var i_0 = 0; i_0 !== tmp$.size; ++i_0) {
       var evt = this.keyEvents.get_za3lpa$(i_0);
-      var listener = this.keyHandlers_0.get_11rb$(evt.keyCode);
-      if (listener != null && listener.filter(evt)) {
-        listener.invoke_9cgpoj$(evt);
+      var listeners = this.keyHandlers_0.get_11rb$(evt.keyCode);
+      if (listeners != null) {
+        for (var j = 0; j !== listeners.size; ++j) {
+          if (listeners.get_za3lpa$(j).filter(evt)) {
+            listeners.get_za3lpa$(j).invoke_9cgpoj$(evt);
+          }
+        }
       }
     }
   };
@@ -9964,7 +9994,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simpleName: 'OsmTexImageTileShaderProvider',
     interfaces: [TexImageTileShaderProvider]
   };
-  var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
   function HalfEdgeMesh(meshData, edgeHandler) {
     HalfEdgeMesh$Companion_getInstance();
     if (edgeHandler === void 0)
@@ -14763,11 +14792,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.fovy = 60.0;
     this.fovX_7k9npl$_0 = 0.0;
     this.sphereFacX_87yued$_0 = 1.0;
-    this.speherFacY_ae9ss$_0 = 1.0;
+    this.sphereFacY_87yuf8$_0 = 1.0;
     this.tangX_ey6fwg$_0 = 1.0;
     this.tangY_ey6fvl$_0 = 1.0;
     this.tmpNodeCenter_hw7d0$_0 = MutableVec3f_init();
-    this.tmpNodeExtent_w3j375$_0 = MutableVec3f_init();
   }
   Object.defineProperty(PerspectiveCamera.prototype, 'fovX', {
     get: function () {
@@ -14780,7 +14808,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   PerspectiveCamera.prototype.updateProjectionMatrix = function () {
     this.proj.setPerspective_7b5o5w$(this.fovy, this.aspectRatio, this.clipNear, this.clipFar);
     var angY = this.fovy * package$math.DEG_2_RAD / 2.0;
-    this.speherFacY_ae9ss$_0 = 1.0 / Math_0.cos(angY);
+    this.sphereFacY_87yuf8$_0 = 1.0 / Math_0.cos(angY);
     this.tangY_ey6fvl$_0 = Math_0.tan(angY);
     var x = this.tangY_ey6fvl$_0 * this.aspectRatio;
     var angX = Math_0.atan(x);
@@ -14805,7 +14833,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       return false;
     }
     var y = this.tmpNodeCenter_hw7d0$_0.dot_czzhiu$(this.globalUp);
-    var d = globalRadius * this.speherFacY_ae9ss$_0;
+    var d = globalRadius * this.sphereFacY_87yuf8$_0;
     z *= this.tangY_ey6fvl$_0;
     if (y > z + d || y < -z - d) {
       return false;
@@ -15489,7 +15517,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     target.put_q3cr5i$(this.modelMat.matrix);
   };
   InstancedMesh$Instance.prototype.getLocalOrigin_5s4mqq$ = function (result) {
-    this.modelMat.transform_w1lst9$(result.set_czzhiu$(Vec3f$Companion_getInstance().ZERO));
+    return this.modelMat.transform_w1lst9$(result.set_czzhiu$(Vec3f$Companion_getInstance().ZERO));
   };
   InstancedMesh$Instance.$metadata$ = {
     kind: Kind_CLASS,
@@ -15535,6 +15563,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   InstancedMesh$Instances.prototype.addInstance_m661aa$ = function (instance) {
     this.instances.add_11rb$(instance);
+  };
+  InstancedMesh$Instances.prototype.addInstances_tzquvz$ = function (instance) {
+    addAll_0(this.instances, instance);
   };
   InstancedMesh$Instances.prototype.plusAssign_m661aa$ = function (instance) {
     this.addInstance_m661aa$(instance);
@@ -17758,6 +17789,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   TransformGroup.prototype.getTransform_d4zu6j$ = function (result) {
     return result.set_d4zu6j$(this.transform);
+  };
+  TransformGroup.prototype.getInverseTransform_d4zu6j$ = function (result) {
+    this.checkInverse();
+    return result.set_d4zu6j$(this.invTransform);
   };
   TransformGroup.prototype.translate_czzhiu$ = function (t) {
     return this.translate_y2kzbl$(t.x, t.y, t.z);
@@ -19990,7 +20025,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.LIGHT_SIMPLE = theme(this.LIGHT, UiTheme$Companion$LIGHT_SIMPLE$lambda);
   }
   function UiTheme$Companion$DARK$lambda($receiver) {
-    $receiver.backgroundColor_d7aj7k$(color('00141980'));
+    $receiver.backgroundColor_d7aj7k$(Color$Companion_getInstance().fromHex_61zpoe$('00141980'));
     $receiver.foregroundColor_d7aj7k$(Color$Companion_getInstance().WHITE);
     $receiver.accentColor_d7aj7k$(Color$Companion_getInstance().LIME);
     return Unit;
@@ -20003,8 +20038,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   }
   function UiTheme$Companion$LIGHT$lambda($receiver) {
     $receiver.backgroundColor_d7aj7k$(Color$Companion_getInstance().WHITE.withAlpha_mx4ult$(0.6));
-    $receiver.foregroundColor_d7aj7k$(color('3E2723'));
-    $receiver.accentColor_d7aj7k$(color('BF360C'));
+    $receiver.foregroundColor_d7aj7k$(Color$Companion_getInstance().fromHex_61zpoe$('3E2723'));
+    $receiver.accentColor_d7aj7k$(Color$Companion_getInstance().fromHex_61zpoe$('BF360C'));
     return Unit;
   }
   function UiTheme$Companion$LIGHT_SIMPLE$lambda($receiver) {
@@ -20466,7 +20501,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.uCamPosition = this.addUniform_1ybs2r$(new Uniform3f(GlslGenerator$Companion_getInstance().U_CAMERA_POSITION));
     this.uShininess = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_SHININESS));
     this.uSpecularIntensity = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_SPECULAR_INTENSITY));
-    this.uReflectiveness = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_REFLECTIVENESS));
+    this.uReflectivity = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_REFLECTIVENESS));
     this.uStaticColor = this.addUniform_1ybs2r$(new Uniform4f(GlslGenerator$Companion_getInstance().U_STATIC_COLOR));
     this.uTexture = this.addUniform_1ybs2r$(new UniformTexture2D(GlslGenerator$Companion_getInstance().U_TEXTURE_0));
     this.uNormalMap = this.addUniform_1ybs2r$(new UniformTexture2D(GlslGenerator$Companion_getInstance().U_NORMAL_MAP_0));
@@ -20485,7 +20520,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.scene_i3j15i$_0 = null;
     this.shininess = this.props.shininess;
     this.specularIntensity = this.props.specularIntensity;
-    this.reflectiveness = this.props.reflectiveness;
+    this.reflectivity = this.props.reflectivity;
     this.staticColor.set_czzhhz$(this.props.staticColor);
     this.texture = this.props.texture;
     this.normalMap = this.props.normalMap;
@@ -20520,12 +20555,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       this.uSpecularIntensity.value[0] = value;
     }
   });
-  Object.defineProperty(BasicShader.prototype, 'reflectiveness', {
+  Object.defineProperty(BasicShader.prototype, 'reflectivity', {
     get: function () {
-      return this.uReflectiveness.value[0];
+      return this.uReflectivity.value[0];
     },
     set: function (value) {
-      this.uReflectiveness.value[0] = value;
+      this.uReflectivity.value[0] = value;
     }
   });
   Object.defineProperty(BasicShader.prototype, 'staticColor', {
@@ -20616,7 +20651,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.uAlpha.bind_aemszp$(ctx);
     this.uShininess.bind_aemszp$(ctx);
     this.uSpecularIntensity.bind_aemszp$(ctx);
-    this.uReflectiveness.bind_aemszp$(ctx);
+    this.uReflectivity.bind_aemszp$(ctx);
     this.uStaticColor.bind_aemszp$(ctx);
     this.uTexture.bind_aemszp$(ctx);
     this.uNormalMap.bind_aemszp$(ctx);
@@ -21157,7 +21192,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.U_CLIP_SPACE_FAR_Z = 'uClipSpaceFarZ';
     this.U_NORMAL_MAP_0 = 'uNormalMap0';
     this.U_ENVIRONMENT_MAP = 'uEnvironmentMap';
-    this.U_REFLECTIVENESS = 'uReflectiveness';
+    this.U_REFLECTIVENESS = 'uReflectivity';
     this.V_TEX_COORD = 'vTexCoord';
     this.V_EYE_DIRECTION = 'vEyeDirection_cameraspace';
     this.V_LIGHT_DIRECTION = 'vLightDirection_cameraspace';
@@ -21174,7 +21209,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.L_TEX_COLOR = 'texColor';
     this.L_VERTEX_COLOR = 'vertColor';
     this.L_STATIC_COLOR = 'staticColor';
-    this.L_REFLECTIVENESS = 'reflectiveness';
+    this.L_REFLECTIVITY = 'reflectivity';
   }
   GlslGenerator$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -21207,6 +21242,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$ = function (shaderProps, text, ctx) {
   };
   GlslGenerator$GlslInjector.prototype.fsAfterSampling_jh5913$ = function (shaderProps, text, ctx) {
+  };
+  GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$ = function (shaderProps, text, ctx) {
   };
   GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$ = function (shaderProps, text, ctx) {
   };
@@ -21536,7 +21573,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       text.append_gw00v9$('uniform vec3 uCameraPosition;\n');
     }
     if (shaderProps.isEnvironmentMapped) {
-      text.append_gw00v9$('uniform float uReflectiveness;\n');
+      text.append_gw00v9$('uniform float uReflectivity;\n');
       text.append_gw00v9$('uniform samplerCube uEnvironmentMap;\n');
     }
     if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
@@ -21596,7 +21633,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       text.append_gw00v9$('vec2 texUV = vTexCoord;\n');
     }
     if (shaderProps.isEnvironmentMapped) {
-      text.append_gw00v9$('float reflectiveness = uReflectiveness;\n');
+      text.append_gw00v9$('float reflectivity = uReflectivity;\n');
     }
     var tmp$_0;
     tmp$_0 = this.injectors.iterator();
@@ -21633,7 +21670,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         text.append_gw00v9$('if (' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ' <= ' + GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z + '[' + i + ']) {' + '\n');
         text.append_gw00v9$('  vec3 projPos = ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '].xyz / ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '].w;' + '\n');
         text.append_gw00v9$('  float off = 1.0 / float(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ + '[' + i + ']);' + '\n');
-        text.append_gw00v9$('  shadowFactor = calcShadowFactor(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i + ', projPos, off, 0.0005);' + '\n');
+        text.append_gw00v9$('  shadowFactor = calcShadowFactor(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i + ', projPos, off, ' + shaderProps.shadowDepthOffset + ');' + '\n');
         text.append_gw00v9$('}\n');
         if (i < (shadowMap.numMaps - 1 | 0)) {
           text.append_gw00v9$('else ');
@@ -21654,7 +21691,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         text.append_gw00v9$('float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n');
         text.append_gw00v9$('vec3 r = reflect(-l, n);\n');
         text.append_gw00v9$('float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n');
-        text.append_gw00v9$('vec3 materialAmbientColor = ' + this.fsOutBody + '.rgb * vec3(0.42);' + '\n');
+        text.append_gw00v9$('vec3 materialAmbientColor = ' + this.fsOutBody + '.rgb * 0.42;' + '\n');
         text.append_gw00v9$('vec3 materialDiffuseColor = ' + this.fsOutBody + '.rgb * ' + GlslGenerator$Companion_getInstance().U_LIGHT_COLOR + ' * cosTheta;' + '\n');
         text.append_gw00v9$('vec3 materialSpecularColor = ' + GlslGenerator$Companion_getInstance().U_LIGHT_COLOR + ' * ' + GlslGenerator$Companion_getInstance().U_SPECULAR_INTENSITY + ' * pow(cosAlpha, ' + GlslGenerator$Companion_getInstance().U_SHININESS + ') * ' + this.fsOutBody + '.a * shadowFactor;' + '\n');
       }
@@ -21663,12 +21700,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         text.append_gw00v9$('vec3 materialDiffuseColor = ' + this.fsOutBody + '.rgb * ' + GlslGenerator$Companion_getInstance().V_DIFFUSE_LIGHT_COLOR + ';' + '\n');
         text.append_gw00v9$('vec3 materialSpecularColor = ' + GlslGenerator$Companion_getInstance().V_SPECULAR_LIGHT_COLOR + ' * ' + this.fsOutBody + '.a * shadowFactor;' + '\n');
       }
-      text.append_gw00v9$(this.fsOutBody + ' = vec4(materialAmbientColor + materialDiffuseColor + materialSpecularColor, ' + this.fsOutBody + '.a);' + '\n');
+      text.append_gw00v9$(this.fsOutBody + '.rgb = materialAmbientColor + materialDiffuseColor + materialSpecularColor;' + '\n');
+    }
+    var tmp$_2;
+    tmp$_2 = this.injectors.iterator();
+    while (tmp$_2.hasNext()) {
+      var element_1 = tmp$_2.next();
+      element_1.fsAfterLighting_jh5913$(shaderProps, text, ctx);
     }
     if (shaderProps.isEnvironmentMapped) {
       text.append_gw00v9$('vec3 eyeDir = normalize(vPositionWorldspace - uCameraPosition);\n');
       text.append_gw00v9$('vec3 reflectedDir = reflect(eyeDir, normalize(vNormalWorldspace));\n');
-      text.append_gw00v9$(this.fsOutBody + '.rgb = mix(' + this.fsOutBody + '.rgb , texture(' + GlslGenerator$Companion_getInstance().U_ENVIRONMENT_MAP + ', reflectedDir).rgb, ' + GlslGenerator$Companion_getInstance().L_REFLECTIVENESS + ');' + '\n');
+      text.append_gw00v9$(this.fsOutBody + '.rgb = mix(' + this.fsOutBody + '.rgb , texture(' + GlslGenerator$Companion_getInstance().U_ENVIRONMENT_MAP + ', reflectedDir).rgb, ' + GlslGenerator$Companion_getInstance().L_REFLECTIVITY + ');' + '\n');
     }
     if (shaderProps.fogModel !== FogModel$FOG_OFF_getInstance()) {
       text.append_gw00v9$('float d = 1.0 - clamp(length(uCameraPosition - vPositionWorldspace / uFogRange), 0.0, 1.0);\n');
@@ -21681,11 +21724,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       text.append_gw00v9$('float avgColor = (' + this.fsOutBody + '.r + ' + this.fsOutBody + '.g + ' + this.fsOutBody + '.b) * 0.333;' + '\n');
       text.append_gw00v9$(this.fsOutBody + '.rgb = mix(vec3(avgColor), ' + this.fsOutBody + '.rgb, ' + GlslGenerator$Companion_getInstance().U_SATURATION + ');' + '\n');
     }
-    var tmp$_2;
-    tmp$_2 = this.injectors.iterator();
-    while (tmp$_2.hasNext()) {
-      var element_1 = tmp$_2.next();
-      element_1.fsEnd_jh5913$(shaderProps, text, ctx);
+    var tmp$_3;
+    tmp$_3 = this.injectors.iterator();
+    while (tmp$_3.hasNext()) {
+      var element_2 = tmp$_3.next();
+      element_2.fsEnd_jh5913$(shaderProps, text, ctx);
     }
     text.append_gw00v9$('}\n');
   };
@@ -22030,11 +22073,12 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.numBones = 0;
     this.isInstanced = false;
     this.shadowMap = null;
+    this.shadowDepthOffset = 5.0E-4;
     this.isNormalMapped = false;
     this.isEnvironmentMapped = false;
     this.shininess = 20.0;
     this.specularIntensity = 0.75;
-    this.reflectiveness = 0.5;
+    this.reflectivity = 0.5;
     this.staticColor = Color$Companion_getInstance().BLACK;
     this.alpha = 1.0;
     this.saturation = 1.0;
@@ -22720,18 +22764,18 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     simpleName: 'BufferedTextureData',
     interfaces: [TextureData]
   };
-  function CubeMapTextureData(front, back, left, right, top, bottom) {
+  function CubeMapTextureData(front, back, left, right, up, down) {
     TextureData.call(this);
     this.front = front;
     this.back = back;
     this.left = left;
     this.right = right;
-    this.top = top;
-    this.bottom = bottom;
+    this.up = up;
+    this.down = down;
   }
   Object.defineProperty(CubeMapTextureData.prototype, 'isAvailable', {
     get: function () {
-      return this.front.isAvailable && this.back.isAvailable && this.left.isAvailable && this.right.isAvailable && this.top.isAvailable && this.bottom.isAvailable;
+      return this.front.isAvailable && this.back.isAvailable && this.left.isAvailable && this.right.isAvailable && this.up.isAvailable && this.down.isAvailable;
     }
   });
   CubeMapTextureData.prototype.onLoad_2jsdat$ = function (texture, target, ctx) {
@@ -22742,8 +22786,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.back.onLoad_2jsdat$(texture, 34073, ctx);
     this.left.onLoad_2jsdat$(texture, 34070, ctx);
     this.right.onLoad_2jsdat$(texture, 34069, ctx);
-    this.top.onLoad_2jsdat$(texture, 34071, ctx);
-    this.bottom.onLoad_2jsdat$(texture, 34072, ctx);
+    this.up.onLoad_2jsdat$(texture, 34071, ctx);
+    this.down.onLoad_2jsdat$(texture, 34072, ctx);
     glTexParameteri(34067, 32882, 33071);
   };
   CubeMapTextureData.$metadata$ = {
@@ -23764,284 +23808,327 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.DARK_CYAN = new Color(0.0, 0.5, 0.5, 1.0);
     this.DARK_MAGENTA = new Color(0.5, 0.0, 0.5, 1.0);
     this.DARK_ORANGE = new Color(0.5, 0.25, 0.0, 1.0);
-    this.MD_RED_50 = color('FFEBEE');
-    this.MD_RED_100 = color('FFCDD2');
-    this.MD_RED_200 = color('EF9A9A');
-    this.MD_RED_300 = color('E57373');
-    this.MD_RED_400 = color('EF5350');
-    this.MD_RED_500 = color('F44336');
-    this.MD_RED_600 = color('E53935');
-    this.MD_RED_700 = color('D32F2F');
-    this.MD_RED_800 = color('C62828');
-    this.MD_RED_900 = color('B71C1C');
-    this.MD_RED_A100 = color('FF8A80');
-    this.MD_RED_A200 = color('FF5252');
-    this.MD_RED_A400 = color('FF1744');
-    this.MD_RED_A700 = color('D50000');
+    this.MD_RED_50 = this.fromHex_61zpoe$('FFEBEE');
+    this.MD_RED_100 = this.fromHex_61zpoe$('FFCDD2');
+    this.MD_RED_200 = this.fromHex_61zpoe$('EF9A9A');
+    this.MD_RED_300 = this.fromHex_61zpoe$('E57373');
+    this.MD_RED_400 = this.fromHex_61zpoe$('EF5350');
+    this.MD_RED_500 = this.fromHex_61zpoe$('F44336');
+    this.MD_RED_600 = this.fromHex_61zpoe$('E53935');
+    this.MD_RED_700 = this.fromHex_61zpoe$('D32F2F');
+    this.MD_RED_800 = this.fromHex_61zpoe$('C62828');
+    this.MD_RED_900 = this.fromHex_61zpoe$('B71C1C');
+    this.MD_RED_A100 = this.fromHex_61zpoe$('FF8A80');
+    this.MD_RED_A200 = this.fromHex_61zpoe$('FF5252');
+    this.MD_RED_A400 = this.fromHex_61zpoe$('FF1744');
+    this.MD_RED_A700 = this.fromHex_61zpoe$('D50000');
     this.MD_RED = this.MD_RED_500;
-    this.MD_PINK_50 = color('FCE4EC');
-    this.MD_PINK_100 = color('F8BBD0');
-    this.MD_PINK_200 = color('F48FB1');
-    this.MD_PINK_300 = color('F06292');
-    this.MD_PINK_400 = color('EC407A');
-    this.MD_PINK_500 = color('E91E63');
-    this.MD_PINK_600 = color('D81B60');
-    this.MD_PINK_700 = color('C2185B');
-    this.MD_PINK_800 = color('AD1457');
-    this.MD_PINK_900 = color('880E4F');
-    this.MD_PINK_A100 = color('FF80AB');
-    this.MD_PINK_A200 = color('FF4081');
-    this.MD_PINK_A400 = color('F50057');
-    this.MD_PINK_A700 = color('C51162');
+    this.MD_PINK_50 = this.fromHex_61zpoe$('FCE4EC');
+    this.MD_PINK_100 = this.fromHex_61zpoe$('F8BBD0');
+    this.MD_PINK_200 = this.fromHex_61zpoe$('F48FB1');
+    this.MD_PINK_300 = this.fromHex_61zpoe$('F06292');
+    this.MD_PINK_400 = this.fromHex_61zpoe$('EC407A');
+    this.MD_PINK_500 = this.fromHex_61zpoe$('E91E63');
+    this.MD_PINK_600 = this.fromHex_61zpoe$('D81B60');
+    this.MD_PINK_700 = this.fromHex_61zpoe$('C2185B');
+    this.MD_PINK_800 = this.fromHex_61zpoe$('AD1457');
+    this.MD_PINK_900 = this.fromHex_61zpoe$('880E4F');
+    this.MD_PINK_A100 = this.fromHex_61zpoe$('FF80AB');
+    this.MD_PINK_A200 = this.fromHex_61zpoe$('FF4081');
+    this.MD_PINK_A400 = this.fromHex_61zpoe$('F50057');
+    this.MD_PINK_A700 = this.fromHex_61zpoe$('C51162');
     this.MD_PINK = this.MD_PINK_500;
-    this.MD_PURPLE_50 = color('F3E5F5');
-    this.MD_PURPLE_100 = color('E1BEE7');
-    this.MD_PURPLE_200 = color('CE93D8');
-    this.MD_PURPLE_300 = color('BA68C8');
-    this.MD_PURPLE_400 = color('AB47BC');
-    this.MD_PURPLE_500 = color('9C27B0');
-    this.MD_PURPLE_600 = color('8E24AA');
-    this.MD_PURPLE_700 = color('7B1FA2');
-    this.MD_PURPLE_800 = color('6A1B9A');
-    this.MD_PURPLE_900 = color('4A148C');
-    this.MD_PURPLE_A100 = color('EA80FC');
-    this.MD_PURPLE_A200 = color('E040FB');
-    this.MD_PURPLE_A400 = color('D500F9');
-    this.MD_PURPLE_A700 = color('AA00FF');
+    this.MD_PURPLE_50 = this.fromHex_61zpoe$('F3E5F5');
+    this.MD_PURPLE_100 = this.fromHex_61zpoe$('E1BEE7');
+    this.MD_PURPLE_200 = this.fromHex_61zpoe$('CE93D8');
+    this.MD_PURPLE_300 = this.fromHex_61zpoe$('BA68C8');
+    this.MD_PURPLE_400 = this.fromHex_61zpoe$('AB47BC');
+    this.MD_PURPLE_500 = this.fromHex_61zpoe$('9C27B0');
+    this.MD_PURPLE_600 = this.fromHex_61zpoe$('8E24AA');
+    this.MD_PURPLE_700 = this.fromHex_61zpoe$('7B1FA2');
+    this.MD_PURPLE_800 = this.fromHex_61zpoe$('6A1B9A');
+    this.MD_PURPLE_900 = this.fromHex_61zpoe$('4A148C');
+    this.MD_PURPLE_A100 = this.fromHex_61zpoe$('EA80FC');
+    this.MD_PURPLE_A200 = this.fromHex_61zpoe$('E040FB');
+    this.MD_PURPLE_A400 = this.fromHex_61zpoe$('D500F9');
+    this.MD_PURPLE_A700 = this.fromHex_61zpoe$('AA00FF');
     this.MD_PURPLE = this.MD_PURPLE_500;
-    this.MD_DEEP_PURPLE_50 = color('EDE7F6');
-    this.MD_DEEP_PURPLE_100 = color('D1C4E9');
-    this.MD_DEEP_PURPLE_200 = color('B39DDB');
-    this.MD_DEEP_PURPLE_300 = color('9575CD');
-    this.MD_DEEP_PURPLE_400 = color('7E57C2');
-    this.MD_DEEP_PURPLE_500 = color('673AB7');
-    this.MD_DEEP_PURPLE_600 = color('5E35B1');
-    this.MD_DEEP_PURPLE_700 = color('512DA8');
-    this.MD_DEEP_PURPLE_800 = color('4527A0');
-    this.MD_DEEP_PURPLE_900 = color('311B92');
-    this.MD_DEEP_PURPLE_A100 = color('B388FF');
-    this.MD_DEEP_PURPLE_A200 = color('7C4DFF');
-    this.MD_DEEP_PURPLE_A400 = color('651FFF');
-    this.MD_DEEP_PURPLE_A700 = color('6200EA');
+    this.MD_DEEP_PURPLE_50 = this.fromHex_61zpoe$('EDE7F6');
+    this.MD_DEEP_PURPLE_100 = this.fromHex_61zpoe$('D1C4E9');
+    this.MD_DEEP_PURPLE_200 = this.fromHex_61zpoe$('B39DDB');
+    this.MD_DEEP_PURPLE_300 = this.fromHex_61zpoe$('9575CD');
+    this.MD_DEEP_PURPLE_400 = this.fromHex_61zpoe$('7E57C2');
+    this.MD_DEEP_PURPLE_500 = this.fromHex_61zpoe$('673AB7');
+    this.MD_DEEP_PURPLE_600 = this.fromHex_61zpoe$('5E35B1');
+    this.MD_DEEP_PURPLE_700 = this.fromHex_61zpoe$('512DA8');
+    this.MD_DEEP_PURPLE_800 = this.fromHex_61zpoe$('4527A0');
+    this.MD_DEEP_PURPLE_900 = this.fromHex_61zpoe$('311B92');
+    this.MD_DEEP_PURPLE_A100 = this.fromHex_61zpoe$('B388FF');
+    this.MD_DEEP_PURPLE_A200 = this.fromHex_61zpoe$('7C4DFF');
+    this.MD_DEEP_PURPLE_A400 = this.fromHex_61zpoe$('651FFF');
+    this.MD_DEEP_PURPLE_A700 = this.fromHex_61zpoe$('6200EA');
     this.MD_DEEP_PURPLE = this.MD_DEEP_PURPLE_500;
-    this.MD_INDIGO_50 = color('E8EAF6');
-    this.MD_INDIGO_100 = color('C5CAE9');
-    this.MD_INDIGO_200 = color('9FA8DA');
-    this.MD_INDIGO_300 = color('7986CB');
-    this.MD_INDIGO_400 = color('5C6BC0');
-    this.MD_INDIGO_500 = color('3F51B5');
-    this.MD_INDIGO_600 = color('3949AB');
-    this.MD_INDIGO_700 = color('303F9F');
-    this.MD_INDIGO_800 = color('283593');
-    this.MD_INDIGO_900 = color('1A237E');
-    this.MD_INDIGO_A100 = color('8C9EFF');
-    this.MD_INDIGO_A200 = color('536DFE');
-    this.MD_INDIGO_A400 = color('3D5AFE');
-    this.MD_INDIGO_A700 = color('304FFE');
+    this.MD_INDIGO_50 = this.fromHex_61zpoe$('E8EAF6');
+    this.MD_INDIGO_100 = this.fromHex_61zpoe$('C5CAE9');
+    this.MD_INDIGO_200 = this.fromHex_61zpoe$('9FA8DA');
+    this.MD_INDIGO_300 = this.fromHex_61zpoe$('7986CB');
+    this.MD_INDIGO_400 = this.fromHex_61zpoe$('5C6BC0');
+    this.MD_INDIGO_500 = this.fromHex_61zpoe$('3F51B5');
+    this.MD_INDIGO_600 = this.fromHex_61zpoe$('3949AB');
+    this.MD_INDIGO_700 = this.fromHex_61zpoe$('303F9F');
+    this.MD_INDIGO_800 = this.fromHex_61zpoe$('283593');
+    this.MD_INDIGO_900 = this.fromHex_61zpoe$('1A237E');
+    this.MD_INDIGO_A100 = this.fromHex_61zpoe$('8C9EFF');
+    this.MD_INDIGO_A200 = this.fromHex_61zpoe$('536DFE');
+    this.MD_INDIGO_A400 = this.fromHex_61zpoe$('3D5AFE');
+    this.MD_INDIGO_A700 = this.fromHex_61zpoe$('304FFE');
     this.MD_INDIGO = this.MD_INDIGO_500;
-    this.MD_BLUE_50 = color('E3F2FD');
-    this.MD_BLUE_100 = color('BBDEFB');
-    this.MD_BLUE_200 = color('90CAF9');
-    this.MD_BLUE_300 = color('64B5F6');
-    this.MD_BLUE_400 = color('42A5F5');
-    this.MD_BLUE_500 = color('2196F3');
-    this.MD_BLUE_600 = color('1E88E5');
-    this.MD_BLUE_700 = color('1976D2');
-    this.MD_BLUE_800 = color('1565C0');
-    this.MD_BLUE_900 = color('0D47A1');
-    this.MD_BLUE_A100 = color('82B1FF');
-    this.MD_BLUE_A200 = color('448AFF');
-    this.MD_BLUE_A400 = color('2979FF');
-    this.MD_BLUE_A700 = color('2962FF');
+    this.MD_BLUE_50 = this.fromHex_61zpoe$('E3F2FD');
+    this.MD_BLUE_100 = this.fromHex_61zpoe$('BBDEFB');
+    this.MD_BLUE_200 = this.fromHex_61zpoe$('90CAF9');
+    this.MD_BLUE_300 = this.fromHex_61zpoe$('64B5F6');
+    this.MD_BLUE_400 = this.fromHex_61zpoe$('42A5F5');
+    this.MD_BLUE_500 = this.fromHex_61zpoe$('2196F3');
+    this.MD_BLUE_600 = this.fromHex_61zpoe$('1E88E5');
+    this.MD_BLUE_700 = this.fromHex_61zpoe$('1976D2');
+    this.MD_BLUE_800 = this.fromHex_61zpoe$('1565C0');
+    this.MD_BLUE_900 = this.fromHex_61zpoe$('0D47A1');
+    this.MD_BLUE_A100 = this.fromHex_61zpoe$('82B1FF');
+    this.MD_BLUE_A200 = this.fromHex_61zpoe$('448AFF');
+    this.MD_BLUE_A400 = this.fromHex_61zpoe$('2979FF');
+    this.MD_BLUE_A700 = this.fromHex_61zpoe$('2962FF');
     this.MD_BLUE = this.MD_BLUE_500;
-    this.MD_LIGHT_BLUE_50 = color('E1F5FE');
-    this.MD_LIGHT_BLUE_100 = color('B3E5FC');
-    this.MD_LIGHT_BLUE_200 = color('81D4FA');
-    this.MD_LIGHT_BLUE_300 = color('4FC3F7');
-    this.MD_LIGHT_BLUE_400 = color('29B6F6');
-    this.MD_LIGHT_BLUE_500 = color('03A9F4');
-    this.MD_LIGHT_BLUE_600 = color('039BE5');
-    this.MD_LIGHT_BLUE_700 = color('0288D1');
-    this.MD_LIGHT_BLUE_800 = color('0277BD');
-    this.MD_LIGHT_BLUE_900 = color('01579B');
-    this.MD_LIGHT_BLUE_A100 = color('80D8FF');
-    this.MD_LIGHT_BLUE_A200 = color('40C4FF');
-    this.MD_LIGHT_BLUE_A400 = color('00B0FF');
-    this.MD_LIGHT_BLUE_A700 = color('0091EA');
+    this.MD_LIGHT_BLUE_50 = this.fromHex_61zpoe$('E1F5FE');
+    this.MD_LIGHT_BLUE_100 = this.fromHex_61zpoe$('B3E5FC');
+    this.MD_LIGHT_BLUE_200 = this.fromHex_61zpoe$('81D4FA');
+    this.MD_LIGHT_BLUE_300 = this.fromHex_61zpoe$('4FC3F7');
+    this.MD_LIGHT_BLUE_400 = this.fromHex_61zpoe$('29B6F6');
+    this.MD_LIGHT_BLUE_500 = this.fromHex_61zpoe$('03A9F4');
+    this.MD_LIGHT_BLUE_600 = this.fromHex_61zpoe$('039BE5');
+    this.MD_LIGHT_BLUE_700 = this.fromHex_61zpoe$('0288D1');
+    this.MD_LIGHT_BLUE_800 = this.fromHex_61zpoe$('0277BD');
+    this.MD_LIGHT_BLUE_900 = this.fromHex_61zpoe$('01579B');
+    this.MD_LIGHT_BLUE_A100 = this.fromHex_61zpoe$('80D8FF');
+    this.MD_LIGHT_BLUE_A200 = this.fromHex_61zpoe$('40C4FF');
+    this.MD_LIGHT_BLUE_A400 = this.fromHex_61zpoe$('00B0FF');
+    this.MD_LIGHT_BLUE_A700 = this.fromHex_61zpoe$('0091EA');
     this.MD_LIGHT_BLUE = this.MD_LIGHT_BLUE_500;
-    this.MD_CYAN_50 = color('E0F7FA');
-    this.MD_CYAN_100 = color('B2EBF2');
-    this.MD_CYAN_200 = color('80DEEA');
-    this.MD_CYAN_300 = color('4DD0E1');
-    this.MD_CYAN_400 = color('26C6DA');
-    this.MD_CYAN_500 = color('00BCD4');
-    this.MD_CYAN_600 = color('00ACC1');
-    this.MD_CYAN_700 = color('0097A7');
-    this.MD_CYAN_800 = color('00838F');
-    this.MD_CYAN_900 = color('006064');
-    this.MD_CYAN_A100 = color('84FFFF');
-    this.MD_CYAN_A200 = color('18FFFF');
-    this.MD_CYAN_A400 = color('00E5FF');
-    this.MD_CYAN_A700 = color('00B8D4');
+    this.MD_CYAN_50 = this.fromHex_61zpoe$('E0F7FA');
+    this.MD_CYAN_100 = this.fromHex_61zpoe$('B2EBF2');
+    this.MD_CYAN_200 = this.fromHex_61zpoe$('80DEEA');
+    this.MD_CYAN_300 = this.fromHex_61zpoe$('4DD0E1');
+    this.MD_CYAN_400 = this.fromHex_61zpoe$('26C6DA');
+    this.MD_CYAN_500 = this.fromHex_61zpoe$('00BCD4');
+    this.MD_CYAN_600 = this.fromHex_61zpoe$('00ACC1');
+    this.MD_CYAN_700 = this.fromHex_61zpoe$('0097A7');
+    this.MD_CYAN_800 = this.fromHex_61zpoe$('00838F');
+    this.MD_CYAN_900 = this.fromHex_61zpoe$('006064');
+    this.MD_CYAN_A100 = this.fromHex_61zpoe$('84FFFF');
+    this.MD_CYAN_A200 = this.fromHex_61zpoe$('18FFFF');
+    this.MD_CYAN_A400 = this.fromHex_61zpoe$('00E5FF');
+    this.MD_CYAN_A700 = this.fromHex_61zpoe$('00B8D4');
     this.MD_CYAN = this.MD_CYAN_500;
-    this.MD_TEAL_50 = color('E0F2F1');
-    this.MD_TEAL_100 = color('B2DFDB');
-    this.MD_TEAL_200 = color('80CBC4');
-    this.MD_TEAL_300 = color('4DB6AC');
-    this.MD_TEAL_400 = color('26A69A');
-    this.MD_TEAL_500 = color('009688');
-    this.MD_TEAL_600 = color('00897B');
-    this.MD_TEAL_700 = color('00796B');
-    this.MD_TEAL_800 = color('00695C');
-    this.MD_TEAL_900 = color('004D40');
-    this.MD_TEAL_A100 = color('A7FFEB');
-    this.MD_TEAL_A200 = color('64FFDA');
-    this.MD_TEAL_A400 = color('1DE9B6');
-    this.MD_TEAL_A700 = color('00BFA5');
+    this.MD_TEAL_50 = this.fromHex_61zpoe$('E0F2F1');
+    this.MD_TEAL_100 = this.fromHex_61zpoe$('B2DFDB');
+    this.MD_TEAL_200 = this.fromHex_61zpoe$('80CBC4');
+    this.MD_TEAL_300 = this.fromHex_61zpoe$('4DB6AC');
+    this.MD_TEAL_400 = this.fromHex_61zpoe$('26A69A');
+    this.MD_TEAL_500 = this.fromHex_61zpoe$('009688');
+    this.MD_TEAL_600 = this.fromHex_61zpoe$('00897B');
+    this.MD_TEAL_700 = this.fromHex_61zpoe$('00796B');
+    this.MD_TEAL_800 = this.fromHex_61zpoe$('00695C');
+    this.MD_TEAL_900 = this.fromHex_61zpoe$('004D40');
+    this.MD_TEAL_A100 = this.fromHex_61zpoe$('A7FFEB');
+    this.MD_TEAL_A200 = this.fromHex_61zpoe$('64FFDA');
+    this.MD_TEAL_A400 = this.fromHex_61zpoe$('1DE9B6');
+    this.MD_TEAL_A700 = this.fromHex_61zpoe$('00BFA5');
     this.MD_TEAL = this.MD_TEAL_500;
-    this.MD_GREEN_50 = color('E8F5E9');
-    this.MD_GREEN_100 = color('C8E6C9');
-    this.MD_GREEN_200 = color('A5D6A7');
-    this.MD_GREEN_300 = color('81C784');
-    this.MD_GREEN_400 = color('66BB6A');
-    this.MD_GREEN_500 = color('4CAF50');
-    this.MD_GREEN_600 = color('43A047');
-    this.MD_GREEN_700 = color('388E3C');
-    this.MD_GREEN_800 = color('2E7D32');
-    this.MD_GREEN_900 = color('1B5E20');
-    this.MD_GREEN_A100 = color('B9F6CA');
-    this.MD_GREEN_A200 = color('69F0AE');
-    this.MD_GREEN_A400 = color('00E676');
-    this.MD_GREEN_A700 = color('00C853');
+    this.MD_GREEN_50 = this.fromHex_61zpoe$('E8F5E9');
+    this.MD_GREEN_100 = this.fromHex_61zpoe$('C8E6C9');
+    this.MD_GREEN_200 = this.fromHex_61zpoe$('A5D6A7');
+    this.MD_GREEN_300 = this.fromHex_61zpoe$('81C784');
+    this.MD_GREEN_400 = this.fromHex_61zpoe$('66BB6A');
+    this.MD_GREEN_500 = this.fromHex_61zpoe$('4CAF50');
+    this.MD_GREEN_600 = this.fromHex_61zpoe$('43A047');
+    this.MD_GREEN_700 = this.fromHex_61zpoe$('388E3C');
+    this.MD_GREEN_800 = this.fromHex_61zpoe$('2E7D32');
+    this.MD_GREEN_900 = this.fromHex_61zpoe$('1B5E20');
+    this.MD_GREEN_A100 = this.fromHex_61zpoe$('B9F6CA');
+    this.MD_GREEN_A200 = this.fromHex_61zpoe$('69F0AE');
+    this.MD_GREEN_A400 = this.fromHex_61zpoe$('00E676');
+    this.MD_GREEN_A700 = this.fromHex_61zpoe$('00C853');
     this.MD_GREEN = this.MD_GREEN_500;
-    this.MD_LIGHT_GREEN_50 = color('F1F8E9');
-    this.MD_LIGHT_GREEN_100 = color('DCEDC8');
-    this.MD_LIGHT_GREEN_200 = color('C5E1A5');
-    this.MD_LIGHT_GREEN_300 = color('AED581');
-    this.MD_LIGHT_GREEN_400 = color('9CCC65');
-    this.MD_LIGHT_GREEN_500 = color('8BC34A');
-    this.MD_LIGHT_GREEN_600 = color('7CB342');
-    this.MD_LIGHT_GREEN_700 = color('689F38');
-    this.MD_LIGHT_GREEN_800 = color('558B2F');
-    this.MD_LIGHT_GREEN_900 = color('33691E');
-    this.MD_LIGHT_GREEN_A100 = color('CCFF90');
-    this.MD_LIGHT_GREEN_A200 = color('B2FF59');
-    this.MD_LIGHT_GREEN_A400 = color('76FF03');
-    this.MD_LIGHT_GREEN_A700 = color('64DD17');
+    this.MD_LIGHT_GREEN_50 = this.fromHex_61zpoe$('F1F8E9');
+    this.MD_LIGHT_GREEN_100 = this.fromHex_61zpoe$('DCEDC8');
+    this.MD_LIGHT_GREEN_200 = this.fromHex_61zpoe$('C5E1A5');
+    this.MD_LIGHT_GREEN_300 = this.fromHex_61zpoe$('AED581');
+    this.MD_LIGHT_GREEN_400 = this.fromHex_61zpoe$('9CCC65');
+    this.MD_LIGHT_GREEN_500 = this.fromHex_61zpoe$('8BC34A');
+    this.MD_LIGHT_GREEN_600 = this.fromHex_61zpoe$('7CB342');
+    this.MD_LIGHT_GREEN_700 = this.fromHex_61zpoe$('689F38');
+    this.MD_LIGHT_GREEN_800 = this.fromHex_61zpoe$('558B2F');
+    this.MD_LIGHT_GREEN_900 = this.fromHex_61zpoe$('33691E');
+    this.MD_LIGHT_GREEN_A100 = this.fromHex_61zpoe$('CCFF90');
+    this.MD_LIGHT_GREEN_A200 = this.fromHex_61zpoe$('B2FF59');
+    this.MD_LIGHT_GREEN_A400 = this.fromHex_61zpoe$('76FF03');
+    this.MD_LIGHT_GREEN_A700 = this.fromHex_61zpoe$('64DD17');
     this.MD_LIGHT_GREEN = this.MD_LIGHT_GREEN_500;
-    this.MD_LIME_50 = color('F9FBE7');
-    this.MD_LIME_100 = color('F0F4C3');
-    this.MD_LIME_200 = color('E6EE9C');
-    this.MD_LIME_300 = color('DCE775');
-    this.MD_LIME_400 = color('D4E157');
-    this.MD_LIME_500 = color('CDDC39');
-    this.MD_LIME_600 = color('C0CA33');
-    this.MD_LIME_700 = color('AFB42B');
-    this.MD_LIME_800 = color('9E9D24');
-    this.MD_LIME_900 = color('827717');
-    this.MD_LIME_A100 = color('F4FF81');
-    this.MD_LIME_A200 = color('EEFF41');
-    this.MD_LIME_A400 = color('C6FF00');
-    this.MD_LIME_A700 = color('AEEA00');
+    this.MD_LIME_50 = this.fromHex_61zpoe$('F9FBE7');
+    this.MD_LIME_100 = this.fromHex_61zpoe$('F0F4C3');
+    this.MD_LIME_200 = this.fromHex_61zpoe$('E6EE9C');
+    this.MD_LIME_300 = this.fromHex_61zpoe$('DCE775');
+    this.MD_LIME_400 = this.fromHex_61zpoe$('D4E157');
+    this.MD_LIME_500 = this.fromHex_61zpoe$('CDDC39');
+    this.MD_LIME_600 = this.fromHex_61zpoe$('C0CA33');
+    this.MD_LIME_700 = this.fromHex_61zpoe$('AFB42B');
+    this.MD_LIME_800 = this.fromHex_61zpoe$('9E9D24');
+    this.MD_LIME_900 = this.fromHex_61zpoe$('827717');
+    this.MD_LIME_A100 = this.fromHex_61zpoe$('F4FF81');
+    this.MD_LIME_A200 = this.fromHex_61zpoe$('EEFF41');
+    this.MD_LIME_A400 = this.fromHex_61zpoe$('C6FF00');
+    this.MD_LIME_A700 = this.fromHex_61zpoe$('AEEA00');
     this.MD_LIME = this.MD_LIME_500;
-    this.MD_YELLOW_50 = color('FFFDE7');
-    this.MD_YELLOW_100 = color('FFF9C4');
-    this.MD_YELLOW_200 = color('FFF59D');
-    this.MD_YELLOW_300 = color('FFF176');
-    this.MD_YELLOW_400 = color('FFEE58');
-    this.MD_YELLOW_500 = color('FFEB3B');
-    this.MD_YELLOW_600 = color('FDD835');
-    this.MD_YELLOW_700 = color('FBC02D');
-    this.MD_YELLOW_800 = color('F9A825');
-    this.MD_YELLOW_900 = color('F57F17');
-    this.MD_YELLOW_A100 = color('FFFF8D');
-    this.MD_YELLOW_A200 = color('FFFF00');
-    this.MD_YELLOW_A400 = color('FFEA00');
-    this.MD_YELLOW_A700 = color('FFD600');
+    this.MD_YELLOW_50 = this.fromHex_61zpoe$('FFFDE7');
+    this.MD_YELLOW_100 = this.fromHex_61zpoe$('FFF9C4');
+    this.MD_YELLOW_200 = this.fromHex_61zpoe$('FFF59D');
+    this.MD_YELLOW_300 = this.fromHex_61zpoe$('FFF176');
+    this.MD_YELLOW_400 = this.fromHex_61zpoe$('FFEE58');
+    this.MD_YELLOW_500 = this.fromHex_61zpoe$('FFEB3B');
+    this.MD_YELLOW_600 = this.fromHex_61zpoe$('FDD835');
+    this.MD_YELLOW_700 = this.fromHex_61zpoe$('FBC02D');
+    this.MD_YELLOW_800 = this.fromHex_61zpoe$('F9A825');
+    this.MD_YELLOW_900 = this.fromHex_61zpoe$('F57F17');
+    this.MD_YELLOW_A100 = this.fromHex_61zpoe$('FFFF8D');
+    this.MD_YELLOW_A200 = this.fromHex_61zpoe$('FFFF00');
+    this.MD_YELLOW_A400 = this.fromHex_61zpoe$('FFEA00');
+    this.MD_YELLOW_A700 = this.fromHex_61zpoe$('FFD600');
     this.MD_YELLOW = this.MD_YELLOW_500;
-    this.MD_AMBER_50 = color('FFF8E1');
-    this.MD_AMBER_100 = color('FFECB3');
-    this.MD_AMBER_200 = color('FFE082');
-    this.MD_AMBER_300 = color('FFD54F');
-    this.MD_AMBER_400 = color('FFCA28');
-    this.MD_AMBER_500 = color('FFC107');
-    this.MD_AMBER_600 = color('FFB300');
-    this.MD_AMBER_700 = color('FFA000');
-    this.MD_AMBER_800 = color('FF8F00');
-    this.MD_AMBER_900 = color('FF6F00');
-    this.MD_AMBER_A100 = color('FFE57F');
-    this.MD_AMBER_A200 = color('FFD740');
-    this.MD_AMBER_A400 = color('FFC400');
-    this.MD_AMBER_A700 = color('FFAB00');
+    this.MD_AMBER_50 = this.fromHex_61zpoe$('FFF8E1');
+    this.MD_AMBER_100 = this.fromHex_61zpoe$('FFECB3');
+    this.MD_AMBER_200 = this.fromHex_61zpoe$('FFE082');
+    this.MD_AMBER_300 = this.fromHex_61zpoe$('FFD54F');
+    this.MD_AMBER_400 = this.fromHex_61zpoe$('FFCA28');
+    this.MD_AMBER_500 = this.fromHex_61zpoe$('FFC107');
+    this.MD_AMBER_600 = this.fromHex_61zpoe$('FFB300');
+    this.MD_AMBER_700 = this.fromHex_61zpoe$('FFA000');
+    this.MD_AMBER_800 = this.fromHex_61zpoe$('FF8F00');
+    this.MD_AMBER_900 = this.fromHex_61zpoe$('FF6F00');
+    this.MD_AMBER_A100 = this.fromHex_61zpoe$('FFE57F');
+    this.MD_AMBER_A200 = this.fromHex_61zpoe$('FFD740');
+    this.MD_AMBER_A400 = this.fromHex_61zpoe$('FFC400');
+    this.MD_AMBER_A700 = this.fromHex_61zpoe$('FFAB00');
     this.MD_AMBER = this.MD_AMBER_500;
-    this.MD_ORANGE_50 = color('FFF3E0');
-    this.MD_ORANGE_100 = color('FFE0B2');
-    this.MD_ORANGE_200 = color('FFCC80');
-    this.MD_ORANGE_300 = color('FFB74D');
-    this.MD_ORANGE_400 = color('FFA726');
-    this.MD_ORANGE_500 = color('FF9800');
-    this.MD_ORANGE_600 = color('FB8C00');
-    this.MD_ORANGE_700 = color('F57C00');
-    this.MD_ORANGE_800 = color('EF6C00');
-    this.MD_ORANGE_900 = color('E65100');
-    this.MD_ORANGE_A100 = color('FFD180');
-    this.MD_ORANGE_A200 = color('FFAB40');
-    this.MD_ORANGE_A400 = color('FF9100');
-    this.MD_ORANGE_A700 = color('FF6D00');
+    this.MD_ORANGE_50 = this.fromHex_61zpoe$('FFF3E0');
+    this.MD_ORANGE_100 = this.fromHex_61zpoe$('FFE0B2');
+    this.MD_ORANGE_200 = this.fromHex_61zpoe$('FFCC80');
+    this.MD_ORANGE_300 = this.fromHex_61zpoe$('FFB74D');
+    this.MD_ORANGE_400 = this.fromHex_61zpoe$('FFA726');
+    this.MD_ORANGE_500 = this.fromHex_61zpoe$('FF9800');
+    this.MD_ORANGE_600 = this.fromHex_61zpoe$('FB8C00');
+    this.MD_ORANGE_700 = this.fromHex_61zpoe$('F57C00');
+    this.MD_ORANGE_800 = this.fromHex_61zpoe$('EF6C00');
+    this.MD_ORANGE_900 = this.fromHex_61zpoe$('E65100');
+    this.MD_ORANGE_A100 = this.fromHex_61zpoe$('FFD180');
+    this.MD_ORANGE_A200 = this.fromHex_61zpoe$('FFAB40');
+    this.MD_ORANGE_A400 = this.fromHex_61zpoe$('FF9100');
+    this.MD_ORANGE_A700 = this.fromHex_61zpoe$('FF6D00');
     this.MD_ORANGE = this.MD_ORANGE_500;
-    this.MD_DEEP_ORANGE_50 = color('FBE9E7');
-    this.MD_DEEP_ORANGE_100 = color('FFCCBC');
-    this.MD_DEEP_ORANGE_200 = color('FFAB91');
-    this.MD_DEEP_ORANGE_300 = color('FF8A65');
-    this.MD_DEEP_ORANGE_400 = color('FF7043');
-    this.MD_DEEP_ORANGE_500 = color('FF5722');
-    this.MD_DEEP_ORANGE_600 = color('F4511E');
-    this.MD_DEEP_ORANGE_700 = color('E64A19');
-    this.MD_DEEP_ORANGE_800 = color('D84315');
-    this.MD_DEEP_ORANGE_900 = color('BF360C');
-    this.MD_DEEP_ORANGE_A100 = color('FF9E80');
-    this.MD_DEEP_ORANGE_A200 = color('FF6E40');
-    this.MD_DEEP_ORANGE_A400 = color('FF3D00');
-    this.MD_DEEP_ORANGE_A700 = color('DD2C00');
+    this.MD_DEEP_ORANGE_50 = this.fromHex_61zpoe$('FBE9E7');
+    this.MD_DEEP_ORANGE_100 = this.fromHex_61zpoe$('FFCCBC');
+    this.MD_DEEP_ORANGE_200 = this.fromHex_61zpoe$('FFAB91');
+    this.MD_DEEP_ORANGE_300 = this.fromHex_61zpoe$('FF8A65');
+    this.MD_DEEP_ORANGE_400 = this.fromHex_61zpoe$('FF7043');
+    this.MD_DEEP_ORANGE_500 = this.fromHex_61zpoe$('FF5722');
+    this.MD_DEEP_ORANGE_600 = this.fromHex_61zpoe$('F4511E');
+    this.MD_DEEP_ORANGE_700 = this.fromHex_61zpoe$('E64A19');
+    this.MD_DEEP_ORANGE_800 = this.fromHex_61zpoe$('D84315');
+    this.MD_DEEP_ORANGE_900 = this.fromHex_61zpoe$('BF360C');
+    this.MD_DEEP_ORANGE_A100 = this.fromHex_61zpoe$('FF9E80');
+    this.MD_DEEP_ORANGE_A200 = this.fromHex_61zpoe$('FF6E40');
+    this.MD_DEEP_ORANGE_A400 = this.fromHex_61zpoe$('FF3D00');
+    this.MD_DEEP_ORANGE_A700 = this.fromHex_61zpoe$('DD2C00');
     this.MD_DEEP_ORANGE = this.MD_DEEP_ORANGE_500;
-    this.MD_BROWN_50 = color('EFEBE9');
-    this.MD_BROWN_100 = color('D7CCC8');
-    this.MD_BROWN_200 = color('BCAAA4');
-    this.MD_BROWN_300 = color('A1887F');
-    this.MD_BROWN_400 = color('8D6E63');
-    this.MD_BROWN_500 = color('795548');
-    this.MD_BROWN_600 = color('6D4C41');
-    this.MD_BROWN_700 = color('5D4037');
-    this.MD_BROWN_800 = color('4E342E');
-    this.MD_BROWN_900 = color('3E2723');
+    this.MD_BROWN_50 = this.fromHex_61zpoe$('EFEBE9');
+    this.MD_BROWN_100 = this.fromHex_61zpoe$('D7CCC8');
+    this.MD_BROWN_200 = this.fromHex_61zpoe$('BCAAA4');
+    this.MD_BROWN_300 = this.fromHex_61zpoe$('A1887F');
+    this.MD_BROWN_400 = this.fromHex_61zpoe$('8D6E63');
+    this.MD_BROWN_500 = this.fromHex_61zpoe$('795548');
+    this.MD_BROWN_600 = this.fromHex_61zpoe$('6D4C41');
+    this.MD_BROWN_700 = this.fromHex_61zpoe$('5D4037');
+    this.MD_BROWN_800 = this.fromHex_61zpoe$('4E342E');
+    this.MD_BROWN_900 = this.fromHex_61zpoe$('3E2723');
     this.MD_BROWN = this.MD_BROWN_500;
-    this.MD_GREY_50 = color('FAFAFA');
-    this.MD_GREY_100 = color('F5F5F5');
-    this.MD_GREY_200 = color('EEEEEE');
-    this.MD_GREY_300 = color('E0E0E0');
-    this.MD_GREY_400 = color('BDBDBD');
-    this.MD_GREY_500 = color('9E9E9E');
-    this.MD_GREY_600 = color('757575');
-    this.MD_GREY_700 = color('616161');
-    this.MD_GREY_800 = color('424242');
-    this.MD_GREY_900 = color('212121');
+    this.MD_GREY_50 = this.fromHex_61zpoe$('FAFAFA');
+    this.MD_GREY_100 = this.fromHex_61zpoe$('F5F5F5');
+    this.MD_GREY_200 = this.fromHex_61zpoe$('EEEEEE');
+    this.MD_GREY_300 = this.fromHex_61zpoe$('E0E0E0');
+    this.MD_GREY_400 = this.fromHex_61zpoe$('BDBDBD');
+    this.MD_GREY_500 = this.fromHex_61zpoe$('9E9E9E');
+    this.MD_GREY_600 = this.fromHex_61zpoe$('757575');
+    this.MD_GREY_700 = this.fromHex_61zpoe$('616161');
+    this.MD_GREY_800 = this.fromHex_61zpoe$('424242');
+    this.MD_GREY_900 = this.fromHex_61zpoe$('212121');
     this.MD_GREY = this.MD_GREY_500;
-    this.MD_BLUE_GREY_50 = color('ECEFF1');
-    this.MD_BLUE_GREY_100 = color('CFD8DC');
-    this.MD_BLUE_GREY_200 = color('B0BEC5');
-    this.MD_BLUE_GREY_300 = color('90A4AE');
-    this.MD_BLUE_GREY_400 = color('78909C');
-    this.MD_BLUE_GREY_500 = color('607D8B');
-    this.MD_BLUE_GREY_600 = color('546E7A');
-    this.MD_BLUE_GREY_700 = color('455A64');
-    this.MD_BLUE_GREY_800 = color('37474F');
-    this.MD_BLUE_GREY_900 = color('263238');
+    this.MD_BLUE_GREY_50 = this.fromHex_61zpoe$('ECEFF1');
+    this.MD_BLUE_GREY_100 = this.fromHex_61zpoe$('CFD8DC');
+    this.MD_BLUE_GREY_200 = this.fromHex_61zpoe$('B0BEC5');
+    this.MD_BLUE_GREY_300 = this.fromHex_61zpoe$('90A4AE');
+    this.MD_BLUE_GREY_400 = this.fromHex_61zpoe$('78909C');
+    this.MD_BLUE_GREY_500 = this.fromHex_61zpoe$('607D8B');
+    this.MD_BLUE_GREY_600 = this.fromHex_61zpoe$('546E7A');
+    this.MD_BLUE_GREY_700 = this.fromHex_61zpoe$('455A64');
+    this.MD_BLUE_GREY_800 = this.fromHex_61zpoe$('37474F');
+    this.MD_BLUE_GREY_900 = this.fromHex_61zpoe$('263238');
     this.MD_BLUE_GREY = this.MD_BLUE_GREY_500;
     this.MD_COLORS = listOf([this.MD_RED, this.MD_PINK, this.MD_PURPLE, this.MD_DEEP_PURPLE, this.MD_INDIGO, this.MD_BLUE, this.MD_LIGHT_BLUE, this.MD_CYAN, this.MD_TEAL, this.MD_GREEN, this.MD_LIGHT_GREEN, this.MD_LIME, this.MD_YELLOW, this.MD_AMBER, this.MD_ORANGE, this.MD_DEEP_ORANGE, this.MD_BROWN, this.MD_GREY, this.MD_BLUE_GREY]);
   }
   Color$Companion.prototype.fromHsv_7b5o5w$ = function (h, s, v, a) {
     var color = MutableColor_init();
     return color.setHsv_7b5o5w$(h, s, v, a);
+  };
+  Color$Companion.prototype.fromHex_61zpoe$ = function (hex) {
+    if (hex.length === 0) {
+      return Color$Companion_getInstance().BLACK;
+    }
+    var str = hex;
+    if (str.charCodeAt(0) === 35) {
+      str = str.substring(1);
+    }
+    var r = 0.0;
+    var g = 0.0;
+    var b = 0.0;
+    var a = 1.0;
+    if (str.length === 3) {
+      var r4 = toInt_0(str.substring(0, 1), 16);
+      var g4 = toInt_0(str.substring(1, 2), 16);
+      var b4 = toInt_0(str.substring(2, 3), 16);
+      r = (r4 | r4 << 4) / 255.0;
+      g = (g4 | g4 << 4) / 255.0;
+      b = (b4 | b4 << 4) / 255.0;
+    }
+     else if (str.length === 4) {
+      var r4_0 = toInt_0(str.substring(0, 1), 16);
+      var g4_0 = toInt_0(str.substring(1, 2), 16);
+      var b4_0 = toInt_0(str.substring(2, 3), 16);
+      var a4 = toInt_0(str.substring(2, 3), 16);
+      r = (r4_0 | r4_0 << 4) / 255.0;
+      g = (g4_0 | g4_0 << 4) / 255.0;
+      b = (b4_0 | b4_0 << 4) / 255.0;
+      a = (a4 | a4 << 4) / 255.0;
+    }
+     else if (str.length === 6) {
+      r = toInt_0(str.substring(0, 2), 16) / 255.0;
+      g = toInt_0(str.substring(2, 4), 16) / 255.0;
+      b = toInt_0(str.substring(4, 6), 16) / 255.0;
+    }
+     else if (str.length === 8) {
+      r = toInt_0(str.substring(0, 2), 16) / 255.0;
+      g = toInt_0(str.substring(2, 4), 16) / 255.0;
+      b = toInt_0(str.substring(4, 6), 16) / 255.0;
+      a = toInt_0(str.substring(6, 8), 16) / 255.0;
+    }
+    return new Color(r, g, b, a);
   };
   Color$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -24191,47 +24278,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return $this;
   }
   function color(hex) {
-    if (hex.length === 0) {
-      return Color$Companion_getInstance().BLACK;
-    }
-    var str = hex;
-    if (str.charCodeAt(0) === 35) {
-      str = str.substring(1);
-    }
-    var r = 0.0;
-    var g = 0.0;
-    var b = 0.0;
-    var a = 1.0;
-    if (str.length === 3) {
-      var r4 = toInt_0(str.substring(0, 1), 16);
-      var g4 = toInt_0(str.substring(1, 2), 16);
-      var b4 = toInt_0(str.substring(2, 3), 16);
-      r = (r4 | r4 << 4) / 255.0;
-      g = (g4 | g4 << 4) / 255.0;
-      b = (b4 | b4 << 4) / 255.0;
-    }
-     else if (str.length === 4) {
-      var r4_0 = toInt_0(str.substring(0, 1), 16);
-      var g4_0 = toInt_0(str.substring(1, 2), 16);
-      var b4_0 = toInt_0(str.substring(2, 3), 16);
-      var a4 = toInt_0(str.substring(2, 3), 16);
-      r = (r4_0 | r4_0 << 4) / 255.0;
-      g = (g4_0 | g4_0 << 4) / 255.0;
-      b = (b4_0 | b4_0 << 4) / 255.0;
-      a = (a4 | a4 << 4) / 255.0;
-    }
-     else if (str.length === 6) {
-      r = toInt_0(str.substring(0, 2), 16) / 255.0;
-      g = toInt_0(str.substring(2, 4), 16) / 255.0;
-      b = toInt_0(str.substring(4, 6), 16) / 255.0;
-    }
-     else if (str.length === 8) {
-      r = toInt_0(str.substring(0, 2), 16) / 255.0;
-      g = toInt_0(str.substring(2, 4), 16) / 255.0;
-      b = toInt_0(str.substring(4, 6), 16) / 255.0;
-      a = toInt_0(str.substring(6, 8), 16) / 255.0;
-    }
-    return new Color(r, g, b, a);
+    return Color$Companion_getInstance().fromHex_61zpoe$(hex);
   }
   var sortWith_0 = Kotlin.kotlin.collections.sortWith_iwcb0m$;
   var compareBy$lambda_4 = wrapFunction(function () {
@@ -36021,6 +36068,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
   Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
   Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
   Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
   BlankComponentUi.prototype.createUi_aemszp$ = ComponentUi.prototype.createUi_aemszp$;
@@ -36036,6 +36084,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   BasicPointShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
   BasicPointShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
   BasicPointShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterSampling_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
   BasicPointShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
   BlurShader_init$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
   BlurShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
@@ -36045,6 +36094,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   BlurShader_init$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
   BlurShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
   BlurShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
+  BlurShader_init$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
   BlurShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
   BillboardShader_init$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
   BillboardShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
@@ -36054,6 +36104,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   BillboardShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
   BillboardShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
   BillboardShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterSampling_jh5913$;
+  BillboardShader_init$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
   BillboardShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
   fontShader$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
   fontShader$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
@@ -36063,6 +36114,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   fontShader$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
   fontShader$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
   fontShader$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
+  fontShader$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
   fontShader$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
   AnimationData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
   NodeAnimationData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;

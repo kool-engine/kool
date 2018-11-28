@@ -110,7 +110,8 @@ object ModelConverter {
         // fixme: this should work, but it doesn't...
         //return AIString.create(MemoryUtil.memGetAddress(address() + AIMaterialProperty.MDATA)).dataString()
 
-        val bytes = ByteArray(mDataLength())
+        // mDataLength() includes terminating 0 byte, skip that
+        val bytes = ByteArray(mDataLength() - 1)
         mData().get(bytes)
         // first four bytes contain string header... (length)
         return String(bytes, 4, bytes.size-4)

@@ -88,8 +88,8 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
             target.put(modelMat.matrix)
         }
 
-        open fun getLocalOrigin(result: MutableVec3f) {
-            modelMat.transform(result.set(Vec3f.ZERO))
+        open fun getLocalOrigin(result: MutableVec3f): MutableVec3f {
+            return modelMat.transform(result.set(Vec3f.ZERO))
         }
     }
 
@@ -115,6 +115,10 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
         }
 
         fun addInstance(instance: T) {
+            instances += instance
+        }
+
+        fun addInstances(instance: List<T>) {
             instances += instance
         }
 

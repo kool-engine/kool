@@ -236,12 +236,11 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
         private set
 
     private var sphereFacX = 1f
-    private var speherFacY = 1f
+    private var sphereFacY = 1f
     private var tangX = 1f
     private var tangY = 1f
 
     private val tmpNodeCenter = MutableVec3f()
-    private val tmpNodeExtent = MutableVec3f()
 
     override fun updateProjectionMatrix() {
         //ctx.mvpState.projMatrix.setPerspective(fovy, aspectRatio, clipNear, clipFar)
@@ -249,7 +248,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
 
         // compute intermediate values needed for view frustum culling
         val angY = fovy.toRad() / 2f
-        speherFacY = 1f / cos(angY)
+        sphereFacY = 1f / cos(angY)
         tangY = tan(angY)
 
         val angX = atan(tangY * aspectRatio)
@@ -284,7 +283,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
         }
 
         val y = tmpNodeCenter.dot(globalUp)
-        var d = globalRadius * speherFacY
+        var d = globalRadius * sphereFacY
         z *= tangY
         if (y > z + d || y < -z - d) {
             // node's bounding sphere is either above or below view frustum

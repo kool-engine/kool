@@ -16,8 +16,6 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.color
-import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlinx.serialization.load
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlin.math.max
@@ -123,7 +121,7 @@ class GlobeUi(var globe: Globe?, val ctx: KoolContext) {
                     padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                     textColor.setCustom(Color.LIME)
-                    textColorHovered.setCustom(color("#42A5F5"))
+                    textColorHovered.setCustom(Color.fromHex("#42A5F5"))
                     text = ""
 
                     onClick += { _, _, _ ->

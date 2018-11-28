@@ -30,7 +30,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     protected val uCamPosition = addUniform(Uniform3f(GlslGenerator.U_CAMERA_POSITION))
     protected val uShininess = addUniform(Uniform1f(GlslGenerator.U_SHININESS))
     protected val uSpecularIntensity = addUniform(Uniform1f(GlslGenerator.U_SPECULAR_INTENSITY))
-    protected val uReflectiveness = addUniform(Uniform1f(GlslGenerator.U_REFLECTIVENESS))
+    protected val uReflectivity = addUniform(Uniform1f(GlslGenerator.U_REFLECTIVENESS))
     protected val uStaticColor = addUniform(Uniform4f(GlslGenerator.U_STATIC_COLOR))
     protected val uTexture = addUniform(UniformTexture2D(GlslGenerator.U_TEXTURE_0))
     protected val uNormalMap = addUniform(UniformTexture2D(GlslGenerator.U_NORMAL_MAP_0))
@@ -52,9 +52,9 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     var specularIntensity: Float
         get() = uSpecularIntensity.value[0]
         set(value) { uSpecularIntensity.value[0] = value }
-    var reflectiveness: Float
-        get() = uReflectiveness.value[0]
-        set(value) { uReflectiveness.value[0] = value }
+    var reflectivity: Float
+        get() = uReflectivity.value[0]
+        set(value) { uReflectivity.value[0] = value }
     var staticColor: MutableVec4f
         get() = uStaticColor.value
         set(value) { uStaticColor.value.set(value) }
@@ -84,7 +84,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         // set meaningful uniform default values
         shininess = props.shininess
         specularIntensity = props.specularIntensity
-        reflectiveness = props.reflectiveness
+        reflectivity = props.reflectivity
         staticColor.set(props.staticColor)
         texture = props.texture
         normalMap = props.normalMap
@@ -139,7 +139,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         uAlpha.bind(ctx)
         uShininess.bind(ctx)
         uSpecularIntensity.bind(ctx)
-        uReflectiveness.bind(ctx)
+        uReflectivity.bind(ctx)
         uStaticColor.bind(ctx)
         uTexture.bind(ctx)
         uNormalMap.bind(ctx)

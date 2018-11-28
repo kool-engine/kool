@@ -101,9 +101,9 @@ class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val 
 }
 
 open class CubeMapTextureData(val front: TextureData, val back: TextureData, val left: TextureData,
-                              val right: TextureData, val top: TextureData, val bottom: TextureData) : TextureData() {
+                              val right: TextureData, val up: TextureData, val down: TextureData) : TextureData() {
     override val isAvailable: Boolean get() = front.isAvailable && back.isAvailable && left.isAvailable &&
-            right.isAvailable && top.isAvailable && bottom.isAvailable
+            right.isAvailable && up.isAvailable && down.isAvailable
 
     override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
         if (target != GL_TEXTURE_CUBE_MAP) {
@@ -115,8 +115,8 @@ open class CubeMapTextureData(val front: TextureData, val back: TextureData, val
         back.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, ctx)
         left.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, ctx)
         right.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_X, ctx)
-        top.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, ctx)
-        bottom.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, ctx)
+        up.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, ctx)
+        down.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, ctx)
 
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
     }

@@ -75,7 +75,9 @@ class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager
     private fun loadLocal(assetUrl: String, onError: ((Exception) -> Unit)? = null, onLoad: (InputStream) -> Unit) {
         GlobalScope.launch {
             try {
-                onLoad(openLocalStream(assetUrl))
+                openLocalStream(assetUrl).use {
+                    onLoad(it)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 onError?.invoke(e)
@@ -91,7 +93,9 @@ class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager
                 var file: File? = null
                 try {
                     file = HttpCache.loadHttpResource(assetUrl)
-                    onLoad(FileInputStream(file))
+                    FileInputStream(file).use {
+                        onLoad(it)
+                    }
                     // asset loading succeeded, break retry loop
                     break
 

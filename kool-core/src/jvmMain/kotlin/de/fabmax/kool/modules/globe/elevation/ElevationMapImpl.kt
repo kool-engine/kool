@@ -17,7 +17,9 @@ actual fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta, asse
 }
 
 fun loadPngS16ElevationMap(basePath: String, meta: ElevationMapMeta): BoundedElevationMap {
-    val data = loadElevationMapData(FileInputStream(File(basePath, meta.name)), meta)
+    val data = FileInputStream(File(basePath, meta.name)).use {
+        loadElevationMapData(it, meta)
+    }
     return ElevationMapS16(data, meta)
 }
 

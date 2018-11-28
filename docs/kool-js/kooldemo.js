@@ -58,7 +58,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Font = $module$kool.de.fabmax.kool.util.Font;
   var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
   var Margin = $module$kool.de.fabmax.kool.scene.ui.Margin;
-  var color = $module$kool.de.fabmax.kool.util.color_61zpoe$;
   var Pair = Kotlin.kotlin.Pair;
   var toString_0 = $module$kool.de.fabmax.kool.toString_j6vyb1$;
   var equals = Kotlin.equals;
@@ -821,7 +820,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
       $receiver.textColor.setCustom_11rb$(Color.Companion.LIME);
-      $receiver.textColorHovered.setCustom_11rb$(color('#42A5F5'));
+      $receiver.textColorHovered.setCustom_11rb$(Color.Companion.fromHex_61zpoe$('#42A5F5'));
       $receiver.text = '';
       var $receiver_0 = $receiver.onClick;
       var element = GlobeUi$scene$lambda$lambda$lambda$lambda(closure$attributions, closure$i, this$GlobeUi);
@@ -1592,7 +1591,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.lightModel = LightModel.PHONG_LIGHTING;
       $receiver.staticColor = Color.Companion.MD_ORANGE;
       $receiver.isEnvironmentMapped = true;
-      $receiver.reflectiveness = 0.75;
+      $receiver.reflectivity = 0.75;
       $receiver.environmentMap = closure$envRenderer.environmentMap;
       return Unit;
     };
@@ -4139,6 +4138,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   package$demo.uiDemoContent_d6jo3u$ = uiDemoContent;
   _.main = main;
   _.getParams = getParams;
+  ModelShader_init$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
   ModelShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
   ModelShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
   ModelShader_init$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;

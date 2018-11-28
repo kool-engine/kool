@@ -49,6 +49,7 @@ class ShaderProps {
     var isInstanced = false
 
     var shadowMap: ShadowMap? = null
+    var shadowDepthOffset = 0.0005
 
     var isNormalMapped = false
     var isEnvironmentMapped = false
@@ -56,7 +57,7 @@ class ShaderProps {
     // init values for newly created BasicShader
     var shininess = 20.0f
     var specularIntensity = 0.75f
-    var reflectiveness = 0.5f
+    var reflectivity = 0.5f
     var staticColor = Color.BLACK
     var alpha = 1.0f
     var saturation = 1.0f

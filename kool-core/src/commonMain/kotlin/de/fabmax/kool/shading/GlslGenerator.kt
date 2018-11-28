@@ -30,7 +30,7 @@ open class GlslGenerator {
         const val U_CLIP_SPACE_FAR_Z = "uClipSpaceFarZ"
         const val U_NORMAL_MAP_0 = "uNormalMap0"
         const val U_ENVIRONMENT_MAP = "uEnvironmentMap"
-        const val U_REFLECTIVENESS = "uReflectiveness"
+        const val U_REFLECTIVENESS = "uReflectivity"
 
         const val V_TEX_COORD = "vTexCoord"
         const val V_EYE_DIRECTION = "vEyeDirection_cameraspace"
@@ -49,7 +49,7 @@ open class GlslGenerator {
         const val L_TEX_COLOR = "texColor"
         const val L_VERTEX_COLOR = "vertColor"
         const val L_STATIC_COLOR = "staticColor"
-        const val L_REFLECTIVENESS = "reflectiveness"
+        const val L_REFLECTIVITY = "reflectivity"
     }
 
     interface GlslInjector {
@@ -63,6 +63,7 @@ open class GlslGenerator {
         fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun fsBeforeSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
+        fun fsAfterLighting(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
         fun fsEnd(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) { }
     }
 
@@ -435,7 +436,7 @@ open class GlslGenerator {
         }
 
         if (shaderProps.isEnvironmentMapped) {
-            text.append("float $L_REFLECTIVENESS = $U_REFLECTIVENESS;\n")
+            text.append("float $L_REFLECTIVITY = $U_REFLECTIVENESS;\n")
         }
 
         injectors.forEach { it.fsBeforeSampling(shaderProps, text, ctx) }
@@ -469,7 +470,7 @@ open class GlslGenerator {
                 text.append("if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[$i]) {\n")
                 text.append("  vec3 projPos = $V_POSITION_LIGHTSPACE[$i].xyz / $V_POSITION_LIGHTSPACE[$i].w;\n")
                 text.append("  float off = 1.0 / float($U_SHADOW_TEX_SZ[$i]);\n")
-                text.append("  shadowFactor = calcShadowFactor(${U_SHADOW_TEX}_$i, projPos, off, 0.0005);\n")
+                text.append("  shadowFactor = calcShadowFactor(${U_SHADOW_TEX}_$i, projPos, off, ${shaderProps.shadowDepthOffset});\n")
                 text.append("}\n")
                 if (i < shadowMap.numMaps - 1) {
                     text.append("else ")
@@ -497,7 +498,7 @@ open class GlslGenerator {
                 // cosine of the angle between the eye vector and the reflect vector
                 text.append("float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n")
 
-                text.append("vec3 materialAmbientColor = $fsOutBody.rgb * vec3(0.42);\n")
+                text.append("vec3 materialAmbientColor = $fsOutBody.rgb * 0.42;\n")
                 text.append("vec3 materialDiffuseColor = $fsOutBody.rgb * $U_LIGHT_COLOR * cosTheta;\n")
                 text.append("vec3 materialSpecularColor = $U_LIGHT_COLOR * $U_SPECULAR_INTENSITY * pow(cosAlpha, $U_SHININESS) * $fsOutBody.a * shadowFactor;\n")
 
@@ -508,14 +509,15 @@ open class GlslGenerator {
             }
 
             // compute output color
-            text.append("$fsOutBody = vec4(materialAmbientColor + materialDiffuseColor + materialSpecularColor, $fsOutBody.a);\n")
-
+            text.append("$fsOutBody.rgb = materialAmbientColor + materialDiffuseColor + materialSpecularColor;\n")
         }
+
+        injectors.forEach { it.fsAfterLighting(shaderProps, text, ctx) }
 
         if (shaderProps.isEnvironmentMapped) {
             text.append("vec3 eyeDir = normalize($V_POSITION_WORLDSPACE - $U_CAMERA_POSITION);\n")
             text.append("vec3 reflectedDir = reflect(eyeDir, normalize($V_NORMAL_WORLDSPACE));\n")
-            text.append("$fsOutBody.rgb = mix($fsOutBody.rgb , texture($U_ENVIRONMENT_MAP, reflectedDir).rgb, $L_REFLECTIVENESS);\n")
+            text.append("$fsOutBody.rgb = mix($fsOutBody.rgb , texture($U_ENVIRONMENT_MAP, reflectedDir).rgb, $L_REFLECTIVITY);\n")
         }
 
         // add fog code

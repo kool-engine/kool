@@ -47,7 +47,7 @@ fun reflectionDemo(ctx: KoolContext): List<Scene> {
             lightModel = LightModel.PHONG_LIGHTING
             staticColor = Color.MD_ORANGE
             isEnvironmentMapped = true
-            reflectiveness = 0.75f
+            reflectivity = 0.75f
             environmentMap = envRenderer.environmentMap
         }
         +mesh

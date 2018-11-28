@@ -37,28 +37,29 @@ class InputManager internal constructor() {
      */
     val primaryPointer = pointers[0]
 
-    private val keyHandlers = mutableMapOf<Int, KeyEventListener>()
+    private val keyHandlers = mutableMapOf<Int, MutableList<KeyEventListener>>()
 
     fun registerKeyListener(char: Char, name: String, filter: (KeyEvent) -> Boolean = { it.isCharTyped }, callback: (KeyEvent) -> Unit): KeyEventListener {
         return registerKeyListener(char.toInt(), name, filter, callback)
     }
 
     fun registerKeyListener(keyCode: Int, name: String, filter: (KeyEvent) -> Boolean = { true }, callback: (KeyEvent) -> Unit): KeyEventListener {
-        val existing = keyHandlers[keyCode]
-        if (existing != null) {
-            logW { "KeyListener \"$name\" replaces existing KexListener \"${existing.name}\"" }
-        }
-        val handler = KeyEventListener(keyCode, name, filter, callback)
-        keyHandlers[keyCode] = handler
         val keyStr = if (keyCode in 32..126) "${keyCode.toChar()}" else "$keyCode"
+
+        val listeners = keyHandlers.getOrPut(keyCode) { mutableListOf() }
+        if (listeners.isNotEmpty()) {
+            logW { "Multiple bindings for key $keyStr: ${listeners.map { it.name }}" }
+        }
+
+        val handler = KeyEventListener(keyCode, name, filter, callback)
+        listeners += handler
         logD { "Registered key handler: \"$name\" [keyCode=$keyStr]" }
         return handler
     }
 
     fun removeKeyListener(listener: KeyEventListener) {
-        if (keyHandlers[listener.keyCode] === listener) {
-            keyHandlers.remove(listener.keyCode)
-        }
+        val listeners = keyHandlers[listener.keyCode] ?: return
+        listeners -= listener
     }
 
     fun getActivePointers(result: MutableList<Pointer>) {
@@ -133,9 +134,13 @@ class InputManager internal constructor() {
 
         for (i in keyEvents.indices) {
             val evt = keyEvents[i]
-            val listener = keyHandlers[evt.keyCode]
-            if (listener != null && listener.filter(evt)) {
-                listener.invoke(evt)
+            val listeners = keyHandlers[evt.keyCode]
+            if (listeners != null) {
+                for (j in listeners.indices) {
+                    if (listeners[j].filter(evt)) {
+                        listeners[j](evt)
+                    }
+                }
             }
         }
     }
@@ -438,7 +443,7 @@ class InputManager internal constructor() {
     }
 
     class KeyEventListener(val keyCode: Int, val name: String, val filter: (KeyEvent) -> Boolean = { true }, val callback: (KeyEvent) -> Unit) {
-        fun invoke(evt: KeyEvent) = callback.invoke(evt)
+        operator fun invoke(evt: KeyEvent) = callback.invoke(evt)
     }
 
     class KeyEvent {
