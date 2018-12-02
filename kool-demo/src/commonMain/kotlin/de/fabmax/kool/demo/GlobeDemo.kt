@@ -32,7 +32,7 @@ fun globeScene(ctx: KoolContext): List<Scene> {
 
     scenes += scene {
         +sphericalInputTransform {
-            // some of the mouse interactions are handled by Earth itself
+            // some of the mouse interactions are handled by Globe itself
             // therefore we configure the camera transform to center-zoom and no panning
             leftDragMethod = SphericalInputTransform.DragMethod.NONE
             rightDragMethod = SphericalInputTransform.DragMethod.ROTATE
@@ -41,8 +41,7 @@ fun globeScene(ctx: KoolContext): List<Scene> {
             // zoom range is quite large: 20 meters to 20000 km above surface
             minZoom = 2e1f
             maxZoom = 2e7f
-            zoom = 1e7f
-            zoomAnimator.set(zoom)
+            resetZoom(1e7f)
 
             verticalAxis = Vec3f.Z_AXIS
             minHorizontalRot = 0f

@@ -27,7 +27,7 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
     val tileManager = TileManager(this)
     var elevationMapProvider: ElevationMapProvider = NullElevationMap()
     var meshGenerator = GridTileMeshGenerator()
-    var meshDetailLevel = 5
+    var meshDetailLevel = 4
     var tileShaderProvider = OsmTexImageTileShaderProvider()
 
     private val tileFrames = mutableMapOf<Long, TileFrame>()
@@ -51,6 +51,13 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
             zoomGroups += grp
             +grp
         }
+    }
+
+    fun setCenter(latitudeDeg: Double, longitudeDeg: Double, height: Double) {
+        setIdentity()
+        translate(0.0, 0.0, -(radius + height))
+        rotate(latitudeDeg.clamp(-85.0, 85.0), 1.0, 0.0, 0.0)
+        rotate(longitudeDeg, 0.0, -1.0, 0.0)
     }
 
     override fun preRenderDp(ctx: KoolContext, modelMatDp: Mat4dStack) {
