@@ -43,7 +43,7 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
     private fun onPreRender(ctx: KoolContext) {
         if (globePan.isValid) {
             globePan.apply(ctx)
-            globe.setCenter(globePan.globeCenter.y, globePan.globeCenter.x, 0.0)
+            globe.setCenter(globePan.globeCenter.y, globePan.globeCenter.x)
         }
     }
 
@@ -90,15 +90,14 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
 
                 // compute hit point of pick ray on globe surface: ray-sphere intersection
                 // globe center is at (0, 0, 0) -> ray origin is the vector from sphere origin to ray origin
-                // fixme: this ignores the heightmap / mountains
+                val radius = globe.radius + globe.getHeightAt(globe.centerLat, globe.centerLon)
                 val ldo = tmpRayL * tmpRayO
-                val sqr = ldo * ldo - tmpRayO.sqrLength() + globe.radius * globe.radius
+                val sqr = ldo * ldo - tmpRayO.sqrLength() + radius * radius
                 if (sqr > 0) {
                     val hitDist = -ldo - sqrt(sqr)
                     // compute ray hit point in globe coordinates and store it in tmpVec
                     tmpRayL.scale(hitDist, tmpVec).add(tmpRayO)
 
-                    val radius = tmpVec.length()
                     result.x = atan2(tmpVec.x, tmpVec.z).toDeg()
                     result.y = (PI * 0.5 - acos(tmpVec.y / radius)).toDeg()
 

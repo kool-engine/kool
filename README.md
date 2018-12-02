@@ -20,7 +20,7 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 - Environment-Mapping for sky-boxes and (dynamic) reflections: [Reflection Demo](https://fabmax.github.io/kool/kool-js/?demo=reflectionDemo)
 - Instanced rendering: [Instanced Mesh Demo](https://fabmax.github.io/kool/kool-js/?demo=instancedDemo)
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo) module using error quadrics
-- Added elevation mapping in [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo) (Europe only) - Zoom in on the alps!
+- 3D map / earth rendering: [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo) (OSM tile-server is quite slow - be patient until tiles are loaded...)
 - Some super-primitive [Physics Simulation](https://fabmax.github.io/kool/kool-js/?demo=boxDemo)
 - Full support of all features on all platforms
 - Multi-touch support (on Android and Javascript / WebGL)
@@ -28,7 +28,6 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 - Cascaded shadow maps
 - Vertex shader mesh animation: [Model Demo](https://fabmax.github.io/kool/kool-js/?demo=modelDemo)
 - Normal mapping
-- OpenStreetMap tile loading: [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo)
 - Synthie music: [Synthie Demo](https://fabmax.github.io/kool/kool-js/?demo=synthieDemo), quite CPU intense...
 - Multiplatform support for Desktop JVM, Javascript and Android
 - Multi-scene / multi-viewport support

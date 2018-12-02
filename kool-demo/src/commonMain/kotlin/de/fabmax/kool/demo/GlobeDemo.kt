@@ -16,6 +16,7 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.logW
 import kotlinx.serialization.load
 import kotlinx.serialization.protobuf.ProtoBuf
 import kotlin.math.max
@@ -41,11 +42,14 @@ fun globeScene(ctx: KoolContext): List<Scene> {
             // zoom range is quite large: 20 meters to 20000 km above surface
             minZoom = 2e1f
             maxZoom = 2e7f
-            resetZoom(1e7f)
 
             verticalAxis = Vec3f.Z_AXIS
             minHorizontalRot = 0f
             maxHorizontalRot = 85f
+
+            resetZoom(15e3f)
+            horizontalRotation = 60f
+            verticalRotation = -30f
 
             +camera
             updateTransform()
@@ -60,23 +64,26 @@ fun globeScene(ctx: KoolContext): List<Scene> {
         val elevationUrl = Demo.getProperty("globe.elevationUrl", "elevation")
         ctx.assetMgr.loadAsset("$elevationUrl/meta.pb") { data ->
             // create globe with earth radius
-            val earth = Globe(6_371_000.8)
-            ui.globe = earth
+            val globe = Globe(6_371_000.8)
+            globe.setCenter(47.05, 9.48)
+            ui.globe = globe
 
             if (data != null) {
                 // deserialize elevation map meta data
                 val metaHierarchy: ElevationMapMetaHierarchy = ProtoBuf.load(data)
 
                 // use loaded elevation map info to generate tile meshes, tiles will have 2^6 x 2^6 vertices
-                earth.elevationMapProvider = ElevationMapHierarchy(elevationUrl, metaHierarchy, ctx.assetMgr)
-                earth.meshDetailLevel = 6
+                globe.elevationMapProvider = ElevationMapHierarchy(elevationUrl, metaHierarchy, ctx.assetMgr)
+                globe.meshDetailLevel = 6
+            } else {
+                logW { "Height map data not available" }
             }
 
-            val dpGroup = DoublePrecisionRoot(earth)
+            val dpGroup = DoublePrecisionRoot(globe)
             +dpGroup
 
             // register specialized mouse input handler for globe manipulation
-            registerDragHandler(GlobeDragHandler(earth))
+            registerDragHandler(GlobeDragHandler(globe))
         }
 
     }

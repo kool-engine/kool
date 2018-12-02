@@ -16,7 +16,8 @@ class TileManager(val globe: Globe) {
     private val loadingTiles = mutableSetOf<Long>()
     private val removingTiles = mutableMapOf<Long, TileMesh>()
 
-    private var center = TileName(0, 0, 1)
+    var center = TileName(0, 0, 1)
+        private set
 
     fun onTileLoaded(tile: TileMesh) {
         loadingTiles -= tile.key

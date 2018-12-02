@@ -59,6 +59,8 @@ open class TileName(val x: Int, val y: Int, val zoom: Int) {
         return fusedKey.hashCode()
     }
 
+    fun arcSecondsLat(): Double = (latN - latS) * 3600.0
+
     companion object {
         fun forLatLon(lat: Double, lon: Double, zoom: Int): TileName {
             val latRad = lat.toRad()

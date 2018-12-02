@@ -5,6 +5,9 @@ import de.fabmax.kool.math.Vec3f
 
 interface ElevationMapProvider {
     fun getElevationMapAt(lat: Double, lon: Double, resolution: Double): ElevationMap?
+
+    fun getElevationAt(lat: Double, lon: Double, resolution: Double): Double =
+            getElevationMapAt(lat, lon, resolution)?.getElevationAt(lat, lon) ?: 0.0
 }
 
 interface ElevationMap {

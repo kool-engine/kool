@@ -7787,6 +7787,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   function ElevationMapProvider() {
   }
+  ElevationMapProvider.prototype.getElevationAt_yvo9jy$ = function (lat, lon, resolution) {
+    var tmp$, tmp$_0;
+    return (tmp$_0 = (tmp$ = this.getElevationMapAt_yvo9jy$(lat, lon, resolution)) != null ? tmp$.getElevationAt_lu1900$(lat, lon) : null) != null ? tmp$_0 : 0.0;
+  };
   ElevationMapProvider.$metadata$ = {
     kind: Kind_INTERFACE,
     simpleName: 'ElevationMapProvider',
@@ -8703,14 +8707,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.tileManager = new TileManager(this);
     this.elevationMapProvider = new NullElevationMap();
     this.meshGenerator = new GridTileMeshGenerator();
-    this.meshDetailLevel = 5;
+    this.meshDetailLevel = 4;
     this.tileShaderProvider = new OsmTexImageTileShaderProvider();
     this.tileFrames_0 = LinkedHashMap_init();
     this.zoomGroups_0 = ArrayList_init();
     this.removeTiles_0 = ArrayList_init();
     this.camPosition_0 = MutableVec3f_init();
     this.camDirection_0 = MutableVec3f_init();
-    this.prevCamHeight_0 = 0.0;
+    this.prevCamDist_0 = 0.0;
     this.prevLat_0 = 0.0;
     this.prevLon_0 = 0.0;
     this.tmpVec_0 = MutableVec3f_init();
@@ -8758,6 +8762,30 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       this.cameraHeight_vk4iv0$_0 = cameraHeight;
     }
   });
+  Globe.prototype.getHeightAt_lu1900$ = function (latitudeDeg, longitudeDeg) {
+    var heightRes = this.tileManager.center.arcSecondsLat();
+    return this.elevationMapProvider.getElevationAt_yvo9jy$(latitudeDeg, longitudeDeg, heightRes);
+  };
+  Globe.prototype.setCenter_lu1900$ = function (latitudeDeg, longitudeDeg) {
+    this.setCenter_yvo9jy$(latitudeDeg, longitudeDeg, this.getHeightAt_lu1900$(latitudeDeg, longitudeDeg));
+  };
+  Globe.prototype.setCenter_yvo9jy$ = function (latitudeDeg, longitudeDeg, height) {
+    this.setIdentity();
+    this.translate_yvo9jy$(0.0, 0.0, -(this.radius + height));
+    var min = -85.0;
+    var clamp$result;
+    if (latitudeDeg < min) {
+      clamp$result = min;
+    }
+     else if (latitudeDeg > 85.0) {
+      clamp$result = 85.0;
+    }
+     else {
+      clamp$result = latitudeDeg;
+    }
+    this.rotate_6y0v78$(clamp$result, 1.0, 0.0, 0.0);
+    this.rotate_6y0v78$(longitudeDeg, 0.0, -1.0, 0.0);
+  };
   Globe.prototype.preRenderDp_oxz17o$ = function (ctx, modelMatDp) {
     var tmp$, tmp$_0;
     TileMesh$Companion_getInstance().prepareDefaultTex_aemszp$(ctx);
@@ -8772,14 +8800,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       this.camPosition_0.norm_5s4mqq$(this.camDirection_0);
       cam.clipNear = camDist * 0.05;
       cam.clipFar = camDist * 10.0;
-      if (camDist > this.prevCamHeight_0) {
-        tmp$_0 = this.prevCamHeight_0 / camDist;
+      if (camDist > this.prevCamDist_0) {
+        tmp$_0 = this.prevCamDist_0 / camDist;
       }
        else {
-        tmp$_0 = camDist / this.prevCamHeight_0;
+        tmp$_0 = camDist / this.prevCamDist_0;
       }
       var dh = tmp$_0;
-      this.prevCamHeight_0 = camDist;
+      this.prevCamDist_0 = camDist;
       var tmp$_1 = math.PI * 0.5;
       var x = this.camDirection_0.y;
       var $receiver = tmp$_1 - Math_0.acos(x);
@@ -8814,7 +8842,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       this.prevLon_0 = lon;
       this.centerLat = lat * package$math.RAD_2_DEG;
       this.centerLon = lon * package$math.RAD_2_DEG;
-      this.camDirection_0.scale_mx4ult$(this.radius);
+      var height = this.getHeightAt_lu1900$(this.centerLat, this.centerLon);
+      this.camDirection_0.scale_mx4ult$(this.radius + height);
       var camHeight = this.camDirection_0.distance_czzhiu$(this.camPosition_0);
       var x_3 = cam.fovy * package$math.DEG_2_RAD * 0.5;
       var meterPerPx = camHeight * Math_0.tan(x_3) * 2.0 / (ctx.viewport.height * 96.0 / ctx.screenDpi);
@@ -8936,120 +8965,103 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     interfaces: [TransformGroupDp]
   };
   function GlobeDragHandler(globe) {
-    GlobeDragHandler$Companion_getInstance();
     this.globe = globe;
-    this.steadyScreenPt_0 = MutableVec2f_init();
-    this.steadyScreenPtMode_0 = 0;
-    this.startTransform_0 = new Mat4d();
-    this.ptOrientation_0 = new Mat4d();
-    this.mouseRotationStart_0 = new Mat4d();
-    this.isDragging_0 = false;
     this.pickRay_0 = new Ray();
     this.tmpVec_0 = MutableVec3d_init();
-    this.tmpVecRt_0 = MutableVec3d_init();
-    this.tmpVecUp_0 = MutableVec3d_init();
-    this.tmpVecY_0 = MutableVec3d_init();
-    this.tmpVecf_0 = MutableVec3f_init();
     this.tmpRayO_0 = MutableVec3d_init();
     this.tmpRayL_0 = MutableVec3d_init();
+    this.globePan_0 = new GlobeDragHandler$GlobePan(this);
     this.globe.onPreRender.add_11rb$(GlobeDragHandler_init$lambda(this));
   }
   GlobeDragHandler.prototype.handleDrag_kin2e3$ = function (dragPtrs, ctx) {
     if (dragPtrs.size === 1 && dragPtrs.get_za3lpa$(0).isInViewport_aemszp$(ctx)) {
-      var ptrX = dragPtrs.get_za3lpa$(0).x;
-      var ptrY = dragPtrs.get_za3lpa$(0).y;
-      if (dragPtrs.get_za3lpa$(0).isLeftButtonDown) {
-        this.steadyScreenPtMode_0 = 0;
-        if (dragPtrs.get_za3lpa$(0).isLeftButtonEvent) {
-          this.isDragging_0 = this.computePointOrientation_0(ptrX, ptrY, ctx);
-          this.ptOrientation_0.transpose_d4zu6l$(this.mouseRotationStart_0);
-          this.globe.getTransform_d4zu6l$(this.startTransform_0);
-        }
-         else if (this.isDragging_0) {
-          this.globe.set_d4zu6l$(this.startTransform_0);
-          var valid = this.computePointOrientation_0(ptrX, ptrY, ctx);
-          if (valid) {
-            this.ptOrientation_0.mul_d4zu6l$(this.mouseRotationStart_0);
-          }
-          this.globe.mul_d4zu6l$(this.ptOrientation_0);
-          this.isDragging_0 = valid;
-        }
+      var ptr = dragPtrs.get_za3lpa$(0);
+      var startPan = ptr.isLeftButtonEvent && ptr.isLeftButtonDown;
+      var startRotate = ptr.isRightButtonEvent && ptr.isRightButtonDown;
+      var startZoom = ptr.deltaScroll !== 0.0 && (ptr.x !== this.globePan_0.screenPosStart.x || ptr.y !== this.globePan_0.screenPosStart.y);
+      if (startPan || startRotate || startZoom) {
+        this.globePan_0.start_1nc7s5$(ptr.x, ptr.y, ctx);
       }
-       else if (dragPtrs.get_za3lpa$(0).deltaScroll !== 0.0 || (dragPtrs.get_za3lpa$(0).isRightButtonEvent && dragPtrs.get_za3lpa$(0).isRightButtonDown)) {
-        if (this.steadyScreenPtMode_0 === 0 || ptrX !== this.steadyScreenPt_0.x || ptrY !== this.steadyScreenPt_0.y) {
-          this.setSteadyPoint_0(ptrX, ptrY);
-        }
+      if (ptr.isLeftButtonDown) {
+        this.globePan_0.screenPos.set_dleff0$(ptr.x, ptr.y);
       }
     }
     return 0;
   };
   GlobeDragHandler.prototype.onPreRender_0 = function (ctx) {
-    if (this.steadyScreenPtMode_0 === 1 && this.computePointOrientation_0(this.steadyScreenPt_0.x, this.steadyScreenPt_0.y, ctx)) {
-      this.steadyScreenPtMode_0 = 2;
-      this.ptOrientation_0.transpose_d4zu6l$(this.mouseRotationStart_0);
-      this.globe.getTransform_d4zu6l$(this.startTransform_0);
-    }
-     else if (this.steadyScreenPtMode_0 === 2) {
-      this.globe.set_d4zu6l$(this.startTransform_0);
-      if (this.computePointOrientation_0(this.steadyScreenPt_0.x, this.steadyScreenPt_0.y, ctx)) {
-        this.ptOrientation_0.mul_d4zu6l$(this.mouseRotationStart_0);
-      }
-       else {
-        this.steadyScreenPtMode_0 = 0;
-      }
-      this.globe.mul_d4zu6l$(this.ptOrientation_0);
+    if (this.globePan_0.isValid) {
+      this.globePan_0.apply_aemszp$(ctx);
+      this.globe.setCenter_lu1900$(this.globePan_0.globeCenter.y, this.globePan_0.globeCenter.x);
     }
   };
-  GlobeDragHandler.prototype.setSteadyPoint_0 = function (screenX, screenY) {
-    this.steadyScreenPt_0.set_dleff0$(screenX, screenY);
-    this.steadyScreenPtMode_0 = 1;
+  function GlobeDragHandler$GlobePan($outer) {
+    this.$outer = $outer;
+    this.screenPosStart = MutableVec2f_init();
+    this.screenPos = MutableVec2f_init();
+    this.globeCoordsStart = MutableVec2d_init();
+    this.globeCoords = MutableVec2d_init();
+    this.globeCenter = MutableVec2d_init();
+    this.isValid = false;
+  }
+  GlobeDragHandler$GlobePan.prototype.start_1nc7s5$ = function (screenX, screenY, ctx) {
+    this.globeCenter.set_lu1900$(this.$outer.globe.centerLon, this.$outer.globe.centerLat);
+    this.screenPosStart.set_dleff0$(screenX, screenY);
+    this.screenPos.set_czzhjp$(this.screenPosStart);
+    if (this.screen2LatLon_r0ihl8$(screenX, screenY, this.globeCoordsStart, ctx)) {
+      this.globeCoords.set_czzhjr$(this.globeCoordsStart);
+    }
+    this.isValid = true;
   };
-  GlobeDragHandler.prototype.computePointOrientation_0 = function (screenX, screenY, ctx) {
-    var tmp$, tmp$_0;
-    if (((tmp$_0 = (tmp$ = this.globe.scene) != null ? tmp$.camera : null) != null ? tmp$_0.computePickRay_jker1g$(this.pickRay_0, screenX, screenY, ctx) : null) === true) {
-      this.pickRay_0.origin.toMutableVec3d_5s4mqs$(this.tmpRayO_0);
-      this.pickRay_0.direction.toMutableVec3d_5s4mqs$(this.tmpRayL_0);
-      this.globe.toLocalCoordsDp_j7uy7i$(this.tmpRayO_0, 1.0);
-      this.globe.toLocalCoordsDp_j7uy7i$(this.tmpRayL_0, 0.0);
-      this.globe.toLocalCoordsDp_j7uy7i$(this.tmpVecY_0.set_czzhiw$(Vec3d$Companion_getInstance().Y_AXIS), 0.0);
-      var ldo = this.tmpRayL_0.times_czzhiw$(this.tmpRayO_0);
-      var sqr = ldo * ldo - this.tmpRayO_0.sqrLength() + this.globe.radius * this.globe.radius;
-      if (sqr > 0) {
-        var d = -ldo - Math_0.sqrt(sqr);
-        this.tmpRayL_0.scale_b0flbq$(d, this.tmpVec_0).add_czzhiw$(this.tmpRayO_0);
-        this.tmpVec_0.norm();
-        if (this.tmpVec_0.isFuzzyEqual_6nz8ey$(this.tmpVecY_0)) {
-          return false;
+  GlobeDragHandler$GlobePan.prototype.apply_aemszp$ = function (ctx) {
+    if (this.isValid) {
+      if (this.screen2LatLon_r0ihl8$(this.screenPos.x, this.screenPos.y, this.globeCoords, ctx)) {
+        this.globeCenter.x = this.globeCenter.x + (this.globeCoordsStart.x - this.globeCoords.x);
+        var tmp$ = this.globeCenter;
+        var $receiver = this.globeCenter.y + (this.globeCoordsStart.y - this.globeCoords.y);
+        var min = -85.0;
+        var clamp$result;
+        if ($receiver < min) {
+          clamp$result = min;
         }
-        this.tmpVecY_0.cross_vgki2o$(this.tmpVec_0, this.tmpVecRt_0).norm();
-        this.tmpVec_0.cross_vgki2o$(this.tmpVecRt_0, this.tmpVecUp_0);
-        this.ptOrientation_0.setCol_umtdzk$(0, this.tmpVec_0, 0.0);
-        this.ptOrientation_0.setCol_umtdzk$(1, this.tmpVecRt_0, 0.0);
-        this.ptOrientation_0.setCol_umtdzk$(2, this.tmpVecUp_0, 0.0);
-        this.ptOrientation_0.setCol_umtdzk$(3, Vec3d$Companion_getInstance().ZERO, 1.0);
+         else if ($receiver > 85.0) {
+          clamp$result = 85.0;
+        }
+         else {
+          clamp$result = $receiver;
+        }
+        tmp$.y = clamp$result;
+      }
+    }
+  };
+  GlobeDragHandler$GlobePan.prototype.screen2LatLon_r0ihl8$ = function (screenX, screenY, result, ctx) {
+    var tmp$, tmp$_0;
+    if (((tmp$_0 = (tmp$ = this.$outer.globe.scene) != null ? tmp$.camera : null) != null ? tmp$_0.computePickRay_jker1g$(this.$outer.pickRay_0, screenX, screenY, ctx) : null) === true) {
+      this.$outer.pickRay_0.origin.toMutableVec3d_5s4mqs$(this.$outer.tmpRayO_0);
+      this.$outer.pickRay_0.direction.toMutableVec3d_5s4mqs$(this.$outer.tmpRayL_0);
+      this.$outer.globe.toLocalCoordsDp_j7uy7i$(this.$outer.tmpRayO_0, 1.0);
+      this.$outer.globe.toLocalCoordsDp_j7uy7i$(this.$outer.tmpRayL_0, 0.0);
+      var radius = this.$outer.globe.radius + this.$outer.globe.getHeightAt_lu1900$(this.$outer.globe.centerLat, this.$outer.globe.centerLon);
+      var ldo = this.$outer.tmpRayL_0.times_czzhiw$(this.$outer.tmpRayO_0);
+      var sqr = ldo * ldo - this.$outer.tmpRayO_0.sqrLength() + radius * radius;
+      if (sqr > 0) {
+        var hitDist = -ldo - Math_0.sqrt(sqr);
+        this.$outer.tmpRayL_0.scale_b0flbq$(hitDist, this.$outer.tmpVec_0).add_czzhiw$(this.$outer.tmpRayO_0);
+        var y = this.$outer.tmpVec_0.x;
+        var x = this.$outer.tmpVec_0.z;
+        result.x = Math_0.atan2(y, x) * package$math.RAD_2_DEG;
+        var tmp$_1 = math.PI * 0.5;
+        var x_0 = this.$outer.tmpVec_0.y / radius;
+        result.y = (tmp$_1 - Math_0.acos(x_0)) * package$math.RAD_2_DEG;
         return true;
       }
     }
     return false;
   };
-  function GlobeDragHandler$Companion() {
-    GlobeDragHandler$Companion_instance = this;
-    this.STEADY_SCREEN_PT_OFF_0 = 0;
-    this.STEADY_SCREEN_PT_INIT_0 = 1;
-    this.STEADY_SCREEN_PT_HOLD_0 = 2;
-  }
-  GlobeDragHandler$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
+  GlobeDragHandler$GlobePan.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'GlobePan',
     interfaces: []
   };
-  var GlobeDragHandler$Companion_instance = null;
-  function GlobeDragHandler$Companion_getInstance() {
-    if (GlobeDragHandler$Companion_instance === null) {
-      new GlobeDragHandler$Companion();
-    }
-    return GlobeDragHandler$Companion_instance;
-  }
   function GlobeDragHandler_init$lambda(this$GlobeDragHandler) {
     return function ($receiver, it) {
       this$GlobeDragHandler.onPreRender_0(it);
@@ -9123,8 +9135,16 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.tiles_0 = LinkedHashMap_init();
     this.loadingTiles_0 = LinkedHashSet_init();
     this.removingTiles_0 = LinkedHashMap_init();
-    this.center_0 = new TileName(0, 0, 1);
+    this.center_zihcwr$_0 = new TileName(0, 0, 1);
   }
+  Object.defineProperty(TileManager.prototype, 'center', {
+    get: function () {
+      return this.center_zihcwr$_0;
+    },
+    set: function (center) {
+      this.center_zihcwr$_0 = center;
+    }
+  });
   TileManager.prototype.onTileLoaded_xadgus$ = function (tile) {
     var $receiver = this.loadingTiles_0;
     var element = tile.key;
@@ -9168,13 +9188,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
   };
   TileManager.prototype.updateCenter_6i2c0k$ = function (newCenter, isMoving, ctx) {
-    if (!(newCenter != null ? newCenter.equals(this.center_0) : null) && (this.tiles_0.size < this.maxTiles || !isMoving)) {
-      this.center_0 = newCenter;
+    if (!(newCenter != null ? newCenter.equals(this.center) : null) && (this.tiles_0.size < this.maxTiles || !isMoving)) {
+      this.center = newCenter;
       this.updateTiles_0(ctx);
     }
   };
   TileManager.prototype.getCenterTile = function () {
-    return this.getTile_xacwza$(this.center_0);
+    return this.getTile_xacwza$(this.center);
   };
   TileManager.prototype.getTile_xacwza$ = function (tileName) {
     return this.getTile_s8cxhz$(tileName.fusedKey);
@@ -9188,8 +9208,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
         return -kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
       }
        else {
-        var dx = m.tileName.lonCenter - this$TileManager.center_0.lonCenter;
-        var dy = m.tileName.latCenter - this$TileManager.center_0.latCenter;
+        var dx = m.tileName.lonCenter - this$TileManager.center.lonCenter;
+        var dy = m.tileName.latCenter - this$TileManager.center.latCenter;
         return -(dx * dx + dy * dy);
       }
     };
@@ -9251,11 +9271,11 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   TileManager.prototype.computeNeededTileList_0 = function () {
     var tileList = ArrayList_init();
     var rng = 5;
-    var zoom = this.center_0.zoom;
-    var xStart = this.center_0.x - rng + 1 & -2;
-    var xEnd = (this.center_0.x + rng + 1 & -2) - 1 | 0;
-    var yStart = this.center_0.y - rng + 1 & -2;
-    var yEnd = (this.center_0.y + rng + 1 & -2) - 1 | 0;
+    var zoom = this.center.zoom;
+    var xStart = this.center.x - rng + 1 & -2;
+    var xEnd = (this.center.x + rng + 1 & -2) - 1 | 0;
+    var yStart = this.center.y - rng + 1 & -2;
+    var yEnd = (this.center.y + rng + 1 & -2) - 1 | 0;
     this.addTilesWrappingX_0(xStart, xEnd, yStart, yEnd, zoom, tileList);
     for (var i = 1; i <= 4; i++) {
       zoom = zoom - 1 | 0;
@@ -9679,7 +9699,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
             this.local$tileMesh.meshData.isBatchUpdate = true;
             this.local$steps = 1 << this.local$stepsLog2;
             this.local$zoomDiv = 2 * math.PI / (1 << this.local$tileMesh.tileName.zoom + this.local$stepsLog2);
-            this.local$heightResolution = (this.local$tileMesh.tileName.latN - this.local$tileMesh.tileName.latS) / this.local$steps * 3600.0;
+            this.local$heightResolution = this.local$tileMesh.tileName.arcSecondsLat() / this.local$steps;
             this.local$pos = MutableVec3d_init();
             this.local$nrm = MutableVec3f_init();
             this.local$posf = MutableVec3f_init();
@@ -9879,6 +9899,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   TileName.prototype.hashCode = function () {
     return hashCode(this.fusedKey);
+  };
+  TileName.prototype.arcSecondsLat = function () {
+    return (this.latN - this.latS) * 3600.0;
   };
   function TileName$Companion() {
     TileName$Companion_instance = this;
@@ -35246,9 +35269,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     get: Globe$Companion_getInstance
   });
   package$globe.Globe = Globe;
-  Object.defineProperty(GlobeDragHandler, 'Companion', {
-    get: GlobeDragHandler$Companion_getInstance
-  });
   package$globe.GlobeDragHandler = GlobeDragHandler;
   package$globe.TileFrame = TileFrame;
   package$globe.TileManager = TileManager;
@@ -36052,8 +36072,10 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   package$util.createFloat32Buffer_za3lpa$ = createFloat32Buffer;
   FloatRange.prototype.contains_mef7kx$ = ClosedRange.prototype.contains_mef7kx$;
   FloatRange.prototype.isEmpty = ClosedRange.prototype.isEmpty;
+  NullElevationMap.prototype.getElevationAt_yvo9jy$ = ElevationMapProvider.prototype.getElevationAt_yvo9jy$;
   ElevationMapMeta$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
   ElevationMapMetaHierarchy$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
+  ElevationMapHierarchy.prototype.getElevationAt_yvo9jy$ = ElevationMapProvider.prototype.getElevationAt_yvo9jy$;
   Object.defineProperty(ElevationMapS16.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
   Object.defineProperty(ElevationMapS16.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
   ElevationMapS16.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;

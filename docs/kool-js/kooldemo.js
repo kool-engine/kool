@@ -735,11 +735,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.zoomMethod = SphericalInputTransform$ZoomMethod.ZOOM_CENTER;
       $receiver.minZoom = 20.0;
       $receiver.maxZoom = 2.0E7;
-      $receiver.zoom = 1.0E7;
-      $receiver.zoomAnimator.set_mx4ult$($receiver.zoom);
       $receiver.verticalAxis = Vec3f.Companion.Z_AXIS;
       $receiver.minHorizontalRot = 0.0;
       $receiver.maxHorizontalRot = 85.0;
+      $receiver.resetZoom_mx4ult$(15000.0);
+      $receiver.horizontalRotation = 60.0;
+      $receiver.verticalRotation = -30.0;
       $receiver.unaryPlus_uv0sim$(this$.camera);
       $receiver.updateTransform();
       this$.camera.updateCamera_aemszp$(closure$ctx);
@@ -748,19 +749,31 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   var getKClass = Kotlin.getKClass;
   var getOrDefault = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.context.getOrDefault_6qy6ah$;
+  var util = $module$kool.de.fabmax.kool.util;
+  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   function globeScene$lambda$lambda_0(closure$ui, closure$elevationUrl, closure$ctx, this$) {
     return function (data) {
-      var earth = new Globe(6371000.8);
-      closure$ui.globe = earth;
+      var globe = new Globe(6371000.8);
+      globe.setCenter_lu1900$(47.05, 9.48);
+      closure$ui.globe = globe;
       if (data != null) {
         var $receiver = ProtoBuf.Companion;
         var metaHierarchy = $receiver.load_dntfbn$(getOrDefault($receiver.context, getKClass(ElevationMapMetaHierarchy)), data);
-        earth.elevationMapProvider = new ElevationMapHierarchy(closure$elevationUrl, metaHierarchy, closure$ctx.assetMgr);
-        earth.meshDetailLevel = 6;
+        globe.elevationMapProvider = new ElevationMapHierarchy(closure$elevationUrl, metaHierarchy, closure$ctx.assetMgr);
+        globe.meshDetailLevel = 6;
       }
-      var dpGroup = new DoublePrecisionRoot(earth);
+       else {
+        var $receiver_0 = this$;
+        var $this = util.Log;
+        var level = Log$Level.WARN;
+        var tag = Kotlin.getKClassFromExpression($receiver_0).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Height map data not available');
+        }
+      }
+      var dpGroup = new DoublePrecisionRoot(globe);
       this$.unaryPlus_uv0sim$(dpGroup);
-      this$.registerDragHandler_dsvxak$(new GlobeDragHandler(earth));
+      this$.registerDragHandler_dsvxak$(new GlobeDragHandler(globe));
       return Unit;
     };
   }
@@ -1410,8 +1423,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     rightScene.onPostRender.add_11rb$(multiScene$lambda_2);
     return listOf([leftScene, rightScene]);
   }
-  var util = $module$kool.de.fabmax.kool.util;
-  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   function pointScene$lambda$lambda(closure$frameCnt, closure$data, closure$trav, closure$ptVertCnt, closure$tree) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1;

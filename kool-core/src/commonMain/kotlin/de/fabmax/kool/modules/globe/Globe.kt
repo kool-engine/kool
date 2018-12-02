@@ -37,7 +37,7 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
     private val camPosition = MutableVec3f()
     private val camDirection = MutableVec3f()
 
-    private var prevCamHeight = 0f
+    private var prevCamDist = 0f
     private var prevLat = 0.0
     private var prevLon = 0.0
 
@@ -51,6 +51,15 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
             zoomGroups += grp
             +grp
         }
+    }
+
+    fun getHeightAt(latitudeDeg: Double, longitudeDeg: Double): Double {
+        val heightRes = tileManager.center.arcSecondsLat()
+        return elevationMapProvider.getElevationAt(latitudeDeg, longitudeDeg, heightRes)
+    }
+
+    fun setCenter(latitudeDeg: Double, longitudeDeg: Double) {
+        setCenter(latitudeDeg, longitudeDeg, getHeightAt(latitudeDeg, longitudeDeg))
     }
 
     fun setCenter(latitudeDeg: Double, longitudeDeg: Double, height: Double) {
@@ -79,8 +88,8 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
             cam.clipNear = camDist * 0.05f
             cam.clipFar = camDist * 10f
 
-            val dh = if (camDist > prevCamHeight) { prevCamHeight / camDist } else { camDist / prevCamHeight }
-            prevCamHeight = camDist
+            val dh = if (camDist > prevCamDist) { prevCamDist / camDist } else { camDist / prevCamDist }
+            prevCamDist = camDist
 
             val lat = (PI * 0.5 - acos(camDirection.y.toDouble())).clamp(-RAD_85, RAD_85)
             val lon = atan2(camDirection.x.toDouble(), camDirection.z.toDouble())
@@ -92,7 +101,8 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
             centerLon = lon.toDeg()
 
             // determine best zoom level
-            camDirection.scale(radius.toFloat())
+            val height = getHeightAt(centerLat, centerLon)
+            camDirection.scale(radius.toFloat() + height.toFloat())
             val camHeight = camDirection.distance(camPosition)
             val meterPerPx = camHeight * tan(cam.fovy.toRad() * 0.5f) * 2f / (ctx.viewport.height * 96f / ctx.screenDpi)
             val centerZoom = getBestZoom(meterPerPx, lat)

@@ -32,7 +32,7 @@ open class GridTileMeshGenerator : TileMeshGenerator {
 
         val steps = 1 shl stepsLog2
         val zoomDiv = 2 * PI / (1 shl (tileMesh.tileName.zoom + stepsLog2)).toDouble()
-        val heightResolution = (tileMesh.tileName.latN - tileMesh.tileName.latS) / steps * 3600.0
+        val heightResolution = tileMesh.tileName.arcSecondsLat() / steps
 
         //println("${tileMesh.tileName} -> res = $heightResolution")
 
