@@ -1,10 +1,10 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.AssetManager
-import de.fabmax.kool.TextureData
+import de.fabmax.kool.*
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
+import kotlinx.coroutines.CompletableDeferred
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
@@ -18,7 +18,16 @@ class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
-    override fun loadHttpAsset(assetPath: String, onLoad: (ByteArray?) -> Unit) {
+    override suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef) = LoadedRawAsset(localRawRef, loadRaw(localRawRef.url))
+
+    override suspend fun loadHttpRaw(httpRawRef: HttpRawAssetRef) = LoadedRawAsset(httpRawRef, loadRaw(httpRawRef.url))
+
+    override suspend fun loadHttpTexture(httpTextureRef: HttpTextureAssetRef) = LoadedTextureAsset(httpTextureRef, loadImage(httpTextureRef.url))
+
+    override suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef) = LoadedTextureAsset(localTextureRef, loadImage(localTextureRef.url))
+
+    private suspend fun loadRaw(url: String): ByteArray? {
+        val data = CompletableDeferred<ByteArray?>(job)
         val req = XMLHttpRequest()
         req.responseType = XMLHttpRequestResponseType.ARRAYBUFFER
         req.onload = {
@@ -27,33 +36,30 @@ class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(
             for (i in 0 until array.length) {
                 bytes[i] = array[i]
             }
-            onLoad(bytes)
+            data.complete(bytes)
         }
         req.onerror = {
-            onLoad(null)
-            logE { "Failed loading resource $assetPath: $it" }
+            data.complete(null)
+            logE { "Failed loading resource $url: $it" }
         }
-        req.open("GET", assetPath)
+        req.open("GET", url)
         req.send()
+
+        return data.await()
     }
 
-    override fun loadHttpTexture(assetPath: String): TextureData {
+    private fun loadImage(url: String): ImageTextureData {
         val img = document.createElement("img") as HTMLImageElement
         val data = ImageTextureData(img)
         img.crossOrigin = ""
-        img.src = assetPath
+        img.src = url
         return data
     }
-
-    // in js everything is http...
-    override fun loadLocalAsset(assetPath: String, onLoad: (ByteArray?) -> Unit) = loadHttpAsset(assetPath, onLoad)
-
-    override fun loadLocalTexture(assetPath: String): TextureData = loadHttpTexture(assetPath)
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
 
     companion object {
-        private const val MAX_GENERATED_TEX_WIDTH = 1024
-        private const val MAX_GENERATED_TEX_HEIGHT = 1024
+        private const val MAX_GENERATED_TEX_WIDTH = 2048
+        private const val MAX_GENERATED_TEX_HEIGHT = 2048
     }
 }

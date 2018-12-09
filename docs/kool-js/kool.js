@@ -1,12 +1,21 @@
-define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-coroutines-core'], function (_, Kotlin, $module$kotlinx_serialization_runtime_js, $module$kotlinx_coroutines_core) {
+define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-runtime-js'], function (_, Kotlin, $module$kotlinx_coroutines_core, $module$kotlinx_serialization_runtime_js) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
+  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
+  var Unit = Kotlin.kotlin.Unit;
+  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
+  var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
+  var ensureNotNull = Kotlin.ensureNotNull;
+  var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.launch_s496o7$;
   var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
+  var throwCCE = Kotlin.throwCCE;
+  var CompletableDeferred = $module$kotlinx_coroutines_core.kotlinx.coroutines.CompletableDeferred_xptg6w$;
   var Kind_CLASS = Kotlin.Kind.CLASS;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
-  var ensureNotNull = Kotlin.ensureNotNull;
+  var Job = $module$kotlinx_coroutines_core.kotlinx.coroutines.Job_5dx9e$;
+  var Channel = $module$kotlinx_coroutines_core.kotlinx.coroutines.channels.Channel_ww73n8$;
+  var CoroutineScope = $module$kotlinx_coroutines_core.kotlinx.coroutines.CoroutineScope;
   var equals = Kotlin.equals;
-  var Unit = Kotlin.kotlin.Unit;
   var Enum = Kotlin.kotlin.Enum;
   var throwISE = Kotlin.throwISE;
   var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
@@ -15,9 +24,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var toBoxedChar = Kotlin.toBoxedChar;
   var unboxChar = Kotlin.unboxChar;
   var PropertyMetadata = Kotlin.PropertyMetadata;
-  var throwCCE = Kotlin.throwCCE;
   var RuntimeException_init = Kotlin.kotlin.RuntimeException_init_pdl1vj$;
-  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var Exception = Kotlin.kotlin.Exception;
   var first = Kotlin.kotlin.collections.first_2p1efm$;
   var last = Kotlin.kotlin.collections.last_2p1efm$;
@@ -51,9 +58,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var kotlin_js_internal_DoubleCompanionObject = Kotlin.kotlin.js.internal.DoubleCompanionObject;
   var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var coroutines = $module$kotlinx_coroutines_core.kotlinx.coroutines;
-  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
-  var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
-  var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.launch_s496o7$;
   var L50 = Kotlin.Long.fromInt(50);
   var delay = $module$kotlinx_coroutines_core.kotlinx.coroutines.delay_s8cxhz$;
   var yield_0 = $module$kotlinx_coroutines_core.kotlinx.coroutines.yield;
@@ -101,6 +105,20 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   var removeAll_0 = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   var L1 = Kotlin.Long.ONE;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
+  AssetManager$TextureDataProxy.prototype = Object.create(TextureData.prototype);
+  AssetManager$TextureDataProxy.prototype.constructor = AssetManager$TextureDataProxy;
+  LocalRawAssetRef.prototype = Object.create(AssetRef.prototype);
+  LocalRawAssetRef.prototype.constructor = LocalRawAssetRef;
+  HttpRawAssetRef.prototype = Object.create(AssetRef.prototype);
+  HttpRawAssetRef.prototype.constructor = HttpRawAssetRef;
+  LocalTextureAssetRef.prototype = Object.create(AssetRef.prototype);
+  LocalTextureAssetRef.prototype.constructor = LocalTextureAssetRef;
+  HttpTextureAssetRef.prototype = Object.create(AssetRef.prototype);
+  HttpTextureAssetRef.prototype.constructor = HttpTextureAssetRef;
+  LoadedRawAsset.prototype = Object.create(LoadedAsset.prototype);
+  LoadedRawAsset.prototype.constructor = LoadedRawAsset;
+  LoadedTextureAsset.prototype = Object.create(LoadedAsset.prototype);
+  LoadedTextureAsset.prototype.constructor = LoadedTextureAsset;
   BufferResource.prototype = Object.create(GlResource.prototype);
   BufferResource.prototype.constructor = BufferResource;
   FramebufferResource.prototype = Object.create(GlResource.prototype);
@@ -429,36 +447,805 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Uint32BufferImpl.prototype.constructor = Uint32BufferImpl;
   Float32BufferImpl.prototype = Object.create(GenericBuffer.prototype);
   Float32BufferImpl.prototype.constructor = Float32BufferImpl;
+  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
   function AssetManager(assetsBaseDir) {
+    AssetManager$Companion_getInstance();
     this.assetsBaseDir = assetsBaseDir;
+    this.job = Job();
+    this.awaitedAssetsChannel_nphlkp$_0 = Channel();
+    this.assetRefChannel_acu3lu$_0 = Channel(2147483647);
+    this.loadedAssetChannel_obd8me$_0 = Channel();
+    this.loader_lxnfnl$_0 = this.loader_enrikm$_0(this.awaitedAssetsChannel_nphlkp$_0, this.assetRefChannel_acu3lu$_0, this.loadedAssetChannel_obd8me$_0);
+    var list = ArrayList_init(8);
+    for (var index = 0; index < 8; index++) {
+      list.add_11rb$(this.loadWorker_lf86lv$_0(this.assetRefChannel_acu3lu$_0, this.loadedAssetChannel_obd8me$_0));
+    }
+    this.workers_dv6i5$_0 = list;
   }
-  AssetManager.prototype.loadAsset_us385g$ = function (assetPath, onLoad) {
-    var tmp$;
-    if (this.isHttpAsset_61zpoe$(assetPath)) {
-      tmp$ = this.loadHttpAsset_us385g$(assetPath, onLoad);
+  Object.defineProperty(AssetManager.prototype, 'coroutineContext', {
+    get: function () {
+      return this.job;
     }
-     else {
-      tmp$ = this.loadLocalAsset_us385g$(this.assetsBaseDir + '/' + assetPath, onLoad);
-    }
-    return tmp$;
+  });
+  AssetManager.prototype.close = function () {
+    this.job.cancel();
   };
-  AssetManager.prototype.loadTextureAsset_61zpoe$ = function (assetPath) {
-    var tmp$;
-    if (this.isHttpAsset_61zpoe$(assetPath)) {
-      tmp$ = this.loadHttpTexture_61zpoe$(assetPath);
-    }
-     else {
-      tmp$ = this.loadLocalTexture_61zpoe$(this.assetsBaseDir + '/' + assetPath);
-    }
-    return tmp$;
+  function AssetManager$loader$lambda$lambda$lambda(closure$requested_0, closure$assetRefs_0) {
+    return function (awaited_0, continuation_0, suspended) {
+      var instance = new Coroutine$AssetManager$loader$lambda$lambda$lambda(closure$requested_0, closure$assetRefs_0, awaited_0, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$AssetManager$loader$lambda$lambda$lambda(closure$requested_0, closure$assetRefs_0, awaited_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.local$closure$requested = closure$requested_0;
+    this.local$closure$assetRefs = closure$assetRefs_0;
+    this.local$awaited = awaited_0;
+  }
+  Coroutine$AssetManager$loader$lambda$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$AssetManager$loader$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AssetManager$loader$lambda$lambda$lambda.prototype.constructor = Coroutine$AssetManager$loader$lambda$lambda$lambda;
+  Coroutine$AssetManager$loader$lambda$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var awaiting = this.local$closure$requested.get_11rb$(this.local$awaited.ref);
+            if (awaiting == null) {
+              var $receiver = this.local$closure$requested;
+              var key = this.local$awaited.ref;
+              var value = mutableListOf([this.local$awaited]);
+              $receiver.put_xwzc9p$(key, value);
+              this.state_0 = 2;
+              this.result_0 = this.local$closure$assetRefs.send_11rb$(this.local$awaited.ref, this);
+              if (this.result_0 === COROUTINE_SUSPENDED)
+                return COROUTINE_SUSPENDED;
+              continue;
+            }
+             else {
+              return awaiting.add_11rb$(this.local$awaited);
+            }
+
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          case 3:
+            return;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function AssetManager$loader$lambda$lambda$lambda_0(closure$requested_0) {
+    return function (loaded_0, continuation_0, suspended) {
+      var instance = new Coroutine$AssetManager$loader$lambda$lambda$lambda_0(closure$requested_0, loaded_0, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$AssetManager$loader$lambda$lambda$lambda_0(closure$requested_0, loaded_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.local$closure$requested = closure$requested_0;
+    this.local$loaded = loaded_0;
+  }
+  Coroutine$AssetManager$loader$lambda$lambda$lambda_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$AssetManager$loader$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AssetManager$loader$lambda$lambda$lambda_0.prototype.constructor = Coroutine$AssetManager$loader$lambda$lambda$lambda_0;
+  Coroutine$AssetManager$loader$lambda$lambda$lambda_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$;
+            var awaiting = ensureNotNull(this.local$closure$requested.remove_11rb$(this.local$loaded.ref));
+            tmp$ = awaiting.iterator();
+            while (tmp$.hasNext()) {
+              var awaited = tmp$.next();
+              awaited.awaiting.complete_11rb$(this.local$loaded);
+            }
+
+            return Unit;
+          case 1:
+            throw this.exception_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function AssetManager$loader$lambda$lambda(closure$awaitedAssets, closure$requested, closure$assetRefs, closure$loadedAssets) {
+    return function ($receiver) {
+      $receiver.invoke_veq140$(closure$awaitedAssets.onReceive, AssetManager$loader$lambda$lambda$lambda(closure$requested, closure$assetRefs));
+      $receiver.invoke_veq140$(closure$loadedAssets.onReceive, AssetManager$loader$lambda$lambda$lambda_0(closure$requested));
+      return Unit;
+    };
+  }
+  var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
+  var SelectBuilderImpl_init = $module$kotlinx_coroutines_core.kotlinx.coroutines.selects.SelectBuilderImpl;
+  var Throwable = Error;
+  function select$lambda(closure$builder) {
+    return function (uCont) {
+      var scope = new SelectBuilderImpl_init(uCont);
+      try {
+        closure$builder(scope);
+      }
+       catch (e) {
+        if (Kotlin.isType(e, Throwable)) {
+          scope.handleBuilderException_tcv7n7$(e);
+        }
+         else
+          throw e;
+      }
+      return scope.getResult();
+    };
+  }
+  function AssetManager$loader$lambda(closure$awaitedAssets_0, closure$assetRefs_0, closure$loadedAssets_0) {
+    return function ($receiver, continuation_0, suspended) {
+      var instance = new Coroutine$AssetManager$loader$lambda(closure$awaitedAssets_0, closure$assetRefs_0, closure$loadedAssets_0, $receiver, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$AssetManager$loader$lambda(closure$awaitedAssets_0, closure$assetRefs_0, closure$loadedAssets_0, $receiver, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$awaitedAssets = closure$awaitedAssets_0;
+    this.local$closure$assetRefs = closure$assetRefs_0;
+    this.local$closure$loadedAssets = closure$loadedAssets_0;
+    this.local$requested = void 0;
+  }
+  Coroutine$AssetManager$loader$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$AssetManager$loader$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AssetManager$loader$lambda.prototype.constructor = Coroutine$AssetManager$loader$lambda;
+  Coroutine$AssetManager$loader$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.local$requested = LinkedHashMap_init();
+            this.state_0 = 2;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.state_0 = 3;
+            this.result_0 = select$lambda(AssetManager$loader$lambda$lambda(this.local$closure$awaitedAssets, this.local$requested, this.local$closure$assetRefs, this.local$closure$loadedAssets))(this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            this.result_0;
+            this.state_0 = 2;
+            continue;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  AssetManager.prototype.loader_enrikm$_0 = function (awaitedAssets, assetRefs, loadedAssets) {
+    return launch(this, void 0, void 0, AssetManager$loader$lambda(awaitedAssets, assetRefs, loadedAssets));
+  };
+  function AssetManager$loadWorker$lambda(closure$assetRefs_0, closure$loadedAssets_0, this$AssetManager_0) {
+    return function ($receiver, continuation_0, suspended) {
+      var instance = new Coroutine$AssetManager$loadWorker$lambda(closure$assetRefs_0, closure$loadedAssets_0, this$AssetManager_0, $receiver, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$AssetManager$loadWorker$lambda(closure$assetRefs_0, closure$loadedAssets_0, this$AssetManager_0, $receiver, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$assetRefs = closure$assetRefs_0;
+    this.local$closure$loadedAssets = closure$loadedAssets_0;
+    this.local$this$AssetManager = this$AssetManager_0;
+    this.local$tmp$ = void 0;
+  }
+  Coroutine$AssetManager$loadWorker$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$AssetManager$loadWorker$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AssetManager$loadWorker$lambda.prototype.constructor = Coroutine$AssetManager$loadWorker$lambda;
+  Coroutine$AssetManager$loadWorker$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$;
+            this.local$tmp$ = this.local$closure$assetRefs.iterator();
+            this.state_0 = 2;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.state_0 = 3;
+            this.result_0 = this.local$tmp$.hasNext(this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            if (!this.result_0) {
+              this.state_0 = 8;
+              continue;
+            }
+             else {
+              this.state_0 = 4;
+              continue;
+            }
+
+          case 4:
+            this.state_0 = 5;
+            this.result_0 = this.local$tmp$.next(this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 5:
+            var ref = this.result_0;
+            this.state_0 = 6;
+            this.result_0 = this.local$this$AssetManager.loadAsset_lpb790$_0(ref, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 6:
+            tmp$ = this.result_0;
+            this.state_0 = 7;
+            this.result_0 = this.local$closure$loadedAssets.send_11rb$(tmp$, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 7:
+            this.state_0 = 2;
+            continue;
+          case 8:
+            return Unit;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  AssetManager.prototype.loadWorker_lf86lv$_0 = function (assetRefs, loadedAssets) {
+    return launch(this, void 0, void 0, AssetManager$loadWorker$lambda(assetRefs, loadedAssets, this));
+  };
+  AssetManager.prototype.loadAsset_lpb790$_0 = function (ref_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadAsset_lpb790$_0(this, ref_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  };
+  function Coroutine$loadAsset_lpb790$_0($this, ref_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$tmp$ = void 0;
+    this.local$ref = ref_0;
+  }
+  Coroutine$loadAsset_lpb790$_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$loadAsset_lpb790$_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadAsset_lpb790$_0.prototype.constructor = Coroutine$loadAsset_lpb790$_0;
+  Coroutine$loadAsset_lpb790$_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            if (Kotlin.isType(this.local$ref, LocalRawAssetRef)) {
+              this.state_0 = 8;
+              this.result_0 = this.$this.loadLocalRaw_hl6yzt$(this.local$ref, this);
+              if (this.result_0 === COROUTINE_SUSPENDED)
+                return COROUTINE_SUSPENDED;
+              continue;
+            }
+             else {
+              if (Kotlin.isType(this.local$ref, HttpRawAssetRef)) {
+                this.state_0 = 6;
+                this.result_0 = this.$this.loadHttpRaw_ohmb7q$(this.local$ref, this);
+                if (this.result_0 === COROUTINE_SUSPENDED)
+                  return COROUTINE_SUSPENDED;
+                continue;
+              }
+               else {
+                if (Kotlin.isType(this.local$ref, LocalTextureAssetRef)) {
+                  this.state_0 = 4;
+                  this.result_0 = this.$this.loadLocalTexture_68kns4$(this.local$ref, this);
+                  if (this.result_0 === COROUTINE_SUSPENDED)
+                    return COROUTINE_SUSPENDED;
+                  continue;
+                }
+                 else {
+                  if (Kotlin.isType(this.local$ref, HttpTextureAssetRef)) {
+                    this.state_0 = 2;
+                    this.result_0 = this.$this.loadHttpTexture_nbaz3h$(this.local$ref, this);
+                    if (this.result_0 === COROUTINE_SUSPENDED)
+                      return COROUTINE_SUSPENDED;
+                    continue;
+                  }
+                   else {
+                    this.local$tmp$ = Kotlin.noWhenBranchMatched();
+                    this.state_0 = 3;
+                    continue;
+                  }
+                }
+              }
+            }
+
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.local$tmp$ = this.result_0;
+            this.state_0 = 3;
+            continue;
+          case 3:
+            this.state_0 = 5;
+            continue;
+          case 4:
+            this.local$tmp$ = this.result_0;
+            this.state_0 = 5;
+            continue;
+          case 5:
+            this.state_0 = 7;
+            continue;
+          case 6:
+            this.local$tmp$ = this.result_0;
+            this.state_0 = 7;
+            continue;
+          case 7:
+            this.state_0 = 9;
+            continue;
+          case 8:
+            this.local$tmp$ = this.result_0;
+            this.state_0 = 9;
+            continue;
+          case 9:
+            return this.local$tmp$;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
   };
   AssetManager.prototype.isHttpAsset_61zpoe$ = function (assetPath) {
     return startsWith(assetPath, 'http://', true) || startsWith(assetPath, 'https://', true);
   };
+  function AssetManager$loadAsset$lambda(closure$assetPath_0, this$AssetManager_0, closure$onLoad_0) {
+    return function ($receiver, continuation_0, suspended) {
+      var instance = new Coroutine$AssetManager$loadAsset$lambda(closure$assetPath_0, this$AssetManager_0, closure$onLoad_0, $receiver, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$AssetManager$loadAsset$lambda(closure$assetPath_0, this$AssetManager_0, closure$onLoad_0, $receiver, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$assetPath = closure$assetPath_0;
+    this.local$this$AssetManager = this$AssetManager_0;
+    this.local$closure$onLoad = closure$onLoad_0;
+    this.local$awaitedAsset = void 0;
+  }
+  Coroutine$AssetManager$loadAsset$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$AssetManager$loadAsset$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AssetManager$loadAsset$lambda.prototype.constructor = Coroutine$AssetManager$loadAsset$lambda;
+  Coroutine$AssetManager$loadAsset$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$, tmp$_0;
+            if (this.local$this$AssetManager.isHttpAsset_61zpoe$(this.local$closure$assetPath)) {
+              tmp$ = new HttpRawAssetRef(this.local$closure$assetPath);
+            }
+             else {
+              tmp$ = new LocalRawAssetRef(this.local$this$AssetManager.assetsBaseDir + '/' + this.local$closure$assetPath);
+            }
+
+            var ref = tmp$;
+            this.local$awaitedAsset = new AssetManager$AwaitedAsset(this.local$this$AssetManager, ref);
+            this.state_0 = 2;
+            this.result_0 = this.local$this$AssetManager.awaitedAssetsChannel_nphlkp$_0.send_11rb$(this.local$awaitedAsset, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.state_0 = 3;
+            this.result_0 = this.local$awaitedAsset.awaiting.await(this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            var loaded = Kotlin.isType(tmp$_0 = this.result_0, LoadedRawAsset) ? tmp$_0 : throwCCE();
+            return this.local$closure$onLoad(loaded.data);
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  AssetManager.prototype.loadAsset_us385g$ = function (assetPath, onLoad) {
+    launch(this, void 0, void 0, AssetManager$loadAsset$lambda(assetPath, this, onLoad));
+  };
+  function AssetManager$loadTextureAsset$lambda(closure$assetPath_0, this$AssetManager_0, closure$proxy_0) {
+    return function ($receiver, continuation_0, suspended) {
+      var instance = new Coroutine$AssetManager$loadTextureAsset$lambda(closure$assetPath_0, this$AssetManager_0, closure$proxy_0, $receiver, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$AssetManager$loadTextureAsset$lambda(closure$assetPath_0, this$AssetManager_0, closure$proxy_0, $receiver, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$closure$assetPath = closure$assetPath_0;
+    this.local$this$AssetManager = this$AssetManager_0;
+    this.local$closure$proxy = closure$proxy_0;
+    this.local$awaitedAsset = void 0;
+  }
+  Coroutine$AssetManager$loadTextureAsset$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$AssetManager$loadTextureAsset$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$AssetManager$loadTextureAsset$lambda.prototype.constructor = Coroutine$AssetManager$loadTextureAsset$lambda;
+  Coroutine$AssetManager$loadTextureAsset$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            var tmp$, tmp$_0;
+            if (this.local$this$AssetManager.isHttpAsset_61zpoe$(this.local$closure$assetPath)) {
+              tmp$ = new HttpTextureAssetRef(this.local$closure$assetPath);
+            }
+             else {
+              tmp$ = new LocalTextureAssetRef(this.local$this$AssetManager.assetsBaseDir + '/' + this.local$closure$assetPath);
+            }
+
+            var ref = tmp$;
+            this.local$awaitedAsset = new AssetManager$AwaitedAsset(this.local$this$AssetManager, ref);
+            this.state_0 = 2;
+            this.result_0 = this.local$this$AssetManager.awaitedAssetsChannel_nphlkp$_0.send_11rb$(this.local$awaitedAsset, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            this.state_0 = 3;
+            this.result_0 = this.local$awaitedAsset.awaiting.await(this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 3:
+            var loaded = Kotlin.isType(tmp$_0 = this.result_0, LoadedTextureAsset) ? tmp$_0 : throwCCE();
+            return this.local$closure$proxy.proxyData = loaded.data, Unit;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  AssetManager.prototype.loadTextureAsset_61zpoe$ = function (assetPath) {
+    var proxy = new AssetManager$TextureDataProxy();
+    launch(this, void 0, void 0, AssetManager$loadTextureAsset$lambda(assetPath, this, proxy));
+    return proxy;
+  };
+  function AssetManager$AwaitedAsset($outer, ref, awaiting) {
+    this.$outer = $outer;
+    if (awaiting === void 0)
+      awaiting = CompletableDeferred(this.$outer.job);
+    this.ref = ref;
+    this.awaiting = awaiting;
+  }
+  AssetManager$AwaitedAsset.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AwaitedAsset',
+    interfaces: []
+  };
+  function AssetManager$TextureDataProxy() {
+    TextureData.call(this);
+    this.proxyData = null;
+  }
+  Object.defineProperty(AssetManager$TextureDataProxy.prototype, 'isAvailable', {
+    get: function () {
+      var tmp$, tmp$_0;
+      return (tmp$_0 = (tmp$ = this.proxyData) != null ? tmp$.isAvailable : null) != null ? tmp$_0 : false;
+    }
+  });
+  Object.defineProperty(AssetManager$TextureDataProxy.prototype, 'width', {
+    get: function () {
+      var tmp$, tmp$_0;
+      return (tmp$_0 = (tmp$ = this.proxyData) != null ? tmp$.width : null) != null ? tmp$_0 : 0;
+    },
+    set: function (f) {
+    }
+  });
+  Object.defineProperty(AssetManager$TextureDataProxy.prototype, 'height', {
+    get: function () {
+      var tmp$, tmp$_0;
+      return (tmp$_0 = (tmp$ = this.proxyData) != null ? tmp$.height : null) != null ? tmp$_0 : 0;
+    },
+    set: function (f) {
+    }
+  });
+  AssetManager$TextureDataProxy.prototype.onLoad_2jsdat$ = function (texture, target, ctx) {
+    ensureNotNull(this.proxyData).onLoad_2jsdat$(texture, target, ctx);
+  };
+  AssetManager$TextureDataProxy.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TextureDataProxy',
+    interfaces: [TextureData]
+  };
+  function AssetManager$Companion() {
+    AssetManager$Companion_instance = this;
+    this.NUM_LOAD_WORKERS = 8;
+  }
+  AssetManager$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var AssetManager$Companion_instance = null;
+  function AssetManager$Companion_getInstance() {
+    if (AssetManager$Companion_instance === null) {
+      new AssetManager$Companion();
+    }
+    return AssetManager$Companion_instance;
+  }
   AssetManager.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'AssetManager',
+    interfaces: [CoroutineScope]
+  };
+  function AssetRef() {
+  }
+  AssetRef.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AssetRef',
     interfaces: []
+  };
+  function LocalRawAssetRef(url) {
+    AssetRef.call(this);
+    this.url = url;
+  }
+  LocalRawAssetRef.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LocalRawAssetRef',
+    interfaces: [AssetRef]
+  };
+  LocalRawAssetRef.prototype.component1 = function () {
+    return this.url;
+  };
+  LocalRawAssetRef.prototype.copy_61zpoe$ = function (url) {
+    return new LocalRawAssetRef(url === void 0 ? this.url : url);
+  };
+  LocalRawAssetRef.prototype.toString = function () {
+    return 'LocalRawAssetRef(url=' + Kotlin.toString(this.url) + ')';
+  };
+  LocalRawAssetRef.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.url) | 0;
+    return result;
+  };
+  LocalRawAssetRef.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && Kotlin.equals(this.url, other.url))));
+  };
+  function HttpRawAssetRef(url) {
+    AssetRef.call(this);
+    this.url = url;
+  }
+  HttpRawAssetRef.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'HttpRawAssetRef',
+    interfaces: [AssetRef]
+  };
+  HttpRawAssetRef.prototype.component1 = function () {
+    return this.url;
+  };
+  HttpRawAssetRef.prototype.copy_61zpoe$ = function (url) {
+    return new HttpRawAssetRef(url === void 0 ? this.url : url);
+  };
+  HttpRawAssetRef.prototype.toString = function () {
+    return 'HttpRawAssetRef(url=' + Kotlin.toString(this.url) + ')';
+  };
+  HttpRawAssetRef.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.url) | 0;
+    return result;
+  };
+  HttpRawAssetRef.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && Kotlin.equals(this.url, other.url))));
+  };
+  function LocalTextureAssetRef(url) {
+    AssetRef.call(this);
+    this.url = url;
+  }
+  LocalTextureAssetRef.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LocalTextureAssetRef',
+    interfaces: [AssetRef]
+  };
+  LocalTextureAssetRef.prototype.component1 = function () {
+    return this.url;
+  };
+  LocalTextureAssetRef.prototype.copy_61zpoe$ = function (url) {
+    return new LocalTextureAssetRef(url === void 0 ? this.url : url);
+  };
+  LocalTextureAssetRef.prototype.toString = function () {
+    return 'LocalTextureAssetRef(url=' + Kotlin.toString(this.url) + ')';
+  };
+  LocalTextureAssetRef.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.url) | 0;
+    return result;
+  };
+  LocalTextureAssetRef.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && Kotlin.equals(this.url, other.url))));
+  };
+  function HttpTextureAssetRef(url) {
+    AssetRef.call(this);
+    this.url = url;
+  }
+  HttpTextureAssetRef.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'HttpTextureAssetRef',
+    interfaces: [AssetRef]
+  };
+  HttpTextureAssetRef.prototype.component1 = function () {
+    return this.url;
+  };
+  HttpTextureAssetRef.prototype.copy_61zpoe$ = function (url) {
+    return new HttpTextureAssetRef(url === void 0 ? this.url : url);
+  };
+  HttpTextureAssetRef.prototype.toString = function () {
+    return 'HttpTextureAssetRef(url=' + Kotlin.toString(this.url) + ')';
+  };
+  HttpTextureAssetRef.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.url) | 0;
+    return result;
+  };
+  HttpTextureAssetRef.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && Kotlin.equals(this.url, other.url))));
+  };
+  function LoadedAsset(ref, successfull) {
+    this.ref = ref;
+    this.successfull = successfull;
+  }
+  LoadedAsset.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LoadedAsset',
+    interfaces: []
+  };
+  function LoadedRawAsset(ref, data) {
+    LoadedAsset.call(this, ref, data != null);
+    this.data = data;
+  }
+  LoadedRawAsset.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LoadedRawAsset',
+    interfaces: [LoadedAsset]
+  };
+  function LoadedTextureAsset(ref, data) {
+    LoadedAsset.call(this, ref, data != null);
+    this.data = data;
+  }
+  LoadedTextureAsset.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LoadedTextureAsset',
+    interfaces: [LoadedAsset]
   };
   function assetTexture(assetPath, delayLoading) {
     if (delayLoading === void 0)
@@ -1673,15 +2460,14 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   GlslDialect.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.version, other.version) && Kotlin.equals(this.vsIn, other.vsIn) && Kotlin.equals(this.vsOut, other.vsOut) && Kotlin.equals(this.fsIn, other.fsIn) && Kotlin.equals(this.fragColorHead, other.fragColorHead) && Kotlin.equals(this.fragColorBody, other.fragColorBody) && Kotlin.equals(this.texSampler, other.texSampler)))));
   };
-  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
+  var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   var Array_0 = Array;
-  var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   function InputManager() {
     InputManager$Companion_getInstance();
     this.compatGestureEvaluator_0 = new TouchGestureEvaluator();
     this.isEvaluatingCompatGestures = true;
-    this.queuedKeyEvents_0 = ArrayList_init();
-    this.keyEvents = ArrayList_init();
+    this.queuedKeyEvents_0 = ArrayList_init_0();
+    this.keyEvents = ArrayList_init_0();
     this.lastPtrInput_0 = 0.0;
     var array = Array_0(10);
     var tmp$;
@@ -1737,7 +2523,6 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return true;
   }
   var collectionSizeOrDefault = Kotlin.kotlin.collections.collectionSizeOrDefault_ba2ldo$;
-  var ArrayList_init_0 = Kotlin.kotlin.collections.ArrayList_init_ww73n8$;
   InputManager.prototype.registerKeyListener_aviy8w$ = function (keyCode, name, filter, callback) {
     if (filter === void 0)
       filter = InputManager$registerKeyListener$lambda_0;
@@ -1746,7 +2531,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var tmp$;
     var value = $receiver.get_11rb$(keyCode);
     if (value == null) {
-      var answer = ArrayList_init();
+      var answer = ArrayList_init_0();
       $receiver.put_xwzc9p$(keyCode, answer);
       tmp$ = answer;
     }
@@ -1761,7 +2546,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       if (level.level >= $this.level.level) {
         var tmp$_0 = $this.printer;
         var tmp$_1 = 'Multiple bindings for key ' + keyStr + ': ';
-        var destination = ArrayList_init_0(collectionSizeOrDefault(listeners, 10));
+        var destination = ArrayList_init(collectionSizeOrDefault(listeners, 10));
         var tmp$_2;
         tmp$_2 = listeners.iterator();
         while (tmp$_2.hasNext()) {
@@ -2669,13 +3454,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.shaderMgr = new ShaderManager();
     this.textureMgr = new TextureManager();
     this.mvpState = new MvpState();
-    this.onRender = ArrayList_init();
+    this.onRender = ArrayList_init_0();
     this.renderPass = RenderPass$SCREEN_getInstance();
     this.time_q5mkh0$_0 = 0.0;
     this.deltaT_wdv5hn$_0 = 0.0;
     this.frameIdx_2g8w1r$_0 = 0;
     this.fps_a02wsa$_0 = 60.0;
-    this.scenes = ArrayList_init();
+    this.scenes = ArrayList_init_0();
     this.attribs_e3zeo6$_0 = new KoolContext$Attribs();
     var array = Array_0(16);
     var tmp$;
@@ -3055,9 +3840,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.factory_o8y0vc$_0 = factory;
     this.copy_1qqihf$_0 = copy;
     this.mix_rjp6wa$_0 = mix;
-    this.ctrlPoints = ArrayList_init();
-    this.knots_ks2m93$_0 = ArrayList_init();
-    this.d_c5f19u$_0 = ArrayList_init();
+    this.ctrlPoints = ArrayList_init_0();
+    this.knots_ks2m93$_0 = ArrayList_init_0();
+    this.d_c5f19u$_0 = ArrayList_init_0();
   }
   BSpline.prototype.addInterpolationEndpoints = function () {
     var tmp$;
@@ -4070,7 +4855,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return buffer;
   };
   Mat4d.prototype.toList = function () {
-    var list = ArrayList_init();
+    var list = ArrayList_init_0();
     for (var i = 0; i <= 15; i++) {
       var element = this.matrix[this.offset + i | 0];
       list.add_11rb$(element);
@@ -4764,7 +5549,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return buffer;
   };
   Mat4f.prototype.toList = function () {
-    var list = ArrayList_init();
+    var list = ArrayList_init_0();
     for (var i = 0; i <= 15; i++) {
       var element = this.matrix[this.offset + i | 0];
       list.add_11rb$(element);
@@ -5189,7 +5974,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function PointDistribution() {
   }
   PointDistribution.prototype.nextPoints_za3lpa$ = function (n) {
-    var points = ArrayList_init();
+    var points = ArrayList_init_0();
     for (var i = 1; i <= n; i++) {
       var element = this.nextPoint();
       points.add_11rb$(element);
@@ -8280,7 +9065,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function ElevationMapHierarchy(baseDir, metaHierarchy, assetMgr) {
     this.baseDir_0 = baseDir;
     this.assetMgr_0 = assetMgr;
-    this.sets_0 = ArrayList_init();
+    this.sets_0 = ArrayList_init_0();
     this.loadedMaps_0 = new LoadedMapCache(64);
     var tmp$;
     tmp$ = metaHierarchy.maps.entries.iterator();
@@ -8710,8 +9495,8 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.meshDetailLevel = 4;
     this.tileShaderProvider = new OsmTexImageTileShaderProvider();
     this.tileFrames_0 = LinkedHashMap_init();
-    this.zoomGroups_0 = ArrayList_init();
-    this.removeTiles_0 = ArrayList_init();
+    this.zoomGroups_0 = ArrayList_init_0();
+    this.removeTiles_0 = ArrayList_init_0();
     this.camPosition_0 = MutableVec3f_init();
     this.camDirection_0 = MutableVec3f_init();
     this.prevCamDist_0 = 0.0;
@@ -9077,7 +9862,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     TransformGroupDp.call(this);
     this.tileName = tileName;
     this.globe_0 = globe;
-    this.zoomGroups = ArrayList_init();
+    this.zoomGroups = ArrayList_init_0();
     this.tileCount_sswiux$_0 = 0;
     var tmp$, tmp$_0;
     this.rotate_5820x2$(this.tileName.lonCenter, Vec3d$Companion_getInstance().Y_AXIS);
@@ -9256,7 +10041,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     var forceRemoveThresh = numberToInt(this.maxTiles * 1.5);
     if (this.tiles_0.size > forceRemoveThresh) {
-      var $receiver = ArrayList_init();
+      var $receiver = ArrayList_init_0();
       $receiver.addAll_brywnq$(this.removingTiles_0.values);
       var rmQueue = $receiver;
       if (rmQueue.size > 1) {
@@ -9269,7 +10054,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
   };
   TileManager.prototype.computeNeededTileList_0 = function () {
-    var tileList = ArrayList_init();
+    var tileList = ArrayList_init_0();
     var rng = 5;
     var zoom = this.center.zoom;
     var xStart = this.center.x - rng + 1 & -2;
@@ -10033,7 +10818,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       throw KoolException_init('Supplied meshData must be of primitive type GL_TRIANGLES');
     }
     var size = meshData.numVertices;
-    var list = ArrayList_init_0(size);
+    var list = ArrayList_init(size);
     for (var index = 0; index < size; index++) {
       list.add_11rb$(new HalfEdgeMesh$HalfEdgeVertex(this, index));
     }
@@ -10108,7 +10893,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var v0 = MutableVec3f_init();
     var v1 = MutableVec3f_init();
     var $receiver = this.edgeHandler;
-    var destination = ArrayList_init();
+    var destination = ArrayList_init_0();
     var tmp$;
     tmp$ = $receiver.iterator();
     while (tmp$.hasNext()) {
@@ -10140,7 +10925,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     var vertCnt = this.verts_0.size;
     this.edgeHandler.rebuild();
-    var removeEdges = ArrayList_init();
+    var removeEdges = ArrayList_init_0();
     tmp$_0 = this.verts_0.iterator();
     while (tmp$_0.hasNext()) {
       var v_0 = tmp$_0.next();
@@ -10252,7 +11037,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   HalfEdgeMesh.prototype.subSelect_ojfeji$ = function (start, maxTris) {
     if (maxTris === void 0)
       maxTris = 0;
-    var selection = ArrayList_init();
+    var selection = ArrayList_init_0();
     var borderEdges = LinkedHashSet_init();
     var innerEdges = LinkedHashSet_init();
     var borderQueue = mutableListOf([start]);
@@ -10587,7 +11372,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.$outer = $outer;
     Vec3f_init(0.0, this);
     this.index = index;
-    this.edges = ArrayList_init();
+    this.edges = ArrayList_init_0();
     this.isDeleted_st01j9$_0 = false;
     this.meshDataIndex_8be2vx$ = this.index;
   }
@@ -10887,7 +11672,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return $this;
   }
   function HalfEdgeMesh$ListEdgeHandler() {
-    this.edgeList = ArrayList_init();
+    this.edgeList = ArrayList_init_0();
     this.numEdges_a9s0c5$_0 = 0;
   }
   Object.defineProperty(HalfEdgeMesh$ListEdgeHandler.prototype, 'numEdges', {
@@ -12219,7 +13004,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.nodes_0 = ObjectRecycler_init(Dbvt$nodes$lambda);
     this.tmpVec_0 = MutableVec3f_init();
     this.tmpVolume_0 = new BoundingBox();
-    this.tmpLeaves_0 = ArrayList_init();
+    this.tmpLeaves_0 = ArrayList_init_0();
   }
   Object.defineProperty(Dbvt.prototype, 'root', {
     get: function () {
@@ -12837,7 +13622,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     interfaces: []
   };
   function Contact() {
-    this.worldPosB = ArrayList_init();
+    this.worldPosB = ArrayList_init_0();
     this.worldNormalOnB = MutableVec3f_init();
     this.restitutionCoeff = 0.0;
     this.frictionCoeff = 0.0;
@@ -12886,7 +13671,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function Contacts() {
     this.contactRecycler_0 = ObjectRecycler_init(Contacts$contactRecycler$lambda);
     this.vec4Recycler_0 = ObjectRecycler_init(Contacts$vec4Recycler$lambda);
-    this.liveContacts_0 = ArrayList_init();
+    this.liveContacts_0 = ArrayList_init_0();
   }
   Object.defineProperty(Contacts.prototype, 'contacts', {
     get: function () {
@@ -12956,7 +13741,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     interfaces: []
   };
   function CollisionWorld() {
-    this.bodies = ArrayList_init();
+    this.bodies = ArrayList_init_0();
     this.gravity = new MutableVec3f(0.0, -9.81, 0.0);
     this.collisionChecker_0 = new BoxBoxCollision();
     this.solver_0 = new SequentialImpulseConstraintSolver();
@@ -14039,7 +14824,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   }
   function Animation(duration) {
     this.duration = duration;
-    this.channels = ArrayList_init();
+    this.channels = ArrayList_init_0();
     this.weight = 0.0;
   }
   Animation.prototype.apply_8ca0d4$ = function (pos, clearTransform) {
@@ -14075,13 +14860,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if (attributes === void 0)
       attributes = InstancedMesh$Companion_getInstance().MODEL_INSTANCES;
     InstancedMesh.call(this, meshData, name, instances, attributes);
-    this.rootBones = ArrayList_init();
+    this.rootBones = ArrayList_init_0();
     this.bones = LinkedHashMap_init();
-    this.indexedBones_emt8o4$_0 = ArrayList_init();
+    this.indexedBones_emt8o4$_0 = ArrayList_init_0();
     this.boneTransforms_8cyf9r$_0 = null;
     this.isCpuAnimated = false;
     this.animations_k11tmz$_0 = LinkedHashMap_init();
-    this.animationList_t94xw8$_0 = ArrayList_init();
+    this.animationList_t94xw8$_0 = ArrayList_init_0();
     this.animationPos = 0.0;
     this.animationSpeed = 1.0;
     this.transform_sr6hm6$_0 = new Mat4fStack();
@@ -14408,7 +15193,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.name = name;
     this.parent = null;
     this.id = 0;
-    this.children = ArrayList_init();
+    this.children = ArrayList_init_0();
     this.offsetMatrix = new Mat4f();
     this.transform = new Mat4f();
     this.vertexIds = new Int32Array(numVertices);
@@ -14439,9 +15224,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function NodeAnimation(name, node) {
     this.name = name;
     this.node = node;
-    this.rotationKeys = ArrayList_init();
-    this.positionKeys = ArrayList_init();
-    this.scalingKeys = ArrayList_init();
+    this.rotationKeys = ArrayList_init_0();
+    this.positionKeys = ArrayList_init_0();
+    this.scalingKeys = ArrayList_init_0();
     this.tmpTransform_0 = new Mat4f();
     this.tmpMat_0 = new Mat4f();
   }
@@ -15056,7 +15841,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if (name === void 0)
       name = null;
     NodeDp.call(this, name);
-    this.children = ArrayList_init();
+    this.children = ArrayList_init_0();
     this.tmpBounds = new BoundingBox();
     this.transform = new Mat4d();
     this.invTransform = new Mat4d();
@@ -15287,7 +16072,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if (name === void 0)
       name = null;
     Node.call(this, name);
-    this.intChildren_kg4pgm$_0 = ArrayList_init();
+    this.intChildren_kg4pgm$_0 = ArrayList_init_0();
     this.tmpBounds = new BoundingBox();
   }
   Object.defineProperty(Group.prototype, 'children', {
@@ -15467,7 +16252,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     this.instanceStride_lhoub3$_0 = sum;
     var $receiver = this.attributes;
-    var destination = ArrayList_init();
+    var destination = ArrayList_init_0();
     var tmp$_0;
     tmp$_0 = $receiver.iterator();
     while (tmp$_0.hasNext()) {
@@ -15548,7 +16333,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     interfaces: []
   };
   function InstancedMesh$Instances(maxInstances) {
-    this.instances = ArrayList_init();
+    this.instances = ArrayList_init_0();
     this.bounds = new BoundingBox();
     this.maxInstances_dqdtpv$_0 = maxInstances;
     this.instanceData_52xgya$_0 = null;
@@ -16206,7 +16991,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var wasBatchUpdate = this.isBatchUpdate;
     this.isBatchUpdate = true;
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12;
-    var verts = ArrayList_init();
+    var verts = ArrayList_init_0();
     tmp$ = this.numVertices;
     for (var i = 0; i < tmp$; i++) {
       var element = this.get_za3lpa$(i);
@@ -16214,7 +16999,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     }
     var tree = pointKdTree(verts);
     var trav = new InRadiusTraverser();
-    var removeVerts = ArrayList_init();
+    var removeVerts = ArrayList_init_0();
     var replaceIndcs = LinkedHashMap_init();
     var requiresRebuildNormals = false;
     tmp$_0 = verts.iterator();
@@ -16601,13 +17386,13 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if (name === void 0)
       name = null;
     this.name = name;
-    this.onPreRender = ArrayList_init();
-    this.onRender = ArrayList_init();
-    this.onPostRender = ArrayList_init();
-    this.onDispose = ArrayList_init();
-    this.onHoverEnter = ArrayList_init();
-    this.onHover = ArrayList_init();
-    this.onHoverExit = ArrayList_init();
+    this.onPreRender = ArrayList_init_0();
+    this.onRender = ArrayList_init_0();
+    this.onPostRender = ArrayList_init_0();
+    this.onDispose = ArrayList_init_0();
+    this.onHoverEnter = ArrayList_init_0();
+    this.onHover = ArrayList_init_0();
+    this.onHoverExit = ArrayList_init_0();
     this.tags = new Tags();
     this.bounds_ba5obo$_0 = new BoundingBox();
     this.globalRadius_3g00fw$_0 = 0.0;
@@ -16801,7 +17586,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if (name === void 0)
       name = null;
     Group.call(this, name);
-    this.onRenderScene = ArrayList_init();
+    this.onRenderScene = ArrayList_init_0();
     this.camera = new PerspectiveCamera();
     this.light = new Light();
     this.defaultShadowMap_jajs2a$_0 = null;
@@ -16809,9 +17594,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.isPickingEnabled = true;
     this.rayTest_odjp91$_0 = new RayTest();
     this.hoverNode_ab2f3d$_0 = null;
-    this.dragPtrs_mbcqtw$_0 = ArrayList_init();
-    this.dragHandlers_ipew8g$_0 = ArrayList_init();
-    this.disposables_mcwga4$_0 = ArrayList_init();
+    this.dragPtrs_mbcqtw$_0 = ArrayList_init_0();
+    this.dragHandlers_ipew8g$_0 = ArrayList_init_0();
+    this.disposables_mcwga4$_0 = ArrayList_init_0();
     this.scene = this;
     this.onPreRender.add_11rb$(Scene_init$lambda(this));
     this.onDispose.add_11rb$(Scene_init$lambda_0(this));
@@ -17655,7 +18440,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   }));
   Tags.prototype.toString = function () {
     var str = StringBuilder_init();
-    var destination = ArrayList_init_0(this.size);
+    var destination = ArrayList_init(this.size);
     var tmp$;
     tmp$ = this.entries.iterator();
     while (tmp$.hasNext()) {
@@ -17862,7 +18647,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   function Button(name, root) {
     Label.call(this, name, root);
-    this.onClick = ArrayList_init();
+    this.onClick = ArrayList_init_0();
     this.textColorHovered = new ThemeOrCustomProp(Color$Companion_getInstance().WHITE);
     this.isPressed_xi0anj$_0 = false;
     this.isHovered_k6sd62$_0 = false;
@@ -18801,7 +19586,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   Alignment.valueOf_61zpoe$ = Alignment$valueOf;
   function Slider(name, min, max, value, root) {
     UiComponent.call(this, name, root);
-    this.onValueChanged = ArrayList_init();
+    this.onValueChanged = ArrayList_init_0();
     this.trackColor = Color$Companion_getInstance().GRAY;
     this.trackColorHighlighted = new ThemeOrCustomProp(Color$Companion_getInstance().LIGHT_GRAY);
     this.knobColor = new ThemeOrCustomProp(Color$Companion_getInstance().WHITE);
@@ -19310,7 +20095,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if (initState === void 0)
       initState = false;
     Button.call(this, name, root);
-    this.onStateChange = ArrayList_init();
+    this.onStateChange = ArrayList_init_0();
     this.knobColorOn = Color$Companion_getInstance().WHITE;
     this.knobColorOff = Color$Companion_getInstance().LIGHT_GRAY;
     this.trackColor = Color$Companion_getInstance().GRAY;
@@ -20538,7 +21323,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
     this.uShadowTexSz = this.addUniform_1ybs2r$(new Uniform1iv(GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ, (tmp$_0 = (tmp$ = this.props.shadowMap) != null ? tmp$.numMaps : null) != null ? tmp$_0 : 0));
     this.uClipSpaceFarZ = this.addUniform_1ybs2r$(new Uniform1fv(GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z, (tmp$_2 = (tmp$_1 = this.props.shadowMap) != null ? tmp$_1.numMaps : null) != null ? tmp$_2 : 0));
-    this.uShadowTex = ArrayList_init();
+    this.uShadowTex = ArrayList_init_0();
     this.shadowMap_6x93ay$_0 = null;
     this.scene_i3j15i$_0 = null;
     this.shininess = this.props.shininess;
@@ -21182,9 +21967,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   function GlslGenerator() {
     GlslGenerator$Companion_getInstance();
-    this.injectors = ArrayList_init();
-    this.customUniforms = ArrayList_init();
-    this.customAttributes = ArrayList_init();
+    this.injectors = ArrayList_init_0();
+    this.customUniforms = ArrayList_init_0();
+    this.customAttributes = ArrayList_init_0();
     this.vsIn_5467de$_0 = this.vsIn_5467de$_0;
     this.vsOut_gj894f$_0 = this.vsOut_gj894f$_0;
     this.fsIn_4vdhvm$_0 = this.fsIn_4vdhvm$_0;
@@ -21763,7 +22548,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function Shader() {
     GlObject.call(this);
     this.source_ow0gcj$_0 = new Shader$Source('', '', '');
-    this.attributeLocations = ArrayList_init();
+    this.attributeLocations = ArrayList_init_0();
     this.attributes = LinkedHashSet_init();
     this.uniforms = LinkedHashMap_init();
   }
@@ -25873,7 +26658,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     var init = getCallableRef('get', function ($receiver, index) {
       return $receiver.get_za3lpa$(index);
     }.bind(null, items));
-    var list = ArrayList_init_0(size);
+    var list = ArrayList_init(size);
     for (var index = 0; index < size; index++) {
       list.add_11rb$(init(index));
     }
@@ -25917,7 +26702,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.$outer = $outer;
     SpatialTree$Node.call(this, this.$outer, depth);
     this.nodeRange_rt7fdu$_0 = nodeRange;
-    this.children_wv5otg$_0 = ArrayList_init();
+    this.children_wv5otg$_0 = ArrayList_init_0();
     this.size_zddesm$_0 = 0;
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     var tmpVec = MutableVec3f_init();
@@ -27447,7 +28232,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     ObjectRecycler$Companion_getInstance();
     this.maxSize_tysx8i$_0 = maxSize;
     this.factory_vv2li5$_0 = factory;
-    this.recyclingStack_cbi09h$_0 = ArrayList_init();
+    this.recyclingStack_cbi09h$_0 = ArrayList_init_0();
   }
   ObjectRecycler.prototype.get = function () {
     if (!this.recyclingStack_cbi09h$_0.isEmpty()) {
@@ -27499,7 +28284,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   }
   function ObjectPool(factory) {
     ObjectRecycler_init(factory, this);
-    this.liveObjects_0 = ArrayList_init();
+    this.liveObjects_0 = ArrayList_init_0();
   }
   Object.defineProperty(ObjectPool.prototype, 'size', {
     get: function () {
@@ -27545,7 +28330,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   });
   function AutoRecycler$Context($outer) {
     this.$outer = $outer;
-    this.liveObjects_0 = ArrayList_init();
+    this.liveObjects_0 = ArrayList_init_0();
   }
   AutoRecycler$Context.prototype.get = function () {
     var o = this.$outer.get();
@@ -27590,7 +28375,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     SpatialTree.call(this, itemAdapter);
     this.accurateBounds = accurateBounds;
     this.root_be3r27$_0 = null;
-    this.emptyItems_0 = ArrayList_init();
+    this.emptyItems_0 = ArrayList_init_0();
     var tmpPt = MutableVec3f_init();
     if (!items.isEmpty()) {
       var $this = bounds;
@@ -27667,7 +28452,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     return success;
   };
   function OcTree$iterator$ObjectLiteral(this$OcTree) {
-    this.elementIts = ArrayList_init();
+    this.elementIts = ArrayList_init_0();
     this.elemIt = null;
     var tmp$;
     this.collectElements_witnv0$(this$OcTree.root);
@@ -27675,7 +28460,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       tmp$ = this.elementIts.removeAt_za3lpa$(get_lastIndex(this.elementIts));
     }
      else {
-      tmp$ = ArrayList_init().iterator();
+      tmp$ = ArrayList_init_0().iterator();
     }
     this.elemIt = tmp$;
   }
@@ -27781,9 +28566,9 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     this.nodeBounds = nodeBounds;
     this.bucketSz = bucketSz;
     this.size_yjj6gq$_0 = 0;
-    this.children_oh99z0$_0 = ArrayList_init();
+    this.children_oh99z0$_0 = ArrayList_init_0();
     this.tmpVec_0 = MutableVec3f_init();
-    this.mutItems_0 = ArrayList_init();
+    this.mutItems_0 = ArrayList_init_0();
     if (depth > 20) {
       throw KoolException_init('Octree is too deep');
     }
@@ -27956,7 +28741,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   OcTree$OcNode.prototype.merge_0 = function () {
     var tmp$;
-    this.mutItems_0 = ArrayList_init();
+    this.mutItems_0 = ArrayList_init_0();
     tmp$ = this.children;
     for (var i = 0; i !== tmp$.size; ++i) {
       this.mutItems_0.addAll_brywnq$(this.children.get_za3lpa$(i).mutItems_0);
@@ -28191,7 +28976,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     if (comparator === void 0)
       comparator = null;
     this.comparator_0 = null;
-    this.elements_0 = ArrayList_init();
+    this.elements_0 = ArrayList_init_0();
     this.comparator_0 = comparator != null ? comparator : new Comparator$ObjectLiteral_6(PriorityQueue_init$lambda);
   }
   Object.defineProperty(PriorityQueue.prototype, 'size', {
@@ -31092,7 +31877,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   }
   Edge$Companion.prototype.getEdges_3w6cym$ = function (meshData) {
     var tmp$;
-    var edges = ArrayList_init();
+    var edges = ArrayList_init_0();
     tmp$ = meshData.numIndices;
     for (var i = 0; i < tmp$; i += 2) {
       var element = Edge_init(meshData, i);
@@ -31189,7 +31974,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   }
   Triangle$Companion.prototype.getTriangles_3w6cym$ = function (meshData) {
     var tmp$;
-    var triangles = ArrayList_init();
+    var triangles = ArrayList_init_0();
     tmp$ = meshData.numIndices;
     for (var i = 0; i < tmp$; i += 3) {
       var element = Triangle_init(meshData, i);
@@ -31296,7 +32081,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     interfaces: []
   };
   function SpatialTree$candidatesPool$lambda() {
-    return ArrayList_init();
+    return ArrayList_init_0();
   }
   SpatialTree.$metadata$ = {
     kind: Kind_CLASS,
@@ -31381,7 +32166,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   };
   function InRadiusTraverser() {
     CenterPointTraverser.call(this);
-    this.result = ArrayList_init();
+    this.result = ArrayList_init_0();
     this.radius_45ks74$_0 = 1.0;
     this.radiusSqr_ri3rk0$_0 = 1.0;
   }
@@ -31440,7 +32225,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
     CenterPointTraverser.call(this);
     this.k_lz5t59$_0 = 10;
     this.radiusSqr_9tgcx0$_0 = 9.9999998E17;
-    this.result = ArrayList_init();
+    this.result = ArrayList_init_0();
     this.maxDistance_1d7gth$_0 = 0.0;
     this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_7(KNearestTraverser$items$lambda));
     this.itemRecycler_b63bes$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
@@ -31757,7 +32542,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function TouchGestureEvaluator() {
     TouchGestureEvaluator$Companion_getInstance();
     this.currentGesture_nrwzky$_0 = new TouchGestureEvaluator$Gesture();
-    this.activePointers_ajelte$_0 = ArrayList_init();
+    this.activePointers_ajelte$_0 = ArrayList_init_0();
     this.tmpVec1_vwccvm$_0 = MutableVec2f_init();
     this.tmpVec2_vwccwh$_0 = MutableVec2f_init();
     this.startPositions = LinkedHashMap_init();
@@ -31829,7 +32614,7 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   }
   TouchGestureEvaluator.prototype.onDetermineGesture_mcn869$ = function (pointers) {
     removeAll_0(this.startPositions.keys, TouchGestureEvaluator$onDetermineGesture$lambda(pointers));
-    var destination = ArrayList_init();
+    var destination = ArrayList_init_0();
     var tmp$;
     tmp$ = pointers.iterator();
     while (tmp$.hasNext()) {
@@ -32729,9 +33514,115 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function JsAssetManager(assetsBaseDir) {
     JsAssetManager$Companion_getInstance();
     AssetManager.call(this, assetsBaseDir);
-    this.fontGenerator_0 = new FontMapGenerator(1024, 1024);
+    this.fontGenerator_0 = new FontMapGenerator(2048, 2048);
   }
-  function JsAssetManager$loadHttpAsset$lambda(closure$req, closure$onLoad) {
+  JsAssetManager.prototype.loadLocalRaw_hl6yzt$ = function (localRawRef_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadLocalRaw_hl6yzt$(this, localRawRef_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  };
+  function Coroutine$loadLocalRaw_hl6yzt$($this, localRawRef_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$localRawRef = localRawRef_0;
+  }
+  Coroutine$loadLocalRaw_hl6yzt$.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$loadLocalRaw_hl6yzt$.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadLocalRaw_hl6yzt$.prototype.constructor = Coroutine$loadLocalRaw_hl6yzt$;
+  Coroutine$loadLocalRaw_hl6yzt$.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.$this.loadRaw_0(this.local$localRawRef.url, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return new LoadedRawAsset(this.local$localRawRef, this.result_0);
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  JsAssetManager.prototype.loadHttpRaw_ohmb7q$ = function (httpRawRef_0, continuation_0, suspended) {
+    var instance = new Coroutine$loadHttpRaw_ohmb7q$(this, httpRawRef_0, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  };
+  function Coroutine$loadHttpRaw_ohmb7q$($this, httpRawRef_0, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.exceptionState_0 = 1;
+    this.$this = $this;
+    this.local$httpRawRef = httpRawRef_0;
+  }
+  Coroutine$loadHttpRaw_ohmb7q$.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$loadHttpRaw_ohmb7q$.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$loadHttpRaw_ohmb7q$.prototype.constructor = Coroutine$loadHttpRaw_ohmb7q$;
+  Coroutine$loadHttpRaw_ohmb7q$.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.$this.loadRaw_0(this.local$httpRawRef.url, this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return new LoadedRawAsset(this.local$httpRawRef, this.result_0);
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  JsAssetManager.prototype.loadHttpTexture_nbaz3h$ = function (httpTextureRef, continuation) {
+    return new LoadedTextureAsset(httpTextureRef, this.loadImage_0(httpTextureRef.url));
+  };
+  JsAssetManager.prototype.loadLocalTexture_68kns4$ = function (localTextureRef, continuation) {
+    return new LoadedTextureAsset(localTextureRef, this.loadImage_0(localTextureRef.url));
+  };
+  function JsAssetManager$loadRaw$lambda(closure$req, closure$data) {
     return function (it) {
       var tmp$, tmp$_0;
       var array = new Uint8Array(Kotlin.isType(tmp$ = closure$req.response, ArrayBuffer) ? tmp$ : throwCCE());
@@ -32740,52 +33631,47 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
       for (var i = 0; i < tmp$_0; i++) {
         bytes[i] = array[i];
       }
-      closure$onLoad(bytes);
-      return Unit;
+      return closure$data.complete_11rb$(bytes);
     };
   }
-  function JsAssetManager$loadHttpAsset$lambda_0(closure$onLoad, closure$assetPath, this$JsAssetManager) {
+  function JsAssetManager$loadRaw$lambda_0(closure$data, closure$url, this$JsAssetManager) {
     return function (it) {
-      closure$onLoad(null);
+      closure$data.complete_11rb$(null);
       var $receiver = this$JsAssetManager;
       var $this = package$util.Log;
       var level = Log$Level.ERROR;
       var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
       if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Failed loading resource ' + closure$assetPath + ': ' + it);
+        $this.printer(level, tag, 'Failed loading resource ' + closure$url + ': ' + it);
       }
       return Unit;
     };
   }
-  JsAssetManager.prototype.loadHttpAsset_us385g$ = function (assetPath, onLoad) {
+  JsAssetManager.prototype.loadRaw_0 = function (url, continuation) {
+    var data = CompletableDeferred(this.job);
     var req = new XMLHttpRequest();
     req.responseType = 'arraybuffer';
-    req.onload = JsAssetManager$loadHttpAsset$lambda(req, onLoad);
-    req.onerror = JsAssetManager$loadHttpAsset$lambda_0(onLoad, assetPath, this);
-    req.open('GET', assetPath);
+    req.onload = JsAssetManager$loadRaw$lambda(req, data);
+    req.onerror = JsAssetManager$loadRaw$lambda_0(data, url, this);
+    req.open('GET', url);
     req.send();
+    return data.await(continuation);
   };
-  JsAssetManager.prototype.loadHttpTexture_61zpoe$ = function (assetPath) {
+  JsAssetManager.prototype.loadImage_0 = function (url) {
     var tmp$;
     var img = Kotlin.isType(tmp$ = document.createElement('img'), HTMLImageElement) ? tmp$ : throwCCE();
     var data = new ImageTextureData(img);
     img.crossOrigin = '';
-    img.src = assetPath;
+    img.src = url;
     return data;
-  };
-  JsAssetManager.prototype.loadLocalAsset_us385g$ = function (assetPath, onLoad) {
-    this.loadHttpAsset_us385g$(assetPath, onLoad);
-  };
-  JsAssetManager.prototype.loadLocalTexture_61zpoe$ = function (assetPath) {
-    return this.loadHttpTexture_61zpoe$(assetPath);
   };
   JsAssetManager.prototype.createCharMap_ttufcy$ = function (fontProps) {
     return this.fontGenerator_0.createCharMap_ttufcy$(fontProps);
   };
   function JsAssetManager$Companion() {
     JsAssetManager$Companion_instance = this;
-    this.MAX_GENERATED_TEX_WIDTH_0 = 1024;
-    this.MAX_GENERATED_TEX_HEIGHT_0 = 1024;
+    this.MAX_GENERATED_TEX_WIDTH_0 = 2048;
+    this.MAX_GENERATED_TEX_HEIGHT_0 = 2048;
   }
   JsAssetManager$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -33379,10 +34265,22 @@ define(['exports', 'kotlin', 'kotlinx-serialization-runtime-js', 'kotlinx-corout
   function createFloat32Buffer(capacity) {
     return new Float32BufferImpl(capacity);
   }
+  $$importsForInline$$['kotlinx-coroutines-core'] = $module$kotlinx_coroutines_core;
+  Object.defineProperty(AssetManager, 'Companion', {
+    get: AssetManager$Companion_getInstance
+  });
   var package$de = _.de || (_.de = {});
   var package$fabmax = package$de.fabmax || (package$de.fabmax = {});
   var package$kool = package$fabmax.kool || (package$fabmax.kool = {});
   package$kool.AssetManager = AssetManager;
+  package$kool.AssetRef = AssetRef;
+  package$kool.LocalRawAssetRef = LocalRawAssetRef;
+  package$kool.HttpRawAssetRef = HttpRawAssetRef;
+  package$kool.LocalTextureAssetRef = LocalTextureAssetRef;
+  package$kool.HttpTextureAssetRef = HttpTextureAssetRef;
+  package$kool.LoadedAsset = LoadedAsset;
+  package$kool.LoadedRawAsset = LoadedRawAsset;
+  package$kool.LoadedTextureAsset = LoadedTextureAsset;
   package$kool.assetTexture_ivxn3r$ = assetTexture;
   package$kool.assetTexture_4689t5$ = assetTexture_0;
   package$kool.assetTextureCubeMap_y2is7l$ = assetTextureCubeMap;

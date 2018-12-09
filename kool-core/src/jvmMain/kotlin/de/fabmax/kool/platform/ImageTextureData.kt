@@ -12,11 +12,15 @@ import java.awt.image.BufferedImage
 import java.awt.image.DataBufferByte
 import kotlin.math.round
 
-class ImageTextureData : TextureData() {
+class ImageTextureData() : TextureData() {
     override var isAvailable: Boolean = false
         private set
     private var buffer: Uint8Buffer? = null
     private var format = 0
+
+    constructor(image: BufferedImage) : this() {
+        setTexImage(image)
+    }
 
     internal fun setTexImage(image: BufferedImage) {
         val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK

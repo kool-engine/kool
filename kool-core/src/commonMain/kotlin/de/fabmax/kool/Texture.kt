@@ -55,9 +55,9 @@ data class TextureProps(
 abstract class TextureData {
     open val isAvailable = false
 
-    var width = 0
+    open var width = 0
         protected set
-    var height = 0
+    open var height = 0
         protected set
 
     internal fun loadData(texture: Texture, ctx: KoolContext) {

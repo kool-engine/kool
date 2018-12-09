@@ -28,7 +28,7 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
     var elevationMapProvider: ElevationMapProvider = NullElevationMap()
     var meshGenerator = GridTileMeshGenerator()
     var meshDetailLevel = 4
-    var tileShaderProvider = OsmTexImageTileShaderProvider()
+    var tileShaderProvider: TexImageTileShaderProvider = OsmTexImageTileShaderProvider()
 
     private val tileFrames = mutableMapOf<Long, TileFrame>()
     private val zoomGroups = mutableListOf<Group>()

@@ -1,15 +1,9 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.AssetManager
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.TextureData
-import de.fabmax.kool.use
+import de.fabmax.kool.*
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.logW
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import java.io.ByteArrayOutputStream
+import de.fabmax.kool.util.logE
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -24,93 +18,47 @@ class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager
         HttpCache.initCache(File(".httpCache"))
     }
 
-    override fun loadHttpAsset(assetPath: String, onLoad: (ByteArray?) -> Unit) {
-        loadHttp(assetPath, { onLoad(null) }) {
-            onLoad(loadAllBytes(it))
+    override suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef): LoadedRawAsset {
+        var data: ByteArray? = null
+        try {
+            openLocalStream(localRawRef.url).use { data = it.readBytes() }
+        } catch (e: Exception) {
+            logE { "Failed loading asset ${localRawRef.url}: $e" }
         }
+        return LoadedRawAsset(localRawRef, data)
     }
 
-    override fun loadLocalAsset(assetPath: String, onLoad: (ByteArray?) -> Unit) {
-        loadLocal(assetPath, { onLoad(null) }) {
-            onLoad(loadAllBytes(it))
+    override suspend fun loadHttpRaw(httpRawRef: HttpRawAssetRef): LoadedRawAsset {
+        var data: ByteArray? = null
+        try {
+            FileInputStream(HttpCache.loadHttpResource(httpRawRef.url)).use { data = it.readBytes() }
+        } catch (e: Exception) {
+            logE { "Failed loading asset ${httpRawRef.url}: $e" }
         }
+        return LoadedRawAsset(httpRawRef, data)
     }
 
-    override fun loadHttpTexture(assetPath: String): TextureData {
-        val texData = ImageTextureData()
-        loadHttp(assetPath) {
-            texData.setTexImage(ImageIO.read(it))
+    override suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef): LoadedTextureAsset {
+        var data: ImageTextureData? = null
+        try {
+            openLocalStream(localTextureRef.url).use { data = ImageTextureData(ImageIO.read(it)) }
+        } catch (e: Exception) {
+            logE { "Failed loading texture ${localTextureRef.url}: $e" }
         }
-        return texData
+        return LoadedTextureAsset(localTextureRef, data)
     }
 
-    override fun loadLocalTexture(assetPath: String): TextureData {
-        val texData = ImageTextureData()
-        loadLocal(assetPath) {
-            texData.setTexImage(ImageIO.read(it))
-        }
-        return texData
-    }
-
-    fun loadAssetAsStream(assetPath: String, onLoad: (InputStream?) -> Unit) {
-        return if (isHttpAsset(assetPath)) {
-            loadHttpAssetAsStream(assetPath, onLoad)
-        } else {
-            loadLocalAssetAsStream("$assetsBaseDir/$assetPath", onLoad)
-        }
-    }
-
-    private fun loadHttpAssetAsStream(assetPath: String, onLoad: (InputStream?) -> Unit) {
-        loadHttp(assetPath, { onLoad(null) }) {
-            onLoad(it)
-        }
-    }
-
-    private fun loadLocalAssetAsStream(assetPath: String, onLoad: (InputStream?) -> Unit) {
-        loadLocal(assetPath, { onLoad(null) }) {
-            onLoad(it)
-        }
-    }
-
-    private fun loadLocal(assetUrl: String, onError: ((Exception) -> Unit)? = null, onLoad: (InputStream) -> Unit) {
-        GlobalScope.launch {
-            try {
-                openLocalStream(assetUrl).use {
-                    onLoad(it)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                onError?.invoke(e)
-                throw KoolException("Failed to load asset: \"$assetUrl\"", e)
+    override suspend fun loadHttpTexture(httpTextureRef: HttpTextureAssetRef): LoadedTextureAsset {
+        var data: ImageTextureData? = null
+        try {
+            val f = HttpCache.loadHttpResource(httpTextureRef.url)
+            FileInputStream(f).use {
+                data = ImageTextureData(ImageIO.read(it))
             }
+        } catch (e: Exception) {
+            logE { "Failed loading texture ${httpTextureRef.url}: $e" }
         }
-    }
-
-    private fun loadHttp(assetUrl: String, onError: ((Exception) -> Unit)? = null, onLoad: (InputStream) -> Unit) {
-        GlobalScope.launch {
-            var tries = 2
-            while (tries > 0) {
-                var file: File? = null
-                try {
-                    file = HttpCache.loadHttpResource(assetUrl)
-                    FileInputStream(file).use {
-                        onLoad(it)
-                    }
-                    // asset loading succeeded, break retry loop
-                    break
-
-                } catch (e: Exception) {
-                    // if exception is caused by a corrupted HTTP cache file, delete it and try again
-                    if (--tries > 0) {
-                        logW { "HTTP cache file load failed: $e, retrying" }
-                        file?.delete()
-                    } else {
-                        onError?.invoke(e)
-                        throw KoolException("Failed to load http asset: \"$assetUrl\"", e)
-                    }
-                }
-            }
-        }
+        return LoadedTextureAsset(httpTextureRef, data)
     }
 
     private fun openLocalStream(assetPath: String): InputStream {
@@ -120,18 +68,6 @@ class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager
             inStream = FileInputStream(assetPath)
         }
         return inStream
-    }
-
-    private fun loadAllBytes(inputStream: InputStream): ByteArray {
-        inputStream.use {
-            val data = ByteArrayOutputStream()
-            val buf = ByteArray(1024 * 1024)
-            while (it.available() > 0) {
-                val len = it.read(buf)
-                data.write(buf, 0, len)
-            }
-            return data.toByteArray()
-        }
     }
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
