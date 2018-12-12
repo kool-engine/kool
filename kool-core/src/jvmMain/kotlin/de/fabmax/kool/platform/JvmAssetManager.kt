@@ -51,7 +51,7 @@ class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager
     override suspend fun loadHttpTexture(httpTextureRef: HttpTextureAssetRef): LoadedTextureAsset {
         var data: ImageTextureData? = null
         try {
-            val f = HttpCache.loadHttpResource(httpTextureRef.url)
+            val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
             FileInputStream(f).use {
                 data = ImageTextureData(ImageIO.read(it))
             }

@@ -66,9 +66,13 @@ class HttpCache private constructor(private val cacheDir: File) {
 
     private fun addCacheEntry(entry: CacheEntry) {
         synchronized(cache) {
-            cacheSize -= cache[entry.file]?.size ?: 0
-            cacheSize += entry.size
-            cache[entry.file] = entry
+            if (entry.file.canRead()) {
+                cacheSize -= cache[entry.file]?.size ?: 0
+                cacheSize += entry.size
+                cache[entry.file] = entry
+            } else {
+                logW { "Cache entry not readable: ${entry.file}" }
+            }
         }
         checkCacheSize()
     }
@@ -98,6 +102,7 @@ class HttpCache private constructor(private val cacheDir: File) {
             while (!removeQueue.isEmpty() && cacheSize > MAX_CACHE_SIZE * 0.8) {
                 val rmEntry = removeQueue.poll()
                 rmEntry.file.delete()
+                logD { "Deleted from cache: ${rmEntry.file}" }
                 synchronized(cache) {
                     cache.remove(rmEntry.file)
                     cacheSize -= rmEntry.size
@@ -107,7 +112,7 @@ class HttpCache private constructor(private val cacheDir: File) {
         }
     }
 
-    fun loadHttpResource(url: String): File {
+    fun loadHttpResource(url: String): File? {
         val req = URL(url)
 
         // use host-name as cache directory name, sub-domain components are dropped
@@ -125,21 +130,36 @@ class HttpCache private constructor(private val cacheDir: File) {
 
         if (!file.canRead()) {
             // download file and add to cache
-            val con = req.openConnection() as HttpURLConnection
-            if (req.host in credentialsMap.keys) {
-                con.addRequestProperty("Authorization", credentialsMap[req.host]!!.encoded)
-            }
-            if (con.responseCode == 200) {
-                con.inputStream.copyTo(file)
-                addCacheEntry(CacheEntry(file))
-            } else {
-                logW { "failed downloading $url: ${con.responseCode} - ${con.responseMessage}" }
+            try {
+                val con = req.openConnection() as HttpURLConnection
+                if (req.host in credentialsMap.keys) {
+                    con.addRequestProperty("Authorization", credentialsMap[req.host]!!.encoded)
+                }
+                if (con.responseCode == 200) {
+                    con.inputStream.copyTo(file)
+                    addCacheEntry(CacheEntry(file))
+                    return file
+                } else {
+                    logW { "Unexpected response on downloading $url: ${con.responseCode} - ${con.responseMessage}" }
+                }
+            } catch (e: Exception) {
+                logW { "Exception during download of $url: $e" }
             }
         }
-        return file
+
+        return if (file.canRead()) {
+            synchronized(cache) {
+                cache[file]?.lastAccess = System.currentTimeMillis()
+            }
+            file
+        } else {
+            logW { "Failed downloading $url" }
+            null
+        }
     }
 
     private fun InputStream.copyTo(file: File): Long {
+        file.parentFile.mkdirs()
         return use { inStream ->
             FileOutputStream(file).use { outStream ->
                 inStream.copyTo(outStream, 4096)
@@ -163,7 +183,7 @@ class HttpCache private constructor(private val cacheDir: File) {
             }
         }
 
-        fun loadHttpResource(url: String): File {
+        fun loadHttpResource(url: String): File? {
             val inst = instance ?: throw KoolException("Default cache used before initCache() was called")
             return inst.loadHttpResource(url)
         }
