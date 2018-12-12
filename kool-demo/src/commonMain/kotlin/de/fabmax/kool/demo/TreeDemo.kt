@@ -39,9 +39,9 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     var leafMesh: Mesh? = null
 
     val treeScene = scene {
-        defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
+        lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-        +makeGroundGrid(40, defaultShadowMap)
+        +makeGroundGrid(40, lighting.shadowMap)
 
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {
@@ -54,7 +54,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             shader = basicShader {
                 colorModel = ColorModel.TEXTURE_COLOR
                 lightModel = LightModel.PHONG_LIGHTING
-                shadowMap = defaultShadowMap
+                shadowMap = lighting.shadowMap
                 isNormalMapped = true
                 specularIntensity = 0.25f
 
@@ -69,7 +69,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
         leafMesh = textureMesh {
             generator = {
                 timedMs({"Generated ${meshData.numIndices / 3} leaf triangles in"}) {
-                    treeGen.buildLeafMesh(this, light.direction)
+                    treeGen.buildLeafMesh(this, lighting.primaryLight.direction)
                 }
             }
 
@@ -79,7 +79,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             shader = basicShader {
                 colorModel = ColorModel.TEXTURE_COLOR
                 lightModel = LightModel.PHONG_LIGHTING
-                shadowMap = defaultShadowMap
+                shadowMap = lighting.shadowMap
                 specularIntensity = 0.1f
                 isDiscardTranslucent = true
                 texture = assetTexture("leaf.png")
@@ -241,7 +241,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                             clear()
                             val builder = MeshBuilder(this)
                             timedMs({"Generated ${numIndices / 3} leaf triangles in"}) {
-                                treeGen.buildLeafMesh(builder, scene?.light?.direction ?: Vec3f.ZERO)
+                                treeGen.buildLeafMesh(builder, scene?.lighting?.primaryLight?.direction ?: Vec3f.ZERO)
                             }
                         }
                     }

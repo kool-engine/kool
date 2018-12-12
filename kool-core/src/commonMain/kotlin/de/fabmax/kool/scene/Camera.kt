@@ -191,11 +191,10 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     }
 
     override fun computeFrustumPlane(z: Float, result: FrustumPlane) {
-        val zd = near + (far - near) * z
-        invView.transform(result.upperLeft.set(left, top, -zd))
-        invView.transform(result.upperRight.set(right, top, -zd))
-        invView.transform(result.lowerLeft.set(left, bottom, -zd))
-        invView.transform(result.lowerRight.set(right, bottom, -zd))
+        invView.transform(result.upperLeft.set(left, top, -z))
+        invView.transform(result.upperRight.set(right, top, -z))
+        invView.transform(result.lowerLeft.set(left, bottom, -z))
+        invView.transform(result.lowerRight.set(right, bottom, -z))
     }
 
     /**
@@ -258,14 +257,13 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     }
 
     override fun computeFrustumPlane(z: Float, result: FrustumPlane) {
-        val zd = clipNear + (clipFar - clipNear) * z
-        val x = zd * tangX
-        val y = zd * tangY
+        val x = z * tangX
+        val y = z * tangY
 
-        invView.transform(result.upperLeft.set(-x, y, -zd))
-        invView.transform(result.upperRight.set(x, y, -zd))
-        invView.transform(result.lowerLeft.set(-x, -y, -zd))
-        invView.transform(result.lowerRight.set(x, -y, -zd))
+        invView.transform(result.upperLeft.set(-x, y, -z))
+        invView.transform(result.upperRight.set(x, y, -z))
+        invView.transform(result.lowerLeft.set(-x, -y, -z))
+        invView.transform(result.lowerRight.set(x, -y, -z))
     }
 
     /**

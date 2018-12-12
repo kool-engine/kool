@@ -21,9 +21,9 @@ import kotlin.math.sqrt
  */
 
 fun modelScene(ctx: KoolContext): Scene = scene {
-    defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
+    lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-    +makeGroundGrid(40, defaultShadowMap)
+    +makeGroundGrid(40, lighting.shadowMap)
 
     // add animated character model
     +transformGroup {
@@ -48,7 +48,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                 lightModel = LightModel.PHONG_LIGHTING
                 colorModel = ColorModel.STATIC_COLOR
                 staticColor = Color.GRAY
-                shadowMap = defaultShadowMap
+                shadowMap = lighting.shadowMap
 
                 if (!mesh.isCpuAnimated) {
                     // do mesh animation on vertex shader if available.

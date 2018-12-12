@@ -70,8 +70,8 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
     var boxCnt = 40
 
     val boxScene = scene {
-        light.direction.set(1f, 0.8f, 0.4f)
-        defaultShadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
+        lighting.primaryLight.direction.set(1f, 0.8f, 0.4f)
+        lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
         +sphericalInputTransform {
             +camera
@@ -80,7 +80,7 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
             setMouseRotation(45f, -30f)
         }
 
-        boxWorld = BoxWorld(defaultShadowMap)
+        boxWorld = BoxWorld(lighting.shadowMap)
         boxWorld!!.createBoxes(boxCnt)
         +boxWorld!!
 
@@ -98,7 +98,7 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
             shader = basicShader {
                 lightModel = LightModel.NO_LIGHTING
                 colorModel = ColorModel.VERTEX_COLOR
-                shadowMap = defaultShadowMap
+                shadowMap = lighting.shadowMap
             }
         }
     }

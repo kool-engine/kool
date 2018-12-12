@@ -33,13 +33,9 @@ fun instancedDemo(ctx: KoolContext): Scene = scene {
     }
 
     // create a custom shadow map with reduced maximum distance (increases shadow resolution)
-    defaultShadowMap = CascadedShadowMap(arrayOf(
-            SimpleShadowMap(0f, 0.03f),
-            SimpleShadowMap(0.03f, 0.1f),
-            SimpleShadowMap(0.1f, 0.3f)
-    ))
+    lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-    +makeGroundGrid(100, defaultShadowMap)
+    +makeGroundGrid(100, lighting.shadowMap)
 
     +transformGroup {
         // model uses z-axis as up-axis, rotate it accordingly
@@ -54,7 +50,7 @@ fun instancedDemo(ctx: KoolContext): Scene = scene {
             val model = ModelData.load(data).meshes[0].toMesh() as Armature
 
             for (i in 1..5) {
-                +spawnMesh(model, defaultShadowMap, randomF(0.2f, 0.6f))
+                +spawnMesh(model, lighting.shadowMap, randomF(0.2f, 0.6f))
             }
         }
     }

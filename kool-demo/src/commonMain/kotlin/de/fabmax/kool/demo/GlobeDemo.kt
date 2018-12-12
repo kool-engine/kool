@@ -30,7 +30,7 @@ fun globeScene(ctx: KoolContext): List<Scene> {
 
     scenes += scene {
         // dim light to avoid over-exposure (OSM tiles are quite bright)
-        light.color.set(Color.LIGHT_GRAY)
+        lighting.primaryLight.color.set(Color.LIGHT_GRAY)
 
         // create globe with earth radius
         val globe = Globe(6_371_000.8)

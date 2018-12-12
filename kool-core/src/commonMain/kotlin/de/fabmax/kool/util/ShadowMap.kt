@@ -54,7 +54,7 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val tex
         val scene = nodeToRender.scene ?: return
         val camera = scene.camera
 
-        depthCam.position.set(scene.light.direction)
+        depthCam.position.set(scene.lighting.primaryLight.direction)
         depthCam.lookAt.set(0f, 0f, 0f)
         depthView.setLookAt(depthCam.position, depthCam.lookAt, depthCam.up)
 
@@ -161,9 +161,9 @@ class CascadedShadowMap(private val subMaps: Array<SimpleShadowMap>) : ShadowMap
     companion object {
         fun defaultCascadedShadowMap3(texSize: Int = SimpleShadowMap.defaultMapSize): CascadedShadowMap {
             val subMaps = arrayOf(
-                    SimpleShadowMap(0f, 0.1f, texSize),
-                    SimpleShadowMap(0.1f, 0.3f, texSize),
-                    SimpleShadowMap(0.3f, 1f, texSize)
+                    SimpleShadowMap(0f, 10f, texSize),
+                    SimpleShadowMap(10f, 30f, texSize),
+                    SimpleShadowMap(30f, 100f, texSize)
             )
             return CascadedShadowMap(subMaps)
         }

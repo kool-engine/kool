@@ -172,10 +172,10 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
                 uCamPosition.value.set(scene!!.camera.globalPos)
                 uCamPosition.bind(ctx)
 
-                val light = scene!!.light
-                uLightDirection.value.set(light.direction)
+                val lighting = scene!!.lighting
+                uLightDirection.value.set(lighting.primaryLight.direction)
                 uLightDirection.bind(ctx)
-                uLightColor.value.set(light.color.r, light.color.g, light.color.b)
+                uLightColor.value.set(lighting.primaryLight.color.r, lighting.primaryLight.color.g, lighting.primaryLight.color.b)
                 uLightColor.bind(ctx)
             }
         }

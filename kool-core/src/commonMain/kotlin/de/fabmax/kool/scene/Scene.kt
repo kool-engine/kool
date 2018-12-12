@@ -8,7 +8,6 @@ import de.fabmax.kool.gl.glClear
 import de.fabmax.kool.lock
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.util.Disposable
-import de.fabmax.kool.util.ShadowMap
 
 /**
  * @author fabmax
@@ -28,16 +27,7 @@ open class Scene(name: String? = null) : Group(name) {
         set(@Suppress("UNUSED_PARAMETER") value) {}
 
     var camera: Camera = PerspectiveCamera()
-    var light = Light()
-    var defaultShadowMap: ShadowMap? = null
-        set(value) {
-            if (field != null) {
-                lock(disposables) {
-                    disposables += field!!
-                }
-            }
-            field = value
-        }
+    var lighting = Lighting(this)
 
     var clearMask = GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
     var isPickingEnabled = true
@@ -51,13 +41,6 @@ open class Scene(name: String? = null) : Group(name) {
 
     init {
         scene = this
-
-        onPreRender += { ctx ->
-            defaultShadowMap?.renderShadowMap(this, ctx)
-        }
-        onDispose += { ctx ->
-            defaultShadowMap?.dispose(ctx)
-        }
     }
 
     override fun preRender(ctx: KoolContext) {
