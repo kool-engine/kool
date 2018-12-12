@@ -1,16 +1,13 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.globe.Globe
-import de.fabmax.kool.modules.globe.GlobeDragHandler
+import de.fabmax.kool.modules.globe.GlobeCamHandler
 import de.fabmax.kool.modules.globe.elevation.ElevationMapHierarchy
 import de.fabmax.kool.modules.globe.elevation.ElevationMapMetaHierarchy
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.SphericalInputTransform
 import de.fabmax.kool.scene.doubleprec.DoublePrecisionRoot
 import de.fabmax.kool.scene.scene
-import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
@@ -32,42 +29,33 @@ fun globeScene(ctx: KoolContext): List<Scene> {
     val ui = GlobeUi(null, ctx)
 
     scenes += scene {
-        +sphericalInputTransform {
-            // some of the mouse interactions are handled by Globe itself
-            // therefore we configure the camera transform to center-zoom and no panning
-            leftDragMethod = SphericalInputTransform.DragMethod.NONE
-            rightDragMethod = SphericalInputTransform.DragMethod.ROTATE
-            zoomMethod = SphericalInputTransform.ZoomMethod.ZOOM_CENTER
+        // dim light to avoid over-exposure (OSM tiles are quite bright)
+        light.color.set(Color.LIGHT_GRAY)
 
-            // zoom range is quite large: 20 meters to 20000 km above surface
-            minZoom = 2e1f
-            maxZoom = 2e7f
+        // create globe with earth radius
+        val globe = Globe(6_371_000.8)
 
-            verticalAxis = Vec3f.Z_AXIS
-            minHorizontalRot = 0f
-            maxHorizontalRot = 85f
+        // globe is added into a double precision transform group
+        // standard transform group with single precision is not accurate enough for high zoom levels
+        val globeGroup = DoublePrecisionRoot(globe)
 
+        ui.globe = globe
+
+        // GlobeCamHandler handles mouse interaction
+        +GlobeCamHandler(globe, this, ctx).apply {
+            // set a nice start location in the alps
+            globe.setCenter(47.05, 9.48)
+
+            // zoom in and tilt the camera to get a nice mountain panorama
             resetZoom(15e3f)
             horizontalRotation = 60f
             verticalRotation = -30f
-
-            +camera
-            updateTransform()
-            camera.updateCamera(ctx)
         }
-
-        // dim light to avoid over-exposure (OSM tiles are quite bright)
-        light.color.set(Color.LIGHT_GRAY)
 
         // load elevation map meta data
         // default elevation URL requires elevation map data in path docs/assets/elevation (not the case if pulled from github)
         val elevationUrl = Demo.getProperty("globe.elevationUrl", "elevation")
         ctx.assetMgr.loadAsset("$elevationUrl/meta.pb") { data ->
-            // create globe with earth radius
-            val globe = Globe(6_371_000.8)
-            globe.setCenter(47.05, 9.48)
-            ui.globe = globe
-
             if (data != null) {
                 // deserialize elevation map meta data
                 val metaHierarchy: ElevationMapMetaHierarchy = ProtoBuf.load(data)
@@ -79,13 +67,9 @@ fun globeScene(ctx: KoolContext): List<Scene> {
                 logW { "Height map data not available" }
             }
 
-            val dpGroup = DoublePrecisionRoot(globe)
-            +dpGroup
-
-            // register specialized mouse input handler for globe manipulation
-            registerDragHandler(GlobeDragHandler(globe))
+            // do not render globe before height map info is loaded...
+            +globeGroup
         }
-
     }
 
     // add ui overlay after globe scene (order matters)
@@ -99,8 +83,6 @@ class GlobeUi(var globe: Globe?, val ctx: KoolContext) {
 
     val scene = uiScene {
         theme = theme(UiTheme.DARK) {
-            //componentUi(::SimpleComponentUi)
-            //containerUi { BlankComponentUi() }
             containerUi(::SimpleComponentUi)
             componentUi { BlankComponentUi() }
             standardFont(FontProps(Font.SYSTEM_FONT, 12f))

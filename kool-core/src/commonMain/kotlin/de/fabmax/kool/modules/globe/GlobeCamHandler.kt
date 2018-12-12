@@ -3,24 +3,47 @@ package de.fabmax.kool.modules.globe
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.SphericalInputTransform
 import kotlin.math.PI
 import kotlin.math.acos
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
-    private val pickRay = Ray()
-    private val tmpVec = MutableVec3d()
-    private val tmpRayO = MutableVec3d()
-    private val tmpRayL = MutableVec3d()
+class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : SphericalInputTransform() {
 
     private val globePan = GlobePan()
 
     init {
         globe.onPreRender += { onPreRender(it) }
+
+        // panning is handled by the globe itself (by rotating it's parent transform group around the globe center)
+        // therefore we configure the camera transform to center-zoom and no panning
+        // this way camera center is always at (0, 0, 0) in world coordinates
+        leftDragMethod = SphericalInputTransform.DragMethod.NONE
+        rightDragMethod = SphericalInputTransform.DragMethod.ROTATE
+        zoomMethod = SphericalInputTransform.ZoomMethod.ZOOM_CENTER
+
+        // zoom range is quite large: 20 meters to 20000 km above surface
+        minZoom = 2e1f
+        maxZoom = 2e7f
+
+        verticalAxis = Vec3f.Z_AXIS
+        minHorizontalRot = 0f
+        maxHorizontalRot = 85f
+
+        resetZoom(1e7f)
+
+        +scene.camera
+        updateTransform()
+        scene.camera.updateCamera(ctx)
+
+        scene.registerDragHandler(this)
     }
 
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext): Int {
+        super.handleDrag(dragPtrs, ctx)
+
         if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(ctx)) {
             val ptr = dragPtrs[0]
             val startPan = ptr.isLeftButtonEvent && ptr.isLeftButtonDown
@@ -48,12 +71,26 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
     }
 
     private inner class GlobePan {
+        val pickRay = Ray()
+        val tmpVec = MutableVec3d()
+        val tmpRayO = MutableVec3d()
+        val tmpRayL = MutableVec3d()
+
+        val hitPosWorld = MutableVec3d()
+
         val screenPosStart = MutableVec2f()
         val screenPos = MutableVec2f()
         val globeCoordsStart = MutableVec2d()
         val globeCoords = MutableVec2d()
         val globeCenter = MutableVec2d()
+        var startDist = 0.0
+        var startZoom = 0f
         var isValid = false
+
+        val cam
+            get() = globe.scene?.camera!!
+        val camTransform
+            get() = cam.parent as SphericalInputTransform
 
         fun start(screenX: Float, screenY: Float, ctx: KoolContext) {
             globeCenter.set(globe.centerLon, globe.centerLat)
@@ -62,6 +99,8 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
             screenPos.set(screenPosStart)
 
             if (screen2LatLon(screenX, screenY, globeCoordsStart, ctx)) {
+                startDist = cam.globalPos.toMutableVec3d(tmpVec).distance(hitPosWorld)
+                startZoom = camTransform.zoom
                 globeCoords.set(globeCoordsStart)
             }
             isValid = true
@@ -73,6 +112,19 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
                     globeCenter.x += (globeCoordsStart.x - globeCoords.x)
                     globeCenter.y = (globeCenter.y + (globeCoordsStart.y - globeCoords.y)).clamp(-85.0, 85.0)
                 }
+                //applyZoom()
+            }
+        }
+
+        private fun applyZoom() {
+            cam.globalPos.toMutableVec3d(tmpRayO)
+            cam.globalLookDir.toMutableVec3d(tmpRayL).norm()
+
+            val d = hitDistSphere(tmpRayO, tmpRayL, hitPosWorld, startDist)
+            if (d < Double.MAX_VALUE) {
+                //val dd = d.toFloat().clamp(camTransform.zoom / -2, camTransform.zoom / 2)
+                camTransform.resetZoom(camTransform.zoom - d.toFloat() / 4)
+                println("startDist = $startDist, d = $d")
             }
         }
 
@@ -80,8 +132,8 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
          * Compute latitude / longitude for the given screen coordinate. Result coordinate is stored in
          * result vec: x = longitude in degrees, y = latitude in degrees
          */
-        fun screen2LatLon(screenX: Float, screenY: Float, result: MutableVec2d, ctx: KoolContext): Boolean {
-            if (globe.scene?.camera?.computePickRay(pickRay, screenX, screenY, ctx) == true) {
+        private fun screen2LatLon(screenX: Float, screenY: Float, result: MutableVec2d, ctx: KoolContext): Boolean {
+            if (cam.computePickRay(pickRay, screenX, screenY, ctx)) {
                 // compute origin and direction of pick ray in globe coordinates
                 pickRay.origin.toMutableVec3d(tmpRayO)
                 pickRay.direction.toMutableVec3d(tmpRayL)
@@ -96,15 +148,34 @@ class GlobeDragHandler(val globe: Globe) : InputManager.DragHandler {
                 if (sqr > 0) {
                     val hitDist = -ldo - sqrt(sqr)
                     // compute ray hit point in globe coordinates and store it in tmpVec
-                    tmpRayL.scale(hitDist, tmpVec).add(tmpRayO)
+                    tmpRayL.scale(hitDist, hitPosWorld).add(tmpRayO)
 
-                    result.x = atan2(tmpVec.x, tmpVec.z).toDeg()
-                    result.y = (PI * 0.5 - acos(tmpVec.y / radius)).toDeg()
+                    result.x = atan2(hitPosWorld.x, hitPosWorld.z).toDeg()
+                    result.y = (PI * 0.5 - acos(hitPosWorld.y / radius)).toDeg()
+                    globe.toGlobalCoordsDp(hitPosWorld)
 
                     return true
                 }
             }
             return false
+        }
+
+        private fun hitDistSphere(orig: Vec3d, dir: Vec3d, center: Vec3d, radius: Double): Double {
+            center.subtract(orig, tmpVec)
+
+            val tc = tmpVec * dir
+            if (tc < 0) {
+                return Double.MAX_VALUE
+            }
+
+            val rSqr = radius * radius
+            val dSqr = tmpVec.sqrLength() - (tc * tc)
+            if (dSqr > rSqr) {
+                return Double.MAX_VALUE
+            }
+
+            val t1c = sqrt(rSqr - dSqr)
+            return tc - t1c
         }
     }
 }

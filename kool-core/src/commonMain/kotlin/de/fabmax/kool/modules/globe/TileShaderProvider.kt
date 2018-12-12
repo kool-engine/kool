@@ -15,13 +15,16 @@ interface TileShaderProvider {
 class TileShader(val shader: Shader, val attribution: TileMesh.AttributionInfo)
 
 abstract class TexImageTileShaderProvider : TileShaderProvider {
+    protected var specularIntensity = 0.25f
+    protected var shininess = 25f
+
     override fun getShader(tileName: TileName, ctx: KoolContext): TileShader{
         val shader = basicShader {
             colorModel = ColorModel.TEXTURE_COLOR
             lightModel = LightModel.PHONG_LIGHTING
 
-            specularIntensity = 0.25f
-            shininess = 25f
+            specularIntensity = this@TexImageTileShaderProvider.specularIntensity
+            shininess = this@TexImageTileShaderProvider.shininess
             texture = getTexture(tileName, ctx)
         }
         return TileShader(shader, getAttributionInfo(tileName))
@@ -33,11 +36,8 @@ abstract class TexImageTileShaderProvider : TileShaderProvider {
 }
 
 open class OsmTexImageTileShaderProvider : TexImageTileShaderProvider() {
-    protected val tileUrls = mutableListOf("a.tile.openstreetmap.org", "b.tile.openstreetmap.org", "c.tile.openstreetmap.org")
-
     override fun getTexture(tileName: TileName, ctx: KoolContext): Texture {
-        val srvIdx = (tileName.x xor tileName.y xor tileName.zoom) % tileUrls.size
-        return assetTexture("https://${tileUrls[srvIdx]}/${tileName.zoom}/${tileName.x}/${tileName.y}.png")
+        return assetTexture("https://tile.openstreetmap.org/${tileName.zoom}/${tileName.x}/${tileName.y}.png")
     }
 
     override fun getAttributionInfo(tileName: TileName): TileMesh.AttributionInfo =

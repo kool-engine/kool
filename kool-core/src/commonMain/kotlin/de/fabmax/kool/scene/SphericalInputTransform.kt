@@ -222,14 +222,11 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext): Int {
         if (!dragPtrs.isEmpty() && dragPtrs[0].isInViewport(ctx)) {
             if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
-                if (dragPtrs[0].isLeftButtonDown) {
-                    dragMethod = leftDragMethod
-                } else if (dragPtrs[0].isRightButtonDown) {
-                    dragMethod = rightDragMethod
-                } else if (dragPtrs[0].isMiddleButtonDown) {
-                    dragMethod = middleDragMethod
-                } else {
-                    dragMethod = DragMethod.NONE
+                dragMethod = when {
+                    dragPtrs[0].isLeftButtonDown -> leftDragMethod
+                    dragPtrs[0].isRightButtonDown -> rightDragMethod
+                    dragPtrs[0].isMiddleButtonDown -> middleDragMethod
+                    else -> DragMethod.NONE
                 }
                 dragStart = dragMethod != DragMethod.NONE
             }
@@ -278,7 +275,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
             var t = 0f
             while (t < deltaT) {
-                val dt = min(0.05f, (deltaT - t).toFloat())
+                val dt = min(0.05f, (deltaT - t))
                 t += dt + 0.001f
 
                 val err = desired - actual
