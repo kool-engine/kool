@@ -41,7 +41,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     val treeScene = scene {
         lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-        +makeGroundGrid(40, lighting.shadowMap)
+        +makeGroundGrid(40)
 
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {
@@ -54,7 +54,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             shader = basicShader {
                 colorModel = ColorModel.TEXTURE_COLOR
                 lightModel = LightModel.PHONG_LIGHTING
-                shadowMap = lighting.shadowMap
+                isReceivingShadows = true
                 isNormalMapped = true
                 specularIntensity = 0.25f
 
@@ -79,7 +79,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             shader = basicShader {
                 colorModel = ColorModel.TEXTURE_COLOR
                 lightModel = LightModel.PHONG_LIGHTING
-                shadowMap = lighting.shadowMap
+                isReceivingShadows = true
                 specularIntensity = 0.1f
                 isDiscardTranslucent = true
                 texture = assetTexture("leaf.png")

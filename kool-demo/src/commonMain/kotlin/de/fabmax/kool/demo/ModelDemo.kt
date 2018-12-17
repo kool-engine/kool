@@ -2,6 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.PreferredShadowMethod
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
@@ -23,7 +24,7 @@ import kotlin.math.sqrt
 fun modelScene(ctx: KoolContext): Scene = scene {
     lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-    +makeGroundGrid(40, lighting.shadowMap)
+    +makeGroundGrid(40)
 
     // add animated character model
     +transformGroup {
@@ -48,7 +49,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                 lightModel = LightModel.PHONG_LIGHTING
                 colorModel = ColorModel.STATIC_COLOR
                 staticColor = Color.GRAY
-                shadowMap = lighting.shadowMap
+                isReceivingShadows = true
 
                 if (!mesh.isCpuAnimated) {
                     // do mesh animation on vertex shader if available.
@@ -92,11 +93,25 @@ fun modelScene(ctx: KoolContext): Scene = scene {
 
         +embeddedUi(dps(400f)) {
             globalWidth = 0.75f
-            globalHeight = 1f
+            globalHeight = 1.25f
 
             content.apply {
                 rotate(90f, Vec3f.X_AXIS)
                 translate(0.5f, 1.2f, 0f)
+
+                +ToggleButton("Shadow on / off", root).apply {
+                    layoutSpec.setOrigin(uns(0f), dps(190f), uns(0f))
+                    layoutSpec.setSize(pcs(100f), dps(35f), uns(0f))
+
+                    onStateChange += {
+                        ctx.renderingHints.preferredShadowMethod = if (isEnabled) {
+                            PreferredShadowMethod.CASCADED_SHADOW_MAP
+                        } else {
+                            PreferredShadowMethod.NO_SHADOW
+                        }
+                        ctx.applyRenderingHints()
+                    }
+                }
 
                 +Label("label1", root).apply {
                     layoutSpec.setOrigin(uns(0f), dps(140f), uns(0f))

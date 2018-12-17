@@ -90,8 +90,14 @@ class Uniform1i(name: String) : Uniform<IntArray>(name, IntArray(1)) {
     }
 }
 
-class Uniform1iv(name: String, size: Int) : Uniform<IntArray>(name, IntArray(size)) {
+class Uniform1iv(name: String) : Uniform<IntArray>(name, IntArray(0)) {
     override val type = "int"
+
+    fun setSize(size: Int) {
+        if (size != value.size) {
+            value = IntArray(size)
+        }
+    }
 
     override fun doBind(ctx: KoolContext) {
         glUniform1iv(location, value)
@@ -106,8 +112,14 @@ class Uniform1f(name: String) : Uniform<FloatArray>(name, FloatArray(1)) {
     }
 }
 
-class Uniform1fv(name: String, size: Int) : Uniform<FloatArray>(name, FloatArray(size)) {
+class Uniform1fv(name: String) : Uniform<FloatArray>(name, FloatArray(0)) {
     override val type = "float"
+
+    fun setSize(size: Int) {
+        if (size != value.size) {
+            value = FloatArray(size)
+        }
+    }
 
     override fun doBind(ctx: KoolContext) {
         glUniform1fv(location, value)

@@ -11,10 +11,9 @@ import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.ShadowMap
 
 
-class BoxMesh(val box: RigidBody, boxColor: Color = Color.MD_GREY, sceneShadows: ShadowMap? = null) :
+class BoxMesh(val box: RigidBody, boxColor: Color = Color.MD_GREY) :
         Mesh(MeshData(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS), box.name) {
 
     private val boundsMin = MutableVec3f()
@@ -33,7 +32,7 @@ class BoxMesh(val box: RigidBody, boxColor: Color = Color.MD_GREY, sceneShadows:
         shader = basicShader {
             colorModel = ColorModel.VERTEX_COLOR
             lightModel = LightModel.PHONG_LIGHTING
-            shadowMap = sceneShadows
+            isReceivingShadows = true
             specularIntensity = 0.4f
         }
     }

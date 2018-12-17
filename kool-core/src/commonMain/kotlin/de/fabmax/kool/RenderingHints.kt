@@ -1,9 +1,10 @@
-package de.fabmax.kool.shading
+package de.fabmax.kool
 
-data class ShadingHints(
-        var preferredLightModel: PreferredLightModel,
-        var preferredShadowMethod: PreferredShadowMethod
-)
+class RenderingHints {
+    var preferredLightModel: PreferredLightModel = PreferredLightModel.PHONG
+
+    var preferredShadowMethod: PreferredShadowMethod = PreferredShadowMethod.NO_SHADOW
+}
 
 enum class PreferredLightModel(val level: Int) {
     NO_LIGHTING(0),

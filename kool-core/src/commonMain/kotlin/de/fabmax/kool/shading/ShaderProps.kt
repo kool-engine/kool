@@ -3,7 +3,6 @@ package de.fabmax.kool.shading
 import de.fabmax.kool.CubeMapTexture
 import de.fabmax.kool.Texture
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
 
 enum class LightModel {
     PHONG_LIGHTING,
@@ -27,6 +26,7 @@ class ShaderProps {
     var lightModel = LightModel.PHONG_LIGHTING
     var colorModel = ColorModel.STATIC_COLOR
         set(value) {
+            field = value
             when (value) {
                 ColorModel.VERTEX_COLOR -> { isVertexColor = true; isTextureColor = false; isStaticColor = false }
                 ColorModel.TEXTURE_COLOR -> { isVertexColor = false; isTextureColor = true; isStaticColor = false }
@@ -48,9 +48,10 @@ class ShaderProps {
 
     var isInstanced = false
 
-    var shadowMap: ShadowMap? = null
+    //var shadowMap: ShadowMap? = null
     var shadowDepthOffset = 0.0005
 
+    var isReceivingShadows = false
     var isNormalMapped = false
     var isEnvironmentMapped = false
 

@@ -11,9 +11,8 @@ import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
 
-fun makeGroundGrid(cells: Int, shadows: ShadowMap? = null, y: Float = 0f): Node {
+fun makeGroundGrid(cells: Int, y: Float = 0f): Node {
     val groundExt = cells / 2
 
     return textureMesh(isNormalMapped = true) {
@@ -39,7 +38,7 @@ fun makeGroundGrid(cells: Int, shadows: ShadowMap? = null, y: Float = 0f): Node 
         shader = basicShader {
             lightModel = LightModel.PHONG_LIGHTING
             colorModel = ColorModel.TEXTURE_COLOR
-            shadowMap = shadows
+            isReceivingShadows = true
             isNormalMapped = true
 
             specularIntensity = 0.25f

@@ -54,8 +54,8 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
         }
     }
 
-    override fun onBind(ctx: KoolContext) {
-        super.onBind(ctx)
+    override fun onBind(node: Node, ctx: KoolContext) {
+        super.onBind(node, ctx)
         val helper = blurHelper
         if (helper != null) {
             helper.isInUse = true
@@ -219,7 +219,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         ctx.clearColor = Color.BLACK
         ctx.applyAttributes()
 
-        ctx.shaderMgr.bindShader(null, ctx)
+        ctx.shaderMgr.clearShader(ctx)
         ctx.mvpState.pushMatrices()
         ctx.mvpState.projMatrix.setIdentity()
         ctx.mvpState.viewMatrix.setIdentity()
@@ -278,7 +278,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         val uTexture = addUniform(UniformTexture2D("uTexture"))
         val uDirection = addUniform(Uniform2f("uDirection"))
 
-        override fun generate(ctx: KoolContext) {
+        override fun generate(node: Node, ctx: KoolContext) {
             attributes.add(Attribute.POSITIONS)
             attributes.add(Attribute.TEXTURE_COORDS)
 
@@ -337,7 +337,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
             source = Source(vs, fs)
         }
 
-        override fun onBind(ctx: KoolContext) {
+        override fun onBind(node: Node, ctx: KoolContext) {
             uTexture.bind(ctx)
             uDirection.bind(ctx)
         }

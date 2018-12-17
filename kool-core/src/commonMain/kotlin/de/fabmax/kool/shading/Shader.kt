@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Node
 
 /**
  * Base class for custom shader implementations.
@@ -25,7 +26,7 @@ abstract class Shader : GlObject<ProgramResource>() {
     val attributes = mutableSetOf<Attribute>()
     val uniforms = mutableMapOf<String, Uniform<*>>()
 
-    abstract fun generate(ctx: KoolContext)
+    abstract fun generate(node: Node, ctx: KoolContext)
 
     /**
      * Checks if this Shader is currently bound.
@@ -40,10 +41,11 @@ abstract class Shader : GlObject<ProgramResource>() {
      * Loads / compiles the shader program. Is called automatically when the shader is bound for
      * the first time and it is not already loaded.
      *
-     * @param ctx    the graphics engine context
+     * @param node    the node this shader is bound to
+     * @param ctx     the graphics engine context
      */
-    open fun onLoad(ctx: KoolContext) {
-        generate(ctx)
+    open fun onLoad(node: Node, ctx: KoolContext) {
+        generate(node, ctx)
         res = ctx.shaderMgr.createShader(source, ctx)
 
         attributeLocations.clear()
@@ -60,9 +62,10 @@ abstract class Shader : GlObject<ProgramResource>() {
      * Is called when the shader is bound. Implementations should update all their shader uniforms
      * here.
      *
-     * @param ctx    the graphics engine context
+     * @param node    the node this shader is bound to
+     * @param ctx     the graphics engine context
      */
-    abstract fun onBind(ctx: KoolContext)
+    abstract fun onBind(node: Node, ctx: KoolContext)
 
     /**
      * Is called on the currently bound shader when the MVP matrix has changed. Implementations should update their

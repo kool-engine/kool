@@ -106,7 +106,7 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val tex
         fbo.unbind(ctx)
 
         // force re-binding shaders
-        ctx.shaderMgr.bindShader(null, ctx)
+        ctx.shaderMgr.clearShader(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {

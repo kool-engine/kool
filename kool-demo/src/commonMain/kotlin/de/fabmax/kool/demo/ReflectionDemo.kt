@@ -31,7 +31,7 @@ fun reflectionDemo(ctx: KoolContext): List<Scene> {
             resetZoom(20f)
         }
 
-        +makeGroundGrid(100, null).also { reflectedObjects += it }
+        +makeGroundGrid(100).also { reflectedObjects += it }
 
         val mesh = colorMesh {
             generator = {

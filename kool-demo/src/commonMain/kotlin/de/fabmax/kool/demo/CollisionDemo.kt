@@ -53,7 +53,7 @@ fun basicCollisionDemo(): List<Scene> {
                 for (j in 0 until ARRAY_SIZE_Z) {
                     world.bodies += uniformMassBox(.2f, .2f, .2f, 1f).apply {
                         centerOfMass.set(0.2f * i, 2 + 0.2f*k, 0.2f * j)
-                        this@scene += BoxMesh(this, BOX_COLORS[c++ % BOX_COLORS.size])
+                        this@scene += BoxMesh(this, Color.MD_COLORS[c++ % Color.MD_COLORS.size])
                     }
                 }
             }
@@ -98,7 +98,7 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
             shader = basicShader {
                 lightModel = LightModel.NO_LIGHTING
                 colorModel = ColorModel.VERTEX_COLOR
-                shadowMap = lighting.shadowMap
+                isReceivingShadows = true
             }
         }
     }
@@ -223,7 +223,7 @@ class BoxWorld(private val shadowMap: ShadowMap?): Group() {
             }
             world.bodies += box
             //this += BoxMesh(box, BOX_COLORS[rand.randomI(0, BOX_COLORS.size-1)], shadowMap)
-            this += BoxMesh(box, BOX_COLORS[i % BOX_COLORS.size], shadowMap)
+            this += BoxMesh(box, Color.MD_COLORS[i % Color.MD_COLORS.size])
         }
         createGround()
     }
@@ -254,40 +254,30 @@ class BoxWorld(private val shadowMap: ShadowMap?): Group() {
             centerOfMass.set(0f, -0.5f, 0f)
         }
         world.bodies += groundBox
-        this += BoxMesh(groundBox, Color.MD_GREY, shadowMap)
+        this += BoxMesh(groundBox, Color.MD_GREY)
 
         val borderLt = staticBox(1f, 4f, 50f).apply {
             centerOfMass.set(-25.5f, 2f, 0f)
         }
         world.bodies += borderLt
-        this += BoxMesh(borderLt, Color.MD_ORANGE, shadowMap)
+        this += BoxMesh(borderLt, Color.MD_ORANGE)
 
         val borderRt = staticBox(1f, 4f, 50f).apply {
             centerOfMass.set(25.5f, 2f, 0f)
         }
         world.bodies += borderRt
-        this += BoxMesh(borderRt, Color.MD_ORANGE, shadowMap)
+        this += BoxMesh(borderRt, Color.MD_ORANGE)
 
         val borderBk = staticBox(52f, 4f, 1f).apply {
             centerOfMass.set(0f, 2f, -25.5f)
         }
         world.bodies += borderBk
-        this += BoxMesh(borderBk, Color.MD_ORANGE, shadowMap)
+        this += BoxMesh(borderBk, Color.MD_ORANGE)
 
         val borderFt = staticBox(52f, 4f, 1f).apply {
             centerOfMass.set(0f, 2f, 25.5f)
         }
         world.bodies += borderFt
-        this += BoxMesh(borderFt, Color.MD_ORANGE, shadowMap)
+        this += BoxMesh(borderFt, Color.MD_ORANGE)
     }
 }
-
-
-private val BOX_COLORS = listOf(Color.MD_YELLOW, Color.MD_AMBER, Color.MD_ORANGE, Color.MD_DEEP_ORANGE, Color.MD_RED,
-        Color.MD_PINK, Color.MD_PURPLE, Color.MD_DEEP_PURPLE, Color.MD_INDIGO, Color.MD_BLUE,
-        Color.MD_LIGHT_BLUE, Color.MD_CYAN, Color.MD_TEAL, Color.MD_GREEN, Color.MD_LIGHT_GREEN, Color.MD_LIME)
-
-//private val BOX_COLORS = listOf(Color.MD_AMBER_500, Color.MD_BLUE_500, Color.MD_BROWN_500, Color.MD_CYAN_500,
-//        Color.MD_GREEN_500, Color.MD_INDIGO_500, Color.MD_LIME_500, Color.MD_ORANGE_500, Color.MD_PINK_500,
-//        Color.MD_PURPLE_500, Color.MD_RED_500, Color.MD_TEAL_500, Color.MD_YELLOW_500, Color.MD_DEEP_ORANGE_500,
-//        Color.MD_DEEP_PURPLE_500, Color.MD_LIGHT_BLUE_500, Color.MD_LIGHT_GREEN_500, Color.MD_BLUE_GREY_500)

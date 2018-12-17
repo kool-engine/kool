@@ -18,16 +18,17 @@ abstract class KoolContext {
     abstract val glCapabilities: GlCapabilities
 
     abstract val assetMgr: AssetManager
+
     val inputMgr = InputManager()
     val memoryMgr = MemoryManager()
     val shaderMgr = ShaderManager()
     val textureMgr = TextureManager()
 
+    val renderingHints = RenderingHints()
+    var renderPass = RenderPass.SCREEN
     val mvpState = MvpState()
 
     val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()
-
-    var renderPass = RenderPass.SCREEN
 
     /**
      * Run time of this render context in seconds. This is the wall clock time between now and the first time render()
@@ -57,10 +58,10 @@ abstract class KoolContext {
     val scenes: MutableList<Scene> = mutableListOf()
 
     private val attribs = Attribs()
-    private val attribsStack = Array(16, { Attribs() })
+    private val attribsStack = Array(16) { Attribs() }
     private var attribsStackIdx = 0
 
-    private val frameTimes = DoubleArray(25, { 0.017 })
+    private val frameTimes = DoubleArray(25) { 0.017 }
 
     abstract val windowWidth: Int
     abstract val windowHeight: Int
@@ -124,7 +125,13 @@ abstract class KoolContext {
     }
 
     fun applyAttributes() {
+        checkIsGlThread()
         attribs.apply()
+    }
+
+    fun applyRenderingHints() {
+        checkIsGlThread()
+        shaderMgr.applyRenderingHints(renderingHints, this)
     }
 
     private class Attribs {
@@ -206,7 +213,7 @@ abstract class KoolContext {
     }
 }
 
-enum class RenderPass(val increaseTime: Boolean) {
-    SHADOW(false),
-    SCREEN(true)
+enum class RenderPass {
+    SHADOW,
+    SCREEN
 }

@@ -35,7 +35,7 @@ fun instancedDemo(ctx: KoolContext): Scene = scene {
     // create a custom shadow map with reduced maximum distance (increases shadow resolution)
     lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
 
-    +makeGroundGrid(100, lighting.shadowMap)
+    +makeGroundGrid(100)
 
     +transformGroup {
         // model uses z-axis as up-axis, rotate it accordingly
@@ -50,7 +50,7 @@ fun instancedDemo(ctx: KoolContext): Scene = scene {
             val model = ModelData.load(data).meshes[0].toMesh() as Armature
 
             for (i in 1..5) {
-                +spawnMesh(model, lighting.shadowMap, randomF(0.2f, 0.6f))
+                +spawnMesh(model, randomF(0.2f, 0.6f))
             }
         }
     }
@@ -66,7 +66,7 @@ private fun computeAnimationWeights(speed: Float): Map<String, Float> {
     return mapOf("Armature|idle" to idleWeight, "Armature|walk" to walkWeight, "Armature|run" to runWeight)
 }
 
-private fun spawnMesh(proto: Armature, shadows: ShadowMap?, movementSpeed: Float): Armature {
+private fun spawnMesh(proto: Armature, movementSpeed: Float): Armature {
     // create custom model instances
     val instances = InstancedMesh.Instances<ModelInstance>(100)
 
@@ -87,7 +87,7 @@ private fun spawnMesh(proto: Armature, shadows: ShadowMap?, movementSpeed: Float
     mesh.shader = ModelShader {
         lightModel = LightModel.PHONG_LIGHTING
         colorModel = ColorModel.CUSTOM_COLOR
-        shadowMap = shadows
+        isReceivingShadows = true
         isInstanced = true
 
         if (!mesh.isCpuAnimated) {

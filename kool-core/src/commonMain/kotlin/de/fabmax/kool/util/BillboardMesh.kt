@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.shading.*
 
 /**
@@ -61,8 +62,8 @@ class BillboardShader internal constructor(props: ShaderProps, generator: GlslGe
         }
     }
 
-    override fun onBind(ctx: KoolContext) {
-        super.onBind(ctx)
+    override fun onBind(node: Node, ctx: KoolContext) {
+        super.onBind(node, ctx)
         uViewportSz.value.set(0.5f * ctx.viewport.width.toFloat() / billboardSize,
                 0.5f * ctx.viewport.height.toFloat() / billboardSize)
         uViewportSz.bind(ctx)

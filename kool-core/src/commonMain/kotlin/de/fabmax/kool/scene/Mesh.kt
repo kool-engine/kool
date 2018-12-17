@@ -124,7 +124,9 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
-        if (!isRendered || (!ctx.isDepthTest && ctx.renderPass == RenderPass.SHADOW)) {
+
+        val shader = this.shader
+        if (!isRendered || shader == null || (!ctx.isDepthTest && ctx.renderPass == RenderPass.SHADOW)) {
             // mesh is not visible (either hidden or outside frustum)
             return
         }
@@ -136,7 +138,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         }
 
         // bind shader for this mesh
-        ctx.shaderMgr.bindShader(shader, ctx)
+        ctx.shaderMgr.bindShader(shader, this, ctx)
 
         // setup shader for mesh rendering, the active shader is not necessarily mMeshShader
         ctx.shaderMgr.boundShader?.let { boundShader ->
