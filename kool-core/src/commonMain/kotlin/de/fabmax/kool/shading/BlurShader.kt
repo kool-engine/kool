@@ -44,7 +44,7 @@ class BlurShader internal constructor(props: ShaderProps, generator: GlslGenerat
         generator.customUniforms += uTexSz
 
         generator.injectors += object : GlslGenerator.GlslInjector {
-            override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+            override fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                 text.append("vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ")
                         .append("1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n")
                         .append("${ctx.glCapabilities.glslDialect.fragColorBody} = ${ctx.glCapabilities.glslDialect.texSampler}(")

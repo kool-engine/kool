@@ -24,7 +24,7 @@ interface ShadowMap : Disposable {
     fun getClipSpaceFarZ(map: Int): Float
 }
 
-class SimpleShadowMap(val near: Float = 0f, val far: Float = 1f, private val texSize: Int = defaultMapSize) : ShadowMap {
+class SimpleShadowMap(val near: Float = 0f, val far: Float = 100f, private val texSize: Int = defaultMapSize) : ShadowMap {
     override val numMaps = 1
     override val shadowMvp = createFloat32Buffer(16)
 
@@ -159,11 +159,11 @@ class CascadedShadowMap(private val subMaps: Array<SimpleShadowMap>) : ShadowMap
     override fun getClipSpaceFarZ(map: Int) = subMaps[map].getClipSpaceFarZ(0)
 
     companion object {
-        fun defaultCascadedShadowMap3(texSize: Int = SimpleShadowMap.defaultMapSize): CascadedShadowMap {
+        fun defaultCascadedShadowMap3(range: Float = 100f, texSize: Int = SimpleShadowMap.defaultMapSize): CascadedShadowMap {
             val subMaps = arrayOf(
-                    SimpleShadowMap(0f, 10f, texSize),
-                    SimpleShadowMap(10f, 30f, texSize),
-                    SimpleShadowMap(30f, 100f, texSize)
+                    SimpleShadowMap(0f, 0.1f * range, texSize),
+                    SimpleShadowMap(0.1f * range, 0.3f * range, texSize),
+                    SimpleShadowMap(0.3f * range, range, texSize)
             )
             return CascadedShadowMap(subMaps)
         }

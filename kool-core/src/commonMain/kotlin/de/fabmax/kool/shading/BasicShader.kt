@@ -93,6 +93,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         val shadowMap = node.scene?.lighting?.shadowMap
         uShadowTexSz.setSize(shadowMap?.numMaps ?: 0)
         uClipSpaceFarZ.setSize(shadowMap?.numMaps ?: 0)
+        uShadowTex.clear()
         if (shadowMap != null) {
             uShadowMvp.value = shadowMap.shadowMvp
             for (i in 0 until shadowMap.numMaps) {
@@ -103,7 +104,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
             }
         }
 
-        source = generator.generate(props, node.scene!!, ctx)
+        source = generator.generate(props, node, ctx)
 
         attributes.clear()
         attributes.add(Attribute.POSITIONS)
@@ -212,7 +213,7 @@ open class BasicPointShader internal constructor(props: ShaderProps, generator: 
     init {
         generator.customUniforms += uPointSz
         generator.injectors += object : GlslGenerator.GlslInjector {
-            override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+            override fun vsAfterProj(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                 text.append("gl_PointSize = ${BasicPointShader.U_POINT_SIZE};\n")
             }
         }

@@ -42,8 +42,9 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
         }
     }
 
-    internal fun applyRenderingHints(hints: RenderingHints, ctx: KoolContext) {
-
+    internal fun onRenderingHintsChanged(ctx: KoolContext) {
+        // invalidate all shaders
+        deleteAllResources(ctx)
     }
 
     internal fun createShader(source: Shader.Source, ctx: KoolContext): ProgramResource {

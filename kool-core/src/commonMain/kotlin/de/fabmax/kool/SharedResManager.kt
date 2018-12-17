@@ -31,6 +31,14 @@ abstract class SharedResManager<K, R> {
     protected abstract fun createResource(key: K, ctx: KoolContext): R
     protected abstract fun deleteResource(key: K, res: R, ctx: KoolContext)
 
+    fun deleteAllResources(ctx: KoolContext) {
+        resources.forEach { (key, sharedRes) ->
+            deleteResource(key, sharedRes.resource, ctx)
+            sharedRes.refCount = 0
+        }
+        resources.clear()
+    }
+
     protected class SharedResource<out R>(val resource: R) {
         var refCount = 0
     }

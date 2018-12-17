@@ -48,22 +48,22 @@ class Skybox(camera: Camera, var environmentMap: CubeMapTexture) : Scene() {
         init {
             generator.customUniforms += projMatrix
             generator.injectors += object : GlslGenerator.GlslInjector {
-                override fun vsAfterInput(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+                override fun vsAfterInput(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                     text.append("${generator.vsOut} vec3 texCoord;\n")
                 }
 
-                override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+                override fun vsAfterProj(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                     text.append("texCoord = ${Attribute.POSITIONS};\n")
                     text.append("vec4 pos = uProjMatrix * mat4(mat3(${GlslGenerator.U_VIEW_MATRIX})) * vec4(${Attribute.POSITIONS}, 1.0);\n")
                     text.append("gl_Position = pos.xyww;\n")
                 }
 
-                override fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+                override fun fsAfterInput(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                     text.append("${generator.fsIn} vec3 texCoord;\n")
                     text.append("uniform samplerCube ${GlslGenerator.U_ENVIRONMENT_MAP};\n")
                 }
 
-                override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+                override fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                     text.append("${generator.fsOutBody} = texture(${GlslGenerator.U_ENVIRONMENT_MAP}, texCoord);\n")
                 }
             }

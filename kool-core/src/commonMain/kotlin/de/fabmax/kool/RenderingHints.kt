@@ -1,19 +1,30 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.util.CascadedShadowMap
+import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.SimpleShadowMap
+
 class RenderingHints {
-    var preferredLightModel: PreferredLightModel = PreferredLightModel.PHONG
-
-    var preferredShadowMethod: PreferredShadowMethod = PreferredShadowMethod.NO_SHADOW
+    var shadowRange = 100f
+    var shadowPreset: ShadowPreset = ShadowPreset.SHADOW_HIGH
 }
 
-enum class PreferredLightModel(val level: Int) {
-    NO_LIGHTING(0),
-    GOURAUD(1),
-    PHONG(2)
-}
+enum class ShadowPreset {
+    SHADOW_OFF {
+        override fun createShadowMap(hints: RenderingHints): ShadowMap? = null
+    },
+    SHADOW_LOW {
+        override fun createShadowMap(hints: RenderingHints): ShadowMap? = SimpleShadowMap(0f, hints.shadowRange)
+    },
+    SHADOW_MEDIUM {
+        override fun createShadowMap(hints: RenderingHints): ShadowMap? = SimpleShadowMap(0f, hints.shadowRange, 4096)
+    },
+    SHADOW_HIGH {
+        override fun createShadowMap(hints: RenderingHints): ShadowMap? = CascadedShadowMap.defaultCascadedShadowMap3(hints.shadowRange)
+    },
+    SHADOW_ULTRA {
+        override fun createShadowMap(hints: RenderingHints): ShadowMap? = CascadedShadowMap.defaultCascadedShadowMap3(hints.shadowRange, 4096)
+    };
 
-enum class PreferredShadowMethod(val level: Int) {
-    NO_SHADOW(0),
-    SINGLE_SHADOW_MAP(1),
-    CASCADED_SHADOW_MAP(2)
+    abstract fun createShadowMap(hints: RenderingHints): ShadowMap?
 }

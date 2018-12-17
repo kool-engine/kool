@@ -5,6 +5,7 @@ import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.defaultProps
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.GlslGenerator
 import de.fabmax.kool.shading.ShaderProps
@@ -30,7 +31,7 @@ fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): Bas
     // inject shader code to take color from static color and alpha from texture
     // static color rgb has to be pre-multiplied with texture alpha
     generator.injectors += object: GlslGenerator.GlslInjector {
-        override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+        override fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
             text.append("${ctx.glCapabilities.glslDialect.fragColorBody} = ${GlslGenerator.L_VERTEX_COLOR} * ${GlslGenerator.L_TEX_COLOR}.a;\n")
         }
     }

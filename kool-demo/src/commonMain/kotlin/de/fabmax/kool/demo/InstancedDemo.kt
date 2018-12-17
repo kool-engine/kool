@@ -33,7 +33,7 @@ fun instancedDemo(ctx: KoolContext): Scene = scene {
     }
 
     // create a custom shadow map with reduced maximum distance (increases shadow resolution)
-    lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
+    lighting.useDefaultShadowMap(ctx)
 
     +makeGroundGrid(100)
 
@@ -162,19 +162,19 @@ private class ModelShader(props: ShaderProps.() -> Unit) :
         generator.customAttributes += INSTANCE_COLOR
 
         generator.injectors += object : GlslGenerator.GlslInjector {
-            override fun vsAfterInput(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+            override fun vsAfterInput(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                 text.append("flat ${generator.vsOut} vec4 inst_color;\n")
             }
 
-            override fun vsEnd(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+            override fun vsEnd(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                 text.append("inst_color = ${INSTANCE_COLOR.glslSrcName};\n")
             }
 
-            override fun fsAfterInput(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+            override fun fsAfterInput(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                 text.append("flat ${generator.fsIn} vec4 inst_color;\n")
             }
 
-            override fun fsAfterSampling(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+            override fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                 text.append("${generator.fsOutBody} = inst_color;\n")
             }
         }

@@ -2,7 +2,6 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.PreferredShadowMethod
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
@@ -12,7 +11,6 @@ import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.serialization.ModelData
 import kotlin.math.sqrt
@@ -22,7 +20,7 @@ import kotlin.math.sqrt
  */
 
 fun modelScene(ctx: KoolContext): Scene = scene {
-    lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
+    lighting.useDefaultShadowMap(ctx)
 
     +makeGroundGrid(40)
 
@@ -93,25 +91,11 @@ fun modelScene(ctx: KoolContext): Scene = scene {
 
         +embeddedUi(dps(400f)) {
             globalWidth = 0.75f
-            globalHeight = 1.25f
+            globalHeight = 1f
 
             content.apply {
                 rotate(90f, Vec3f.X_AXIS)
                 translate(0.5f, 1.2f, 0f)
-
-                +ToggleButton("Shadow on / off", root).apply {
-                    layoutSpec.setOrigin(uns(0f), dps(190f), uns(0f))
-                    layoutSpec.setSize(pcs(100f), dps(35f), uns(0f))
-
-                    onStateChange += {
-                        ctx.renderingHints.preferredShadowMethod = if (isEnabled) {
-                            PreferredShadowMethod.CASCADED_SHADOW_MAP
-                        } else {
-                            PreferredShadowMethod.NO_SHADOW
-                        }
-                        ctx.applyRenderingHints()
-                    }
-                }
 
                 +Label("label1", root).apply {
                     layoutSpec.setOrigin(uns(0f), dps(140f), uns(0f))

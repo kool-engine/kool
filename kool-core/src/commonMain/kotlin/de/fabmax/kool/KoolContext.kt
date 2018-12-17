@@ -131,7 +131,10 @@ abstract class KoolContext {
 
     fun applyRenderingHints() {
         checkIsGlThread()
-        shaderMgr.applyRenderingHints(renderingHints, this)
+        // apply scene specific hints (shadow map type, etc.)
+        scenes.forEach { it.onRenderingHintsChanged(this) }
+        // regenerate shaders
+        shaderMgr.onRenderingHintsChanged(this)
     }
 
     private class Attribs {

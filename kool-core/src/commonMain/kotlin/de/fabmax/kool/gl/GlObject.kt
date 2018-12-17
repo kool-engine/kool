@@ -11,7 +11,7 @@ abstract class GlObject<T: GlResource> : Disposable {
         internal set
 
     open val isValid: Boolean
-        get() = res != null
+        get() = res?.isValid == true
 
     override fun dispose(ctx: KoolContext) {
         res?.delete(ctx)

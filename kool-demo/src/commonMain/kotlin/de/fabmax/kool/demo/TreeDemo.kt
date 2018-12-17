@@ -13,7 +13,6 @@ import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.timedMs
 
@@ -39,7 +38,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     var leafMesh: Mesh? = null
 
     val treeScene = scene {
-        lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
+        lighting.useDefaultShadowMap(ctx)
 
         +makeGroundGrid(40)
 

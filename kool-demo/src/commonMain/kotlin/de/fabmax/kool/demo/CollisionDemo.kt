@@ -15,7 +15,6 @@ import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.lineMesh
@@ -71,7 +70,7 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
 
     val boxScene = scene {
         lighting.primaryLight.direction.set(1f, 0.8f, 0.4f)
-        lighting.shadowMap = CascadedShadowMap.defaultCascadedShadowMap3()
+        lighting.useDefaultShadowMap(ctx)
 
         +sphericalInputTransform {
             +camera

@@ -55,7 +55,7 @@ class BillboardShader internal constructor(props: ShaderProps, generator: GlslGe
     init {
         generator.customUniforms += uViewportSz
         generator.injectors += object: GlslGenerator.GlslInjector {
-            override fun vsAfterProj(shaderProps: ShaderProps, text: StringBuilder, ctx: KoolContext) {
+            override fun vsAfterProj(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
                 text.append("gl_Position.x += (${Attribute.TEXTURE_COORDS.name}.x - 0.5) * gl_Position.w / uViewportSz.x;\n")
                         .append("gl_Position.y -= (${Attribute.TEXTURE_COORDS.name}.y - 0.5) * gl_Position.w / uViewportSz.y;\n")
             }
