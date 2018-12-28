@@ -43,7 +43,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) },
             "instancedDemo" to DemoEntry("Instanced Demo") { add(instancedDemo(it)) },
             "reflectionDemo" to DemoEntry("Reflection Demo") { addAll(reflectionDemo(it)) },
-            "particleDemo" to DemoEntry("Particle Demo") { add(particleDemo()) }
+            "particleDemo" to DemoEntry("Particle Demo") { addAll(particleDemo(it)) }
     )
 
     init {

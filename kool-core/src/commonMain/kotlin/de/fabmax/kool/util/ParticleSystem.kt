@@ -2,6 +2,7 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.Texture
+import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
@@ -10,14 +11,15 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.shading.BasicShader
 
-class ParticleSystem(particleTex: Texture, val maxParticles: Int = 100_000, name: String? = null) : Node() {
+class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name: String? = null) : Node() {
 
     private val mesh = BillboardMesh(name)
 
     private val particles = Array(maxParticles) { Particle(it, TYPE_DEAD) }
-    private var lastParticle = 0
     private val sortedIndices = mutableListOf<ParticleIndex>()
 
+    var numParticles = 0
+        private set
     var drawOrder = BillboardMesh.DrawOrder.FAR_FIRST
     var isDepthMask = true
 
@@ -25,6 +27,8 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 100_000, name
         mesh.parent = this
         // don't let billboard mesh do any z-sorting, instead ParticleSystem does the sorting, this way only alive particles can be sorted
         mesh.drawOrder = BillboardMesh.DrawOrder.AS_IS
+        // mesh data is frequently updated
+        mesh.meshData.usage = GL_DYNAMIC_DRAW
         // disable frustum checking, since particle bounds are not exactly known (and expensive to compute)
         isFrustumChecked = false
         mesh.isFrustumChecked = false
@@ -37,12 +41,12 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 100_000, name
     }
 
     fun spawnParticle(type: Type): Particle? {
-        if (lastParticle == maxParticles) {
+        if (numParticles == maxParticles) {
             logW { "Maximum number of particles reached" }
             return null
         }
 
-        val p = particles[lastParticle++]
+        val p = particles[numParticles++]
         p.replaceBy(type)
         return p
     }
@@ -56,7 +60,7 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 100_000, name
         super.preRender(ctx)
 
         //timedMs("particles update took") {
-            for (i in 0 until lastParticle) {
+            for (i in 0 until numParticles) {
                 particles[i].update(ctx)
             }
             if (drawOrder != BillboardMesh.DrawOrder.AS_IS) {
@@ -116,7 +120,7 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 100_000, name
 
         // swap particles into draw order, will make following sort operations much faster (assuming that order won't
         // drastically change between consecutive frames)
-        for (i in 0 until lastParticle) {
+        for (i in 0 until numParticles) {
             val drawIdx = particles[i].drawIndex
             if (drawIdx != i) {
                 // swapping particles by value is actually faster than swapping object references (data locality!)
@@ -126,16 +130,16 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 100_000, name
     }
 
     private fun setupSortList() {
-        if (sortedIndices.size < lastParticle) {
-            for (i in 1..(lastParticle - sortedIndices.size)) {
+        if (sortedIndices.size < numParticles) {
+            for (i in 1..(numParticles - sortedIndices.size)) {
                 sortedIndices.add(ParticleIndex(0, 0))
             }
-        } else if (sortedIndices.size > lastParticle) {
-            for (i in 1..(sortedIndices.size - lastParticle)) {
+        } else if (sortedIndices.size > numParticles) {
+            for (i in 1..(sortedIndices.size - numParticles)) {
                 sortedIndices.removeAt(sortedIndices.lastIndex)
             }
         }
-        for (i in 0 until lastParticle) {
+        for (i in 0 until numParticles) {
             sortedIndices[i].listIndex = i
             sortedIndices[i].meshIndex = particles[i].meshIndex
         }
@@ -180,10 +184,10 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 100_000, name
         fun die() {
             replaceBy(TYPE_DEAD)
 
-            if (lastParticle > 1) {
-                swap(particles[lastParticle-1])
+            if (numParticles > 1) {
+                swap(particles[numParticles-1])
             }
-            lastParticle--
+            numParticles--
         }
 
         fun replaceBy(newType: Type) {

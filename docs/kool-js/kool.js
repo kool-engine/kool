@@ -36,6 +36,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var wrapFunction = Kotlin.wrapFunction;
   var ClosedRange = Kotlin.kotlin.ranges.ClosedRange;
   var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
+  var get_indices_0 = Kotlin.kotlin.collections.get_indices_m7z4lg$;
   var L698769069 = Kotlin.Long.fromInt(698769069);
   var abs = Kotlin.kotlin.math.abs_za3lpa$;
   var abs_0 = Kotlin.kotlin.math.abs_s8cxhz$;
@@ -89,11 +90,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
   var getCallableRef = Kotlin.getCallableRef;
   var StringBuilder = Kotlin.kotlin.text.StringBuilder;
+  var addAll_0 = Kotlin.kotlin.collections.addAll_ipc267$;
+  var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
   var toInt_0 = Kotlin.kotlin.text.toInt_6ic1pp$;
   var to = Kotlin.kotlin.to_ujzrz7$;
   var first_0 = Kotlin.kotlin.collections.first_us0mfu$;
   var last_0 = Kotlin.kotlin.collections.last_us0mfu$;
-  var get_indices_0 = Kotlin.kotlin.text.get_indices_gw00vp$;
+  var get_indices_1 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
   var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
   var MutableIterator = Kotlin.kotlin.collections.MutableIterator;
@@ -207,6 +210,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   TransformGroupDp.prototype.constructor = TransformGroupDp;
   Globe.prototype = Object.create(TransformGroupDp.prototype);
   Globe.prototype.constructor = Globe;
+  Group.prototype = Object.create(Node.prototype);
+  Group.prototype.constructor = Group;
+  TransformGroup.prototype = Object.create(Group.prototype);
+  TransformGroup.prototype.constructor = TransformGroup;
+  SphericalInputTransform.prototype = Object.create(TransformGroup.prototype);
+  SphericalInputTransform.prototype.constructor = SphericalInputTransform;
+  GlobeCamHandler.prototype = Object.create(SphericalInputTransform.prototype);
+  GlobeCamHandler.prototype.constructor = GlobeCamHandler;
   TileFrame.prototype = Object.create(TransformGroupDp.prototype);
   TileFrame.prototype.constructor = TileFrame;
   Mesh.prototype = Object.create(Node.prototype);
@@ -231,6 +242,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   FrictionConstraint.prototype.constructor = FrictionConstraint;
   RollingFrictionConstraint.prototype = Object.create(SolverConstraint.prototype);
   RollingFrictionConstraint.prototype.constructor = RollingFrictionConstraint;
+  ShadowPreset.prototype = Object.create(Enum.prototype);
+  ShadowPreset.prototype.constructor = ShadowPreset;
+  ShadowPreset$SHADOW_OFF.prototype = Object.create(ShadowPreset.prototype);
+  ShadowPreset$SHADOW_OFF.prototype.constructor = ShadowPreset$SHADOW_OFF;
+  ShadowPreset$SHADOW_LOW.prototype = Object.create(ShadowPreset.prototype);
+  ShadowPreset$SHADOW_LOW.prototype.constructor = ShadowPreset$SHADOW_LOW;
+  ShadowPreset$SHADOW_MEDIUM.prototype = Object.create(ShadowPreset.prototype);
+  ShadowPreset$SHADOW_MEDIUM.prototype.constructor = ShadowPreset$SHADOW_MEDIUM;
+  ShadowPreset$SHADOW_HIGH.prototype = Object.create(ShadowPreset.prototype);
+  ShadowPreset$SHADOW_HIGH.prototype.constructor = ShadowPreset$SHADOW_HIGH;
+  ShadowPreset$SHADOW_ULTRA.prototype = Object.create(ShadowPreset.prototype);
+  ShadowPreset$SHADOW_ULTRA.prototype.constructor = ShadowPreset$SHADOW_ULTRA;
   InstancedMesh.prototype = Object.create(Mesh.prototype);
   InstancedMesh.prototype.constructor = InstancedMesh;
   Armature.prototype = Object.create(InstancedMesh.prototype);
@@ -251,10 +274,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   DoublePrecisionRoot.prototype.constructor = DoublePrecisionRoot;
   NodeProxy.prototype = Object.create(NodeDp.prototype);
   NodeProxy.prototype.constructor = NodeProxy;
-  Group.prototype = Object.create(Node.prototype);
-  Group.prototype.constructor = Group;
   InstancedMesh$SimpleInstances.prototype = Object.create(InstancedMesh$Instances.prototype);
   InstancedMesh$SimpleInstances.prototype.constructor = InstancedMesh$SimpleInstances;
+  DirectionalLight.prototype = Object.create(Light.prototype);
+  DirectionalLight.prototype.constructor = DirectionalLight;
   CullMethod.prototype = Object.create(Enum.prototype);
   CullMethod.prototype.constructor = CullMethod;
   Scene.prototype = Object.create(Group.prototype);
@@ -273,10 +296,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   SphericalInputTransform$DragMethod.prototype.constructor = SphericalInputTransform$DragMethod;
   SphericalInputTransform$ZoomMethod.prototype = Object.create(Enum.prototype);
   SphericalInputTransform$ZoomMethod.prototype.constructor = SphericalInputTransform$ZoomMethod;
-  TransformGroup.prototype = Object.create(Group.prototype);
-  TransformGroup.prototype.constructor = TransformGroup;
-  SphericalInputTransform.prototype = Object.create(TransformGroup.prototype);
-  SphericalInputTransform.prototype.constructor = SphericalInputTransform;
   CameraOrthogonalPan.prototype = Object.create(PanBase.prototype);
   CameraOrthogonalPan.prototype.constructor = CameraOrthogonalPan;
   FixedPlanePan.prototype = Object.create(PanBase.prototype);
@@ -337,10 +356,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   ColorModel.prototype.constructor = ColorModel;
   FogModel.prototype = Object.create(Enum.prototype);
   FogModel.prototype.constructor = FogModel;
-  PreferredLightModel.prototype = Object.create(Enum.prototype);
-  PreferredLightModel.prototype.constructor = PreferredLightModel;
-  PreferredShadowMethod.prototype = Object.create(Enum.prototype);
-  PreferredShadowMethod.prototype.constructor = PreferredShadowMethod;
   UniformTexture2D.prototype = Object.create(Uniform.prototype);
   UniformTexture2D.prototype.constructor = UniformTexture2D;
   UniformTexture2Dv.prototype = Object.create(Uniform.prototype);
@@ -381,6 +396,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   InterpolatedFloat.prototype.constructor = InterpolatedFloat;
   InterpolatedColor.prototype = Object.create(InterpolatedValue.prototype);
   InterpolatedColor.prototype.constructor = InterpolatedColor;
+  BillboardMesh$DrawOrder.prototype = Object.create(Enum.prototype);
+  BillboardMesh$DrawOrder.prototype.constructor = BillboardMesh$DrawOrder;
   BillboardMesh.prototype = Object.create(Mesh.prototype);
   BillboardMesh.prototype.constructor = BillboardMesh;
   BillboardShader.prototype = Object.create(BasicShader.prototype);
@@ -421,6 +438,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   OcTree$OcNode.prototype.constructor = OcTree$OcNode;
   OcTree.prototype = Object.create(SpatialTree.prototype);
   OcTree.prototype.constructor = OcTree;
+  ParticleSystem.prototype = Object.create(Node.prototype);
+  ParticleSystem.prototype.constructor = ParticleSystem;
   PointMesh.prototype = Object.create(Mesh.prototype);
   PointMesh.prototype.constructor = PointMesh;
   PrimitiveType.prototype = Object.create(Enum.prototype);
@@ -1424,6 +1443,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var GL_UNSIGNED_SHORT_5_6_5;
   var GL_FRAGMENT_SHADER;
   var GL_VERTEX_SHADER;
+  var GL_GEOMETRY_SHADER;
   var GL_MAX_VERTEX_ATTRIBS;
   var GL_MAX_VERTEX_UNIFORM_VECTORS;
   var GL_MAX_VARYING_VECTORS;
@@ -1932,7 +1952,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   });
   Object.defineProperty(GlObject.prototype, 'isValid', {
     get: function () {
-      return this.res != null;
+      var tmp$;
+      return ((tmp$ = this.res) != null ? tmp$.isValid : null) === true;
     }
   });
   GlObject.prototype.dispose_aemszp$ = function (ctx) {
@@ -2132,6 +2153,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   ShaderResource$Companion.prototype.createFragmentShader_aemszp$ = function (ctx) {
     return new ShaderResource(glCreateShader(35632), ctx);
   };
+  ShaderResource$Companion.prototype.createGeometryShader_aemszp$ = function (ctx) {
+    if (!ctx.glCapabilities.geometryShader) {
+      throw KoolException_init('Geometry shaders are not supported on this implementation');
+    }
+    return new ShaderResource(glCreateShader(36313), ctx);
+  };
   ShaderResource$Companion.prototype.createVertexShader_aemszp$ = function (ctx) {
     return new ShaderResource(glCreateShader(35633), ctx);
   };
@@ -2217,7 +2244,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'TextureResource',
     interfaces: [GlResource]
   };
-  function GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
+  function GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, geometryShader, glslDialect, glVersion) {
     GlCapabilities$Companion_getInstance();
     this.uint32Indices = uint32Indices;
     this.shaderIntAttribs = shaderIntAttribs;
@@ -2226,12 +2253,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.depthComponentIntFormat = depthComponentIntFormat;
     this.depthFilterMethod = depthFilterMethod;
     this.anisotropicTexFilterInfo = anisotropicTexFilterInfo;
+    this.geometryShader = geometryShader;
     this.glslDialect = glslDialect;
     this.glVersion = glVersion;
   }
   function GlCapabilities$Companion() {
     GlCapabilities$Companion_instance = this;
-    this.UNKNOWN_CAPABILITIES = new GlCapabilities(false, false, 16, false, 0, 0, AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED, GlslDialect$Companion_getInstance().GLSL_DIALECT_100, new GlVersion('Unknown', 0, 0));
+    this.UNKNOWN_CAPABILITIES = new GlCapabilities(false, false, 16, false, 0, 0, AnisotropicTexFilterInfo$Companion_getInstance().NOT_SUPPORTED, false, GlslDialect$Companion_getInstance().GLSL_DIALECT_100, new GlVersion('Unknown', 0, 0));
   }
   GlCapabilities$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -2272,16 +2300,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     return this.anisotropicTexFilterInfo;
   };
   GlCapabilities.prototype.component8 = function () {
-    return this.glslDialect;
+    return this.geometryShader;
   };
   GlCapabilities.prototype.component9 = function () {
+    return this.glslDialect;
+  };
+  GlCapabilities.prototype.component10 = function () {
     return this.glVersion;
   };
-  GlCapabilities.prototype.copy_9b28tz$ = function (uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion) {
-    return new GlCapabilities(uint32Indices === void 0 ? this.uint32Indices : uint32Indices, shaderIntAttribs === void 0 ? this.shaderIntAttribs : shaderIntAttribs, maxTexUnits === void 0 ? this.maxTexUnits : maxTexUnits, depthTextures === void 0 ? this.depthTextures : depthTextures, depthComponentIntFormat === void 0 ? this.depthComponentIntFormat : depthComponentIntFormat, depthFilterMethod === void 0 ? this.depthFilterMethod : depthFilterMethod, anisotropicTexFilterInfo === void 0 ? this.anisotropicTexFilterInfo : anisotropicTexFilterInfo, glslDialect === void 0 ? this.glslDialect : glslDialect, glVersion === void 0 ? this.glVersion : glVersion);
+  GlCapabilities.prototype.copy_8p8y8k$ = function (uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, geometryShader, glslDialect, glVersion) {
+    return new GlCapabilities(uint32Indices === void 0 ? this.uint32Indices : uint32Indices, shaderIntAttribs === void 0 ? this.shaderIntAttribs : shaderIntAttribs, maxTexUnits === void 0 ? this.maxTexUnits : maxTexUnits, depthTextures === void 0 ? this.depthTextures : depthTextures, depthComponentIntFormat === void 0 ? this.depthComponentIntFormat : depthComponentIntFormat, depthFilterMethod === void 0 ? this.depthFilterMethod : depthFilterMethod, anisotropicTexFilterInfo === void 0 ? this.anisotropicTexFilterInfo : anisotropicTexFilterInfo, geometryShader === void 0 ? this.geometryShader : geometryShader, glslDialect === void 0 ? this.glslDialect : glslDialect, glVersion === void 0 ? this.glVersion : glVersion);
   };
   GlCapabilities.prototype.toString = function () {
-    return 'GlCapabilities(uint32Indices=' + Kotlin.toString(this.uint32Indices) + (', shaderIntAttribs=' + Kotlin.toString(this.shaderIntAttribs)) + (', maxTexUnits=' + Kotlin.toString(this.maxTexUnits)) + (', depthTextures=' + Kotlin.toString(this.depthTextures)) + (', depthComponentIntFormat=' + Kotlin.toString(this.depthComponentIntFormat)) + (', depthFilterMethod=' + Kotlin.toString(this.depthFilterMethod)) + (', anisotropicTexFilterInfo=' + Kotlin.toString(this.anisotropicTexFilterInfo)) + (', glslDialect=' + Kotlin.toString(this.glslDialect)) + (', glVersion=' + Kotlin.toString(this.glVersion)) + ')';
+    return 'GlCapabilities(uint32Indices=' + Kotlin.toString(this.uint32Indices) + (', shaderIntAttribs=' + Kotlin.toString(this.shaderIntAttribs)) + (', maxTexUnits=' + Kotlin.toString(this.maxTexUnits)) + (', depthTextures=' + Kotlin.toString(this.depthTextures)) + (', depthComponentIntFormat=' + Kotlin.toString(this.depthComponentIntFormat)) + (', depthFilterMethod=' + Kotlin.toString(this.depthFilterMethod)) + (', anisotropicTexFilterInfo=' + Kotlin.toString(this.anisotropicTexFilterInfo)) + (', geometryShader=' + Kotlin.toString(this.geometryShader)) + (', glslDialect=' + Kotlin.toString(this.glslDialect)) + (', glVersion=' + Kotlin.toString(this.glVersion)) + ')';
   };
   GlCapabilities.prototype.hashCode = function () {
     var result = 0;
@@ -2292,12 +2323,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     result = result * 31 + Kotlin.hashCode(this.depthComponentIntFormat) | 0;
     result = result * 31 + Kotlin.hashCode(this.depthFilterMethod) | 0;
     result = result * 31 + Kotlin.hashCode(this.anisotropicTexFilterInfo) | 0;
+    result = result * 31 + Kotlin.hashCode(this.geometryShader) | 0;
     result = result * 31 + Kotlin.hashCode(this.glslDialect) | 0;
     result = result * 31 + Kotlin.hashCode(this.glVersion) | 0;
     return result;
   };
   GlCapabilities.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uint32Indices, other.uint32Indices) && Kotlin.equals(this.shaderIntAttribs, other.shaderIntAttribs) && Kotlin.equals(this.maxTexUnits, other.maxTexUnits) && Kotlin.equals(this.depthTextures, other.depthTextures) && Kotlin.equals(this.depthComponentIntFormat, other.depthComponentIntFormat) && Kotlin.equals(this.depthFilterMethod, other.depthFilterMethod) && Kotlin.equals(this.anisotropicTexFilterInfo, other.anisotropicTexFilterInfo) && Kotlin.equals(this.glslDialect, other.glslDialect) && Kotlin.equals(this.glVersion, other.glVersion)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.uint32Indices, other.uint32Indices) && Kotlin.equals(this.shaderIntAttribs, other.shaderIntAttribs) && Kotlin.equals(this.maxTexUnits, other.maxTexUnits) && Kotlin.equals(this.depthTextures, other.depthTextures) && Kotlin.equals(this.depthComponentIntFormat, other.depthComponentIntFormat) && Kotlin.equals(this.depthFilterMethod, other.depthFilterMethod) && Kotlin.equals(this.anisotropicTexFilterInfo, other.anisotropicTexFilterInfo) && Kotlin.equals(this.geometryShader, other.geometryShader) && Kotlin.equals(this.glslDialect, other.glslDialect) && Kotlin.equals(this.glVersion, other.glVersion)))));
   };
   function GlVersion(glDialect, versionMajor, versionMinor) {
     this.glDialect = glDialect;
@@ -3453,9 +3485,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.memoryMgr = new MemoryManager();
     this.shaderMgr = new ShaderManager();
     this.textureMgr = new TextureManager();
+    this.renderingHints = new RenderingHints();
+    this.renderPass = RenderPass$SCREEN_getInstance();
     this.mvpState = new MvpState();
     this.onRender = ArrayList_init_0();
-    this.renderPass = RenderPass$SCREEN_getInstance();
     this.time_q5mkh0$_0 = 0.0;
     this.deltaT_wdv5hn$_0 = 0.0;
     this.frameIdx_2g8w1r$_0 = 0;
@@ -3638,7 +3671,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.applyAttributes();
   };
   KoolContext.prototype.applyAttributes = function () {
+    this.checkIsGlThread();
     this.attribs_e3zeo6$_0.apply();
+  };
+  KoolContext.prototype.applyRenderingHints = function () {
+    this.checkIsGlThread();
+    var tmp$;
+    tmp$ = this.scenes.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.onRenderingHintsChanged_aemszp$(this);
+    }
+    this.shaderMgr.onRenderingHintsChanged_cwprtu$(this);
   };
   function KoolContext$Attribs() {
     this.attribs_0 = mutableListOf([new Property('viewport', new KoolContext$Viewport(0, 0, 0, 0), KoolContext$Attribs$attribs$lambda), new Property('clearColor', new Color(0.05, 0.15, 0.25, 1.0), KoolContext$Attribs$attribs$lambda_0), new Property('cullFace', 1029, KoolContext$Attribs$attribs$lambda_1), new Property('depthFunc', 515, KoolContext$Attribs$attribs$lambda_2), new Property('isDepthTest', true, KoolContext$Attribs$attribs$lambda_3), new Property('isDepthMask', true, KoolContext$Attribs$attribs$lambda_4), new Property('isCullFace', true, KoolContext$Attribs$attribs$lambda_5), new Property('isBlend', true, KoolContext$Attribs$attribs$lambda_6), new Property('lineWidth', 1.0, KoolContext$Attribs$attribs$lambda_7)]);
@@ -3780,17 +3824,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'KoolContext',
     interfaces: []
   };
-  function RenderPass(name, ordinal, increaseTime) {
+  function RenderPass(name, ordinal) {
     Enum.call(this);
-    this.increaseTime = increaseTime;
     this.name$ = name;
     this.ordinal$ = ordinal;
   }
   function RenderPass_initFields() {
     RenderPass_initFields = function () {
     };
-    RenderPass$SHADOW_instance = new RenderPass('SHADOW', 0, false);
-    RenderPass$SCREEN_instance = new RenderPass('SCREEN', 1, true);
+    RenderPass$SHADOW_instance = new RenderPass('SHADOW', 0);
+    RenderPass$SCREEN_instance = new RenderPass('SCREEN', 1);
   }
   var RenderPass$SHADOW_instance;
   function RenderPass$SHADOW_getInstance() {
@@ -5771,9 +5814,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function partition($receiver, k, cmp) {
     partition_0($receiver, get_indices($receiver), k, cmp);
   }
+  function partition$lambda($receiver, it) {
+    return $receiver.get_za3lpa$(it);
+  }
+  function partition$lambda_0($receiver, a, b) {
+    var $receiver_0 = $receiver.get_za3lpa$(b);
+    $receiver.set_wxm5ur$(b, $receiver.get_za3lpa$(a));
+    $receiver.set_wxm5ur$(a, $receiver_0);
+    return Unit;
+  }
   function partition_0($receiver, rng, k, cmp) {
-    var left = rng.first;
-    var right = rng.last;
+    partition_3($receiver, rng.first, rng.last, k, partition$lambda, cmp, partition$lambda_0);
+  }
+  function partition_1($receiver, k, cmp) {
+    partition_2($receiver, get_indices_0($receiver), k, cmp);
+  }
+  function partition$lambda_1($receiver, it) {
+    return $receiver[it];
+  }
+  function partition$lambda_2($receiver, a, b) {
+    var $receiver_0 = $receiver[b];
+    $receiver[b] = $receiver[a];
+    $receiver[a] = $receiver_0;
+    return Unit;
+  }
+  function partition_2($receiver, rng, k, cmp) {
+    partition_3($receiver, rng.first, rng.last, k, partition$lambda_1, cmp, partition$lambda_2);
+  }
+  function partition_3(elems, lt, rt, k, get, cmp, swap) {
+    var left = lt;
+    var right = rt;
     while (right > left) {
       if ((right - left | 0) > 600) {
         var n = right - left + 1 | 0;
@@ -5791,32 +5861,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         var a_0 = right;
         var b_0 = numberToInt(k + (n - i | 0) * s / n + sd);
         var newRight = Math_0.min(a_0, b_0);
-        partition_0($receiver, new IntRange(newLeft, newRight), k, cmp);
+        partition_3(elems, newLeft, newRight, k, get, cmp, swap);
       }
-      var t = $receiver.get_za3lpa$(k);
+      var t = get(elems, k);
       var i_0 = left;
       var j = right;
-      swap($receiver, left, k);
-      if (cmp($receiver.get_za3lpa$(right), t) > 0) {
-        swap($receiver, right, left);
+      swap(elems, left, k);
+      if (cmp(get(elems, right), t) > 0) {
+        swap(elems, right, left);
       }
       while (i_0 < j) {
-        swap($receiver, i_0, j);
+        swap(elems, i_0, j);
         i_0 = i_0 + 1 | 0;
         j = j - 1 | 0;
-        while (cmp($receiver.get_za3lpa$(i_0), t) < 0) {
+        while (cmp(get(elems, i_0), t) < 0) {
           i_0 = i_0 + 1 | 0;
         }
-        while (cmp($receiver.get_za3lpa$(j), t) > 0) {
+        while (j >= 0 && cmp(get(elems, j), t) > 0) {
           j = j - 1 | 0;
         }
       }
-      if (cmp($receiver.get_za3lpa$(left), t) === 0) {
-        swap($receiver, left, j);
+      if (cmp(get(elems, left), t) === 0) {
+        swap(elems, left, j);
       }
        else {
         j = j + 1 | 0;
-        swap($receiver, j, right);
+        swap(elems, j, right);
       }
       if (j <= k) {
         left = j + 1 | 0;
@@ -5825,11 +5895,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         right = j - 1 | 0;
       }
     }
-  }
-  function swap($receiver, a, b) {
-    var $receiver_0 = $receiver.get_za3lpa$(b);
-    $receiver.set_wxm5ur$(b, $receiver.get_za3lpa$(a));
-    $receiver.set_wxm5ur$(a, $receiver_0);
   }
   function Plane() {
     this.p = MutableVec3f_init();
@@ -9749,16 +9814,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'Globe',
     interfaces: [TransformGroupDp]
   };
-  function GlobeDragHandler(globe) {
+  function GlobeCamHandler(globe, scene, ctx) {
+    SphericalInputTransform.call(this);
     this.globe = globe;
-    this.pickRay_0 = new Ray();
-    this.tmpVec_0 = MutableVec3d_init();
-    this.tmpRayO_0 = MutableVec3d_init();
-    this.tmpRayL_0 = MutableVec3d_init();
-    this.globePan_0 = new GlobeDragHandler$GlobePan(this);
-    this.globe.onPreRender.add_11rb$(GlobeDragHandler_init$lambda(this));
+    this.globePan_0 = new GlobeCamHandler$GlobePan(this);
+    this.globe.onPreRender.add_11rb$(GlobeCamHandler_init$lambda(this));
+    this.leftDragMethod = SphericalInputTransform$DragMethod$NONE_getInstance();
+    this.rightDragMethod = SphericalInputTransform$DragMethod$ROTATE_getInstance();
+    this.zoomMethod = SphericalInputTransform$ZoomMethod$ZOOM_CENTER_getInstance();
+    this.minZoom = 20.0;
+    this.maxZoom = 2.0E7;
+    this.verticalAxis = Vec3f$Companion_getInstance().Z_AXIS;
+    this.minHorizontalRot = 0.0;
+    this.maxHorizontalRot = 85.0;
+    this.resetZoom_mx4ult$(1.0E7);
+    this.unaryPlus_uv0sim$(scene.camera);
+    this.updateTransform();
+    scene.camera.updateCamera_aemszp$(ctx);
+    scene.registerDragHandler_dsvxak$(this);
   }
-  GlobeDragHandler.prototype.handleDrag_kin2e3$ = function (dragPtrs, ctx) {
+  GlobeCamHandler.prototype.handleDrag_kin2e3$ = function (dragPtrs, ctx) {
+    SphericalInputTransform.prototype.handleDrag_kin2e3$.call(this, dragPtrs, ctx);
     if (dragPtrs.size === 1 && dragPtrs.get_za3lpa$(0).isInViewport_aemszp$(ctx)) {
       var ptr = dragPtrs.get_za3lpa$(0);
       var startPan = ptr.isLeftButtonEvent && ptr.isLeftButtonDown;
@@ -9773,33 +9849,54 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     return 0;
   };
-  GlobeDragHandler.prototype.onPreRender_0 = function (ctx) {
+  GlobeCamHandler.prototype.onPreRender_0 = function (ctx) {
     if (this.globePan_0.isValid) {
       this.globePan_0.apply_aemszp$(ctx);
       this.globe.setCenter_lu1900$(this.globePan_0.globeCenter.y, this.globePan_0.globeCenter.x);
     }
   };
-  function GlobeDragHandler$GlobePan($outer) {
+  function GlobeCamHandler$GlobePan($outer) {
     this.$outer = $outer;
+    this.pickRay = new Ray();
+    this.tmpVec = MutableVec3d_init();
+    this.tmpRayO = MutableVec3d_init();
+    this.tmpRayL = MutableVec3d_init();
+    this.hitPosWorld = MutableVec3d_init();
     this.screenPosStart = MutableVec2f_init();
     this.screenPos = MutableVec2f_init();
     this.globeCoordsStart = MutableVec2d_init();
     this.globeCoords = MutableVec2d_init();
     this.globeCenter = MutableVec2d_init();
+    this.startDist = 0.0;
+    this.startZoom = 0.0;
     this.isValid = false;
   }
-  GlobeDragHandler$GlobePan.prototype.start_1nc7s5$ = function (screenX, screenY, ctx) {
+  Object.defineProperty(GlobeCamHandler$GlobePan.prototype, 'cam', {
+    get: function () {
+      var tmp$;
+      return ensureNotNull((tmp$ = this.$outer.globe.scene) != null ? tmp$.camera : null);
+    }
+  });
+  Object.defineProperty(GlobeCamHandler$GlobePan.prototype, 'camTransform', {
+    get: function () {
+      var tmp$;
+      return Kotlin.isType(tmp$ = this.cam.parent, SphericalInputTransform) ? tmp$ : throwCCE();
+    }
+  });
+  GlobeCamHandler$GlobePan.prototype.start_1nc7s5$ = function (screenX, screenY, ctx) {
     this.globeCenter.set_lu1900$(this.$outer.globe.centerLon, this.$outer.globe.centerLat);
     this.screenPosStart.set_dleff0$(screenX, screenY);
     this.screenPos.set_czzhjp$(this.screenPosStart);
-    if (this.screen2LatLon_r0ihl8$(screenX, screenY, this.globeCoordsStart, ctx)) {
+    if (this.screen2LatLon_0(screenX, screenY, this.globeCoordsStart, ctx)) {
+      this.startDist = this.cam.globalPos.toMutableVec3d_5s4mqs$(this.tmpVec).distance_czzhiw$(this.hitPosWorld);
+      this.startZoom = this.camTransform.zoom;
       this.globeCoords.set_czzhjr$(this.globeCoordsStart);
     }
     this.isValid = true;
   };
-  GlobeDragHandler$GlobePan.prototype.apply_aemszp$ = function (ctx) {
+  GlobeCamHandler$GlobePan.prototype.apply_aemszp$ = function (ctx) {
     if (this.isValid) {
-      if (this.screen2LatLon_r0ihl8$(this.screenPos.x, this.screenPos.y, this.globeCoords, ctx)) {
+      if (this.screen2LatLon_0(this.screenPos.x, this.screenPos.y, this.globeCoords, ctx)) {
         this.globeCenter.x = this.globeCenter.x + (this.globeCoordsStart.x - this.globeCoords.x);
         var tmp$ = this.globeCenter;
         var $receiver = this.globeCenter.y + (this.globeCoordsStart.y - this.globeCoords.y);
@@ -9818,45 +9915,69 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
     }
   };
-  GlobeDragHandler$GlobePan.prototype.screen2LatLon_r0ihl8$ = function (screenX, screenY, result, ctx) {
-    var tmp$, tmp$_0;
-    if (((tmp$_0 = (tmp$ = this.$outer.globe.scene) != null ? tmp$.camera : null) != null ? tmp$_0.computePickRay_jker1g$(this.$outer.pickRay_0, screenX, screenY, ctx) : null) === true) {
-      this.$outer.pickRay_0.origin.toMutableVec3d_5s4mqs$(this.$outer.tmpRayO_0);
-      this.$outer.pickRay_0.direction.toMutableVec3d_5s4mqs$(this.$outer.tmpRayL_0);
-      this.$outer.globe.toLocalCoordsDp_j7uy7i$(this.$outer.tmpRayO_0, 1.0);
-      this.$outer.globe.toLocalCoordsDp_j7uy7i$(this.$outer.tmpRayL_0, 0.0);
+  GlobeCamHandler$GlobePan.prototype.applyZoom_0 = function () {
+    this.cam.globalPos.toMutableVec3d_5s4mqs$(this.tmpRayO);
+    this.cam.globalLookDir.toMutableVec3d_5s4mqs$(this.tmpRayL).norm();
+    var d = this.hitDistSphere_0(this.tmpRayO, this.tmpRayL, this.hitPosWorld, this.startDist);
+    if (d < kotlin_js_internal_DoubleCompanionObject.MAX_VALUE) {
+      this.camTransform.resetZoom_mx4ult$(this.camTransform.zoom - d / 4);
+      println('startDist = ' + this.startDist + ', d = ' + d);
+    }
+  };
+  GlobeCamHandler$GlobePan.prototype.screen2LatLon_0 = function (screenX, screenY, result, ctx) {
+    if (this.cam.computePickRay_jker1g$(this.pickRay, screenX, screenY, ctx)) {
+      this.pickRay.origin.toMutableVec3d_5s4mqs$(this.tmpRayO);
+      this.pickRay.direction.toMutableVec3d_5s4mqs$(this.tmpRayL);
+      this.$outer.globe.toLocalCoordsDp_j7uy7i$(this.tmpRayO, 1.0);
+      this.$outer.globe.toLocalCoordsDp_j7uy7i$(this.tmpRayL, 0.0);
       var radius = this.$outer.globe.radius + this.$outer.globe.getHeightAt_lu1900$(this.$outer.globe.centerLat, this.$outer.globe.centerLon);
-      var ldo = this.$outer.tmpRayL_0.times_czzhiw$(this.$outer.tmpRayO_0);
-      var sqr = ldo * ldo - this.$outer.tmpRayO_0.sqrLength() + radius * radius;
+      var ldo = this.tmpRayL.times_czzhiw$(this.tmpRayO);
+      var sqr = ldo * ldo - this.tmpRayO.sqrLength() + radius * radius;
       if (sqr > 0) {
         var hitDist = -ldo - Math_0.sqrt(sqr);
-        this.$outer.tmpRayL_0.scale_b0flbq$(hitDist, this.$outer.tmpVec_0).add_czzhiw$(this.$outer.tmpRayO_0);
-        var y = this.$outer.tmpVec_0.x;
-        var x = this.$outer.tmpVec_0.z;
+        this.tmpRayL.scale_b0flbq$(hitDist, this.hitPosWorld).add_czzhiw$(this.tmpRayO);
+        var y = this.hitPosWorld.x;
+        var x = this.hitPosWorld.z;
         result.x = Math_0.atan2(y, x) * package$math.RAD_2_DEG;
-        var tmp$_1 = math.PI * 0.5;
-        var x_0 = this.$outer.tmpVec_0.y / radius;
-        result.y = (tmp$_1 - Math_0.acos(x_0)) * package$math.RAD_2_DEG;
+        var tmp$ = math.PI * 0.5;
+        var x_0 = this.hitPosWorld.y / radius;
+        result.y = (tmp$ - Math_0.acos(x_0)) * package$math.RAD_2_DEG;
+        this.$outer.globe.toGlobalCoordsDp_j7uy7i$(this.hitPosWorld);
         return true;
       }
     }
     return false;
   };
-  GlobeDragHandler$GlobePan.$metadata$ = {
+  GlobeCamHandler$GlobePan.prototype.hitDistSphere_0 = function (orig, dir, center, radius) {
+    center.subtract_vgki2o$(orig, this.tmpVec);
+    var tc = this.tmpVec.times_czzhiw$(dir);
+    if (tc < 0) {
+      return kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
+    }
+    var rSqr = radius * radius;
+    var dSqr = this.tmpVec.sqrLength() - tc * tc;
+    if (dSqr > rSqr) {
+      return kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
+    }
+    var x = rSqr - dSqr;
+    var t1c = Math_0.sqrt(x);
+    return tc - t1c;
+  };
+  GlobeCamHandler$GlobePan.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'GlobePan',
     interfaces: []
   };
-  function GlobeDragHandler_init$lambda(this$GlobeDragHandler) {
+  function GlobeCamHandler_init$lambda(this$GlobeCamHandler) {
     return function ($receiver, it) {
-      this$GlobeDragHandler.onPreRender_0(it);
+      this$GlobeCamHandler.onPreRender_0(it);
       return Unit;
     };
   }
-  GlobeDragHandler.$metadata$ = {
+  GlobeCamHandler.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'GlobeDragHandler',
-    interfaces: [InputManager$DragHandler]
+    simpleName: 'GlobeCamHandler',
+    interfaces: [SphericalInputTransform]
   };
   function TileFrame(tileName, globe) {
     TransformGroupDp.call(this);
@@ -10766,19 +10887,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     interfaces: []
   };
   function TexImageTileShaderProvider() {
+    this.specularIntensity = 0.25;
+    this.shininess = 25.0;
   }
-  function TexImageTileShaderProvider$getShader$lambda(closure$tileName, closure$ctx, this$TexImageTileShaderProvider) {
+  function TexImageTileShaderProvider$getShader$lambda(this$TexImageTileShaderProvider, closure$tileName, closure$ctx) {
     return function ($receiver) {
       $receiver.colorModel = ColorModel$TEXTURE_COLOR_getInstance();
       $receiver.lightModel = LightModel$PHONG_LIGHTING_getInstance();
-      $receiver.specularIntensity = 0.25;
-      $receiver.shininess = 25.0;
+      $receiver.specularIntensity = this$TexImageTileShaderProvider.specularIntensity;
+      $receiver.shininess = this$TexImageTileShaderProvider.shininess;
       $receiver.texture = this$TexImageTileShaderProvider.getTexture_wqbs4n$(closure$tileName, closure$ctx);
       return Unit;
     };
   }
   TexImageTileShaderProvider.prototype.getShader_wqbs4n$ = function (tileName, ctx) {
-    var shader = basicShader(TexImageTileShaderProvider$getShader$lambda(tileName, ctx, this));
+    var shader = basicShader(TexImageTileShaderProvider$getShader$lambda(this, tileName, ctx));
     return new TileShader(shader, this.getAttributionInfo_xacwza$(tileName));
   };
   TexImageTileShaderProvider.$metadata$ = {
@@ -10788,11 +10911,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   };
   function OsmTexImageTileShaderProvider() {
     TexImageTileShaderProvider.call(this);
-    this.tileUrls = mutableListOf(['a.tile.openstreetmap.org', 'b.tile.openstreetmap.org', 'c.tile.openstreetmap.org']);
   }
   OsmTexImageTileShaderProvider.prototype.getTexture_wqbs4n$ = function (tileName, ctx) {
-    var srvIdx = (tileName.x ^ tileName.y ^ tileName.zoom) % this.tileUrls.size;
-    return assetTexture('https://' + this.tileUrls.get_za3lpa$(srvIdx) + '/' + tileName.zoom + '/' + tileName.x + '/' + tileName.y + '.png');
+    return assetTexture('https://tile.openstreetmap.org/' + tileName.zoom + '/' + tileName.x + '/' + tileName.y + '.png');
   };
   OsmTexImageTileShaderProvider.prototype.getAttributionInfo_xacwza$ = function (tileName) {
     return new TileMesh$AttributionInfo('Imagery: \xA9 OpenStreetMap', 'http://www.openstreetmap.org/copyright');
@@ -12331,11 +12452,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'Box',
     interfaces: []
   };
-  function BoxMesh(box, boxColor, sceneShadows) {
+  function BoxMesh(box, boxColor) {
     if (boxColor === void 0)
       boxColor = Color$Companion_getInstance().MD_GREY;
-    if (sceneShadows === void 0)
-      sceneShadows = null;
     Mesh.call(this, MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().NORMALS]), box.name);
     this.box = box;
     this.boundsMin_0 = MutableVec3f_init();
@@ -12347,7 +12466,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     $receiver_0.size.set_czzhiu$(this.box.shape.halfExtents).scale_mx4ult$(2.0);
     $receiver_0.centerOrigin();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
-    this.shader = basicShader(BoxMesh_init$lambda(sceneShadows));
+    this.shader = basicShader(BoxMesh_init$lambda);
   }
   BoxMesh.prototype.preRender_aemszp$ = function (ctx) {
     this.box.worldTransform.getOrigin_5s4mqq$(this.boundsMin_0);
@@ -12369,14 +12488,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     ctx.mvpState.modelMatrix.pop();
     ctx.mvpState.update_aemszp$(ctx);
   };
-  function BoxMesh_init$lambda(closure$sceneShadows) {
-    return function ($receiver) {
-      $receiver.colorModel = ColorModel$VERTEX_COLOR_getInstance();
-      $receiver.lightModel = LightModel$PHONG_LIGHTING_getInstance();
-      $receiver.shadowMap = closure$sceneShadows;
-      $receiver.specularIntensity = 0.4;
-      return Unit;
-    };
+  function BoxMesh_init$lambda($receiver) {
+    $receiver.colorModel = ColorModel$VERTEX_COLOR_getInstance();
+    $receiver.lightModel = LightModel$PHONG_LIGHTING_getInstance();
+    $receiver.isReceivingShadows = true;
+    $receiver.specularIntensity = 0.4;
+    return Unit;
   }
   BoxMesh.$metadata$ = {
     kind: Kind_CLASS,
@@ -14822,6 +14939,139 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function toString_0($receiver, precision) {
     return toString_1($receiver, precision);
   }
+  function RenderingHints() {
+    this.shadowRange = 100.0;
+    this.shadowPreset = ShadowPreset$SHADOW_HIGH_getInstance();
+  }
+  RenderingHints.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RenderingHints',
+    interfaces: []
+  };
+  function ShadowPreset(name, ordinal) {
+    Enum.call(this);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function ShadowPreset_initFields() {
+    ShadowPreset_initFields = function () {
+    };
+    new ShadowPreset$SHADOW_OFF();
+    new ShadowPreset$SHADOW_LOW();
+    new ShadowPreset$SHADOW_MEDIUM();
+    new ShadowPreset$SHADOW_HIGH();
+    new ShadowPreset$SHADOW_ULTRA();
+  }
+  function ShadowPreset$SHADOW_OFF() {
+    ShadowPreset$SHADOW_OFF_instance = this;
+    ShadowPreset.call(this, 'SHADOW_OFF', 0);
+  }
+  ShadowPreset$SHADOW_OFF.prototype.createShadowMap_nqmrbr$ = function (hints) {
+    return null;
+  };
+  ShadowPreset$SHADOW_OFF.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SHADOW_OFF',
+    interfaces: [ShadowPreset]
+  };
+  var ShadowPreset$SHADOW_OFF_instance = null;
+  function ShadowPreset$SHADOW_OFF_getInstance() {
+    ShadowPreset_initFields();
+    return ShadowPreset$SHADOW_OFF_instance;
+  }
+  function ShadowPreset$SHADOW_LOW() {
+    ShadowPreset$SHADOW_LOW_instance = this;
+    ShadowPreset.call(this, 'SHADOW_LOW', 1);
+  }
+  ShadowPreset$SHADOW_LOW.prototype.createShadowMap_nqmrbr$ = function (hints) {
+    return new SimpleShadowMap(0.0, hints.shadowRange);
+  };
+  ShadowPreset$SHADOW_LOW.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SHADOW_LOW',
+    interfaces: [ShadowPreset]
+  };
+  var ShadowPreset$SHADOW_LOW_instance = null;
+  function ShadowPreset$SHADOW_LOW_getInstance() {
+    ShadowPreset_initFields();
+    return ShadowPreset$SHADOW_LOW_instance;
+  }
+  function ShadowPreset$SHADOW_MEDIUM() {
+    ShadowPreset$SHADOW_MEDIUM_instance = this;
+    ShadowPreset.call(this, 'SHADOW_MEDIUM', 2);
+  }
+  ShadowPreset$SHADOW_MEDIUM.prototype.createShadowMap_nqmrbr$ = function (hints) {
+    return new SimpleShadowMap(0.0, hints.shadowRange, 4096);
+  };
+  ShadowPreset$SHADOW_MEDIUM.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SHADOW_MEDIUM',
+    interfaces: [ShadowPreset]
+  };
+  var ShadowPreset$SHADOW_MEDIUM_instance = null;
+  function ShadowPreset$SHADOW_MEDIUM_getInstance() {
+    ShadowPreset_initFields();
+    return ShadowPreset$SHADOW_MEDIUM_instance;
+  }
+  function ShadowPreset$SHADOW_HIGH() {
+    ShadowPreset$SHADOW_HIGH_instance = this;
+    ShadowPreset.call(this, 'SHADOW_HIGH', 3);
+  }
+  ShadowPreset$SHADOW_HIGH.prototype.createShadowMap_nqmrbr$ = function (hints) {
+    return CascadedShadowMap$Companion_getInstance().defaultCascadedShadowMap3_vjorfl$(hints.shadowRange);
+  };
+  ShadowPreset$SHADOW_HIGH.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SHADOW_HIGH',
+    interfaces: [ShadowPreset]
+  };
+  var ShadowPreset$SHADOW_HIGH_instance = null;
+  function ShadowPreset$SHADOW_HIGH_getInstance() {
+    ShadowPreset_initFields();
+    return ShadowPreset$SHADOW_HIGH_instance;
+  }
+  function ShadowPreset$SHADOW_ULTRA() {
+    ShadowPreset$SHADOW_ULTRA_instance = this;
+    ShadowPreset.call(this, 'SHADOW_ULTRA', 4);
+  }
+  ShadowPreset$SHADOW_ULTRA.prototype.createShadowMap_nqmrbr$ = function (hints) {
+    return CascadedShadowMap$Companion_getInstance().defaultCascadedShadowMap3_vjorfl$(hints.shadowRange, 4096);
+  };
+  ShadowPreset$SHADOW_ULTRA.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SHADOW_ULTRA',
+    interfaces: [ShadowPreset]
+  };
+  var ShadowPreset$SHADOW_ULTRA_instance = null;
+  function ShadowPreset$SHADOW_ULTRA_getInstance() {
+    ShadowPreset_initFields();
+    return ShadowPreset$SHADOW_ULTRA_instance;
+  }
+  ShadowPreset.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ShadowPreset',
+    interfaces: [Enum]
+  };
+  function ShadowPreset$values() {
+    return [ShadowPreset$SHADOW_OFF_getInstance(), ShadowPreset$SHADOW_LOW_getInstance(), ShadowPreset$SHADOW_MEDIUM_getInstance(), ShadowPreset$SHADOW_HIGH_getInstance(), ShadowPreset$SHADOW_ULTRA_getInstance()];
+  }
+  ShadowPreset.values = ShadowPreset$values;
+  function ShadowPreset$valueOf(name) {
+    switch (name) {
+      case 'SHADOW_OFF':
+        return ShadowPreset$SHADOW_OFF_getInstance();
+      case 'SHADOW_LOW':
+        return ShadowPreset$SHADOW_LOW_getInstance();
+      case 'SHADOW_MEDIUM':
+        return ShadowPreset$SHADOW_MEDIUM_getInstance();
+      case 'SHADOW_HIGH':
+        return ShadowPreset$SHADOW_HIGH_getInstance();
+      case 'SHADOW_ULTRA':
+        return ShadowPreset$SHADOW_ULTRA_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.ShadowPreset.' + name);
+    }
+  }
+  ShadowPreset.valueOf_61zpoe$ = ShadowPreset$valueOf;
   function Animation(duration) {
     this.duration = duration;
     this.channels = ArrayList_init_0();
@@ -14946,7 +15196,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
     }
   };
-  var addAll_0 = Kotlin.kotlin.collections.addAll_ipc267$;
   Armature.prototype.copyBonesAndAnimations_rdsqcy$ = function (other) {
     var $receiver = this.bones;
     var map = other.bones;
@@ -15563,11 +15812,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
   };
   OrthographicCamera.prototype.computeFrustumPlane_jwr40o$ = function (z, result) {
-    var zd = this.near + (this.far - this.near) * z;
-    this.invView.transform_w1lst9$(result.upperLeft.set_y2kzbl$(this.left, this.top, -zd));
-    this.invView.transform_w1lst9$(result.upperRight.set_y2kzbl$(this.right, this.top, -zd));
-    this.invView.transform_w1lst9$(result.lowerLeft.set_y2kzbl$(this.left, this.bottom, -zd));
-    this.invView.transform_w1lst9$(result.lowerRight.set_y2kzbl$(this.right, this.bottom, -zd));
+    this.invView.transform_w1lst9$(result.upperLeft.set_y2kzbl$(this.left, this.top, -z));
+    this.invView.transform_w1lst9$(result.upperRight.set_y2kzbl$(this.right, this.top, -z));
+    this.invView.transform_w1lst9$(result.lowerLeft.set_y2kzbl$(this.left, this.bottom, -z));
+    this.invView.transform_w1lst9$(result.lowerRight.set_y2kzbl$(this.right, this.bottom, -z));
   };
   OrthographicCamera.prototype.isInFrustum_2qa7tb$ = function (globalCenter, globalRadius) {
     this.tmpNodeCenter_dwzowq$_0.set_czzhiu$(globalCenter);
@@ -15625,13 +15873,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.fovX = angX * 2 * package$math.RAD_2_DEG;
   };
   PerspectiveCamera.prototype.computeFrustumPlane_jwr40o$ = function (z, result) {
-    var zd = this.clipNear + (this.clipFar - this.clipNear) * z;
-    var x = zd * this.tangX_ey6fwg$_0;
-    var y = zd * this.tangY_ey6fvl$_0;
-    this.invView.transform_w1lst9$(result.upperLeft.set_y2kzbl$(-x, y, -zd));
-    this.invView.transform_w1lst9$(result.upperRight.set_y2kzbl$(x, y, -zd));
-    this.invView.transform_w1lst9$(result.lowerLeft.set_y2kzbl$(-x, -y, -zd));
-    this.invView.transform_w1lst9$(result.lowerRight.set_y2kzbl$(x, -y, -zd));
+    var x = z * this.tangX_ey6fwg$_0;
+    var y = z * this.tangY_ey6fvl$_0;
+    this.invView.transform_w1lst9$(result.upperLeft.set_y2kzbl$(-x, y, -z));
+    this.invView.transform_w1lst9$(result.upperRight.set_y2kzbl$(x, y, -z));
+    this.invView.transform_w1lst9$(result.lowerLeft.set_y2kzbl$(-x, -y, -z));
+    this.invView.transform_w1lst9$(result.lowerRight.set_y2kzbl$(x, -y, -z));
   };
   PerspectiveCamera.prototype.isInFrustum_2qa7tb$ = function (globalCenter, globalRadius) {
     this.tmpNodeCenter_hw7d0$_0.set_czzhiu$(globalCenter);
@@ -16515,14 +16762,77 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'InstancedMesh',
     interfaces: [Mesh]
   };
+  function Lighting(scene) {
+    this.scene = scene;
+    this.primaryLight = new DirectionalLight();
+    this.shadowMap_g6ilv9$_0 = null;
+    this.isDefaultShadowMap_0 = false;
+    this.scene.onPreRender.add_11rb$(Lighting_init$lambda(this));
+    this.scene.onDispose.add_11rb$(Lighting_init$lambda_0(this));
+  }
+  Object.defineProperty(Lighting.prototype, 'shadowMap', {
+    get: function () {
+      return this.shadowMap_g6ilv9$_0;
+    },
+    set: function (value) {
+      if (this.shadowMap_g6ilv9$_0 != null) {
+        this.scene.dispose_ipew3$(ensureNotNull(this.shadowMap_g6ilv9$_0));
+      }
+      this.shadowMap_g6ilv9$_0 = value;
+    }
+  });
+  Lighting.prototype.useDefaultShadowMap_aemszp$ = function (ctx) {
+    this.isDefaultShadowMap_0 = true;
+    this.shadowMap = ctx.renderingHints.shadowPreset.createShadowMap_nqmrbr$(ctx.renderingHints);
+  };
+  Lighting.prototype.useCustomShadowMap_y9x37d$ = function (customShadowMap) {
+    this.isDefaultShadowMap_0 = false;
+    this.shadowMap = customShadowMap;
+  };
+  Lighting.prototype.disableShadowMap = function () {
+    this.isDefaultShadowMap_0 = false;
+    this.shadowMap = null;
+  };
+  Lighting.prototype.onRenderingHintsChanged_aemszp$ = function (ctx) {
+    if (this.isDefaultShadowMap_0) {
+      this.useDefaultShadowMap_aemszp$(ctx);
+    }
+  };
+  function Lighting_init$lambda(this$Lighting) {
+    return function ($receiver, ctx) {
+      var tmp$;
+      (tmp$ = this$Lighting.shadowMap) != null ? (tmp$.renderShadowMap_x4tdlw$($receiver, ctx), Unit) : null;
+      return Unit;
+    };
+  }
+  function Lighting_init$lambda_0(this$Lighting) {
+    return function ($receiver, ctx) {
+      var tmp$;
+      (tmp$ = this$Lighting.shadowMap) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
+      return Unit;
+    };
+  }
+  Lighting.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Lighting',
+    interfaces: []
+  };
   function Light() {
-    this.direction = new MutableVec3f(1.0, 1.0, 1.0);
     this.color = MutableColor_init_0(Color$Companion_getInstance().WHITE);
   }
   Light.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Light',
     interfaces: []
+  };
+  function DirectionalLight() {
+    Light.call(this);
+    this.direction = new MutableVec3f(1.0, 1.0, 1.0);
+  }
+  DirectionalLight.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DirectionalLight',
+    interfaces: [Light]
   };
   var mesh = defineInlineFunction('kool.de.fabmax.kool.scene.mesh_ki35ir$', wrapFunction(function () {
     var Attribute = _.de.fabmax.kool.shading.Attribute;
@@ -16777,13 +17087,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Mesh.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
     Node.prototype.render_aemszp$.call(this, ctx);
-    if (!this.isRendered || (!ctx.isDepthTest && ctx.renderPass === RenderPass$SHADOW_getInstance())) {
+    var shader = this.shader;
+    if (!this.isRendered || shader == null || (!ctx.isDepthTest && ctx.renderPass === RenderPass$SHADOW_getInstance())) {
       return;
     }
     if (this.meshData.checkBuffers_aemszp$(ctx)) {
       this.rayTest.onMeshDataChanged_f1jspk$(this);
     }
-    ctx.shaderMgr.bindShader_gt83r0$(this.shader, ctx);
+    ctx.shaderMgr.bindShader_c0ina6$(shader, this, ctx);
     if ((tmp$ = ctx.shaderMgr.boundShader) != null) {
       var tmp$_0;
       tmp$.bindMesh_sbx4mf$(this, ctx);
@@ -17588,8 +17899,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     Group.call(this, name);
     this.onRenderScene = ArrayList_init_0();
     this.camera = new PerspectiveCamera();
-    this.light = new Light();
-    this.defaultShadowMap_jajs2a$_0 = null;
+    this.lighting = new Lighting(this);
     this.clearMask = 16640;
     this.isPickingEnabled = true;
     this.rayTest_odjp91$_0 = new RayTest();
@@ -17598,8 +17908,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.dragHandlers_ipew8g$_0 = ArrayList_init_0();
     this.disposables_mcwga4$_0 = ArrayList_init_0();
     this.scene = this;
-    this.onPreRender.add_11rb$(Scene_init$lambda(this));
-    this.onDispose.add_11rb$(Scene_init$lambda_0(this));
   }
   Object.defineProperty(Scene.prototype, 'isFrustumChecked', {
     get: function () {
@@ -17608,19 +17916,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     set: function (value) {
     }
   });
-  Object.defineProperty(Scene.prototype, 'defaultShadowMap', {
-    get: function () {
-      return this.defaultShadowMap_jajs2a$_0;
-    },
-    set: function (value) {
-      if (this.defaultShadowMap_jajs2a$_0 != null) {
-        var $receiver = this.disposables_mcwga4$_0;
-        var element = ensureNotNull(this.defaultShadowMap_jajs2a$_0);
-        $receiver.add_11rb$(element);
-      }
-      this.defaultShadowMap_jajs2a$_0 = value;
-    }
-  });
+  Scene.prototype.onRenderingHintsChanged_aemszp$ = function (ctx) {
+    this.lighting.onRenderingHintsChanged_aemszp$(ctx);
+  };
   Scene.prototype.preRender_aemszp$ = function (ctx) {
     var tmp$;
     tmp$ = this.disposables_mcwga4$_0;
@@ -17725,20 +18023,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
     }
   };
-  function Scene_init$lambda(this$Scene) {
-    return function ($receiver, ctx) {
-      var tmp$;
-      (tmp$ = this$Scene.defaultShadowMap) != null ? (tmp$.renderShadowMap_x4tdlw$($receiver, ctx), Unit) : null;
-      return Unit;
-    };
-  }
-  function Scene_init$lambda_0(this$Scene) {
-    return function ($receiver, ctx) {
-      var tmp$;
-      (tmp$ = this$Scene.defaultShadowMap) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
-      return Unit;
-    };
-  }
   Scene.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Scene',
@@ -17821,19 +18105,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function Skybox$Skybox$SkyboxShader_init$ObjectLiteral(this$SkyboxShader) {
     this.this$SkyboxShader = this$SkyboxShader;
   }
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = function (shaderProps, text, ctx) {
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsAfterInput_kv1jfs$ = function (shaderProps, node, text, ctx) {
     text.append_gw00v9$(this.this$SkyboxShader.generator.vsOut + ' vec3 texCoord;' + '\n');
   };
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsAfterProj_jh5913$ = function (shaderProps, text, ctx) {
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsAfterProj_kv1jfs$ = function (shaderProps, node, text, ctx) {
     text.append_gw00v9$('texCoord = ' + Attribute$Companion_getInstance().POSITIONS + ';' + '\n');
     text.append_gw00v9$('vec4 pos = uProjMatrix * mat4(mat3(' + GlslGenerator$Companion_getInstance().U_VIEW_MATRIX + ')) * vec4(' + Attribute$Companion_getInstance().POSITIONS + ', 1.0);' + '\n');
     text.append_gw00v9$('gl_Position = pos.xyww;\n');
   };
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = function (shaderProps, text, ctx) {
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterInput_kv1jfs$ = function (shaderProps, node, text, ctx) {
     text.append_gw00v9$(this.this$SkyboxShader.generator.fsIn + ' vec3 texCoord;' + '\n');
     text.append_gw00v9$('uniform samplerCube uEnvironmentMap;\n');
   };
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = function (shaderProps, text, ctx) {
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterSampling_kv1jfs$ = function (shaderProps, node, text, ctx) {
     text.append_gw00v9$(this.this$SkyboxShader.generator.fsOutBody + ' = texture(' + GlslGenerator$Companion_getInstance().U_ENVIRONMENT_MAP + ', texCoord);' + '\n');
   };
   Skybox$Skybox$SkyboxShader_init$ObjectLiteral.$metadata$ = {
@@ -18096,20 +18380,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     newScene != null ? (newScene.registerDragHandler_dsvxak$(this), Unit) : null;
   };
   SphericalInputTransform.prototype.handleDrag_kin2e3$ = function (dragPtrs, ctx) {
+    var tmp$;
     if (!dragPtrs.isEmpty() && dragPtrs.get_za3lpa$(0).isInViewport_aemszp$(ctx)) {
       if (dragPtrs.get_za3lpa$(0).buttonEventMask !== 0 || dragPtrs.get_za3lpa$(0).buttonMask !== this.prevButtonMask_tpqbjl$_0) {
-        if (dragPtrs.get_za3lpa$(0).isLeftButtonDown) {
-          this.dragMethod_dbmj85$_0 = this.leftDragMethod;
-        }
-         else if (dragPtrs.get_za3lpa$(0).isRightButtonDown) {
-          this.dragMethod_dbmj85$_0 = this.rightDragMethod;
-        }
-         else if (dragPtrs.get_za3lpa$(0).isMiddleButtonDown) {
-          this.dragMethod_dbmj85$_0 = this.middleDragMethod;
-        }
-         else {
-          this.dragMethod_dbmj85$_0 = SphericalInputTransform$DragMethod$NONE_getInstance();
-        }
+        if (dragPtrs.get_za3lpa$(0).isLeftButtonDown)
+          tmp$ = this.leftDragMethod;
+        else if (dragPtrs.get_za3lpa$(0).isRightButtonDown)
+          tmp$ = this.rightDragMethod;
+        else if (dragPtrs.get_za3lpa$(0).isMiddleButtonDown)
+          tmp$ = this.middleDragMethod;
+        else
+          tmp$ = SphericalInputTransform$DragMethod$NONE_getInstance();
+        this.dragMethod_dbmj85$_0 = tmp$;
         this.dragStart_48qwuy$_0 = this.dragMethod_dbmj85$_0 !== SphericalInputTransform$DragMethod$NONE_getInstance();
       }
       this.prevButtonMask_tpqbjl$_0 = dragPtrs.get_za3lpa$(0).buttonMask;
@@ -21029,7 +21311,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function ShaderManager() {
     SharedResManager.call(this);
     this.boundShader_u35sjq$_0 = null;
-    this.shadingHints = new ShadingHints(PreferredLightModel$PHONG_getInstance(), PreferredShadowMethod$NO_SHADOW_getInstance());
   }
   Object.defineProperty(ShaderManager.prototype, 'boundShader', {
     get: function () {
@@ -21040,26 +21321,30 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
   });
   ShaderManager.prototype.onNewFrame_aemszp$ = function (ctx) {
-    this.bindShader_gt83r0$(null, ctx);
+    this.clearShader_aemszp$(ctx);
   };
-  ShaderManager.prototype.bindShader_gt83r0$ = function (shader, ctx) {
-    var tmp$, tmp$_0, tmp$_1;
-    if (shader != null) {
-      if (!shader.isValid) {
-        shader.onLoad_aemszp$(ctx);
-      }
-      if (!shader.isBound_aemszp$(ctx)) {
-        if (!equals((tmp$ = shader.res) != null ? tmp$.glRef : null, (tmp$_1 = (tmp$_0 = this.boundShader) != null ? tmp$_0.res : null) != null ? tmp$_1.glRef : null)) {
-          glUseProgram(shader.res);
-        }
-        this.boundShader = shader;
-        shader.onBind_aemszp$(ctx);
-      }
-    }
-     else if (this.boundShader != null) {
+  ShaderManager.prototype.clearShader_aemszp$ = function (ctx) {
+    ctx.checkIsGlThread();
+    if (this.boundShader != null) {
       glUseProgram(null);
       this.boundShader = null;
     }
+  };
+  ShaderManager.prototype.bindShader_c0ina6$ = function (shader, toNode, ctx) {
+    var tmp$, tmp$_0, tmp$_1;
+    if (!shader.isValid) {
+      shader.onLoad_x4tdlw$(toNode, ctx);
+    }
+    if (!shader.isBound_aemszp$(ctx)) {
+      if (!equals((tmp$ = shader.res) != null ? tmp$.glRef : null, (tmp$_1 = (tmp$_0 = this.boundShader) != null ? tmp$_0.res : null) != null ? tmp$_1.glRef : null)) {
+        glUseProgram(shader.res);
+      }
+      this.boundShader = shader;
+      shader.onBind_x4tdlw$(toNode, ctx);
+    }
+  };
+  ShaderManager.prototype.onRenderingHintsChanged_cwprtu$ = function (ctx) {
+    this.deleteAllResources_aemszp$(ctx);
   };
   ShaderManager.prototype.createShader_2ouvod$ = function (source, ctx) {
     return this.addReference_pl4ufq$(source, ctx);
@@ -21109,22 +21394,48 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
       throw KoolException_init('Fragment shader compilation failed: ' + log_0);
     }
+    var geomShader = null;
+    if (key.geometrySrc.length > 0) {
+      geomShader = ShaderResource$Companion_getInstance().createGeometryShader_aemszp$(ctx);
+      geomShader.shaderSource_vvp3il$(key.geometrySrc, ctx);
+      if (!fragShader.compile_aemszp$(ctx)) {
+        var log_1 = geomShader.getInfoLog_aemszp$(ctx);
+        geomShader.delete_aemszp$(ctx);
+        var $this_3 = package$util.Log;
+        var level_3 = Log$Level.ERROR;
+        var tag_3 = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level_3.level >= $this_3.level.level) {
+          $this_3.printer(level_3, tag_3, 'Geometry shader compilation failed: ' + log_1);
+        }
+        var $this_4 = package$util.Log;
+        var level_4 = Log$Level.ERROR;
+        var tag_4 = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level_4.level >= $this_4.level.level) {
+          $this_4.printer(level_4, tag_4, 'Shader source: ' + '\n' + key.geometrySrc);
+        }
+        throw KoolException_init('Geometry shader compilation failed: ' + log_1);
+      }
+    }
     var prog = ProgramResource$Companion_getInstance().create_aemszp$(ctx);
     prog.attachShader_55k08u$(vertShader, ctx);
     prog.attachShader_55k08u$(fragShader, ctx);
+    if (geomShader != null) {
+      prog.attachShader_55k08u$(geomShader, ctx);
+    }
     var success = prog.link_aemszp$(ctx);
     vertShader.delete_aemszp$(ctx);
     fragShader.delete_aemszp$(ctx);
+    geomShader != null ? (geomShader.delete_aemszp$(ctx), Unit) : null;
     if (!success) {
-      var log_1 = prog.getInfoLog_aemszp$(ctx);
+      var log_2 = prog.getInfoLog_aemszp$(ctx);
       prog.delete_aemszp$(ctx);
-      var $this_3 = package$util.Log;
-      var level_3 = Log$Level.ERROR;
-      var tag_3 = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level_3.level >= $this_3.level.level) {
-        $this_3.printer(level_3, tag_3, 'Shader linkage failed: ' + log_1);
+      var $this_5 = package$util.Log;
+      var level_5 = Log$Level.ERROR;
+      var tag_5 = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level_5.level >= $this_5.level.level) {
+        $this_5.printer(level_5, tag_5, 'Shader linkage failed: ' + log_2);
       }
-      throw KoolException_init('Shader linkage failed: ' + log_1);
+      throw KoolException_init('Shader linkage failed: ' + log_2);
     }
     return prog;
   };
@@ -21304,6 +21615,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.uMvpMatrix = this.addUniform_1ybs2r$(new UniformMatrix4(GlslGenerator$Companion_getInstance().U_MVP_MATRIX));
     this.uModelMatrix = this.addUniform_1ybs2r$(new UniformMatrix4(GlslGenerator$Companion_getInstance().U_MODEL_MATRIX));
     this.uViewMatrix = this.addUniform_1ybs2r$(new UniformMatrix4(GlslGenerator$Companion_getInstance().U_VIEW_MATRIX));
+    this.uProjMatrix = this.addUniform_1ybs2r$(new UniformMatrix4(GlslGenerator$Companion_getInstance().U_PROJ_MATRIX));
     this.uLightColor = this.addUniform_1ybs2r$(new Uniform3f(GlslGenerator$Companion_getInstance().U_LIGHT_COLOR));
     this.uLightDirection = this.addUniform_1ybs2r$(new Uniform3f(GlslGenerator$Companion_getInstance().U_LIGHT_DIRECTION));
     this.uCamPosition = this.addUniform_1ybs2r$(new Uniform3f(GlslGenerator$Companion_getInstance().U_CAMERA_POSITION));
@@ -21320,12 +21632,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.uFogRange = this.addUniform_1ybs2r$(new Uniform1f(GlslGenerator$Companion_getInstance().U_FOG_RANGE));
     this.uBones = this.addUniform_1ybs2r$(new UniformMatrix4(GlslGenerator$Companion_getInstance().U_BONES));
     this.uShadowMvp = this.addUniform_1ybs2r$(new UniformMatrix4(GlslGenerator$Companion_getInstance().U_SHADOW_MVP));
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-    this.uShadowTexSz = this.addUniform_1ybs2r$(new Uniform1iv(GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ, (tmp$_0 = (tmp$ = this.props.shadowMap) != null ? tmp$.numMaps : null) != null ? tmp$_0 : 0));
-    this.uClipSpaceFarZ = this.addUniform_1ybs2r$(new Uniform1fv(GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z, (tmp$_2 = (tmp$_1 = this.props.shadowMap) != null ? tmp$_1.numMaps : null) != null ? tmp$_2 : 0));
+    this.uShadowTexSz = this.addUniform_1ybs2r$(new Uniform1iv(GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ));
+    this.uClipSpaceFarZ = this.addUniform_1ybs2r$(new Uniform1fv(GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z));
     this.uShadowTex = ArrayList_init_0();
-    this.shadowMap_6x93ay$_0 = null;
-    this.scene_i3j15i$_0 = null;
     this.shininess = this.props.shininess;
     this.specularIntensity = this.props.specularIntensity;
     this.reflectivity = this.props.reflectivity;
@@ -21335,17 +21644,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.environmentMap = this.props.environmentMap;
     this.alpha = this.props.alpha;
     this.saturation = this.props.saturation;
-    this.shadowMap_6x93ay$_0 = this.props.shadowMap;
-    if (this.shadowMap_6x93ay$_0 != null) {
-      this.uShadowMvp.value = this.shadowMap_6x93ay$_0.shadowMvp;
-      tmp$_3 = this.shadowMap_6x93ay$_0.numMaps;
-      for (var i = 0; i < tmp$_3; i++) {
-        var shadowTex = this.addUniform_1ybs2r$(new UniformTexture2D(GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i));
-        this.uShadowTex.add_11rb$(shadowTex);
-        shadowTex.value = this.shadowMap_6x93ay$_0.getShadowMap_za3lpa$(i);
-        this.uShadowTexSz.value[i] = this.shadowMap_6x93ay$_0.getShadowMapSize_za3lpa$(i);
-      }
-    }
   }
   Object.defineProperty(BasicShader.prototype, 'shininess', {
     get: function () {
@@ -21427,8 +21725,23 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       this.uBones.value = value;
     }
   });
-  BasicShader.prototype.generate_aemszp$ = function (ctx) {
-    this.source = this.generator.generate_eh8ey5$(this.props, ctx);
+  BasicShader.prototype.generate_x4tdlw$ = function (node, ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    var shadowMap = (tmp$_0 = (tmp$ = node.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.shadowMap : null;
+    this.uShadowTexSz.setSize_za3lpa$((tmp$_1 = shadowMap != null ? shadowMap.numMaps : null) != null ? tmp$_1 : 0);
+    this.uClipSpaceFarZ.setSize_za3lpa$((tmp$_2 = shadowMap != null ? shadowMap.numMaps : null) != null ? tmp$_2 : 0);
+    this.uShadowTex.clear();
+    if (shadowMap != null) {
+      this.uShadowMvp.value = shadowMap.shadowMvp;
+      tmp$_3 = shadowMap.numMaps;
+      for (var i = 0; i < tmp$_3; i++) {
+        var shadowTex = this.addUniform_1ybs2r$(new UniformTexture2D(GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i));
+        this.uShadowTex.add_11rb$(shadowTex);
+        shadowTex.value = shadowMap.getShadowMap_za3lpa$(i);
+        this.uShadowTexSz.value[i] = shadowMap.getShadowMapSize_za3lpa$(i);
+      }
+    }
+    this.source = this.generator.generate_4v27xu$(this.props, node, ctx);
     this.attributes.clear();
     this.attributes.add_11rb$(Attribute$Companion_getInstance().POSITIONS);
     this.attributes.add_11rb$(Attribute$Companion_getInstance().NORMALS);
@@ -21449,10 +21762,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     addAll_0(this.attributes, this.generator.customAttributes);
   };
-  BasicShader.prototype.onBind_aemszp$ = function (ctx) {
-    var tmp$, tmp$_0;
+  BasicShader.prototype.onBind_x4tdlw$ = function (node, ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
     this.onMatrixUpdate_aemszp$(ctx);
-    this.scene_i3j15i$_0 = null;
     this.uFogColor.bind_aemszp$(ctx);
     this.uFogRange.bind_aemszp$(ctx);
     this.uSaturation.bind_aemszp$(ctx);
@@ -21465,19 +21777,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.uNormalMap.bind_aemszp$(ctx);
     this.uEnvironmentMap.bind_aemszp$(ctx);
     this.uBones.bind_aemszp$(ctx);
-    if (ctx.glCapabilities.depthTextures && this.shadowMap_6x93ay$_0 != null) {
+    var shadowMap = (tmp$_0 = (tmp$ = node.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.shadowMap : null;
+    if (ctx.glCapabilities.depthTextures && shadowMap != null) {
       if (ctx.renderPass === RenderPass$SHADOW_getInstance()) {
-        tmp$ = this.shadowMap_6x93ay$_0.numMaps;
-        for (var i = 0; i < tmp$; i++) {
+        tmp$_1 = shadowMap.numMaps;
+        for (var i = 0; i < tmp$_1; i++) {
           this.uShadowTex.get_za3lpa$(i).value = null;
           this.uShadowTex.get_za3lpa$(i).bind_aemszp$(ctx);
         }
       }
        else {
-        tmp$_0 = this.shadowMap_6x93ay$_0.numMaps;
-        for (var i_0 = 0; i_0 < tmp$_0; i_0++) {
-          this.uClipSpaceFarZ.value[i_0] = this.shadowMap_6x93ay$_0.getClipSpaceFarZ_za3lpa$(i_0);
-          this.uShadowTex.get_za3lpa$(i_0).value = this.shadowMap_6x93ay$_0.getShadowMap_za3lpa$(i_0);
+        tmp$_2 = shadowMap.numMaps;
+        for (var i_0 = 0; i_0 < tmp$_2; i_0++) {
+          this.uClipSpaceFarZ.value[i_0] = shadowMap.getClipSpaceFarZ_za3lpa$(i_0);
+          this.uShadowTex.get_za3lpa$(i_0).value = shadowMap.getShadowMap_za3lpa$(i_0);
           this.uShadowTex.get_za3lpa$(i_0).bind_aemszp$(ctx);
         }
         this.uShadowMvp.bind_aemszp$(ctx);
@@ -21486,28 +21799,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
     }
   };
-  BasicShader.prototype.bindMesh_sbx4mf$ = function (mesh, ctx) {
-    if (!equals(this.scene_i3j15i$_0, mesh.scene)) {
-      this.scene_i3j15i$_0 = mesh.scene;
-      if (this.scene_i3j15i$_0 != null) {
-        this.uCamPosition.value.set_czzhiu$(ensureNotNull(this.scene_i3j15i$_0).camera.globalPos);
-        this.uCamPosition.bind_aemszp$(ctx);
-        var light = ensureNotNull(this.scene_i3j15i$_0).light;
-        this.uLightDirection.value.set_czzhiu$(light.direction);
-        this.uLightDirection.bind_aemszp$(ctx);
-        this.uLightColor.value.set_y2kzbl$(light.color.r, light.color.g, light.color.b);
-        this.uLightColor.bind_aemszp$(ctx);
-      }
-    }
-    Shader.prototype.bindMesh_sbx4mf$.call(this, mesh, ctx);
-  };
   BasicShader.prototype.onMatrixUpdate_aemszp$ = function (ctx) {
     this.uMvpMatrix.value = ctx.mvpState.mvpMatrixBuffer;
     this.uMvpMatrix.bind_aemszp$(ctx);
-    this.uViewMatrix.value = ctx.mvpState.viewMatrixBuffer;
-    this.uViewMatrix.bind_aemszp$(ctx);
     this.uModelMatrix.value = ctx.mvpState.modelMatrixBuffer;
     this.uModelMatrix.bind_aemszp$(ctx);
+    this.uViewMatrix.value = ctx.mvpState.viewMatrixBuffer;
+    this.uViewMatrix.bind_aemszp$(ctx);
+    this.uProjMatrix.value = ctx.mvpState.projMatrixBuffer;
+    this.uProjMatrix.bind_aemszp$(ctx);
+  };
+  BasicShader.prototype.bindMesh_sbx4mf$ = function (mesh, ctx) {
+    var scene = ensureNotNull(mesh.scene);
+    this.uCamPosition.value.set_czzhiu$(scene.camera.globalPos);
+    this.uCamPosition.bind_aemszp$(ctx);
+    var lighting = scene.lighting;
+    this.uLightDirection.value.set_czzhiu$(lighting.primaryLight.direction);
+    this.uLightDirection.bind_aemszp$(ctx);
+    this.uLightColor.value.set_y2kzbl$(lighting.primaryLight.color.r, lighting.primaryLight.color.g, lighting.primaryLight.color.b);
+    this.uLightColor.bind_aemszp$(ctx);
+    Shader.prototype.bindMesh_sbx4mf$.call(this, mesh, ctx);
   };
   BasicShader.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
@@ -21561,13 +21872,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       this.uPointSz.value[0] = value;
     }
   });
-  BasicPointShader.prototype.onBind_aemszp$ = function (ctx) {
-    BasicShader.prototype.onBind_aemszp$.call(this, ctx);
+  BasicPointShader.prototype.onBind_x4tdlw$ = function (node, ctx) {
+    BasicShader.prototype.onBind_x4tdlw$.call(this, node, ctx);
     this.uPointSz.bind_aemszp$(ctx);
   };
   function BasicPointShader_init$ObjectLiteral() {
   }
-  BasicPointShader_init$ObjectLiteral.prototype.vsAfterProj_jh5913$ = function (shaderProps, text, ctx) {
+  BasicPointShader_init$ObjectLiteral.prototype.vsAfterProj_kv1jfs$ = function (shaderProps, node, text, ctx) {
     text.append_gw00v9$('gl_PointSize = uPointSz;\n');
   };
   BasicPointShader_init$ObjectLiteral.$metadata$ = {
@@ -21621,8 +21932,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       this.uColorMix_0.value[0] = value;
     }
   });
-  BlurShader.prototype.onBind_aemszp$ = function (ctx) {
-    BasicShader.prototype.onBind_aemszp$.call(this, ctx);
+  BlurShader.prototype.onBind_x4tdlw$ = function (node, ctx) {
+    BasicShader.prototype.onBind_x4tdlw$.call(this, node, ctx);
     var helper = this.blurHelper;
     if (helper != null) {
       helper.isInUse_8be2vx$ = true;
@@ -21637,7 +21948,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   };
   function BlurShader_init$ObjectLiteral() {
   }
-  BlurShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = function (shaderProps, text, ctx) {
+  BlurShader_init$ObjectLiteral.prototype.fsAfterSampling_kv1jfs$ = function (shaderProps, node, text, ctx) {
     text.append_gw00v9$('vec2 blurSamplePos = vec2((gl_FragCoord.x - uTexPos.x) / uTexSz.x, ').append_gw00v9$('1.0 - (gl_FragCoord.y - uTexPos.y) / uTexSz.y);\n').append_gw00v9$(ctx.glCapabilities.glslDialect.fragColorBody + ' = ' + ctx.glCapabilities.glslDialect.texSampler + '(').append_gw00v9$('uBlurTexture, blurSamplePos) * (1.0 - uColorMix) + ').append_gw00v9$(ctx.glCapabilities.glslDialect.fragColorBody + ' * uColorMix;' + '\n');
   };
   BlurShader_init$ObjectLiteral.$metadata$ = {
@@ -21840,7 +22151,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     ctx.pushAttributes();
     ctx.clearColor = Color$Companion_getInstance().BLACK;
     ctx.applyAttributes();
-    ctx.shaderMgr.bindShader_gt83r0$(null, ctx);
+    ctx.shaderMgr.clearShader_aemszp$(ctx);
     ctx.mvpState.pushMatrices();
     ctx.mvpState.projMatrix.setIdentity();
     ctx.mvpState.viewMatrix.setIdentity();
@@ -21902,7 +22213,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.uTexture = this.addUniform_1ybs2r$(new UniformTexture2D('uTexture'));
     this.uDirection = this.addUniform_1ybs2r$(new Uniform2f('uDirection'));
   }
-  BlurredBackgroundHelper$BlurQuadShader.prototype.generate_aemszp$ = function (ctx) {
+  BlurredBackgroundHelper$BlurQuadShader.prototype.generate_x4tdlw$ = function (node, ctx) {
     this.attributes.add_11rb$(Attribute$Companion_getInstance().POSITIONS);
     this.attributes.add_11rb$(Attribute$Companion_getInstance().TEXTURE_COORDS);
     var vs = ctx.glCapabilities.glslDialect.version + '\n' + (ctx.glCapabilities.glslDialect.vsIn + ' vec3 ' + Attribute$Companion_getInstance().POSITIONS.name + ';' + '\n') + (ctx.glCapabilities.glslDialect.vsIn + ' vec2 ' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + ';' + '\n') + (ctx.glCapabilities.glslDialect.vsOut + ' vec2 vTexCoord;' + '\n') + 'void main() {\n' + ('  gl_Position = vec4(' + Attribute$Companion_getInstance().POSITIONS.name + ', 1.0);' + '\n') + ('  vTexCoord = ' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + ';' + '\n') + '}';
@@ -21917,7 +22228,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     this.source = Shader$Shader$Source_init(vs, fs);
   };
-  BlurredBackgroundHelper$BlurQuadShader.prototype.onBind_aemszp$ = function (ctx) {
+  BlurredBackgroundHelper$BlurQuadShader.prototype.onBind_x4tdlw$ = function (node, ctx) {
     this.uTexture.bind_aemszp$(ctx);
     this.uDirection.bind_aemszp$(ctx);
   };
@@ -21982,6 +22293,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.U_MVP_MATRIX = 'uMvpMatrix';
     this.U_MODEL_MATRIX = 'uModelMatrix';
     this.U_VIEW_MATRIX = 'uViewMatrix';
+    this.U_PROJ_MATRIX = 'uProjMatrix';
     this.U_LIGHT_DIRECTION = 'uLightDirection';
     this.U_LIGHT_COLOR = 'uLightColor';
     this.U_SHININESS = 'uShininess';
@@ -22033,27 +22345,29 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   }
   function GlslGenerator$GlslInjector() {
   }
-  GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.vsHeader_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.vsAfterInput_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.vsBeforeProj_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.vsAfterProj_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.vsAfterProj_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.vsEnd_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.fsHeader_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.fsAfterInput_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.fsBeforeSampling_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsAfterSampling_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.fsAfterSampling_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.fsAfterLighting_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
-  GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$ = function (shaderProps, text, ctx) {
+  GlslGenerator$GlslInjector.prototype.fsEnd_kv1jfs$ = function (shaderProps, node, text, ctx) {
+  };
+  GlslGenerator$GlslInjector.prototype.geomShader_kv1jfs$ = function (shaderProps, node, text, ctx) {
   };
   GlslGenerator$GlslInjector.$metadata$ = {
     kind: Kind_INTERFACE,
@@ -22120,41 +22434,55 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       this.texSampler_1a4zdf$_0 = texSampler;
     }
   });
-  GlslGenerator.prototype.generate_eh8ey5$ = function (shaderProps, ctx) {
+  GlslGenerator.prototype.generate_4v27xu$ = function (shaderProps, node, ctx) {
     this.vsIn = ctx.glCapabilities.glslDialect.vsIn;
     this.vsOut = ctx.glCapabilities.glslDialect.vsOut;
     this.fsIn = ctx.glCapabilities.glslDialect.fsIn;
     this.fsOut = ctx.glCapabilities.glslDialect.fragColorHead;
     this.fsOutBody = ctx.glCapabilities.glslDialect.fragColorBody;
     this.texSampler = ctx.glCapabilities.glslDialect.texSampler;
-    return Shader$Shader$Source_init(this.generateVertShader_4lpf1y$_0(shaderProps, ctx), this.generateFragShader_l2byrv$_0(shaderProps, ctx));
+    return new Shader$Source(this.generateVertShader_lchxyh$_0(shaderProps, node, ctx), this.generateGeomShader_7agvf0$_0(shaderProps, node, ctx), this.generateFragShader_ms1zqi$_0(shaderProps, node, ctx));
   };
-  GlslGenerator.prototype.generateVertShader_4lpf1y$_0 = function (shaderProps, ctx) {
+  GlslGenerator.prototype.generateVertShader_lchxyh$_0 = function (shaderProps, node, ctx) {
     var text = new StringBuilder(ctx.glCapabilities.glslDialect.version + '\n');
     var tmp$;
     tmp$ = this.injectors.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.vsHeader_jh5913$(shaderProps, text, ctx);
+      element.vsHeader_kv1jfs$(shaderProps, node, text, ctx);
     }
-    this.generateVertInputCode_mthzc6$_0(shaderProps, text, ctx);
-    this.generateVertBodyCode_srnive$_0(shaderProps, text, ctx);
+    this.generateVertInputCode_921nlz$_0(shaderProps, node, text, ctx);
+    this.generateVertBodyCode_x1mox5$_0(shaderProps, node, text, ctx);
     return text.toString();
   };
-  GlslGenerator.prototype.generateFragShader_l2byrv$_0 = function (shaderProps, ctx) {
+  GlslGenerator.prototype.generateFragShader_ms1zqi$_0 = function (shaderProps, node, ctx) {
     var text = new StringBuilder(ctx.glCapabilities.glslDialect.version + '\n');
     var tmp$;
     tmp$ = this.injectors.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.fsHeader_jh5913$(shaderProps, text, ctx);
+      element.fsHeader_kv1jfs$(shaderProps, node, text, ctx);
     }
-    this.generateFragInputCode_nfcw8p$_0(shaderProps, text, ctx);
-    this.generateFragBodyCode_fke3g5$_0(shaderProps, text, ctx);
+    this.generateFragInputCode_za72l4$_0(shaderProps, node, text, ctx);
+    this.generateFragBodyCode_y9i40m$_0(shaderProps, node, text, ctx);
     return text.toString();
   };
-  GlslGenerator.prototype.generateVertInputCode_mthzc6$_0 = function (shaderProps, text, ctx) {
-    var tmp$, tmp$_0;
+  GlslGenerator.prototype.generateGeomShader_7agvf0$_0 = function (shaderProps, node, ctx) {
+    var text = StringBuilder_init();
+    var tmp$;
+    tmp$ = this.injectors.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.geomShader_kv1jfs$(shaderProps, node, text, ctx);
+    }
+    var txt = text.toString();
+    if (txt.length > 0 && !startsWith(txt, '#version')) {
+      txt = ctx.glCapabilities.glslDialect.version + '\n' + txt;
+    }
+    return txt;
+  };
+  GlslGenerator.prototype.generateVertInputCode_921nlz$_0 = function (shaderProps, node, text, ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
     text.append_gw00v9$(this.vsIn + ' vec3 ' + Attribute$Companion_getInstance().POSITIONS.glslSrcName + ';' + '\n');
     text.append_gw00v9$('uniform mat4 uModelMatrix;\n');
     text.append_gw00v9$('uniform mat4 uViewMatrix;\n');
@@ -22195,8 +22523,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       text.append_gw00v9$(this.vsIn + ' vec4 ' + Armature$Companion_getInstance().BONE_WEIGHTS.glslSrcName + ';' + '\n');
       text.append_gw00v9$('uniform mat4 ' + GlslGenerator$Companion_getInstance().U_BONES + '[' + shaderProps.numBones + '];' + '\n');
     }
-    var shadowMap = shaderProps.shadowMap;
-    if (shadowMap != null) {
+    var shadowMap = (tmp$_0 = (tmp$ = node.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.shadowMap : null;
+    if (shaderProps.isReceivingShadows && shadowMap != null) {
       text.append_gw00v9$('uniform mat4 ' + GlslGenerator$Companion_getInstance().U_SHADOW_MVP + '[' + shadowMap.numMaps + '];' + '\n');
       text.append_gw00v9$(this.vsOut + ' vec4 ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + shadowMap.numMaps + '];' + '\n');
       text.append_gw00v9$(this.vsOut + ' float ' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ';' + '\n');
@@ -22209,25 +22537,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (isFsNeedsWorldNormal) {
       text.append_gw00v9$(this.vsOut + ' vec3 ' + GlslGenerator$Companion_getInstance().V_NORMAL_WORLDSPACE + ';' + '\n');
     }
-    tmp$ = this.customUniforms.iterator();
-    while (tmp$.hasNext()) {
-      var uniform = tmp$.next();
+    tmp$_1 = this.customUniforms.iterator();
+    while (tmp$_1.hasNext()) {
+      var uniform = tmp$_1.next();
       text.append_gw00v9$('uniform ' + uniform.type + ' ' + uniform.name + ';' + '\n');
     }
-    tmp$_0 = this.customAttributes.iterator();
-    while (tmp$_0.hasNext()) {
-      var attrib = tmp$_0.next();
+    tmp$_2 = this.customAttributes.iterator();
+    while (tmp$_2.hasNext()) {
+      var attrib = tmp$_2.next();
       text.append_gw00v9$(this.vsIn + ' ' + attrib.type.glslTypeName + ' ' + attrib.glslSrcName + ';' + '\n');
     }
-    var tmp$_1;
-    tmp$_1 = this.injectors.iterator();
-    while (tmp$_1.hasNext()) {
-      var element = tmp$_1.next();
-      element.vsAfterInput_jh5913$(shaderProps, text, ctx);
+    var tmp$_3;
+    tmp$_3 = this.injectors.iterator();
+    while (tmp$_3.hasNext()) {
+      var element = tmp$_3.next();
+      element.vsAfterInput_kv1jfs$(shaderProps, node, text, ctx);
     }
   };
-  GlslGenerator.prototype.generateVertBodyCode_srnive$_0 = function (shaderProps, text, ctx) {
-    var tmp$;
+  GlslGenerator.prototype.generateVertBodyCode_x1mox5$_0 = function (shaderProps, node, text, ctx) {
+    var tmp$, tmp$_0, tmp$_1;
     text.append_gw00v9$('\nvoid main() {\n');
     var mvpMat = GlslGenerator$Companion_getInstance().U_MVP_MATRIX;
     var modelMat = GlslGenerator$Companion_getInstance().U_MODEL_MATRIX;
@@ -22244,11 +22572,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         text.append_gw00v9$('vec4 tangent = vec4(' + Attribute$Companion_getInstance().TANGENTS + ', 0.0);' + '\n');
       }
     }
-    var tmp$_0;
-    tmp$_0 = this.injectors.iterator();
-    while (tmp$_0.hasNext()) {
-      var element = tmp$_0.next();
-      element.vsBeforeProj_jh5913$(shaderProps, text, ctx);
+    var tmp$_2;
+    tmp$_2 = this.injectors.iterator();
+    while (tmp$_2.hasNext()) {
+      var element = tmp$_2.next();
+      element.vsBeforeProj_kv1jfs$(shaderProps, node, text, ctx);
     }
     if (shaderProps.numBones > 0 && ctx.glCapabilities.shaderIntAttribs) {
       text.append_gw00v9$('mat4 boneT = ' + GlslGenerator$Companion_getInstance().U_BONES + '[' + Armature$Companion_getInstance().BONE_INDICES + '[0]] * ' + Armature$Companion_getInstance().BONE_WEIGHTS + '[0];' + '\n');
@@ -22264,16 +22592,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
     }
     text.append_gw00v9$('gl_Position = ' + mvpMat + ' * position;' + '\n');
-    var tmp$_1;
-    tmp$_1 = this.injectors.iterator();
-    while (tmp$_1.hasNext()) {
-      var element_0 = tmp$_1.next();
-      element_0.vsAfterProj_jh5913$(shaderProps, text, ctx);
+    var tmp$_3;
+    tmp$_3 = this.injectors.iterator();
+    while (tmp$_3.hasNext()) {
+      var element_0 = tmp$_3.next();
+      element_0.vsAfterProj_kv1jfs$(shaderProps, node, text, ctx);
     }
-    var shadowMap = shaderProps.shadowMap;
-    if (shadowMap != null) {
-      tmp$ = shadowMap.numMaps;
-      for (var i = 0; i < tmp$; i++) {
+    var shadowMap = (tmp$_0 = (tmp$ = node.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.shadowMap : null;
+    if (shaderProps.isReceivingShadows && shadowMap != null) {
+      tmp$_1 = shadowMap.numMaps;
+      for (var i = 0; i < tmp$_1; i++) {
         text.append_gw00v9$(GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '] = ' + GlslGenerator$Companion_getInstance().U_SHADOW_MVP + '[' + i + '] * (' + modelMat + ' * position);' + '\n');
       }
       text.append_gw00v9$('vPositionClipspaceZ = gl_Position.z;\n');
@@ -22310,16 +22638,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       text.append_gw00v9$('vDiffuseLightColor = uLightColor * cosTheta;\n');
       text.append_gw00v9$('vSpecularLightColor = uLightColor * uSpecularIntensity * pow(cosAlpha, uShininess);\n');
     }
-    var tmp$_2;
-    tmp$_2 = this.injectors.iterator();
-    while (tmp$_2.hasNext()) {
-      var element_1 = tmp$_2.next();
-      element_1.vsEnd_jh5913$(shaderProps, text, ctx);
+    var tmp$_4;
+    tmp$_4 = this.injectors.iterator();
+    while (tmp$_4.hasNext()) {
+      var element_1 = tmp$_4.next();
+      element_1.vsEnd_kv1jfs$(shaderProps, node, text, ctx);
     }
     text.append_gw00v9$('}\n');
   };
-  GlslGenerator.prototype.generateFragInputCode_nfcw8p$_0 = function (shaderProps, text, ctx) {
-    var tmp$, tmp$_0;
+  GlslGenerator.prototype.generateFragInputCode_za72l4$_0 = function (shaderProps, node, text, ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
     text.append_gw00v9$('precision highp float;\n');
     text.append_gw00v9$('uniform mat4 uViewMatrix;\n');
     if (shaderProps.isAlpha) {
@@ -22357,12 +22685,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (shaderProps.isStaticColor) {
       text.append_gw00v9$('uniform vec4 uStaticColor;\n');
     }
-    var shadowMap = shaderProps.shadowMap;
-    if (shadowMap != null) {
+    var shadowMap = (tmp$_0 = (tmp$ = node.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.shadowMap : null;
+    if (shaderProps.isReceivingShadows && shadowMap != null) {
       text.append_gw00v9$(this.fsIn + ' vec4 ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + shadowMap.numMaps + '];' + '\n');
       text.append_gw00v9$(this.fsIn + ' float ' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ';' + '\n');
-      tmp$ = shadowMap.numMaps;
-      for (var i = 0; i < tmp$; i++) {
+      tmp$_1 = shadowMap.numMaps;
+      for (var i = 0; i < tmp$_1; i++) {
         text.append_gw00v9$('uniform sampler2D ' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i + ';' + '\n');
       }
       text.append_gw00v9$('uniform int ' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ + '[' + shadowMap.numMaps + '];' + '\n');
@@ -22388,17 +22716,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       text.append_gw00v9$('uniform vec4 uFogColor;\n');
       text.append_gw00v9$('uniform float uFogRange;\n');
     }
-    tmp$_0 = this.customUniforms.iterator();
-    while (tmp$_0.hasNext()) {
-      var uniform = tmp$_0.next();
+    tmp$_2 = this.customUniforms.iterator();
+    while (tmp$_2.hasNext()) {
+      var uniform = tmp$_2.next();
       text.append_gw00v9$('uniform ' + uniform.type + ' ' + uniform.name + ';' + '\n');
     }
     text.append_gw00v9$(this.fsOut);
-    var tmp$_1;
-    tmp$_1 = this.injectors.iterator();
-    while (tmp$_1.hasNext()) {
-      var element = tmp$_1.next();
-      element.fsAfterInput_jh5913$(shaderProps, text, ctx);
+    var tmp$_3;
+    tmp$_3 = this.injectors.iterator();
+    while (tmp$_3.hasNext()) {
+      var element = tmp$_3.next();
+      element.fsAfterInput_kv1jfs$(shaderProps, node, text, ctx);
     }
   };
   function GlslGenerator$generateFragBodyCode$addSample(closure$text, this$GlslGenerator) {
@@ -22407,10 +22735,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       closure$text.append_gw00v9$('factor += step(projPos.z + accLvl, shadowMapDepth);\n');
     };
   }
-  GlslGenerator.prototype.generateFragBodyCode_fke3g5$_0 = function (shaderProps, text, ctx) {
-    var tmp$;
-    var shadowMap = shaderProps.shadowMap;
-    if (shadowMap != null) {
+  GlslGenerator.prototype.generateFragBodyCode_y9i40m$_0 = function (shaderProps, node, text, ctx) {
+    var tmp$, tmp$_0, tmp$_1;
+    var shadowMap = (tmp$_0 = (tmp$ = node.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.shadowMap : null;
+    if (shaderProps.isReceivingShadows && shadowMap != null) {
       var addSample = GlslGenerator$generateFragBodyCode$addSample(text, this);
       text.append_gw00v9$('float calcShadowFactor(sampler2D shadowTex, vec3 projPos, float off, float accLvl) {\n');
       text.append_gw00v9$('  float factor = 0.0;\n');
@@ -22443,11 +22771,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (shaderProps.isEnvironmentMapped) {
       text.append_gw00v9$('float reflectivity = uReflectivity;\n');
     }
-    var tmp$_0;
-    tmp$_0 = this.injectors.iterator();
-    while (tmp$_0.hasNext()) {
-      var element = tmp$_0.next();
-      element.fsBeforeSampling_jh5913$(shaderProps, text, ctx);
+    var tmp$_2;
+    tmp$_2 = this.injectors.iterator();
+    while (tmp$_2.hasNext()) {
+      var element = tmp$_2.next();
+      element.fsBeforeSampling_kv1jfs$(shaderProps, node, text, ctx);
     }
     if (shaderProps.isTextureColor) {
       text.append_gw00v9$('vec4 ' + GlslGenerator$Companion_getInstance().L_TEX_COLOR + ' = ' + this.texSampler + '(' + GlslGenerator$Companion_getInstance().U_TEXTURE_0 + ', ' + GlslGenerator$Companion_getInstance().L_TEX_COORD + ');' + '\n');
@@ -22463,18 +22791,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       text.append_gw00v9$('staticColor.rgb *= staticColor.a;\n');
       text.append_gw00v9$(this.fsOutBody + ' = ' + GlslGenerator$Companion_getInstance().L_STATIC_COLOR + ';' + '\n');
     }
-    var tmp$_1;
-    tmp$_1 = this.injectors.iterator();
-    while (tmp$_1.hasNext()) {
-      var element_0 = tmp$_1.next();
-      element_0.fsAfterSampling_jh5913$(shaderProps, text, ctx);
+    var tmp$_3;
+    tmp$_3 = this.injectors.iterator();
+    while (tmp$_3.hasNext()) {
+      var element_0 = tmp$_3.next();
+      element_0.fsAfterSampling_kv1jfs$(shaderProps, node, text, ctx);
     }
     if (shaderProps.isDiscardTranslucent) {
       text.append_gw00v9$('if (' + this.fsOutBody + '.a == 0.0) { discard; }');
     }
-    if (shadowMap != null) {
-      tmp$ = shadowMap.numMaps;
-      for (var i = 0; i < tmp$; i++) {
+    if (shaderProps.isReceivingShadows && shadowMap != null) {
+      tmp$_1 = shadowMap.numMaps;
+      for (var i = 0; i < tmp$_1; i++) {
         text.append_gw00v9$('if (' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ' <= ' + GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z + '[' + i + ']) {' + '\n');
         text.append_gw00v9$('  vec3 projPos = ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '].xyz / ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '].w;' + '\n');
         text.append_gw00v9$('  float off = 1.0 / float(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ + '[' + i + ']);' + '\n');
@@ -22510,11 +22838,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
       text.append_gw00v9$(this.fsOutBody + '.rgb = materialAmbientColor + materialDiffuseColor + materialSpecularColor;' + '\n');
     }
-    var tmp$_2;
-    tmp$_2 = this.injectors.iterator();
-    while (tmp$_2.hasNext()) {
-      var element_1 = tmp$_2.next();
-      element_1.fsAfterLighting_jh5913$(shaderProps, text, ctx);
+    var tmp$_4;
+    tmp$_4 = this.injectors.iterator();
+    while (tmp$_4.hasNext()) {
+      var element_1 = tmp$_4.next();
+      element_1.fsAfterLighting_kv1jfs$(shaderProps, node, text, ctx);
     }
     if (shaderProps.isEnvironmentMapped) {
       text.append_gw00v9$('vec3 eyeDir = normalize(vPositionWorldspace - uCameraPosition);\n');
@@ -22532,11 +22860,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       text.append_gw00v9$('float avgColor = (' + this.fsOutBody + '.r + ' + this.fsOutBody + '.g + ' + this.fsOutBody + '.b) * 0.333;' + '\n');
       text.append_gw00v9$(this.fsOutBody + '.rgb = mix(vec3(avgColor), ' + this.fsOutBody + '.rgb, ' + GlslGenerator$Companion_getInstance().U_SATURATION + ');' + '\n');
     }
-    var tmp$_3;
-    tmp$_3 = this.injectors.iterator();
-    while (tmp$_3.hasNext()) {
-      var element_2 = tmp$_3.next();
-      element_2.fsEnd_jh5913$(shaderProps, text, ctx);
+    var tmp$_5;
+    tmp$_5 = this.injectors.iterator();
+    while (tmp$_5.hasNext()) {
+      var element_2 = tmp$_5.next();
+      element_2.fsEnd_kv1jfs$(shaderProps, node, text, ctx);
     }
     text.append_gw00v9$('}\n');
   };
@@ -22633,9 +22961,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Shader.prototype.isBound_aemszp$ = function (ctx) {
     return ctx.shaderMgr.boundShader === this;
   };
-  Shader.prototype.onLoad_aemszp$ = function (ctx) {
+  Shader.prototype.onLoad_x4tdlw$ = function (node, ctx) {
     var tmp$, tmp$_0;
-    this.generate_aemszp$(ctx);
+    this.generate_x4tdlw$(node, ctx);
     this.res = ctx.shaderMgr.createShader_2ouvod$(this.source, ctx);
     this.attributeLocations.clear();
     tmp$ = this.attributes.iterator();
@@ -22880,8 +23208,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.isDiscardTranslucent = false;
     this.numBones = 0;
     this.isInstanced = false;
-    this.shadowMap = null;
     this.shadowDepthOffset = 5.0E-4;
+    this.isReceivingShadows = false;
     this.isNormalMapped = false;
     this.isEnvironmentMapped = false;
     this.shininess = 20.0;
@@ -22899,6 +23227,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       return this.colorModel_3v9dr8$_0;
     },
     set: function (value) {
+      this.colorModel_3v9dr8$_0 = value;
       switch (value.name) {
         case 'VERTEX_COLOR':
           this.isVertexColor = true;
@@ -22928,134 +23257,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'ShaderProps',
     interfaces: []
   };
-  function ShadingHints(preferredLightModel, preferredShadowMethod) {
-    this.preferredLightModel = preferredLightModel;
-    this.preferredShadowMethod = preferredShadowMethod;
-  }
-  ShadingHints.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ShadingHints',
-    interfaces: []
-  };
-  ShadingHints.prototype.component1 = function () {
-    return this.preferredLightModel;
-  };
-  ShadingHints.prototype.component2 = function () {
-    return this.preferredShadowMethod;
-  };
-  ShadingHints.prototype.copy_m0yo6y$ = function (preferredLightModel, preferredShadowMethod) {
-    return new ShadingHints(preferredLightModel === void 0 ? this.preferredLightModel : preferredLightModel, preferredShadowMethod === void 0 ? this.preferredShadowMethod : preferredShadowMethod);
-  };
-  ShadingHints.prototype.toString = function () {
-    return 'ShadingHints(preferredLightModel=' + Kotlin.toString(this.preferredLightModel) + (', preferredShadowMethod=' + Kotlin.toString(this.preferredShadowMethod)) + ')';
-  };
-  ShadingHints.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.preferredLightModel) | 0;
-    result = result * 31 + Kotlin.hashCode(this.preferredShadowMethod) | 0;
-    return result;
-  };
-  ShadingHints.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.preferredLightModel, other.preferredLightModel) && Kotlin.equals(this.preferredShadowMethod, other.preferredShadowMethod)))));
-  };
-  function PreferredLightModel(name, ordinal, level) {
-    Enum.call(this);
-    this.level = level;
-    this.name$ = name;
-    this.ordinal$ = ordinal;
-  }
-  function PreferredLightModel_initFields() {
-    PreferredLightModel_initFields = function () {
-    };
-    PreferredLightModel$NO_LIGHTING_instance = new PreferredLightModel('NO_LIGHTING', 0, 0);
-    PreferredLightModel$GOURAUD_instance = new PreferredLightModel('GOURAUD', 1, 1);
-    PreferredLightModel$PHONG_instance = new PreferredLightModel('PHONG', 2, 2);
-  }
-  var PreferredLightModel$NO_LIGHTING_instance;
-  function PreferredLightModel$NO_LIGHTING_getInstance() {
-    PreferredLightModel_initFields();
-    return PreferredLightModel$NO_LIGHTING_instance;
-  }
-  var PreferredLightModel$GOURAUD_instance;
-  function PreferredLightModel$GOURAUD_getInstance() {
-    PreferredLightModel_initFields();
-    return PreferredLightModel$GOURAUD_instance;
-  }
-  var PreferredLightModel$PHONG_instance;
-  function PreferredLightModel$PHONG_getInstance() {
-    PreferredLightModel_initFields();
-    return PreferredLightModel$PHONG_instance;
-  }
-  PreferredLightModel.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'PreferredLightModel',
-    interfaces: [Enum]
-  };
-  function PreferredLightModel$values() {
-    return [PreferredLightModel$NO_LIGHTING_getInstance(), PreferredLightModel$GOURAUD_getInstance(), PreferredLightModel$PHONG_getInstance()];
-  }
-  PreferredLightModel.values = PreferredLightModel$values;
-  function PreferredLightModel$valueOf(name) {
-    switch (name) {
-      case 'NO_LIGHTING':
-        return PreferredLightModel$NO_LIGHTING_getInstance();
-      case 'GOURAUD':
-        return PreferredLightModel$GOURAUD_getInstance();
-      case 'PHONG':
-        return PreferredLightModel$PHONG_getInstance();
-      default:throwISE('No enum constant de.fabmax.kool.shading.PreferredLightModel.' + name);
-    }
-  }
-  PreferredLightModel.valueOf_61zpoe$ = PreferredLightModel$valueOf;
-  function PreferredShadowMethod(name, ordinal, level) {
-    Enum.call(this);
-    this.level = level;
-    this.name$ = name;
-    this.ordinal$ = ordinal;
-  }
-  function PreferredShadowMethod_initFields() {
-    PreferredShadowMethod_initFields = function () {
-    };
-    PreferredShadowMethod$NO_SHADOW_instance = new PreferredShadowMethod('NO_SHADOW', 0, 0);
-    PreferredShadowMethod$SINGLE_SHADOW_MAP_instance = new PreferredShadowMethod('SINGLE_SHADOW_MAP', 1, 1);
-    PreferredShadowMethod$CASCADED_SHADOW_MAP_instance = new PreferredShadowMethod('CASCADED_SHADOW_MAP', 2, 2);
-  }
-  var PreferredShadowMethod$NO_SHADOW_instance;
-  function PreferredShadowMethod$NO_SHADOW_getInstance() {
-    PreferredShadowMethod_initFields();
-    return PreferredShadowMethod$NO_SHADOW_instance;
-  }
-  var PreferredShadowMethod$SINGLE_SHADOW_MAP_instance;
-  function PreferredShadowMethod$SINGLE_SHADOW_MAP_getInstance() {
-    PreferredShadowMethod_initFields();
-    return PreferredShadowMethod$SINGLE_SHADOW_MAP_instance;
-  }
-  var PreferredShadowMethod$CASCADED_SHADOW_MAP_instance;
-  function PreferredShadowMethod$CASCADED_SHADOW_MAP_getInstance() {
-    PreferredShadowMethod_initFields();
-    return PreferredShadowMethod$CASCADED_SHADOW_MAP_instance;
-  }
-  PreferredShadowMethod.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'PreferredShadowMethod',
-    interfaces: [Enum]
-  };
-  function PreferredShadowMethod$values() {
-    return [PreferredShadowMethod$NO_SHADOW_getInstance(), PreferredShadowMethod$SINGLE_SHADOW_MAP_getInstance(), PreferredShadowMethod$CASCADED_SHADOW_MAP_getInstance()];
-  }
-  PreferredShadowMethod.values = PreferredShadowMethod$values;
-  function PreferredShadowMethod$valueOf(name) {
-    switch (name) {
-      case 'NO_SHADOW':
-        return PreferredShadowMethod$NO_SHADOW_getInstance();
-      case 'SINGLE_SHADOW_MAP':
-        return PreferredShadowMethod$SINGLE_SHADOW_MAP_getInstance();
-      case 'CASCADED_SHADOW_MAP':
-        return PreferredShadowMethod$CASCADED_SHADOW_MAP_getInstance();
-      default:throwISE('No enum constant de.fabmax.kool.shading.PreferredShadowMethod.' + name);
-    }
-  }
-  PreferredShadowMethod.valueOf_61zpoe$ = PreferredShadowMethod$valueOf;
   function Uniform(name, value) {
     this.name = name;
     this.value_xe1c$_0 = value;
@@ -23208,8 +23409,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'Uniform1i',
     interfaces: [Uniform]
   };
-  function Uniform1iv(name, size) {
-    Uniform.call(this, name, new Int32Array(size));
+  function Uniform1iv(name) {
+    Uniform.call(this, name, new Int32Array(0));
     this.type_2txs21$_0 = 'int';
   }
   Object.defineProperty(Uniform1iv.prototype, 'type', {
@@ -23217,6 +23418,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       return this.type_2txs21$_0;
     }
   });
+  Uniform1iv.prototype.setSize_za3lpa$ = function (size) {
+    if (size !== this.value.length) {
+      this.value = new Int32Array(size);
+    }
+  };
   Uniform1iv.prototype.doBind_aemszp$ = function (ctx) {
     glUniform1iv(this.location, this.value);
   };
@@ -23242,8 +23448,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'Uniform1f',
     interfaces: [Uniform]
   };
-  function Uniform1fv(name, size) {
-    Uniform.call(this, name, new Float32Array(size));
+  function Uniform1fv(name) {
+    Uniform.call(this, name, new Float32Array(0));
     this.type_cltl5g$_0 = 'float';
   }
   Object.defineProperty(Uniform1fv.prototype, 'type', {
@@ -23251,6 +23457,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       return this.type_cltl5g$_0;
     }
   });
+  Uniform1fv.prototype.setSize_za3lpa$ = function (size) {
+    if (size !== this.value.length) {
+      this.value = new Float32Array(size);
+    }
+  };
   Uniform1fv.prototype.doBind_aemszp$ = function (ctx) {
     glUniform1fv(this.location, this.value);
   };
@@ -23386,6 +23597,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         this.resources.remove_11rb$(key);
       }
     }
+  };
+  SharedResManager.prototype.deleteAllResources_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.resources.entries.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var key = element.key;
+      var sharedRes = element.value;
+      this.deleteResource_5nn3pu$(key, sharedRes.resource, ctx);
+      sharedRes.refCount = 0;
+    }
+    this.resources.clear();
   };
   function SharedResManager$SharedResource(resource) {
     this.resource = resource;
@@ -23960,37 +24183,377 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'InterpolatedColor',
     interfaces: [InterpolatedValue]
   };
-  function BillboardMesh(data, name) {
-    if (data === void 0)
-      data = MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().TEXTURE_COORDS]);
+  function BillboardMesh(name) {
+    BillboardMesh$Companion_getInstance();
     if (name === void 0)
-      name = '';
-    Mesh.call(this, data, name);
+      name = null;
+    Mesh.call(this, MeshData_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().TEXTURE_COORDS, BillboardMesh$Companion_getInstance().ATTR_EXTENTS, BillboardMesh$Companion_getInstance().ATTR_TEX_EXTENTS, BillboardMesh$Companion_getInstance().ATTR_ROTATION]), name);
+    this.drawOrder = BillboardMesh$DrawOrder$AS_IS_getInstance();
+    this.indexList_55a61b$_0 = ArrayList_init_0();
+    this.billboardIt_w6i85x$_0 = new BillboardMesh$BillboardInstance(this);
+    this.isWithGeometryShader_gmwcxa$_0 = true;
+    this.meshData.primitiveType = 0;
     this.shader = billboardShader(BillboardMesh_init$lambda);
-    this.builder_0 = new MeshBuilder(data);
+    this.isCastingShadow = false;
   }
-  Object.defineProperty(BillboardMesh.prototype, 'billboardSize', {
-    get: function () {
-      var tmp$;
-      return (Kotlin.isType(tmp$ = this.shader, BillboardShader) ? tmp$ : throwCCE()).billboardSize;
-    },
-    set: function (value) {
-      var tmp$;
-      (Kotlin.isType(tmp$ = this.shader, BillboardShader) ? tmp$ : throwCCE()).billboardSize = value;
+  BillboardMesh.prototype.addQuad_mr3yw4$ = function (center, size, rotation, texCenter, texSize, color) {
+    if (rotation === void 0)
+      rotation = 0.0;
+    if (texCenter === void 0)
+      texCenter = BillboardMesh$Companion_getInstance().TEX_CENTER;
+    if (texSize === void 0)
+      texSize = BillboardMesh$Companion_getInstance().TEX_SIZE_FULL;
+    if (color === void 0)
+      color = Color$Companion_getInstance().WHITE;
+    var idx = this.appendQuad_wnnros$_0();
+    this.updateQuad_lszk0i$(idx, center, size, rotation, texCenter, texSize, color);
+    this.addQuadIndex_za3lpa$(idx);
+    if (this.drawOrder !== BillboardMesh$DrawOrder$AS_IS_getInstance()) {
+      this.indexList_55a61b$_0.add_11rb$(idx);
     }
-  });
-  BillboardMesh.prototype.addQuad_4sqmhu$ = function (centerPosition, color) {
-    this.builder_0.color = color;
-    var $this = this.builder_0;
-    var $receiver = $this.rectProps.defaults();
-    $receiver.fullTexCoords();
-    $receiver.origin.set_czzhiu$(centerPosition);
-    $receiver.size.set_czzhjp$(Vec2f$Companion_getInstance().ZERO);
-    $this.rect_e5k3t5$($this.rectProps);
   };
+  BillboardMesh.prototype.updateQuad_lszk0i$ = function (index, center, size, rotation, texCenter, texSize, color) {
+    if (rotation === void 0)
+      rotation = 0.0;
+    if (texCenter === void 0)
+      texCenter = BillboardMesh$Companion_getInstance().TEX_CENTER;
+    if (texSize === void 0)
+      texSize = BillboardMesh$Companion_getInstance().TEX_SIZE_FULL;
+    if (color === void 0)
+      color = Color$Companion_getInstance().WHITE;
+    if (this.isWithGeometryShader_gmwcxa$_0) {
+      this.billboardIt_w6i85x$_0.vertex.index = index;
+      this.billboardIt_w6i85x$_0.vertex.position.set_czzhiu$(center);
+      this.billboardIt_w6i85x$_0.vertex.texCoord.set_czzhjp$(texCenter);
+      this.billboardIt_w6i85x$_0.vertex.color.set_d7aj7k$(color);
+      this.billboardIt_w6i85x$_0.extents.set_dleff0$(size.x * 0.5, size.y * 0.5);
+      this.billboardIt_w6i85x$_0.texExtents.set_dleff0$(texSize.x * 0.5, texSize.y * 0.5);
+      this.billboardIt_w6i85x$_0.rotation.f = rotation * package$math.DEG_2_RAD;
+    }
+     else {
+      for (var i = 0; i <= 3; i++) {
+        this.billboardIt_w6i85x$_0.vertex.index = (index * 4 | 0) + i | 0;
+        this.billboardIt_w6i85x$_0.vertex.position.set_czzhiu$(center);
+        this.billboardIt_w6i85x$_0.vertex.texCoord.set_czzhjp$(texCenter);
+        this.billboardIt_w6i85x$_0.vertex.color.set_d7aj7k$(color);
+        this.billboardIt_w6i85x$_0.extents.set_dleff0$(size.x * 0.5, size.y * 0.5).mul_czzhjp$(BillboardMesh$Companion_getInstance().SZ_EXT_SIGNS_0.get_za3lpa$(i));
+        this.billboardIt_w6i85x$_0.texExtents.set_dleff0$(texSize.x * 0.5, texSize.y * 0.5).mul_czzhjp$(BillboardMesh$Companion_getInstance().TEX_EXT_SIGNS_0.get_za3lpa$(i));
+        this.billboardIt_w6i85x$_0.rotation.f = rotation * package$math.DEG_2_RAD;
+      }
+    }
+    this.meshData.isSyncRequired = true;
+  };
+  BillboardMesh.prototype.clearIndices = function () {
+    this.meshData.vertexList.indices.clear();
+  };
+  BillboardMesh.prototype.addQuadIndex_za3lpa$ = function (quadIdx) {
+    if (this.isWithGeometryShader_gmwcxa$_0) {
+      this.meshData.vertexList.addIndex_za3lpa$(quadIdx);
+    }
+     else {
+      var idx = quadIdx * 4 | 0;
+      this.meshData.vertexList.addIndex_za3lpa$(idx);
+      this.meshData.vertexList.addIndex_za3lpa$(idx + 1 | 0);
+      this.meshData.vertexList.addIndex_za3lpa$(idx + 2 | 0);
+      this.meshData.vertexList.addIndex_za3lpa$(idx + 3 | 0);
+      this.meshData.vertexList.addIndex_za3lpa$(idx + 2 | 0);
+      this.meshData.vertexList.addIndex_za3lpa$(idx + 1 | 0);
+    }
+  };
+  BillboardMesh.prototype.appendQuad_wnnros$_0 = function () {
+    var tmp$;
+    if (this.isWithGeometryShader_gmwcxa$_0) {
+      var $this = this.meshData;
+      $this.isSyncRequired = true;
+      var $this_0 = $this.vertexList;
+      var updateBounds = $this.bounds;
+      var tmp$_0, tmp$_1, tmp$_2;
+      $this_0.checkBufferSizes_za3lpa$();
+      tmp$_0 = $this_0.vertexSizeF;
+      for (var i = 1; i <= tmp$_0; i++) {
+        $this_0.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_1 = $this_0.vertexSizeI;
+      for (var i_0 = 1; i_0 <= tmp$_1; i_0++) {
+        $this_0.dataI.plusAssign_za3lpa$(0);
+      }
+      $this_0.vertexIt.index = (tmp$_2 = $this_0.size, $this_0.size = tmp$_2 + 1 | 0, tmp$_2);
+      updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
+      tmp$ = $this_0.size - 1 | 0;
+    }
+     else {
+      var $this_1 = this.meshData;
+      $this_1.isSyncRequired = true;
+      var $this_2 = $this_1.vertexList;
+      var updateBounds_0 = $this_1.bounds;
+      var tmp$_3, tmp$_4, tmp$_5;
+      $this_2.checkBufferSizes_za3lpa$();
+      tmp$_3 = $this_2.vertexSizeF;
+      for (var i_1 = 1; i_1 <= tmp$_3; i_1++) {
+        $this_2.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_4 = $this_2.vertexSizeI;
+      for (var i_2 = 1; i_2 <= tmp$_4; i_2++) {
+        $this_2.dataI.plusAssign_za3lpa$(0);
+      }
+      $this_2.vertexIt.index = (tmp$_5 = $this_2.size, $this_2.size = tmp$_5 + 1 | 0, tmp$_5);
+      updateBounds_0 != null ? updateBounds_0.add_czzhiu$($this_2.vertexIt.position) : null;
+      var $this_3 = this.meshData;
+      $this_3.isSyncRequired = true;
+      var $this_4 = $this_3.vertexList;
+      var updateBounds_1 = $this_3.bounds;
+      var tmp$_6, tmp$_7, tmp$_8;
+      $this_4.checkBufferSizes_za3lpa$();
+      tmp$_6 = $this_4.vertexSizeF;
+      for (var i_3 = 1; i_3 <= tmp$_6; i_3++) {
+        $this_4.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_7 = $this_4.vertexSizeI;
+      for (var i_4 = 1; i_4 <= tmp$_7; i_4++) {
+        $this_4.dataI.plusAssign_za3lpa$(0);
+      }
+      $this_4.vertexIt.index = (tmp$_8 = $this_4.size, $this_4.size = tmp$_8 + 1 | 0, tmp$_8);
+      updateBounds_1 != null ? updateBounds_1.add_czzhiu$($this_4.vertexIt.position) : null;
+      var $this_5 = this.meshData;
+      $this_5.isSyncRequired = true;
+      var $this_6 = $this_5.vertexList;
+      var updateBounds_2 = $this_5.bounds;
+      var tmp$_9, tmp$_10, tmp$_11;
+      $this_6.checkBufferSizes_za3lpa$();
+      tmp$_9 = $this_6.vertexSizeF;
+      for (var i_5 = 1; i_5 <= tmp$_9; i_5++) {
+        $this_6.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_10 = $this_6.vertexSizeI;
+      for (var i_6 = 1; i_6 <= tmp$_10; i_6++) {
+        $this_6.dataI.plusAssign_za3lpa$(0);
+      }
+      $this_6.vertexIt.index = (tmp$_11 = $this_6.size, $this_6.size = tmp$_11 + 1 | 0, tmp$_11);
+      updateBounds_2 != null ? updateBounds_2.add_czzhiu$($this_6.vertexIt.position) : null;
+      var $this_7 = this.meshData;
+      $this_7.isSyncRequired = true;
+      var $this_8 = $this_7.vertexList;
+      var updateBounds_3 = $this_7.bounds;
+      var tmp$_12, tmp$_13, tmp$_14;
+      $this_8.checkBufferSizes_za3lpa$();
+      tmp$_12 = $this_8.vertexSizeF;
+      for (var i_7 = 1; i_7 <= tmp$_12; i_7++) {
+        $this_8.dataF.plusAssign_mx4ult$(0.0);
+      }
+      tmp$_13 = $this_8.vertexSizeI;
+      for (var i_8 = 1; i_8 <= tmp$_13; i_8++) {
+        $this_8.dataI.plusAssign_za3lpa$(0);
+      }
+      $this_8.vertexIt.index = (tmp$_14 = $this_8.size, $this_8.size = tmp$_14 + 1 | 0, tmp$_14);
+      updateBounds_3 != null ? updateBounds_3.add_czzhiu$($this_8.vertexIt.position) : null;
+      tmp$ = ($this_8.size - 1 | 0) / 4 | 0;
+    }
+    return tmp$;
+  };
+  BillboardMesh.prototype.preRender_aemszp$ = function (ctx) {
+    if (this.isWithGeometryShader_gmwcxa$_0 && !ctx.glCapabilities.geometryShader) {
+      this.isWithGeometryShader_gmwcxa$_0 = false;
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Falling back to non-geometry-shader billboard mesh');
+      }
+      this.convertToQuadMesh_ibkkv7$_0();
+    }
+    if (this.drawOrder !== BillboardMesh$DrawOrder$AS_IS_getInstance()) {
+      this.sortElems_pgt1t3$_0();
+    }
+    Mesh.prototype.preRender_aemszp$.call(this, ctx);
+  };
+  BillboardMesh.prototype.convertToQuadMesh_ibkkv7$_0 = function () {
+    var tmp$;
+    var tmpData = new MeshData(this.meshData.vertexAttributes);
+    var $this = this.meshData.vertexList;
+    var tmp$_0;
+    tmp$_0 = $this.size;
+    for (var i = 0; i < tmp$_0; i++) {
+      $this.vertexIt.index = i;
+      var ptVertex = $this.vertexIt;
+      for (var i_0 = 0; i_0 <= 3; i_0++) {
+        tmpData.isSyncRequired = true;
+        var $this_0 = tmpData.vertexList;
+        var updateBounds = tmpData.bounds;
+        var tmp$_1, tmp$_2, tmp$_3;
+        $this_0.checkBufferSizes_za3lpa$();
+        tmp$_1 = $this_0.vertexSizeF;
+        for (var i_1 = 1; i_1 <= tmp$_1; i_1++) {
+          $this_0.dataF.plusAssign_mx4ult$(0.0);
+        }
+        tmp$_2 = $this_0.vertexSizeI;
+        for (var i_2 = 1; i_2 <= tmp$_2; i_2++) {
+          $this_0.dataI.plusAssign_za3lpa$(0);
+        }
+        $this_0.vertexIt.index = (tmp$_3 = $this_0.size, $this_0.size = tmp$_3 + 1 | 0, tmp$_3);
+        var $receiver = $this_0.vertexIt;
+        var tmp$_4, tmp$_5;
+        $receiver.set_j5bz6$(ptVertex);
+        (tmp$_4 = $receiver.getVec2fAttribute_mczodr$(BillboardMesh$Companion_getInstance().ATTR_EXTENTS)) != null ? tmp$_4.mul_czzhjp$(BillboardMesh$Companion_getInstance().SZ_EXT_SIGNS_0.get_za3lpa$(i_0)) : null;
+        (tmp$_5 = $receiver.getVec2fAttribute_mczodr$(BillboardMesh$Companion_getInstance().ATTR_TEX_EXTENTS)) != null ? tmp$_5.mul_czzhjp$(BillboardMesh$Companion_getInstance().TEX_EXT_SIGNS_0.get_za3lpa$(i_0)) : null;
+        updateBounds != null ? updateBounds.add_czzhiu$($this_0.vertexIt.position) : null;
+      }
+    }
+    tmp$ = this.meshData.numIndices;
+    for (var i_3 = 0; i_3 < tmp$; i_3++) {
+      var idx = this.meshData.vertexList.indices.get_za3lpa$(i_3) * 4 | 0;
+      tmpData.addIndex_za3lpa$(idx);
+      tmpData.addIndex_za3lpa$(idx + 1 | 0);
+      tmpData.addIndex_za3lpa$(idx + 2 | 0);
+      tmpData.addIndex_za3lpa$(idx + 3 | 0);
+      tmpData.addIndex_za3lpa$(idx + 2 | 0);
+      tmpData.addIndex_za3lpa$(idx + 1 | 0);
+    }
+    this.meshData.vertexList.clear();
+    this.meshData.vertexList.addFrom_r7nl2o$(tmpData.vertexList);
+    this.meshData.primitiveType = 4;
+  };
+  function BillboardMesh$sortElems$lambda(closure$vertCnt, closure$v, closure$camPos, closure$s) {
+    return function (idx) {
+      closure$v.index = Kotlin.imul(idx, closure$vertCnt);
+      return closure$v.position.sqrDistance_czzhiu$(closure$camPos) * closure$s;
+    };
+  }
+  var compareBy$lambda_4 = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  function Comparator$ObjectLiteral_5(closure$comparison) {
+    this.closure$comparison = closure$comparison;
+  }
+  Comparator$ObjectLiteral_5.prototype.compare = function (a, b) {
+    return this.closure$comparison(a, b);
+  };
+  Comparator$ObjectLiteral_5.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  BillboardMesh.prototype.sortElems_pgt1t3$_0 = function () {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.globalPos : null;
+    if (tmp$_1 == null) {
+      return;
+    }
+    var camPos = tmp$_1;
+    if (this.isWithGeometryShader_gmwcxa$_0) {
+      tmp$_2 = 1;
+    }
+     else {
+      tmp$_2 = 4;
+    }
+    var vertCnt = tmp$_2;
+    if (this.indexList_55a61b$_0.size !== (this.meshData.numVertices / vertCnt | 0)) {
+      this.indexList_55a61b$_0.clear();
+      addAll_0(this.indexList_55a61b$_0, until(0, this.meshData.numVertices / vertCnt | 0));
+    }
+    var s = this.drawOrder === BillboardMesh$DrawOrder$FAR_FIRST_getInstance() ? -1 : 1;
+    var v = this.meshData.vertexList.vertexIt;
+    var $receiver = this.indexList_55a61b$_0;
+    if ($receiver.size > 1) {
+      sortWith($receiver, new Comparator$ObjectLiteral_5(compareBy$lambda_4(BillboardMesh$sortElems$lambda(vertCnt, v, camPos, s))));
+    }
+    this.meshData.vertexList.indices.clear();
+    tmp$_3 = this.indexList_55a61b$_0;
+    for (var i = 0; i !== tmp$_3.size; ++i) {
+      this.addQuadIndex_za3lpa$(this.indexList_55a61b$_0.get_za3lpa$(i));
+    }
+    this.meshData.isSyncRequired = true;
+  };
+  function BillboardMesh$BillboardInstance($outer) {
+    this.$outer = $outer;
+    this.vertex = this.$outer.meshData.vertexList.get_za3lpa$(0);
+    this.rotation = ensureNotNull(this.vertex.getFloatAttribute_mczodr$(BillboardMesh$Companion_getInstance().ATTR_ROTATION));
+    this.extents = ensureNotNull(this.vertex.getVec2fAttribute_mczodr$(BillboardMesh$Companion_getInstance().ATTR_EXTENTS));
+    this.texExtents = ensureNotNull(this.vertex.getVec2fAttribute_mczodr$(BillboardMesh$Companion_getInstance().ATTR_TEX_EXTENTS));
+  }
+  BillboardMesh$BillboardInstance.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'BillboardInstance',
+    interfaces: []
+  };
+  function BillboardMesh$DrawOrder(name, ordinal) {
+    Enum.call(this);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function BillboardMesh$DrawOrder_initFields() {
+    BillboardMesh$DrawOrder_initFields = function () {
+    };
+    BillboardMesh$DrawOrder$AS_IS_instance = new BillboardMesh$DrawOrder('AS_IS', 0);
+    BillboardMesh$DrawOrder$FAR_FIRST_instance = new BillboardMesh$DrawOrder('FAR_FIRST', 1);
+    BillboardMesh$DrawOrder$NEAR_FIRST_instance = new BillboardMesh$DrawOrder('NEAR_FIRST', 2);
+  }
+  var BillboardMesh$DrawOrder$AS_IS_instance;
+  function BillboardMesh$DrawOrder$AS_IS_getInstance() {
+    BillboardMesh$DrawOrder_initFields();
+    return BillboardMesh$DrawOrder$AS_IS_instance;
+  }
+  var BillboardMesh$DrawOrder$FAR_FIRST_instance;
+  function BillboardMesh$DrawOrder$FAR_FIRST_getInstance() {
+    BillboardMesh$DrawOrder_initFields();
+    return BillboardMesh$DrawOrder$FAR_FIRST_instance;
+  }
+  var BillboardMesh$DrawOrder$NEAR_FIRST_instance;
+  function BillboardMesh$DrawOrder$NEAR_FIRST_getInstance() {
+    BillboardMesh$DrawOrder_initFields();
+    return BillboardMesh$DrawOrder$NEAR_FIRST_instance;
+  }
+  BillboardMesh$DrawOrder.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'DrawOrder',
+    interfaces: [Enum]
+  };
+  function BillboardMesh$DrawOrder$values() {
+    return [BillboardMesh$DrawOrder$AS_IS_getInstance(), BillboardMesh$DrawOrder$FAR_FIRST_getInstance(), BillboardMesh$DrawOrder$NEAR_FIRST_getInstance()];
+  }
+  BillboardMesh$DrawOrder.values = BillboardMesh$DrawOrder$values;
+  function BillboardMesh$DrawOrder$valueOf(name) {
+    switch (name) {
+      case 'AS_IS':
+        return BillboardMesh$DrawOrder$AS_IS_getInstance();
+      case 'FAR_FIRST':
+        return BillboardMesh$DrawOrder$FAR_FIRST_getInstance();
+      case 'NEAR_FIRST':
+        return BillboardMesh$DrawOrder$NEAR_FIRST_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.util.BillboardMesh.DrawOrder.' + name);
+    }
+  }
+  BillboardMesh$DrawOrder.valueOf_61zpoe$ = BillboardMesh$DrawOrder$valueOf;
+  function BillboardMesh$Companion() {
+    BillboardMesh$Companion_instance = this;
+    this.ATTR_EXTENTS = new Attribute('aExtents', AttributeType$VEC_2F_getInstance());
+    this.ATTR_TEX_EXTENTS = new Attribute('aTexExtents', AttributeType$VEC_2F_getInstance());
+    this.ATTR_ROTATION = new Attribute('aRotation', AttributeType$FLOAT_getInstance());
+    this.TEX_SIZE_FULL = new Vec2f(1.0, 1.0);
+    this.TEX_CENTER = new Vec2f(0.5, 0.5);
+    this.SZ_EXT_SIGNS_0 = listOf([new Vec2f(-1.0, -1.0), new Vec2f(1.0, -1.0), new Vec2f(-1.0, 1.0), new Vec2f(1.0, 1.0)]);
+    this.TEX_EXT_SIGNS_0 = listOf([new Vec2f(-1.0, 1.0), new Vec2f(1.0, 1.0), new Vec2f(-1.0, -1.0), new Vec2f(1.0, -1.0)]);
+  }
+  BillboardMesh$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var BillboardMesh$Companion_instance = null;
+  function BillboardMesh$Companion_getInstance() {
+    if (BillboardMesh$Companion_instance === null) {
+      new BillboardMesh$Companion();
+    }
+    return BillboardMesh$Companion_instance;
+  }
   function BillboardMesh_init$lambda($receiver) {
     $receiver.colorModel = ColorModel$VERTEX_COLOR_getInstance();
     $receiver.lightModel = LightModel$NO_LIGHTING_getInstance();
+    $receiver.isVertexColor = true;
+    $receiver.isTextureColor = true;
+    $receiver.isDiscardTranslucent = true;
+    $receiver.isReceivingShadows = false;
     return Unit;
   }
   BillboardMesh.$metadata$ = {
@@ -24006,29 +24569,73 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       propsInit = billboardShader$lambda;
     var props = new ShaderProps();
     propsInit(props);
-    props.isTextureColor = true;
     return new BillboardShader(props, new GlslGenerator());
   }
   function BillboardShader(props, generator) {
     BasicShader.call(this, props, generator);
-    this.uViewportSz_0 = this.addUniform_1ybs2r$(new Uniform2f('uViewportSz'));
-    this.billboardSize = 1.0;
-    var $receiver = generator.customUniforms;
-    var element = this.uViewportSz_0;
+    var $receiver = generator.customAttributes;
+    var element = BillboardMesh$Companion_getInstance().ATTR_EXTENTS;
     $receiver.add_11rb$(element);
-    var $receiver_0 = generator.injectors;
-    var element_0 = new BillboardShader_init$ObjectLiteral();
+    var $receiver_0 = generator.customAttributes;
+    var element_0 = BillboardMesh$Companion_getInstance().ATTR_TEX_EXTENTS;
     $receiver_0.add_11rb$(element_0);
+    var $receiver_1 = generator.customAttributes;
+    var element_1 = BillboardMesh$Companion_getInstance().ATTR_ROTATION;
+    $receiver_1.add_11rb$(element_1);
+    var $receiver_2 = generator.injectors;
+    var element_2 = new BillboardShader_init$ObjectLiteral(this, generator);
+    $receiver_2.add_11rb$(element_2);
   }
-  BillboardShader.prototype.onBind_aemszp$ = function (ctx) {
-    BasicShader.prototype.onBind_aemszp$.call(this, ctx);
-    this.uViewportSz_0.value.set_dleff0$(0.5 * ctx.viewport.width / this.billboardSize, 0.5 * ctx.viewport.height / this.billboardSize);
-    this.uViewportSz_0.bind_aemszp$(ctx);
+  BillboardShader.prototype.vsAfterInputGeom_0 = function (text) {
+    text.append_gw00v9$('out vec2 vsSzExtents;\n');
+    text.append_gw00v9$('out vec4 vsVertColor;\n');
+    text.append_gw00v9$('out float vsRotation;\n');
+    text.append_gw00v9$('out vec2 vsTexExtents;\nout vec2 vsCenterUv;\n');
   };
-  function BillboardShader_init$ObjectLiteral() {
+  BillboardShader.prototype.vsEndGeom_0 = function (text) {
+    text.append_gw00v9$('gl_Position = ' + GlslGenerator$Companion_getInstance().U_VIEW_MATRIX + ' * (' + GlslGenerator$Companion_getInstance().U_MODEL_MATRIX + ' * vec4(' + Attribute$Companion_getInstance().POSITIONS + ', 1.0));');
+    text.append_gw00v9$('vsSzExtents = ' + BillboardMesh$Companion_getInstance().ATTR_EXTENTS + ';');
+    text.append_gw00v9$('vsTexExtents = ' + BillboardMesh$Companion_getInstance().ATTR_TEX_EXTENTS + ';');
+    text.append_gw00v9$('vsVertColor = ' + Attribute$Companion_getInstance().COLORS + ';' + '\n');
+    text.append_gw00v9$('vsCenterUv = ' + Attribute$Companion_getInstance().TEXTURE_COORDS + ';' + '\n');
+    text.append_gw00v9$('vsRotation = ' + BillboardMesh$Companion_getInstance().ATTR_ROTATION + ';' + '\n');
+  };
+  BillboardShader.prototype.geomShaderGeom_0 = function (text) {
+    text.append_gw00v9$(trimIndent('\n            layout (points) in;\n            layout (triangle_strip, max_vertices = 4) out;\n\n            in vec2 vsSzExtents[];\n            in vec2 vsTexExtents[];\n            in float vsRotation[];\n\n            in vec4 vsVertColor[];\n            out vec4 vFragmentColor;\n\n            in vec2 vsCenterUv[];\n            out vec2 vTexCoord;\n\n            uniform mat4 uProjMatrix;\n\n            void main() {\n                vFragmentColor = vsVertColor[0];\n\n                vec4 center = gl_in[0].gl_Position;\n                float rot = vsRotation[0];\n                vec2 ext = vsSzExtents[0];\n                vec4 rt = vec4(ext.x * cos(rot), ext.x * sin(rot), 0.0, 0.0);\n                vec4 up = vec4(ext.y * -sin(rot), ext.y * cos(rot), 0.0, 0.0);\n\n                gl_Position = uProjMatrix * (center - rt - up);\n                vTexCoord = vsCenterUv[0] + vec2(-vsTexExtents[0].x, vsTexExtents[0].y);\n                EmitVertex();\n                gl_Position = uProjMatrix * (center + rt - up);\n                vTexCoord = vsCenterUv[0] + vec2(vsTexExtents[0].x, vsTexExtents[0].y);\n                EmitVertex();\n                gl_Position = uProjMatrix * (center - rt + up);\n                vTexCoord = vsCenterUv[0] + vec2(-vsTexExtents[0].x, -vsTexExtents[0].y);\n                EmitVertex();\n                gl_Position = uProjMatrix * (center + rt + up);\n                vTexCoord = vsCenterUv[0] + vec2(vsTexExtents[0].x, -vsTexExtents[0].y);\n                EmitVertex();\n                EndPrimitive();\n            }\n        '));
+  };
+  BillboardShader.prototype.vsAfterInputQuad_0 = function (text) {
+    text.append_gw00v9$('uniform mat4 uProjMatrix;\n');
+  };
+  BillboardShader.prototype.vsEndQuad_0 = function (text) {
+    text.append_gw00v9$(trimIndent('\n' + '            float rot = ' + BillboardMesh$Companion_getInstance().ATTR_ROTATION + ';' + '\n' + '            vec2 ext = ' + BillboardMesh$Companion_getInstance().ATTR_EXTENTS + ';' + '\n' + '            vec4 rt = vec4(ext.x * cos(rot), ext.x * sin(rot), 0.0, 0.0);' + '\n' + '            vec4 up = vec4(ext.y * -sin(rot), ext.y * cos(rot), 0.0, 0.0);' + '\n' + '            vec4 center = ' + GlslGenerator$Companion_getInstance().U_VIEW_MATRIX + ' * (' + GlslGenerator$Companion_getInstance().U_MODEL_MATRIX + ' * vec4(' + Attribute$Companion_getInstance().POSITIONS + ', 1.0));' + '\n' + '            gl_Position = ' + GlslGenerator$Companion_getInstance().U_PROJ_MATRIX + ' * (center + rt + up);' + '\n' + '            ' + GlslGenerator$Companion_getInstance().V_TEX_COORD + ' += ' + BillboardMesh$Companion_getInstance().ATTR_TEX_EXTENTS + ';' + '\n' + '        ')).append_s8itvh$(10);
+  };
+  function BillboardShader_init$ObjectLiteral(this$BillboardShader, closure$generator) {
+    this.this$BillboardShader = this$BillboardShader;
+    this.closure$generator = closure$generator;
   }
-  BillboardShader_init$ObjectLiteral.prototype.vsAfterProj_jh5913$ = function (shaderProps, text, ctx) {
-    text.append_gw00v9$('gl_Position.x += (' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + '.x - 0.5) * gl_Position.w / uViewportSz.x;' + '\n').append_gw00v9$('gl_Position.y -= (' + Attribute$Companion_getInstance().TEXTURE_COORDS.name + '.y - 0.5) * gl_Position.w / uViewportSz.y;' + '\n');
+  BillboardShader_init$ObjectLiteral.prototype.vsAfterInput_kv1jfs$ = function (shaderProps, node, text, ctx) {
+    if (ctx.glCapabilities.geometryShader) {
+      this.this$BillboardShader.vsAfterInputGeom_0(text);
+    }
+     else {
+      this.this$BillboardShader.vsAfterInputQuad_0(text);
+    }
+  };
+  BillboardShader_init$ObjectLiteral.prototype.vsEnd_kv1jfs$ = function (shaderProps, node, text, ctx) {
+    if (ctx.glCapabilities.geometryShader) {
+      this.this$BillboardShader.vsEndGeom_0(text);
+    }
+     else {
+      this.this$BillboardShader.vsEndQuad_0(text);
+    }
+  };
+  BillboardShader_init$ObjectLiteral.prototype.geomShader_kv1jfs$ = function (shaderProps, node, text, ctx) {
+    if (ctx.glCapabilities.geometryShader) {
+      this.this$BillboardShader.geomShaderGeom_0(text);
+    }
+  };
+  BillboardShader_init$ObjectLiteral.prototype.fsAfterSampling_kv1jfs$ = function (shaderProps, node, text, ctx) {
+    text.append_gw00v9$(this.closure$generator.fsOutBody + ' = ' + GlslGenerator$Companion_getInstance().L_TEX_COLOR + ' * vec4(' + GlslGenerator$Companion_getInstance().L_VERTEX_COLOR + '.rgb, 1.0) * (' + GlslGenerator$Companion_getInstance().L_TEX_COLOR + '.a * ' + GlslGenerator$Companion_getInstance().L_VERTEX_COLOR + '.a);');
   };
   BillboardShader_init$ObjectLiteral.$metadata$ = {
     kind: Kind_CLASS,
@@ -25089,7 +25696,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     return Color$Companion_getInstance().fromHex_61zpoe$(hex);
   }
   var sortWith_0 = Kotlin.kotlin.collections.sortWith_iwcb0m$;
-  var compareBy$lambda_4 = wrapFunction(function () {
+  var compareBy$lambda_5 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -25098,13 +25705,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       };
     };
   });
-  function Comparator$ObjectLiteral_5(closure$comparison) {
+  function Comparator$ObjectLiteral_6(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_5.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_6.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_5.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_6.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function ColorGradient(colors, n) {
     ColorGradient$Companion_getInstance();
     if (n === void 0)
@@ -25121,7 +25728,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       throw KoolException_init('ColorGradient requires at least two colors');
     }
     if (colors.length > 1) {
-      sortWith_0(colors, new Comparator$ObjectLiteral_5(compareBy$lambda_4(ColorGradient_init$lambda)));
+      sortWith_0(colors, new Comparator$ObjectLiteral_6(compareBy$lambda_5(ColorGradient_init$lambda)));
     }
     var mi = first_0(colors).first;
     var mx = last_0(colors).first;
@@ -25668,7 +26275,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   }
   function fontShader$ObjectLiteral() {
   }
-  fontShader$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = function (shaderProps, text, ctx) {
+  fontShader$ObjectLiteral.prototype.fsAfterSampling_kv1jfs$ = function (shaderProps, node, text, ctx) {
     text.append_gw00v9$(ctx.glCapabilities.glslDialect.fragColorBody + ' = ' + GlslGenerator$Companion_getInstance().L_VERTEX_COLOR + ' * ' + GlslGenerator$Companion_getInstance().L_TEX_COLOR + '.a;' + '\n');
   };
   fontShader$ObjectLiteral.$metadata$ = {
@@ -25757,7 +26364,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     var width = 0.0;
     var maxWidth = 0.0;
-    tmp$ = get_indices_0(string);
+    tmp$ = get_indices_1(string);
     tmp$_0 = tmp$.first;
     tmp$_1 = tmp$.last;
     tmp$_2 = tmp$.step;
@@ -28796,6 +29403,408 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'OcTree',
     interfaces: [MutableCollection, SpatialTree]
   };
+  function ParticleSystem(particleTex, maxParticles, name) {
+    ParticleSystem$Companion_getInstance();
+    if (maxParticles === void 0)
+      maxParticles = 10000;
+    if (name === void 0)
+      name = null;
+    Node.call(this);
+    this.maxParticles = maxParticles;
+    this.mesh_0 = new BillboardMesh(name);
+    var array = Array_0(this.maxParticles);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = new ParticleSystem$Particle(this, i, ParticleSystem$Companion_getInstance().TYPE_DEAD_0);
+    }
+    this.particles_0 = array;
+    this.sortedIndices_0 = ArrayList_init_0();
+    this.numParticles_m4cuf7$_0 = 0;
+    this.drawOrder = BillboardMesh$DrawOrder$FAR_FIRST_getInstance();
+    this.isDepthMask = true;
+    var tmp$_0;
+    this.mesh_0.parent = this;
+    this.mesh_0.drawOrder = BillboardMesh$DrawOrder$AS_IS_getInstance();
+    this.mesh_0.meshData.usage = 35048;
+    this.isFrustumChecked = false;
+    this.mesh_0.isFrustumChecked = false;
+    (Kotlin.isType(tmp$_0 = this.mesh_0.shader, BasicShader) ? tmp$_0 : throwCCE()).texture = particleTex;
+    var $receiver = this.particles_0;
+    var tmp$_1;
+    for (tmp$_1 = 0; tmp$_1 !== $receiver.length; ++tmp$_1) {
+      var element = $receiver[tmp$_1];
+      this.mesh_0.addQuad_mr3yw4$(element.position, element.size);
+    }
+  }
+  Object.defineProperty(ParticleSystem.prototype, 'numParticles', {
+    get: function () {
+      return this.numParticles_m4cuf7$_0;
+    },
+    set: function (numParticles) {
+      this.numParticles_m4cuf7$_0 = numParticles;
+    }
+  });
+  ParticleSystem.prototype.spawnParticle_1rs1w0$ = function (type) {
+    var tmp$;
+    if (this.numParticles === this.maxParticles) {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Maximum number of particles reached');
+      }
+      return null;
+    }
+    var p = this.particles_0[tmp$ = this.numParticles, this.numParticles = tmp$ + 1 | 0, tmp$];
+    p.replaceBy_1rs1w0$(type);
+    return p;
+  };
+  ParticleSystem.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
+    Node.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
+    this.mesh_0.scene = newScene;
+  };
+  ParticleSystem.prototype.preRender_aemszp$ = function (ctx) {
+    var tmp$;
+    Node.prototype.preRender_aemszp$.call(this, ctx);
+    tmp$ = this.numParticles;
+    for (var i = 0; i < tmp$; i++) {
+      this.update_0(this.particles_0[i], ctx);
+    }
+    if (this.drawOrder !== BillboardMesh$DrawOrder$AS_IS_getInstance()) {
+      this.zSortParticles_0();
+    }
+    this.mesh_0.preRender_aemszp$(ctx);
+  };
+  ParticleSystem.prototype.render_aemszp$ = function (ctx) {
+    Node.prototype.render_aemszp$.call(this, ctx);
+    if (this.isRendered) {
+      var restoreAttribs = false;
+      if (this.isDepthMask !== ctx.isDepthMask) {
+        ctx.pushAttributes();
+        ctx.isDepthMask = this.isDepthMask;
+        ctx.applyAttributes();
+        restoreAttribs = true;
+      }
+      this.mesh_0.render_aemszp$(ctx);
+      if (restoreAttribs) {
+        ctx.popAttributes();
+      }
+    }
+  };
+  ParticleSystem.prototype.postRender_aemszp$ = function (ctx) {
+    Node.prototype.postRender_aemszp$.call(this, ctx);
+    this.mesh_0.postRender_aemszp$(ctx);
+  };
+  ParticleSystem.prototype.dispose_aemszp$ = function (ctx) {
+    Node.prototype.dispose_aemszp$.call(this, ctx);
+    this.mesh_0.dispose_aemszp$(ctx);
+  };
+  function ParticleSystem$zSortParticles$lambda(this$ParticleSystem, closure$camPos, closure$s) {
+    return function (idx) {
+      return this$ParticleSystem.particles_0[idx.listIndex].position.sqrDistance_czzhiu$(closure$camPos) * closure$s;
+    };
+  }
+  var compareBy$lambda_6 = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  function Comparator$ObjectLiteral_7(closure$comparison) {
+    this.closure$comparison = closure$comparison;
+  }
+  Comparator$ObjectLiteral_7.prototype.compare = function (a, b) {
+    return this.closure$comparison(a, b);
+  };
+  Comparator$ObjectLiteral_7.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  ParticleSystem.prototype.zSortParticles_0 = function () {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.globalPos : null;
+    if (tmp$_1 == null) {
+      return;
+    }
+    var camPos = tmp$_1;
+    this.setupSortList_0();
+    var s = this.drawOrder === BillboardMesh$DrawOrder$FAR_FIRST_getInstance() ? -1 : 1;
+    var $receiver = this.sortedIndices_0;
+    if ($receiver.size > 1) {
+      sortWith($receiver, new Comparator$ObjectLiteral_7(compareBy$lambda_6(ParticleSystem$zSortParticles$lambda(this, camPos, s))));
+    }
+    this.mesh_0.clearIndices();
+    tmp$_2 = this.sortedIndices_0;
+    for (var i = 0; i !== tmp$_2.size; ++i) {
+      var idx = this.sortedIndices_0.get_za3lpa$(i);
+      this.mesh_0.addQuadIndex_za3lpa$(idx.meshIndex);
+      this.particles_0[idx.listIndex].drawIndex_8be2vx$ = i;
+    }
+    this.mesh_0.meshData.isSyncRequired = true;
+    tmp$_3 = this.numParticles;
+    for (var i_0 = 0; i_0 < tmp$_3; i_0++) {
+      var drawIdx = this.particles_0[i_0].drawIndex_8be2vx$;
+      if (drawIdx !== i_0) {
+        this.particles_0[i_0].swap_7b27wf$(this.particles_0[drawIdx]);
+      }
+    }
+  };
+  ParticleSystem.prototype.setupSortList_0 = function () {
+    var tmp$, tmp$_0, tmp$_1;
+    if (this.sortedIndices_0.size < this.numParticles) {
+      tmp$ = this.numParticles - this.sortedIndices_0.size | 0;
+      for (var i = 1; i <= tmp$; i++) {
+        this.sortedIndices_0.add_11rb$(new ParticleSystem$ParticleIndex(0, 0));
+      }
+    }
+     else if (this.sortedIndices_0.size > this.numParticles) {
+      tmp$_0 = this.sortedIndices_0.size - this.numParticles | 0;
+      for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
+        this.sortedIndices_0.removeAt_za3lpa$(get_lastIndex(this.sortedIndices_0));
+      }
+    }
+    tmp$_1 = this.numParticles;
+    for (var i_1 = 0; i_1 < tmp$_1; i_1++) {
+      this.sortedIndices_0.get_za3lpa$(i_1).listIndex = i_1;
+      this.sortedIndices_0.get_za3lpa$(i_1).meshIndex = this.particles_0[i_1].meshIndex;
+    }
+  };
+  ParticleSystem.prototype.update_0 = function ($receiver, ctx) {
+    $receiver.type.update($receiver, ctx);
+    $receiver.lifeTime += ctx.deltaT;
+    $receiver.position.x = $receiver.position.x + $receiver.velocity.x * ctx.deltaT;
+    $receiver.position.y = $receiver.position.y + $receiver.velocity.y * ctx.deltaT;
+    $receiver.position.z = $receiver.position.z + $receiver.velocity.z * ctx.deltaT;
+    $receiver.rotation += $receiver.angularVelocity * ctx.deltaT;
+    this.mesh_0.updateQuad_lszk0i$($receiver.meshIndex, $receiver.position, $receiver.size, $receiver.rotation, $receiver.type.texCenter, $receiver.type.texSize, $receiver.color);
+    if ($receiver.lifeTime > $receiver.type.maxLifeTime) {
+      $receiver.die();
+    }
+  };
+  function ParticleSystem$ParticleIndex(meshIndex, listIndex) {
+    this.meshIndex = meshIndex;
+    this.listIndex = listIndex;
+  }
+  ParticleSystem$ParticleIndex.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ParticleIndex',
+    interfaces: []
+  };
+  ParticleSystem$ParticleIndex.prototype.component1 = function () {
+    return this.meshIndex;
+  };
+  ParticleSystem$ParticleIndex.prototype.component2 = function () {
+    return this.listIndex;
+  };
+  ParticleSystem$ParticleIndex.prototype.copy_vux9f0$ = function (meshIndex, listIndex) {
+    return new ParticleSystem$ParticleIndex(meshIndex === void 0 ? this.meshIndex : meshIndex, listIndex === void 0 ? this.listIndex : listIndex);
+  };
+  ParticleSystem$ParticleIndex.prototype.toString = function () {
+    return 'ParticleIndex(meshIndex=' + Kotlin.toString(this.meshIndex) + (', listIndex=' + Kotlin.toString(this.listIndex)) + ')';
+  };
+  ParticleSystem$ParticleIndex.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.meshIndex) | 0;
+    result = result * 31 + Kotlin.hashCode(this.listIndex) | 0;
+    return result;
+  };
+  ParticleSystem$ParticleIndex.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.meshIndex, other.meshIndex) && Kotlin.equals(this.listIndex, other.listIndex)))));
+  };
+  function ParticleSystem$Type(name, texCenter, texSize, maxLifeTime, init, update) {
+    if (maxLifeTime === void 0)
+      maxLifeTime = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+    if (update === void 0)
+      update = ParticleSystem$ParticleSystem$Type_init$lambda;
+    this.name = name;
+    this.texCenter = texCenter;
+    this.texSize = texSize;
+    this.maxLifeTime = maxLifeTime;
+    this.init = init;
+    this.update = update;
+  }
+  function ParticleSystem$ParticleSystem$Type_init$lambda($receiver, it) {
+    return Unit;
+  }
+  ParticleSystem$Type.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Type',
+    interfaces: []
+  };
+  ParticleSystem$Type.prototype.component1 = function () {
+    return this.name;
+  };
+  ParticleSystem$Type.prototype.component2 = function () {
+    return this.texCenter;
+  };
+  ParticleSystem$Type.prototype.component3 = function () {
+    return this.texSize;
+  };
+  ParticleSystem$Type.prototype.component4 = function () {
+    return this.maxLifeTime;
+  };
+  ParticleSystem$Type.prototype.component5 = function () {
+    return this.init;
+  };
+  ParticleSystem$Type.prototype.component6 = function () {
+    return this.update;
+  };
+  ParticleSystem$Type.prototype.copy_6s5un6$ = function (name, texCenter, texSize, maxLifeTime, init, update) {
+    return new ParticleSystem$Type(name === void 0 ? this.name : name, texCenter === void 0 ? this.texCenter : texCenter, texSize === void 0 ? this.texSize : texSize, maxLifeTime === void 0 ? this.maxLifeTime : maxLifeTime, init === void 0 ? this.init : init, update === void 0 ? this.update : update);
+  };
+  ParticleSystem$Type.prototype.toString = function () {
+    return 'Type(name=' + Kotlin.toString(this.name) + (', texCenter=' + Kotlin.toString(this.texCenter)) + (', texSize=' + Kotlin.toString(this.texSize)) + (', maxLifeTime=' + Kotlin.toString(this.maxLifeTime)) + (', init=' + Kotlin.toString(this.init)) + (', update=' + Kotlin.toString(this.update)) + ')';
+  };
+  ParticleSystem$Type.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    result = result * 31 + Kotlin.hashCode(this.texCenter) | 0;
+    result = result * 31 + Kotlin.hashCode(this.texSize) | 0;
+    result = result * 31 + Kotlin.hashCode(this.maxLifeTime) | 0;
+    result = result * 31 + Kotlin.hashCode(this.init) | 0;
+    result = result * 31 + Kotlin.hashCode(this.update) | 0;
+    return result;
+  };
+  ParticleSystem$Type.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.texCenter, other.texCenter) && Kotlin.equals(this.texSize, other.texSize) && Kotlin.equals(this.maxLifeTime, other.maxLifeTime) && Kotlin.equals(this.init, other.init) && Kotlin.equals(this.update, other.update)))));
+  };
+  function ParticleSystem$Particle($outer, index, type) {
+    this.$outer = $outer;
+    this.type_admc1e$_0 = type;
+    this.meshIndex_6bf8ux$_0 = index;
+    this.drawIndex_8be2vx$ = 0;
+    this.lifeTime = 0.0;
+    this.position = MutableVec3f_init();
+    this.size = MutableVec2f_init();
+    this.rotation = 0.0;
+    this.color = MutableColor_init_0(Color$Companion_getInstance().WHITE);
+    this.velocity = MutableVec3f_init();
+    this.angularVelocity = 0.0;
+  }
+  Object.defineProperty(ParticleSystem$Particle.prototype, 'type', {
+    get: function () {
+      return this.type_admc1e$_0;
+    },
+    set: function (type) {
+      this.type_admc1e$_0 = type;
+    }
+  });
+  Object.defineProperty(ParticleSystem$Particle.prototype, 'meshIndex', {
+    get: function () {
+      return this.meshIndex_6bf8ux$_0;
+    },
+    set: function (meshIndex) {
+      this.meshIndex_6bf8ux$_0 = meshIndex;
+    }
+  });
+  ParticleSystem$Particle.prototype.die = function () {
+    var tmp$;
+    this.replaceBy_1rs1w0$(ParticleSystem$Companion_getInstance().TYPE_DEAD_0);
+    if (this.$outer.numParticles > 1) {
+      this.swap_7b27wf$(this.$outer.particles_0[this.$outer.numParticles - 1 | 0]);
+    }
+    tmp$ = this.$outer.numParticles;
+    this.$outer.numParticles = tmp$ - 1 | 0;
+  };
+  ParticleSystem$Particle.prototype.replaceBy_1rs1w0$ = function (newType) {
+    this.type = newType;
+    newType.init(this);
+    this.$outer.mesh_0.updateQuad_lszk0i$(this.meshIndex, this.position, this.size, this.rotation, this.type.texCenter, this.type.texSize, this.color);
+  };
+  ParticleSystem$Particle.prototype.swap_7b27wf$ = function (other) {
+    var $receiver = other.type;
+    other.type = this.type;
+    this.type = $receiver;
+    var $receiver_0 = other.meshIndex;
+    other.meshIndex = this.meshIndex;
+    this.meshIndex = $receiver_0;
+    var $receiver_1 = other.drawIndex_8be2vx$;
+    other.drawIndex_8be2vx$ = this.drawIndex_8be2vx$;
+    this.drawIndex_8be2vx$ = $receiver_1;
+    var $receiver_2 = other.lifeTime;
+    other.lifeTime = this.lifeTime;
+    this.lifeTime = $receiver_2;
+    this.swap_0(this.position, other.position);
+    this.swap_1(this.size, other.size);
+    var $receiver_3 = other.rotation;
+    other.rotation = this.rotation;
+    this.rotation = $receiver_3;
+    this.swap_2(this.color, other.color);
+    this.swap_0(this.velocity, other.velocity);
+    var $receiver_4 = other.angularVelocity;
+    other.angularVelocity = this.angularVelocity;
+    this.angularVelocity = $receiver_4;
+  };
+  ParticleSystem$Particle.prototype.swap_1 = function ($receiver, other) {
+    var $receiver_0 = other.x;
+    other.x = $receiver.x;
+    $receiver.x = $receiver_0;
+    var $receiver_1 = other.y;
+    other.y = $receiver.y;
+    $receiver.y = $receiver_1;
+  };
+  ParticleSystem$Particle.prototype.swap_0 = function ($receiver, other) {
+    var $receiver_0 = other.x;
+    other.x = $receiver.x;
+    $receiver.x = $receiver_0;
+    var $receiver_1 = other.y;
+    other.y = $receiver.y;
+    $receiver.y = $receiver_1;
+    var $receiver_2 = other.z;
+    other.z = $receiver.z;
+    $receiver.z = $receiver_2;
+  };
+  ParticleSystem$Particle.prototype.swap_2 = function ($receiver, other) {
+    var $receiver_0 = other.r;
+    other.r = $receiver.r;
+    $receiver.r = $receiver_0;
+    var $receiver_1 = other.g;
+    other.g = $receiver.g;
+    $receiver.g = $receiver_1;
+    var $receiver_2 = other.b;
+    other.b = $receiver.b;
+    $receiver.b = $receiver_2;
+    var $receiver_3 = other.a;
+    other.a = $receiver.a;
+    $receiver.a = $receiver_3;
+  };
+  ParticleSystem$Particle.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Particle',
+    interfaces: []
+  };
+  function ParticleSystem$Companion() {
+    ParticleSystem$Companion_instance = this;
+    this.TYPE_DEAD_0 = new ParticleSystem$Type('dead', Vec2f$Companion_getInstance().ZERO, Vec2f$Companion_getInstance().ZERO, void 0, ParticleSystem$Companion$TYPE_DEAD$lambda);
+  }
+  function ParticleSystem$Companion$TYPE_DEAD$lambda($receiver) {
+    $receiver.lifeTime = 0.0;
+    $receiver.position.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+    $receiver.size.set_czzhjp$(Vec2f$Companion_getInstance().ZERO);
+    $receiver.rotation = 0.0;
+    $receiver.color.set_d7aj7k$(Color$Companion_getInstance().WHITE);
+    $receiver.velocity.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+    $receiver.angularVelocity = 0.0;
+    return Unit;
+  }
+  ParticleSystem$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var ParticleSystem$Companion_instance = null;
+  function ParticleSystem$Companion_getInstance() {
+    if (ParticleSystem$Companion_instance === null) {
+      new ParticleSystem$Companion();
+    }
+    return ParticleSystem$Companion_instance;
+  }
+  ParticleSystem.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ParticleSystem',
+    interfaces: [Node]
+  };
   function PerfTimer() {
     this.tStart_0 = 0.0;
     this.reset();
@@ -28965,19 +29974,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'PointMesh',
     interfaces: [Mesh]
   };
-  function Comparator$ObjectLiteral_6(closure$comparison) {
+  function Comparator$ObjectLiteral_8(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_6.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_8.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_6.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_8.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function PriorityQueue(comparator) {
     if (comparator === void 0)
       comparator = null;
     this.comparator_0 = null;
     this.elements_0 = ArrayList_init_0();
-    this.comparator_0 = comparator != null ? comparator : new Comparator$ObjectLiteral_6(PriorityQueue_init$lambda);
+    this.comparator_0 = comparator != null ? comparator : new Comparator$ObjectLiteral_8(PriorityQueue_init$lambda);
   }
   Object.defineProperty(PriorityQueue.prototype, 'size', {
     get: function () {
@@ -31395,7 +32404,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (near === void 0)
       near = 0.0;
     if (far === void 0)
-      far = 1.0;
+      far = 100.0;
     if (texSize === void 0)
       texSize = SimpleShadowMap$Companion_getInstance().defaultMapSize;
     this.near = near;
@@ -31435,7 +32444,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     var scene = tmp$;
     var camera = scene.camera;
-    this.depthCam_0.position.set_czzhiu$(scene.light.direction);
+    this.depthCam_0.position.set_czzhiu$(scene.lighting.primaryLight.direction);
     this.depthCam_0.lookAt.set_y2kzbl$(0.0, 0.0, 0.0);
     this.depthView_0.setLookAt_n440fu$(this.depthCam_0.position, this.depthCam_0.lookAt, this.depthCam_0.up);
     camera.computeFrustumPlane_jwr40o$(this.near, this.nearPlane_0);
@@ -31471,7 +32480,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     ctx.mvpState.popMatrices();
     ctx.mvpState.update_aemszp$(ctx);
     this.fbo_0.unbind_aemszp$(ctx);
-    ctx.shaderMgr.bindShader_gt83r0$(null, ctx);
+    ctx.shaderMgr.clearShader_aemszp$(ctx);
   };
   SimpleShadowMap.prototype.dispose_aemszp$ = function (ctx) {
     this.fbo_0.dispose_aemszp$(ctx);
@@ -31553,10 +32562,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function CascadedShadowMap$Companion() {
     CascadedShadowMap$Companion_instance = this;
   }
-  CascadedShadowMap$Companion.prototype.defaultCascadedShadowMap3_za3lpa$ = function (texSize) {
+  CascadedShadowMap$Companion.prototype.defaultCascadedShadowMap3_vjorfl$ = function (range, texSize) {
+    if (range === void 0)
+      range = 100.0;
     if (texSize === void 0)
       texSize = SimpleShadowMap$Companion_getInstance().defaultMapSize;
-    var subMaps = [new SimpleShadowMap(0.0, 0.1, texSize), new SimpleShadowMap(0.1, 0.3, texSize), new SimpleShadowMap(0.3, 1.0, texSize)];
+    var subMaps = [new SimpleShadowMap(0.0, 0.1 * range, texSize), new SimpleShadowMap(0.1 * range, 0.3 * range, texSize), new SimpleShadowMap(0.3 * range, range, texSize)];
     return new CascadedShadowMap(subMaps);
   };
   CascadedShadowMap$Companion.$metadata$ = {
@@ -32213,13 +33224,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'InRadiusTraverser',
     interfaces: [CenterPointTraverser]
   };
-  function Comparator$ObjectLiteral_7(closure$comparison) {
+  function Comparator$ObjectLiteral_9(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_7.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_9.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_7.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_9.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function KNearestTraverser() {
     KNearestTraverser$Companion_getInstance();
     CenterPointTraverser.call(this);
@@ -32227,7 +33238,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.radiusSqr_9tgcx0$_0 = 9.9999998E17;
     this.result = ArrayList_init_0();
     this.maxDistance_1d7gth$_0 = 0.0;
-    this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_7(KNearestTraverser$items$lambda));
+    this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_9(KNearestTraverser$items$lambda));
     this.itemRecycler_b63bes$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
   }
   Object.defineProperty(KNearestTraverser.prototype, 'k', {
@@ -32507,7 +33518,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function sortByTraversalOrder$lambda(it) {
     return it.traversalOrder;
   }
-  var compareBy$lambda_5 = wrapFunction(function () {
+  var compareBy$lambda_7 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -32516,13 +33527,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       };
     };
   });
-  function Comparator$ObjectLiteral_8(closure$comparison) {
+  function Comparator$ObjectLiteral_10(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_8.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_10.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_8.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_10.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function sortByTraversalOrder($receiver) {
     if ($receiver.size > 1) {
       if ($receiver.size === 2) {
@@ -32534,7 +33545,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
        else {
         if ($receiver.size > 1) {
-          sortWith($receiver, new Comparator$ObjectLiteral_8(compareBy$lambda_5(sortByTraversalOrder$lambda)));
+          sortWith($receiver, new Comparator$ObjectLiteral_10(compareBy$lambda_7(sortByTraversalOrder$lambda)));
         }
       }
     }
@@ -32884,6 +33895,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (JsImpl_getInstance().isWebGl2Context) {
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).drawBuffers(new Int32Array([buf]));
     }
+     else {
+      alert('Your browser does not support WebGL2');
+      throw KoolException_init('This function requires WebGL2 support');
+    }
   }
   function glDrawElements(mode, count, type, offset) {
     JsImpl_getInstance().gl.drawElements(mode, count, type, offset);
@@ -32894,6 +33909,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).drawElementsInstanced(mode, count, type, indicesOffset, instanceCount);
     }
      else {
+      alert('Your browser does not support WebGL2');
       throw KoolException_init('This function requires WebGL2 support');
     }
   }
@@ -32975,6 +33991,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (JsImpl_getInstance().isWebGl2Context) {
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).readBuffer(src);
     }
+     else {
+      alert('Your browser does not support WebGL2');
+      throw KoolException_init('This function requires WebGL2 support');
+    }
   }
   function glRenderbufferStorage(target, internalformat, width, height) {
     JsImpl_getInstance().gl.renderbufferStorage(target, internalformat, width, height);
@@ -32985,6 +34005,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).renderbufferStorageMultisample(target, samples, internalformat, width, height);
     }
      else {
+      alert('Your browser does not support WebGL2');
       throw KoolException_init('This function requires WebGL2 support');
     }
   }
@@ -33061,6 +34082,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).vertexAttribDivisor(index, divisor);
     }
      else {
+      alert('Your browser does not support WebGL2');
       throw KoolException_init('This function requires WebGL2 support');
     }
   }
@@ -33073,6 +34095,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       (Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE()).vertexAttribIPointer(index, size, type, stride, offset);
     }
      else {
+      alert('Your browser does not support WebGL2');
       throw KoolException_init('This function requires WebGL2 support');
     }
   }
@@ -33081,6 +34104,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   }
   function isValidUniformLocation(location) {
     return location != null && Kotlin.isType(location, WebGLUniformLocation);
+  }
+  function withWebGl2Ctx(block) {
+    var tmp$;
+    if (JsImpl_getInstance().isWebGl2Context) {
+      block(Kotlin.isType(tmp$ = JsImpl_getInstance().gl, WebGL2RenderingContext) ? tmp$ : throwCCE());
+    }
+     else {
+      alert('Your browser does not support WebGL2');
+      throw KoolException_init('This function requires WebGL2 support');
+    }
   }
   function createDefaultContext() {
     return createContext(new JsContext$InitProps());
@@ -33745,7 +34778,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       var max = typeof (tmp$_4 = this.gl_8be2vx$.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT)) === 'number' ? tmp$_4 : throwCCE();
       anisotropicTexFilterInfo = new AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT);
     }
-    this.glCapabilities_4q43mj$_0 = new GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, glslDialect, glVersion);
+    var geometryShader = false;
+    this.glCapabilities_4q43mj$_0 = new GlCapabilities(uint32Indices, shaderIntAttribs, maxTexUnits, depthTextures, depthComponentIntFormat, depthFilterMethod, anisotropicTexFilterInfo, geometryShader, glslDialect, glVersion);
     this.screenDpi = JsImpl_getInstance().dpi;
     this.windowWidth = this.canvas_8be2vx$.clientWidth;
     this.windowHeight = this.canvas_8be2vx$.clientHeight;
@@ -34995,6 +36029,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       return GL_VERTEX_SHADER;
     }
   });
+  Object.defineProperty(package$gl, 'GL_GEOMETRY_SHADER', {
+    get: function () {
+      return GL_GEOMETRY_SHADER;
+    }
+  });
   Object.defineProperty(package$gl, 'GL_MAX_VERTEX_ATTRIBS', {
     get: function () {
       return GL_MAX_VERTEX_ATTRIBS;
@@ -35985,6 +37024,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$math.rangeTo_yni7l$ = rangeTo_0;
   package$math.partition_yk7sjr$ = partition;
   package$math.partition_iuu93u$ = partition_0;
+  package$math.partition_sdyu2v$ = partition_1;
+  package$math.partition_p3zpdg$ = partition_2;
+  package$math.partition_6k0an1$ = partition_3;
   package$math.Plane = Plane;
   package$math.distanceToLine_f1pxpf$ = distanceToLine;
   package$math.sqrDistanceToLine_f1pxpf$ = sqrDistanceToLine;
@@ -36167,7 +37209,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     get: Globe$Companion_getInstance
   });
   package$globe.Globe = Globe;
-  package$globe.GlobeDragHandler = GlobeDragHandler;
+  package$globe.GlobeCamHandler = GlobeCamHandler;
   package$globe.TileFrame = TileFrame;
   package$globe.TileManager = TileManager;
   TileMesh.AttributionInfo = TileMesh$AttributionInfo;
@@ -36268,6 +37310,23 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$physics.uniformMassBox_7b5o5w$ = uniformMassBox_0;
   package$kool.MvpState = MvpState;
   package$kool.toString_lcymw2$ = toString_0;
+  package$kool.RenderingHints = RenderingHints;
+  Object.defineProperty(ShadowPreset, 'SHADOW_OFF', {
+    get: ShadowPreset$SHADOW_OFF_getInstance
+  });
+  Object.defineProperty(ShadowPreset, 'SHADOW_LOW', {
+    get: ShadowPreset$SHADOW_LOW_getInstance
+  });
+  Object.defineProperty(ShadowPreset, 'SHADOW_MEDIUM', {
+    get: ShadowPreset$SHADOW_MEDIUM_getInstance
+  });
+  Object.defineProperty(ShadowPreset, 'SHADOW_HIGH', {
+    get: ShadowPreset$SHADOW_HIGH_getInstance
+  });
+  Object.defineProperty(ShadowPreset, 'SHADOW_ULTRA', {
+    get: ShadowPreset$SHADOW_ULTRA_getInstance
+  });
+  package$kool.ShadowPreset = ShadowPreset;
   var package$scene = package$kool.scene || (package$kool.scene = {});
   var package$animation = package$scene.animation || (package$scene.animation = {});
   package$animation.Animation = Animation;
@@ -36302,7 +37361,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     get: InstancedMesh$Companion_getInstance
   });
   package$scene.InstancedMesh = InstancedMesh;
+  package$scene.Lighting = Lighting;
   package$scene.Light = Light;
+  package$scene.DirectionalLight = DirectionalLight;
   var package$shading = package$kool.shading || (package$kool.shading = {});
   package$shading.Attribute = Attribute;
   package$scene.mesh_ajiltw$ = mesh_0;
@@ -36534,27 +37595,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   });
   package$shading.FogModel = FogModel;
   package$shading.ShaderProps = ShaderProps;
-  package$shading.ShadingHints = ShadingHints;
-  Object.defineProperty(PreferredLightModel, 'NO_LIGHTING', {
-    get: PreferredLightModel$NO_LIGHTING_getInstance
-  });
-  Object.defineProperty(PreferredLightModel, 'GOURAUD', {
-    get: PreferredLightModel$GOURAUD_getInstance
-  });
-  Object.defineProperty(PreferredLightModel, 'PHONG', {
-    get: PreferredLightModel$PHONG_getInstance
-  });
-  package$shading.PreferredLightModel = PreferredLightModel;
-  Object.defineProperty(PreferredShadowMethod, 'NO_SHADOW', {
-    get: PreferredShadowMethod$NO_SHADOW_getInstance
-  });
-  Object.defineProperty(PreferredShadowMethod, 'SINGLE_SHADOW_MAP', {
-    get: PreferredShadowMethod$SINGLE_SHADOW_MAP_getInstance
-  });
-  Object.defineProperty(PreferredShadowMethod, 'CASCADED_SHADOW_MAP', {
-    get: PreferredShadowMethod$CASCADED_SHADOW_MAP_getInstance
-  });
-  package$shading.PreferredShadowMethod = PreferredShadowMethod;
   package$shading.Uniform = Uniform;
   package$shading.UniformTexture2D = UniformTexture2D;
   package$shading.UniformTexture2Dv = UniformTexture2Dv;
@@ -36593,6 +37633,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$util.InterpolatedValue = InterpolatedValue;
   package$util.InterpolatedFloat = InterpolatedFloat;
   package$util.InterpolatedColor = InterpolatedColor;
+  Object.defineProperty(BillboardMesh$DrawOrder, 'AS_IS', {
+    get: BillboardMesh$DrawOrder$AS_IS_getInstance
+  });
+  Object.defineProperty(BillboardMesh$DrawOrder, 'FAR_FIRST', {
+    get: BillboardMesh$DrawOrder$FAR_FIRST_getInstance
+  });
+  Object.defineProperty(BillboardMesh$DrawOrder, 'NEAR_FIRST', {
+    get: BillboardMesh$DrawOrder$NEAR_FIRST_getInstance
+  });
+  BillboardMesh.DrawOrder = BillboardMesh$DrawOrder;
+  Object.defineProperty(BillboardMesh, 'Companion', {
+    get: BillboardMesh$Companion_getInstance
+  });
   package$util.BillboardMesh = BillboardMesh;
   package$util.billboardShader_n50u2h$ = billboardShader;
   package$util.BillboardShader = BillboardShader;
@@ -36712,6 +37765,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     get: OcTree$Companion_getInstance
   });
   package$util.OcTree = OcTree;
+  ParticleSystem.Type = ParticleSystem$Type;
+  ParticleSystem.Particle = ParticleSystem$Particle;
+  Object.defineProperty(ParticleSystem, 'Companion', {
+    get: ParticleSystem$Companion_getInstance
+  });
+  package$util.ParticleSystem = ParticleSystem;
   package$util.PerfTimer = PerfTimer;
   package$kool.now = now;
   package$kool.toString_j6vyb1$ = toString_1;
@@ -36983,59 +38042,61 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   terminateOnFaceCountAbs$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   terminateOnError$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   MeshRayTest$Companion$nopTest$ObjectLiteral.prototype.onMeshDataChanged_f1jspk$ = MeshRayTest.prototype.onMeshDataChanged_f1jspk$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsHeader_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsBeforeProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsEnd_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsHeader_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsBeforeSampling_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterLighting_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsEnd_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.geomShader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.geomShader_kv1jfs$;
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
   BlankComponentUi.prototype.createUi_aemszp$ = ComponentUi.prototype.createUi_aemszp$;
   BlankComponentUi.prototype.updateUi_aemszp$ = ComponentUi.prototype.updateUi_aemszp$;
   BlankComponentUi.prototype.onRender_aemszp$ = ComponentUi.prototype.onRender_aemszp$;
   BlankComponentUi.prototype.dispose_aemszp$ = ComponentUi.prototype.dispose_aemszp$;
   SimpleComponentUi.prototype.onRender_aemszp$ = ComponentUi.prototype.onRender_aemszp$;
-  BasicPointShader_init$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
-  BasicPointShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
-  BasicPointShader_init$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
-  BasicPointShader_init$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterSampling_jh5913$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
-  BasicPointShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.vsAfterProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
-  BlurShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.fsAfterSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterSampling_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
-  BillboardShader_init$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
-  fontShader$ObjectLiteral.prototype.vsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.vsHeader_jh5913$;
-  fontShader$ObjectLiteral.prototype.vsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_jh5913$;
-  fontShader$ObjectLiteral.prototype.vsBeforeProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_jh5913$;
-  fontShader$ObjectLiteral.prototype.vsAfterProj_jh5913$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_jh5913$;
-  fontShader$ObjectLiteral.prototype.vsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.vsEnd_jh5913$;
-  fontShader$ObjectLiteral.prototype.fsHeader_jh5913$ = GlslGenerator$GlslInjector.prototype.fsHeader_jh5913$;
-  fontShader$ObjectLiteral.prototype.fsAfterInput_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_jh5913$;
-  fontShader$ObjectLiteral.prototype.fsBeforeSampling_jh5913$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_jh5913$;
-  fontShader$ObjectLiteral.prototype.fsAfterLighting_jh5913$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_jh5913$;
-  fontShader$ObjectLiteral.prototype.fsEnd_jh5913$ = GlslGenerator$GlslInjector.prototype.fsEnd_jh5913$;
+  BasicPointShader_init$ObjectLiteral.prototype.vsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsHeader_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.vsAfterInput_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.vsBeforeProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.vsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsEnd_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsHeader_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsAfterInput_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsBeforeSampling_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsAfterSampling_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterSampling_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsAfterLighting_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.fsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsEnd_kv1jfs$;
+  BasicPointShader_init$ObjectLiteral.prototype.geomShader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.geomShader_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.vsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsHeader_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.vsAfterInput_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.vsBeforeProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.vsAfterProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.vsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsEnd_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.fsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsHeader_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.fsAfterInput_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.fsBeforeSampling_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.fsAfterLighting_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.fsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsEnd_kv1jfs$;
+  BlurShader_init$ObjectLiteral.prototype.geomShader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.geomShader_kv1jfs$;
+  BillboardShader_init$ObjectLiteral.prototype.fsAfterInput_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_kv1jfs$;
+  BillboardShader_init$ObjectLiteral.prototype.fsAfterLighting_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_kv1jfs$;
+  BillboardShader_init$ObjectLiteral.prototype.fsBeforeSampling_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_kv1jfs$;
+  BillboardShader_init$ObjectLiteral.prototype.fsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsEnd_kv1jfs$;
+  BillboardShader_init$ObjectLiteral.prototype.fsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsHeader_kv1jfs$;
+  BillboardShader_init$ObjectLiteral.prototype.vsAfterProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_kv1jfs$;
+  BillboardShader_init$ObjectLiteral.prototype.vsBeforeProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_kv1jfs$;
+  BillboardShader_init$ObjectLiteral.prototype.vsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsHeader_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.vsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsHeader_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.vsAfterInput_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsAfterInput_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.vsBeforeProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.vsAfterProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.vsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsEnd_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.fsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsHeader_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.fsAfterInput_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterInput_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.fsBeforeSampling_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.fsAfterLighting_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.fsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsEnd_kv1jfs$;
+  fontShader$ObjectLiteral.prototype.geomShader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.geomShader_kv1jfs$;
   AnimationData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
   NodeAnimationData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
   Vec3KeyData$$serializer.prototype.patch_mynpiu$ = KSerializer.prototype.patch_mynpiu$;
@@ -37230,6 +38291,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   GL_UNSIGNED_SHORT_5_6_5 = 33635;
   GL_FRAGMENT_SHADER = 35632;
   GL_VERTEX_SHADER = 35633;
+  GL_GEOMETRY_SHADER = 36313;
   GL_MAX_VERTEX_ATTRIBS = 34921;
   GL_MAX_VERTEX_UNIFORM_VECTORS = 36347;
   GL_MAX_VARYING_VECTORS = 36348;

@@ -17,6 +17,7 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 200 bodies, js is slower...).
 
 ## Features / Noticeable stuff:
+- Simple particle system (slow in WebGL, much faster on platforms with geometry shader...): [Particle Demo](https://fabmax.github.io/kool/kool-js/?demo=particleDemo)
 - Environment-Mapping for sky-boxes and (dynamic) reflections: [Reflection Demo](https://fabmax.github.io/kool/kool-js/?demo=reflectionDemo)
 - Instanced rendering: [Instanced Mesh Demo](https://fabmax.github.io/kool/kool-js/?demo=instancedDemo)
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo) module using error quadrics
