@@ -13,6 +13,7 @@ open class GlslGenerator {
         const val U_MVP_MATRIX = "uMvpMatrix"
         const val U_MODEL_MATRIX = "uModelMatrix"
         const val U_VIEW_MATRIX = "uViewMatrix"
+        const val U_PROJ_MATRIX = "uProjMatrix"
         const val U_LIGHT_DIRECTION = "uLightDirection"
         const val U_LIGHT_COLOR = "uLightColor"
         const val U_SHININESS = "uShininess"
@@ -66,6 +67,8 @@ open class GlslGenerator {
         fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) { }
         fun fsAfterLighting(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) { }
         fun fsEnd(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) { }
+
+        fun geomShader(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) { }
     }
 
     val injectors = mutableListOf<GlslInjector>()
@@ -88,7 +91,9 @@ open class GlslGenerator {
         fsOutBody = ctx.glCapabilities.glslDialect.fragColorBody
         texSampler = ctx.glCapabilities.glslDialect.texSampler
 
-        return Shader.Source(generateVertShader(shaderProps, node, ctx), generateFragShader(shaderProps, node, ctx))
+        return Shader.Source(generateVertShader(shaderProps, node, ctx),
+                generateGeomShader(shaderProps, node, ctx),
+                generateFragShader(shaderProps, node, ctx))
     }
 
     private fun generateVertShader(shaderProps: ShaderProps, node: Node, ctx: KoolContext): String {
@@ -109,6 +114,16 @@ open class GlslGenerator {
         generateFragBodyCode(shaderProps, node, text, ctx)
 
         return text.toString()
+    }
+
+    private fun generateGeomShader(shaderProps: ShaderProps, node: Node, ctx: KoolContext): String {
+        val text = StringBuilder()
+        injectors.forEach { it.geomShader(shaderProps, node, text, ctx) }
+        var txt = text.toString()
+        if (txt.isNotEmpty() && !txt.startsWith("#version")) {
+            txt = "${ctx.glCapabilities.glslDialect.version}\n" + txt
+        }
+        return txt
     }
 
     private fun generateVertInputCode(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {

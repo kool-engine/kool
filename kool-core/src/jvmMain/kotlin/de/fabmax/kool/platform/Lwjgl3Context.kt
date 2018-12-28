@@ -148,6 +148,9 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         // This is required to be able to set gl_PointSize in vertex shaders (to get same behaviour as in GLES)
         GL11.glEnable(GL20.GL_VERTEX_PROGRAM_POINT_SIZE)
 
+        // Geometry shaders are introduced with OpenGL 3.2
+        val geometryShader = versionMajor > 3 || (versionMajor == 3 && versionMinor >= 2)
+
         glCapabilities = GlCapabilities(
                 uint32Indices = true,
                 shaderIntAttribs = true,
@@ -155,9 +158,10 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
                 depthTextures = true,
                 depthComponentIntFormat = GL_DEPTH_COMPONENT,
                 depthFilterMethod = GL_LINEAR,
+                anisotropicTexFilterInfo = anisotropicTexFilterInfo,
+                geometryShader = geometryShader,
                 glslDialect = GlslDialect.GLSL_DIALECT_330,
-                glVersion = GlVersion("OpenGL", versionMajor, versionMinor),
-                anisotropicTexFilterInfo = anisotropicTexFilterInfo)
+                glVersion = GlVersion("OpenGL", versionMajor, versionMinor))
 
         textureMgr.maxTextureLoadsPerFrame = MAX_TEXTURE_LOADS_PER_FRAmE
     }

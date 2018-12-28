@@ -91,20 +91,14 @@ actual fun glDisable(cap: Int) = JsImpl.gl.disable(cap)
 actual fun glDisableVertexAttribArray(index: Int) = JsImpl.gl.disableVertexAttribArray(index)
 
 actual fun glDrawBuffer(buf: Int) {
-    if (JsImpl.isWebGl2Context) {
-        (JsImpl.gl as WebGL2RenderingContext).drawBuffers(intArrayOf(buf))
-    } // else just ignore this call
+    withWebGl2Ctx { it.drawBuffers(intArrayOf(buf)) }
 }
 
 actual fun glDrawElements(mode: Int, count: Int, type: Int, offset: Int) =
         JsImpl.gl.drawElements(mode, count, type, offset)
 
 actual fun glDrawElementsInstanced(mode: Int, count: Int, type: Int, indicesOffset: Int, instanceCount: Int) {
-    if (JsImpl.isWebGl2Context) {
-        (JsImpl.gl as WebGL2RenderingContext).drawElementsInstanced(mode, count, type, indicesOffset, instanceCount)
-    } else {
-        throw KoolException("This function requires WebGL2 support")
-    }
+    withWebGl2Ctx { it.drawElementsInstanced(mode, count, type, indicesOffset, instanceCount) }
 }
 
 actual fun glEnable(cap: Int) = JsImpl.gl.enable(cap)
@@ -166,20 +160,14 @@ actual fun glPointSize(size: Float) {
 }
 
 actual fun glReadBuffer(src: Int) {
-    if (JsImpl.isWebGl2Context) {
-        (JsImpl.gl as WebGL2RenderingContext).readBuffer(src)
-    } // else just ignore this call
+    withWebGl2Ctx { it.readBuffer(src) }
 }
 
 actual fun glRenderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) =
         JsImpl.gl.renderbufferStorage(target, internalformat, width, height)
 
 actual fun glRenderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) {
-    if (JsImpl.isWebGl2Context) {
-        (JsImpl.gl as WebGL2RenderingContext).renderbufferStorageMultisample(target, samples, internalformat, width, height)
-    } else {
-        throw KoolException("This function requires WebGL2 support")
-    }
+    withWebGl2Ctx { it.renderbufferStorageMultisample(target, samples, internalformat, width, height) }
 }
 
 actual fun glShaderSource(shader: ShaderResource, source: String) =
@@ -226,22 +214,14 @@ actual fun glUniformMatrix4fv(location: Any?, transpose: Boolean, value: Float32
 actual fun glUseProgram(program: ProgramResource?) = JsImpl.gl.useProgram(program?.glRef as WebGLProgram?)
 
 actual fun glVertexAttribDivisor(index: Int, divisor: Int) {
-    if (JsImpl.isWebGl2Context) {
-        (JsImpl.gl as WebGL2RenderingContext).vertexAttribDivisor(index, divisor)
-    } else {
-        throw KoolException("This function requires WebGL2 support")
-    }
+    withWebGl2Ctx { it.vertexAttribDivisor(index, divisor) }
 }
 
 actual fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int) =
         JsImpl.gl.vertexAttribPointer(index, size, type, normalized, stride, offset)
 
 actual fun glVertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int) {
-    if (JsImpl.isWebGl2Context) {
-        (JsImpl.gl as WebGL2RenderingContext).vertexAttribIPointer(index, size, type, stride, offset)
-    } else {
-        throw KoolException("This function requires WebGL2 support")
-    }
+    withWebGl2Ctx {  it.vertexAttribIPointer(index, size, type, stride, offset) }
 }
 
 actual fun glViewport(x: Int, y: Int, width: Int, height: Int) = JsImpl.gl.viewport(x, y, width, height)
@@ -255,4 +235,13 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
     fun vertexAttribDivisor(index: Int, divisor: Int)
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
+}
+
+private inline fun withWebGl2Ctx(block: (WebGL2RenderingContext) -> Unit) {
+    if (JsImpl.isWebGl2Context) {
+        block(JsImpl.gl as WebGL2RenderingContext)
+    } else {
+        js("alert(\"Your browser does not support WebGL2\")")
+        throw KoolException("This function requires WebGL2 support")
+    }
 }

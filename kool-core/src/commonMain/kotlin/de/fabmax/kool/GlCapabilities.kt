@@ -8,6 +8,7 @@ data class GlCapabilities(
         val depthComponentIntFormat: Int,
         val depthFilterMethod: Int,
         val anisotropicTexFilterInfo: AnisotropicTexFilterInfo,
+        val geometryShader: Boolean,
         val glslDialect: GlslDialect,
         val glVersion: GlVersion
 ) {
@@ -20,6 +21,7 @@ data class GlCapabilities(
                 depthComponentIntFormat = 0,
                 depthFilterMethod = 0,
                 anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED,
+                geometryShader = false,
                 glslDialect = GlslDialect.GLSL_DIALECT_100,
                 glVersion = GlVersion("Unknown", 0, 0))
     }

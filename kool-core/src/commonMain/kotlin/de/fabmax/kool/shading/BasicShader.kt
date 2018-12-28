@@ -24,6 +24,7 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     protected val uMvpMatrix = addUniform(UniformMatrix4(GlslGenerator.U_MVP_MATRIX))
     protected val uModelMatrix = addUniform(UniformMatrix4(GlslGenerator.U_MODEL_MATRIX))
     protected val uViewMatrix = addUniform(UniformMatrix4(GlslGenerator.U_VIEW_MATRIX))
+    protected val uProjMatrix = addUniform(UniformMatrix4(GlslGenerator.U_PROJ_MATRIX))
     protected val uLightColor = addUniform(Uniform3f(GlslGenerator.U_LIGHT_COLOR))
     protected val uLightDirection = addUniform(Uniform3f(GlslGenerator.U_LIGHT_DIRECTION))
     protected val uCamPosition = addUniform(Uniform3f(GlslGenerator.U_CAMERA_POSITION))
@@ -167,10 +168,12 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         // pass current transformation matrices to shader
         uMvpMatrix.value = ctx.mvpState.mvpMatrixBuffer
         uMvpMatrix.bind(ctx)
-        uViewMatrix.value = ctx.mvpState.viewMatrixBuffer
-        uViewMatrix.bind(ctx)
         uModelMatrix.value = ctx.mvpState.modelMatrixBuffer
         uModelMatrix.bind(ctx)
+        uViewMatrix.value = ctx.mvpState.viewMatrixBuffer
+        uViewMatrix.bind(ctx)
+        uProjMatrix.value = ctx.mvpState.projMatrixBuffer
+        uProjMatrix.bind(ctx)
     }
 
     override fun bindMesh(mesh: Mesh, ctx: KoolContext) {

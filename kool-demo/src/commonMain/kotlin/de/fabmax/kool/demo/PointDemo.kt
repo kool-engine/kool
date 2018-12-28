@@ -13,7 +13,6 @@ import de.fabmax.kool.util.*
 
 fun pointScene(): Scene {
     val (pointMesh, tree) = makePointMesh()
-    //val (pointMesh, tree) = makeBillboardPointMesh()
 
     //val trav = InRadiusTraverser<MeshPoint>().setup(Vec3f.ZERO, 1f)
     val trav = KNearestTraverser<MeshPoint>().setup(Vec3f.ZERO, 3000)
@@ -95,28 +94,8 @@ fun makePointMesh(): Pair<Mesh, SpatialTree<MeshPoint>> {
         }
     }
     val tree = timedMs("Constructed spatial tree with ${points.size} points in ") {
-        //pointKdTree(points)
-        pointOcTree(points)
-    }
-    return Pair(mesh, tree)
-}
-
-fun makeBillboardPointMesh(): Pair<BillboardMesh, KdTree<MeshPoint>> {
-    val mesh = BillboardMesh()
-    mesh.billboardSize = 3f
-
-    val points: MutableList<MeshPoint> = mutableListOf()
-    for (i in 1..100_000) {
-        val x = randomF(-2.5f, 2.5f)
-        val z = randomF(-2.5f, 2.5f)
-        val y = randomF(-2.5f, 2.5f)
-
-        mesh.addQuad(Vec3f(x, y, z), Color.DARK_GRAY)
-        points.add(MeshPoint(x, y, z, (i-1)*4))
-    }
-
-    val tree = timedMs("Constructed k-d-Tree with ${points.size} points in ") {
         pointKdTree(points)
+        //pointOcTree(points)
     }
     return Pair(mesh, tree)
 }

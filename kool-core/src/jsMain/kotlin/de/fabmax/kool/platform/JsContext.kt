@@ -82,6 +82,9 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT)
         }
 
+        // unfortunately no support for geometry shaders in WebGL
+        val geometryShader = false
+
         glCapabilities = GlCapabilities(
                 uint32Indices,
                 shaderIntAttribs,
@@ -90,6 +93,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
                 depthComponentIntFormat,
                 depthFilterMethod,
                 anisotropicTexFilterInfo,
+                geometryShader,
                 glslDialect,
                 glVersion)
 

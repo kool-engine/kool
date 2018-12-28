@@ -114,7 +114,7 @@ abstract class Node(val name: String? = null) : Disposable {
     }
 
     /**
-     * Renders this node using the specified graphics engine context. Implementations should consider the [isVisible]
+     * Renders this node using the specified graphics engine context. Implementations should consider the [isRendered]
      * flag and return without drawing anything if it is false. This method might be called multiple times per frame,
      * e.g. during shadow depth texture rendering.
      *

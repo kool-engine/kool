@@ -22,6 +22,7 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
     }
 
     fun clearShader(ctx: KoolContext) {
+        ctx.checkIsGlThread()
         if (boundShader != null) {
             // clear used shader
             glUseProgram(null)
@@ -83,14 +84,32 @@ class ShaderManager internal constructor() : SharedResManager<Shader.Source, Pro
             throw KoolException("Fragment shader compilation failed: $log")
         }
 
+        // optionally create geometry shader
+        var geomShader: ShaderResource? = null
+        if (key.geometrySrc.isNotEmpty()) {
+            geomShader = ShaderResource.createGeometryShader(ctx)
+            geomShader.shaderSource(key.geometrySrc, ctx)
+            if (!fragShader.compile(ctx)) {
+                // compilation failed
+                val log = geomShader.getInfoLog(ctx)
+                geomShader.delete(ctx)
+                logE { "Geometry shader compilation failed: $log" }
+                logE { "Shader source: \n${key.geometrySrc}" }
+                throw KoolException("Geometry shader compilation failed: $log")
+            }
+        }
+
         // link shader
         val prog = ProgramResource.create(ctx)
         prog.attachShader(vertShader, ctx)
         prog.attachShader(fragShader, ctx)
+        geomShader?.let { prog.attachShader(it, ctx) }
         val success = prog.link(ctx)
+
         // after linkage fragment and vertex shader are no longer needed
         vertShader.delete(ctx)
         fragShader.delete(ctx)
+        geomShader?.delete(ctx)
         if (!success) {
             // linkage failed
             val log = prog.getInfoLog(ctx)
