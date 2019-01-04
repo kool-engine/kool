@@ -12,6 +12,7 @@ import android.view.MotionEvent
 import android.view.View
 import de.fabmax.kool.*
 import de.fabmax.kool.gl.*
+import de.fabmax.kool.util.logI
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLContext
@@ -39,7 +40,7 @@ class AndroidRenderContext(val context: Context, val glView: GLSurfaceView, val 
     private var prevRenderTime = System.nanoTime()
     private var isCreated = false
 
-    private val glThread = Thread.currentThread()
+    private var glThread = Thread.currentThread()
 
     constructor(context: Context, onKoolContextCreated: (AndroidRenderContext) -> Unit) :
             this(context, GLSurfaceView(context), onKoolContextCreated)
@@ -142,6 +143,18 @@ class AndroidRenderContext(val context: Context, val glView: GLSurfaceView, val 
     //
 
     override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
+        glThread = Thread.currentThread()
+
+        val versionStr = GLES30.glGetString(GL_VERSION) ?: ""
+        var versionMajor = 0
+        var versionMinor = 0
+        if (versionStr.matches(Regex("^OpenGL ES [0-9]\\.[0-9].*"))) {
+            val parts = versionStr.substring(10).split(Regex("[^0-9]"), 3)
+            versionMajor = parts[0].toInt()
+            versionMinor = parts[1].toInt()
+        }
+        logI { "OpenGL ES version: $versionStr -> $versionMajor.$versionMinor" }
+
         // check available extensions
         val extensions = GLES30.glGetString(GL_EXTENSIONS).split(" ")
         //extensions.forEach { Log.i(TAG, it) }
@@ -163,7 +176,14 @@ class AndroidRenderContext(val context: Context, val glView: GLSurfaceView, val 
         GLES30.glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, resultBuf, 0)
         val maxTexUnits = resultBuf[0]
 
+        // Geometry shaders are introduced with OpenGL ES 3.2
+        //val geometryShader = versionMajor > 3 || (versionMajor == 3 && versionMinor >= 2)
+        // fixme: with geometry shader, shader linkage fails without message?
+        val geometryShader = false
+
         if (isGLES30Context) {
+            val glsl = if (versionMajor == 3 && versionMinor >= 2) GlslDialect.GLSL_DIALECT_320_ES else GlslDialect.GLSL_DIALECT_300_ES
+
             glCapabilities = GlCapabilities(
                     uint32Indices = uint32Indices,
                     shaderIntAttribs = true,
@@ -171,9 +191,10 @@ class AndroidRenderContext(val context: Context, val glView: GLSurfaceView, val 
                     depthTextures = true,
                     depthComponentIntFormat = GL_DEPTH_COMPONENT24,
                     depthFilterMethod = GL_NEAREST,
-                    glslDialect = GlslDialect.GLSL_DIALECT_300_ES,
-                    glVersion = GlVersion("OpenGL ES", 3, 0),
-                    anisotropicTexFilterInfo = anisotropicTexFilterInfo)
+                    anisotropicTexFilterInfo = anisotropicTexFilterInfo,
+                    geometryShader = geometryShader,
+                    glslDialect = glsl,
+                    glVersion = GlVersion("OpenGL ES", versionMajor, versionMinor))
 
         } else {
             glCapabilities = GlCapabilities(
@@ -183,9 +204,10 @@ class AndroidRenderContext(val context: Context, val glView: GLSurfaceView, val 
                     depthTextures = extensions.contains("GL_OES_depth_texture"),
                     depthComponentIntFormat = GL_DEPTH_COMPONENT,
                     depthFilterMethod = GL_NEAREST,
+                    anisotropicTexFilterInfo = anisotropicTexFilterInfo,
+                    geometryShader = geometryShader,
                     glslDialect = GlslDialect.GLSL_DIALECT_100,
-                    glVersion = GlVersion("OpenGL ES", 2, 0),
-                    anisotropicTexFilterInfo = anisotropicTexFilterInfo)
+                    glVersion = GlVersion("OpenGL ES", versionMajor, versionMinor))
         }
 
         // don't call onKoolContextCreated() yet, we first wan't to know how big our viewport is

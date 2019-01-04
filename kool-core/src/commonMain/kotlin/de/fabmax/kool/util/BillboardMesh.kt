@@ -247,10 +247,16 @@ class BillboardShader internal constructor(props: ShaderProps, generator: GlslGe
     }
 
     private fun vsEndGeom(text: StringBuilder) {
+        // super nasty hack: remove standard tex coords and fragment color varyings...
+        val lines = text.toString().split('\n').toMutableList()
+        lines.removeAll { it.contains(GlslGenerator.V_TEX_COORD) || it.contains(GlslGenerator.V_COLOR) }
+        text.clear()
+        lines.forEach { text.append(it).append('\n') }
+
         // transform position to camera space
-        text.append("gl_Position = ${GlslGenerator.U_VIEW_MATRIX} * (${GlslGenerator.U_MODEL_MATRIX} * vec4(${Attribute.POSITIONS}, 1.0));")
-        text.append("vsSzExtents = ${BillboardMesh.ATTR_EXTENTS};")
-        text.append("vsTexExtents = ${BillboardMesh.ATTR_TEX_EXTENTS};")
+        text.append("gl_Position = ${GlslGenerator.U_VIEW_MATRIX} * (${GlslGenerator.U_MODEL_MATRIX} * vec4(${Attribute.POSITIONS}, 1.0));\n")
+        text.append("vsSzExtents = ${BillboardMesh.ATTR_EXTENTS};\n")
+        text.append("vsTexExtents = ${BillboardMesh.ATTR_TEX_EXTENTS};\n")
         text.append("vsVertColor = ${Attribute.COLORS};\n")
         text.append("vsCenterUv = ${Attribute.TEXTURE_COORDS};\n")
         text.append("vsRotation = ${BillboardMesh.ATTR_ROTATION};\n")

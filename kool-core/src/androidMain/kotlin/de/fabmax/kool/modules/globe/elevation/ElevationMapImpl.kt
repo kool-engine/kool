@@ -6,6 +6,7 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.platform.AndroidAssetManager
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -34,9 +35,9 @@ private class DelayedElevationMap(basePath: String, override val meta: Elevation
     private var loadedHeightMap: ElevationMapS16? = null
 
     init {
-        assetMgr.loadAssetAsStream("$basePath/${meta.name}") {
+        assetMgr.loadAsset("$basePath/${meta.name}") {
             if (it != null) {
-                loadedHeightMap = ElevationMapS16(loadElevationMapData(it, meta), meta)
+                loadedHeightMap = ElevationMapS16(loadElevationMapData(ByteArrayInputStream(it), meta), meta)
             }
             isAvailable = true
         }

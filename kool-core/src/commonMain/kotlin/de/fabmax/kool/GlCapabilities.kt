@@ -63,5 +63,7 @@ data class GlslDialect(
                 "in", "out vec4 fragColor;", "fragColor", "texture")
         val GLSL_DIALECT_300_ES = GlslDialect("#version 300 es", "in", "out",
                 "in", "out vec4 fragColor;", "fragColor", "texture")
+        val GLSL_DIALECT_320_ES = GlslDialect("#version 320 es", "in", "out",
+                "in", "out vec4 fragColor;", "fragColor", "texture")
     }
 }

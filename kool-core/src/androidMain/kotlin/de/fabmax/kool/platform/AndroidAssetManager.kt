@@ -4,11 +4,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
-import de.fabmax.kool.AssetManager
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.TextureData
+import de.fabmax.kool.*
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -17,7 +16,98 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 
-class AndroidAssetManager(private val context: Context, assetsBaseDir: String) : AssetManager(assetsBaseDir) {
+class AndroidAssetManager internal constructor(private val context: Context, assetsBaseDir: String) : AssetManager(assetsBaseDir) {
+
+    private val fontGenerator = FontMapGenerator(context, MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
+
+    init {
+        // inits http cache if not already happened
+        HttpCache.initCache(File(context.cacheDir, ".httpCache"))
+    }
+
+    override suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef): LoadedRawAsset {
+        var data: ByteArray? = null
+        try {
+            openLocalStream(localRawRef.url).use { data = it.readBytes() }
+        } catch (e: Exception) {
+            logE { "Failed loading asset ${localRawRef.url}: $e" }
+        }
+        return LoadedRawAsset(localRawRef, data)
+    }
+
+    override suspend fun loadHttpRaw(httpRawRef: HttpRawAssetRef): LoadedRawAsset {
+        var data: ByteArray? = null
+        try {
+            FileInputStream(HttpCache.loadHttpResource(httpRawRef.url)).use { data = it.readBytes() }
+        } catch (e: Exception) {
+            logE { "Failed loading asset ${httpRawRef.url}: $e" }
+        }
+        return LoadedRawAsset(httpRawRef, data)
+    }
+
+    override suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef): LoadedTextureAsset {
+        val data = ImageTextureData()
+        try {
+            openLocalStream(localTextureRef.url).use {
+                val opts = BitmapFactory.Options()
+                opts.inPreferredConfig = Bitmap.Config.ARGB_8888
+                val bitmap = BitmapFactory.decodeStream(it, null, opts)!!
+                data.setTexImage(bitmap)
+                bitmap.recycle()
+            }
+        } catch (e: Exception) {
+            logE { "Failed loading texture ${localTextureRef.url}: $e" }
+        }
+        return LoadedTextureAsset(localTextureRef, data)
+    }
+
+    override suspend fun loadHttpTexture(httpTextureRef: HttpTextureAssetRef): LoadedTextureAsset {
+        val data = ImageTextureData()
+        try {
+            val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
+            FileInputStream(f).use {
+                val opts = BitmapFactory.Options()
+                opts.inPreferredConfig = Bitmap.Config.ARGB_8888
+                val bitmap = BitmapFactory.decodeStream(it, null, opts)!!
+                data.setTexImage(bitmap)
+                bitmap.recycle()
+            }
+        } catch (e: Exception) {
+            logE { "Failed loading texture ${httpTextureRef.url}: $e" }
+        }
+        return LoadedTextureAsset(httpTextureRef, data)
+    }
+
+    private fun openLocalStream(assetPath: String): InputStream {
+        var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
+        if (inStream == null) {
+            // if asset wasn't found in resources try to load it from file system
+            val checkFile = File(assetPath)
+            inStream = if (checkFile.canRead()) {
+                // load from sdcard
+                FileInputStream(checkFile)
+
+            } else {
+                // load from asset manager
+                val path = if (assetPath.startsWith("./")) {
+                    assetPath.substring(2)
+                } else {
+                    assetPath
+                }
+                context.assets.open(path)
+            }
+        }
+        return inStream
+    }
+
+    override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
+
+    companion object {
+        private const val MAX_GENERATED_TEX_WIDTH = 2048
+        private const val MAX_GENERATED_TEX_HEIGHT = 2048
+    }
+}
+/*class AndroidAssetManager(private val context: Context, assetsBaseDir: String) : AssetManager(assetsBaseDir) {
     private val fontGenerator = FontMapGenerator(context, MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     init {
@@ -146,4 +236,4 @@ class AndroidAssetManager(private val context: Context, assetsBaseDir: String) :
         private const val MAX_GENERATED_TEX_WIDTH = 1024
         private const val MAX_GENERATED_TEX_HEIGHT = 1024
     }
-}
+}*/

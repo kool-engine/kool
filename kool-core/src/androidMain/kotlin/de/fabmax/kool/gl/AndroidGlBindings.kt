@@ -218,11 +218,20 @@ actual fun glUniform1iv(location: Any?, x: IntArray) =
 actual fun glUniform2f(location: Any?, x: Float, y: Float) =
         GLES30.glUniform2f(location as Int, x, y)
 
+actual fun glUniform2fv(location: Any?, value: Float32Buffer) =
+        GLES30.glUniform2fv(location as Int, value.capacity / 2, (value as Float32BufferImpl).buffer)
+
 actual fun glUniform3f(location: Any?, x: Float, y: Float, z: Float) =
         GLES30.glUniform3f(location as Int, x, y, z)
 
+actual fun glUniform3fv(location: Any?, value: Float32Buffer) =
+        GLES30.glUniform3fv(location as Int, value.capacity / 3, (value as Float32BufferImpl).buffer)
+
 actual fun glUniform4f(location: Any?, x: Float, y: Float, z: Float, w: Float) =
         GLES30.glUniform4f(location as Int, x, y, z, w)
+
+actual fun glUniform4fv(location: Any?, value: Float32Buffer) =
+        GLES30.glUniform2fv(location as Int, value.capacity / 4, (value as Float32BufferImpl).buffer)
 
 actual fun glUniformMatrix4fv(location: Any?, transpose: Boolean, value: Float32Buffer) =
         GLES30.glUniformMatrix4fv(location as Int, value.capacity / 16, transpose, (value as Float32BufferImpl).buffer)
