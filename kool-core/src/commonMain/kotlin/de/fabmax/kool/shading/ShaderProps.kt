@@ -35,6 +35,7 @@ class ShaderProps {
             }
         }
     var fogModel = FogModel.FOG_OFF
+    var clipMethod: ClipMethod = NoClipping()
 
     var isVertexColor = false
     var isTextureColor = false

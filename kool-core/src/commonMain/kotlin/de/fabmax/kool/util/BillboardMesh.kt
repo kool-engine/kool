@@ -233,7 +233,7 @@ class BillboardShader internal constructor(props: ShaderProps, generator: GlslGe
             }
 
             override fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
-                text.append("${generator.fsOutBody} = ${GlslGenerator.L_TEX_COLOR} * vec4(${GlslGenerator.L_VERTEX_COLOR}.rgb, 1.0) * (${GlslGenerator.L_TEX_COLOR}.a * ${GlslGenerator.L_VERTEX_COLOR}.a);")
+                text.append("${generator.fsOutBody} = ${GlslGenerator.L_FS_TEX_COLOR} * vec4(${GlslGenerator.L_FS_VERTEX_COLOR}.rgb, 1.0) * (${GlslGenerator.L_FS_TEX_COLOR}.a * ${GlslGenerator.L_FS_VERTEX_COLOR}.a);")
             }
         }
     }

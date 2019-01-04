@@ -47,11 +47,13 @@ open class GlslGenerator {
         const val V_POSITION_CLIPSPACE_Z = "vPositionClipspaceZ"
         const val V_TANGENT = "vTangent"
 
-        const val L_TEX_COORD = "texUV"
-        const val L_TEX_COLOR = "texColor"
-        const val L_VERTEX_COLOR = "vertColor"
-        const val L_STATIC_COLOR = "staticColor"
-        const val L_REFLECTIVITY = "reflectivity"
+        const val L_VS_POSITION = "position"
+
+        const val L_FS_TEX_COORD = "texUV"
+        const val L_FS_TEX_COLOR = "texColor"
+        const val L_FS_VERTEX_COLOR = "vertColor"
+        const val L_FS_STATIC_COLOR = "staticColor"
+        const val L_FS_REFLECTIVITY = "reflectivity"
     }
 
     interface GlslInjector {
@@ -221,7 +223,7 @@ open class GlslGenerator {
             text.append("mat4 $modelMat = $U_MODEL_MATRIX * ${InstancedMesh.MODEL_INSTANCES_0.glslSrcName};\n")
         }
 
-        text.append("vec4 position = vec4(${Attribute.POSITIONS}, 1.0);\n")
+        text.append("vec4 $L_VS_POSITION = vec4(${Attribute.POSITIONS}, 1.0);\n")
         if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
             text.append("vec4 normal = vec4(${Attribute.NORMALS}, 0.0);\n")
             if (shaderProps.isNormalMapped) {
@@ -236,7 +238,7 @@ open class GlslGenerator {
             text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[1]] * ${Armature.BONE_WEIGHTS}[1];\n")
             text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[2]] * ${Armature.BONE_WEIGHTS}[2];\n")
             text.append("boneT += $U_BONES[${Armature.BONE_INDICES}[3]] * ${Armature.BONE_WEIGHTS}[3];\n")
-            text.append("position = boneT * position;\n")
+            text.append("$L_VS_POSITION = boneT * $L_VS_POSITION;\n")
 
             if (shaderProps.lightModel != LightModel.NO_LIGHTING) {
                 text.append("normal = boneT * normal;\n")
@@ -247,14 +249,14 @@ open class GlslGenerator {
         }
 
         // output position of the vertex in clip space: MVP * position
-        text.append("gl_Position = $mvpMat * position;\n")
+        text.append("gl_Position = $mvpMat * $L_VS_POSITION;\n")
 
         injectors.forEach { it.vsAfterProj(shaderProps, node, text, ctx) }
 
         val shadowMap = node.scene?.lighting?.shadowMap
         if (shaderProps.isReceivingShadows && shadowMap != null) {
             for (i in 0 until shadowMap.numMaps) {
-                text.append("$V_POSITION_LIGHTSPACE[$i] = $U_SHADOW_MVP[$i] * ($modelMat * position);\n")
+                text.append("$V_POSITION_LIGHTSPACE[$i] = $U_SHADOW_MVP[$i] * ($modelMat * $L_VS_POSITION);\n")
             }
             text.append("$V_POSITION_CLIPSPACE_Z = gl_Position.z;\n")
         }
@@ -262,7 +264,7 @@ open class GlslGenerator {
         // forward vertex position and / or normal in world space to fragment shader if needed
         val isFsNeedsWorldPos = shaderProps.fogModel != FogModel.FOG_OFF || shaderProps.isEnvironmentMapped
         if (isFsNeedsWorldPos) {
-            text.append("$V_POSITION_WORLDSPACE = ($modelMat * position).xyz;\n")
+            text.append("$V_POSITION_WORLDSPACE = ($modelMat * $L_VS_POSITION).xyz;\n")
         }
         val isFsNeedsWorldNormal = shaderProps.isEnvironmentMapped
         if (isFsNeedsWorldNormal) {
@@ -281,7 +283,7 @@ open class GlslGenerator {
 
         if (shaderProps.lightModel == LightModel.PHONG_LIGHTING) {
             // vector from vertex to camera, in camera space. In camera space, the camera is at the origin (0, 0, 0).
-            text.append("$V_EYE_DIRECTION = -($U_VIEW_MATRIX * ($modelMat * position)).xyz;\n")
+            text.append("$V_EYE_DIRECTION = -($U_VIEW_MATRIX * ($modelMat * $L_VS_POSITION)).xyz;\n")
 
             // light direction, in camera space. M is left out because light position is already in world space.
             text.append("$V_LIGHT_DIRECTION = ($U_VIEW_MATRIX * vec4($U_LIGHT_DIRECTION, 0.0)).xyz;\n")
@@ -295,7 +297,7 @@ open class GlslGenerator {
 
         } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
             // vector from vertex to camera, in camera space. In camera space, the camera is at the origin (0, 0, 0).
-            text.append("vec3 e = normalize(-($U_VIEW_MATRIX * ($modelMat * position)).xyz);\n")
+            text.append("vec3 e = normalize(-($U_VIEW_MATRIX * ($modelMat * $L_VS_POSITION)).xyz);\n")
 
             // light direction, in camera space. M is left out because light position is already in world space.
             text.append("vec3 l = normalize(($U_VIEW_MATRIX * vec4($U_LIGHT_DIRECTION, 0.0)).xyz);\n")
@@ -405,7 +407,7 @@ open class GlslGenerator {
         for (uniform in customUniforms) {
             text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
-        text.append(fsOut)
+        text.append("$fsOut\n")
 
         injectors.forEach { it.fsAfterInput(shaderProps, node, text, ctx) }
     }
@@ -448,31 +450,31 @@ open class GlslGenerator {
         text.append("float shadowFactor = 1.0;\n")
 
         if (shaderProps.isTextureColor) {
-            text.append("vec2 $L_TEX_COORD = $V_TEX_COORD;\n")
+            text.append("vec2 $L_FS_TEX_COORD = $V_TEX_COORD;\n")
         }
 
         if (shaderProps.isEnvironmentMapped) {
-            text.append("float $L_REFLECTIVITY = $U_REFLECTIVENESS;\n")
+            text.append("float $L_FS_REFLECTIVITY = $U_REFLECTIVENESS;\n")
         }
 
         injectors.forEach { it.fsBeforeSampling(shaderProps, node, text, ctx) }
 
         if (shaderProps.isTextureColor) {
             // get base fragment color from texture
-            text.append("vec4 $L_TEX_COLOR = $texSampler($U_TEXTURE_0, $L_TEX_COORD);\n")
-            text.append("$fsOutBody = $L_TEX_COLOR;\n")
+            text.append("vec4 $L_FS_TEX_COLOR = $texSampler($U_TEXTURE_0, $L_FS_TEX_COORD);\n")
+            text.append("$fsOutBody = $L_FS_TEX_COLOR;\n")
         }
         if (shaderProps.isVertexColor) {
             // get base fragment color from vertex attribute
-            text.append("vec4 $L_VERTEX_COLOR = $V_COLOR;\n")
-            text.append("$L_VERTEX_COLOR.rgb *= $L_VERTEX_COLOR.a;\n")
-            text.append("$fsOutBody = $L_VERTEX_COLOR;\n")
+            text.append("vec4 $L_FS_VERTEX_COLOR = $V_COLOR;\n")
+            text.append("$L_FS_VERTEX_COLOR.rgb *= $L_FS_VERTEX_COLOR.a;\n")
+            text.append("$fsOutBody = $L_FS_VERTEX_COLOR;\n")
         }
         if (shaderProps.isStaticColor) {
             // get base fragment color from static color uniform
-            text.append("vec4 $L_STATIC_COLOR = $U_STATIC_COLOR;\n")
-            text.append("$L_STATIC_COLOR.rgb *= $L_STATIC_COLOR.a;\n")
-            text.append("$fsOutBody = $L_STATIC_COLOR;\n")
+            text.append("vec4 $L_FS_STATIC_COLOR = $U_STATIC_COLOR;\n")
+            text.append("$L_FS_STATIC_COLOR.rgb *= $L_FS_STATIC_COLOR.a;\n")
+            text.append("$fsOutBody = $L_FS_STATIC_COLOR;\n")
         }
 
         injectors.forEach { it.fsAfterSampling(shaderProps, node, text, ctx) }
@@ -533,7 +535,7 @@ open class GlslGenerator {
         if (shaderProps.isEnvironmentMapped) {
             text.append("vec3 eyeDir = normalize($V_POSITION_WORLDSPACE - $U_CAMERA_POSITION);\n")
             text.append("vec3 reflectedDir = reflect(eyeDir, normalize($V_NORMAL_WORLDSPACE));\n")
-            text.append("$fsOutBody.rgb = mix($fsOutBody.rgb , texture($U_ENVIRONMENT_MAP, reflectedDir).rgb, $L_REFLECTIVITY);\n")
+            text.append("$fsOutBody.rgb = mix($fsOutBody.rgb , texture($U_ENVIRONMENT_MAP, reflectedDir).rgb, $L_FS_REFLECTIVITY);\n")
         }
 
         // add fog code

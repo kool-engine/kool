@@ -133,9 +133,15 @@ expect fun glUniform1iv(location: Any?, x: IntArray)
 
 expect fun glUniform2f(location: Any?, x: Float, y: Float)
 
+expect fun glUniform2fv(location: Any?, value: Float32Buffer)
+
 expect fun glUniform3f(location: Any?, x: Float, y: Float, z: Float)
 
+expect fun glUniform3fv(location: Any?, value: Float32Buffer)
+
 expect fun glUniform4f(location: Any?, x: Float, y: Float, z: Float, w: Float)
+
+expect fun glUniform4fv(location: Any?, value: Float32Buffer)
 
 expect fun glUniformMatrix4fv(location: Any?, transpose: Boolean, value: Float32Buffer)
 

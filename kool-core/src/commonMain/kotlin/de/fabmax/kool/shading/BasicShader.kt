@@ -12,8 +12,12 @@ import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.util.Float32Buffer
 
 
-fun basicShader(propsInit: ShaderProps.() -> Unit): BasicShader {
-    return BasicShader(ShaderProps().apply(propsInit))
+fun basicShader(injector: GlslGenerator.GlslInjector? = null, propsInit: ShaderProps.() -> Unit): BasicShader {
+    val gen = GlslGenerator()
+    if (injector != null) {
+        gen.injectors += injector
+    }
+    return BasicShader(ShaderProps().apply(propsInit), gen)
 }
 
 /**
@@ -45,6 +49,8 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
     protected val uClipSpaceFarZ: Uniform1fv = addUniform(Uniform1fv(GlslGenerator.U_CLIP_SPACE_FAR_Z))
 
     protected val uShadowTex = mutableListOf<UniformTexture2D>()
+
+    val clipMethod = props.clipMethod
 
     var shininess: Float
         get() = uShininess.value[0]
@@ -88,6 +94,12 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         environmentMap = props.environmentMap
         alpha = props.alpha
         saturation = props.saturation
+
+        for (uniform in clipMethod.getUniforms()) {
+            addUniform(uniform)
+            generator.customUniforms += uniform
+        }
+        generator.injectors += clipMethod
     }
 
     override fun generate(node: Node, ctx: KoolContext) {
@@ -162,6 +174,8 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
                 uClipSpaceFarZ.bind(ctx)
             }
         }
+
+        clipMethod.onBind(node, ctx)
     }
 
     override fun onMatrixUpdate(ctx: KoolContext) {

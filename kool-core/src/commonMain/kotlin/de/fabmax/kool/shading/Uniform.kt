@@ -7,7 +7,7 @@ import de.fabmax.kool.gl.*
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
-import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.*
 
 
 abstract class Uniform<T>(val name: String, value: T) {
@@ -134,6 +134,30 @@ class Uniform2f(name: String) : Uniform<MutableVec2f>(name, MutableVec2f()) {
     }
 }
 
+class Uniform2fv(name: String) : Uniform<List<MutableVec2f>>(name, emptyList()) {
+    override val type = "vec2[]"
+
+    private var buffer: Float32Buffer? = null
+
+    constructor(name: String, size: Int) : this(name) {
+        setSize(size)
+    }
+
+    fun setSize(size: Int) {
+        if (size != value.size) {
+            buffer = createFloat32Buffer(size * 2)
+            value = List(size) { Vec2fView(buffer!!, it * 2) }
+        }
+    }
+
+    override fun doBind(ctx: KoolContext) {
+        val buf = buffer
+        if (buf != null) {
+            glUniform4fv(location, buf)
+        }
+    }
+}
+
 class Uniform3f(name: String) : Uniform<MutableVec3f>(name, MutableVec3f()) {
     override val type = "vec3"
 
@@ -142,11 +166,59 @@ class Uniform3f(name: String) : Uniform<MutableVec3f>(name, MutableVec3f()) {
     }
 }
 
+class Uniform3fv(name: String) : Uniform<List<MutableVec3f>>(name, emptyList()) {
+    override val type = "vec3[]"
+
+    private var buffer: Float32Buffer? = null
+
+    constructor(name: String, size: Int) : this(name) {
+        setSize(size)
+    }
+
+    fun setSize(size: Int) {
+        if (size != value.size) {
+            buffer = createFloat32Buffer(size * 3)
+            value = List(size) { Vec3fView(buffer!!, it * 3) }
+        }
+    }
+
+    override fun doBind(ctx: KoolContext) {
+        val buf = buffer
+        if (buf != null) {
+            glUniform4fv(location, buf)
+        }
+    }
+}
+
 class Uniform4f(name: String) : Uniform<MutableVec4f>(name, MutableVec4f()) {
     override val type = "vec4"
 
     override fun doBind(ctx: KoolContext) {
         glUniform4f(location, value.x, value.y, value.z, value.w)
+    }
+}
+
+class Uniform4fv(name: String) : Uniform<List<MutableVec4f>>(name, emptyList()) {
+    override val type = "vec4[]"
+
+    private var buffer: Float32Buffer? = null
+
+    constructor(name: String, size: Int) : this(name) {
+        setSize(size)
+    }
+
+    fun setSize(size: Int) {
+        if (size != value.size) {
+            buffer = createFloat32Buffer(size * 4)
+            value = List(size) { Vec4fView(buffer!!, it * 4) }
+        }
+    }
+
+    override fun doBind(ctx: KoolContext) {
+        val buf = buffer
+        if (buf != null) {
+            glUniform4fv(location, buf)
+        }
     }
 }
 

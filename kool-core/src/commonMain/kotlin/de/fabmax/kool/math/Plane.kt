@@ -29,4 +29,13 @@ class Plane {
         return false
     }
 
+    fun toVec4() : MutableVec4f = toVec4(MutableVec4f())
+
+    fun toVec4(result: MutableVec4f): MutableVec4f {
+        result.x = n.x
+        result.y = n.y
+        result.z = n.z
+        result.w = n * p
+        return result
+    }
 }

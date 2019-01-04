@@ -32,7 +32,7 @@ fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): Bas
     // static color rgb has to be pre-multiplied with texture alpha
     generator.injectors += object: GlslGenerator.GlslInjector {
         override fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
-            text.append("${ctx.glCapabilities.glslDialect.fragColorBody} = ${GlslGenerator.L_VERTEX_COLOR} * ${GlslGenerator.L_TEX_COLOR}.a;\n")
+            text.append("${ctx.glCapabilities.glslDialect.fragColorBody} = ${GlslGenerator.L_FS_VERTEX_COLOR} * ${GlslGenerator.L_FS_TEX_COLOR}.a;\n")
         }
     }
 

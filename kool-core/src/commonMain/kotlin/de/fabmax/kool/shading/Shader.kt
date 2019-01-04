@@ -128,6 +128,10 @@ abstract class Shader : GlObject<ProgramResource>() {
 
     inline fun <T, reified U: Uniform<T>> getUniform(name: String): U? = uniforms[name] as? U
 
+    fun addUniform(uniform: Uniform<*>) {
+        uniforms[uniform.name] = uniform
+    }
+
     /**
      * Looks for the specified uniform and returns its location or null if the uniform was not found. The actual type
      * of the uniform location is platform dependent.

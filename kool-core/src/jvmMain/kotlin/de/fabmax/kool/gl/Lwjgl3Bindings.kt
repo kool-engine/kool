@@ -156,10 +156,19 @@ actual fun glUniform1iv(location: Any?, x: IntArray) = GL20.glUniform1iv(locatio
 
 actual fun glUniform2f(location: Any?, x: Float, y: Float) = GL20.glUniform2f(location as Int, x, y)
 
+actual fun glUniform2fv(location: Any?, value: Float32Buffer) =
+        GL20.glUniform2fv(location as Int, (value as Float32BufferImpl).buffer)
+
 actual fun glUniform3f(location: Any?, x: Float, y: Float, z: Float) = GL20.glUniform3f(location as Int, x, y, z)
+
+actual fun glUniform3fv(location: Any?, value: Float32Buffer) =
+        GL20.glUniform3fv(location as Int, (value as Float32BufferImpl).buffer)
 
 actual fun glUniform4f(location: Any?, x: Float, y: Float, z: Float, w: Float) =
         GL20.glUniform4f(location as Int, x, y, z, w)
+
+actual fun glUniform4fv(location: Any?, value: Float32Buffer) =
+        GL20.glUniform4fv(location as Int, (value as Float32BufferImpl).buffer)
 
 actual fun glUniformMatrix4fv(location: Any?, transpose: Boolean, value: Float32Buffer) =
         GL20.glUniformMatrix4fv(location as Int, transpose, (value as Float32BufferImpl).buffer)

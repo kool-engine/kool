@@ -251,11 +251,11 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
             }
 
         // standard attributes for easy access
-        val position: Vec3fView
-        val normal: Vec3fView
-        val tangent: Vec3fView
-        val color: ColorView
-        val texCoord: Vec2fView
+        val position: MutableVec3f
+        val normal: MutableVec3f
+        val tangent: MutableVec3f
+        val color: MutableColor
+        val texCoord: MutableVec2f
 
         private val attributeViews: Map<Attribute, Any>
 
@@ -316,10 +316,10 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         }
 
         fun getFloatAttribute(attribute: Attribute): FloatView? = attributeViews[attribute] as FloatView?
-        fun getVec2fAttribute(attribute: Attribute): Vec2fView? = attributeViews[attribute] as Vec2fView?
-        fun getVec3fAttribute(attribute: Attribute): Vec3fView? = attributeViews[attribute] as Vec3fView?
-        fun getVec4fAttribute(attribute: Attribute): Vec4fView? = attributeViews[attribute] as Vec4fView?
-        fun getColorAttribute(attribute: Attribute): ColorView? = attributeViews[attribute] as ColorView?
+        fun getVec2fAttribute(attribute: Attribute): MutableVec2f? = attributeViews[attribute] as MutableVec2f?
+        fun getVec3fAttribute(attribute: Attribute): MutableVec3f? = attributeViews[attribute] as MutableVec3f?
+        fun getVec4fAttribute(attribute: Attribute): MutableVec4f? = attributeViews[attribute] as MutableVec4f?
+        fun getColorAttribute(attribute: Attribute): MutableColor? = attributeViews[attribute] as MutableColor?
         fun getIntAttribute(attribute: Attribute): IntView? = attributeViews[attribute] as IntView?
         fun getVec2iAttribute(attribute: Attribute): Vec2iView? = attributeViews[attribute] as Vec2iView?
         fun getVec3iAttribute(attribute: Attribute): Vec3iView? = attributeViews[attribute] as Vec3iView?
@@ -333,7 +333,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
                 }
         }
 
-        inner class Vec2fView(private val attribOffset: Int) : MutableVec2f() {
+        private inner class Vec2fView(private val attribOffset: Int) : MutableVec2f() {
             override operator fun get(i: Int): Float {
                 return if (attribOffset >= 0 && i in 0..1) {
                     dataF[offsetF + attribOffset + i]
@@ -348,7 +348,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
             }
         }
 
-        inner class Vec3fView(val attribOffset: Int) : MutableVec3f() {
+        private inner class Vec3fView(val attribOffset: Int) : MutableVec3f() {
             override operator fun get(i: Int): Float {
                 return if (attribOffset >= 0 && i in 0..2) {
                     dataF[offsetF + attribOffset + i]
@@ -363,7 +363,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
             }
         }
 
-        inner class Vec4fView(val attribOffset: Int) : MutableVec4f() {
+        private inner class Vec4fView(val attribOffset: Int) : MutableVec4f() {
             override operator fun get(i: Int): Float {
                 return if (attribOffset >= 0 && i in 0..3) {
                     dataF[offsetF + attribOffset + i]
@@ -378,7 +378,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
             }
         }
 
-        inner class ColorView(val attribOffset: Int) : MutableColor() {
+        private inner class ColorView(val attribOffset: Int) : MutableColor() {
             override operator fun get(i: Int): Float {
                 return if (attribOffset >= 0 && i in 0..3) {
                     dataF[offsetF + attribOffset + i]

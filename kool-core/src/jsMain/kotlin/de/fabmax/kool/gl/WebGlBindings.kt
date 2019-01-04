@@ -202,11 +202,20 @@ actual fun glUniform1iv(location: Any?, x: IntArray) {
 actual fun glUniform2f(location: Any?, x: Float, y: Float) =
         JsImpl.gl.uniform2f((location as WebGLUniformLocation?), x, y)
 
+actual fun glUniform2fv(location: Any?, value: Float32Buffer) =
+        JsImpl.gl.uniform2fv((location as WebGLUniformLocation?), (value as Float32BufferImpl).buffer)
+
 actual fun glUniform3f(location: Any?, x: Float, y: Float, z: Float) =
         JsImpl.gl.uniform3f((location as WebGLUniformLocation?), x, y, z)
 
+actual fun glUniform3fv(location: Any?, value: Float32Buffer) =
+        JsImpl.gl.uniform3fv((location as WebGLUniformLocation?), (value as Float32BufferImpl).buffer)
+
 actual fun glUniform4f(location: Any?, x: Float, y: Float, z: Float, w: Float) =
         JsImpl.gl.uniform4f((location as WebGLUniformLocation?), x, y, z, w)
+
+actual fun glUniform4fv(location: Any?, value: Float32Buffer) =
+        JsImpl.gl.uniform4fv((location as WebGLUniformLocation?), (value as Float32BufferImpl).buffer)
 
 actual fun glUniformMatrix4fv(location: Any?, transpose: Boolean, value: Float32Buffer) =
         JsImpl.gl.uniformMatrix4fv((location as WebGLUniformLocation?), transpose, (value as Float32BufferImpl).buffer)
