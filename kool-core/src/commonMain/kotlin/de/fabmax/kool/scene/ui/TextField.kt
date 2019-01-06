@@ -103,7 +103,7 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
 
         meshBuilder.withTransform {
             // elevate z
-            translate(0f, 0f, label.dp(4f))
+            translate(0f, 0f, label.dp(.1f))
 
             // draw underline
             meshBuilder.color = label.root.theme.accentColor

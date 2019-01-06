@@ -117,20 +117,20 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
             containerUi { BlankComponentUi() }
         }
 
-        +container("menu") {
+        +container("particle-menu") {
             layoutSpec.setOrigin(dps(-200f, true), zero(), zero())
-            layoutSpec.setSize(dps(200f, true), pcs(100f), zero())
+            layoutSpec.setSize(dps(200f, true), pcs(100f), full())
             ui.setCustom(SimpleComponentUi(this))
 
             var posY = -45f
             +label("Settings") {
                 layoutSpec.setOrigin(zero(), dps(posY, true), zero())
-                layoutSpec.setSize(pcs(100f), dps(40f, true), zero())
+                layoutSpec.setSize(pcs(100f), dps(40f, true), full())
                 textColor.setCustom(theme.accentColor)
             }
             +component("divider") {
                 layoutSpec.setOrigin(pcs(5f), dps(posY, true), zero())
-                layoutSpec.setSize(pcs(90f), dps(1f, true), zero())
+                layoutSpec.setSize(pcs(90f), dps(1f, true), full())
                 val bg = SimpleComponentUi(this)
                 bg.color.setCustom(theme.accentColor)
                 ui.setCustom(bg)
@@ -139,7 +139,7 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
             posY -= 35f
             +toggleButton("Colorful") {
                 layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                 isEnabled = isColored
                 onStateChange += {
                     isColored = isEnabled
@@ -149,7 +149,7 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
             posY -= 35f
             +toggleButton("Z-Sorted") {
                 layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                 isEnabled = isSorted
                 onStateChange += {
                     isSorted = isEnabled
@@ -159,11 +159,11 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
             posY -= 35f
             +label("Current:") {
                 layoutSpec.setOrigin(zero(), dps(posY, true), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                layoutSpec.setSize(pcs(100f), dps(25f, true), full())
             }
             +label("currentCnt") {
                 layoutSpec.setOrigin(zero(), dps(posY, true), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                 onPreRender += { text = "$currentParticleCount" }
             }
@@ -171,18 +171,18 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
             posY -= 35f
             +label("Max:") {
                 layoutSpec.setOrigin(zero(), dps(posY, true), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                layoutSpec.setSize(pcs(100f), dps(25f, true), full())
             }
             +label("maxCnt") {
                 layoutSpec.setOrigin(zero(), dps(posY, true), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                 onPreRender += { text = "$maxParticleCount" }
             }
             posY -= 35f
             +slider("particleCnt") {
                 layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                 setValue(1f, 50f, 10f)
                 disableCamDrag()
                 onValueChanged += { value ->

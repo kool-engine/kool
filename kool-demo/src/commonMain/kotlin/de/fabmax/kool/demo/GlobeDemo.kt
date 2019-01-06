@@ -95,7 +95,7 @@ class GlobeUi(var globe: Globe?, val ctx: KoolContext) {
         +container("globeUI") {
 
             val posLbl = label("posLabel") {
-                layoutSpec.setSize(dps(200f, true), dps(18f), zero())
+                layoutSpec.setSize(dps(200f, true), dps(18f), full())
                 layoutSpec.setOrigin(dps(-200f, true), zero(), zero())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
@@ -104,7 +104,7 @@ class GlobeUi(var globe: Globe?, val ctx: KoolContext) {
 
             for (i in 0 until maxAttributions) {
                 val button = button("attributionText_$i") {
-                    layoutSpec.setSize(dps(200f, true), dps(18f), zero())
+                    layoutSpec.setSize(dps(200f, true), dps(18f), full())
                     layoutSpec.setOrigin(dps(-200f, true), dps(18f * (i+1), true), zero())
                     padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
@@ -158,7 +158,7 @@ class GlobeUi(var globe: Globe?, val ctx: KoolContext) {
 
                 if (width != containerWidth) {
                     containerWidth = width
-                    layoutSpec.setSize(dps(containerWidth + 8, true), dps(18f * lines), zero())
+                    layoutSpec.setSize(dps(containerWidth + 8, true), dps(18f * lines), full())
                     layoutSpec.setOrigin(dps(-containerWidth - 8, true), zero(), zero())
                     this@uiScene.content.requestLayout()
                 }

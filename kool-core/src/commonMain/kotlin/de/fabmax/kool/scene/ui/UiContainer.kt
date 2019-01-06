@@ -15,6 +15,8 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     private var isLayoutNeeded = true
     private val tmpChildBounds = BoundingBox()
 
+    val viewport = BoundingBox()
+
     fun requestLayout() {
         isLayoutNeeded = true
     }
@@ -43,6 +45,15 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
         if (isLayoutNeeded) {
             isLayoutNeeded = false
             doLayout(contentBounds, ctx)
+
+            if (viewport.isEmpty) {
+                viewport.set(contentBounds)
+            } else {
+                viewport.set(viewport.min.x, viewport.min.y, viewport.min.z,
+                        viewport.min.x + contentBounds.size.x,
+                        viewport.min.y + contentBounds.size.y,
+                        viewport.min.z + contentBounds.size.z)
+            }
         }
         super.preRender(ctx)
     }

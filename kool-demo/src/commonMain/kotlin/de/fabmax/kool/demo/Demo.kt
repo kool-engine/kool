@@ -85,25 +85,32 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
         +drawerMenu("menu", "Demos") {
             // no nice layouting functions yet, choose start y such that menu items start somewhere below the title
             // negative value means it's measured from top
-            var y = -105f
-            for (demo in demos) {
-                +button(demo.key) {
-                    layoutSpec.setOrigin(zero(), dps(y, true), zero())
-                    layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
-                    textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                    text = demo.value.label
-                    y -= 35f
 
-                    onClick += { _,_,_ ->
-                        demo.value.loadScene.invoke(newScenes, ctx)
-                        isOpen = false
+//            +container("demos") {
+//                ui.setCustom(BlankComponentUi())
+//                layoutSpec.setOrigin(zero(), dps(-75f, true), zero())
+//                layoutSpec.setSize(full(), dps(500f, true), full())
+
+                var y = -105f
+                for (demo in demos) {
+                    +button(demo.key) {
+                        layoutSpec.setOrigin(zero(), dps(y, true), zero())
+                        layoutSpec.setSize(pcs(100f, true), dps(30f, true), full())
+                        textAlignment = Gravity(Alignment.START, Alignment.CENTER)
+                        text = demo.value.label
+                        y -= 35f
+
+                        onClick += { _,_,_ ->
+                            demo.value.loadScene.invoke(newScenes, ctx)
+                            isOpen = false
+                        }
                     }
                 }
-            }
+//            }
 
             +toggleButton("showDbg") {
                 layoutSpec.setOrigin(zero(), dps(10f, true), zero())
-                layoutSpec.setSize(pcs(100f, true), dps(30f, true), zero())
+                layoutSpec.setSize(pcs(100f, true), dps(30f, true), full())
                 text = "Debug Info"
                 isEnabled = dbgOverlay.isVisible
 

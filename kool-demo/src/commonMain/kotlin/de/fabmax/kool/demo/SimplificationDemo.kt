@@ -17,7 +17,6 @@ import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.serialization.ModelData
-import kotlinx.serialization.ImplicitReflectionSerializer
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -118,19 +117,19 @@ class SimplificationDemo(ctx: KoolContext) {
 
             +container("menu") {
                 layoutSpec.setOrigin(dps(-200f, true), zero(), zero())
-                layoutSpec.setSize(dps(200f, true), pcs(100f), zero())
+                layoutSpec.setSize(dps(200f, true), pcs(100f), full())
                 ui.setCustom(SimpleComponentUi(this))
 
                 var posY = -45f
 
                 +label("Models") {
                     layoutSpec.setOrigin(zero(), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(40f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(40f, true), full())
                     textColor.setCustom(theme.accentColor)
                 }
                 +component("divider") {
                     layoutSpec.setOrigin(pcs(5f), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(90f), dps(1f, true), zero())
+                    layoutSpec.setSize(pcs(90f), dps(1f, true), full())
                     val bg = SimpleComponentUi(this)
                     bg.color.setCustom(theme.accentColor)
                     ui.setCustom(bg)
@@ -138,7 +137,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 35f
                 +button("Cow") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(35f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(35f, true), full())
                     textAlignment = Gravity(Alignment.START, Alignment.CENTER)
 
                     onClick += { _,_,_ ->
@@ -152,7 +151,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 35f
                 +button("Bunny") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(35f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(35f, true), full())
                     textAlignment = Gravity(Alignment.START, Alignment.CENTER)
 
                     onClick += { _,_,_ ->
@@ -166,7 +165,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 35f
                 +button("Cosine Grid") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(35f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(35f, true), full())
                     textAlignment = Gravity(Alignment.START, Alignment.CENTER)
 
                     onClick += { _,_,_ ->
@@ -178,12 +177,12 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 50f
                 +label("Simplify") {
                     layoutSpec.setOrigin(zero(), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(40f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(40f, true), full())
                     textColor.setCustom(theme.accentColor)
                 }
                 +component("divider") {
                     layoutSpec.setOrigin(pcs(5f), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(90f), dps(1f, true), zero())
+                    layoutSpec.setSize(pcs(90f), dps(1f, true), full())
                     val bg = SimpleComponentUi(this)
                     bg.color.setCustom(theme.accentColor)
                     ui.setCustom(bg)
@@ -191,12 +190,12 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 35f
                 +label("Ratio:") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(35f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(35f, true), full())
                     textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 }
                 val faceCntVal = label("faceCntVal") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(35f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(35f, true), full())
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                     text = "100 %"
                 }
@@ -204,7 +203,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 25f
                 +slider("faceCnt") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                     setValue(0.01f, 1f, 1f)
                     disableCamDrag()
                     onValueChanged += { value ->
@@ -218,7 +217,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 35f
                 +button("Update Mesh") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(35f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(35f, true), full())
                     textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                     onClick += { _,_,_ ->
                         simplify()
@@ -227,18 +226,18 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 35f
                 autoRun = toggleButton("Auto Update") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                     isEnabled = true
                 }
                 +autoRun
                 posY -= 35f
                 +label("Faces:") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                 }
                 facesValLbl = label("facesValLbl") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                     text = ""
                 }
@@ -246,11 +245,11 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 35f
                 +label("Vertices:") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                 }
                 vertsValLbl = label("verticesValLbl") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                     text = ""
                 }
@@ -258,11 +257,11 @@ class SimplificationDemo(ctx: KoolContext) {
                 posY -= 35f
                 +label("Time:") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                 }
                 timeValLbl = label("timeValLbl") {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
-                    layoutSpec.setSize(pcs(100f), dps(25f, true), zero())
+                    layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                     text = ""
                 }

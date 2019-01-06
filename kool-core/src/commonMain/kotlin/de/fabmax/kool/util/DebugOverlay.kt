@@ -46,16 +46,16 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                 Position.LOWER_LEFT -> layoutSpec.setOrigin(zero(), dps(0f, true), zero())
                 Position.LOWER_RIGHT -> layoutSpec.setOrigin(dps(-width, true), dps(0f, true), zero())
             }
-            layoutSpec.setSize(dps(width, true), dps(height, true), zero())
+            layoutSpec.setSize(dps(width, true), dps(height, true), full())
 
             +DeltaTGraph(this@uiScene).apply {
                 layoutSpec.setOrigin(zero(), dps(-40f, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(40f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(40f, true), full())
             }
 
             +label("lblFps") {
                 layoutSpec.setOrigin(zero(), dps(-37f, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(37f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(37f, true), full())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                 text = ""
@@ -70,7 +70,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             var yOri = -60f
             +label("lblVersion") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), full())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                 text = ctx.glCapabilities.glVersion.toString()
@@ -80,7 +80,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                 yOri -= 18f
                 +label("lblMemInfo") {
                     layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                    layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
+                    layoutSpec.setSize(dps(width, true), dps(18f, true), full())
                     padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -93,7 +93,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             yOri -= 18f
             +label("lblVpSize") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), full())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -111,7 +111,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             yOri -= 18f
             +label("lblUpTime") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), full())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                 text = "Up: 00:00.00"
@@ -143,7 +143,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             yOri -= 18f
             +label("lblNumTextures") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), full())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -163,7 +163,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             yOri -= 18f
             +label("lblNumBuffers") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), full())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
@@ -183,7 +183,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             yOri -= 18f
             +label("lblNumShaders") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(18f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), full())
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 

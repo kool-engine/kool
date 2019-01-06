@@ -89,32 +89,29 @@ fun modelScene(ctx: KoolContext): Scene = scene {
             +camera
         }
 
-        +embeddedUi(dps(400f)) {
-            globalWidth = 0.75f
-            globalHeight = 1f
-
+        +embeddedUi(0.75f, 1f, dps(400f)) {
             content.apply {
                 rotate(90f, Vec3f.X_AXIS)
                 translate(0.5f, 1.2f, 0f)
 
                 +Label("label1", root).apply {
-                    layoutSpec.setOrigin(uns(0f), dps(140f), uns(0f))
-                    layoutSpec.setSize(pcs(75f), dps(35f), uns(0f))
+                    layoutSpec.setOrigin(uns(0f), dps(140f), zero())
+                    layoutSpec.setSize(pcs(75f), dps(35f), full())
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
                     text = "Movement Speed:"
                 }
                 val speedLabel = Label("speedLabel", root).apply {
-                    layoutSpec.setOrigin(pcs(75f), dps(140f), uns(0f))
-                    layoutSpec.setSize(pcs(25f), dps(35f), uns(0f))
+                    layoutSpec.setOrigin(pcs(75f), dps(140f), zero())
+                    layoutSpec.setSize(pcs(25f), dps(35f), full())
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
                     text = sqrt(movementSpeed).toString(2)
                 }
                 +speedLabel
                 +Slider("speedSlider", 0.0f, 1f, sqrt(movementSpeed), root).apply {
-                    layoutSpec.setOrigin(uns(0f), dps(90f), uns(0f))
-                    layoutSpec.setSize(pcs(100f), dps(50f), uns(0f))
+                    layoutSpec.setOrigin(uns(0f), dps(90f), zero())
+                    layoutSpec.setSize(pcs(100f), dps(50f), full())
                     onValueChanged += { value ->
                         movementSpeed = value * value
 
@@ -135,23 +132,23 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                 }
 
                 +Label("label2", root).apply {
-                    layoutSpec.setOrigin(uns(0f), dps(50f), uns(0f))
-                    layoutSpec.setSize(pcs(75f), dps(40f), uns(0f))
+                    layoutSpec.setOrigin(uns(0f), dps(50f), zero())
+                    layoutSpec.setSize(pcs(75f), dps(40f), full())
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
                     text = "Slow Motion:"
                 }
                 val slowMoLabel = Label("slowMotion", root).apply {
-                    layoutSpec.setOrigin(pcs(75f), dps(50f), uns(0f))
-                    layoutSpec.setSize(pcs(25f), dps(40f), uns(0f))
+                    layoutSpec.setOrigin(pcs(75f), dps(50f), zero())
+                    layoutSpec.setSize(pcs(25f), dps(40f), full())
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
                     text = slowMotion.toString(2)
                 }
                 +slowMoLabel
                 +Slider("slowMoSlider", 0.0f, 1f, slowMotion, root).apply {
-                    layoutSpec.setOrigin(uns(0f), uns(0f), uns(0f))
-                    layoutSpec.setSize(pcs(100f), dps(50f), uns(0f))
+                    layoutSpec.setOrigin(uns(0f), uns(0f), zero())
+                    layoutSpec.setSize(pcs(100f), dps(50f), full())
                     onValueChanged += { value ->
                         slowMotion = value
                         slowMoLabel.text = slowMotion.toString(2)

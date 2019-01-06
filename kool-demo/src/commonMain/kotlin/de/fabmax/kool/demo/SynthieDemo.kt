@@ -34,12 +34,12 @@ private fun synthieMenu(content: SynthieScene, ctx: KoolContext): Scene = uiScen
 
     val menu = container("menu") {
         layoutSpec.setOrigin(zero(), zero(), zero())
-        layoutSpec.setSize(pcs(100f), dps(260f), zero())
+        layoutSpec.setSize(pcs(100f), dps(260f), full())
         ui.setCustom(SimpleComponentUi(this))
 
         +container("sequencer") {
             layoutSpec.setOrigin(pcs(50f) - dps(240f), dps(10f), zero())
-            layoutSpec.setSize(dps(320f), pcs(100f), zero())
+            layoutSpec.setSize(dps(320f), pcs(100f), full())
 
             for (col in content.melody.sequence.indices) {
                 for (row in (0..15).reversed()) {
@@ -50,19 +50,19 @@ private fun synthieMenu(content: SynthieScene, ctx: KoolContext): Scene = uiScen
 
         +VerticalLayout("volumes", this@uiScene).apply {
             layoutSpec.setOrigin(pcs(50f, true) + dps(250f, true), dps(10f, true), zero())
-            layoutSpec.setSize(dps(240f, true), dps(160f, true), zero())
+            layoutSpec.setSize(dps(240f, true), dps(160f, true), full())
             //ui.setCustom(SimpleComponentUi(this).apply { color.setCustom(Color.RED) })
 
             +label("meloLbl") {
                 layoutSpec.setOrigin(dps(5f), dps(120f, true), zero())
-                layoutSpec.setSize(dps(70f, true), dps(40f, true), zero())
+                layoutSpec.setSize(dps(70f, true), dps(40f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 padding = Margin(zero(), zero(), zero(), zero())
                 text = "Melody"
             }
             +slider("melo") {
                 layoutSpec.setOrigin(dps(70f), dps(120f, true), zero())
-                layoutSpec.setSize(dps(170f), dps(40f), zero())
+                layoutSpec.setSize(dps(170f), dps(40f), full())
                 padding = Margin(zero(), zero(), zero(), zero())
 
                 onValueChanged += { value ->
@@ -72,14 +72,14 @@ private fun synthieMenu(content: SynthieScene, ctx: KoolContext): Scene = uiScen
 
             +label("padLbl") {
                 layoutSpec.setOrigin(dps(5f), dps(80f, true), zero())
-                layoutSpec.setSize(dps(70f, true), dps(40f, true), zero())
+                layoutSpec.setSize(dps(70f, true), dps(40f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 padding = Margin(zero(), zero(), zero(), zero())
                 text = "Pad"
             }
             +slider("pad") {
                 layoutSpec.setOrigin(dps(70f), dps(80f, true), zero())
-                layoutSpec.setSize(dps(170f), dps(40f), zero())
+                layoutSpec.setSize(dps(170f), dps(40f), full())
                 padding = Margin(zero(), zero(), zero(), zero())
 
                 onValueChanged += { value ->
@@ -89,14 +89,14 @@ private fun synthieMenu(content: SynthieScene, ctx: KoolContext): Scene = uiScen
 
             +label("shkLbl") {
                 layoutSpec.setOrigin(dps(5f), dps(40f, true), zero())
-                layoutSpec.setSize(dps(70f, true), dps(40f, true), zero())
+                layoutSpec.setSize(dps(70f, true), dps(40f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 padding = Margin(zero(), zero(), zero(), zero())
                 text = "Shaker"
             }
             +slider("shk") {
                 layoutSpec.setOrigin(dps(70f), dps(40f), zero())
-                layoutSpec.setSize(dps(170f), dps(40f), zero())
+                layoutSpec.setSize(dps(170f), dps(40f), full())
                 padding = Margin(zero(), zero(), zero(), zero())
 
                 onValueChanged += { value ->
@@ -106,14 +106,14 @@ private fun synthieMenu(content: SynthieScene, ctx: KoolContext): Scene = uiScen
 
             +label("kickLbl") {
                 layoutSpec.setOrigin(dps(5f), zero(), zero())
-                layoutSpec.setSize(dps(70f, true), dps(40f, true), zero())
+                layoutSpec.setSize(dps(70f, true), dps(40f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 padding = Margin(zero(), zero(), zero(), zero())
                 text = "Kick"
             }
             +slider("kick") {
                 layoutSpec.setOrigin(dps(70f), zero(), zero())
-                layoutSpec.setSize(dps(170f), dps(40f), zero())
+                layoutSpec.setSize(dps(170f), dps(40f), full())
                 padding = Margin(zero(), zero(), zero(), zero())
 
                 onValueChanged += { value ->
@@ -197,7 +197,7 @@ private class SequenceButton(val col: Int, val row: Int, val melody: Melody, roo
 
     init {
         layoutSpec.setOrigin(dps(col*20f), dps(row*15f), zero())
-        layoutSpec.setSize(dps(18f), dps(13f), zero())
+        layoutSpec.setSize(dps(18f), dps(13f), full())
         ui.setCustom(background)
 
         colorAnimator.duration = 0.3f

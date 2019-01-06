@@ -123,22 +123,22 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
 
         +container("menu") {
             layoutSpec.setOrigin(zero(), zero(), zero())
-            layoutSpec.setSize(dps(280f), dps(115f), zero())
+            layoutSpec.setSize(dps(280f), dps(115f), full())
             ui.setCustom(SimpleComponentUi(this))
 
             +label("Boxes:") {
                 layoutSpec.setOrigin(dps(0f, true), dps(75f, true), zero())
-                layoutSpec.setSize(dps(80f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(80f, true), dps(35f, true), full())
             }
             val boxCntLbl = label("boxCntLbl") {
                 layoutSpec.setOrigin(dps(210f, true), dps(75f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
                 text = "$boxCnt"
             }
             +boxCntLbl
             +slider("boxCnt", 1f, 200f,  40f) {
                 layoutSpec.setOrigin(dps(80f, true), dps(75f, true), zero())
-                layoutSpec.setSize(dps(150f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(150f, true), dps(35f, true), full())
                 disableCamDrag()
 
                 onValueChanged += { value ->
@@ -149,17 +149,17 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
 
             +label("Gravity:") {
                 layoutSpec.setOrigin(dps(0f, true), dps(40f, true), zero())
-                layoutSpec.setSize(dps(80f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(80f, true), dps(35f, true), full())
             }
             val gravityLbl = label("gravityLbl") {
                 layoutSpec.setOrigin(dps(210f, true), dps(40f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
                 text = boxWorld!!.world.gravity.length().toString(2)
             }
             +gravityLbl
             +slider("gravity", 0f, 10f,  boxWorld!!.world.gravity.length()) {
                 layoutSpec.setOrigin(dps(80f, true), dps(40f, true), zero())
-                layoutSpec.setSize(dps(150f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(150f, true), dps(35f, true), full())
                 disableCamDrag()
 
                 onValueChanged += { value ->
@@ -171,7 +171,7 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
 
             +button("Reset Boxes!") {
                 layoutSpec.setOrigin(dps(0f, true), dps(5f, true), zero())
-                layoutSpec.setSize(dps(150f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(150f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
 
                 onClick += { _, _, ctx ->

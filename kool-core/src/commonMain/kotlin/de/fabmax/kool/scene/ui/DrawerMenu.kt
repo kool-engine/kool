@@ -32,7 +32,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
         root.apply {
             this@DrawerMenu.apply {
                 layoutSpec.setOrigin(zero(), zero(), zero())
-                layoutSpec.setSize(width, pcs(100f, true), zero())
+                layoutSpec.setSize(width, pcs(100f, true), full())
 
                 // menu starts hidden
                 alpha = 0f
@@ -40,7 +40,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                 if (title != null) {
                     +label("title") {
                         layoutSpec.setOrigin(zero(), dps(-50f, true), zero())
-                        layoutSpec.setSize(pcs(100f, true), dps(40f, true), zero())
+                        layoutSpec.setSize(pcs(100f, true), dps(40f, true), full())
                         textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
                         text = title
                         textColor.setCustom(theme.accentColor)
@@ -55,7 +55,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                     }
                     +component("divider") {
                         layoutSpec.setOrigin(pcs(5f), dps(-60f, true), zero())
-                        layoutSpec.setSize(pcs(90f), dps(1f, true), zero())
+                        layoutSpec.setSize(pcs(90f), dps(1f, true), full())
                         val bg = SimpleComponentUi(this)
                         bg.color.setCustom(theme.accentColor)
                         ui.setCustom(bg)
@@ -66,7 +66,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                 menuButton = this
                 ui.setCustom(MenuButtonUi(this))
                 layoutSpec.setOrigin(dps(10f, true), dps(-50f, true), zero())
-                layoutSpec.setSize(dps(40f, true), dps(40f, true), zero())
+                layoutSpec.setSize(dps(40f, true), dps(40f, true), full())
             }
         }
     }

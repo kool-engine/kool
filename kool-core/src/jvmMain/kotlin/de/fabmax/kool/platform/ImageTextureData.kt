@@ -36,15 +36,7 @@ class ImageTextureData() : TextureData() {
         val limit = buffer!!.limit
         val pos = buffer!!.position
         buffer!!.flip()
-
-//        val intFormat = if (format == GL.RGBA) {
-//            GL13.GL_COMPRESSED_RGBA
-//        } else {
-//            GL13.GL_COMPRESSED_RGB
-//        }
-        val intFormat = format
-
-        glTexImage2D(target, 0, intFormat, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
+        glTexImage2D(target, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
         buffer!!.limit = limit
         buffer!!.position = pos
         ctx.memoryMgr.memoryAllocated(res, buffer!!.position)

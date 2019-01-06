@@ -133,6 +133,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
             lightModel = LightModel.PHONG_LIGHTING
             colorModel = ColorModel.VERTEX_COLOR
             isAlpha = true
+            clipMethod = LocalPlaneClip(6)
         }
         slider += mesh
     }
@@ -159,7 +160,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
         if (slider.value > slider.min) {
             meshBuilder.color = slider.trackColorHighlighted.apply()
             meshBuilder.rect {
-                origin.set(x, y, slider.dp(4f))
+                origin.set(x, y, slider.dp(.1f))
                 size.set(slider.knobPosition.x - x + trackH, trackH)
                 cornerRadius = trackH / 2f
                 cornerSteps = 4
@@ -168,7 +169,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
         if (slider.value < slider.max) {
             meshBuilder.color = slider.trackColor
             meshBuilder.rect {
-                origin.set(slider.knobPosition.x - trackH, y, slider.dp(4f))
+                origin.set(slider.knobPosition.x - trackH, y, slider.dp(.1f))
                 size.set(slider.trackWidth - slider.knobPosition.x + x + trackH, trackH)
                 cornerRadius = trackH / 2f
                 cornerSteps = 4
@@ -176,9 +177,14 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
         }
         meshBuilder.color = slider.knobColor.apply()
         meshBuilder.circle {
-            center.set(slider.knobPosition.x, slider.knobPosition.y, slider.dp(6f))
+            center.set(slider.knobPosition.x, slider.knobPosition.y, slider.dp(.2f))
             radius = slider.knobSize
             steps = 30
         }
+    }
+
+    override fun onRender(ctx: KoolContext) {
+        mesh.shader?.setDrawBounds(slider.drawBounds)
+        baseUi.onRender(ctx)
     }
 }

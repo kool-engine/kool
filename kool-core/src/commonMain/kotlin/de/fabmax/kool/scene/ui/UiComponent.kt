@@ -5,6 +5,8 @@ import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MeshBuilder
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Base class for all UI components.
@@ -14,6 +16,8 @@ import de.fabmax.kool.util.MeshBuilder
 open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
 
     val contentBounds = BoundingBox()
+    val drawBounds = BoundingBox()
+
     val posX: Float get() = contentBounds.min.x
     val posY: Float get() = contentBounds.min.y
     val posZ: Float get() = contentBounds.min.z
@@ -85,7 +89,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         return root.theme.componentUi(this)
     }
 
-    override fun render(ctx: KoolContext) {
+    override fun preRender(ctx: KoolContext) {
         if (isThemeUpdate) {
             isThemeUpdate = false
             updateTheme(ctx)
@@ -95,7 +99,30 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
             updateUi(ctx)
         }
 
-        if (alpha != 0f) {
+        val parentContainer = parent
+        if (parentContainer is UiContainer) {
+            val bndMinX = max(contentBounds.min.x, parentContainer.viewport.min.x)
+            val bndMinY = max(contentBounds.min.y, parentContainer.viewport.min.y)
+            val bndMinZ = max(contentBounds.min.z, parentContainer.viewport.min.z)
+
+            val bndMaxX = min(contentBounds.max.x, parentContainer.viewport.max.x)
+            val bndMaxY = min(contentBounds.max.y, parentContainer.viewport.max.y)
+            val bndMaxZ = min(contentBounds.max.z, parentContainer.viewport.max.z)
+
+            if (bndMinX >= bndMaxX || bndMinY >= bndMaxY || bndMinZ >= bndMaxZ) {
+                drawBounds.clear()
+            } else {
+                drawBounds.set(bndMinX, bndMinY, bndMinZ, bndMaxX, bndMaxY, bndMaxZ)
+            }
+        } else {
+            drawBounds.set(contentBounds)
+        }
+
+        super.preRender(ctx)
+    }
+
+    override fun render(ctx: KoolContext) {
+        if (alpha > 0f && !drawBounds.isEmpty) {
             ui.prop.onRender(ctx)
             super.render(ctx)
         }

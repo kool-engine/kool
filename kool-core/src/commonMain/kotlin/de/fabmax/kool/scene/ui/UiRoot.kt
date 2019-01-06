@@ -10,9 +10,11 @@ import de.fabmax.kool.scene.scene
 import de.fabmax.kool.shading.BlurredBackgroundHelper
 import de.fabmax.kool.shading.LightModel
 
-fun embeddedUi(contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
+fun embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
     val ui = UiRoot(dpi)
     ui.contentHeight = contentHeight
+    ui.globalWidth = width
+    ui.globalHeight = height
     ui.block()
     return ui
 }
@@ -28,7 +30,7 @@ fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, blo
         clearMask = GL_DEPTH_BUFFER_BIT
     }
 
-    +embeddedUi(null, dpi) {
+    +embeddedUi(1f, 1f, null, dpi) {
         isFillViewport = true
         this.block()
     }

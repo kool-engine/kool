@@ -38,6 +38,7 @@ enum class SizeUnit {
 }
 
 fun zero() = SizeSpec(0f, SizeUnit.UN)
+fun full() = SizeSpec(100f, SizeUnit.PC)
 fun uns(value: Float, roundToUnit: Boolean = false) = SizeSpec(value, SizeUnit.UN, roundToUnit)
 fun dps(value: Float, roundToUnit: Boolean = false) = SizeSpec(value, SizeUnit.DP, roundToUnit)
 fun mms(value: Float, roundToUnit: Boolean = false) = SizeSpec(value, SizeUnit.MM, roundToUnit)
@@ -49,6 +50,7 @@ fun mm(mm: Float, dpi: Float) = mm * dpi / 25.4f
 
 fun UiComponent.pcW(pc: Float) = pc(pc, this.width)
 fun UiComponent.pcH(pc: Float) = pc(pc, this.height)
+fun UiComponent.pcD(pc: Float) = pc(pc, this.depth)
 fun UiComponent.dp(pc: Float) = dp(pc, this.dpi)
 fun UiComponent.mm(pc: Float) = mm(pc, this.dpi)
 
@@ -59,6 +61,7 @@ fun mmR(mm: Float, dpi: Float) = round(mm * dpi / 25.4f)
 
 fun UiComponent.pcWR(pc: Float) = pcR(pc, this.width)
 fun UiComponent.pcHR(pc: Float) = pcR(pc, this.height)
+fun UiComponent.pcDR(pc: Float) = pcR(pc, this.depth)
 fun UiComponent.dpR(pc: Float) = dpR(pc, this.dpi)
 fun UiComponent.mmR(pc: Float) = mmR(pc, this.dpi)
 

@@ -130,8 +130,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var versionMinor = 0
         if (versionStr.matches(Regex("^[0-9]\\.[0-9].*"))) {
             val parts = versionStr.split(Regex("[^0-9]"), 3)
-            versionMajor = java.lang.Integer.parseInt(parts[0])
-            versionMinor = java.lang.Integer.parseInt(parts[1])
+            versionMajor = parts[0].toInt()
+            versionMinor = parts[1].toInt()
         }
 
         // check for anisotropic texture filtering support

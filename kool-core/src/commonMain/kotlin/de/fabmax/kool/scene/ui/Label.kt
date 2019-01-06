@@ -6,6 +6,7 @@ import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.ColorModel
+import de.fabmax.kool.shading.LocalPlaneClip
 import de.fabmax.kool.util.*
 
 /**
@@ -73,6 +74,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
             lightModel = label.root.shaderLightModel
             colorModel = ColorModel.VERTEX_COLOR
             isAlpha = true
+            clipMethod = LocalPlaneClip(6)
         }
         label += mesh
     }
@@ -97,6 +99,11 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         updateTextColor()
         computeTextMetrics()
         renderText(ctx)
+    }
+
+    override fun onRender(ctx: KoolContext) {
+        mesh.shader?.setDrawBounds(label.drawBounds)
+        baseUi.onRender(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -126,7 +133,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         val fnt = font
         if (fnt != null) {
             meshBuilder.text(fnt) {
-                origin.set(textStartX, textBaseline, label.dp(4f))
+                origin.set(textStartX, textBaseline, label.dp(.1f))
                 text = label.text
             }
         }

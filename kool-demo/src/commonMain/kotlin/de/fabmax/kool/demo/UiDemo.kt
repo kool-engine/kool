@@ -29,10 +29,7 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
         }
     }
 
-    +embeddedUi(dps(400f)) {
-        globalWidth = 10f
-        globalHeight = 10f
-
+    +embeddedUi(10f, 10f, dps(400f)) {
         content.uiDemoContent(this)
     }
 }
@@ -41,22 +38,22 @@ fun UiContainer.uiDemoContent(uiRoot: UiRoot) {
     translate(-uiRoot.globalWidth /2, -uiRoot.globalHeight/2, 0f)
 
     +ToggleButton("toggle-button", root).apply {
-        layoutSpec.setOrigin(pcs(15f), pcs(-25f), uns(0f))
-        layoutSpec.setSize(pcs(70f), pcs(15f), uns(0f))
+        layoutSpec.setOrigin(pcs(15f), pcs(-25f), zero())
+        layoutSpec.setSize(pcs(70f), pcs(15f), full())
 
         text = "Toggle Button"
     }
 
     +Label("label", root).apply {
-        layoutSpec.setOrigin(pcs(15f), pcs(-45f), uns(0f))
-        layoutSpec.setSize(pcs(20f), pcs(15f), uns(0f))
+        layoutSpec.setOrigin(pcs(15f), pcs(-45f), zero())
+        layoutSpec.setSize(pcs(20f), pcs(15f), full())
 
         text = "Slider"
     }
 
     +Slider("slider", 0.4f, 1f, 1f, root).apply {
-        layoutSpec.setOrigin(pcs(35f), pcs(-45f), uns(0f))
-        layoutSpec.setSize(pcs(50f), pcs(15f), uns(0f))
+        layoutSpec.setOrigin(pcs(35f), pcs(-45f), zero())
+        layoutSpec.setSize(pcs(50f), pcs(15f), full())
         padding.left = uns(0f)
 
         onValueChanged += { value ->
@@ -65,13 +62,13 @@ fun UiContainer.uiDemoContent(uiRoot: UiRoot) {
     }
 
     +TextField("text-field", root).apply {
-        layoutSpec.setOrigin(pcs(15f), pcs(-65f), uns(0f))
-        layoutSpec.setSize(pcs(70f), pcs(15f), uns(0f))
+        layoutSpec.setOrigin(pcs(15f), pcs(-65f), zero())
+        layoutSpec.setSize(pcs(70f), pcs(15f), full())
     }
 
     +Button("toggle-theme", root).apply {
-        layoutSpec.setOrigin(pcs(15f), pcs(-85f), uns(0f))
-        layoutSpec.setSize(pcs(70f), pcs(15f), uns(0f))
+        layoutSpec.setOrigin(pcs(15f), pcs(-85f), zero())
+        layoutSpec.setSize(pcs(70f), pcs(15f), full())
         text = "Toggle Theme"
 
         onClick += { _,_,_ ->

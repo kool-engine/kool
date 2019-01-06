@@ -122,24 +122,24 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
         +container("menu") {
             layoutSpec.setOrigin(zero(), zero(), zero())
-            layoutSpec.setSize(pcs(100f), dps(150f), zero())
+            layoutSpec.setSize(pcs(100f), dps(150f), full())
             ui.setCustom(SimpleComponentUi(this))
 
             +label("Grow Distance:") {
                 layoutSpec.setOrigin(dps(0f, true), dps(110f, true), zero())
-                layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
             }
             val growDistVal = label("growDistVal") {
                 layoutSpec.setOrigin(dps(380f, true), dps(110f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = treeGen.growDistance.toString(2)
             }
             +growDistVal
             +slider("growDist") {
                 layoutSpec.setOrigin(dps(200f, true), dps(110f, true), zero())
-                layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 setValue(0.05f, 0.4f, treeGen.growDistance)
                 disableCamDrag()
                 onValueChanged += { value ->
@@ -150,19 +150,19 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
             +label("Kill Distance:") {
                 layoutSpec.setOrigin(dps(0f, true), dps(75f, true), zero())
-                layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
             }
             val killDistVal = label("killDistVal") {
                 layoutSpec.setOrigin(dps(380f, true), dps(75f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = treeGen.killDistance.toString(2)
             }
             +killDistVal
             +slider("killDist") {
                 layoutSpec.setOrigin(dps(200f, true), dps(75f, true), zero())
-                layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 setValue(1f, 4f, treeGen.killDistance)
                 disableCamDrag()
                 onValueChanged += { value ->
@@ -173,19 +173,19 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
             +label("Attraction Points:") {
                 layoutSpec.setOrigin(dps(0f, true), dps(40f, true), zero())
-                layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
             }
             val attractPtsVal = label("attractPtsVal") {
                 layoutSpec.setOrigin(dps(380f, true), dps(40f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = "${treeGen.numberOfAttractionPoints}"
             }
             +attractPtsVal
             +slider("attractPts") {
                 layoutSpec.setOrigin(dps(200f, true), dps(40f, true), zero())
-                layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 setValue(100f, 10000f, treeGen.numberOfAttractionPoints.toFloat())
                 disableCamDrag()
                 onValueChanged += { value ->
@@ -196,19 +196,19 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
             +label("Radius of Influence:") {
                 layoutSpec.setOrigin(dps(0f, true), dps(5f, true), zero())
-                layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
             }
             val infRadiusVal = label("killDistVal") {
                 layoutSpec.setOrigin(dps(380f, true), dps(5f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = treeGen.radiusOfInfluence.toString(2)
             }
             +infRadiusVal
             +slider("killDist") {
                 layoutSpec.setOrigin(dps(200f, true), dps(5f, true), zero())
-                layoutSpec.setSize(dps(200f, true), dps(35f, true), zero())
+                layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 setValue(0.25f, 10f, treeGen.radiusOfInfluence)
                 disableCamDrag()
                 onValueChanged += { value ->
@@ -219,7 +219,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
             +button("generate") {
                 layoutSpec.setOrigin(dps(470f, true), dps(110f, true), zero())
-                layoutSpec.setSize(dps(220f, true), dps(40f, true), zero())
+                layoutSpec.setSize(dps(220f, true), dps(40f, true), full())
                 text = "Generate Tree!"
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 onClick += { _,_,_ ->
@@ -249,7 +249,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
             +toggleButton("toggleLeafs") {
                 layoutSpec.setOrigin(dps(470f, true), dps(75f, true), zero())
-                layoutSpec.setSize(dps(230f, true), dps(40f, true), zero())
+                layoutSpec.setSize(dps(230f, true), dps(40f, true), full())
                 text = "Toggle Leafs"
                 isEnabled = true
                 onClick += { _, _, _ ->
