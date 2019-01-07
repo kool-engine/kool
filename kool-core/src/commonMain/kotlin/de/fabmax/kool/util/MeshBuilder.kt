@@ -679,7 +679,8 @@ class RectProps {
         cornerSteps = 8
         origin.set(Vec3f.ZERO)
         size.set(1f, 1f)
-        zeroTexCoords()
+        //zeroTexCoords()
+        fullTexCoords()
         return this
     }
 }

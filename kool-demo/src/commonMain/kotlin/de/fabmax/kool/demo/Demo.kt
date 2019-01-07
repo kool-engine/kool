@@ -86,12 +86,12 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             // no nice layouting functions yet, choose start y such that menu items start somewhere below the title
             // negative value means it's measured from top
 
-//            +container("demos") {
-//                ui.setCustom(BlankComponentUi())
-//                layoutSpec.setOrigin(zero(), dps(-75f, true), zero())
-//                layoutSpec.setSize(full(), dps(500f, true), full())
+            +container("demos") {
+                ui.setCustom(BlankComponentUi())
+                layoutSpec.setOrigin(zero(), dps(45f, true), zero())
+                layoutSpec.setSize(full(), pcs(100f, true) - dps(110f, true), full())
 
-                var y = -105f
+                var y = -30f
                 for (demo in demos) {
                     +button(demo.key) {
                         layoutSpec.setOrigin(zero(), dps(y, true), zero())
@@ -106,7 +106,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
                         }
                     }
                 }
-//            }
+            }
 
             +toggleButton("showDbg") {
                 layoutSpec.setOrigin(zero(), dps(10f, true), zero())

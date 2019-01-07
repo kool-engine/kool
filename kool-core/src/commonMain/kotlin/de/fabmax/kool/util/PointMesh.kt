@@ -6,6 +6,7 @@ import de.fabmax.kool.gl.GL_POINTS
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.shading.*
 
 /**
@@ -20,6 +21,7 @@ open class PointMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.CO
         Mesh(data, name) {
     init {
         data.primitiveType = GL_POINTS
+        rayTest = MeshRayTest.nopTest()
         shader = basicPointShader {
             colorModel = ColorModel.VERTEX_COLOR
             lightModel = LightModel.NO_LIGHTING

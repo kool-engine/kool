@@ -54,7 +54,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                         }
                     }
                     +component("divider") {
-                        layoutSpec.setOrigin(pcs(5f), dps(-60f, true), zero())
+                        layoutSpec.setOrigin(pcs(5f), dps(-58f, true), zero())
                         layoutSpec.setSize(pcs(90f), dps(1f, true), full())
                         val bg = SimpleComponentUi(this)
                         bg.color.setCustom(theme.accentColor)

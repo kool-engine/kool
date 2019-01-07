@@ -89,13 +89,20 @@ fun modelScene(ctx: KoolContext): Scene = scene {
             +camera
         }
 
-        +embeddedUi(0.75f, 1f, dps(400f)) {
+        +embeddedUi(0.75f, 0.45f, dps(175f)) {
             content.apply {
-                rotate(90f, Vec3f.X_AXIS)
-                translate(0.5f, 1.2f, 0f)
+                customTransform = {
+                    rotate(90f, Vec3f.X_AXIS)
+                    translate(0.5f, 1.2f, 0f)
+                }
+
+                theme = theme(UiTheme.DARK) {
+                    componentUi { BlankComponentUi() }
+                    containerUi(::BlurredComponentUi)
+                }
 
                 +Label("label1", root).apply {
-                    layoutSpec.setOrigin(uns(0f), dps(140f), zero())
+                    layoutSpec.setOrigin(zero(), dps(140f), zero())
                     layoutSpec.setSize(pcs(75f), dps(35f), full())
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
@@ -110,7 +117,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                 }
                 +speedLabel
                 +Slider("speedSlider", 0.0f, 1f, sqrt(movementSpeed), root).apply {
-                    layoutSpec.setOrigin(uns(0f), dps(90f), zero())
+                    layoutSpec.setOrigin(zero(), dps(90f), zero())
                     layoutSpec.setSize(pcs(100f), dps(50f), full())
                     onValueChanged += { value ->
                         movementSpeed = value * value
@@ -132,7 +139,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                 }
 
                 +Label("label2", root).apply {
-                    layoutSpec.setOrigin(uns(0f), dps(50f), zero())
+                    layoutSpec.setOrigin(zero(), dps(50f), zero())
                     layoutSpec.setSize(pcs(75f), dps(40f), full())
                     textAlignment = Gravity(Alignment.START, Alignment.END)
                     padding.bottom = dps(4f)
@@ -147,7 +154,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
                 }
                 +slowMoLabel
                 +Slider("slowMoSlider", 0.0f, 1f, slowMotion, root).apply {
-                    layoutSpec.setOrigin(uns(0f), uns(0f), zero())
+                    layoutSpec.setOrigin(zero(), zero(), zero())
                     layoutSpec.setSize(pcs(100f), dps(50f), full())
                     onValueChanged += { value ->
                         slowMotion = value

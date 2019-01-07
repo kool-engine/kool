@@ -135,7 +135,8 @@ class Uniform2f(name: String) : Uniform<MutableVec2f>(name, MutableVec2f()) {
 }
 
 class Uniform2fv(name: String) : Uniform<List<MutableVec2f>>(name, emptyList()) {
-    override val type = "vec2[]"
+    override val type: String
+        get() = "vec2[${value.size}]"
 
     private var buffer: Float32Buffer? = null
 
@@ -167,7 +168,8 @@ class Uniform3f(name: String) : Uniform<MutableVec3f>(name, MutableVec3f()) {
 }
 
 class Uniform3fv(name: String) : Uniform<List<MutableVec3f>>(name, emptyList()) {
-    override val type = "vec3[]"
+    override val type: String
+        get() = "vec3[${value.size}]"
 
     private var buffer: Float32Buffer? = null
 
@@ -199,7 +201,8 @@ class Uniform4f(name: String) : Uniform<MutableVec4f>(name, MutableVec4f()) {
 }
 
 class Uniform4fv(name: String) : Uniform<List<MutableVec4f>>(name, emptyList()) {
-    override val type = "vec4[]"
+    override val type: String
+        get() = "vec4[${value.size}]"
 
     private var buffer: Float32Buffer? = null
 

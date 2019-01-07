@@ -81,15 +81,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         requestUiUpdate()
     }
 
-    protected open fun setThemeProps(ctx: KoolContext) {
-        // no props to set
-    }
-
-    protected open fun createThemeUi(ctx: KoolContext): ComponentUi {
-        return root.theme.componentUi(this)
-    }
-
-    override fun preRender(ctx: KoolContext) {
+    open fun update(ctx: KoolContext) {
         if (isThemeUpdate) {
             isThemeUpdate = false
             updateTheme(ctx)
@@ -117,8 +109,14 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         } else {
             drawBounds.set(contentBounds)
         }
+    }
 
-        super.preRender(ctx)
+    protected open fun setThemeProps(ctx: KoolContext) {
+        // no props to set
+    }
+
+    protected open fun createThemeUi(ctx: KoolContext): ComponentUi {
+        return root.theme.componentUi(this)
     }
 
     override fun render(ctx: KoolContext) {

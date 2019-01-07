@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.shading.BlurredBackgroundHelper
 import de.fabmax.kool.shading.LightModel
+import de.fabmax.kool.util.BoundingBox
 
 fun embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
     val ui = UiRoot(dpi)
@@ -116,6 +117,10 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         this.globalDepth = depth
     }
 
+    fun requestLayout() {
+        isLayoutNeeded = true
+    }
+
     override fun preRender(ctx: KoolContext) {
         if (isFillViewport &&
                 (globalWidth != ctx.viewport.width.toFloat() || globalHeight != ctx.viewport.height.toFloat())) {
@@ -130,24 +135,25 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
             val ch = contentHeight
             if (ch != null) {
                 contentScale = 1f / (ch.toUnits(globalHeight, uiDpi) / globalHeight)
-                content.scale(contentScale, contentScale, contentScale)
             }
 
-            content.contentBounds.set(0f, 0f, 0f,
+            val contentBounds = BoundingBox().set(content.posInParent.x, content.posInParent.y, content.posInParent.z,
                     globalWidth / contentScale, globalHeight / contentScale, globalDepth / contentScale)
-            content.requestLayout()
+            content.contentScale = contentScale
+            content.doLayout(contentBounds, ctx)
         }
 
         content.preRender(ctx)
         bounds.set(content.bounds)
         super.preRender(ctx)
+
+        content.update(ctx)
     }
 
     override fun render(ctx: KoolContext) {
         blurHelper?.updateDistortionTexture(this, ctx, content.bounds)
 
         ctx.pushAttributes()
-        //ctx.isDepthMask = false
         ctx.isCullFace = false
         ctx.applyAttributes()
 

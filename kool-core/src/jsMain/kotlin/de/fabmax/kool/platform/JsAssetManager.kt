@@ -52,6 +52,7 @@ class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(
         val img = document.createElement("img") as HTMLImageElement
         val data = ImageTextureData(img)
         img.crossOrigin = ""
+        js("if ('decoding' in img) { img.decoding = 'async'; }")
         img.src = url
         return data
     }

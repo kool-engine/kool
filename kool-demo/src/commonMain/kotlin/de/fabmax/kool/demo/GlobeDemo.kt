@@ -160,7 +160,7 @@ class GlobeUi(var globe: Globe?, val ctx: KoolContext) {
                     containerWidth = width
                     layoutSpec.setSize(dps(containerWidth + 8, true), dps(18f * lines), full())
                     layoutSpec.setOrigin(dps(-containerWidth - 8, true), zero(), zero())
-                    this@uiScene.content.requestLayout()
+                    root.requestLayout()
                 }
             }
         }

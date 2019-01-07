@@ -83,6 +83,7 @@ open class BlurredComponentUi(component: UiComponent) : SimpleComponentUi(compon
             lightModel = component.root.shaderLightModel
             colorModel = ColorModel.STATIC_COLOR
             isAlpha = true
+            clipMethod = LocalPlaneClip(6)
         }.apply {
             blurHelper = component.root.createBlurHelper()
         }

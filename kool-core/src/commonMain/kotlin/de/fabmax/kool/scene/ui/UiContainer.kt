@@ -3,6 +3,7 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
 
 /**
@@ -12,14 +13,12 @@ import de.fabmax.kool.util.BoundingBox
 open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
 
     val posInParent = MutableVec3f()
-    private var isLayoutNeeded = true
-    private val tmpChildBounds = BoundingBox()
-
+    var contentScale = 1f
+    var customTransform: TransformGroup.() -> Unit = { }
     val viewport = BoundingBox()
 
-    fun requestLayout() {
-        isLayoutNeeded = true
-    }
+    private val tmpChildBounds = BoundingBox()
+
 
     override fun updateTheme(ctx: KoolContext) {
         super.updateTheme(ctx)
@@ -41,25 +40,28 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
         }
     }
 
-    override fun preRender(ctx: KoolContext) {
-        if (isLayoutNeeded) {
-            isLayoutNeeded = false
-            doLayout(contentBounds, ctx)
-
-            if (viewport.isEmpty) {
-                viewport.set(contentBounds)
-            } else {
-                viewport.set(viewport.min.x, viewport.min.y, viewport.min.z,
-                        viewport.min.x + contentBounds.size.x,
-                        viewport.min.y + contentBounds.size.y,
-                        viewport.min.z + contentBounds.size.z)
+    override fun update(ctx: KoolContext) {
+        super.update(ctx)
+        for (i in children.indices) {
+            val child = children[i]
+            if (child is UiComponent) {
+                child.update(ctx)
             }
         }
-        super.preRender(ctx)
     }
 
     override fun doLayout(bounds: BoundingBox, ctx: KoolContext) {
         applyBounds(bounds, ctx)
+
+        if (viewport.isEmpty) {
+            viewport.set(contentBounds)
+        } else {
+            viewport.set(viewport.min.x, viewport.min.y, viewport.min.z,
+                    viewport.min.x + contentBounds.size.x,
+                    viewport.min.y + contentBounds.size.y,
+                    viewport.min.z + contentBounds.size.z)
+        }
+
         for (i in children.indices) {
             val child = children[i]
             if (child is UiComponent) {
@@ -74,9 +76,10 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 
     protected open fun applyBounds(bounds: BoundingBox, ctx: KoolContext) {
-        if (!bounds.size.isFuzzyEqual(contentBounds.size) || !bounds.min.isFuzzyEqual(contentBounds.min)) {
+        if (!bounds.size.isFuzzyEqual(contentBounds.size) || !bounds.min.isFuzzyEqual(posInParent)) {
             posInParent.set(bounds.min)
-            setIdentity().translate(bounds.min)
+            setIdentity().translate(posInParent).customTransform()
+            scale(contentScale, contentScale, contentScale)
             contentBounds.set(Vec3f.ZERO, bounds.size)
             requestUiUpdate()
         }

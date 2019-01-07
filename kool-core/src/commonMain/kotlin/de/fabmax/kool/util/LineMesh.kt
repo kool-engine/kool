@@ -9,6 +9,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
@@ -38,6 +39,7 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
         Mesh(data, name) {
     init {
         data.primitiveType = GL_LINES
+        rayTest = MeshRayTest.nopTest()
         shader = basicShader {
             colorModel = ColorModel.VERTEX_COLOR
             lightModel = LightModel.NO_LIGHTING
