@@ -462,6 +462,9 @@ open class GlslGenerator {
         if (shaderProps.isTextureColor) {
             // get base fragment color from texture
             text.append("vec4 $L_FS_TEX_COLOR = $texSampler($U_TEXTURE_0, $L_FS_TEX_COORD);\n")
+            if (!ctx.glCapabilities.premultipliedAlphaTextures) {
+                text.append("$L_FS_TEX_COLOR.rgb *= $L_FS_TEX_COLOR.a;\n")
+            }
             text.append("$fsOutBody = $L_FS_TEX_COLOR;\n")
         }
         if (shaderProps.isVertexColor) {

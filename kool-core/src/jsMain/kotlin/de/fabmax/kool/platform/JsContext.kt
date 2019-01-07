@@ -85,10 +85,17 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         // unfortunately no support for geometry shaders in WebGL
         val geometryShader = false
 
+        // by default javascript images don't offer pre-multiplied alpha
+        // Even if images are converted to an ImageBitmap with
+        // window.createImageBitmap(image, ImageBitmapOptions(premultiplyAlpha = PremultiplyAlpha.PREMULTIPLY))
+        // texture data inside WebGL shader apparently is not pre-multiplied...
+        val premultipliedAlphaTex = false
+
         glCapabilities = GlCapabilities(
                 uint32Indices,
                 shaderIntAttribs,
                 maxTexUnits,
+                premultipliedAlphaTex,
                 depthTextures,
                 depthComponentIntFormat,
                 depthFilterMethod,

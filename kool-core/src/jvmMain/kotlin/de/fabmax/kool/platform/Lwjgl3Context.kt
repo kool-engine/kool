@@ -155,6 +155,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
                 uint32Indices = true,
                 shaderIntAttribs = true,
                 maxTexUnits = maxTexUnits,
+                premultipliedAlphaTextures = true,
                 depthTextures = true,
                 depthComponentIntFormat = GL_DEPTH_COMPONENT,
                 depthFilterMethod = GL_LINEAR,
