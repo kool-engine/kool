@@ -17,7 +17,7 @@ fun group(name: String? = null, block: Group.() -> Unit): Group {
 
 open class Group(name: String? = null) : Node(name) {
     private val intChildren = mutableListOf<Node>()
-    protected val tmpBounds = BoundingBox()
+    protected val childrenBounds = BoundingBox()
 
     val children: List<Node> get() = intChildren
     val size: Int get() = intChildren.size
@@ -31,15 +31,19 @@ open class Group(name: String? = null) : Node(name) {
 
     override fun preRender(ctx: KoolContext) {
         // call preRender on all children and update group bounding box
-        tmpBounds.clear()
+        childrenBounds.clear()
         for (i in intChildren.indices) {
             intChildren[i].preRender(ctx)
-            tmpBounds.add(intChildren[i].bounds)
+            childrenBounds.add(intChildren[i].bounds)
         }
-        bounds.set(tmpBounds)
+        setLocalBounds()
 
         // compute global position and size based on group bounds and current model transform
         super.preRender(ctx)
+    }
+
+    protected open fun setLocalBounds() {
+        bounds.set(childrenBounds)
     }
 
     override fun render(ctx: KoolContext) {

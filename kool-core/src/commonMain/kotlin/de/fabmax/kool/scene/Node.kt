@@ -43,8 +43,8 @@ abstract class Node(val name: String? = null) : Disposable {
     open var globalRadius = 0f
         protected set
 
-    private val globalCenterMut = MutableVec3f()
-    private val globalExtentMut = MutableVec3f()
+    protected val globalCenterMut = MutableVec3f()
+    protected val globalExtentMut = MutableVec3f()
 
     /**
      * Parent node is set when this node is added to a [Group]

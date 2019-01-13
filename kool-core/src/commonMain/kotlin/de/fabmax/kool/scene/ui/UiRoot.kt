@@ -87,6 +87,8 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
             field = value
             isLayoutNeeded = true
         }
+    override val bounds: BoundingBox
+        get() = content.bounds
 
     private var blurHelper: BlurredBackgroundHelper? = null
 
@@ -137,21 +139,22 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
                 contentScale = 1f / (ch.toUnits(globalHeight, uiDpi) / globalHeight)
             }
 
-            val contentBounds = BoundingBox().set(content.posInParent.x, content.posInParent.y, content.posInParent.z,
-                    globalWidth / contentScale, globalHeight / contentScale, globalDepth / contentScale)
+            val contentBounds = BoundingBox().set(0f, 0f, 0f,
+                    globalWidth / contentScale,
+                    globalHeight / contentScale,
+                    globalDepth / contentScale)
             content.contentScale = contentScale
             content.doLayout(contentBounds, ctx)
         }
 
         content.preRender(ctx)
-        bounds.set(content.bounds)
         super.preRender(ctx)
 
         content.update(ctx)
     }
 
     override fun render(ctx: KoolContext) {
-        blurHelper?.updateDistortionTexture(this, ctx, content.bounds)
+        blurHelper?.updateDistortionTexture(this, ctx, bounds)
 
         ctx.pushAttributes()
         ctx.isCullFace = false

@@ -60,8 +60,8 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
 
     init {
         onHover += { ptr, rt, _ ->
-            val ptX = rt.hitPositionLocal.x - contentBounds.min.x
-            val ptY = rt.hitPositionLocal.y - contentBounds.min.y
+            val ptX = rt.hitPositionLocal.x - componentBounds.min.x
+            val ptY = rt.hitPositionLocal.y - componentBounds.min.y
             hitDelta.set(ptX, ptY).subtract(prevHit)
             prevHit.set(ptX, ptY)
 

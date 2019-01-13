@@ -30,7 +30,7 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
     }
 
     +embeddedUi(10f, 10f, dps(400f)) {
-        content.posInParent.set(-globalWidth / 2, -globalHeight / 2, 0f)
+        content.customTransform = { translate(-content.dp(200f), -content.dp(200f), 0f) }
 
         +toggleButton("toggle-button") {
             layoutSpec.setOrigin(pcs(15f), pcs(-25f), zero())

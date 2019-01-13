@@ -15,15 +15,19 @@ import kotlin.math.min
  */
 open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
 
-    val contentBounds = BoundingBox()
+    // bounds of this component in local coordinates
+    val componentBounds = BoundingBox()
+
+    // drawBounds contain the clipped component bounds (also in local coordinates), everything out of draw bounds should be discarded during rendering
+    // regular Node.bounds also contain the drawBounds but in parent coordinates
     val drawBounds = BoundingBox()
 
-    val posX: Float get() = contentBounds.min.x
-    val posY: Float get() = contentBounds.min.y
-    val posZ: Float get() = contentBounds.min.z
-    val width: Float get() = contentBounds.size.x
-    val height: Float get() = contentBounds.size.y
-    val depth: Float get() = contentBounds.size.z
+    val posX: Float get() = componentBounds.min.x
+    val posY: Float get() = componentBounds.min.y
+    val posZ: Float get() = componentBounds.min.z
+    val width: Float get() = componentBounds.size.x
+    val height: Float get() = componentBounds.size.y
+    val depth: Float get() = componentBounds.size.z
 
     var layoutSpec = LayoutSpec()
     var padding = Margin(dps(16f), dps(16f), dps(16f), dps(16f))
@@ -53,7 +57,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     open fun setupBuilder(builder: MeshBuilder) {
         builder.clear()
         builder.identity()
-        builder.translate(contentBounds.min)
+        builder.translate(componentBounds.min)
     }
 
     open fun requestThemeUpdate() {
@@ -91,23 +95,29 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
             updateUi(ctx)
         }
 
-        val parentContainer = parent
-        if (parentContainer is UiContainer) {
-            val bndMinX = max(contentBounds.min.x, parentContainer.viewport.min.x)
-            val bndMinY = max(contentBounds.min.y, parentContainer.viewport.min.y)
-            val bndMinZ = max(contentBounds.min.z, parentContainer.viewport.min.z)
+        setDrawBoundsFromWrappedComponentBounds(parent as? UiContainer, ctx)
+    }
 
-            val bndMaxX = min(contentBounds.max.x, parentContainer.viewport.max.x)
-            val bndMaxY = min(contentBounds.max.y, parentContainer.viewport.max.y)
-            val bndMaxZ = min(contentBounds.max.z, parentContainer.viewport.max.z)
+    protected open fun setDrawBoundsFromWrappedComponentBounds(parentContainer: UiContainer?, ctx: KoolContext) {
+        if (parentContainer != null) {
+            val bndMinX = max(componentBounds.min.x, parentContainer.drawBounds.min.x)
+            val bndMinY = max(componentBounds.min.y, parentContainer.drawBounds.min.y)
+            val bndMinZ = max(componentBounds.min.z, parentContainer.drawBounds.min.z)
+
+            val bndMaxX = min(componentBounds.max.x, parentContainer.drawBounds.max.x)
+            val bndMaxY = min(componentBounds.max.y, parentContainer.drawBounds.max.y)
+            val bndMaxZ = min(componentBounds.max.z, parentContainer.drawBounds.max.z)
 
             if (bndMinX >= bndMaxX || bndMinY >= bndMaxY || bndMinZ >= bndMaxZ) {
                 drawBounds.clear()
             } else {
                 drawBounds.set(bndMinX, bndMinY, bndMinZ, bndMaxX, bndMaxY, bndMaxZ)
             }
+            bounds.set(drawBounds)
+
         } else {
-            drawBounds.set(contentBounds)
+            drawBounds.set(componentBounds)
+            bounds.set(componentBounds)
         }
     }
 
@@ -120,15 +130,15 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     }
 
     override fun render(ctx: KoolContext) {
-        if (alpha > 0f && !drawBounds.isEmpty) {
+        if (isVisible && alpha > 0f && !bounds.isEmpty) {
             ui.prop.onRender(ctx)
             super.render(ctx)
         }
     }
 
-    open fun doLayout(bounds: BoundingBox, ctx: KoolContext) {
-        if (!contentBounds.isFuzzyEqual(bounds)) {
-            contentBounds.set(bounds)
+    open fun doLayout(layoutBounds: BoundingBox, ctx: KoolContext) {
+        if (!componentBounds.isFuzzyEqual(layoutBounds)) {
+            componentBounds.set(layoutBounds)
             requestUiUpdate()
         }
     }

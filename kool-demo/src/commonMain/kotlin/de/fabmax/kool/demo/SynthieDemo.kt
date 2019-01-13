@@ -141,12 +141,12 @@ private fun synthieMenu(content: SynthieScene, ctx: KoolContext): Scene = uiScen
  * Super-hacky UI Container which is rotated by 90 degrees
  */
 private class VerticalLayout(name: String, root: UiRoot) : UiContainer(name, root) {
-    override fun doLayout(bounds: BoundingBox, ctx: KoolContext) {
-        if (bounds != contentBounds) {
-            contentBounds.clear()
+    override fun doLayout(layoutBounds: BoundingBox, ctx: KoolContext) {
+        if (layoutBounds != componentBounds) {
+            componentBounds.clear()
         }
-        super.doLayout(bounds, ctx)
-        if (bounds != contentBounds) {
+        super.doLayout(layoutBounds, ctx)
+        if (layoutBounds != componentBounds) {
             translate(-posInParent.x, -posInParent.y, -posInParent.z)
             rotate(90f, Vec3f.Z_AXIS)
             translate(posInParent.y, -posInParent.x, posInParent.z)

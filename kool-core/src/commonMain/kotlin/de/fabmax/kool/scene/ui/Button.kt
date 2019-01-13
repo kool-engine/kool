@@ -41,15 +41,15 @@ open class Button(name: String, root: UiRoot) : Label(name, root) {
             if (ptr.isLeftButtonEvent) {
                 if (ptr.isLeftButtonDown) {
                     // button is pressed, issue click event when it is released again
-                    ptrDownPos.set(rt.hitPositionLocal.x - contentBounds.min.x, rt.hitPositionLocal.y - contentBounds.min.y)
+                    ptrDownPos.set(rt.hitPositionLocal.x - componentBounds.min.x, rt.hitPositionLocal.y - componentBounds.min.y)
                     isPressed = true
 
                 } else if (isPressed) {
                     // button was pressed and pointer is up, issue click event
                     isPressed = false
                     // check that pointer didn't move to much
-                    ptrDownPos.x -= rt.hitPositionLocal.x - contentBounds.min.x
-                    ptrDownPos.y -= rt.hitPositionLocal.y - contentBounds.min.y
+                    ptrDownPos.x -= rt.hitPositionLocal.x - componentBounds.min.x
+                    ptrDownPos.y -= rt.hitPositionLocal.y - componentBounds.min.y
                     if (ptrDownPos.length() < this@Button.dp(5f)) {
                         fireOnClick(ptr, rt, ctx)
                     }

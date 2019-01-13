@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.util.BoundingBox
 
 /**
  * @author fabmax
@@ -23,6 +24,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
     protected var isDirty = false
 
     private val tmpTransformVec = MutableVec3f()
+    private val tmpBounds = BoundingBox()
 
     protected fun checkInverse() {
         if (isDirty) {
