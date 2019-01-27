@@ -41,11 +41,10 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : Spheri
         scene.registerDragHandler(this)
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext) {
-        super.handleDrag(dragPtrs, ctx)
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
+        super.handleDrag(dragPtrs, scene, ctx)
 
-        val viewport = scene?.viewport ?: return
-        if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(viewport, ctx)) {
+        if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(scene.viewport, ctx)) {
             val ptr = dragPtrs[0]
             val startPan = ptr.isLeftButtonEvent && ptr.isLeftButtonDown
             val startRotate = ptr.isRightButtonEvent && ptr.isRightButtonDown

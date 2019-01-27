@@ -2,10 +2,10 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
@@ -15,7 +15,7 @@ import de.fabmax.kool.util.MutableColor
  * @author fabmax
  */
 class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
-        UiComponent(name, root), InputManager.DragHandler {
+        UiComponent(name, root), Scene.DragHandler {
 
     var onValueChanged: List<Slider.(Float) -> Unit> = mutableListOf()
 
@@ -55,20 +55,22 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
             }
         }
 
-    private var prevHit = MutableVec2f()
-    private var hitDelta = MutableVec2f()
+    private val pickRay = Ray()
+    private val hitPlane = Plane()
+    private val hitPos = MutableVec3f()
+    private val initHitPos = MutableVec3f()
+    private var startDrag = false
+    private var startDragValue = 0f
 
     init {
+        hitPlane.n.set(Vec3f.Z_AXIS)
         onHover += { ptr, rt, _ ->
             val ptX = rt.hitPositionLocal.x - componentBounds.min.x
             val ptY = rt.hitPositionLocal.y - componentBounds.min.y
-            hitDelta.set(ptX, ptY).subtract(prevHit)
-            prevHit.set(ptX, ptY)
-
-            if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown && isOverKnob(prevHit.x, prevHit.y)) {
+            if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown && isOverKnob(ptX, ptY)) {
                 // register drag handler to handle knob movement
                 scene?.registerDragHandler(this@Slider)
-                hitDelta.set(0f, 0f)
+                startDrag = true
             }
         }
     }
@@ -85,17 +87,23 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
         return dx*dx + dy*dy < knobSize * knobSize
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext) {
-        if (dragPtrs.size == 1 && !dragPtrs[0].isConsumed() && dragPtrs[0].isLeftButtonDown) {
-            // drag event is handled, no other drag handler should do something
-            // we use the delta computed in local coordinates in the onHover handler instead of the native pointer
-            // delta, which is in screen coords
-            value += (hitDelta.x / trackWidth) * (max - min)
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
+        if (dragPtrs.size == 1 && !dragPtrs[0].isConsumed() && dragPtrs[0].isLeftButtonDown &&
+                computeLocalPickRay(dragPtrs[0], ctx, pickRay)) {
+            if (hitPlane.intersectionPoint(hitPos, pickRay)) {
+                if (startDrag) {
+                    startDrag = false
+                    initHitPos.set(hitPos)
+                    startDragValue = value
+                }
+                val deltaX = hitPos.x - initHitPos.x
+                value = startDragValue + (deltaX / trackWidth) * (max - min)
+            }
             dragPtrs[0].consume()
 
         } else {
             // knob dragging stopped
-            scene?.removeDragHandler(this)
+            scene.removeDragHandler(this)
         }
     }
 

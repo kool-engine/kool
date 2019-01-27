@@ -113,10 +113,9 @@ open class TransformGroup(name: String? = null) : Group(name) {
         super.toLocalCoords(vec, w)
         if (!isIdentity) {
             checkInverse()
-            return invTransform.transform(vec, w)
-        } else {
-            return vec
+            invTransform.transform(vec, w)
         }
+        return vec
     }
 
     override fun rayTest(test: RayTest) {

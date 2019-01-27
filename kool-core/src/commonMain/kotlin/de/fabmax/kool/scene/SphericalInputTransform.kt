@@ -30,7 +30,7 @@ fun Scene.defaultCamTransform() {
     }
 }
 
-open class SphericalInputTransform(name: String? = null) : TransformGroup(name), InputManager.DragHandler {
+open class SphericalInputTransform(name: String? = null) : TransformGroup(name), Scene.DragHandler {
 
     var leftDragMethod = DragMethod.ROTATE
     var middleDragMethod = DragMethod.NONE
@@ -219,10 +219,8 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         newScene?.registerDragHandler(this)
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext) {
-        val viewport = scene?.viewport ?: return
-
-        if (!dragPtrs.isEmpty() && !dragPtrs[0].isConsumed() && dragPtrs[0].isInViewport(viewport, ctx)) {
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
+        if (!dragPtrs.isEmpty() && !dragPtrs[0].isConsumed() && dragPtrs[0].isInViewport(scene.viewport, ctx)) {
             if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
                 dragMethod = when {
                     dragPtrs[0].isLeftButtonDown -> leftDragMethod

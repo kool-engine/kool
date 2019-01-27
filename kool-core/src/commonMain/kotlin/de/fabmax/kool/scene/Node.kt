@@ -164,7 +164,7 @@ abstract class Node(val name: String? = null) : Disposable {
      * Transforms [vec] in-place from global to local coordinates.
      */
     open fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        parent?.toLocalCoords(vec)
+        parent?.toLocalCoords(vec, w)
         return vec
     }
 

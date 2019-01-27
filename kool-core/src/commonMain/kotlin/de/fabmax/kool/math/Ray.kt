@@ -25,10 +25,18 @@ class Ray {
     fun sqrDistanceToPoint(point: Vec3f): Float = point.sqrDistanceToRay(origin, direction)
 
     fun sqrDistanceToPoint(x: Float, y: Float, z: Float) = sqrDistancePointToRay(x, y, z, origin, direction)
+
+    fun transformBy(matrix: Mat4f) {
+        matrix.transform(origin)
+        matrix.transform(direction, 0f).norm()
+    }
+
+    override fun toString(): String {
+        return "{origin=$origin, direction=$direction}"
+    }
 }
 
 class RayTest {
-
     val ray = Ray()
 
     private val intHitPosition = MutableVec3f()
@@ -63,9 +71,7 @@ class RayTest {
     }
 
     fun transformBy(matrix: Mat4f) {
-        matrix.transform(ray.origin)
-        matrix.transform(ray.direction, 0f)
-        ray.direction.norm()
+        ray.transformBy(matrix)
         if (isHit) {
             matrix.transform(intHitPosition)
             hitDistanceSqr = hitPosition.sqrDistance(ray.origin)

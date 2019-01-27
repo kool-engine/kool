@@ -11,12 +11,6 @@ import kotlin.math.abs
 
 class InputManager internal constructor() {
 
-    interface DragHandler {
-        fun handleDrag(dragPtrs: List<Pointer>, ctx: KoolContext)
-    }
-
-    private val compatGestureEvaluator = TouchGestureEvaluator()
-
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
     val keyEvents: MutableList<KeyEvent> = mutableListOf()
 

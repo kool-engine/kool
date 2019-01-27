@@ -1,6 +1,8 @@
 package de.fabmax.kool.scene.ui
 
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
@@ -155,5 +157,14 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
                 test.setHit(this, test.hitPosition)
             }
         }
+    }
+
+    fun computeLocalPickRay(pointer: InputManager.Pointer, ctx: KoolContext, result: Ray): Boolean {
+        val success = scene?.computeRay(pointer, ctx, result) ?: false
+        if (success) {
+            toLocalCoords(result.origin)
+            toLocalCoords(result.direction, 0f).norm()
+        }
+        return success
     }
 }

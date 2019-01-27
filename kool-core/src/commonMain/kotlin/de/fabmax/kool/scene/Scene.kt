@@ -6,6 +6,7 @@ import de.fabmax.kool.gl.GL_COLOR_BUFFER_BIT
 import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
 import de.fabmax.kool.gl.glClear
 import de.fabmax.kool.lock
+import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.util.Disposable
 
@@ -37,7 +38,7 @@ open class Scene(name: String? = null) : Group(name) {
     private var hoverNode: Node? = null
 
     private val dragPtrs: MutableList<InputManager.Pointer> = mutableListOf()
-    private val dragHandlers: MutableList<InputManager.DragHandler> = mutableListOf()
+    private val dragHandlers: MutableList<DragHandler> = mutableListOf()
 
     private val disposables = mutableListOf<Disposable>()
 
@@ -94,14 +95,18 @@ open class Scene(name: String? = null) : Group(name) {
         super.dispose(ctx)
     }
 
-    fun registerDragHandler(handler: InputManager.DragHandler) {
+    fun registerDragHandler(handler: DragHandler) {
         if (handler !in dragHandlers) {
             dragHandlers += handler
         }
     }
 
-    fun removeDragHandler(handler: InputManager.DragHandler) {
+    fun removeDragHandler(handler: DragHandler) {
         dragHandlers -= handler
+    }
+
+    fun computeRay(pointer: InputManager.Pointer, ctx: KoolContext, result: Ray): Boolean {
+        return camera.computePickRay(result, pointer, viewport, ctx)
     }
 
     private fun handleInput(ctx: KoolContext) {
@@ -153,9 +158,12 @@ open class Scene(name: String? = null) : Group(name) {
         }
 
         for (i in dragHandlers.indices.reversed()) {
-            dragHandlers[i].handleDrag(dragPtrs, ctx)
+            dragHandlers[i].handleDrag(dragPtrs, this, ctx)
         }
     }
 
-}
+    interface DragHandler {
+        fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext)
 
+    }
+}
