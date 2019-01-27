@@ -124,10 +124,12 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
     }
 
     override fun preRender(ctx: KoolContext) {
+        val viewport = scene?.viewport ?: return
+
         if (isFillViewport &&
-                (globalWidth != ctx.viewport.width.toFloat() || globalHeight != ctx.viewport.height.toFloat())) {
-            globalWidth = ctx.viewport.width.toFloat()
-            globalHeight = ctx.viewport.height.toFloat()
+                (globalWidth != viewport.width.toFloat() || globalHeight != viewport.height.toFloat())) {
+            globalWidth = viewport.width.toFloat()
+            globalHeight = viewport.height.toFloat()
         }
 
         if (isLayoutNeeded) {

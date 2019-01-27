@@ -19,7 +19,7 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
 
 open class Scene(name: String? = null) : Group(name) {
 
-    val onRenderScene: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+    val onRenderScene: MutableList<Scene.(KoolContext) -> Unit> = mutableListOf()
 
     override var isFrustumChecked: Boolean
         // frustum check is force disabled for Scenes
@@ -28,6 +28,8 @@ open class Scene(name: String? = null) : Group(name) {
 
     var camera: Camera = PerspectiveCamera()
     var lighting = Lighting(this)
+    var viewport = KoolContext.Viewport(0, 0, 0, 0)
+        protected set
 
     var clearMask = GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
     var isPickingEnabled = true
@@ -43,6 +45,27 @@ open class Scene(name: String? = null) : Group(name) {
         scene = this
     }
 
+    fun renderScene(ctx: KoolContext) {
+        for (i in onRenderScene.indices) {
+            onRenderScene[i](ctx)
+        }
+        viewport = ctx.viewport
+
+        camera.updateCamera(ctx)
+        preRender(ctx)
+        //handleInput(ctx)
+
+        if (clearMask != 0) {
+            glClear(clearMask)
+        }
+        render(ctx)
+        postRender(ctx)
+    }
+
+    fun processInput(ctx: KoolContext) {
+        handleInput(ctx)
+    }
+
     fun onRenderingHintsChanged(ctx: KoolContext) {
         lighting.onRenderingHintsChanged(ctx)
     }
@@ -55,26 +78,6 @@ open class Scene(name: String? = null) : Group(name) {
             disposables.clear()
         }
         super.preRender(ctx)
-    }
-
-    fun renderScene(ctx: KoolContext) {
-        if (!isVisible) {
-            return
-        }
-
-        for (i in onRenderScene.indices) {
-            onRenderScene[i](ctx)
-        }
-        camera.updateCamera(ctx)
-        preRender(ctx)
-        handleInput(ctx)
-
-        if (clearMask != 0) {
-            glClear(clearMask)
-        }
-        render(ctx)
-
-        postRender(ctx)
     }
 
     fun dispose(disposable: Disposable) {
@@ -104,9 +107,13 @@ open class Scene(name: String? = null) : Group(name) {
     private fun handleInput(ctx: KoolContext) {
         var hovered: Node? = null
         val prevHovered = hoverNode
-        val ptr = ctx.inputMgr.primaryPointer
+        val ptr = ctx.inputMgr.pointerState.primaryPointer
 
-        if (isPickingEnabled && ptr.isInViewport(ctx) && camera.initRayTes(rayTest, ptr, ctx)) {
+        if (!isPickingEnabled || !ptr.isValid || ptr.isConsumed()) {
+            return
+        }
+
+        if (ptr.isInViewport(viewport, ctx) && camera.initRayTes(rayTest, ptr, viewport, ctx)) {
             rayTest(rayTest)
             if (rayTest.isHit) {
                 hovered = rayTest.hitNode
@@ -132,29 +139,21 @@ open class Scene(name: String? = null) : Group(name) {
             }
         }
 
-        if (isPickingEnabled) {
-            handleDrag(ctx)
-        }
+        handleDrag(ctx)
     }
 
     private fun handleDrag(ctx: KoolContext) {
         dragPtrs.clear()
-        for (i in ctx.inputMgr.pointers.indices) {
-            val ptr = ctx.inputMgr.pointers[i]
-            if (ptr.isInViewport(ctx) &&
+        for (i in ctx.inputMgr.pointerState.pointers.indices) {
+            val ptr = ctx.inputMgr.pointerState.pointers[i]
+            if (ptr.isValid && ptr.isInViewport(viewport, ctx) &&
                     (ptr.buttonMask != 0 || ptr.buttonEventMask != 0 || ptr.deltaScroll != 0f)) {
-                dragPtrs.add(ctx.inputMgr.pointers[i])
+                dragPtrs.add(ptr)
             }
         }
 
-        for (i in dragHandlers.lastIndex downTo 0) {
-            val result = dragHandlers[i].handleDrag(dragPtrs, ctx)
-            if (result and InputManager.DragHandler.REMOVE_HANDLER != 0) {
-                dragHandlers.removeAt(i)
-            }
-            if (result and InputManager.DragHandler.HANDLED != 0) {
-                break
-            }
+        for (i in dragHandlers.indices.reversed()) {
+            dragHandlers[i].handleDrag(dragPtrs, ctx)
         }
     }
 

@@ -219,8 +219,10 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         newScene?.registerDragHandler(this)
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext): Int {
-        if (!dragPtrs.isEmpty() && dragPtrs[0].isInViewport(ctx)) {
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext) {
+        val viewport = scene?.viewport ?: return
+
+        if (!dragPtrs.isEmpty() && !dragPtrs[0].isConsumed() && dragPtrs[0].isInViewport(viewport, ctx)) {
             if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
                 dragMethod = when {
                     dragPtrs[0].isLeftButtonDown -> leftDragMethod
@@ -235,13 +237,12 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             ptrPos.set(dragPtrs[0].x, dragPtrs[0].y)
             deltaPos.set(dragPtrs[0].deltaX, dragPtrs[0].deltaY)
             deltaScroll = dragPtrs[0].deltaScroll
+            dragPtrs[0].consume()
 
         } else {
             deltaPos.set(Vec2f.ZERO)
             deltaScroll = 0f
         }
-        // let other drag handlers do their job
-        return 0
     }
 
     enum class DragMethod {
@@ -301,7 +302,7 @@ class CameraOrthogonalPan : PanBase() {
     override fun computePanPoint(result: MutableVec3f, scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
         panPlane.p.set(scene.camera.globalLookAt)
         panPlane.n.set(scene.camera.globalLookDir)
-        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, ctx) &&
+        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, scene.viewport, ctx) &&
                 panPlane.intersectionPoint(result, pointerRay)
     }
 }
@@ -316,7 +317,7 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
 
     override fun computePanPoint(result: MutableVec3f, scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
         panPlane.p.set(scene.camera.globalLookAt)
-        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, ctx) &&
+        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, scene.viewport, ctx) &&
                 panPlane.intersectionPoint(result, pointerRay)
     }
 }

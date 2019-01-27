@@ -110,8 +110,18 @@ abstract class KoolContext {
             onRender[i](this)
         }
 
+        // draw scene contents (back to front)
         for (i in scenes.indices) {
-            scenes[i].renderScene(this)
+            if (scenes[i].isVisible) {
+                scenes[i].renderScene(this)
+            }
+        }
+
+        // process input for scenes in reverse order (front to back)
+        for (i in scenes.indices.reversed()) {
+            if (scenes[i].isVisible) {
+                scenes[i].processInput(this)
+            }
         }
     }
 

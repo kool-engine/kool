@@ -21,9 +21,9 @@ open class TouchGestureEvaluator {
     protected val startPositions = mutableMapOf<Int, Vec2f>()
     protected var screenDpi = 96f
 
-    fun evaluate(ctx: KoolContext) {
+    fun evaluate(pointerState: InputManager.PointerState, ctx: KoolContext) {
         screenDpi = ctx.screenDpi
-        ctx.inputMgr.getActivePointers(activePointers)
+        pointerState.getActivePointers(activePointers)
 
         if (activePointers.size > 1) {
             when (currentGesture.type) {
@@ -107,6 +107,9 @@ open class TouchGestureEvaluator {
             tmpVec1.set(pointers[0].x, pointers[0].y)
             tmpVec2.set(pointers[1].x, pointers[1].y)
             currentGesture.update(tmpVec1, tmpVec2, screenDpi)
+
+            pointers[0].consume()
+            pointers[1].consume()
         } else {
             currentGesture.type = INVALID
         }

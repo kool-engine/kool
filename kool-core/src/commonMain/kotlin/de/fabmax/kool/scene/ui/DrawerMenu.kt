@@ -24,7 +24,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
         menuAnimator.duration = 0.25f
         menuAnimator.speed = -1f
         menuAnimator.value.onUpdate = { v ->
-            setScrollOffset(dp(-40f) * (1f - v), 0f, 0f)
+            setScrollOffset(dp(40f) * (1f - v), 0f, 0f)
             alpha = v
         }
 

@@ -28,7 +28,7 @@ fun multiScene(koolCtx: KoolContext): List<Scene> {
         val vp = ctx.viewport
         val width = (vp.width * 0.5).toInt()
         ctx.pushAttributes()
-        ctx.viewport = KoolContext.Viewport(width, vp.y, width, vp.height)
+        ctx.viewport = KoolContext.Viewport(vp.x + width, vp.y, width, vp.height)
         ctx.applyAttributes()
     }
     rightScene.onPostRender += { ctx ->

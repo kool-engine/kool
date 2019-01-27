@@ -109,18 +109,6 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
             containerUi { BlankComponentUi() }
         }
 
-        fun Slider.disableCamDrag() {
-            onHoverEnter += { _, _, _ ->
-                // disable mouse interaction on content scene while pointer is over menu
-                boxScene.isPickingEnabled = false
-            }
-            onHoverExit += { _, _, _->
-                // enable mouse interaction on content scene when pointer leaves menu (and nothing else in this scene
-                // is hit instead)
-                boxScene.isPickingEnabled = true
-            }
-        }
-
         +container("menu") {
             layoutSpec.setOrigin(zero(), zero(), zero())
             layoutSpec.setSize(dps(280f), dps(115f), full())
@@ -139,7 +127,6 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
             +slider("boxCnt", 1f, 200f,  40f) {
                 layoutSpec.setOrigin(dps(80f, true), dps(75f, true), zero())
                 layoutSpec.setSize(dps(150f, true), dps(35f, true), full())
-                disableCamDrag()
 
                 onValueChanged += { value ->
                     boxCnt = value.toInt()
@@ -160,7 +147,6 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
             +slider("gravity", 0f, 10f,  boxWorld!!.world.gravity.length()) {
                 layoutSpec.setOrigin(dps(80f, true), dps(40f, true), zero())
                 layoutSpec.setSize(dps(150f, true), dps(35f, true), full())
-                disableCamDrag()
 
                 onValueChanged += { value ->
                     val grav = boxWorld!!.world.gravity

@@ -252,7 +252,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
     private fun addToTexBounds(cam: Camera, node: Node, x: Float, y: Float, z: Float, ctx: KoolContext) {
         tmpVec.set(x, y, z)
         node.toGlobalCoords(tmpVec)
-        cam.projectScreen(tmpVec, ctx, tmpRes)
+        cam.projectScreen(tmpVec, node.scene!!.viewport, ctx, tmpRes)
         texBounds.add(tmpRes)
     }
 

@@ -41,10 +41,11 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : Spheri
         scene.registerDragHandler(this)
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext): Int {
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext) {
         super.handleDrag(dragPtrs, ctx)
 
-        if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(ctx)) {
+        val viewport = scene?.viewport ?: return
+        if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(viewport, ctx)) {
             val ptr = dragPtrs[0]
             val startPan = ptr.isLeftButtonEvent && ptr.isLeftButtonDown
             val startRotate = ptr.isRightButtonEvent && ptr.isRightButtonDown
@@ -60,7 +61,6 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : Spheri
                 globePan.screenPos.set(ptr.x, ptr.y)
             }
         }
-        return 0
     }
 
     private fun onPreRender(ctx: KoolContext) {
@@ -133,7 +133,8 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : Spheri
          * result vec: x = longitude in degrees, y = latitude in degrees
          */
         private fun screen2LatLon(screenX: Float, screenY: Float, result: MutableVec2d, ctx: KoolContext): Boolean {
-            if (cam.computePickRay(pickRay, screenX, screenY, ctx)) {
+            val viewport = scene?.viewport ?: return false
+            if (cam.computePickRay(pickRay, screenX, screenY, viewport, ctx)) {
                 // compute origin and direction of pick ray in globe coordinates
                 pickRay.origin.toMutableVec3d(tmpRayO)
                 pickRay.direction.toMutableVec3d(tmpRayL)

@@ -93,7 +93,7 @@ fun modelScene(ctx: KoolContext): Scene = scene {
             content.apply {
                 customTransform = {
                     rotate(90f, Vec3f.X_AXIS)
-                    translate(0.5f, 1.2f, 0f)
+                    translate(500f, 1500f, 0f)
                 }
 
                 theme = theme(UiTheme.DARK) {

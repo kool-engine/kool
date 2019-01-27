@@ -75,13 +75,13 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     abstract protected fun updateProjectionMatrix()
 
-    fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, ctx: KoolContext): Boolean {
-        return ptr.isValid && computePickRay(pickRay, ptr.x, ptr.y, ctx)
+    fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
+        return ptr.isValid && computePickRay(pickRay, ptr.x, ptr.y, viewport, ctx)
     }
 
-    fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, ctx: KoolContext): Boolean {
-        var valid = unProjectScreen(tmpVec3.set(screenX, screenY, 0f), ctx, pickRay.origin)
-        valid = valid && unProjectScreen(tmpVec3.set(screenX, screenY, 1f), ctx, pickRay.direction)
+    fun computePickRay(pickRay: Ray, screenX: Float, screenY: Float, viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
+        var valid = unProjectScreen(tmpVec3.set(screenX, screenY, 0f), viewport, ctx, pickRay.origin)
+        valid = valid && unProjectScreen(tmpVec3.set(screenX, screenY, 1f), viewport, ctx, pickRay.direction)
 
         if (valid) {
             pickRay.direction.subtract(pickRay.origin)
@@ -91,13 +91,13 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return valid
     }
 
-    fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, ctx: KoolContext): Boolean {
-        return ptr.isValid && initRayTes(rayTest, ptr.x, ptr.y, ctx)
+    fun initRayTes(rayTest: RayTest, ptr: InputManager.Pointer, viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
+        return ptr.isValid && initRayTes(rayTest, ptr.x, ptr.y, viewport, ctx)
     }
 
-    fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, ctx: KoolContext): Boolean {
+    fun initRayTes(rayTest: RayTest, screenX: Float, screenY: Float, viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
         rayTest.clear()
-        return computePickRay(rayTest.ray, screenX, screenY, ctx)
+        return computePickRay(rayTest.ray, screenX, screenY, viewport, ctx)
     }
 
     abstract fun computeFrustumPlane(z: Float, result: FrustumPlane)
@@ -124,20 +124,20 @@ abstract class Camera(name: String = "camera") : Node(name) {
     fun project(world: Vec3f, result: MutableVec4f): MutableVec4f =
             mvp.transform(result.set(world.x, world.y, world.z, 1f))
 
-    fun projectScreen(world: Vec3f, ctx: KoolContext, result: MutableVec3f): Boolean {
+    fun projectScreen(world: Vec3f, viewport: KoolContext.Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
         if (!project(world, result)) {
             return false
         }
-        result.x = (1 + result.x) * 0.5f * ctx.viewport.width + ctx.viewport.x
-        result.y = ctx.windowHeight - ((1 + result.y) * 0.5f * ctx.viewport.height + ctx.viewport.y)
+        result.x = (1 + result.x) * 0.5f * viewport.width + viewport.x
+        result.y = ctx.windowHeight - ((1 + result.y) * 0.5f * viewport.height + viewport.y)
         result.z = (1 + result.z) * 0.5f
         return true
     }
 
-    fun unProjectScreen(screen: Vec3f, ctx: KoolContext, result: MutableVec3f): Boolean {
-        val x = screen.x - ctx.viewport.x
-        val y = (ctx.windowHeight - screen.y) - ctx.viewport.y
-        tmpVec4.set(2f * x / ctx.viewport.width - 1f, 2f * y / ctx.viewport.height - 1f, 2f * screen.z - 1f, 1f)
+    fun unProjectScreen(screen: Vec3f, viewport: KoolContext.Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
+        val x = screen.x - viewport.x
+        val y = (ctx.windowHeight - screen.y) - viewport.y
+        tmpVec4.set(2f * x / viewport.width - 1f, 2f * y / viewport.height - 1f, 2f * screen.z - 1f, 1f)
         invMvp.transform(tmpVec4)
         val s = 1f / tmpVec4.w
         result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)

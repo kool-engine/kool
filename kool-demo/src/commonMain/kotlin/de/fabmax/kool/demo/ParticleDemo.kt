@@ -99,18 +99,6 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
         }
     }
 
-    fun Slider.disableCamDrag() {
-        onHoverEnter += { _, _, _ ->
-            // disable mouse interaction on content scene while pointer is over menu
-            scene.isPickingEnabled = false
-        }
-        onHoverExit += { _, _, _->
-            // enable mouse interaction on content scene when pointer leaves menu (and nothing else in this scene
-            // is hit instead)
-            scene.isPickingEnabled = true
-        }
-    }
-
     val ui = uiScene(ctx.screenDpi) {
         theme = theme(UiTheme.DARK_SIMPLE) {
             componentUi { BlankComponentUi() }
@@ -184,7 +172,6 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
                 layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
                 layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                 setValue(1f, 50f, 10f)
-                disableCamDrag()
                 onValueChanged += { value ->
                     maxParticleCount = round(value).toInt() * 1000
                 }

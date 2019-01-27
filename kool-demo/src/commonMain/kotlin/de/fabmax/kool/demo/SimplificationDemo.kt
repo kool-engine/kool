@@ -205,7 +205,6 @@ class SimplificationDemo(ctx: KoolContext) {
                     layoutSpec.setOrigin(dps(0f, true), dps(posY, true), zero())
                     layoutSpec.setSize(pcs(100f), dps(25f, true), full())
                     setValue(0.01f, 1f, 1f)
-                    disableCamDrag()
                     onValueChanged += { value ->
                         faceCntVal.text = "${(value * 100f).toString(0)} %"
                         simplifcationGrade = value
@@ -334,18 +333,6 @@ class SimplificationDemo(ctx: KoolContext) {
             }
         }
         return builder.meshData
-    }
-
-    fun Slider.disableCamDrag() {
-        onHoverEnter += { _, _, _ ->
-            // disable mouse interaction on content scene while pointer is over menu
-            simplificationScene.isPickingEnabled = false
-        }
-        onHoverExit += { _, _, _->
-            // enable mouse interaction on content scene when pointer leaves menu (and nothing else in this scene
-            // is hit instead)
-            simplificationScene.isPickingEnabled = true
-        }
     }
 
     class EdgeRayDistance : RayDistance<HalfEdgeMesh.HalfEdge> {

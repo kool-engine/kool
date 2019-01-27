@@ -12,32 +12,17 @@ import kotlin.math.abs
 class InputManager internal constructor() {
 
     interface DragHandler {
-        companion object {
-            const val HANDLED = 1
-            const val REMOVE_HANDLER = 2
-        }
-
-        fun handleDrag(dragPtrs: List<Pointer>, ctx: KoolContext): Int
+        fun handleDrag(dragPtrs: List<Pointer>, ctx: KoolContext)
     }
 
     private val compatGestureEvaluator = TouchGestureEvaluator()
-    var isEvaluatingCompatGestures = true
 
     private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
     val keyEvents: MutableList<KeyEvent> = mutableListOf()
 
-    private var lastPtrInput = 0.0
-    private val inputPointers = Array(MAX_POINTERS) { BufferedPointerInput() }
-    val pointers = Array(MAX_POINTERS) { Pointer() }
-
-    /**
-     * The primary pointer. For mouse-input that's the mouse cursor, for touch-input it's the first finger
-     * that touched the screen. Keep in mind that the returned [Pointer] might be invalid (i.e. [Pointer.isValid] is
-     * false) if the cursor exited the GL surface or if no finger touches the screen.
-     */
-    val primaryPointer = pointers[0]
-
     private val keyHandlers = mutableMapOf<Int, MutableList<KeyEventListener>>()
+
+    val pointerState = PointerState()
 
     fun registerKeyListener(char: Char, name: String, filter: (KeyEvent) -> Boolean = { it.isCharTyped }, callback: (KeyEvent) -> Unit): KeyEventListener {
         return registerKeyListener(char.toInt(), name, filter, callback)
@@ -62,69 +47,8 @@ class InputManager internal constructor() {
         listeners -= listener
     }
 
-    fun getActivePointers(result: MutableList<Pointer>) {
-        result.clear()
-        // nicer but produces heap garbage: pointers.filter { it.isValid }.forEach { result.add(it) }
-        for (i in pointers.indices) {
-            if (pointers[i].isValid) {
-                result.add(pointers[i])
-            }
-        }
-    }
-
-    private fun getFreeInputPointer(): BufferedPointerInput? {
-        // nicer but produces heap garbage: return inputPointers.firstOrNull { !it.isValid }
-        for (i in inputPointers.indices) {
-            if (!inputPointers[i].isValid) {
-                return inputPointers[i]
-            }
-        }
-        return null
-    }
-
-    private fun findInputPointer(pointerId: Int): BufferedPointerInput? {
-        // nicer but produces heap garbage: return inputPointers.firstOrNull { it.isValid && it.id == pointerId }
-        for (i in inputPointers.indices) {
-            if (inputPointers[i].isValid && inputPointers[i].id == pointerId) {
-                return inputPointers[i]
-            }
-        }
-        return null
-    }
-
     internal fun onNewFrame(ctx: KoolContext) {
-        lock(inputPointers) {
-            for (i in pointers.indices) {
-                inputPointers[i].update(pointers[i], lastPtrInput)
-            }
-        }
-
-        if (isEvaluatingCompatGestures) {
-            compatGestureEvaluator.evaluate(ctx)
-            when (compatGestureEvaluator.currentGesture.type) {
-                TouchGestureEvaluator.PINCH -> {
-                    // set primary pointer deltaScroll for compatibility with mouse input
-                    primaryPointer.deltaScroll = compatGestureEvaluator.currentGesture.dPinchAmount / 20
-                    primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
-                    primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
-                    primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
-                    primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
-                }
-                TouchGestureEvaluator.TWO_FINGER_DRAG -> {
-                    // set primary pointer right button down for compatibility with mouse input
-                    primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
-                    primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
-                    primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
-                    primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
-                    if (primaryPointer.buttonMask == LEFT_BUTTON_MASK) {
-                        primaryPointer.buttonMask = RIGHT_BUTTON_MASK
-                        if (compatGestureEvaluator.currentGesture.numUpdates > 1){
-                            primaryPointer.buttonEventMask = 0
-                        }
-                    }
-                }
-            }
-        }
+        pointerState.onNewFrame(ctx)
 
         lock(queuedKeyEvents) {
             keyEvents.clear()
@@ -168,88 +92,26 @@ class InputManager internal constructor() {
     }
 
     //
-    // touch handler functions to be called by platform code
+    // mouse and touch handler functions to be called by platform code
     //
 
-    fun handleTouchStart(pointerId: Int, x: Float, y: Float) {
-        lock(inputPointers) {
-            lastPtrInput = now()
-            val inPtr = getFreeInputPointer() ?: return
-            inPtr.startPointer(pointerId, x, y)
-            inPtr.buttonMask = 1
-        }
-    }
+    fun handleTouchStart(pointerId: Int, x: Float, y: Float) = pointerState.handleTouchStart(pointerId, x, y)
 
-    fun handleTouchEnd(pointerId: Int) {
-        lock(inputPointers) {
-            findInputPointer(pointerId)?.endPointer()
-        }
-    }
+    fun handleTouchEnd(pointerId: Int) = pointerState.handleTouchEnd(pointerId)
 
-    fun handleTouchCancel(pointerId: Int) {
-        lock(inputPointers) {
-            findInputPointer(pointerId)?.cancelPointer()
-        }
-    }
+    fun handleTouchCancel(pointerId: Int) = pointerState.handleTouchCancel(pointerId)
 
-    fun handleTouchMove(pointerId: Int, x: Float, y: Float) {
-        lock(inputPointers) {
-            lastPtrInput = now()
-            findInputPointer(pointerId)?.movePointer(x, y)
-        }
-    }
+    fun handleTouchMove(pointerId: Int, x: Float, y: Float) = pointerState.handleTouchMove(pointerId, x, y)
 
-    //
-    // mouse handler functions to be called by platform code
-    //
+    fun handleMouseMove(x: Float, y: Float) = pointerState.handleMouseMove(x, y)
 
-    fun handleMouseMove(x: Float, y: Float) {
-        lock(inputPointers) {
-            lastPtrInput = now()
-            val mousePtr = findInputPointer(MOUSE_POINTER_ID)
-            if (mousePtr == null) {
-                val startPtr = getFreeInputPointer() ?: return
-                startPtr.startPointer(MOUSE_POINTER_ID, x, y)
-            } else {
-                mousePtr.movePointer(x, y)
-            }
-        }
-    }
+    fun handleMouseButtonState(button: Int, down: Boolean) = pointerState.handleMouseButtonState(button, down)
 
-    fun handleMouseButtonState(button: Int, down: Boolean) {
-        lock(inputPointers) {
-            val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-            if (down) {
-                ptr.setButtonMask(ptr.buttonMask or (1 shl button))
-            } else {
-                ptr.setButtonMask(ptr.buttonMask and (1 shl button).inv())
-            }
-            // todo: on low frame rates, mouse button events can get lost if button is pressed
-            // and released again before a new frame was rendered
-        }
-    }
+    fun handleMouseButtonStates(mask: Int) = pointerState.handleMouseButtonStates(mask)
 
-    fun handleMouseButtonStates(mask: Int) {
-        lock(inputPointers) {
-            val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-            ptr.setButtonMask(mask)
-            // todo: on low frame rates, mouse button events can get lost if button is pressed
-            // and released again before a new frame was rendered
-        }
-    }
+    fun handleMouseScroll(ticks: Float) = pointerState.handleMouseScroll(ticks)
 
-    fun handleMouseScroll(ticks: Float) {
-        lock(inputPointers) {
-            val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-            ptr.deltaScroll += ticks
-        }
-    }
-
-    fun handleMouseExit() {
-        lock(inputPointers) {
-            findInputPointer(MOUSE_POINTER_ID)?.cancelPointer()
-        }
-    }
+    fun handleMouseExit() = pointerState.handleMouseExit()
 
     open class Pointer {
         var id = 0
@@ -281,6 +143,8 @@ class InputManager internal constructor() {
         var isValid = false
             internal set
 
+        internal var consumptionMask = 0
+
         val isLeftButtonDown: Boolean get() = (buttonMask and LEFT_BUTTON_MASK) != 0
         val isRightButtonDown: Boolean get() = (buttonMask and RIGHT_BUTTON_MASK) != 0
         val isMiddleButtonDown: Boolean get() = (buttonMask and MIDDLE_BUTTON_MASK) != 0
@@ -311,16 +175,21 @@ class InputManager internal constructor() {
         val isBackButtonClicked: Boolean get() = isBackButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
         val isForwardButtonClicked: Boolean get() = isForwardButtonReleased && abs(dragDeltaX) + abs(dragDeltaY) < 5f
 
+        fun consume(mask: Int = CONSUMED_ALL) {
+            consumptionMask = consumptionMask or mask
+        }
+
+        fun isConsumed(mask: Int = CONSUMED_ALL) = (consumptionMask and mask) != 0
+
         /**
          * Usually, if a pointer is outside the viewport, it is not valid. However, they can be
          * outside a viewport and valid, if there is more than one viewport (e.g. split viewport
          * demo).
          */
-        fun isInViewport(ctx: KoolContext): Boolean {
+        fun isInViewport(viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
             // y-axis of viewport is inverted to window coordinates
             val ptrY = ctx.windowHeight - y
-            //return (isValid || wasValid) && ctx.viewport.isInViewport(x, ptrY)
-            return (isValid) && ctx.viewport.isInViewport(x, ptrY)
+            return (isValid) && viewport.isInViewport(x, ptrY)
         }
     }
 
@@ -391,6 +260,7 @@ class InputManager internal constructor() {
             target.x = x
             target.y = y
             target.isValid = true
+            target.consumptionMask = 0
             target.buttonEventMask = 0
 
             when (updateState) {
@@ -467,6 +337,170 @@ class InputManager internal constructor() {
         val isSuperDown: Boolean get() = (modifiers and KEY_MOD_SUPER) != 0
     }
 
+    class PointerState {
+        val pointers = Array(MAX_POINTERS) { Pointer() }
+
+        private var lastPtrInput = 0.0
+        private val inputPointers = Array(MAX_POINTERS) { BufferedPointerInput() }
+
+        private val compatGestureEvaluator = TouchGestureEvaluator()
+        var isEvaluatingCompatGestures = true
+
+        /**
+         * The primary pointer. For mouse-input that's the mouse cursor, for touch-input it's the first finger
+         * that touched the screen. Keep in mind that the returned [Pointer] might be invalid (i.e. [Pointer.isValid] is
+         * false) if the cursor exited the GL surface or if no finger touches the screen.
+         */
+        val primaryPointer = pointers[0]
+
+        fun getActivePointers(result: MutableList<Pointer>, consumedMask: Int = CONSUMED_ALL) {
+            result.clear()
+            // pointers.filter { it.isValid }.forEach { result.add(it) }
+            for (i in pointers.indices) {
+                if (pointers[i].isValid && !pointers[i].isConsumed(consumedMask)) {
+                    result.add(pointers[i])
+                }
+            }
+        }
+
+        internal fun onNewFrame(ctx: KoolContext) {
+            lock(inputPointers) {
+                for (i in pointers.indices) {
+                    inputPointers[i].update(pointers[i], lastPtrInput)
+                }
+            }
+
+            if (isEvaluatingCompatGestures) {
+                compatGestureEvaluator.evaluate(this, ctx)
+                when (compatGestureEvaluator.currentGesture.type) {
+                    TouchGestureEvaluator.PINCH -> {
+                        // set primary pointer deltaScroll for compatibility with mouse input
+                        primaryPointer.consumptionMask = 0
+                        primaryPointer.deltaScroll = compatGestureEvaluator.currentGesture.dPinchAmount / 20
+                        primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
+                        primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
+                        primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
+                        primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
+                    }
+                    TouchGestureEvaluator.TWO_FINGER_DRAG -> {
+                        // set primary pointer right button down for compatibility with mouse input
+                        primaryPointer.consumptionMask = 0
+                        primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
+                        primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
+                        primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
+                        primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
+                        if (primaryPointer.buttonMask == LEFT_BUTTON_MASK) {
+                            primaryPointer.buttonMask = RIGHT_BUTTON_MASK
+                            if (compatGestureEvaluator.currentGesture.numUpdates > 1){
+                                primaryPointer.buttonEventMask = 0
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        internal fun getFreeInputPointer(): BufferedPointerInput? {
+            // return inputPointers.firstOrNull { !it.isValid }
+            for (i in inputPointers.indices) {
+                if (!inputPointers[i].isValid) {
+                    return inputPointers[i]
+                }
+            }
+            return null
+        }
+
+        internal fun findInputPointer(pointerId: Int): BufferedPointerInput? {
+            // return inputPointers.firstOrNull { it.isValid && it.id == pointerId }
+            for (i in inputPointers.indices) {
+                if (inputPointers[i].isValid && inputPointers[i].id == pointerId) {
+                    return inputPointers[i]
+                }
+            }
+            return null
+        }
+
+        internal fun handleTouchStart(pointerId: Int, x: Float, y: Float) {
+            lock(inputPointers) {
+                lastPtrInput = now()
+                val inPtr = getFreeInputPointer() ?: return
+                inPtr.startPointer(pointerId, x, y)
+                inPtr.buttonMask = 1
+            }
+        }
+
+        internal fun handleTouchEnd(pointerId: Int) {
+            lock(inputPointers) {
+                findInputPointer(pointerId)?.endPointer()
+            }
+        }
+
+        internal fun handleTouchCancel(pointerId: Int) {
+            lock(inputPointers) {
+                findInputPointer(pointerId)?.cancelPointer()
+            }
+        }
+
+        internal fun handleTouchMove(pointerId: Int, x: Float, y: Float) {
+            lock(inputPointers) {
+                lastPtrInput = now()
+                findInputPointer(pointerId)?.movePointer(x, y)
+            }
+        }
+
+        //
+        // mouse handler functions to be called by platform code
+        //
+
+        internal fun handleMouseMove(x: Float, y: Float) {
+            lock(inputPointers) {
+                lastPtrInput = now()
+                val mousePtr = findInputPointer(MOUSE_POINTER_ID)
+                if (mousePtr == null) {
+                    val startPtr = getFreeInputPointer() ?: return
+                    startPtr.startPointer(MOUSE_POINTER_ID, x, y)
+                } else {
+                    mousePtr.movePointer(x, y)
+                }
+            }
+        }
+
+        internal fun handleMouseButtonState(button: Int, down: Boolean) {
+            lock(inputPointers) {
+                val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
+                if (down) {
+                    ptr.setButtonMask(ptr.buttonMask or (1 shl button))
+                } else {
+                    ptr.setButtonMask(ptr.buttonMask and (1 shl button).inv())
+                }
+                // todo: on low frame rates, mouse button events can get lost if button is pressed
+                // and released again before a new frame was rendered
+            }
+        }
+
+        internal fun handleMouseButtonStates(mask: Int) {
+            lock(inputPointers) {
+                val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
+                ptr.setButtonMask(mask)
+                // todo: on low frame rates, mouse button events can get lost if button is pressed
+                // and released again before a new frame was rendered
+            }
+        }
+
+        internal fun handleMouseScroll(ticks: Float) {
+            lock(inputPointers) {
+                val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
+                ptr.deltaScroll += ticks
+            }
+        }
+
+        internal fun handleMouseExit() {
+            lock(inputPointers) {
+                findInputPointer(MOUSE_POINTER_ID)?.cancelPointer()
+            }
+        }
+    }
+
     companion object {
         const val LEFT_BUTTON = 0
         const val LEFT_BUTTON_MASK = 1
@@ -481,6 +515,16 @@ class InputManager internal constructor() {
 
         const val MAX_POINTERS = 10
         const val MOUSE_POINTER_ID = -1000000
+
+        const val CONSUMED_ALL = -1     // 0xffffffff
+        const val CONSUMED_X = 1
+        const val CONSUMED_Y = 2
+        const val CONSUMED_SCROLL = 4
+        const val CONSUMED_LEFT_BUTTON = 8
+        const val CONSUMED_RIGHT_BUTTON = 16
+        const val CONSUMED_MIDDLE_BUTTON = 32
+        const val CONSUMED_BACK_BUTTON = 64
+        const val CONSUMED_FORWARD_BUTTON = 128
 
         const val KEY_EV_UP = 1
         const val KEY_EV_DOWN = 2

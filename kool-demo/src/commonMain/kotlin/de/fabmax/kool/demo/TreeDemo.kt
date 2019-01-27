@@ -102,18 +102,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     }
     scenes += treeScene
 
-    fun Slider.disableCamDrag() {
-        onHoverEnter += { _, _, _ ->
-            // disable mouse interaction on content scene while pointer is over menu
-            treeScene.isPickingEnabled = false
-        }
-        onHoverExit += { _, _, _->
-            // enable mouse interaction on content scene when pointer leaves menu (and nothing else in this scene
-            // is hit instead)
-            treeScene.isPickingEnabled = true
-        }
-    }
-
     scenes += uiScene(ctx.screenDpi) {
         theme = theme(UiTheme.DARK_SIMPLE) {
             componentUi { BlankComponentUi() }
@@ -141,7 +129,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 layoutSpec.setOrigin(dps(200f, true), dps(110f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 setValue(0.05f, 0.4f, treeGen.growDistance)
-                disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.growDistance = value
                     growDistVal.text = value.toString(2)
@@ -164,7 +151,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 layoutSpec.setOrigin(dps(200f, true), dps(75f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 setValue(1f, 4f, treeGen.killDistance)
-                disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.killDistance = value
                     killDistVal.text = value.toString(2)
@@ -187,7 +173,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 layoutSpec.setOrigin(dps(200f, true), dps(40f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 setValue(100f, 10000f, treeGen.numberOfAttractionPoints.toFloat())
-                disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.numberOfAttractionPoints = value.toInt()
                     attractPtsVal.text = "${value.toInt()}"
@@ -210,7 +195,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 layoutSpec.setOrigin(dps(200f, true), dps(5f, true), zero())
                 layoutSpec.setSize(dps(200f, true), dps(35f, true), full())
                 setValue(0.25f, 10f, treeGen.radiusOfInfluence)
-                disableCamDrag()
                 onValueChanged += { value ->
                     treeGen.radiusOfInfluence = value
                     infRadiusVal.text = value.toString(2)

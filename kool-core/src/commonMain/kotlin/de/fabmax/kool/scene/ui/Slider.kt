@@ -85,19 +85,17 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
         return dx*dx + dy*dy < knobSize * knobSize
     }
 
-    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext): Int {
-        if (dragPtrs.size == 1 && dragPtrs[0].isValid && dragPtrs[0].isLeftButtonDown) {
+    override fun handleDrag(dragPtrs: List<InputManager.Pointer>, ctx: KoolContext) {
+        if (dragPtrs.size == 1 && !dragPtrs[0].isConsumed() && dragPtrs[0].isLeftButtonDown) {
             // drag event is handled, no other drag handler should do something
             // we use the delta computed in local coordinates in the onHover handler instead of the native pointer
             // delta, which is in screen coords
             value += (hitDelta.x / trackWidth) * (max - min)
-
-            // don't let other drag handlers process the drag event (camera rotation, etc.)
-            return InputManager.DragHandler.HANDLED
+            dragPtrs[0].consume()
 
         } else {
             // knob dragging stopped
-            return InputManager.DragHandler.REMOVE_HANDLER
+            scene?.removeDragHandler(this)
         }
     }
 
