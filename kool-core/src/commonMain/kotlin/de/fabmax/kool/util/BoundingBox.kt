@@ -156,6 +156,24 @@ class BoundingBox() {
         return this
     }
 
+    fun move(offset: Vec3f) = move(offset.x, offset.y, offset.z)
+
+    fun move(x: Float, y: Float, z: Float): BoundingBox {
+        if (isEmpty) {
+            throw KoolException("Empty BoundingBox cannot be moved")
+        }
+        mutMin.x += x
+        mutMin.y += y
+        mutMin.z += z
+        mutMax.x += x
+        mutMax.y += y
+        mutMax.z += z
+        mutCenter.x += x
+        mutCenter.y += y
+        mutCenter.z += z
+        return this
+    }
+
     fun setMerged(aabb1: BoundingBox, aabb2: BoundingBox): BoundingBox {
         // manual if is faster than min() and max()
         mutMin.x = if (aabb1.min.x < aabb2.min.x) { aabb1.min.x } else { aabb2.min.x }

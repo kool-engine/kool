@@ -3,6 +3,7 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
 
@@ -12,11 +13,18 @@ import de.fabmax.kool.util.BoundingBox
 
 open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
 
+    val contentBounds: BoundingBox get() = childrenBounds
+
     protected val posInParent = MutableVec3f()
     var contentScale = 1f
     var customTransform: TransformGroup.() -> Unit = { }
 
-    val scrollOffset = MutableVec3f()
+    val scrollOffset: Vec3f get() = scrollOffsetMut
+    protected val scrollOffsetMut = MutableVec3f()
+    protected var isScrollDirty = true
+
+    private val childComponents = mutableListOf<UiComponent>()
+    private var scrollHandler: ScrollHandler? = null
 
     private val tmpChildBounds = BoundingBox()
     private val tmpVec1 = MutableVec3f()
@@ -24,46 +32,41 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
 
     override fun updateTheme(ctx: KoolContext) {
         super.updateTheme(ctx)
-        for (i in children.indices) {
-            val child = children[i]
-            if (child is UiComponent) {
-                child.requestThemeUpdate()
-            }
+        for (i in childComponents.indices) {
+            childComponents[i].requestThemeUpdate()
         }
     }
 
     override fun updateComponentAlpha() {
         super.updateComponentAlpha()
-        for (i in children.indices) {
-            val child = children[i]
-            if (child is UiComponent) {
-                child.alpha = alpha
-            }
+        for (i in childComponents.indices) {
+            childComponents[i].alpha = alpha
         }
     }
 
     override fun update(ctx: KoolContext) {
-        updateTransform()
+        if (isScrollDirty) {
+            isScrollDirty = false
+            scrollHandler?.requestUiUpdate()
+            updateTransform()
+        }
 
         super.update(ctx)
 
-        for (i in children.indices) {
-            val child = children[i]
-            if (child is UiComponent) {
-                child.update(ctx)
-            }
+        for (i in childComponents.indices) {
+            childComponents[i].update(ctx)
         }
     }
 
     override fun doLayout(layoutBounds: BoundingBox, ctx: KoolContext) {
         applyBounds(layoutBounds, ctx)
 
-        for (i in children.indices) {
-            val child = children[i]
-            if (child is UiComponent) {
-                computeChildLayoutBounds(tmpChildBounds, child, ctx)
-                child.doLayout(tmpChildBounds, ctx)
-            }
+        contentBounds.clear()
+        for (i in childComponents.indices) {
+            val child = childComponents[i]
+            computeChildLayoutBounds(tmpChildBounds, child, ctx)
+            contentBounds.add(tmpChildBounds)
+            child.doLayout(tmpChildBounds, ctx)
         }
     }
 
@@ -74,11 +77,19 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     override fun setDrawBoundsFromWrappedComponentBounds(parentContainer: UiContainer?, ctx: KoolContext) {
         super.setDrawBoundsFromWrappedComponentBounds(parentContainer, ctx)
         if (!drawBounds.isEmpty) {
-            drawBounds.setWithOffset(drawBounds, scrollOffset)
+            drawBounds.move(scrollOffset)
             syncNodeBounds(ctx)
         } else {
             bounds.clear()
         }
+    }
+
+    override fun setLocalBounds() {
+        childrenBounds.clear()
+        for (i in childComponents.indices) {
+            childrenBounds.add(childComponents[i].componentBounds)
+        }
+        bounds.set(childrenBounds)
     }
 
     protected open fun applyBounds(bounds: BoundingBox, ctx: KoolContext) {
@@ -105,7 +116,7 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
         setIdentity()
                 .scale(contentScale, contentScale, contentScale)
                 .translate(posInParent)
-                .translate(scrollOffset.x, scrollOffset.y, scrollOffset.z)
+                .translate(-scrollOffsetMut.x, -scrollOffsetMut.y, -scrollOffsetMut.z)
                 .customTransform()
     }
 
@@ -124,8 +135,45 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
         result.set(x, y, z, x + w, y + h, z + d)
     }
 
-    private fun BoundingBox.setWithOffset(set: BoundingBox, offset: Vec3f) {
-        set(set.min.x - offset.x, set.min.y - offset.y, set.min.z - offset.z,
-                set.max.x - offset.x, set.max.y - offset.y, set.max.z - offset.z)
+    fun setScrollOffset(offset: Vec3f) = setScrollOffset(offset.x, offset.y, offset.z)
+
+    fun setScrollOffset(offX: Float, offY: Float, offZ: Float) {
+        scrollOffsetMut.set(offX, offY, offZ)
+        isScrollDirty = true
+    }
+
+    override fun addNode(node: Node, index: Int) {
+        // if the last component is a ScrollHandler we want it to stay the last one to maintain correct draw order
+        val idx = if (children.isNotEmpty() && index < 0 && children.last() is ScrollHandler) {
+            children.lastIndex
+        } else {
+            index
+        }
+
+        super.addNode(node, idx)
+        if (node is UiComponent) {
+            childComponents.add(node)
+
+            if (node is ScrollHandler) {
+                scrollHandler = node
+            }
+        }
+    }
+
+    override fun removeNode(node: Node): Boolean {
+        if (node is UiComponent) {
+            childComponents.remove(node)
+
+            if (node == scrollHandler) {
+                scrollHandler = null
+            }
+        }
+        return super.removeNode(node)
+    }
+
+    override fun removeAllChildren() {
+        super.removeAllChildren()
+        childComponents.clear()
+        scrollHandler = null
     }
 }

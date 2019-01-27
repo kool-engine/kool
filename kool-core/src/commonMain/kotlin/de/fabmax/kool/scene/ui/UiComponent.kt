@@ -18,8 +18,8 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     // bounds of this component in local coordinates
     val componentBounds = BoundingBox()
 
-    // drawBounds contain the clipped component bounds (also in local coordinates), everything out of draw bounds should be discarded during rendering
-    // regular Node.bounds also contain the drawBounds but in parent coordinates
+    // drawBounds contain the clipped component bounds (also in local coordinates), everything out of draw bounds
+    // should be discarded during rendering regular Node.bounds also contain the drawBounds but in parent coordinates
     val drawBounds = BoundingBox()
 
     val posX: Float get() = componentBounds.min.x
@@ -113,12 +113,14 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
             } else {
                 drawBounds.set(bndMinX, bndMinY, bndMinZ, bndMaxX, bndMaxY, bndMaxZ)
             }
-            bounds.set(drawBounds)
-
         } else {
             drawBounds.set(componentBounds)
-            bounds.set(componentBounds)
         }
+        bounds.set(drawBounds)
+    }
+
+    override fun setLocalBounds() {
+        bounds.set(drawBounds)
     }
 
     protected open fun setThemeProps(ctx: KoolContext) {
@@ -141,6 +143,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
             componentBounds.set(layoutBounds)
             requestUiUpdate()
         }
+        setDrawBoundsFromWrappedComponentBounds(parent as? UiContainer, ctx)
     }
 
     override fun rayTest(test: RayTest) {

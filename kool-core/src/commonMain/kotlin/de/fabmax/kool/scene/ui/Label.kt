@@ -51,7 +51,6 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
     protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
     protected val meshBuilder = MeshBuilder(meshData)
     protected val mesh = Mesh(meshData)
-    protected var meshAdded = false
 
     protected var font = label.font.prop
     protected var textColor = MutableColor()

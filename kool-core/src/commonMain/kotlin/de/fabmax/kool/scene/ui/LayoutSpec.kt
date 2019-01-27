@@ -28,6 +28,14 @@ class LayoutSpec {
         this.depth = depth
     }
 
+    fun set(other: LayoutSpec) {
+        this.width = other.width
+        this.height = other.height
+        this.depth = other.depth
+        this.x = other.x
+        this.y = other.y
+        this.z = other.z
+    }
 }
 
 enum class SizeUnit {
@@ -123,7 +131,16 @@ private class CombSizeSpec(val left: SizeSpec, val right: SizeSpec, val add: Boo
     }
 }
 
-data class Margin(var top: SizeSpec, var bottom: SizeSpec, var left: SizeSpec, var right: SizeSpec)
+data class Margin(var top: SizeSpec, var bottom: SizeSpec, var left: SizeSpec, var right: SizeSpec) {
+    fun set(all: SizeSpec) = set(all, all, all, all)
+
+    fun set(top: SizeSpec, bottom: SizeSpec, left: SizeSpec, right: SizeSpec) {
+        this.top = top
+        this.bottom = bottom
+        this.left = left
+        this.right = right
+    }
+}
 
 data class Gravity(val xAlignment: Alignment, val yAlignment: Alignment)
 

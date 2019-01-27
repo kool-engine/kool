@@ -5,7 +5,9 @@ import de.fabmax.kool.gl.*
 import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.events.*
+import org.w3c.dom.events.Event
+import org.w3c.dom.events.KeyboardEvent
+import org.w3c.dom.events.UIEvent
 import kotlin.browser.document
 import kotlin.browser.window
 
@@ -113,23 +115,19 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
         // install mouse handlers
         canvas.onmousemove = { ev ->
-            ev as MouseEvent
             val bounds = canvas.getBoundingClientRect()
             val x = (ev.clientX - bounds.left).toFloat()
             val y = (ev.clientY - bounds.top).toFloat()
             inputMgr.handleMouseMove(x, y)
         }
         canvas.onmousedown = { ev ->
-            ev as MouseEvent
             inputMgr.handleMouseButtonStates(ev.buttons.toInt())
         }
         canvas.onmouseup = { ev ->
-            ev as MouseEvent
             inputMgr.handleMouseButtonStates(ev.buttons.toInt())
         }
         canvas.onmouseleave = { inputMgr.handleMouseExit() }
         canvas.onwheel = { ev ->
-            ev as WheelEvent
             // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse
             // scroll wheel tick
             var ticks = -ev.deltaY.toFloat() / 3f
@@ -175,8 +173,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             }
         }, false)
 
-        document.onkeydown = { ev -> handleKeyDown(ev as KeyboardEvent) }
-        document.onkeyup = { ev -> handleKeyUp(ev as KeyboardEvent) }
+        document.onkeydown = { ev -> handleKeyDown(ev) }
+        document.onkeyup = { ev -> handleKeyUp(ev) }
 
 //        if (canvas.tabIndex <= 0) {
 //            println("No canvas tabIndex set! Falling back to document key events, this doesn't work with multi context")

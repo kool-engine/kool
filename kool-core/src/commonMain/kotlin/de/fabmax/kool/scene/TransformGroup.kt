@@ -26,6 +26,10 @@ open class TransformGroup(name: String? = null) : Group(name) {
     private val tmpTransformVec = MutableVec3f()
     private val tmpBounds = BoundingBox()
 
+    init {
+        setIdentity()
+    }
+
     protected fun checkInverse() {
         if (isDirty) {
             transform.invert(invTransform)

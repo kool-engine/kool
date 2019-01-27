@@ -40,6 +40,9 @@ open class UiTheme {
     fun newLabelUi(c: Label): LabelUi = labelUi(c, newComponentUi(c))
     var labelUi: ((Label, ComponentUi) -> LabelUi) = ::LabelUi
         protected set
+    fun newScrollHandlerUi(c: ScrollHandler): ScrollHandlerUi = scrollHandlerUi(c)
+    var scrollHandlerUi: ((ScrollHandler) -> ScrollHandlerUi) = ::ScrollHandlerUi
+        protected set
     fun newSliderUi(c: Slider): SliderUi = sliderUi(c, newComponentUi(c))
     var sliderUi: ((Slider, ComponentUi) -> SliderUi) = ::SliderUi
         protected set
@@ -94,6 +97,7 @@ class ThemeBuilder(base: UiTheme?) : UiTheme() {
             containerUi = base.containerUi
             buttonUi = base.buttonUi
             labelUi = base.labelUi
+            scrollHandlerUi = base.scrollHandlerUi
             sliderUi = base.sliderUi
             textFieldUi = base.textFieldUi
             toggleButtonUi = base.toggleButtonUi
@@ -109,6 +113,7 @@ class ThemeBuilder(base: UiTheme?) : UiTheme() {
     fun containerUi(fab: (UiContainer) -> ComponentUi) { containerUi = fab }
     fun buttonUi(fab: (Button, ComponentUi) -> ButtonUi) { buttonUi = fab}
     fun labelUi(fab: (Label, ComponentUi) -> LabelUi) { labelUi = fab}
+    fun scrollHandlerUi(fab: (ScrollHandler) -> ScrollHandlerUi) { scrollHandlerUi = fab }
     fun sliderUi(fab: (Slider, ComponentUi) -> SliderUi) { sliderUi = fab}
     fun textFieldUi(fab: (TextField, ComponentUi) -> TextFieldUi) { textFieldUi = fab}
     fun toggleButtonUi(fab: (ToggleButton, ComponentUi) -> ToggleButtonUi) { toggleButtonUi = fab}
