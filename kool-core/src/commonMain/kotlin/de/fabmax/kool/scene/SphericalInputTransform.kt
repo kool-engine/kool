@@ -4,9 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.BoundingBox
-import kotlin.math.abs
-import kotlin.math.min
-import kotlin.math.sqrt
+import de.fabmax.kool.util.MassDamperFloat
 
 /**
  * A special kind of transform group which translates mouse input into a spherical transform. This is mainly useful
@@ -59,9 +57,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
     var panMethod: PanBase = CameraOrthogonalPan()
 
-    val vertRotAnimator = AnimatedVal(0f)
-    val horiRotAnimator = AnimatedVal(0f)
-    val zoomAnimator = AnimatedVal(zoom)
+    val vertRotAnimator = MassDamperFloat(0f)
+    val horiRotAnimator = MassDamperFloat(0f)
+    val zoomAnimator = MassDamperFloat(zoom)
 
     private var prevButtonMask = 0
     private var dragMethod = DragMethod.NONE
@@ -82,15 +80,11 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     var smoothness: Float = 0f
         set(value) {
             field = value
-            if (!value.isFuzzyZero()) {
-                stiffness = 50.0f / value
-                damping = 2f * sqrt(stiffness.toDouble()).toFloat()
-            }
+            val stiffness = if (!value.isFuzzyZero()) { 50.0f / value } else { 0f }
+            vertRotAnimator.stiffness = stiffness
+            horiRotAnimator.stiffness = stiffness
+            zoomAnimator.stiffness = stiffness
         }
-
-    private var stiffness = 0f
-    private var damping = 0f
-
 
     init {
         smoothness = 0.5f
@@ -252,40 +246,6 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     enum class ZoomMethod {
         ZOOM_CENTER,
         ZOOM_TRANSLATE
-    }
-
-    inner class AnimatedVal(value: Float) {
-        var desired = value
-        var actual = value
-        var speed = 0f
-
-        fun set(value: Float) {
-            desired = value
-            actual = value
-            speed = 0f
-        }
-
-        fun animate(deltaT: Float): Float {
-            if (smoothness.isFuzzyZero() || deltaT > 0.2f) {
-                // don't care about smoothing on low frame rates
-                actual = desired
-                return actual
-            }
-
-            var t = 0f
-            while (t < deltaT) {
-                val dt = min(0.05f, (deltaT - t))
-                t += dt + 0.001f
-
-                val err = desired - actual
-                speed += (err * stiffness - speed * damping) * dt
-                val delta = speed * dt
-                if (abs(delta) > 0.001f) {
-                    actual += delta
-                }
-            }
-            return actual
-        }
     }
 }
 

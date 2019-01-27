@@ -14,6 +14,7 @@ import de.fabmax.kool.util.BoundingBox
 open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
 
     val contentBounds: BoundingBox get() = childrenBounds
+    //val contentBounds = BoundingBox()
 
     protected val posInParent = MutableVec3f()
     var contentScale = 1f
@@ -143,7 +144,8 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     }
 
     override fun addNode(node: Node, index: Int) {
-        // if the last component is a ScrollHandler we want it to stay the last one to maintain correct draw order
+        // if the last component is a ScrollHandler we want it to stay the last one to maintain correct
+        // draw order: scrollbars should stay on top of all sub-components
         val idx = if (children.isNotEmpty() && index < 0 && children.last() is ScrollHandler) {
             children.lastIndex
         } else {

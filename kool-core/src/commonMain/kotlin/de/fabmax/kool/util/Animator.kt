@@ -3,8 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.isFuzzyZero
-import kotlin.math.PI
-import kotlin.math.cos
+import kotlin.math.*
 
 /**
  * @author fabmax
@@ -109,5 +108,53 @@ class InterpolatedColor(var from: MutableColor, var to: MutableColor) : Interpol
 
     override fun updateValue(interpolationPos: Float) {
         value.set(to).subtract(from).scale(interpolationPos).add(from)
+    }
+}
+
+class MassDamperFloat(value: Float) {
+    var desired = value
+    var actual = value
+    var speed = 0f
+        private set
+
+    private var damping = 0f
+    var stiffness = 0f
+        set(value) {
+            field = value
+            damping = 2f * sqrt(stiffness.toDouble()).toFloat()
+        }
+
+    init {
+        stiffness = 100f
+    }
+
+    fun set(value: Float) {
+        desired = value
+        actual = value
+        speed = 0f
+    }
+
+    fun animate(deltaT: Float): Float {
+        if (stiffness == 0f || deltaT > 0.2f) {
+            // don't care about smoothing on low frame rates
+            actual = desired
+            return actual
+        }
+
+        var t = 0f
+        while (t < deltaT) {
+            val dt = min(0.05f, (deltaT - t))
+            t += dt + 0.001f
+
+            val err = desired - actual
+            speed += (err * stiffness - speed * damping) * dt
+            val delta = speed * dt
+            if (abs(delta) > 0.001f) {
+                actual += delta
+            } else {
+                actual = desired
+            }
+        }
+        return actual
     }
 }

@@ -12,13 +12,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
   var LightModel = $module$kool.de.fabmax.kool.shading.LightModel;
   var ColorModel = $module$kool.de.fabmax.kool.shading.ColorModel;
-  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_n50u2h$;
+  var basicShader = $module$kool.de.fabmax.kool.shading.basicShader_5qtd3o$;
   var lineMesh = $module$kool.de.fabmax.kool.util.lineMesh_6a24eg$;
   var UiTheme = $module$kool.de.fabmax.kool.scene.ui.UiTheme;
   var BlankComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlankComponentUi;
   var theme = $module$kool.de.fabmax.kool.scene.ui.theme_vvurn$;
   var zero = $module$kool.de.fabmax.kool.scene.ui.zero;
   var dps = $module$kool.de.fabmax.kool.scene.ui.dps_8ca0d4$;
+  var full = $module$kool.de.fabmax.kool.scene.ui.full;
   var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
   var numberToInt = Kotlin.numberToInt;
   var plus = Kotlin.kotlin.collections.plus_qloxvw$;
@@ -39,6 +40,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
   var getCallableRef = Kotlin.getCallableRef;
   var pcs = $module$kool.de.fabmax.kool.scene.ui.pcs_8ca0d4$;
+  var ScrollHandler = $module$kool.de.fabmax.kool.scene.ui.ScrollHandler;
   var defineInlineFunction = Kotlin.defineInlineFunction;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
   var Position = $module$kool.de.fabmax.kool.util.Position;
@@ -91,9 +93,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var SphericalInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.ZoomMethod;
   var SphericalInputTransform$DragMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.DragMethod;
   var Label = $module$kool.de.fabmax.kool.scene.ui.Label;
-  var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
   var Slider = $module$kool.de.fabmax.kool.scene.ui.Slider;
-  var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_o1x1d9$;
+  var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_y4avn7$;
   var KoolContext$Viewport = $module$kool.de.fabmax.kool.KoolContext.Viewport;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var assetTexture_0 = $module$kool.de.fabmax.kool.assetTexture_ivxn3r$;
@@ -155,8 +156,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
   var MutableVec2f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
-  var ToggleButton = $module$kool.de.fabmax.kool.scene.ui.ToggleButton;
-  var TextField = $module$kool.de.fabmax.kool.scene.ui.TextField;
+  var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
+  var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
   var split = Kotlin.kotlin.text.split_ip8yn$;
   BoxWorld.prototype = Object.create(Group.prototype);
   BoxWorld.prototype.constructor = BoxWorld;
@@ -257,7 +258,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.addLine_b8opkg$(new Vec3f(-sz, y, i), color, new Vec3f(sz, y, i), color);
     }
     $receiver.isCastingShadow = false;
-    $receiver.shader = basicShader(collisionDemo$lambda$lambda$lambda);
+    $receiver.shader = basicShader(void 0, collisionDemo$lambda$lambda$lambda);
     return Unit;
   }
   function collisionDemo$lambda$lambda$lambda_0(it) {
@@ -271,37 +272,15 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.containerUi_2t3ptw$(collisionDemo$lambda$lambda$lambda_1);
     return Unit;
   }
-  function collisionDemo$lambda$disableCamDrag$lambda(closure$boxScene) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$boxScene.isPickingEnabled = false;
-      return Unit;
-    };
-  }
-  function collisionDemo$lambda$disableCamDrag$lambda_0(closure$boxScene) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$boxScene.isPickingEnabled = true;
-      return Unit;
-    };
-  }
-  function collisionDemo$lambda$disableCamDrag(closure$boxScene) {
-    return function ($receiver) {
-      var $receiver_0 = $receiver.onHoverEnter;
-      var element = collisionDemo$lambda$disableCamDrag$lambda(closure$boxScene);
-      $receiver_0.add_11rb$(element);
-      var $receiver_1 = $receiver.onHoverExit;
-      var element_0 = collisionDemo$lambda$disableCamDrag$lambda_0(closure$boxScene);
-      $receiver_1.add_11rb$(element_0);
-    };
-  }
   function collisionDemo$lambda$lambda$lambda_2($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(75.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(80.0, true), dps(35.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(80.0, true), dps(35.0, true), full());
     return Unit;
   }
   function collisionDemo$lambda$lambda$lambda_3(closure$boxCnt) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(210.0, true), dps(75.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
       $receiver.text = closure$boxCnt.v.toString();
       return Unit;
     };
@@ -313,24 +292,23 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function collisionDemo$lambda$lambda$lambda_4(closure$disableCamDrag, closure$boxCnt, closure$boxCntLbl) {
+  function collisionDemo$lambda$lambda$lambda_4(closure$boxCnt, closure$boxCntLbl) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(80.0, true), dps(75.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), zero());
-      closure$disableCamDrag($receiver);
+      $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), full());
       $receiver.onValueChanged = plus($receiver.onValueChanged, collisionDemo$lambda$lambda$lambda$lambda(closure$boxCnt, closure$boxCntLbl));
       return Unit;
     };
   }
   function collisionDemo$lambda$lambda$lambda_5($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(40.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(80.0, true), dps(35.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(80.0, true), dps(35.0, true), full());
     return Unit;
   }
   function collisionDemo$lambda$lambda$lambda_6(closure$boxWorld) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(210.0, true), dps(40.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
       $receiver.text = toString(ensureNotNull(closure$boxWorld.v).world.gravity.length(), 2);
       return Unit;
     };
@@ -343,11 +321,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function collisionDemo$lambda$lambda$lambda_7(closure$disableCamDrag, closure$boxWorld, closure$gravityLbl) {
+  function collisionDemo$lambda$lambda$lambda_7(closure$boxWorld, closure$gravityLbl) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(80.0, true), dps(40.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), zero());
-      closure$disableCamDrag($receiver);
+      $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), full());
       $receiver.onValueChanged = plus($receiver.onValueChanged, collisionDemo$lambda$lambda$lambda$lambda_0(closure$boxWorld, closure$gravityLbl));
       return Unit;
     };
@@ -362,7 +339,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function collisionDemo$lambda$lambda$lambda_8(closure$boxWorld, closure$boxCnt) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(5.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       var $receiver_0 = $receiver.onClick;
       var element = collisionDemo$lambda$lambda$lambda$lambda_1(closure$boxWorld, closure$boxCnt);
@@ -370,28 +347,27 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function collisionDemo$lambda$lambda_2(this$, closure$boxCnt, closure$disableCamDrag, closure$boxWorld) {
+  function collisionDemo$lambda$lambda_2(this$, closure$boxCnt, closure$boxWorld) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(280.0), dps(115.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(280.0), dps(115.0), full());
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Boxes:', collisionDemo$lambda$lambda$lambda_2));
       var boxCntLbl = this$.label_tokfmu$('boxCntLbl', collisionDemo$lambda$lambda$lambda_3(closure$boxCnt));
       $receiver.unaryPlus_uv0sim$(boxCntLbl);
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('boxCnt', 1.0, 200.0, 40.0, collisionDemo$lambda$lambda$lambda_4(closure$disableCamDrag, closure$boxCnt, boxCntLbl)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('boxCnt', 1.0, 200.0, 40.0, collisionDemo$lambda$lambda$lambda_4(closure$boxCnt, boxCntLbl)));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Gravity:', collisionDemo$lambda$lambda$lambda_5));
       var gravityLbl = this$.label_tokfmu$('gravityLbl', collisionDemo$lambda$lambda$lambda_6(closure$boxWorld));
       $receiver.unaryPlus_uv0sim$(gravityLbl);
-      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('gravity', 0.0, 10.0, ensureNotNull(closure$boxWorld.v).world.gravity.length(), collisionDemo$lambda$lambda$lambda_7(closure$disableCamDrag, closure$boxWorld, gravityLbl)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('gravity', 0.0, 10.0, ensureNotNull(closure$boxWorld.v).world.gravity.length(), collisionDemo$lambda$lambda$lambda_7(closure$boxWorld, gravityLbl)));
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Reset Boxes!', collisionDemo$lambda$lambda$lambda_8(closure$boxWorld, closure$boxCnt)));
       return Unit;
     };
   }
-  function collisionDemo$lambda(closure$boxScene, closure$boxCnt, closure$boxWorld) {
+  function collisionDemo$lambda(closure$boxCnt, closure$boxWorld) {
     return function ($receiver) {
       $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, collisionDemo$lambda$lambda_1);
-      var disableCamDrag = collisionDemo$lambda$disableCamDrag(closure$boxScene);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', collisionDemo$lambda$lambda_2($receiver, closure$boxCnt, disableCamDrag, closure$boxWorld)));
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', collisionDemo$lambda$lambda_2($receiver, closure$boxCnt, closure$boxWorld)));
       return Unit;
     };
   }
@@ -409,7 +385,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.unaryPlus_uv0sim$(lineMesh(void 0, collisionDemo$lambda$lambda_0));
     var boxScene = $receiver;
     scenes.add_11rb$(boxScene);
-    var element = uiScene(ctx.screenDpi, void 0, void 0, collisionDemo$lambda(boxScene, boxCnt, boxWorld));
+    var element = uiScene(ctx.screenDpi, void 0, void 0, collisionDemo$lambda(boxCnt, boxWorld));
     scenes.add_11rb$(element);
     return scenes;
   }
@@ -584,23 +560,39 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     }));
     return Unit;
   }
-  function Demo$demoOverlay$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, this$) {
+  function Demo$demoOverlay$lambda$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, this$) {
     return function ($receiver, f, f_0, f_1) {
       closure$demo.value.loadScene(this$Demo.newScenes_0, closure$ctx);
       this$.isOpen = false;
       return Unit;
     };
   }
-  function Demo$demoOverlay$lambda$lambda$lambda_0(closure$y, closure$demo, this$Demo, closure$ctx, this$) {
+  function Demo$demoOverlay$lambda$lambda$lambda$lambda(closure$y, closure$demo, this$Demo, closure$ctx, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$y.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       $receiver.text = closure$demo.value.label;
       closure$y.v -= 35.0;
       var $receiver_0 = $receiver.onClick;
-      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, this$);
+      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, this$);
       $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function Demo$demoOverlay$lambda$lambda$lambda_0(this$Demo, closure$ctx, this$, this$_0) {
+    return function ($receiver) {
+      var tmp$;
+      $receiver.ui.setCustom_11rb$(new BlankComponentUi());
+      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(45.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(full(), pcs(100.0, true).minus_m986jv$(dps(110.0, true)), full());
+      $receiver.unaryPlus_uv0sim$(new ScrollHandler($receiver));
+      var y = {v: -30.0};
+      tmp$ = this$Demo.demos_0.entries.iterator();
+      while (tmp$.hasNext()) {
+        var demo = tmp$.next();
+        $receiver.unaryPlus_uv0sim$(this$_0.button_9zrh0o$(demo.key, Demo$demoOverlay$lambda$lambda$lambda$lambda(y, demo, this$Demo, closure$ctx, this$)));
+      }
       return Unit;
     };
   }
@@ -613,7 +605,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function Demo$demoOverlay$lambda$lambda$lambda_1(this$Demo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(10.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), full());
       $receiver.text = 'Debug Info';
       $receiver.isEnabled = this$Demo.dbgOverlay_0.isVisible;
       var $receiver_0 = $receiver.onClick;
@@ -624,13 +616,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function Demo$demoOverlay$lambda$lambda_0(this$Demo, closure$ctx, this$) {
     return function ($receiver) {
-      var tmp$;
-      var y = {v: -105.0};
-      tmp$ = this$Demo.demos_0.entries.iterator();
-      while (tmp$.hasNext()) {
-        var demo = tmp$.next();
-        $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$(demo.key, Demo$demoOverlay$lambda$lambda$lambda_0(y, demo, this$Demo, closure$ctx, $receiver)));
-      }
+      $receiver.unaryPlus_uv0sim$(this$.container_t34sov$('demos', Demo$demoOverlay$lambda$lambda$lambda_0(this$Demo, closure$ctx, $receiver, this$)));
       $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('showDbg', Demo$demoOverlay$lambda$lambda$lambda_1(this$Demo)));
       return Unit;
     };
@@ -796,7 +782,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return Unit;
   }
   function GlobeUi$scene$lambda$lambda$lambda_0($receiver) {
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(18.0), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(18.0), full());
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), zero(), zero());
     $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
     $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
@@ -812,7 +798,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function GlobeUi$scene$lambda$lambda$lambda_1(closure$i, closure$attributions, this$GlobeUi) {
     return function ($receiver) {
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(18.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(18.0), full());
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), dps(18.0 * (closure$i + 1 | 0), true), zero());
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
@@ -826,7 +812,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   var Math_0 = Math;
-  function GlobeUi$scene$lambda$lambda$lambda_2(this$GlobeUi, closure$posLbl, closure$attributions, this$, this$_0) {
+  function GlobeUi$scene$lambda$lambda$lambda_2(this$GlobeUi, closure$posLbl, closure$attributions, this$) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
       var width = {v: 0.0};
@@ -872,9 +858,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       }
       if (width.v !== this$GlobeUi.containerWidth_0) {
         this$GlobeUi.containerWidth_0 = width.v;
-        this$.layoutSpec.setSize_4ujscr$(dps(this$GlobeUi.containerWidth_0 + 8, true), dps(18.0 * lines.v), zero());
+        this$.layoutSpec.setSize_4ujscr$(dps(this$GlobeUi.containerWidth_0 + 8, true), dps(18.0 * lines.v), full());
         this$.layoutSpec.setOrigin_4ujscr$(dps(-this$GlobeUi.containerWidth_0 - 8, true), zero(), zero());
-        this$_0.content.requestLayout();
+        this$.root.requestLayout();
       }
       return Unit;
     };
@@ -893,7 +879,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         $receiver.unaryPlus_uv0sim$(button);
       }
       var $receiver_1 = $receiver.onPreRender;
-      var element_0 = GlobeUi$scene$lambda$lambda$lambda_2(this$GlobeUi, posLbl, closure$attributions, $receiver, this$);
+      var element_0 = GlobeUi$scene$lambda$lambda$lambda_2(this$GlobeUi, posLbl, closure$attributions, $receiver);
       $receiver_1.add_11rb$(element_0);
       return Unit;
     };
@@ -951,7 +937,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.isCastingShadow = false;
       $receiver.generator = makeGroundGrid$lambda$lambda(closure$groundExt, closure$y);
-      $receiver.shader = basicShader(makeGroundGrid$lambda$lambda_0);
+      $receiver.shader = basicShader(void 0, makeGroundGrid$lambda$lambda_0);
       return Unit;
     };
   }
@@ -1222,7 +1208,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var mesh = Kotlin.isType(tmp$ = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
       closure$model.plusAssign_f1kmr1$(mesh);
       closure$armature.v = mesh;
-      mesh.shader = basicShader(modelScene$lambda$lambda$lambda$lambda(mesh));
+      mesh.shader = basicShader(void 0, modelScene$lambda$lambda$lambda$lambda(mesh));
       (tmp$_0 = mesh.getAnimation_61zpoe$('Armature|walk')) != null ? (tmp$_0.weight = 1.0) : null;
       var $receiver = mesh.onPreRender;
       var element = modelScene$lambda$lambda$lambda$lambda_0(closure$movementSpeed, closure$slowMotion, this$, mesh);
@@ -1244,7 +1230,22 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function modelScene$lambda$lambda$lambda$lambda$lambda$lambda(closure$movementSpeed, closure$armature, closure$speedLabel) {
+  function modelScene$lambda$lambda$lambda$lambda$lambda($receiver) {
+    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.X_AXIS);
+    $receiver.translate_y2kzbl$(500.0, 1500.0, 0.0);
+    return Unit;
+  }
+  function modelScene$lambda$lambda$lambda$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
+  }
+  function modelScene$lambda$lambda$lambda$lambda$lambda_0($receiver) {
+    $receiver.componentUi_mloaa0$(modelScene$lambda$lambda$lambda$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(getCallableRef('BlurredComponentUi', function (component) {
+      return new BlurredComponentUi(component);
+    }));
+    return Unit;
+  }
+  function modelScene$lambda$lambda$lambda$lambda$lambda$lambda_0(closure$movementSpeed, closure$armature, closure$speedLabel) {
     return function ($receiver, value) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2;
       closure$movementSpeed.v = value * value;
@@ -1286,7 +1287,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function modelScene$lambda$lambda$lambda$lambda$lambda$lambda_0(closure$slowMotion, closure$slowMoLabel) {
+  function modelScene$lambda$lambda$lambda$lambda$lambda$lambda_1(closure$slowMotion, closure$slowMoLabel) {
     return function ($receiver, value) {
       closure$slowMotion.v = value;
       closure$slowMoLabel.text = toString(closure$slowMotion.v, 2);
@@ -1295,24 +1296,22 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function modelScene$lambda$lambda$lambda_1(closure$movementSpeed, closure$armature, closure$slowMotion) {
     return function ($receiver) {
-      $receiver.globalWidth = 0.75;
-      $receiver.globalHeight = 1.0;
       var $receiver_0 = $receiver.content;
       var closure$movementSpeed_0 = closure$movementSpeed;
       var closure$armature_0 = closure$armature;
       var closure$slowMotion_0 = closure$slowMotion;
-      $receiver_0.rotate_ad55pp$(90.0, Vec3f.Companion.X_AXIS);
-      $receiver_0.translate_y2kzbl$(0.5, 1.2, 0.0);
+      $receiver_0.customTransform = modelScene$lambda$lambda$lambda$lambda$lambda;
+      $receiver.theme = theme(UiTheme.Companion.DARK, modelScene$lambda$lambda$lambda$lambda$lambda_0);
       var $receiver_1 = new Label('label1', $receiver_0.root);
-      $receiver_1.layoutSpec.setOrigin_4ujscr$(uns(0.0), dps(140.0), uns(0.0));
-      $receiver_1.layoutSpec.setSize_4ujscr$(pcs(75.0), dps(35.0), uns(0.0));
+      $receiver_1.layoutSpec.setOrigin_4ujscr$(zero(), dps(140.0), zero());
+      $receiver_1.layoutSpec.setSize_4ujscr$(pcs(75.0), dps(35.0), full());
       $receiver_1.textAlignment = new Gravity(Alignment.START, Alignment.END);
       $receiver_1.padding.bottom = dps(4.0);
       $receiver_1.text = 'Movement Speed:';
       $receiver_0.unaryPlus_uv0sim$($receiver_1);
       var $receiver_2 = new Label('speedLabel', $receiver_0.root);
-      $receiver_2.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(140.0), uns(0.0));
-      $receiver_2.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), uns(0.0));
+      $receiver_2.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(140.0), zero());
+      $receiver_2.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
       $receiver_2.textAlignment = new Gravity(Alignment.START, Alignment.END);
       $receiver_2.padding.bottom = dps(4.0);
       var x = closure$movementSpeed_0.v;
@@ -1321,29 +1320,29 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver_0.unaryPlus_uv0sim$(speedLabel);
       var x_0 = closure$movementSpeed_0.v;
       var $receiver_3 = new Slider('speedSlider', 0.0, 1.0, Math_0.sqrt(x_0), $receiver_0.root);
-      $receiver_3.layoutSpec.setOrigin_4ujscr$(uns(0.0), dps(90.0), uns(0.0));
-      $receiver_3.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(50.0), uns(0.0));
-      $receiver_3.onValueChanged = plus($receiver_3.onValueChanged, modelScene$lambda$lambda$lambda$lambda$lambda$lambda(closure$movementSpeed_0, closure$armature_0, speedLabel));
+      $receiver_3.layoutSpec.setOrigin_4ujscr$(zero(), dps(90.0), zero());
+      $receiver_3.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(50.0), full());
+      $receiver_3.onValueChanged = plus($receiver_3.onValueChanged, modelScene$lambda$lambda$lambda$lambda$lambda$lambda_0(closure$movementSpeed_0, closure$armature_0, speedLabel));
       $receiver_0.unaryPlus_uv0sim$($receiver_3);
       var $receiver_4 = new Label('label2', $receiver_0.root);
-      $receiver_4.layoutSpec.setOrigin_4ujscr$(uns(0.0), dps(50.0), uns(0.0));
-      $receiver_4.layoutSpec.setSize_4ujscr$(pcs(75.0), dps(40.0), uns(0.0));
+      $receiver_4.layoutSpec.setOrigin_4ujscr$(zero(), dps(50.0), zero());
+      $receiver_4.layoutSpec.setSize_4ujscr$(pcs(75.0), dps(40.0), full());
       $receiver_4.textAlignment = new Gravity(Alignment.START, Alignment.END);
       $receiver_4.padding.bottom = dps(4.0);
       $receiver_4.text = 'Slow Motion:';
       $receiver_0.unaryPlus_uv0sim$($receiver_4);
       var $receiver_5 = new Label('slowMotion', $receiver_0.root);
-      $receiver_5.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(50.0), uns(0.0));
-      $receiver_5.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(40.0), uns(0.0));
+      $receiver_5.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(50.0), zero());
+      $receiver_5.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(40.0), full());
       $receiver_5.textAlignment = new Gravity(Alignment.START, Alignment.END);
       $receiver_5.padding.bottom = dps(4.0);
       $receiver_5.text = toString(closure$slowMotion_0.v, 2);
       var slowMoLabel = $receiver_5;
       $receiver_0.unaryPlus_uv0sim$(slowMoLabel);
       var $receiver_6 = new Slider('slowMoSlider', 0.0, 1.0, closure$slowMotion_0.v, $receiver_0.root);
-      $receiver_6.layoutSpec.setOrigin_4ujscr$(uns(0.0), uns(0.0), uns(0.0));
-      $receiver_6.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(50.0), uns(0.0));
-      $receiver_6.onValueChanged = plus($receiver_6.onValueChanged, modelScene$lambda$lambda$lambda$lambda$lambda$lambda_0(closure$slowMotion_0, slowMoLabel));
+      $receiver_6.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
+      $receiver_6.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(50.0), full());
+      $receiver_6.onValueChanged = plus($receiver_6.onValueChanged, modelScene$lambda$lambda$lambda$lambda$lambda$lambda_1(closure$slowMotion_0, slowMoLabel));
       $receiver_0.unaryPlus_uv0sim$($receiver_6);
       return Unit;
     };
@@ -1358,7 +1357,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       closure$ctx.assetMgr.loadAsset_us385g$('player.kmf', modelScene$lambda$lambda$lambda(model, armature, movementSpeed, slowMotion, $receiver));
       $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
       $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, modelScene$lambda$lambda$lambda_0(this$)));
-      $receiver.unaryPlus_uv0sim$(embeddedUi(dps(400.0), void 0, modelScene$lambda$lambda$lambda_1(movementSpeed, armature, slowMotion)));
+      $receiver.unaryPlus_uv0sim$(embeddedUi(0.75, 0.45, dps(175.0), void 0, modelScene$lambda$lambda$lambda_1(movementSpeed, armature, slowMotion)));
       return Unit;
     };
   }
@@ -1385,7 +1384,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var vp = ctx.viewport;
     var width = numberToInt(vp.width * 0.5);
     ctx.pushAttributes();
-    ctx.viewport = new KoolContext$Viewport(width, vp.y, width, vp.height);
+    ctx.viewport = new KoolContext$Viewport(vp.x + width | 0, vp.y, width, vp.height);
     ctx.applyAttributes();
     return Unit;
   }
@@ -1478,28 +1477,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function particleDemo$disableCamDrag$lambda(closure$scene) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$scene.isPickingEnabled = false;
-      return Unit;
-    };
-  }
-  function particleDemo$disableCamDrag$lambda_0(closure$scene) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$scene.isPickingEnabled = true;
-      return Unit;
-    };
-  }
-  function particleDemo$disableCamDrag(closure$scene) {
-    return function ($receiver) {
-      var $receiver_0 = $receiver.onHoverEnter;
-      var element = particleDemo$disableCamDrag$lambda(closure$scene);
-      $receiver_0.add_11rb$(element);
-      var $receiver_1 = $receiver.onHoverExit;
-      var element_0 = particleDemo$disableCamDrag$lambda_0(closure$scene);
-      $receiver_1.add_11rb$(element_0);
-    };
-  }
   function particleDemo$lambda$lambda$lambda_4(it) {
     return new BlankComponentUi();
   }
@@ -1514,7 +1491,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function particleDemo$lambda$lambda$lambda_6(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), full());
       $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
       return Unit;
     };
@@ -1522,7 +1499,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function particleDemo$lambda$lambda$lambda_7(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), full());
       var bg = new SimpleComponentUi($receiver);
       bg.color.setCustom_11rb$(this$.theme.accentColor);
       $receiver.ui.setCustom_11rb$(bg);
@@ -1538,7 +1515,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function particleDemo$lambda$lambda$lambda_8(closure$posY, closure$isColored) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.isEnabled = closure$isColored.v;
       var $receiver_0 = $receiver.onStateChange;
       var element = particleDemo$lambda$lambda$lambda$lambda(closure$isColored);
@@ -1555,7 +1532,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function particleDemo$lambda$lambda$lambda_9(closure$posY, closure$isSorted) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.isEnabled = closure$isSorted.v;
       var $receiver_0 = $receiver.onStateChange;
       var element = particleDemo$lambda$lambda$lambda$lambda_0(closure$isSorted);
@@ -1566,7 +1543,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function particleDemo$lambda$lambda$lambda_10(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       return Unit;
     };
   }
@@ -1579,7 +1556,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function particleDemo$lambda$lambda$lambda_11(closure$posY, closure$currentParticleCount) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
       var $receiver_0 = $receiver.onPreRender;
       var element = particleDemo$lambda$lambda$lambda$lambda_1(closure$currentParticleCount, $receiver);
@@ -1590,7 +1567,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function particleDemo$lambda$lambda$lambda_12(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       return Unit;
     };
   }
@@ -1603,7 +1580,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function particleDemo$lambda$lambda$lambda_13(closure$posY, closure$maxParticleCount) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
       var $receiver_0 = $receiver.onPreRender;
       var element = particleDemo$lambda$lambda$lambda$lambda_2(closure$maxParticleCount, $receiver);
@@ -1618,20 +1595,19 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function particleDemo$lambda$lambda$lambda_14(closure$posY, closure$disableCamDrag, closure$maxParticleCount) {
+  function particleDemo$lambda$lambda$lambda_14(closure$posY, closure$maxParticleCount) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.setValue_y2kzbl$(1.0, 50.0, 10.0);
-      closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, particleDemo$lambda$lambda$lambda$lambda_3(closure$maxParticleCount));
       return Unit;
     };
   }
-  function particleDemo$lambda$lambda_1(this$, closure$isColored, closure$isSorted, closure$currentParticleCount, closure$maxParticleCount, closure$disableCamDrag) {
+  function particleDemo$lambda$lambda_1(this$, closure$isColored, closure$isSorted, closure$currentParticleCount, closure$maxParticleCount) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), pcs(100.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), pcs(100.0), full());
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
       var posY = {v: -45.0};
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Settings', particleDemo$lambda$lambda$lambda_6(posY, this$)));
@@ -1647,14 +1623,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Max:', particleDemo$lambda$lambda$lambda_12(posY)));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('maxCnt', particleDemo$lambda$lambda$lambda_13(posY, closure$maxParticleCount)));
       posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('particleCnt', particleDemo$lambda$lambda$lambda_14(posY, closure$disableCamDrag, closure$maxParticleCount)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('particleCnt', particleDemo$lambda$lambda$lambda_14(posY, closure$maxParticleCount)));
       return Unit;
     };
   }
-  function particleDemo$lambda(closure$isColored, closure$isSorted, closure$currentParticleCount, closure$maxParticleCount, closure$disableCamDrag) {
+  function particleDemo$lambda(closure$isColored, closure$isSorted, closure$currentParticleCount, closure$maxParticleCount) {
     return function ($receiver) {
       $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, particleDemo$lambda$lambda_0);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', particleDemo$lambda$lambda_1($receiver, closure$isColored, closure$isSorted, closure$currentParticleCount, closure$maxParticleCount, closure$disableCamDrag)));
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('particle-menu', particleDemo$lambda$lambda_1($receiver, closure$isColored, closure$isSorted, closure$currentParticleCount, closure$maxParticleCount)));
       return Unit;
     };
   }
@@ -1683,8 +1659,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver_0.onPreRender.add_11rb$(particleDemo$lambda$lambda$lambda_3(isSorted, $receiver_0, currentParticleCount, maxParticleCount, types));
     $receiver.unaryPlus_uv0sim$($receiver_0);
     var scene = $receiver;
-    var disableCamDrag = particleDemo$disableCamDrag(scene);
-    var ui = uiScene(ctx.screenDpi, void 0, void 0, particleDemo$lambda(isColored, isSorted, currentParticleCount, maxParticleCount, disableCamDrag));
+    var ui = uiScene(ctx.screenDpi, void 0, void 0, particleDemo$lambda(isColored, isSorted, currentParticleCount, maxParticleCount));
     return listOf([scene, ui]);
   }
   function pointScene$lambda$lambda(closure$frameCnt, closure$data, closure$trav, closure$ptVertCnt, closure$tree) {
@@ -1922,7 +1897,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     reflectedObjects.add_11rb$($receiver_1);
     $receiver.unaryPlus_uv0sim$($receiver_1);
     var mesh = colorMesh(void 0, reflectionDemo$lambda$lambda_0);
-    mesh.shader = basicShader(reflectionDemo$lambda$lambda_1(envRenderer));
+    mesh.shader = basicShader(void 0, reflectionDemo$lambda$lambda_1(envRenderer));
     $receiver.unaryPlus_uv0sim$(mesh);
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, reflectionDemo$lambda$lambda_2(reflectedObjects, ctx)));
     $receiver.onPreRender.add_11rb$(reflectionDemo$lambda$lambda_3(envRenderer, reflectedObjects));
@@ -2023,7 +1998,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       speedAnimator.speed = -1.0;
       speedAnimator.duration = 0.5;
       speedAnimator.value.onUpdate = simpleShapesScene$lambda$lambda$lambda$lambda_0(closure$cubeAnimator, $receiver);
-      $receiver.shader = basicShader(simpleShapesScene$lambda$lambda$lambda$lambda_1);
+      $receiver.shader = basicShader(void 0, simpleShapesScene$lambda$lambda$lambda$lambda_1);
       $receiver.generator = simpleShapesScene$lambda$lambda$lambda$lambda_2;
       $receiver.onPreRender.add_11rb$(simpleShapesScene$lambda$lambda$lambda$lambda_3(speedAnimator));
       $receiver.onHoverEnter.add_11rb$(simpleShapesScene$lambda$lambda$lambda$lambda_4(speedAnimator));
@@ -2128,7 +2103,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var $receiver_1 = new NearestToRayTraverser();
     $receiver_1.rayDistance = this.edgeDistance_0;
     this.nearestEdgeTraverser_0 = $receiver_1;
-    this.dispModel.shader = basicShader(SimplificationDemo_init$lambda);
+    this.dispModel.shader = basicShader(void 0, SimplificationDemo_init$lambda);
     this.srcModel = this.makeCosGrid_0();
     var $receiver_2 = this.models;
     var value = this.srcModel;
@@ -2290,22 +2265,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     builder.grid_gtbnl3$(builder.gridProps);
     return builder.meshData;
   };
-  function SimplificationDemo$disableCamDrag$lambda(this$SimplificationDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$SimplificationDemo.simplificationScene.isPickingEnabled = false;
-      return Unit;
-    };
-  }
-  function SimplificationDemo$disableCamDrag$lambda_0(this$SimplificationDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$SimplificationDemo.simplificationScene.isPickingEnabled = true;
-      return Unit;
-    };
-  }
-  SimplificationDemo.prototype.disableCamDrag_iqrebl$ = function ($receiver) {
-    $receiver.onHoverEnter.add_11rb$(SimplificationDemo$disableCamDrag$lambda(this));
-    $receiver.onHoverExit.add_11rb$(SimplificationDemo$disableCamDrag$lambda_0(this));
-  };
   function SimplificationDemo$EdgeRayDistance() {
     this.tmpVec1_0 = MutableVec3f_init_0();
     this.tmpVec2_0 = MutableVec3f_init_0();
@@ -2370,7 +2329,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_1(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), full());
       $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
       return Unit;
     };
@@ -2378,7 +2337,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_2(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), full());
       var bg = new SimpleComponentUi($receiver);
       bg.color.setCustom_11rb$(this$.theme.accentColor);
       $receiver.ui.setCustom_11rb$(bg);
@@ -2398,7 +2357,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_3(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       var $receiver_0 = $receiver.onClick;
       var element = SimplificationDemo_init$lambda$lambda$lambda$lambda(this$SimplificationDemo);
@@ -2419,7 +2378,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_4(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       var $receiver_0 = $receiver.onClick;
       var element = SimplificationDemo_init$lambda$lambda$lambda$lambda_0(this$SimplificationDemo);
@@ -2437,7 +2396,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_5(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       var $receiver_0 = $receiver.onClick;
       var element = SimplificationDemo_init$lambda$lambda$lambda$lambda_1(this$SimplificationDemo);
@@ -2448,7 +2407,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_6(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), full());
       $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
       return Unit;
     };
@@ -2456,7 +2415,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_7(closure$posY, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), full());
       var bg = new SimpleComponentUi($receiver);
       bg.color.setCustom_11rb$(this$.theme.accentColor);
       $receiver.ui.setCustom_11rb$(bg);
@@ -2466,7 +2425,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_8(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       return Unit;
     };
@@ -2474,7 +2433,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_9(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
       $receiver.text = '100 %';
       return Unit;
@@ -2490,12 +2449,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function SimplificationDemo_init$lambda$lambda$lambda_10(closure$posY, this$SimplificationDemo, closure$faceCntVal) {
+  function SimplificationDemo_init$lambda$lambda$lambda_10(closure$posY, closure$faceCntVal, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.setValue_y2kzbl$(0.01, 1.0, 1.0);
-      this$SimplificationDemo.disableCamDrag_iqrebl$($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, SimplificationDemo_init$lambda$lambda$lambda$lambda_2(closure$faceCntVal, this$SimplificationDemo));
       return Unit;
     };
@@ -2509,7 +2467,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_11(closure$posY, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       var $receiver_0 = $receiver.onClick;
       var element = SimplificationDemo_init$lambda$lambda$lambda$lambda_3(this$SimplificationDemo);
@@ -2520,7 +2478,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_12(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.isEnabled = true;
       return Unit;
     };
@@ -2528,14 +2486,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_13(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       return Unit;
     };
   }
   function SimplificationDemo_init$lambda$lambda$lambda_14(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
       $receiver.text = '';
       return Unit;
@@ -2544,14 +2502,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_15(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       return Unit;
     };
   }
   function SimplificationDemo_init$lambda$lambda$lambda_16(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
       $receiver.text = '';
       return Unit;
@@ -2560,14 +2518,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda$lambda_17(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       return Unit;
     };
   }
   function SimplificationDemo_init$lambda$lambda$lambda_18(closure$posY) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
       $receiver.text = '';
       return Unit;
@@ -2576,7 +2534,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function SimplificationDemo_init$lambda$lambda_0(this$, this$SimplificationDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), pcs(100.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), pcs(100.0), full());
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
       var posY = {v: -45.0};
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Models', SimplificationDemo_init$lambda$lambda$lambda_1(posY, this$)));
@@ -2595,7 +2553,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var faceCntVal = this$.label_tokfmu$('faceCntVal', SimplificationDemo_init$lambda$lambda$lambda_9(posY));
       $receiver.unaryPlus_uv0sim$(faceCntVal);
       posY.v -= 25.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('faceCnt', SimplificationDemo_init$lambda$lambda$lambda_10(posY, this$SimplificationDemo, faceCntVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('faceCnt', SimplificationDemo_init$lambda$lambda$lambda_10(posY, faceCntVal, this$SimplificationDemo)));
       posY.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Update Mesh', SimplificationDemo_init$lambda$lambda$lambda_11(posY, this$SimplificationDemo)));
       posY.v -= 35.0;
@@ -2648,7 +2606,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       var tmp$;
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(50.0).minus_m986jv$(dps(240.0)), dps(10.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(320.0), pcs(100.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(320.0), pcs(100.0), full());
       tmp$ = closure$content.melody.sequence;
       for (var col = 0; col !== tmp$.length; ++col) {
         var tmp$_0;
@@ -2663,7 +2621,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function synthieMenu$lambda$lambda$lambda$lambda($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(5.0), dps(120.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), full());
     $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
     $receiver.padding = new Margin(zero(), zero(), zero(), zero());
     $receiver.text = 'Melody';
@@ -2678,7 +2636,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function synthieMenu$lambda$lambda$lambda$lambda_0(closure$content) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), dps(120.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
       $receiver.padding = new Margin(zero(), zero(), zero(), zero());
       $receiver.onValueChanged = plus($receiver.onValueChanged, synthieMenu$lambda$lambda$lambda$lambda$lambda(closure$content));
       return Unit;
@@ -2686,7 +2644,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function synthieMenu$lambda$lambda$lambda$lambda_1($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(5.0), dps(80.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), full());
     $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
     $receiver.padding = new Margin(zero(), zero(), zero(), zero());
     $receiver.text = 'Pad';
@@ -2701,7 +2659,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function synthieMenu$lambda$lambda$lambda$lambda_2(closure$content) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), dps(80.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
       $receiver.padding = new Margin(zero(), zero(), zero(), zero());
       $receiver.onValueChanged = plus($receiver.onValueChanged, synthieMenu$lambda$lambda$lambda$lambda$lambda_0(closure$content));
       return Unit;
@@ -2709,7 +2667,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function synthieMenu$lambda$lambda$lambda$lambda_3($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(5.0), dps(40.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), full());
     $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
     $receiver.padding = new Margin(zero(), zero(), zero(), zero());
     $receiver.text = 'Shaker';
@@ -2724,7 +2682,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function synthieMenu$lambda$lambda$lambda$lambda_4(closure$content) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), dps(40.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
       $receiver.padding = new Margin(zero(), zero(), zero(), zero());
       $receiver.onValueChanged = plus($receiver.onValueChanged, synthieMenu$lambda$lambda$lambda$lambda$lambda_1(closure$content));
       return Unit;
@@ -2732,7 +2690,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function synthieMenu$lambda$lambda$lambda$lambda_5($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(5.0), zero(), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), full());
     $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
     $receiver.padding = new Margin(zero(), zero(), zero(), zero());
     $receiver.text = 'Kick';
@@ -2747,7 +2705,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function synthieMenu$lambda$lambda$lambda$lambda_6(closure$content) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
       $receiver.padding = new Margin(zero(), zero(), zero(), zero());
       $receiver.onValueChanged = plus($receiver.onValueChanged, synthieMenu$lambda$lambda$lambda$lambda$lambda_2(closure$content));
       return Unit;
@@ -2770,14 +2728,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function synthieMenu$lambda$lambda_0(closure$content, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(260.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(260.0), full());
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
       $receiver.unaryPlus_uv0sim$(this$.container_t34sov$('sequencer', synthieMenu$lambda$lambda$lambda_1(closure$content, this$)));
       var $receiver_0 = new VerticalLayout('volumes', this$);
       var this$_0 = this$;
       var closure$content_0 = closure$content;
       $receiver_0.layoutSpec.setOrigin_4ujscr$(pcs(50.0, true).plus_m986jv$(dps(250.0, true)), dps(10.0, true), zero());
-      $receiver_0.layoutSpec.setSize_4ujscr$(dps(240.0, true), dps(160.0, true), zero());
+      $receiver_0.layoutSpec.setSize_4ujscr$(dps(240.0, true), dps(160.0, true), full());
       $receiver_0.unaryPlus_uv0sim$(this$_0.label_tokfmu$('meloLbl', synthieMenu$lambda$lambda$lambda$lambda));
       $receiver_0.unaryPlus_uv0sim$(this$_0.slider_87iqh3$('melo', synthieMenu$lambda$lambda$lambda$lambda_0(closure$content_0)));
       $receiver_0.unaryPlus_uv0sim$(this$_0.label_tokfmu$('padLbl', synthieMenu$lambda$lambda$lambda$lambda_1));
@@ -2810,12 +2768,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function VerticalLayout(name, root) {
     UiContainer.call(this, name, root);
   }
-  VerticalLayout.prototype.doLayout_sq5703$ = function (bounds, ctx) {
-    if (!(bounds != null ? bounds.equals(this.contentBounds) : null)) {
-      this.contentBounds.clear();
+  VerticalLayout.prototype.doLayout_sq5703$ = function (layoutBounds, ctx) {
+    if (!(layoutBounds != null ? layoutBounds.equals(this.componentBounds) : null)) {
+      this.componentBounds.clear();
     }
-    UiContainer.prototype.doLayout_sq5703$.call(this, bounds, ctx);
-    if (!(bounds != null ? bounds.equals(this.contentBounds) : null)) {
+    UiContainer.prototype.doLayout_sq5703$.call(this, layoutBounds, ctx);
+    if (!(layoutBounds != null ? layoutBounds.equals(this.componentBounds) : null)) {
       this.translate_y2kzbl$(-this.posInParent.x, -this.posInParent.y, -this.posInParent.z);
       this.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
       this.translate_y2kzbl$(this.posInParent.y, -this.posInParent.x, this.posInParent.z);
@@ -2878,7 +2836,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.colorAnimator_0 = new CosAnimator(new InterpolatedColor(MutableColor_init_0(Color.Companion.WHITE.withAlpha_mx4ult$(0.2)), MutableColor_init_0(Color.Companion.LIME.withAlpha_mx4ult$(0.6))));
     this.wasHovered_0 = false;
     this.layoutSpec.setOrigin_4ujscr$(dps(this.col * 20.0), dps(this.row * 15.0), zero());
-    this.layoutSpec.setSize_4ujscr$(dps(18.0), dps(13.0), zero());
+    this.layoutSpec.setSize_4ujscr$(dps(18.0), dps(13.0), full());
     this.ui.setCustom_11rb$(this.background_0);
     this.colorAnimator_0.duration = 0.3;
     this.colorAnimator_0.speed = -1.0;
@@ -3203,7 +3161,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         }
       }
       $receiver.lineWidth = 1.0;
-      $receiver.shader = basicShader(SynthieScene$Waveform$lines$lambda$lambda$lambda);
+      $receiver.shader = basicShader(void 0, SynthieScene$Waveform$lines$lambda$lambda$lambda);
       (Kotlin.isType(tmp$_0 = $receiver.shader, BasicShader) ? tmp$_0 : throwCCE()).staticColor.set_czzhhz$(Color.Companion.LIME);
       $receiver.meshData.usage = 35048;
       return Unit;
@@ -3262,7 +3220,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function treeScene$lambda$lambda(closure$treeGen) {
     return function ($receiver) {
       $receiver.generator = treeScene$lambda$lambda$lambda(closure$treeGen);
-      $receiver.shader = basicShader(treeScene$lambda$lambda$lambda_0);
+      $receiver.shader = basicShader(void 0, treeScene$lambda$lambda$lambda_0);
       return Unit;
     };
   }
@@ -3294,7 +3252,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.generator = treeScene$lambda$lambda$lambda_1(closure$treeGen, this$);
       $receiver.cullMethod = CullMethod.NO_CULLING;
-      $receiver.shader = basicShader(treeScene$lambda$lambda$lambda_2);
+      $receiver.shader = basicShader(void 0, treeScene$lambda$lambda$lambda_2);
       return Unit;
     };
   }
@@ -3307,28 +3265,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.translationBounds = BoundingBox_init(new Vec3f(-10.0, -10.0, -10.0), new Vec3f(10.0, 10.0, 10.0));
       $receiver.translate_y2kzbl$(0.0, 2.0, 0.0);
       return Unit;
-    };
-  }
-  function treeScene$disableCamDrag$lambda(closure$treeScene) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$treeScene.isPickingEnabled = false;
-      return Unit;
-    };
-  }
-  function treeScene$disableCamDrag$lambda_0(closure$treeScene) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$treeScene.isPickingEnabled = true;
-      return Unit;
-    };
-  }
-  function treeScene$disableCamDrag(closure$treeScene) {
-    return function ($receiver) {
-      var $receiver_0 = $receiver.onHoverEnter;
-      var element = treeScene$disableCamDrag$lambda(closure$treeScene);
-      $receiver_0.add_11rb$(element);
-      var $receiver_1 = $receiver.onHoverExit;
-      var element_0 = treeScene$disableCamDrag$lambda_0(closure$treeScene);
-      $receiver_1.add_11rb$(element_0);
     };
   }
   function treeScene$lambda$lambda$lambda_3(it) {
@@ -3344,14 +3280,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function treeScene$lambda$lambda$lambda_5($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(110.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
     $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
     return Unit;
   }
   function treeScene$lambda$lambda$lambda_6(closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(110.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       $receiver.text = toString(closure$treeGen.growDistance, 2);
       return Unit;
@@ -3364,26 +3300,25 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_7(closure$treeGen, closure$disableCamDrag, closure$growDistVal) {
+  function treeScene$lambda$lambda$lambda_7(closure$treeGen, closure$growDistVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(110.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
       $receiver.setValue_y2kzbl$(0.05, 0.4, closure$treeGen.growDistance);
-      closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda(closure$treeGen, closure$growDistVal));
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda_8($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(75.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
     $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
     return Unit;
   }
   function treeScene$lambda$lambda$lambda_9(closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(75.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       $receiver.text = toString(closure$treeGen.killDistance, 2);
       return Unit;
@@ -3396,26 +3331,25 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_10(closure$treeGen, closure$disableCamDrag, closure$killDistVal) {
+  function treeScene$lambda$lambda$lambda_10(closure$treeGen, closure$killDistVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(75.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
       $receiver.setValue_y2kzbl$(1.0, 4.0, closure$treeGen.killDistance);
-      closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_0(closure$treeGen, closure$killDistVal));
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda_11($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(40.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
     $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
     return Unit;
   }
   function treeScene$lambda$lambda$lambda_12(closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(40.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       $receiver.text = closure$treeGen.numberOfAttractionPoints.toString();
       return Unit;
@@ -3428,26 +3362,25 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_13(closure$treeGen, closure$disableCamDrag, closure$attractPtsVal) {
+  function treeScene$lambda$lambda$lambda_13(closure$treeGen, closure$attractPtsVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(40.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
       $receiver.setValue_y2kzbl$(100.0, 10000.0, closure$treeGen.numberOfAttractionPoints);
-      closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_1(closure$treeGen, closure$attractPtsVal));
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda_14($receiver) {
     $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(5.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
     $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
     return Unit;
   }
   function treeScene$lambda$lambda$lambda_15(closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(5.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       $receiver.text = toString(closure$treeGen.radiusOfInfluence, 2);
       return Unit;
@@ -3460,12 +3393,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_16(closure$treeGen, closure$disableCamDrag, closure$infRadiusVal) {
+  function treeScene$lambda$lambda$lambda_16(closure$treeGen, closure$infRadiusVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(5.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
       $receiver.setValue_y2kzbl$(0.25, 10.0, closure$treeGen.radiusOfInfluence);
-      closure$disableCamDrag($receiver);
       $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_2(closure$treeGen, closure$infRadiusVal));
       return Unit;
     };
@@ -3528,7 +3460,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function treeScene$lambda$lambda$lambda_17(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(470.0, true), dps(110.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(220.0, true), dps(40.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(220.0, true), dps(40.0, true), full());
       $receiver.text = 'Generate Tree!';
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       var $receiver_0 = $receiver.onClick;
@@ -3547,7 +3479,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function treeScene$lambda$lambda$lambda_18(closure$leafMesh) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(470.0, true), dps(75.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(230.0, true), dps(40.0, true), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(230.0, true), dps(40.0, true), full());
       $receiver.text = 'Toggle Leafs';
       $receiver.isEnabled = true;
       var $receiver_0 = $receiver.onClick;
@@ -3556,36 +3488,36 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_3(this$, closure$treeGen, closure$disableCamDrag, closure$trunkMesh, closure$leafMesh) {
+  function treeScene$lambda$lambda_3(this$, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(150.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(150.0), full());
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Grow Distance:', treeScene$lambda$lambda$lambda_5));
       var growDistVal = this$.label_tokfmu$('growDistVal', treeScene$lambda$lambda$lambda_6(closure$treeGen));
       $receiver.unaryPlus_uv0sim$(growDistVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('growDist', treeScene$lambda$lambda$lambda_7(closure$treeGen, closure$disableCamDrag, growDistVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('growDist', treeScene$lambda$lambda$lambda_7(closure$treeGen, growDistVal)));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Kill Distance:', treeScene$lambda$lambda$lambda_8));
       var killDistVal = this$.label_tokfmu$('killDistVal', treeScene$lambda$lambda$lambda_9(closure$treeGen));
       $receiver.unaryPlus_uv0sim$(killDistVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_10(closure$treeGen, closure$disableCamDrag, killDistVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_10(closure$treeGen, killDistVal)));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Attraction Points:', treeScene$lambda$lambda$lambda_11));
       var attractPtsVal = this$.label_tokfmu$('attractPtsVal', treeScene$lambda$lambda$lambda_12(closure$treeGen));
       $receiver.unaryPlus_uv0sim$(attractPtsVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('attractPts', treeScene$lambda$lambda$lambda_13(closure$treeGen, closure$disableCamDrag, attractPtsVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('attractPts', treeScene$lambda$lambda$lambda_13(closure$treeGen, attractPtsVal)));
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius of Influence:', treeScene$lambda$lambda$lambda_14));
       var infRadiusVal = this$.label_tokfmu$('killDistVal', treeScene$lambda$lambda$lambda_15(closure$treeGen));
       $receiver.unaryPlus_uv0sim$(infRadiusVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_16(closure$treeGen, closure$disableCamDrag, infRadiusVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_16(closure$treeGen, infRadiusVal)));
       $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('generate', treeScene$lambda$lambda$lambda_17(closure$treeGen, closure$trunkMesh, closure$leafMesh)));
       $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('toggleLeafs', treeScene$lambda$lambda$lambda_18(closure$leafMesh)));
       return Unit;
     };
   }
-  function treeScene$lambda(closure$treeGen, closure$disableCamDrag, closure$trunkMesh, closure$leafMesh) {
+  function treeScene$lambda(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
     return function ($receiver) {
       $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, treeScene$lambda$lambda_2);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', treeScene$lambda$lambda_3($receiver, closure$treeGen, closure$disableCamDrag, closure$trunkMesh, closure$leafMesh)));
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', treeScene$lambda$lambda_3($receiver, closure$treeGen, closure$trunkMesh, closure$leafMesh)));
       return Unit;
     };
   }
@@ -3608,8 +3540,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, treeScene$lambda$lambda_1($receiver)));
     var treeScene = $receiver;
     scenes.add_11rb$(treeScene);
-    var disableCamDrag = treeScene$disableCamDrag(treeScene);
-    var element = uiScene(ctx.screenDpi, void 0, void 0, treeScene$lambda(treeGen, disableCamDrag, trunkMesh, leafMesh));
+    var element = uiScene(ctx.screenDpi, void 0, void 0, treeScene$lambda(treeGen, trunkMesh, leafMesh));
     scenes.add_11rb$(element);
     return scenes;
   }
@@ -4264,62 +4195,77 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.unaryPlus_uv0sim$(colorMesh(void 0, uiDemoScene$lambda$lambda$lambda_0));
     return Unit;
   }
+  function uiDemoScene$lambda$lambda$lambda_1(this$) {
+    return function ($receiver) {
+      $receiver.translate_y2kzbl$(-dp(this$.content, 200.0), -dp(this$.content, 200.0), 0.0);
+      return Unit;
+    };
+  }
+  function uiDemoScene$lambda$lambda$lambda_2($receiver) {
+    $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), pcs(-25.0), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), pcs(15.0), full());
+    $receiver.text = 'Toggle Button';
+    return Unit;
+  }
+  function uiDemoScene$lambda$lambda$lambda_3($receiver) {
+    $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), pcs(-45.0), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(pcs(21.0), pcs(15.0), full());
+    $receiver.text = 'Slider';
+    return Unit;
+  }
+  function uiDemoScene$lambda$lambda$lambda$lambda_0($receiver, value) {
+    $receiver.root.content.alpha = value;
+    return Unit;
+  }
+  function uiDemoScene$lambda$lambda$lambda_4($receiver) {
+    $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), pcs(-45.0), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(pcs(50.0), pcs(15.0), full());
+    $receiver.padding.left = uns(0.0);
+    $receiver.onValueChanged = plus($receiver.onValueChanged, uiDemoScene$lambda$lambda$lambda$lambda_0);
+    return Unit;
+  }
+  function uiDemoScene$lambda$lambda$lambda_5($receiver) {
+    $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), pcs(-65.0), zero());
+    $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), pcs(15.0), full());
+    return Unit;
+  }
+  function uiDemoScene$lambda$lambda$lambda$lambda_1(this$) {
+    return function ($receiver, f, f_0, f_1) {
+      if (equals(this$.theme, UiTheme.Companion.DARK)) {
+        this$.theme = UiTheme.Companion.LIGHT;
+      }
+       else {
+        this$.theme = UiTheme.Companion.DARK;
+      }
+      return Unit;
+    };
+  }
+  function uiDemoScene$lambda$lambda$lambda_6(this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), pcs(-85.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), pcs(15.0), full());
+      $receiver.text = 'Toggle Theme';
+      var $receiver_0 = $receiver.onClick;
+      var element = uiDemoScene$lambda$lambda$lambda$lambda_1(this$);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
   function uiDemoScene$lambda$lambda_1($receiver) {
-    $receiver.globalWidth = 10.0;
-    $receiver.globalHeight = 10.0;
-    uiDemoContent($receiver.content, $receiver);
+    $receiver.content.customTransform = uiDemoScene$lambda$lambda$lambda_1($receiver);
+    $receiver.unaryPlus_uv0sim$($receiver.toggleButton_6j87po$('toggle-button', uiDemoScene$lambda$lambda$lambda_2));
+    $receiver.unaryPlus_uv0sim$($receiver.label_tokfmu$('label', uiDemoScene$lambda$lambda$lambda_3));
+    $receiver.unaryPlus_uv0sim$($receiver.slider_91a1dk$('slider', 0.4, 1.0, 1.0, uiDemoScene$lambda$lambda$lambda_4));
+    $receiver.unaryPlus_uv0sim$($receiver.textField_peizi7$('text-field', uiDemoScene$lambda$lambda$lambda_5));
+    $receiver.unaryPlus_uv0sim$($receiver.button_9zrh0o$('toggle-theme', uiDemoScene$lambda$lambda$lambda_6($receiver)));
     return Unit;
   }
   function uiDemoScene() {
     var $receiver = new Scene('UI Demo');
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, uiDemoScene$lambda$lambda($receiver)));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, uiDemoScene$lambda$lambda_0));
-    $receiver.unaryPlus_uv0sim$(embeddedUi(dps(400.0), void 0, uiDemoScene$lambda$lambda_1));
+    $receiver.unaryPlus_uv0sim$(embeddedUi(10.0, 10.0, dps(400.0), void 0, uiDemoScene$lambda$lambda_1));
     return $receiver;
-  }
-  function uiDemoContent$lambda$lambda($receiver, value) {
-    $receiver.root.content.alpha = value;
-    return Unit;
-  }
-  function uiDemoContent$lambda$lambda_0(closure$uiRoot) {
-    return function ($receiver, f, f_0, f_1) {
-      if (equals(closure$uiRoot.theme, UiTheme.Companion.DARK)) {
-        closure$uiRoot.theme = UiTheme.Companion.LIGHT;
-      }
-       else {
-        closure$uiRoot.theme = UiTheme.Companion.DARK;
-      }
-      return Unit;
-    };
-  }
-  function uiDemoContent($receiver, uiRoot) {
-    $receiver.translate_y2kzbl$(-uiRoot.globalWidth / 2, -uiRoot.globalHeight / 2, 0.0);
-    var $receiver_0 = new ToggleButton('toggle-button', $receiver.root);
-    $receiver_0.layoutSpec.setOrigin_4ujscr$(pcs(15.0), pcs(-25.0), uns(0.0));
-    $receiver_0.layoutSpec.setSize_4ujscr$(pcs(70.0), pcs(15.0), uns(0.0));
-    $receiver_0.text = 'Toggle Button';
-    $receiver.unaryPlus_uv0sim$($receiver_0);
-    var $receiver_1 = new Label('label', $receiver.root);
-    $receiver_1.layoutSpec.setOrigin_4ujscr$(pcs(15.0), pcs(-45.0), uns(0.0));
-    $receiver_1.layoutSpec.setSize_4ujscr$(pcs(20.0), pcs(15.0), uns(0.0));
-    $receiver_1.text = 'Slider';
-    $receiver.unaryPlus_uv0sim$($receiver_1);
-    var $receiver_2 = new Slider('slider', 0.4, 1.0, 1.0, $receiver.root);
-    $receiver_2.layoutSpec.setOrigin_4ujscr$(pcs(35.0), pcs(-45.0), uns(0.0));
-    $receiver_2.layoutSpec.setSize_4ujscr$(pcs(50.0), pcs(15.0), uns(0.0));
-    $receiver_2.padding.left = uns(0.0);
-    $receiver_2.onValueChanged = plus($receiver_2.onValueChanged, uiDemoContent$lambda$lambda);
-    $receiver.unaryPlus_uv0sim$($receiver_2);
-    var $receiver_3 = new TextField('text-field', $receiver.root);
-    $receiver_3.layoutSpec.setOrigin_4ujscr$(pcs(15.0), pcs(-65.0), uns(0.0));
-    $receiver_3.layoutSpec.setSize_4ujscr$(pcs(70.0), pcs(15.0), uns(0.0));
-    $receiver.unaryPlus_uv0sim$($receiver_3);
-    var $receiver_4 = new Button('toggle-theme', $receiver.root);
-    $receiver_4.layoutSpec.setOrigin_4ujscr$(pcs(15.0), pcs(-85.0), uns(0.0));
-    $receiver_4.layoutSpec.setSize_4ujscr$(pcs(70.0), pcs(15.0), uns(0.0));
-    $receiver_4.text = 'Toggle Theme';
-    $receiver_4.onClick.add_11rb$(uiDemoContent$lambda$lambda_0(uiRoot));
-    $receiver.unaryPlus_uv0sim$($receiver_4);
   }
   function main() {
     Demo$Companion_getInstance().setProperty_bm4g0d$('globe.elevationUrl', 'https://s3.eu-central-1.amazonaws.com/fabmax-kool-globe/dem');
@@ -4381,7 +4327,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   package$demo.TreeGenerator = TreeGenerator;
   package$demo.TreeTopPointDistribution = TreeTopPointDistribution;
   package$demo.uiDemoScene = uiDemoScene;
-  package$demo.uiDemoContent_d6jo3u$ = uiDemoContent;
   _.main = main;
   _.getParams = getParams;
   ModelShader_init$ObjectLiteral.prototype.fsAfterLighting_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_kv1jfs$;

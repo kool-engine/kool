@@ -56,6 +56,33 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     private var isThemeUpdate = true
     private var isUiUpdate = true
 
+    init {
+        onHoverEnter += { ptr, rt, ctx ->
+            val p = parent as? UiComponent
+            if (p != null) {
+                for (i in p.onHoverEnter.indices) {
+                    p.onHoverEnter[i].invoke(p, ptr, rt, ctx)
+                }
+            }
+        }
+        onHoverExit += { ptr, rt, ctx ->
+            val p = parent as? UiComponent
+            if (p != null) {
+                for (i in p.onHoverExit.indices) {
+                    p.onHoverExit[i].invoke(p, ptr, rt, ctx)
+                }
+            }
+        }
+        onHover += { ptr, rt, ctx ->
+            val p = parent as? UiComponent
+            if (p != null) {
+                for (i in p.onHover.indices) {
+                    p.onHover[i].invoke(p, ptr, rt, ctx)
+                }
+            }
+        }
+    }
+
     open fun setupBuilder(builder: MeshBuilder) {
         builder.clear()
         builder.identity()

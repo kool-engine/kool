@@ -164,6 +164,5 @@ open class Scene(name: String? = null) : Group(name) {
 
     interface DragHandler {
         fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext)
-
     }
 }

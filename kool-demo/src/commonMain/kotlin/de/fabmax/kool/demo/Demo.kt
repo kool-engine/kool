@@ -91,6 +91,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
                 layoutSpec.setOrigin(zero(), dps(45f, true), zero())
                 layoutSpec.setSize(full(), pcs(100f, true) - dps(110f, true), full())
 
+                +ScrollHandler(this)
+
                 var y = -30f
                 for (demo in demos) {
                     +button(demo.key) {

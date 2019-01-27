@@ -80,6 +80,10 @@
   var NoSuchElementException_init = Kotlin.kotlin.NoSuchElementException_init;
   var MutableIterator = Kotlin.kotlin.collections.MutableIterator;
   var AbstractMutableList = Kotlin.kotlin.collections.AbstractMutableList;
+  DispatchedTask.prototype = Object.create(SchedulerTask.prototype);
+  DispatchedTask.prototype.constructor = DispatchedTask;
+  AbstractContinuation.prototype = Object.create(DispatchedTask.prototype);
+  AbstractContinuation.prototype.constructor = AbstractContinuation;
   CancelHandler.prototype = Object.create(CancelHandlerBase.prototype);
   CancelHandler.prototype.constructor = CancelHandler;
   InvokeOnCancel.prototype = Object.create(CancelHandler.prototype);
@@ -124,6 +128,8 @@
   CoroutineName.prototype.constructor = CoroutineName;
   CoroutineStart.prototype = Object.create(Enum.prototype);
   CoroutineStart.prototype.constructor = CoroutineStart;
+  DispatchedContinuation.prototype = Object.create(DispatchedTask.prototype);
+  DispatchedContinuation.prototype.constructor = DispatchedContinuation;
   JobSupport$ChildCompletion.prototype = Object.create(JobNode.prototype);
   JobSupport$ChildCompletion.prototype.constructor = JobSupport$ChildCompletion;
   JobSupport$AwaitContinuation.prototype = Object.create(CancellableContinuationImpl.prototype);
@@ -284,8 +290,8 @@
   var SUSPENDED;
   var RESUMED;
   function AbstractContinuation(delegate, resumeMode) {
+    DispatchedTask.call(this, resumeMode);
     this.delegate_6vb3h8$_0 = delegate;
-    this.resumeMode_7umvvz$_0 = resumeMode;
     this._decision_0 = 0;
     this._state_0 = ACTIVE;
     this.parentHandle_0 = null;
@@ -293,10 +299,6 @@
   Object.defineProperty(AbstractContinuation.prototype, 'delegate', {
   get: function() {
   return this.delegate_6vb3h8$_0;
-}});
-  Object.defineProperty(AbstractContinuation.prototype, 'resumeMode', {
-  get: function() {
-  return this.resumeMode_7umvvz$_0;
 }});
   Object.defineProperty(AbstractContinuation.prototype, 'state_8be2vx$', {
   get: function() {
@@ -512,7 +514,7 @@
   AbstractContinuation.$metadata$ = {
   kind: Kind_CLASS, 
   simpleName: 'AbstractContinuation', 
-  interfaces: [DispatchedTask, Continuation]};
+  interfaces: [Continuation, DispatchedTask]};
   function NotCompleted() {
   }
   NotCompleted.$metadata$ = {
@@ -1972,19 +1974,12 @@
     return UndispatchedEventLoop_instance;
   }
   function DispatchedContinuation(dispatcher, continuation) {
+    DispatchedTask.call(this, 0);
     this.dispatcher = dispatcher;
     this.continuation = continuation;
     this._state_8be2vx$ = UNDEFINED;
-    this.resumeMode_gfw4mw$_0 = 0;
     this.countOrElement_8be2vx$ = threadContextElements(this.context);
   }
-  Object.defineProperty(DispatchedContinuation.prototype, 'resumeMode', {
-  get: function() {
-  return this.resumeMode_gfw4mw$_0;
-}, 
-  set: function(resumeMode) {
-  this.resumeMode_gfw4mw$_0 = resumeMode;
-}});
   DispatchedContinuation.prototype.takeState = function() {
   var state = this._state_8be2vx$;
   if (!(state !== UNDEFINED)) {
@@ -2384,7 +2379,7 @@
   DispatchedContinuation.$metadata$ = {
   kind: Kind_CLASS, 
   simpleName: 'DispatchedContinuation', 
-  interfaces: [DispatchedTask, Continuation]};
+  interfaces: [Continuation, DispatchedTask]};
   var DispatchedContinuation$resumeCancellable$lambda = wrapFunction(function() {
   var Job = _.kotlinx.coroutines.Job;
   var Result = Kotlin.kotlin.Result;
@@ -2648,12 +2643,10 @@
       $receiver.resumeWith_tl1gpc$(new Result(createFailure(exception)));
     }
   }
-  function DispatchedTask() {
+  function DispatchedTask(resumeMode) {
+    SchedulerTask.call(this);
+    this.resumeMode = resumeMode;
   }
-  Object.defineProperty(DispatchedTask.prototype, 'resumeMode', {
-  get: function() {
-  return 1;
-}});
   DispatchedTask.prototype.getSuccessfulResult_tpy1pm$ = function(state) {
   var tmp$;
   return (tmp$ = state) == null || Kotlin.isType(tmp$, Any) ? tmp$ : throwCCE();
@@ -2664,6 +2657,7 @@
 };
   DispatchedTask.prototype.run = function() {
   var tmp$;
+  var taskContext = get_taskContext(this);
   try {
     var delegate = Kotlin.isType(tmp$ = this.delegate, DispatchedContinuation) ? tmp$ : throwCCE();
     var continuation = delegate.continuation;
@@ -2688,11 +2682,13 @@
   } else 
     throw e;
 }
+ finally   {
+  }
 };
   DispatchedTask.$metadata$ = {
-  kind: Kind_INTERFACE, 
+  kind: Kind_CLASS, 
   simpleName: 'DispatchedTask', 
-  interfaces: [Runnable]};
+  interfaces: [SchedulerTask]};
   function yieldUndispatched($receiver) {
     var $this = UndispatchedEventLoop_getInstance();
     var execute_7gc2iq$result;
@@ -4789,7 +4785,7 @@
     var cont = coroutine.uCont;
     var context = cont.context;
     disposeOnCompletion(coroutine, get_delay(context).invokeOnTimeout_8irseu$(coroutine.time, coroutine));
-    return startUndispatchedOrReturn(coroutine, coroutine, block);
+    return startUndispatchedOrReturnIgnoreTimeout(coroutine, coroutine, block);
   }
   function TimeoutCoroutine(time, uCont) {
     AbstractCoroutine.call(this, uCont.context, true);
@@ -18467,16 +18463,54 @@
     var result = tmp$;
     if (result === COROUTINE_SUSPENDED) 
       tmp$_0 = COROUTINE_SUSPENDED;
-    else if ($receiver.makeCompletingOnce_42w2xh$(result, 4)) 
-      if (Kotlin.isType(result, CompletedExceptionally)) 
-      throw result.cause;
-    else 
-      tmp$_0 = result;
-    else 
+    else if ($receiver.makeCompletingOnce_42w2xh$(result, 4)) {
+      var state = $receiver.state_8be2vx$;
+      if (Kotlin.isType(state, CompletedExceptionally)) {
+        if (true) 
+          throw state.cause;
+        else if (Kotlin.isType(result, CompletedExceptionally)) 
+          throw result.cause;
+        else 
+          tmp$_0 = result;
+      } else {
+        tmp$_0 = state;
+      }
+    } else 
       tmp$_0 = COROUTINE_SUSPENDED;
     return tmp$_0;
   }
-  function undispatchedResult($receiver, startBlock) {
+  function startUndispatchedOrReturnIgnoreTimeout($receiver, receiver, block) {
+    $receiver.initParentJob_8be2vx$();
+    var tmp$, tmp$_0;
+    try {
+      tmp$ = block(receiver, $receiver, false);
+    }    catch (e) {
+  if (Kotlin.isType(e, Throwable)) {
+    tmp$ = new CompletedExceptionally(e);
+  } else 
+    throw e;
+}
+    var result = tmp$;
+    if (result === COROUTINE_SUSPENDED) 
+      tmp$_0 = COROUTINE_SUSPENDED;
+    else if ($receiver.makeCompletingOnce_42w2xh$(result, 4)) {
+      var state = $receiver.state_8be2vx$;
+      if (Kotlin.isType(state, CompletedExceptionally)) {
+        var e_0 = state.cause;
+        if (!(Kotlin.isType(e_0, TimeoutCancellationException) && e_0.coroutine_8be2vx$ === $receiver)) 
+          throw state.cause;
+        else if (Kotlin.isType(result, CompletedExceptionally)) 
+          throw result.cause;
+        else 
+          tmp$_0 = result;
+      } else {
+        tmp$_0 = state;
+      }
+    } else 
+      tmp$_0 = COROUTINE_SUSPENDED;
+    return tmp$_0;
+  }
+  function undispatchedResult($receiver, shouldThrow, startBlock) {
     var tmp$, tmp$_0;
     try {
       tmp$ = startBlock();
@@ -18489,12 +18523,19 @@
     var result = tmp$;
     if (result === COROUTINE_SUSPENDED) 
       tmp$_0 = COROUTINE_SUSPENDED;
-    else if ($receiver.makeCompletingOnce_42w2xh$(result, 4)) 
-      if (Kotlin.isType(result, CompletedExceptionally)) 
-      throw result.cause;
-    else 
-      tmp$_0 = result;
-    else 
+    else if ($receiver.makeCompletingOnce_42w2xh$(result, 4)) {
+      var state = $receiver.state_8be2vx$;
+      if (Kotlin.isType(state, CompletedExceptionally)) {
+        if (shouldThrow(state.cause)) 
+          throw state.cause;
+        else if (Kotlin.isType(result, CompletedExceptionally)) 
+          throw result.cause;
+        else 
+          tmp$_0 = result;
+      } else {
+        tmp$_0 = state;
+      }
+    } else 
       tmp$_0 = COROUTINE_SUSPENDED;
     return tmp$_0;
   }
@@ -20069,6 +20110,16 @@
   return new Runnable$ObjectLiteral(block);
 };
 }));
+  function SchedulerTask() {
+  }
+  SchedulerTask.$metadata$ = {
+  kind: Kind_CLASS, 
+  simpleName: 'SchedulerTask', 
+  interfaces: [Runnable]};
+  function get_taskContext($receiver) {
+  }
+  var afterTask = defineInlineFunction('kotlinx-coroutines-core.kotlinx.coroutines.afterTask_o4pqbf$', function($receiver) {
+});
   function asCoroutineDispatcher($receiver) {
     var tmp$;
     var tmp$_0;
@@ -20524,7 +20575,7 @@
   package$coroutines.CancelledContinuation = CancelledContinuation;
   package$coroutines.CoroutineDispatcher = CoroutineDispatcher;
   package$coroutines.handleCoroutineException_qb3u6s$ = handleCoroutineException;
-  package$coroutines.handleExceptionViaHandler_yfv4gr$ = handleExceptionViaHandler;
+  package$coroutines.handleExceptionViaHandler_1ur55u$ = handleExceptionViaHandler;
   package$coroutines.handlerException_l3aqr5$ = handlerException;
   package$coroutines.CoroutineExceptionHandler = CoroutineExceptionHandler_0;
   package$coroutines.CoroutineExceptionHandler_kumrnp$ = CoroutineExceptionHandler;
@@ -20824,6 +20875,7 @@
   package$intrinsics.startCoroutineUndispatched_81hn2s$ = startCoroutineUndispatched;
   package$intrinsics.startCoroutineUndispatched_kew4v3$ = startCoroutineUndispatched_0;
   package$intrinsics.startUndispatchedOrReturn_j6gkos$ = startUndispatchedOrReturn;
+  package$intrinsics.startUndispatchedOrReturnIgnoreTimeout_j6gkos$ = startUndispatchedOrReturnIgnoreTimeout;
   var package$selects = package$coroutines.selects || (package$coroutines.selects = {});
   package$selects.SelectBuilder = SelectBuilder;
   package$selects.SelectClause0 = SelectClause0;
@@ -20873,6 +20925,9 @@
   package$coroutines.await_t11jrl$ = await_0;
   package$coroutines.Runnable = Runnable;
   package$coroutines.Runnable_o14v8n$ = Runnable_0;
+  package$coroutines.SchedulerTask = SchedulerTask;
+  package$coroutines.get_taskContext_5sfo4y$ = get_taskContext;
+  package$coroutines.afterTask_o4pqbf$ = afterTask;
   package$coroutines.asCoroutineDispatcher_nz12v2$ = asCoroutineDispatcher;
   package$coroutines.awaitAnimationFrame_nz12v2$ = awaitAnimationFrame;
   package$internal.arraycopy_t6l26v$ = arraycopy;
@@ -20889,9 +20944,6 @@
   package$internal.synchronized_eocq09$ = synchronized;
   package$internal.threadContextElements_v4qu62$ = threadContextElements;
   package$internal.CommonThreadLocal = CommonThreadLocal;
-  AbstractContinuation.prototype.getSuccessfulResult_tpy1pm$ = DispatchedTask.prototype.getSuccessfulResult_tpy1pm$;
-  AbstractContinuation.prototype.getExceptionalResult_s8jyv4$ = DispatchedTask.prototype.getExceptionalResult_s8jyv4$;
-  AbstractContinuation.prototype.run = DispatchedTask.prototype.run;
   Job.prototype.plus_1fupul$ = CoroutineContext$Element.prototype.plus_1fupul$;
   Job.prototype.fold_3cc69b$ = CoroutineContext$Element.prototype.fold_3cc69b$;
   Job.prototype.get_j3r2sn$ = CoroutineContext$Element.prototype.get_j3r2sn$;
@@ -20946,9 +20998,6 @@
   CoroutineExceptionHandler_0.prototype.get_j3r2sn$ = CoroutineContext$Element.prototype.get_j3r2sn$;
   CoroutineExceptionHandler_0.prototype.minusKey_yeqjby$ = CoroutineContext$Element.prototype.minusKey_yeqjby$;
   CoroutineExceptionHandler_0.prototype.plus_1fupul$ = CoroutineContext$Element.prototype.plus_1fupul$;
-  DispatchedContinuation.prototype.getSuccessfulResult_tpy1pm$ = DispatchedTask.prototype.getSuccessfulResult_tpy1pm$;
-  DispatchedContinuation.prototype.getExceptionalResult_s8jyv4$ = DispatchedTask.prototype.getExceptionalResult_s8jyv4$;
-  DispatchedContinuation.prototype.run = DispatchedTask.prototype.run;
   NonCancellable.prototype.plus_dqr1mp$ = Job.prototype.plus_dqr1mp$;
   NonCancellable.prototype.cancel0 = Job.prototype.cancel0;
   NonCancellable.prototype.invokeOnCompletion_ct2b2z$ = Job.prototype.invokeOnCompletion_ct2b2z$;
