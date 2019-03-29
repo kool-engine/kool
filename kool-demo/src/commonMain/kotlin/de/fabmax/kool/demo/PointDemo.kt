@@ -14,8 +14,9 @@ import de.fabmax.kool.util.*
 fun pointScene(): Scene {
     val (pointMesh, tree) = makePointMesh()
 
-    //val trav = InRadiusTraverser<MeshPoint>().setup(Vec3f.ZERO, 1f)
-    val trav = KNearestTraverser<MeshPoint>().setup(Vec3f.ZERO, 3000)
+    val trav = InRadiusTraverser<MeshPoint>().setup(Vec3f.ZERO, 1f)
+    //val trav = KNearestTraverser<MeshPoint>().setup(Vec3f.ZERO, 3000)
+
     val data = pointMesh.meshData
     val ptVertCnt = if (pointMesh is BillboardMesh) 4 else 1
 
@@ -38,7 +39,7 @@ fun pointScene(): Scene {
 
                 trav.center.set(randomF(-1f, 1f), randomF(-1f, 1f), randomF(-1f, 1f))
                 val t = PerfTimer()
-                tree.traverse(trav)
+                trav.traverse(tree)
                 val searchT = t.takeMs()
 
                 t.reset()

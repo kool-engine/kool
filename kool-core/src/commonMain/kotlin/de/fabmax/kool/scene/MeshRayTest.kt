@@ -44,7 +44,7 @@ interface MeshRayTest {
 
                     override fun rayTest(test: RayTest) {
                         rayTraverser.setup(test.ray)
-                        triangleTree?.traverse(rayTraverser)
+                        triangleTree?.let { rayTraverser.traverse(it) }
                         if (rayTraverser.distanceSqr < test.hitDistanceSqr) {
                             test.setHit(mesh, rayTraverser.distance)
                         }
@@ -60,7 +60,7 @@ interface MeshRayTest {
 
                     override fun rayTest(test: RayTest) {
                         rayTraverser.setup(test.ray)
-                        edgeTree?.traverse(rayTraverser)
+                        edgeTree?.let { rayTraverser.traverse(it) }
                         if (rayTraverser.distanceSqr < test.hitDistanceSqr) {
                             test.setHit(mesh, rayTraverser.distance)
                         }

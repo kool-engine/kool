@@ -67,6 +67,7 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
 
         meshData.batchUpdate {
             val v = triMesh[0]
+            val startI = numVertices
             for (i in 0 until triMesh.numVertices) {
                 v.index = i
                 meshData.addVertex {
@@ -75,9 +76,9 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
                 }
             }
             for (i in 0 until triMesh.numIndices step 3) {
-                val i1 = triMesh.vertexList.indices[i]
-                val i2 = triMesh.vertexList.indices[i + 1]
-                val i3 = triMesh.vertexList.indices[i + 2]
+                val i1 = startI + triMesh.vertexList.indices[i]
+                val i2 = startI + triMesh.vertexList.indices[i + 1]
+                val i3 = startI + triMesh.vertexList.indices[i + 2]
                 meshData.addIndices(i1, i2, i2, i3, i3, i1)
             }
         }

@@ -4,7 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.MassDamperFloat
+import de.fabmax.kool.util.SpringDamperFloat
 
 /**
  * A special kind of transform group which translates mouse input into a spherical transform. This is mainly useful
@@ -57,9 +57,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
 
     var panMethod: PanBase = CameraOrthogonalPan()
 
-    val vertRotAnimator = MassDamperFloat(0f)
-    val horiRotAnimator = MassDamperFloat(0f)
-    val zoomAnimator = MassDamperFloat(zoom)
+    val vertRotAnimator = SpringDamperFloat(0f)
+    val horiRotAnimator = SpringDamperFloat(0f)
+    val zoomAnimator = SpringDamperFloat(zoom)
 
     private var prevButtonMask = 0
     private var dragMethod = DragMethod.NONE

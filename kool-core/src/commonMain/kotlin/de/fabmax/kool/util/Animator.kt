@@ -111,7 +111,7 @@ class InterpolatedColor(var from: MutableColor, var to: MutableColor) : Interpol
     }
 }
 
-class MassDamperFloat(value: Float) {
+class SpringDamperFloat(value: Float) {
     var desired = value
     var actual = value
     var speed = 0f

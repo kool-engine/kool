@@ -21,6 +21,8 @@ open class TileName(val x: Int, val y: Int, val zoom: Int) {
 
     val fusedKey: Long = fuesdKey(x, y, zoom)
 
+    val sizeMeters: Double
+
     init {
         val zp = (1 shl zoom)
         latS = atan(sinh(PI - (y+1).toDouble() / (1 shl zoom) * 2 * PI)).toDeg()
@@ -30,6 +32,8 @@ open class TileName(val x: Int, val y: Int, val zoom: Int) {
 
         latCenter = latS + (latN - latS) * 0.5
         lonCenter = lonE + (lonW - lonE) * 0.5
+
+        sizeMeters = 2 * PI * Globe.EARTH_RADIUS * cos(latCenter.toRad()) / (1 shl zoom)
     }
 
     fun isSubTileOf(parent: TileName): Boolean {

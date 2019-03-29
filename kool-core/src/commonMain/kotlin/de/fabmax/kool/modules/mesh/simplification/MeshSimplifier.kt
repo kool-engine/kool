@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.mesh.simplification
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
+import de.fabmax.kool.modules.mesh.ListEdgeHandler
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.toString
@@ -15,7 +16,7 @@ fun Mesh.simplify(termCrit: TermCriterion, keepBorders: Boolean = false) {
 }
 
 fun MeshData.simplify(termCrit: TermCriterion, keepBorders: Boolean = false) {
-    HalfEdgeMesh(this, HalfEdgeMesh.ListEdgeHandler()).simplify(termCrit, keepBorders)
+    HalfEdgeMesh(this, ListEdgeHandler()).simplify(termCrit, keepBorders)
 }
 
 fun HalfEdgeMesh.simplify(termCrit: TermCriterion, keepBorders: Boolean = false) {

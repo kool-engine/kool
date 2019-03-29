@@ -9,7 +9,7 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.doubleprec.TransformGroupDp
 import kotlin.math.*
 
-class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
+class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : TransformGroupDp(name) {
 
     var meterPerPxLvl0: Double = 156e3
     val frameZoomLvl = 11
@@ -188,5 +188,7 @@ class Globe(val radius: Double, name: String? = null) : TransformGroupDp(name) {
     companion object {
         private val RAD_85 = 85.0.toRad()
         const val ALLOWED_MESH_REFINEMENTS_PER_FRAME = 1
+
+        const val EARTH_RADIUS = 6378137.0
     }
 }

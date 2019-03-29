@@ -6,6 +6,7 @@ import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.isFuzzyZero
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
+import de.fabmax.kool.modules.mesh.ListEdgeHandler
 import de.fabmax.kool.modules.mesh.simplification.simplify
 import de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel
 import de.fabmax.kool.scene.*
@@ -277,7 +278,7 @@ class SimplificationDemo(ctx: KoolContext) {
             dispModel.meshData.clear()
             dispModel.meshData.vertexList.addFrom(srcModel.vertexList)
 
-            heMesh = HalfEdgeMesh(dispModel.meshData, HalfEdgeMesh.ListEdgeHandler())
+            heMesh = HalfEdgeMesh(dispModel.meshData, ListEdgeHandler())
             //heMesh = HalfEdgeMesh(dispModel.meshData)
             if (simplifcationGrade < 0.999f) {
                 heMesh.simplify(terminateOnFaceCountRel(simplifcationGrade))

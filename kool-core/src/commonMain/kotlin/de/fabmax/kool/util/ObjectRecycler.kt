@@ -62,6 +62,12 @@ class ObjectPool<T: Any>(factory: () -> T) : ObjectRecycler<T>(factory) {
         return super.recycle(obj)
     }
 
+    inline fun use(block: (T) -> Unit) {
+        val item = get()
+        block(item)
+        recycle(item)
+    }
+
     fun recycleAll() {
         for (i in liveObjects.indices) {
             super.recycle(liveObjects[i])

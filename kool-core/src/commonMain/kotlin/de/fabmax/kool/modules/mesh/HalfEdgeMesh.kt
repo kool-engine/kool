@@ -10,9 +10,6 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.util.*
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
@@ -187,6 +184,28 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
         }
     }
 
+    fun selectBorders(): MutableList<MutableList<HalfEdge>> {
+        val borders = mutableListOf<MutableList<HalfEdge>>()
+        val collected = mutableSetOf<HalfEdge>()
+
+        var border = mutableListOf<HalfEdge>()
+        for (edge in edgeHandler) {
+            if (edge.opp == null) {
+                var borderEdge = edge
+                while (borderEdge !in collected) {
+                    border.add(borderEdge)
+                    collected.add(borderEdge)
+                    borderEdge = borderEdge.to.edges.find { it.opp == null && it !in collected } ?: break
+                }
+                if (border.isNotEmpty()) {
+                    borders.add(border)
+                    border = mutableListOf()
+                }
+            }
+        }
+        return borders
+    }
+
     fun subSelect(start: HalfEdge, maxTris: Int = 0): Pair<List<HalfEdge>, List<HalfEdge>> {
         val selection = mutableListOf<HalfEdge>()
 
@@ -217,7 +236,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
         return Pair(borderQueue, selection)
     }
 
-    fun splitEdge(edge: HalfEdge, fraction: Float) {
+    fun splitEdge(edge: HalfEdge, fraction: Float): HalfEdgeVertex {
         // spawn new vertex
         val idx = meshData.vertexList.addVertex {
             position.set(edge.to).subtract(edge.from).scale(fraction).add(edge.from)
@@ -281,6 +300,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
             edgeHandler += insertEdL1
             edgeHandler += insertEdL2
         }
+        return insertV
     }
 
     fun collapseEdge(edge: HalfEdge, fraction: Float) {
@@ -384,30 +404,6 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
         return subData
     }
 
-    companion object {
-        object HalfEdgeAdapter : ItemAdapter<HalfEdge> {
-            override fun getMinX(item: HalfEdge): Float = min(item.from.x, item.to.x)
-            override fun getMinY(item: HalfEdge): Float = min(item.from.y, item.to.y)
-            override fun getMinZ(item: HalfEdge): Float = min(item.from.z, item.to.z)
-
-            override fun getMaxX(item: HalfEdge): Float = max(item.from.x, item.to.x)
-            override fun getMaxY(item: HalfEdge): Float = max(item.from.y, item.to.y)
-            override fun getMaxZ(item: HalfEdge): Float = max(item.from.z, item.to.z)
-
-            override fun getSzX(item: HalfEdge): Float = abs(item.from.x - item.to.x)
-            override fun getSzY(item: HalfEdge): Float = abs(item.from.y - item.to.y)
-            override fun getSzZ(item: HalfEdge): Float = abs(item.from.z - item.to.z)
-
-            override fun getCenterX(item: HalfEdge): Float = (item.from.x + item.to.x) * 0.5f
-            override fun getCenterY(item: HalfEdge): Float = (item.from.y + item.to.y) * 0.5f
-            override fun getCenterZ(item: HalfEdge): Float = (item.from.z + item.to.z) * 0.5f
-
-            override fun setNode(item: HalfEdge, node: SpatialTree<HalfEdge>.Node) {
-                item.treeNode = node as OcTree<HalfEdge>.OcNode
-            }
-        }
-    }
-
     inner class HalfEdgeVertex(var index: Int): Vec3f(0f) {
         /**
          * List of edges that start with this vertex.
@@ -430,6 +426,11 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
             meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 1] = y
             meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 2] = z
         }
+
+        fun getMeshVertex(result: IndexedVertexList.Vertex) {
+            result.index = this.index
+        }
+
 
         fun getEdgeTo(v: HalfEdgeVertex): HalfEdge? {
             for (i in edges.indices) {
@@ -513,6 +514,14 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
             return result
         }
 
+        fun collapse(fraction: Float) {
+            collapseEdge(this, fraction)
+        }
+
+        fun split(fraction: Float): HalfEdgeVertex {
+            return splitEdge(this, fraction)
+        }
+
         private fun deleteEdge() {
             edgeHandler -= this
             isDeleted = true
@@ -537,160 +546,4 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
         }
     }
 
-    class OcTreeEdgeHandler(treeBounds: BoundingBox) : EdgeHandler {
-        val edgeTree = OcTree(HalfEdgeAdapter, bounds = treeBounds)
-        override val numEdges: Int
-            get() = edgeTree.size
-
-        constructor(meshData: MeshData): this(BoundingBox().apply {
-            batchUpdate {
-                val v = meshData.vertexList.vertexIt
-                for (i in 0 until meshData.numVertices) {
-                    v.index = i
-                    add(v.position)
-                }
-            }
-        })
-
-        override fun plusAssign(edge: HalfEdge) = edgeTree.plusAssign(edge)
-
-        override fun minusAssign(edge: HalfEdge) = edgeTree.minusAssign(edge)
-
-        override fun checkedUpdateEdgeTo(edge: HalfEdge, newTo: HalfEdgeVertex) {
-            edge.apply {
-                val newX = (from.x + newTo.x) * 0.5f
-                val newY = (from.y + newTo.y) * 0.5f
-                val newZ = (from.z + newTo.z) * 0.5f
-
-                if (treeNode?.isInNode(newX, newY, newZ) == true) {
-                    // edge stays in same tree node, no full update required
-                    to = newTo
-                } else {
-                    // updated position is in different tree node, full update required
-                    edgeTree -= this
-                    to = newTo
-                    edgeTree += this
-                }
-            }
-        }
-
-        override fun checkedUpdateEdgeFrom(edge: HalfEdge, newFrom: HalfEdgeVertex) {
-            edge.apply {
-                val newX = (newFrom.x + to.x) * 0.5f
-                val newY = (newFrom.y + to.y) * 0.5f
-                val newZ = (newFrom.z + to.z) * 0.5f
-
-                if (treeNode?.isInNode(newX, newY, newZ) == true) {
-                    // edge stays in same tree node, no full update required
-                    from = newFrom
-                } else {
-                    // updated position is in different tree node, full update required
-                    edgeTree -= this
-                    from = newFrom
-                    edgeTree += this
-                }
-            }
-        }
-
-        override fun checkedUpdateVertexPosition(vertex: HalfEdgeVertex, x: Float, y: Float, z: Float) {
-            vertex.apply {
-                for (i in edges.indices) {
-                    // check from this vertex
-                    var ed = edges[i]
-                    var newX = (x + ed.to.x) * 0.5f
-                    var newY = (y + ed.to.y) * 0.5f
-                    var newZ = (z + ed.to.z) * 0.5f
-                    if (ed.treeNode?.isInNode(newX, newY, newZ) != true) {
-                        // full tree update required
-                        this@OcTreeEdgeHandler -= ed
-                        ed.treeNode = null
-                    }
-
-                    // check edge to this vertex
-                    ed = edges[i].next.next
-                    newX = (x + ed.from.x) * 0.5f
-                    newY = (y + ed.from.y) * 0.5f
-                    newZ = (z + ed.from.z) * 0.5f
-                    if (ed.treeNode?.isInNode(newX, newY, newZ) != true) {
-                        // full tree update required
-                        this@OcTreeEdgeHandler -= ed
-                        ed.treeNode = null
-                    }
-                }
-
-                setPosition(x, y, z)
-
-                for (i in edges.indices) {
-                    val ed = edges[i]
-                    if (ed.treeNode == null) {
-                        this@OcTreeEdgeHandler += ed
-                    }
-                    if (ed.next.next.treeNode == null) {
-                        this@OcTreeEdgeHandler += ed.next.next
-                    }
-                }
-            }
-        }
-
-        override fun rebuild() { }
-
-        override fun iterator(): Iterator<HalfEdge> = edgeTree.iterator()
-    }
-
-    class ListEdgeHandler : EdgeHandler {
-        val edgeList = mutableListOf<HalfEdge>()
-
-        override var numEdges = 0
-            private set
-
-        override fun plusAssign(edge: HalfEdge) {
-            if (edge.isDeleted) {
-                logW { "edge was deleted before" }
-                edge.isDeleted = false
-                rebuild()
-            }
-            edgeList += edge
-            numEdges++
-        }
-
-        override fun minusAssign(edge: HalfEdge) {
-            edge.isDeleted = true
-            numEdges--
-        }
-
-        override fun checkedUpdateEdgeTo(edge: HalfEdge, newTo: HalfEdgeVertex) {
-            edge.to = newTo
-        }
-
-        override fun checkedUpdateEdgeFrom(edge: HalfEdge, newFrom: HalfEdgeVertex) {
-            edge.from = newFrom
-        }
-
-        override fun checkedUpdateVertexPosition(vertex: HalfEdgeVertex, x: Float, y: Float, z: Float) {
-            vertex.setPosition(x, y, z)
-        }
-
-        override fun rebuild() {
-            edgeList.removeAll { it.isDeleted }
-        }
-
-        override fun iterator(): Iterator<HalfEdge> = object : Iterator<HalfEdge> {
-            var i = 0
-
-            override fun hasNext(): Boolean {
-                while (i < edgeList.size && edgeList[i].isDeleted) {
-                    i++
-                }
-                return i < edgeList.size
-            }
-
-            override fun next(): HalfEdge {
-                if (!hasNext()) {
-                    throw NoSuchElementException()
-                }
-                return edgeList[i++]
-            }
-        }
-
-    }
 }

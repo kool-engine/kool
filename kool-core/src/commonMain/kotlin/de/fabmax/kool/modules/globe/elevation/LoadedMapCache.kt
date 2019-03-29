@@ -12,12 +12,10 @@ class LoadedMapCache(private val maxMaps: Int) {
         loaded.lastUsed = ++useCnt
 
         if (loadedMaps.size > maxMaps) {
-            if (loadedMaps.size > maxMaps) {
-                val remCnt = loadedMaps.size - maxMaps
-                val sorted = loadedMaps.values.sortedBy { it.lastUsed }
-                for (i in 0..remCnt) {
-                    loadedMaps -= sorted[i].key
-                }
+            val remCnt = loadedMaps.size - maxMaps
+            val sorted = loadedMaps.values.sortedBy { it.lastUsed }
+            for (i in 0..remCnt) {
+                loadedMaps -= sorted[i].key
             }
         }
         return loaded.map

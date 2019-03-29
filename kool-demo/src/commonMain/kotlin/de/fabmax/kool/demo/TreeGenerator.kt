@@ -63,7 +63,7 @@ class TreeGenerator(val distribution: PointDistribution,
         for (node in treeNodes) {
             node.influencingPts.clear()
             if (!node.isFinished) {
-                attractionPointsTree.traverse(attractionPointTrav.setup(node, radiusOfInfluence))
+                attractionPointTrav.setup(node, radiusOfInfluence).traverse(attractionPointsTree)
                 for (attracPt in attractionPointTrav.result) {
                     if (attracPt.isOpen) {
                         attracPt.checkNearest(node)
@@ -95,7 +95,7 @@ class TreeGenerator(val distribution: PointDistribution,
                     node.addChild(newNode)
                     newNodes += newNode
 
-                    attractionPointsTree.traverse(attractionPointTrav.setup(newNode, actualKillDistance))
+                    attractionPointTrav.setup(newNode, actualKillDistance).traverse(attractionPointsTree)
                     attractionPointTrav.result.forEach { it.isOpen = false }
                     changed = true
                 }

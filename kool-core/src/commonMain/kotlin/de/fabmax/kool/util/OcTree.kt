@@ -61,7 +61,7 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
             val it = iterator()
             while (it.hasNext()) {
                 if (it.next() == element) {
-                    logW { "Removed via brute force" }
+                    logW { "Removed via brute force, did element change it's position?" }
                     it.remove()
                 }
             }
@@ -275,9 +275,15 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
             }
         }
 
-        fun isInNode(center: Vec3f) = nodeBounds.isIncluding(center)
+        fun isInBounds(center: Vec3f) = isInBounds(center.x, center.y, center.z)
 
-        fun isInNode(centerX: Float, centerY: Float, centerZ: Float) = nodeBounds.isIncluding(centerX, centerY, centerZ)
+        fun isInBounds(centerX: Float, centerY: Float, centerZ: Float): Boolean {
+            // Do not use BoundingBox.isIncluding() here: It tests inclusive max bounds (x >= min && x <= max) which is
+            // problematic if an item is on the border of neighboring nodes (x == max and x == min of next node)
+            return centerX >= nodeBounds.min.x && centerX < nodeBounds.max.x &&
+                    centerY >= nodeBounds.min.y && centerY < nodeBounds.max.y &&
+                    centerZ >= nodeBounds.min.z && centerZ < nodeBounds.max.z
+        }
 
         private fun split() {
             val x0 = nodeBounds.min.x

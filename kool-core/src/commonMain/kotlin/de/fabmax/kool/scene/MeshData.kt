@@ -164,7 +164,7 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
 
             for (v in verts) {
                 if (v !in removeVerts) {
-                    tree.traverse(trav.setup(v, eps))
+                    trav.setup(v, eps).traverse(tree)
                     trav.result.removeAll { it.index == v.index || it.index in replaceIndcs.keys }
 
                     if (trav.result.isNotEmpty()) {

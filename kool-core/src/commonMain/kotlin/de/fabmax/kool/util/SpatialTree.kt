@@ -244,12 +244,6 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
 
     abstract val root: Node
 
-    open fun traverse(traverser: SpatialTreeTraverser<T>) {
-        traverser.onStart(this)
-        root.traverse(traverser)
-        traverser.onFinish(this)
-    }
-
     open fun drawNodeBounds(lineMesh: LineMesh) {
         root.drawNodeBounds(lineMesh)
     }
@@ -269,7 +263,7 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
 
         /**
          * Item list, depending on implementation the list can be shared between multiple nodes, meaning not all
-         * element within the list belng to this node. Therefor, when using this list one must consider [nodeRange].
+         * element within the list belong to this node. Therefore, when using this list one must consider [nodeRange].
          *
          * Non-leaf nodes can but don't have to supply items of sub-nodes.
          */
@@ -279,26 +273,6 @@ abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection
          * Range within [items] in which elements belong to this node.
          */
         abstract val nodeRange: IntRange
-
-        open fun traverse(traverser: SpatialTreeTraverser<T>) {
-            if (isLeaf) {
-                traverser.traverseLeaf(this@SpatialTree, this)
-
-            } else {
-                candidatesPool.use { candidates ->
-                    candidates.clear()
-                    for (i in children.indices) {
-                        if (children[i].size > 0) {
-                            candidates += children[i]
-                        }
-                    }
-                    traverser.traversalOrder(this@SpatialTree, candidates)
-                    for (i in candidates.indices) {
-                        candidates[i].traverse(traverser)
-                    }
-                }
-            }
-        }
 
         open fun drawNodeBounds(lineMesh: LineMesh) {
             val color = ColorGradient.JET_MD.getColor((depth % 6.7f) / 6.7f)

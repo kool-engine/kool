@@ -12,8 +12,8 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MassDamperFloat
 import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.SpringDamperFloat
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -28,8 +28,8 @@ open class ScrollHandler(val scrollTarget: UiContainer, name: String = "${scroll
     val horizontalTrackBounds = BoundingBox()
     val horizontalHandleBounds = BoundingBox()
 
-    private val scrollPosY = MassDamperFloat(0f)
-    private val scrollPosYGuard = MassDamperFloat(0f)
+    private val scrollPosY = SpringDamperFloat(0f)
+    private val scrollPosYGuard = SpringDamperFloat(0f)
     private val pickRay = Ray()
 
     init {
