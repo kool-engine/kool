@@ -13,7 +13,7 @@ interface CollapseStrategy {
      * Computes the optimal merge position when collapsing the edge between [q1] and [q2].
      * Returns the resulting error.
      */
-    fun computeCollapsePosition(q1: ErrorQuadric, q2: ErrorQuadric, resultPos: MutableVec3f): Float
+    fun computeCollapsePosition(q1: ErrorQuadric, q2: ErrorQuadric, resultPos: MutableVec3f): Double
 }
 
 fun defaultCollapseStrategy() = object : CollapseStrategy {
@@ -23,7 +23,7 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
     val tmpPos0 = MutableVec3f()
     val tmpPos1 = MutableVec3f()
 
-    override fun computeCollapsePosition(q1: ErrorQuadric, q2: ErrorQuadric, resultPos: MutableVec3f): Float {
+    override fun computeCollapsePosition(q1: ErrorQuadric, q2: ErrorQuadric, resultPos: MutableVec3f): Double {
         // count number of triangles adjacent to edge between q1 and q2
         //  -> for inner edges in a 2d manifold (plane mesh) triCnt must be 2
         //  -> for border edges in a 2d manifold (plane mesh) triCnt can also be 1
@@ -35,7 +35,19 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
             }
         }
         if (triCnt > 2 || triCnt < if (q1.isBorder && q2.isBorder) 1 else 2) {
-            return Float.MAX_VALUE
+            return Double.MAX_VALUE
+        }
+
+        // don't collapse edges on corner triangles
+        q1.vertex.getEdgeTo(q2.vertex)?.let { ed ->
+            if (ed.next.opp == null && ed.next.next.opp == null) {
+                return Double.MAX_VALUE
+            }
+        }
+        q2.vertex.getEdgeTo(q1.vertex)?.let { ed ->
+            if (ed.next.opp == null && ed.next.next.opp == null) {
+                return Double.MAX_VALUE
+            }
         }
 
         tmpQ.set(q1.errQuadric)
@@ -51,12 +63,12 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
             // error quadric is singular (both vertices lie in a plane), simply join them in the middle
             q2.vertex.subtract(q1.vertex, resultPos).scale(0.5f).add(q1.vertex)
             // error in joining plane vertices is actually 0, but shorter edges should be preferred
-            q1.vertex.distance(q2.vertex) / 1e6f
+            q1.vertex.distance(q2.vertex) / 1e6
         }
 
         return if (isRejected(q1.vertex, q2.vertex, resultPos) || isRejected(q2.vertex, q1.vertex, resultPos)) {
             // collapse is rejected
-            Float.MAX_VALUE
+            Double.MAX_VALUE
         } else {
             err
         }

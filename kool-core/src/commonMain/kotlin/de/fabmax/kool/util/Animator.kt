@@ -149,7 +149,7 @@ class SpringDamperFloat(value: Float) {
             val err = desired - actual
             speed += (err * stiffness - speed * damping) * dt
             val delta = speed * dt
-            if (abs(delta) > 0.001f) {
+            if (!abs(delta).isFuzzyZero()) {
                 actual += delta
             } else {
                 actual = desired

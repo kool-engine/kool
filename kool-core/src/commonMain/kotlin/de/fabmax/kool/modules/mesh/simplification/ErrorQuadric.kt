@@ -48,9 +48,9 @@ class ErrorQuadric(val vertex: HalfEdgeMesh.HalfEdgeVertex) {
         other.isDeleted = true
     }
 
-    fun getError(v: Vec3f): Float {
+    fun getError(v: Vec3f): Double {
         errQuadric.transform(tmpVec4.set(v, 1f))
-        return tmpVec4.x * v.x + tmpVec4.y * v.y + tmpVec4.z * v.z + tmpVec4.w
+        return tmpVec4.x.toDouble() * v.x + tmpVec4.y.toDouble() * v.y + tmpVec4.z.toDouble() * v.z + tmpVec4.w
     }
 
     private fun addPlane(planeVec: Vec4f) {

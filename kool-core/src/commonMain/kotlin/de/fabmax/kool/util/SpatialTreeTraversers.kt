@@ -185,13 +185,6 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
         }
     }
 
-    private inner class Child(var dist: Float, var node: SpatialTree<T>.Node) {
-        fun setChildNode(node: SpatialTree<T>.Node) {
-            this.node = node
-            dist = pointDistance.nodeSqrDistanceToPoint(node, center)
-        }
-    }
-
     companion object {
         const val MAX_RADIUS = 1.8446743E19f     // sqrt(Float.MAX_VALUE)
     }

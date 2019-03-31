@@ -281,7 +281,7 @@ class SimplificationDemo(ctx: KoolContext) {
             heMesh = HalfEdgeMesh(dispModel.meshData, ListEdgeHandler())
             //heMesh = HalfEdgeMesh(dispModel.meshData)
             if (simplifcationGrade < 0.999f) {
-                heMesh.simplify(terminateOnFaceCountRel(simplifcationGrade))
+                heMesh.simplify(terminateOnFaceCountRel(simplifcationGrade.toDouble()))
             }
 
             modelWireframe.meshData.batchUpdate {

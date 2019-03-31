@@ -17,7 +17,7 @@ import kotlin.math.sqrt
  *
  * @author fabmax
  */
-class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdgeHandler(meshData)): Mesh(meshData) {
+class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHandler()): Mesh(meshData) {
 
     private val verts: MutableList<HalfEdgeVertex>
     val vertices: List<HalfEdgeVertex>
@@ -80,7 +80,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = OcTreeEdge
     fun generateWireframe(lineMesh: LineMesh, lineColor: Color = Color.MD_PINK) {
         val v0 = MutableVec3f()
         val v1 = MutableVec3f()
-        edgeHandler.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->
+        edgeHandler.filter { !it.isDeleted && (it.opp == null || it.from.index < it.to.index) }.forEach { edge ->
             v0.set(edge.from)
             v1.set(edge.to)
             lineMesh.addLine(v0, lineColor, v1, lineColor)
