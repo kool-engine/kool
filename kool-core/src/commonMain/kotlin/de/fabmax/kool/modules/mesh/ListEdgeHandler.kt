@@ -19,8 +19,12 @@ class ListEdgeHandler : HalfEdgeMesh.EdgeHandler {
     }
 
     override fun minusAssign(edge: HalfEdgeMesh.HalfEdge) {
-        edge.isDeleted = true
-        numEdges--
+        if (!edge.isDeleted) {
+            numEdges--
+        } else {
+            logW { "edge is already deleted" }
+            rebuild()
+        }
     }
 
     override fun checkedUpdateEdgeTo(edge: HalfEdgeMesh.HalfEdge, newTo: HalfEdgeMesh.HalfEdgeVertex) {
@@ -37,6 +41,10 @@ class ListEdgeHandler : HalfEdgeMesh.EdgeHandler {
 
     override fun rebuild() {
         edgeList.removeAll { it.isDeleted }
+        if (numEdges != edgeList.size) {
+            logW { "Wrong edge count: $numEdges != ${edgeList.size}" }
+            numEdges = edgeList.size
+        }
     }
 
     override fun iterator(): Iterator<HalfEdgeMesh.HalfEdge> = object : Iterator<HalfEdgeMesh.HalfEdge> {

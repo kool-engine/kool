@@ -406,21 +406,25 @@ open class MeshBuilder(val meshData: MeshData) {
         props.fixNegativeSize()
 
         // bottom
-        withTransform {
-            translate(props.origin)
-            rotate(90f, Vec3f.X_AXIS)
-            circle {
-                steps = props.steps
-                radius = props.bottomRadius
+        if (props.bottomFill) {
+            withTransform {
+                translate(props.origin)
+                rotate(90f, Vec3f.X_AXIS)
+                circle {
+                    steps = props.steps
+                    radius = props.bottomRadius
+                }
             }
         }
         // top
-        withTransform {
-            translate(props.origin.x, props.origin.y + props.height, props.origin.z)
-            rotate(-90f, Vec3f.X_AXIS)
-            circle {
-                steps = props.steps
-                radius = props.topRadius
+        if (props.topFill) {
+            withTransform {
+                translate(props.origin.x, props.origin.y + props.height, props.origin.z)
+                rotate(-90f, Vec3f.X_AXIS)
+                circle {
+                    steps = props.steps
+                    radius = props.topRadius
+                }
             }
         }
 
@@ -757,6 +761,8 @@ class CylinderProps {
     var topRadius = 1f
     var steps = 20
     var height = 1f
+    var topFill = true
+    var bottomFill = true
     val origin = MutableVec3f()
 
     fun defaults(): CylinderProps {
@@ -764,6 +770,8 @@ class CylinderProps {
         topRadius = 1f
         steps = 20
         height = 1f
+        topFill = true
+        bottomFill = true
         origin.set(Vec3f.ZERO)
         return this
     }

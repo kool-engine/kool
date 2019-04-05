@@ -2,15 +2,11 @@ package de.fabmax.kool.modules.mesh
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.gl.GL_TRIANGLES
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.MutableVec4f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.isFuzzyZero
+import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.util.*
-import kotlin.math.sqrt
 
 /**
  * An editable mesh.
@@ -29,6 +25,9 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
     private val tmpVec2 = MutableVec3f()
     private val tmpVec3 = MutableVec3f()
 
+    private val vertexIt1 = meshData[0]
+    private val vertexIt2 = meshData[0]
+
     val vertCount: Int
         get() = verts.size
     val faceCount: Int
@@ -43,6 +42,8 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
         fun checkedUpdateEdgeTo(edge: HalfEdge, newTo: HalfEdgeVertex)
         fun checkedUpdateEdgeFrom(edge: HalfEdge, newFrom: HalfEdgeVertex)
         fun checkedUpdateVertexPosition(vertex: HalfEdgeVertex, x: Float, y: Float, z: Float)
+
+        fun distinctTriangleEdges(): List<HalfEdge> = filter { it.id < it.next.id && it.id < it.next.next.id }
 
         fun rebuild()
     }
@@ -80,7 +81,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
     fun generateWireframe(lineMesh: LineMesh, lineColor: Color = Color.MD_PINK) {
         val v0 = MutableVec3f()
         val v1 = MutableVec3f()
-        edgeHandler.filter { !it.isDeleted && (it.opp == null || it.from.index < it.to.index) }.forEach { edge ->
+        edgeHandler.filter { it.opp == null || it.from.index < it.to.index }.forEach { edge ->
             v0.set(edge.from)
             v1.set(edge.to)
             lineMesh.addLine(v0, lineColor, v1, lineColor)
@@ -101,10 +102,21 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
         val vertCnt = verts.size
 
         edgeHandler.rebuild()
+        if (edgeHandler.numEdges % 3 != 0) {
+            logW { "Uneven edge count: ${edgeHandler.numEdges % 3}" }
+        }
 
-        // check for invalid edges, fixme: ideally this shouldn't happen but it does sometimes
+        // check for invalid edges
+        // fixme: check why deleted edges sometimes remain linked to their from vertex
+        //  test with cow model: 7 such edges on 1% simplification
         val removeEdges = mutableListOf<HalfEdge>()
         for (v in verts) {
+            v.edges.removeAll {
+                if (it.isDeleted) {
+                    logW { "Deleted edge in v, edge.from == v: ${it.from === v}" }
+                }
+                it.isDeleted
+            }
             for (he in v.edges) {
                 val i0 = he.from.index
                 val i1 = he.next.from.index
@@ -118,6 +130,10 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
         edgeHandler.forEach { he ->
             if (he.from.isDeleted || he.from.index >= vertCnt || he.to.isDeleted || he.to.index >= vertCnt) {
                 logW { "Inconsistent edge: ${he.from.index} (del=${he.from.isDeleted}) -> ${he.to.index} (del=${he.to.isDeleted}), mesh has only $vertCnt vertices" }
+                removeEdges += he
+            }
+            if (he === he.next || he === he.next.next) {
+                logW { "Invalid edge linkage: he == he.next || he == he.next.next" }
                 removeEdges += he
             }
         }
@@ -155,21 +171,14 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
 
             // rebuild triangle index list
             meshData.vertexList.clearIndices()
-            for (i in verts.indices) {
-                val v = verts[i]
-                for (j in v.edges.indices) {
-                    val e = v.edges[j]
-                    val ei = e.from.index
-                    if (ei < e.next.from.index && ei < e.next.next.from.index) {
-                        meshData.vertexList.addIndex(e.from.index)
-                        meshData.vertexList.addIndex(e.next.from.index)
-                        meshData.vertexList.addIndex(e.next.next.from.index)
-                    }
-                }
+            for (e in edgeHandler.distinctTriangleEdges()) {
+                meshData.vertexList.addIndex(e.from.index)
+                meshData.vertexList.addIndex(e.next.from.index)
+                meshData.vertexList.addIndex(e.next.next.from.index)
             }
 
             if (meshData.numIndices != faceCount * 3) {
-                logW { "Inconsiatent triangle count! MeshData: ${meshData.numIndices / 3}, HalfEdgeMesh: $faceCount" }
+                logW { "Inconsistent triangle count! MeshData: ${meshData.numIndices / 3}, HalfEdgeMesh: $faceCount" }
             }
 
             meshData.vertexList.dataF = newDataF
@@ -240,6 +249,12 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
         // spawn new vertex
         val idx = meshData.vertexList.addVertex {
             position.set(edge.to).subtract(edge.from).scale(fraction).add(edge.from)
+
+            // interpolate texture coordinates and normals
+            edge.from.getMeshVertex(vertexIt1)
+            edge.to.getMeshVertex(vertexIt2)
+            texCoord.set(vertexIt2.texCoord).subtract(vertexIt1.texCoord).scale(fraction).add(vertexIt1.texCoord)
+            normal.set(vertexIt2.normal).subtract(vertexIt1.normal).scale(fraction).add(vertexIt1.normal)
         }
         val insertV = HalfEdgeVertex(idx)
         verts += insertV
@@ -427,8 +442,9 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
             meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 2] = z
         }
 
-        fun getMeshVertex(result: IndexedVertexList.Vertex) {
+        fun getMeshVertex(result: IndexedVertexList.Vertex): IndexedVertexList.Vertex {
             result.index = this.index
+            return result
         }
 
 
@@ -442,8 +458,8 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
         }
 
         fun delete() {
-            while (edges.size > 0) {
-                edges[0].deleteTriangle()
+            while (edges.isNotEmpty()) {
+                edges.last().deleteTriangle()
             }
             // mark vertex as deleted, cleanup is done sometime later
             isDeleted = true
@@ -480,26 +496,9 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
 
         fun computeLength(): Float = from.distance(to)
 
-        fun computeTriArea(): Float {
-		    val xAB = to.x - from.x
-		    val yAB = to.y - from.y
-		    val zAB = to.z - from.z
-		    val xAC = next.to.x - from.x
-		    val yAC = next.to.y - from.y
-		    val zAC = next.to.z - from.z
-		    val abSqr = xAB * xAB + yAB * yAB + zAB * zAB
-		    val acSqr = xAC * xAC + yAC * yAC + zAC * zAC
-		    val abcSqr = xAB * xAC + yAB * yAC + zAB * zAC
-		    return 0.5f * sqrt(abSqr * acSqr - abcSqr * abcSqr)
-        }
+        fun computeTriArea(): Float = triArea(from, to, next.to)
 
-        fun computeTriAspectRatio(): Float {
-            val a = from.distance(to)
-            val b = to.distance(next.to)
-            val c = next.to.distance(from)
-            val s = (a + b + c) / 2f
-            return a * b * c / (8 * (s-a) * (s-b) * (s-c))
-        }
+        fun computeTriAspectRatio() = triAspectRatio(from, to, next.to)
 
         fun computeTriNormal(result: MutableVec3f): MutableVec3f {
             to.subtract(from, tmpVec1)

@@ -4,10 +4,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.PerfTimer
-import de.fabmax.kool.util.TreeMap
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 
 fun MeshData.simplify(termCrit: TermCriterion) {
     HalfEdgeMesh(this).simplify(termCrit, emptySet())
@@ -28,22 +25,29 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
     var keepBorders = false
 
     fun simplifyMesh(mesh: HalfEdgeMesh, generateNormals: Boolean = true, generateTangents: Boolean = true) {
-        logD { "Simplifying mesh: ${mesh.faceCount} faces / ${mesh.vertCount} vertices..." }
-
-        quadrics.clear()
-        candidates.clear()
-
-        val perf = PerfTimer()
-        rebuildCollapseQueue(mesh)
-        termCrit.init(mesh)
         this.mesh = mesh
 
+        logD { "Simplifying mesh: ${mesh.faceCount} faces / ${mesh.vertCount} vertices..." }
+
+        val perf = PerfTimer()
+        quadrics.clear()
+        candidates.clear()
+        termCrit.init(mesh)
+
+        var nextReshape = mesh.faceCount / 2
+
+        rebuildCollapseQueue()
         var lastError = 0.0
 
         while (candidates.isNotEmpty() && candidates.peek().error < Double.MAX_VALUE && !termCrit.isFinished(mesh, lastError)) {
+            if (mesh.faceCount < nextReshape) {
+                reshapeTriangles()
+                nextReshape = mesh.faceCount / 2
+            }
+
             val candidate = candidates.poll()
             if (candidate.edge.isDeleted || candidate.q1.isDeleted || candidate.q2.isDeleted) {
-                logE { "invalid edge: already deleted!" }
+                logW { "Invalid edge: already deleted!" }
                 continue
             }
 
@@ -52,8 +56,8 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
             candidate.updateCollapsePosAndError()
             if (oldError != candidate.error) {
                 // fixme: this should not happen since all affected edges are updated after each collapse operation
-                // however, somehow this still happens
-                rebuildCollapseQueue(mesh)
+                // however, somehow this still happens (but not that often, so it's ok to rebuild the whole queue)
+                rebuildCollapseQueue()
                 continue
             }
 
@@ -78,16 +82,40 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
         logD { "Mesh simplification done! ${mesh.faceCount} faces / ${mesh.vertCount} vertices remain, last error: $lastError, took ${perf.takeSecs().toString(3)} s" }
     }
 
-    private fun rebuildCollapseQueue(mesh: HalfEdgeMesh) {
+    private fun reshapeTriangles() {
+        val v1 = MutableVec3f()
+        val v2 = MutableVec3f()
+
+        mesh.edgeHandler.distinctTriangleEdges().forEach {
+            if (it.computeTriAspectRatio() > 50f) {
+                val l1 = it.computeLength()
+                val l2 = it.next.computeLength()
+                val l3 = it.next.next.computeLength()
+
+                // split longest edge
+                val splitEd = when {
+                    l1 > l2 && l1 > l3 -> it
+                    l2 > l1 && l2 > l3 -> it.next
+                    else -> it.next.next
+                }
+
+                // compute split fraction
+                v1.set(it.to).subtract(it.from).norm()
+                v2.set(it.next.from).subtract(it.next.to)
+                val f = 1f - v1.dot(v2) / splitEd.computeLength()
+
+                if (f > 0.1f && f < 0.9f) {
+                    splitEd.split(f)
+                }
+            }
+        }
+
+        rebuildCollapseQueue()
+    }
+
+    private fun rebuildCollapseQueue() {
         candidates.clear()
         candidateMap.clear()
-
-//        val q = mutableListOf<ErrorQuadric>()
-//        quadrics.values.forEach { q += it }
-//        quadrics.clear()
-//        mesh.rebuild(false, false)
-//        q.forEach { quadrics[it.vertex.index] = it }
-
         for (edge in mesh.edgeHandler) {
             insertEdge(edge)
         }

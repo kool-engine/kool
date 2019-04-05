@@ -1,10 +1,7 @@
 package de.fabmax.kool.modules.mesh
 
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.ItemAdapter
-import de.fabmax.kool.util.OcTree
-import de.fabmax.kool.util.SpatialTree
+import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -26,7 +23,12 @@ class OcTreeEdgeHandler(treeBounds: BoundingBox) : HalfEdgeMesh.EdgeHandler {
 
     override fun plusAssign(edge: HalfEdgeMesh.HalfEdge) = edgeTree.plusAssign(edge)
 
-    override fun minusAssign(edge: HalfEdgeMesh.HalfEdge) = edgeTree.minusAssign(edge)
+    override fun minusAssign(edge: HalfEdgeMesh.HalfEdge) {
+        if (edge.isDeleted) {
+            logW { "edge is already deleted, probably not in tree anymore..." }
+        }
+        edgeTree.minusAssign(edge)
+    }
 
     override fun checkedUpdateEdgeTo(edge: HalfEdgeMesh.HalfEdge, newTo: HalfEdgeMesh.HalfEdgeVertex) {
         edge.apply {

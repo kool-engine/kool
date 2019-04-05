@@ -87,12 +87,16 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
 
             v1.position.subtract(v0.position, e1).norm()
             v2.position.subtract(v0.position, e2).norm()
+            val a = triArea(v0.position, v1.position, v2.position)
 
-            e1.cross(e2, nrm).norm().scale(triArea(v0.position, v1.position, v2.position))
-            //e1.cross(e2, nrm).norm()
-            v0.normal += nrm
-            v1.normal += nrm
-            v2.normal += nrm
+            e1.cross(e2, nrm).norm().scale(a)
+            if (nrm.x.isNaN() || nrm.y.isNaN() || nrm.z.isNaN()) {
+                logW { "degenerated triangle" }
+            } else {
+                v0.normal += nrm
+                v1.normal += nrm
+                v2.normal += nrm
+            }
         }
 
         for (i in 0 until numVertices) {

@@ -63,7 +63,7 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
             // error quadric is singular (both vertices lie in a plane), simply join them in the middle
             q2.vertex.subtract(q1.vertex, resultPos).scale(0.5f).add(q1.vertex)
             // error in joining plane vertices is actually 0, but shorter edges should be preferred
-            q1.vertex.distance(q2.vertex) / 1e6
+            q1.vertex.distance(q2.vertex) / 1e100
         }
 
         return if (isRejected(q1.vertex, q2.vertex, resultPos) || isRejected(q2.vertex, q1.vertex, resultPos)) {
@@ -83,21 +83,13 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
                     // normal flip -> results in overlapping triangles, rejected
                     return true
                 }
-                if (triangleAr(newPos, edge.to, edge.next.to) > 10000) {
+                if (triAspectRatio(newPos, edge.to, edge.next.to) > 10000) {
                     // degenerated triangle -> rejected
                     return true
                 }
             }
         }
         return false
-    }
-
-    private fun triangleAr(va: Vec3f, vb: Vec3f, vc: Vec3f): Float {
-        val a = va.distance(vb)
-        val b = vb.distance(vc)
-        val c = vc.distance(va)
-        val s = (a + b + c) / 2f
-        return a * b * c / (8f * (s - a) * (s - b) * (s - c))
     }
 
     private fun newNormal(edge: HalfEdgeMesh.HalfEdge, newPos: Vec3f, newNormal: MutableVec3f) {

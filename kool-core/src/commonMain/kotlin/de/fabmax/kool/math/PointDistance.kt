@@ -82,7 +82,7 @@ fun Vec3f.nearestPointOnRay(origin: Vec3f, direction: Vec3f, result: MutableVec3
 // point to edge functions (two ends, finite length)
 //
 
-fun Vec3f.distanceEdge(edgeA: Vec3f, edgeB: Vec3f) = sqrt(sqrDistanceToEdge(edgeA, edgeB))
+fun Vec3f.distanceToEdge(edgeA: Vec3f, edgeB: Vec3f) = sqrt(sqrDistanceToEdge(edgeA, edgeB))
 
 fun Vec3f.sqrDistanceToEdge(edgeA: Vec3f, edgeB: Vec3f) =
         sqrDistancePointToEdge(x, y, z, edgeA, edgeB)

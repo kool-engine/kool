@@ -4,6 +4,7 @@ package de.fabmax.kool.math
 
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 const val DEG_2_RAD = PI / 180.0
 const val RAD_2_DEG = 180.0 / PI
@@ -50,10 +51,25 @@ inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
     else -> this
 }
 
-fun triArea(v1: Vec3f, v2: Vec3f, v3: Vec3f): Float {
-    val b = v2.distance(v3)
-    val h = v1.distanceToLine(v2, v3)
-    return 0.5f * b * h
+fun triArea(va: Vec3f, vb: Vec3f, vc: Vec3f): Float {
+    val xAB = vb.x - va.x
+    val yAB = vb.y - va.y
+    val zAB = vb.z - va.z
+    val xAC = vc.x - va.x
+    val yAC = vc.y - va.y
+    val zAC = vc.z - va.z
+    val abSqr = xAB * xAB + yAB * yAB + zAB * zAB
+    val acSqr = xAC * xAC + yAC * yAC + zAC * zAC
+    val abcSqr = xAB * xAC + yAB * yAC + zAB * zAC
+    return 0.5f * sqrt(abSqr * acSqr - abcSqr * abcSqr)
+}
+
+fun triAspectRatio(va: Vec3f, vb: Vec3f, vc: Vec3f): Float {
+    val a = va.distance(vb)
+    val b = vb.distance(vc)
+    val c = vc.distance(va)
+    val s = (a + b + c) / 2f
+    return a * b * c / (8f * (s - a) * (s - b) * (s - c))
 }
 
 class FloatRange(override val start: Float, override val endInclusive: Float) : ClosedRange<Float>

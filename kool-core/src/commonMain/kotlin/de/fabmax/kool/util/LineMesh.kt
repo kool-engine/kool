@@ -14,6 +14,8 @@ import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * @author fabmax
@@ -65,6 +67,7 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
             throw KoolException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")
         }
 
+        val addedEdges = mutableSetOf<Long>()
         meshData.batchUpdate {
             val v = triMesh[0]
             val startI = numVertices
@@ -79,7 +82,23 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
                 val i1 = startI + triMesh.vertexList.indices[i]
                 val i2 = startI + triMesh.vertexList.indices[i + 1]
                 val i3 = startI + triMesh.vertexList.indices[i + 2]
-                meshData.addIndices(i1, i2, i2, i3, i3, i1)
+
+                val e1 = min(i1, i2).toLong() shl 32 or max(i1, i2).toLong()
+                val e2 = min(i2, i3).toLong() shl 32 or max(i2, i3).toLong()
+                val e3 = min(i3, i1).toLong() shl 32 or max(i3, i1).toLong()
+
+                if (e1 !in addedEdges) {
+                    meshData.addIndices(i1, i2)
+                    addedEdges += e1
+                }
+                if (e2 !in addedEdges) {
+                    meshData.addIndices(i2, i3)
+                    addedEdges += e2
+                }
+                if (e3 !in addedEdges) {
+                    meshData.addIndices(i3, i1)
+                    addedEdges += e3
+                }
             }
         }
     }
