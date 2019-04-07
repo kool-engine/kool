@@ -8,6 +8,7 @@ import kotlinx.coroutines.CompletableDeferred
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
+import org.khronos.webgl.set
 import org.w3c.dom.HTMLImageElement
 import org.w3c.xhr.ARRAYBUFFER
 import org.w3c.xhr.XMLHttpRequest
@@ -16,6 +17,7 @@ import kotlin.browser.document
 
 class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(assetsBaseDir) {
 
+    private val pako = js("require('pako_inflate.min');")
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
 
     override suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef) = LoadedRawAsset(localRawRef, loadRaw(localRawRef.url))
@@ -58,6 +60,15 @@ class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(
     }
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
+
+    override fun inflate(zipData: ByteArray): ByteArray {
+        val uint8Data = Uint8Array(zipData.size)
+        for (i in zipData.indices) {
+            uint8Data[i] = zipData[i]
+        }
+        val inflated = pako.inflate(uint8Data) as Uint8Array
+        return ByteArray(inflated.length) { inflated[it] }
+    }
 
     companion object {
         private const val MAX_GENERATED_TEX_WIDTH = 2048

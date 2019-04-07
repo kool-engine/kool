@@ -28,7 +28,7 @@ class MeshCutXy(val meshData: MeshData) {
 
     fun cutXy(cutPoly: List<Vec2f>) {
         val splitVerts = splitIntersectingEdges(cutPoly)
-        deleteInside(cutPoly, splitVerts)
+        deleteInside(cutPoly)
         fitInsideEdges(cutPoly)
         collapseShortEdges(splitVerts)
 
@@ -108,7 +108,7 @@ class MeshCutXy(val meshData: MeshData) {
     /**
      * delete all triangles (and vertices) inside cutPoly
      */
-    private fun deleteInside(cutPoly: List<Vec2f>, excludedVerts: Set<HalfEdgeMesh.HalfEdgeVertex>) {
+    private fun deleteInside(cutPoly: List<Vec2f>) {
         var delCnt = 0
         ocTreeHandler.filter {
             isInPolygon(MutableVec3f().add(it.from).add(it.next.from).add(it.next.next.from).scale(1/3f), cutPoly)

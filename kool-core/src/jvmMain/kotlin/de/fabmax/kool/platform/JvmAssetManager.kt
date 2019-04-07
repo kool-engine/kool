@@ -4,9 +4,8 @@ import de.fabmax.kool.*
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
-import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
+import java.io.*
+import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 
 class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager(assetsBaseDir) {
@@ -71,6 +70,13 @@ class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager
     }
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
+
+    override fun inflate(zipData: ByteArray): ByteArray {
+        val inflateIn = GZIPInputStream(ByteArrayInputStream(zipData))
+        val bos = ByteArrayOutputStream()
+        inflateIn.copyTo(bos)
+        return bos.toByteArray()
+    }
 
     companion object {
         private const val MAX_GENERATED_TEX_WIDTH = 2048

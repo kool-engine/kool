@@ -1,5 +1,7 @@
 package de.fabmax.kool.util.serialization
 
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.shading.AttributeType
@@ -9,16 +11,14 @@ import java.io.File
 
 object ModelConverter {
 
-    fun convertModel(file: String, invertFaceOrientation: Boolean = false): ModelData =
-            convertModel(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices)!!, File(file).name, invertFaceOrientation)
+    fun convertModel(file: String, invertFaceOrientation: Boolean = false, normalBits: Int = 0): ModelData =
+            convertModel(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices)!!, File(file).name, invertFaceOrientation, normalBits)
 
-    fun convertModel(aiScene: AIScene, modelName: String = "", invertFaceOrientation: Boolean = false): ModelData {
+    fun convertModel(aiScene: AIScene, modelName: String = "", invertFaceOrientation: Boolean = false, normalBits: Int = 0): ModelData {
         val meshes = mutableListOf<ModelMeshData>()
 
         val nodes = mutableMapOf<String, SceneNode>()
         val root = traverseSceneGraph(aiScene.mRootNode()!!, null, nodes)
-        //logI { "Loaded scene: ${nodes.size} nodes" }
-        //printSceneGraph(root, "")
 
         val materials = makeMaterials(aiScene)
 
@@ -28,8 +28,11 @@ object ModelConverter {
             val normalList = mutableListOf<Float>()
             val uvList = mutableListOf<Float>()
             val colorList = mutableListOf<Float>()
+            val attribs = mutableMapOf<String, AttributeList>()
             val armature = makeArmature(aiMesh, nodes)
             val animations = makeAnimations(aiScene)
+            val tags = mutableListOf<String>()
+            val intAttribs = mutableMapOf<String, IntAttributeList>()
 
             makeVertices(aiMesh, posList, normalList, uvList, colorList)
 
@@ -39,9 +42,15 @@ object ModelConverter {
                 else -> emptyList()
             }
 
-            val attribs = mutableMapOf(ModelMeshData.ATTRIB_POSITIONS to AttributeList(AttributeType.VEC_3F, posList))
+            attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(AttributeType.VEC_3F, posList)
             if (!normalList.isEmpty()) {
-                attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
+                if (normalBits > 0) {
+                    val octNormals = encodeNormals(normalList, normalBits)
+                    tags += "${ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED}=$normalBits"
+                    intAttribs[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED] = IntAttributeList(AttributeType.VEC_2I, octNormals)
+                } else {
+                    attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
+                }
             }
             if (!uvList.isEmpty()) {
                 attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(AttributeType.VEC_2F, uvList)
@@ -49,10 +58,25 @@ object ModelConverter {
             if (!colorList.isEmpty()) {
                 attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(AttributeType.COLOR_4F, colorList)
             }
-            meshes += ModelMeshData(meshName, PrimitiveType.TRIANGLES, attribs, indices, armature, animations, aiMesh.mMaterialIndex())
+            meshes += ModelMeshData(meshName, PrimitiveType.TRIANGLES, attribs, indices, armature, animations,
+                    aiMesh.mMaterialIndex(), tags, intAttribs)
         }
 
         return ModelData(ModelData.VERSION, modelName, meshes, listOf(convertSceneGraph(root)), materials)
+    }
+
+    private fun encodeNormals(normals: List<Float>, bits: Int): List<Int> {
+        val octNormals = mutableListOf<Int>()
+        val f = (1 shl bits) - 1
+        val n = MutableVec3f()
+        val o = MutableVec2f()
+        for (i in normals.indices step 3) {
+            n.set(normals[i], normals[i+1], normals[i+2])
+            NormalOctCoding.encodeNormalToOct(n, o)
+            octNormals += Math.round(o.x * f)
+            octNormals += Math.round(o.y * f)
+        }
+        return octNormals
     }
 
     private fun makeMaterials(aiScene: AIScene): List<MaterialData> {

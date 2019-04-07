@@ -7,7 +7,6 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.serialization.ModelData
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
@@ -42,12 +41,12 @@ fun instancedDemo(ctx: KoolContext): Scene = scene {
         rotate(-90f, Vec3f.X_AXIS)
 
         // add animated character model
-        ctx.assetMgr.loadAsset("player.kmf") { data ->
-            if (data == null) {
+        ctx.assetMgr.loadModel("player.kmfz") { modelData ->
+            if (modelData == null) {
                 throw KoolException("Fatal: Failed loading model")
             }
             // load model
-            val model = ModelData.load(data).meshes[0].toMesh() as Armature
+            val model = modelData.meshes[0].toMesh() as Armature
 
             for (i in 1..5) {
                 +spawnMesh(model, randomF(0.2f, 0.6f))

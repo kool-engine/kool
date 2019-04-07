@@ -4,6 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MeshBuilder
@@ -81,6 +82,13 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
                 }
             }
         }
+    }
+
+    override fun onParentChanged(oldParent: Node?, newParent: Node?) {
+        if (newParent is UiComponent) {
+            alpha = newParent.alpha
+        }
+        super.onParentChanged(oldParent, newParent)
     }
 
     open fun setupBuilder(builder: MeshBuilder) {

@@ -9,6 +9,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var launch = $module$kotlinx_coroutines_core.kotlinx.coroutines.launch_s496o7$;
   var startsWith = Kotlin.kotlin.text.startsWith_7epoxm$;
   var throwCCE = Kotlin.throwCCE;
+  var endsWith = Kotlin.kotlin.text.endsWith_7epoxm$;
   var CompletableDeferred = $module$kotlinx_coroutines_core.kotlinx.coroutines.CompletableDeferred_xptg6w$;
   var Kind_CLASS = Kotlin.Kind.CLASS;
   var Kind_OBJECT = Kotlin.Kind.OBJECT;
@@ -67,16 +68,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var yield_0 = $module$kotlinx_coroutines_core.kotlinx.coroutines.yield;
   var L536870911 = Kotlin.Long.fromInt(536870911);
   var Iterable = Kotlin.kotlin.collections.Iterable;
+  var removeAll = Kotlin.kotlin.collections.removeAll_qafx1e$;
   var Pair = Kotlin.kotlin.Pair;
   var throwUPAE = Kotlin.throwUPAE;
-  var removeAll = Kotlin.kotlin.collections.removeAll_qafx1e$;
   var NoSuchElementException_init = Kotlin.kotlin.NoSuchElementException_init;
   var Iterator = Kotlin.kotlin.collections.Iterator;
+  var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
+  var emptySet = Kotlin.kotlin.collections.emptySet_287e2$;
   var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var mutableSetOf = Kotlin.kotlin.collections.mutableSetOf_i5x0yv$;
   var addAll = Kotlin.kotlin.collections.addAll_ye1y7v$;
   var setOf = Kotlin.kotlin.collections.setOf_i5x0yv$;
+  var isNaN_0 = Kotlin.kotlin.isNaN_81szk$;
   var toShort = Kotlin.toShort;
   var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
   var setOf_0 = Kotlin.kotlin.collections.setOf_mh5how$;
@@ -90,7 +94,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var joinTo = Kotlin.kotlin.collections.joinTo_gcc71v$;
   var MutableMap = Kotlin.kotlin.collections.MutableMap;
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
-  var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
   var getCallableRef = Kotlin.getCallableRef;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
@@ -113,7 +116,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
   var getKClass = Kotlin.getKClass;
   var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
+  var emptyMap = Kotlin.kotlin.collections.emptyMap_q3lmfv$;
+  var sortWith = Kotlin.kotlin.collections.sortWith_nqfjgj$;
   var removeAll_0 = Kotlin.kotlin.collections.removeAll_uhyeqt$;
+  var MutableMap$MutableEntry = Kotlin.kotlin.collections.MutableMap.MutableEntry;
   var L1 = Kotlin.Long.ONE;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   AssetManager$TextureDataProxy.prototype = Object.create(TextureData.prototype);
@@ -238,6 +244,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   HalfEdgeMesh$HalfEdgeVertex.prototype.constructor = HalfEdgeMesh$HalfEdgeVertex;
   HalfEdgeMesh.prototype = Object.create(Mesh.prototype);
   HalfEdgeMesh.prototype.constructor = HalfEdgeMesh;
+  MeshCutXy$EdgeInsidePolyTrav.prototype = Object.create(SpatialTreeTraverser.prototype);
+  MeshCutXy$EdgeInsidePolyTrav.prototype.constructor = MeshCutXy$EdgeInsidePolyTrav;
+  MeshCutXy$EdgeXyIntersectionTrav.prototype = Object.create(SpatialTreeTraverser.prototype);
+  MeshCutXy$EdgeXyIntersectionTrav.prototype.constructor = MeshCutXy$EdgeXyIntersectionTrav;
+  MeshSimplifier$CollapseCandidates.prototype = Object.create(TreeMap.prototype);
+  MeshSimplifier$CollapseCandidates.prototype.constructor = MeshSimplifier$CollapseCandidates;
   Box$ColVecView.prototype = Object.create(MutableVec3f.prototype);
   Box$ColVecView.prototype.constructor = Box$ColVecView;
   BoxMesh.prototype = Object.create(Mesh.prototype);
@@ -474,10 +486,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   PointMesh.prototype.constructor = PointMesh;
   PrimitiveType.prototype = Object.create(Enum.prototype);
   PrimitiveType.prototype.constructor = PrimitiveType;
+  CenterPointTraverser.prototype = Object.create(SpatialTreeTraverser.prototype);
+  CenterPointTraverser.prototype.constructor = CenterPointTraverser;
   InRadiusTraverser.prototype = Object.create(CenterPointTraverser.prototype);
   InRadiusTraverser.prototype.constructor = InRadiusTraverser;
   KNearestTraverser.prototype = Object.create(CenterPointTraverser.prototype);
   KNearestTraverser.prototype.constructor = KNearestTraverser;
+  NearestToRayTraverser.prototype = Object.create(SpatialTreeTraverser.prototype);
+  NearestToRayTraverser.prototype.constructor = NearestToRayTraverser;
   NearestEdgeToRayTraverser.prototype = Object.create(NearestToRayTraverser.prototype);
   NearestEdgeToRayTraverser.prototype.constructor = NearestEdgeToRayTraverser;
   TriangleHitTraverser.prototype = Object.create(NearestToRayTraverser.prototype);
@@ -1013,6 +1029,31 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   }
   AssetManager.prototype.loadAsset_us385g$ = function (assetPath, onLoad) {
     launch(this, void 0, void 0, AssetManager$loadAsset$lambda(assetPath, this, onLoad));
+  };
+  function AssetManager$loadModel$lambda(closure$modelPath, this$AssetManager, closure$onLoad) {
+    return function (loadedData) {
+      var tmp$;
+      if (loadedData == null) {
+        var $receiver = this$AssetManager;
+        var $this = package$util.Log;
+        var level = Log$Level.ERROR;
+        var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Failed loading model ' + closure$modelPath);
+        }
+        tmp$ = null;
+      }
+       else {
+        var data = endsWith(closure$modelPath, '.kmfz', true) ? this$AssetManager.inflate_fqrh44$(loadedData) : loadedData;
+        tmp$ = ModelData$Companion_getInstance().load_fqrh44$(data);
+      }
+      var model = tmp$;
+      closure$onLoad(model);
+      return Unit;
+    };
+  }
+  AssetManager.prototype.loadModel_v5uqdg$ = function (modelPath, onLoad) {
+    this.loadAsset_us385g$(modelPath, AssetManager$loadModel$lambda(modelPath, this, onLoad));
   };
   function Coroutine$AssetManager$loadTextureAsset$lambda(closure$assetPath_0, this$AssetManager_0, closure$proxy_0, $receiver_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -5875,10 +5916,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     else
       return $receiver;
   });
-  function triArea(v1, v2, v3) {
-    var b = v2.distance_czzhiu$(v3);
-    var h = distanceToLine(v1, v2, v3);
-    return 0.5 * b * h;
+  function triArea(va, vb, vc) {
+    var xAB = vb.x - va.x;
+    var yAB = vb.y - va.y;
+    var zAB = vb.z - va.z;
+    var xAC = vc.x - va.x;
+    var yAC = vc.y - va.y;
+    var zAC = vc.z - va.z;
+    var abSqr = xAB * xAB + yAB * yAB + zAB * zAB;
+    var acSqr = xAC * xAC + yAC * yAC + zAC * zAC;
+    var abcSqr = xAB * xAC + yAB * yAC + zAB * zAC;
+    var x = abSqr * acSqr - abcSqr * abcSqr;
+    return 0.5 * Math_0.sqrt(x);
+  }
+  function triAspectRatio(va, vb, vc) {
+    var a = va.distance_czzhiu$(vb);
+    var b = vb.distance_czzhiu$(vc);
+    var c = vc.distance_czzhiu$(va);
+    var s = (a + b + c) / 2.0;
+    return a * b * c / (8.0 * (s - a) * (s - b) * (s - c));
   }
   function FloatRange(start, endInclusive) {
     this.start_f2tjk8$_0 = start;
@@ -6087,7 +6143,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     return tmp$;
   }
-  function distanceEdge($receiver, edgeA, edgeB) {
+  function distanceToEdge($receiver, edgeA, edgeB) {
     var x = sqrDistanceToEdge($receiver, edgeA, edgeB);
     return Math_0.sqrt(x);
   }
@@ -9221,7 +9277,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       throw new NotImplementedError('Unknown format ' + meta.format);
     return tmp$;
   }
-  var sortWith = Kotlin.kotlin.collections.sortWith_nqfjgj$;
   var compareBy$lambda = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
@@ -9602,14 +9657,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     var loaded = tmp$;
     loaded.lastUsed = (this.useCnt_0 = this.useCnt_0.inc(), this.useCnt_0);
     if (this.loadedMaps_0.size > this.maxMaps_0) {
-      if (this.loadedMaps_0.size > this.maxMaps_0) {
-        var remCnt = this.loadedMaps_0.size - this.maxMaps_0 | 0;
-        var sorted = sortedWith(this.loadedMaps_0.values, new Comparator$ObjectLiteral_0(compareBy$lambda_0(LoadedMapCache$getOrLoad$lambda)));
-        for (var i = 0; i <= remCnt; i++) {
-          var $receiver_0 = this.loadedMaps_0;
-          var key_0 = sorted.get_za3lpa$(i).key;
-          $receiver_0.remove_11rb$(key_0);
-        }
+      var remCnt = this.loadedMaps_0.size - this.maxMaps_0 | 0;
+      var sorted = sortedWith(this.loadedMaps_0.values, new Comparator$ObjectLiteral_0(compareBy$lambda_0(LoadedMapCache$getOrLoad$lambda)));
+      for (var i = 0; i <= remCnt; i++) {
+        var $receiver_0 = this.loadedMaps_0;
+        var key_0 = sorted.get_za3lpa$(i).key;
+        $receiver_0.remove_11rb$(key_0);
       }
     }
     return loaded.map;
@@ -9656,6 +9709,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   };
   function Globe(radius, name) {
     Globe$Companion_getInstance();
+    if (radius === void 0)
+      radius = Globe$Companion_getInstance().EARTH_RADIUS;
     if (name === void 0)
       name = null;
     TransformGroupDp.call(this, name);
@@ -9908,6 +9963,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     Globe$Companion_instance = this;
     this.RAD_85_0 = 85.0 * package$math.DEG_2_RAD;
     this.ALLOWED_MESH_REFINEMENTS_PER_FRAME = 1;
+    this.EARTH_RADIUS = 6378137.0;
   }
   Globe$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -10884,6 +10940,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.latCenter = 0;
     this.lonCenter = 0;
     this.fusedKey = TileName$Companion_getInstance().fuesdKey_qt1dr2$(this.x, this.y, this.zoom);
+    this.sizeMeters = 0;
     var zp = 1 << this.zoom;
     var x_0 = math.PI - (this.y + 1 | 0) / (1 << this.zoom) * 2 * math.PI;
     var x_1 = Math_0.sinh(x_0);
@@ -10895,6 +10952,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.lonE = this.x / zp * 360.0 - 180.0;
     this.latCenter = this.latS + (this.latN - this.latS) * 0.5;
     this.lonCenter = this.lonE + (this.lonW - this.lonE) * 0.5;
+    var tmp$ = 2 * math.PI * Globe$Companion_getInstance().EARTH_RADIUS;
+    var x_4 = this.latCenter * package$math.DEG_2_RAD;
+    this.sizeMeters = tmp$ * Math_0.cos(x_4) / (1 << this.zoom);
   }
   TileName.prototype.isSubTileOf_xacwza$ = function (parent) {
     var tmp$;
@@ -11041,9 +11101,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     interfaces: [TexImageTileShaderProvider]
   };
   function HalfEdgeMesh(meshData, edgeHandler) {
-    HalfEdgeMesh$Companion_getInstance();
     if (edgeHandler === void 0)
-      edgeHandler = HalfEdgeMesh$HalfEdgeMesh$OcTreeEdgeHandler_init(meshData);
+      edgeHandler = new ListEdgeHandler();
     Mesh.call(this, meshData);
     this.edgeHandler = edgeHandler;
     this.verts_0 = null;
@@ -11051,6 +11110,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.tmpVec1_0 = MutableVec3f_init();
     this.tmpVec2_0 = MutableVec3f_init();
     this.tmpVec3_0 = MutableVec3f_init();
+    this.vertexIt1_0 = meshData.get_za3lpa$(0);
+    this.vertexIt2_0 = meshData.get_za3lpa$(0);
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
     if (meshData.primitiveType !== 4) {
       throw KoolException_init('Supplied meshData must be of primitive type GL_TRIANGLES');
@@ -11120,6 +11181,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   });
   function HalfEdgeMesh$EdgeHandler() {
   }
+  HalfEdgeMesh$EdgeHandler.prototype.distinctTriangleEdges = function () {
+    var destination = ArrayList_init_0();
+    var tmp$;
+    tmp$ = this.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (element.id.compareTo_11rb$(element.next.id) < 0 && element.id.compareTo_11rb$(element.next.next.id) < 0)
+        destination.add_11rb$(element);
+    }
+    return destination;
+  };
   HalfEdgeMesh$EdgeHandler.$metadata$ = {
     kind: Kind_INTERFACE,
     simpleName: 'EdgeHandler',
@@ -11148,6 +11220,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       lineMesh.addLine_b8opkg$(v0, lineColor, v1, lineColor);
     }
   };
+  function HalfEdgeMesh$sanitize$lambda(closure$v, this$HalfEdgeMesh) {
+    return function (it) {
+      if (it.isDeleted) {
+        var $receiver = this$HalfEdgeMesh;
+        var $this = package$util.Log;
+        var level = Log$Level.WARN;
+        var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Deleted edge in v, edge.from == v: ' + (it.from === closure$v));
+        }
+      }
+      return it.isDeleted;
+    };
+  }
   HalfEdgeMesh.prototype.sanitize = function () {
     var tmp$, tmp$_0, tmp$_1;
     var vIt = this.verts_0.iterator();
@@ -11163,10 +11249,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     var vertCnt = this.verts_0.size;
     this.edgeHandler.rebuild();
+    if (this.edgeHandler.numEdges % 3 !== 0) {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Uneven edge count: ' + this.edgeHandler.numEdges % 3);
+      }
+    }
     var removeEdges = ArrayList_init_0();
     tmp$_0 = this.verts_0.iterator();
     while (tmp$_0.hasNext()) {
       var v_0 = tmp$_0.next();
+      removeAll(v_0.edges, HalfEdgeMesh$sanitize$lambda(v_0, this));
       tmp$_1 = v_0.edges.iterator();
       while (tmp$_1.hasNext()) {
         var he = tmp$_1.next();
@@ -11174,11 +11269,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         var i1 = he.next.from.index;
         var i2 = he.next.next.from.index;
         if (i0 >= vertCnt || i1 >= vertCnt || i2 >= vertCnt) {
-          var $this = package$util.Log;
-          var level = Log$Level.WARN;
-          var tag = Kotlin.getKClassFromExpression(this).simpleName;
-          if (level.level >= $this.level.level) {
-            $this.printer(level, tag, 'Inconsistent triangle indices: i0=' + i0 + ', i1=' + i1 + ', i2=' + i2 + ', mesh has only ' + vertCnt + ' vertices');
+          var $this_0 = package$util.Log;
+          var level_0 = Log$Level.WARN;
+          var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+          if (level_0.level >= $this_0.level.level) {
+            $this_0.printer(level_0, tag_0, 'Inconsistent triangle indices: i0=' + i0 + ', i1=' + i1 + ', i2=' + i2 + ', mesh has only ' + vertCnt + ' vertices');
           }
           removeEdges.add_11rb$(he);
         }
@@ -11189,11 +11284,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     while (tmp$_2.hasNext()) {
       var element = tmp$_2.next();
       if (element.from.isDeleted || element.from.index >= vertCnt || element.to.isDeleted || element.to.index >= vertCnt) {
-        var $this_0 = package$util.Log;
-        var level_0 = Log$Level.WARN;
-        var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
-        if (level_0.level >= $this_0.level.level) {
-          $this_0.printer(level_0, tag_0, 'Inconsistent edge: ' + element.from.index + ' (del=' + element.from.isDeleted + ') -> ' + element.to.index + ' (del=' + element.to.isDeleted + '), mesh has only ' + vertCnt + ' vertices');
+        var $this_1 = package$util.Log;
+        var level_1 = Log$Level.WARN;
+        var tag_1 = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level_1.level >= $this_1.level.level) {
+          $this_1.printer(level_1, tag_1, 'Inconsistent edge: ' + element.from.index + ' (del=' + element.from.isDeleted + ') -> ' + element.to.index + ' (del=' + element.to.isDeleted + '), mesh has only ' + vertCnt + ' vertices');
+        }
+        removeEdges.add_11rb$(element);
+      }
+      if (element === element.next || element === element.next.next) {
+        var $this_2 = package$util.Log;
+        var level_2 = Log$Level.WARN;
+        var tag_2 = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level_2.level >= $this_2.level.level) {
+          $this_2.printer(level_2, tag_2, 'Invalid edge linkage: he == he.next || he == he.next.next');
         }
         removeEdges.add_11rb$(element);
       }
@@ -11234,27 +11338,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
     }
     this.meshData.vertexList.clearIndices();
-    tmp$_0 = this.verts_0;
-    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
-      var tmp$_1;
-      var v = this.verts_0.get_za3lpa$(i_0);
-      tmp$_1 = v.edges;
-      for (var j_1 = 0; j_1 !== tmp$_1.size; ++j_1) {
-        var e = v.edges.get_za3lpa$(j_1);
-        var ei = e.from.index;
-        if (ei < e.next.from.index && ei < e.next.next.from.index) {
-          this.meshData.vertexList.addIndex_za3lpa$(e.from.index);
-          this.meshData.vertexList.addIndex_za3lpa$(e.next.from.index);
-          this.meshData.vertexList.addIndex_za3lpa$(e.next.next.from.index);
-        }
-      }
+    tmp$_0 = this.edgeHandler.distinctTriangleEdges().iterator();
+    while (tmp$_0.hasNext()) {
+      var e = tmp$_0.next();
+      this.meshData.vertexList.addIndex_za3lpa$(e.from.index);
+      this.meshData.vertexList.addIndex_za3lpa$(e.next.from.index);
+      this.meshData.vertexList.addIndex_za3lpa$(e.next.next.from.index);
     }
     if (this.meshData.numIndices !== (this.faceCount * 3 | 0)) {
       var $this_0 = package$util.Log;
       var level = Log$Level.WARN;
       var tag = Kotlin.getKClassFromExpression($this).simpleName;
       if (level.level >= $this_0.level.level) {
-        $this_0.printer(level, tag, 'Inconsiatent triangle count! MeshData: ' + (this.meshData.numIndices / 3 | 0) + ', HalfEdgeMesh: ' + this.faceCount);
+        $this_0.printer(level, tag, 'Inconsistent triangle count! MeshData: ' + (this.meshData.numIndices / 3 | 0) + ', HalfEdgeMesh: ' + this.faceCount);
       }
     }
     this.meshData.vertexList.dataF = newDataF;
@@ -11271,6 +11367,48 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (true) {
       $this.rebuildBounds();
     }
+  };
+  HalfEdgeMesh.prototype.selectBorders = function () {
+    var tmp$, tmp$_0;
+    var borders = ArrayList_init_0();
+    var collected = LinkedHashSet_init();
+    var border = ArrayList_init_0();
+    tmp$ = this.edgeHandler.iterator();
+    while (tmp$.hasNext()) {
+      var edge = tmp$.next();
+      if (edge.opp == null) {
+        var borderEdge = edge;
+        while (!collected.contains_11rb$(borderEdge)) {
+          border.add_11rb$(borderEdge);
+          collected.add_11rb$(borderEdge);
+          var $receiver = borderEdge.to.edges;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_1;
+            tmp$_1 = $receiver.iterator();
+            while (tmp$_1.hasNext()) {
+              var element = tmp$_1.next();
+              if (element.opp == null && !collected.contains_11rb$(element)) {
+                firstOrNull$result = element;
+                break firstOrNull$break;
+              }
+            }
+            firstOrNull$result = null;
+          }
+           while (false);
+          tmp$_0 = firstOrNull$result;
+          if (tmp$_0 == null) {
+            break;
+          }
+          borderEdge = tmp$_0;
+        }
+        if (!border.isEmpty()) {
+          borders.add_11rb$(border);
+          border = ArrayList_init_0();
+        }
+      }
+    }
+    return borders;
   };
   HalfEdgeMesh.prototype.subSelect_ojfeji$ = function (start, maxTris) {
     if (maxTris === void 0)
@@ -11323,33 +11461,38 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       $this.dataI.plusAssign_za3lpa$(0);
     }
     $this.vertexIt.index = (tmp$_1 = $this.size, $this.size = tmp$_1 + 1 | 0, tmp$_1);
-    $this.vertexIt.position.set_czzhiu$(edge.to).subtract_czzhiu$(edge.from).scale_mx4ult$(fraction).add_czzhiu$(edge.from);
+    var $receiver = $this.vertexIt;
+    $receiver.position.set_czzhiu$(edge.to).subtract_czzhiu$(edge.from).scale_mx4ult$(fraction).add_czzhiu$(edge.from);
+    edge.from.getMeshVertex_j5bz6$(this.vertexIt1_0);
+    edge.to.getMeshVertex_j5bz6$(this.vertexIt2_0);
+    $receiver.texCoord.set_czzhjp$(this.vertexIt2_0.texCoord).subtract_czzhjp$(this.vertexIt1_0.texCoord).scale_mx4ult$(fraction).add_czzhjp$(this.vertexIt1_0.texCoord);
+    $receiver.normal.set_czzhiu$(this.vertexIt2_0.normal).subtract_czzhiu$(this.vertexIt1_0.normal).scale_mx4ult$(fraction).add_czzhiu$(this.vertexIt1_0.normal);
     null != null ? null.add_czzhiu$($this.vertexIt.position) : null;
     var idx = $this.size - 1 | 0;
     var insertV = new HalfEdgeMesh$HalfEdgeVertex(this, idx);
     this.verts_0.add_11rb$(insertV);
     var prevToR = edge.to;
     edge.updateTo_n38rgs$(insertV);
-    var $receiver = edge.next.from.edges;
+    var $receiver_0 = edge.next.from.edges;
     var element = edge.next;
-    $receiver.remove_11rb$(element);
+    $receiver_0.remove_11rb$(element);
     edge.next.updateFrom_n38rgs$(insertV);
-    var $receiver_0 = insertV.edges;
+    var $receiver_1 = insertV.edges;
     var element_0 = edge.next;
-    $receiver_0.add_11rb$(element_0);
+    $receiver_1.add_11rb$(element_0);
     var insertEdR0 = new HalfEdgeMesh$HalfEdge(this, insertV, prevToR);
-    var $receiver_1 = new HalfEdgeMesh$HalfEdge(this, prevToR, edge.next.to);
+    var $receiver_2 = new HalfEdgeMesh$HalfEdge(this, prevToR, edge.next.to);
     var tmp$_2;
-    insertEdR0.next = $receiver_1;
-    $receiver_1.opp = edge.next.opp;
-    (tmp$_2 = $receiver_1.opp) != null ? (tmp$_2.opp = $receiver_1) : null;
-    var insertEdR1 = $receiver_1;
-    var $receiver_2 = new HalfEdgeMesh$HalfEdge(this, edge.next.to, insertV);
-    insertEdR1.next = $receiver_2;
-    $receiver_2.next = insertEdR0;
-    $receiver_2.opp = edge.next;
-    edge.next.opp = $receiver_2;
-    var insertEdR2 = $receiver_2;
+    insertEdR0.next = $receiver_2;
+    $receiver_2.opp = edge.next.opp;
+    (tmp$_2 = $receiver_2.opp) != null ? (tmp$_2.opp = $receiver_2) : null;
+    var insertEdR1 = $receiver_2;
+    var $receiver_3 = new HalfEdgeMesh$HalfEdge(this, edge.next.to, insertV);
+    insertEdR1.next = $receiver_3;
+    $receiver_3.next = insertEdR0;
+    $receiver_3.opp = edge.next;
+    edge.next.opp = $receiver_3;
+    var insertEdR2 = $receiver_3;
     this.edgeHandler.plusAssign_ebe40$(insertEdR0);
     this.edgeHandler.plusAssign_ebe40$(insertEdR1);
     this.edgeHandler.plusAssign_ebe40$(insertEdR2);
@@ -11357,26 +11500,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (edgeOpp != null) {
       var prevToL = edgeOpp.to;
       edgeOpp.updateTo_n38rgs$(insertV);
-      var $receiver_3 = edgeOpp.next.from.edges;
+      var $receiver_4 = edgeOpp.next.from.edges;
       var element_1 = edgeOpp.next;
-      $receiver_3.remove_11rb$(element_1);
+      $receiver_4.remove_11rb$(element_1);
       edgeOpp.next.updateFrom_n38rgs$(insertV);
-      var $receiver_4 = insertV.edges;
+      var $receiver_5 = insertV.edges;
       var element_2 = edgeOpp.next;
-      $receiver_4.add_11rb$(element_2);
+      $receiver_5.add_11rb$(element_2);
       var insertEdL0 = new HalfEdgeMesh$HalfEdge(this, insertV, prevToL);
-      var $receiver_5 = new HalfEdgeMesh$HalfEdge(this, prevToL, edgeOpp.next.to);
+      var $receiver_6 = new HalfEdgeMesh$HalfEdge(this, prevToL, edgeOpp.next.to);
       var tmp$_3;
-      insertEdL0.next = $receiver_5;
-      $receiver_5.opp = edgeOpp.next.opp;
-      (tmp$_3 = $receiver_5.opp) != null ? (tmp$_3.opp = $receiver_5) : null;
-      var insertEdL1 = $receiver_5;
-      var $receiver_6 = new HalfEdgeMesh$HalfEdge(this, edgeOpp.next.to, insertV);
-      insertEdL1.next = $receiver_6;
-      $receiver_6.next = insertEdL0;
-      $receiver_6.opp = edgeOpp.next;
-      edgeOpp.next.opp = $receiver_6;
-      var insertEdL2 = $receiver_6;
+      insertEdL0.next = $receiver_6;
+      $receiver_6.opp = edgeOpp.next.opp;
+      (tmp$_3 = $receiver_6.opp) != null ? (tmp$_3.opp = $receiver_6) : null;
+      var insertEdL1 = $receiver_6;
+      var $receiver_7 = new HalfEdgeMesh$HalfEdge(this, edgeOpp.next.to, insertV);
+      insertEdL1.next = $receiver_7;
+      $receiver_7.next = insertEdL0;
+      $receiver_7.opp = edgeOpp.next;
+      edgeOpp.next.opp = $receiver_7;
+      var insertEdL2 = $receiver_7;
       insertEdL0.opp = edge;
       edge.opp = insertEdL0;
       insertEdR0.opp = edgeOpp;
@@ -11385,6 +11528,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       this.edgeHandler.plusAssign_ebe40$(insertEdL1);
       this.edgeHandler.plusAssign_ebe40$(insertEdL2);
     }
+    return insertV;
   };
   HalfEdgeMesh.prototype.collapseEdge_b49or$ = function (edge, fraction) {
     var tmp$;
@@ -11521,91 +11665,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     return subData;
   };
-  function HalfEdgeMesh$Companion() {
-    HalfEdgeMesh$Companion_instance = this;
-  }
-  function HalfEdgeMesh$Companion$HalfEdgeAdapter() {
-    HalfEdgeMesh$Companion$HalfEdgeAdapter_instance = this;
-  }
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMinX_trkh7z$ = function (item) {
-    var a = item.from.x;
-    var b = item.to.x;
-    return Math_0.min(a, b);
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMinY_trkh7z$ = function (item) {
-    var a = item.from.y;
-    var b = item.to.y;
-    return Math_0.min(a, b);
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMinZ_trkh7z$ = function (item) {
-    var a = item.from.z;
-    var b = item.to.z;
-    return Math_0.min(a, b);
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMaxX_trkh7z$ = function (item) {
-    var a = item.from.x;
-    var b = item.to.x;
-    return Math_0.max(a, b);
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMaxY_trkh7z$ = function (item) {
-    var a = item.from.y;
-    var b = item.to.y;
-    return Math_0.max(a, b);
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMaxZ_trkh7z$ = function (item) {
-    var a = item.from.z;
-    var b = item.to.z;
-    return Math_0.max(a, b);
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getSzX_trkh7z$ = function (item) {
-    var x = item.from.x - item.to.x;
-    return Math_0.abs(x);
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getSzY_trkh7z$ = function (item) {
-    var x = item.from.y - item.to.y;
-    return Math_0.abs(x);
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getSzZ_trkh7z$ = function (item) {
-    var x = item.from.z - item.to.z;
-    return Math_0.abs(x);
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getCenterX_trkh7z$ = function (item) {
-    return (item.from.x + item.to.x) * 0.5;
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getCenterY_trkh7z$ = function (item) {
-    return (item.from.y + item.to.y) * 0.5;
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getCenterZ_trkh7z$ = function (item) {
-    return (item.from.z + item.to.z) * 0.5;
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.setNode_bc9457$ = function (item, node) {
-    var tmp$;
-    item.treeNode = Kotlin.isType(tmp$ = node, OcTree$OcNode) ? tmp$ : throwCCE();
-  };
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'HalfEdgeAdapter',
-    interfaces: [ItemAdapter]
-  };
-  var HalfEdgeMesh$Companion$HalfEdgeAdapter_instance = null;
-  function HalfEdgeMesh$Companion$HalfEdgeAdapter_getInstance() {
-    if (HalfEdgeMesh$Companion$HalfEdgeAdapter_instance === null) {
-      new HalfEdgeMesh$Companion$HalfEdgeAdapter();
-    }
-    return HalfEdgeMesh$Companion$HalfEdgeAdapter_instance;
-  }
-  HalfEdgeMesh$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var HalfEdgeMesh$Companion_instance = null;
-  function HalfEdgeMesh$Companion_getInstance() {
-    if (HalfEdgeMesh$Companion_instance === null) {
-      new HalfEdgeMesh$Companion();
-    }
-    return HalfEdgeMesh$Companion_instance;
-  }
   function HalfEdgeMesh$HalfEdgeVertex($outer, index) {
     this.$outer = $outer;
     Vec3f_init(0.0, this);
@@ -11642,6 +11701,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.$outer.meshData.vertexList.dataF.set_24o109$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 + 1 | 0, y);
     this.$outer.meshData.vertexList.dataF.set_24o109$(Kotlin.imul(this.index, this.$outer.meshData.vertexList.vertexSizeF) + this.$outer.positionOffset_0 + 2 | 0, z);
   };
+  HalfEdgeMesh$HalfEdgeVertex.prototype.getMeshVertex_j5bz6$ = function (result) {
+    result.index = this.index;
+    return result;
+  };
   HalfEdgeMesh$HalfEdgeVertex.prototype.getEdgeTo_n38rgs$ = function (v) {
     var tmp$;
     tmp$ = this.edges;
@@ -11653,8 +11716,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     return null;
   };
   HalfEdgeMesh$HalfEdgeVertex.prototype.delete = function () {
-    while (this.edges.size > 0) {
-      this.edges.get_za3lpa$(0).deleteTriangle();
+    while (!this.edges.isEmpty()) {
+      last(this.edges).deleteTriangle();
     }
     this.isDeleted = true;
   };
@@ -11747,24 +11810,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     return this.from.distance_czzhiu$(this.to);
   };
   HalfEdgeMesh$HalfEdge.prototype.computeTriArea = function () {
-    var xAB = this.to.x - this.from.x;
-    var yAB = this.to.y - this.from.y;
-    var zAB = this.to.z - this.from.z;
-    var xAC = this.next.to.x - this.from.x;
-    var yAC = this.next.to.y - this.from.y;
-    var zAC = this.next.to.z - this.from.z;
-    var abSqr = xAB * xAB + yAB * yAB + zAB * zAB;
-    var acSqr = xAC * xAC + yAC * yAC + zAC * zAC;
-    var abcSqr = xAB * xAC + yAB * yAC + zAB * zAC;
-    var x = abSqr * acSqr - abcSqr * abcSqr;
-    return 0.5 * Math_0.sqrt(x);
+    return triArea(this.from, this.to, this.next.to);
   };
   HalfEdgeMesh$HalfEdge.prototype.computeTriAspectRatio = function () {
-    var a = this.from.distance_czzhiu$(this.to);
-    var b = this.to.distance_czzhiu$(this.next.to);
-    var c = this.next.to.distance_czzhiu$(this.from);
-    var s = (a + b + c) / 2.0;
-    return a * b * c / (8 * (s - a) * (s - b) * (s - c));
+    return triAspectRatio(this.from, this.to, this.next.to);
   };
   HalfEdgeMesh$HalfEdge.prototype.computeTriNormal_5s4mqq$ = function (result) {
     this.to.subtract_2gj7b4$(this.from, this.$outer.tmpVec1_0);
@@ -11776,6 +11825,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.computeTriNormal_5s4mqq$(this.$outer.tmpVec3_0);
     result.set_2qa7tb$(this.$outer.tmpVec3_0, -this.$outer.tmpVec3_0.dot_czzhiu$(this.from));
     return result;
+  };
+  HalfEdgeMesh$HalfEdge.prototype.collapse_mx4ult$ = function (fraction) {
+    this.$outer.collapseEdge_b49or$(this, fraction);
+  };
+  HalfEdgeMesh$HalfEdge.prototype.split_mx4ult$ = function (fraction) {
+    return this.$outer.splitEdge_b49or$(this, fraction);
   };
   HalfEdgeMesh$HalfEdge.prototype.deleteEdge_0 = function () {
     var tmp$;
@@ -11807,26 +11862,624 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'HalfEdge',
     interfaces: []
   };
-  function HalfEdgeMesh$OcTreeEdgeHandler(treeBounds) {
-    this.edgeTree = new OcTree(HalfEdgeMesh$Companion$HalfEdgeAdapter_getInstance(), void 0, treeBounds);
+  HalfEdgeMesh.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'HalfEdgeMesh',
+    interfaces: [Mesh]
+  };
+  function ListEdgeHandler() {
+    this.edgeList = ArrayList_init_0();
+    this.numEdges_wlm1ja$_0 = 0;
   }
-  Object.defineProperty(HalfEdgeMesh$OcTreeEdgeHandler.prototype, 'numEdges', {
+  Object.defineProperty(ListEdgeHandler.prototype, 'numEdges', {
+    get: function () {
+      return this.numEdges_wlm1ja$_0;
+    },
+    set: function (numEdges) {
+      this.numEdges_wlm1ja$_0 = numEdges;
+    }
+  });
+  ListEdgeHandler.prototype.plusAssign_ebe40$ = function (edge) {
+    if (edge.isDeleted) {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'edge was deleted before');
+      }
+      edge.isDeleted = false;
+      this.rebuild();
+    }
+    this.edgeList.add_11rb$(edge);
+    this.numEdges = this.numEdges + 1 | 0;
+  };
+  ListEdgeHandler.prototype.minusAssign_ebe40$ = function (edge) {
+    if (!edge.isDeleted) {
+      this.numEdges = this.numEdges - 1 | 0;
+    }
+     else {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'edge is already deleted');
+      }
+      this.rebuild();
+    }
+  };
+  ListEdgeHandler.prototype.checkedUpdateEdgeTo_870n7c$ = function (edge, newTo) {
+    edge.to = newTo;
+  };
+  ListEdgeHandler.prototype.checkedUpdateEdgeFrom_870n7c$ = function (edge, newFrom) {
+    edge.from = newFrom;
+  };
+  ListEdgeHandler.prototype.checkedUpdateVertexPosition_efzdnr$ = function (vertex, x, y, z) {
+    vertex.setPosition_eyxpjg$(x, y, z);
+  };
+  function ListEdgeHandler$rebuild$lambda(it) {
+    return it.isDeleted;
+  }
+  ListEdgeHandler.prototype.rebuild = function () {
+    removeAll(this.edgeList, ListEdgeHandler$rebuild$lambda);
+    if (this.numEdges !== this.edgeList.size) {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Wrong edge count: ' + this.numEdges + ' != ' + this.edgeList.size);
+      }
+      this.numEdges = this.edgeList.size;
+    }
+  };
+  function ListEdgeHandler$iterator$ObjectLiteral(this$ListEdgeHandler) {
+    this.this$ListEdgeHandler = this$ListEdgeHandler;
+    this.i = 0;
+  }
+  ListEdgeHandler$iterator$ObjectLiteral.prototype.hasNext = function () {
+    while (this.i < this.this$ListEdgeHandler.edgeList.size && this.this$ListEdgeHandler.edgeList.get_za3lpa$(this.i).isDeleted) {
+      this.i = this.i + 1 | 0;
+    }
+    return this.i < this.this$ListEdgeHandler.edgeList.size;
+  };
+  ListEdgeHandler$iterator$ObjectLiteral.prototype.next = function () {
+    var tmp$;
+    if (!this.hasNext()) {
+      throw NoSuchElementException_init();
+    }
+    return this.this$ListEdgeHandler.edgeList.get_za3lpa$((tmp$ = this.i, this.i = tmp$ + 1 | 0, tmp$));
+  };
+  ListEdgeHandler$iterator$ObjectLiteral.$metadata$ = {
+    kind: Kind_CLASS,
+    interfaces: [Iterator]
+  };
+  ListEdgeHandler.prototype.iterator = function () {
+    return new ListEdgeHandler$iterator$ObjectLiteral(this);
+  };
+  ListEdgeHandler.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ListEdgeHandler',
+    interfaces: [HalfEdgeMesh$EdgeHandler]
+  };
+  function MeshCutXy(meshData) {
+    MeshCutXy$Companion_getInstance();
+    this.meshData = meshData;
+    this.ocTreeHandler_0 = OcTreeEdgeHandler_init(this.meshData);
+    this.halfEdgeMesh_0 = new HalfEdgeMesh(this.meshData, this.ocTreeHandler_0);
+    var b = this.meshData.bounds.min.distance_czzhiu$(this.meshData.bounds.max);
+    this.eps_0 = Math_0.max(1.0, b) / 10000.0;
+    this.shortEdgeThresh = 0;
+    var tmp$;
+    var edLen = 0.0;
+    tmp$ = this.ocTreeHandler_0.iterator();
+    while (tmp$.hasNext()) {
+      var ed = tmp$.next();
+      edLen += ed.computeLength();
+    }
+    this.shortEdgeThresh = edLen / this.ocTreeHandler_0.numEdges * 0.2;
+  }
+  MeshCutXy.prototype.cutXy_uqk2hy$ = function (cutPoly) {
+    var splitVerts = this.splitIntersectingEdges_0(cutPoly);
+    this.deleteInside_0(cutPoly);
+    this.fitInsideEdges_0(cutPoly);
+    this.collapseShortEdges_0(splitVerts);
+    this.halfEdgeMesh_0.rebuild_dqye30$(false, false);
+  };
+  MeshCutXy.prototype.collapseShortEdges_0 = function (splitVerts) {
+    var $receiver = this.halfEdgeMesh_0.selectBorders();
+    var destination = ArrayList_init_0();
+    var tmp$;
+    tmp$ = $receiver.iterator();
+    loop_label: while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var any$result;
+      any$break: do {
+        var tmp$_0;
+        if (Kotlin.isType(element, Collection) && element.isEmpty()) {
+          any$result = false;
+          break any$break;
+        }
+        tmp$_0 = element.iterator();
+        while (tmp$_0.hasNext()) {
+          var element_0 = tmp$_0.next();
+          if (splitVerts.contains_11rb$(element_0.from)) {
+            any$result = true;
+            break any$break;
+          }
+        }
+        any$result = false;
+      }
+       while (false);
+      if (any$result)
+        destination.add_11rb$(element);
+    }
+    var cutBorders = destination;
+    var collapseCnt = {v: 0};
+    var tmp$_1;
+    tmp$_1 = cutBorders.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_1 = tmp$_1.next();
+      var tmp$_2;
+      tmp$_2 = element_1.iterator();
+      while (tmp$_2.hasNext()) {
+        var element_2 = tmp$_2.next();
+        var tmp$_3, tmp$_4, tmp$_5, tmp$_6;
+        var edgeLen = element_2.computeLength();
+        var eps = this.eps_0;
+        if (Math_0.abs(edgeLen) <= eps) {
+          element_2.collapse_mx4ult$(0.0);
+          collapseCnt.v = collapseCnt.v + 1 | 0;
+        }
+         else if (element_2.computeLength() < this.shortEdgeThresh) {
+          var $receiver_0 = element_2.to.edges;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_7;
+            tmp$_7 = $receiver_0.iterator();
+            while (tmp$_7.hasNext()) {
+              var element_3 = tmp$_7.next();
+              if (element_3.opp == null) {
+                firstOrNull$result = element_3;
+                break firstOrNull$break;
+              }
+            }
+            firstOrNull$result = null;
+          }
+           while (false);
+          var nextEdge = firstOrNull$result;
+          var e0 = (new MutableVec2f(element_2.to.x - element_2.from.x, element_2.to.y - element_2.from.y)).norm();
+          var e1 = MutableVec2f_init();
+          if (nextEdge != null) {
+            e1.set_dleff0$(nextEdge.to.x - nextEdge.from.x, nextEdge.to.y - nextEdge.from.y).norm();
+          }
+          var a = e0.times_czzhjp$(e1);
+          var eps_0;
+          eps_0 = package$math.FUZZY_EQ_F;
+          var $receiver_1 = a - 1.0;
+          if (Math_0.abs($receiver_1) <= eps_0) {
+            element_2.collapse_mx4ult$(0.0);
+            tmp$_3 = collapseCnt.v, collapseCnt.v = tmp$_3 + 1 | 0;
+          }
+           else {
+            var $receiver_2 = element_2.from.edges;
+            var firstOrNull$result_0;
+            firstOrNull$break: do {
+              var tmp$_8;
+              tmp$_8 = $receiver_2.iterator();
+              while (tmp$_8.hasNext()) {
+                var element_4 = tmp$_8.next();
+                if (element_4.next.next.opp == null) {
+                  firstOrNull$result_0 = element_4;
+                  break firstOrNull$break;
+                }
+              }
+              firstOrNull$result_0 = null;
+            }
+             while (false);
+            var prevEdge = (tmp$_5 = (tmp$_4 = firstOrNull$result_0) != null ? tmp$_4.next : null) != null ? tmp$_5.next : null;
+            e1.set_czzhjp$(Vec2f$Companion_getInstance().ZERO);
+            if (prevEdge != null) {
+              e1.set_dleff0$(prevEdge.to.x - prevEdge.from.x, prevEdge.to.y - prevEdge.from.y).norm();
+            }
+            var a_0 = e0.times_czzhjp$(e1);
+            var eps_1;
+            eps_1 = package$math.FUZZY_EQ_F;
+            var $receiver_3 = a_0 - 1.0;
+            if (Math_0.abs($receiver_3) <= eps_1) {
+              element_2.collapse_mx4ult$(1.0);
+              tmp$_6 = collapseCnt.v, collapseCnt.v = tmp$_6 + 1 | 0;
+            }
+          }
+        }
+      }
+    }
+    var $this = package$util.Log;
+    var level = Log$Level.DEBUG;
+    var tag = Kotlin.getKClassFromExpression(this).simpleName;
+    if (level.level >= $this.level.level) {
+      $this.printer(level, tag, 'Collapsed ' + collapseCnt.v + ' short edges');
+    }
+  };
+  MeshCutXy.prototype.splitIntersectingEdges_0 = function (cutPoly) {
+    var tmp$, tmp$_0, tmp$_1;
+    var cutEdges = ArrayList_init_0();
+    tmp$ = cutPoly.size;
+    for (var i = 0; i < tmp$; i++) {
+      var i1 = (i + 1 | 0) % cutPoly.size;
+      var element = new Edge(new Vec3f(cutPoly.get_za3lpa$(i).x, cutPoly.get_za3lpa$(i).y, 0.0), new Vec3f(cutPoly.get_za3lpa$(i1).x, cutPoly.get_za3lpa$(i1).y, 0.0));
+      cutEdges.add_11rb$(element);
+    }
+    var splitVerts = LinkedHashSet_init();
+    var intersectionTrav = new MeshCutXy$EdgeXyIntersectionTrav(this);
+    for (var i_0 = 0; i_0 <= 100; i_0++) {
+      var anyCut = false;
+      tmp$_0 = cutEdges.iterator();
+      while (tmp$_0.hasNext()) {
+        var cutEdge = tmp$_0.next();
+        intersectionTrav.setup_nc6eo0$(cutEdge).traverse_m6hlto$(this.ocTreeHandler_0.edgeTree);
+        tmp$_1 = intersectionTrav.result;
+        if (tmp$_1 == null) {
+          continue;
+        }
+        var ce = tmp$_1;
+        var sv = ce.split_mx4ult$(0.5);
+        sv.updatePosition_czzhiu$(intersectionTrav.intersectionPt);
+        splitVerts.add_11rb$(sv);
+        anyCut = true;
+      }
+      if (!anyCut || i_0 === 100) {
+        var $this = package$util.Log;
+        var level = Log$Level.DEBUG;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Edge splitting done, took ' + i_0 + ' iterations');
+        }
+        break;
+      }
+    }
+    return splitVerts;
+  };
+  MeshCutXy.prototype.deleteInside_0 = function (cutPoly) {
+    var delCnt = {v: 0};
+    var $receiver = this.ocTreeHandler_0;
+    var destination = ArrayList_init_0();
+    var tmp$;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      if (MeshCutXy$Companion_getInstance().isInPolygon_0(MutableVec3f_init().add_czzhiu$(element.from).add_czzhiu$(element.next.from).add_czzhiu$(element.next.next.from).scale_mx4ult$(1 / 3.0), cutPoly))
+        destination.add_11rb$(element);
+    }
+    var tmp$_0;
+    tmp$_0 = destination.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      if (!element_0.isDeleted) {
+        element_0.deleteTriangle();
+        delCnt.v = delCnt.v + 1 | 0;
+      }
+    }
+    var $this = package$util.Log;
+    var level = Log$Level.DEBUG;
+    var tag = Kotlin.getKClassFromExpression(this).simpleName;
+    if (level.level >= $this.level.level) {
+      $this.printer(level, tag, 'Deleted ' + delCnt.v + ' inner triangles');
+    }
+  };
+  MeshCutXy.prototype.fitInsideEdges_0 = function (cutPoly) {
+    var movedVerts = LinkedHashSet_init();
+    var $receiver = MeshRayTest$Companion_getInstance().geometryTest_f1jspk$(this.halfEdgeMesh_0);
+    $receiver.onMeshDataChanged_f1jspk$(this.halfEdgeMesh_0);
+    var heightTest = $receiver;
+    var $receiver_0 = new RayTest();
+    $receiver_0.ray.origin.set_y2kzbl$(0.0, 0.0, this.halfEdgeMesh_0.bounds.max.z + 1);
+    $receiver_0.ray.direction.set_y2kzbl$(0.0, 0.0, -1.0);
+    var rayTest = $receiver_0;
+    var insideTrav = new MeshCutXy$EdgeInsidePolyTrav(this, cutPoly);
+    for (var i = 0; i <= 100; i++) {
+      var anyCut = false;
+      for (var i_0 = 0; i_0 !== cutPoly.size; ++i_0) {
+        var tmp$;
+        var pt = cutPoly.get_za3lpa$(i_0);
+        var prev = cutPoly.get_za3lpa$(i_0 === 0 ? get_lastIndex(cutPoly) : i_0 - 1 | 0);
+        var next = cutPoly.get_za3lpa$((i_0 + 1 | 0) % cutPoly.size);
+        insideTrav.setup_q586s7$(pt, prev, next).traverse_m6hlto$(this.ocTreeHandler_0.edgeTree);
+        var ce = insideTrav.closestEdge;
+        if (ce != null) {
+          rayTest.clear();
+          var $receiver_1 = rayTest.ray.origin;
+          $receiver_1.x = insideTrav.splitPos.x;
+          $receiver_1.y = insideTrav.splitPos.y;
+          heightTest.rayTest_jljx4v$(rayTest);
+          if (rayTest.isHit) {
+            insideTrav.splitPos.z = rayTest.hitPosition.z;
+          }
+          var $receiver_2 = MeshCutXy$Companion_getInstance().distXy_0(insideTrav.splitPos, ce.from);
+          var eps = this.eps_0;
+          if (Math_0.abs($receiver_2) <= eps)
+            tmp$ = ce.from;
+          else {
+            var $receiver_3 = MeshCutXy$Companion_getInstance().distXy_0(insideTrav.splitPos, ce.to);
+            var eps_0 = this.eps_0;
+            if (Math_0.abs($receiver_3) <= eps_0)
+              tmp$ = ce.to;
+            else
+              tmp$ = ce.split_mx4ult$(0.5);
+          }
+          var mvVertex = tmp$;
+          if (!movedVerts.contains_11rb$(mvVertex.index)) {
+            mvVertex.updatePosition_czzhiu$(insideTrav.splitPos);
+            var element = mvVertex.index;
+            movedVerts.add_11rb$(element);
+            anyCut = true;
+          }
+        }
+      }
+      if (!anyCut || i === 100) {
+        var $this = package$util.Log;
+        var level = Log$Level.DEBUG;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'Inside fitting done, took ' + i + ' iterations');
+        }
+        break;
+      }
+    }
+  };
+  function MeshCutXy$EdgeInsidePolyTrav($outer, cutPoly) {
+    this.$outer = $outer;
+    SpatialTreeTraverser.call(this);
+    this.cutPoly = cutPoly;
+    this.point = MutableVec3f_init();
+    this.radiusSqr = 0.0;
+    this.minDist = 0.0;
+    this.closestEdge = null;
+    this.splitPos = MutableVec3f_init();
+  }
+  MeshCutXy$EdgeInsidePolyTrav.prototype.setup_q586s7$ = function (point, next, prev) {
+    this.point.set_y2kzbl$(point.x, point.y, 0.0);
+    var a = point.sqrDistance_czzhjp$(next);
+    var b = point.sqrDistance_czzhjp$(prev);
+    this.radiusSqr = Math_0.max(a, b);
+    this.minDist = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+    this.closestEdge = null;
+    this.splitPos.set_czzhiu$(this.point);
+    return this;
+  };
+  MeshCutXy$EdgeInsidePolyTrav.prototype.traverseChildren_h2y3v6$ = function (tree, node) {
+    var tmp$;
+    tmp$ = node.children.iterator();
+    while (tmp$.hasNext()) {
+      var c = tmp$.next();
+      this.point.z = c.bounds.center.z;
+      if (c.bounds.pointDistanceSqr_czzhiu$(this.point) < this.radiusSqr) {
+        this.traverseNode_h2y3v6$(tree, c);
+      }
+    }
+  };
+  MeshCutXy$EdgeInsidePolyTrav.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    var splitPt = MutableVec3f_init();
+    tmp$ = leaf.nodeRange;
+    tmp$_0 = tmp$.first;
+    tmp$_1 = tmp$.last;
+    tmp$_2 = tmp$.step;
+    for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
+      var e = leaf.items.get_za3lpa$(i);
+      if (e.opp == null) {
+        var c = MutableVec3f_init_1(e.to).subtract_czzhiu$(e.from).scale_mx4ult$(0.5).add_czzhiu$(e.from);
+        if (MeshCutXy$Companion_getInstance().isInPolygon_0(c, this.cutPoly)) {
+          nearestPointOnEdge(this.point, e.from, e.to, splitPt);
+          var splitD = MeshCutXy$Companion_getInstance().distXy_0(splitPt, this.point);
+          var tmp$_3 = !splitPt.isFuzzyEqual_2qa7tb$(e.from, this.$outer.eps_0) && !splitPt.isFuzzyEqual_2qa7tb$(e.to, this.$outer.eps_0) && splitD < this.minDist;
+          if (tmp$_3) {
+            var eps = this.$outer.eps_0;
+            tmp$_3 = !(Math_0.abs(splitD) <= eps);
+          }
+          if (tmp$_3) {
+            this.minDist = splitD;
+            this.closestEdge = e;
+            this.splitPos.z = splitPt.z;
+          }
+        }
+      }
+    }
+  };
+  MeshCutXy$EdgeInsidePolyTrav.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'EdgeInsidePolyTrav',
+    interfaces: [SpatialTreeTraverser]
+  };
+  function MeshCutXy$EdgeXyIntersectionTrav($outer) {
+    this.$outer = $outer;
+    SpatialTreeTraverser.call(this);
+    this.edge_93dgqa$_0 = this.edge_93dgqa$_0;
+    this.edgeRayXy_0 = new Ray();
+    this.edgeLenXy_0 = 0.0;
+    this.result = null;
+    this.intersectionPt = MutableVec3f_init();
+  }
+  Object.defineProperty(MeshCutXy$EdgeXyIntersectionTrav.prototype, 'edge_0', {
+    get: function () {
+      if (this.edge_93dgqa$_0 == null)
+        return throwUPAE('edge');
+      return this.edge_93dgqa$_0;
+    },
+    set: function (edge) {
+      this.edge_93dgqa$_0 = edge;
+    }
+  });
+  MeshCutXy$EdgeXyIntersectionTrav.prototype.setup_nc6eo0$ = function (edge) {
+    this.edge_0 = edge;
+    this.result = null;
+    this.intersectionPt.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+    this.edgeRayXy_0.origin.set_czzhiu$(edge.pt0).z = 0.0;
+    this.edgeRayXy_0.direction.set_czzhiu$(edge.pt1).subtract_czzhiu$(edge.pt0).z = 0.0;
+    this.edgeLenXy_0 = this.edgeRayXy_0.direction.length();
+    this.edgeRayXy_0.direction.norm();
+    return this;
+  };
+  MeshCutXy$EdgeXyIntersectionTrav.prototype.traverseChildren_h2y3v6$ = function (tree, node) {
+    var tmp$;
+    tmp$ = node.children.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      this.edgeRayXy_0.origin.z = element.bounds.center.z;
+      var tmp$_0 = this.result == null;
+      if (tmp$_0) {
+        var x = element.bounds.hitDistanceSqr_nvyeur$(this.edgeRayXy_0);
+        tmp$_0 = Math_0.sqrt(x) < this.edgeLenXy_0;
+      }
+      if (tmp$_0) {
+        this.traverseNode_h2y3v6$(tree, element);
+      }
+    }
+  };
+  MeshCutXy$EdgeXyIntersectionTrav.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    tmp$ = leaf.nodeRange;
+    tmp$_0 = tmp$.first;
+    tmp$_1 = tmp$.last;
+    tmp$_2 = tmp$.step;
+    for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
+      var item = leaf.items.get_za3lpa$(i);
+      var tmp$_3 = MeshCutXy$Companion_getInstance().computeXyEdgeIntersectionPoint_0(this.edge_0.pt0, this.edge_0.pt1, item.from, item.to, this.intersectionPt);
+      if (tmp$_3) {
+        var $receiver = MeshCutXy$Companion_getInstance().distXy_0(this.intersectionPt, item.from);
+        var eps = this.$outer.eps_0;
+        tmp$_3 = !(Math_0.abs($receiver) <= eps);
+      }
+      var tmp$_4 = tmp$_3;
+      if (tmp$_4) {
+        var $receiver_0 = MeshCutXy$Companion_getInstance().distXy_0(this.intersectionPt, item.to);
+        var eps_0 = this.$outer.eps_0;
+        tmp$_4 = !(Math_0.abs($receiver_0) <= eps_0);
+      }
+      if (tmp$_4) {
+        this.result = item;
+        var f = MeshCutXy$Companion_getInstance().distXy_0(this.intersectionPt, item.from) / MeshCutXy$Companion_getInstance().distXy_0(item.to, item.from);
+        this.intersectionPt.z = item.from.z + (item.to.z - item.from.z) * f;
+        break;
+      }
+    }
+  };
+  MeshCutXy$EdgeXyIntersectionTrav.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'EdgeXyIntersectionTrav',
+    interfaces: [SpatialTreeTraverser]
+  };
+  function MeshCutXy$Companion() {
+    MeshCutXy$Companion_instance = this;
+  }
+  MeshCutXy$Companion.prototype.distXy_0 = function ($receiver, other) {
+    var dx = $receiver.x - other.x;
+    var dy = $receiver.y - other.y;
+    var x = dx * dx + dy * dy;
+    return Math_0.sqrt(x);
+  };
+  MeshCutXy$Companion.prototype.isInPolygon_0 = function (point, poly) {
+    var tmp$;
+    var i = 0;
+    var j = poly.size - 1 | 0;
+    var result = false;
+    while (i < poly.size) {
+      if (poly.get_za3lpa$(i).y > point.y !== poly.get_za3lpa$(j).y > point.y && point.x < (poly.get_za3lpa$(j).x - poly.get_za3lpa$(i).x) * (point.y - poly.get_za3lpa$(i).y) / (poly.get_za3lpa$(j).y - poly.get_za3lpa$(i).y) + poly.get_za3lpa$(i).x) {
+        result = !result;
+      }
+      j = (tmp$ = i, i = tmp$ + 1 | 0, tmp$);
+    }
+    return result;
+  };
+  MeshCutXy$Companion.prototype.computeXyLineIntersectionPoint_0 = function (e11, e12, e21, e22, result) {
+    var x1 = e11.x;
+    var y1 = e11.y;
+    var x2 = e12.x;
+    var y2 = e12.y;
+    var x3 = e21.x;
+    var y3 = e21.y;
+    var x4 = e22.x;
+    var y4 = e22.y;
+    var denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+    var eps;
+    eps = package$math.FUZZY_EQ_F;
+    if (!(Math_0.abs(denom) <= eps)) {
+      var a = x1 * y2 - y1 * x2;
+      var b = x3 * y4 - y3 * x4;
+      var x = (a * (x3 - x4) - b * (x1 - x2)) / denom;
+      var y = (a * (y3 - y4) - b * (y1 - y2)) / denom;
+      result.set_y2kzbl$(x, y, 0.0);
+      return true;
+    }
+    return false;
+  };
+  MeshCutXy$Companion.prototype.computeXyEdgeIntersectionPoint_0 = function (e11, e12, e21, e22, result) {
+    if (!this.computeXyLineIntersectionPoint_0(e11, e12, e21, e22, result)) {
+      return false;
+    }
+    var dx0 = result.x - e11.x;
+    var dy0 = result.y - e11.y;
+    var dx1 = e12.x - e11.x;
+    var dy1 = e12.y - e11.y;
+    var dot = dx0 * dx1 + dy0 * dy1;
+    var l0 = dx0 * dx0 + dy0 * dy0;
+    var l1 = dx1 * dx1 + dy1 * dy1;
+    if (dot < 0.0 || l0 > l1) {
+      return false;
+    }
+    dx0 = result.x - e21.x;
+    dy0 = result.y - e21.y;
+    dx1 = e22.x - e21.x;
+    dy1 = e22.y - e21.y;
+    dot = dx0 * dx1 + dy0 * dy1;
+    l0 = dx0 * dx0 + dy0 * dy0;
+    l1 = dx1 * dx1 + dy1 * dy1;
+    return dot > 0 && l0 < l1;
+  };
+  MeshCutXy$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var MeshCutXy$Companion_instance = null;
+  function MeshCutXy$Companion_getInstance() {
+    if (MeshCutXy$Companion_instance === null) {
+      new MeshCutXy$Companion();
+    }
+    return MeshCutXy$Companion_instance;
+  }
+  MeshCutXy.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MeshCutXy',
+    interfaces: []
+  };
+  function OcTreeEdgeHandler(treeBounds) {
+    OcTreeEdgeHandler$Companion_getInstance();
+    this.edgeTree = new OcTree(OcTreeEdgeHandler$Companion$HalfEdgeAdapter_getInstance(), void 0, treeBounds);
+  }
+  Object.defineProperty(OcTreeEdgeHandler.prototype, 'numEdges', {
     get: function () {
       return this.edgeTree.size;
     }
   });
-  HalfEdgeMesh$OcTreeEdgeHandler.prototype.plusAssign_ebe40$ = function (edge) {
+  OcTreeEdgeHandler.prototype.plusAssign_ebe40$ = function (edge) {
     this.edgeTree.add_11rb$(edge);
   };
-  HalfEdgeMesh$OcTreeEdgeHandler.prototype.minusAssign_ebe40$ = function (edge) {
+  OcTreeEdgeHandler.prototype.minusAssign_ebe40$ = function (edge) {
+    if (edge.isDeleted) {
+      var $this = package$util.Log;
+      var level = Log$Level.WARN;
+      var tag = Kotlin.getKClassFromExpression(this).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'edge is already deleted, probably not in tree anymore...');
+      }
+    }
     this.edgeTree.remove_11rb$(edge);
   };
-  HalfEdgeMesh$OcTreeEdgeHandler.prototype.checkedUpdateEdgeTo_870n7c$ = function (edge, newTo) {
+  OcTreeEdgeHandler.prototype.checkedUpdateEdgeTo_870n7c$ = function (edge, newTo) {
     var tmp$;
     var newX = (edge.from.x + newTo.x) * 0.5;
     var newY = (edge.from.y + newTo.y) * 0.5;
     var newZ = (edge.from.z + newTo.z) * 0.5;
-    if (((tmp$ = edge.treeNode) != null ? tmp$.isInNode_y2kzbl$(newX, newY, newZ) : null) === true) {
+    if (((tmp$ = edge.treeNode) != null ? tmp$.isInBounds_y2kzbl$(newX, newY, newZ) : null) === true) {
       edge.to = newTo;
     }
      else {
@@ -11835,12 +12488,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       this.edgeTree.add_11rb$(edge);
     }
   };
-  HalfEdgeMesh$OcTreeEdgeHandler.prototype.checkedUpdateEdgeFrom_870n7c$ = function (edge, newFrom) {
+  OcTreeEdgeHandler.prototype.checkedUpdateEdgeFrom_870n7c$ = function (edge, newFrom) {
     var tmp$;
     var newX = (newFrom.x + edge.to.x) * 0.5;
     var newY = (newFrom.y + edge.to.y) * 0.5;
     var newZ = (newFrom.z + edge.to.z) * 0.5;
-    if (((tmp$ = edge.treeNode) != null ? tmp$.isInNode_y2kzbl$(newX, newY, newZ) : null) === true) {
+    if (((tmp$ = edge.treeNode) != null ? tmp$.isInBounds_y2kzbl$(newX, newY, newZ) : null) === true) {
       edge.from = newFrom;
     }
      else {
@@ -11849,7 +12502,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       this.edgeTree.add_11rb$(edge);
     }
   };
-  HalfEdgeMesh$OcTreeEdgeHandler.prototype.checkedUpdateVertexPosition_efzdnr$ = function (vertex, x, y, z) {
+  OcTreeEdgeHandler.prototype.checkedUpdateVertexPosition_efzdnr$ = function (vertex, x, y, z) {
     var tmp$, tmp$_0;
     tmp$ = vertex.edges;
     for (var i = 0; i !== tmp$.size; ++i) {
@@ -11858,16 +12511,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       var newX = (x + ed.to.x) * 0.5;
       var newY = (y + ed.to.y) * 0.5;
       var newZ = (z + ed.to.z) * 0.5;
-      if (((tmp$_1 = ed.treeNode) != null ? tmp$_1.isInNode_y2kzbl$(newX, newY, newZ) : null) !== true) {
-        this.minusAssign_ebe40$(ed);
+      if (((tmp$_1 = ed.treeNode) != null ? tmp$_1.isInBounds_y2kzbl$(newX, newY, newZ) : null) === false) {
+        var $receiver = this.edgeTree;
+        var element = ed;
+        $receiver.remove_11rb$(element);
         ed.treeNode = null;
       }
       ed = vertex.edges.get_za3lpa$(i).next.next;
       newX = (x + ed.from.x) * 0.5;
       newY = (y + ed.from.y) * 0.5;
       newZ = (z + ed.from.z) * 0.5;
-      if (((tmp$_2 = ed.treeNode) != null ? tmp$_2.isInNode_y2kzbl$(newX, newY, newZ) : null) !== true) {
-        this.minusAssign_ebe40$(ed);
+      if (((tmp$_2 = ed.treeNode) != null ? tmp$_2.isInBounds_y2kzbl$(newX, newY, newZ) : null) === false) {
+        var $receiver_0 = this.edgeTree;
+        var element_0 = ed;
+        $receiver_0.remove_11rb$(element_0);
         ed.treeNode = null;
       }
     }
@@ -11883,18 +12540,103 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
     }
   };
-  HalfEdgeMesh$OcTreeEdgeHandler.prototype.rebuild = function () {
+  OcTreeEdgeHandler.prototype.rebuild = function () {
   };
-  HalfEdgeMesh$OcTreeEdgeHandler.prototype.iterator = function () {
+  OcTreeEdgeHandler.prototype.iterator = function () {
     return this.edgeTree.iterator();
   };
-  HalfEdgeMesh$OcTreeEdgeHandler.$metadata$ = {
+  function OcTreeEdgeHandler$Companion() {
+    OcTreeEdgeHandler$Companion_instance = this;
+  }
+  function OcTreeEdgeHandler$Companion$HalfEdgeAdapter() {
+    OcTreeEdgeHandler$Companion$HalfEdgeAdapter_instance = this;
+  }
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMinX_trkh7z$ = function (item) {
+    var a = item.from.x;
+    var b = item.to.x;
+    return Math_0.min(a, b);
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMinY_trkh7z$ = function (item) {
+    var a = item.from.y;
+    var b = item.to.y;
+    return Math_0.min(a, b);
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMinZ_trkh7z$ = function (item) {
+    var a = item.from.z;
+    var b = item.to.z;
+    return Math_0.min(a, b);
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMaxX_trkh7z$ = function (item) {
+    var a = item.from.x;
+    var b = item.to.x;
+    return Math_0.max(a, b);
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMaxY_trkh7z$ = function (item) {
+    var a = item.from.y;
+    var b = item.to.y;
+    return Math_0.max(a, b);
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMaxZ_trkh7z$ = function (item) {
+    var a = item.from.z;
+    var b = item.to.z;
+    return Math_0.max(a, b);
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getSzX_trkh7z$ = function (item) {
+    var x = item.from.x - item.to.x;
+    return Math_0.abs(x);
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getSzY_trkh7z$ = function (item) {
+    var x = item.from.y - item.to.y;
+    return Math_0.abs(x);
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getSzZ_trkh7z$ = function (item) {
+    var x = item.from.z - item.to.z;
+    return Math_0.abs(x);
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getCenterX_trkh7z$ = function (item) {
+    return (item.from.x + item.to.x) * 0.5;
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getCenterY_trkh7z$ = function (item) {
+    return (item.from.y + item.to.y) * 0.5;
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getCenterZ_trkh7z$ = function (item) {
+    return (item.from.z + item.to.z) * 0.5;
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.setNode_bc9457$ = function (item, node) {
+    var tmp$;
+    item.treeNode = Kotlin.isType(tmp$ = node, OcTree$OcNode) ? tmp$ : throwCCE();
+  };
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'HalfEdgeAdapter',
+    interfaces: [ItemAdapter]
+  };
+  var OcTreeEdgeHandler$Companion$HalfEdgeAdapter_instance = null;
+  function OcTreeEdgeHandler$Companion$HalfEdgeAdapter_getInstance() {
+    if (OcTreeEdgeHandler$Companion$HalfEdgeAdapter_instance === null) {
+      new OcTreeEdgeHandler$Companion$HalfEdgeAdapter();
+    }
+    return OcTreeEdgeHandler$Companion$HalfEdgeAdapter_instance;
+  }
+  OcTreeEdgeHandler$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var OcTreeEdgeHandler$Companion_instance = null;
+  function OcTreeEdgeHandler$Companion_getInstance() {
+    if (OcTreeEdgeHandler$Companion_instance === null) {
+      new OcTreeEdgeHandler$Companion();
+    }
+    return OcTreeEdgeHandler$Companion_instance;
+  }
+  OcTreeEdgeHandler.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'OcTreeEdgeHandler',
     interfaces: [HalfEdgeMesh$EdgeHandler]
   };
-  function HalfEdgeMesh$HalfEdgeMesh$OcTreeEdgeHandler_init(meshData, $this) {
-    $this = $this || Object.create(HalfEdgeMesh$OcTreeEdgeHandler.prototype);
+  function OcTreeEdgeHandler_init(meshData, $this) {
+    $this = $this || Object.create(OcTreeEdgeHandler.prototype);
     var $receiver = new BoundingBox();
     var wasBatchUpdate = $receiver.isBatchUpdate;
     $receiver.isBatchUpdate = true;
@@ -11906,88 +12648,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       $receiver.add_czzhiu$(v.position);
     }
     $receiver.isBatchUpdate = wasBatchUpdate;
-    HalfEdgeMesh$OcTreeEdgeHandler.call($this, $receiver);
+    OcTreeEdgeHandler.call($this, $receiver);
     return $this;
   }
-  function HalfEdgeMesh$ListEdgeHandler() {
-    this.edgeList = ArrayList_init_0();
-    this.numEdges_a9s0c5$_0 = 0;
-  }
-  Object.defineProperty(HalfEdgeMesh$ListEdgeHandler.prototype, 'numEdges', {
-    get: function () {
-      return this.numEdges_a9s0c5$_0;
-    },
-    set: function (numEdges) {
-      this.numEdges_a9s0c5$_0 = numEdges;
-    }
-  });
-  HalfEdgeMesh$ListEdgeHandler.prototype.plusAssign_ebe40$ = function (edge) {
-    if (edge.isDeleted) {
-      var $this = package$util.Log;
-      var level = Log$Level.WARN;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'edge was deleted before');
-      }
-      edge.isDeleted = false;
-      this.rebuild();
-    }
-    this.edgeList.add_11rb$(edge);
-    this.numEdges = this.numEdges + 1 | 0;
-  };
-  HalfEdgeMesh$ListEdgeHandler.prototype.minusAssign_ebe40$ = function (edge) {
-    edge.isDeleted = true;
-    this.numEdges = this.numEdges - 1 | 0;
-  };
-  HalfEdgeMesh$ListEdgeHandler.prototype.checkedUpdateEdgeTo_870n7c$ = function (edge, newTo) {
-    edge.to = newTo;
-  };
-  HalfEdgeMesh$ListEdgeHandler.prototype.checkedUpdateEdgeFrom_870n7c$ = function (edge, newFrom) {
-    edge.from = newFrom;
-  };
-  HalfEdgeMesh$ListEdgeHandler.prototype.checkedUpdateVertexPosition_efzdnr$ = function (vertex, x, y, z) {
-    vertex.setPosition_eyxpjg$(x, y, z);
-  };
-  function HalfEdgeMesh$ListEdgeHandler$rebuild$lambda(it) {
-    return it.isDeleted;
-  }
-  HalfEdgeMesh$ListEdgeHandler.prototype.rebuild = function () {
-    removeAll(this.edgeList, HalfEdgeMesh$ListEdgeHandler$rebuild$lambda);
-  };
-  function HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral(this$ListEdgeHandler) {
-    this.this$ListEdgeHandler = this$ListEdgeHandler;
-    this.i = 0;
-  }
-  HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral.prototype.hasNext = function () {
-    while (this.i < this.this$ListEdgeHandler.edgeList.size && this.this$ListEdgeHandler.edgeList.get_za3lpa$(this.i).isDeleted) {
-      this.i = this.i + 1 | 0;
-    }
-    return this.i < this.this$ListEdgeHandler.edgeList.size;
-  };
-  HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral.prototype.next = function () {
-    var tmp$;
-    if (!this.hasNext()) {
-      throw NoSuchElementException_init();
-    }
-    return this.this$ListEdgeHandler.edgeList.get_za3lpa$((tmp$ = this.i, this.i = tmp$ + 1 | 0, tmp$));
-  };
-  HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral.$metadata$ = {
-    kind: Kind_CLASS,
-    interfaces: [Iterator]
-  };
-  HalfEdgeMesh$ListEdgeHandler.prototype.iterator = function () {
-    return new HalfEdgeMesh$ListEdgeHandler$iterator$ObjectLiteral(this);
-  };
-  HalfEdgeMesh$ListEdgeHandler.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ListEdgeHandler',
-    interfaces: [HalfEdgeMesh$EdgeHandler]
-  };
-  HalfEdgeMesh.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'HalfEdgeMesh',
-    interfaces: [Mesh]
-  };
   function CollapseStrategy() {
   }
   CollapseStrategy.$metadata$ = {
@@ -12003,7 +12666,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.tmpPos1 = MutableVec3f_init();
   }
   defaultCollapseStrategy$ObjectLiteral.prototype.computeCollapsePosition_2pqe3s$ = function (q1, q2, resultPos) {
-    var tmp$, tmp$_0, tmp$_1;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
     var triCnt = 0;
     tmp$ = q1.vertex.edges;
     for (var i = 0; i !== tmp$.size; ++i) {
@@ -12013,27 +12676,37 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
     }
     if (triCnt > 2 || triCnt < (q1.isBorder && q2.isBorder ? 1 : 2)) {
-      return kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+      return kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
+    }
+    if ((tmp$_0 = q1.vertex.getEdgeTo_n38rgs$(q2.vertex)) != null) {
+      if (tmp$_0.next.opp == null && tmp$_0.next.next.opp == null) {
+        return kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
+      }
+    }
+    if ((tmp$_1 = q2.vertex.getEdgeTo_n38rgs$(q1.vertex)) != null) {
+      if (tmp$_1.next.opp == null && tmp$_1.next.next.opp == null) {
+        return kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
+      }
     }
     this.tmpQ.set_d4zu6l$(q1.errQuadric);
     this.tmpQ.add_d4zu6l$(q2.errQuadric);
     this.tmpQ.setRow_ky00rh$(3, Vec4d$Companion_getInstance().W_AXIS);
     if (this.tmpQ.invert_14dthe$(FUZZY_EQ_D)) {
       resultPos.set_y2kzbl$(this.tmpQ.get_vux9f0$(0, 3), this.tmpQ.get_vux9f0$(1, 3), this.tmpQ.get_vux9f0$(2, 3));
-      tmp$_0 = q1.getError_czzhiu$(resultPos) + q2.getError_czzhiu$(resultPos);
+      tmp$_2 = q1.getError_czzhiu$(resultPos) + q2.getError_czzhiu$(resultPos);
     }
      else {
       q2.vertex.subtract_2gj7b4$(q1.vertex, resultPos).scale_mx4ult$(0.5).add_czzhiu$(q1.vertex);
-      tmp$_0 = q1.vertex.distance_czzhiu$(q2.vertex) / 1000000.0;
+      tmp$_2 = q1.vertex.distance_czzhiu$(q2.vertex) / 1.0E100;
     }
-    var err = tmp$_0;
+    var err = tmp$_2;
     if (this.isRejected_0(q1.vertex, q2.vertex, resultPos) || this.isRejected_0(q2.vertex, q1.vertex, resultPos)) {
-      tmp$_1 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+      tmp$_3 = kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
     }
      else {
-      tmp$_1 = err;
+      tmp$_3 = err;
     }
-    return tmp$_1;
+    return tmp$_3;
   };
   defaultCollapseStrategy$ObjectLiteral.prototype.isRejected_0 = function (vert, excludedTo, newPos) {
     var tmp$, tmp$_0;
@@ -12046,19 +12719,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         if (this.tmpNrm0.dot_czzhiu$(this.tmpNrm1) < 0) {
           return true;
         }
-        if (this.triangleAr_0(newPos, edge.to, edge.next.to) > 10000) {
+        if (triAspectRatio(newPos, edge.to, edge.next.to) > 10000) {
           return true;
         }
       }
     }
     return false;
-  };
-  defaultCollapseStrategy$ObjectLiteral.prototype.triangleAr_0 = function (va, vb, vc) {
-    var a = va.distance_czzhiu$(vb);
-    var b = vb.distance_czzhiu$(vc);
-    var c = vc.distance_czzhiu$(va);
-    var s = (a + b + c) / 2.0;
-    return a * b * c / (8.0 * (s - a) * (s - b) * (s - c));
   };
   defaultCollapseStrategy$ObjectLiteral.prototype.newNormal_0 = function (edge, newPos, newNormal) {
     edge.to.subtract_2gj7b4$(newPos, this.tmpPos0);
@@ -12153,52 +12819,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'ErrorQuadric',
     interfaces: []
   };
-  function simplify($receiver, termCrit, keepBorders) {
-    if (keepBorders === void 0)
-      keepBorders = false;
-    simplify_0($receiver.meshData, termCrit, keepBorders);
+  function simplify($receiver, termCrit) {
+    simplify_0(new HalfEdgeMesh($receiver), termCrit, emptySet());
   }
-  function simplify_0($receiver, termCrit, keepBorders) {
-    if (keepBorders === void 0)
-      keepBorders = false;
-    simplify_1(new HalfEdgeMesh($receiver, new HalfEdgeMesh$ListEdgeHandler()), termCrit, keepBorders);
+  function simplify_0($receiver, termCrit, excludedEdges) {
+    if (excludedEdges === void 0)
+      excludedEdges = emptySet();
+    var $receiver_0 = new MeshSimplifier(termCrit);
+    addAll_0($receiver_0.excludedEdges, excludedEdges);
+    $receiver_0.simplifyMesh_mnbsaa$($receiver);
   }
-  function simplify_1($receiver, termCrit, keepBorders) {
-    if (keepBorders === void 0)
-      keepBorders = false;
-    (new MeshSimplifier(termCrit, keepBorders)).simplifyMesh_mnbsaa$($receiver);
-  }
-  function Comparator$ObjectLiteral_2(closure$comparison) {
-    this.closure$comparison = closure$comparison;
-  }
-  Comparator$ObjectLiteral_2.prototype.compare = function (a, b) {
-    return this.closure$comparison(a, b);
-  };
-  Comparator$ObjectLiteral_2.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  function MeshSimplifier(termCrit, keepBorders, quality, collapseStrategy) {
-    if (keepBorders === void 0)
-      keepBorders = false;
-    if (quality === void 0)
-      quality = 3.0;
+  function MeshSimplifier(termCrit, collapseStrategy) {
     if (collapseStrategy === void 0)
       collapseStrategy = defaultCollapseStrategy();
     this.termCrit = termCrit;
-    this.keepBorders = keepBorders;
-    this.quality = quality;
     this.collapseStrategy = collapseStrategy;
     this.quadrics = LinkedHashMap_init();
-    this.candidates_0 = new PriorityQueue(new Comparator$ObjectLiteral_2(MeshSimplifier$candidates$lambda));
-    this.tmpVec_0 = MutableVec3f_init();
-    this.mesh_c14x7o$_0 = this.mesh_c14x7o$_0;
+    this.candidates_gym04f$_0 = new MeshSimplifier$CollapseCandidates();
+    this.candidateMap_xv83ew$_0 = LinkedHashMap_init();
+    this.mesh_c14x7o$_aesyuh$_0 = this.mesh_c14x7o$_aesyuh$_0;
+    this.excludedEdges = LinkedHashSet_init();
+    this.keepBorders = false;
   }
-  Object.defineProperty(MeshSimplifier.prototype, 'mesh_0', {
+  Object.defineProperty(MeshSimplifier.prototype, 'mesh_c14x7o$_0', {
     get: function () {
-      if (this.mesh_c14x7o$_0 == null)
+      if (this.mesh_c14x7o$_aesyuh$_0 == null)
         return throwUPAE('mesh');
-      return this.mesh_c14x7o$_0;
+      return this.mesh_c14x7o$_aesyuh$_0;
     },
     set: function (mesh) {
-      this.mesh_c14x7o$_0 = mesh;
+      this.mesh_c14x7o$_aesyuh$_0 = mesh;
     }
   });
   MeshSimplifier.prototype.simplifyMesh_mnbsaa$ = function (mesh, generateNormals, generateTangents) {
@@ -12206,91 +12856,160 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       generateNormals = true;
     if (generateTangents === void 0)
       generateTangents = true;
+    this.mesh_c14x7o$_0 = mesh;
     var $this = package$util.Log;
     var level = Log$Level.DEBUG;
     var tag = Kotlin.getKClassFromExpression(this).simpleName;
     if (level.level >= $this.level.level) {
       $this.printer(level, tag, 'Simplifying mesh: ' + mesh.faceCount + ' faces / ' + mesh.vertCount + ' vertices...');
     }
-    this.quadrics.clear();
-    this.candidates_0.clear();
     var perf = new PerfTimer();
-    this.rebuildCollapseQueue_nbf0q6$(mesh);
+    this.quadrics.clear();
+    this.candidates_gym04f$_0.clear();
     this.termCrit.init_nbf0q6$(mesh);
-    this.mesh_0 = mesh;
-    var rebuildQueue = numberToInt(mesh.faceCount / this.quality);
+    var nextReshape = mesh.faceCount / 2 | 0;
+    this.rebuildCollapseQueue_sifma0$_0();
     var lastError = {v: 0.0};
-    while (!this.candidates_0.isEmpty() && this.candidates_0.peek().error < kotlin_js_internal_FloatCompanionObject.MAX_VALUE && !this.termCrit.isFinished_fugc5p$(mesh, lastError.v)) {
-      if ((rebuildQueue = rebuildQueue - 1 | 0, rebuildQueue) <= 0) {
-        var b = numberToInt(mesh.faceCount / this.quality);
-        rebuildQueue = Math_0.max(10, b);
-        this.rebuildCollapseQueue_nbf0q6$(mesh);
+    while (this.candidates_gym04f$_0.isNotEmpty() && this.candidates_gym04f$_0.peek().error < kotlin_js_internal_DoubleCompanionObject.MAX_VALUE && !this.termCrit.isFinished_6w1xds$(mesh, lastError.v)) {
+      if (mesh.faceCount < nextReshape) {
+        this.reshapeTriangles_ps2mgc$_0();
+        nextReshape = mesh.faceCount / 2 | 0;
       }
-      var candidate = this.candidates_0.poll();
+      var candidate = this.candidates_gym04f$_0.poll();
       if (candidate.edge.isDeleted || candidate.q1.isDeleted || candidate.q2.isDeleted) {
+        var $this_0 = package$util.Log;
+        var level_0 = Log$Level.WARN;
+        var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level_0.level >= $this_0.level.level) {
+          $this_0.printer(level_0, tag_0, 'Invalid edge: already deleted!');
+        }
         continue;
       }
+      var oldError = candidate.error;
       candidate.updateCollapsePosAndError();
-      if (candidate.error > this.candidates_0.peek().error) {
-        this.candidates_0.plusAssign_11rb$(candidate);
+      if (oldError !== candidate.error) {
+        this.rebuildCollapseQueue_sifma0$_0();
+        continue;
+      }
+      if (candidate.error > this.candidates_gym04f$_0.peek().error) {
+        var $this_1 = package$util.Log;
+        var level_1 = Log$Level.ERROR;
+        var tag_1 = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level_1.level >= $this_1.level.level) {
+          $this_1.printer(level_1, tag_1, 'next error is less!');
+        }
+        this.candidates_gym04f$_0.plusAssign_g91td9$(candidate);
       }
        else if (candidate.error < kotlin_js_internal_FloatCompanionObject.MAX_VALUE) {
         lastError.v = candidate.collapse();
       }
        else {
-        var $this_0 = package$util.Log;
-        var level_0 = Log$Level.DEBUG;
-        var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
-        if (level_0.level >= $this_0.level.level) {
-          $this_0.printer(level_0, tag_0, 'No more collapsable edges');
+        var $this_2 = package$util.Log;
+        var level_2 = Log$Level.DEBUG;
+        var tag_2 = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level_2.level >= $this_2.level.level) {
+          $this_2.printer(level_2, tag_2, 'No more collapsable edges');
         }
         break;
       }
     }
     mesh.rebuild_dqye30$(generateNormals, generateTangents);
-    var $this_1 = package$util.Log;
-    var level_1 = Log$Level.DEBUG;
-    var tag_1 = Kotlin.getKClassFromExpression(this).simpleName;
-    if (level_1.level >= $this_1.level.level) {
-      $this_1.printer(level_1, tag_1, 'Mesh simplification done! ' + mesh.faceCount + ' faces / ' + mesh.vertCount + ' vertices remain, last error: ' + lastError.v + ', took ' + toString_1(perf.takeSecs(), 3) + ' s');
+    var $this_3 = package$util.Log;
+    var level_3 = Log$Level.DEBUG;
+    var tag_3 = Kotlin.getKClassFromExpression(this).simpleName;
+    if (level_3.level >= $this_3.level.level) {
+      $this_3.printer(level_3, tag_3, 'Mesh simplification done! ' + mesh.faceCount + ' faces / ' + mesh.vertCount + ' vertices remain, last error: ' + lastError.v + ', took ' + toString_1(perf.takeSecs(), 3) + ' s');
     }
   };
-  MeshSimplifier.prototype.rebuildCollapseQueue_nbf0q6$ = function (mesh) {
+  MeshSimplifier.prototype.reshapeTriangles_ps2mgc$_0 = function () {
+    var v1 = MutableVec3f_init();
+    var v2 = MutableVec3f_init();
     var tmp$;
-    this.candidates_0.clear();
-    tmp$ = mesh.edgeHandler.iterator();
+    tmp$ = this.mesh_c14x7o$_0.edgeHandler.distinctTriangleEdges().iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var tmp$_0;
+      if (element.computeTriAspectRatio() > 50.0) {
+        var l1 = element.computeLength();
+        var l2 = element.next.computeLength();
+        var l3 = element.next.next.computeLength();
+        if (l1 > l2 && l1 > l3)
+          tmp$_0 = element;
+        else if (l2 > l1 && l2 > l3)
+          tmp$_0 = element.next;
+        else
+          tmp$_0 = element.next.next;
+        var splitEd = tmp$_0;
+        v1.set_czzhiu$(element.to).subtract_czzhiu$(element.from).norm();
+        v2.set_czzhiu$(element.next.from).subtract_czzhiu$(element.next.to);
+        var f = 1.0 - v1.dot_czzhiu$(v2) / splitEd.computeLength();
+        if (f > 0.1 && f < 0.9) {
+          splitEd.split_mx4ult$(f);
+        }
+      }
+    }
+    this.rebuildCollapseQueue_sifma0$_0();
+  };
+  MeshSimplifier.prototype.rebuildCollapseQueue_sifma0$_0 = function () {
+    var tmp$;
+    this.candidates_gym04f$_0.clear();
+    this.candidateMap_xv83ew$_0.clear();
+    tmp$ = this.mesh_c14x7o$_0.edgeHandler.iterator();
     while (tmp$.hasNext()) {
       var edge = tmp$.next();
-      if (edge.from.index < edge.to.index || edge.opp == null) {
-        var $receiver = this.quadrics;
-        var key = edge.from.index;
-        var tmp$_0;
-        var value = $receiver.get_11rb$(key);
-        if (value == null) {
-          var answer = new ErrorQuadric(edge.from);
-          $receiver.put_xwzc9p$(key, answer);
-          tmp$_0 = answer;
-        }
-         else {
-          tmp$_0 = value;
-        }
-        var q1 = tmp$_0;
-        var $receiver_0 = this.quadrics;
-        var key_0 = edge.to.index;
-        var tmp$_1;
-        var value_0 = $receiver_0.get_11rb$(key_0);
-        if (value_0 == null) {
-          var answer_0 = new ErrorQuadric(edge.to);
-          $receiver_0.put_xwzc9p$(key_0, answer_0);
-          tmp$_1 = answer_0;
-        }
-         else {
-          tmp$_1 = value_0;
-        }
-        var q2 = tmp$_1;
-        if (!this.keepBorders || (!q1.isBorder && !q2.isBorder)) {
-          this.candidates_0.plusAssign_11rb$(new MeshSimplifier$CollapseCandidate(this, edge, q1, q2));
-        }
+      this.insertEdge_56qw8l$_0(edge);
+    }
+  };
+  MeshSimplifier.prototype.insertEdge_56qw8l$_0 = function (edge) {
+    if (!this.excludedEdges.contains_11rb$(edge) && (edge.from.index < edge.to.index || edge.opp == null)) {
+      var $receiver = this.quadrics;
+      var key = edge.from.index;
+      var tmp$;
+      var value = $receiver.get_11rb$(key);
+      if (value == null) {
+        var answer = new ErrorQuadric(edge.from);
+        $receiver.put_xwzc9p$(key, answer);
+        tmp$ = answer;
+      }
+       else {
+        tmp$ = value;
+      }
+      var q1 = tmp$;
+      var $receiver_0 = this.quadrics;
+      var key_0 = edge.to.index;
+      var tmp$_0;
+      var value_0 = $receiver_0.get_11rb$(key_0);
+      if (value_0 == null) {
+        var answer_0 = new ErrorQuadric(edge.to);
+        $receiver_0.put_xwzc9p$(key_0, answer_0);
+        tmp$_0 = answer_0;
+      }
+       else {
+        tmp$_0 = value_0;
+      }
+      var q2 = tmp$_0;
+      if (!this.keepBorders || (!q1.isBorder && !q2.isBorder)) {
+        var c = new MeshSimplifier$CollapseCandidate(this, edge, q1, q2);
+        this.candidates_gym04f$_0.plusAssign_g91td9$(c);
+        var $receiver_1 = this.candidateMap_xv83ew$_0;
+        var key_1 = new MeshSimplifier$EdgeId(edge.from.index, edge.to.index);
+        $receiver_1.put_xwzc9p$(key_1, c);
+      }
+    }
+  };
+  MeshSimplifier.prototype.collectAffectedEdges_4ta87$_0 = function (v, result) {
+    var tmp$;
+    tmp$ = v.edges.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var tmp$_0;
+      result.add_11rb$(element);
+      var element_0 = element.next.next;
+      result.add_11rb$(element_0);
+      var element_1 = element.next;
+      result.add_11rb$(element_1);
+      if ((tmp$_0 = element.next.opp) != null) {
+        result.add_11rb$(tmp$_0);
       }
     }
   };
@@ -12300,19 +13019,43 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.q1 = q1;
     this.q2 = q2;
     this.error = 0.0;
+    this.collapsePos = MutableVec3f_init();
     this.updateCollapsePosAndError();
   }
   MeshSimplifier$CollapseCandidate.prototype.updateCollapsePosAndError = function () {
-    this.error = this.$outer.collapseStrategy.computeCollapsePosition_2pqe3s$(this.q1, this.q2, this.$outer.tmpVec_0);
+    this.error = this.$outer.collapseStrategy.computeCollapsePosition_2pqe3s$(this.q1, this.q2, this.collapsePos);
   };
   MeshSimplifier$CollapseCandidate.prototype.collapse = function () {
     var rem = this.$outer.quadrics.remove_11rb$(this.q2.vertex.index);
     if (rem !== this.q2) {
       throw IllegalStateException_init('Quadric removal failed!');
     }
+    var affectedEdges = LinkedHashSet_init();
+    this.$outer.collectAffectedEdges_4ta87$_0(this.q1.vertex, affectedEdges);
+    this.$outer.collectAffectedEdges_4ta87$_0(this.q2.vertex, affectedEdges);
+    this.$outer;
+    var tmp$;
+    tmp$ = affectedEdges.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var this$MeshSimplifier = this.$outer;
+      var tmp$_0;
+      if ((tmp$_0 = this$MeshSimplifier.candidateMap_xv83ew$_0.remove_11rb$(new MeshSimplifier$EdgeId(element.from.index, element.to.index))) != null) {
+        this$MeshSimplifier.candidates_gym04f$_0.minusAssign_g91td9$(tmp$_0);
+      }
+    }
     this.q1.consume_zdf47l$(this.q2);
-    this.$outer.mesh_0.collapseEdge_b49or$(this.edge, 0.0);
-    this.q1.vertex.updatePosition_czzhiu$(this.$outer.tmpVec_0);
+    this.edge.collapse_mx4ult$(0.0);
+    this.q1.vertex.updatePosition_czzhiu$(this.collapsePos);
+    affectedEdges.clear();
+    this.$outer.collectAffectedEdges_4ta87$_0(this.q1.vertex, affectedEdges);
+    this.$outer;
+    var tmp$_1;
+    tmp$_1 = affectedEdges.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_0 = tmp$_1.next();
+      this.$outer.insertEdge_56qw8l$_0(element_0);
+    }
     return this.error;
   };
   MeshSimplifier$CollapseCandidate.$metadata$ = {
@@ -12320,9 +13063,75 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'CollapseCandidate',
     interfaces: []
   };
-  function MeshSimplifier$candidates$lambda(a, b) {
-    return Kotlin.compareTo(a.error, b.error);
+  function MeshSimplifier$EdgeId(fromId, toId) {
+    this.fromId = fromId;
+    this.toId = toId;
   }
+  MeshSimplifier$EdgeId.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'EdgeId',
+    interfaces: []
+  };
+  MeshSimplifier$EdgeId.prototype.component1 = function () {
+    return this.fromId;
+  };
+  MeshSimplifier$EdgeId.prototype.component2 = function () {
+    return this.toId;
+  };
+  MeshSimplifier$EdgeId.prototype.copy_vux9f0$ = function (fromId, toId) {
+    return new MeshSimplifier$EdgeId(fromId === void 0 ? this.fromId : fromId, toId === void 0 ? this.toId : toId);
+  };
+  MeshSimplifier$EdgeId.prototype.toString = function () {
+    return 'EdgeId(fromId=' + Kotlin.toString(this.fromId) + (', toId=' + Kotlin.toString(this.toId)) + ')';
+  };
+  MeshSimplifier$EdgeId.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.fromId) | 0;
+    result = result * 31 + Kotlin.hashCode(this.toId) | 0;
+    return result;
+  };
+  MeshSimplifier$EdgeId.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.fromId, other.fromId) && Kotlin.equals(this.toId, other.toId)))));
+  };
+  function MeshSimplifier$CollapseCandidates() {
+    TreeMap.call(this);
+  }
+  MeshSimplifier$CollapseCandidates.prototype.isNotEmpty = function () {
+    return !this.isEmpty();
+  };
+  MeshSimplifier$CollapseCandidates.prototype.peek = function () {
+    return first(this.firstValue());
+  };
+  MeshSimplifier$CollapseCandidates.prototype.poll = function () {
+    var v = this.firstValue();
+    var c = v.removeAt_za3lpa$(get_lastIndex(v));
+    if (v.isEmpty()) {
+      this.remove_11rb$(this.firstKey());
+    }
+    return c;
+  };
+  MeshSimplifier$CollapseCandidates.prototype.plusAssign_g91td9$ = function (c) {
+    var v = this.get_11rb$(c.error);
+    if (v == null) {
+      v = ArrayList_init_0();
+      this.put_xwzc9p$(c.error, v);
+    }
+    v.add_11rb$(c);
+  };
+  MeshSimplifier$CollapseCandidates.prototype.minusAssign_g91td9$ = function (c) {
+    var v = this.get_11rb$(c.error);
+    if (v != null) {
+      v.remove_11rb$(c);
+      if (v.isEmpty()) {
+        this.remove_11rb$(c.error);
+      }
+    }
+  };
+  MeshSimplifier$CollapseCandidates.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'CollapseCandidates',
+    interfaces: [TreeMap]
+  };
   MeshSimplifier.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'MeshSimplifier',
@@ -12344,7 +13153,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   terminateOnFaceCountRel$ObjectLiteral.prototype.init_nbf0q6$ = function (mesh) {
     this.targetFaceCnt = numberToInt(round(mesh.faceCount * this.closure$factor));
   };
-  terminateOnFaceCountRel$ObjectLiteral.prototype.isFinished_fugc5p$ = function (mesh, nextError) {
+  terminateOnFaceCountRel$ObjectLiteral.prototype.isFinished_6w1xds$ = function (mesh, nextError) {
     return mesh.faceCount <= this.targetFaceCnt;
   };
   terminateOnFaceCountRel$ObjectLiteral.$metadata$ = {
@@ -12357,7 +13166,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function terminateOnFaceCountAbs$ObjectLiteral(closure$targetFaceCnt) {
     this.closure$targetFaceCnt = closure$targetFaceCnt;
   }
-  terminateOnFaceCountAbs$ObjectLiteral.prototype.isFinished_fugc5p$ = function (mesh, nextError) {
+  terminateOnFaceCountAbs$ObjectLiteral.prototype.isFinished_6w1xds$ = function (mesh, nextError) {
     return mesh.faceCount <= this.closure$targetFaceCnt;
   };
   terminateOnFaceCountAbs$ObjectLiteral.$metadata$ = {
@@ -12370,7 +13179,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function terminateOnError$ObjectLiteral(closure$targetError) {
     this.closure$targetError = closure$targetError;
   }
-  terminateOnError$ObjectLiteral.prototype.isFinished_fugc5p$ = function (mesh, nextError) {
+  terminateOnError$ObjectLiteral.prototype.isFinished_6w1xds$ = function (mesh, nextError) {
     return nextError > this.closure$targetError;
   };
   terminateOnError$ObjectLiteral.$metadata$ = {
@@ -16550,17 +17359,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       };
     };
   });
-  function Comparator$ObjectLiteral_3(closure$comparison) {
+  function Comparator$ObjectLiteral_2(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_3.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_2.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_3.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_2.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   Group.prototype.sortChildrenBy_mq7kdd$ = function (selector) {
     var $receiver = this.intChildren_kg4pgm$_0;
     if ($receiver.size > 1) {
-      sortWith($receiver, new Comparator$ObjectLiteral_3(compareBy$lambda_2(selector)));
+      sortWith($receiver, new Comparator$ObjectLiteral_2(compareBy$lambda_2(selector)));
     }
   };
   Group.prototype.removeNode_f1kmr1$ = function (node) {
@@ -17337,10 +18146,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
       v1.position.subtract_2gj7b4$(v0.position, e1).norm();
       v2.position.subtract_2gj7b4$(v0.position, e2).norm();
-      e1.cross_2gj7b4$(e2, nrm).norm().scale_mx4ult$(triArea(v0.position, v1.position, v2.position));
-      v0.normal.plusAssign_czzhiu$(nrm);
-      v1.normal.plusAssign_czzhiu$(nrm);
-      v2.normal.plusAssign_czzhiu$(nrm);
+      var a = triArea(v0.position, v1.position, v2.position);
+      e1.cross_2gj7b4$(e2, nrm).norm().scale_mx4ult$(a);
+      if (isNaN_0(nrm.x) || isNaN_0(nrm.y) || isNaN_0(nrm.z)) {
+        var $this_0 = package$util.Log;
+        var level_0 = Log$Level.WARN;
+        var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level_0.level >= $this_0.level.level) {
+          $this_0.printer(level_0, tag_0, 'degenerated triangle');
+        }
+      }
+       else {
+        v0.normal.plusAssign_czzhiu$(nrm);
+        v1.normal.plusAssign_czzhiu$(nrm);
+        v2.normal.plusAssign_czzhiu$(nrm);
+      }
     }
     tmp$_1 = this.numVertices;
     for (var i_1 = 0; i_1 < tmp$_1; i_1++) {
@@ -17409,13 +18229,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       };
     };
   });
-  function Comparator$ObjectLiteral_4(closure$comparison) {
+  function Comparator$ObjectLiteral_3(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_4.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_3.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_4.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_3.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   MeshData.prototype.joinCloseVertices_mx4ult$ = function (eps) {
     if (eps === void 0)
       eps = FUZZY_EQ_F;
@@ -17437,7 +18257,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     while (tmp$_0.hasNext()) {
       var v = tmp$_0.next();
       if (!removeVerts.contains_11rb$(v)) {
-        tree.traverse_ssbmfa$(trav.setup_2qa7tb$(v, eps));
+        trav.setup_2qa7tb$(v, eps).traverse_m6hlto$(tree);
         removeAll(trav.result, MeshData$joinCloseVertices$lambda$lambda(v, replaceIndcs));
         if (!trav.result.isEmpty()) {
           tmp$_1 = trav.result.iterator();
@@ -17474,7 +18294,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (level.level >= $this.level.level) {
       $this.printer(level, tag, 'Found ' + removeVerts.size + ' duplicate positions (of ' + this.numVertices + ' vertices)');
     }
-    tmp$_2 = sortedWith(removeVerts, new Comparator$ObjectLiteral_4(compareBy$lambda_3(MeshData$joinCloseVertices$lambda$lambda_0))).iterator();
+    tmp$_2 = sortedWith(removeVerts, new Comparator$ObjectLiteral_3(compareBy$lambda_3(MeshData$joinCloseVertices$lambda$lambda_0))).iterator();
     while (tmp$_2.hasNext()) {
       var r = tmp$_2.next();
       tmp$_3 = Kotlin.imul(r.index, this.vertexList.vertexSizeI);
@@ -17754,7 +18574,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   MeshRayTest$Companion$geometryTest$ObjectLiteral.prototype.rayTest_jljx4v$ = function (test) {
     var tmp$;
     this.rayTraverser.setup_nvyeur$(test.ray);
-    (tmp$ = this.triangleTree) != null ? (tmp$.traverse_ssbmfa$(this.rayTraverser), Unit) : null;
+    if ((tmp$ = this.triangleTree) != null) {
+      this.rayTraverser.traverse_m6hlto$(tmp$);
+    }
     if (this.rayTraverser.distanceSqr < test.hitDistanceSqr) {
       test.setHit_vfk0k2$(this.closure$mesh, this.rayTraverser.distance);
     }
@@ -17774,7 +18596,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   MeshRayTest$Companion$geometryTest$ObjectLiteral_0.prototype.rayTest_jljx4v$ = function (test) {
     var tmp$;
     this.rayTraverser.setup_nvyeur$(test.ray);
-    (tmp$ = this.edgeTree) != null ? (tmp$.traverse_ssbmfa$(this.rayTraverser), Unit) : null;
+    if ((tmp$ = this.edgeTree) != null) {
+      this.rayTraverser.traverse_m6hlto$(tmp$);
+    }
     if (this.rayTraverser.distanceSqr < test.hitDistanceSqr) {
       test.setHit_vfk0k2$(this.closure$mesh, this.rayTraverser.distance);
     }
@@ -18316,9 +19140,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.maxZoom = 100.0;
     this.translationBounds = null;
     this.panMethod = new CameraOrthogonalPan();
-    this.vertRotAnimator = new MassDamperFloat(0.0);
-    this.horiRotAnimator = new MassDamperFloat(0.0);
-    this.zoomAnimator = new MassDamperFloat(this.zoom);
+    this.vertRotAnimator = new SpringDamperFloat(0.0);
+    this.horiRotAnimator = new SpringDamperFloat(0.0);
+    this.zoomAnimator = new SpringDamperFloat(this.zoom);
     this.prevButtonMask_tpqbjl$_0 = 0;
     this.dragMethod_dbmj85$_0 = SphericalInputTransform$DragMethod$NONE_getInstance();
     this.dragStart_48qwuy$_0 = false;
@@ -20027,8 +20851,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.verticalHandleBounds = new BoundingBox();
     this.horizontalTrackBounds = new BoundingBox();
     this.horizontalHandleBounds = new BoundingBox();
-    this.scrollPosY_ted4vc$_0 = new MassDamperFloat(0.0);
-    this.scrollPosYGuard_vhhi7b$_0 = new MassDamperFloat(0.0);
+    this.scrollPosY_ted4vc$_0 = new SpringDamperFloat(0.0);
+    this.scrollPosYGuard_vhhi7b$_0 = new SpringDamperFloat(0.0);
     this.pickRay_m6hrch$_0 = new Ray();
     this.padding.set_m986jv$(dps(3.0));
     this.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
@@ -20049,6 +20873,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.bounds.set_ea4od8$(this.drawBounds);
   };
   ScrollHandler.prototype.handleDrag_urvnay$ = function (dragPtrs, scene, ctx) {
+    if (this.alpha === 0.0) {
+      return;
+    }
     if (!dragPtrs.isEmpty() && !dragPtrs.get_za3lpa$(0).isConsumed_za3lpa$() && this.computeLocalPickRay_wswg9$(dragPtrs.get_za3lpa$(0), ctx, this.pickRay_m6hrch$_0) && this.bounds.hitDistanceSqr_nvyeur$(this.pickRay_m6hrch$_0) < kotlin_js_internal_FloatCompanionObject.MAX_VALUE) {
       this.scrollPosY_ted4vc$_0.desired = this.scrollPosY_ted4vc$_0.desired + dragPtrs.get_za3lpa$(0).deltaScroll * 50;
       dragPtrs.get_za3lpa$(0).consume_za3lpa$();
@@ -21030,6 +21857,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       return this.root.uiDpi;
     }
   });
+  UiComponent.prototype.onParentChanged_etw0z0$ = function (oldParent, newParent) {
+    if (Kotlin.isType(newParent, UiComponent)) {
+      this.alpha = newParent.alpha;
+    }
+    TransformGroup.prototype.onParentChanged_etw0z0$.call(this, oldParent, newParent);
+  };
   UiComponent.prototype.setupBuilder_84rojv$ = function (builder) {
     builder.clear();
     builder.identity();
@@ -24513,6 +25346,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function defaultProps(id) {
     return TextureProps_init(id, 9729, 33071);
   }
+  function defaultPropsRepeated(id) {
+    return TextureProps_init(id, 9729, 10497);
+  }
   function TextureProps(id, minFilter, magFilter, xWrapping, yWrapping, anisotropy, target) {
     TextureProps$Companion_getInstance();
     if (target === void 0)
@@ -25069,38 +25905,38 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'InterpolatedColor',
     interfaces: [InterpolatedValue]
   };
-  function MassDamperFloat(value) {
+  function SpringDamperFloat(value) {
     this.desired = value;
     this.actual = value;
-    this.speed_ph48k7$_0 = 0.0;
+    this.speed_j0cmgy$_0 = 0.0;
     this.damping_0 = 0.0;
-    this.stiffness_17key9$_0 = 0.0;
+    this.stiffness_kq1inq$_0 = 0.0;
     this.stiffness = 100.0;
   }
-  Object.defineProperty(MassDamperFloat.prototype, 'speed', {
+  Object.defineProperty(SpringDamperFloat.prototype, 'speed', {
     get: function () {
-      return this.speed_ph48k7$_0;
+      return this.speed_j0cmgy$_0;
     },
     set: function (speed) {
-      this.speed_ph48k7$_0 = speed;
+      this.speed_j0cmgy$_0 = speed;
     }
   });
-  Object.defineProperty(MassDamperFloat.prototype, 'stiffness', {
+  Object.defineProperty(SpringDamperFloat.prototype, 'stiffness', {
     get: function () {
-      return this.stiffness_17key9$_0;
+      return this.stiffness_kq1inq$_0;
     },
     set: function (value) {
-      this.stiffness_17key9$_0 = value;
+      this.stiffness_kq1inq$_0 = value;
       var x = this.stiffness;
       this.damping_0 = 2.0 * Math_0.sqrt(x);
     }
   });
-  MassDamperFloat.prototype.set_mx4ult$ = function (value) {
+  SpringDamperFloat.prototype.set_mx4ult$ = function (value) {
     this.desired = value;
     this.actual = value;
     this.speed = 0.0;
   };
-  MassDamperFloat.prototype.animate_mx4ult$ = function (deltaT) {
+  SpringDamperFloat.prototype.animate_mx4ult$ = function (deltaT) {
     if (this.stiffness === 0.0 || deltaT > 0.2) {
       this.actual = this.desired;
       return this.actual;
@@ -25113,7 +25949,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       var err = this.desired - this.actual;
       this.speed = this.speed + (err * this.stiffness - this.speed * this.damping_0) * dt;
       var delta = this.speed * dt;
-      if (Math_0.abs(delta) > 0.001) {
+      var $receiver = Math_0.abs(delta);
+      var eps;
+      eps = package$math.FUZZY_EQ_F;
+      if (!(Math_0.abs($receiver) <= eps)) {
         this.actual += delta;
       }
        else {
@@ -25122,9 +25961,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     return this.actual;
   };
-  MassDamperFloat.$metadata$ = {
+  SpringDamperFloat.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'MassDamperFloat',
+    simpleName: 'SpringDamperFloat',
     interfaces: []
   };
   function BillboardMesh(name) {
@@ -25371,13 +26210,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       };
     };
   });
-  function Comparator$ObjectLiteral_5(closure$comparison) {
+  function Comparator$ObjectLiteral_4(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_5.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_4.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_5.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_4.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   BillboardMesh.prototype.sortElems_pgt1t3$_0 = function () {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
     tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.globalPos : null;
@@ -25400,7 +26239,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     var v = this.meshData.vertexList.vertexIt;
     var $receiver = this.indexList_55a61b$_0;
     if ($receiver.size > 1) {
-      sortWith($receiver, new Comparator$ObjectLiteral_5(compareBy$lambda_4(BillboardMesh$sortElems$lambda(vertCnt, v, camPos, s))));
+      sortWith($receiver, new Comparator$ObjectLiteral_4(compareBy$lambda_4(BillboardMesh$sortElems$lambda(vertCnt, v, camPos, s))));
     }
     this.meshData.vertexList.indices.clear();
     tmp$_3 = this.indexList_55a61b$_0;
@@ -26727,13 +27566,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       };
     };
   });
-  function Comparator$ObjectLiteral_6(closure$comparison) {
+  function Comparator$ObjectLiteral_5(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_6.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_5.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_6.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_5.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function ColorGradient(colors, n) {
     ColorGradient$Companion_getInstance();
     if (n === void 0)
@@ -26750,7 +27589,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       throw KoolException_init('ColorGradient requires at least two colors');
     }
     if (colors.length > 1) {
-      sortWith_0(colors, new Comparator$ObjectLiteral_6(compareBy$lambda_5(ColorGradient_init$lambda)));
+      sortWith_0(colors, new Comparator$ObjectLiteral_5(compareBy$lambda_5(ColorGradient_init$lambda)));
     }
     var mi = first_0(colors).first;
     var mx = last_0(colors).first;
@@ -28501,11 +29340,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (triMesh.primitiveType !== 4) {
       throw KoolException_init('Supplied mesh is not a triangle mesh: ' + triMesh.primitiveType);
     }
+    var addedEdges = LinkedHashSet_init();
     var $this = this.meshData;
     var wasBatchUpdate = $this.isBatchUpdate;
     $this.isBatchUpdate = true;
     var tmp$, tmp$_0;
     var v = triMesh.get_za3lpa$(0);
+    var startI = $this.numVertices;
     tmp$ = triMesh.numVertices;
     for (var i = 0; i < tmp$; i++) {
       v.index = i;
@@ -28531,10 +29372,24 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     tmp$_0 = triMesh.numIndices;
     for (var i_2 = 0; i_2 < tmp$_0; i_2 += 3) {
-      var i1 = triMesh.vertexList.indices.get_za3lpa$(i_2);
-      var i2 = triMesh.vertexList.indices.get_za3lpa$(i_2 + 1 | 0);
-      var i3 = triMesh.vertexList.indices.get_za3lpa$(i_2 + 2 | 0);
-      this.meshData.addIndices_pmhfmb$(new Int32Array([i1, i2, i2, i3, i3, i1]));
+      var i1 = startI + triMesh.vertexList.indices.get_za3lpa$(i_2) | 0;
+      var i2 = startI + triMesh.vertexList.indices.get_za3lpa$(i_2 + 1 | 0) | 0;
+      var i3 = startI + triMesh.vertexList.indices.get_za3lpa$(i_2 + 2 | 0) | 0;
+      var e1 = Kotlin.Long.fromInt(Math_0.min(i1, i2)).shiftLeft(32).or(Kotlin.Long.fromInt(Math_0.max(i1, i2)));
+      var e2 = Kotlin.Long.fromInt(Math_0.min(i2, i3)).shiftLeft(32).or(Kotlin.Long.fromInt(Math_0.max(i2, i3)));
+      var e3 = Kotlin.Long.fromInt(Math_0.min(i3, i1)).shiftLeft(32).or(Kotlin.Long.fromInt(Math_0.max(i3, i1)));
+      if (!addedEdges.contains_11rb$(e1)) {
+        this.meshData.addIndices_pmhfmb$(new Int32Array([i1, i2]));
+        addedEdges.add_11rb$(e1);
+      }
+      if (!addedEdges.contains_11rb$(e2)) {
+        this.meshData.addIndices_pmhfmb$(new Int32Array([i2, i3]));
+        addedEdges.add_11rb$(e2);
+      }
+      if (!addedEdges.contains_11rb$(e3)) {
+        this.meshData.addIndices_pmhfmb$(new Int32Array([i3, i1]));
+        addedEdges.add_11rb$(e3);
+      }
     }
     $this.isSyncRequired = true;
     $this.isBatchUpdate = wasBatchUpdate;
@@ -29413,22 +30268,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   MeshBuilder.prototype.cylinder_tnt2h$ = function (props) {
     var tmp$;
     props.fixNegativeSize();
-    this.transform.push();
-    this.translate_czzhiu$(props.origin);
-    this.rotate_ad55pp$(90.0, Vec3f$Companion_getInstance().X_AXIS);
-    var $receiver = this.circleProps.defaults();
-    $receiver.steps = props.steps;
-    $receiver.radius = props.bottomRadius;
-    this.circle_59f34t$(this.circleProps);
-    this.transform.pop();
-    this.transform.push();
-    this.translate_y2kzbl$(props.origin.x, props.origin.y + props.height, props.origin.z);
-    this.rotate_ad55pp$(-90.0, Vec3f$Companion_getInstance().X_AXIS);
-    var $receiver_0 = this.circleProps.defaults();
-    $receiver_0.steps = props.steps;
-    $receiver_0.radius = props.topRadius;
-    this.circle_59f34t$(this.circleProps);
-    this.transform.pop();
+    if (props.bottomFill) {
+      this.transform.push();
+      this.translate_czzhiu$(props.origin);
+      this.rotate_ad55pp$(90.0, Vec3f$Companion_getInstance().X_AXIS);
+      var $receiver = this.circleProps.defaults();
+      $receiver.steps = props.steps;
+      $receiver.radius = props.bottomRadius;
+      this.circle_59f34t$(this.circleProps);
+      this.transform.pop();
+    }
+    if (props.topFill) {
+      this.transform.push();
+      this.translate_y2kzbl$(props.origin.x, props.origin.y + props.height, props.origin.z);
+      this.rotate_ad55pp$(-90.0, Vec3f$Companion_getInstance().X_AXIS);
+      var $receiver_0 = this.circleProps.defaults();
+      $receiver_0.steps = props.steps;
+      $receiver_0.radius = props.topRadius;
+      this.circle_59f34t$(this.circleProps);
+      this.transform.pop();
+    }
     var dr = props.bottomRadius - props.topRadius;
     var x = dr * dr + props.height * props.height;
     var x_0 = dr / Math_0.sqrt(x);
@@ -29822,6 +30681,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.topRadius = 1.0;
     this.steps = 20;
     this.height = 1.0;
+    this.topFill = true;
+    this.bottomFill = true;
     this.origin = MutableVec3f_init();
   }
   CylinderProps.prototype.defaults = function () {
@@ -29829,6 +30690,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.topRadius = 1.0;
     this.steps = 20;
     this.height = 1.0;
+    this.topFill = true;
+    this.bottomFill = true;
     this.origin.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
     return this;
   };
@@ -29933,6 +30796,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.liveObjects_0.remove_11rb$(obj);
     return ObjectRecycler.prototype.recycle_trkh7z$.call(this, obj);
   };
+  ObjectPool.prototype.use_oh3mgy$ = defineInlineFunction('kool.de.fabmax.kool.util.ObjectPool.use_oh3mgy$', function (block) {
+    var item = this.get();
+    block(item);
+    this.recycle_trkh7z$(item);
+  });
   ObjectPool.prototype.recycleAll = function () {
     var tmp$;
     tmp$ = this.liveObjects_0;
@@ -30073,7 +30941,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
           var level_0 = Log$Level.WARN;
           var tag_0 = Kotlin.getKClassFromExpression(this).simpleName;
           if (level_0.level >= $this_0.level.level) {
-            $this_0.printer(level_0, tag_0, 'Removed via brute force');
+            $this_0.printer(level_0, tag_0, "Removed via brute force, did element change it's position?");
           }
           it.remove();
         }
@@ -30322,11 +31190,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     return tmp$;
   };
-  OcTree$OcNode.prototype.isInNode_czzhiu$ = function (center) {
-    return this.nodeBounds.isIncluding_czzhiu$(center);
+  OcTree$OcNode.prototype.isInBounds_czzhiu$ = function (center) {
+    return this.isInBounds_y2kzbl$(center.x, center.y, center.z);
   };
-  OcTree$OcNode.prototype.isInNode_y2kzbl$ = function (centerX, centerY, centerZ) {
-    return this.nodeBounds.isIncluding_y2kzbl$(centerX, centerY, centerZ);
+  OcTree$OcNode.prototype.isInBounds_y2kzbl$ = function (centerX, centerY, centerZ) {
+    return centerX >= this.nodeBounds.min.x && centerX < this.nodeBounds.max.x && centerY >= this.nodeBounds.min.y && centerY < this.nodeBounds.max.y && centerZ >= this.nodeBounds.min.z && centerZ < this.nodeBounds.max.z;
   };
   OcTree$OcNode.prototype.split_0 = function () {
     var tmp$;
@@ -30537,13 +31405,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       };
     };
   });
-  function Comparator$ObjectLiteral_7(closure$comparison) {
+  function Comparator$ObjectLiteral_6(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_7.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_6.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_7.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_6.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   ParticleSystem.prototype.zSortParticles_0 = function () {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
     tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.globalPos : null;
@@ -30555,7 +31423,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     var s = this.drawOrder === BillboardMesh$DrawOrder$FAR_FIRST_getInstance() ? -1 : 1;
     var $receiver = this.sortedIndices_0;
     if ($receiver.size > 1) {
-      sortWith($receiver, new Comparator$ObjectLiteral_7(compareBy$lambda_6(ParticleSystem$zSortParticles$lambda(this, camPos, s))));
+      sortWith($receiver, new Comparator$ObjectLiteral_6(compareBy$lambda_6(ParticleSystem$zSortParticles$lambda(this, camPos, s))));
     }
     this.mesh_0.clearIndices();
     tmp$_2 = this.sortedIndices_0;
@@ -30998,19 +31866,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'PointMesh',
     interfaces: [Mesh]
   };
-  function Comparator$ObjectLiteral_8(closure$comparison) {
+  function Comparator$ObjectLiteral_7(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_8.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_7.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_8.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_7.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function PriorityQueue(comparator) {
     if (comparator === void 0)
       comparator = null;
     this.comparator_0 = null;
     this.elements_0 = ArrayList_init_0();
-    this.comparator_0 = comparator != null ? comparator : new Comparator$ObjectLiteral_8(PriorityQueue_init$lambda);
+    this.comparator_0 = comparator != null ? comparator : new Comparator$ObjectLiteral_7(PriorityQueue_init$lambda);
   }
   Object.defineProperty(PriorityQueue.prototype, 'size', {
     get: function () {
@@ -32385,18 +33253,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   };
   function ModelData$Companion() {
     ModelData$Companion_instance = this;
-    this.VERSION = 1;
+    this.VERSION = 2;
   }
   var getOrDefault = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.context.getOrDefault_6qy6ah$;
   ModelData$Companion.prototype.load_fqrh44$ = function (data) {
     var $receiver = ProtoBuf.Companion;
     var model = $receiver.load_dntfbn$(getOrDefault($receiver.context, getKClass(ModelData)), data);
-    if (model.version !== 1) {
+    if (model.version !== 2) {
       var $this = package$util.Log;
       var level = Log$Level.WARN;
       var tag = Kotlin.getKClassFromExpression(this).simpleName;
       if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Unsupported model version: ' + model.version + ' (should be ' + '1' + ')');
+        $this.printer(level, tag, 'Unsupported model version: ' + model.version + ' (should be ' + '2' + ')');
       }
     }
     return model;
@@ -32789,7 +33657,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   ModelNodeData.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.transform, other.transform) && Kotlin.equals(this.children, other.children) && Kotlin.equals(this.meshes, other.meshes) && Kotlin.equals(this.tags, other.tags)))));
   };
-  function ModelMeshData(name, primitiveType, attributes, indices, armature, animations, material, tags) {
+  function ModelMeshData(name, primitiveType, attributes, indices, armature, animations, material, tags, intAttributes) {
     ModelMeshData$Companion_getInstance();
     if (indices === void 0)
       indices = emptyList();
@@ -32801,6 +33669,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       material = -1;
     if (tags === void 0)
       tags = emptyList();
+    if (intAttributes === void 0)
+      intAttributes = emptyMap();
     this.name = name;
     this.primitiveType = primitiveType;
     this.attributes = attributes;
@@ -32809,6 +33679,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.animations = animations;
     this.material = material;
     this.tags = tags;
+    this.intAttributes = intAttributes;
     this.numVertices_r5k7x2$_0 = 0;
     this.hasNormals_ijlhl3$_0 = false;
     this.hasTexCoords_7qmtnk$_0 = false;
@@ -32917,6 +33788,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     var texCoords = this.attributes.get_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_TEXTURE_COORDS);
     var colors = this.attributes.get_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_COLORS);
     var tangents = this.attributes.get_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_TANGENTS);
+    var normalsOct = this.intAttributes.get_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_NORMALS_OCT_COMPRESSED);
+    var octBits = this.getNormalOctBits_0();
     tmp$_0 = positions.size / 3 | 0;
     for (var i = 0; i < tmp$_0; i++) {
       meshData.isSyncRequired = true;
@@ -32937,6 +33810,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       $receiver.position.set_y2kzbl$(positions.get_za3lpa$(i * 3 | 0), positions.get_za3lpa$((i * 3 | 0) + 1 | 0), positions.get_za3lpa$((i * 3 | 0) + 2 | 0));
       if (normals != null) {
         $receiver.normal.set_y2kzbl$(normals.get_za3lpa$(i * 3 | 0), normals.get_za3lpa$((i * 3 | 0) + 1 | 0), normals.get_za3lpa$((i * 3 | 0) + 2 | 0));
+      }
+       else if (normalsOct != null && octBits > 0) {
+        NormalOctCoding_getInstance().decodeOctToNormal_rovr2w$(normalsOct.get_za3lpa$(i * 2 | 0), normalsOct.get_za3lpa$((i * 2 | 0) + 1 | 0), octBits, $receiver.normal);
       }
       if (texCoords != null) {
         $receiver.texCoord.set_dleff0$(texCoords.get_za3lpa$(i * 2 | 0), texCoords.get_za3lpa$((i * 2 | 0) + 1 | 0));
@@ -32983,6 +33859,30 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
     }
     return mesh;
+  };
+  ModelMeshData.prototype.getNormalOctBits_0 = function () {
+    var octBitsKey = 'normalsOct=';
+    var $receiver = this.tags;
+    var firstOrNull$result;
+    firstOrNull$break: do {
+      var tmp$;
+      tmp$ = $receiver.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        if (startsWith(element, octBitsKey)) {
+          firstOrNull$result = element;
+          break firstOrNull$break;
+        }
+      }
+      firstOrNull$result = null;
+    }
+     while (false);
+    var octBitsTag = firstOrNull$result;
+    if (octBitsTag != null) {
+      var startIndex = octBitsKey.length;
+      return toInt(octBitsTag.substring(startIndex));
+    }
+    return -1;
   };
   ModelMeshData.prototype.buildAramature_0 = function (meshData) {
     var mesh = new Armature(meshData, this.name);
@@ -33034,6 +33934,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     ModelMeshData$Companion_instance = this;
     this.ATTRIB_POSITIONS = 'positions';
     this.ATTRIB_NORMALS = 'normals';
+    this.ATTRIB_NORMALS_OCT_COMPRESSED = 'normalsOct';
     this.ATTRIB_TEXTURE_COORDS = 'textureCoords';
     this.ATTRIB_COLORS = 'colors';
     this.ATTRIB_TANGENTS = 'tangents';
@@ -33071,6 +33972,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.descriptor.pushAnnotation_yj921w$(new SerialId(7));
     this.descriptor.addElement_ivxn3r$('tags', true);
     this.descriptor.pushAnnotation_yj921w$(new SerialId(8));
+    this.descriptor.addElement_ivxn3r$('intAttributes', true);
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(9));
     ModelMeshData$$serializer_instance = this;
   }
   Object.defineProperty(ModelMeshData$$serializer.prototype, 'descriptor', {
@@ -33093,6 +33996,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       output.encodeIntElement_4wpqag$(this.descriptor, 6, obj.material);
     if (!equals(obj.tags, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 7))
       output.encodeSerializableElement_blecud$(this.descriptor, 7, new ArrayListSerializer(internal.StringSerializer), obj.tags);
+    if (!equals(obj.intAttributes, emptyMap()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 8))
+      output.encodeSerializableElement_blecud$(this.descriptor, 8, new LinkedHashMapSerializer(internal.StringSerializer, IntAttributeList$$serializer_getInstance()), obj.intAttributes);
     output.endStructure_qatsm0$(this.descriptor);
   };
   ModelMeshData$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
@@ -33105,7 +34010,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     , local4
     , local5
     , local6
-    , local7;
+    , local7
+    , local8;
     var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
     loopLabel: while (true) {
       index = input.decodeElementIndex_qatsm0$(this.descriptor);
@@ -33152,16 +34058,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
           bitMask0 |= 128;
           if (!readAll)
             break;
+        case 8:
+          local8 = (bitMask0 & 256) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 8, new LinkedHashMapSerializer(internal.StringSerializer, IntAttributeList$$serializer_getInstance())) : input.updateSerializableElement_ehubvl$(this.descriptor, 8, new LinkedHashMapSerializer(internal.StringSerializer, IntAttributeList$$serializer_getInstance()), local8);
+          bitMask0 |= 256;
+          if (!readAll)
+            break;
         case -1:
           break loopLabel;
         default:throw new UnknownFieldException(index);
       }
     }
     input.endStructure_qatsm0$(this.descriptor);
-    return ModelMeshData_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, null);
+    return ModelMeshData_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, null);
   };
   ModelMeshData$$serializer.prototype.childSerializers = function () {
-    return [internal.StringSerializer, new EnumSerializer(getKClass(PrimitiveType)), new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance()), new ArrayListSerializer(internal.IntSerializer), new ArrayListSerializer(BoneData$$serializer_getInstance()), new ArrayListSerializer(AnimationData$$serializer_getInstance()), internal.IntSerializer, new ArrayListSerializer(internal.StringSerializer)];
+    return [internal.StringSerializer, new EnumSerializer(getKClass(PrimitiveType)), new LinkedHashMapSerializer(internal.StringSerializer, AttributeList$$serializer_getInstance()), new ArrayListSerializer(internal.IntSerializer), new ArrayListSerializer(BoneData$$serializer_getInstance()), new ArrayListSerializer(AnimationData$$serializer_getInstance()), internal.IntSerializer, new ArrayListSerializer(internal.StringSerializer), new LinkedHashMapSerializer(internal.StringSerializer, IntAttributeList$$serializer_getInstance())];
   };
   ModelMeshData$$serializer.$metadata$ = {
     kind: Kind_OBJECT,
@@ -33175,7 +34086,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     return ModelMeshData$$serializer_instance;
   }
-  function ModelMeshData_init(seen, name, primitiveType, attributes, indices, armature, animations, material, tags, serializationConstructorMarker) {
+  function ModelMeshData_init(seen, name, primitiveType, attributes, indices, armature, animations, material, tags, intAttributes, serializationConstructorMarker) {
     var tmp$, tmp$_0;
     var $this = Object.create(ModelMeshData.prototype);
     if ((seen & 1) === 0)
@@ -33210,6 +34121,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       $this.tags = emptyList();
     else
       $this.tags = tags;
+    if ((seen & 256) === 0)
+      $this.intAttributes = emptyMap();
+    else
+      $this.intAttributes = intAttributes;
     $this.numVertices_r5k7x2$_0 = 0;
     $this.hasNormals_ijlhl3$_0 = false;
     $this.hasTexCoords_7qmtnk$_0 = false;
@@ -33264,11 +34179,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   ModelMeshData.prototype.component8 = function () {
     return this.tags;
   };
-  ModelMeshData.prototype.copy_e0s7jg$ = function (name, primitiveType, attributes, indices, armature, animations, material, tags) {
-    return new ModelMeshData(name === void 0 ? this.name : name, primitiveType === void 0 ? this.primitiveType : primitiveType, attributes === void 0 ? this.attributes : attributes, indices === void 0 ? this.indices : indices, armature === void 0 ? this.armature : armature, animations === void 0 ? this.animations : animations, material === void 0 ? this.material : material, tags === void 0 ? this.tags : tags);
+  ModelMeshData.prototype.component9 = function () {
+    return this.intAttributes;
+  };
+  ModelMeshData.prototype.copy_cvuba5$ = function (name, primitiveType, attributes, indices, armature, animations, material, tags, intAttributes) {
+    return new ModelMeshData(name === void 0 ? this.name : name, primitiveType === void 0 ? this.primitiveType : primitiveType, attributes === void 0 ? this.attributes : attributes, indices === void 0 ? this.indices : indices, armature === void 0 ? this.armature : armature, animations === void 0 ? this.animations : animations, material === void 0 ? this.material : material, tags === void 0 ? this.tags : tags, intAttributes === void 0 ? this.intAttributes : intAttributes);
   };
   ModelMeshData.prototype.toString = function () {
-    return 'ModelMeshData(name=' + Kotlin.toString(this.name) + (', primitiveType=' + Kotlin.toString(this.primitiveType)) + (', attributes=' + Kotlin.toString(this.attributes)) + (', indices=' + Kotlin.toString(this.indices)) + (', armature=' + Kotlin.toString(this.armature)) + (', animations=' + Kotlin.toString(this.animations)) + (', material=' + Kotlin.toString(this.material)) + (', tags=' + Kotlin.toString(this.tags)) + ')';
+    return 'ModelMeshData(name=' + Kotlin.toString(this.name) + (', primitiveType=' + Kotlin.toString(this.primitiveType)) + (', attributes=' + Kotlin.toString(this.attributes)) + (', indices=' + Kotlin.toString(this.indices)) + (', armature=' + Kotlin.toString(this.armature)) + (', animations=' + Kotlin.toString(this.animations)) + (', material=' + Kotlin.toString(this.material)) + (', tags=' + Kotlin.toString(this.tags)) + (', intAttributes=' + Kotlin.toString(this.intAttributes)) + ')';
   };
   ModelMeshData.prototype.hashCode = function () {
     var result = 0;
@@ -33280,10 +34198,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     result = result * 31 + Kotlin.hashCode(this.animations) | 0;
     result = result * 31 + Kotlin.hashCode(this.material) | 0;
     result = result * 31 + Kotlin.hashCode(this.tags) | 0;
+    result = result * 31 + Kotlin.hashCode(this.intAttributes) | 0;
     return result;
   };
   ModelMeshData.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.primitiveType, other.primitiveType) && Kotlin.equals(this.attributes, other.attributes) && Kotlin.equals(this.indices, other.indices) && Kotlin.equals(this.armature, other.armature) && Kotlin.equals(this.animations, other.animations) && Kotlin.equals(this.material, other.material) && Kotlin.equals(this.tags, other.tags)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.primitiveType, other.primitiveType) && Kotlin.equals(this.attributes, other.attributes) && Kotlin.equals(this.indices, other.indices) && Kotlin.equals(this.armature, other.armature) && Kotlin.equals(this.animations, other.animations) && Kotlin.equals(this.material, other.material) && Kotlin.equals(this.tags, other.tags) && Kotlin.equals(this.intAttributes, other.intAttributes)))));
   };
   function PrimitiveType(name, ordinal) {
     Enum.call(this);
@@ -33462,6 +34381,204 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   AttributeList.prototype.equals = function (other) {
     return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.type, other.type) && Kotlin.equals(this.values, other.values)))));
   };
+  function IntAttributeList(type, values) {
+    IntAttributeList$Companion_getInstance();
+    this.type = type;
+    this.values = values;
+    this.size = this.values.size;
+  }
+  IntAttributeList.prototype.get_za3lpa$ = function (i) {
+    return this.values.get_za3lpa$(i);
+  };
+  function IntAttributeList$Companion() {
+    IntAttributeList$Companion_instance = this;
+  }
+  IntAttributeList$Companion.prototype.serializer = function () {
+    return IntAttributeList$$serializer_getInstance();
+  };
+  IntAttributeList$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var IntAttributeList$Companion_instance = null;
+  function IntAttributeList$Companion_getInstance() {
+    if (IntAttributeList$Companion_instance === null) {
+      new IntAttributeList$Companion();
+    }
+    return IntAttributeList$Companion_instance;
+  }
+  function IntAttributeList$$serializer() {
+    this.descriptor_rw0mhb$_0 = new SerialClassDescImpl('de.fabmax.kool.util.serialization.IntAttributeList', this);
+    this.descriptor.addElement_ivxn3r$('type', false);
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(1));
+    this.descriptor.addElement_ivxn3r$('values', false);
+    this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
+    IntAttributeList$$serializer_instance = this;
+  }
+  Object.defineProperty(IntAttributeList$$serializer.prototype, 'descriptor', {
+    get: function () {
+      return this.descriptor_rw0mhb$_0;
+    }
+  });
+  IntAttributeList$$serializer.prototype.serialize_awe97i$ = function (encoder, obj) {
+    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
+    output.encodeSerializableElement_blecud$(this.descriptor, 0, new EnumSerializer(getKClass(AttributeType)), obj.type);
+    output.encodeSerializableElement_blecud$(this.descriptor, 1, new ArrayListSerializer(internal.IntSerializer), obj.values);
+    output.endStructure_qatsm0$(this.descriptor);
+  };
+  IntAttributeList$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
+    var index, readAll = false;
+    var bitMask0 = 0;
+    var local0
+    , local1;
+    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
+    loopLabel: while (true) {
+      index = input.decodeElementIndex_qatsm0$(this.descriptor);
+      switch (index) {
+        case -2:
+          readAll = true;
+        case 0:
+          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new EnumSerializer(getKClass(AttributeType))) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new EnumSerializer(getKClass(AttributeType)), local0);
+          bitMask0 |= 1;
+          if (!readAll)
+            break;
+        case 1:
+          local1 = (bitMask0 & 2) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 1, new ArrayListSerializer(internal.IntSerializer)) : input.updateSerializableElement_ehubvl$(this.descriptor, 1, new ArrayListSerializer(internal.IntSerializer), local1);
+          bitMask0 |= 2;
+          if (!readAll)
+            break;
+        case -1:
+          break loopLabel;
+        default:throw new UnknownFieldException(index);
+      }
+    }
+    input.endStructure_qatsm0$(this.descriptor);
+    return IntAttributeList_init(bitMask0, local0, local1, null);
+  };
+  IntAttributeList$$serializer.prototype.childSerializers = function () {
+    return [new EnumSerializer(getKClass(AttributeType)), new ArrayListSerializer(internal.IntSerializer)];
+  };
+  IntAttributeList$$serializer.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: '$serializer',
+    interfaces: [GeneratedSerializer]
+  };
+  var IntAttributeList$$serializer_instance = null;
+  function IntAttributeList$$serializer_getInstance() {
+    if (IntAttributeList$$serializer_instance === null) {
+      new IntAttributeList$$serializer();
+    }
+    return IntAttributeList$$serializer_instance;
+  }
+  function IntAttributeList_init(seen, type, values, serializationConstructorMarker) {
+    var $this = Object.create(IntAttributeList.prototype);
+    if ((seen & 1) === 0)
+      throw new MissingFieldException('type');
+    else
+      $this.type = type;
+    if ((seen & 2) === 0)
+      throw new MissingFieldException('values');
+    else
+      $this.values = values;
+    $this.size = $this.values.size;
+    return $this;
+  }
+  IntAttributeList.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'IntAttributeList',
+    interfaces: []
+  };
+  IntAttributeList.prototype.component1 = function () {
+    return this.type;
+  };
+  IntAttributeList.prototype.component2 = function () {
+    return this.values;
+  };
+  IntAttributeList.prototype.copy_jcdwl0$ = function (type, values) {
+    return new IntAttributeList(type === void 0 ? this.type : type, values === void 0 ? this.values : values);
+  };
+  IntAttributeList.prototype.toString = function () {
+    return 'IntAttributeList(type=' + Kotlin.toString(this.type) + (', values=' + Kotlin.toString(this.values)) + ')';
+  };
+  IntAttributeList.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.type) | 0;
+    result = result * 31 + Kotlin.hashCode(this.values) | 0;
+    return result;
+  };
+  IntAttributeList.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.type, other.type) && Kotlin.equals(this.values, other.values)))));
+  };
+  function NormalOctCoding() {
+    NormalOctCoding_instance = this;
+    this.SIGN_PP_0 = new Vec2f(1.0, 1.0);
+    this.SIGN_PN_0 = new Vec2f(1.0, -1.0);
+    this.SIGN_NP_0 = new Vec2f(-1.0, 1.0);
+    this.SIGN_NN_0 = new Vec2f(-1.0, -1.0);
+  }
+  NormalOctCoding.prototype.signNotZero_0 = function (x, y) {
+    var tmp$;
+    if (x >= 0.0 && y >= 0.0)
+      tmp$ = this.SIGN_PP_0;
+    else if (x >= 0.0 && y < 0.0)
+      tmp$ = this.SIGN_PN_0;
+    else if (x < 0.0 && y >= 0.0)
+      tmp$ = this.SIGN_NP_0;
+    else
+      tmp$ = this.SIGN_NN_0;
+    return tmp$;
+  };
+  NormalOctCoding.prototype.encodeNormalToOct_2gj7a9$ = function (normal, result) {
+    var x = normal.x;
+    var tmp$ = Math_0.abs(x);
+    var x_0 = normal.y;
+    var tmp$_0 = tmp$ + Math_0.abs(x_0);
+    var x_1 = normal.z;
+    var f = 1.0 / (tmp$_0 + Math_0.abs(x_1));
+    result.set_dleff0$(normal.x * f, normal.y * f);
+    if (normal.z <= 0.0) {
+      var s = this.signNotZero_0(result.x, result.y);
+      var x_2 = result.y;
+      var x_3 = (1.0 - Math_0.abs(x_2)) * s.x;
+      var x_4 = result.x;
+      var y = (1.0 - Math_0.abs(x_4)) * s.y;
+      result.set_dleff0$(x_3, y);
+    }
+    return result;
+  };
+  NormalOctCoding.prototype.decodeOctToNormal_rovr2w$ = function (x, y, bits, result) {
+    var f = 1.0 / ((1 << bits) - 1 | 0);
+    return NormalOctCoding_getInstance().decodeOctToNormal_4dxiiq$(x * f, y * f, result);
+  };
+  NormalOctCoding.prototype.decodeOctToNormal_q2ru9t$ = function (oct, result) {
+    return NormalOctCoding_getInstance().decodeOctToNormal_4dxiiq$(oct.x, oct.y, result);
+  };
+  NormalOctCoding.prototype.decodeOctToNormal_4dxiiq$ = function (x, y, result) {
+    result.set_y2kzbl$(x, y, 1.0 - Math_0.abs(x) - Math_0.abs(y));
+    if (result.z < 0) {
+      var s = this.signNotZero_0(result.x, result.y);
+      var x_0 = result.y;
+      var rx = (1.0 - Math_0.abs(x_0)) * s.x;
+      var x_1 = result.x;
+      var ry = (1.0 - Math_0.abs(x_1)) * s.y;
+      result.x = rx;
+      result.y = ry;
+    }
+    return result.norm();
+  };
+  NormalOctCoding.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'NormalOctCoding',
+    interfaces: []
+  };
+  var NormalOctCoding_instance = null;
+  function NormalOctCoding_getInstance() {
+    if (NormalOctCoding_instance === null) {
+      new NormalOctCoding();
+    }
+    return NormalOctCoding_instance;
+  }
   function ShadowMap() {
   }
   ShadowMap.$metadata$ = {
@@ -34101,11 +35218,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.itemAdapter = itemAdapter;
     this.candidatesPool = new AutoRecycler(void 0, SpatialTree$candidatesPool$lambda);
   }
-  SpatialTree.prototype.traverse_ssbmfa$ = function (traverser) {
-    traverser.onStart_m6hlto$(this);
-    this.root.traverse_am62sm$(traverser);
-    traverser.onFinish_m6hlto$(this);
-  };
   SpatialTree.prototype.drawNodeBounds_acte6c$ = function (lineMesh) {
     this.root.drawNodeBounds_acte6c$(lineMesh);
   };
@@ -34120,33 +35232,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       return this.children.isEmpty();
     }
   });
-  SpatialTree$Node.prototype.traverse_am62sm$ = function (traverser) {
-    if (this.isLeaf) {
-      traverser.traverseLeaf_h2y3v6$(this.$outer, this);
-    }
-     else {
-      var $this = this.$outer.candidatesPool;
-      this.$outer;
-      var ctx = $this.contextRecycler.get();
-      var this$SpatialTree = this.$outer;
-      var candidates = ctx.get();
-      var tmp$;
-      candidates.clear();
-      tmp$ = this.children;
-      for (var i = 0; i !== tmp$.size; ++i) {
-        if (this.children.get_za3lpa$(i).size > 0) {
-          var element = this.children.get_za3lpa$(i);
-          candidates.add_11rb$(element);
-        }
-      }
-      traverser.traversalOrder_6id3hy$(this$SpatialTree, candidates);
-      for (var i_0 = 0; i_0 !== candidates.size; ++i_0) {
-        candidates.get_za3lpa$(i_0).traverse_am62sm$(traverser);
-      }
-      ctx.free();
-      $this.contextRecycler.recycle_trkh7z$(ctx);
-    }
-  };
   SpatialTree$Node.prototype.drawNodeBounds_acte6c$ = function (lineMesh) {
     var tmp$;
     var color = ColorGradient$Companion_getInstance().JET_MD.getColor_y2kzbl$(this.depth % 6.7 / 6.7);
@@ -34169,20 +35254,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'SpatialTree',
     interfaces: [Collection]
   };
-  function SpatialTreeTraverser() {
-  }
-  SpatialTreeTraverser.prototype.onStart_m6hlto$ = function (tree) {
-  };
-  SpatialTreeTraverser.prototype.onFinish_m6hlto$ = function (tree) {
-  };
-  SpatialTreeTraverser.$metadata$ = {
-    kind: Kind_INTERFACE,
-    simpleName: 'SpatialTreeTraverser',
-    interfaces: []
-  };
   function PointDistance() {
   }
-  PointDistance.prototype.nodeDistanceToPoint_m5117s$ = function (node, point) {
+  PointDistance.prototype.nodeSqrDistanceToPoint_m5117s$ = function (node, point) {
     return node.bounds.pointDistanceSqr_czzhiu$(point);
   };
   PointDistance.prototype.itemSqrDistanceToPoint_54x1zp$ = function (tree, item, point) {
@@ -34198,7 +35272,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   };
   function RayDistance() {
   }
-  RayDistance.prototype.nodeDistanceToRay_4lohg5$ = function (node, ray) {
+  RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$ = function (node, ray) {
     var halfExtX = node.bounds.size.x * 0.5;
     var halfExtY = node.bounds.size.y * 0.5;
     var halfExtZ = node.bounds.size.z * 0.5;
@@ -34227,7 +35301,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'RayDistance',
     interfaces: []
   };
+  function SpatialTreeTraverser() {
+  }
+  SpatialTreeTraverser.prototype.traverse_m6hlto$ = function (tree) {
+    this.traverseNode_h2y3v6$(tree, tree.root);
+  };
+  SpatialTreeTraverser.prototype.traverseNode_h2y3v6$ = function (tree, node) {
+    if (node.isLeaf) {
+      this.traverseLeaf_h2y3v6$(tree, node);
+    }
+     else {
+      this.traverseChildren_h2y3v6$(tree, node);
+    }
+  };
+  SpatialTreeTraverser.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SpatialTreeTraverser',
+    interfaces: []
+  };
   function CenterPointTraverser() {
+    SpatialTreeTraverser.call(this);
     this.center = MutableVec3f_init();
     this.pointDistance = new CenterPointTraverser$pointDistance$ObjectLiteral();
   }
@@ -34265,15 +35358,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.radiusSqr_ri3rk0$_0 = radius * radius;
     return this;
   };
-  InRadiusTraverser.prototype.onStart_m6hlto$ = function (tree) {
+  InRadiusTraverser.prototype.traverse_m6hlto$ = function (tree) {
     this.result.clear();
+    CenterPointTraverser.prototype.traverse_m6hlto$.call(this, tree);
   };
-  InRadiusTraverser.prototype.traversalOrder_6id3hy$ = function (tree, candidates) {
-    for (var i = 0; i !== candidates.size; ++i) {
-      var nd = candidates.get_za3lpa$(i);
-      nd.traversalOrder = this.pointDistance.nodeDistanceToPoint_m5117s$(nd, this.center);
+  InRadiusTraverser.prototype.traverseChildren_h2y3v6$ = function (tree, node) {
+    var tmp$;
+    tmp$ = node.children;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var child = node.children.get_za3lpa$(i);
+      var dSqr = this.pointDistance.nodeSqrDistanceToPoint_m5117s$(child, this.center);
+      if (dSqr < this.radiusSqr_ri3rk0$_0) {
+        this.traverseNode_h2y3v6$(tree, child);
+      }
     }
-    removeCandidatesOutOfDist(candidates, this.radiusSqr_ri3rk0$_0);
   };
   InRadiusTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
@@ -34283,8 +35381,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     tmp$_2 = tmp$.step;
     for (var i = tmp$_0; i <= tmp$_1; i += tmp$_2) {
       var it = leaf.items.get_za3lpa$(i);
-      var dSqr = this.pointDistance.itemSqrDistanceToPoint_54x1zp$(tree, it, this.center);
-      if (dSqr < this.radiusSqr_ri3rk0$_0) {
+      if (this.pointDistance.itemSqrDistanceToPoint_54x1zp$(tree, it, this.center) < this.radiusSqr_ri3rk0$_0) {
         this.result.add_11rb$(it);
       }
     }
@@ -34294,13 +35391,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'InRadiusTraverser',
     interfaces: [CenterPointTraverser]
   };
-  function Comparator$ObjectLiteral_9(closure$comparison) {
+  var compareBy$lambda_7 = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  function Comparator$ObjectLiteral_8(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_9.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_8.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_9.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_8.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function KNearestTraverser() {
     KNearestTraverser$Companion_getInstance();
     CenterPointTraverser.call(this);
@@ -34308,8 +35414,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.radiusSqr_9tgcx0$_0 = 9.9999998E17;
     this.result = ArrayList_init_0();
     this.maxDistance_1d7gth$_0 = 0.0;
-    this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_9(KNearestTraverser$items$lambda));
+    this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_8(compareBy$lambda_7(KNearestTraverser$items$lambda)));
     this.itemRecycler_b63bes$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
+    this.childLists_142w3h$_0 = new ChildNodesWithDistance(KNearestTraverser$childLists$lambda(this));
   }
   Object.defineProperty(KNearestTraverser.prototype, 'k', {
     get: function () {
@@ -34346,7 +35453,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       maxRadius = KNearestTraverser$Companion_getInstance().MAX_RADIUS;
     return callback$default ? callback$default(center, k, maxRadius) : this.setup_w8bw21$$default(center, k, maxRadius);
   };
-  KNearestTraverser.prototype.onFinish_m6hlto$ = function (tree) {
+  KNearestTraverser.prototype.traverse_m6hlto$ = function (tree) {
+    CenterPointTraverser.prototype.traverse_m6hlto$.call(this, tree);
     this.result.clear();
     this.maxDistance = 0.0;
     if (!this.items_3hjtdu$_0.isEmpty()) {
@@ -34360,21 +35468,74 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     this.itemRecycler_b63bes$_0.recycleAll();
   };
-  KNearestTraverser.prototype.traversalOrder_6id3hy$ = function (tree, candidates) {
+  var ChildNodesWithDistance$use$lambda = wrapFunction(function () {
+    return function (closure$n, this$ChildNodesWithDistance, closure$block) {
+      return function (childList) {
+        var tmp$;
+        if (childList.size !== closure$n) {
+          if (childList.size < closure$n) {
+            tmp$ = closure$n - childList.size | 0;
+            for (var i = 1; i <= tmp$; i++) {
+              var element = new ChildNodesWithDistance$Child(this$ChildNodesWithDistance, 0.0, null);
+              childList.add_11rb$(element);
+            }
+          }
+           else {
+            while (childList.size > closure$n) {
+              childList.removeAt_za3lpa$(get_lastIndex(childList));
+            }
+          }
+        }
+        closure$block(childList);
+        return Unit;
+      };
+    };
+  });
+  KNearestTraverser.prototype.traverseChildren_h2y3v6$ = function (tree, node) {
+    var $this = this.childLists_142w3h$_0;
+    var n = node.children.size;
+    var $this_0 = $this.childListRecycler;
+    var item = $this_0.get();
     var tmp$;
-    if (this.items_3hjtdu$_0.size < this.k) {
-      tmp$ = this.radiusSqr;
+    if (item.size !== n) {
+      if (item.size < n) {
+        tmp$ = n - item.size | 0;
+        for (var i = 1; i <= tmp$; i++) {
+          var element = new ChildNodesWithDistance$Child($this, 0.0, null);
+          item.add_11rb$(element);
+        }
+      }
+       else {
+        while (item.size > n) {
+          item.removeAt_za3lpa$(get_lastIndex(item));
+        }
+      }
     }
-     else {
-      tmp$ = this.items_3hjtdu$_0.peek().dSqr;
+    var tmp$_0, tmp$_1;
+    tmp$_0 = node.children;
+    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+      item.get_za3lpa$(i_0).setChildNode_m31f86$(node.children.get_za3lpa$(i_0));
     }
-    var remThresh = tmp$;
-    for (var i = 0; i !== candidates.size; ++i) {
-      var nd = candidates.get_za3lpa$(i);
-      nd.traversalOrder = this.pointDistance.nodeDistanceToPoint_m5117s$(nd, this.center);
+    this.childLists_142w3h$_0.sortByDistance_ntxjn6$(item);
+    tmp$_1 = node.children;
+    for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
+      var tmp$_2;
+      if (this.items_3hjtdu$_0.size < this.k) {
+        tmp$_2 = this.radiusSqr;
+      }
+       else {
+        tmp$_2 = this.items_3hjtdu$_0.peek().dSqr;
+      }
+      var maxDist = tmp$_2;
+      var child = item.get_za3lpa$(i_1);
+      if (child.dist < maxDist) {
+        this.traverseNode_h2y3v6$(tree, ensureNotNull(child.node));
+      }
+       else {
+        break;
+      }
     }
-    removeCandidatesOutOfDist(candidates, remThresh);
-    sortByTraversalOrder(candidates);
+    $this_0.recycle_trkh7z$(item);
   };
   KNearestTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
@@ -34391,10 +35552,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
   };
   KNearestTraverser.prototype.insert_2aiobd$_0 = function (value, dSqr) {
+    var tmp$;
     if (this.items_3hjtdu$_0.size === this.k) {
-      this.items_3hjtdu$_0.poll();
+      tmp$ = this.items_3hjtdu$_0.poll();
     }
-    this.items_3hjtdu$_0.plusAssign_11rb$(this.itemRecycler_b63bes$_0.get().set_mv9gn0$(value, dSqr));
+     else {
+      tmp$ = this.itemRecycler_b63bes$_0.get();
+    }
+    var insItem = tmp$;
+    this.items_3hjtdu$_0.plusAssign_11rb$(insItem.set_mv9gn0$(value, dSqr));
   };
   function KNearestTraverser$Item() {
     this.item_zg5hxs$_0 = this.item_zg5hxs$_0;
@@ -34436,11 +35602,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     return KNearestTraverser$Companion_instance;
   }
-  function KNearestTraverser$items$lambda(a, b) {
-    return Kotlin.compareTo(b.dSqr, a.dSqr);
+  function KNearestTraverser$items$lambda(it) {
+    return it.dSqr;
   }
   function KNearestTraverser$itemRecycler$lambda() {
     return new KNearestTraverser$Item();
+  }
+  function KNearestTraverser$childLists$lambda(this$KNearestTraverser) {
+    return function (it) {
+      return this$KNearestTraverser.pointDistance.nodeSqrDistanceToPoint_m5117s$(it, this$KNearestTraverser.center);
+    };
   }
   KNearestTraverser.$metadata$ = {
     kind: Kind_CLASS,
@@ -34448,11 +35619,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     interfaces: [CenterPointTraverser]
   };
   function NearestToRayTraverser() {
+    SpatialTreeTraverser.call(this);
     this.ray = new Ray();
     this.nearest_pgibj6$_0 = null;
     this.distance_w4zyjn$_0 = 0.0;
     this.distanceSqr_n4v5rx$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     this.rayDistance = new NearestToRayTraverser$rayDistance$ObjectLiteral();
+    this.childLists_pq2ts1$_0 = new ChildNodesWithDistance(NearestToRayTraverser$childLists$lambda(this));
   }
   Object.defineProperty(NearestToRayTraverser.prototype, 'nearest', {
     get: function () {
@@ -34484,7 +35657,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.distanceSqr = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     return this;
   };
-  NearestToRayTraverser.prototype.onFinish_m6hlto$ = function (tree) {
+  NearestToRayTraverser.prototype.traverse_m6hlto$ = function (tree) {
+    SpatialTreeTraverser.prototype.traverse_m6hlto$.call(this, tree);
     var tmp$;
     if (this.nearest != null) {
       var x = this.distanceSqr;
@@ -34494,13 +35668,43 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       tmp$ = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     this.distance = tmp$;
   };
-  NearestToRayTraverser.prototype.traversalOrder_6id3hy$ = function (tree, candidates) {
-    for (var i = 0; i !== candidates.size; ++i) {
-      var nd = candidates.get_za3lpa$(i);
-      nd.traversalOrder = this.rayDistance.nodeDistanceToRay_4lohg5$(nd, this.ray);
+  NearestToRayTraverser.prototype.traverseChildren_h2y3v6$ = function (tree, node) {
+    var $this = this.childLists_pq2ts1$_0;
+    var n = node.children.size;
+    var $this_0 = $this.childListRecycler;
+    var item = $this_0.get();
+    var tmp$;
+    if (item.size !== n) {
+      if (item.size < n) {
+        tmp$ = n - item.size | 0;
+        for (var i = 1; i <= tmp$; i++) {
+          var element = new ChildNodesWithDistance$Child($this, 0.0, null);
+          item.add_11rb$(element);
+        }
+      }
+       else {
+        while (item.size > n) {
+          item.removeAt_za3lpa$(get_lastIndex(item));
+        }
+      }
     }
-    removeCandidatesOutOfDist(candidates, this.distanceSqr);
-    sortByTraversalOrder(candidates);
+    var tmp$_0, tmp$_1;
+    tmp$_0 = node.children;
+    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+      item.get_za3lpa$(i_0).setChildNode_m31f86$(node.children.get_za3lpa$(i_0));
+    }
+    this.childLists_pq2ts1$_0.sortByDistance_ntxjn6$(item);
+    tmp$_1 = node.children;
+    for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
+      var child = item.get_za3lpa$(i_1);
+      if (child.dist < this.distanceSqr) {
+        this.traverseNode_h2y3v6$(tree, ensureNotNull(child.node));
+      }
+       else {
+        break;
+      }
+    }
+    $this_0.recycle_trkh7z$(item);
   };
   NearestToRayTraverser.prototype.traverseLeaf_h2y3v6$ = function (tree, leaf) {
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
@@ -34523,6 +35727,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     kind: Kind_CLASS,
     interfaces: [RayDistance]
   };
+  function NearestToRayTraverser$childLists$lambda(this$NearestToRayTraverser) {
+    return function (it) {
+      return this$NearestToRayTraverser.rayDistance.nodeSqrDistanceToRay_4lohg5$(it, this$NearestToRayTraverser.ray);
+    };
+  }
   NearestToRayTraverser.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'NearestToRayTraverser',
@@ -34572,23 +35781,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'TriangleHitTraverser',
     interfaces: [NearestToRayTraverser]
   };
-  var computeTraversalOrder = defineInlineFunction('kool.de.fabmax.kool.util.computeTraversalOrder_4xxo93$', function ($receiver, distFun) {
-    for (var i = 0; i !== $receiver.size; ++i) {
-      var nd = $receiver.get_za3lpa$(i);
-      nd.traversalOrder = distFun(nd);
-    }
-  });
-  function removeCandidatesOutOfDist($receiver, dist) {
-    for (var i = $receiver.size - 1 | 0; i >= 0; i--) {
-      if ($receiver.get_za3lpa$(i).traversalOrder > dist) {
-        $receiver.removeAt_za3lpa$(i);
-      }
-    }
-  }
-  function sortByTraversalOrder$lambda(it) {
-    return it.traversalOrder;
-  }
-  var compareBy$lambda_7 = wrapFunction(function () {
+  var compareBy$lambda_8 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -34597,29 +35790,71 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       };
     };
   });
-  function Comparator$ObjectLiteral_10(closure$comparison) {
+  function Comparator$ObjectLiteral_9(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_10.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_9.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_10.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  function sortByTraversalOrder($receiver) {
-    if ($receiver.size > 1) {
-      if ($receiver.size === 2) {
-        if ($receiver.get_za3lpa$(1).traversalOrder < $receiver.get_za3lpa$(0).traversalOrder) {
-          var $receiver_0 = $receiver.get_za3lpa$(0);
-          $receiver.set_wxm5ur$(0, $receiver.get_za3lpa$(1));
-          $receiver.set_wxm5ur$(1, $receiver_0);
-        }
-      }
-       else {
-        if ($receiver.size > 1) {
-          sortWith($receiver, new Comparator$ObjectLiteral_10(compareBy$lambda_7(sortByTraversalOrder$lambda)));
-        }
-      }
-    }
+  Comparator$ObjectLiteral_9.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  function ChildNodesWithDistance(childDist) {
+    this.childDist = childDist;
+    this.childListRecycler = new ObjectPool(ChildNodesWithDistance$childListRecycler$lambda);
+    this.childComparator = new Comparator$ObjectLiteral_9(compareBy$lambda_8(ChildNodesWithDistance$childComparator$lambda));
   }
+  ChildNodesWithDistance.prototype.use_5wl3jr$ = defineInlineFunction('kool.de.fabmax.kool.util.ChildNodesWithDistance.use_5wl3jr$', wrapFunction(function () {
+    var ChildNodesWithDistance$ChildNodesWithDistance$Child_init = _.de.fabmax.kool.util.ChildNodesWithDistance.Child;
+    var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
+    return function (n, block) {
+      var $this = this.childListRecycler;
+      var item = $this.get();
+      var tmp$;
+      if (item.size !== n) {
+        if (item.size < n) {
+          tmp$ = n - item.size | 0;
+          for (var i = 1; i <= tmp$; i++) {
+            var element = new ChildNodesWithDistance$ChildNodesWithDistance$Child_init(this, 0.0, null);
+            item.add_11rb$(element);
+          }
+        }
+         else {
+          while (item.size > n) {
+            item.removeAt_za3lpa$(get_lastIndex(item));
+          }
+        }
+      }
+      block(item);
+      $this.recycle_trkh7z$(item);
+    };
+  }));
+  ChildNodesWithDistance.prototype.sortByDistance_ntxjn6$ = function (childList) {
+    sortWith(childList, this.childComparator);
+  };
+  function ChildNodesWithDistance$Child($outer, dist, node) {
+    this.$outer = $outer;
+    this.dist = dist;
+    this.node = node;
+  }
+  ChildNodesWithDistance$Child.prototype.setChildNode_m31f86$ = function (node) {
+    this.node = node;
+    this.dist = this.$outer.childDist(node);
+  };
+  ChildNodesWithDistance$Child.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Child',
+    interfaces: []
+  };
+  function ChildNodesWithDistance$childListRecycler$lambda() {
+    return ArrayList_init_0();
+  }
+  function ChildNodesWithDistance$childComparator$lambda(it) {
+    return it.dist;
+  }
+  ChildNodesWithDistance.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ChildNodesWithDistance',
+    interfaces: []
+  };
   function TouchGestureEvaluator() {
     TouchGestureEvaluator$Companion_getInstance();
     this.currentGesture_nrwzky$_0 = new TouchGestureEvaluator$Gesture();
@@ -34825,6 +36060,483 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     kind: Kind_CLASS,
     simpleName: 'TouchGestureEvaluator',
     interfaces: []
+  };
+  function TreeMap() {
+    TreeMap$Companion_getInstance();
+    this.cmp_ta02bd$_0 = TreeMap$cmp$lambda;
+    this.root_g0oxgl$_0 = null;
+    this.size_g153xi$_0 = 0;
+  }
+  Object.defineProperty(TreeMap.prototype, 'size', {
+    get: function () {
+      return this.size_g153xi$_0;
+    },
+    set: function (size) {
+      this.size_g153xi$_0 = size;
+    }
+  });
+  TreeMap.prototype.clear = function () {
+    this.root_g0oxgl$_0 = null;
+    this.size = 0;
+  };
+  TreeMap.prototype.isEmpty = function () {
+    return this.size === 0;
+  };
+  TreeMap.prototype.firstEntry = function () {
+    var p = this.root_g0oxgl$_0;
+    if (p != null) {
+      while ((p != null ? p.left : null) != null) {
+        p = ensureNotNull(p.left);
+      }
+    }
+    if (p == null) {
+      throw NoSuchElementException_init();
+    }
+    return p;
+  };
+  TreeMap.prototype.firstValue = function () {
+    return this.firstEntry().value;
+  };
+  TreeMap.prototype.firstKey = function () {
+    return this.firstEntry().key;
+  };
+  TreeMap.prototype.lastEntry = function () {
+    var p = this.root_g0oxgl$_0;
+    if (p != null) {
+      while ((p != null ? p.right : null) != null) {
+        p = ensureNotNull(p.right);
+      }
+    }
+    if (p == null) {
+      throw NoSuchElementException_init();
+    }
+    return p;
+  };
+  TreeMap.prototype.lastValue = function () {
+    return this.lastEntry().value;
+  };
+  TreeMap.prototype.lastKey = function () {
+    return this.lastEntry().key;
+  };
+  TreeMap.prototype.put_xwzc9p$ = function (key, value) {
+    var tmp$;
+    if (this.root_g0oxgl$_0 == null) {
+      this.root_g0oxgl$_0 = new TreeMap$MapEntry(this, key, value, null);
+    }
+     else {
+      var t = this.root_g0oxgl$_0;
+      var parent;
+      do {
+        parent = ensureNotNull(t);
+        if (this.cmp_ta02bd$_0(key, t.key) < 0)
+          tmp$ = t.left;
+        else if (this.cmp_ta02bd$_0(key, t.key) > 0)
+          tmp$ = t.right;
+        else {
+          return t.setValue_11rc$(value);
+        }
+        t = tmp$;
+      }
+       while (t != null);
+      var e = new TreeMap$MapEntry(this, key, value, parent);
+      if (this.cmp_ta02bd$_0(key, parent.key) < 0) {
+        parent.left = e;
+      }
+       else {
+        parent.right = e;
+      }
+      this.fixAfterInsertion_9avj2i$_0(e);
+    }
+    this.size = this.size + 1 | 0;
+    return null;
+  };
+  TreeMap.prototype.remove_11rb$ = function (key) {
+    var tmp$;
+    var tmp$_0;
+    if ((tmp$ = this.getEntry_iowdmk$_0(key)) != null) {
+      var value = tmp$.value;
+      this.deleteEntry_xb9s9j$_0(tmp$);
+      tmp$_0 = value;
+    }
+     else
+      tmp$_0 = null;
+    return tmp$_0;
+  };
+  TreeMap.prototype.get_11rb$ = function (key) {
+    var tmp$;
+    return (tmp$ = this.getEntry_iowdmk$_0(key)) != null ? tmp$.value : null;
+  };
+  Object.defineProperty(TreeMap.prototype, 'entries', {
+    get: function () {
+      var tmp$;
+      var entries = LinkedHashSet_init();
+      if (!this.isEmpty()) {
+        var e = (tmp$ = this.firstEntry()) == null || Kotlin.isType(tmp$, TreeMap$MapEntry) ? tmp$ : throwCCE();
+        while (e != null) {
+          var element = e;
+          entries.add_11rb$(element);
+          e = this.successor_78gl9k$_0(e);
+        }
+      }
+      return entries;
+    }
+  });
+  Object.defineProperty(TreeMap.prototype, 'keys', {
+    get: function () {
+      var tmp$;
+      var keys = LinkedHashSet_init();
+      if (!this.isEmpty()) {
+        var e = (tmp$ = this.firstEntry()) == null || Kotlin.isType(tmp$, TreeMap$MapEntry) ? tmp$ : throwCCE();
+        while (e != null) {
+          var element = e.key;
+          keys.add_11rb$(element);
+          e = this.successor_78gl9k$_0(e);
+        }
+      }
+      return keys;
+    }
+  });
+  Object.defineProperty(TreeMap.prototype, 'values', {
+    get: function () {
+      var tmp$;
+      var values = LinkedHashSet_init();
+      if (!this.isEmpty()) {
+        var e = (tmp$ = this.firstEntry()) == null || Kotlin.isType(tmp$, TreeMap$MapEntry) ? tmp$ : throwCCE();
+        while (e != null) {
+          var element = e.value;
+          values.add_11rb$(element);
+          e = this.successor_78gl9k$_0(e);
+        }
+      }
+      return values;
+    }
+  });
+  TreeMap.prototype.containsKey_11rb$ = function (key) {
+    return this.getEntry_iowdmk$_0(key) != null;
+  };
+  TreeMap.prototype.containsValue_11rc$ = function (value) {
+    return this.values.contains_11rb$(value);
+  };
+  TreeMap.prototype.putAll_a2k3zr$ = function (from) {
+    var tmp$;
+    tmp$ = from.entries.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      this.put_xwzc9p$(element.key, element.value);
+    }
+  };
+  TreeMap.prototype.getEntry_iowdmk$_0 = function (key) {
+    var tmp$;
+    var p = this.root_g0oxgl$_0;
+    while (p != null) {
+      if (this.cmp_ta02bd$_0(key, p.key) < 0)
+        tmp$ = p.left;
+      else if (this.cmp_ta02bd$_0(key, p.key) > 0)
+        tmp$ = p.right;
+      else
+        return p;
+      p = tmp$;
+    }
+    return null;
+  };
+  TreeMap.prototype.deleteEntry_xb9s9j$_0 = function (entry) {
+    var p = entry;
+    this.size = this.size - 1 | 0;
+    if (p.left != null && p.right != null) {
+      var s = ensureNotNull(this.successor_78gl9k$_0(p));
+      p.key = s.key;
+      p.value = s.value;
+      p = s;
+    }
+    var replacement = p.left != null ? p.left : p.right;
+    if (replacement != null) {
+      replacement.parent = p.parent;
+      if (p.parent == null)
+        this.root_g0oxgl$_0 = replacement;
+      else if (p === ensureNotNull(p.parent).left)
+        ensureNotNull(p.parent).left = replacement;
+      else
+        ensureNotNull(p.parent).right = replacement;
+      p.left = null;
+      p.right = null;
+      p.parent = null;
+      if (p.color === TreeMap$Companion_getInstance().BLACK_0) {
+        this.fixAfterDeletion_6ssue5$_0(replacement);
+      }
+    }
+     else if (p.parent == null) {
+      this.root_g0oxgl$_0 = null;
+    }
+     else {
+      if (p.color === TreeMap$Companion_getInstance().BLACK_0) {
+        this.fixAfterDeletion_6ssue5$_0(p);
+      }
+      if (p.parent != null) {
+        if (p === ensureNotNull(p.parent).left) {
+          ensureNotNull(p.parent).left = null;
+        }
+         else if (p === ensureNotNull(p.parent).right) {
+          ensureNotNull(p.parent).right = null;
+        }
+        p.parent = null;
+      }
+    }
+  };
+  TreeMap.prototype.fixAfterInsertion_9avj2i$_0 = function (entry) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13, tmp$_14, tmp$_15, tmp$_16, tmp$_17, tmp$_18, tmp$_19, tmp$_20, tmp$_21, tmp$_22, tmp$_23;
+    var x = entry;
+    x != null ? (x.color = TreeMap$Companion_getInstance().RED_0) : null;
+    while (x != null && !equals(x, this.root_g0oxgl$_0) && this.color_3jivvv$_0(x.parent) === TreeMap$Companion_getInstance().RED_0) {
+      if (x.parent === ((tmp$_0 = (tmp$ = x.parent) != null ? tmp$.parent : null) != null ? tmp$_0.left : null)) {
+        var y = (tmp$_2 = (tmp$_1 = x.parent) != null ? tmp$_1.parent : null) != null ? tmp$_2.right : null;
+        if (this.color_3jivvv$_0(y) === TreeMap$Companion_getInstance().RED_0) {
+          (tmp$_3 = x.parent) != null ? (tmp$_3.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          y != null ? (y.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          (tmp$_5 = (tmp$_4 = x.parent) != null ? tmp$_4.parent : null) != null ? (tmp$_5.color = TreeMap$Companion_getInstance().RED_0) : null;
+          x = (tmp$_6 = x.parent) != null ? tmp$_6.parent : null;
+        }
+         else {
+          if (x === ((tmp$_7 = x.parent) != null ? tmp$_7.right : null)) {
+            x = x.parent;
+            this.rotateLeft_xtlw1j$_0(x);
+          }
+          (tmp$_8 = x != null ? x.parent : null) != null ? (tmp$_8.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          (tmp$_10 = (tmp$_9 = x != null ? x.parent : null) != null ? tmp$_9.parent : null) != null ? (tmp$_10.color = TreeMap$Companion_getInstance().RED_0) : null;
+          this.rotateRight_ltp9a$_0((tmp$_11 = x != null ? x.parent : null) != null ? tmp$_11.parent : null);
+        }
+      }
+       else {
+        var y_0 = (tmp$_13 = (tmp$_12 = x.parent) != null ? tmp$_12.parent : null) != null ? tmp$_13.left : null;
+        if (this.color_3jivvv$_0(y_0) === TreeMap$Companion_getInstance().RED_0) {
+          (tmp$_14 = x.parent) != null ? (tmp$_14.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          y_0 != null ? (y_0.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          (tmp$_16 = (tmp$_15 = x.parent) != null ? tmp$_15.parent : null) != null ? (tmp$_16.color = TreeMap$Companion_getInstance().RED_0) : null;
+          x = (tmp$_17 = x.parent) != null ? tmp$_17.parent : null;
+        }
+         else {
+          if (x === ((tmp$_18 = x.parent) != null ? tmp$_18.left : null)) {
+            x = x.parent;
+            this.rotateRight_ltp9a$_0(x);
+          }
+          (tmp$_19 = x != null ? x.parent : null) != null ? (tmp$_19.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          (tmp$_21 = (tmp$_20 = x != null ? x.parent : null) != null ? tmp$_20.parent : null) != null ? (tmp$_21.color = TreeMap$Companion_getInstance().RED_0) : null;
+          this.rotateLeft_xtlw1j$_0((tmp$_22 = x != null ? x.parent : null) != null ? tmp$_22.parent : null);
+        }
+      }
+    }
+    (tmp$_23 = this.root_g0oxgl$_0) != null ? (tmp$_23.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+  };
+  TreeMap.prototype.fixAfterDeletion_6ssue5$_0 = function (entry) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10, tmp$_11, tmp$_12, tmp$_13;
+    var x = entry;
+    while (!equals(x, this.root_g0oxgl$_0) && x.color === TreeMap$Companion_getInstance().BLACK_0) {
+      if (equals(x, (tmp$ = x.parent) != null ? tmp$.left : null)) {
+        var sib = (tmp$_0 = x.parent) != null ? tmp$_0.right : null;
+        if (this.color_3jivvv$_0(sib) === TreeMap$Companion_getInstance().RED_0) {
+          sib != null ? (sib.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          (tmp$_1 = x.parent) != null ? (tmp$_1.color = TreeMap$Companion_getInstance().RED_0) : null;
+          this.rotateLeft_xtlw1j$_0(x.parent);
+          sib = (tmp$_2 = x.parent) != null ? tmp$_2.right : null;
+        }
+        if (this.color_3jivvv$_0(sib != null ? sib.left : null) === TreeMap$Companion_getInstance().BLACK_0 && this.color_3jivvv$_0(sib != null ? sib.right : null) === TreeMap$Companion_getInstance().BLACK_0) {
+          sib != null ? (sib.color = TreeMap$Companion_getInstance().RED_0) : null;
+          x = ensureNotNull(x.parent);
+        }
+         else {
+          if (this.color_3jivvv$_0(sib != null ? sib.right : null) === TreeMap$Companion_getInstance().BLACK_0) {
+            (tmp$_3 = sib != null ? sib.left : null) != null ? (tmp$_3.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+            sib != null ? (sib.color = TreeMap$Companion_getInstance().RED_0) : null;
+            this.rotateRight_ltp9a$_0(sib);
+            sib = (tmp$_4 = x.parent) != null ? tmp$_4.right : null;
+          }
+          sib != null ? (sib.color = this.color_3jivvv$_0(x.parent)) : null;
+          (tmp$_5 = x.parent) != null ? (tmp$_5.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          (tmp$_6 = sib != null ? sib.right : null) != null ? (tmp$_6.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          this.rotateLeft_xtlw1j$_0(x.parent);
+          x = ensureNotNull(this.root_g0oxgl$_0);
+        }
+      }
+       else {
+        var sib_0 = (tmp$_7 = x.parent) != null ? tmp$_7.left : null;
+        if (this.color_3jivvv$_0(sib_0) === TreeMap$Companion_getInstance().RED_0) {
+          sib_0 != null ? (sib_0.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          (tmp$_8 = sib_0 != null ? sib_0.parent : null) != null ? (tmp$_8.color = TreeMap$Companion_getInstance().RED_0) : null;
+          this.rotateRight_ltp9a$_0(x.parent);
+          sib_0 = (tmp$_9 = x.parent) != null ? tmp$_9.left : null;
+        }
+        if (this.color_3jivvv$_0(sib_0 != null ? sib_0.right : null) === TreeMap$Companion_getInstance().BLACK_0 && this.color_3jivvv$_0(sib_0 != null ? sib_0.left : null) === TreeMap$Companion_getInstance().BLACK_0) {
+          sib_0 != null ? (sib_0.color = TreeMap$Companion_getInstance().RED_0) : null;
+          x = ensureNotNull(x.parent);
+        }
+         else {
+          if (this.color_3jivvv$_0(sib_0 != null ? sib_0.left : null) === TreeMap$Companion_getInstance().BLACK_0) {
+            (tmp$_10 = sib_0 != null ? sib_0.right : null) != null ? (tmp$_10.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+            sib_0 != null ? (sib_0.color = TreeMap$Companion_getInstance().RED_0) : null;
+            this.rotateLeft_xtlw1j$_0(sib_0);
+            sib_0 = (tmp$_11 = x.parent) != null ? tmp$_11.left : null;
+          }
+          sib_0 != null ? (sib_0.color = this.color_3jivvv$_0(x.parent)) : null;
+          (tmp$_12 = x.parent) != null ? (tmp$_12.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          (tmp$_13 = sib_0 != null ? sib_0.left : null) != null ? (tmp$_13.color = TreeMap$Companion_getInstance().BLACK_0) : null;
+          this.rotateRight_ltp9a$_0(x.parent);
+          x = ensureNotNull(this.root_g0oxgl$_0);
+        }
+      }
+    }
+    x.color = TreeMap$Companion_getInstance().BLACK_0;
+  };
+  TreeMap.prototype.rotateLeft_xtlw1j$_0 = function (p) {
+    var tmp$, tmp$_0, tmp$_1;
+    if (p != null) {
+      var r = p.right;
+      p.right = r != null ? r.left : null;
+      if ((r != null ? r.left : null) != null) {
+        (tmp$ = r.left) != null ? (tmp$.parent = p) : null;
+      }
+      r != null ? (r.parent = p.parent) : null;
+      if (p.parent == null)
+        this.root_g0oxgl$_0 = r;
+      else {
+        var tmp$_2;
+        if (((tmp$_2 = p.parent) != null ? tmp$_2.left : null) === p)
+          (tmp$_0 = p.parent) != null ? (tmp$_0.left = r) : null;
+        else
+          (tmp$_1 = p.parent) != null ? (tmp$_1.right = r) : null;
+      }
+      r != null ? (r.left = p) : null;
+      p.parent = r;
+    }
+  };
+  TreeMap.prototype.rotateRight_ltp9a$_0 = function (p) {
+    var tmp$, tmp$_0, tmp$_1;
+    if (p != null) {
+      var l = p.left;
+      p.left = l != null ? l.right : null;
+      if ((l != null ? l.right : null) != null) {
+        (tmp$ = l.right) != null ? (tmp$.parent = p) : null;
+      }
+      l != null ? (l.parent = p.parent) : null;
+      if (p.parent == null)
+        this.root_g0oxgl$_0 = l;
+      else {
+        var tmp$_2;
+        if (((tmp$_2 = p.parent) != null ? tmp$_2.right : null) === p)
+          (tmp$_0 = p.parent) != null ? (tmp$_0.right = l) : null;
+        else
+          (tmp$_1 = p.parent) != null ? (tmp$_1.left = l) : null;
+      }
+      l != null ? (l.right = p) : null;
+      p.parent = l;
+    }
+  };
+  TreeMap.prototype.color_3jivvv$_0 = function ($receiver) {
+    var tmp$;
+    return (tmp$ = $receiver != null ? $receiver.color : null) != null ? tmp$ : TreeMap$Companion_getInstance().BLACK_0;
+  };
+  TreeMap.prototype.successor_78gl9k$_0 = function ($receiver) {
+    var tmp$;
+    if ($receiver == null)
+      tmp$ = null;
+    else if ($receiver.right != null) {
+      var p = ensureNotNull($receiver.right);
+      while (p.left != null) {
+        p = ensureNotNull(p.left);
+      }
+      tmp$ = p;
+    }
+     else {
+      var p_0 = $receiver.parent;
+      var ch = $receiver;
+      while (p_0 != null && equals(ch, p_0.right)) {
+        ch = p_0;
+        p_0 = p_0.parent;
+      }
+      tmp$ = p_0;
+    }
+    return tmp$;
+  };
+  TreeMap.prototype.predecessor_3j2kg5$_0 = function ($receiver) {
+    var tmp$;
+    if ($receiver == null)
+      tmp$ = null;
+    else if ($receiver.left != null) {
+      var p = ensureNotNull($receiver.left);
+      while (p.right != null) {
+        p = ensureNotNull(p.right);
+      }
+      tmp$ = p;
+    }
+     else {
+      var p_0 = $receiver.parent;
+      var ch = $receiver;
+      while (p_0 != null && equals(ch, p_0.left)) {
+        ch = p_0;
+        p_0 = p_0.parent;
+      }
+      tmp$ = p_0;
+    }
+    return tmp$;
+  };
+  function TreeMap$MapEntry($outer, key, value, parent) {
+    this.$outer = $outer;
+    this.parent = parent;
+    this.key_qa5ejk$_0 = key;
+    this.value_owqnua$_0 = value;
+    this.left = null;
+    this.right = null;
+    this.color = TreeMap$Companion_getInstance().BLACK_0;
+  }
+  Object.defineProperty(TreeMap$MapEntry.prototype, 'key', {
+    get: function () {
+      return this.key_qa5ejk$_0;
+    },
+    set: function (key) {
+      this.key_qa5ejk$_0 = key;
+    }
+  });
+  Object.defineProperty(TreeMap$MapEntry.prototype, 'value', {
+    get: function () {
+      return this.value_owqnua$_0;
+    },
+    set: function (value) {
+      this.value_owqnua$_0 = value;
+    }
+  });
+  TreeMap$MapEntry.prototype.setValue_11rc$ = function (newValue) {
+    var old = this.value;
+    this.value = newValue;
+    return old;
+  };
+  TreeMap$MapEntry.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MapEntry',
+    interfaces: [MutableMap$MutableEntry]
+  };
+  function TreeMap$Companion() {
+    TreeMap$Companion_instance = this;
+    this.BLACK_0 = false;
+    this.RED_0 = true;
+  }
+  TreeMap$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var TreeMap$Companion_instance = null;
+  function TreeMap$Companion_getInstance() {
+    if (TreeMap$Companion_instance === null) {
+      new TreeMap$Companion();
+    }
+    return TreeMap$Companion_instance;
+  }
+  function TreeMap$cmp$lambda(a, b) {
+    var tmp$;
+    return Kotlin.compareTo(Kotlin.isComparable(tmp$ = a) ? tmp$ : throwCCE(), b);
+  }
+  TreeMap.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TreeMap',
+    interfaces: [MutableMap]
   };
   function UniqueId() {
     UniqueId_instance = this;
@@ -35631,6 +37343,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function JsAssetManager(assetsBaseDir) {
     JsAssetManager$Companion_getInstance();
     AssetManager.call(this, assetsBaseDir);
+    this.pako_0 = require('pako_inflate.min');
     this.fontGenerator_0 = new FontMapGenerator(2048, 2048);
   }
   function Coroutine$loadLocalRaw_hl6yzt$($this, localRawRef_0, continuation_0) {
@@ -35787,6 +37500,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   };
   JsAssetManager.prototype.createCharMap_ttufcy$ = function (fontProps) {
     return this.fontGenerator_0.createCharMap_ttufcy$(fontProps);
+  };
+  JsAssetManager.prototype.inflate_fqrh44$ = function (zipData) {
+    var tmp$;
+    var uint8Data = new Uint8Array(zipData.length);
+    for (var i = 0; i !== zipData.length; ++i) {
+      uint8Data[i] = zipData[i];
+    }
+    var inflated = Kotlin.isType(tmp$ = this.pako_0.inflate(uint8Data), Uint8Array) ? tmp$ : throwCCE();
+    var array = new Int8Array(inflated.length);
+    var tmp$_0;
+    tmp$_0 = array.length - 1 | 0;
+    for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
+      array[i_0] = inflated[i_0];
+    }
+    return array;
   };
   function JsAssetManager$Companion() {
     JsAssetManager$Companion_instance = this;
@@ -36376,6 +38104,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     return new Float32BufferImpl(capacity);
   }
   $$importsForInline$$['kotlinx-coroutines-core'] = $module$kotlinx_coroutines_core;
+  $$importsForInline$$.kool = _;
   Object.defineProperty(AssetManager, 'Companion', {
     get: AssetManager$Companion_getInstance
   });
@@ -37928,7 +39657,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(FramebufferResource, 'Companion', {
     get: FramebufferResource$Companion_getInstance
   });
-  $$importsForInline$$.kool = _;
   package$gl.FramebufferResource = FramebufferResource;
   Object.defineProperty(FbColorTexData, 'Companion', {
     get: FbColorTexData$Companion_getInstance
@@ -38093,6 +39821,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$math.clamp_wj6e7o$ = clamp_0;
   package$math.clamp_nig4hr$ = clamp_1;
   package$math.triArea_n440fu$ = triArea;
+  package$math.triAspectRatio_n440fu$ = triAspectRatio;
   package$math.FloatRange = FloatRange;
   package$math.rangeTo_yni7l$ = rangeTo_0;
   package$math.partition_yk7sjr$ = partition;
@@ -38111,7 +39840,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$math.sqrDistanceToRay_f1pxpf$ = sqrDistanceToRay_0;
   package$math.sqrDistancePointToRay_dthv57$ = sqrDistancePointToRay;
   package$math.nearestPointOnRay_lg9eux$ = nearestPointOnRay;
-  package$math.distanceEdge_f1pxpf$ = distanceEdge;
+  package$math.distanceToEdge_f1pxpf$ = distanceToEdge;
   package$math.sqrDistanceToEdge_f1pxpf$ = sqrDistanceToEdge;
   package$math.sqrDistancePointToEdge_dthv57$ = sqrDistancePointToEdge;
   package$math.nearestPointOnEdge_lg9eux$ = nearestPointOnEdge;
@@ -38304,29 +40033,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$globe.TexImageTileShaderProvider = TexImageTileShaderProvider;
   package$globe.OsmTexImageTileShaderProvider = OsmTexImageTileShaderProvider;
   HalfEdgeMesh.EdgeHandler = HalfEdgeMesh$EdgeHandler;
-  Object.defineProperty(HalfEdgeMesh$Companion.prototype, 'HalfEdgeAdapter', {
-    get: HalfEdgeMesh$Companion$HalfEdgeAdapter_getInstance
-  });
-  Object.defineProperty(HalfEdgeMesh, 'Companion', {
-    get: HalfEdgeMesh$Companion_getInstance
-  });
   HalfEdgeMesh.HalfEdgeVertex = HalfEdgeMesh$HalfEdgeVertex;
   HalfEdgeMesh.HalfEdge = HalfEdgeMesh$HalfEdge;
-  HalfEdgeMesh.OcTreeEdgeHandler_init_3w6cym$ = HalfEdgeMesh$HalfEdgeMesh$OcTreeEdgeHandler_init;
-  HalfEdgeMesh.OcTreeEdgeHandler = HalfEdgeMesh$OcTreeEdgeHandler;
-  HalfEdgeMesh.ListEdgeHandler = HalfEdgeMesh$ListEdgeHandler;
   var package$mesh = package$modules.mesh || (package$modules.mesh = {});
   package$mesh.HalfEdgeMesh = HalfEdgeMesh;
+  package$mesh.ListEdgeHandler = ListEdgeHandler;
+  Object.defineProperty(MeshCutXy, 'Companion', {
+    get: MeshCutXy$Companion_getInstance
+  });
+  package$mesh.MeshCutXy = MeshCutXy;
+  Object.defineProperty(OcTreeEdgeHandler$Companion.prototype, 'HalfEdgeAdapter', {
+    get: OcTreeEdgeHandler$Companion$HalfEdgeAdapter_getInstance
+  });
+  Object.defineProperty(OcTreeEdgeHandler, 'Companion', {
+    get: OcTreeEdgeHandler$Companion_getInstance
+  });
+  package$mesh.OcTreeEdgeHandler_init_3w6cym$ = OcTreeEdgeHandler_init;
+  package$mesh.OcTreeEdgeHandler = OcTreeEdgeHandler;
   var package$simplification = package$mesh.simplification || (package$mesh.simplification = {});
   package$simplification.CollapseStrategy = CollapseStrategy;
   package$simplification.defaultCollapseStrategy = defaultCollapseStrategy;
   package$simplification.ErrorQuadric = ErrorQuadric;
-  package$simplification.simplify_d8bgst$ = simplify;
-  package$simplification.simplify_l8ya3b$ = simplify_0;
-  package$simplification.simplify_e3b8wt$ = simplify_1;
+  package$simplification.simplify_8igdhs$ = simplify;
+  package$simplification.simplify_hem9$ = simplify_0;
   package$simplification.MeshSimplifier = MeshSimplifier;
   package$simplification.TermCriterion = TermCriterion;
-  package$simplification.terminateOnFaceCountRel_mx4ult$ = terminateOnFaceCountRel;
+  package$simplification.terminateOnFaceCountRel_14dthe$ = terminateOnFaceCountRel;
   package$simplification.terminateOnFaceCountAbs_za3lpa$ = terminateOnFaceCountAbs;
   package$simplification.terminateOnError_14dthe$ = terminateOnError;
   var package$physics = package$modules.physics || (package$modules.physics = {});
@@ -38701,6 +40433,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   SharedResManager.SharedResource = SharedResManager$SharedResource;
   package$kool.SharedResManager = SharedResManager;
   package$kool.defaultProps_61zpoe$ = defaultProps;
+  package$kool.defaultPropsRepeated_61zpoe$ = defaultPropsRepeated;
   Object.defineProperty(TextureProps, 'Companion', {
     get: TextureProps$Companion_getInstance
   });
@@ -38723,7 +40456,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$util.InterpolatedValue = InterpolatedValue;
   package$util.InterpolatedFloat = InterpolatedFloat;
   package$util.InterpolatedColor = InterpolatedColor;
-  package$util.MassDamperFloat = MassDamperFloat;
+  package$util.SpringDamperFloat = SpringDamperFloat;
   Object.defineProperty(BillboardMesh$DrawOrder, 'AS_IS', {
     get: BillboardMesh$DrawOrder$AS_IS_getInstance
   });
@@ -38954,6 +40687,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     get: AttributeList$$serializer_getInstance
   });
   package$serialization.AttributeList = AttributeList;
+  Object.defineProperty(IntAttributeList, 'Companion', {
+    get: IntAttributeList$Companion_getInstance
+  });
+  Object.defineProperty(IntAttributeList, '$serializer', {
+    get: IntAttributeList$$serializer_getInstance
+  });
+  package$serialization.IntAttributeList = IntAttributeList;
+  Object.defineProperty(package$serialization, 'NormalOctCoding', {
+    get: NormalOctCoding_getInstance
+  });
   package$util.ShadowMap = ShadowMap;
   Object.defineProperty(SimpleShadowMap, 'Companion', {
     get: SimpleShadowMap$Companion_getInstance
@@ -38991,9 +40734,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$util.Triangle = Triangle;
   SpatialTree.Node = SpatialTree$Node;
   package$util.SpatialTree = SpatialTree;
-  package$util.SpatialTreeTraverser = SpatialTreeTraverser;
   package$util.PointDistance = PointDistance;
   package$util.RayDistance = RayDistance;
+  package$util.SpatialTreeTraverser = SpatialTreeTraverser;
   package$util.CenterPointTraverser = CenterPointTraverser;
   package$util.InRadiusTraverser = InRadiusTraverser;
   Object.defineProperty(KNearestTraverser, 'Companion', {
@@ -39003,14 +40746,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$util.NearestToRayTraverser = NearestToRayTraverser;
   package$util.NearestEdgeToRayTraverser = NearestEdgeToRayTraverser;
   package$util.TriangleHitTraverser = TriangleHitTraverser;
-  package$util.computeTraversalOrder_4xxo93$ = computeTraversalOrder;
-  package$util.removeCandidatesOutOfDist_w6pp3o$ = removeCandidatesOutOfDist;
-  package$util.sortByTraversalOrder_vme2cj$ = sortByTraversalOrder;
+  ChildNodesWithDistance.Child = ChildNodesWithDistance$Child;
+  package$util.ChildNodesWithDistance = ChildNodesWithDistance;
   Object.defineProperty(TouchGestureEvaluator, 'Companion', {
     get: TouchGestureEvaluator$Companion_getInstance
   });
   TouchGestureEvaluator.Gesture = TouchGestureEvaluator$Gesture;
   package$util.TouchGestureEvaluator = TouchGestureEvaluator;
+  Object.defineProperty(TreeMap, 'Companion', {
+    get: TreeMap$Companion_getInstance
+  });
+  package$util.TreeMap = TreeMap;
   Object.defineProperty(package$util, 'UniqueId', {
     get: UniqueId_getInstance
   });
@@ -39129,9 +40875,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(ElevationMapS16.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
   Object.defineProperty(ElevationMapS16.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
   ElevationMapS16.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMin_hm1yd1$ = ItemAdapter.prototype.getMin_hm1yd1$;
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getMax_hm1yd1$ = ItemAdapter.prototype.getMax_hm1yd1$;
-  HalfEdgeMesh$Companion$HalfEdgeAdapter.prototype.getCenter_hm1yd1$ = ItemAdapter.prototype.getCenter_hm1yd1$;
+  ListEdgeHandler.prototype.distinctTriangleEdges = HalfEdgeMesh$EdgeHandler.prototype.distinctTriangleEdges;
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMin_hm1yd1$ = ItemAdapter.prototype.getMin_hm1yd1$;
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMax_hm1yd1$ = ItemAdapter.prototype.getMax_hm1yd1$;
+  OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getCenter_hm1yd1$ = ItemAdapter.prototype.getCenter_hm1yd1$;
+  OcTreeEdgeHandler.prototype.distinctTriangleEdges = HalfEdgeMesh$EdgeHandler.prototype.distinctTriangleEdges;
   terminateOnFaceCountAbs$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   terminateOnError$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   MeshRayTest$Companion$nopTest$ObjectLiteral.prototype.onMeshDataChanged_f1jspk$ = MeshRayTest.prototype.onMeshDataChanged_f1jspk$;
@@ -39211,6 +40959,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   ModelNodeData$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   ModelMeshData$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   AttributeList$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
+  IntAttributeList$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
   Vec3fAdapter.prototype.setNode_bc9457$ = ItemAdapter.prototype.setNode_bc9457$;
   EdgeAdapter.prototype.getCenterX_trkh7z$ = ItemAdapter.prototype.getCenterX_trkh7z$;
   EdgeAdapter.prototype.getCenterY_trkh7z$ = ItemAdapter.prototype.getCenterY_trkh7z$;
@@ -39228,15 +40977,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   TriangleAdapter.prototype.getSzZ_trkh7z$ = ItemAdapter.prototype.getSzZ_trkh7z$;
   TriangleAdapter.prototype.getCenter_hm1yd1$ = ItemAdapter.prototype.getCenter_hm1yd1$;
   TriangleAdapter.prototype.setNode_bc9457$ = ItemAdapter.prototype.setNode_bc9457$;
-  CenterPointTraverser$pointDistance$ObjectLiteral.prototype.nodeDistanceToPoint_m5117s$ = PointDistance.prototype.nodeDistanceToPoint_m5117s$;
+  CenterPointTraverser$pointDistance$ObjectLiteral.prototype.nodeSqrDistanceToPoint_m5117s$ = PointDistance.prototype.nodeSqrDistanceToPoint_m5117s$;
   CenterPointTraverser$pointDistance$ObjectLiteral.prototype.itemSqrDistanceToPoint_54x1zp$ = PointDistance.prototype.itemSqrDistanceToPoint_54x1zp$;
-  CenterPointTraverser.prototype.onStart_m6hlto$ = SpatialTreeTraverser.prototype.onStart_m6hlto$;
-  CenterPointTraverser.prototype.onFinish_m6hlto$ = SpatialTreeTraverser.prototype.onFinish_m6hlto$;
-  NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.nodeDistanceToRay_4lohg5$ = RayDistance.prototype.nodeDistanceToRay_4lohg5$;
+  NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
   NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.itemSqrDistanceToRay_t0er6w$ = RayDistance.prototype.itemSqrDistanceToRay_t0er6w$;
-  NearestToRayTraverser.prototype.onStart_m6hlto$ = SpatialTreeTraverser.prototype.onStart_m6hlto$;
-  NearestEdgeToRayTraverser_init$ObjectLiteral.prototype.nodeDistanceToRay_4lohg5$ = RayDistance.prototype.nodeDistanceToRay_4lohg5$;
-  TriangleHitTraverser_init$ObjectLiteral.prototype.nodeDistanceToRay_4lohg5$ = RayDistance.prototype.nodeDistanceToRay_4lohg5$;
+  NearestEdgeToRayTraverser_init$ObjectLiteral.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
+  TriangleHitTraverser_init$ObjectLiteral.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
   Object.defineProperty(DelayedElevationMap.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
   Object.defineProperty(DelayedElevationMap.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
   DelayedElevationMap.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;

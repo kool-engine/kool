@@ -3,8 +3,8 @@ package de.fabmax.kool.demo
 /**
  * @author fabmax
  */
-fun main(args: Array<String>) {
+fun main() {
     Demo.setProperty("assetsBaseDir", "./docs/assets")
     // launch demo
-    demo( "particleDemo")
+    demo( "simplificationDemo")
 }

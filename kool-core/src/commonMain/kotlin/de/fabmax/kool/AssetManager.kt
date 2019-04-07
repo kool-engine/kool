@@ -5,6 +5,8 @@ import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_TEXTURE_CUBE_MAP
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.serialization.ModelData
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -81,6 +83,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract fun createCharMap(fontProps: FontProps): CharMap
 
+    abstract fun inflate(zipData: ByteArray): ByteArray
+
     protected open fun isHttpAsset(assetPath: String): Boolean =
             // maybe use something less naive here?
             assetPath.startsWith("http://", true) ||
@@ -100,7 +104,20 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         }
     }
 
-    open fun loadTextureAsset(assetPath: String): TextureData  {
+    fun loadModel(modelPath: String, onLoad: (ModelData?) -> Unit) {
+        loadAsset(modelPath) { loadedData ->
+            val model: ModelData? = if (loadedData == null) {
+                logE { "Failed loading model $modelPath" }
+                null
+            } else {
+                val data = if (modelPath.endsWith(".kmfz", true)) inflate(loadedData) else loadedData
+                ModelData.load(data)
+            }
+            onLoad(model)
+        }
+    }
+
+    fun loadTextureAsset(assetPath: String): TextureData  {
         val proxy = TextureDataProxy()
         launch {
             val ref = if (isHttpAsset(assetPath)) {

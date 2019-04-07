@@ -17,7 +17,6 @@ import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
-import de.fabmax.kool.util.serialization.ModelData
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -63,8 +62,8 @@ class SimplificationDemo(ctx: KoolContext) {
         models["cos"] = srcModel
         heMesh = HalfEdgeMesh(srcModel)
 
-        loadModel("bunny.kmf", 0.05f, ctx)
-        loadModel("cow.kmf", 1f, ctx)
+        loadModel("bunny.kmfz", 0.05f, ctx)
+        loadModel("cow.kmfz", 1f, ctx)
 
 
         simplificationScene = scene {
@@ -142,7 +141,7 @@ class SimplificationDemo(ctx: KoolContext) {
                     textAlignment = Gravity(Alignment.START, Alignment.CENTER)
 
                     onClick += { _,_,_ ->
-                        val m = models["cow.kmf"]
+                        val m = models["cow.kmfz"]
                         if (m != null) {
                             srcModel = m
                             simplify()
@@ -156,7 +155,7 @@ class SimplificationDemo(ctx: KoolContext) {
                     textAlignment = Gravity(Alignment.START, Alignment.CENTER)
 
                     onClick += { _,_,_ ->
-                        val m = models["bunny.kmf"]
+                        val m = models["bunny.kmfz"]
                         if (m != null) {
                             srcModel = m
                             simplify()
@@ -301,11 +300,9 @@ class SimplificationDemo(ctx: KoolContext) {
 
     private fun loadModel(name: String, scale: Float, ctx: KoolContext) {
         loadingModels += name
-        ctx.assetMgr.loadAsset(name) { data ->
-            if (data == null) {
-                logE { "Fatal: Failed loading model" }
-            } else {
-                val mesh = ModelData.load(data).meshes[0].toMesh()
+        ctx.assetMgr.loadModel(name) { model ->
+            if (model != null) {
+                val mesh = model.meshes[0].toMesh()
                 val meshdata = mesh.meshData
                 for (i in 0 until meshdata.numVertices) {
                     meshdata.vertexList.vertexIt.index = i

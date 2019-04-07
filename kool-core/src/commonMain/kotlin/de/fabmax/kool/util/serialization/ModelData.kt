@@ -72,7 +72,7 @@ data class ModelData(
     }
 
     companion object {
-        const val VERSION = 1
+        const val VERSION = 2
 
         fun load(data: ByteArray): ModelData {
             val model = ProtoBuf.load<ModelData>(data)

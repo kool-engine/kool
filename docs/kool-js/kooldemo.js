@@ -67,7 +67,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
   var throwCCE = Kotlin.throwCCE;
   var KoolException_init = $module$kool.de.fabmax.kool.KoolException_init_61zpoe$;
-  var ModelData = $module$kool.de.fabmax.kool.util.serialization.ModelData;
   var Armature = $module$kool.de.fabmax.kool.scene.animation.Armature;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
@@ -104,7 +103,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var BillboardMesh$DrawOrder = $module$kool.de.fabmax.kool.util.BillboardMesh.DrawOrder;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var randomI = $module$kool.de.fabmax.kool.math.randomI_n8acyv$;
-  var KNearestTraverser = $module$kool.de.fabmax.kool.util.KNearestTraverser;
+  var InRadiusTraverser = $module$kool.de.fabmax.kool.util.InRadiusTraverser;
   var BillboardMesh = $module$kool.de.fabmax.kool.util.BillboardMesh;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
   var pointMesh = $module$kool.de.fabmax.kool.util.pointMesh_h6khem$;
@@ -118,10 +117,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var LinearAnimator = $module$kool.de.fabmax.kool.util.LinearAnimator;
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
   var throwUPAE = Kotlin.throwUPAE;
+  var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
   var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
-  var HalfEdgeMesh$ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh.ListEdgeHandler;
-  var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_mx4ult$;
-  var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_e3b8wt$;
+  var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_14dthe$;
+  var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_hem9$;
   var toString_1 = Kotlin.toString;
   var MeshData_init = $module$kool.de.fabmax.kool.scene.MeshData_init_j0mu7e$;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
@@ -151,7 +150,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var math = Kotlin.kotlin.math;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
-  var InRadiusTraverser = $module$kool.de.fabmax.kool.util.InRadiusTraverser;
   var math_0 = $module$kool.de.fabmax.kool.math;
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
   var MutableVec2f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
@@ -509,7 +507,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('Simple Demo', Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('simpleDemo', this.defaultScene_0), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_0)), to('globeDemo', new Demo$DemoEntry('Globe Demo', Demo$demos$lambda_1)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_2)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_3)), to('boxDemo', new Demo$DemoEntry('Physics Demo', Demo$demos$lambda_4)), to('simplificationDemo', new Demo$DemoEntry('Simplification Demo', Demo$demos$lambda_5)), to('instancedDemo', new Demo$DemoEntry('Instanced Demo', Demo$demos$lambda_6)), to('reflectionDemo', new Demo$DemoEntry('Reflection Demo', Demo$demos$lambda_7)), to('particleDemo', new Demo$DemoEntry('Particle Demo', Demo$demos$lambda_8))]);
+    this.demos_0 = mutableMapOf([to('simpleDemo', this.defaultScene_0), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda)), to('pointDemo', new Demo$DemoEntry('Point Tree Demo', Demo$demos$lambda_0)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_1)), to('globeDemo', new Demo$DemoEntry('Globe Demo', Demo$demos$lambda_2)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_4)), to('boxDemo', new Demo$DemoEntry('Physics Demo', Demo$demos$lambda_5)), to('simplificationDemo', new Demo$DemoEntry('Simplification Demo', Demo$demos$lambda_6)), to('instancedDemo', new Demo$DemoEntry('Instanced Demo', Demo$demos$lambda_7)), to('reflectionDemo', new Demo$DemoEntry('Reflection Demo', Demo$demos$lambda_8)), to('particleDemo', new Demo$DemoEntry('Particle Demo', Demo$demos$lambda_9))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0;
@@ -674,38 +672,42 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return Unit;
   }
   function Demo$demos$lambda_0($receiver, it) {
-    $receiver.addAll_brywnq$(synthieScene(it));
+    $receiver.add_11rb$(pointScene());
     return Unit;
   }
   function Demo$demos$lambda_1($receiver, it) {
-    $receiver.addAll_brywnq$(globeScene(it));
+    $receiver.addAll_brywnq$(synthieScene(it));
     return Unit;
   }
   function Demo$demos$lambda_2($receiver, it) {
-    $receiver.add_11rb$(modelScene(it));
+    $receiver.addAll_brywnq$(globeScene(it));
     return Unit;
   }
   function Demo$demos$lambda_3($receiver, it) {
-    $receiver.addAll_brywnq$(treeScene(it));
+    $receiver.add_11rb$(modelScene(it));
     return Unit;
   }
   function Demo$demos$lambda_4($receiver, it) {
-    $receiver.addAll_brywnq$(collisionDemo(it));
+    $receiver.addAll_brywnq$(treeScene(it));
     return Unit;
   }
   function Demo$demos$lambda_5($receiver, it) {
-    $receiver.addAll_brywnq$(simplificationDemo(it));
+    $receiver.addAll_brywnq$(collisionDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_6($receiver, it) {
-    $receiver.add_11rb$(instancedDemo(it));
+    $receiver.addAll_brywnq$(simplificationDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_7($receiver, it) {
-    $receiver.addAll_brywnq$(reflectionDemo(it));
+    $receiver.add_11rb$(instancedDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_8($receiver, it) {
+    $receiver.addAll_brywnq$(reflectionDemo(it));
+    return Unit;
+  }
+  function Demo$demos$lambda_9($receiver, it) {
     $receiver.addAll_brywnq$(particleDemo(it));
     return Unit;
   }
@@ -961,12 +963,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   function instancedDemo$lambda$lambda$lambda(this$) {
-    return function (data) {
+    return function (modelData) {
       var tmp$;
-      if (data == null) {
+      if (modelData == null) {
         throw KoolException_init('Fatal: Failed loading model');
       }
-      var model = Kotlin.isType(tmp$ = ModelData.Companion.load_fqrh44$(data).meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
+      var model = Kotlin.isType(tmp$ = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
       for (var i = 1; i <= 5; i++) {
         this$.unaryPlus_uv0sim$(spawnMesh(model, randomF(0.2, 0.6)));
       }
@@ -976,7 +978,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function instancedDemo$lambda$lambda_0(closure$ctx) {
     return function ($receiver) {
       $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
-      closure$ctx.assetMgr.loadAsset_us385g$('player.kmf', instancedDemo$lambda$lambda$lambda($receiver));
+      closure$ctx.assetMgr.loadModel_v5uqdg$('player.kmfz', instancedDemo$lambda$lambda$lambda($receiver));
       return Unit;
     };
   }
@@ -1199,12 +1201,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   function modelScene$lambda$lambda$lambda(closure$model, closure$armature, closure$movementSpeed, closure$slowMotion, this$) {
-    return function (data) {
+    return function (modelData) {
       var tmp$, tmp$_0;
-      if (data == null) {
+      if (modelData == null) {
         throw KoolException_init('Fatal: Failed loading model');
       }
-      var modelData = ModelData.Companion.load_fqrh44$(data);
       var mesh = Kotlin.isType(tmp$ = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
       closure$model.plusAssign_f1kmr1$(mesh);
       closure$armature.v = mesh;
@@ -1354,7 +1355,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var slowMotion = {v: 1.0};
       var armature = {v: null};
       $receiver.unaryPlus_uv0sim$(model);
-      closure$ctx.assetMgr.loadAsset_us385g$('player.kmf', modelScene$lambda$lambda$lambda(model, armature, movementSpeed, slowMotion, $receiver));
+      closure$ctx.assetMgr.loadModel_v5uqdg$('player.kmfz', modelScene$lambda$lambda$lambda(model, armature, movementSpeed, slowMotion, $receiver));
       $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
       $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, modelScene$lambda$lambda$lambda_0(this$)));
       $receiver.unaryPlus_uv0sim$(embeddedUi(0.75, 0.45, dps(175.0), void 0, modelScene$lambda$lambda$lambda_1(movementSpeed, armature, slowMotion)));
@@ -1679,7 +1680,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         }
         closure$trav.center.set_y2kzbl$(randomF(-1.0, 1.0), randomF(-1.0, 1.0), randomF(-1.0, 1.0));
         var t = new PerfTimer();
-        closure$tree.traverse_ssbmfa$(closure$trav);
+        closure$trav.traverse_m6hlto$(closure$tree);
         var searchT = t.takeMs();
         t.reset();
         tmp$_1 = closure$trav.result;
@@ -1730,7 +1731,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var tmp$ = makePointMesh();
     var pointMesh = tmp$.component1()
     , tree = tmp$.component2();
-    var trav = (new KNearestTraverser()).setup_w8bw21$(Vec3f.Companion.ZERO, 3000);
+    var trav = (new InRadiusTraverser()).setup_2qa7tb$(Vec3f.Companion.ZERO, 1.0);
     var data = pointMesh.meshData;
     var ptVertCnt = Kotlin.isType(pointMesh, BillboardMesh) ? 4 : 1;
     var frameCnt = {v: 30};
@@ -2109,8 +2110,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var value = this.srcModel;
     $receiver_2.put_xwzc9p$('cos', value);
     this.heMesh = new HalfEdgeMesh(this.srcModel);
-    this.loadModel_0('bunny.kmf', 0.05, ctx);
-    this.loadModel_0('cow.kmf', 1.0, ctx);
+    this.loadModel_0('bunny.kmfz', 0.05, ctx);
+    this.loadModel_0('cow.kmfz', 1.0, ctx);
     var $receiver_3 = new Scene(null);
     defaultCamTransform($receiver_3);
     $receiver_3.unaryPlus_uv0sim$(this.dispModel);
@@ -2173,7 +2174,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $this.isBatchUpdate = true;
     this.dispModel.meshData.clear();
     this.dispModel.meshData.vertexList.addFrom_r7nl2o$(this.srcModel.vertexList);
-    this.heMesh = new HalfEdgeMesh(this.dispModel.meshData, new HalfEdgeMesh$ListEdgeHandler());
+    this.heMesh = new HalfEdgeMesh(this.dispModel.meshData, new ListEdgeHandler());
     if (this.simplifcationGrade < 0.999) {
       simplify(this.heMesh, terminateOnFaceCountRel(this.simplifcationGrade));
     }
@@ -2200,41 +2201,32 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $this.rebuildBounds();
     }
   };
-  function SimplificationDemo$loadModel$lambda(this$SimplificationDemo, closure$scale, closure$name) {
-    return function (data) {
+  function SimplificationDemo$loadModel$lambda(closure$scale, this$SimplificationDemo, closure$name) {
+    return function (model) {
       var tmp$;
-      if (data == null) {
-        var $receiver = this$SimplificationDemo;
-        var $this = util.Log;
-        var level = Log$Level.ERROR;
-        var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
-        if (level.level >= $this.level.level) {
-          $this.printer(level, tag, 'Fatal: Failed loading model');
-        }
-      }
-       else {
-        var mesh = ModelData.Companion.load_fqrh44$(data).meshes.get_za3lpa$(0).toMesh_8p8ifh$();
+      if (model != null) {
+        var mesh = model.meshes.get_za3lpa$(0).toMesh_8p8ifh$();
         var meshdata = mesh.meshData;
         tmp$ = meshdata.numVertices;
         for (var i = 0; i < tmp$; i++) {
           meshdata.vertexList.vertexIt.index = i;
           meshdata.vertexList.vertexIt.position.scale_mx4ult$(closure$scale);
         }
-        var $receiver_0 = this$SimplificationDemo.models;
+        var $receiver = this$SimplificationDemo.models;
         var key = closure$name;
-        $receiver_0.put_xwzc9p$(key, meshdata);
-        var $receiver_1 = this$SimplificationDemo.loadingModels;
+        $receiver.put_xwzc9p$(key, meshdata);
+        var $receiver_0 = this$SimplificationDemo.loadingModels;
         var element = closure$name;
-        $receiver_1.remove_11rb$(element);
-        var $receiver_2 = this$SimplificationDemo;
-        var $this_0 = util.Log;
-        var level_0 = Log$Level.DEBUG;
-        var tag_0 = Kotlin.getKClassFromExpression($receiver_2).simpleName;
-        if (level_0.level >= $this_0.level.level) {
-          var tmp$_0 = $this_0.printer;
+        $receiver_0.remove_11rb$(element);
+        var $receiver_1 = this$SimplificationDemo;
+        var $this = util.Log;
+        var level = Log$Level.DEBUG;
+        var tag = Kotlin.getKClassFromExpression($receiver_1).simpleName;
+        if (level.level >= $this.level.level) {
+          var tmp$_0 = $this.printer;
           var closure$name_0 = closure$name;
           var tmp$_1;
-          tmp$_0.call($this_0, level_0, tag_0, 'loaded: ' + closure$name_0 + ', bounds: ' + toString_1((tmp$_1 = this$SimplificationDemo.models.get_11rb$(closure$name_0)) != null ? tmp$_1.bounds : null));
+          tmp$_0.call($this, level, tag, 'loaded: ' + closure$name_0 + ', bounds: ' + toString_1((tmp$_1 = this$SimplificationDemo.models.get_11rb$(closure$name_0)) != null ? tmp$_1.bounds : null));
         }
       }
       return Unit;
@@ -2242,7 +2234,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   SimplificationDemo.prototype.loadModel_0 = function (name, scale, ctx) {
     this.loadingModels.add_11rb$(name);
-    ctx.assetMgr.loadAsset_us385g$(name, SimplificationDemo$loadModel$lambda(this, scale, name));
+    ctx.assetMgr.loadModel_v5uqdg$(name, SimplificationDemo$loadModel$lambda(scale, this, name));
   };
   function SimplificationDemo$makeCosGrid$lambda$lambda(this$) {
     return function (x, y) {
@@ -2346,7 +2338,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function SimplificationDemo_init$lambda$lambda$lambda$lambda(this$SimplificationDemo) {
     return function ($receiver, f, f_0, f_1) {
-      var m = this$SimplificationDemo.models.get_11rb$('cow.kmf');
+      var m = this$SimplificationDemo.models.get_11rb$('cow.kmfz');
       if (m != null) {
         this$SimplificationDemo.srcModel = m;
         this$SimplificationDemo.simplify();
@@ -2367,7 +2359,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function SimplificationDemo_init$lambda$lambda$lambda$lambda_0(this$SimplificationDemo) {
     return function ($receiver, f, f_0, f_1) {
-      var m = this$SimplificationDemo.models.get_11rb$('bunny.kmf');
+      var m = this$SimplificationDemo.models.get_11rb$('bunny.kmfz');
       if (m != null) {
         this$SimplificationDemo.srcModel = m;
         this$SimplificationDemo.simplify();
@@ -3618,7 +3610,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var node = tmp$.next();
       node.influencingPts.clear();
       if (!node.isFinished) {
-        this.attractionPointsTree_0.traverse_ssbmfa$(this.attractionPointTrav_0.setup_2qa7tb$(node, this.radiusOfInfluence));
+        this.attractionPointTrav_0.setup_2qa7tb$(node, this.radiusOfInfluence).traverse_m6hlto$(this.attractionPointsTree_0);
         tmp$_0 = this.attractionPointTrav_0.result.iterator();
         while (tmp$_0.hasNext()) {
           var attracPt = tmp$_0.next();
@@ -3653,7 +3645,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         if (!node_0.containsChild_15eqn9$(newNode)) {
           node_0.addChild_15eqn9$(newNode);
           newNodes.add_11rb$(newNode);
-          this.attractionPointsTree_0.traverse_ssbmfa$(this.attractionPointTrav_0.setup_2qa7tb$(newNode, this.actualKillDistance));
+          this.attractionPointTrav_0.setup_2qa7tb$(newNode, this.actualKillDistance).traverse_m6hlto$(this.attractionPointsTree_0);
           var tmp$_7;
           tmp$_7 = this.attractionPointTrav_0.result.iterator();
           while (tmp$_7.hasNext()) {
@@ -4337,7 +4329,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   ModelShader_init$ObjectLiteral.prototype.vsAfterProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsAfterProj_kv1jfs$;
   ModelShader_init$ObjectLiteral.prototype.vsBeforeProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_kv1jfs$;
   ModelShader_init$ObjectLiteral.prototype.vsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsHeader_kv1jfs$;
-  SimplificationDemo$EdgeRayDistance.prototype.nodeDistanceToRay_4lohg5$ = RayDistance.prototype.nodeDistanceToRay_4lohg5$;
+  SimplificationDemo$EdgeRayDistance.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
   main();
   Kotlin.defineModule('kooldemo', _);
   return _;

@@ -6,6 +6,7 @@ import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.scene.animation.Bone
 import de.fabmax.kool.shading.*
+import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_NORMALS_OCT_COMPRESSED
 import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_POSITIONS
 import kotlinx.serialization.Optional
 import kotlinx.serialization.SerialId
@@ -53,7 +54,12 @@ data class ModelMeshData(
     /**
      * Optional list of arbitrary tags.
      */
-    @SerialId(8) @Optional val tags: List<String> = emptyList()
+    @SerialId(8) @Optional val tags: List<String> = emptyList(),
+
+    /**
+     * Optional map of additional integer vertex attributes. E.g. compressed normals [ATTRIB_NORMALS_OCT_COMPRESSED]
+     */
+    @SerialId(9) @Optional val intAttributes: Map<String, IntAttributeList> = emptyMap()
 ) {
 
     @Transient var numVertices: Int = 0
@@ -96,11 +102,16 @@ data class ModelMeshData(
         val texCoords = attributes[ModelMeshData.ATTRIB_TEXTURE_COORDS]
         val colors = attributes[ModelMeshData.ATTRIB_COLORS]
         val tangents = attributes[ModelMeshData.ATTRIB_TANGENTS]
+        val normalsOct = intAttributes[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED]
+        val octBits = getNormalOctBits()
+
         for (i in 0 until positions.size / 3) {
             meshData.addVertex {
                 position.set(positions[i*3], positions[i*3+1], positions[i*3+2])
                 if (normals != null) {
                     normal.set(normals[i*3], normals[i*3+1], normals[i*3+2])
+                } else if (normalsOct != null && octBits > 0) {
+                    NormalOctCoding.decodeOctToNormal(normalsOct[i*2], normalsOct[i*2+1], octBits, normal)
                 }
                 if (texCoords != null) {
                     texCoord.set(texCoords[i*2], texCoords[i*2+1])
@@ -154,6 +165,14 @@ data class ModelMeshData(
         return mesh
     }
 
+    private fun getNormalOctBits(): Int {
+        val octBitsKey = "$ATTRIB_NORMALS_OCT_COMPRESSED="
+        val octBitsTag = tags.find { it.startsWith(octBitsKey) }
+        if (octBitsTag != null) {
+            return octBitsTag.substring(octBitsKey.length).toInt()
+        }
+        return -1
+    }
 
     private fun buildAramature(meshData: de.fabmax.kool.scene.MeshData): Armature {
         // create armature with bones
@@ -197,6 +216,7 @@ data class ModelMeshData(
     companion object {
         const val ATTRIB_POSITIONS = "positions"
         const val ATTRIB_NORMALS = "normals"
+        const val ATTRIB_NORMALS_OCT_COMPRESSED = "normalsOct"
         const val ATTRIB_TEXTURE_COORDS = "textureCoords"
         const val ATTRIB_COLORS = "colors"
         const val ATTRIB_TANGENTS = "tangents"
@@ -224,4 +244,21 @@ data class AttributeList(
     @Transient val size: Int = values.size
 
     operator fun get(i: Int): Float = values[i]
+}
+
+@Serializable
+data class IntAttributeList(
+        /**
+         * Type of the attribute
+         */
+        @SerialId(1) val type: AttributeType,
+
+        /**
+         * Attribute values. There are [type].size values per vertex
+         */
+        @SerialId(2) val values: List<Int>
+) {
+    @Transient val size: Int = values.size
+
+    operator fun get(i: Int): Int = values[i]
 }

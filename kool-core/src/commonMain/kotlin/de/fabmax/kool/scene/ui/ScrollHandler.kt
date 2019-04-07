@@ -62,6 +62,10 @@ open class ScrollHandler(val scrollTarget: UiContainer, name: String = "${scroll
 //    }
 
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
+        if (alpha == 0f) {
+            // don't handle drag if component is hidden
+            return
+        }
         if (dragPtrs.isNotEmpty() && !dragPtrs[0].isConsumed() &&
                 computeLocalPickRay(dragPtrs[0], ctx, pickRay) &&
                 bounds.hitDistanceSqr(pickRay) < Float.MAX_VALUE) {

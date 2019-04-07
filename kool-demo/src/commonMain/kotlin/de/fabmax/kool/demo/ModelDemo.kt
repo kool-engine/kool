@@ -12,7 +12,6 @@ import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.serialization.ModelData
 import kotlin.math.sqrt
 
 /**
@@ -33,12 +32,11 @@ fun modelScene(ctx: KoolContext): Scene = scene {
 
         +model
 
-        ctx.assetMgr.loadAsset("player.kmf") { data ->
-            if (data == null) {
+        ctx.assetMgr.loadModel("player.kmfz") { modelData ->
+            if (modelData == null) {
                 throw KoolException("Fatal: Failed loading model")
             }
 
-            val modelData = ModelData.load(data)
             val mesh = modelData.meshes[0].toMesh() as Armature
             model += mesh
             armature = mesh
