@@ -37,7 +37,7 @@ data class ModelData(
         /**
          * List of materials in this model. Materials are references by index from [ModelMeshData]
          */
-        @SerialId(4) val materials: List<MaterialData>
+        @SerialId(4) @Optional val materials: List<MaterialData> = emptyList()
 ) {
 
     fun toModel(lod: Int = 0): TransformGroup = toModel(lod, { TransformGroup(it.name).set(it.getTransformMatrix()) }, { it.toMesh(this) })

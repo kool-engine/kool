@@ -26,9 +26,9 @@ open class TileName(val x: Int, val y: Int, val zoom: Int) {
     init {
         val zp = (1 shl zoom)
         latS = atan(sinh(PI - (y+1).toDouble() / (1 shl zoom) * 2 * PI)).toDeg()
-        lonW = (x+1).toDouble() / zp * 360.0 - 180.0
+        lonW = x.toDouble() / zp * 360.0 - 180.0
         latN = atan(sinh(PI - y.toDouble() / (1 shl zoom) * 2 * PI)).toDeg()
-        lonE = x.toDouble() / zp * 360.0 - 180.0
+        lonE = (x+1).toDouble() / zp * 360.0 - 180.0
 
         latCenter = latS + (latN - latS) * 0.5
         lonCenter = lonE + (lonW - lonE) * 0.5

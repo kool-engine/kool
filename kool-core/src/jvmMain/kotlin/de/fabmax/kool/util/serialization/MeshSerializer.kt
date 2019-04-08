@@ -89,21 +89,13 @@ class MeshSerializer {
             attribs[ModelMeshData.ATTRIB_TANGENTS] = AttributeList(AttributeType.VEC_3F, tangentList)
         }
 
-        println("indices:    ${indices.size}")
-        println("positions:  ${posList.size}")
-        println("normals:    ${normalList.size}")
-        println("encNormals: ${encNormalList.size}")
-        println("texCoords:  ${uvList.size}")
-        println("colors:     ${colorList.size}")
-        println("tangents:   ${tangentList.size}")
-
         val primitiveType = when(mesh.primitiveType) {
             GL_TRIANGLES -> PrimitiveType.TRIANGLES
             GL_LINES -> PrimitiveType.LINES
             else -> PrimitiveType.POINTS
         }
 
-        return ModelMeshData(name = name, primitiveType = primitiveType, indices = indices,
+        return ModelMeshData(name = name, tags = tags, primitiveType = primitiveType, indices = indices,
                 attributes = attribs, intAttributes = intAttribs, material = materialIdx,
                 animations = emptyList(), armature = emptyList())
     }

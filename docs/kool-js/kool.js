@@ -5934,7 +5934,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     var b = vb.distance_czzhiu$(vc);
     var c = vc.distance_czzhiu$(va);
     var s = (a + b + c) / 2.0;
-    return a * b * c / (8.0 * (s - a) * (s - b) * (s - c));
+    var x = a * b * c / (8.0 * (s - a) * (s - b) * (s - c));
+    return Math_0.abs(x);
   }
   function FloatRange(start, endInclusive) {
     this.start_f2tjk8$_0 = start;
@@ -10945,11 +10946,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     var x_0 = math.PI - (this.y + 1 | 0) / (1 << this.zoom) * 2 * math.PI;
     var x_1 = Math_0.sinh(x_0);
     this.latS = Math_0.atan(x_1) * package$math.RAD_2_DEG;
-    this.lonW = (this.x + 1 | 0) / zp * 360.0 - 180.0;
+    this.lonW = this.x / zp * 360.0 - 180.0;
     var x_2 = math.PI - this.y / (1 << this.zoom) * 2 * math.PI;
     var x_3 = Math_0.sinh(x_2);
     this.latN = Math_0.atan(x_3) * package$math.RAD_2_DEG;
-    this.lonE = this.x / zp * 360.0 - 180.0;
+    this.lonE = (this.x + 1 | 0) / zp * 360.0 - 180.0;
     this.latCenter = this.latS + (this.latN - this.latS) * 0.5;
     this.lonCenter = this.lonE + (this.lonW - this.lonE) * 0.5;
     var tmp$ = 2 * math.PI * Globe$Companion_getInstance().EARTH_RADIUS;
@@ -12875,7 +12876,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         this.reshapeTriangles_ps2mgc$_0();
         nextReshape = mesh.faceCount / 2 | 0;
       }
-      var candidate = this.candidates_gym04f$_0.poll();
+      var candidate = this.pollNextCandidate_yxb6xa$_0();
       if (candidate.edge.isDeleted || candidate.q1.isDeleted || candidate.q2.isDeleted) {
         var $this_0 = package$util.Log;
         var level_0 = Log$Level.WARN;
@@ -12885,22 +12886,23 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         }
         continue;
       }
-      var oldError = candidate.error;
-      candidate.updateCollapsePosAndError();
-      if (oldError !== candidate.error) {
-        this.rebuildCollapseQueue_sifma0$_0();
-        continue;
-      }
-      if (candidate.error > this.candidates_gym04f$_0.peek().error) {
+      if (candidate.edgeId.fromId !== candidate.edge.from.index || candidate.edgeId.toId !== candidate.edge.to.index) {
         var $this_1 = package$util.Log;
         var level_1 = Log$Level.ERROR;
         var tag_1 = Kotlin.getKClassFromExpression(this).simpleName;
         if (level_1.level >= $this_1.level.level) {
-          $this_1.printer(level_1, tag_1, 'next error is less!');
+          $this_1.printer(level_1, tag_1, 'Invalid edge: inconsistent vertex indices');
         }
-        this.candidates_gym04f$_0.plusAssign_g91td9$(candidate);
+        this.rebuildCollapseQueue_sifma0$_0();
+        continue;
       }
-       else if (candidate.error < kotlin_js_internal_FloatCompanionObject.MAX_VALUE) {
+      var oldError = candidate.error;
+      candidate.updateCollapsePosAndError();
+      if (oldError !== candidate.error) {
+        this.addCandidate_jw529q$_0(candidate);
+        continue;
+      }
+      if (candidate.error < kotlin_js_internal_FloatCompanionObject.MAX_VALUE) {
         lastError.v = candidate.collapse();
       }
        else {
@@ -12920,6 +12922,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (level_3.level >= $this_3.level.level) {
       $this_3.printer(level_3, tag_3, 'Mesh simplification done! ' + mesh.faceCount + ' faces / ' + mesh.vertCount + ' vertices remain, last error: ' + lastError.v + ', took ' + toString_1(perf.takeSecs(), 3) + ' s');
     }
+  };
+  MeshSimplifier.prototype.pollNextCandidate_yxb6xa$_0 = function () {
+    var c = this.candidates_gym04f$_0.poll();
+    var $receiver = this.candidateMap_xv83ew$_0;
+    var key = c.edgeId;
+    $receiver.remove_11rb$(key);
+    return c;
+  };
+  MeshSimplifier.prototype.addCandidate_jw529q$_0 = function (c) {
+    this.candidates_gym04f$_0.plusAssign_g91td9$(c);
+    var $receiver = this.candidateMap_xv83ew$_0;
+    var key = c.edgeId;
+    $receiver.put_xwzc9p$(key, c);
   };
   MeshSimplifier.prototype.reshapeTriangles_ps2mgc$_0 = function () {
     var v1 = MutableVec3f_init();
@@ -12989,11 +13004,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       }
       var q2 = tmp$_0;
       if (!this.keepBorders || (!q1.isBorder && !q2.isBorder)) {
-        var c = new MeshSimplifier$CollapseCandidate(this, edge, q1, q2);
-        this.candidates_gym04f$_0.plusAssign_g91td9$(c);
-        var $receiver_1 = this.candidateMap_xv83ew$_0;
-        var key_1 = new MeshSimplifier$EdgeId(edge.from.index, edge.to.index);
-        $receiver_1.put_xwzc9p$(key_1, c);
+        this.addCandidate_jw529q$_0(new MeshSimplifier$CollapseCandidate(this, edge, q1, q2));
       }
     }
   };
@@ -13002,15 +13013,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     tmp$ = v.edges.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      var tmp$_0;
       result.add_11rb$(element);
       var element_0 = element.next.next;
       result.add_11rb$(element_0);
-      var element_1 = element.next;
-      result.add_11rb$(element_1);
-      if ((tmp$_0 = element.next.opp) != null) {
-        result.add_11rb$(tmp$_0);
-      }
     }
   };
   function MeshSimplifier$CollapseCandidate($outer, edge, q1, q2) {
@@ -13020,6 +13025,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.q2 = q2;
     this.error = 0.0;
     this.collapsePos = MutableVec3f_init();
+    this.edgeId = new MeshSimplifier$EdgeId(this.edge.from.index, this.edge.to.index);
     this.updateCollapsePosAndError();
   }
   MeshSimplifier$CollapseCandidate.prototype.updateCollapsePosAndError = function () {
@@ -27553,9 +27559,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     MutableColor.call($this, color.r, color.g, color.b, color.a);
     return $this;
   }
-  function color(hex) {
-    return Color$Companion_getInstance().fromHex_61zpoe$(hex);
-  }
   var sortWith_0 = Kotlin.kotlin.collections.sortWith_iwcb0m$;
   var compareBy$lambda_5 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
@@ -33193,6 +33196,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     ModelData$Companion_getInstance();
     if (name === void 0)
       name = '';
+    if (materials === void 0)
+      materials = emptyList();
     this.version = version;
     this.name = name;
     this.meshes = meshes;
@@ -33294,7 +33299,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.descriptor.pushAnnotation_yj921w$(new SerialId(2));
     this.descriptor.addElement_ivxn3r$('lodRootNodes', false);
     this.descriptor.pushAnnotation_yj921w$(new SerialId(3));
-    this.descriptor.addElement_ivxn3r$('materials', false);
+    this.descriptor.addElement_ivxn3r$('materials', true);
     this.descriptor.pushAnnotation_yj921w$(new SerialId(4));
     ModelData$$serializer_instance = this;
   }
@@ -33310,7 +33315,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       output.encodeStringElement_bgm7zs$(this.descriptor, 1, obj.name);
     output.encodeSerializableElement_blecud$(this.descriptor, 2, new ArrayListSerializer(ModelMeshData$$serializer_getInstance()), obj.meshes);
     output.encodeSerializableElement_blecud$(this.descriptor, 3, new ArrayListSerializer(ModelNodeData$$serializer_getInstance()), obj.lodRootNodes);
-    output.encodeSerializableElement_blecud$(this.descriptor, 4, new ArrayListSerializer(MaterialData$$serializer_getInstance()), obj.materials);
+    if (!equals(obj.materials, emptyList()) || output.shouldEncodeElementDefault_3zr2iy$(this.descriptor, 4))
+      output.encodeSerializableElement_blecud$(this.descriptor, 4, new ArrayListSerializer(MaterialData$$serializer_getInstance()), obj.materials);
     output.endStructure_qatsm0$(this.descriptor);
   };
   ModelData$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
@@ -33394,7 +33400,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     else
       $this.lodRootNodes = lodRootNodes;
     if ((seen & 16) === 0)
-      throw new MissingFieldException('materials');
+      $this.materials = emptyList();
     else
       $this.materials = materials;
     return $this;
@@ -33691,7 +33697,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       throw KoolException_init('ModelMeshData does not contain positions');
     }
     this.numVertices = tmp$.size / 3 | 0;
-    this.hasNormals = this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_NORMALS);
+    this.hasNormals = this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_NORMALS) || this.intAttributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_NORMALS_OCT_COMPRESSED);
     this.hasTexCoords = this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_TEXTURE_COORDS);
     this.hasColors = this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_COLORS);
     this.hasTangents = this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_TANGENTS);
@@ -34135,7 +34141,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       throw KoolException_init('ModelMeshData does not contain positions');
     }
     $this.numVertices = tmp$.size / 3 | 0;
-    $this.hasNormals = $this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_NORMALS);
+    $this.hasNormals = $this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_NORMALS) || $this.intAttributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_NORMALS_OCT_COMPRESSED);
     $this.hasTexCoords = $this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_TEXTURE_COORDS);
     $this.hasColors = $this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_COLORS);
     $this.hasTangents = $this.attributes.containsKey_11rb$(ModelMeshData$Companion_getInstance().ATTRIB_TANGENTS);
@@ -40490,7 +40496,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$util.MutableColor_init = MutableColor_init;
   package$util.MutableColor_init_d7aj7k$ = MutableColor_init_0;
   package$util.MutableColor = MutableColor;
-  package$util.color_61zpoe$ = color;
   Object.defineProperty(ColorGradient, 'Companion', {
     get: ColorGradient$Companion_getInstance
   });

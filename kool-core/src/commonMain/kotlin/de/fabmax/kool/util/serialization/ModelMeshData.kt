@@ -75,7 +75,7 @@ data class ModelMeshData(
 
     init {
         numVertices = (attributes[ATTRIB_POSITIONS] ?: throw KoolException("ModelMeshData does not contain positions")).size / 3
-        hasNormals = attributes.containsKey(ATTRIB_NORMALS)
+        hasNormals = attributes.containsKey(ATTRIB_NORMALS) || intAttributes.containsKey(ATTRIB_NORMALS_OCT_COMPRESSED)
         hasTexCoords = attributes.containsKey(ATTRIB_TEXTURE_COORDS)
         hasColors = attributes.containsKey(ATTRIB_COLORS)
         hasTangents = attributes.containsKey(ATTRIB_TANGENTS)

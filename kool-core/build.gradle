@@ -80,9 +80,6 @@ kotlin {
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test'
                 implementation 'org.jetbrains.kotlin:kotlin-test-junit'
-
-                implementation "mil.nga:tiff:2.0.0"
-                implementation "org.apache.commons:commons-compress:1.17"
             }
         }
 

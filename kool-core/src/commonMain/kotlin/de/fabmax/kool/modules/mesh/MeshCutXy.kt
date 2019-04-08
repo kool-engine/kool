@@ -132,7 +132,7 @@ class MeshCutXy(val meshData: MeshData) {
             ray.direction.set(0f, 0f, -1f)
         }
         val insideTrav = EdgeInsidePolyTrav(cutPoly)
-        for (i in 0..100) {
+        for (n in 0..100) {
             var anyCut = false
             for (i in cutPoly.indices) {
                 val pt = cutPoly[i]
@@ -165,8 +165,8 @@ class MeshCutXy(val meshData: MeshData) {
                     }
                 }
             }
-            if (!anyCut || i == 100) {
-                logD { "Inside fitting done, took $i iterations" }
+            if (!anyCut || n == 100) {
+                logD { "Inside fitting done, took $n iterations" }
                 break
             }
         }

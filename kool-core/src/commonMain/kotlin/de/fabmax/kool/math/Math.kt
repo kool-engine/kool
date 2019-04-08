@@ -69,7 +69,7 @@ fun triAspectRatio(va: Vec3f, vb: Vec3f, vc: Vec3f): Float {
     val b = vb.distance(vc)
     val c = vc.distance(va)
     val s = (a + b + c) / 2f
-    return a * b * c / (8f * (s - a) * (s - b) * (s - c))
+    return abs(a * b * c / (8f * (s - a) * (s - b) * (s - c)))
 }
 
 class FloatRange(override val start: Float, override val endInclusive: Float) : ClosedRange<Float>

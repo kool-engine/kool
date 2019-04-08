@@ -504,6 +504,3 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
         return this
     }
 }
-
-@Deprecated("Use Color.fromHex(hex) instead", ReplaceWith("Color.fromHex(hex)"))
-fun color(hex: String): Color = Color.fromHex(hex)

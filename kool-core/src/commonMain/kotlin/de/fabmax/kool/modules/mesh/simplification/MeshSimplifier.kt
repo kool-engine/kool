@@ -45,9 +45,15 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
                 nextReshape = mesh.faceCount / 2
             }
 
-            val candidate = candidates.poll()
+            val candidate = pollNextCandidate()
             if (candidate.edge.isDeleted || candidate.q1.isDeleted || candidate.q2.isDeleted) {
                 logW { "Invalid edge: already deleted!" }
+                continue
+            }
+
+            if (candidate.edgeId.fromId != candidate.edge.from.index || candidate.edgeId.toId != candidate.edge.to.index) {
+                logE { "Invalid edge: inconsistent vertex indices" }
+                rebuildCollapseQueue()
                 continue
             }
 
@@ -56,17 +62,12 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
             candidate.updateCollapsePosAndError()
             if (oldError != candidate.error) {
                 // fixme: this should not happen since all affected edges are updated after each collapse operation
-                // however, somehow this still happens (but not that often, so it's ok to rebuild the whole queue)
-                rebuildCollapseQueue()
+                // however, somehow this still happens, reinsert candidate with updated error and try next
+                addCandidate(candidate)
                 continue
             }
 
-            if (candidate.error > candidates.peek().error) {
-                // updated error is greater than next best candidate's error, re-insert into queue and try next
-                logE { "next error is less!" }
-                candidates += candidate
-
-            } else if (candidate.error < Float.MAX_VALUE) {
+            if (candidate.error < Float.MAX_VALUE) {
                 // collapse edge
                 lastError = candidate.collapse()
 
@@ -80,6 +81,17 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
         mesh.rebuild(generateNormals, generateTangents)
 
         logD { "Mesh simplification done! ${mesh.faceCount} faces / ${mesh.vertCount} vertices remain, last error: $lastError, took ${perf.takeSecs().toString(3)} s" }
+    }
+
+    private fun pollNextCandidate(): CollapseCandidate {
+        val c = candidates.poll()
+        candidateMap -= c.edgeId
+        return c
+    }
+
+    private fun addCandidate(c: CollapseCandidate) {
+        candidates += c
+        candidateMap[c.edgeId] = c
     }
 
     private fun reshapeTriangles() {
@@ -128,9 +140,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
             val q2 = quadrics.getOrPut(edge.to.index) { ErrorQuadric(edge.to) }
 
             if (!keepBorders || (!q1.isBorder && !q2.isBorder)) {
-                val c = CollapseCandidate(edge, q1, q2)
-                candidates += c
-                candidateMap[EdgeId(edge.from.index, edge.to.index)] = c
+                addCandidate(CollapseCandidate(edge, q1, q2))
             }
         }
     }
@@ -140,14 +150,13 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
         v.edges.forEach { ed ->
             result += ed
             result += ed.next.next
-            result += ed.next
-            ed.next.opp?.let { result += it }
         }
     }
 
     private inner class CollapseCandidate(val edge: HalfEdgeMesh.HalfEdge, val q1: ErrorQuadric, val q2: ErrorQuadric) {
         var error = 0.0
         val collapsePos = MutableVec3f()
+        val edgeId = EdgeId(edge.from.index, edge.to.index)
 
         init {
             updateCollapsePosAndError()
