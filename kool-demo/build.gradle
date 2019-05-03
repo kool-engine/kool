@@ -99,7 +99,7 @@ clean {
 
 build.doLast {
     // fixme: this is a hack to get the dependencies of core-js as well
-    def cfgs = [project(":kool-core").configurations.jsMainImplementation, configurations.jsMainImplementation]
+    def cfgs = [project(":kool-core").configurations.find { cfg -> cfg.name.endsWith("jsRuntimeClasspath") }, configurations.find { cfg -> cfg.name.endsWith("jsRuntimeClasspath") }]
     cfgs.each { cfg ->
         cfg.each { file ->
             copy {
@@ -113,7 +113,7 @@ build.doLast {
             }
         }
     }
-    
+
     copy {
         includeEmptyDirs = false
         from "${buildDir}/web"
@@ -122,7 +122,7 @@ build.doLast {
             fileTreeElement.path.endsWith(".js")
         }
     }
-    
+
     copy {
         from kotlin.sourceSets.jsMain.resources.srcDirs
         into "$projectDir/$webPath"

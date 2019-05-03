@@ -35,6 +35,12 @@ open class Vec2f(x: Float, y: Float) {
 
     fun length(): Float = sqrt(sqrLength())
 
+    fun mix(other: Vec2f, weight: Float, result: MutableVec2f): MutableVec2f {
+        result.x = other.x * weight + x * (1f - weight)
+        result.y = other.y * weight + y * (1f - weight)
+        return result
+    }
+
     fun mul(other: Vec2f, result: MutableVec2f): MutableVec2f = result.set(this).mul(other)
 
     fun norm(result: MutableVec2f): MutableVec2f = result.set(this).norm()
@@ -197,6 +203,12 @@ open class Vec2d(x: Double, y: Double) {
             isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps)
 
     fun length(): Double = sqrt(sqrLength())
+
+    fun mix(other: Vec2d, weight: Double, result: MutableVec2d): MutableVec2d {
+        result.x = other.x * weight + x * (1.0 - weight)
+        result.y = other.y * weight + y * (1.0 - weight)
+        return result
+    }
 
     fun mul(other: Vec2d, result: MutableVec2d): MutableVec2d = result.set(this).mul(other)
 

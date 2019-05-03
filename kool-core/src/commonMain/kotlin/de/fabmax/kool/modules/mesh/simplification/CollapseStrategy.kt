@@ -38,6 +38,19 @@ fun defaultCollapseStrategy() = object : CollapseStrategy {
             return Double.MAX_VALUE
         }
 
+        // check vertex stickyness
+        when {
+            q1.isStickyVertex && q2.isStickyVertex -> return Double.MAX_VALUE
+            q1.isStickyVertex -> {
+                resultPos.set(q1.vertex)
+                return q1.getError(resultPos) + q2.getError(resultPos)
+            }
+            q2.isStickyVertex -> {
+                resultPos.set(q2.vertex)
+                return q1.getError(resultPos) + q2.getError(resultPos)
+            }
+        }
+
         // don't collapse edges on corner triangles
         q1.vertex.getEdgeTo(q2.vertex)?.let { ed ->
             if (ed.next.opp == null && ed.next.next.opp == null) {

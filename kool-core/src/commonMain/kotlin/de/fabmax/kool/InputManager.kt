@@ -23,7 +23,7 @@ class InputManager internal constructor() {
     }
 
     fun registerKeyListener(keyCode: Int, name: String, filter: (KeyEvent) -> Boolean = { true }, callback: (KeyEvent) -> Unit): KeyEventListener {
-        val keyStr = if (keyCode in 32..126) "${keyCode.toChar()}" else "$keyCode"
+        val keyStr = if (keyCode in 32..126) "'${keyCode.toChar()}'" else "$keyCode"
 
         val listeners = keyHandlers.getOrPut(keyCode) { mutableListOf() }
         if (listeners.isNotEmpty()) {

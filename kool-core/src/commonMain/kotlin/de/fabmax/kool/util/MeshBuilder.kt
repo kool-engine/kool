@@ -328,6 +328,24 @@ open class MeshBuilder(val meshData: MeshData) {
         meshData.addTriIndices(i0, i2, i3)
     }
 
+    fun lineArc(centerX: Float, centerY: Float, radius: Float, startDeg: Float, sweepDeg: Float, width: Float, resolution: Float = 3f) {
+        val steps = max(1, round(abs(sweepDeg) / resolution).toInt())
+        val step = sweepDeg / steps
+
+        val startRad = startDeg.toRad()
+        val stepRad = step.toRad()
+
+        for (i in 0 until steps) {
+            val a0 = startRad + stepRad * i
+            val a1 = a0 + stepRad
+            val x0 = centerX + cos(a0) * radius
+            val y0 = centerY + sin(a0) * radius
+            val x1 = centerX + cos(a1) * radius
+            val y1 = centerY + sin(a1) * radius
+            line(x0, y0, x1, y1, width)
+        }
+    }
+
     inline fun cube(props: CubeProps.() -> Unit) {
         cubeProps.defaults().props()
         cube(cubeProps)

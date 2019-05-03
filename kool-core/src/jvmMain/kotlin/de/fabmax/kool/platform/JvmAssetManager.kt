@@ -11,9 +11,9 @@ import java.io.InputStream
 import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager(assetsBaseDir) {
+class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps) : AssetManager(props.assetsBaseDir) {
 
-    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
+    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
 
     init {
         // inits http cache if not already happened
@@ -63,7 +63,7 @@ class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager
         return LoadedTextureAsset(httpTextureRef, data)
     }
 
-    private fun openLocalStream(assetPath: String): InputStream {
+    internal fun openLocalStream(assetPath: String): InputStream {
         var inStream = ClassLoader.getSystemResourceAsStream(assetPath)
         if (inStream == null) {
             // if asset wasn't found in resources try to load it from file system
@@ -74,7 +74,7 @@ class JvmAssetManager internal constructor(assetsBaseDir: String) : AssetManager
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
 
-    override fun inflate(zipData: ByteArray): ByteArray = GZIPInputStream(ByteArrayInputStream(zipData)).readAllBytes()
+    override fun inflate(zipData: ByteArray): ByteArray = GZIPInputStream(ByteArrayInputStream(zipData)).readBytes()
 
     companion object {
         private const val MAX_GENERATED_TEX_WIDTH = 2048

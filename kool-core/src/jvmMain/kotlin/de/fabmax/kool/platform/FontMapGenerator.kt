@@ -2,21 +2,19 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.BufferedTextureData
 import de.fabmax.kool.gl.GL_ALPHA
-import de.fabmax.kool.util.CharMap
-import de.fabmax.kool.util.CharMetrics
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.*
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.GraphicsEnvironment
 import java.awt.RenderingHints
 import java.awt.image.BufferedImage
+import java.io.IOException
 
 /**
  * @author fabmax
  */
 
-internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
+internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lwjgl3Context.InitProps, val assetManager: JvmAssetManager) {
 
     private val canvas = BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB)
     private val clearColor = Color(0, 0, 0, 0)
@@ -29,6 +27,18 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         for (family in ge.availableFontFamilyNames) {
             families.add(family)
         }
+        for (f in props.extraFonts) {
+            try {
+                val inStream = assetManager.openLocalStream(f)
+                val localFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, inStream)
+                GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(localFont)
+                families.add(localFont.family)
+                logI { "Registered font: $f -> ${localFont.family}" }
+            } catch (e: IOException) {
+                logW { "Font not found: $f" }
+            }
+        }
+
         availableFamilies = families
     }
 

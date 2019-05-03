@@ -43,8 +43,8 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             when (position) {
                 Position.UPPER_LEFT -> layoutSpec.setOrigin(zero(), dps(-height, true), zero())
                 Position.UPPER_RIGHT -> layoutSpec.setOrigin(dps(-width, true), dps(-height, true), zero())
-                Position.LOWER_LEFT -> layoutSpec.setOrigin(zero(), dps(0f, true), zero())
-                Position.LOWER_RIGHT -> layoutSpec.setOrigin(dps(-width, true), dps(0f, true), zero())
+                Position.LOWER_LEFT -> layoutSpec.setOrigin(zero(), zero(), zero())
+                Position.LOWER_RIGHT -> layoutSpec.setOrigin(dps(-width, true), zero(), zero())
             }
             layoutSpec.setSize(dps(width, true), dps(height, true), full())
 

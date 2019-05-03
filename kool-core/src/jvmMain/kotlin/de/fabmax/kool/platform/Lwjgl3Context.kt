@@ -24,7 +24,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
 
     override val glCapabilities: GlCapabilities
 
-    override val assetMgr = JvmAssetManager(props.assetsBaseDir)
+    override val assetMgr = JvmAssetManager(props)
 
     val window: Long
 
@@ -213,6 +213,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var msaaSamples = 8
 
         var assetsBaseDir = "./assets"
+
+        val extraFonts = mutableListOf<String>()
 
         init {
             init()

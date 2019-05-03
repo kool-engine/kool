@@ -38,6 +38,14 @@ open class Vec4f(x: Float, y: Float, z: Float, w: Float) {
 
     fun length(): Float = sqrt(sqrLength())
 
+    fun mix(other: Vec4f, weight: Float, result: MutableVec4f): MutableVec4f {
+        result.x = other.x * weight + x * (1f - weight)
+        result.y = other.y * weight + y * (1f - weight)
+        result.z = other.z * weight + z * (1f - weight)
+        result.w = other.w * weight + w * (1f - weight)
+        return result
+    }
+
     fun mul(other: Vec4f, result: MutableVec4f): MutableVec4f = result.set(this).mul(other)
 
     fun norm(result: MutableVec4f): MutableVec4f = result.set(this).norm()
@@ -248,6 +256,14 @@ open class Vec4d(x: Double, y: Double, z: Double, w: Double) {
             isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps) && isFuzzyEqual(z, other.z, eps) && isFuzzyEqual(w, other.w, eps)
 
     fun length(): Double = sqrt(sqrLength())
+
+    fun mix(other: Vec4d, weight: Double, result: MutableVec4d): MutableVec4d {
+        result.x = other.x * weight + x * (1.0 - weight)
+        result.y = other.y * weight + y * (1.0 - weight)
+        result.z = other.z * weight + z * (1.0 - weight)
+        result.w = other.w * weight + w * (1.0 - weight)
+        return result
+    }
 
     fun mul(other: Vec4d, result: MutableVec4d): MutableVec4d = result.set(this).mul(other)
 

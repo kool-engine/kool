@@ -22,7 +22,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var full = $module$kool.de.fabmax.kool.scene.ui.full;
   var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
   var numberToInt = Kotlin.numberToInt;
-  var plus = Kotlin.kotlin.collections.plus_qloxvw$;
   var toString = $module$kool.de.fabmax.kool.toString_lcymw2$;
   var Alignment = $module$kool.de.fabmax.kool.scene.ui.Alignment;
   var Gravity = $module$kool.de.fabmax.kool.scene.ui.Gravity;
@@ -36,6 +35,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Group = $module$kool.de.fabmax.kool.scene.Group;
   var Random = $module$kool.de.fabmax.kool.math.Random;
   var Kind_CLASS = Kotlin.Kind.CLASS;
+  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
+  var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
   var createDefaultContext = $module$kool.de.fabmax.kool.createDefaultContext;
   var BlurredComponentUi = $module$kool.de.fabmax.kool.scene.ui.BlurredComponentUi;
   var getCallableRef = Kotlin.getCallableRef;
@@ -47,6 +48,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var debugOverlay = $module$kool.de.fabmax.kool.util.debugOverlay_msaor1$;
   var to = Kotlin.kotlin.to_ujzrz7$;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
+  var Map = Kotlin.kotlin.collections.Map;
+  var throwCCE = Kotlin.throwCCE;
+  var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
+  var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   var Globe = $module$kool.de.fabmax.kool.modules.globe.Globe;
   var DoublePrecisionRoot = $module$kool.de.fabmax.kool.scene.doubleprec.DoublePrecisionRoot;
   var GlobeCamHandler = $module$kool.de.fabmax.kool.modules.globe.GlobeCamHandler;
@@ -59,13 +64,17 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Pair = Kotlin.kotlin.Pair;
   var toString_0 = $module$kool.de.fabmax.kool.toString_j6vyb1$;
   var equals = Kotlin.equals;
+  var getKClass = Kotlin.getKClass;
+  var getOrDefault = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.context.getOrDefault_6qy6ah$;
+  var util = $module$kool.de.fabmax.kool.util;
+  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
+  var Math_0 = Math;
   var TextureProps_init = $module$kool.de.fabmax.kool.TextureProps_init_3m52m6$;
   var assetTexture = $module$kool.de.fabmax.kool.assetTexture_4689t5$;
   var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var yPlanePan = $module$kool.de.fabmax.kool.scene.yPlanePan;
   var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
-  var throwCCE = Kotlin.throwCCE;
   var KoolException_init = $module$kool.de.fabmax.kool.KoolException_init_61zpoe$;
   var Armature = $module$kool.de.fabmax.kool.scene.animation.Armature;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
@@ -88,6 +97,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var GlslGenerator = $module$kool.de.fabmax.kool.shading.GlslGenerator;
   var BasicShader = $module$kool.de.fabmax.kool.shading.BasicShader;
   var GlslGenerator$GlslInjector = $module$kool.de.fabmax.kool.shading.GlslGenerator.GlslInjector;
+  var math = $module$kool.de.fabmax.kool.math;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var SphericalInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.ZoomMethod;
   var SphericalInputTransform$DragMethod = $module$kool.de.fabmax.kool.scene.SphericalInputTransform.DragMethod;
@@ -103,11 +113,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var BillboardMesh$DrawOrder = $module$kool.de.fabmax.kool.util.BillboardMesh.DrawOrder;
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var randomI = $module$kool.de.fabmax.kool.math.randomI_n8acyv$;
+  var round = Kotlin.kotlin.math.round_14dthe$;
   var InRadiusTraverser = $module$kool.de.fabmax.kool.util.InRadiusTraverser;
   var BillboardMesh = $module$kool.de.fabmax.kool.util.BillboardMesh;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
   var pointMesh = $module$kool.de.fabmax.kool.util.pointMesh_h6khem$;
   var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
+  var now = $module$kool.de.fabmax.kool.now;
   var EnvironmentMapRenderer = $module$kool.de.fabmax.kool.util.EnvironmentMapRenderer;
   var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
   var assetTextureCubeMap = $module$kool.de.fabmax.kool.assetTextureCubeMap_y2is7l$;
@@ -116,6 +128,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Animator = $module$kool.de.fabmax.kool.util.Animator;
   var LinearAnimator = $module$kool.de.fabmax.kool.util.LinearAnimator;
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
+  var TextProps_init = $module$kool.de.fabmax.kool.util.TextProps;
   var throwUPAE = Kotlin.throwUPAE;
   var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
   var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
@@ -131,6 +144,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Ray = $module$kool.de.fabmax.kool.math.Ray;
   var NearestToRayTraverser = $module$kool.de.fabmax.kool.util.NearestToRayTraverser;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
+  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
   var UiContainer = $module$kool.de.fabmax.kool.scene.ui.UiContainer;
   var SampleNode = $module$kool.de.fabmax.kool.modules.audio.SampleNode;
@@ -140,20 +154,20 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Button = $module$kool.de.fabmax.kool.scene.ui.Button;
   var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
   var InterpolatedColor = $module$kool.de.fabmax.kool.util.InterpolatedColor;
-  var Scene = $module$kool.de.fabmax.kool.scene.Scene;
   var Shaker = $module$kool.de.fabmax.kool.modules.audio.Shaker;
   var Kick = $module$kool.de.fabmax.kool.modules.audio.Kick;
   var Pad = $module$kool.de.fabmax.kool.modules.audio.Pad;
   var AudioGenerator = $module$kool.de.fabmax.kool.modules.audio.AudioGenerator;
+  var Array_0 = Array;
   var TextureProps_init_0 = $module$kool.de.fabmax.kool.TextureProps_init_wfrsr4$;
   var CullMethod = $module$kool.de.fabmax.kool.scene.CullMethod;
-  var math = Kotlin.kotlin.math;
+  var math_0 = Kotlin.kotlin.math;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
-  var math_0 = $module$kool.de.fabmax.kool.math;
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
   var MutableVec2f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
+  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
   var split = Kotlin.kotlin.text.split_ip8yn$;
@@ -177,7 +191,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   SynthieScene$Heightmap.prototype.constructor = SynthieScene$Heightmap;
   SynthieScene$Waveform.prototype = Object.create(Group.prototype);
   SynthieScene$Waveform.prototype.constructor = SynthieScene$Waveform;
-  SynthieScene.prototype = Object.create(Scene.prototype);
+  SynthieScene.prototype = Object.create(Scene_init.prototype);
   SynthieScene.prototype.constructor = SynthieScene;
   TreeGenerator$AttractionPoint.prototype = Object.create(MutableVec3f.prototype);
   TreeGenerator$AttractionPoint.prototype.constructor = TreeGenerator$AttractionPoint;
@@ -200,13 +214,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   function basicCollisionDemo() {
     var scenes = ArrayList_init();
     var ARRAY_SIZE_Y = 2;
     var ARRAY_SIZE_X = 1;
     var ARRAY_SIZE_Z = 1;
-    var $receiver = new Scene(null);
+    var $receiver = new Scene_init(null);
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, basicCollisionDemo$lambda$lambda($receiver)));
     var world = new CollisionWorld();
     world.gravity.set_y2kzbl$(0.0, -10.0, 0.0);
@@ -294,7 +307,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(80.0, true), dps(75.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), full());
-      $receiver.onValueChanged = plus($receiver.onValueChanged, collisionDemo$lambda$lambda$lambda$lambda(closure$boxCnt, closure$boxCntLbl));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = collisionDemo$lambda$lambda$lambda$lambda(closure$boxCnt, closure$boxCntLbl);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -323,7 +338,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(80.0, true), dps(40.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(150.0, true), dps(35.0, true), full());
-      $receiver.onValueChanged = plus($receiver.onValueChanged, collisionDemo$lambda$lambda$lambda$lambda_0(closure$boxWorld, closure$gravityLbl));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = collisionDemo$lambda$lambda$lambda$lambda_0(closure$boxWorld, closure$gravityLbl);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -373,7 +390,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var boxWorld = {v: null};
     var scenes = ArrayList_init();
     var boxCnt = {v: 40};
-    var $receiver = new Scene(null);
+    var $receiver = new Scene_init(null);
     $receiver.lighting.primaryLight.direction.set_y2kzbl$(1.0, 0.8, 0.4);
     $receiver.lighting.useDefaultShadowMap_aemszp$(ctx);
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, collisionDemo$lambda$lambda($receiver)));
@@ -498,7 +515,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     }
     new Demo(ctx, startScene);
   }
-  var Map = Kotlin.kotlin.collections.Map;
   function Demo(ctx, startScene) {
     Demo$Companion_getInstance();
     if (startScene === void 0)
@@ -526,7 +542,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     ((tmp$ = (Kotlin.isType(tmp$_0 = $receiver_2, Map) ? tmp$_0 : throwCCE()).get_11rb$(key)) != null ? tmp$ : this.defaultScene_0).loadScene(this.newScenes_0, ctx);
     ctx.run();
   }
-  var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
   Demo.prototype.onRender_0 = function (ctx) {
     if (!this.newScenes_0.isEmpty()) {
       var tmp$;
@@ -639,7 +654,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     simpleName: 'DemoEntry',
     interfaces: []
   };
-  var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
   function Demo$Companion() {
     Demo$Companion_instance = this;
     this.demoProps = LinkedHashMap_init();
@@ -716,10 +730,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     simpleName: 'Demo',
     interfaces: []
   };
-  var getKClass = Kotlin.getKClass;
-  var getOrDefault = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.context.getOrDefault_6qy6ah$;
-  var util = $module$kool.de.fabmax.kool.util;
-  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   function globeScene$lambda$lambda(closure$elevationUrl, closure$ctx, closure$globe, this$, closure$globeGroup) {
     return function (data) {
       if (data != null) {
@@ -744,7 +754,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function globeScene(ctx) {
     var scenes = ArrayList_init();
     var ui = new GlobeUi(null, ctx);
-    var $receiver = new Scene(null);
+    var $receiver = new Scene_init(null);
     $receiver.lighting.primaryLight.color.set_d7aj7k$(Color.Companion.LIGHT_GRAY);
     var globe = new Globe(6371000.8);
     var globeGroup = new DoublePrecisionRoot(globe);
@@ -813,7 +823,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  var Math_0 = Math;
   function GlobeUi$scene$lambda$lambda$lambda_2(this$GlobeUi, closure$posLbl, closure$attributions, this$) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
@@ -983,7 +992,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   function instancedDemo(ctx) {
-    var $receiver = new Scene(null);
+    var $receiver = new Scene_init(null);
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, instancedDemo$lambda$lambda($receiver)));
     $receiver.lighting.useDefaultShadowMap_aemszp$(ctx);
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(100));
@@ -1097,7 +1106,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
        else {
         var dx = this.spawnPosition_0.x - this.position_0.x;
         var dy = this.spawnPosition_0.y - this.position_0.y;
-        tmp$ = Math_0.atan2(dy, dx) * math_0.RAD_2_DEG + 90;
+        tmp$ = Math_0.atan2(dy, dx) * math.RAD_2_DEG + 90;
       }
       tmp$_0.to = tmp$;
     }
@@ -1323,7 +1332,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var $receiver_3 = new Slider('speedSlider', 0.0, 1.0, Math_0.sqrt(x_0), $receiver_0.root);
       $receiver_3.layoutSpec.setOrigin_4ujscr$(zero(), dps(90.0), zero());
       $receiver_3.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(50.0), full());
-      $receiver_3.onValueChanged = plus($receiver_3.onValueChanged, modelScene$lambda$lambda$lambda$lambda$lambda$lambda_0(closure$movementSpeed_0, closure$armature_0, speedLabel));
+      $receiver_3.onValueChanged.add_11rb$(modelScene$lambda$lambda$lambda$lambda$lambda$lambda_0(closure$movementSpeed_0, closure$armature_0, speedLabel));
       $receiver_0.unaryPlus_uv0sim$($receiver_3);
       var $receiver_4 = new Label('label2', $receiver_0.root);
       $receiver_4.layoutSpec.setOrigin_4ujscr$(zero(), dps(50.0), zero());
@@ -1343,7 +1352,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var $receiver_6 = new Slider('slowMoSlider', 0.0, 1.0, closure$slowMotion_0.v, $receiver_0.root);
       $receiver_6.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
       $receiver_6.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(50.0), full());
-      $receiver_6.onValueChanged = plus($receiver_6.onValueChanged, modelScene$lambda$lambda$lambda$lambda$lambda$lambda_1(closure$slowMotion_0, slowMoLabel));
+      $receiver_6.onValueChanged.add_11rb$(modelScene$lambda$lambda$lambda$lambda$lambda$lambda_1(closure$slowMotion_0, slowMoLabel));
       $receiver_0.unaryPlus_uv0sim$($receiver_6);
       return Unit;
     };
@@ -1363,7 +1372,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   function modelScene(ctx) {
-    var $receiver = new Scene(null);
+    var $receiver = new Scene_init(null);
     $receiver.lighting.useDefaultShadowMap_aemszp$(ctx);
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, modelScene$lambda$lambda(ctx, $receiver)));
@@ -1589,7 +1598,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  var round = Kotlin.kotlin.math.round_14dthe$;
   function particleDemo$lambda$lambda$lambda$lambda_3(closure$maxParticleCount) {
     return function ($receiver, value) {
       closure$maxParticleCount.v = numberToInt(round(value)) * 1000 | 0;
@@ -1601,7 +1609,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.setValue_y2kzbl$(1.0, 50.0, 10.0);
-      $receiver.onValueChanged = plus($receiver.onValueChanged, particleDemo$lambda$lambda$lambda$lambda_3(closure$maxParticleCount));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = particleDemo$lambda$lambda$lambda$lambda_3(closure$maxParticleCount);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -1640,7 +1650,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var isSorted = {v: false};
     var currentParticleCount = {v: 0};
     var maxParticleCount = {v: 10000};
-    var $receiver = new Scene(null);
+    var $receiver = new Scene_init(null);
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, particleDemo$lambda$lambda($receiver)));
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40));
     var $receiver_0 = new ParticleSystem(assetTexture_0('snowflakes.png'), 50000);
@@ -1735,7 +1745,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var data = pointMesh.meshData;
     var ptVertCnt = Kotlin.isType(pointMesh, BillboardMesh) ? 4 : 1;
     var frameCnt = {v: 30};
-    var $receiver = new Scene(null);
+    var $receiver = new Scene_init(null);
     $receiver.onPreRender.add_11rb$(pointScene$lambda$lambda(frameCnt, data, trav, ptVertCnt, tree));
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, pointScene$lambda$lambda_0($receiver)));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, pointScene$lambda$lambda_1(pointMesh)));
@@ -1760,7 +1770,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  var now = $module$kool.de.fabmax.kool.now;
   function makePointMesh() {
     var points = ArrayList_init();
     var mesh = pointMesh(void 0, makePointMesh$lambda(points));
@@ -1889,7 +1898,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   }
   function reflectionDemo(ctx) {
     var reflectedObjects = ArrayList_init();
-    var $receiver = new Scene(null);
+    var $receiver = new Scene_init(null);
     var $receiver_0 = new EnvironmentMapRenderer();
     $receiver_0.origin.set_y2kzbl$(0.0, 3.0, 0.0);
     var envRenderer = $receiver_0;
@@ -2024,7 +2033,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  var TextProps_init = $module$kool.de.fabmax.kool.util.TextProps;
   function simpleShapesScene$lambda$lambda$lambda$lambda_6(closure$font) {
     return function ($receiver) {
       $receiver.color = Color.Companion.LIME;
@@ -2066,7 +2074,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     };
   }
   function simpleShapesScene(ctx) {
-    var $receiver = new Scene('simpleShapes');
+    var $receiver = new Scene_init('simpleShapes');
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, simpleShapesScene$lambda$lambda($receiver)));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_0));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_1));
@@ -2076,7 +2084,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function simplificationDemo(ctx) {
     return (new SimplificationDemo(ctx)).scenes;
   }
-  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   function SimplificationDemo(ctx) {
     this.simplificationScene = null;
     this.scenes = ArrayList_init();
@@ -2112,7 +2119,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.heMesh = new HalfEdgeMesh(this.srcModel);
     this.loadModel_0('bunny.kmfz', 0.05, ctx);
     this.loadModel_0('cow.kmfz', 1.0, ctx);
-    var $receiver_3 = new Scene(null);
+    var $receiver_3 = new Scene_init(null);
     defaultCamTransform($receiver_3);
     $receiver_3.unaryPlus_uv0sim$(this.dispModel);
     $receiver_3.unaryPlus_uv0sim$(this.modelWireframe);
@@ -2273,7 +2280,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var dot = this.tmpVec1_0.times_czzhiu$(this.tmpVec2_0);
     var n = 1.0 - dot * dot;
     var eps;
-    eps = math_0.FUZZY_EQ_F;
+    eps = math.FUZZY_EQ_F;
     if (Math_0.abs(n) <= eps) {
       if (edge.from.sqrDistance_czzhiu$(ray.origin) < edge.to.sqrDistance_czzhiu$(ray.origin)) {
         tmp$ = edge.from;
@@ -2446,7 +2453,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
       $receiver.setValue_y2kzbl$(0.01, 1.0, 1.0);
-      $receiver.onValueChanged = plus($receiver.onValueChanged, SimplificationDemo_init$lambda$lambda$lambda$lambda_2(closure$faceCntVal, this$SimplificationDemo));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = SimplificationDemo_init$lambda$lambda$lambda$lambda_2(closure$faceCntVal, this$SimplificationDemo);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -2630,7 +2639,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), dps(120.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
       $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-      $receiver.onValueChanged = plus($receiver.onValueChanged, synthieMenu$lambda$lambda$lambda$lambda$lambda(closure$content));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = synthieMenu$lambda$lambda$lambda$lambda$lambda(closure$content);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -2653,7 +2664,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), dps(80.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
       $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-      $receiver.onValueChanged = plus($receiver.onValueChanged, synthieMenu$lambda$lambda$lambda$lambda$lambda_0(closure$content));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = synthieMenu$lambda$lambda$lambda$lambda$lambda_0(closure$content);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -2676,7 +2689,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), dps(40.0), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
       $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-      $receiver.onValueChanged = plus($receiver.onValueChanged, synthieMenu$lambda$lambda$lambda$lambda$lambda_1(closure$content));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = synthieMenu$lambda$lambda$lambda$lambda$lambda_1(closure$content);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -2699,7 +2714,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), zero(), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
       $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-      $receiver.onValueChanged = plus($receiver.onValueChanged, synthieMenu$lambda$lambda$lambda$lambda$lambda_2(closure$content));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = synthieMenu$lambda$lambda$lambda$lambda$lambda_2(closure$content);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -2915,7 +2932,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     interfaces: [SimpleComponentUi]
   };
   function SynthieScene(ctx) {
-    Scene.call(this);
+    Scene_init.call(this);
     this.melody = new Melody();
     this.shaker = new Shaker(60.0);
     this.kick = new Kick(120.0);
@@ -2935,7 +2952,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   };
   SynthieScene.prototype.dispose_aemszp$ = function (ctx) {
     this.audioGen_0.stop();
-    Scene.prototype.dispose_aemszp$.call(this, ctx);
+    Scene_init.prototype.dispose_aemszp$.call(this, ctx);
   };
   function SynthieScene$Heightmap($outer, width, length) {
     this.$outer = $outer;
@@ -3049,7 +3066,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     simpleName: 'Heightmap',
     interfaces: [TransformGroup]
   };
-  var Array_0 = Array;
   function SynthieScene$Waveform($outer, points, sampleRate) {
     this.$outer = $outer;
     Group.call(this);
@@ -3180,7 +3196,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   SynthieScene.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'SynthieScene',
-    interfaces: [Scene]
+    interfaces: [Scene_init]
   };
   function treeScene$lambda$lambda$lambda(closure$treeGen) {
     return function ($receiver) {
@@ -3297,7 +3313,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(110.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
       $receiver.setValue_y2kzbl$(0.05, 0.4, closure$treeGen.growDistance);
-      $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda(closure$treeGen, closure$growDistVal));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda(closure$treeGen, closure$growDistVal);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -3328,7 +3346,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(75.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
       $receiver.setValue_y2kzbl$(1.0, 4.0, closure$treeGen.killDistance);
-      $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_0(closure$treeGen, closure$killDistVal));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda_0(closure$treeGen, closure$killDistVal);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -3359,7 +3379,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(40.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
       $receiver.setValue_y2kzbl$(100.0, 10000.0, closure$treeGen.numberOfAttractionPoints);
-      $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_1(closure$treeGen, closure$attractPtsVal));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda_1(closure$treeGen, closure$attractPtsVal);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -3390,7 +3412,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(5.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
       $receiver.setValue_y2kzbl$(0.25, 10.0, closure$treeGen.radiusOfInfluence);
-      $receiver.onValueChanged = plus($receiver.onValueChanged, treeScene$lambda$lambda$lambda$lambda_2(closure$treeGen, closure$infRadiusVal));
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda_2(closure$treeGen, closure$infRadiusVal);
+      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -3522,7 +3546,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     treeGen.generate_za3lpa$();
     var trunkMesh = {v: null};
     var leafMesh = {v: null};
-    var $receiver = new Scene(null);
+    var $receiver = new Scene_init(null);
     $receiver.lighting.useDefaultShadowMap_aemszp$(ctx);
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40));
     trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen));
@@ -3536,7 +3560,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     scenes.add_11rb$(element);
     return scenes;
   }
-  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   function TreeGenerator(distribution, baseTop, baseBot) {
     if (baseTop === void 0)
       baseTop = new Vec3f(0.0, 1.0, 0.0);
@@ -3678,7 +3701,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function TreeGenerator$finishTree$lambda_0($receiver) {
     if ($receiver.parent != null) {
       var baseV = ensureNotNull($receiver.parent).texV;
-      $receiver.texV = baseV + $receiver.distance_czzhiu$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math.PI * 1.5);
+      $receiver.texV = baseV + $receiver.distance_czzhiu$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math_0.PI * 1.5);
     }
     return Unit;
   }
@@ -4015,7 +4038,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   };
   function TreeTopPointDistribution(centerY, width, height, random) {
     if (random === void 0)
-      random = math_0.defaultRandomInstance;
+      random = math.defaultRandomInstance;
     PointDistribution.call(this);
     this.centerY = centerY;
     this.width = width;
@@ -4033,7 +4056,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var spline = new BSplineVec2f(3);
       var n = 7;
       for (var i = 0; i <= n; i++) {
-        var a = i / n * math.PI;
+        var a = i / n * math_0.PI;
         if (1 <= i && i <= (n - 1 | 0)) {
           tmp$ = randomF(0.4, 0.6);
         }
@@ -4064,7 +4087,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     tmp$ = this.borders_0;
     for (var i = 0; i !== tmp$.size; ++i) {
       var tmp$_0;
-      var a = i / this.borders_0.size * 2.0 * math.PI;
+      var a = i / this.borders_0.size * 2.0 * math_0.PI;
       var pts = this.borders_0.get_za3lpa$(i);
       tmp$_0 = pts.size;
       for (var j = 1; j < tmp$_0; j++) {
@@ -4084,7 +4107,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var py = this.tmpPt1_0.y;
       var y = this.tmpPt1_0.z;
       var x_0 = this.tmpPt1_0.x;
-      var $receiver = Math_0.atan2(y, x_0) / (2.0 * math.PI) + 0.5;
+      var $receiver = Math_0.atan2(y, x_0) / (2.0 * math_0.PI) + 0.5;
       var clamp$result;
       if ($receiver < 0.0) {
         clamp$result = 0.0;
@@ -4213,7 +4236,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), pcs(-45.0), zero());
     $receiver.layoutSpec.setSize_4ujscr$(pcs(50.0), pcs(15.0), full());
     $receiver.padding.left = uns(0.0);
-    $receiver.onValueChanged = plus($receiver.onValueChanged, uiDemoScene$lambda$lambda$lambda$lambda_0);
+    $receiver.onValueChanged.add_11rb$(uiDemoScene$lambda$lambda$lambda$lambda_0);
     return Unit;
   }
   function uiDemoScene$lambda$lambda$lambda_5($receiver) {
@@ -4253,7 +4276,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return Unit;
   }
   function uiDemoScene() {
-    var $receiver = new Scene('UI Demo');
+    var $receiver = new Scene_init('UI Demo');
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, uiDemoScene$lambda$lambda($receiver)));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, uiDemoScene$lambda$lambda_0));
     $receiver.unaryPlus_uv0sim$(embeddedUi(10.0, 10.0, dps(400.0), void 0, uiDemoScene$lambda$lambda_1));

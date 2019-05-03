@@ -44,6 +44,13 @@ open class Vec3f(x: Float, y: Float, z: Float) {
 
     fun length(): Float = sqrt(sqrLength())
 
+    fun mix(other: Vec3f, weight: Float, result: MutableVec3f): MutableVec3f {
+        result.x = other.x * weight + x * (1f - weight)
+        result.y = other.y * weight + y * (1f - weight)
+        result.z = other.z * weight + z * (1f - weight)
+        return result
+    }
+
     fun mul(other: Vec3f, result: MutableVec3f): MutableVec3f = result.set(this).mul(other)
 
     fun norm(result: MutableVec3f): MutableVec3f = result.set(this).norm()
@@ -264,6 +271,13 @@ open class Vec3d(x: Double, y: Double, z: Double) {
             isFuzzyEqual(x, other.x, eps) && isFuzzyEqual(y, other.y, eps) && isFuzzyEqual(z, other.z, eps)
 
     fun length(): Double = sqrt(sqrLength())
+
+    fun mix(other: Vec3d, weight: Double, result: MutableVec3d): MutableVec3d {
+        result.x = other.x * weight + x * (1.0 - weight)
+        result.y = other.y * weight + y * (1.0 - weight)
+        result.z = other.z * weight + z * (1.0 - weight)
+        return result
+    }
 
     fun mul(other: Vec3d, result: MutableVec3d): MutableVec3d = result.set(this).mul(other)
 

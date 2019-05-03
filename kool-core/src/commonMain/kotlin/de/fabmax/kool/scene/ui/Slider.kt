@@ -17,7 +17,7 @@ import de.fabmax.kool.util.MutableColor
 class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
         UiComponent(name, root), Scene.DragHandler {
 
-    var onValueChanged: List<Slider.(Float) -> Unit> = mutableListOf()
+    val onValueChanged: MutableList<Slider.(Float) -> Unit> = mutableListOf()
 
     var trackColor = Color.GRAY
     val trackColorHighlighted = ThemeOrCustomProp(Color.LIGHT_GRAY)

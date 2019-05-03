@@ -16,12 +16,13 @@ fun HalfEdgeMesh.simplify(termCrit: TermCriterion, excludedEdges: Set<HalfEdgeMe
 
 open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: CollapseStrategy = defaultCollapseStrategy()) {
 
-    val quadrics = mutableMapOf<Int, ErrorQuadric>()
+    private val quadrics = mutableMapOf<Int, ErrorQuadric>()
     private val candidates = CollapseCandidates()
-    private val candidateMap = mutableMapOf<EdgeId, CollapseCandidate>()
 
     private lateinit var mesh: HalfEdgeMesh
+
     val excludedEdges = mutableSetOf<HalfEdgeMesh.HalfEdge>()
+    val stickyVertices = mutableSetOf<HalfEdgeMesh.HalfEdgeVertex>()
     var keepBorders = false
 
     fun simplifyMesh(mesh: HalfEdgeMesh, generateNormals: Boolean = true, generateTangents: Boolean = true) {
@@ -45,7 +46,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
                 nextReshape = mesh.faceCount / 2
             }
 
-            val candidate = pollNextCandidate()
+            val candidate = candidates.poll()
             if (candidate.edge.isDeleted || candidate.q1.isDeleted || candidate.q2.isDeleted) {
                 logW { "Invalid edge: already deleted!" }
                 continue
@@ -61,13 +62,13 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
             val oldError = candidate.error
             candidate.updateCollapsePosAndError()
             if (oldError != candidate.error) {
-                // fixme: this should not happen since all affected edges are updated after each collapse operation
-                // however, somehow this still happens, reinsert candidate with updated error and try next
-                addCandidate(candidate)
+                // this happens if neighboring mesh structure has changed and collapse of this edge is now rejected
+                // new error should be Double.MAX_VALUE, nevertheless we reinsert the candidate just to be safe...
+                candidates += candidate
                 continue
             }
 
-            if (candidate.error < Float.MAX_VALUE) {
+            if (candidate.error < Double.MAX_VALUE) {
                 // collapse edge
                 lastError = candidate.collapse()
 
@@ -81,17 +82,6 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
         mesh.rebuild(generateNormals, generateTangents)
 
         logD { "Mesh simplification done! ${mesh.faceCount} faces / ${mesh.vertCount} vertices remain, last error: $lastError, took ${perf.takeSecs().toString(3)} s" }
-    }
-
-    private fun pollNextCandidate(): CollapseCandidate {
-        val c = candidates.poll()
-        candidateMap -= c.edgeId
-        return c
-    }
-
-    private fun addCandidate(c: CollapseCandidate) {
-        candidates += c
-        candidateMap[c.edgeId] = c
     }
 
     private fun reshapeTriangles() {
@@ -127,7 +117,6 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
 
     private fun rebuildCollapseQueue() {
         candidates.clear()
-        candidateMap.clear()
         for (edge in mesh.edgeHandler) {
             insertEdge(edge)
         }
@@ -136,20 +125,12 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
     private fun insertEdge(edge: HalfEdgeMesh.HalfEdge) {
         // only add one half edge per edge
         if (edge !in excludedEdges && (edge.from.index < edge.to.index || edge.opp == null)) {
-            val q1 = quadrics.getOrPut(edge.from.index) { ErrorQuadric(edge.from) }
-            val q2 = quadrics.getOrPut(edge.to.index) { ErrorQuadric(edge.to) }
+            val q1 = quadrics.getOrPut(edge.from.index) { ErrorQuadric(edge.from).apply { isStickyVertex = edge.from in stickyVertices } }
+            val q2 = quadrics.getOrPut(edge.to.index) { ErrorQuadric(edge.to).apply { isStickyVertex = edge.to in stickyVertices } }
 
-            if (!keepBorders || (!q1.isBorder && !q2.isBorder)) {
-                addCandidate(CollapseCandidate(edge, q1, q2))
+            if ((!q1.isStickyVertex || !q2.isStickyVertex)  && (!keepBorders || (!q1.isBorder && !q2.isBorder))) {
+                candidates += CollapseCandidate(edge, q1, q2)
             }
-        }
-    }
-
-    private fun collectAffectedEdges(v: HalfEdgeMesh.HalfEdgeVertex, result: MutableSet<HalfEdgeMesh.HalfEdge>) {
-        // collect all collapse candidates adjacent to given vertex
-        v.edges.forEach { ed ->
-            result += ed
-            result += ed.next.next
         }
     }
 
@@ -176,9 +157,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
             collectAffectedEdges(q1.vertex, affectedEdges)
             collectAffectedEdges(q2.vertex, affectedEdges)
             affectedEdges.forEach {
-                candidateMap.remove(EdgeId(it.from.index, it.to.index))?.let { c ->
-                    candidates -= c
-                }
+                candidates.removeByVertexIndices(it.from.index, it.to.index)
             }
 
             q1.consume(q2)
@@ -194,11 +173,21 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
             return error
         }
 
+
+        private fun collectAffectedEdges(v: HalfEdgeMesh.HalfEdgeVertex, result: MutableSet<HalfEdgeMesh.HalfEdge>) {
+            // collect all collapse candidates adjacent to given vertex
+            v.edges.forEach { ed ->
+                result += ed
+                result += ed.next.next
+            }
+        }
     }
 
     private data class EdgeId(val fromId: Int, val toId: Int)
 
     private class CollapseCandidates : TreeMap<Double, MutableList<CollapseCandidate>>() {
+        val candidateMap = mutableMapOf<EdgeId, CollapseCandidate>()
+
         fun isNotEmpty() = !isEmpty()
 
         fun peek(): CollapseCandidate = firstValue().first()
@@ -209,16 +198,26 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
             if (v.isEmpty()) {
                 remove(firstKey())
             }
+            candidateMap -= c.edgeId
+            return c
+        }
+
+        override fun clear() {
+            super.clear()
+            candidateMap.clear()
+        }
+
+        fun removeByVertexIndices(fromId: Int, toId: Int): CollapseCandidate? {
+            val c = candidateMap.remove(EdgeId(fromId, toId))
+            if (c != null) {
+                this -= c
+            }
             return c
         }
 
         operator fun plusAssign(c: CollapseCandidate) {
-            var v = get(c.error)
-            if (v == null) {
-                v = mutableListOf()
-                put(c.error, v)
-            }
-            v.add(c)
+            getOrPut(c.error) { mutableListOf() } += c
+            candidateMap[c.edgeId] = c
         }
 
         operator fun minusAssign(c: CollapseCandidate) {
@@ -229,6 +228,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
                     remove(c.error)
                 }
             }
+            candidateMap -= c.edgeId
         }
     }
 }

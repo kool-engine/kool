@@ -107,7 +107,7 @@ class Font(val fontProps: FontProps, ctx: KoolContext) :
             DEFAULT_FONT_PROPS = FontProps(SYSTEM_FONT, 12f)
         }
 
-        fun defaultFont(ctx: KoolContext): Font = Font(Font.DEFAULT_FONT_PROPS, ctx)
+        fun defaultFont(ctx: KoolContext): Font = Font(DEFAULT_FONT_PROPS, ctx)
 
         private fun getCharMap(fontProps: FontProps, ctx: KoolContext): CharMap {
             var map = charMaps[fontProps]
