@@ -16,7 +16,7 @@ fun group(name: String? = null, block: Group.() -> Unit): Group {
 }
 
 open class Group(name: String? = null) : Node(name) {
-    private val intChildren = mutableListOf<Node>()
+    protected val intChildren = mutableListOf<Node>()
     protected val childrenBounds = BoundingBox()
 
     val children: List<Node> get() = intChildren

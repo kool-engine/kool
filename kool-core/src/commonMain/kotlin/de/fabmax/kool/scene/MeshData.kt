@@ -138,19 +138,33 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
             val du2 = v2.texCoord.x - v0.texCoord.x
             val dv2 = v2.texCoord.y - v0.texCoord.y
             val f = 1f / (du1 * dv2 - du2 * dv1)
+            if (f.isNaN()) {
+                logW { "degenerated triangle" }
+            } else {
+                tan.x = f * (dv2 * e1.x - dv1 * e2.x)
+                tan.y = f * (dv2 * e1.y - dv1 * e2.y)
+                tan.z = f * (dv2 * e1.z - dv1 * e2.z)
 
-            tan.x = f * (dv2 * e1.x - dv1 * e2.x)
-            tan.y = f * (dv2 * e1.y - dv1 * e2.y)
-            tan.z = f * (dv2 * e1.z - dv1 * e2.z)
-
-            v0.tangent += tan
-            v1.tangent += tan
-            v2.tangent += tan
+                v0.tangent += tan
+                v1.tangent += tan
+                v2.tangent += tan
+            }
         }
 
         for (i in 0 until numVertices) {
             v0.index = i
-            v0.tangent.norm()
+
+            if (v0.normal.sqrLength() == 0f) {
+                logW { "singular normal" }
+                v0.normal.set(Vec3f.Y_AXIS)
+            }
+
+            if (v0.tangent.sqrLength() != 0f) {
+                v0.tangent.norm()
+            } else {
+                logW { "singular tangent" }
+                v0.normal.set(Vec3f.X_AXIS)
+            }
         }
     }
 
@@ -254,6 +268,14 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
             isSyncRequired = true
             bounds.add(position)
             vertexList.addVertex(position, normal, color, texCoord)
+        }
+    }
+
+    fun addMeshData(other: MeshData) {
+        lock(vertexList) {
+            vertexList.addFrom(other.vertexList)
+            bounds.add(other.bounds)
+            isSyncRequired = true
         }
     }
 

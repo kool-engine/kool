@@ -43,7 +43,9 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
 
     override fun preRender(ctx: KoolContext) {
         super.preRender(ctx)
-        instances.setupInstances(this, ctx)
+        if (isVisible) {
+            instances.setupInstances(this, ctx)
+        }
     }
 
     override fun getAttributeBinder(attrib: Attribute) = instanceBinders[attrib] ?: super.getAttributeBinder(attrib)
@@ -84,6 +86,13 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
     }
 
     open class Instance(val modelMat: Mat4f) {
+        /**
+         * Radius of a single instance in global coordinates. Is used for frustum culling of individual instances.
+         * A good starting point is distance between center and max of corresponding MeshData bounds. Larger values
+         * might be needed for correct shadow casting etc.
+         */
+        var radius = 1f
+
         open fun putInstanceAttributes(target: Float32Buffer) {
             target.put(modelMat.matrix)
         }
@@ -107,10 +116,9 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
         var numInstances = 0
             private set
 
-        private val tmpVec1 = MutableVec3f()
-        private val tmpVec2 = MutableVec3f()
+        private val tmpVec = MutableVec3f()
 
-        fun clearInstances() {
+        open fun clearInstances() {
             instances.clear()
         }
 
@@ -139,22 +147,14 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
         protected open fun putInstanceData(target: Float32Buffer, mesh: InstancedMesh, ctx: KoolContext) {
             val cam = mesh.scene?.camera
             if (mesh.isFrustumChecked && cam != null) {
-                val radius = computeGlobalRadius(mesh.meshData.bounds, ctx)
-
                 for (i in instances.indices) {
                     // determine local instance center position
-                    instances[i].getLocalOrigin(tmpVec1)
-                    bounds.add(tmpVec1)
+                    instances[i].getLocalOrigin(tmpVec)
+                    bounds.add(tmpVec)
 
-                    // determine global instance center position
-                    ctx.mvpState.modelMatrix.transform(tmpVec1)
-
-                    // this assumes individual instances have all the same size (i.e. no scaling by the individual
-                    // instance matrices)
-                    if (cam.isInFrustum(tmpVec1, radius)) {
+                    if (isIncludeInstance(instances[i], tmpVec, cam, ctx)) {
                         putInstance(instances[i], target)
                     }
-
                     if (numInstances == maxInstances) {
                         // maximum buffer size reached
                         break
@@ -162,14 +162,20 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
                 }
 
                 if (!bounds.isEmpty) {
-                    tmpVec1.set(mesh.meshData.bounds.size).scale(0.5f)
-                    bounds.expand(tmpVec1)
+                    tmpVec.set(mesh.meshData.bounds.size).scale(0.5f)
+                    bounds.expand(tmpVec)
                 }
             } else {
                 for (i in 0 until min(instances.size, maxInstances)) {
                     putInstance(instances[i], target)
                 }
             }
+        }
+
+        protected open fun isIncludeInstance(instance: T, localPos: Vec3f, cam: Camera, ctx: KoolContext): Boolean {
+            // determine global instance center position
+            ctx.mvpState.modelMatrix.transform(tmpVec)
+            return cam.isInFrustum(tmpVec, instance.radius)
         }
 
         protected open fun putInstance(instance: T, target: Float32Buffer) {
@@ -179,15 +185,6 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
             } else {
                 logW { "Discarding instance: max instance count reached" }
             }
-        }
-
-        protected fun computeGlobalRadius(meshDataBounds: BoundingBox, ctx: KoolContext): Float {
-            // update global center and radius
-            tmpVec1.set(meshDataBounds.center)
-            tmpVec2.set(meshDataBounds.max)
-            ctx.mvpState.modelMatrix.transform(tmpVec1)
-            ctx.mvpState.modelMatrix.transform(tmpVec2)
-            return tmpVec1.distance(tmpVec2)
         }
     }
 

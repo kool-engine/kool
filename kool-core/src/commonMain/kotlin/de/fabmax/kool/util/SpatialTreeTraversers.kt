@@ -3,7 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.clamp
+import kotlin.math.max
 import kotlin.math.sqrt
 
 interface PointDistance<T: Any> {
@@ -17,14 +17,24 @@ interface PointDistance<T: Any> {
     }
 }
 
+interface BoundingSphereDistance<T: Any> : PointDistance<T> {
+    override fun itemSqrDistanceToPoint(tree: SpatialTree<T>, item: T, point: Vec3f): Float {
+        val dx = tree.itemAdapter.getCenterX(item) - point.x
+        val dy = tree.itemAdapter.getCenterY(item) - point.y
+        val dz = tree.itemAdapter.getCenterZ(item) - point.z
+
+        val rx = tree.itemAdapter.getSzX(item) * 0.5f
+        val ry = tree.itemAdapter.getSzY(item) * 0.5f
+        val rz = tree.itemAdapter.getSzZ(item) * 0.5f
+
+        val d = max(0f, sqrt(dx*dx + dy*dy + dz*dz) - sqrt(rx*rx + ry*ry + rz*rz))
+        return d*d
+    }
+}
+
 interface RayDistance<T: Any> {
     fun nodeSqrDistanceToRay(node: SpatialTree<T>.Node, ray: Ray): Float {
-        val halfExtX = node.bounds.size.x * 0.5f
-        val halfExtY = node.bounds.size.y * 0.5f
-        val halfExtZ = node.bounds.size.z * 0.5f
-        val r = sqrt(halfExtX*halfExtX + halfExtY*halfExtY + halfExtZ*halfExtZ)
-        val dist = (ray.distanceToPoint(node.bounds.center) - r).clamp(0f, Float.MAX_VALUE)
-        return dist * dist
+        return node.bounds.hitDistanceSqr(ray)
     }
 
     fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
@@ -65,7 +75,7 @@ open class InRadiusTraverser<T: Any> : CenterPointTraverser<T>() {
     val result: MutableList<T> = mutableListOf()
     var radius = 1f
         protected set
-    private var radiusSqr = 1f
+    protected var radiusSqr = 1f
 
     open fun setup(center: Vec3f, radius: Float): InRadiusTraverser<T> {
         super.setup(center)
@@ -93,6 +103,21 @@ open class InRadiusTraverser<T: Any> : CenterPointTraverser<T>() {
         for (i in leaf.nodeRange) {
             val it = leaf.items[i]
             if (pointDistance.itemSqrDistanceToPoint(tree, it, center) < radiusSqr) {
+                result += it
+            }
+        }
+    }
+}
+
+open class BoundingSphereInRadiusTraverser<T: Any> : InRadiusTraverser<T>() {
+    override fun traverseLeaf(tree: SpatialTree<T>, leaf: SpatialTree<T>.Node) {
+        for (i in leaf.nodeRange) {
+            val it = leaf.items[i]
+            val rx = tree.itemAdapter.getSzX(it) / 2
+            val ry = tree.itemAdapter.getSzY(it) / 2
+            val rz = tree.itemAdapter.getSzZ(it) / 2
+            val itRadius = sqrt(rx*rx + ry*ry + rz*rz)
+            if (sqrt(pointDistance.itemSqrDistanceToPoint(tree, it, center)) - itRadius < radius) {
                 result += it
             }
         }
@@ -212,7 +237,7 @@ open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T>() {
 
     override fun traverse(tree: SpatialTree<T>) {
         super.traverse(tree)
-        distance = if (nearest != null) sqrt(distanceSqr) else Float.MAX_VALUE
+        distance = if (distanceSqr != Float.MAX_VALUE) sqrt(distanceSqr) else Float.MAX_VALUE
     }
 
     override fun traverseChildren(tree: SpatialTree<T>, node: SpatialTree<T>.Node) {
@@ -245,7 +270,7 @@ open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T>() {
     }
 }
 
-open class NearestEdgeToRayTraverser<T: Edge> : NearestToRayTraverser<T>() {
+open class NearestEdgeToRayTraverser<T: Edge<*>> : NearestToRayTraverser<T>() {
     init {
         rayDistance = object : RayDistance<T> {
             override fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
@@ -256,6 +281,11 @@ open class NearestEdgeToRayTraverser<T: Edge> : NearestToRayTraverser<T>() {
 }
 
 open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
+    val isHit: Boolean
+        get() = nearest != null
+
+    val hitPoint = MutableVec3f()
+
     init {
         rayDistance = object : RayDistance<T> {
             override fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: Ray): Float {
@@ -266,6 +296,18 @@ open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
                     return Float.MAX_VALUE
                 }
             }
+        }
+    }
+
+    override fun setup(ray: Ray): NearestToRayTraverser<T> {
+        hitPoint.set(Vec3f.ZERO)
+        return super.setup(ray)
+    }
+
+    override fun traverse(tree: SpatialTree<T>) {
+        super.traverse(tree)
+        if (isHit) {
+            hitPoint.set(ray.direction).scale(distance).add(ray.origin)
         }
     }
 }

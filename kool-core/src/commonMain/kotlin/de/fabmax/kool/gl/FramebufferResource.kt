@@ -20,6 +20,8 @@ class Framebuffer(val width: Int, val height: Int, val texTargetColor: Int = GL_
     var colorAttachment: Texture? = null
     var depthAttachment: Texture? = null
 
+    var viewport = KoolContext.Viewport(0, 0, width, height)
+
     fun withColor(): Framebuffer {
         if (colorAttachment == null) {
             colorAttachment = FbColorTexData.colorTex(width, height, fbId)
@@ -50,7 +52,7 @@ class Framebuffer(val width: Int, val height: Int, val texTargetColor: Int = GL_
             colorAttachment = this@Framebuffer.colorAttachment
             depthAttachment = this@Framebuffer.depthAttachment
         }
-        fb.bind(ctx)
+        fb.bind(viewport, ctx)
     }
 
     fun unbind(ctx: KoolContext) {
@@ -77,7 +79,7 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
         super.delete(ctx)
     }
 
-    fun bind(ctx: KoolContext) {
+    fun bind(viewport: KoolContext.Viewport, ctx: KoolContext) {
         glBindFramebuffer(GL_FRAMEBUFFER, this)
         if (!isFbComplete) {
             isFbComplete = true
@@ -121,7 +123,7 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
         }
 
         ctx.pushAttributes()
-        ctx.viewport = KoolContext.Viewport(0, 0, width, height)
+        ctx.viewport = viewport
         ctx.applyAttributes()
     }
 

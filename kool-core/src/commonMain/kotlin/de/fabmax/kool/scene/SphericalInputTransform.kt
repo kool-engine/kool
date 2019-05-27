@@ -7,7 +7,7 @@ import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.SpringDamperFloat
 
 /**
- * A special kind of transform group which translates mouse input into a spherical transform. This is mainly useful
+ * A special kind of transform group which translates mouse input into a orbit transform. This is mainly useful
  * for camera manipulation.
  *
  * @author fabmax
@@ -144,6 +144,7 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             } else if (dragMethod == DragMethod.PAN) {
                 val s = (1 - smoothness).clamp(0.1f, 1f)
                 tmpVec1.set(pointerHitStart).subtract(pointerHit).scale(s)
+                parent?.toLocalCoords(tmpVec1, 0f)
 
                 // limit panning speed
                 val tLen = tmpVec1.length()
@@ -194,7 +195,9 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         // tmpVec2 = zoomed pos on view center ray
         scene.camera.globalPos.subtract(scene.camera.globalLookAt, tmpVec2).scale(newZoom / oldZoom)
                 .add(scene.camera.globalLookAt)
-        translation.add(tmpVec1).subtract(tmpVec2)
+        tmpVec1.subtract(tmpVec2)
+        parent?.toLocalCoords(tmpVec1, 0f)
+        translation.add(tmpVec1)//.subtract(tmpVec2)
     }
 
     private fun stopSmoothMotion() {

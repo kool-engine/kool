@@ -6,7 +6,8 @@ import kotlin.math.*
 
 class TreeGenerator(val distribution: PointDistribution,
                     val baseTop: Vec3f = Vec3f(0f, 1f, 0f),
-                    val baseBot: Vec3f = Vec3f.ZERO) {
+                    val baseBot: Vec3f = Vec3f.ZERO,
+                    val random: Random = defaultRandomInstance) {
 
     var radiusOfInfluence = 1.0f
     var growDistance = 0.15f
@@ -82,7 +83,7 @@ class TreeGenerator(val distribution: PointDistribution,
         val newNodes = mutableListOf<TreeNode>()
         var changed = false
         for (node in treeNodes) {
-            if (!node.influencingPts.isEmpty()) {
+            if (node.influencingPts.isNotEmpty()) {
                 val growDir = MutableVec3f()
                 for (attracPt in node.influencingPts) {
                     growDir += attracPt.subtract(node, MutableVec3f()).norm()
@@ -114,9 +115,9 @@ class TreeGenerator(val distribution: PointDistribution,
                 this += MutableVec3f(parent!!).subtract(this).norm().scale(growDistance * 0.5f)
 
                 // add a small random offset
-                x += randomF(-0.01f, 0.01f)
-                y += randomF(-0.01f, 0.01f)
-                z += randomF(-0.01f, 0.01f)
+                x += random.randomF(-0.01f, 0.01f)
+                y += random.randomF(-0.01f, 0.01f)
+                z += random.randomF(-0.01f, 0.01f)
             }
             computeTrunkRadiusAndDepth()
             computeCircumPoints()
@@ -179,7 +180,7 @@ class TreeGenerator(val distribution: PointDistribution,
         }
     }
 
-    private class TreeNode : MutableVec3f() {
+    private inner class TreeNode : MutableVec3f() {
         val children = mutableListOf<TreeNode>()
         var parent: TreeNode? = null
         var branchDepth = 0
@@ -297,12 +298,12 @@ class TreeGenerator(val distribution: PointDistribution,
                 n.norm()
                 for (i in 1..20) {
                     target.withTransform {
-                        val r = MutableVec3f(circumPts[0]).subtract(this@TreeNode).norm().scale(radius + randomF(0f, 0.15f))
-                        r.rotate(randomF(0f, 360f), n)
-                        val p = MutableVec3f(n).scale(randomF(0f, len)).add(r).add(this@TreeNode)
+                        val r = MutableVec3f(circumPts[0]).subtract(this@TreeNode).norm().scale(radius + random.randomF(0f, 0.15f))
+                        r.rotate(random.randomF(0f, 360f), n)
+                        val p = MutableVec3f(n).scale(random.randomF(0f, len)).add(r).add(this@TreeNode)
 
                         translate(p)
-                        rotate(randomF(0f, 360f), n)
+                        rotate(random.randomF(0f, 360f), n)
 
                         val i0 = vertex(Vec3f(0f, -0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 0f))
                         val i1 = vertex(Vec3f(0f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 1f))
@@ -327,13 +328,15 @@ class TreeTopPointDistribution(val centerY: Float, val width: Float, val height:
     private val e10 = MutableVec2f()
     private val e11 = MutableVec2f()
 
+    private val seedPts = mutableListOf<Vec3f>()
+
     init {
         for (j in 1..8) {
             val spline = BSplineVec2f(3)
             val n = 7
             for (i in 0..n) {
                 val a = i / n.toFloat() * PI.toFloat()
-                val f = if (i in 1..(n - 1)) { randomF(0.4f, 0.6f) } else { 0.5f }
+                val f = if (i in 1 until n) { random.randomF(0.4f, 0.6f) } else { 0.5f }
                 val x = sin(a) * (width - 0.4f) * f + 0.2f
                 val y = cos(a) * height * f + centerY
                 spline.ctrlPoints += MutableVec2f(x, y)
@@ -349,6 +352,14 @@ class TreeTopPointDistribution(val centerY: Float, val width: Float, val height:
             }
             borders += pts
         }
+        seed()
+    }
+
+    private fun seed() {
+        seedPts.clear()
+        for (i in 1..10) {
+            seedPts += nextPointInBounds()
+        }
     }
 
     fun drawBorders(target: LineMesh) {
@@ -363,12 +374,29 @@ class TreeTopPointDistribution(val centerY: Float, val width: Float, val height:
         }
     }
 
+    override fun nextPoints(n: Int): List<Vec3f> {
+        seed()
+        return super.nextPoints(n)
+    }
+
     override fun nextPoint(): Vec3f {
+        var pt: Vec3f
+        while (true) {
+            pt = nextPointInBounds()
+            val d = seedPts.minBy { it.sqrDistance(pt) }!!.distance(pt)
+            if (d < random.randomF()) {
+                break
+            }
+        }
+        return pt
+    }
+
+    private fun nextPointInBounds(): Vec3f {
         val w = width * 0.5f
         val h = height * 0.5f
 
         while (true) {
-            tmpPt1.set(random.randomF(-w, w), centerY + random.randomF(-h, h), randomF(-w, w))
+            tmpPt1.set(random.randomF(-w, w), centerY + random.randomF(-h, h), random.randomF(-w, w))
 
             val px = sqrt(tmpPt1.x * tmpPt1.x + tmpPt1.z * tmpPt1.z)
             val py = tmpPt1.y

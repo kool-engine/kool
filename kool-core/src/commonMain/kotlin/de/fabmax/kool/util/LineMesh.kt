@@ -62,6 +62,12 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
         return idx0
     }
 
+    fun addLineString(lineString: LineString<*>, color: Color) {
+        for (i in 0 until lineString.lastIndex) {
+            addLine(lineString[i], color, lineString[i+1], color)
+        }
+    }
+
     fun addWireframe(triMesh: MeshData, lineColor: Color? = null) {
         if (triMesh.primitiveType != GL_TRIANGLES) {
             throw KoolException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")

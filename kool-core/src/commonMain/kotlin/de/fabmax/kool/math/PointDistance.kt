@@ -82,10 +82,46 @@ fun Vec3f.nearestPointOnRay(origin: Vec3f, direction: Vec3f, result: MutableVec3
 // point to edge functions (two ends, finite length)
 //
 
+fun Vec2f.distanceToEdge(edgeA: Vec2f, edgeB: Vec2f) = sqrt(sqrDistanceToEdge(edgeA, edgeB))
+
+fun Vec2f.sqrDistanceToEdge(edgeA: Vec2f, edgeB: Vec2f) = sqrDistancePointToEdge(x, y, edgeA, edgeB)
+
+fun sqrDistancePointToEdge(x: Float, y: Float, edgeA: Vec2f, edgeB: Vec2f): Float {
+    // vec math would be nice here, but we don't want to create a temporary MutableVec3f
+    val rx = edgeB.x - edgeA.x
+    val ry = edgeB.y - edgeA.y
+
+    val dotPt = x*rx + y*ry
+    val dotEdgeA = edgeA.x*rx + edgeA.y*ry
+    val dotR = rx*rx + ry*ry
+
+    val l = (dotPt - dotEdgeA) / dotR
+    val nx: Float
+    val ny: Float
+    when {
+        l <= 0 -> { nx = edgeA.x; ny = edgeA.y }
+        l >= 1 -> { nx = edgeB.x; ny = edgeB.y }
+        else -> { nx = rx * l + edgeA.x; ny = ry * l + edgeA.y }
+    }
+
+    val dx = nx - x
+    val dy = ny - y
+    return dx*dx + dy*dy
+}
+
+fun Vec2f.nearestPointOnEdge(edgeA: Vec2f, edgeB: Vec2f, result: MutableVec2f): MutableVec2f {
+    edgeB.subtract(edgeA, result)
+    val l = (dot(result) - edgeA * result) / (result * result)
+    return when {
+        l <= 0 -> result.set(edgeA)
+        l >= 1 -> result.set(edgeB)
+        else -> result.scale(l).add(edgeA)
+    }
+}
+
 fun Vec3f.distanceToEdge(edgeA: Vec3f, edgeB: Vec3f) = sqrt(sqrDistanceToEdge(edgeA, edgeB))
 
-fun Vec3f.sqrDistanceToEdge(edgeA: Vec3f, edgeB: Vec3f) =
-        sqrDistancePointToEdge(x, y, z, edgeA, edgeB)
+fun Vec3f.sqrDistanceToEdge(edgeA: Vec3f, edgeB: Vec3f) = sqrDistancePointToEdge(x, y, z, edgeA, edgeB)
 
 fun sqrDistancePointToEdge(x: Float, y: Float, z: Float, edgeA: Vec3f, edgeB: Vec3f): Float {
     // vec math would be nice here, but we don't want to create a temporary MutableVec3f

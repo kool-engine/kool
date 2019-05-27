@@ -17,19 +17,43 @@ fun <T: Vec3f> pointOcTree(points: List<T> = emptyList(), bounds: BoundingBox = 
     return OcTree(Vec3fAdapter, points, bounds, bucketSz = bucketSz)
 }
 
-fun <T: Triangle> triangleKdTree(triangles: List<T>, bucketSz: Int = 20): KdTree<T> {
+fun triangleKdTree(mesh: MeshData, bucketSz: Int = 10): KdTree<Triangle> {
+    val triangles = mutableListOf<Triangle>()
+    val v = mesh.vertexList[0]
+    for (i in 0 until mesh.numIndices step 3) {
+        val p0 = Vec3f(v.apply { index = mesh.vertexList.indices[i] })
+        val p1 = Vec3f(v.apply { index = mesh.vertexList.indices[i+1] })
+        val p2 = Vec3f(v.apply { index = mesh.vertexList.indices[i+2] })
+        triangles += Triangle(p0, p1, p2)
+    }
+    return triangleKdTree(triangles, bucketSz)
+}
+
+fun <T: Triangle> triangleKdTree(triangles: List<T>, bucketSz: Int = 10): KdTree<T> {
     return KdTree(triangles, TriangleAdapter, bucketSz)
 }
 
-fun <T: Triangle> triangleOcTree(triangles: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 20): OcTree<T> {
+fun <T: Triangle> triangleOcTree(triangles: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 10): OcTree<T> {
     return OcTree(TriangleAdapter, triangles, bounds, bucketSz = bucketSz)
 }
 
-fun <T: Edge> edgeKdTree(edges: List<T>, bucketSz: Int = 20): KdTree<T> {
+fun triangleOcTree(mesh: MeshData, bucketSz: Int = 10): OcTree<Triangle> {
+    val triangles = mutableListOf<Triangle>()
+    val v = mesh.vertexList[0]
+    for (i in 0 until mesh.numIndices step 3) {
+        val p0 = Vec3f(v.apply { index = mesh.vertexList.indices[i] })
+        val p1 = Vec3f(v.apply { index = mesh.vertexList.indices[i+1] })
+        val p2 = Vec3f(v.apply { index = mesh.vertexList.indices[i+2] })
+        triangles += Triangle(p0, p1, p2)
+    }
+    return triangleOcTree(triangles, mesh.bounds, bucketSz)
+}
+
+fun <T: Edge<*>> edgeKdTree(edges: List<T>, bucketSz: Int = 10): KdTree<T> {
     return KdTree(edges, EdgeAdapter, bucketSz)
 }
 
-fun <T: Edge> edgeOcTree(triangles: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 20): OcTree<T> {
+fun <T: Edge<*>> edgeOcTree(triangles: List<T> = emptyList(), bounds: BoundingBox = BoundingBox(), bucketSz: Int = 10): OcTree<T> {
     return OcTree(EdgeAdapter, triangles, bounds, bucketSz = bucketSz)
 }
 
@@ -82,18 +106,18 @@ object Vec3fAdapter : ItemAdapter<Vec3f> {
     override fun getMax(item: Vec3f, result: MutableVec3f): MutableVec3f = result.set(item)
 }
 
-object EdgeAdapter : ItemAdapter<Edge> {
-    override fun getMinX(item: Edge): Float = item.minX
-    override fun getMinY(item: Edge): Float = item.minY
-    override fun getMinZ(item: Edge): Float = item.minZ
+object EdgeAdapter : ItemAdapter<Edge<*>> {
+    override fun getMinX(item: Edge<*>): Float = item.minX
+    override fun getMinY(item: Edge<*>): Float = item.minY
+    override fun getMinZ(item: Edge<*>): Float = item.minZ
 
-    override fun getMaxX(item: Edge): Float = item.maxX
-    override fun getMaxY(item: Edge): Float = item.maxY
-    override fun getMaxZ(item: Edge): Float = item.maxZ
+    override fun getMaxX(item: Edge<*>): Float = item.maxX
+    override fun getMaxY(item: Edge<*>): Float = item.maxY
+    override fun getMaxZ(item: Edge<*>): Float = item.maxZ
 
-    override fun getMin(item: Edge, result: MutableVec3f): MutableVec3f =
+    override fun getMin(item: Edge<*>, result: MutableVec3f): MutableVec3f =
             result.set(item.minX, item.minY, item.minZ)
-    override fun getMax(item: Edge, result: MutableVec3f): MutableVec3f =
+    override fun getMax(item: Edge<*>, result: MutableVec3f): MutableVec3f =
             result.set(item.maxX, item.maxY, item.maxZ)
 }
 
@@ -112,7 +136,7 @@ object TriangleAdapter : ItemAdapter<Triangle> {
             result.set(item.maxX, item.maxY, item.maxZ)
 }
 
-open class Edge(val pt0: Vec3f, val pt1: Vec3f) {
+open class Edge<T: Vec3f>(val pt0: T, val pt1: T) {
     val e: Vec3f
     val length: Float
 
@@ -125,15 +149,6 @@ open class Edge(val pt0: Vec3f, val pt1: Vec3f) {
 
     private val tmpVec = MutableVec3f()
     private val tmpResult = MutableVec3f()
-
-    constructor(data: MeshData, idx0: Int) : this(
-            MutableVec3f().apply { data.vertexList.vertexIt.index = data.vertexList.indices[idx0]; set(data.vertexList.vertexIt.position) },
-            MutableVec3f().apply { data.vertexList.vertexIt.index = data.vertexList.indices[idx0+1]; set(data.vertexList.vertexIt.position) }
-    ) {
-        if (data.primitiveType != GL_LINES) {
-            throw IllegalArgumentException("Supplied meshData must have primitiveType GL_LINES")
-        }
-    }
 
     init {
         e = pt1.subtract(pt0, MutableVec3f()).norm()
@@ -167,10 +182,17 @@ open class Edge(val pt0: Vec3f, val pt1: Vec3f) {
     }
 
     companion object {
-        fun getEdges(meshData: MeshData): List<Edge> {
-            val edges = mutableListOf<Edge>()
-            for (i in 0 until meshData.numIndices step 2) {
-                edges += Edge(meshData, i)
+        fun getEdges(lineMeshData: MeshData): List<Edge<Vec3f>> {
+            if (lineMeshData.primitiveType != GL_LINES) {
+                throw IllegalArgumentException("Supplied meshData must have primitiveType GL_LINES")
+            }
+            val edges = mutableListOf<Edge<Vec3f>>()
+            for (i in 0 until lineMeshData.numIndices step 2) {
+                val i0 = lineMeshData.vertexList.indices[i]
+                val i1 = lineMeshData.vertexList.indices[i+1]
+                val p0 = Vec3f(lineMeshData.vertexList.vertexIt.apply { index = i0 })
+                val p1 = Vec3f(lineMeshData.vertexList.vertexIt.apply { index = i1 })
+                edges += Edge(p0, p1)
             }
             return edges
         }

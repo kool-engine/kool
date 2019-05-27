@@ -467,6 +467,13 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
         return this
     }
 
+    fun scaleRgb(factor : Float): MutableColor {
+        r *= factor
+        g *= factor
+        b *= factor
+        return this
+    }
+
     fun clear(): MutableColor {
         set(0f, 0f, 0f, 0f)
         return this

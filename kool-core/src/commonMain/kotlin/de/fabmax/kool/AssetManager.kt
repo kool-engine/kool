@@ -166,7 +166,7 @@ class LoadedRawAsset(ref: AssetRef, val data: ByteArray?) : LoadedAsset(ref, dat
 class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(ref, data != null)
 
 fun assetTexture(assetPath: String, delayLoading: Boolean = true): Texture {
-    return assetTexture(defaultProps(assetPath), delayLoading)
+    return assetTexture(defaultPropsRepeated(assetPath), delayLoading)
 }
 
 fun assetTexture(props: TextureProps, delayLoading: Boolean = true): Texture {

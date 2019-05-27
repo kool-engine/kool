@@ -381,7 +381,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
         delVert.edges.clear()
         delVert.delete()
 
-        if (!fraction.isFuzzyZero()) {
+        if (fraction != 0f) {
             val newX = srcVert.x + (delVert.x - srcVert.x) * fraction
             val newY = srcVert.y + (delVert.y - srcVert.y) * fraction
             val newZ = srcVert.z + (delVert.z - srcVert.z) * fraction

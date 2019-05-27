@@ -23,6 +23,10 @@ fun defaultPropsRepeated(id: String): TextureProps {
     return TextureProps(id, GL_LINEAR, GL_REPEAT)
 }
 
+fun defaultPropsClamped(id: String): TextureProps {
+    return TextureProps(id, GL_LINEAR, GL_REPEAT)
+}
+
 data class TextureProps(
         val id: String,
         val minFilter: Int,

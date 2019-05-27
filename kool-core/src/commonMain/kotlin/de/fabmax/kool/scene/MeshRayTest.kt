@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.gl.GL_LINES
 import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.*
 import kotlin.math.sqrt
 
@@ -51,8 +52,8 @@ interface MeshRayTest {
                     }
                 }
                 GL_LINES -> object : MeshRayTest {
-                    var edgeTree: KdTree<Edge>? = null
-                    val rayTraverser = NearestEdgeToRayTraverser<Edge>()
+                    var edgeTree: KdTree<Edge<Vec3f>>? = null
+                    val rayTraverser = NearestEdgeToRayTraverser<Edge<Vec3f>>()
 
                     override fun onMeshDataChanged(mesh: Mesh) {
                         edgeTree = edgeKdTree(Edge.getEdges(mesh.meshData))

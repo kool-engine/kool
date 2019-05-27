@@ -117,6 +117,7 @@ private class ModelInstance(val movementSpeed: Float) : InstancedMesh.Instance(M
 
     init {
         applyTransform()
+        radius = 5f
     }
 
     override fun putInstanceAttributes(target: Float32Buffer) {

@@ -2,20 +2,16 @@ package de.fabmax.kool.modules.mesh
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.scene.MeshRayTest
-import de.fabmax.kool.util.Edge
-import de.fabmax.kool.util.SpatialTree
-import de.fabmax.kool.util.SpatialTreeTraverser
-import de.fabmax.kool.util.logD
-import kotlin.math.max
+import de.fabmax.kool.util.*
+import kotlin.math.min
 import kotlin.math.sqrt
 
 class MeshCutXy(val meshData: MeshData) {
 
-    private val ocTreeHandler = OcTreeEdgeHandler(meshData)
-    private val halfEdgeMesh = HalfEdgeMesh(meshData, ocTreeHandler)
+    val ocTreeHandler = OcTreeEdgeHandler(meshData)
+    val halfEdgeMesh = HalfEdgeMesh(meshData, ocTreeHandler)
 
-    private val eps: Float = max(1f, meshData.bounds.min.distance(meshData.bounds.max)) / 1e4f
+    private val eps: Float = meshData.bounds.min.distance(meshData.bounds.max) * FUZZY_EQ_F
     var shortEdgeThresh: Float
 
     init {
@@ -23,86 +19,108 @@ class MeshCutXy(val meshData: MeshData) {
         for (ed in ocTreeHandler) {
             edLen += ed.computeLength()
         }
-        shortEdgeThresh = (edLen.toFloat() / ocTreeHandler.numEdges) * 0.2f
+        shortEdgeThresh = (edLen.toFloat() / ocTreeHandler.numEdges) * 0.05f
     }
 
     fun cutXy(cutPoly: List<Vec2f>) {
-        val splitVerts = splitIntersectingEdges(cutPoly)
+        val cutEdges = mutableListOf<Edge<Vec3f>>()
+        for (i in 0 until cutPoly.size) {
+            val j = (i + 1) % cutPoly.size
+            cutEdges += Edge(Vec3f(cutPoly[i].x, cutPoly[i].y, 0f), Vec3f(cutPoly[j].x, cutPoly[j].y, 0f))
+        }
+
+        insertVertices(cutPoly)
+        splitIntersectingEdges(cutEdges)
         deleteInside(cutPoly)
-        fitInsideEdges(cutPoly)
-        collapseShortEdges(splitVerts)
+
+        // fixme: lots of errors if we do this, apparently edge octree is not correctly updated...
+        //collapseShortEdges(cutPoly)
 
         halfEdgeMesh.rebuild(generateNormals = false, generateTangents = false)
     }
 
-    private fun collapseShortEdges(splitVerts: Set<HalfEdgeMesh.HalfEdgeVertex>) {
-        val cutBorders = halfEdgeMesh.selectBorders().filter { it.any { e -> e.from in splitVerts } }
-        var collapseCnt = 0
+    private fun insertVertices(cutPoly: List<Vec2f>) {
+        val trav = CoveringTriXyTrav()
+        cutPoly.forEach { pt ->
+            trav.setup(pt)
+            trav.traverse(ocTreeHandler.edgeTree)
+            trav.result.forEach { ed ->
+                if (!ed.from.distXy(pt).isFuzzyZero(eps) && !ed.to.distXy(pt).isFuzzyZero(eps)) {
+                    val edTo = ed.to
+                    val insertedA = ed.split(pt.computeSplitFraction(ed))
 
-        cutBorders.forEach { border ->
-            border.forEach { edge ->
-                val edgeLen = edge.computeLength()
+                    // find inserted edge inside of original triangle
+                    val newEdge = insertedA.edges.first { it.to === edTo }.next.next
 
-                if (edgeLen.isFuzzyZero(eps)) {
-                    edge.collapse(0f)
-                    collapseCnt++
+                    val f = newEdge.from.distXy(pt) / newEdge.to.distXy(newEdge.from)
+                    newEdge.split(f).apply { updatePosition(pt.x, pt.y, z) }
 
-                } else if (edge.computeLength() < shortEdgeThresh) {
-                    val nextEdge = edge.to.edges.find { it.opp == null }
-                    val e0 = MutableVec2f(edge.to.x - edge.from.x, edge.to.y - edge.from.y).norm()
-                    val e1 = MutableVec2f()
-                    if (nextEdge != null) {
-                        e1.set(nextEdge.to.x - nextEdge.from.x, nextEdge.to.y - nextEdge.from.y).norm()
-                    }
-                    if (isFuzzyEqual(e0 * e1, 1f)) {
-                        edge.collapse(0f)
-                        collapseCnt++
+                } else {
+                    if (ed.from.distXy(pt).isFuzzyZero(eps)) {
+                        ed.from.updatePosition(pt.x, pt.y, ed.from.z)
                     } else {
-                        val prevEdge = edge.from.edges.find { it.next.next.opp == null }?.next?.next
-                        e1.set(Vec2f.ZERO)
-                        if (prevEdge != null) {
-                            e1.set(prevEdge.to.x - prevEdge.from.x, prevEdge.to.y - prevEdge.from.y).norm()
-                        }
-                        if (isFuzzyEqual(e0 * e1, 1f)) {
-                            edge.collapse(1f)
-                            collapseCnt++
-                        }
+                        ed.to.updatePosition(pt.x, pt.y, ed.to.z)
                     }
                 }
             }
         }
-        logD { "Collapsed $collapseCnt short edges" }
+        ocTreeHandler.edgeTree
+    }
+
+    private fun Vec2f.computeSplitFraction(edge: HalfEdgeMesh.HalfEdge): Float {
+        val pt = Vec3f(x, y, 0f)
+        val a = Vec3f(edge.from.x, edge.from.y, 0f)
+        val b = Vec3f(edge.to.x, edge.to.y, 0f)
+        val r = pt.nearestPointOnEdge(a, b, MutableVec3f())
+        return r.distance(a) / b.distance(a)
     }
 
     /**
      * split any mesh edge that intersects cutPoly
      */
-    private fun splitIntersectingEdges(cutPoly: List<Vec2f>): Set<HalfEdgeMesh.HalfEdgeVertex> {
-        val cutEdges = mutableListOf<Edge>()
-        for (i in 0 until cutPoly.size) {
-            val i1 = (i + 1) % cutPoly.size
-            cutEdges += Edge(Vec3f(cutPoly[i].x, cutPoly[i].y, 0f), Vec3f(cutPoly[i1].x, cutPoly[i1].y, 0f))
-        }
-
-        val splitVerts = mutableSetOf<HalfEdgeMesh.HalfEdgeVertex>()
+    private fun splitIntersectingEdges(cutEdges: List<Edge<Vec3f>>) {
         val intersectionTrav = EdgeXyIntersectionTrav()
-        for (i in 0..100) {
-            var anyCut = false
-            for (cutEdge in cutEdges) {
+        for (cutEdge in cutEdges) {
+            for (pass in 1..2) {
                 intersectionTrav.setup(cutEdge).traverse(ocTreeHandler.edgeTree)
-                val ce = intersectionTrav.result ?: continue
-                val sv = ce.split(0.5f)
-                sv.updatePosition(intersectionTrav.intersectionPt)
-                splitVerts += sv
-                anyCut = true
-            }
-
-            if (!anyCut || i == 100) {
-                logD { "Edge splitting done, took $i iterations" }
-                break
+                if (intersectionTrav.splitEdges.isNotEmpty()) {
+                    //println("[$pass] split ${intersectionTrav.result.size} edges...")
+                    intersectionTrav.splitEdges.forEach { (splitEd, _) ->
+                        val splitPos = MutableVec3f()
+                        if (computeXyEdgeIntersectionPoint(cutEdge.pt0, cutEdge.pt1, splitEd.from, splitEd.to, splitPos)) {
+                            val f = splitPos.distXy(splitEd.from) / splitEd.to.distXy(splitEd.from)
+                            splitEd.split(f).apply { updatePosition(splitPos.x, splitPos.y, z) }
+                        }
+                    }
+                }
             }
         }
-        return splitVerts
+    }
+
+    private fun collapseShortEdges(cutEdges: List<Edge<Vec3f>>) {
+        var collapseCnt = 0
+        val edgeTrav = ShortEdgeOnEdgeTraverser()
+        for (cutEdge in cutEdges) {
+            var remove = true
+            while (remove) {
+                remove = false
+                edgeTrav.setup(cutEdge).traverse(ocTreeHandler.edgeTree)
+                if (edgeTrav.result.isNotEmpty()) {
+                    val ed = edgeTrav.result[0]
+                    val minFromD = min(ed.from.distance(cutEdge.pt0), ed.from.distance(cutEdge.pt1))
+                    val minToD = min(ed.to.distance(cutEdge.pt0), ed.to.distance(cutEdge.pt1))
+                    if (minFromD < minToD) {
+                        ed.collapse(0f)
+                    } else {
+                        ed.collapse(1f)
+                    }
+                    collapseCnt++
+                    remove = true
+                }
+            }
+        }
+
+        logD { "Collapsed $collapseCnt short edges" }
     }
 
     /**
@@ -110,168 +128,129 @@ class MeshCutXy(val meshData: MeshData) {
      */
     private fun deleteInside(cutPoly: List<Vec2f>) {
         var delCnt = 0
-        ocTreeHandler.filter {
-            isInPolygon(MutableVec3f().add(it.from).add(it.next.from).add(it.next.next.from).scale(1/3f), cutPoly)
+        ocTreeHandler.distinctTriangleEdges().filter {
+            isInPolygon(MutableVec3f(it.from).add(it.next.from).add(it.next.next.from).scale(1/3f), cutPoly)
         }.forEach {
-            if (!it.isDeleted) {
-                it.deleteTriangle()
-                delCnt++
-            }
+            it.deleteTriangle()
+            delCnt++
         }
-        logD { "Deleted $delCnt inner triangles" }
+        //logD { "Deleted $delCnt inner triangles" }
     }
 
-    /**
-     * split remaining edges inside cutPoly and fit them to it
-     */
-    private fun fitInsideEdges(cutPoly: List<Vec2f>) {
-        val movedVerts = mutableSetOf<Int>()
-        val heightTest = MeshRayTest.geometryTest(halfEdgeMesh).apply { onMeshDataChanged(halfEdgeMesh) }
-        val rayTest = RayTest().apply {
-            ray.origin.set(0f, 0f, halfEdgeMesh.bounds.max.z + 1)
-            ray.direction.set(0f, 0f, -1f)
-        }
-        val insideTrav = EdgeInsidePolyTrav(cutPoly)
-        for (n in 0..100) {
-            var anyCut = false
-            for (i in cutPoly.indices) {
-                val pt = cutPoly[i]
-                val prev = cutPoly[if (i == 0) cutPoly.lastIndex else i - 1]
-                val next = cutPoly[(i + 1) % cutPoly.size]
-                insideTrav.setup(pt, prev, next).traverse(ocTreeHandler.edgeTree)
+    private inner class CoveringTriXyTrav : KNearestTraverser<HalfEdgeMesh.HalfEdge>() {
+        val triPts = MutableList(3) { MutableVec2f() }
 
-                val ce = insideTrav.closestEdge
-                if (ce != null) {
-                    rayTest.clear()
-                    rayTest.ray.origin.apply {
-                        x = insideTrav.splitPos.x
-                        y = insideTrav.splitPos.y
-                    }
-                    heightTest.rayTest(rayTest)
-                    if (rayTest.isHit) {
-                        insideTrav.splitPos.z = rayTest.hitPosition.z
-                    }
-                    //println("${insideTrav.minDist}, ${Vec3f(pt.x, pt.y, 0f).distXy(insideTrav.splitPos)}, ${insideTrav.splitPos}")
-
-                    val mvVertex = when {
-                        insideTrav.splitPos.distXy(ce.from).isFuzzyZero(eps) -> ce.from
-                        insideTrav.splitPos.distXy(ce.to).isFuzzyZero(eps) -> ce.to
-                        else -> ce.split(0.5f)
-                    }
-                    if (mvVertex.index !in movedVerts) {
-                        mvVertex.updatePosition(insideTrav.splitPos)
-                        movedVerts += mvVertex.index
-                        anyCut = true
-                    }
+        init {
+            pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3f): Float {
+                    val pt = Vec3f(point.x, point.y, node.bounds.center.z)
+                    return node.bounds.pointDistanceSqr(pt)
                 }
-            }
-            if (!anyCut || n == 100) {
-                logD { "Inside fitting done, took $n iterations" }
-                break
-            }
-        }
-    }
 
-    private inner class EdgeInsidePolyTrav(val cutPoly: List<Vec2f>) : SpatialTreeTraverser<HalfEdgeMesh.HalfEdge>() {
-        val point = MutableVec3f()
-        var radiusSqr = 0f
-
-        var minDist = 0f
-        var closestEdge: HalfEdgeMesh.HalfEdge? = null
-        val splitPos = MutableVec3f()
-
-        fun setup(point: Vec2f, next: Vec2f, prev: Vec2f): EdgeInsidePolyTrav {
-            this.point.set(point.x, point.y, 0f)
-            radiusSqr = max(point.sqrDistance(next), point.sqrDistance(prev))
-            minDist = Float.MAX_VALUE
-            closestEdge = null
-            splitPos.set(this.point)
-            return this
-        }
-
-        override fun traverseChildren(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node) {
-            for (c in node.children) {
-                point.z = c.bounds.center.z
-                if (c.bounds.pointDistanceSqr(point) < radiusSqr) {
-                    traverseNode(tree, c)
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3f): Float {
+                    triPts[0].set(item.from.x, item.from.y)
+                    triPts[1].set(item.next.from.x, item.next.from.y)
+                    triPts[2].set(item.next.next.from.x, item.next.next.from.y)
+                    return if (isInPolygon(center, triPts)) {
+                        return point.distanceToEdge(Vec3f(item.from.x, item.from.y, 0f), Vec3f(item.to.x, item.to.y, 0f))
+                    } else {
+                        Float.MAX_VALUE
+                    }
                 }
             }
         }
 
-        override fun traverseLeaf(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, leaf: SpatialTree<HalfEdgeMesh.HalfEdge>.Node) {
-            val splitPt = MutableVec3f()
+        fun setup(pt: Vec2f) {
+            super.setup(Vec3f(pt.x, pt.y, 0f), 1, 1e6f)
+        }
+    }
 
-            for (i in leaf.nodeRange) {
-                val e = leaf.items[i]
-                if (e.opp == null) {
-                    val c = MutableVec3f(e.to).subtract(e.from).scale(0.5f).add(e.from)
-                    if (isInPolygon(c, cutPoly)) {
-                        point.nearestPointOnEdge(e.from, e.to, splitPt)
-                        val splitD = splitPt.distXy(point)
-                        if (!splitPt.isFuzzyEqual(e.from, eps) && !splitPt.isFuzzyEqual(e.to, eps) && splitD < minDist && !splitD.isFuzzyZero(eps)) {
-                            minDist = splitD
-                            closestEdge = e
-                            splitPos.z = splitPt.z
+    private inner class ShortEdgeOnEdgeTraverser : InRadiusTraverser<HalfEdgeMesh.HalfEdge>() {
+        lateinit var edge: Edge<Vec3f>
+
+        fun setup(edge: Edge<Vec3f>): ShortEdgeOnEdgeTraverser {
+            super.setup(MutableVec3f(edge.pt0).add(edge.pt1).scale(0.5f), edge.length / 2)
+            this.edge = edge
+
+            pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3f): Float {
+                    val pt = Vec3f(point.x, point.y, node.bounds.center.z)
+                    return super.nodeSqrDistanceToPoint(node, pt)
+                }
+
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3f): Float {
+                    if (/*item.opp == null &&*/ item.computeLength() < shortEdgeThresh) {
+                        val d0 = Vec3f(item.from.x, item.from.y, 0f).distanceToEdge(edge.pt0, edge.pt1)
+                        val d1 = Vec3f(item.to.x, item.to.y, 0f).distanceToEdge(edge.pt0, edge.pt1)
+                        if (d0.isFuzzyZero(eps) && d1.isFuzzyZero(eps) && !isFuzzyEqual(item.computeLength(), edge.length, eps)) {
+                            return 0f
                         }
                     }
+                    return Float.MAX_VALUE
                 }
             }
+            return this
         }
     }
 
-    private inner class EdgeXyIntersectionTrav : SpatialTreeTraverser<HalfEdgeMesh.HalfEdge>() {
-        private lateinit var edge: Edge
-        private val edgeRayXy = Ray()
-        private var edgeLenXy = 0f
-        var result: HalfEdgeMesh.HalfEdge? = null
+    private inner class EdgeXyIntersectionTrav : InRadiusTraverser<HalfEdgeMesh.HalfEdge>() {
+        lateinit var edge: Edge<Vec3f>
         val intersectionPt = MutableVec3f()
 
-        fun setup(edge: Edge): EdgeXyIntersectionTrav {
+        val splitEdges = mutableListOf<Pair<HalfEdgeMesh.HalfEdge, Vec3f>>()
+
+        override fun traverse(tree: SpatialTree<HalfEdgeMesh.HalfEdge>) {
+            splitEdges.clear()
+            super.traverse(tree)
+            splitEdges.sortBy { it.second.distance(edge.pt0) }
+        }
+
+        fun setup(edge: Edge<Vec3f>): EdgeXyIntersectionTrav {
+            super.setup(MutableVec3f(edge.pt0).add(edge.pt1).scale(0.5f), edge.length / 2)
             this.edge = edge
-            result = null
-            intersectionPt.set(Vec3f.ZERO)
 
-            edgeRayXy.origin.set(edge.pt0).apply { z = 0f }
-            edgeRayXy.direction.set(edge.pt1).subtract(edge.pt0).apply { z = 0f }
-            edgeLenXy = edgeRayXy.direction.length()
-            edgeRayXy.direction.norm()
+            pointDistance = object : PointDistance<HalfEdgeMesh.HalfEdge> {
+                override fun nodeSqrDistanceToPoint(node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node, point: Vec3f): Float {
+                    val pt = Vec3f(point.x, point.y, node.bounds.center.z)
+                    return super.nodeSqrDistanceToPoint(node, pt)
+                }
 
+                override fun itemSqrDistanceToPoint(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, item: HalfEdgeMesh.HalfEdge, point: Vec3f): Float {
+                    return if (computeXyEdgeIntersectionPoint(edge.pt0, edge.pt1, item.from, item.to, intersectionPt)) {
+                        val d = intersectionPt.distXy(item.from) / item.to.distXy(item.from)
+
+                        if (isFuzzyEqual(d, 0f) || isFuzzyEqual(d, 1f)) {
+                            Float.MAX_VALUE
+                        } else {
+                            val v = MutableVec3f(item.to).subtract(item.from).scale(d).add(item.from)
+                            //delCenters += v
+                            splitEdges += item to v
+                            0f
+                        }
+                    } else {
+                        Float.MAX_VALUE
+                    }
+                }
+            }
             return this
         }
-
-        override fun traverseChildren(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, node: SpatialTree<HalfEdgeMesh.HalfEdge>.Node) {
-            node.children.forEach {
-                edgeRayXy.origin.z = it.bounds.center.z
-                if (result == null && sqrt(it.bounds.hitDistanceSqr(edgeRayXy)) < edgeLenXy) {
-                    traverseNode(tree, it)
-                }
-            }
-        }
-
-        override fun traverseLeaf(tree: SpatialTree<HalfEdgeMesh.HalfEdge>, leaf: SpatialTree<HalfEdgeMesh.HalfEdge>.Node) {
-            for (i in leaf.nodeRange) {
-                val item = leaf.items[i]
-                if (computeXyEdgeIntersectionPoint(edge.pt0, edge.pt1, item.from, item.to, intersectionPt) &&
-                        !intersectionPt.distXy(item.from).isFuzzyZero(eps) && !intersectionPt.distXy(item.to).isFuzzyZero(eps)) {
-                    result = item
-                    val f = intersectionPt.distXy(item.from) / item.to.distXy(item.from)
-                    intersectionPt.z = item.from.z + (item.to.z - item.from.z) * f
-                    break
-                }
-            }
-        }
-
     }
 
     companion object {
         private fun Vec3f.distXy(other: Vec3f): Float {
-            val dx = x - other.x
-            val dy = y - other.y
-            return sqrt(dx * dx + dy * dy)
+            val dx = x.toDouble() - other.x.toDouble()
+            val dy = y.toDouble() - other.y.toDouble()
+            return sqrt(dx * dx + dy * dy).toFloat()
         }
 
-        private fun isInPolygon(point: Vec3f, poly: List<Vec2f>): Boolean {
-            // based on: http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+        private fun Vec3f.distXy(other: Vec2f): Float {
+            val dx = x.toDouble() - other.x.toDouble()
+            val dy = y.toDouble() - other.y.toDouble()
+            return sqrt(dx*dx + dy*dy).toFloat()
+        }
+
+        fun isInPolygon(point: Vec3f, poly: List<Vec2f>): Boolean {
+            // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
             var i = 0
             var j = poly.size - 1
             var result = false
@@ -287,14 +266,14 @@ class MeshCutXy(val meshData: MeshData) {
 
         private fun computeXyLineIntersectionPoint(e11: Vec3f, e12: Vec3f, e21: Vec3f, e22: Vec3f, result: MutableVec3f): Boolean {
             // http://en.wikipedia.org/wiki/Line-line_intersection
-            val x1 = e11.x
-            val y1 = e11.y
-            val x2 = e12.x
-            val y2 = e12.y
-            val x3 = e21.x
-            val y3 = e21.y
-            val x4 = e22.x
-            val y4 = e22.y
+            val x1 = e11.x.toDouble()
+            val y1 = e11.y.toDouble()
+            val x2 = e12.x.toDouble()
+            val y2 = e12.y.toDouble()
+            val x3 = e21.x.toDouble()
+            val y3 = e21.y.toDouble()
+            val x4 = e22.x.toDouble()
+            val y4 = e22.y.toDouble()
 
             val denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
             if (!denom.isFuzzyZero()) {
@@ -303,7 +282,7 @@ class MeshCutXy(val meshData: MeshData) {
                 val b = x3 * y4 - y3 * x4
                 val x = (a * (x3 - x4) - b * (x1 - x2)) / denom
                 val y = (a * (y3 - y4) - b * (y1 - y2)) / denom
-                result.set(x, y, 0f)
+                result.set(x.toFloat(), y.toFloat(), 0f)
                 return true
             }
             return false

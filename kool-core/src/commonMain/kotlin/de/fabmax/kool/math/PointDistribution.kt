@@ -4,7 +4,7 @@ abstract class PointDistribution {
 
     abstract fun nextPoint(): Vec3f
 
-    fun nextPoints(n: Int): List<Vec3f> {
+    open fun nextPoints(n: Int): List<Vec3f> {
         val points = mutableListOf<Vec3f>()
         for (i in 1..n) {
             points += nextPoint()

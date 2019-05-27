@@ -50,7 +50,7 @@ class ShaderProps {
     var isInstanced = false
 
     //var shadowMap: ShadowMap? = null
-    var shadowDepthOffset = 0.0005
+    var shadowDepthOffset = 0.0005f
 
     var isReceivingShadows = false
     var isNormalMapped = false
