@@ -513,18 +513,22 @@ open class GlslGenerator {
                 }
 
                 // cosine of angle between surface normal and light direction
-                text.append("float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n")
+                if (!shaderProps.isTwoSidedLighting) {
+                    text.append("float cosTheta = clamp(dot(n, l), 0.0, 1.0);\n")
+                } else {
+                    text.append("float cosTheta = abs(dot(n, l));\n")
+                }
                 // direction in which the light is reflected
                 text.append("vec3 r = reflect(-l, n);\n")
                 // cosine of the angle between the eye vector and the reflect vector
                 text.append("float cosAlpha = clamp(dot(e, r), 0.0, 1.0);\n")
 
-                text.append("vec3 materialAmbientColor = $fsOutBody.rgb * 0.42;\n")
+                text.append("vec3 materialAmbientColor = $fsOutBody.rgb * ${shaderProps.ambientColorBrightness};\n")
                 text.append("vec3 materialDiffuseColor = $fsOutBody.rgb * $U_LIGHT_COLOR * cosTheta;\n")
                 text.append("vec3 materialSpecularColor = $U_LIGHT_COLOR * $U_SPECULAR_INTENSITY * pow(cosAlpha, $U_SHININESS) * $fsOutBody.a * shadowFactor;\n")
 
             } else if (shaderProps.lightModel == LightModel.GOURAUD_LIGHTING) {
-                text.append("vec3 materialAmbientColor = $fsOutBody.rgb * vec3(0.42);\n")
+                text.append("vec3 materialAmbientColor = $fsOutBody.rgb * ${shaderProps.ambientColorBrightness};\n")
                 text.append("vec3 materialDiffuseColor = $fsOutBody.rgb * $V_DIFFUSE_LIGHT_COLOR;\n")
                 text.append("vec3 materialSpecularColor = $V_SPECULAR_LIGHT_COLOR * $fsOutBody.a * shadowFactor;\n")
             }

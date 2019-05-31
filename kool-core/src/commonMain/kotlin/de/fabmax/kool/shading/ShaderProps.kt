@@ -41,6 +41,7 @@ class ShaderProps {
     var isTextureColor = false
     var isStaticColor = true
 
+    var isTwoSidedLighting = false
     var isAlpha = false
     var isSaturation = false
     var isDiscardTranslucent = false
@@ -57,6 +58,7 @@ class ShaderProps {
     var isEnvironmentMapped = false
 
     // init values for newly created BasicShader
+    var ambientColorBrightness = 0.42f
     var shininess = 20.0f
     var specularIntensity = 0.75f
     var reflectivity = 0.5f

@@ -135,18 +135,8 @@ class TreeGenerator(val distribution: PointDistribution,
         treeNodes.forEach { it.buildTrunkMesh(target) }
     }
 
-    fun buildLeafMesh(target: MeshBuilder, lightDir: Vec3f) {
-        val oldModFun = target.vertexModFun
-        val ld = lightDir.norm(MutableVec3f())
-
-        // set vertex mod fun to ensure that all normals point in light direction
-        target.vertexModFun = {
-            if (normal * ld < 0) {
-                normal.scale(-1f)
-            }
-        }
+    fun buildLeafMesh(target: MeshBuilder) {
         treeNodes.forEach { it.buildLeafMesh(target) }
-        target.vertexModFun = oldModFun
     }
 
     private fun populateAttractionPoints() {

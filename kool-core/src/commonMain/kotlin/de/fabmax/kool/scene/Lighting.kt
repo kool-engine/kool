@@ -35,7 +35,7 @@ class Lighting(val scene: Scene) {
         shadowMap = ctx.renderingHints.shadowPreset.createShadowMap(ctx.renderingHints)
     }
 
-    fun useCustomShadowMap(customShadowMap: ShadowMap) {
+    fun useCustomShadowMap(customShadowMap: ShadowMap?) {
         isDefaultShadowMap = false
         shadowMap = customShadowMap
     }

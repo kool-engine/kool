@@ -48,6 +48,8 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
             field = value.clamp(minZoom, maxZoom)
         }
 
+    var isKeepingStandardTransform = false
+
     var invertRotX = false
     var invertRotY = false
 
@@ -115,8 +117,10 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
     fun updateTransform() {
         translationBounds?.clampToBounds(translation)
 
-        mouseTransform.invert(mouseTransformInv)
-        mul(mouseTransformInv)
+        if (isKeepingStandardTransform) {
+            mouseTransform.invert(mouseTransformInv)
+            mul(mouseTransformInv)
+        }
 
         val z = zoomAnimator.actual
         val vr = vertRotAnimator.actual
@@ -126,7 +130,12 @@ open class SphericalInputTransform(name: String? = null) : TransformGroup(name),
         mouseTransform.scale(z, z, z)
         mouseTransform.rotate(vr, verticalAxis)
         mouseTransform.rotate(hr, horizontalAxis)
-        mul(mouseTransform)
+
+        if (isKeepingStandardTransform) {
+            mul(mouseTransform)
+        } else {
+            set(mouseTransform)
+        }
 
     }
 

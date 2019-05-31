@@ -1087,6 +1087,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.headingAnimator_0 = $receiver;
     this.color_0 = MutableColor_init();
     this.applyTransform_0();
+    this.radius = 5.0;
   }
   ModelInstance.prototype.putInstanceAttributes_he122g$ = function (target) {
     InstancedMesh$Instance.prototype.putInstanceAttributes_he122g$.call(this, target);
@@ -3560,14 +3561,17 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     scenes.add_11rb$(element);
     return scenes;
   }
-  function TreeGenerator(distribution, baseTop, baseBot) {
+  function TreeGenerator(distribution, baseTop, baseBot, random) {
     if (baseTop === void 0)
       baseTop = new Vec3f(0.0, 1.0, 0.0);
     if (baseBot === void 0)
       baseBot = Vec3f.Companion.ZERO;
+    if (random === void 0)
+      random = math.defaultRandomInstance;
     this.distribution = distribution;
     this.baseTop = baseTop;
     this.baseBot = baseBot;
+    this.random = random;
     this.radiusOfInfluence = 1.0;
     this.growDistance = 0.15;
     this.killDistance = 1.5;
@@ -3576,7 +3580,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.attractionPointsTree_0 = pointKdTree(emptyList());
     this.attractionPointTrav_0 = new InRadiusTraverser();
     this.treeNodes_0 = ArrayList_init();
-    this.root_0 = new TreeGenerator$TreeNode();
+    this.root_0 = new TreeGenerator$TreeNode(this);
   }
   Object.defineProperty(TreeGenerator.prototype, 'actualKillDistance', {
     get: function () {
@@ -3586,7 +3590,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   TreeGenerator.prototype.seedTree = function () {
     this.populateAttractionPoints_0();
     this.treeNodes_0.clear();
-    this.root_0 = new TreeGenerator$TreeNode();
+    this.root_0 = new TreeGenerator$TreeNode(this);
     this.root_0.set_czzhiu$(this.baseBot);
     var $receiver = this.treeNodes_0;
     var element = this.root_0;
@@ -3594,7 +3598,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     var d = this.baseTop.subtract_2gj7b4$(this.baseBot, MutableVec3f_init_0()).norm().scale_mx4ult$(this.growDistance);
     var prev = this.root_0;
     while (prev.distance_czzhiu$(this.baseTop) > this.growDistance) {
-      var newNd = new TreeGenerator$TreeNode();
+      var newNd = new TreeGenerator$TreeNode(this);
       newNd.set_czzhiu$(prev).add_czzhiu$(d);
       prev.addChild_15eqn9$(newNd);
       this.treeNodes_0.add_11rb$(newNd);
@@ -3663,7 +3667,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
           growDir.plusAssign_czzhiu$(attracPt_1.subtract_2gj7b4$(node_0, MutableVec3f_init_0()).norm());
         }
         growDir.norm().scale_mx4ult$(this.growDistance);
-        var newNode = new TreeGenerator$TreeNode();
+        var newNode = new TreeGenerator$TreeNode(this);
         newNode.set_czzhiu$(node_0).add_czzhiu$(growDir);
         if (!node_0.containsChild_15eqn9$(newNode)) {
           node_0.addChild_15eqn9$(newNode);
@@ -3689,9 +3693,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function ($receiver) {
       if ($receiver.parent != null) {
         $receiver.plusAssign_czzhiu$(MutableVec3f_init(ensureNotNull($receiver.parent)).subtract_czzhiu$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
-        $receiver.x = $receiver.x + randomF(-0.01, 0.01);
-        $receiver.y = $receiver.y + randomF(-0.01, 0.01);
-        $receiver.z = $receiver.z + randomF(-0.01, 0.01);
+        $receiver.x = $receiver.x + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
+        $receiver.y = $receiver.y + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
+        $receiver.z = $receiver.z + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
       }
       $receiver.computeTrunkRadiusAndDepth();
       $receiver.computeCircumPoints();
@@ -3786,7 +3790,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     simpleName: 'AttractionPoint',
     interfaces: [MutableVec3f]
   };
-  function TreeGenerator$TreeNode() {
+  function TreeGenerator$TreeNode($outer) {
+    this.$outer = $outer;
     MutableVec3f_init_0(this);
     this.children = ArrayList_init();
     this.parent = null;
@@ -4011,12 +4016,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       var len = n.length();
       n.norm();
       for (var i = 1; i <= 20; i++) {
+        this.$outer;
         target.transform.push();
-        var r = MutableVec3f_init(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + randomF(0.0, 0.15));
-        r.rotate_ad55pp$(randomF(0.0, 360.0), n);
-        var p = MutableVec3f_init(n).scale_mx4ult$(randomF(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
+        var this$TreeGenerator = this.$outer;
+        var r = MutableVec3f_init(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + this$TreeGenerator.random.randomF_dleff0$(0.0, 0.15));
+        r.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
+        var p = MutableVec3f_init(n).scale_mx4ult$(this$TreeGenerator.random.randomF_dleff0$(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
         target.translate_czzhiu$(p);
-        target.rotate_ad55pp$(randomF(0.0, 360.0), n);
+        target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
         var i0 = target.vertex_n440gp$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 0.0));
         var i1 = target.vertex_n440gp$(new Vec3f(0.0, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 1.0));
         var i2 = target.vertex_n440gp$(new Vec3f(0.1, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 1.0));
@@ -4051,14 +4058,15 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     this.e01_0 = MutableVec2f_init_0();
     this.e10_0 = MutableVec2f_init_0();
     this.e11_0 = MutableVec2f_init_0();
+    this.seedPts_0 = ArrayList_init();
     var tmp$;
     for (var j = 1; j <= 8; j++) {
       var spline = new BSplineVec2f(3);
       var n = 7;
       for (var i = 0; i <= n; i++) {
         var a = i / n * math_0.PI;
-        if (1 <= i && i <= (n - 1 | 0)) {
-          tmp$ = randomF(0.4, 0.6);
+        if (1 <= i && i < n) {
+          tmp$ = this.random_0.randomF_dleff0$(0.4, 0.6);
         }
          else {
           tmp$ = 0.5;
@@ -4081,7 +4089,16 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       }
       this.borders_0.add_11rb$(pts);
     }
+    this.seed_0();
   }
+  TreeTopPointDistribution.prototype.seed_0 = function () {
+    this.seedPts_0.clear();
+    for (var i = 1; i <= 10; i++) {
+      var $receiver = this.seedPts_0;
+      var element = this.nextPointInBounds_0();
+      $receiver.add_11rb$(element);
+    }
+  };
   TreeTopPointDistribution.prototype.drawBorders_acte6c$ = function (target) {
     var tmp$;
     tmp$ = this.borders_0;
@@ -4097,11 +4114,47 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       }
     }
   };
+  TreeTopPointDistribution.prototype.nextPoints_za3lpa$ = function (n) {
+    this.seed_0();
+    return PointDistribution.prototype.nextPoints_za3lpa$.call(this, n);
+  };
   TreeTopPointDistribution.prototype.nextPoint = function () {
+    var pt = {v: null};
+    loop_label: while (true) {
+      pt.v = this.nextPointInBounds_0();
+      var $receiver = this.seedPts_0;
+      var minBy$result;
+      minBy$break: do {
+        var iterator = $receiver.iterator();
+        if (!iterator.hasNext()) {
+          minBy$result = null;
+          break minBy$break;
+        }
+        var minElem = iterator.next();
+        var minValue = minElem.sqrDistance_czzhiu$(pt.v);
+        while (iterator.hasNext()) {
+          var e = iterator.next();
+          var v = e.sqrDistance_czzhiu$(pt.v);
+          if (Kotlin.compareTo(minValue, v) > 0) {
+            minElem = e;
+            minValue = v;
+          }
+        }
+        minBy$result = minElem;
+      }
+       while (false);
+      var d = ensureNotNull(minBy$result).distance_czzhiu$(pt.v);
+      if (d < this.random_0.randomF()) {
+        break loop_label;
+      }
+    }
+    return pt.v;
+  };
+  TreeTopPointDistribution.prototype.nextPointInBounds_0 = function () {
     var w = this.width * 0.5;
     var h = this.height * 0.5;
     while (true) {
-      this.tmpPt1_0.set_y2kzbl$(this.random_0.randomF_dleff0$(-w, w), this.centerY + this.random_0.randomF_dleff0$(-h, h), randomF(-w, w));
+      this.tmpPt1_0.set_y2kzbl$(this.random_0.randomF_dleff0$(-w, w), this.centerY + this.random_0.randomF_dleff0$(-h, h), this.random_0.randomF_dleff0$(-w, w));
       var x = this.tmpPt1_0.x * this.tmpPt1_0.x + this.tmpPt1_0.z * this.tmpPt1_0.z;
       var px = Math_0.sqrt(x);
       var py = this.tmpPt1_0.y;

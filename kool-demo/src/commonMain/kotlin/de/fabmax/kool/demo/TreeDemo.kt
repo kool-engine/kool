@@ -56,6 +56,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 isReceivingShadows = true
                 isNormalMapped = true
                 specularIntensity = 0.25f
+                ambientColorBrightness = 0.6f
 
                 val textureProps = TextureProps("tree_bark.png", GL_LINEAR, GL_REPEAT, 16)
                 val nrmMapProps = TextureProps("tree_bark_nrm.png", GL_LINEAR, GL_REPEAT, 16)
@@ -68,7 +69,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
         leafMesh = textureMesh {
             generator = {
                 timedMs({"Generated ${meshData.numIndices / 3} leaf triangles in"}) {
-                    treeGen.buildLeafMesh(this, lighting.primaryLight.direction)
+                    treeGen.buildLeafMesh(this)
                 }
             }
 
@@ -81,6 +82,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 isReceivingShadows = true
                 specularIntensity = 0.1f
                 isDiscardTranslucent = true
+                isTwoSidedLighting = true
                 texture = assetTexture("leaf.png")
             }
         }
@@ -120,7 +122,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             }
             val growDistVal = label("growDistVal") {
                 layoutSpec.setOrigin(dps(380f, true), dps(110f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
+                layoutSpec.setSize(dps(70f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = treeGen.growDistance.toString(2)
             }
@@ -142,7 +144,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             }
             val killDistVal = label("killDistVal") {
                 layoutSpec.setOrigin(dps(380f, true), dps(75f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
+                layoutSpec.setSize(dps(70f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = treeGen.killDistance.toString(2)
             }
@@ -164,7 +166,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             }
             val attractPtsVal = label("attractPtsVal") {
                 layoutSpec.setOrigin(dps(380f, true), dps(40f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
+                layoutSpec.setSize(dps(70f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = "${treeGen.numberOfAttractionPoints}"
             }
@@ -186,7 +188,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             }
             val infRadiusVal = label("killDistVal") {
                 layoutSpec.setOrigin(dps(380f, true), dps(5f, true), zero())
-                layoutSpec.setSize(dps(50f, true), dps(35f, true), full())
+                layoutSpec.setSize(dps(70f, true), dps(35f, true), full())
                 textAlignment = Gravity(Alignment.START, Alignment.CENTER)
                 text = treeGen.radiusOfInfluence.toString(2)
             }
@@ -224,7 +226,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                             clear()
                             val builder = MeshBuilder(this)
                             timedMs({"Generated ${numIndices / 3} leaf triangles in"}) {
-                                treeGen.buildLeafMesh(builder, scene?.lighting?.primaryLight?.direction ?: Vec3f.ZERO)
+                                treeGen.buildLeafMesh(builder)
                             }
                         }
                     }
