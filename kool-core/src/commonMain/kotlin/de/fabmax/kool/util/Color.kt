@@ -377,40 +377,44 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
             var g = 0f
             var b = 0f
             var a = 1f
-            when {
-                str.length == 3 -> {
-                    val r4 = str.substring(0, 1).toInt(16)
-                    val g4 = str.substring(1, 2).toInt(16)
-                    val b4 = str.substring(2, 3).toInt(16)
-                    r = (r4 or (r4 shl 4)) / 255f
-                    g = (g4 or (g4 shl 4)) / 255f
-                    b = (b4 or (b4 shl 4)) / 255f
+            try {
+                when {
+                    str.length == 3 -> {
+                        val r4 = str.substring(0, 1).toInt(16)
+                        val g4 = str.substring(1, 2).toInt(16)
+                        val b4 = str.substring(2, 3).toInt(16)
+                        r = (r4 or (r4 shl 4)) / 255f
+                        g = (g4 or (g4 shl 4)) / 255f
+                        b = (b4 or (b4 shl 4)) / 255f
 
-                }
-                str.length == 4 -> {
-                    val r4 = str.substring(0, 1).toInt(16)
-                    val g4 = str.substring(1, 2).toInt(16)
-                    val b4 = str.substring(2, 3).toInt(16)
-                    val a4 = str.substring(2, 3).toInt(16)
-                    r = (r4 or (r4 shl 4)) / 255f
-                    g = (g4 or (g4 shl 4)) / 255f
-                    b = (b4 or (b4 shl 4)) / 255f
-                    a = (a4 or (a4 shl 4)) / 255f
+                    }
+                    str.length == 4 -> {
+                        val r4 = str.substring(0, 1).toInt(16)
+                        val g4 = str.substring(1, 2).toInt(16)
+                        val b4 = str.substring(2, 3).toInt(16)
+                        val a4 = str.substring(2, 3).toInt(16)
+                        r = (r4 or (r4 shl 4)) / 255f
+                        g = (g4 or (g4 shl 4)) / 255f
+                        b = (b4 or (b4 shl 4)) / 255f
+                        a = (a4 or (a4 shl 4)) / 255f
 
+                    }
+                    str.length == 6 -> {
+                        // parse rgb
+                        r = str.substring(0, 2).toInt(16) / 255f
+                        g = str.substring(2, 4).toInt(16) / 255f
+                        b = str.substring(4, 6).toInt(16) / 255f
+                    }
+                    str.length == 8 -> {
+                        // parse rgba
+                        r = str.substring(0, 2).toInt(16) / 255f
+                        g = str.substring(2, 4).toInt(16) / 255f
+                        b = str.substring(4, 6).toInt(16) / 255f
+                        a = str.substring(6, 8).toInt(16) / 255f
+                    }
                 }
-                str.length == 6 -> {
-                    // parse rgb
-                    r = str.substring(0, 2).toInt(16) / 255f
-                    g = str.substring(2, 4).toInt(16) / 255f
-                    b = str.substring(4, 6).toInt(16) / 255f
-                }
-                str.length == 8 -> {
-                    // parse rgba
-                    r = str.substring(0, 2).toInt(16) / 255f
-                    g = str.substring(2, 4).toInt(16) / 255f
-                    b = str.substring(4, 6).toInt(16) / 255f
-                    a = str.substring(6, 8).toInt(16) / 255f
-                }
+            } catch (e: NumberFormatException) {
+                logE { "invalid color code: $hex, $e" }
             }
             return Color(r, g, b, a)
         }

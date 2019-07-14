@@ -38,6 +38,9 @@ fun norm(a: Vec3d): MutableVec3d = a.norm(MutableVec3d())
 fun cross(a: Vec3f, b: Vec3f): MutableVec3f = a.cross(b, MutableVec3f())
 fun cross(a: Vec3d, b: Vec3d): MutableVec3d = a.cross(b, MutableVec3d())
 
+fun Vec3f.xy(): Vec2f = Vec2f(x, y)
+fun MutableVec3f.xy(): MutableVec2f = MutableVec2f(x, y)
+
 private val slerpTmpAf = MutableVec4f()
 private val slerpTmpBf = MutableVec4f()
 private val slerpTmpCf = MutableVec4f()

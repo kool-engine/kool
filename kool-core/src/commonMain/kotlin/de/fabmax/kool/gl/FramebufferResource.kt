@@ -167,8 +167,12 @@ class FbDepthTexData(width: Int, height: Int) : TextureData() {
 
     override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
         // make sure correct filter method is set (GLES only supports GL_NEAREST for depth textures)
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, ctx.glCapabilities.depthFilterMethod)
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, ctx.glCapabilities.depthFilterMethod)
+        //glTexParameteri(target, GL_TEXTURE_MIN_FILTER, ctx.glCapabilities.depthFilterMethod)
+        //glTexParameteri(target, GL_TEXTURE_MAG_FILTER, ctx.glCapabilities.depthFilterMethod)
+
+        // linear filtering for depth texture doesn't make that much sense anyway...
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
         // sets up the depth attachment texture
         glTexImage2D(target, 0, ctx.glCapabilities.depthComponentIntFormat, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, null)

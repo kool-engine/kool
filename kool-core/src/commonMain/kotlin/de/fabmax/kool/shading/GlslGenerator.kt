@@ -54,6 +54,25 @@ open class GlslGenerator {
         const val L_FS_VERTEX_COLOR = "vertColor"
         const val L_FS_STATIC_COLOR = "staticColor"
         const val L_FS_REFLECTIVITY = "reflectivity"
+
+        private val shadowOffsets = listOf(
+                -0.9420f, -0.3990f,
+                +0.9456f, -0.7689f,
+                -0.0942f, -0.9294f,
+                +0.3450f, +0.2939f,
+                -0.9159f, +0.4577f,
+                -0.8154f, -0.8791f,
+                -0.3828f, +0.2768f,
+                +0.9748f, +0.7565f,
+                +0.4432f, -0.9751f,
+                +0.5374f, -0.4737f,
+                -0.2650f, -0.4189f,
+                +0.7920f, +0.1909f,
+                -0.2419f, +0.9971f,
+                -0.8141f, +0.9144f,
+                +0.1998f, +0.7864f,
+                +0.1438f, -0.1410f
+        )
     }
 
     interface GlslInjector {
@@ -415,20 +434,46 @@ open class GlslGenerator {
     private fun generateFragBodyCode(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
         val shadowMap = node.scene?.lighting?.shadowMap
         if (shaderProps.isReceivingShadows && shadowMap != null) {
-            fun addSample(x: Int, y: Int) {
-                text.append("shadowMapDepth = $texSampler(shadowTex, projPos.xy + vec2(float($x) * off, float($y) * off)).x;\n")
-                text.append("factor += step(projPos.z + accLvl, shadowMapDepth);\n")
-            }
+            text.append("float calcShadowFactor(sampler2D shadowTex, vec3 projPos, float pxSz, float accLvl) {\n")
 
-            text.append("float calcShadowFactor(sampler2D shadowTex, vec3 projPos, float off, float accLvl) {\n")
+            fun addSample(fac: String, x: Float, y: Float) {
+                text.append("shadowMapDepth = $texSampler(shadowTex, projPos.xy + vec2($x * pxSz, $y * pxSz)).x;\n")
+                text.append("$fac += step(projPos.z + accLvl, shadowMapDepth);\n")
+            }
             text.append("  float factor = 0.0;\n")
             text.append("  float shadowMapDepth = 0.0;\n")
-            for (y in -1..1) {
-                for (x in -1..1) {
-                    addSample(x, y)
-                }
+            for (i in 0..8) {
+                addSample("factor", shadowOffsets[i*2], shadowOffsets[i*2+1])
             }
-            text.append("  return factor / 9.0;\n")
+            text.append("  factor /= 9.0;\n")
+            text.append("  return factor;\n")
+
+//            fun quadSample(fac: String, tx: String, ty: String) {
+//                for (i in 0..3) {
+//                    val ox = shadowOffsets[i*2]
+//                    val oy = shadowOffsets[i*2+1]
+//                    text.append("d = $texSampler(shadowTex, vec2($tx + $ox * pxSz, $ty + $oy * pxSz)).x;\n")
+//                    text.append("$fac += step(projPos.z + accLvl, d);\n")
+//                }
+//                text.append("$fac /= 4.0;\n")
+//            }
+//            text.append("float su = 0.5 * pxSz;\n")
+//            text.append("float tx0 = float(int(projPos.x / su)) * su;\n")
+//            text.append("float ty0 = float(int(projPos.y / su)) * su;\n")
+//            text.append("float tx1 = float(int(projPos.x / su) + 1) * su;\n")
+//            text.append("float ty1 = float(int(projPos.y / su) + 1) * su;\n")
+//            text.append("float wx = (tx1 - projPos.x) / su;\n")
+//            text.append("float wy = (ty1 - projPos.y) / su;\n")
+//            text.append("float d = 0.0;\n")
+//            text.append("float s00 = 0.0;\n")
+//            text.append("float s01 = 0.0;\n")
+//            text.append("float s10 = 0.0;\n")
+//            text.append("float s11 = 0.0;\n")
+//            quadSample("s00", "tx0", "ty0")
+//            quadSample("s01", "tx0", "ty1")
+//            quadSample("s10", "tx1", "ty0")
+//            quadSample("s11", "tx1", "ty1")
+//            text.append("return (s00 * wy + s01 * (1.0-wy)) * wx + (s10 * wy + s11 * (1.0-wy)) * (1.0-wx);\n")
 
             text.append("}\n")
         }
@@ -490,8 +535,8 @@ open class GlslGenerator {
             for (i in 0 until shadowMap.numMaps) {
                 text.append("if ($V_POSITION_CLIPSPACE_Z <= $U_CLIP_SPACE_FAR_Z[$i]) {\n")
                 text.append("  vec3 projPos = $V_POSITION_LIGHTSPACE[$i].xyz / $V_POSITION_LIGHTSPACE[$i].w;\n")
-                text.append("  float off = 1.0 / float($U_SHADOW_TEX_SZ[$i]);\n")
-                text.append("  shadowFactor = calcShadowFactor(${U_SHADOW_TEX}_$i, projPos, off, ${shaderProps.shadowDepthOffset});\n")
+                text.append("  float pxSz = 1.0 / float($U_SHADOW_TEX_SZ[$i]);\n")
+                text.append("  shadowFactor = calcShadowFactor(${U_SHADOW_TEX}_$i, projPos, pxSz, ${shaderProps.shadowDepthOffset});\n")
                 text.append("}\n")
                 if (i < shadowMap.numMaps - 1) {
                     text.append("else ")

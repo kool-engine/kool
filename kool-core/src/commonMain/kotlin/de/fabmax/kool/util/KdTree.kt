@@ -87,8 +87,8 @@ class KdTree<T: Any>(items: List<T>, itemAdapter: ItemAdapter<T>, bucketSz: Int 
 
             } else {
                 return when {
-                    children[0].bounds.isIncluding(itemAdapter.getMinX(item), itemAdapter.getMinY(item), itemAdapter.getMinZ(item)) -> children[0].contains(item)
-                    children[1].bounds.isIncluding(itemAdapter.getMinX(item), itemAdapter.getMinY(item), itemAdapter.getMinZ(item)) -> children[1].contains(item)
+                    children[0].bounds.contains(itemAdapter.getMinX(item), itemAdapter.getMinY(item), itemAdapter.getMinZ(item)) -> children[0].contains(item)
+                    children[1].bounds.contains(itemAdapter.getMinX(item), itemAdapter.getMinY(item), itemAdapter.getMinZ(item)) -> children[1].contains(item)
                     else -> false
                 }
             }

@@ -1,4 +1,4 @@
-define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], function (_, Kotlin, $module$kool, $module$kotlinx_serialization_runtime_js) {
+define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serialization-runtime'], function (_, Kotlin, $module$kool, $module$kotlinx_serialization_kotlinx_serialization_runtime) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var Unit = Kotlin.kotlin.Unit;
@@ -55,7 +55,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var Globe = $module$kool.de.fabmax.kool.modules.globe.Globe;
   var DoublePrecisionRoot = $module$kool.de.fabmax.kool.scene.doubleprec.DoublePrecisionRoot;
   var GlobeCamHandler = $module$kool.de.fabmax.kool.modules.globe.GlobeCamHandler;
-  var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
+  var ProtoBuf = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.protobuf.ProtoBuf;
   var ElevationMapMetaHierarchy = $module$kool.de.fabmax.kool.modules.globe.elevation.ElevationMapMetaHierarchy;
   var ElevationMapHierarchy = $module$kool.de.fabmax.kool.modules.globe.elevation.ElevationMapHierarchy;
   var Font = $module$kool.de.fabmax.kool.util.Font;
@@ -65,7 +65,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   var toString_0 = $module$kool.de.fabmax.kool.toString_j6vyb1$;
   var equals = Kotlin.equals;
   var getKClass = Kotlin.getKClass;
-  var getOrDefault = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.context.getOrDefault_6qy6ah$;
+  var getContextualOrDefault = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.modules.getContextualOrDefault_6za9kt$;
   var util = $module$kool.de.fabmax.kool.util;
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   var Math_0 = Math;
@@ -734,7 +734,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     return function (data) {
       if (data != null) {
         var $receiver = ProtoBuf.Companion;
-        var metaHierarchy = $receiver.load_dntfbn$(getOrDefault($receiver.context, getKClass(ElevationMapMetaHierarchy)), data);
+        var metaHierarchy = $receiver.load_dntfbn$(getContextualOrDefault($receiver.context, getKClass(ElevationMapMetaHierarchy)), data);
         closure$globe.elevationMapProvider = new ElevationMapHierarchy(closure$elevationUrl, metaHierarchy, closure$ctx.assetMgr);
         closure$globe.meshDetailLevel = 6;
       }
@@ -3220,6 +3220,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.isReceivingShadows = true;
     $receiver.isNormalMapped = true;
     $receiver.specularIntensity = 0.25;
+    $receiver.ambientColorBrightness = 0.6;
     var textureProps = TextureProps_init_0('tree_bark.png', 9729, 10497, 16);
     var nrmMapProps = TextureProps_init_0('tree_bark_nrm.png', 9729, 10497, 16);
     $receiver.texture = assetTexture(textureProps);
@@ -3233,12 +3234,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_1(closure$treeGen, this$) {
+  function treeScene$lambda$lambda$lambda_1(closure$treeGen) {
     return function ($receiver) {
       var level;
       level = Log$Level.INFO;
       var t = now();
-      closure$treeGen.buildLeafMesh_d7s9uf$($receiver, this$.lighting.primaryLight.direction);
+      closure$treeGen.buildLeafMesh_84rojv$($receiver);
       var ret = Unit;
       var $this = util.Log;
       var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
@@ -3254,12 +3255,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.isReceivingShadows = true;
     $receiver.specularIntensity = 0.1;
     $receiver.isDiscardTranslucent = true;
+    $receiver.isTwoSidedLighting = true;
     $receiver.texture = assetTexture_0('leaf.png');
     return Unit;
   }
-  function treeScene$lambda$lambda_0(closure$treeGen, this$) {
+  function treeScene$lambda$lambda_0(closure$treeGen) {
     return function ($receiver) {
-      $receiver.generator = treeScene$lambda$lambda$lambda_1(closure$treeGen, this$);
+      $receiver.generator = treeScene$lambda$lambda$lambda_1(closure$treeGen);
       $receiver.cullMethod = CullMethod.NO_CULLING;
       $receiver.shader = basicShader(void 0, treeScene$lambda$lambda$lambda_2);
       return Unit;
@@ -3296,7 +3298,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function treeScene$lambda$lambda$lambda_6(closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(110.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       $receiver.text = toString(closure$treeGen.growDistance, 2);
       return Unit;
@@ -3329,7 +3331,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function treeScene$lambda$lambda$lambda_9(closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(75.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       $receiver.text = toString(closure$treeGen.killDistance, 2);
       return Unit;
@@ -3362,7 +3364,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function treeScene$lambda$lambda$lambda_12(closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(40.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       $receiver.text = closure$treeGen.numberOfAttractionPoints.toString();
       return Unit;
@@ -3395,7 +3397,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
   function treeScene$lambda$lambda$lambda_15(closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(5.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(50.0, true), dps(35.0, true), full());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(35.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
       $receiver.text = toString(closure$treeGen.radiusOfInfluence, 2);
       return Unit;
@@ -3457,8 +3459,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
         var level_0;
         level_0 = Log$Level.INFO;
         var t_0 = now();
-        var tmp$_1, tmp$_2, tmp$_3, tmp$_4;
-        closure$treeGen_1.buildLeafMesh_d7s9uf$(builder_0, (tmp$_4 = (tmp$_3 = (tmp$_2 = (tmp$_1 = tmp$_0.scene) != null ? tmp$_1.lighting : null) != null ? tmp$_2.primaryLight : null) != null ? tmp$_3.direction : null) != null ? tmp$_4 : Vec3f.Companion.ZERO);
+        closure$treeGen_1.buildLeafMesh_84rojv$(builder_0);
         var ret_0 = Unit;
         var $this_2 = util.Log;
         var tag_0 = Kotlin.getKClassFromExpression($this_1).simpleName;
@@ -3551,7 +3552,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     $receiver.lighting.useDefaultShadowMap_aemszp$(ctx);
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40));
     trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen));
-    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen, $receiver));
+    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
     $receiver.unaryPlus_uv0sim$(sphericalInputTransform(void 0, treeScene$lambda$lambda_1($receiver)));
@@ -3721,25 +3722,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
       element.buildTrunkMesh_84rojv$(target);
     }
   };
-  function TreeGenerator$buildLeafMesh$lambda(closure$ld) {
-    return function ($receiver) {
-      if ($receiver.normal.times_czzhiu$(closure$ld) < 0) {
-        $receiver.normal.scale_mx4ult$(-1.0);
-      }
-      return Unit;
-    };
-  }
-  TreeGenerator.prototype.buildLeafMesh_d7s9uf$ = function (target, lightDir) {
-    var oldModFun = target.vertexModFun;
-    var ld = lightDir.norm_5s4mqq$(MutableVec3f_init_0());
-    target.vertexModFun = TreeGenerator$buildLeafMesh$lambda(ld);
+  TreeGenerator.prototype.buildLeafMesh_84rojv$ = function (target) {
     var tmp$;
     tmp$ = this.treeNodes_0.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       element.buildLeafMesh_84rojv$(target);
     }
-    target.vertexModFun = oldModFun;
   };
   TreeGenerator.prototype.populateAttractionPoints_0 = function () {
     var tmp$;
@@ -3866,8 +3855,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
             break maxBy$break;
           }
           var maxElem = iterator.next();
+          if (!iterator.hasNext()) {
+            maxBy$result = maxElem;
+            break maxBy$break;
+          }
           var maxValue = maxElem.branchDepth;
-          while (iterator.hasNext()) {
+          do {
             var e = iterator.next();
             var v = e.branchDepth;
             if (Kotlin.compareTo(maxValue, v) < 0) {
@@ -3875,6 +3868,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
               maxValue = v;
             }
           }
+           while (iterator.hasNext());
           maxBy$result = maxElem;
         }
          while (false);
@@ -4131,8 +4125,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
           break minBy$break;
         }
         var minElem = iterator.next();
+        if (!iterator.hasNext()) {
+          minBy$result = minElem;
+          break minBy$break;
+        }
         var minValue = minElem.sqrDistance_czzhiu$(pt.v);
-        while (iterator.hasNext()) {
+        do {
           var e = iterator.next();
           var v = e.sqrDistance_czzhiu$(pt.v);
           if (Kotlin.compareTo(minValue, v) > 0) {
@@ -4140,6 +4138,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
             minValue = v;
           }
         }
+         while (iterator.hasNext());
         minBy$result = minElem;
       }
        while (false);
@@ -4374,7 +4373,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-runtime-js'], functi
     get: Demo$Companion_getInstance
   });
   package$demo.Demo = Demo;
-  $$importsForInline$$['kotlinx-serialization-runtime-js'] = $module$kotlinx_serialization_runtime_js;
+  $$importsForInline$$['kotlinx-serialization-kotlinx-serialization-runtime'] = $module$kotlinx_serialization_kotlinx_serialization_runtime;
   package$demo.globeScene_aemszp$ = globeScene;
   package$demo.GlobeUi = GlobeUi;
   package$demo.makeGroundGrid_24o109$ = makeGroundGrid;

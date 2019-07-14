@@ -299,9 +299,10 @@ open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
         }
     }
 
-    override fun setup(ray: Ray): NearestToRayTraverser<T> {
+    override fun setup(ray: Ray): TriangleHitTraverser<T> {
         hitPoint.set(Vec3f.ZERO)
-        return super.setup(ray)
+        super.setup(ray)
+        return this
     }
 
     override fun traverse(tree: SpatialTree<T>) {

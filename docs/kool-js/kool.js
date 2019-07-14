@@ -1,4 +1,4 @@
-define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-runtime-js'], function (_, Kotlin, $module$kotlinx_coroutines_core, $module$kotlinx_serialization_runtime_js) {
+define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-kotlinx-serialization-runtime'], function (_, Kotlin, $module$kotlinx_coroutines_core, $module$kotlinx_serialization_kotlinx_serialization_runtime) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
@@ -55,14 +55,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var round = Kotlin.kotlin.math.round_14dthe$;
   var rangeTo = Kotlin.kotlin.ranges.rangeTo_38ydlf$;
   var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
-  var SerialClassDescImpl = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.SerialClassDescImpl;
-  var SerialId = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.SerialId;
-  var UnknownFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.UnknownFieldException;
-  var internal = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal;
-  var GeneratedSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.GeneratedSerializer;
-  var MissingFieldException = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.MissingFieldException;
-  var ArrayListSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.ArrayListSerializer;
-  var LinkedHashMapSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.LinkedHashMapSerializer;
+  var SerialClassDescImpl = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.SerialClassDescImpl;
+  var SerialId = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.SerialId;
+  var UnknownFieldException = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.UnknownFieldException;
+  var internal = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal;
+  var GeneratedSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.GeneratedSerializer;
+  var MissingFieldException = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.MissingFieldException;
+  var ArrayListSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.ArrayListSerializer;
+  var LinkedHashMapSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.LinkedHashMapSerializer;
   var NotImplementedError = Kotlin.kotlin.NotImplementedError;
   var sortWith = Kotlin.kotlin.collections.sortWith_nqfjgj$;
   var Comparator = Kotlin.kotlin.Comparator;
@@ -119,6 +119,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var contains = Kotlin.kotlin.text.contains_li3zpu$;
   var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
   var toInt_0 = Kotlin.kotlin.text.toInt_6ic1pp$;
+  var NumberFormatException = Kotlin.kotlin.NumberFormatException;
   var first_0 = Kotlin.kotlin.collections.first_us0mfu$;
   var last_0 = Kotlin.kotlin.collections.last_us0mfu$;
   var sortWith_0 = Kotlin.kotlin.collections.sortWith_iwcb0m$;
@@ -128,10 +129,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
   var MutableIterator = Kotlin.kotlin.collections.MutableIterator;
   var Collection = Kotlin.kotlin.collections.Collection;
-  var ProtoBuf = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.protobuf.ProtoBuf;
+  var ProtoBuf = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.protobuf.ProtoBuf;
   var getKClass = Kotlin.getKClass;
-  var getOrDefault = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.context.getOrDefault_6qy6ah$;
-  var EnumSerializer = $module$kotlinx_serialization_runtime_js.kotlinx.serialization.internal.EnumSerializer;
+  var getContextualOrDefault = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.modules.getContextualOrDefault_6za9kt$;
+  var EnumSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.EnumSerializer;
   var emptyMap = Kotlin.kotlin.collections.emptyMap_q3lmfv$;
   var removeAll_0 = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   var MutableMap$MutableEntry = Kotlin.kotlin.collections.MutableMap.MutableEntry;
@@ -573,7 +574,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
   });
   AssetManager.prototype.close = function () {
-    this.job.cancel();
+    this.job.cancel_m4sck1$();
   };
   function Coroutine$AssetManager$loader$lambda$lambda$lambda(closure$requested_0, closure$assetRefs_0, awaited_0, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -801,7 +802,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
             continue;
           case 3:
             if (!this.result_0) {
-              this.state_0 = 8;
+              this.state_0 = 7;
               continue;
             }
              else {
@@ -810,29 +811,23 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
             }
 
           case 4:
+            var ref = this.local$tmp$.next();
             this.state_0 = 5;
-            this.result_0 = this.local$tmp$.next(this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 5:
-            var ref = this.result_0;
-            this.state_0 = 6;
             this.result_0 = this.local$this$AssetManager.loadAsset_lpb790$_0(ref, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
-          case 6:
+          case 5:
             tmp$ = this.result_0;
-            this.state_0 = 7;
+            this.state_0 = 6;
             this.result_0 = this.local$closure$loadedAssets.send_11rb$(tmp$, this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
-          case 7:
+          case 6:
             this.state_0 = 2;
             continue;
-          case 8:
+          case 7:
             return Unit;
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
@@ -1999,8 +1994,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
   });
   FbDepthTexData.prototype.onLoad_2jsdat$ = function (texture, target, ctx) {
-    glTexParameteri(target, 10241, ctx.glCapabilities.depthFilterMethod);
-    glTexParameteri(target, 10240, ctx.glCapabilities.depthFilterMethod);
+    glTexParameteri(target, 10241, 9728);
+    glTexParameteri(target, 10240, 9728);
     glTexImage2D(target, 0, ctx.glCapabilities.depthComponentIntFormat, this.width, this.height, 0, 6402, 5125, null);
   };
   function FbDepthTexData$Companion() {
@@ -8269,6 +8264,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   function cross_0(a, b) {
     return a.cross_vgki2o$(b, MutableVec3d_init());
   }
+  function xy($receiver) {
+    return new Vec2f($receiver.x, $receiver.y);
+  }
+  function xy_0($receiver) {
+    return new MutableVec2f($receiver.x, $receiver.y);
+  }
   var slerpTmpAf;
   var slerpTmpBf;
   var slerpTmpCf;
@@ -14264,7 +14265,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.insertLeaf_0(root, leaf);
   };
   Dbvt.prototype.update_xxqp3s$ = function (leaf, volume, velocity, margin) {
-    if (leaf.volume.isIncluding_ea4od8$(volume)) {
+    if (leaf.volume.contains_ea4od8$(volume)) {
       return false;
     }
     volume.expand_czzhiu$(this.tmpVec_0.set_y2kzbl$(margin, margin, margin)).signedExpand_czzhiu$(velocity);
@@ -14272,7 +14273,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     return true;
   };
   Dbvt.prototype.update_z4mtab$ = function (leaf, volume, velocity) {
-    if (leaf.volume.isIncluding_ea4od8$(volume)) {
+    if (leaf.volume.contains_ea4od8$(volume)) {
       return false;
     }
     volume.signedExpand_czzhiu$(velocity);
@@ -14280,7 +14281,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     return true;
   };
   Dbvt.prototype.update_ioke9y$ = function (leaf, volume, margin) {
-    if (leaf.volume.isIncluding_ea4od8$(volume)) {
+    if (leaf.volume.contains_ea4od8$(volume)) {
       return false;
     }
     volume.expand_czzhiu$(this.tmpVec_0.set_y2kzbl$(margin, margin, margin));
@@ -14338,7 +14339,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         leaf.parent = node.v;
         tmp$_0.right = leaf;
         while (prev != null) {
-          if (!prev.volume.isIncluding_ea4od8$(node.v.volume)) {
+          if (!prev.volume.contains_ea4od8$(node.v.volume)) {
             prev.volume.setMerged_hnxjto$(ensureNotNull(prev.left).volume, ensureNotNull(prev.right).volume);
           }
            else {
@@ -24176,6 +24177,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     this.L_FS_VERTEX_COLOR = 'vertColor';
     this.L_FS_STATIC_COLOR = 'staticColor';
     this.L_FS_REFLECTIVITY = 'reflectivity';
+    this.shadowOffsets_0 = listOf([-0.942, -0.399, +0.9456, -0.7689, -0.0942, -0.9294, +0.345, +0.2939, -0.9159, +0.4577, -0.8154, -0.8791, -0.3828, +0.2768, +0.9748, +0.7565, +0.4432, -0.9751, +0.5374, -0.4737, -0.265, -0.4189, +0.792, +0.1909, -0.2419, +0.9971, -0.8141, +0.9144, +0.1998, +0.7864, +0.1438, -0.141]);
   }
   GlslGenerator$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -24576,25 +24578,24 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
   };
   function GlslGenerator$generateFragBodyCode$addSample(closure$text, this$GlslGenerator) {
-    return function (x, y) {
-      closure$text.append_gw00v9$('shadowMapDepth = ' + this$GlslGenerator.texSampler + '(shadowTex, projPos.xy + vec2(float(' + x + ') * off, float(' + y + ') * off)).x;' + '\n');
-      closure$text.append_gw00v9$('factor += step(projPos.z + accLvl, shadowMapDepth);\n');
+    return function (fac, x, y) {
+      closure$text.append_gw00v9$('shadowMapDepth = ' + this$GlslGenerator.texSampler + '(shadowTex, projPos.xy + vec2(' + x + ' * pxSz, ' + y + ' * pxSz)).x;' + '\n');
+      closure$text.append_gw00v9$(fac + ' += step(projPos.z + accLvl, shadowMapDepth);' + '\n');
     };
   }
   GlslGenerator.prototype.generateFragBodyCode_y9i40m$_0 = function (shaderProps, node, text, ctx) {
     var tmp$, tmp$_0, tmp$_1;
     var shadowMap = (tmp$_0 = (tmp$ = node.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.shadowMap : null;
     if (shaderProps.isReceivingShadows && shadowMap != null) {
+      text.append_gw00v9$('float calcShadowFactor(sampler2D shadowTex, vec3 projPos, float pxSz, float accLvl) {\n');
       var addSample = GlslGenerator$generateFragBodyCode$addSample(text, this);
-      text.append_gw00v9$('float calcShadowFactor(sampler2D shadowTex, vec3 projPos, float off, float accLvl) {\n');
       text.append_gw00v9$('  float factor = 0.0;\n');
       text.append_gw00v9$('  float shadowMapDepth = 0.0;\n');
-      for (var y = -1; y <= 1; y++) {
-        for (var x = -1; x <= 1; x++) {
-          addSample(x, y);
-        }
+      for (var i = 0; i <= 8; i++) {
+        addSample('factor', GlslGenerator$Companion_getInstance().shadowOffsets_0.get_za3lpa$(i * 2 | 0), GlslGenerator$Companion_getInstance().shadowOffsets_0.get_za3lpa$((i * 2 | 0) + 1 | 0));
       }
-      text.append_gw00v9$('  return factor / 9.0;\n');
+      text.append_gw00v9$('  factor /= 9.0;\n');
+      text.append_gw00v9$('  return factor;\n');
       text.append_gw00v9$('}\n');
     }
     if (shaderProps.isNormalMapped) {
@@ -24651,13 +24652,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
     if (shaderProps.isReceivingShadows && shadowMap != null) {
       tmp$_1 = shadowMap.numMaps;
-      for (var i = 0; i < tmp$_1; i++) {
-        text.append_gw00v9$('if (' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ' <= ' + GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z + '[' + i + ']) {' + '\n');
-        text.append_gw00v9$('  vec3 projPos = ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '].xyz / ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i + '].w;' + '\n');
-        text.append_gw00v9$('  float off = 1.0 / float(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ + '[' + i + ']);' + '\n');
-        text.append_gw00v9$('  shadowFactor = calcShadowFactor(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i + ', projPos, off, ' + shaderProps.shadowDepthOffset + ');' + '\n');
+      for (var i_0 = 0; i_0 < tmp$_1; i_0++) {
+        text.append_gw00v9$('if (' + GlslGenerator$Companion_getInstance().V_POSITION_CLIPSPACE_Z + ' <= ' + GlslGenerator$Companion_getInstance().U_CLIP_SPACE_FAR_Z + '[' + i_0 + ']) {' + '\n');
+        text.append_gw00v9$('  vec3 projPos = ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i_0 + '].xyz / ' + GlslGenerator$Companion_getInstance().V_POSITION_LIGHTSPACE + '[' + i_0 + '].w;' + '\n');
+        text.append_gw00v9$('  float pxSz = 1.0 / float(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX_SZ + '[' + i_0 + ']);' + '\n');
+        text.append_gw00v9$('  shadowFactor = calcShadowFactor(' + GlslGenerator$Companion_getInstance().U_SHADOW_TEX + '_' + i_0 + ', projPos, pxSz, ' + shaderProps.shadowDepthOffset + ');' + '\n');
         text.append_gw00v9$('}\n');
-        if (i < (shadowMap.numMaps - 1 | 0)) {
+        if (i_0 < (shadowMap.numMaps - 1 | 0)) {
           text.append_gw00v9$('else ');
         }
       }
@@ -26872,67 +26873,42 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     return this;
   };
   BoundingBox.prototype.setMerged_hnxjto$ = function (aabb1, aabb2) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10;
-    tmp$_0 = this.mutMin_0;
-    if (aabb1.min.x < aabb2.min.x) {
-      tmp$ = aabb1.min.x;
-    }
-     else {
-      tmp$ = aabb2.min.x;
-    }
-    tmp$_0.x = tmp$;
-    tmp$_2 = this.mutMin_0;
-    if (aabb1.min.y < aabb2.min.y) {
-      tmp$_1 = aabb1.min.y;
-    }
-     else {
-      tmp$_1 = aabb2.min.y;
-    }
-    tmp$_2.y = tmp$_1;
-    tmp$_4 = this.mutMin_0;
-    if (aabb1.min.z < aabb2.min.z) {
-      tmp$_3 = aabb1.min.z;
-    }
-     else {
-      tmp$_3 = aabb2.min.z;
-    }
-    tmp$_4.z = tmp$_3;
-    tmp$_6 = this.mutMax_0;
-    if (aabb1.max.x > aabb2.max.x) {
-      tmp$_5 = aabb1.max.x;
-    }
-     else {
-      tmp$_5 = aabb2.max.x;
-    }
-    tmp$_6.x = tmp$_5;
-    tmp$_8 = this.mutMax_0;
-    if (aabb1.max.y > aabb2.max.y) {
-      tmp$_7 = aabb1.max.y;
-    }
-     else {
-      tmp$_7 = aabb2.max.y;
-    }
-    tmp$_8.y = tmp$_7;
-    tmp$_10 = this.mutMax_0;
-    if (aabb1.max.z > aabb2.max.z) {
-      tmp$_9 = aabb1.max.z;
-    }
-     else {
-      tmp$_9 = aabb2.max.z;
-    }
-    tmp$_10.z = tmp$_9;
+    var tmp$ = this.mutMin_0;
+    var a = aabb1.min.x;
+    var b = aabb2.min.x;
+    tmp$.x = Math_0.min(a, b);
+    var tmp$_0 = this.mutMin_0;
+    var a_0 = aabb1.min.y;
+    var b_0 = aabb2.min.y;
+    tmp$_0.y = Math_0.min(a_0, b_0);
+    var tmp$_1 = this.mutMin_0;
+    var a_1 = aabb1.min.z;
+    var b_1 = aabb2.min.z;
+    tmp$_1.z = Math_0.min(a_1, b_1);
+    var tmp$_2 = this.mutMax_0;
+    var a_2 = aabb1.max.x;
+    var b_2 = aabb2.max.x;
+    tmp$_2.x = Math_0.max(a_2, b_2);
+    var tmp$_3 = this.mutMax_0;
+    var a_3 = aabb1.max.y;
+    var b_3 = aabb2.max.y;
+    tmp$_3.y = Math_0.max(a_3, b_3);
+    var tmp$_4 = this.mutMax_0;
+    var a_4 = aabb1.max.z;
+    var b_4 = aabb2.max.z;
+    tmp$_4.z = Math_0.max(a_4, b_4);
     this.isEmpty = false;
     this.updateSizeAndCenter_0();
     return this;
   };
-  BoundingBox.prototype.isIncluding_czzhiu$ = function (point) {
+  BoundingBox.prototype.contains_czzhiu$ = function (point) {
     return point.x >= this.min.x && point.x <= this.max.x && point.y >= this.min.y && point.y <= this.max.y && point.z >= this.min.z && point.z <= this.max.z;
   };
-  BoundingBox.prototype.isIncluding_y2kzbl$ = function (x, y, z) {
+  BoundingBox.prototype.contains_y2kzbl$ = function (x, y, z) {
     return x >= this.min.x && x <= this.max.x && y >= this.min.y && y <= this.max.y && z >= this.min.z && z <= this.max.z;
   };
-  BoundingBox.prototype.isIncluding_ea4od8$ = function (aabb) {
-    return this.isIncluding_czzhiu$(aabb.min) && this.isIncluding_czzhiu$(aabb.max);
+  BoundingBox.prototype.contains_ea4od8$ = function (aabb) {
+    return this.contains_czzhiu$(aabb.min) && this.contains_czzhiu$(aabb.max);
   };
   BoundingBox.prototype.isIntersecting_ea4od8$ = function (aabb) {
     return this.min.x <= aabb.max.x && this.max.x >= aabb.min.x && this.min.y <= aabb.max.y && this.max.y >= aabb.min.y && this.min.z <= aabb.max.z && this.max.z >= aabb.min.z;
@@ -26986,7 +26962,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     return Math_0.sqrt(x);
   };
   BoundingBox.prototype.pointDistanceSqr_czzhiu$ = function (pt) {
-    if (this.isIncluding_czzhiu$(pt)) {
+    if (this.contains_czzhiu$(pt)) {
       return 0.0;
     }
     var x = 0.0;
@@ -27034,7 +27010,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     if (this.isEmpty) {
       return kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     }
-    if (this.isIncluding_czzhiu$(ray.origin)) {
+    if (this.contains_czzhiu$(ray.origin)) {
       return 0.0;
     }
     var div = 1.0 / ray.direction.x;
@@ -27636,34 +27612,48 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     var g = 0.0;
     var b = 0.0;
     var a = 1.0;
-    if (str.length === 3) {
-      var r4 = toInt_0(str.substring(0, 1), 16);
-      var g4 = toInt_0(str.substring(1, 2), 16);
-      var b4 = toInt_0(str.substring(2, 3), 16);
-      r = (r4 | r4 << 4) / 255.0;
-      g = (g4 | g4 << 4) / 255.0;
-      b = (b4 | b4 << 4) / 255.0;
+    try {
+      if (str.length === 3) {
+        var r4 = toInt_0(str.substring(0, 1), 16);
+        var g4 = toInt_0(str.substring(1, 2), 16);
+        var b4 = toInt_0(str.substring(2, 3), 16);
+        r = (r4 | r4 << 4) / 255.0;
+        g = (g4 | g4 << 4) / 255.0;
+        b = (b4 | b4 << 4) / 255.0;
+      }
+       else if (str.length === 4) {
+        var r4_0 = toInt_0(str.substring(0, 1), 16);
+        var g4_0 = toInt_0(str.substring(1, 2), 16);
+        var b4_0 = toInt_0(str.substring(2, 3), 16);
+        var a4 = toInt_0(str.substring(2, 3), 16);
+        r = (r4_0 | r4_0 << 4) / 255.0;
+        g = (g4_0 | g4_0 << 4) / 255.0;
+        b = (b4_0 | b4_0 << 4) / 255.0;
+        a = (a4 | a4 << 4) / 255.0;
+      }
+       else if (str.length === 6) {
+        r = toInt_0(str.substring(0, 2), 16) / 255.0;
+        g = toInt_0(str.substring(2, 4), 16) / 255.0;
+        b = toInt_0(str.substring(4, 6), 16) / 255.0;
+      }
+       else if (str.length === 8) {
+        r = toInt_0(str.substring(0, 2), 16) / 255.0;
+        g = toInt_0(str.substring(2, 4), 16) / 255.0;
+        b = toInt_0(str.substring(4, 6), 16) / 255.0;
+        a = toInt_0(str.substring(6, 8), 16) / 255.0;
+      }
     }
-     else if (str.length === 4) {
-      var r4_0 = toInt_0(str.substring(0, 1), 16);
-      var g4_0 = toInt_0(str.substring(1, 2), 16);
-      var b4_0 = toInt_0(str.substring(2, 3), 16);
-      var a4 = toInt_0(str.substring(2, 3), 16);
-      r = (r4_0 | r4_0 << 4) / 255.0;
-      g = (g4_0 | g4_0 << 4) / 255.0;
-      b = (b4_0 | b4_0 << 4) / 255.0;
-      a = (a4 | a4 << 4) / 255.0;
-    }
-     else if (str.length === 6) {
-      r = toInt_0(str.substring(0, 2), 16) / 255.0;
-      g = toInt_0(str.substring(2, 4), 16) / 255.0;
-      b = toInt_0(str.substring(4, 6), 16) / 255.0;
-    }
-     else if (str.length === 8) {
-      r = toInt_0(str.substring(0, 2), 16) / 255.0;
-      g = toInt_0(str.substring(2, 4), 16) / 255.0;
-      b = toInt_0(str.substring(4, 6), 16) / 255.0;
-      a = toInt_0(str.substring(6, 8), 16) / 255.0;
+     catch (e) {
+      if (Kotlin.isType(e, NumberFormatException)) {
+        var $this = package$util.Log;
+        var level = Log$Level.ERROR;
+        var tag = Kotlin.getKClassFromExpression(this).simpleName;
+        if (level.level >= $this.level.level) {
+          $this.printer(level, tag, 'invalid color code: ' + hex + ', ' + e);
+        }
+      }
+       else
+        throw e;
     }
     return new Color(r, g, b, a);
   };
@@ -29512,9 +29502,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
       return false;
     }
      else {
-      if (this.children.get_za3lpa$(0).bounds.isIncluding_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
+      if (this.children.get_za3lpa$(0).bounds.contains_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
         tmp$_3 = this.children.get_za3lpa$(0).contains_uargzz$(item);
-      else if (this.children.get_za3lpa$(1).bounds.isIncluding_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
+      else if (this.children.get_za3lpa$(1).bounds.contains_y2kzbl$(this.$outer.itemAdapter.getMinX_trkh7z$(item), this.$outer.itemAdapter.getMinY_trkh7z$(item), this.$outer.itemAdapter.getMinZ_trkh7z$(item)))
         tmp$_3 = this.children.get_za3lpa$(1).contains_uargzz$(item);
       else
         tmp$_3 = false;
@@ -30859,7 +30849,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
         this.translate_y2kzbl$(0.0, -props.font.lineSpace, 0.0);
         advanced.v = 0.0;
       }
-      var metrics = props.font.charMap.get_11rb$(c);
+      var metrics = props.font.charMap.get_11rb$(toBoxedChar(c));
       if (metrics != null) {
         var $receiver = this.rectProps.defaults();
         $receiver.origin.set_y2kzbl$(advanced.v - metrics.xOffset, metrics.yBaseline - metrics.height, 0.0);
@@ -31365,7 +31355,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     }
   });
   OcTree.prototype.add_11rb$ = function (element) {
-    if (!this.root.nodeBounds.isIncluding_y2kzbl$(this.itemAdapter.getCenterX_trkh7z$(element), this.itemAdapter.getCenterY_trkh7z$(element), this.itemAdapter.getCenterZ_trkh7z$(element))) {
+    if (!this.root.nodeBounds.contains_y2kzbl$(this.itemAdapter.getCenterX_trkh7z$(element), this.itemAdapter.getCenterY_trkh7z$(element), this.itemAdapter.getCenterZ_trkh7z$(element))) {
       var $this = package$util.Log;
       var level = Log$Level.ERROR;
       var tag = Kotlin.getKClassFromExpression(this).simpleName;
@@ -33711,7 +33701,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   }
   ModelData$Companion.prototype.load_fqrh44$ = function (data) {
     var $receiver = ProtoBuf.Companion;
-    var model = $receiver.load_dntfbn$(getOrDefault($receiver.context, getKClass(ModelData)), data);
+    var model = $receiver.load_dntfbn$(getContextualOrDefault($receiver.context, getKClass(ModelData)), data);
     if (model.version !== 2) {
       var $this = package$util.Log;
       var level = Log$Level.WARN;
@@ -35705,7 +35695,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   }
   function SpatialTree(itemAdapter) {
     this.itemAdapter = itemAdapter;
-    this.candidatesPool = new AutoRecycler(void 0, SpatialTree$candidatesPool$lambda);
   }
   SpatialTree.prototype.drawNodeBounds_acte6c$ = function (lineMesh) {
     this.root.drawNodeBounds_acte6c$(lineMesh);
@@ -35735,9 +35724,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     simpleName: 'Node',
     interfaces: []
   };
-  function SpatialTree$candidatesPool$lambda() {
-    return ArrayList_init_0();
-  }
   SpatialTree.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'SpatialTree',
@@ -36263,7 +36249,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   });
   TriangleHitTraverser.prototype.setup_nvyeur$ = function (ray) {
     this.hitPoint.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
-    return NearestToRayTraverser.prototype.setup_nvyeur$.call(this, ray);
+    NearestToRayTraverser.prototype.setup_nvyeur$.call(this, ray);
+    return this;
   };
   TriangleHitTraverser.prototype.traverse_m6hlto$ = function (tree) {
     NearestToRayTraverser.prototype.traverse_m6hlto$.call(this, tree);
@@ -40449,6 +40436,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   package$math.norm_czzhiw$ = norm_2;
   package$math.cross_4lfkt4$ = cross;
   package$math.cross_ymn0x0$ = cross_0;
+  package$math.xy_n748o5$ = xy;
+  package$math.xy_xvcky9$ = xy_0;
   package$math.slerp_m26pjg$ = slerp;
   package$math.slerp_nr5s3x$ = slerp_0;
   package$kool.MemoryManager = MemoryManager;
@@ -40487,6 +40476,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(ElevationMapMeta, '$serializer', {
     get: ElevationMapMeta$$serializer_getInstance
   });
+  package$elevation.ElevationMapMeta_init_xz4r7n$ = ElevationMapMeta_init;
   package$elevation.ElevationMapMeta = ElevationMapMeta;
   Object.defineProperty(ElevationMapMetaHierarchy, 'Companion', {
     get: ElevationMapMetaHierarchy$Companion_getInstance
@@ -40494,6 +40484,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(ElevationMapMetaHierarchy, '$serializer', {
     get: ElevationMapMetaHierarchy$$serializer_getInstance
   });
+  package$elevation.ElevationMapMetaHierarchy_init_jfa9i3$ = ElevationMapMetaHierarchy_init;
   package$elevation.ElevationMapMetaHierarchy = ElevationMapMetaHierarchy;
   package$elevation.loadElevationMap_jn660e$ = loadElevationMap;
   package$elevation.ElevationMapHierarchy = ElevationMapHierarchy;
@@ -41115,6 +41106,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
     get: AnimationData$$serializer_getInstance
   });
   var package$serialization = package$util.serialization || (package$util.serialization = {});
+  package$serialization.AnimationData_init_14elwv$ = AnimationData_init;
   package$serialization.AnimationData = AnimationData;
   Object.defineProperty(NodeAnimationData, 'Companion', {
     get: NodeAnimationData$Companion_getInstance
@@ -41122,6 +41114,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(NodeAnimationData, '$serializer', {
     get: NodeAnimationData$$serializer_getInstance
   });
+  package$serialization.NodeAnimationData_init_y5fm6r$ = NodeAnimationData_init;
   package$serialization.NodeAnimationData = NodeAnimationData;
   Object.defineProperty(Vec3KeyData, 'Companion', {
     get: Vec3KeyData$Companion_getInstance
@@ -41129,6 +41122,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(Vec3KeyData, '$serializer', {
     get: Vec3KeyData$$serializer_getInstance
   });
+  package$serialization.Vec3KeyData_init_cp3pdw$ = Vec3KeyData_init;
   package$serialization.Vec3KeyData = Vec3KeyData;
   Object.defineProperty(Vec4KeyData, 'Companion', {
     get: Vec4KeyData$Companion_getInstance
@@ -41136,6 +41130,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(Vec4KeyData, '$serializer', {
     get: Vec4KeyData$$serializer_getInstance
   });
+  package$serialization.Vec4KeyData_init_orydo3$ = Vec4KeyData_init;
   package$serialization.Vec4KeyData = Vec4KeyData;
   Object.defineProperty(BoneData, 'Companion', {
     get: BoneData$Companion_getInstance
@@ -41143,6 +41138,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(BoneData, '$serializer', {
     get: BoneData$$serializer_getInstance
   });
+  package$serialization.BoneData_init_ekms6w$ = BoneData_init;
   package$serialization.BoneData = BoneData;
   Object.defineProperty(MaterialData, 'Companion', {
     get: MaterialData$Companion_getInstance
@@ -41150,14 +41146,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(MaterialData, '$serializer', {
     get: MaterialData$$serializer_getInstance
   });
+  package$serialization.MaterialData_init_t6brj5$ = MaterialData_init;
   package$serialization.MaterialData = MaterialData;
-  $$importsForInline$$['kotlinx-serialization-runtime-js'] = $module$kotlinx_serialization_runtime_js;
+  $$importsForInline$$['kotlinx-serialization-kotlinx-serialization-runtime'] = $module$kotlinx_serialization_kotlinx_serialization_runtime;
   Object.defineProperty(ModelData, 'Companion', {
     get: ModelData$Companion_getInstance
   });
   Object.defineProperty(ModelData, '$serializer', {
     get: ModelData$$serializer_getInstance
   });
+  package$serialization.ModelData_init_totb9m$ = ModelData_init;
   package$serialization.ModelData = ModelData;
   Object.defineProperty(ModelNodeData, 'Companion', {
     get: ModelNodeData$Companion_getInstance
@@ -41165,6 +41163,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(ModelNodeData, '$serializer', {
     get: ModelNodeData$$serializer_getInstance
   });
+  package$serialization.ModelNodeData_init_ahcxlw$ = ModelNodeData_init;
   package$serialization.ModelNodeData = ModelNodeData;
   Object.defineProperty(ModelMeshData, 'Companion', {
     get: ModelMeshData$Companion_getInstance
@@ -41172,6 +41171,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(ModelMeshData, '$serializer', {
     get: ModelMeshData$$serializer_getInstance
   });
+  package$serialization.ModelMeshData_init_yteazz$ = ModelMeshData_init;
   package$serialization.ModelMeshData = ModelMeshData;
   Object.defineProperty(PrimitiveType, 'LINES', {
     get: PrimitiveType$LINES_getInstance
@@ -41189,6 +41189,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(AttributeList, '$serializer', {
     get: AttributeList$$serializer_getInstance
   });
+  package$serialization.AttributeList_init_l340n7$ = AttributeList_init;
   package$serialization.AttributeList = AttributeList;
   Object.defineProperty(IntAttributeList, 'Companion', {
     get: IntAttributeList$Companion_getInstance
@@ -41196,6 +41197,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   Object.defineProperty(IntAttributeList, '$serializer', {
     get: IntAttributeList$$serializer_getInstance
   });
+  package$serialization.IntAttributeList_init_4a8bm8$ = IntAttributeList_init;
   package$serialization.IntAttributeList = IntAttributeList;
   Object.defineProperty(package$serialization, 'NormalOctCoding', {
     get: NormalOctCoding_getInstance
@@ -41387,14 +41389,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-r
   terminateOnFaceCountAbs$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   terminateOnError$ObjectLiteral.prototype.init_nbf0q6$ = TermCriterion.prototype.init_nbf0q6$;
   MeshRayTest$Companion$nopTest$ObjectLiteral.prototype.onMeshDataChanged_f1jspk$ = MeshRayTest.prototype.onMeshDataChanged_f1jspk$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterLighting_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_kv1jfs$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsBeforeSampling_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_kv1jfs$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsEnd_kv1jfs$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsHeader_kv1jfs$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.geomShader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.geomShader_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsHeader_kv1jfs$;
   Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsBeforeProj_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsBeforeProj_kv1jfs$;
   Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsEnd_kv1jfs$;
-  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.vsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.vsHeader_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsHeader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsHeader_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsBeforeSampling_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsBeforeSampling_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsAfterLighting_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsAfterLighting_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.fsEnd_kv1jfs$ = GlslGenerator$GlslInjector.prototype.fsEnd_kv1jfs$;
+  Skybox$Skybox$SkyboxShader_init$ObjectLiteral.prototype.geomShader_kv1jfs$ = GlslGenerator$GlslInjector.prototype.geomShader_kv1jfs$;
   BlankComponentUi.prototype.updateComponentAlpha = ComponentUi.prototype.updateComponentAlpha;
   BlankComponentUi.prototype.createUi_aemszp$ = ComponentUi.prototype.createUi_aemszp$;
   BlankComponentUi.prototype.updateUi_aemszp$ = ComponentUi.prototype.updateUi_aemszp$;

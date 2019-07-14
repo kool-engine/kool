@@ -5,6 +5,8 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
@@ -176,33 +178,33 @@ class BoundingBox() {
 
     fun setMerged(aabb1: BoundingBox, aabb2: BoundingBox): BoundingBox {
         // manual if is faster than min() and max()
-        mutMin.x = if (aabb1.min.x < aabb2.min.x) { aabb1.min.x } else { aabb2.min.x }
-        mutMin.y = if (aabb1.min.y < aabb2.min.y) { aabb1.min.y } else { aabb2.min.y }
-        mutMin.z = if (aabb1.min.z < aabb2.min.z) { aabb1.min.z } else { aabb2.min.z }
+        mutMin.x = min(aabb1.min.x, aabb2.min.x)
+        mutMin.y = min(aabb1.min.y, aabb2.min.y)
+        mutMin.z = min(aabb1.min.z, aabb2.min.z)
 
-        mutMax.x = if (aabb1.max.x > aabb2.max.x) { aabb1.max.x } else { aabb2.max.x }
-        mutMax.y = if (aabb1.max.y > aabb2.max.y) { aabb1.max.y } else { aabb2.max.y }
-        mutMax.z = if (aabb1.max.z > aabb2.max.z) { aabb1.max.z } else { aabb2.max.z }
+        mutMax.x = max(aabb1.max.x, aabb2.max.x)
+        mutMax.y = max(aabb1.max.y, aabb2.max.y)
+        mutMax.z = max(aabb1.max.z, aabb2.max.z)
 
         isEmpty = false
         updateSizeAndCenter()
         return this
     }
 
-    fun isIncluding(point: Vec3f): Boolean {
+    operator fun contains(point: Vec3f): Boolean {
         return point.x >= min.x && point.x <= max.x &&
                 point.y >= min.y && point.y <= max.y &&
                 point.z >= min.z && point.z <= max.z
     }
 
-    fun isIncluding(x: Float, y: Float, z: Float): Boolean {
+    fun contains(x: Float, y: Float, z: Float): Boolean {
         return x >= min.x && x <= max.x &&
                 y >= min.y && y <= max.y &&
                 z >= min.z && z <= max.z
     }
 
-    fun isIncluding(aabb: BoundingBox): Boolean {
-        return isIncluding(aabb.min) && isIncluding(aabb.max)
+    operator fun contains(aabb: BoundingBox): Boolean {
+        return aabb.min in this && aabb.max in this
     }
 
     fun isIntersecting(aabb: BoundingBox): Boolean {
@@ -230,7 +232,7 @@ class BoundingBox() {
      * the point, 0 is returned.
      */
     fun pointDistanceSqr(pt: Vec3f): Float {
-        if (isIncluding(pt)) {
+        if (pt in this) {
             return 0f
         }
 
@@ -298,7 +300,7 @@ class BoundingBox() {
         if (isEmpty) {
             return Float.MAX_VALUE
         }
-        if (isIncluding(ray.origin)) {
+        if (ray.origin in this) {
             return 0f
         }
 

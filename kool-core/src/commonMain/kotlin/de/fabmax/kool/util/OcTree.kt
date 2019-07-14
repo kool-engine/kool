@@ -45,7 +45,7 @@ class OcTree<T: Any>(itemAdapter: ItemAdapter<T>, items: List<T> = emptyList(),
     }
 
     override fun add(element: T): Boolean {
-        if (!root.nodeBounds.isIncluding(itemAdapter.getCenterX(element), itemAdapter.getCenterY(element), itemAdapter.getCenterZ(element))) {
+        if (!root.nodeBounds.contains(itemAdapter.getCenterX(element), itemAdapter.getCenterY(element), itemAdapter.getCenterZ(element))) {
             logE { "Item not in tree bounds: (${itemAdapter.getMinX(element)}, ${itemAdapter.getMinY(element)}, ${itemAdapter.getMinZ(element)}), bounds: ${root.bounds}" }
             return false
         }

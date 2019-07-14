@@ -262,8 +262,6 @@ open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
 
 abstract class SpatialTree<T: Any>(val itemAdapter: ItemAdapter<T>) : Collection<T> {
 
-    protected val candidatesPool = AutoRecycler<MutableList<Node>> { mutableListOf() }
-
     abstract val root: Node
 
     open fun drawNodeBounds(lineMesh: LineMesh) {
