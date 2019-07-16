@@ -110,7 +110,34 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
         transform.transform(tmpVec1)
         transform.transform(tmpVec2)
 
-        bounds.set(tmpVec1, tmpVec2)
+        val minX: Float
+        val maxX: Float
+        val minY: Float
+        val maxY: Float
+        val minZ: Float
+        val maxZ: Float
+        if (tmpVec1.x < tmpVec2.x) {
+            minX = tmpVec1.x
+            maxX = tmpVec2.x
+        } else {
+            minX = tmpVec2.x
+            maxX = tmpVec2.x
+        }
+        if (tmpVec1.y < tmpVec2.y) {
+            minY = tmpVec1.y
+            maxY = tmpVec2.y
+        } else {
+            minY = tmpVec2.y
+            maxY = tmpVec1.y
+        }
+        if (tmpVec1.z < tmpVec2.z) {
+            minZ = tmpVec1.z
+            maxZ = tmpVec2.z
+        } else {
+            minZ = tmpVec2.z
+            maxZ = tmpVec1.z
+        }
+        bounds.set(minX, minY, minZ, maxX, maxY, maxZ)
     }
 
     protected open fun updateTransform() {

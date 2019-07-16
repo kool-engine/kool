@@ -360,7 +360,7 @@ class BoundingBox() {
             dist += comp * comp
             return dist / ray.direction.sqrLength()
         } else {
-            // no intersection
+            // no intersection: box is behind ray
             return Float.MAX_VALUE
         }
     }

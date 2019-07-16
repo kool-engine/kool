@@ -22356,7 +22356,37 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.tmpVec2_md9hat$_0.set_czzhiu$(this.drawBounds.max);
     this.transform.transform_w1lst9$(this.tmpVec1_md9h9y$_0);
     this.transform.transform_w1lst9$(this.tmpVec2_md9hat$_0);
-    this.bounds.set_4lfkt4$(this.tmpVec1_md9h9y$_0, this.tmpVec2_md9hat$_0);
+    var minX;
+    var maxX;
+    var minY;
+    var maxY;
+    var minZ;
+    var maxZ;
+    if (this.tmpVec1_md9h9y$_0.x < this.tmpVec2_md9hat$_0.x) {
+      minX = this.tmpVec1_md9h9y$_0.x;
+      maxX = this.tmpVec2_md9hat$_0.x;
+    }
+     else {
+      minX = this.tmpVec2_md9hat$_0.x;
+      maxX = this.tmpVec2_md9hat$_0.x;
+    }
+    if (this.tmpVec1_md9h9y$_0.y < this.tmpVec2_md9hat$_0.y) {
+      minY = this.tmpVec1_md9h9y$_0.y;
+      maxY = this.tmpVec2_md9hat$_0.y;
+    }
+     else {
+      minY = this.tmpVec2_md9hat$_0.y;
+      maxY = this.tmpVec1_md9h9y$_0.y;
+    }
+    if (this.tmpVec1_md9h9y$_0.z < this.tmpVec2_md9hat$_0.z) {
+      minZ = this.tmpVec1_md9h9y$_0.z;
+      maxZ = this.tmpVec2_md9hat$_0.z;
+    }
+     else {
+      minZ = this.tmpVec2_md9hat$_0.z;
+      maxZ = this.tmpVec1_md9h9y$_0.z;
+    }
+    this.bounds.set_w8lrqs$(minX, minY, minZ, maxX, maxY, maxZ);
   };
   UiContainer.prototype.updateTransform = function () {
     this.customTransform(this.setIdentity().scale_y2kzbl$(this.contentScale, this.contentScale, this.contentScale).translate_czzhiu$(this.posInParent).translate_y2kzbl$(-this.scrollOffsetMut.x, -this.scrollOffsetMut.y, -this.scrollOffsetMut.z));

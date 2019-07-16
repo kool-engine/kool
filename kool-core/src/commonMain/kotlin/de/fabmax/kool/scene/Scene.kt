@@ -54,7 +54,6 @@ open class Scene(name: String? = null) : Group(name) {
 
         camera.updateCamera(ctx)
         preRender(ctx)
-        //handleInput(ctx)
 
         if (clearMask != 0) {
             glClear(clearMask)
