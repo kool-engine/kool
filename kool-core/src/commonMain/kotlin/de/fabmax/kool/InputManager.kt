@@ -235,6 +235,13 @@ class InputManager internal constructor() {
         }
 
         fun cancelPointer() {
+            buttonMask = 0
+            buttonEventMask = 0
+            deltaX = 0f
+            deltaY = 0f
+            deltaScroll = 0f
+            dragDeltaX = 0f
+            dragDeltaY = 0f
             updateState = UpdateState.INVALID
             isValid = false
         }
