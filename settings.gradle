@@ -2,5 +2,3 @@ rootProject.name = 'kool'
 
 include 'kool-core'
 include 'kool-demo'
-
-include 'kool-tryouts'
