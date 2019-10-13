@@ -6,7 +6,7 @@ import java.nio.Buffer
 /**
  * @author fabmax
  */
-internal abstract class GenericBuffer<out B: Buffer>(override val capacity: Int, create: () -> B) : de.fabmax.kool.util.Buffer {
+abstract class GenericBuffer<out B: Buffer>(override val capacity: Int, create: () -> B) : de.fabmax.kool.util.Buffer {
     val buffer = create()
 
     override var limit: Int
@@ -32,7 +32,7 @@ internal abstract class GenericBuffer<out B: Buffer>(override val capacity: Int,
 /**
  * ByteBuffer buffer implementation
  */
-internal class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<ByteBuffer>(capacity, {
+class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<ByteBuffer>(capacity, {
     ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder())
 }) {
     override fun get(i: Int): Byte {
@@ -70,7 +70,7 @@ internal class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<ByteB
 /**
  * ShortBuffer buffer implementation
  */
-internal class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<ShortBuffer>(capacity, {
+class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<ShortBuffer>(capacity, {
     ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asShortBuffer()
 }) {
     override fun get(i: Int): Short {
@@ -108,7 +108,7 @@ internal class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<Sho
 /**
  * IntBuffer buffer implementation
  */
-internal class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<IntBuffer>(capacity, {
+class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<IntBuffer>(capacity, {
     ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asIntBuffer()
 }) {
     override fun get(i: Int): Int {
@@ -146,7 +146,7 @@ internal class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<Int
 /**
  * FloatBuffer buffer implementation
  */
-internal class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<FloatBuffer>(capacity, {
+class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<FloatBuffer>(capacity, {
     ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
 }) {
     override fun get(i: Int): Float {
