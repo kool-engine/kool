@@ -52,4 +52,6 @@ class ShaderStage(val name: String, val code: ByteArray, val stage: Int, val ent
     }
 }
 
-class SpirvShaderCode(val vertexStage: ShaderStage, val fragmentStage: ShaderStage) : ShaderCode
+class SpirvShaderCode(val stages: List<ShaderStage>) : ShaderCode {
+    constructor(vararg stages: ShaderStage): this(stages.asList())
+}

@@ -22,7 +22,8 @@ data class PipelineConfig(
         val isWriteDepth: Boolean,
         val lineWidth: Float,
 
-        val vertexLayout: VertexInputDescription,
+        val vertexLayout: VertexLayoutDescription,
+        val uniformLayout: UniformLayoutDescription,
 
         val shaderCode: ShaderCode
 ) {
@@ -32,19 +33,20 @@ data class PipelineConfig(
         var isWriteDepth = true
         var lineWidth = 1f
 
-        lateinit var vertexLayout: VertexInputDescription
+        var uniformLayout = UniformLayoutDescription(listOf())
+        lateinit var vertexLayout: VertexLayoutDescription
 
         lateinit var shaderCode: ShaderCode
 
         fun build(): PipelineConfig {
-            return PipelineConfig(cullMethod, depthTest, isWriteDepth, lineWidth, vertexLayout, shaderCode)
+            return PipelineConfig(cullMethod, depthTest, isWriteDepth, lineWidth, vertexLayout, uniformLayout, shaderCode)
         }
     }
 }
 
 fun Mesh.pipelineConfig(block: PipelineConfig.Builder.() -> Unit): PipelineConfig {
     val builder = PipelineConfig.Builder()
-    builder.vertexLayout = VertexInputDescription.forMesh(this)
+    builder.vertexLayout = VertexLayoutDescription.forMesh(this)
     builder.block()
     return builder.build()
 }

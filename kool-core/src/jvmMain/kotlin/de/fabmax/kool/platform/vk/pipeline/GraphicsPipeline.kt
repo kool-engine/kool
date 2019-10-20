@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.vk.pipeline
 
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.scene.UniformBufferObject
 import de.fabmax.kool.util.logD
@@ -8,7 +9,7 @@ import org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
 import org.lwjgl.vulkan.VK10.*
 import java.nio.ByteBuffer
 
-class GraphicsPipeline(val swapChain: SwapChain, pipelineConfig: VkPipelineConfig) : VkResource() {
+class GraphicsPipeline(val swapChain: SwapChain, val pipelineConfig: PipelineConfig) : VkResource() {
 
     val descriptorSetLayout: Long
     val descriptorPool: Long
@@ -20,27 +21,45 @@ class GraphicsPipeline(val swapChain: SwapChain, pipelineConfig: VkPipelineConfi
 
     init {
         memStack {
-            descriptorSetLayout = createDescriptorSetLayout()
-            descriptorPool = createDescriptorPool()
+            descriptorSetLayout = createDescriptorSetLayout(pipelineConfig.uniformLayout)
+            descriptorPool = createDescriptorPool(pipelineConfig.uniformLayout)
             createDescriptorSets()
             createUniformBuffers()
 
-            val shaderStageModules = pipelineConfig.shaderStages.map { createShaderModule(it) }
-            val shaderStages = callocVkPipelineShaderStageCreateInfoN(pipelineConfig.shaderStages.size) {
-                for (i in pipelineConfig.shaderStages.indices) {
+            val shaderStages = pipelineConfig.shaderCode as SpirvShaderCode
+            val shaderStageModules = shaderStages.stages.map { createShaderModule(it) }
+            val shaderStageInfos = callocVkPipelineShaderStageCreateInfoN(shaderStages.stages.size) {
+                for (i in shaderStages.stages.indices) {
                     this[i]
                         .sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)
-                        .stage(pipelineConfig.shaderStages[i].stage)
+                        .stage(shaderStages.stages[i].stage)
                         .module(shaderStageModules[i])
-                        .pName(ASCII(pipelineConfig.shaderStages[i].entryPoint))
+                        .pName(ASCII(shaderStages.stages[i].entryPoint))
                 }
             }
 
             val bindingDescription = callocVkVertexInputBindingDescriptionN(1) {
-                pipelineConfig.vertexInputBindingDescription(this)
+                binding(pipelineConfig.vertexLayout.bindings[0].binding)
+                stride(pipelineConfig.vertexLayout.bindings[0].strideBytes)
+                inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
             }
-            val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(pipelineConfig.nVertexAttributes) {
-                pipelineConfig.vertexInputAttributeDescription(this)
+            val nAttributes = pipelineConfig.vertexLayout.bindings[0].attributes.size
+            val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nAttributes) {
+                pipelineConfig.vertexLayout.bindings[0].attributes.forEachIndexed { i, attrib ->
+                    this[i].apply {
+                        binding(attrib.binding)
+                        location(attrib.location)
+                        offset(attrib.offset)
+                        format(when (attrib.type) {
+                            AttributeType.FLOAT -> VK_FORMAT_R32_SFLOAT
+                            AttributeType.VEC_2F -> VK_FORMAT_R32G32_SFLOAT
+                            AttributeType.VEC_3F -> VK_FORMAT_R32G32B32_SFLOAT
+                            AttributeType.VEC_4F -> VK_FORMAT_R32G32B32A32_SFLOAT
+                            AttributeType.COLOR_4F -> VK_FORMAT_R32G32B32A32_SFLOAT
+                            else -> throw IllegalStateException("Attribute is not a float type")
+                        })
+                    }
+                }
             }
             val vertexInputInfo = callocVkPipelineVertexInputStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO)
@@ -83,7 +102,11 @@ class GraphicsPipeline(val swapChain: SwapChain, pipelineConfig: VkPipelineConfi
                 polygonMode(VK_POLYGON_MODE_FILL)
                 //polygonMode(VK_POLYGON_MODE_LINE)
                 lineWidth(1f)
-                cullMode(pipelineConfig.cullMode)
+                cullMode(when (pipelineConfig.cullMethod) {
+                    CullMethod.FRONT_FACE -> VK_CULL_MODE_FRONT_BIT
+                    CullMethod.BACK_FACE -> VK_CULL_MODE_BACK_BIT
+                    CullMethod.NO_CULL -> VK_CULL_MODE_NONE
+                })
                 //frontFace(VK_FRONT_FACE_CLOCKWISE)
                 frontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE)     // use counter-clockwise as front to compensate y-flip in projection
                 depthBiasEnable(false)
@@ -128,9 +151,13 @@ class GraphicsPipeline(val swapChain: SwapChain, pipelineConfig: VkPipelineConfi
 
             val depthStencil = callocVkPipelineDepthStencilStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
-                depthTestEnable(pipelineConfig.isDepthTestEnabled)
-                depthWriteEnable(true)
-                depthCompareOp(VK_COMPARE_OP_LESS)
+                depthTestEnable(pipelineConfig.depthTest != DepthTest.DISABLED)
+                depthWriteEnable(pipelineConfig.isWriteDepth)
+                depthCompareOp(when (pipelineConfig.depthTest) {
+                    DepthTest.LESS -> VK_COMPARE_OP_LESS
+                    DepthTest.LESS_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
+                    DepthTest.DISABLED -> 0
+                })
                 depthBoundsTestEnable(false)
                 stencilTestEnable(false)
             }
@@ -145,7 +172,7 @@ class GraphicsPipeline(val swapChain: SwapChain, pipelineConfig: VkPipelineConfi
 
             val pipelineInfo = callocVkGraphicsPipelineCreateInfoN(1) {
                 sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO)
-                pStages(shaderStages)
+                pStages(shaderStageInfos)
                 pVertexInputState(vertexInputInfo)
                 pInputAssemblyState(inputAssembly)
                 pViewportState(viewportState)
@@ -200,27 +227,29 @@ class GraphicsPipeline(val swapChain: SwapChain, pipelineConfig: VkPipelineConfi
         }
     }
 
-    /**
-     * fixme: Move somewhere else?
-     */
-    private fun MemoryStack.createDescriptorSetLayout(): Long {
-//        val bindings = callocVkDescriptorSetLayoutBindingN(2) {
-//            this[0]
-//                    .binding(0)
-//                    .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-//                    .descriptorCount(1)
-//                    .stageFlags(VK_SHADER_STAGE_VERTEX_BIT)
-//            this[1]
-//                    .binding(1)
-//                    .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-//                    .descriptorCount(1)
-//                    .stageFlags(VK_SHADER_STAGE_FRAGMENT_BIT)
-//        }
-        val bindings = callocVkDescriptorSetLayoutBindingN(1) {
-            binding(0)
-            descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-            descriptorCount(1)
-            stageFlags(VK_SHADER_STAGE_VERTEX_BIT)
+    private fun UniformType.intType() = when (this) {
+        UniformType.IMAGE_SAMPLER -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        UniformType.UNIFORM_BUFFER -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+    }
+
+    private fun MemoryStack.createDescriptorSetLayout(uniformLayout: UniformLayoutDescription): Long {
+        val bindings = callocVkDescriptorSetLayoutBindingN(uniformLayout.bindings.size) {
+            uniformLayout.bindings.forEachIndexed { i, b ->
+                this[i].apply {
+                    binding(b.binding)
+                    descriptorType(b.type.intType())
+                    descriptorCount(b.count)
+                    var flags = 0
+                    b.stages.forEach { stage ->
+                        flags = when (stage) {
+                            Stage.VERTEX_SHADER -> flags or VK_SHADER_STAGE_VERTEX_BIT
+                            Stage.GEOMETRY_SHADER -> flags or VK_SHADER_STAGE_GEOMETRY_BIT
+                            Stage.FRAGMENT_SHADER -> flags or VK_SHADER_STAGE_FRAGMENT_BIT
+                        }
+                    }
+                    stageFlags(flags)
+                }
+            }
         }
 
         val layoutInfo = callocVkDescriptorSetLayoutCreateInfo {
@@ -241,15 +270,15 @@ class GraphicsPipeline(val swapChain: SwapChain, pipelineConfig: VkPipelineConfi
         }
     }
 
-    private fun createDescriptorPool(): Long {
+    private fun createDescriptorPool(uniformLayout: UniformLayoutDescription): Long {
         memStack {
-            val poolSize = callocVkDescriptorPoolSizeN(2) {
-                this[0]
-                    .type(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-                    .descriptorCount(swapChain.images.size)
-                this[1]
-                    .type(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-                    .descriptorCount(swapChain.images.size)
+            val poolSize = callocVkDescriptorPoolSizeN(uniformLayout.bindings.size) {
+                uniformLayout.bindings.forEachIndexed { i, b ->
+                    this[i].apply {
+                        type(b.type.intType())
+                        descriptorCount(swapChain.images.size)
+                    }
+                }
             }
 
             val poolInfo = callocVkDescriptorPoolCreateInfo {
@@ -278,45 +307,6 @@ class GraphicsPipeline(val swapChain: SwapChain, pipelineConfig: VkPipelineConfi
             checkVk(vkAllocateDescriptorSets(swapChain.sys.device.vkDevice, allocInfo, sets))
             for (i in swapChain.images.indices) {
                 descriptorSets += sets[i]
-            }
-        }
-    }
-
-    fun updateDescriptorSets(bindTexture: Texture) {
-        memStack {
-            for (i in swapChain.images.indices) {
-                val buffereInfo = callocVkDescriptorBufferInfoN(1) {
-                    buffer(uniformBuffers[i].vkBuffer)
-                    offset(0L)
-                    range(UniformBufferObject.SIZE.toLong())
-                }
-
-                val imageInfo = callocVkDescriptorImageInfoN(1) {
-                    imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                    imageView(bindTexture.textureImageView.vkImageView)
-                    sampler(bindTexture.sampler)
-                }
-
-                val descriptorWrite = callocVkWriteDescriptorSetN(2) {
-                    this[0]
-                        .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-                        .dstSet(descriptorSets[i])
-                        .dstBinding(0)
-                        .dstArrayElement(0)
-                        .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-                        .descriptorCount(1)
-                        .pBufferInfo(buffereInfo)
-                    this[1]
-                        .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-                        .dstSet(descriptorSets[i])
-                        .dstBinding(1)
-                        .dstArrayElement(0)
-                        .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-                        .descriptorCount(1)
-                        .pImageInfo(imageInfo)
-                }
-
-                vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
             }
         }
     }

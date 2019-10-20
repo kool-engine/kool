@@ -4,10 +4,8 @@ import de.fabmax.kool.GlCapabilities
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.drawqueue.DrawCommandMesh
-import de.fabmax.kool.pipeline.PipelineConfig
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.pipeline.GraphicsPipeline
-import de.fabmax.kool.platform.vk.pipeline.VkPipelineConfig
 import de.fabmax.kool.platform.vk.scene.UniformBufferObject
 import de.fabmax.kool.scene.Mesh
 import org.lwjgl.glfw.GLFW.glfwPollEvents
@@ -84,7 +82,6 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
         val cmdBuffers = mutableListOf<CommandBuffers>()
         val ubo = UniformBufferObject()
 
-        val pipelineMap = mutableMapOf<PipelineConfig, VkPipelineConfig>()
         val meshMap = mutableMapOf<Mesh, IndexedMesh>()
 
         override fun onLoad(sys: VkSystem) {
@@ -157,7 +154,7 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
 
                 var graphicsPipeline: GraphicsPipeline? = null
                 drawQueue.commands.forEach { cmd ->
-                    val pipelineCfg = pipelineMap.computeIfAbsent(cmd.pipelineConfig!!) { k -> VkPipelineConfig.fromPipelineConfig(k) }
+                    val pipelineCfg = cmd.pipelineConfig!!
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg)) {
                         sys.pipelineManager.addPipelineConfig(pipelineCfg)
                     }

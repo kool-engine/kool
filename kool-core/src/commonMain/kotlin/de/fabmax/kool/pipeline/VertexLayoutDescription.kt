@@ -1,8 +1,9 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.IndexedVertexList
 
-class VertexInputDescription(val bindings: List<Binding>) {
+class VertexLayoutDescription(val bindings: List<Binding>) {
     fun getAttributeLocation(attribName: String): Int {
         for (i in bindings.indices) {
             bindings[i].attributes.find { it.name == attribName }?.let { return it.location }
@@ -17,11 +18,13 @@ class VertexInputDescription(val bindings: List<Binding>) {
     data class Attribute(val binding: Int, val location: Int, val offset: Int, val type: AttributeType, val name: String)
 
     companion object {
-        fun forMesh(mesh: Mesh): VertexInputDescription {
+        fun forMesh(mesh: Mesh): VertexLayoutDescription = forVertices(mesh.meshData.vertexList)
+
+        fun forVertices(vertexList: IndexedVertexList): VertexLayoutDescription {
             val attribs = mutableListOf<Attribute>()
 
             var iAtrrib = 0
-            mesh.meshData.vertexList.attributeOffsets.forEach { (attrib, off) ->
+            vertexList.attributeOffsets.forEach { (attrib, off) ->
                 // fixme: unify / replace old de.fabmax.kool.shading.AttributeType by new one (which is not OpenGL specific)
                 val attribType = when (attrib.type) {
                     de.fabmax.kool.shading.AttributeType.FLOAT -> AttributeType.FLOAT
@@ -37,7 +40,7 @@ class VertexInputDescription(val bindings: List<Binding>) {
 
             // fixme: support multiple bindings
             val bindings = listOf(Binding(0, InputRate.VERTEX, attribs))
-            return VertexInputDescription(bindings)
+            return VertexLayoutDescription(bindings)
         }
     }
 }

@@ -1,9 +1,11 @@
 package de.fabmax.kool.platform.vk.scene
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
+import de.fabmax.kool.platform.vk.pipeline.GraphicsPipeline
 import de.fabmax.kool.platform.vk.pipeline.ShaderStage
-import de.fabmax.kool.platform.vk.pipeline.VkPipelineConfig
+import de.fabmax.kool.platform.vk.pipeline.SpirvShaderCode
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
@@ -12,7 +14,7 @@ class VkTestScene() : VkScene {
     lateinit var sys: VkSystem
     lateinit var texture: Texture
     lateinit var model: IndexedMesh
-    lateinit var pipelineConfig: VkPipelineConfig
+    lateinit var pipelineConfig: PipelineConfig
 
     private val startTime = System.nanoTime()
     private val ubo = UniformBufferObject()
@@ -26,16 +28,19 @@ class VkTestScene() : VkScene {
         sys.device.addDependingResource(texture)
         sys.device.addDependingResource(model)
 
-        val shaderStages = mutableListOf(
-            ShaderStage.fromSource("shader.vert", this::class.java.getResourceAsStream("/shader.vert"), VK_SHADER_STAGE_VERTEX_BIT ),
-            ShaderStage.fromSource("shader.frag", this::class.java.getResourceAsStream("/shader.frag"), VK_SHADER_STAGE_FRAGMENT_BIT )
-        )
-        pipelineConfig = VkPipelineConfig(
-            shaderStages,
-            model.data.attributeOffsets.size,
-            { it.setBindingDescription(model.data) },
-            { it.setAttributeDescription(model.data) }
-        )
+        pipelineConfig = PipelineConfig.Builder().apply {
+            shaderCode = SpirvShaderCode(mutableListOf(
+                    ShaderStage.fromSource("shader.vert", this::class.java.getResourceAsStream("/shader.vert"), VK_SHADER_STAGE_VERTEX_BIT ),
+                    ShaderStage.fromSource("shader.frag", this::class.java.getResourceAsStream("/shader.frag"), VK_SHADER_STAGE_FRAGMENT_BIT )
+            ))
+
+            uniformLayout = UniformLayoutDescription(listOf(
+                    UniformLayoutDescription.Binding("ubo", 0, UniformType.UNIFORM_BUFFER, setOf(Stage.VERTEX_SHADER), 1),
+                    UniformLayoutDescription.Binding("texture", 1, UniformType.IMAGE_SAMPLER, setOf(Stage.FRAGMENT_SHADER), 1)
+            ))
+
+            vertexLayout = VertexLayoutDescription.forVertices(model.data)
+        }.build()
         sys.pipelineManager.addPipelineConfig(pipelineConfig)
     }
 
@@ -115,4 +120,44 @@ class VkTestScene() : VkScene {
 
         return commandBuffers.vkCommandBuffers[currentImage]
     }
+
+    fun GraphicsPipeline.updateDescriptorSets(bindTexture: Texture) {
+        memStack {
+            for (i in swapChain.images.indices) {
+                val buffereInfo = callocVkDescriptorBufferInfoN(1) {
+                    buffer(uniformBuffers[i].vkBuffer)
+                    offset(0L)
+                    range(UniformBufferObject.SIZE.toLong())
+                }
+
+                val imageInfo = callocVkDescriptorImageInfoN(1) {
+                    imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    imageView(bindTexture.textureImageView.vkImageView)
+                    sampler(bindTexture.sampler)
+                }
+
+                val descriptorWrite = callocVkWriteDescriptorSetN(2) {
+                    this[0]
+                            .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                            .dstSet(descriptorSets[i])
+                            .dstBinding(0)
+                            .dstArrayElement(0)
+                            .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                            .descriptorCount(1)
+                            .pBufferInfo(buffereInfo)
+                    this[1]
+                            .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                            .dstSet(descriptorSets[i])
+                            .dstBinding(1)
+                            .dstArrayElement(0)
+                            .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+                            .descriptorCount(1)
+                            .pImageInfo(imageInfo)
+                }
+
+                vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
+            }
+        }
+    }
+
 }

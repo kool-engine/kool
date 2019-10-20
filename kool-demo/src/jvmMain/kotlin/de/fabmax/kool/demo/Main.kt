@@ -1,5 +1,8 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.pipeline.Stage
+import de.fabmax.kool.pipeline.UniformLayoutDescription
+import de.fabmax.kool.pipeline.UniformType
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.Lwjgl3VkContext
@@ -40,6 +43,9 @@ fun testScene() {
             }
 
             pipelineConfig = pipelineConfig {
+                uniformLayout = UniformLayoutDescription(listOf(
+                        UniformLayoutDescription.Binding("ubo", 0, UniformType.UNIFORM_BUFFER, setOf(Stage.VERTEX_SHADER), 1)
+                ))
                 shaderCode = SpirvShaderCode(
                         ShaderStage.fromSource("colorShader.vert", this::class.java.getResourceAsStream("/colorShader.vert"), VK_SHADER_STAGE_VERTEX_BIT),
                         ShaderStage.fromSource("colorShader.frag", this::class.java.getResourceAsStream("/colorShader.frag"), VK_SHADER_STAGE_FRAGMENT_BIT))
@@ -59,6 +65,9 @@ fun testScene() {
                     }
 
                     pipelineConfig = pipelineConfig {
+                        uniformLayout = UniformLayoutDescription(listOf(
+                                UniformLayoutDescription.Binding("ubo", 0, UniformType.UNIFORM_BUFFER, setOf(Stage.VERTEX_SHADER), 1)
+                        ))
                         shaderCode = SpirvShaderCode(
                                 ShaderStage.fromSource("colorShader.vert", this::class.java.getResourceAsStream("/colorShader.vert"), VK_SHADER_STAGE_VERTEX_BIT),
                                 ShaderStage.fromSource("colorShader.frag", this::class.java.getResourceAsStream("/colorShader.frag"), VK_SHADER_STAGE_FRAGMENT_BIT))

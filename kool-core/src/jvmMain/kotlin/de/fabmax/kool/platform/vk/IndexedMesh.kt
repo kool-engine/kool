@@ -29,8 +29,6 @@ class IndexedMesh(val sys: VkSystem, val data: IndexedVertexList) : VkResource()
             stagingBuffer.mappedFloats {
                 data.dataF.flip()
                 put((data.dataF as Float32BufferImpl).buffer)
-
-                logD { "Copied vertex buffer: ${data.dataF.position} elements, first vals: ${get(0)}, ${get(1)}, ${get(2)}" }
             }
 
             val usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT or VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
