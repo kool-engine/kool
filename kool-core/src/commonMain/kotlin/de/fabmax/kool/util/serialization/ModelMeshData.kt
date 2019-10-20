@@ -8,7 +8,6 @@ import de.fabmax.kool.scene.animation.Bone
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_NORMALS_OCT_COMPRESSED
 import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_POSITIONS
-import kotlinx.serialization.Optional
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -34,32 +33,32 @@ data class ModelMeshData(
     /**
      * List of vertex indices. If empty each n vertices form a primitive with n = 1 (points), 2 (lines), 3 (triangles)
      */
-    @SerialId(4) @Optional val indices: List<Int> = emptyList(),
+    @SerialId(4) val indices: List<Int> = emptyList(),
 
     /**
      * List of bones forming the mesh armature. Might be empty.
      */
-    @SerialId(5) @Optional val armature: List<BoneData> = emptyList(),
+    @SerialId(5) val armature: List<BoneData> = emptyList(),
 
     /**
      * List of mesh armature animations. Might be empty.
      */
-    @SerialId(6) @Optional val animations: List<AnimationData> = emptyList(),
+    @SerialId(6) val animations: List<AnimationData> = emptyList(),
 
     /**
      * Material index. -1 if not preset.
      */
-    @SerialId(7) @Optional val material: Int = -1,
+    @SerialId(7) val material: Int = -1,
 
     /**
      * Optional list of arbitrary tags.
      */
-    @SerialId(8) @Optional val tags: List<String> = emptyList(),
+    @SerialId(8) val tags: List<String> = emptyList(),
 
     /**
      * Optional map of additional integer vertex attributes. E.g. compressed normals [ATTRIB_NORMALS_OCT_COMPRESSED]
      */
-    @SerialId(9) @Optional val intAttributes: Map<String, IntAttributeList> = emptyMap()
+    @SerialId(9) val intAttributes: Map<String, IntAttributeList> = emptyMap()
 ) {
 
     @Transient var numVertices: Int = 0
@@ -98,11 +97,11 @@ data class ModelMeshData(
 
         // add mesh vertices
         val positions = attributes[ATTRIB_POSITIONS] ?: throw KoolException("Mesh has no positions")
-        val normals = attributes[ModelMeshData.ATTRIB_NORMALS]
-        val texCoords = attributes[ModelMeshData.ATTRIB_TEXTURE_COORDS]
-        val colors = attributes[ModelMeshData.ATTRIB_COLORS]
-        val tangents = attributes[ModelMeshData.ATTRIB_TANGENTS]
-        val normalsOct = intAttributes[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED]
+        val normals = attributes[ATTRIB_NORMALS]
+        val texCoords = attributes[ATTRIB_TEXTURE_COORDS]
+        val colors = attributes[ATTRIB_COLORS]
+        val tangents = attributes[ATTRIB_TANGENTS]
+        val normalsOct = intAttributes[ATTRIB_NORMALS_OCT_COMPRESSED]
         val octBits = getNormalOctBits()
 
         for (i in 0 until positions.size / 3) {

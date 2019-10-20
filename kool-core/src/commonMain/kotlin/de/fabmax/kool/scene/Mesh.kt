@@ -2,10 +2,10 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
-import de.fabmax.kool.gl.GL_BACK
-import de.fabmax.kool.gl.GL_FRONT
+import de.fabmax.kool.drawqueue.DrawCommandMesh
 import de.fabmax.kool.gl.glDrawElements
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.pipeline.PipelineConfig
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Font
@@ -94,9 +94,12 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         get() = meshData.generator
         set(value) { meshData.generator = value }
 
+    var pipelineConfig: PipelineConfig? = null
     var shader: Shader? = null
     var cullMethod = CullMethod.DEFAULT
     var rayTest = MeshRayTest.boundsTest()
+
+    private val drawCommand = DrawCommandMesh(this)
 
     override val bounds: BoundingBox
         get() = meshData.bounds
@@ -132,47 +135,17 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         }
 
         // create or update data buffers for this mesh
-        if (meshData.checkBuffers(ctx)) {
-            // meshData was updated
-            rayTest.onMeshDataChanged(this)
-        }
+//        if (meshData.checkBuffers(ctx)) {
+//            // meshData was updated
+//            rayTest.onMeshDataChanged(this)
+//        }
 
-        // bind shader for this mesh
-        ctx.shaderMgr.bindShader(shader, this, ctx)
-
-        // setup shader for mesh rendering, the active shader is not necessarily mMeshShader
-        ctx.shaderMgr.boundShader?.let { boundShader ->
-            // bind this mesh as input to the used shader
-            boundShader.bindMesh(this, ctx)
-
-            if (cullMethod != CullMethod.DEFAULT) {
-                ctx.pushAttributes()
-                when (cullMethod) {
-                    CullMethod.CULL_BACK_FACES -> {
-                        ctx.isCullFace = true
-                        ctx.cullFace = GL_BACK
-                    }
-                    CullMethod.CULL_FRONT_FACES -> {
-                        ctx.isCullFace = true
-                        ctx.cullFace = GL_FRONT
-                    }
-                    else -> ctx.isCullFace = false
-                }
-                ctx.applyAttributes()
-            }
-
-            // draw mesh
-            meshData.indexBuffer?.bind(ctx)
-            drawElements(ctx)
-            boundShader.unbindMesh(ctx)
-
-            if (cullMethod != CullMethod.DEFAULT) {
-                ctx.popAttributes()
-            }
-        }
+        drawCommand.pipelineConfig = pipelineConfig
+        drawCommand.captureMvp(ctx)
+        ctx.drawQueue += drawCommand
     }
 
-    protected open fun drawElements(ctx: KoolContext) {
+    open fun drawElements(ctx: KoolContext) {
         glDrawElements(meshData.primitiveType, meshData.numIndices, meshData.indexType, 0)
     }
 }

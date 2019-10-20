@@ -2,9 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.gl.GL_COLOR_BUFFER_BIT
-import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
-import de.fabmax.kool.gl.glClear
+import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.lock
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
@@ -25,14 +23,18 @@ open class Scene(name: String? = null) : Group(name) {
     override var isFrustumChecked: Boolean
         // frustum check is force disabled for Scenes
         get() = false
-        set(@Suppress("UNUSED_PARAMETER") value) {}
+        set(_) {}
+
+    val drawQueue = DrawQueue()
+    var clearMask: Int
+        get() = drawQueue.sceneSetup.clearMask
+        set(value) { drawQueue.sceneSetup.clearMask = value }
 
     var camera: Camera = PerspectiveCamera()
     var lighting = Lighting(this)
     var viewport = KoolContext.Viewport(0, 0, 0, 0)
         protected set
 
-    var clearMask = GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT
     var isPickingEnabled = true
     private val rayTest = RayTest()
     private var hoverNode: Node? = null
@@ -55,10 +57,10 @@ open class Scene(name: String? = null) : Group(name) {
         camera.updateCamera(ctx)
         preRender(ctx)
 
-        if (clearMask != 0) {
-            glClear(clearMask)
-        }
+        drawQueue.clear()
+        ctx.drawQueue = drawQueue
         render(ctx)
+
         postRender(ctx)
     }
 

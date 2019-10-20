@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -29,6 +30,8 @@ abstract class KoolContext {
     val mvpState = MvpState()
 
     val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()
+
+    var drawQueue = DrawQueue()
 
     /**
      * Run time of this render context in seconds. This is the wall clock time between now and the first time render()
@@ -96,15 +99,15 @@ abstract class KoolContext {
         for (i in frameTimes.indices) { sum += frameTimes[i] }
         fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
 
-        inputMgr.onNewFrame(this)
-        textureMgr.onNewFrame(this)
-        shaderMgr.onNewFrame(this)
+//        inputMgr.onNewFrame(this)
+//        textureMgr.onNewFrame(this)
+//        shaderMgr.onNewFrame(this)
 
         // by default the viewport covers the full window
-        if (windowWidth != viewport.width || windowHeight != viewport.height) {
-            viewport = Viewport(0, 0, windowWidth, windowHeight)
-            applyAttributes()
-        }
+//        if (windowWidth != viewport.width || windowHeight != viewport.height) {
+//            viewport = Viewport(0, 0, windowWidth, windowHeight)
+//            applyAttributes()
+//        }
 
         for (i in onRender.indices) {
             onRender[i](this)

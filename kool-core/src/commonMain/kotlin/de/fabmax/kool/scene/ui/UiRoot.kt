@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
+import de.fabmax.kool.drawqueue.SceneSetup
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
@@ -28,7 +28,7 @@ fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, blo
     }
 
     if (overlay) {
-        clearMask = GL_DEPTH_BUFFER_BIT
+        clearMask = SceneSetup.CLEAR_DEPTH
     }
 
     +embeddedUi(1f, 1f, null, dpi) {
