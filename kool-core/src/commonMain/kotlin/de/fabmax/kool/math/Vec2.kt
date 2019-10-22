@@ -109,6 +109,9 @@ open class MutableVec2f(x: Float, y: Float) : Vec2f(x, y) {
         get() = this[1]
         set(value) { this[1] = value }
 
+    val array: FloatArray
+        get() = fields
+
     constructor() : this(0f, 0f)
     constructor(f: Float) : this(f, f)
     constructor(v: Vec2f) : this(v.x, v.y)

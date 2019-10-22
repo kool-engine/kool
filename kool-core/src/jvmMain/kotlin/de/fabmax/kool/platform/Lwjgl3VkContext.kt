@@ -4,10 +4,12 @@ import de.fabmax.kool.GlCapabilities
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.drawqueue.DrawCommandMesh
+import de.fabmax.kool.pipeline.UniformBuffer
+import de.fabmax.kool.pipeline.UniformMat4f
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.pipeline.GraphicsPipeline
-import de.fabmax.kool.platform.vk.scene.UniformBufferObject
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Float32BufferImpl
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import org.lwjgl.vulkan.VK10.*
@@ -80,7 +82,6 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
         lateinit var sys: VkSystem
         val cmdPools = mutableListOf<CommandPool>()
         val cmdBuffers = mutableListOf<CommandBuffers>()
-        val ubo = UniformBufferObject()
 
         val meshMap = mutableMapOf<Mesh, IndexedMesh>()
 
@@ -157,6 +158,7 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
                     val pipelineCfg = cmd.pipelineConfig!!
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg)) {
                         sys.pipelineManager.addPipelineConfig(pipelineCfg)
+                        sys.pipelineManager.getPipeline(pipelineCfg).updateDescriptorSets()
                     }
                     val pipeline = sys.pipelineManager.getPipeline(pipelineCfg)
                     if (pipeline != graphicsPipeline) {
@@ -165,7 +167,6 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
                     }
 
                     cmd as DrawCommandMesh
-                    pipeline.updateDescriptorSets(imageIndex)
                     pipeline.updateUbo(cmd, imageIndex)
 
                     var model = meshMap[cmd.mesh]
@@ -197,48 +198,53 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
             return cmdBufs.vkCommandBuffers[0]
         }
 
-        fun GraphicsPipeline.updateDescriptorSets(imageIndex: Int) {
-            memStack {
-                val buffereInfo = callocVkDescriptorBufferInfoN(1) {
-                    buffer(uniformBuffers[imageIndex].vkBuffer)
-                    offset(0L)
-                    range(UniformBufferObject.SIZE.toLong())
-                }
-
-                val descriptorWrite = callocVkWriteDescriptorSetN(1) {
-                    sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-                    dstSet(descriptorSets[imageIndex])
-                    dstBinding(0)
-                    dstArrayElement(0)
-                    descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-                    descriptorCount(1)
-                    pBufferInfo(buffereInfo)
-                }
-
-                vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
-            }
-        }
+//        fun GraphicsPipeline.updateDescriptorSets(descriptorLayout: DescriptorLayout, imageIndex: Int) {
+//            // fixme: support arbitrary descriptor layouts
+//            val ubo = descriptorLayout.descriptors[0] as UniformBuffer
+//
+//            memStack {
+//                val buffereInfo = callocVkDescriptorBufferInfoN(1) {
+//                    buffer(uniformBuffers[imageIndex].vkBuffer)
+//                    offset(0L)
+//                    range(ubo.size.toLong())
+//                }
+//
+//                val descriptorWrite = callocVkWriteDescriptorSetN(1) {
+//                    sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+//                    dstSet(descriptorSets[imageIndex])
+//                    dstBinding(0)
+//                    dstArrayElement(0)
+//                    descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+//                    descriptorCount(1)
+//                    pBufferInfo(buffereInfo)
+//                }
+//
+//                vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
+//            }
+//        }
 
         private fun GraphicsPipeline.updateUbo(cmd: DrawCommand, imageIndex: Int) {
-            ubo.model.set(cmd.modelMat)
-            ubo.view.set(cmd.viewMat)
-            ubo.proj.set(cmd.projMat)
+            val pipelineCfg = cmd.pipelineConfig!!
+
+            // fixme: support arbitrary descriptor layouts, this assumes UBO with MVP at location 0
+            val descObj = descriptorObjects.getDescriptorObject(imageIndex, 0)
+            val ubo = descObj.descriptor as UniformBuffer
+
+            val model = (ubo.uniforms[0] as UniformMat4f)
+            val view = (ubo.uniforms[1] as UniformMat4f)
+            val proj = (ubo.uniforms[2] as UniformMat4f)
+
+            model.value.set(cmd.modelMat)
+            view.value.set(cmd.viewMat)
+            proj.value.set(cmd.projMat)
 
             // compensate flipped y coordinate in clip space...
-            // this also flips the triangle direction, therefore front-faces are counter-clockwise (-> rasterizer property, createGraphicsPipeline())
-            ubo.proj[1, 1] *= -1f
+            // this also flips the triangle direction, therefore front-faces are counter-clockwise
+            //   -> rasterizer property, createGraphicsPipeline()
+            proj.value[1, 1] *= -1f
 
-//            println("model matrix:")
-//            ubo.model.dump()
-//            println("view matrix:")
-//            ubo.view.dump()
-//            println("proj matrix:")
-//            ubo.proj.dump()
-
-            uniformBuffers[imageIndex].mappedFloats {
-                put(ubo.model.matrix)
-                put(ubo.view.matrix)
-                put(ubo.proj.matrix)
+            descObj.buffer!!.mappedFloats {
+                ubo.putTo(Float32BufferImpl(this))
             }
         }
     }

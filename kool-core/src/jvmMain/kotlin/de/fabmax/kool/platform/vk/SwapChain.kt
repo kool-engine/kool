@@ -21,6 +21,9 @@ class SwapChain(val sys: VkSystem) : VkResource() {
     val imageViews = mutableListOf<ImageView>()
     val framebuffers = mutableListOf<Long>()
 
+    val nImages: Int
+        get() = images.size
+
     val colorImage: Image
     val colorImageView: ImageView
 

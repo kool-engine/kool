@@ -10,8 +10,11 @@ enum class CullMethod {
 
 enum class DepthTest {
     DISABLED,
+    ALWAYS,
     LESS,
-    LESS_EQUAL
+    LESS_EQUAL,
+    GREATER,
+    GREATER_EQUAL
 }
 
 interface ShaderCode
@@ -23,7 +26,7 @@ data class PipelineConfig(
         val lineWidth: Float,
 
         val vertexLayout: VertexLayoutDescription,
-        val uniformLayout: UniformLayoutDescription,
+        val descriptorLayout: DescriptorLayout,
 
         val shaderCode: ShaderCode
 ) {
@@ -33,13 +36,13 @@ data class PipelineConfig(
         var isWriteDepth = true
         var lineWidth = 1f
 
-        var uniformLayout = UniformLayoutDescription(listOf())
         lateinit var vertexLayout: VertexLayoutDescription
+        var descriptorLayout = DescriptorLayout(listOf())
 
         lateinit var shaderCode: ShaderCode
 
         fun build(): PipelineConfig {
-            return PipelineConfig(cullMethod, depthTest, isWriteDepth, lineWidth, vertexLayout, uniformLayout, shaderCode)
+            return PipelineConfig(cullMethod, depthTest, isWriteDepth, lineWidth, vertexLayout, descriptorLayout, shaderCode)
         }
     }
 }

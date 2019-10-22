@@ -6,9 +6,7 @@ import java.nio.Buffer
 /**
  * @author fabmax
  */
-abstract class GenericBuffer<out B: Buffer>(override val capacity: Int, create: () -> B) : de.fabmax.kool.util.Buffer {
-    val buffer = create()
-
+abstract class GenericBuffer<out B: Buffer>(override val capacity: Int, val buffer: B) : de.fabmax.kool.util.Buffer {
     override var limit: Int
         get() = buffer.limit()
         set(value) { buffer.limit(value) }
@@ -32,9 +30,10 @@ abstract class GenericBuffer<out B: Buffer>(override val capacity: Int, create: 
 /**
  * ByteBuffer buffer implementation
  */
-class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<ByteBuffer>(capacity, {
-    ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder())
-}) {
+class Uint8BufferImpl(buffer: ByteBuffer) : Uint8Buffer, GenericBuffer<ByteBuffer>(buffer.capacity(), buffer) {
+
+    constructor(capacity: Int) : this(ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder()))
+
     override fun get(i: Int): Byte {
         return buffer[i]
     }
@@ -70,9 +69,10 @@ class Uint8BufferImpl(capacity: Int) : Uint8Buffer, GenericBuffer<ByteBuffer>(ca
 /**
  * ShortBuffer buffer implementation
  */
-class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<ShortBuffer>(capacity, {
-    ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asShortBuffer()
-}) {
+class Uint16BufferImpl(buffer: ShortBuffer) : Uint16Buffer, GenericBuffer<ShortBuffer>(buffer.capacity(), buffer) {
+
+    constructor(capacity: Int) : this(ByteBuffer.allocateDirect(capacity * 2).order(ByteOrder.nativeOrder()).asShortBuffer())
+
     override fun get(i: Int): Short {
         return buffer[i]
     }
@@ -108,9 +108,10 @@ class Uint16BufferImpl(capacity: Int) : Uint16Buffer, GenericBuffer<ShortBuffer>
 /**
  * IntBuffer buffer implementation
  */
-class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<IntBuffer>(capacity, {
-    ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asIntBuffer()
-}) {
+class Uint32BufferImpl(buffer: IntBuffer) : Uint32Buffer, GenericBuffer<IntBuffer>(buffer.capacity(), buffer) {
+
+    constructor(capacity: Int) : this(ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asIntBuffer())
+
     override fun get(i: Int): Int {
         return buffer[i]
     }
@@ -146,9 +147,10 @@ class Uint32BufferImpl(capacity: Int) : Uint32Buffer, GenericBuffer<IntBuffer>(c
 /**
  * FloatBuffer buffer implementation
  */
-class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<FloatBuffer>(capacity, {
-    ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
-}) {
+class Float32BufferImpl(buffer: FloatBuffer) : Float32Buffer, GenericBuffer<FloatBuffer>(buffer.capacity(), buffer) {
+
+    constructor(capacity: Int) : this(ByteBuffer.allocateDirect(capacity * 4).order(ByteOrder.nativeOrder()).asFloatBuffer())
+
     override fun get(i: Int): Float {
         return buffer[i]
     }

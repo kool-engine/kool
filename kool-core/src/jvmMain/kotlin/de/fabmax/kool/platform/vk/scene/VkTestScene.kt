@@ -3,9 +3,9 @@ package de.fabmax.kool.platform.vk.scene
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
-import de.fabmax.kool.platform.vk.pipeline.GraphicsPipeline
 import de.fabmax.kool.platform.vk.pipeline.ShaderStage
 import de.fabmax.kool.platform.vk.pipeline.SpirvShaderCode
+import de.fabmax.kool.util.Float32BufferImpl
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
@@ -17,7 +17,6 @@ class VkTestScene() : VkScene {
     lateinit var pipelineConfig: PipelineConfig
 
     private val startTime = System.nanoTime()
-    private val ubo = UniformBufferObject()
     private lateinit var commandBuffers: CommandBuffers
 
     override fun onLoad(sys: VkSystem) {
@@ -34,9 +33,15 @@ class VkTestScene() : VkScene {
                     ShaderStage.fromSource("shader.frag", this::class.java.getResourceAsStream("/shader.frag"), VK_SHADER_STAGE_FRAGMENT_BIT )
             ))
 
-            uniformLayout = UniformLayoutDescription(listOf(
-                    UniformLayoutDescription.Binding("ubo", 0, UniformType.UNIFORM_BUFFER, setOf(Stage.VERTEX_SHADER), 1),
-                    UniformLayoutDescription.Binding("texture", 1, UniformType.IMAGE_SAMPLER, setOf(Stage.FRAGMENT_SHADER), 1)
+            descriptorLayout = DescriptorLayout(listOf(
+                    UniformBuffer.Builder().apply {
+                        name = "ubo"
+                        stages = setOf(Stage.VERTEX_SHADER)
+                        +UniformMat4f("model")
+                        +UniformMat4f("view")
+                        +UniformMat4f("proj")
+                    }.build(),
+                    TextureSampler("texture", Stage.FRAGMENT_SHADER)
             ))
 
             vertexLayout = VertexLayoutDescription.forVertices(model.data)
@@ -47,7 +52,10 @@ class VkTestScene() : VkScene {
     override fun onSwapChainCreated(swapChain: SwapChain) {
         val graphicsPipeline = sys.pipelineManager.getPipeline(pipelineConfig)
 
-        graphicsPipeline.updateDescriptorSets(texture)
+        for (i in 0 until swapChain.nImages) {
+            graphicsPipeline.descriptorObjects.getDescriptorObject(i, 1).texture = texture
+        }
+        graphicsPipeline.updateDescriptorSets()
         commandBuffers = sys.commandPool.createCommandBuffers(swapChain.images.size)
         swapChain.addDependingResource(commandBuffers)
 
@@ -101,63 +109,69 @@ class VkTestScene() : VkScene {
         val a = (t / 1e9 * 30).toFloat()
         val ar = swapChain.extent.width() / swapChain.extent.height().toFloat()
 
-        ubo.reset()
-        ubo.model.rotate(a, 0f, 0f, 1f)
-        ubo.view.setLookAt(Vec3f(2f, 2f, 2f), Vec3f(0f, 0f, 0f), Vec3f(0f, 0f, 1f))
-        ubo.proj.setPerspective(45f, ar, 0.1f, 10f)
+        pipelineConfig.descriptorLayout.descriptors[0].let { ubo ->
+            ubo as UniformBuffer
 
-        // compensate flipped y coordinate in clip space...
-        // this also flips the triangle direction, therefore front-faces are counter-clockwise (-> rasterizer property, createGraphicsPipeline())
-        ubo.proj[1, 1] *= -1f
+            val model = (ubo.uniforms[0] as UniformMat4f)
+            val view = (ubo.uniforms[1] as UniformMat4f)
+            val proj = (ubo.uniforms[2] as UniformMat4f)
 
-        sys.pipelineManager.pipelines.values.forEach {
-            it.uniformBuffers[currentImage].mappedFloats {
-                put(ubo.model.matrix)
-                put(ubo.view.matrix)
-                put(ubo.proj.matrix)
+            model.value.setIdentity()
+            model.value.rotate(a, 0f, 0f, 1f)
+            view.value.setLookAt(Vec3f(2f, 2f, 2f), Vec3f(0f, 0f, 0f), Vec3f(0f, 0f, 1f))
+            proj.value.setPerspective(45f, ar, 0.1f, 10f)
+
+            // compensate flipped y coordinate in clip space...
+            // this also flips the triangle direction, therefore front-faces are counter-clockwise (-> rasterizer property, createGraphicsPipeline())
+            proj.value[1, 1] *= -1f
+
+            sys.pipelineManager.pipelines.values.forEach {
+                it.descriptorObjects.getDescriptorObject(currentImage, 0).buffer!!.mappedFloats {
+                    ubo.putTo(Float32BufferImpl(this))
+                }
             }
         }
-
         return commandBuffers.vkCommandBuffers[currentImage]
     }
 
-    fun GraphicsPipeline.updateDescriptorSets(bindTexture: Texture) {
-        memStack {
-            for (i in swapChain.images.indices) {
-                val buffereInfo = callocVkDescriptorBufferInfoN(1) {
-                    buffer(uniformBuffers[i].vkBuffer)
-                    offset(0L)
-                    range(UniformBufferObject.SIZE.toLong())
-                }
-
-                val imageInfo = callocVkDescriptorImageInfoN(1) {
-                    imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                    imageView(bindTexture.textureImageView.vkImageView)
-                    sampler(bindTexture.sampler)
-                }
-
-                val descriptorWrite = callocVkWriteDescriptorSetN(2) {
-                    this[0]
-                            .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-                            .dstSet(descriptorSets[i])
-                            .dstBinding(0)
-                            .dstArrayElement(0)
-                            .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-                            .descriptorCount(1)
-                            .pBufferInfo(buffereInfo)
-                    this[1]
-                            .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-                            .dstSet(descriptorSets[i])
-                            .dstBinding(1)
-                            .dstArrayElement(0)
-                            .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-                            .descriptorCount(1)
-                            .pImageInfo(imageInfo)
-                }
-
-                vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
-            }
-        }
-    }
+//    fun GraphicsPipeline.updateDescriptorSets(bindTexture: Texture) {
+//        memStack {
+//            for (i in swapChain.images.indices) {
+//                val buffereInfo = callocVkDescriptorBufferInfoN(1) {
+//                    buffer(descriptorObjects.getDescriptorObject(i, 0).buffer!!.vkBuffer)
+//                    offset(0L)
+//                    range((pipelineConfig.descriptorLayout.descriptors[0] as UniformBuffer).size.toLong())
+//                }
+//
+//                descriptorObjects.getDescriptorObject(i, 1).texture = bindTexture
+//                val imageInfo = callocVkDescriptorImageInfoN(1) {
+//                    imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+//                    imageView(bindTexture.textureImageView.vkImageView)
+//                    sampler(bindTexture.sampler)
+//                }
+//
+//                val descriptorWrite = callocVkWriteDescriptorSetN(2) {
+//                    this[0]
+//                            .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+//                            .dstSet(descriptorSets[i])
+//                            .dstBinding(0)
+//                            .dstArrayElement(0)
+//                            .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+//                            .descriptorCount(1)
+//                            .pBufferInfo(buffereInfo)
+//                    this[1]
+//                            .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+//                            .dstSet(descriptorSets[i])
+//                            .dstBinding(1)
+//                            .dstArrayElement(0)
+//                            .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+//                            .descriptorCount(1)
+//                            .pImageInfo(imageInfo)
+//                }
+//
+//                vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
+//            }
+//        }
+//    }
 
 }
