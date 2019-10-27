@@ -183,18 +183,10 @@ class Float32BufferImpl(buffer: FloatBuffer) : Float32Buffer, GenericBuffer<Floa
     }
 }
 
-actual fun createUint8Buffer(capacity: Int): Uint8Buffer {
-    return Uint8BufferImpl(capacity)
-}
+actual fun createUint8Buffer(capacity: Int): Uint8Buffer = Uint8BufferImpl(capacity)
 
-actual fun createUint16Buffer(capacity: Int): Uint16Buffer {
-    return Uint16BufferImpl(capacity)
-}
+actual fun createUint16Buffer(capacity: Int): Uint16Buffer = Uint16BufferImpl(capacity)
 
-actual fun createUint32Buffer(capacity: Int): Uint32Buffer {
-    return Uint32BufferImpl(capacity)
-}
+actual fun createUint32Buffer(capacity: Int): Uint32Buffer = Uint32BufferImpl(capacity)
 
-actual fun createFloat32Buffer(capacity: Int): Float32Buffer {
-    return Float32BufferImpl(capacity)
-}
+actual fun createFloat32Buffer(capacity: Int): Float32Buffer = Float32BufferImpl(capacity)

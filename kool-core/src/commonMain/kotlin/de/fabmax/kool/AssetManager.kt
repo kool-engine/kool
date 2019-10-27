@@ -3,6 +3,7 @@ package de.fabmax.kool
 import de.fabmax.kool.gl.GL_CLAMP_TO_EDGE
 import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_TEXTURE_CUBE_MAP
+import de.fabmax.kool.pipeline.ImageData
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
@@ -28,27 +29,22 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     private val assetRefChannel = Channel<AssetRef>(Channel.UNLIMITED)
     private val loadedAssetChannel = Channel<LoadedAsset>()
 
-    private val loader = loader(awaitedAssetsChannel, assetRefChannel, loadedAssetChannel)
     private val workers = List(NUM_LOAD_WORKERS) { loadWorker(assetRefChannel, loadedAssetChannel) }
 
-    open fun close() {
-        job.cancel()
-    }
-
-    private fun loader(awaitedAssets: ReceiveChannel<AwaitedAsset>, assetRefs: SendChannel<AssetRef>, loadedAssets: ReceiveChannel<LoadedAsset>) = launch {
+    private val loader = launch {
         val requested = mutableMapOf<AssetRef, MutableList<AwaitedAsset>>()
         while (true) {
             select<Unit> {
-                awaitedAssets.onReceive { awaited ->
+                awaitedAssetsChannel.onReceive { awaited ->
                     val awaiting = requested[awaited.ref]
                     if (awaiting == null) {
                         requested[awaited.ref] = mutableListOf(awaited)
-                        assetRefs.send(awaited.ref)
+                        assetRefChannel.send(awaited.ref)
                     } else {
                         awaiting.add(awaited)
                     }
                 }
-                loadedAssets.onReceive { loaded ->
+                loadedAssetChannel.onReceive { loaded ->
                     val awaiting = requested.remove(loaded.ref)!!
                     for (awaited in awaiting) {
                         awaited.awaiting.complete(loaded)
@@ -62,6 +58,10 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         for (ref in assetRefs) {
             loadedAssets.send(loadAsset(ref))
         }
+    }
+
+    open fun close() {
+        job.cancel()
     }
 
     private suspend fun loadAsset(ref: AssetRef): LoadedAsset {
@@ -116,6 +116,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
             onLoad(model)
         }
     }
+
+    abstract suspend fun loadImageData(assetPath: String): ImageData
 
     fun loadTextureAsset(assetPath: String): TextureData  {
         val proxy = TextureDataProxy()

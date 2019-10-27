@@ -2,7 +2,7 @@ package de.fabmax.kool.drawqueue
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.pipeline.Pipeline
 
 abstract class DrawCommand {
 
@@ -11,7 +11,7 @@ abstract class DrawCommand {
     val projMat = Mat4f()
     val mvpMat = Mat4f()
 
-    var pipelineConfig: PipelineConfig? = null
+    var pipeline: Pipeline? = null
 
     open fun captureMvp(ctx: KoolContext) {
         modelMat.set(ctx.mvpState.modelMatrix)

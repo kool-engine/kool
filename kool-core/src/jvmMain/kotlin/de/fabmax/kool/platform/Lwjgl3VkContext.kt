@@ -2,14 +2,10 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.GlCapabilities
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.drawqueue.DrawCommandMesh
-import de.fabmax.kool.pipeline.UniformBuffer
-import de.fabmax.kool.pipeline.UniformMat4f
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.pipeline.GraphicsPipeline
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Float32BufferImpl
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import org.lwjgl.vulkan.VK10.*
@@ -37,7 +33,7 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
 
     init {
         viewport = Viewport(0, 0, windowWidth, windowHeight)
-        vkSystem = VkSystem(VkSetup().apply { isValidating = true }, vkScene)
+        vkSystem = VkSystem(VkSetup().apply { isValidating = true }, vkScene, this)
         vkSystem.window.onResize += object : GlfwWindow.OnWindowResizeListener {
             override fun onResize(window: GlfwWindow, newWidth: Int, newHeight: Int) {
                 windowWidth = newWidth
@@ -153,41 +149,43 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
 
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
 
-                var graphicsPipeline: GraphicsPipeline? = null
+                var prevPipeline: GraphicsPipeline? = null
                 drawQueue.commands.forEach { cmd ->
-                    val pipelineCfg = cmd.pipelineConfig!!
+                    val pipelineCfg = cmd.pipeline!!
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg)) {
                         sys.pipelineManager.addPipelineConfig(pipelineCfg)
-                        sys.pipelineManager.getPipeline(pipelineCfg).updateDescriptorSets()
+                        sys.pipelineManager.getPipeline(pipelineCfg)
                     }
                     val pipeline = sys.pipelineManager.getPipeline(pipelineCfg)
-                    if (pipeline != graphicsPipeline) {
+                    if (pipeline !== prevPipeline) {
                         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.vkGraphicsPipeline)
-                        graphicsPipeline = pipeline
+                        prevPipeline = pipeline
                     }
 
                     cmd as DrawCommandMesh
-                    pipeline.updateUbo(cmd, imageIndex)
+                    if (pipeline.updateDescriptors(cmd, imageIndex)) {
+                        pipeline.updateDescriptorSets()
 
-                    var model = meshMap[cmd.mesh]
-                    if (cmd.mesh.meshData.isSyncRequired || model == null) {
-                        cmd.mesh.meshData.isSyncRequired = false
+                        var model = meshMap[cmd.mesh]
+                        if (cmd.mesh.meshData.isSyncRequired || model == null) {
+                            cmd.mesh.meshData.isSyncRequired = false
 
-                        // (re-)build buffer
-                        // fixme: don't do this here, should have happened before (async?)
-                        meshMap.remove(cmd.mesh)?.destroy()
-                        model = IndexedMesh(sys, cmd.mesh.meshData.vertexList)
-                        meshMap[cmd.mesh] = model
-                        sys.device.addDependingResource(model)
+                            // (re-)build buffer
+                            // fixme: don't do this here, should have happened before (async?)
+                            meshMap.remove(cmd.mesh)?.destroy()
+                            model = IndexedMesh(sys, cmd.mesh.meshData.vertexList)
+                            meshMap[cmd.mesh] = model
+                            sys.device.addDependingResource(model)
+                        }
+
+                        vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
+                        vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
+
+                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                pipeline.pipelineLayout, 0, longs(pipeline.descriptorSets[imageIndex]), null)
+
+                        vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0)
                     }
-
-                    vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
-                    vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
-
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            pipeline.pipelineLayout, 0, longs(pipeline.descriptorSets[imageIndex]), null)
-
-                    vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0)
                 }
 
                 vkCmdEndRenderPass(commandBuffer)
@@ -196,56 +194,6 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
             }
 
             return cmdBufs.vkCommandBuffers[0]
-        }
-
-//        fun GraphicsPipeline.updateDescriptorSets(descriptorLayout: DescriptorLayout, imageIndex: Int) {
-//            // fixme: support arbitrary descriptor layouts
-//            val ubo = descriptorLayout.descriptors[0] as UniformBuffer
-//
-//            memStack {
-//                val buffereInfo = callocVkDescriptorBufferInfoN(1) {
-//                    buffer(uniformBuffers[imageIndex].vkBuffer)
-//                    offset(0L)
-//                    range(ubo.size.toLong())
-//                }
-//
-//                val descriptorWrite = callocVkWriteDescriptorSetN(1) {
-//                    sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-//                    dstSet(descriptorSets[imageIndex])
-//                    dstBinding(0)
-//                    dstArrayElement(0)
-//                    descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-//                    descriptorCount(1)
-//                    pBufferInfo(buffereInfo)
-//                }
-//
-//                vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
-//            }
-//        }
-
-        private fun GraphicsPipeline.updateUbo(cmd: DrawCommand, imageIndex: Int) {
-            val pipelineCfg = cmd.pipelineConfig!!
-
-            // fixme: support arbitrary descriptor layouts, this assumes UBO with MVP at location 0
-            val descObj = descriptorObjects.getDescriptorObject(imageIndex, 0)
-            val ubo = descObj.descriptor as UniformBuffer
-
-            val model = (ubo.uniforms[0] as UniformMat4f)
-            val view = (ubo.uniforms[1] as UniformMat4f)
-            val proj = (ubo.uniforms[2] as UniformMat4f)
-
-            model.value.set(cmd.modelMat)
-            view.value.set(cmd.viewMat)
-            proj.value.set(cmd.projMat)
-
-            // compensate flipped y coordinate in clip space...
-            // this also flips the triangle direction, therefore front-faces are counter-clockwise
-            //   -> rasterizer property, createGraphicsPipeline()
-            proj.value[1, 1] *= -1f
-
-            descObj.buffer!!.mappedFloats {
-                ubo.putTo(Float32BufferImpl(this))
-            }
         }
     }
 }

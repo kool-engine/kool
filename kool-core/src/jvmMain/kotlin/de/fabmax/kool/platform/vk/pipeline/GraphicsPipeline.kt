@@ -1,51 +1,57 @@
 package de.fabmax.kool.platform.vk.pipeline
 
+import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
+import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.logD
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkWriteDescriptorSet
 import java.nio.ByteBuffer
 
-class GraphicsPipeline(val swapChain: SwapChain, val pipelineConfig: PipelineConfig) : VkResource() {
+class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline) : VkResource() {
 
     val descriptorSetLayout: Long
     val descriptorPool: Long
     val descriptorSets = mutableListOf<Long>()
 
+    // fixme: make descriptorObjects private and access buffers / textures via pipelineConfig
     val descriptorObjects = DescriptorObjects(swapChain.nImages)
 
     val vkGraphicsPipeline: Long
     val pipelineLayout: Long
 
+    var requiresDescriptorSetUpdate = true
+
     init {
         memStack {
-            descriptorSetLayout = createDescriptorSetLayout(pipelineConfig.descriptorLayout)
-            descriptorPool = createDescriptorPool(pipelineConfig.descriptorLayout)
+            descriptorSetLayout = createDescriptorSetLayout(pipeline.descriptorLayout)
+            descriptorPool = createDescriptorPool(pipeline.descriptorLayout)
             createDescriptorSets()
-            createDescriptorObjects(pipelineConfig.descriptorLayout)
+            createDescriptorObjects(pipeline.descriptorLayout)
 
-            val shaderStages = pipelineConfig.shaderCode as SpirvShaderCode
-            val shaderStageModules = shaderStages.stages.map { createShaderModule(it) }
-            val shaderStageInfos = callocVkPipelineShaderStageCreateInfoN(shaderStages.stages.size) {
-                for (i in shaderStages.stages.indices) {
+            val shaderStages = pipeline.shaderCode.stages
+            val shaderStageModules = shaderStages.map { createShaderModule(it) }
+            val shaderStageInfos = callocVkPipelineShaderStageCreateInfoN(shaderStages.size) {
+                for (i in shaderStages.indices) {
                     this[i]
                         .sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)
-                        .stage(shaderStages.stages[i].stage)
+                        .stage(shaderStages[i].stage)
                         .module(shaderStageModules[i])
-                        .pName(ASCII(shaderStages.stages[i].entryPoint))
+                        .pName(ASCII(shaderStages[i].entryPoint))
                 }
             }
 
             val bindingDescription = callocVkVertexInputBindingDescriptionN(1) {
-                binding(pipelineConfig.vertexLayout.bindings[0].binding)
-                stride(pipelineConfig.vertexLayout.bindings[0].strideBytes)
+                binding(pipeline.vertexLayout.bindings[0].binding)
+                stride(pipeline.vertexLayout.bindings[0].strideBytes)
                 inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
             }
-            val nAttributes = pipelineConfig.vertexLayout.bindings[0].attributes.size
+            val nAttributes = pipeline.vertexLayout.bindings[0].attributes.size
             val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nAttributes) {
-                pipelineConfig.vertexLayout.bindings[0].attributes.forEachIndexed { i, attrib ->
+                pipeline.vertexLayout.bindings[0].attributes.forEachIndexed { i, attrib ->
                     this[i].apply {
                         binding(attrib.binding)
                         location(attrib.location)
@@ -102,7 +108,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipelineConfig: PipelineCon
                 polygonMode(VK_POLYGON_MODE_FILL)
                 //polygonMode(VK_POLYGON_MODE_LINE)
                 lineWidth(1f)
-                cullMode(when (pipelineConfig.cullMethod) {
+                cullMode(when (pipeline.cullMethod) {
                     CullMethod.FRONT_FACE -> VK_CULL_MODE_FRONT_BIT
                     CullMethod.BACK_FACE -> VK_CULL_MODE_BACK_BIT
                     CullMethod.NO_CULL -> VK_CULL_MODE_NONE
@@ -151,9 +157,9 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipelineConfig: PipelineCon
 
             val depthStencil = callocVkPipelineDepthStencilStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
-                depthTestEnable(pipelineConfig.depthTest != DepthTest.DISABLED)
-                depthWriteEnable(pipelineConfig.isWriteDepth)
-                depthCompareOp(when (pipelineConfig.depthTest) {
+                depthTestEnable(pipeline.depthTest != DepthTest.DISABLED)
+                depthWriteEnable(pipeline.isWriteDepth)
+                depthCompareOp(when (pipeline.depthTest) {
                     DepthTest.DISABLED -> 0
                     DepthTest.ALWAYS -> VK_COMPARE_OP_ALWAYS
                     DepthTest.LESS -> VK_COMPARE_OP_LESS
@@ -210,58 +216,19 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipelineConfig: PipelineCon
     }
 
     fun updateDescriptorSets() {
-        for (i in 0 until swapChain.nImages) {
-            updateDescriptorSets(i)
-        }
-    }
-
-    fun updateDescriptorSets(imageIndex: Int) {
-        memStack {
-            val descriptorWrite = callocVkWriteDescriptorSetN(pipelineConfig.descriptorLayout.descriptors.size) {
-                pipelineConfig.descriptorLayout.descriptors.forEachIndexed { descIdx, desc ->
-                    val descObj = descriptorObjects.getDescriptorObject(imageIndex, descIdx)
-
-                    when {
-                        desc.type == DescriptorType.UNIFORM_BUFFER -> {
-                            desc as UniformBuffer
-                            val buffereInfo = callocVkDescriptorBufferInfoN(1) {
-                                buffer(descObj.buffer!!.vkBuffer)
-                                offset(0L)
-                                range(desc.size.toLong())
-                            }
-                            this[descIdx]
-                                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-                                    .dstSet(descriptorSets[imageIndex])
-                                    .dstBinding(descObj.binding)
-                                    .dstArrayElement(0)
-                                    .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-                                    .descriptorCount(1)
-                                    .pBufferInfo(buffereInfo)
-
+        if (requiresDescriptorSetUpdate) {
+            requiresDescriptorSetUpdate = false
+            for (imageIndex in 0 until swapChain.nImages) {
+                memStack {
+                    val descriptorWrite = callocVkWriteDescriptorSetN(pipeline.descriptorLayout.descriptors.size) {
+                        pipeline.descriptorLayout.descriptors.forEachIndexed { descIdx, desc ->
+                            val descObj = descriptorObjects.getDescriptorObject(imageIndex, descIdx)
+                            descObj.setDescriptorSet(this@memStack, this[descIdx], descriptorSets[imageIndex])
                         }
-                        desc.type == DescriptorType.IMAGE_SAMPLER -> {
-                            desc as TextureSampler
-                            val imageInfo = callocVkDescriptorImageInfoN(1) {
-                                imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                                imageView(descObj.texture!!.textureImageView.vkImageView)
-                                sampler(descObj.texture!!.sampler)
-                            }
-                            this[descIdx]
-                                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
-                                    .dstSet(descriptorSets[imageIndex])
-                                    .dstBinding(descObj.binding)
-                                    .dstArrayElement(0)
-                                    .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-                                    .descriptorCount(1)
-                                    .pImageInfo(imageInfo)
-
-                        }
-                        else -> throw IllegalStateException("Unsupported descriptor type: " + desc.type)
                     }
+                    vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
                 }
             }
-
-            vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
         }
     }
 
@@ -322,15 +289,20 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipelineConfig: PipelineCon
     private fun createDescriptorObjects(descriptorLayout: DescriptorLayout) {
         descriptorLayout.descriptors.forEachIndexed { idx, desc ->
             descriptorObjects.addDescriptor {
-                // fixme: more reasonable binding index needed?
-                val obj = DescriptorObject(idx, desc)
-                if (desc.type == DescriptorType.UNIFORM_BUFFER) {
-                    desc as UniformBuffer
-                    val usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
-                    val allocUsage = VMA_MEMORY_USAGE_CPU_TO_GPU
-                    obj.buffer = Buffer(swapChain.sys, desc.size.toLong(), usage, allocUsage).also { addDependingResource(it) }
+                when (desc.type) {
+                    // fixme: more reasonable binding index needed?
+                    DescriptorType.UNIFORM_BUFFER -> {
+                        desc as UniformBuffer
+                        val usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+                        val allocUsage = VMA_MEMORY_USAGE_CPU_TO_GPU
+                        val buffer = Buffer(swapChain.sys, desc.size.toLong(), usage, allocUsage).also { addDependingResource(it) }
+                        UboDescriptor(idx, desc, buffer)
+                    }
+                    DescriptorType.IMAGE_SAMPLER -> {
+                        desc as TextureSampler
+                        SamplerDescriptor(idx, desc)
+                    }
                 }
-                obj
             }
         }
     }
@@ -376,6 +348,10 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipelineConfig: PipelineCon
         }
     }
 
+    fun updateDescriptors(cmd: DrawCommand, imageIndex: Int): Boolean {
+        return descriptorObjects.updateDescriptors(cmd, imageIndex)
+    }
+
     override fun freeResources() {
         vkDestroyPipeline(swapChain.sys.device.vkDevice, vkGraphicsPipeline, null)
         vkDestroyPipelineLayout(swapChain.sys.device.vkDevice, pipelineLayout, null)
@@ -405,10 +381,85 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipelineConfig: PipelineCon
         fun getDescriptorObject(imageIndex: Int, descriptorIndex: Int): DescriptorObject {
             return objects[imageIndex][descriptorIndex]
         }
+
+        fun updateDescriptors(cmd: DrawCommand, imageIndex: Int): Boolean {
+            val descs = objects[imageIndex]
+            var valid = true
+            for (i in descs.indices) {
+                valid = descs[i].update(cmd) && valid
+            }
+            return valid
+        }
     }
 
-    class DescriptorObject(val binding: Int, val descriptor: Descriptor) {
-        var buffer: Buffer? = null
-        var texture: Texture? = null
+    abstract class DescriptorObject(val binding: Int, val descriptor: Descriptor) {
+        abstract fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long)
+
+        abstract fun update(cmd: DrawCommand): Boolean
+    }
+
+    class UboDescriptor(binding: Int, val ubo: UniformBuffer, val buffer: Buffer) : DescriptorObject(binding, ubo) {
+        override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long) {
+            stack.apply {
+                val buffereInfo = callocVkDescriptorBufferInfoN(1) {
+                    buffer(buffer.vkBuffer)
+                    offset(0L)
+                    range(ubo.size.toLong())
+                }
+                vkWriteDescriptorSet
+                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                    .dstSet(dstSet)
+                    .dstBinding(binding)
+                    .dstArrayElement(0)
+                    .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+                    .descriptorCount(1)
+                    .pBufferInfo(buffereInfo)
+            }
+        }
+
+        override fun update(cmd: DrawCommand): Boolean {
+            ubo.onUpdate?.invoke(ubo, cmd)
+            buffer.mappedFloats { ubo.putTo(Float32BufferImpl(this)) }
+            return true
+        }
+    }
+
+    inner class SamplerDescriptor(binding: Int, val sampler: TextureSampler) : DescriptorObject(binding, sampler) {
+        override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long) {
+            stack.apply {
+                // fixme: way to many repeating words and exclamation marks...
+                val vkTex = sampler.texture!!.sampler!!.texture!!
+
+                val imageInfo = callocVkDescriptorImageInfoN(1) {
+                    imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    imageView(vkTex.textureImageView.vkImageView)
+                    sampler(vkTex.sampler)
+                }
+                vkWriteDescriptorSet
+                        .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                        .dstSet(dstSet)
+                        .dstBinding(binding)
+                        .dstArrayElement(0)
+                        .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+                        .descriptorCount(1)
+                        .pImageInfo(imageInfo)
+            }
+        }
+
+        override fun update(cmd: DrawCommand): Boolean {
+            sampler.texture?.let {
+                if (it.sampler == null) {
+                    it.sampler = ImageSampler(swapChain.sys.ctx.assetMgr.deferredTexLoad(it.loader), swapChain.sys)
+                }
+                if (it.sampler?.texture == null) {
+                    it.sampler?.checkComplete()
+                    if (it.sampler?.texture != null) {
+                        requiresDescriptorSetUpdate = true
+                    }
+                }
+            }
+            sampler.onUpdate?.invoke(sampler, cmd)
+            return sampler.texture?.sampler?.texture != null
+        }
     }
 }

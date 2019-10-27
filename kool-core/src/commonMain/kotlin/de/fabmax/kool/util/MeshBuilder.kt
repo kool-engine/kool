@@ -356,60 +356,60 @@ open class MeshBuilder(val meshData: MeshData) {
 
         // front
         withColor(props.frontColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(0f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 1f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(0f, 0f))
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }
 
         // right
         withColor(props.rightColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.X_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.X_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.X_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.X_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.X_AXIS, Vec2f(0f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.X_AXIS, Vec2f(1f, 1f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.X_AXIS, Vec2f(1f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.X_AXIS, Vec2f(0f, 0f))
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }
 
         // back
         withColor(props.backColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(1f, 1f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(1f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 0f))
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }
 
         // left
         withColor(props.leftColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_X_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_X_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS, Vec2f(0f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS, Vec2f(1f, 1f))
+            val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_X_AXIS, Vec2f(1f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_X_AXIS, Vec2f(0f, 0f))
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }
 
         // top
         withColor(props.topColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS, Vec2f(0f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS, Vec2f(1f, 1f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS, Vec2f(1f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS, Vec2f(0f, 0f))
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }
 
         // bottom
         withColor(props.bottomColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS, Vec2f(0f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 1f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS, Vec2f(0f, 0f))
             meshData.addTriIndices(i0, i1, i2)
             meshData.addTriIndices(i0, i2, i3)
         }

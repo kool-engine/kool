@@ -1,12 +1,13 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.platform.Lwjgl3VkContext
 import de.fabmax.kool.platform.vk.pipeline.PipelineManager
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW.glfwGetFramebufferSize
 import org.lwjgl.glfw.GLFW.glfwWaitEvents
 import org.lwjgl.vulkan.VK10.vkDeviceWaitIdle
 
-class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene) : VkResource() {
+class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjgl3VkContext) : VkResource() {
 
     val window: GlfwWindow
 

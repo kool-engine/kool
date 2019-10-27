@@ -1,33 +1,32 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.gl.GL_RGBA
-import de.fabmax.kool.platform.bufferedImageToBuffer
+import de.fabmax.kool.platform.ImageTextureData
+import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logD
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_GPU_ONLY
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkFormatProperties
 import java.io.FileInputStream
-import java.io.InputStream
 import javax.imageio.ImageIO
 import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class Texture(val sys: VkSystem, imgInput: InputStream) : VkResource() {
+class VkTexture(val sys: VkSystem, val width: Int, val height: Int, val data: Uint8Buffer) : VkResource() {
 
     val textureImage: Image
     val textureImageView: ImageView
     val sampler: Long
 
-    constructor(sys: VkSystem, path: String): this(sys, FileInputStream(path))
+    constructor(sys: VkSystem, path: String): this(sys, ImageTextureData().apply { setTexImage(ImageIO.read(FileInputStream(path))) })
+
+    constructor(sys: VkSystem, img: ImageTextureData): this(sys, img.width, img.height, img.buffer!!)
 
     init {
-        val img = ImageIO.read(imgInput)
-        val imageSize = img.width * img.height * 4L
-        val texDataBuf = bufferedImageToBuffer(img, GL_RGBA, 0, 0)
-        val texData = ByteArray(imageSize.toInt()) { i -> texDataBuf[i] }
-        val mipLevels = log2(max(img.width, img.height).toDouble()).roundToInt() + 1
+        val imageSize = width * height * 4L
+        val texData = ByteArray(imageSize.toInt()) { i -> data[i] }
+        val mipLevels = log2(max(width, height).toDouble()).roundToInt() + 1
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -35,10 +34,10 @@ class Texture(val sys: VkSystem, imgInput: InputStream) : VkResource() {
             put(texData)
         }
 
-        textureImage = Image(sys, img.width, img.height, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
+        textureImage = Image(sys, width, height, mipLevels, VK_SAMPLE_COUNT_1_BIT, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT, VMA_MEMORY_USAGE_GPU_ONLY)
         textureImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        copyBufferToImage(stagingBuffer, textureImage, img.width, img.height)
+        copyBufferToImage(stagingBuffer, textureImage, width, height)
         generateMipmaps()
         addDependingResource(textureImage)
         stagingBuffer.destroy()
@@ -47,6 +46,8 @@ class Texture(val sys: VkSystem, imgInput: InputStream) : VkResource() {
         addDependingResource(textureImageView)
 
         sampler = createSampler()
+
+        logD { "Texture created: Image: ${textureImage.vkImage}, view: ${textureImageView.vkImageView}, sampler: $sampler" }
     }
 
     private fun createSampler(): Long {

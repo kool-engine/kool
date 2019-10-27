@@ -29,7 +29,7 @@ kotlin {
             }
         }
 
-        fromPreset(presets.js, 'js') {
+        /*fromPreset(presets.js, 'js') {
             compilations.main {
                 tasks[compileKotlinTaskName].kotlinOptions {
                     outputFile = "${buildDir}/web/kool.js"
@@ -37,7 +37,7 @@ kotlin {
                     sourceMap = false
                 }
             }
-        }
+        }*/
     }
 
     sourceSets {
@@ -90,13 +90,13 @@ kotlin {
         }
 
         // Javascript platform
-        jsMain {
+        /*jsMain {
             dependencies {
                 api 'org.jetbrains.kotlin:kotlin-stdlib-js'
                 api "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutines_version"
                 api "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version"
             }
-        }
+        }*/
 
         sourceSets.all {
             languageSettings {
@@ -109,7 +109,7 @@ kotlin {
     }
 }
 
-build.doLast {
+/*build.doLast {
     copy {
         includeEmptyDirs = false
         from "${buildDir}/web"
@@ -118,7 +118,7 @@ build.doLast {
             fileTreeElement.path.endsWith(".js")
         }
     }
-}
+}*/
 
 //if (publishingAvailable) {
 //    apply from: "../publishing.gradle"

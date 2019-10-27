@@ -2,8 +2,9 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.copy
 
-class VertexLayoutDescription(val bindings: List<Binding>) {
+class VertexLayoutDescription private constructor(val bindings: List<Binding>) {
     fun getAttributeLocation(attribName: String): Int {
         for (i in bindings.indices) {
             bindings[i].attributes.find { it.name == attribName }?.let { return it.location }
@@ -11,18 +12,19 @@ class VertexLayoutDescription(val bindings: List<Binding>) {
         throw NoSuchElementException("Attribute $attribName not found")
     }
 
-    data class Binding(val binding: Int, val inputRate: InputRate, val attributes: List<Attribute>) {
+    class Binding(val binding: Int, val inputRate: InputRate, val attributes: List<Attribute>) {
         val strideBytes: Int = attributes.sumBy { it.type.size }
     }
 
-    data class Attribute(val binding: Int, val location: Int, val offset: Int, val type: AttributeType, val name: String)
+    class Attribute(val binding: Int, val location: Int, val offset: Int, val type: AttributeType, val name: String)
 
-    companion object {
-        fun forMesh(mesh: Mesh): VertexLayoutDescription = forVertices(mesh.meshData.vertexList)
+    class Builder {
+        val bindings = mutableListOf<Binding>()
 
-        fun forVertices(vertexList: IndexedVertexList): VertexLayoutDescription {
+        fun forMesh(mesh: Mesh): Builder = forVertices(mesh.meshData.vertexList)
+
+        fun forVertices(vertexList: IndexedVertexList): Builder {
             val attribs = mutableListOf<Attribute>()
-
             var iAtrrib = 0
             vertexList.attributeOffsets.forEach { (attrib, off) ->
                 // fixme: unify / replace old de.fabmax.kool.shading.AttributeType by new one (which is not OpenGL specific)
@@ -32,15 +34,17 @@ class VertexLayoutDescription(val bindings: List<Binding>) {
                     de.fabmax.kool.shading.AttributeType.VEC_3F -> AttributeType.VEC_3F
                     de.fabmax.kool.shading.AttributeType.VEC_4F -> AttributeType.VEC_4F
                     de.fabmax.kool.shading.AttributeType.COLOR_4F -> AttributeType.COLOR_4F
-                    // fixme: support int types
+                    // fixme: support int types, maybe as a 2nd binding?
                     else -> throw IllegalStateException("Attribute is not a float type")
                 }
                 attribs += Attribute(0, iAtrrib++, off * 4, attribType, attrib.name)
             }
+            bindings += Binding(0, InputRate.VERTEX, attribs)
+            return this
+        }
 
-            // fixme: support multiple bindings
-            val bindings = listOf(Binding(0, InputRate.VERTEX, attribs))
-            return VertexLayoutDescription(bindings)
+        fun build(): VertexLayoutDescription {
+            return VertexLayoutDescription(bindings.copy())
         }
     }
 }

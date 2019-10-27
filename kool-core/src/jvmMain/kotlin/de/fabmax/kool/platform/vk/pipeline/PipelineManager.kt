@@ -1,16 +1,16 @@
 package de.fabmax.kool.platform.vk.pipeline
 
-import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.platform.vk.SwapChain
 import de.fabmax.kool.platform.vk.VkSystem
 
 class PipelineManager(val sys: VkSystem) {
 
-    private val pipelineConfigs = mutableListOf<PipelineConfig>()
+    private val pipelineConfigs = mutableListOf<Pipeline>()
 
     private var swapChain: SwapChain? = null
-    private val mutPipelines = mutableMapOf<PipelineConfig, GraphicsPipeline>()
-    val pipelines: Map<PipelineConfig, GraphicsPipeline> = mutPipelines
+    private val mutPipelines = mutableMapOf<Pipeline, GraphicsPipeline>()
+    val pipelines: Map<Pipeline, GraphicsPipeline> = mutPipelines
 
     fun onSwapchainDestroyed() {
         swapChain = null
@@ -25,17 +25,17 @@ class PipelineManager(val sys: VkSystem) {
         }
     }
 
-    fun hasPipeline(pipelineConfig: PipelineConfig): Boolean = pipelines.containsKey(pipelineConfig)
+    fun hasPipeline(pipeline: Pipeline): Boolean = pipelines.containsKey(pipeline)
 
-    fun addPipelineConfig(pipelineConfig: PipelineConfig) {
-        pipelineConfigs += pipelineConfig
+    fun addPipelineConfig(pipeline: Pipeline) {
+        pipelineConfigs += pipeline
 
         swapChain?.let {
-            mutPipelines[pipelineConfig] = GraphicsPipeline(it, pipelineConfig)
+            mutPipelines[pipeline] = GraphicsPipeline(it, pipeline)
         }
     }
 
-    fun getPipeline(pipelineConfig: PipelineConfig): GraphicsPipeline {
-        return mutPipelines[pipelineConfig] ?: throw NoSuchElementException("Unknown pipeline config")
+    fun getPipeline(pipeline: Pipeline): GraphicsPipeline {
+        return mutPipelines[pipeline] ?: throw NoSuchElementException("Unknown pipeline config")
     }
 }

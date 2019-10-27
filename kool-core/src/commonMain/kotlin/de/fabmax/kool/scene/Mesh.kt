@@ -5,7 +5,7 @@ import de.fabmax.kool.RenderPass
 import de.fabmax.kool.drawqueue.DrawCommandMesh
 import de.fabmax.kool.gl.glDrawElements
 import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Font
@@ -94,7 +94,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         get() = meshData.generator
         set(value) { meshData.generator = value }
 
-    var pipelineConfig: PipelineConfig? = null
+    var pipeline: Pipeline? = null
     var shader: Shader? = null
     var cullMethod = CullMethod.DEFAULT
     var rayTest = MeshRayTest.boundsTest()
@@ -140,7 +140,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 //            rayTest.onMeshDataChanged(this)
 //        }
 
-        drawCommand.pipelineConfig = pipelineConfig
+        drawCommand.pipeline = pipeline
         drawCommand.captureMvp(ctx)
         ctx.drawQueue += drawCommand
     }

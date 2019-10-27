@@ -29,7 +29,7 @@ kotlin {
             }
         }
 
-        fromPreset(presets.js, 'js') {
+        /*fromPreset(presets.js, 'js') {
             compilations.main {
                 tasks[compileKotlinTaskName].kotlinOptions {
                     outputFile = "${buildDir}/web/kooldemo.js"
@@ -37,7 +37,7 @@ kotlin {
                     sourceMap = false
                 }
             }
-        }
+        }*/
     }
 
     sourceSets {
@@ -52,7 +52,7 @@ kotlin {
         jvmMain { }
         
         // Javascript platform
-        jsMain { }
+        //jsMain { }
         
         sourceSets.all {
             languageSettings {
@@ -67,7 +67,7 @@ clean {
     delete "$projectDir/$webPath"
 }
 
-build.doLast {
+/*build.doLast {
     // fixme: this is a hack to get the dependencies of core-js as well
     def cfgs = [project(":kool-core").configurations.find { cfg -> cfg.name.endsWith("jsRuntimeClasspath") }, configurations.find { cfg -> cfg.name.endsWith("jsRuntimeClasspath") }]
     cfgs.each { cfg ->
@@ -97,4 +97,4 @@ build.doLast {
         from kotlin.sourceSets.jsMain.resources.srcDirs
         into "$projectDir/$webPath"
     }
-}
+}*/

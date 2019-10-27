@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.vk.pipeline
 
-import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.platform.vk.util.Shaderc
 import de.fabmax.kool.util.logD
 import org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT
@@ -50,8 +49,4 @@ class ShaderStage(val name: String, val code: ByteArray, val stage: Int, val ent
             return ShaderStage(name, codeArray, stage, entryPoint)
         }
     }
-}
-
-class SpirvShaderCode(val stages: List<ShaderStage>) : ShaderCode {
-    constructor(vararg stages: ShaderStage): this(stages.asList())
 }

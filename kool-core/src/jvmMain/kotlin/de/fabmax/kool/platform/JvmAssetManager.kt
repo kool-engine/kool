@@ -1,9 +1,12 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.pipeline.ImageData
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
+import kotlinx.coroutines.*
+import kotlinx.io.IOException
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -22,43 +25,52 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps) : Ass
 
     override suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef): LoadedRawAsset {
         var data: ByteArray? = null
-        try {
-            openLocalStream(localRawRef.url).use { data = it.readBytes() }
-        } catch (e: Exception) {
-            logE { "Failed loading asset ${localRawRef.url}: $e" }
+        withContext(Dispatchers.IO) {
+            try {
+                openLocalStream(localRawRef.url).use { data = it.readBytes() }
+            } catch (e: Exception) {
+                logE { "Failed loading asset ${localRawRef.url}: $e" }
+            }
         }
         return LoadedRawAsset(localRawRef, data)
     }
 
     override suspend fun loadHttpRaw(httpRawRef: HttpRawAssetRef): LoadedRawAsset {
         var data: ByteArray? = null
-        try {
-            FileInputStream(HttpCache.loadHttpResource(httpRawRef.url)).use { data = it.readBytes() }
-        } catch (e: Exception) {
-            logE { "Failed loading asset ${httpRawRef.url}: $e" }
+        withContext(Dispatchers.IO) {
+            try {
+                val f = HttpCache.loadHttpResource(httpRawRef.url) ?: throw IOException("Failed downloading ${httpRawRef.url}")
+                FileInputStream(f).use { data = it.readBytes() }
+            } catch (e: Exception) {
+                logE { "Failed loading asset ${httpRawRef.url}: $e" }
+            }
         }
         return LoadedRawAsset(httpRawRef, data)
     }
 
     override suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef): LoadedTextureAsset {
         var data: ImageTextureData? = null
-        try {
-            openLocalStream(localTextureRef.url).use { data = ImageTextureData(ImageIO.read(it)) }
-        } catch (e: Exception) {
-            logE { "Failed loading texture ${localTextureRef.url}: $e" }
+        withContext(Dispatchers.IO) {
+            try {
+                openLocalStream(localTextureRef.url).use { data = ImageTextureData(ImageIO.read(it)) }
+            } catch (e: Exception) {
+                logE { "Failed loading texture ${localTextureRef.url}: $e" }
+            }
         }
         return LoadedTextureAsset(localTextureRef, data)
     }
 
     override suspend fun loadHttpTexture(httpTextureRef: HttpTextureAssetRef): LoadedTextureAsset {
         var data: ImageTextureData? = null
-        try {
-            val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
-            FileInputStream(f).use {
-                data = ImageTextureData(ImageIO.read(it))
+        withContext(Dispatchers.IO) {
+            try {
+                val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
+                FileInputStream(f).use {
+                    data = ImageTextureData(ImageIO.read(it))
+                }
+            } catch (e: Exception) {
+                logE { "Failed loading texture ${httpTextureRef.url}: $e" }
             }
-        } catch (e: Exception) {
-            logE { "Failed loading texture ${httpTextureRef.url}: $e" }
         }
         return LoadedTextureAsset(httpTextureRef, data)
     }
@@ -75,6 +87,20 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps) : Ass
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
 
     override fun inflate(zipData: ByteArray): ByteArray = GZIPInputStream(ByteArrayInputStream(zipData)).readBytes()
+
+    override suspend fun loadImageData(assetPath: String): ImageData {
+        val ref = if (isHttpAsset(assetPath)) {
+            loadHttpTexture(HttpTextureAssetRef(assetPath))
+        } else {
+            loadLocalTexture(LocalTextureAssetRef("$assetsBaseDir/$assetPath"))
+        }
+        val data = ref.data as ImageTextureData
+        return ImageData(data)
+    }
+
+    fun deferredTexLoad(loader: suspend CoroutineScope.(AssetManager) -> ImageData): Deferred<ImageData> {
+        return async { loader(this@JvmAssetManager) }
+    }
 
     companion object {
         private const val MAX_GENERATED_TEX_WIDTH = 2048

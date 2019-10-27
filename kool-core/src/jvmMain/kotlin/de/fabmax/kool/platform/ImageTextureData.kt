@@ -15,16 +15,19 @@ import kotlin.math.round
 class ImageTextureData() : TextureData() {
     override var isAvailable: Boolean = false
         private set
-    private var buffer: Uint8Buffer? = null
-    private var format = 0
+    var buffer: Uint8Buffer? = null
+        private set
+    var format = 0
+        private set
 
     constructor(image: BufferedImage) : this() {
         setTexImage(image)
     }
 
     internal fun setTexImage(image: BufferedImage) {
-        val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
-        format = if (alpha) GL_RGBA else GL_RGB
+//        val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
+//        format = if (alpha) GL_RGBA else GL_RGB
+        format = GL_RGBA
         width = image.width
         height = image.height
         buffer = bufferedImageToBuffer(image, format, 0, 0)
