@@ -522,8 +522,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.dbgOverlay_0 = debugOverlay(ctx, Position.LOWER_LEFT);
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
-    this.defaultScene_0 = new Demo$DemoEntry('Simple Demo', Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('simpleDemo', this.defaultScene_0), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda)), to('pointDemo', new Demo$DemoEntry('Point Tree Demo', Demo$demos$lambda_0)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_1)), to('globeDemo', new Demo$DemoEntry('Globe Demo', Demo$demos$lambda_2)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_4)), to('boxDemo', new Demo$DemoEntry('Physics Demo', Demo$demos$lambda_5)), to('simplificationDemo', new Demo$DemoEntry('Simplification Demo', Demo$demos$lambda_6)), to('instancedDemo', new Demo$DemoEntry('Instanced Demo', Demo$demos$lambda_7)), to('reflectionDemo', new Demo$DemoEntry('Reflection Demo', Demo$demos$lambda_8)), to('particleDemo', new Demo$DemoEntry('Particle Demo', Demo$demos$lambda_9))]);
+    this.defaultScene_0 = new Demo$DemoEntry('Instanced Demo', Demo$defaultScene$lambda);
+    this.demos_0 = mutableMapOf([to('simpleDemo', new Demo$DemoEntry('Simple Demo', Demo$demos$lambda)), to('multiDemo', new Demo$DemoEntry('Split Viewport Demo', Demo$demos$lambda_0)), to('pointDemo', new Demo$DemoEntry('Point Tree Demo', Demo$demos$lambda_1)), to('synthieDemo', new Demo$DemoEntry('Synthie Demo', Demo$demos$lambda_2)), to('modelDemo', new Demo$DemoEntry('Model Demo', Demo$demos$lambda_3)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_4)), to('boxDemo', new Demo$DemoEntry('Physics Demo', Demo$demos$lambda_5)), to('simplificationDemo', new Demo$DemoEntry('Simplification Demo', Demo$demos$lambda_6)), to('instancedDemo', new Demo$DemoEntry('Instanced Demo', Demo$demos$lambda_7)), to('reflectionDemo', new Demo$DemoEntry('Reflection Demo', Demo$demos$lambda_8)), to('particleDemo', new Demo$DemoEntry('Particle Demo', Demo$demos$lambda_9))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0;
@@ -678,23 +678,23 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return Demo$Companion_instance;
   }
   function Demo$defaultScene$lambda($receiver, it) {
-    $receiver.add_11rb$(simpleShapesScene(it));
+    $receiver.add_11rb$(instancedDemo(it));
     return Unit;
   }
   function Demo$demos$lambda($receiver, it) {
-    $receiver.addAll_brywnq$(multiScene(it));
+    $receiver.add_11rb$(simpleShapesScene(it));
     return Unit;
   }
   function Demo$demos$lambda_0($receiver, it) {
-    $receiver.add_11rb$(pointScene());
+    $receiver.addAll_brywnq$(multiScene(it));
     return Unit;
   }
   function Demo$demos$lambda_1($receiver, it) {
-    $receiver.addAll_brywnq$(synthieScene(it));
+    $receiver.add_11rb$(pointScene());
     return Unit;
   }
   function Demo$demos$lambda_2($receiver, it) {
-    $receiver.addAll_brywnq$(globeScene(it));
+    $receiver.addAll_brywnq$(synthieScene(it));
     return Unit;
   }
   function Demo$demos$lambda_3($receiver, it) {

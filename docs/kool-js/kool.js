@@ -3048,6 +3048,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.updateState_0 = tmp$;
   };
   InputManager$BufferedPointerInput.prototype.cancelPointer = function () {
+    this.buttonMask = 0;
+    this.buttonEventMask = 0;
+    this.deltaX = 0.0;
+    this.deltaY = 0.0;
+    this.deltaScroll = 0.0;
+    this.dragDeltaX = 0.0;
+    this.dragDeltaY = 0.0;
     this.updateState_0 = InputManager$BufferedPointerInput$UpdateState$INVALID_getInstance();
     this.isValid = false;
   };

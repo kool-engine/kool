@@ -21,7 +21,6 @@ it's surprisingly fast given the fact that there is no intelligent broadphase - 
 - Environment-Mapping for sky-boxes and (dynamic) reflections: [Reflection Demo](https://fabmax.github.io/kool/kool-js/?demo=reflectionDemo)
 - Instanced rendering: [Instanced Mesh Demo](https://fabmax.github.io/kool/kool-js/?demo=instancedDemo)
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo) module using error quadrics
-- 3D map / earth rendering: [OSM Demo](https://fabmax.github.io/kool/kool-js/?demo=globeDemo) (OSM tile-server is quite slow - be patient until tiles are loaded...)
 - Some super-primitive [Physics Simulation](https://fabmax.github.io/kool/kool-js/?demo=boxDemo)
 - Full support of all features on all platforms
 - Multi-touch support (on Android and Javascript / WebGL)

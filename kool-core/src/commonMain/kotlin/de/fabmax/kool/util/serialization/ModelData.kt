@@ -6,7 +6,6 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
-import kotlinx.serialization.Optional
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.load
@@ -22,7 +21,7 @@ data class ModelData(
         /**
          * Optional model name. Empty if not set.
          */
-        @SerialId(5) @Optional val name: String = "",
+        @SerialId(5) val name: String = "",
 
         /**
          * List of meshes in this model. Meshes are referenced by index from [ModelNodeData].
@@ -37,7 +36,7 @@ data class ModelData(
         /**
          * List of materials in this model. Materials are references by index from [ModelMeshData]
          */
-        @SerialId(4) @Optional val materials: List<MaterialData> = emptyList()
+        @SerialId(4) val materials: List<MaterialData> = emptyList()
 ) {
 
     fun toModel(lod: Int = 0): TransformGroup = toModel(lod, { TransformGroup(it.name).set(it.getTransformMatrix()) }, { it.toMesh(this) })
@@ -99,17 +98,17 @@ data class ModelNodeData(
         /**
          * Child nodes
          */
-        @SerialId(3) @Optional val children: List<ModelNodeData> = emptyList(),
+        @SerialId(3) val children: List<ModelNodeData> = emptyList(),
 
         /**
          * Index list of included meshes
          */
-        @SerialId(4) @Optional val meshes: List<Int> = emptyList(),
+        @SerialId(4) val meshes: List<Int> = emptyList(),
 
         /**
          * Optional list of arbitrary tags.
          */
-        @SerialId(5) @Optional val tags: List<String> = emptyList()
+        @SerialId(5) val tags: List<String> = emptyList()
 ) {
 
     fun getTransformMatrix(result: Mat4f = Mat4f()): Mat4f = result.set(transform)

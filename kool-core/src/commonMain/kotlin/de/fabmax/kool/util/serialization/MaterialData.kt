@@ -2,25 +2,24 @@ package de.fabmax.kool.util.serialization
 
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
-import kotlinx.serialization.Optional
 import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class MaterialData(
-        @SerialId(1) @Optional val name: String = "",
+        @SerialId(1) val name: String = "",
 
-        @SerialId(2) @Optional val ambientColor: List<Float> = emptyList(),
+        @SerialId(2) val ambientColor: List<Float> = emptyList(),
 
-        @SerialId(3) @Optional val diffuseColor: List<Float> = emptyList(),
+        @SerialId(3) val diffuseColor: List<Float> = emptyList(),
 
-        @SerialId(4) @Optional val specularColor: List<Float> = emptyList(),
+        @SerialId(4) val specularColor: List<Float> = emptyList(),
 
-        @SerialId(5) @Optional val emissiveColor: List<Float> = emptyList(),
+        @SerialId(5) val emissiveColor: List<Float> = emptyList(),
 
-        @SerialId(6) @Optional val shininess: Float = 10f,
+        @SerialId(6) val shininess: Float = 10f,
 
-        @SerialId(7) @Optional val reflectivity: Float = 0f
+        @SerialId(7) val reflectivity: Float = 0f
 ) {
 
     fun getAmbientColor(result: MutableColor = MutableColor()): MutableColor = ambientColor.getColor(result)
