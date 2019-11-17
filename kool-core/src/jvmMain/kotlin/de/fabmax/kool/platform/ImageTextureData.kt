@@ -5,6 +5,8 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.gl.*
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.glFormat
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.createUint8Buffer
 import java.awt.Transparency
@@ -13,33 +15,35 @@ import java.awt.image.DataBufferByte
 import kotlin.math.round
 
 class ImageTextureData() : TextureData() {
-    override var isAvailable: Boolean = false
+    override var isValid: Boolean = false
         private set
     var buffer: Uint8Buffer? = null
         private set
-    var format = 0
-        private set
+    override var format = TexFormat.RGBA
+        protected set
+
+    override val data: Uint8Buffer?
+        get() = buffer
 
     constructor(image: BufferedImage) : this() {
         setTexImage(image)
     }
 
     internal fun setTexImage(image: BufferedImage) {
-//        val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
-//        format = if (alpha) GL_RGBA else GL_RGB
-        format = GL_RGBA
+        val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
+        format = if (alpha) TexFormat.RGBA else TexFormat.RGB
         width = image.width
         height = image.height
-        buffer = bufferedImageToBuffer(image, format, 0, 0)
-        isAvailable = true
+        buffer = bufferedImageToBuffer(image, format.glFormat, 0, 0)
+        isValid = true
     }
 
-    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
+    fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
         val res = texture.res ?: throw KoolException("Texture wasn't created")
         val limit = buffer!!.limit
         val pos = buffer!!.position
         buffer!!.flip()
-        glTexImage2D(target, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
+        glTexImage2D(target, 0, format.glFormat, width, height, 0, format.glFormat, GL_UNSIGNED_BYTE, buffer)
         buffer!!.limit = limit
         buffer!!.position = pos
         ctx.memoryMgr.memoryAllocated(res, buffer!!.position)

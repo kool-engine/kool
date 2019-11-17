@@ -2,6 +2,8 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.UniformBuffer
+import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
@@ -35,14 +37,24 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
     val color: ThemeOrCustomProp<Color> = ThemeOrCustomProp(Color.BLACK.withAlpha(0.5f))
 
     override fun updateComponentAlpha() {
-        shader?.alpha = component.alpha
+//        shader?.alpha = component.alpha
     }
 
     override fun createUi(ctx: KoolContext) {
         color.setTheme(component.root.theme.backgroundColor).apply()
-        shader = createShader(ctx)
-        shader?.staticColor?.set(color.prop)
-        mesh.shader = shader
+//        shader = createShader(ctx)
+//        shader?.staticColor?.set(color.prop)
+//        mesh.shader = shader
+
+        mesh.pipelineConfig {
+            descriptorLayout.apply {
+                +UniformBuffer.uboMvp()
+            }
+//            shaderCode = ShaderCode(
+//                    ShaderStage.fromSource("colorShader.vert", this::class.java.getResourceAsStream("/colorShader.vert"), VK_SHADER_STAGE_VERTEX_BIT),
+//                    ShaderStage.fromSource("colorShader.frag", this::class.java.getResourceAsStream("/colorShader.frag"), VK_SHADER_STAGE_FRAGMENT_BIT))
+        }
+
         component.addNode(mesh, 0)
     }
 
@@ -53,7 +65,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 
     override fun updateUi(ctx: KoolContext) {
         color.setTheme(component.root.theme.backgroundColor).apply()
-        shader?.staticColor?.set(color.prop)
+//        shader?.staticColor?.set(color.prop)
 
         component.setupBuilder(meshBuilder)
         meshBuilder.color = color.prop
@@ -73,7 +85,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
     }
 
     override fun onRender(ctx: KoolContext) {
-        shader?.setDrawBounds(component.drawBounds)
+//        shader?.setDrawBounds(component.drawBounds)
     }
 }
 

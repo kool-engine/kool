@@ -14,7 +14,6 @@ import de.fabmax.kool.util.BoundingBox
 open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
 
     val contentBounds: BoundingBox get() = childrenBounds
-    //val contentBounds = BoundingBox()
 
     protected val posInParent = MutableVec3f()
     var contentScale = 1f

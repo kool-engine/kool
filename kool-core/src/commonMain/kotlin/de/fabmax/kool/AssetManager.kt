@@ -3,9 +3,10 @@ package de.fabmax.kool
 import de.fabmax.kool.gl.GL_CLAMP_TO_EDGE
 import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_TEXTURE_CUBE_MAP
-import de.fabmax.kool.pipeline.ImageData
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.serialization.ModelData
 import kotlinx.coroutines.CompletableDeferred
@@ -117,7 +118,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         }
     }
 
-    abstract suspend fun loadImageData(assetPath: String): ImageData
+    abstract suspend fun loadImageData(assetPath: String): TextureData
 
     fun loadTextureAsset(assetPath: String): TextureData  {
         val proxy = TextureDataProxy()
@@ -140,16 +141,20 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     private class TextureDataProxy : TextureData() {
         var proxyData: TextureData? = null
 
-        override val isAvailable: Boolean
-            get() = proxyData?.isAvailable ?: false
         override var width: Int
             get() = proxyData?.width ?: 0
             set(_) {}
         override var height: Int
             get() = proxyData?.height ?: 0
             set(_) {}
+        override var format: TexFormat
+            get() = proxyData?.format ?: TexFormat.RGBA
+            set(_) {}
 
-        override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) = proxyData!!.onLoad(texture, target, ctx)
+        override val isValid: Boolean
+            get() = proxyData?.isValid ?: false
+        override val data: Uint8Buffer?
+            get() = proxyData?.data
     }
 
     companion object {

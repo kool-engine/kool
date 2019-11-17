@@ -1,10 +1,14 @@
 package de.fabmax.kool.platform.vk.pipeline
 
+import de.fabmax.kool.BufferedTextureData
+import de.fabmax.kool.TextureData
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.logD
+import kotlinx.coroutines.Deferred
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
 import org.lwjgl.vulkan.VK10.*
@@ -23,7 +27,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline) : VkRes
     val vkGraphicsPipeline: Long
     val pipelineLayout: Long
 
-    var requiresDescriptorSetUpdate = true
+    //var requiresDescriptorSetUpdate = true
 
     init {
         memStack {
@@ -135,9 +139,10 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline) : VkRes
 
             val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(1) {
                 colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
-                blendEnable(false)
+                // pre-multiplied alpha
+                blendEnable(true)
                 srcColorBlendFactor(VK_BLEND_FACTOR_ONE)
-                dstColorBlendFactor(VK_BLEND_FACTOR_ZERO)
+                dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
                 colorBlendOp(VK_BLEND_OP_ADD)
                 srcAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
                 dstAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
@@ -216,8 +221,8 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline) : VkRes
     }
 
     fun updateDescriptorSets() {
-        if (requiresDescriptorSetUpdate) {
-            requiresDescriptorSetUpdate = false
+        if (descriptorObjects.isDescriptorSetUpdateRequired) {
+            descriptorObjects.clearUpdateRequired()
             for (imageIndex in 0 until swapChain.nImages) {
                 memStack {
                     val descriptorWrite = callocVkWriteDescriptorSetN(pipeline.descriptorLayout.descriptors.size) {
@@ -349,7 +354,8 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline) : VkRes
     }
 
     fun updateDescriptors(cmd: DrawCommand, imageIndex: Int): Boolean {
-        return descriptorObjects.updateDescriptors(cmd, imageIndex)
+        descriptorObjects.updateDescriptors(cmd, imageIndex)
+        return descriptorObjects.allValid
     }
 
     override fun freeResources() {
@@ -367,6 +373,11 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline) : VkRes
     class DescriptorObjects(val nImages: Int) {
         private val objects = Array<MutableList<DescriptorObject>>(nImages) { mutableListOf() }
 
+        var allValid = true
+            private set
+        var isDescriptorSetUpdateRequired = false
+            private set
+
         fun addDescriptor(block: () -> DescriptorObject): Int {
             for (i in 0 until nImages) {
                 objects[i].add(block())
@@ -382,20 +393,31 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline) : VkRes
             return objects[imageIndex][descriptorIndex]
         }
 
-        fun updateDescriptors(cmd: DrawCommand, imageIndex: Int): Boolean {
+        fun updateDescriptors(cmd: DrawCommand, imageIndex: Int) {
             val descs = objects[imageIndex]
-            var valid = true
+            allValid = true
+            isDescriptorSetUpdateRequired = false
             for (i in descs.indices) {
-                valid = descs[i].update(cmd) && valid
+                val desc = descs[i]
+                desc.update(cmd)
+                allValid = allValid && desc.isValid
+                isDescriptorSetUpdateRequired = isDescriptorSetUpdateRequired || desc.isDescriptorSetUpdateRequired
             }
-            return valid
+        }
+
+        fun clearUpdateRequired() {
+            isDescriptorSetUpdateRequired = false
+            objects.forEach { descs -> descs.forEach { it.isDescriptorSetUpdateRequired = false } }
         }
     }
 
     abstract class DescriptorObject(val binding: Int, val descriptor: Descriptor) {
+        var isValid = true
+        var isDescriptorSetUpdateRequired = true
+
         abstract fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long)
 
-        abstract fun update(cmd: DrawCommand): Boolean
+        abstract fun update(cmd: DrawCommand)
     }
 
     class UboDescriptor(binding: Int, val ubo: UniformBuffer, val buffer: Buffer) : DescriptorObject(binding, ubo) {
@@ -417,23 +439,29 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline) : VkRes
             }
         }
 
-        override fun update(cmd: DrawCommand): Boolean {
+        override fun update(cmd: DrawCommand) {
             ubo.onUpdate?.invoke(ubo, cmd)
             buffer.mappedFloats { ubo.putTo(Float32BufferImpl(this)) }
-            return true
         }
     }
 
     inner class SamplerDescriptor(binding: Int, val sampler: TextureSampler) : DescriptorObject(binding, sampler) {
+        private var boundTex: LoadedTexture? = null
+
+        private val loadingTextures = mutableListOf<LoadingTex>()
+
+        init {
+            isValid = false
+        }
+
         override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long) {
             stack.apply {
-                // fixme: way to many repeating words and exclamation marks...
-                val vkTex = sampler.texture!!.sampler!!.texture!!
+                val vkTex = sampler.texture?.loadedTexture
 
                 val imageInfo = callocVkDescriptorImageInfoN(1) {
                     imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                    imageView(vkTex.textureImageView.vkImageView)
-                    sampler(vkTex.sampler)
+                    imageView(vkTex?.textureImageView?.vkImageView ?: 0L)
+                    sampler(vkTex?.sampler ?: 0L)
                 }
                 vkWriteDescriptorSet
                         .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
@@ -446,20 +474,59 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline) : VkRes
             }
         }
 
-        override fun update(cmd: DrawCommand): Boolean {
-            sampler.texture?.let {
-                if (it.sampler == null) {
-                    it.sampler = ImageSampler(swapChain.sys.ctx.assetMgr.deferredTexLoad(it.loader), swapChain.sys)
-                }
-                if (it.sampler?.texture == null) {
-                    it.sampler?.checkComplete()
-                    if (it.sampler?.texture != null) {
-                        requiresDescriptorSetUpdate = true
+        override fun update(cmd: DrawCommand) {
+            if (loadingTextures.isNotEmpty()) {
+                val iterator = loadingTextures.iterator()
+                for (loading in iterator) {
+                    if (loading.pollCompleted()) {
+                        iterator.remove()
+                        isDescriptorSetUpdateRequired = true
                     }
                 }
             }
+
+            sampler.texture?.let { tex ->
+                if (tex.loadingState == Texture.LoadingState.NOT_LOADED) {
+                    tex.loadingState = Texture.LoadingState.LOADING
+                    val deferred = swapChain.sys.ctx.assetMgr.loadTextureAsync(tex.loader)
+                    loadingTextures += LoadingTex(swapChain.sys, tex, deferred)
+                }
+
+                if (tex.loadingState == Texture.LoadingState.LOADED && boundTex != tex.loadedTexture) {
+                    boundTex = tex.loadedTexture
+                }
+            }
             sampler.onUpdate?.invoke(sampler, cmd)
-            return sampler.texture?.sampler?.texture != null
+
+            isValid = sampler.texture?.loadingState == Texture.LoadingState.LOADED
+        }
+    }
+
+    private class LoadingTex(val sys: VkSystem, val tex: Texture, val deferredTex: Deferred<TextureData>) {
+        var isCompleted = false
+
+        init {
+            deferredTex.invokeOnCompletion { ex ->
+                if (ex != null) {
+                    tex.loadingState = Texture.LoadingState.LOADING_FAILED
+                }
+                isCompleted = true
+            }
+        }
+
+        fun pollCompleted(): Boolean {
+            if (isCompleted && tex.loadingState != Texture.LoadingState.LOADING_FAILED) {
+                val texData = deferredTex.getCompleted()
+                val loadedTex = when (texData) {
+                    is ImageTextureData -> LoadedTexture.fromImageTextureData(sys, texData)
+                    is BufferedTextureData -> LoadedTexture.fromBufferedTextureData(sys, texData)
+                    else -> throw IllegalArgumentException("Unsupported texture format")
+                }
+                sys.device.addDependingResource(loadedTex)
+                tex.loadedTexture = loadedTex
+                tex.loadingState = Texture.LoadingState.LOADED
+            }
+            return isCompleted
         }
     }
 }

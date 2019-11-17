@@ -4,10 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.TextureProps
-import de.fabmax.kool.util.Disposable
-import de.fabmax.kool.util.UniqueId
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 
 class Framebuffer(val width: Int, val height: Int, val texTargetColor: Int = GL_TEXTURE_2D,
                   val texTargetDepth: Int = GL_TEXTURE_2D) : Disposable {
@@ -134,14 +131,17 @@ class FramebufferResource private constructor(glRef: Any, val width: Int, val he
 }
 
 class FbColorTexData(width: Int, height: Int) : TextureData() {
-    override val isAvailable: Boolean get() = true
+    override val isValid: Boolean get() = true
 
     init {
         this.width = width
         this.height = height
     }
 
-    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
+    override val data: Uint8Buffer?
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
         // sets up the color attachment texture
         glTexImage2D(target, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null)
     }
@@ -158,14 +158,17 @@ class FbColorTexData(width: Int, height: Int) : TextureData() {
 }
 
 class FbDepthTexData(width: Int, height: Int) : TextureData() {
-    override val isAvailable: Boolean get() = true
+    override val isValid: Boolean get() = true
 
     init {
         this.width = width
         this.height = height
     }
 
-    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
+    override val data: Uint8Buffer?
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+
+    fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
         // make sure correct filter method is set (GLES only supports GL_NEAREST for depth textures)
         //glTexParameteri(target, GL_TEXTURE_MIN_FILTER, ctx.glCapabilities.depthFilterMethod)
         //glTexParameteri(target, GL_TEXTURE_MAG_FILTER, ctx.glCapabilities.depthFilterMethod)

@@ -7,10 +7,7 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.textureMesh
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Disposable
-import de.fabmax.kool.util.UniqueId
+import de.fabmax.kool.util.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -257,9 +254,12 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
     }
 
     private class BlurredBgTextureData : TextureData() {
-        override val isAvailable: Boolean get() = true
+        override val isValid: Boolean get() = true
         var x = 0
         var y = 0
+
+        override val data: Uint8Buffer?
+            get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
         fun setCopyWidth(value: Int) {
             width = value
@@ -269,7 +269,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
             height = value
         }
 
-        override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
+        fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
             glCopyTexImage2D(target, 0, GL_RGB, x, y, width, height, 0)
         }
     }

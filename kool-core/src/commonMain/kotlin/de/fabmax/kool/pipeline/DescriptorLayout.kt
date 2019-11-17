@@ -105,6 +105,19 @@ class UniformBuffer private constructor(builder: Builder) : Descriptor(builder, 
             return UniformBuffer(this)
         }
     }
+
+    companion object {
+        fun uboMvp() = UniformBuffer.Builder().apply {
+            stages += Stage.VERTEX_SHADER
+            +{ UniformMat4f("model") }
+            +{ UniformMat4f("view") }
+            +{ UniformMat4f("proj") }
+
+            onUpdate = { ubo, cmd ->
+                ubo.updateMvp(0, 1, 2, cmd)
+            }
+        }
+    }
 }
 
 

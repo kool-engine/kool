@@ -85,13 +85,13 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
             label.font.setCustom(Font.defaultFont(ctx))
         }
         if (label.font.isUpdate) {
-            label.font.prop?.dispose(ctx)
+//            label.font.prop?.dispose(ctx)
             font = label.font.apply()
         }
 
         val shader = mesh.shader
         if (shader is BasicShader) {
-            shader.texture = font
+//            shader.texture = font
         }
 
         label.setupBuilder(meshBuilder)

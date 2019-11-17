@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
-import de.fabmax.kool.pipeline.ImageData
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
@@ -88,17 +87,16 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps) : Ass
 
     override fun inflate(zipData: ByteArray): ByteArray = GZIPInputStream(ByteArrayInputStream(zipData)).readBytes()
 
-    override suspend fun loadImageData(assetPath: String): ImageData {
+    override suspend fun loadImageData(assetPath: String): TextureData {
         val ref = if (isHttpAsset(assetPath)) {
             loadHttpTexture(HttpTextureAssetRef(assetPath))
         } else {
             loadLocalTexture(LocalTextureAssetRef("$assetsBaseDir/$assetPath"))
         }
-        val data = ref.data as ImageTextureData
-        return ImageData(data)
+        return ref.data!!
     }
 
-    fun deferredTexLoad(loader: suspend CoroutineScope.(AssetManager) -> ImageData): Deferred<ImageData> {
+    fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {
         return async { loader(this@JvmAssetManager) }
     }
 

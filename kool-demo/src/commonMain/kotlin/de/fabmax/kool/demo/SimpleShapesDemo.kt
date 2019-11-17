@@ -148,7 +148,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
 
         // Add the text, you can use any font you like. We us a font size of 72pts and characters will be 1.5
         // units tall
-        val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN, 1.5f), ctx)
+        val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN), ctx)
         +textMesh(font) {
             generator = {
                 color = Color.LIME

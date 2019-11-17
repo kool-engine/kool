@@ -1,29 +1,45 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.AssetManager
+import de.fabmax.kool.TextureData
 import kotlinx.coroutines.CoroutineScope
 
-class Texture(
+/**
+ * Describes a texture by it's properties and a loader function which is called once the texture is used.
+ */
+open class Texture(
         val addressModeU: AddressMode = AddressMode.REPEAT,
         val addressModeV: AddressMode = AddressMode.REPEAT,
         val addressModeW: AddressMode = AddressMode.REPEAT,
         val minFilter: FilterMethod = FilterMethod.LINEAR,
         val magFilter: FilterMethod = FilterMethod.LINEAR,
         val maxAnisotropy: Int = 16,
-        val loader: suspend CoroutineScope.(AssetManager) -> ImageData) {
+        val loader: suspend CoroutineScope.(AssetManager) -> TextureData) {
 
-    var sampler: ImageSampler? = null
+    /**
+     * Contains the platform specific handle to the loaded texture. It is available after the loader function was
+     * called by the texture manager.
+     */
+    var loadedTexture: LoadedTexture? = null
 
-}
+    var loadingState = LoadingState.NOT_LOADED
 
-enum class FilterMethod {
-    NEAREST,
-    LINEAR
-}
+    enum class LoadingState {
+        NOT_LOADED,
+        LOADING,
+        LOADED,
+        LOADING_FAILED
+    }
 
-enum class AddressMode {
-    CLAMP_TO_BORDER,
-    CLAMP_TO_EDGE,
-    MIRRORED_REPEAT,
-    REPEAT
+    enum class FilterMethod {
+        NEAREST,
+        LINEAR
+    }
+
+    enum class AddressMode {
+        CLAMP_TO_BORDER,
+        CLAMP_TO_EDGE,
+        MIRRORED_REPEAT,
+        REPEAT
+    }
 }

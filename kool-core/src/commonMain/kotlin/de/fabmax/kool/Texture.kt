@@ -1,6 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.gl.*
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Uint8Buffer
 import kotlin.math.max
 
@@ -61,21 +62,16 @@ data class TextureProps(
 }
 
 abstract class TextureData {
-    open val isAvailable = false
-
     open var width = 0
         protected set
     open var height = 0
         protected set
+    open var format = TexFormat.RGBA
+        protected set
 
-    internal fun loadData(texture: Texture, ctx: KoolContext) {
-        onLoad(texture, texture.props.target, ctx)
-        if (texture.props.minFilter == GL_LINEAR_MIPMAP_LINEAR) {
-            glGenerateMipmap(texture.res!!.target)
-        }
-    }
+    abstract val isValid: Boolean
 
-    abstract fun onLoad(texture: Texture, target: Int, ctx: KoolContext)
+    abstract val data: Uint8Buffer?
 }
 
 /**
@@ -85,49 +81,45 @@ abstract class TextureData {
  * @param buffer texture data buffer, must have a size of width * height * bytes-per-pixel
  * @param width  width of texture in pixels
  * @param height height of texture in pixels
- * @param format texture data format: Any format supported by glTexImage2D, typically [GL_RGBA] (4 byte per pixel)or
- * [GL_RGB] (3 byte per pixel)
+ * @param format texture data format
  */
-class BufferedTextureData(val buffer: Uint8Buffer, width: Int, height: Int, val format: Int) : TextureData() {
-    override val isAvailable: Boolean get() = true
+class BufferedTextureData(buffer: Uint8Buffer, width: Int, height: Int, format: TexFormat) : TextureData() {
 
     init {
         this.width = width
         this.height = height
+        this.format = format
     }
 
-    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
-        val res = texture.res ?: throw KoolException("Texture wasn't created")
-        val limit = buffer.limit
-        val pos = buffer.position
-        buffer.flip()
-        glTexImage2D(target, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, buffer)
-        buffer.limit = limit
-        buffer.position = pos
-        ctx.memoryMgr.memoryAllocated(res, buffer.position)
-    }
+    override val data = buffer
+    override val isValid = true
 }
 
 open class CubeMapTextureData(val front: TextureData, val back: TextureData, val left: TextureData,
                               val right: TextureData, val up: TextureData, val down: TextureData) : TextureData() {
-    override val isAvailable: Boolean get() = front.isAvailable && back.isAvailable && left.isAvailable &&
-            right.isAvailable && up.isAvailable && down.isAvailable
+//    override val isAvailable: Boolean get() = front.isAvailable && back.isAvailable && left.isAvailable &&
+//            right.isAvailable && up.isAvailable && down.isAvailable
+//
+//    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
+//        if (target != GL_TEXTURE_CUBE_MAP) {
+//            throw KoolException("CubeMapTextureData can only be bound to target GL_TEXTURE_CUBE_MAP")
+//        }
+//
+//        // load all cube map sides
+//        front.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, ctx)
+//        back.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, ctx)
+//        left.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, ctx)
+//        right.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_X, ctx)
+//        up.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, ctx)
+//        down.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, ctx)
+//
+//        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
+//    }
 
-    override fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
-        if (target != GL_TEXTURE_CUBE_MAP) {
-            throw KoolException("CubeMapTextureData can only be bound to target GL_TEXTURE_CUBE_MAP")
-        }
-
-        // load all cube map sides
-        front.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, ctx)
-        back.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, ctx)
-        left.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, ctx)
-        right.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_X, ctx)
-        up.onLoad(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, ctx)
-        down.onLoad(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, ctx)
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
-    }
+    override val isValid: Boolean
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
+    override val data: Uint8Buffer?
+        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 }
 
 open class Texture(val props: TextureProps, val generator: Texture.(ctx: KoolContext) -> TextureData) :
@@ -154,12 +146,12 @@ open class Texture(val props: TextureProps, val generator: Texture.(ctx: KoolCon
      * object; i.e. if TextureResource is shared between multiple Texture objects, this method is only called once.
      */
     open fun load(texData: TextureData, ctx: KoolContext) {
-        if (!texData.isAvailable) {
+        if (!texData.isValid) {
             throw KoolException("Texture data is not available")
         }
         val res = res ?: throw KoolException("Texture wasn't created")
 
-        texData.loadData(this, ctx)
+//        texData.loadData(this, ctx)
         width = texData.width
         height = texData.height
 
