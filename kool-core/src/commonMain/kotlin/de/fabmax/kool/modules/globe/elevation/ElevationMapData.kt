@@ -27,14 +27,12 @@ data class ElevationMapMeta(
     /**
      * Lateral height map resolution in arc-seconds
      */
-    @Transient
     val resolutionLat: Double
         get() = (north - south) * 3600.0 / height
 
     /**
      * Longitudinal height map resolution in arc-seconds
      */
-    @Transient
     val resolutionLon: Double
         get() = (east - west) * 3600.0 / height
 
