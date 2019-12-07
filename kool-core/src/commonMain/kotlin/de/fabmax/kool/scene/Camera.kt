@@ -39,6 +39,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
     val mvp = Mat4f()
     val invMvp = Mat4f()
 
+    private val projCorrected = Mat4f()
+
     // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
@@ -50,7 +52,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         updateProjectionMatrix()
 
         ctx.mvpState.viewMatrix.set(view)
-        ctx.mvpState.projMatrix.set(proj)
+        ctx.mvpState.projMatrix.set(ctx.projCorrectionMatrix.mul(proj, projCorrected))
         ctx.mvpState.update(ctx)
 
         mvp.set(ctx.mvpState.mvpMatrix)
@@ -242,7 +244,6 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
 
     override fun updateProjectionMatrix() {
-        //ctx.mvpState.projMatrix.setPerspective(fovy, aspectRatio, clipNear, clipFar)
         proj.setPerspective(fovy, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling

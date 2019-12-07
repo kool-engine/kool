@@ -157,15 +157,8 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
 
     override fun render(ctx: KoolContext) {
         blurHelper?.updateDistortionTexture(this, ctx, bounds)
-
-//        ctx.pushAttributes()
-//        ctx.isCullFace = false
-//        ctx.applyAttributes()
-
         super.render(ctx)
         content.render(ctx)
-
-//        ctx.popAttributes()
     }
 
     override fun postRender(ctx: KoolContext) {

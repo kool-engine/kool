@@ -39,6 +39,22 @@ class Lwjgl3ContextGL(props: InitProps) : KoolContext() {
 
     private val glThread = Thread.currentThread()
 
+    private object SysInfo : ArrayList<String>() {
+        fun set(api: String) {
+            clear()
+            add(api)
+            add("")
+            update()
+        }
+
+        fun update() {
+            val rt = Runtime.getRuntime()
+            val freeMem = rt.freeMemory()
+            val totalMem = rt.totalMemory()
+            set(1, "Heap: ${(totalMem - freeMem) shr 20} / ${totalMem shr 20} MB")
+        }
+    }
+
     init {
         // configure GLFW
         glfwDefaultWindowHints()
@@ -166,7 +182,9 @@ class Lwjgl3ContextGL(props: InitProps) : KoolContext() {
                 glslDialect = GlslDialect.GLSL_DIALECT_330,
                 glVersion = GlVersion("OpenGL", versionMajor, versionMinor))
 
-        textureMgr.maxTextureLoadsPerFrame = MAX_TEXTURE_LOADS_PER_FRAmE
+        textureMgr.maxTextureLoadsPerFrame = MAX_TEXTURE_LOADS_PER_FRAME
+
+        SysInfo.set(glCapabilities.glVersion.toString())
     }
 
     override fun openUrl(url: String)  = Desktop.getDesktop().browse(URI(url))
@@ -186,6 +204,7 @@ class Lwjgl3ContextGL(props: InitProps) : KoolContext() {
             glfwSwapBuffers(window)
             // Poll for window events. The key callback above will only be invoked during this call.
             glfwPollEvents()
+            SysInfo.update()
         }
     }
 
@@ -204,6 +223,8 @@ class Lwjgl3ContextGL(props: InitProps) : KoolContext() {
             throw KoolException("Not on GL thread")
         }
     }
+
+    override fun getSysInfos(): List<String>  = SysInfo
 
     class InitProps(init: InitProps.() -> Unit = {}) {
         var width = 1024
@@ -224,7 +245,7 @@ class Lwjgl3ContextGL(props: InitProps) : KoolContext() {
     }
 
     companion object {
-        const val MAX_TEXTURE_LOADS_PER_FRAmE = 20
+        const val MAX_TEXTURE_LOADS_PER_FRAME = 20
 
         val KEY_CODE_MAP: Map<Int, Int> = mutableMapOf(
                 GLFW_KEY_LEFT_CONTROL to InputManager.KEY_CTRL_LEFT,

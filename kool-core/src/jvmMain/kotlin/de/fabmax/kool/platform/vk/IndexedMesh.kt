@@ -1,7 +1,10 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Float32BufferImpl
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.Uint32BufferImpl
+import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.serialization.ModelConverter
 import de.fabmax.kool.util.serialization.ModelMeshData
 import org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_ONLY
@@ -60,7 +63,7 @@ class IndexedMesh(val sys: VkSystem, val data: IndexedVertexList) : VkResource()
     }
 
     override fun freeResources() {
-        logD { "Destroyed IndexedMesh" }
+        //logD { "Destroyed IndexedMesh" }
     }
 
     companion object {

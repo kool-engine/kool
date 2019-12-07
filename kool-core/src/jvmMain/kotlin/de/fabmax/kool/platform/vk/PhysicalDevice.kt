@@ -15,6 +15,10 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
     val vkDeviceFeatures = VkPhysicalDeviceFeatures.malloc()
     val msaaSamples: Int
 
+    val deviceName: String
+    val apiVersion: String
+    val driverVersion: String
+
     init {
         memStack {
             val ip = mallocInt(1)
@@ -34,12 +38,14 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
             vkGetPhysicalDeviceFeatures(vkPhysicalDevice, vkDeviceFeatures)
             msaaSamples = getMaxUsableSampleCount()
 
+            val api = vkDeviceProperties.apiVersion()
+            val drv = vkDeviceProperties.driverVersion()
+            apiVersion = "${VK_VERSION_MAJOR(api)}.${VK_VERSION_MINOR(api)}.${VK_VERSION_PATCH(api)}"
+            driverVersion = "${VK_VERSION_MAJOR(drv)}.${VK_VERSION_MINOR(drv)}.${VK_VERSION_PATCH(drv)}"
+            deviceName = vkDeviceProperties.deviceNameString()
+
             logI {
-                val api = vkDeviceProperties.apiVersion()
-                val drv = vkDeviceProperties.driverVersion()
-                "Selected GPU: ${vkDeviceProperties.deviceNameString()} " +
-                        "[api: ${VK_VERSION_MAJOR(api)}.${VK_VERSION_MINOR(api)}.${VK_VERSION_PATCH(api)}, " +
-                        "driver: ${VK_VERSION_MAJOR(drv)}.${VK_VERSION_MINOR(drv)}.${VK_VERSION_PATCH(drv)}]"
+                "Selected GPU: $deviceName [api: $apiVersion, driver: $driverVersion]"
             }
             logD {
                 "Using queue families: present: ${queueFamiliyIndices.presentFamily}, " +

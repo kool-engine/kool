@@ -1,17 +1,15 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.getMemoryInfo
 import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.gl.GlResource
+import de.fabmax.kool.pipeline.pipelineConfig
+import de.fabmax.kool.pipeline.shading.BasicMeshShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import kotlin.math.min
 
@@ -28,16 +26,16 @@ enum class Position {
 
 fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): Scene {
     val dbgOverlay = uiScene(ctx.screenDpi, "debug-overlay") {
-        theme = theme(UiTheme.DARK) {
+        theme = theme(UiTheme.DARK_SIMPLE) {
             componentUi { BlankComponentUi() }
             containerUi(::SimpleComponentUi)
+//            containerUi { BlankComponentUi() }
             standardFont(FontProps(Font.SYSTEM_FONT, 12f))
         }
         content.ui.setCustom(BlankComponentUi())
 
         +container("dbgPanel") {
-            val hasMemInfo = !getMemoryInfo().isEmpty()
-            val height = if (hasMemInfo) { 168f } else { 150f }
+            val height = 132 + ctx.getSysInfos().size * 18f
             val width = 130f
 
             when (position) {
@@ -48,10 +46,10 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             }
             layoutSpec.setSize(dps(width, true), dps(height, true), full())
 
-//            +DeltaTGraph(this@uiScene).apply {
-//                layoutSpec.setOrigin(zero(), dps(-40f, true), zero())
-//                layoutSpec.setSize(dps(width, true), dps(40f, true), full())
-//            }
+            +DeltaTGraph(this@uiScene).apply {
+                layoutSpec.setOrigin(zero(), dps(-40f, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(40f, true), full())
+            }
 
             +label("lblFps") {
                 layoutSpec.setOrigin(zero(), dps(-37f, true), zero())
@@ -68,29 +66,20 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             }
 
             var yOri = -60f
-            +label("lblVersion") {
-                layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(18f, true), full())
-                padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
-                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-                text = ctx.glCapabilities.glVersion.toString()
-            }
-
-            if (hasMemInfo) {
-                yOri -= 18f
-                +label("lblMemInfo") {
+            for (i in ctx.getSysInfos().indices) {
+                +label("lblSysInfo_$i") {
                     layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
                     layoutSpec.setSize(dps(width, true), dps(18f, true), full())
                     padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
-
+                    text = ""
                     onPreRender += {
-                        text = getMemoryInfo()
+                        text = ctx.getSysInfos()[i]
                     }
                 }
+                yOri -= 18f
             }
 
-            yOri -= 18f
             +label("lblVpSize") {
                 layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
                 layoutSpec.setSize(dps(width, true), dps(18f, true), full())
@@ -215,10 +204,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
     init {
         graphMesh = Mesh(graphData)
         graphMesh.meshData.usage = GL_DYNAMIC_DRAW
-        graphMesh.shader = basicShader {
-            colorModel = ColorModel.VERTEX_COLOR
-            lightModel = LightModel.NO_LIGHTING
-        }
+        graphMesh.pipelineConfig { shaderLoader = BasicMeshShader.VertexColor.loader }
     }
 
     override fun render(ctx: KoolContext) {
@@ -261,8 +247,11 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
 
         setupBuilder(graphBuilder)
         graphBuilder.color = Color.WHITE
-        for (i in 1..width.toInt()) {
-            graphBuilder.line(i - 0.5f, 0f, i - 0.5f, 1f, 1f)
+        graphBuilder.withTransform {
+            translate(0f, 0f, 10f)
+            for (i in 1..width.toInt()) {
+                graphBuilder.line(i - 0.5f, 0f, i - 0.5f, 1f, 1f)
+            }
         }
     }
 

@@ -6,7 +6,7 @@ import de.fabmax.kool.util.logD
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 
-class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val descriptorSetPoolSize: Int = 10) : VkResource() {
+class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val descriptorSetPoolSize: Int = 100) : VkResource() {
 
     val descriptorSetLayout: Long
     val descriptorPool: Long
@@ -69,6 +69,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
             }
 
             val viewport = callocVkViewportN(1) {
+                // set negative viewport height -> flips viewport y-direction to be compatible with OpenGL, requires KHR_Maintenance1 extension
                 x(0f)
                 y(0f)
                 width(swapChain.extent.width().toFloat())
@@ -102,8 +103,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
                     CullMethod.BACK_FACE -> VK_CULL_MODE_BACK_BIT
                     CullMethod.NO_CULL -> VK_CULL_MODE_NONE
                 })
-                //frontFace(VK_FRONT_FACE_CLOCKWISE)
-                frontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE)     // use counter-clockwise as front to compensate y-flip in projection
+                frontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE)
                 depthBiasEnable(false)
                 depthBiasConstantFactor(0f)
                 depthBiasClamp(0f)
@@ -202,7 +202,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
         }
 
         swapChain.addDependingResource(this)
-        logD { "Created graphics pipeline" }
+        logD { "Created graphics pipeline, pipelineHash: ${pipeline.pipelineHash}" }
     }
 
     private fun createShaderModule(shaderStage: ShaderStage): Long {
@@ -270,13 +270,13 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
         }
     }
 
-    fun getDescriptorSetInstance(pipelineInstanceId: Long): DescriptorSet {
-        return descriptorSetInstances.computeIfAbsent(pipelineInstanceId) {
-            logD { "Creating new descriptor set instance" }
+    fun getDescriptorSetInstance(pipeline: Pipeline): DescriptorSet {
+        return descriptorSetInstances.computeIfAbsent(pipeline.pipelineInstanceId) {
+            logD { "Creating new descriptor set instance [${descriptorSetInstances.size+1} / $descriptorSetPoolSize, pipeline: ${pipeline.pipelineHash}]" }
             if (descriptorSetInstances.size == descriptorSetPoolSize - 1) {
                 throw IllegalStateException("Descriptor set pool exhausted. Use larger descriptorSetPoolSize")
             }
-            DescriptorSet(this)
+            DescriptorSet(this, pipeline)
         }
     }
 

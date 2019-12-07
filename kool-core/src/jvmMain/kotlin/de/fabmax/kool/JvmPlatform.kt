@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.Lwjgl3ContextGL
+import de.fabmax.kool.platform.Lwjgl3ContextVk
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.SimpleShadowMap
@@ -16,18 +17,14 @@ import java.util.*
  * @author fabmax
  */
 
-actual fun createDefaultContext(): KoolContext = createContext(Lwjgl3ContextGL.InitProps())
+actual fun createDefaultContext(): KoolContext {
+    //return createContext(Lwjgl3ContextGL.InitProps())
+    return DesktopImpl.createVkContext(Lwjgl3ContextGL.InitProps())
+}
 
 fun createContext(props: Lwjgl3ContextGL.InitProps): KoolContext = DesktopImpl.createContext(props)
 
 actual fun now(): Double = System.nanoTime() / 1e6
-
-actual fun getMemoryInfo(): String {
-    val rt = Runtime.getRuntime()
-    val freeMem = rt.freeMemory()
-    val totalMem = rt.totalMemory()
-    return "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB"
-}
 
 actual fun Double.toString(precision: Int): String =
         java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", this)
@@ -83,6 +80,10 @@ internal object DesktopImpl {
             }
         }
         return ctx!!
+    }
+
+    fun createVkContext(props: Lwjgl3ContextGL.InitProps): KoolContext {
+        return Lwjgl3ContextVk(props)
     }
 }
 

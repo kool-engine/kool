@@ -19,13 +19,4 @@ abstract class DrawCommand {
         projMat.set(ctx.mvpState.projMatrix)
         mvpMat.set(ctx.mvpState.mvpMatrix)
     }
-
-    fun applyMvp(ctx: KoolContext) {
-        ctx.mvpState.apply {
-            modelMatrix.set(modelMat)
-            viewMatrix.set(viewMat)
-            projMatrix.set(projMat)
-            mvpMatrix.set(mvpMat)
-        }
-    }
 }

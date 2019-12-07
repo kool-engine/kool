@@ -25,7 +25,7 @@ class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjg
     var swapChain: SwapChain? = null
 
     init {
-        window = GlfwWindow(this)
+        window = GlfwWindow(this, ctx.windowWidth, ctx.windowHeight)
         instance = Instance(this)
         window.createSurface()
 

@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.vk.pipeline
 
 import de.fabmax.kool.platform.vk.util.Shaderc
-import de.fabmax.kool.util.logD
 import org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT
 import org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT
 import java.io.InputStream
@@ -34,7 +33,6 @@ class ShaderStage(val name: String, val code: ByteArray, val stage: Int, val ent
             val codeArray = ByteArray(data.remaining())
             data.get(codeArray)
             compileResult.free()
-            logD { "Loaded shader $name: ${codeArray.size} bytes" }
             return ShaderStage(name, codeArray, stage, entryPoint)
         }
     }

@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.vk.util
 
 import de.fabmax.kool.util.PerfTimer
-import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import org.lwjgl.util.shaderc.Shaderc
 import java.io.FileReader
@@ -36,9 +35,7 @@ object Shaderc {
         val result = Shaderc.shaderc_compile_into_spv(compiler, src, shaderKind, fName, entryPoint, 0L)
 
         val status = Shaderc.shaderc_result_get_compilation_status(result)
-        if (status == 0) {
-            logD { "Successfully compiled shader $fName" }
-        } else {
+        if (status != 0) {
             logE { "Failed to compile shader $fName ($status):\n${Shaderc.shaderc_result_get_error_message(result)}" }
         }
 

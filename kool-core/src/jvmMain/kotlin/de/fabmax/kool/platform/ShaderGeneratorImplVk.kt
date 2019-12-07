@@ -7,13 +7,18 @@ import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.pipeline.shadermodel.ShaderModel
 
 class ShaderGeneratorImplVk : ShaderGenerator() {
+
+    private val shaderCodes = mutableMapOf<BaseAlbedo, ShaderCode>()
+
     override fun generateShader(model: ShaderModel, ctx: KoolContext): ShaderCode {
         // fixme: as a placeholder load shaders from resources...
-        return when (model.baseAlbedo) {
-            BaseAlbedo.MASKED -> ShaderCode.codeFromResources("masked.vert", "masked.frag")
-            BaseAlbedo.VERTEX -> ShaderCode.codeFromResources("colorShader.vert", "colorShader.frag")
-            BaseAlbedo.TEXTURE -> ShaderCode.codeFromResources("tex.vert", "tex.frag")
-            else -> TODO("not implemented")
+        return shaderCodes.computeIfAbsent(model.baseAlbedo) {
+            when (model.baseAlbedo) {
+                BaseAlbedo.MASKED -> ShaderCode.codeFromResources("masked.vert", "masked.frag")
+                BaseAlbedo.VERTEX -> ShaderCode.codeFromResources("colorShader.vert", "colorShader.frag")
+                BaseAlbedo.TEXTURE -> ShaderCode.codeFromResources("tex.vert", "tex.frag")
+                else -> TODO("not implemented")
+            }
         }
     }
 }

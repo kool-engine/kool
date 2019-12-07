@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.shading.CustomShader
 import de.fabmax.kool.platform.vk.pipeline.ShaderStage
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Log
 import org.lwjgl.vulkan.VK10
 import java.io.FileNotFoundException
 
@@ -27,6 +28,8 @@ actual class ShaderCode(val stages: List<ShaderStage>) {
             val fragShaderCode = this::class.java.classLoader.getResourceAsStream(fragShaderName)?.use {
                 ShaderStage.fromSource(fragShaderName, it, VK10.VK_SHADER_STAGE_FRAGMENT_BIT)
             } ?: throw FileNotFoundException("fragment shader resource not found: $vertShaderName")
+
+            Log.d("ShaderCode") { "Successfully compiled shader: $vertShaderName: ${vertShaderCode.code.size} bytes, $fragShaderName: ${fragShaderCode.code.size} bytes" }
 
             return ShaderCode(vertShaderCode, fragShaderCode)
         }

@@ -2,13 +2,14 @@ package de.fabmax.kool.platform.vk.pipeline
 
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.DescriptorType
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.TextureSampler
 import de.fabmax.kool.pipeline.UniformBuffer
 import de.fabmax.kool.platform.vk.*
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10
 
-class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
+class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) {
     private val descriptorSets = mutableListOf<Long>()
     private val objects = Array<MutableList<DescriptorObject>>(graphicsPipeline.swapChain.nImages) { mutableListOf() }
 
@@ -19,7 +20,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
 
     init {
         createDescriptorSets()
-        createDescriptorObjects()
+        createDescriptorObjects(pipeline)
     }
 
     fun getDescriptorSet(imageIdx: Int) = descriptorSets[imageIdx]
@@ -45,8 +46,8 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
         }
     }
 
-    private fun createDescriptorObjects() {
-        graphicsPipeline.pipeline.descriptorLayout.descriptors.forEachIndexed { idx, desc ->
+    private fun createDescriptorObjects(pipeline: Pipeline) {
+        pipeline.descriptorLayout.descriptors.forEachIndexed { idx, desc ->
             addDescriptor {
                 // fixme: more reasonable binding index needed?
                 when (desc.type) {

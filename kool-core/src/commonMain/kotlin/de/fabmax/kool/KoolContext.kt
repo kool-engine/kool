@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.gl.*
+import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -32,6 +33,7 @@ abstract class KoolContext {
     val renderingHints = RenderingHints()
     var renderPass = RenderPass.SCREEN
     val mvpState = MvpState()
+    val projCorrectionMatrix = Mat4f()
 
     val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()
 
@@ -92,6 +94,8 @@ abstract class KoolContext {
     abstract fun destroy()
 
     abstract fun checkIsGlThread()
+
+    abstract fun getSysInfos(): List<String>
 
     protected fun render(dt: Double) {
         this.deltaT = dt.toFloat()

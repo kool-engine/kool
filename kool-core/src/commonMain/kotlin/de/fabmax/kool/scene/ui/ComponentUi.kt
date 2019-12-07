@@ -31,8 +31,7 @@ open class BlankComponentUi : ComponentUi
 open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 
     protected var shader: BasicShader? = null
-    //protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
-    protected val meshData = MeshData(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS))
+    protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
     protected val meshBuilder = MeshBuilder(meshData)
     protected val mesh = Mesh(meshData)
 

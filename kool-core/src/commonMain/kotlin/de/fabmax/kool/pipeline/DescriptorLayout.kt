@@ -97,14 +97,7 @@ class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uni
     fun updateMvp(modelIdx: Int, viewIdx: Int, projIdx: Int, cmd: DrawCommand) {
         (uniforms[modelIdx] as UniformMat4f).value.set(cmd.modelMat)
         (uniforms[viewIdx] as UniformMat4f).value.set(cmd.viewMat)
-        (uniforms[projIdx] as UniformMat4f).apply {
-            value.set(cmd.projMat)
-
-            // compensate flipped y coordinate in clip space...
-            // this also flips the triangle direction, therefore front-faces are counter-clockwise
-            //   -> rasterizer property, createGraphicsPipeline()
-            value[1, 1] *= -1f
-        }
+        (uniforms[projIdx] as UniformMat4f).value.set(cmd.projMat)
     }
 
     class Builder : Descriptor.Builder<UniformBuffer>() {

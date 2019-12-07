@@ -32,7 +32,11 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
         descriptorLayout = buildCtx.descriptorLayout.create()
 
         // compute pipelineHash
-        var hash = vertexLayout.longHash
+        var hash = cullMethod.hashCode().toLong()
+        hash = (hash * 71023L) + depthTest.hashCode()
+        hash = (hash * 71023L) + isWriteDepth.hashCode()
+        hash = (hash * 71023L) + lineWidth.hashCode()
+        hash = (hash * 71023L) + vertexLayout.longHash
         hash = (hash * 71023L) + descriptorLayout.longHash
         hash = (hash * 71023L) + shader.shaderCode.longHash
         this.pipelineHash = hash

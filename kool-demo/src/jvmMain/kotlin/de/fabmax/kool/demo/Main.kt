@@ -1,16 +1,17 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.BasicMeshShader
-import de.fabmax.kool.platform.Lwjgl3ContextGL
-import de.fabmax.kool.platform.Lwjgl3ContextVk
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.FontProps
+import de.fabmax.kool.util.debugOverlay
 
 /**
  * @author fabmax
@@ -24,59 +25,61 @@ fun main() {
 }
 
 fun testScene() {
-    val ctx = Lwjgl3ContextVk(Lwjgl3ContextGL.InitProps())
+    val ctx = createDefaultContext()
     ctx.assetMgr.assetsBaseDir = "./docs/assets"
 
 //    ctx.scenes += uiTestScene(ctx)
-    ctx.scenes += simpleTestScene(ctx)
-
-//    ctx.scenes += debugOverlay(ctx)
+//    ctx.scenes += simpleTestScene(ctx)
+    ctx.scenes += debugOverlay(ctx)
 
     ctx.run()
 }
 
-fun uiTestScene(ctx: Lwjgl3ContextVk): Scene = scene {
-    defaultCamTransform()
-
-//    val mesh = Mesh(MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS))
-//    mesh.generator = {
-//        color = Color.CYAN
-//        rect {
-//            size.set(10f, 10f)
-//            fullTexCoords()
-//        }
-//    }
-//    mesh.pipelineConfig { shaderLoader = BasicMeshShader.VertexColor.loader }
-//    mesh.generateGeometry()
-//    +mesh
-
-    +embeddedUi(10f, 10f, dps(400f)) {
-        theme = theme(UiTheme.DARK_SIMPLE) {
-            //containerUi { SimpleComponentUi(it) }
+fun uiTestScene(ctx: KoolContext): Scene {
+    val embd = scene {
+        defaultCamTransform()
+        +embeddedUi(10f, 10f, dps(400f)) {
+            setupUi()
         }
-        content.customTransform = { translate(-content.dp(200f), -content.dp(200f), 0f) }
-        +label("label") {
-            layoutSpec.setOrigin(pcs(15f), pcs(-45f), zero())
-            layoutSpec.setSize(pcs(21f), pcs(15f), full())
+    }
+    return embd
+}
 
-            text = "Slider"
-        }
+fun UiRoot.setupUi() {
+    theme = theme(UiTheme.DARK_SIMPLE) {
+        //containerUi { SimpleComponentUi(it) }
+    }
+    +label("label") {
+        layoutSpec.setOrigin(zero(), zero(), zero())
+        layoutSpec.setSize(dps(200f), dps(40f), full())
+
+        text = "Hello World"
     }
 }
 
-fun simpleTestScene(ctx: Lwjgl3ContextVk): Scene = scene {
+fun simpleTestScene(ctx: KoolContext): Scene = scene {
     defaultCamTransform()
 
     +colorMesh {
         generator = {
-            cube {
-                centerOrigin()
-                colorCube()
-            }
+//            for (i in -5 .. 5) {
+//                cube {
+//                    origin.x = i * 20f
+//                    origin.z = 1000f
+//                    size.set(10f, 10f, 1f)
+//                    colorCube()
+//                }
+//
+//                cube {
+//                    origin.y = i * 20f
+//                    origin.z = -999f
+//                    size.set(10f, 10f, 1.000f)
+//                    colorCube()
+//                }
+//            }
 
             cube {
                 centerOrigin()
-                origin.x = 1.2f
                 colorCube()
             }
         }

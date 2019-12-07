@@ -6,8 +6,6 @@ package de.fabmax.kool
 
 expect fun now(): Double
 
-expect fun getMemoryInfo(): String
-
 expect fun Double.toString(precision: Int): String
 
 /**

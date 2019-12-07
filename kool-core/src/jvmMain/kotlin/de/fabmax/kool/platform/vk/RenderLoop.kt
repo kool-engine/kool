@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.logI
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
@@ -19,7 +18,6 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
     //lateinit var commandBuffers: CommandBuffers
 
     private var frameCnt = 0
-    private val perfT = PerfTimer()
 
     init {
         memStack {
@@ -104,11 +102,7 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
         }
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT
-
-        if (++frameCnt % 1000 == 0) {
-            println("$frameCnt frames, ${1000 / perfT.takeSecs()} fps")
-            perfT.reset()
-        }
+        ++frameCnt
     }
 
     override fun freeResources() {
