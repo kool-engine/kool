@@ -20,11 +20,13 @@ import java.net.URI
 /**
  * @author fabmax
  */
-class Lwjgl3Context(props: InitProps) : KoolContext() {
+class Lwjgl3ContextGL(props: InitProps) : KoolContext() {
 
     override val glCapabilities: GlCapabilities
 
     override val assetMgr = JvmAssetManager(props)
+
+    override val shaderGenerator = ShaderGeneratorImplGL()
 
     val window: Long
 

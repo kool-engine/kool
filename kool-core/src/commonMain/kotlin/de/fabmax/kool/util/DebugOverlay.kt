@@ -48,10 +48,10 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
             }
             layoutSpec.setSize(dps(width, true), dps(height, true), full())
 
-            +DeltaTGraph(this@uiScene).apply {
-                layoutSpec.setOrigin(zero(), dps(-40f, true), zero())
-                layoutSpec.setSize(dps(width, true), dps(40f, true), full())
-            }
+//            +DeltaTGraph(this@uiScene).apply {
+//                layoutSpec.setOrigin(zero(), dps(-40f, true), zero())
+//                layoutSpec.setSize(dps(width, true), dps(40f, true), full())
+//            }
 
             +label("lblFps") {
                 layoutSpec.setOrigin(zero(), dps(-37f, true), zero())

@@ -4,7 +4,6 @@ import de.fabmax.kool.GlCapabilities
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.drawqueue.DrawCommandMesh
 import de.fabmax.kool.platform.vk.*
-import de.fabmax.kool.platform.vk.pipeline.GraphicsPipeline
 import de.fabmax.kool.scene.Mesh
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
@@ -17,11 +16,13 @@ import java.net.URI
 /**
  * @author fabmax
  */
-class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
+class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
 
     override val glCapabilities = GlCapabilities.UNKNOWN_CAPABILITIES
 
     override val assetMgr = JvmAssetManager(props)
+
+    override val shaderGenerator = ShaderGeneratorImplVk()
 
     override var windowWidth = 800
         private set
@@ -58,7 +59,7 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
             // render engine content (fills the draw queue)
             render(dt)
 
-            // fixme: this is way to complicated:
+            // fixme: this is way to complicated, tighter integration of Vulkan stuff needed
             // drawQueue now contains actual draw commands
             // command buffer will be set up in onDrawFrame, called as a call back from render loop
 
@@ -149,22 +150,26 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
 
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
 
-                var prevPipeline: GraphicsPipeline? = null
+                // optimize draw queue order
+                // fixme: more sophisticated sorting, customizable draw order, etc.
+                drawQueue.commands.sortBy { it.pipeline!!.pipelineHash }
+
+                var prevPipeline = 0L
                 drawQueue.commands.forEach { cmd ->
                     val pipelineCfg = cmd.pipeline!!
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg)) {
                         sys.pipelineManager.addPipelineConfig(pipelineCfg)
-                        sys.pipelineManager.getPipeline(pipelineCfg)
                     }
                     val pipeline = sys.pipelineManager.getPipeline(pipelineCfg)
-                    if (pipeline !== prevPipeline) {
+                    if (pipelineCfg.pipelineHash != prevPipeline) {
                         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.vkGraphicsPipeline)
-                        prevPipeline = pipeline
+                        prevPipeline = pipelineCfg.pipelineHash
                     }
+                    val descriptorSet = pipeline.getDescriptorSetInstance(pipelineCfg.pipelineInstanceId)
 
                     cmd as DrawCommandMesh
-                    if (pipeline.updateDescriptors(cmd, imageIndex)) {
-                        pipeline.updateDescriptorSets()
+                    if (descriptorSet.updateDescriptors(cmd, imageIndex, sys)) {
+                        descriptorSet.updateDescriptorSets()
 
                         var model = meshMap[cmd.mesh]
                         if (cmd.mesh.meshData.isSyncRequired || model == null) {
@@ -172,7 +177,10 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
 
                             // (re-)build buffer
                             // fixme: don't do this here, should have happened before (async?)
-                            meshMap.remove(cmd.mesh)?.destroy()
+                            meshMap.remove(cmd.mesh)?.let {
+                                sys.device.removeDependingResource(it)
+                                it.destroy()
+                            }
                             model = IndexedMesh(sys, cmd.mesh.meshData.vertexList)
                             meshMap[cmd.mesh] = model
                             sys.device.addDependingResource(model)
@@ -182,14 +190,13 @@ class Lwjgl3VkContext(props: Lwjgl3Context.InitProps) : KoolContext() {
                         vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
 
                         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                pipeline.pipelineLayout, 0, longs(pipeline.descriptorSets[imageIndex]), null)
+                                pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
 
                         vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0)
                     }
                 }
 
                 vkCmdEndRenderPass(commandBuffer)
-
                 check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
             }
 

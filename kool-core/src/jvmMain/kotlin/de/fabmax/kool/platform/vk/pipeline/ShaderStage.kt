@@ -8,26 +8,15 @@ import java.io.InputStream
 
 class ShaderStage(val name: String, val code: ByteArray, val stage: Int, val entryPoint: String = "main") {
 
-    private val codeHash = code.contentHashCode()
+    val longHash: Long
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ShaderStage) return false
-
-        if (codeHash != other.codeHash) return false
-        if (stage != other.stage) return false
-        if (name != other.name) return false
-        if (entryPoint != other.entryPoint) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + codeHash
-        result = 31 * result + stage
-        result = 31 * result + entryPoint.hashCode()
-        return result
+    init {
+        var hash = stage.toLong()
+        hash = (hash * 31L) xor entryPoint.hashCode().toLong()
+        for (b in code) {
+            hash = (hash * 31L) xor b.toLong()
+        }
+        longHash = hash
     }
 
     companion object {

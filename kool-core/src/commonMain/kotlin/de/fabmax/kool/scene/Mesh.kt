@@ -6,7 +6,10 @@ import de.fabmax.kool.drawqueue.DrawCommandMesh
 import de.fabmax.kool.gl.glDrawElements
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.shading.*
+import de.fabmax.kool.shading.Attribute
+import de.fabmax.kool.shading.LightModel
+import de.fabmax.kool.shading.Shader
+import de.fabmax.kool.shading.VboBinder
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MeshBuilder
@@ -31,19 +34,19 @@ inline fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolea
 inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(MeshData(attributes), name)
 
-    mesh.shader = basicShader {
-        lightModel = if (attributes.contains(Attribute.NORMALS)) {
-            LightModel.PHONG_LIGHTING
-        } else {
-            LightModel.NO_LIGHTING
-        }
-
-        colorModel = when {
-            attributes.contains(Attribute.TEXTURE_COORDS) -> ColorModel.TEXTURE_COLOR
-            attributes.contains(Attribute.COLORS) -> ColorModel.VERTEX_COLOR
-            else -> ColorModel.STATIC_COLOR
-        }
-    }
+//    mesh.shader = basicShader {
+//        lightModel = if (attributes.contains(Attribute.NORMALS)) {
+//            LightModel.PHONG_LIGHTING
+//        } else {
+//            LightModel.NO_LIGHTING
+//        }
+//
+//        colorModel = when {
+//            attributes.contains(Attribute.TEXTURE_COORDS) -> ColorModel.TEXTURE_COLOR
+//            attributes.contains(Attribute.COLORS) -> ColorModel.VERTEX_COLOR
+//            else -> ColorModel.STATIC_COLOR
+//        }
+//    }
 
     mesh.block()
 
@@ -94,7 +97,9 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         get() = meshData.generator
         set(value) { meshData.generator = value }
 
-    var pipeline: Pipeline? = null
+    var pipelineLoader: (Mesh.(KoolContext) -> Pipeline)? = null
+    private var pipeline: Pipeline? = null
+
     var shader: Shader? = null
     var cullMethod = CullMethod.DEFAULT
     var rayTest = MeshRayTest.boundsTest()
@@ -110,6 +115,10 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 
     open fun generateGeometry() {
         meshData.generateGeometry()
+    }
+
+    open fun getPipeline(ctx: KoolContext): Pipeline? {
+        return pipeline ?: pipelineLoader?.let { loader -> loader(this, ctx).also { pipeline = it } }
     }
 
     open fun getAttributeBinder(attrib: Attribute): VboBinder? = meshData.attributeBinders[attrib]
@@ -128,8 +137,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     override fun render(ctx: KoolContext) {
         super.render(ctx)
 
-        val shader = this.shader
-        if (!isRendered || shader == null || (!ctx.isDepthTest && ctx.renderPass == RenderPass.SHADOW)) {
+        if (!isRendered || (!ctx.isDepthTest && ctx.renderPass == RenderPass.SHADOW)) {
             // mesh is not visible (either hidden or outside frustum)
             return
         }
@@ -140,7 +148,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 //            rayTest.onMeshDataChanged(this)
 //        }
 
-        drawCommand.pipeline = pipeline
+        drawCommand.pipeline = getPipeline(ctx)
         drawCommand.captureMvp(ctx)
         ctx.drawQueue += drawCommand
     }

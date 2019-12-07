@@ -12,7 +12,7 @@ import java.io.File
 object ModelConverter {
 
     fun convertModel(file: String, invertFaceOrientation: Boolean = false, normalBits: Int = 0): ModelData =
-            convertModel(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices)!!, File(file).name, invertFaceOrientation, normalBits)
+            convertModel(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices or Assimp.aiProcess_Triangulate)!!, File(file).name, invertFaceOrientation, normalBits)
 
     fun convertModel(aiScene: AIScene, modelName: String = "", invertFaceOrientation: Boolean = false, normalBits: Int = 0): ModelData {
         val meshes = mutableListOf<ModelMeshData>()

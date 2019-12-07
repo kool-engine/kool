@@ -1,13 +1,16 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.pipeline.pipelineConfig
+import de.fabmax.kool.pipeline.shading.BasicMeshShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LocalPlaneClip
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.MutableColor
 
 /**
  * @author fabmax
@@ -69,12 +72,18 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
 
     override fun createUi(ctx: KoolContext) {
         baseUi.createUi(ctx)
-        mesh.shader = fontShader {
-            lightModel = label.root.shaderLightModel
-            colorModel = ColorModel.VERTEX_COLOR
-            isAlpha = true
-            clipMethod = LocalPlaneClip(6)
+        mesh.pipelineConfig {
+            shaderLoader = BasicMeshShader.MaskedColor.loader
+            onPipelineCreated += {
+                (it.shader as BasicMeshShader.MaskedColor).textureSampler.texture = font
+            }
         }
+//        mesh.shader = fontShader {
+//            lightModel = label.root.shaderLightModel
+//            colorModel = ColorModel.VERTEX_COLOR
+//            isAlpha = true
+//            clipMethod = LocalPlaneClip(6)
+//        }
         label += mesh
     }
 

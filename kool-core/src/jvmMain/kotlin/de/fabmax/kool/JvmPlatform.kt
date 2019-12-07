@@ -1,7 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.platform.Lwjgl3ContextGL
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.SimpleShadowMap
@@ -16,9 +16,9 @@ import java.util.*
  * @author fabmax
  */
 
-actual fun createDefaultContext(): KoolContext = createContext(Lwjgl3Context.InitProps())
+actual fun createDefaultContext(): KoolContext = createContext(Lwjgl3ContextGL.InitProps())
 
-fun createContext(props: Lwjgl3Context.InitProps): KoolContext = DesktopImpl.createContext(props)
+fun createContext(props: Lwjgl3ContextGL.InitProps): KoolContext = DesktopImpl.createContext(props)
 
 actual fun now(): Double = System.nanoTime() / 1e6
 
@@ -35,7 +35,7 @@ actual fun Double.toString(precision: Int): String =
 actual inline fun <R> lock(lock: Any, block: () -> R): R = synchronized(lock, block)
 
 internal object DesktopImpl {
-    private var ctx: Lwjgl3Context? = null
+    private var ctx: Lwjgl3ContextGL? = null
 
     val monitors: MutableList<MonitorSpec> = mutableListOf()
     val primaryMonitor: MonitorSpec
@@ -76,10 +76,10 @@ internal object DesktopImpl {
         primaryMonitor = primMon!!
     }
 
-    fun createContext(props: Lwjgl3Context.InitProps): KoolContext {
+    fun createContext(props: Lwjgl3ContextGL.InitProps): KoolContext {
         synchronized(this) {
             if (ctx == null) {
-                ctx = Lwjgl3Context(props)
+                ctx = Lwjgl3ContextGL(props)
             }
         }
         return ctx!!

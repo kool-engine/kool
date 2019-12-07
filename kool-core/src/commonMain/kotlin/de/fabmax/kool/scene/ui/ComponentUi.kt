@@ -2,8 +2,9 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.UniformBuffer
+import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.pipelineConfig
+import de.fabmax.kool.pipeline.shading.BasicMeshShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
@@ -30,7 +31,8 @@ open class BlankComponentUi : ComponentUi
 open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 
     protected var shader: BasicShader? = null
-    protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
+    //protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
+    protected val meshData = MeshData(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS))
     protected val meshBuilder = MeshBuilder(meshData)
     protected val mesh = Mesh(meshData)
 
@@ -47,12 +49,8 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 //        mesh.shader = shader
 
         mesh.pipelineConfig {
-            descriptorLayout.apply {
-                +UniformBuffer.uboMvp()
-            }
-//            shaderCode = ShaderCode(
-//                    ShaderStage.fromSource("colorShader.vert", this::class.java.getResourceAsStream("/colorShader.vert"), VK_SHADER_STAGE_VERTEX_BIT),
-//                    ShaderStage.fromSource("colorShader.frag", this::class.java.getResourceAsStream("/colorShader.frag"), VK_SHADER_STAGE_FRAGMENT_BIT))
+            cullMethod = CullMethod.NO_CULL
+            shaderLoader = BasicMeshShader.VertexColor.loader
         }
 
         component.addNode(mesh, 0)

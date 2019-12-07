@@ -20,7 +20,6 @@ enum class AttributeType(val size: Int, val isInt: Boolean, val glType: Int, val
 }
 
 data class Attribute(val name: String, val type: AttributeType) {
-
     var glslSrcName = name
     var locationOffset = 0
     var divisor = 0

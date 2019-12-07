@@ -13,7 +13,7 @@ import java.io.InputStream
 import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps) : AssetManager(props.assetsBaseDir) {
+class JvmAssetManager internal constructor(props: Lwjgl3ContextGL.InitProps) : AssetManager(props.assetsBaseDir) {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
 

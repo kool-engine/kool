@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.gl.*
+import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Property
@@ -19,6 +20,9 @@ abstract class KoolContext {
     abstract val glCapabilities: GlCapabilities
 
     abstract val assetMgr: AssetManager
+
+    // fixme: move to / join with ShaderManager?
+    abstract val shaderGenerator: ShaderGenerator
 
     val inputMgr = InputManager()
     val memoryMgr = MemoryManager()
