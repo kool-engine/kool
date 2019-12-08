@@ -47,7 +47,10 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
     }
 
     private fun createDescriptorObjects(pipeline: Pipeline) {
-        pipeline.descriptorLayout.descriptors.forEachIndexed { idx, desc ->
+        if (pipeline.descriptorSetLayouts.size != 1) {
+            TODO()
+        }
+        pipeline.descriptorSetLayouts[0].descriptors.forEachIndexed { idx, desc ->
             addDescriptor {
                 // fixme: more reasonable binding index needed?
                 when (desc.type) {
@@ -85,8 +88,12 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
         if (isDescriptorSetUpdateRequired) {
             clearUpdateRequired()
 
+            if (graphicsPipeline.pipeline.descriptorSetLayouts.size != 1) {
+                TODO()
+            }
+
             val swapChain = graphicsPipeline.swapChain
-            val descriptors = graphicsPipeline.pipeline.descriptorLayout.descriptors
+            val descriptors = graphicsPipeline.pipeline.descriptorSetLayouts[0].descriptors
             for (imageIndex in 0 until swapChain.nImages) {
                 memStack {
                     val descriptorWrite = callocVkWriteDescriptorSetN(descriptors.size) {

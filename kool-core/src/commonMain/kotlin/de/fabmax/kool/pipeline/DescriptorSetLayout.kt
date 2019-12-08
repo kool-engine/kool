@@ -4,7 +4,7 @@ import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.copy
 
-class DescriptorLayout private constructor(val descriptors: List<Descriptor>) {
+class DescriptorSetLayout private constructor(val descriptors: List<Descriptor>) {
 
     val longHash: Long
 
@@ -31,8 +31,8 @@ class DescriptorLayout private constructor(val descriptors: List<Descriptor>) {
             descriptors += this
         }
 
-        fun create(): DescriptorLayout {
-            return DescriptorLayout(List(descriptors.size) { descriptors[it].build() })
+        fun create(): DescriptorSetLayout {
+            return DescriptorSetLayout(List(descriptors.size) { descriptors[it].create() })
         }
     }
 }
@@ -54,7 +54,7 @@ abstract class Descriptor(builder: Builder<*>, val type: DescriptorType, hash: L
         var name = ""
         val stages = mutableSetOf<Stage>()
 
-        abstract fun build(): T
+        abstract fun create(): T
     }
 }
 
@@ -70,7 +70,7 @@ class TextureSampler private constructor(builder: Builder, hash: Long) : Descrip
             name = "texture"
         }
 
-        override fun build(): TextureSampler {
+        override fun create(): TextureSampler {
             return TextureSampler(this, DescriptorType.IMAGE_SAMPLER.hashCode() * 71023L)
         }
     }
@@ -82,10 +82,11 @@ class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uni
     val onUpdate: ((UniformBuffer, DrawCommand) -> Unit) ? = builder.onUpdate
 
     /**
-     * Overall size of buffer (i.e. all containing uniforms)
+     * Overall size of buffer in bytes (i.e. all containing uniforms)
      */
     val size = uniforms.sumBy { it.size }
 
+    // fixme: uniforms can contain all kinds of types, not only floats...
     fun putTo(buffer: Float32Buffer) {
         // fixme: ensure proper alignment! also might be platform specific...
         for (i in uniforms.indices) {
@@ -112,7 +113,7 @@ class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uni
             uniforms.add(this)
         }
 
-        override fun build(): UniformBuffer {
+        override fun create(): UniformBuffer {
             val uniforms = List(uniforms.size) { uniforms[it]() }
             var hash = DescriptorType.UNIFORM_BUFFER.hashCode() * 71023L
             uniforms.forEach {
@@ -125,6 +126,7 @@ class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uni
 
     companion object {
         fun uboMvp() = Builder().apply {
+            name = "ubo"
             stages += Stage.VERTEX_SHADER
             +{ UniformMat4f("model") }
             +{ UniformMat4f("view") }

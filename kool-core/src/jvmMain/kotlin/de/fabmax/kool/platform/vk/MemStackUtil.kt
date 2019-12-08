@@ -141,6 +141,9 @@ inline fun MemoryStack.callocVkPipelineViewportStateCreateInfo(block: VkPipeline
 inline fun MemoryStack.callocVkPresentInfoKHR(block: VkPresentInfoKHR.() -> Unit): VkPresentInfoKHR =
     allocStruct(block) { VkPresentInfoKHR.callocStack(it) }
 
+inline fun MemoryStack.callocVkPushConstantRangeN(n: Int, block: VkPushConstantRange.Buffer.() -> Unit): VkPushConstantRange.Buffer =
+        allocStruct(block) { VkPushConstantRange.callocStack(n, it) }
+
 inline fun MemoryStack.callocVkRect2DN(n: Int, block: VkRect2D.Buffer.() -> Unit): VkRect2D.Buffer =
     allocStruct(block) { VkRect2D.callocStack(n, it) }
 

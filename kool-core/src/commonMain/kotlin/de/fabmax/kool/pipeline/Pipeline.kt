@@ -19,8 +19,9 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
     val isWriteDepth: Boolean = builder.isWriteDepth
     val lineWidth: Float = builder.lineWidth
 
-    val vertexLayout: VertexLayoutDescription
-    val descriptorLayout: DescriptorLayout
+    val vertexLayout: VertexLayout
+    val descriptorSetLayouts: List<DescriptorSetLayout>
+    val pushConstantRanges: List<PushConstantRange>
 
     val shader: Shader
 
@@ -29,7 +30,8 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
         builder.onCreatePipeline.forEach { it(buildCtx) }
         shader = builder.shaderLoader(mesh, buildCtx, ctx)
         vertexLayout = buildCtx.vertexLayout.create()
-        descriptorLayout = buildCtx.descriptorLayout.create()
+        descriptorSetLayouts = buildCtx.descriptorSetLayouts.map { it.create() }
+        pushConstantRanges = buildCtx.pushConstantRanges.map { it.create() }
 
         // compute pipelineHash
         var hash = cullMethod.hashCode().toLong()
@@ -37,8 +39,9 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
         hash = (hash * 71023L) + isWriteDepth.hashCode()
         hash = (hash * 71023L) + lineWidth.hashCode()
         hash = (hash * 71023L) + vertexLayout.longHash
-        hash = (hash * 71023L) + descriptorLayout.longHash
         hash = (hash * 71023L) + shader.shaderCode.longHash
+        descriptorSetLayouts.forEach { hash = (hash * 71023L) + it.longHash }
+        pushConstantRanges.forEach { hash = (hash * 71023L) + it.longHash }
         this.pipelineHash = hash
 
         shader.onPipelineCreated(this)
@@ -56,8 +59,26 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
     }
 
     class BuildContext(val builder: Builder) {
-        val vertexLayout = VertexLayoutDescription.Builder()
-        val descriptorLayout = DescriptorLayout.Builder()
+        val vertexLayout = VertexLayout.Builder()
+        val descriptorSetLayouts = mutableListOf<DescriptorSetLayout.Builder>()
+        val pushConstantRanges = mutableListOf<PushConstantRange.Builder>()
+
+        fun vertexLayout(block: VertexLayout.Builder.() -> Unit) {
+            vertexLayout.block()
+        }
+
+        fun descriptorSetLayout(set: Int = 0, block: DescriptorSetLayout.Builder.() -> Unit) {
+            while (set >= descriptorSetLayouts.size) {
+                descriptorSetLayouts += DescriptorSetLayout.Builder()
+            }
+            descriptorSetLayouts[set].block()
+        }
+
+        fun pushConstantRange(block: PushConstantRange.Builder.() -> Unit) {
+            val b = PushConstantRange.Builder()
+            b.block()
+            pushConstantRanges.add(b)
+        }
     }
 
     class Builder {

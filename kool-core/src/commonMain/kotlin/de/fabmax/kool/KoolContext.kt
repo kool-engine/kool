@@ -37,7 +37,7 @@ abstract class KoolContext {
 
     val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()
 
-    var drawQueue = DrawQueue()
+    val drawQueue = DrawQueue()
 
     /**
      * Run time of this render context in seconds. This is the wall clock time between now and the first time render()
@@ -116,6 +116,8 @@ abstract class KoolContext {
 //            viewport = Viewport(0, 0, windowWidth, windowHeight)
 //            applyAttributes()
 //        }
+
+        drawQueue.clear()
 
         for (i in onRender.indices) {
             onRender[i](this)

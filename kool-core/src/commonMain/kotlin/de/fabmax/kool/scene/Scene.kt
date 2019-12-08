@@ -2,7 +2,6 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.lock
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
@@ -25,10 +24,9 @@ open class Scene(name: String? = null) : Group(name) {
         get() = false
         set(_) {}
 
-    val drawQueue = DrawQueue()
-    var clearMask: Int
-        get() = drawQueue.sceneSetup.clearMask
-        set(value) { drawQueue.sceneSetup.clearMask = value }
+    var clearMask: Int = 0
+//        get() = drawQueue.sceneSetup.clearMask
+//        set(value) { drawQueue.sceneSetup.clearMask = value }
 
     var camera: Camera = PerspectiveCamera()
     var lighting = Lighting(this)
@@ -57,8 +55,6 @@ open class Scene(name: String? = null) : Group(name) {
         camera.updateCamera(ctx)
         preRender(ctx)
 
-        drawQueue.clear()
-        ctx.drawQueue = drawQueue
         render(ctx)
 
         postRender(ctx)

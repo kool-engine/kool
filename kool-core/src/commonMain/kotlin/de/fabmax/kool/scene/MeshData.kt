@@ -2,7 +2,10 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.gl.*
+import de.fabmax.kool.gl.BufferResource
+import de.fabmax.kool.gl.GL_STATIC_DRAW
+import de.fabmax.kool.gl.GL_TRIANGLES
+import de.fabmax.kool.gl.GL_UNSIGNED_INT
 import de.fabmax.kool.lock
 import de.fabmax.kool.math.*
 import de.fabmax.kool.shading.Attribute
@@ -355,58 +358,58 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         }
     }
 
-    fun checkBuffers(ctx: KoolContext): Boolean {
-        if (indexBuffer == null) {
-            indexBuffer = BufferResource.create(GL_ELEMENT_ARRAY_BUFFER, ctx)
-        }
-        var hasIntData = false
-        if (dataBufferF == null) {
-            dataBufferF = BufferResource.create(GL_ARRAY_BUFFER, ctx)
-            for (vertexAttrib in vertexAttributes) {
-                if (vertexAttrib.type.isInt) {
-                    hasIntData = true
-                } else {
-                    attributeBinders[vertexAttrib] = VboBinder(dataBufferF!!, vertexAttrib.type.size,
-                            vertexList.strideBytesF, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
-                }
-            }
-        }
-        if (hasIntData && dataBufferI == null) {
-            dataBufferI = BufferResource.create(GL_ARRAY_BUFFER, ctx)
-            for (vertexAttrib in vertexAttributes) {
-                if (vertexAttrib.type.isInt) {
-                    attributeBinders[vertexAttrib] = VboBinder(dataBufferI!!, vertexAttrib.type.size,
-                            vertexList.strideBytesI, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
-                }
-            }
-        }
-
-        return if (isSyncRequired && !isBatchUpdate) {
-            lock(vertexList) {
-                if (!isBatchUpdate) {
-                    if (isRebuildBoundsOnSync) {
-                        rebuildBounds()
-                    }
-                    if (!ctx.glCapabilities.uint32Indices) {
-                        // convert index buffer to uint16
-                        val uint16Buffer = createUint16Buffer(numIndices)
-                        for (i in 0..(vertexList.indices.position - 1)) {
-                            uint16Buffer.put(vertexList.indices[i].toShort())
-                        }
-                        indexType = GL_UNSIGNED_SHORT
-                        indexBuffer?.setData(uint16Buffer, usage, ctx)
-                    } else {
-                        indexType = GL_UNSIGNED_INT
-                        indexBuffer?.setData(vertexList.indices, usage, ctx)
-                    }
-                    dataBufferF?.setData(vertexList.dataF, usage, ctx)
-                    dataBufferI?.setData(vertexList.dataI, usage, ctx)
-                    isSyncRequired = false
-                }
-            }
-            true
-        } else {
-            false
-        }
-    }
+//    fun checkBuffers(ctx: KoolContext): Boolean {
+//        if (indexBuffer == null) {
+//            indexBuffer = BufferResource.create(GL_ELEMENT_ARRAY_BUFFER, ctx)
+//        }
+//        var hasIntData = false
+//        if (dataBufferF == null) {
+//            dataBufferF = BufferResource.create(GL_ARRAY_BUFFER, ctx)
+//            for (vertexAttrib in vertexAttributes) {
+//                if (vertexAttrib.type.isInt) {
+//                    hasIntData = true
+//                } else {
+//                    attributeBinders[vertexAttrib] = VboBinder(dataBufferF!!, vertexAttrib.type.size,
+//                            vertexList.strideBytesF, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
+//                }
+//            }
+//        }
+//        if (hasIntData && dataBufferI == null) {
+//            dataBufferI = BufferResource.create(GL_ARRAY_BUFFER, ctx)
+//            for (vertexAttrib in vertexAttributes) {
+//                if (vertexAttrib.type.isInt) {
+//                    attributeBinders[vertexAttrib] = VboBinder(dataBufferI!!, vertexAttrib.type.size,
+//                            vertexList.strideBytesI, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
+//                }
+//            }
+//        }
+//
+//        return if (isSyncRequired && !isBatchUpdate) {
+//            lock(vertexList) {
+//                if (!isBatchUpdate) {
+//                    if (isRebuildBoundsOnSync) {
+//                        rebuildBounds()
+//                    }
+//                    if (!ctx.glCapabilities.uint32Indices) {
+//                        // convert index buffer to uint16
+//                        val uint16Buffer = createUint16Buffer(numIndices)
+//                        for (i in 0..(vertexList.indices.position - 1)) {
+//                            uint16Buffer.put(vertexList.indices[i].toShort())
+//                        }
+//                        indexType = GL_UNSIGNED_SHORT
+//                        indexBuffer?.setData(uint16Buffer, usage, ctx)
+//                    } else {
+//                        indexType = GL_UNSIGNED_INT
+//                        indexBuffer?.setData(vertexList.indices, usage, ctx)
+//                    }
+//                    dataBufferF?.setData(vertexList.dataF, usage, ctx)
+//                    dataBufferI?.setData(vertexList.dataI, usage, ctx)
+//                    isSyncRequired = false
+//                }
+//            }
+//            true
+//        } else {
+//            false
+//        }
+//    }
 }

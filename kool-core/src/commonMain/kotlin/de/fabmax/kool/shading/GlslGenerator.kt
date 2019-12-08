@@ -224,7 +224,8 @@ open class GlslGenerator {
             text.append("uniform ${uniform.type} ${uniform.name};\n")
         }
         for (attrib in customAttributes) {
-            text.append("$vsIn ${attrib.type.glslTypeName} ${attrib.glslSrcName};\n")
+            TODO()
+            //text.append("$vsIn ${attrib.type.glslTypeName} ${attrib.glslSrcName};\n")
         }
 
         injectors.forEach { it.vsAfterInput(shaderProps, node, text, ctx) }

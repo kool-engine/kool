@@ -6,7 +6,9 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.drawqueue.DrawCommandMesh
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.platform.vk.*
+import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Float32BufferImpl
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import org.lwjgl.vulkan.VK10.*
@@ -220,6 +222,11 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                             model = IndexedMesh(sys, cmd.mesh.meshData.vertexList)
                             meshMap[cmd.mesh] = model
                             sys.device.addDependingResource(model)
+                        }
+
+                        pipelineCfg.pushConstantRanges.forEach {
+                            val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
+                            vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as Float32BufferImpl).buffer)
                         }
 
                         vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))

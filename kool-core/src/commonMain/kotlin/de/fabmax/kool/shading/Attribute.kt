@@ -1,22 +1,19 @@
 package de.fabmax.kool.shading
 
-import de.fabmax.kool.gl.GL_FLOAT
-import de.fabmax.kool.gl.GL_INT
-
 /**
  * @author fabmax
  */
 
-enum class AttributeType(val size: Int, val isInt: Boolean, val glType: Int, val glslTypeName: String) {
-    FLOAT(1, false, GL_FLOAT, "float"),
-    VEC_2F(2, false, GL_FLOAT, "vec2"),
-    VEC_3F(3, false, GL_FLOAT, "vec3"),
-    VEC_4F(4, false, GL_FLOAT, "vec4"),
-    COLOR_4F(4, false, GL_FLOAT, "vec4"),
-    INT(1, true, GL_INT, "int"),
-    VEC_2I(2, true, GL_INT, "ivec2"),
-    VEC_3I(3, true, GL_INT, "ivec3"),
-    VEC_4I(4, true, GL_INT, "ivec4")
+enum class AttributeType(val size: Int, val isInt: Boolean) {
+    FLOAT(4, false),
+    VEC_2F(8, false),
+    VEC_3F(12, false),
+    VEC_4F(16, false),
+    COLOR_4F(16, false),
+    INT(4, true),
+    VEC_2I(8, true),
+    VEC_3I(12, true),
+    VEC_4I(16, true)
 }
 
 data class Attribute(val name: String, val type: AttributeType) {

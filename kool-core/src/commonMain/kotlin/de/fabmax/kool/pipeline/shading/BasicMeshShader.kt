@@ -10,31 +10,25 @@ import de.fabmax.kool.shading.Attribute
 
 abstract class BasicMeshShader(buildCtx: Pipeline.BuildContext) : Shader() {
     init {
-        buildCtx.descriptorLayout.apply { +UniformBuffer.uboMvp() }
+        buildCtx.descriptorSetLayout { +UniformBuffer.uboMvp() }
     }
 
+    /**
+     * Binds specified mesh attributes (by names) to the shader input. Attributes are bound to the locations
+     * corresponding to their list index.
+     */
     protected fun bindAttributes(mesh: Mesh, buildCtx: Pipeline.BuildContext, attribNames: List<String>) {
-        val attribs = mutableListOf<VertexLayoutDescription.Attribute>()
+        val attribs = mutableListOf<VertexLayout.Attribute>()
         val verts = mesh.meshData.vertexList
+
         attribNames.forEachIndexed { iAttrib, name ->
             val attrib = mesh.meshData.vertexAttributes.find { it.name == name }
                     ?: throw NoSuchElementException("Mesh does not include required vertex attribute: $name")
             val off = verts.attributeOffsets[attrib] ?: throw NoSuchElementException()
-
-            // fixme: unify / replace old de.fabmax.kool.shading.AttributeType by new one (which is not OpenGL specific)
-            val attribType = when (attrib.type) {
-                de.fabmax.kool.shading.AttributeType.FLOAT -> AttributeType.FLOAT
-                de.fabmax.kool.shading.AttributeType.VEC_2F -> AttributeType.VEC_2F
-                de.fabmax.kool.shading.AttributeType.VEC_3F -> AttributeType.VEC_3F
-                de.fabmax.kool.shading.AttributeType.VEC_4F -> AttributeType.VEC_4F
-                de.fabmax.kool.shading.AttributeType.COLOR_4F -> AttributeType.COLOR_4F
-                // fixme: support int types, maybe as a 2nd binding?
-                else -> throw IllegalStateException("Attribute is not a float type")
-            }
-            attribs += VertexLayoutDescription.Attribute(0, iAttrib, off * 4, attribType, attrib.name)
+            attribs += VertexLayout.Attribute(0, iAttrib, off, attrib.type, attrib.name)
         }
 
-        buildCtx.vertexLayout.bindings += VertexLayoutDescription.Binding(0, InputRate.VERTEX, attribs, verts.strideBytesF)
+        buildCtx.vertexLayout.bindings += VertexLayout.Binding(0, InputRate.VERTEX, attribs, verts.strideBytesF)
     }
 
     class VertexColor(mesh: Mesh, buildCtx: Pipeline.BuildContext, ctx: KoolContext) : BasicMeshShader(buildCtx) {
@@ -57,6 +51,36 @@ abstract class BasicMeshShader(buildCtx: Pipeline.BuildContext) : Shader() {
         }
     }
 
+    class StaticColor(mesh: Mesh, buildCtx: Pipeline.BuildContext, ctx: KoolContext) : BasicMeshShader(buildCtx) {
+        override val shaderCode: ShaderCode
+
+        lateinit var staticColor: Uniform4f
+
+        init {
+            bindAttributes(mesh, buildCtx, listOf(Attribute.POSITIONS.name))
+            buildCtx.pushConstantRange {
+                stages += Stage.FRAGMENT_SHADER
+                +{ Uniform4f("staticColor") }
+            }
+            val model = ShaderModel().apply {
+                baseMaterial = BaseMaterial.PHONG
+                baseAlbedo = BaseAlbedo.STATIC
+            }
+            shaderCode = ctx.shaderGenerator.generateShader(model, ctx)
+        }
+
+        override fun onPipelineCreated(pipeline: Pipeline) {
+            super.onPipelineCreated(pipeline)
+            staticColor = pipeline.pushConstantRanges[0].pushConstants[0] as Uniform4f
+        }
+
+        companion object {
+            val loader: (Mesh, Pipeline.BuildContext, KoolContext) -> StaticColor = { mesh, buildCtx, ctx ->
+                StaticColor(mesh, buildCtx, ctx)
+            }
+        }
+    }
+
     class TextureColor(mesh: Mesh, buildCtx: Pipeline.BuildContext, ctx: KoolContext) : BasicMeshShader(buildCtx) {
         override val shaderCode: ShaderCode
 
@@ -64,7 +88,7 @@ abstract class BasicMeshShader(buildCtx: Pipeline.BuildContext) : Shader() {
 
         init {
             bindAttributes(mesh, buildCtx, listOf(Attribute.POSITIONS.name, Attribute.TEXTURE_COORDS.name))
-            buildCtx.descriptorLayout.apply {
+            buildCtx.descriptorSetLayout {
                 +TextureSampler.Builder().apply {
                     name = "tex"
                     stages += Stage.FRAGMENT_SHADER
@@ -79,7 +103,7 @@ abstract class BasicMeshShader(buildCtx: Pipeline.BuildContext) : Shader() {
 
         override fun onPipelineCreated(pipeline: Pipeline) {
             super.onPipelineCreated(pipeline)
-            textureSampler = pipeline.descriptorLayout.getTextureSampler("tex")
+            textureSampler = pipeline.descriptorSetLayouts[0].getTextureSampler("tex")
         }
 
         companion object {
@@ -96,7 +120,7 @@ abstract class BasicMeshShader(buildCtx: Pipeline.BuildContext) : Shader() {
 
         init {
             bindAttributes(mesh, buildCtx, listOf(Attribute.POSITIONS.name, Attribute.COLORS.name, Attribute.TEXTURE_COORDS.name))
-            buildCtx.descriptorLayout.apply {
+            buildCtx.descriptorSetLayout {
                 +TextureSampler.Builder().apply {
                     name = "tex"
                     stages += Stage.FRAGMENT_SHADER
@@ -111,7 +135,7 @@ abstract class BasicMeshShader(buildCtx: Pipeline.BuildContext) : Shader() {
 
         override fun onPipelineCreated(pipeline: Pipeline) {
             super.onPipelineCreated(pipeline)
-            textureSampler = pipeline.descriptorLayout.getTextureSampler("tex")
+            textureSampler = pipeline.descriptorSetLayouts[0].getTextureSampler("tex")
         }
 
         companion object {

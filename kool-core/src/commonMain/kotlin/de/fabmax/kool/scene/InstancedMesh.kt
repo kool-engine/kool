@@ -36,7 +36,7 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
 
         // compute instance stride as size of all instance attributes
         // stride is in bytes, attribute type size is in elements with 4 bytes each
-        instanceStride = attributes.sumBy { it.type.size * 4 }
+        instanceStride = attributes.sumBy { it.type.size }
 
         attributes.filter { it.divisor == 0 }.forEach { logW { "InstancedMesh attribute ${it.name} has divisor = 0" } }
     }

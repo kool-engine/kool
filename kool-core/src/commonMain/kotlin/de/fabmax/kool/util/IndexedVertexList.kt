@@ -45,6 +45,9 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
     var dataI: Uint32Buffer
     var indices = createUint32Buffer(INITIAL_SIZE)
 
+    /**
+     * Vertex attribute offsets in bytes.
+     */
     val attributeOffsets: Map<Attribute, Int>
 
     val vertexIt: Vertex
@@ -65,10 +68,10 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         }
         attributeOffsets = offsets
 
-        vertexSizeF = cntF
-        strideBytesF = vertexSizeF * 4
-        vertexSizeI = cntI
-        strideBytesI = vertexSizeI * 4
+        vertexSizeF = cntF / 4
+        strideBytesF = cntF
+        vertexSizeI = cntI / 4
+        strideBytesI = cntI
 
         dataF = createFloat32Buffer(cntF * INITIAL_SIZE)
         dataI = createUint32Buffer(cntI * INITIAL_SIZE)
@@ -276,16 +279,16 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
             for (offset in attributeOffsets) {
                 when (offset.key.type) {
-                    AttributeType.FLOAT -> attribViews[offset.key] = FloatView(offset.value)
-                    AttributeType.VEC_2F -> attribViews[offset.key] = Vec2fView(offset.value)
-                    AttributeType.VEC_3F -> attribViews[offset.key] = Vec3fView(offset.value)
-                    AttributeType.VEC_4F -> attribViews[offset.key] = Vec4fView(offset.value)
-                    AttributeType.COLOR_4F -> attribViews[offset.key] = ColorView(offset.value)
+                    AttributeType.FLOAT -> attribViews[offset.key] = FloatView(offset.value / 4)
+                    AttributeType.VEC_2F -> attribViews[offset.key] = Vec2fView(offset.value / 4)
+                    AttributeType.VEC_3F -> attribViews[offset.key] = Vec3fView(offset.value / 4)
+                    AttributeType.VEC_4F -> attribViews[offset.key] = Vec4fView(offset.value / 4)
+                    AttributeType.COLOR_4F -> attribViews[offset.key] = ColorView(offset.value / 4)
 
-                    AttributeType.INT -> attribViews[offset.key] = IntView(offset.value)
-                    AttributeType.VEC_2I -> attribViews[offset.key] = Vec2iView(offset.value)
-                    AttributeType.VEC_3I -> attribViews[offset.key] = Vec3iView(offset.value)
-                    AttributeType.VEC_4I -> attribViews[offset.key] = Vec4iView(offset.value)
+                    AttributeType.INT -> attribViews[offset.key] = IntView(offset.value / 4)
+                    AttributeType.VEC_2I -> attribViews[offset.key] = Vec2iView(offset.value / 4)
+                    AttributeType.VEC_3I -> attribViews[offset.key] = Vec3iView(offset.value / 4)
+                    AttributeType.VEC_4I -> attribViews[offset.key] = Vec4iView(offset.value / 4)
                 }
             }
 

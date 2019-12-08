@@ -1,8 +1,9 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.shading.AttributeType
 import de.fabmax.kool.util.copy
 
-class VertexLayoutDescription(val bindings: List<Binding>) {
+class VertexLayout(val bindings: List<Binding>) {
 
     val longHash: Long
 
@@ -31,8 +32,8 @@ class VertexLayoutDescription(val bindings: List<Binding>) {
     class Builder {
         val bindings = mutableListOf<Binding>()
 
-        fun create(): VertexLayoutDescription {
-            return VertexLayoutDescription(bindings.copy())
+        fun create(): VertexLayout {
+            return VertexLayout(bindings.copy())
         }
     }
 }
@@ -40,17 +41,4 @@ class VertexLayoutDescription(val bindings: List<Binding>) {
 enum class InputRate {
     VERTEX,
     INSTANCE
-}
-
-enum class AttributeType(val size: Int, val isInt: Boolean) {
-    FLOAT(4, false),
-    VEC_2F(8, false),
-    VEC_3F(12, false),
-    VEC_4F(16, false),
-    COLOR_4F(16, false),
-
-    INT(4, true),
-    VEC_2I(8, true),
-    VEC_3I(12, true),
-    VEC_4I(16, true)
 }

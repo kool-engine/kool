@@ -29,7 +29,7 @@ fun testScene() {
     ctx.assetMgr.assetsBaseDir = "./docs/assets"
 
 //    ctx.scenes += uiTestScene(ctx)
-//    ctx.scenes += simpleTestScene(ctx)
+    ctx.scenes += simpleTestScene(ctx)
     ctx.scenes += debugOverlay(ctx)
 
     ctx.run()
@@ -83,7 +83,15 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
                 colorCube()
             }
         }
-        pipelineConfig { shaderLoader = BasicMeshShader.VertexColor.loader }
+        pipelineConfig {
+            shaderLoader = BasicMeshShader.StaticColor.loader
+        }
+
+        onPreRender += { ctx ->
+            getPipeline(ctx)?.let {
+                (it.shader as BasicMeshShader.StaticColor).staticColor.value.set(Color.fromHsv((ctx.time.toFloat() * 60f) % 360f, 0.8f, 1f, 1f))
+            }
+        }
     }
 
     +transformGroup {

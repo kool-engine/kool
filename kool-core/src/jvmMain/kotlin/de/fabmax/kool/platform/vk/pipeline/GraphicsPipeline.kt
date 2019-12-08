@@ -2,9 +2,12 @@ package de.fabmax.kool.platform.vk.pipeline
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
+import de.fabmax.kool.platform.vk.util.bitValue
+import de.fabmax.kool.shading.AttributeType
 import de.fabmax.kool.util.logD
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkPushConstantRange
 
 class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val descriptorSetPoolSize: Int = 100) : VkResource() {
 
@@ -18,8 +21,11 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
 
     init {
         memStack {
-            descriptorSetLayout = createDescriptorSetLayout(pipeline.descriptorLayout)
-            descriptorPool = createDescriptorPool(pipeline.descriptorLayout)
+            if (pipeline.descriptorSetLayouts.size != 1) {
+                TODO("For now only one descriptor set layout is supported")
+            }
+            descriptorSetLayout = createDescriptorSetLayout(pipeline.descriptorSetLayouts[0])
+            descriptorPool = createDescriptorPool(pipeline.descriptorSetLayouts[0])
 
             val shaderStages = pipeline.shader.shaderCode.stages
             val shaderStageModules = shaderStages.map { createShaderModule(it) }
@@ -161,9 +167,19 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
                 stencilTestEnable(false)
             }
 
+            val pushConstantRanges: VkPushConstantRange.Buffer? = if (pipeline.pushConstantRanges.isEmpty()) { null } else {
+                callocVkPushConstantRangeN(pipeline.pushConstantRanges.size) {
+                    pipeline.pushConstantRanges.forEachIndexed { i, pushConstantRange ->
+                        this[i].stageFlags(pushConstantRange.stages.fold(0) { f, stage -> f or stage.bitValue() })
+                                .size(pushConstantRange.size)
+                    }
+                }
+            }
+
             val pipelineLayoutInfo = callocVkPipelineLayoutCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)
                 pSetLayouts(longs(descriptorSetLayout))
+                pPushConstantRanges(pushConstantRanges)
             }
             pipelineLayout = checkCreatePointer {
                 vkCreatePipelineLayout(swapChain.sys.device.vkDevice, pipelineLayoutInfo, null, it )
@@ -221,22 +237,14 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
         DescriptorType.UNIFORM_BUFFER -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     }
 
-    private fun MemoryStack.createDescriptorSetLayout(descriptorLayout: DescriptorLayout): Long {
-        val bindings = callocVkDescriptorSetLayoutBindingN(descriptorLayout.descriptors.size) {
-            descriptorLayout.descriptors.forEachIndexed { i, b ->
+    private fun MemoryStack.createDescriptorSetLayout(descriptorSetLayout: DescriptorSetLayout): Long {
+        val bindings = callocVkDescriptorSetLayoutBindingN(descriptorSetLayout.descriptors.size) {
+            descriptorSetLayout.descriptors.forEachIndexed { i, b ->
                 this[i].apply {
                     binding(i)
                     descriptorType(b.type.intType())
                     descriptorCount(1)
-                    var flags = 0
-                    b.stages.forEach { stage ->
-                        flags = when (stage) {
-                            Stage.VERTEX_SHADER -> flags or VK_SHADER_STAGE_VERTEX_BIT
-                            Stage.GEOMETRY_SHADER -> flags or VK_SHADER_STAGE_GEOMETRY_BIT
-                            Stage.FRAGMENT_SHADER -> flags or VK_SHADER_STAGE_FRAGMENT_BIT
-                        }
-                    }
-                    stageFlags(flags)
+                    stageFlags(b.stages.fold(0) { flags, stage -> flags or stage.bitValue() })
                 }
             }
         }
@@ -249,10 +257,10 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
         return checkCreatePointer { vkCreateDescriptorSetLayout(swapChain.sys.device.vkDevice, layoutInfo, null, it) }
     }
 
-    private fun createDescriptorPool(descriptorLayout: DescriptorLayout): Long {
+    private fun createDescriptorPool(descriptorSetLayout: DescriptorSetLayout): Long {
         memStack {
-            val poolSize = callocVkDescriptorPoolSizeN(descriptorLayout.descriptors.size) {
-                descriptorLayout.descriptors.forEachIndexed { i, b ->
+            val poolSize = callocVkDescriptorPoolSizeN(descriptorSetLayout.descriptors.size) {
+                descriptorSetLayout.descriptors.forEachIndexed { i, b ->
                     this[i].apply {
                         type(b.type.intType())
                         descriptorCount(swapChain.images.size * descriptorSetPoolSize)
