@@ -83,7 +83,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3ContextGL.InitProps) : A
         return inStream
     }
 
-    override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
+    override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.getCharMap(fontProps)
 
     override fun inflate(zipData: ByteArray): ByteArray = GZIPInputStream(ByteArrayInputStream(zipData)).readBytes()
 

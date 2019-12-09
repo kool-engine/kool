@@ -19,7 +19,7 @@ fun reflectionDemo(ctx: KoolContext): List<Scene> {
         val envRenderer = EnvironmentMapRenderer().apply { origin.set(0f, 3f, 0f) }
 
         // setup camera
-        +sphericalInputTransform {
+        +orbitInputTransform {
             panMethod = yPlanePan()
             translationBounds = BoundingBox(Vec3f(-20f, 0f, -20f), Vec3f(20f, 0f, 20f))
             // Set some initial rotation so that we look down on the scene

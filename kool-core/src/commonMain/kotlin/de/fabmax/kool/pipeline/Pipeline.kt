@@ -11,7 +11,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
      * used to make collisions less likely. For fast equality checks the equals() method only uses this value to
      * determine equality.
      */
-    val pipelineHash: Long
+    val pipelineHash: ULong
     val pipelineInstanceId = (super.hashCode().toLong() shl 32) + instanceId++
 
     val cullMethod: CullMethod = builder.cullMethod
@@ -34,14 +34,14 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
         pushConstantRanges = buildCtx.pushConstantRanges.map { it.create() }
 
         // compute pipelineHash
-        var hash = cullMethod.hashCode().toLong()
-        hash = (hash * 71023L) + depthTest.hashCode()
-        hash = (hash * 71023L) + isWriteDepth.hashCode()
-        hash = (hash * 71023L) + lineWidth.hashCode()
-        hash = (hash * 71023L) + vertexLayout.longHash
-        hash = (hash * 71023L) + shader.shaderCode.longHash
-        descriptorSetLayouts.forEach { hash = (hash * 71023L) + it.longHash }
-        pushConstantRanges.forEach { hash = (hash * 71023L) + it.longHash }
+        var hash = cullMethod.hashCode().toULong()
+        hash = (hash * 71023UL) + depthTest.hashCode().toULong()
+        hash = (hash * 71023UL) + isWriteDepth.hashCode().toULong()
+        hash = (hash * 71023UL) + lineWidth.hashCode().toULong()
+        hash = (hash * 71023UL) + vertexLayout.longHash
+        hash = (hash * 71023UL) + shader.shaderCode.longHash
+        descriptorSetLayouts.forEach { hash = (hash * 71023UL) + it.longHash }
+        pushConstantRanges.forEach { hash = (hash * 71023UL) + it.longHash }
         this.pipelineHash = hash
 
         shader.onPipelineCreated(this)

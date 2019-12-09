@@ -1,5 +1,5 @@
 package de.fabmax.kool.pipeline
 
 expect class ShaderCode {
-    val longHash: Long
+    val longHash: ULong
 }

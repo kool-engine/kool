@@ -21,6 +21,8 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
     private val canvas = BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB)
     private val clearColor = Color(0, 0, 0, 0)
 
+    private val charMaps = mutableMapOf<FontProps, CharMap>()
+
     private val availableFamilies: Set<String>
 
     init {
@@ -44,7 +46,9 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
         availableFamilies = families
     }
 
-    fun createCharMap(fontProps: FontProps): CharMap {
+    fun getCharMap(fontProps: FontProps): CharMap = charMaps.computeIfAbsent(fontProps) { generateCharMap(it) }
+
+    private fun generateCharMap(fontProps: FontProps): CharMap {
         val g = canvas.graphics as Graphics2D
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 

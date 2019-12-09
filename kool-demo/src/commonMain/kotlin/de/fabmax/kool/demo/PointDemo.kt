@@ -61,7 +61,7 @@ fun pointScene(): Scene {
         }
 
         // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
-        +sphericalInputTransform {
+        +orbitInputTransform {
             +camera
             setMouseRotation(0f, -30f)
             minZoom = 5f

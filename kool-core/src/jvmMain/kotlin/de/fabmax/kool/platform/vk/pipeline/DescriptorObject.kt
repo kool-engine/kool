@@ -119,17 +119,26 @@ class SamplerDescriptor(binding: Int, val sampler: TextureSampler) : DescriptorO
 
         fun pollCompleted(): Boolean {
             if (isCompleted && tex.loadingState != Texture.LoadingState.LOADING_FAILED) {
-                val texData = deferredTex.getCompleted()
-                val loadedTex = when (texData) {
-                    is ImageTextureData -> LoadedTexture.fromImageTextureData(sys, texData)
-                    is BufferedTextureData -> LoadedTexture.fromBufferedTextureData(sys, texData)
-                    else -> throw IllegalArgumentException("Unsupported texture format")
-                }
-                sys.device.addDependingResource(loadedTex)
-                tex.loadedTexture = loadedTex
+                tex.loadedTexture = getLoadedTex(deferredTex.getCompleted(), sys)
                 tex.loadingState = Texture.LoadingState.LOADED
             }
             return isCompleted
+        }
+    }
+
+    companion object {
+        // todo: integrate texture manager
+        private val loadedTextures = mutableMapOf<TextureData, LoadedTexture>()
+        private fun getLoadedTex(texData: TextureData, sys: VkSystem): LoadedTexture {
+            return loadedTextures.computeIfAbsent(texData) { k ->
+                val loaded = when (k) {
+                    is ImageTextureData -> LoadedTexture.fromImageTextureData(sys, k)
+                    is BufferedTextureData -> LoadedTexture.fromBufferedTextureData(sys, k)
+                    else -> throw IllegalArgumentException("Unsupported texture format")
+                }
+                sys.device.addDependingResource(loaded)
+                loaded
+            }
         }
     }
 }

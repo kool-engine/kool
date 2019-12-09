@@ -9,8 +9,8 @@ class PipelineManager(val sys: VkSystem) {
     private val pipelineConfigs = mutableSetOf<Pipeline>()
 
     private var swapChain: SwapChain? = null
-    private val mutPipelines = mutableMapOf<Long, GraphicsPipeline>()
-    private val pipelines: Map<Long, GraphicsPipeline> = mutPipelines
+    private val mutPipelines = mutableMapOf<ULong, GraphicsPipeline>()
+    private val pipelines: Map<ULong, GraphicsPipeline> = mutPipelines
 
     fun onSwapchainDestroyed() {
         swapChain = null

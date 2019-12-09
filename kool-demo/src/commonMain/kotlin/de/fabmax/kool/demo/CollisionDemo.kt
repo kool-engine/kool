@@ -8,8 +8,8 @@ import de.fabmax.kool.modules.physics.staticBox
 import de.fabmax.kool.modules.physics.uniformMassBox
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.orbitInputTransform
 import de.fabmax.kool.scene.scene
-import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.shading.ColorModel
 import de.fabmax.kool.shading.LightModel
@@ -28,7 +28,7 @@ fun basicCollisionDemo(): List<Scene> {
     val ARRAY_SIZE_Z = 1
 
     scenes += scene {
-        +sphericalInputTransform {
+        +orbitInputTransform {
             +camera
             maxZoom = 50f
             resetZoom(4f)
@@ -72,7 +72,7 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
         lighting.primaryLight.direction.set(1f, 0.8f, 0.4f)
         lighting.useDefaultShadowMap(ctx)
 
-        +sphericalInputTransform {
+        +orbitInputTransform {
             +camera
             maxZoom = 50f
             resetZoom(50f)

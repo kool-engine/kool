@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.GlCapabilities
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.drawqueue.DrawCommandMesh
 import de.fabmax.kool.math.Vec4f
@@ -9,8 +10,7 @@ import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Float32BufferImpl
-import org.lwjgl.glfw.GLFW.glfwPollEvents
-import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
+import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import java.awt.Desktop
@@ -65,6 +65,7 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                 viewport = Viewport(0, 0, windowWidth, windowHeight)
             }
         }
+        setupInput(vkSystem.window.glfwWindow)
 
         screenDpi = DesktopImpl.primaryMonitor.dpi
 
@@ -110,6 +111,63 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
     override fun checkIsGlThread() { }
 
     override fun getSysInfos(): List<String> = SysInfo
+
+    private fun setupInput(window: Long) {
+        // install window callbacks
+        glfwSetFramebufferSizeCallback(window) { _, w, h ->
+            windowWidth = w
+            windowHeight = h
+        }
+        glfwSetWindowPosCallback(window) { _, x, y ->
+            screenDpi = getResolutionAt(x, y)
+        }
+
+        // install mouse callbacks
+        glfwSetMouseButtonCallback(window) { _, btn, act, _ ->
+            inputMgr.handleMouseButtonState(btn, act == GLFW_PRESS)
+        }
+        glfwSetCursorPosCallback(window) { _, x, y ->
+            inputMgr.handleMouseMove(x.toFloat(), y.toFloat())
+        }
+        glfwSetCursorEnterCallback(window) { _, entered ->
+            if (!entered) {
+                inputMgr.handleMouseExit()
+            }
+        }
+        glfwSetScrollCallback(window) { _, _, yOff ->
+            inputMgr.handleMouseScroll(yOff.toFloat())
+        }
+
+        // install keyboard callbacks
+        glfwSetKeyCallback(window) { _, key, _, action, mods ->
+            val event = when (action) {
+                GLFW_PRESS -> InputManager.KEY_EV_DOWN
+                GLFW_REPEAT -> InputManager.KEY_EV_DOWN or InputManager.KEY_EV_REPEATED
+                GLFW_RELEASE -> InputManager.KEY_EV_UP
+                else -> -1
+            }
+            if (event != -1) {
+                val keyCode = Lwjgl3ContextGL.KEY_CODE_MAP[key] ?: key
+                var keyMod = 0
+                if (mods and GLFW_MOD_ALT != 0) {
+                    keyMod = keyMod or InputManager.KEY_MOD_ALT
+                }
+                if (mods and GLFW_MOD_CONTROL != 0) {
+                    keyMod = keyMod or InputManager.KEY_MOD_CTRL
+                }
+                if (mods and GLFW_MOD_SHIFT != 0) {
+                    keyMod = keyMod or InputManager.KEY_MOD_SHIFT
+                }
+                if (mods and GLFW_MOD_SUPER != 0) {
+                    keyMod = keyMod or InputManager.KEY_MOD_SUPER
+                }
+                inputMgr.keyEvent(keyCode, keyMod, event)
+            }
+        }
+        glfwSetCharCallback(window) { _, codepoint ->
+            inputMgr.charTyped(codepoint.toChar())
+        }
+    }
 
     private inner class KoolVkScene: VkScene {
         lateinit var sys: VkSystem
@@ -193,7 +251,7 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                 // fixme: more sophisticated sorting, customizable draw order, etc.
                 //drawQueue.commands.sortBy { it.pipeline!!.pipelineHash }
 
-                var prevPipeline = 0L
+                var prevPipeline = 0UL
                 drawQueue.commands.forEach { cmd ->
                     val pipelineCfg = cmd.pipeline!!
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg)) {

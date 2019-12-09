@@ -265,7 +265,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
     init {
         +waveform
         +Heightmap(256, 256)
-        +sphericalInputTransform {
+        +orbitInputTransform {
             +camera
             setMouseRotation(20f, -20f)
             zoom = 8f

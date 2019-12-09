@@ -6,12 +6,12 @@ import de.fabmax.kool.util.copy
 
 class DescriptorSetLayout private constructor(val descriptors: List<Descriptor>) {
 
-    val longHash: Long
+    val longHash: ULong
 
     init {
-        var hash = 0L
+        var hash = 0UL
         descriptors.forEach {
-            hash = (hash * 71023L) + it.longHash
+            hash = (hash * 71023UL) + it.longHash
         }
         longHash = hash
     }
@@ -37,16 +37,16 @@ class DescriptorSetLayout private constructor(val descriptors: List<Descriptor>)
     }
 }
 
-abstract class Descriptor(builder: Builder<*>, val type: DescriptorType, hash: Long) {
+abstract class Descriptor(builder: Builder<*>, val type: DescriptorType, hash: ULong) {
     val name: String = builder.name
     val stages: Set<Stage> = builder.stages.copy()
 
-    val longHash: Long
+    val longHash: ULong
 
     init {
         var h = hash
-        h = (h * 71023L) + builder.name.hashCode().toLong()
-        h = (h * 71023L) + type.hashCode().toLong()
+        h = (h * 71023UL) + builder.name.hashCode().toULong()
+        h = (h * 71023UL) + type.hashCode().toULong()
         longHash = h
     }
 
@@ -58,7 +58,7 @@ abstract class Descriptor(builder: Builder<*>, val type: DescriptorType, hash: L
     }
 }
 
-class TextureSampler private constructor(builder: Builder, hash: Long) : Descriptor(builder, DescriptorType.IMAGE_SAMPLER, hash) {
+class TextureSampler private constructor(builder: Builder, hash: ULong) : Descriptor(builder, DescriptorType.IMAGE_SAMPLER, hash) {
 
     val onUpdate: ((TextureSampler, DrawCommand) -> Unit) ? = builder.onUpdate
     var texture: Texture? = null
@@ -71,12 +71,12 @@ class TextureSampler private constructor(builder: Builder, hash: Long) : Descrip
         }
 
         override fun create(): TextureSampler {
-            return TextureSampler(this, DescriptorType.IMAGE_SAMPLER.hashCode() * 71023L)
+            return TextureSampler(this, DescriptorType.IMAGE_SAMPLER.hashCode().toULong() * 71023UL)
         }
     }
 }
 
-class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uniform<*>>, hash: Long) :
+class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uniform<*>>, hash: ULong) :
         Descriptor(builder, DescriptorType.UNIFORM_BUFFER, hash) {
 
     val onUpdate: ((UniformBuffer, DrawCommand) -> Unit) ? = builder.onUpdate
@@ -115,10 +115,10 @@ class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uni
 
         override fun create(): UniformBuffer {
             val uniforms = List(uniforms.size) { uniforms[it]() }
-            var hash = DescriptorType.UNIFORM_BUFFER.hashCode() * 71023L
+            var hash = DescriptorType.UNIFORM_BUFFER.hashCode().toULong() * 71023UL
             uniforms.forEach {
-                hash = (hash * 71023L) + it::class.hashCode().toLong()
-                hash = (hash * 71023L) + it.name.hashCode().toLong()
+                hash = (hash * 71023UL) + it::class.hashCode().toULong()
+                hash = (hash * 71023UL) + it.name.hashCode().toULong()
             }
             return UniformBuffer(this, uniforms, hash)
         }

@@ -5,14 +5,14 @@ import de.fabmax.kool.util.copy
 
 class VertexLayout(val bindings: List<Binding>) {
 
-    val longHash: Long
+    val longHash: ULong
 
     init {
-        var hash = 0L
+        var hash = 0UL
         bindings.forEach {
-            hash = (hash * 71023L) + it.hashCode().toLong()
+            hash = (hash * 71023UL) + it.hashCode().toULong()
             it.attributes.forEach { attr ->
-                hash = (hash * 71023L) + attr.hashCode().toLong()
+                hash = (hash * 71023UL) + attr.hashCode().toULong()
             }
         }
         longHash = hash

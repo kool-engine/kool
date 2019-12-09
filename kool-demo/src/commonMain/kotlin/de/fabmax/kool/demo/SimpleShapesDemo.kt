@@ -18,7 +18,7 @@ import de.fabmax.kool.util.*
 
 fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
     // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
-    +sphericalInputTransform {
+    +orbitInputTransform {
         // Set some initial rotation so that we look down on the scene
         setMouseRotation(20f, -30f)
         // panning / camera translation is limited to a certain area

@@ -69,14 +69,14 @@ fun modelScene(ctx: KoolContext): Scene = scene {
         rotate(-90f, Vec3f.X_AXIS)
 
         // Camera is added to the model transform group to make it move together with the model
-        +sphericalInputTransform {
+        +orbitInputTransform {
             // adjust transform to model coordinates
             verticalAxis = Vec3f.Z_AXIS
             minHorizontalRot = 0f
             maxHorizontalRot = 180f
             // disable panning (doesn't work as expected in nested camera transform groups)
-            zoomMethod = SphericalInputTransform.ZoomMethod.ZOOM_CENTER
-            rightDragMethod = SphericalInputTransform.DragMethod.NONE
+            zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
+            rightDragMethod = OrbitInputTransform.DragMethod.NONE
             // move camera up a little so we look at the center of the model
             translation.set(0.5f, 0f, 1f)
             // Set some initial rotation so that we look down on the scene

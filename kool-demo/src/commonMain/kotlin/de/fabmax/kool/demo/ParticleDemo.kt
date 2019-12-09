@@ -4,8 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.assetTexture
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.orbitInputTransform
 import de.fabmax.kool.scene.scene
-import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.BillboardMesh
 import de.fabmax.kool.util.Color
@@ -21,7 +21,7 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
     var maxParticleCount = 10000
 
     val scene = scene {
-        +sphericalInputTransform {
+        +orbitInputTransform {
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(20f, -30f)
             // Add camera to the transform group

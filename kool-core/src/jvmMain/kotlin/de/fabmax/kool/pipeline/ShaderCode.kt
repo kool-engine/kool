@@ -11,11 +11,11 @@ import java.io.FileNotFoundException
 actual class ShaderCode(val stages: List<ShaderStage>) {
     constructor(vararg stages: ShaderStage): this(stages.asList())
 
-    actual val longHash: Long
+    actual val longHash: ULong
 
     init {
-        var hash = 0L
-        stages.forEach { hash = (hash * 71023L) xor it.longHash }
+        var hash = 0UL
+        stages.forEach { hash = (hash * 71023UL) xor it.longHash }
         longHash = hash
     }
 

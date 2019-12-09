@@ -9,7 +9,7 @@ import de.fabmax.kool.scene.ui.*
  */
 
 fun uiDemoScene(): Scene = scene("UI Demo") {
-    +sphericalInputTransform { +camera }
+    +orbitInputTransform { +camera }
 
     +transformGroup {
         onPreRender += { ctx ->

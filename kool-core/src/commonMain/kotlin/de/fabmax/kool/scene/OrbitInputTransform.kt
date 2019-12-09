@@ -13,14 +13,14 @@ import de.fabmax.kool.util.SpringDamperFloat
  * @author fabmax
  */
 
-fun sphericalInputTransform(name: String? = null, block: SphericalInputTransform.() -> Unit): SphericalInputTransform {
-    val sit = SphericalInputTransform(name)
+fun orbitInputTransform(name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
+    val sit = OrbitInputTransform(name)
     sit.block()
     return sit
 }
 
 fun Scene.defaultCamTransform() {
-    +sphericalInputTransform {
+    +orbitInputTransform {
         // Set some initial rotation so that we look down on the scene
         setMouseRotation(20f, -30f)
         // Add camera to the transform group
@@ -28,7 +28,7 @@ fun Scene.defaultCamTransform() {
     }
 }
 
-open class SphericalInputTransform(name: String? = null) : TransformGroup(name), Scene.DragHandler {
+open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Scene.DragHandler {
 
     var leftDragMethod = DragMethod.ROTATE
     var middleDragMethod = DragMethod.NONE

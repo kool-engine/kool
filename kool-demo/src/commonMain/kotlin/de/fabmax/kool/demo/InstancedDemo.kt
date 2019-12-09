@@ -17,7 +17,7 @@ import kotlin.math.sqrt
 
 fun instancedDemo(ctx: KoolContext): Scene = scene {
     // setup camera
-    +sphericalInputTransform {
+    +orbitInputTransform {
         panMethod = yPlanePan()
         translationBounds = BoundingBox(Vec3f(-50f, 0f, -50f), Vec3f(50f, 0f, 50f))
         // Set some initial rotation so that we look down on the scene

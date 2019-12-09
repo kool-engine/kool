@@ -5,7 +5,7 @@ import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.copy
 import de.fabmax.kool.util.createFloat32Buffer
 
-class PushConstantRange private constructor(builder: Builder, val longHash: Long, val pushConstants: List<Uniform<*>>) {
+class PushConstantRange private constructor(builder: Builder, val longHash: ULong, val pushConstants: List<Uniform<*>>) {
 
     val name = builder.name
     val stages = builder.stages.copy()
@@ -41,13 +41,13 @@ class PushConstantRange private constructor(builder: Builder, val longHash: Long
 
         fun create(): PushConstantRange {
             val pushConstants = List(pushConstants.size) { pushConstants[it]() }
-            var hash = name.hashCode().toLong()
+            var hash = name.hashCode().toULong()
             stages.forEach {
-                hash = (hash * 71023L) + it.hashCode().toLong()
+                hash = (hash * 71023UL) + it.hashCode().toULong()
             }
             pushConstants.forEach {
-                hash = (hash * 71023L) + it::class.hashCode().toLong()
-                hash = (hash * 71023L) + it.name.hashCode().toLong()
+                hash = (hash * 71023UL) + it::class.hashCode().toULong()
+                hash = (hash * 71023UL) + it.name.hashCode().toULong()
             }
             return PushConstantRange(this, hash, pushConstants)
         }
