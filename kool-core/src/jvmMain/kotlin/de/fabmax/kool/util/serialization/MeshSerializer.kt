@@ -3,9 +3,9 @@ package de.fabmax.kool.util.serialization
 import de.fabmax.kool.gl.GL_LINES
 import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.AttributeType
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.shading.AttributeType
 
 class MeshSerializer {
 

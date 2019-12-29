@@ -6,6 +6,8 @@ import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.AttributeType
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Node

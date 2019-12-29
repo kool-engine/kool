@@ -4,7 +4,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.shading.AttributeType
+import de.fabmax.kool.pipeline.AttributeType
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
 import java.io.File
@@ -43,7 +43,7 @@ object ModelConverter {
             }
 
             attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(AttributeType.VEC_3F, posList)
-            if (!normalList.isEmpty()) {
+            if (normalList.isNotEmpty()) {
                 if (normalBits > 0) {
                     val octNormals = encodeNormals(normalList, normalBits)
                     tags += "${ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED}=$normalBits"
@@ -52,11 +52,11 @@ object ModelConverter {
                     attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
                 }
             }
-            if (!uvList.isEmpty()) {
+            if (uvList.isNotEmpty()) {
                 attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(AttributeType.VEC_2F, uvList)
             }
-            if (!colorList.isEmpty()) {
-                attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(AttributeType.COLOR_4F, colorList)
+            if (colorList.isNotEmpty()) {
+                attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(AttributeType.VEC_4F, colorList)
             }
             meshes += ModelMeshData(meshName, PrimitiveType.TRIANGLES, attribs, indices, armature, animations,
                     aiMesh.mMaterialIndex(), tags, intAttribs)

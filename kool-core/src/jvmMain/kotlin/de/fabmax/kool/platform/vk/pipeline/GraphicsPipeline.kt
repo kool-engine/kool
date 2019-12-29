@@ -3,7 +3,6 @@ package de.fabmax.kool.platform.vk.pipeline
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.bitValue
-import de.fabmax.kool.shading.AttributeType
 import de.fabmax.kool.util.logD
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
@@ -27,7 +26,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
             descriptorSetLayout = createDescriptorSetLayout(pipeline.descriptorSetLayouts[0])
             descriptorPool = createDescriptorPool(pipeline.descriptorSetLayouts[0])
 
-            val shaderStages = pipeline.shader.shaderCode.stages
+            val shaderStages = pipeline.shaderCode.stages
             val shaderStageModules = shaderStages.map { createShaderModule(it) }
             val shaderStageInfos = callocVkPipelineShaderStageCreateInfoN(shaderStages.size) {
                 for (i in shaderStages.indices) {
@@ -46,19 +45,21 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
             }
             val nAttributes = pipeline.vertexLayout.bindings[0].attributes.size
             val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nAttributes) {
-                pipeline.vertexLayout.bindings[0].attributes.forEachIndexed { i, attrib ->
-                    this[i].apply {
-                        binding(attrib.binding)
-                        location(attrib.location)
-                        offset(attrib.offset)
-                        format(when (attrib.type) {
-                            AttributeType.FLOAT -> VK_FORMAT_R32_SFLOAT
-                            AttributeType.VEC_2F -> VK_FORMAT_R32G32_SFLOAT
-                            AttributeType.VEC_3F -> VK_FORMAT_R32G32B32_SFLOAT
-                            AttributeType.VEC_4F -> VK_FORMAT_R32G32B32A32_SFLOAT
-                            AttributeType.COLOR_4F -> VK_FORMAT_R32G32B32A32_SFLOAT
-                            else -> throw IllegalStateException("Attribute is not a float type")
-                        })
+                var iAttrib = 0
+                pipeline.vertexLayout.bindings.forEach { binding ->
+                    binding.attributes.forEach { attrib ->
+                        this[iAttrib++].apply {
+                            binding(binding.binding)
+                            location(attrib.location)
+                            offset(attrib.offset)
+                            format(when (attrib.type) {
+                                AttributeType.FLOAT -> VK_FORMAT_R32_SFLOAT
+                                AttributeType.VEC_2F -> VK_FORMAT_R32G32_SFLOAT
+                                AttributeType.VEC_3F -> VK_FORMAT_R32G32B32_SFLOAT
+                                AttributeType.VEC_4F -> VK_FORMAT_R32G32B32A32_SFLOAT
+                                else -> throw IllegalStateException("Attribute is not a float type")
+                            })
+                        }
                     }
                 }
             }
@@ -241,7 +242,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
         val bindings = callocVkDescriptorSetLayoutBindingN(descriptorSetLayout.descriptors.size) {
             descriptorSetLayout.descriptors.forEachIndexed { i, b ->
                 this[i].apply {
-                    binding(i)
+                    binding(b.binding)
                     descriptorType(b.type.intType())
                     descriptorCount(1)
                     stageFlags(b.stages.fold(0) { flags, stage -> flags or stage.bitValue() })

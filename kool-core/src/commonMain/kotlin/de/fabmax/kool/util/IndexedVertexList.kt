@@ -2,8 +2,8 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
-import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.shading.AttributeType
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.AttributeType
 import kotlin.math.max
 import kotlin.math.round
 
@@ -283,8 +283,6 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
                     AttributeType.VEC_2F -> attribViews[offset.key] = Vec2fView(offset.value / 4)
                     AttributeType.VEC_3F -> attribViews[offset.key] = Vec3fView(offset.value / 4)
                     AttributeType.VEC_4F -> attribViews[offset.key] = Vec4fView(offset.value / 4)
-                    AttributeType.COLOR_4F -> attribViews[offset.key] = ColorView(offset.value / 4)
-
                     AttributeType.INT -> attribViews[offset.key] = IntView(offset.value / 4)
                     AttributeType.VEC_2I -> attribViews[offset.key] = Vec2iView(offset.value / 4)
                     AttributeType.VEC_3I -> attribViews[offset.key] = Vec3iView(offset.value / 4)
@@ -296,7 +294,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
             normal = getVec3fAttribute(Attribute.NORMALS) ?: Vec3fView(-1)
             tangent = getVec3fAttribute(Attribute.TANGENTS) ?: Vec3fView(-1)
             texCoord = getVec2fAttribute(Attribute.TEXTURE_COORDS) ?: Vec2fView(-1)
-            color = getColorAttribute(Attribute.COLORS) ?: ColorView(-1)
+            color = getColorAttribute(Attribute.COLORS) ?: ColorWrapView(Vec4fView(-1))
         }
 
         fun set(other: Vertex) {
@@ -308,7 +306,6 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
                         is Vec2fView -> (attributeViews[attrib] as Vec2fView).set(view)
                         is Vec3fView -> (attributeViews[attrib] as Vec3fView).set(view)
                         is Vec4fView -> (attributeViews[attrib] as Vec4fView).set(view)
-                        is ColorView -> (attributeViews[attrib] as ColorView).set(view)
                         is IntView   -> (attributeViews[attrib] as IntView).i = view.i
                         is Vec2iView -> (attributeViews[attrib] as Vec2iView).set(view)
                         is Vec3iView -> (attributeViews[attrib] as Vec3iView).set(view)
@@ -322,7 +319,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         fun getVec2fAttribute(attribute: Attribute): MutableVec2f? = attributeViews[attribute] as MutableVec2f?
         fun getVec3fAttribute(attribute: Attribute): MutableVec3f? = attributeViews[attribute] as MutableVec3f?
         fun getVec4fAttribute(attribute: Attribute): MutableVec4f? = attributeViews[attribute] as MutableVec4f?
-        fun getColorAttribute(attribute: Attribute): MutableColor? = attributeViews[attribute] as MutableColor?
+        fun getColorAttribute(attribute: Attribute): MutableColor? = attributeViews[attribute]?.let { ColorWrapView(it as Vec4fView) }
         fun getIntAttribute(attribute: Attribute): IntView? = attributeViews[attribute] as IntView?
         fun getVec2iAttribute(attribute: Attribute): Vec2iView? = attributeViews[attribute] as Vec2iView?
         fun getVec3iAttribute(attribute: Attribute): Vec3iView? = attributeViews[attribute] as Vec3iView?
@@ -381,19 +378,9 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
             }
         }
 
-        private inner class ColorView(val attribOffset: Int) : MutableColor() {
-            override operator fun get(i: Int): Float {
-                return if (attribOffset >= 0 && i in 0..3) {
-                    dataF[offsetF + attribOffset + i]
-                } else {
-                    0f
-                }
-            }
-            override operator fun set(i: Int, v: Float) {
-                if (attribOffset >= 0 && i in 0..3) {
-                    dataF[offsetF + attribOffset + i] = v
-                }
-            }
+        private inner class ColorWrapView(val vecView: Vec4fView) : MutableColor() {
+            override operator fun get(i: Int) = vecView[i]
+            override operator fun set(i: Int, v: Float) { vecView[i] = v }
         }
 
         inner class IntView(private val attribOffset: Int) {

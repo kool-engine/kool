@@ -20,6 +20,14 @@ actual class ShaderCode(val stages: List<ShaderStage>) {
     }
 
     companion object {
+        fun codeFromSource(vertShaderSrc: String, fragShaderSrc: String): ShaderCode {
+            val vertShaderCode = ShaderStage.fromSource("vertShader", vertShaderSrc, VK10.VK_SHADER_STAGE_VERTEX_BIT)
+            val fragShaderCode = ShaderStage.fromSource("fragShader", fragShaderSrc, VK10.VK_SHADER_STAGE_FRAGMENT_BIT)
+
+            Log.d("ShaderCode") { "Successfully compiled shader: vertShader: ${vertShaderCode.code.size} bytes, fragShader: ${fragShaderCode.code.size} bytes" }
+            return ShaderCode(vertShaderCode, fragShaderCode)
+        }
+
         fun codeFromResources(vertShaderName: String, fragShaderName: String): ShaderCode {
             val vertShaderCode = this::class.java.classLoader.getResourceAsStream(vertShaderName)?.use {
                 ShaderStage.fromSource(vertShaderName, it, VK10.VK_SHADER_STAGE_VERTEX_BIT)

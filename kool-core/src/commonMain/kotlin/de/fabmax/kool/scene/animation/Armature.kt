@@ -4,10 +4,10 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Mat4fStack
 import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.AttributeType
 import de.fabmax.kool.scene.InstancedMesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.shading.AttributeType
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.IndexedVertexList

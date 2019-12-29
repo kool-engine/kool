@@ -1,13 +1,16 @@
 package de.fabmax.kool.platform.vk.util
 
-import de.fabmax.kool.pipeline.Stage
+import de.fabmax.kool.pipeline.ShaderStage
 import org.lwjgl.vulkan.VK10.*
 
-fun Stage.bitValue(): Int {
+fun ShaderStage.bitValue(): Int {
     return when (this) {
-        Stage.VERTEX_SHADER -> VK_SHADER_STAGE_VERTEX_BIT
-        Stage.GEOMETRY_SHADER -> VK_SHADER_STAGE_GEOMETRY_BIT
-        Stage.FRAGMENT_SHADER -> VK_SHADER_STAGE_FRAGMENT_BIT
+        ShaderStage.VERTEX_SHADER -> VK_SHADER_STAGE_VERTEX_BIT
+        ShaderStage.TESSELEATION_CTRL -> VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT
+        ShaderStage.TESSELATION_EVAL -> VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT
+        ShaderStage.GEOMETRY_SHADER -> VK_SHADER_STAGE_GEOMETRY_BIT
+        ShaderStage.FRAGMENT_SHADER -> VK_SHADER_STAGE_FRAGMENT_BIT
+        ShaderStage.ALL -> VK_SHADER_STAGE_ALL
     }
 }
 

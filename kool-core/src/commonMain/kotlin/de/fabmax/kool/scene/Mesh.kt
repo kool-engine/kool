@@ -5,8 +5,8 @@ import de.fabmax.kool.RenderPass
 import de.fabmax.kool.drawqueue.DrawCommandMesh
 import de.fabmax.kool.gl.glDrawElements
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.shading.Shader
 import de.fabmax.kool.shading.VboBinder
@@ -16,20 +16,20 @@ import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.fontShader
 
 
-inline fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
-         block: Mesh.() -> Unit): Mesh {
-    val attributes = mutableSetOf(Attribute.POSITIONS)
-    if (withNormals) {
-        attributes += Attribute.NORMALS
-    }
-    if (withColors) {
-        attributes += Attribute.COLORS
-    }
-    if (withTexCoords) {
-        attributes += Attribute.TEXTURE_COORDS
-    }
-    return mesh(attributes, name, block)
-}
+//inline fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
+//         block: Mesh.() -> Unit): Mesh {
+//    val attributes = mutableSetOf(Attribute.POSITIONS)
+//    if (withNormals) {
+//        attributes += Attribute.NORMALS
+//    }
+//    if (withColors) {
+//        attributes += Attribute.COLORS
+//    }
+//    if (withTexCoords) {
+//        attributes += Attribute.TEXTURE_COORDS
+//    }
+//    return mesh(attributes, name, block)
+//}
 
 inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(MeshData(attributes), name)

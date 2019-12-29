@@ -8,6 +8,7 @@ import de.fabmax.kool.util.createFloat32Buffer
 class PushConstantRange private constructor(builder: Builder, val longHash: ULong, val pushConstants: List<Uniform<*>>) {
 
     val name = builder.name
+    val instanceName = builder.instanceName
     val stages = builder.stages.copy()
 
     /**
@@ -29,8 +30,9 @@ class PushConstantRange private constructor(builder: Builder, val longHash: ULon
     }
 
     class Builder {
-        var name = "pushConstants"
-        val stages = mutableSetOf<Stage>()
+        var name = "PushConstants"
+        var instanceName: String? = null
+        val stages = mutableSetOf<ShaderStage>()
 
         val pushConstants = mutableListOf<() -> Uniform<*>>()
         var onUpdate: ((PushConstantRange, DrawCommand) -> Unit) ? = null

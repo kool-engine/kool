@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
 import de.fabmax.kool.Texture
 import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.InstancedMesh
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node

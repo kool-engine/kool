@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.CubeMapTexture
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.shading.*
 
 class Skybox(camera: Camera, var environmentMap: CubeMapTexture) : Scene() {

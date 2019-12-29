@@ -24,14 +24,18 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
     val pushConstantRanges: List<PushConstantRange>
 
     val shader: Shader
+    val shaderCode: ShaderCode
 
     init {
         val buildCtx = BuildContext(builder)
         builder.onCreatePipeline.forEach { it(buildCtx) }
         shader = builder.shaderLoader(mesh, buildCtx, ctx)
         vertexLayout = buildCtx.vertexLayout.create()
-        descriptorSetLayouts = buildCtx.descriptorSetLayouts.map { it.create() }
+        descriptorSetLayouts = buildCtx.descriptorSetLayouts.mapIndexed { i, b -> b.create(i) }
         pushConstantRanges = buildCtx.pushConstantRanges.map { it.create() }
+
+        // load / generate shader code
+        shaderCode = shader.generateCode(this, ctx)
 
         // compute pipelineHash
         var hash = cullMethod.hashCode().toULong()
@@ -39,7 +43,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
         hash = (hash * 71023UL) + isWriteDepth.hashCode().toULong()
         hash = (hash * 71023UL) + lineWidth.hashCode().toULong()
         hash = (hash * 71023UL) + vertexLayout.longHash
-        hash = (hash * 71023UL) + shader.shaderCode.longHash
+        hash = (hash * 71023UL) + shaderCode.longHash
         descriptorSetLayouts.forEach { hash = (hash * 71023UL) + it.longHash }
         pushConstantRanges.forEach { hash = (hash * 71023UL) + it.longHash }
         this.pipelineHash = hash
@@ -74,8 +78,10 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
             descriptorSetLayouts[set].block()
         }
 
-        fun pushConstantRange(block: PushConstantRange.Builder.() -> Unit) {
+        fun pushConstantRange(name: String, vararg stages: ShaderStage, block: PushConstantRange.Builder.() -> Unit) {
             val b = PushConstantRange.Builder()
+            b.name = name
+            b.stages += stages
             b.block()
             pushConstantRanges.add(b)
         }
@@ -105,7 +111,6 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
 fun Mesh.pipelineConfig(block: Pipeline.Builder.() -> Unit) {
     pipelineLoader = { ctx ->
         val builder = Pipeline.Builder()
-        //builder.onCreatePipeline += { it.vertexLayout.forMesh(this@pipelineConfig) }
         builder.block()
         builder.create(this, ctx)
     }

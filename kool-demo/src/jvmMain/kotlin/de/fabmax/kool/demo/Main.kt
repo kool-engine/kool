@@ -2,15 +2,12 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.pipelineConfig
-import de.fabmax.kool.pipeline.shading.BasicMeshShader
+import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.debugOverlay
 
 /**
@@ -60,57 +57,29 @@ fun UiRoot.setupUi() {
 fun simpleTestScene(ctx: KoolContext): Scene = scene {
     defaultCamTransform()
 
-    +colorMesh {
-        generator = {
-//            for (i in -5 .. 5) {
-//                cube {
-//                    origin.x = i * 20f
-//                    origin.z = 1000f
-//                    size.set(10f, 10f, 1f)
-//                    colorCube()
-//                }
-//
-//                cube {
-//                    origin.y = i * 20f
-//                    origin.z = -999f
-//                    size.set(10f, 10f, 1.000f)
-//                    colorCube()
-//                }
+//    +colorMesh {
+//        generator = {
+//            cube {
+//                centerOrigin()
+//                colorCube()
 //            }
-
-            cube {
-                centerOrigin()
-                colorCube()
-            }
-        }
-        pipelineConfig {
-            shaderLoader = BasicMeshShader.StaticColor.loader
-        }
-
-        onPreRender += { ctx ->
-            getPipeline(ctx)?.let {
-                (it.shader as BasicMeshShader.StaticColor).staticColor.value.set(Color.fromHsv((ctx.time.toFloat() * 60f) % 360f, 0.8f, 1f, 1f))
-            }
-        }
-    }
+//        }
+//        pipelineConfig {
+////            shaderLoader = ModeledShader.staticColor()
+//            shaderLoader = ModeledShader.vertexColor()
+//        }
+//
+////        onPreRender += { ctx ->
+////            getPipeline(ctx)?.let {
+////                (it.shader as ModeledShader.StaticColor).uStaticColor.value.set(Color.fromHsv((ctx.time.toFloat() * 60f) % 360f, 0.8f, 1f, 1f))
+////            }
+////        }
+//    }
 
     +transformGroup {
         translate(3f, 0f, 0f)
 
         +transformGroup {
-            +colorMesh {
-                generator = {
-                    cube {
-                        centerOrigin()
-                        colorCube()
-                    }
-                }
-                pipelineConfig { shaderLoader = BasicMeshShader.VertexColor.loader }
-            }
-            onPreRender += { ctx ->
-                rotate(90f * ctx.deltaT, 0f, 1f, 0f)
-            }
-
             +mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)) {
                 generator = {
                     cube {
@@ -119,32 +88,37 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
                 }
 
                 pipelineConfig {
-                    shaderLoader = BasicMeshShader.TextureColor.loader
+                    //shaderLoader = BasicMeshShader.TextureColor.loader
+                    shaderLoader = ModeledShader.textureColor()
                     onPipelineCreated += {
-                        (it.shader as BasicMeshShader.TextureColor).textureSampler.texture = Texture { assets -> assets.loadImageData("world.jpg") }
+                        (it.shader as ModeledShader.TextureColor).textureSampler.texture = Texture { assets -> assets.loadImageData("world.jpg") }
                     }
                 }
             }
-        }
-    }
 
-    val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN), ctx)
-    +mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
-        generator = {
-            color = Color.LIME
-            text(font, 1f) {
-                // Set the text to render, for now only characters defined in [Font.STD_CHARS] can be rendered
-                text = "kool@Vulkan!"
-                // Make the text centered
-                origin.set(-font.textWidth(text) / 2f, 0f, 200f)
-            }
-        }
-
-        pipelineConfig {
-            shaderLoader = BasicMeshShader.MaskedColor.loader
-            onPipelineCreated += {
-                (it.shader as BasicMeshShader.MaskedColor).textureSampler.texture = font
+            onPreRender += { ctx ->
+                rotate(90f * ctx.deltaT, 0f, 1f, 0f)
             }
         }
     }
+
+//    val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN), ctx)
+//    +mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
+//        generator = {
+//            color = Color.LIME
+//            text(font, 1f) {
+//                // Set the text to render, for now only characters defined in [Font.STD_CHARS] can be rendered
+//                text = "kool@Vulkan!"
+//                // Make the text centered
+//                origin.set(-font.textWidth(text) / 2f, 0f, 200f)
+//            }
+//        }
+//
+//        pipelineConfig {
+//            shaderLoader = BasicMeshShader.MaskedColor.loader
+//            onPipelineCreated += {
+//                (it.shader as BasicMeshShader.MaskedColor).textureSampler.texture = font
+//            }
+//        }
+//    }
 }

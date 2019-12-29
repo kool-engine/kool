@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.shading.Attribute
+import de.fabmax.kool.pipeline.Attribute
 
 open class InstancedLodMesh<T: LodInstance>(val lodDescs: List<LodDesc>, name: String? = null, attributes: List<Attribute> = InstancedMesh.MODEL_INSTANCES) : Group() {
     val instances = mutableListOf<T>()

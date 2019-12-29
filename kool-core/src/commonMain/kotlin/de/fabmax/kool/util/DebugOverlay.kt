@@ -3,13 +3,13 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.gl.GlResource
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.pipelineConfig
-import de.fabmax.kool.pipeline.shading.BasicMeshShader
+import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.toString
 import kotlin.math.min
 
@@ -204,7 +204,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
     init {
         graphMesh = Mesh(graphData)
         graphMesh.meshData.usage = GL_DYNAMIC_DRAW
-        graphMesh.pipelineConfig { shaderLoader = BasicMeshShader.VertexColor.loader }
+        graphMesh.pipelineConfig { shaderLoader = ModeledShader.vertexColor() }
     }
 
     override fun render(ctx: KoolContext) {

@@ -1,6 +1,7 @@
 package de.fabmax.kool.shading
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.InstancedMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.animation.Armature

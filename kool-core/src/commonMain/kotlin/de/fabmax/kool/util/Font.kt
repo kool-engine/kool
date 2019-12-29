@@ -3,7 +3,12 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.shading.ShaderProps
 
@@ -14,6 +19,64 @@ import de.fabmax.kool.shading.ShaderProps
 fun uiFont(family: String, sizeDp: Float, uiDpi: Float, ctx: KoolContext, style: Int = Font.PLAIN, chars: String = Font.STD_CHARS): Font {
     val pts = (sizeDp * uiDpi / 96f)
     return Font(FontProps(family, pts, style, chars), ctx)
+}
+
+private class MaskNode : ShaderNode("Font Mask Node") {
+    var inColor = ShaderNodeIoVar(null, ModelVar4fConst(Color.MAGENTA))
+    var inMask = ShaderNodeIoVar(null, ModelVar1fConst(1f))
+    val outMaskedColor = ShaderNodeIoVar(this, ModelVar4f("maskedColor_outColor"))
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        inputs += inColor
+        inputs += inMask
+        super.setup(shaderGraph)
+    }
+
+    override fun generateCode(generator: CodeGenerator, pipeline: Pipeline, ctx: KoolContext) {
+        generator.appendMain("${outMaskedColor.variable.declare()} = vec4(${inColor.variable.ref3f()}, ${inMask.variable.ref1f()});")
+    }
+}
+
+fun fontShaderLoader(): (Mesh, Pipeline.BuildContext, KoolContext) -> ModeledShader.TextureColor = { mesh, buildCtx, ctx ->
+    val texName = "fontTex"
+    val model = ShaderModel().apply {
+        val mvp = UniformBufferPremultipliedMvp()
+        val attribPos = AttributeNode(Attribute.POSITIONS)
+        val attribColor = AttributeNode(Attribute.COLORS)
+        val attribTexCoords = AttributeNode(Attribute.TEXTURE_COORDS)
+        val ifColors = StageInterfaceNode("ifColors")
+        val ifTexCoords = StageInterfaceNode("ifTexCoords")
+        val plainPos = PlainVertexPosNode()
+
+        ifTexCoords.input = attribTexCoords.output
+        ifColors.input = attribColor.output
+        plainPos.inMvp = mvp.output
+        plainPos.inPosition = attribPos.output
+
+        vertexStage.nodes += attribPos
+        vertexStage.nodes += mvp
+        vertexStage.nodes += attribTexCoords
+        vertexStage.nodes += ifTexCoords.vertexNode
+        vertexStage.nodes += attribColor
+        vertexStage.nodes += ifColors.vertexNode
+        vertexStage.nodes += plainPos
+
+        val tex = TextureNode(texName)
+        val texSampler = TextureSamplerNode(tex)
+        val mask = MaskNode()
+        texSampler.inTexCoord = ifTexCoords.output
+        mask.inColor = ifColors.output
+        mask.inMask = texSampler.outColor
+
+        fragmentStage.nodes += ifTexCoords.fragmentNode
+        fragmentStage.nodes += ifColors.fragmentNode
+        fragmentStage.nodes += tex
+        fragmentStage.nodes += texSampler
+        fragmentStage.nodes += mask
+        fragmentStage.nodes += UnlitMaterialNode(mask.outMaskedColor)
+    }
+    model.setup(mesh, buildCtx, ctx)
+    ModeledShader.TextureColor(model, texName)
 }
 
 fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): BasicShader {

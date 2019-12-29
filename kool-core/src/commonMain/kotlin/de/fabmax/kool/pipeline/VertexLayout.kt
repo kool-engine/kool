@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.shading.AttributeType
 import de.fabmax.kool.util.copy
 
 class VertexLayout(val bindings: List<Binding>) {
@@ -10,10 +9,7 @@ class VertexLayout(val bindings: List<Binding>) {
     init {
         var hash = 0UL
         bindings.forEach {
-            hash = (hash * 71023UL) + it.hashCode().toULong()
-            it.attributes.forEach { attr ->
-                hash = (hash * 71023UL) + attr.hashCode().toULong()
-            }
+            hash = (hash * 71023UL) + it.longHash
         }
         longHash = hash
     }
@@ -25,9 +21,21 @@ class VertexLayout(val bindings: List<Binding>) {
         throw NoSuchElementException("Attribute $attribName not found")
     }
 
-    data class Binding(val binding: Int, val inputRate: InputRate, val attributes: List<Attribute>, val strideBytes: Int = attributes.sumBy { it.type.size })
+    data class Binding(val binding: Int, val inputRate: InputRate, val attributes: List<Attribute>, val strideBytes: Int = attributes.sumBy { it.type.size }) {
+        val longHash: ULong
 
-    data class Attribute(val binding: Int, val location: Int, val offset: Int, val type: AttributeType, val name: String)
+        init {
+            var hash = binding.toULong()
+            hash = (hash * 71023UL) + inputRate.hashCode().toULong()
+            hash = (hash * 71023UL) + strideBytes.toULong()
+            attributes.forEach { attr ->
+                hash = (hash * 71023UL) + attr.hashCode().toULong()
+            }
+            longHash = hash
+        }
+    }
+
+    data class Attribute(val location: Int, val offset: Int, val type: AttributeType, val name: String)
 
     class Builder {
         val bindings = mutableListOf<Binding>()

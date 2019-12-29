@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.shading.Attribute
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.Uint32BufferImpl

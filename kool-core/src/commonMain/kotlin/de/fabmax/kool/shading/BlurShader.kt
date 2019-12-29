@@ -3,6 +3,7 @@ package de.fabmax.kool.shading
 import de.fabmax.kool.*
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node

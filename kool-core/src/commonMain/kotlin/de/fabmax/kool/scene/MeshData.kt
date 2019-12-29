@@ -8,7 +8,7 @@ import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.gl.GL_UNSIGNED_INT
 import de.fabmax.kool.lock
 import de.fabmax.kool.math.*
-import de.fabmax.kool.shading.Attribute
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.shading.VboBinder
 import de.fabmax.kool.util.*
 

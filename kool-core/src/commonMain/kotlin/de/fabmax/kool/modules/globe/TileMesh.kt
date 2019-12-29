@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.globe
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.Texture
 import de.fabmax.kool.assetTexture
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*

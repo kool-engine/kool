@@ -1,8 +1,8 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.Attribute
 import kotlin.math.*
 
 /**

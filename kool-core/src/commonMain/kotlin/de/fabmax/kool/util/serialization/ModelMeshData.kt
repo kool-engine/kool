@@ -1,11 +1,15 @@
 package de.fabmax.kool.util.serialization
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.AttributeType
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.scene.animation.Bone
-import de.fabmax.kool.shading.*
+import de.fabmax.kool.shading.ColorModel
+import de.fabmax.kool.shading.LightModel
+import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_NORMALS_OCT_COMPRESSED
 import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_POSITIONS
 import kotlinx.serialization.SerialId

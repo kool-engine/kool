@@ -4,7 +4,7 @@ import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.copy
 
-class DescriptorSetLayout private constructor(val descriptors: List<Descriptor>) {
+class DescriptorSetLayout private constructor(val set: Int, val descriptors: List<Descriptor>) {
 
     val longHash: ULong
 
@@ -31,15 +31,23 @@ class DescriptorSetLayout private constructor(val descriptors: List<Descriptor>)
             descriptors += this
         }
 
-        fun create(): DescriptorSetLayout {
-            return DescriptorSetLayout(List(descriptors.size) { descriptors[it].create() })
+        fun uniformBuffer(name: String, vararg stages: ShaderStage, block: UniformBuffer.Builder.() -> Unit) {
+            val uniformBuilder = UniformBuffer.Builder()
+            uniformBuilder.name = name
+            uniformBuilder.stages += stages
+            uniformBuilder.block()
+            +uniformBuilder
+        }
+
+        fun create(set: Int): DescriptorSetLayout {
+            return DescriptorSetLayout(set, List(descriptors.size) { i -> descriptors[i].create(i) })
         }
     }
 }
 
-abstract class Descriptor(builder: Builder<*>, val type: DescriptorType, hash: ULong) {
+abstract class Descriptor(builder: Builder<*>, val binding: Int, val type: DescriptorType, hash: ULong) {
     val name: String = builder.name
-    val stages: Set<Stage> = builder.stages.copy()
+    val stages: Set<ShaderStage> = builder.stages.copy()
 
     val longHash: ULong
 
@@ -52,13 +60,14 @@ abstract class Descriptor(builder: Builder<*>, val type: DescriptorType, hash: U
 
     abstract class Builder<T : Descriptor> {
         var name = ""
-        val stages = mutableSetOf<Stage>()
+        val stages = mutableSetOf<ShaderStage>()
 
-        abstract fun create(): T
+        abstract fun create(binding: Int): T
     }
 }
 
-class TextureSampler private constructor(builder: Builder, hash: ULong) : Descriptor(builder, DescriptorType.IMAGE_SAMPLER, hash) {
+class TextureSampler private constructor(builder: Builder, binding: Int, hash: ULong) :
+        Descriptor(builder, binding, DescriptorType.IMAGE_SAMPLER, hash) {
 
     val onUpdate: ((TextureSampler, DrawCommand) -> Unit) ? = builder.onUpdate
     var texture: Texture? = null
@@ -70,15 +79,16 @@ class TextureSampler private constructor(builder: Builder, hash: ULong) : Descri
             name = "texture"
         }
 
-        override fun create(): TextureSampler {
-            return TextureSampler(this, DescriptorType.IMAGE_SAMPLER.hashCode().toULong() * 71023UL)
+        override fun create(binding: Int): TextureSampler {
+            return TextureSampler(this, binding, DescriptorType.IMAGE_SAMPLER.hashCode().toULong() * 71023UL)
         }
     }
 }
 
-class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uniform<*>>, hash: ULong) :
-        Descriptor(builder, DescriptorType.UNIFORM_BUFFER, hash) {
+class UniformBuffer private constructor(builder: Builder, binding: Int, val uniforms: List<Uniform<*>>, hash: ULong) :
+        Descriptor(builder, binding, DescriptorType.UNIFORM_BUFFER, hash) {
 
+    val instanceName = builder.instanceName
     val onUpdate: ((UniformBuffer, DrawCommand) -> Unit) ? = builder.onUpdate
 
     /**
@@ -95,6 +105,9 @@ class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uni
         buffer.flip()
     }
 
+    @Suppress("UNCHECKED_CAST")
+    fun <T> uniform(index: Int): T = uniforms[index] as T
+
     fun updateMvp(modelIdx: Int, viewIdx: Int, projIdx: Int, cmd: DrawCommand) {
         (uniforms[modelIdx] as UniformMat4f).value.set(cmd.modelMat)
         (uniforms[viewIdx] as UniformMat4f).value.set(cmd.viewMat)
@@ -102,32 +115,34 @@ class UniformBuffer private constructor(builder: Builder, val uniforms: List<Uni
     }
 
     class Builder : Descriptor.Builder<UniformBuffer>() {
+        var instanceName: String? = null
+
         val uniforms = mutableListOf<() -> Uniform<*>>()
         var onUpdate: ((UniformBuffer, DrawCommand) -> Unit) ? = null
 
         init {
-            name = "ubo"
+            name = "Ubo"
         }
 
         operator fun (() -> Uniform<*>).unaryPlus() {
             uniforms.add(this)
         }
 
-        override fun create(): UniformBuffer {
+        override fun create(binding: Int): UniformBuffer {
             val uniforms = List(uniforms.size) { uniforms[it]() }
             var hash = DescriptorType.UNIFORM_BUFFER.hashCode().toULong() * 71023UL
             uniforms.forEach {
                 hash = (hash * 71023UL) + it::class.hashCode().toULong()
                 hash = (hash * 71023UL) + it.name.hashCode().toULong()
             }
-            return UniformBuffer(this, uniforms, hash)
+            return UniformBuffer(this, binding, uniforms, hash)
         }
     }
 
     companion object {
         fun uboMvp() = Builder().apply {
             name = "ubo"
-            stages += Stage.VERTEX_SHADER
+            stages += ShaderStage.VERTEX_SHADER
             +{ UniformMat4f("model") }
             +{ UniformMat4f("view") }
             +{ UniformMat4f("proj") }
@@ -145,8 +160,3 @@ enum class DescriptorType {
     UNIFORM_BUFFER
 }
 
-enum class Stage {
-    VERTEX_SHADER,
-    GEOMETRY_SHADER,
-    FRAGMENT_SHADER
-}

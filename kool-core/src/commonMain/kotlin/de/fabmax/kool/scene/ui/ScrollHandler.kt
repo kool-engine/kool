@@ -6,10 +6,14 @@ import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.isFuzzyEqual
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.shading.*
+import de.fabmax.kool.shading.BasicShader
+import de.fabmax.kool.shading.ColorModel
+import de.fabmax.kool.shading.LocalPlaneClip
+import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
