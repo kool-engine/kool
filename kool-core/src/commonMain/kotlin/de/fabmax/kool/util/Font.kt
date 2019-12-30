@@ -27,9 +27,8 @@ private class MaskNode : ShaderNode("Font Mask Node") {
     val outMaskedColor = ShaderNodeIoVar(this, ModelVar4f("maskedColor_outColor"))
 
     override fun setup(shaderGraph: ShaderGraph) {
-        inputs += inColor
-        inputs += inMask
         super.setup(shaderGraph)
+        dependsOn(inColor, inMask)
     }
 
     override fun generateCode(generator: CodeGenerator, pipeline: Pipeline, ctx: KoolContext) {
@@ -40,40 +39,19 @@ private class MaskNode : ShaderNode("Font Mask Node") {
 fun fontShaderLoader(): (Mesh, Pipeline.BuildContext, KoolContext) -> ModeledShader.TextureColor = { mesh, buildCtx, ctx ->
     val texName = "fontTex"
     val model = ShaderModel().apply {
-        val mvp = UniformBufferPremultipliedMvp()
-        val attribPos = AttributeNode(Attribute.POSITIONS)
-        val attribColor = AttributeNode(Attribute.COLORS)
-        val attribTexCoords = AttributeNode(Attribute.TEXTURE_COORDS)
-        val ifColors = StageInterfaceNode("ifColors")
-        val ifTexCoords = StageInterfaceNode("ifTexCoords")
-        val plainPos = PlainVertexPosNode()
+        val ifTexCoords: StageInterfaceNode
+        val ifColors: StageInterfaceNode
 
-        ifTexCoords.input = attribTexCoords.output
-        ifColors.input = attribColor.output
-        plainPos.inMvp = mvp.output
-        plainPos.inPosition = attribPos.output
-
-        vertexStage.nodes += attribPos
-        vertexStage.nodes += mvp
-        vertexStage.nodes += attribTexCoords
-        vertexStage.nodes += ifTexCoords.vertexNode
-        vertexStage.nodes += attribColor
-        vertexStage.nodes += ifColors.vertexNode
-        vertexStage.nodes += plainPos
-
-        val tex = TextureNode(texName)
-        val texSampler = TextureSamplerNode(tex)
-        val mask = MaskNode()
-        texSampler.inTexCoord = ifTexCoords.output
-        mask.inColor = ifColors.output
-        mask.inMask = texSampler.outColor
-
-        fragmentStage.nodes += ifTexCoords.fragmentNode
-        fragmentStage.nodes += ifColors.fragmentNode
-        fragmentStage.nodes += tex
-        fragmentStage.nodes += texSampler
-        fragmentStage.nodes += mask
-        fragmentStage.nodes += UnlitMaterialNode(mask.outMaskedColor)
+        vertexStage {
+            ifTexCoords = stageInterfaceNode("ifTexCoords", attributeNode(Attribute.TEXTURE_COORDS).output)
+            ifColors = stageInterfaceNode("ifColors", attributeNode(Attribute.COLORS).output)
+            simpleVertexPositionNode()
+        }
+        fragmentStage {
+            val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output)
+            val maskedColor = addNode(MaskNode().apply { inColor = ifColors.output; inMask = sampler.outColor })
+            unlitMaterialNode(maskedColor.outMaskedColor)
+        }
     }
     model.setup(mesh, buildCtx, ctx)
     ModeledShader.TextureColor(model, texName)

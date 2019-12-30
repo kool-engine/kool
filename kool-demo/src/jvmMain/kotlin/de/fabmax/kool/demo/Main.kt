@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.debugOverlay
 
 /**
@@ -57,24 +58,23 @@ fun UiRoot.setupUi() {
 fun simpleTestScene(ctx: KoolContext): Scene = scene {
     defaultCamTransform()
 
-//    +colorMesh {
-//        generator = {
-//            cube {
-//                centerOrigin()
-//                colorCube()
-//            }
-//        }
-//        pipelineConfig {
-////            shaderLoader = ModeledShader.staticColor()
-//            shaderLoader = ModeledShader.vertexColor()
-//        }
-//
-////        onPreRender += { ctx ->
-////            getPipeline(ctx)?.let {
-////                (it.shader as ModeledShader.StaticColor).uStaticColor.value.set(Color.fromHsv((ctx.time.toFloat() * 60f) % 360f, 0.8f, 1f, 1f))
-////            }
-////        }
-//    }
+    +colorMesh {
+        generator = {
+            cube {
+                centerOrigin()
+                colorCube()
+            }
+        }
+        pipelineConfig {
+            shaderLoader = ModeledShader.staticColor()
+        }
+
+        onPreRender += { ctx ->
+            getPipeline(ctx)?.let {
+                (it.shader as ModeledShader.StaticColor).uStaticColor.value.set(Color.fromHsv((ctx.time.toFloat() * 60f) % 360f, 0.8f, 1f, 1f))
+            }
+        }
+    }
 
     +transformGroup {
         translate(3f, 0f, 0f)

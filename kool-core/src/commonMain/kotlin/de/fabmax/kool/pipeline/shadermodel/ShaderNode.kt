@@ -12,14 +12,26 @@ open class ShaderNodeIoVar(val node: ShaderNode?, val variable: ModelVar) {
 }
 
 abstract class ShaderNode(val name: String, val allowedStages: Int = ShaderStage.ALL.mask) {
-    val dependsOn = mutableSetOf<ShaderNode>()
-    val inputs = mutableListOf<ShaderNodeIoVar>()
+    val dependencies = mutableSetOf<ShaderNode>()
+
+    fun dependsOn(nd: ShaderNode?) {
+        if (nd != null) {
+            dependencies += nd
+        }
+    }
+
+    fun dependsOn(ndVar: ShaderNodeIoVar) {
+        dependsOn(ndVar.node)
+    }
+
+    fun dependsOn(vararg ndVars: ShaderNodeIoVar) {
+        ndVars.forEach { dependsOn(it) }
+    }
 
     open fun setup(shaderGraph: ShaderGraph) {
         check(shaderGraph.stage.mask and allowedStages != 0) {
             "Unallowed shader stage (${shaderGraph.stage} for node $name"
         }
-        inputs.filter { it.node != null }.forEach { dependsOn += it.node!! }
     }
 
     open fun generateCode(generator: CodeGenerator, pipeline: Pipeline, ctx: KoolContext) { }
@@ -32,21 +44,19 @@ abstract class ShaderNode(val name: String, val allowedStages: Int = ShaderStage
 abstract class UniformBufferNode(name: String) : ShaderNode(name) {
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        shaderGraph.descriptorSet.apply {
-            createUniformBuffer(this, shaderGraph)
-        }
+        createUniformBuffer(shaderGraph)
     }
 
-    protected abstract fun createUniformBuffer(builder: DescriptorSetLayout.Builder, shaderGraph: ShaderGraph)
+    protected abstract fun createUniformBuffer(shaderGraph: ShaderGraph)
 }
 
 class UniformBufferPremultipliedMvp : UniformBufferNode("UboPremultipliedMvp") {
     val uMvp = UniformMat4f("modelViewProj")
 
-    val output = ShaderNodeIoVar(this, ModelVarMat4f(uMvp.name))
+    val outMvpMat = ShaderNodeIoVar(this, ModelVarMat4f(uMvp.name))
 
-    override fun createUniformBuffer(builder: DescriptorSetLayout.Builder, shaderGraph: ShaderGraph) {
-        builder.apply {
+    override fun createUniformBuffer(shaderGraph: ShaderGraph) {
+        shaderGraph.descriptorSet.apply {
             uniformBuffer(name, shaderGraph.stage) {
                 +{ uMvp }
                 onUpdate = { _, cmd -> uMvp.value.set(cmd.mvpMat) }
@@ -65,8 +75,8 @@ class UniformBufferMvp : UniformBufferNode("UboMvp") {
     val outProjMat = ShaderNodeIoVar(this, ModelVarMat4f(uProjMat.name))
     val outMvpMat = ShaderNodeIoVar(this, ModelVarMat4f("uMvp_outMvp"))
 
-    override fun createUniformBuffer(builder: DescriptorSetLayout.Builder, shaderGraph: ShaderGraph) {
-        builder.apply {
+    override fun createUniformBuffer(shaderGraph: ShaderGraph) {
+        shaderGraph.descriptorSet.apply {
             uniformBuffer(name, shaderGraph.stage) {
                 +{ uModelMat }
                 +{ uViewMat }
@@ -101,12 +111,12 @@ class TextureNode(val texName: String) : ShaderNode("Texture $texName") {
 
 class TextureSamplerNode(val texture: TextureNode) : ShaderNode("Sample Texture ${texture.texName}") {
     var inTexCoord = ShaderNodeIoVar(this, ModelVar2fConst(Vec2f.ZERO))
-    val outColor: ShaderNodeIoVar = ShaderNodeIoVar(this, ModelVar4f("texSampler${++texture.samplerIdx}_outColor"))
+    val outColor: ShaderNodeIoVar = ShaderNodeIoVar(this, ModelVar4f("texSampler_${texture.texName}_${++texture.samplerIdx}_outColor"))
 
     override fun setup(shaderGraph: ShaderGraph) {
-        dependsOn += texture
-        inputs += inTexCoord
         super.setup(shaderGraph)
+        dependsOn(texture)
+        dependsOn(inTexCoord)
     }
 
     override fun generateCode(generator: CodeGenerator, pipeline: Pipeline, ctx: KoolContext) {
@@ -177,8 +187,8 @@ class StageInterfaceNode(name: String) {
 
     val vertexNode = object : ShaderNode("Stage Interface Src $name", ShaderStage.VERTEX_SHADER.mask) {
         override fun setup(shaderGraph: ShaderGraph) {
-            inputs += input
             super.setup(shaderGraph)
+            dependsOn(input)
             layout = shaderGraph.outputs.size
             shaderGraph.outputs += ShaderInterfaceIoVar(layout, output.variable)
         }
@@ -196,15 +206,14 @@ class StageInterfaceNode(name: String) {
     }
 }
 
-class PlainVertexPosNode : ShaderNode("Plain Vertex Position", ShaderStage.VERTEX_SHADER.mask) {
+class VertexPosTransformNode : ShaderNode("Vertex Pos Transform", ShaderStage.VERTEX_SHADER.mask) {
     var inMvp: ShaderNodeIoVar? = null
     var inPosition: ShaderNodeIoVar = ShaderNodeIoVar(null, ModelVar3fConst(Vec3f.ZERO))
     val outPosition = ShaderNodeIoVar(this, ModelVar4f("plainVertPos_outPosition"))
 
     override fun setup(shaderGraph: ShaderGraph) {
-        inputs += inMvp ?: throw KoolException("MVP matrix input not set")
-        inputs += inPosition
         super.setup(shaderGraph)
+        dependsOn(inPosition, inMvp ?: throw KoolException("MVP matrix input not set"))
 
         shaderGraph as VertexShaderGraph
         shaderGraph.positionOutput = outPosition
@@ -223,8 +232,8 @@ class UnlitMaterialNode(var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(null, Mo
     val outColor = ShaderNodeIoVar(this, ModelVar4f("unlitMat_outColor"))
 
     override fun setup(shaderGraph: ShaderGraph) {
-        inputs += inAlbedo
         super.setup(shaderGraph)
+        dependsOn(inAlbedo)
 
         shaderGraph as FragmentShaderGraph
         shaderGraph.colorOutput = outColor

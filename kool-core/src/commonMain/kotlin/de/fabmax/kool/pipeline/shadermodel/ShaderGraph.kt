@@ -31,7 +31,7 @@ open class ShaderGraph(val stage: ShaderStage) {
             val ndIt = nodes.iterator()
             var anyAdded = false
             for (nd in ndIt) {
-                if (sortedNodes.containsAll(nd.dependsOn)) {
+                if (sortedNodes.containsAll(nd.dependencies)) {
                     sortedNodes.add(nd)
                     ndIt.remove()
                     anyAdded = true

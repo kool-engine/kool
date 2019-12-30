@@ -25,21 +25,15 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
 
     companion object {
         fun staticColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> StaticColor = { mesh, buildCtx, ctx ->
-            val staticColorNode = PushConstantNode4f("uStaticColor")
+            val staticColorNode: PushConstantNode4f
             val model = ShaderModel().apply {
-                val mvp = UniformBufferPremultipliedMvp()
-                val attribPos = AttributeNode(Attribute.POSITIONS)
-                val plainPos = PlainVertexPosNode()
-
-                plainPos.inPosition = attribPos.output
-                plainPos.inMvp = mvp.output
-
-                vertexStage.nodes += mvp
-                vertexStage.nodes += attribPos
-                vertexStage.nodes += plainPos
-
-                fragmentStage.nodes += staticColorNode
-                fragmentStage.nodes += UnlitMaterialNode(staticColorNode.output)
+                vertexStage {
+                    simpleVertexPositionNode()
+                }
+                fragmentStage {
+                    staticColorNode = pushConstantNode4f("uStaticColor")
+                    unlitMaterialNode(staticColorNode.output)
+                }
             }
             model.setup(mesh, buildCtx, ctx)
             StaticColor(model, staticColorNode.uniform)
@@ -47,24 +41,15 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
 
         fun vertexColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> VertexColor = { mesh, buildCtx, ctx ->
             val model = ShaderModel().apply {
-                val mvp = UniformBufferPremultipliedMvp()
-                val attribPos = AttributeNode(Attribute.POSITIONS)
-                val attribColor = AttributeNode(Attribute.COLORS)
-                val ifColor = StageInterfaceNode("colorIf")
-                val plainPos = PlainVertexPosNode()
+                val ifColors: StageInterfaceNode
 
-                ifColor.input = attribColor.output
-                plainPos.inMvp = mvp.output
-                plainPos.inPosition = attribPos.output
-
-                vertexStage.nodes += attribPos
-                vertexStage.nodes += mvp
-                vertexStage.nodes += attribColor
-                vertexStage.nodes += ifColor.vertexNode
-                vertexStage.nodes += plainPos
-
-                fragmentStage.nodes += ifColor.fragmentNode
-                fragmentStage.nodes += UnlitMaterialNode(ifColor.output)
+                vertexStage {
+                    ifColors = stageInterfaceNode("ifColors", attributeNode(Attribute.COLORS).output)
+                    simpleVertexPositionNode()
+                }
+                fragmentStage {
+                    unlitMaterialNode(ifColors.output)
+                }
             }
             model.setup(mesh, buildCtx, ctx)
             VertexColor(model)
@@ -73,30 +58,16 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
         fun textureColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> TextureColor = { mesh, buildCtx, ctx ->
             val texName = "tex"
             val model = ShaderModel().apply {
-                val mvp = UniformBufferPremultipliedMvp()
-                val attribPos = AttributeNode(Attribute.POSITIONS)
-                val attribTexCoords = AttributeNode(Attribute.TEXTURE_COORDS)
-                val ifTexCoords = StageInterfaceNode("texCoordsIf")
-                val plainPos = PlainVertexPosNode()
+                val ifTexCoords: StageInterfaceNode
 
-                ifTexCoords.input = attribTexCoords.output
-                plainPos.inMvp = mvp.output
-                plainPos.inPosition = attribPos.output
-
-                vertexStage.nodes += attribPos
-                vertexStage.nodes += mvp
-                vertexStage.nodes += attribTexCoords
-                vertexStage.nodes += ifTexCoords.vertexNode
-                vertexStage.nodes += plainPos
-
-                val tex = TextureNode(texName)
-                val texSampler = TextureSamplerNode(tex)
-                texSampler.inTexCoord = ifTexCoords.output
-
-                fragmentStage.nodes += ifTexCoords.fragmentNode
-                fragmentStage.nodes += tex
-                fragmentStage.nodes += texSampler
-                fragmentStage.nodes += UnlitMaterialNode(texSampler.outColor)
+                vertexStage {
+                    ifTexCoords = stageInterfaceNode("ifTexCoords", attributeNode(Attribute.TEXTURE_COORDS).output)
+                    simpleVertexPositionNode()
+                }
+                fragmentStage {
+                    val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output)
+                    unlitMaterialNode(sampler.outColor)
+                }
             }
             model.setup(mesh, buildCtx, ctx)
             TextureColor(model, texName)

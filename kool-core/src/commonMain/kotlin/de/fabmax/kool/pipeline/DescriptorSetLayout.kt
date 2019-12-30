@@ -108,12 +108,6 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
     @Suppress("UNCHECKED_CAST")
     fun <T> uniform(index: Int): T = uniforms[index] as T
 
-    fun updateMvp(modelIdx: Int, viewIdx: Int, projIdx: Int, cmd: DrawCommand) {
-        (uniforms[modelIdx] as UniformMat4f).value.set(cmd.modelMat)
-        (uniforms[viewIdx] as UniformMat4f).value.set(cmd.viewMat)
-        (uniforms[projIdx] as UniformMat4f).value.set(cmd.projMat)
-    }
-
     class Builder : Descriptor.Builder<UniformBuffer>() {
         var instanceName: String? = null
 
@@ -136,20 +130,6 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
                 hash = (hash * 71023UL) + it.name.hashCode().toULong()
             }
             return UniformBuffer(this, binding, uniforms, hash)
-        }
-    }
-
-    companion object {
-        fun uboMvp() = Builder().apply {
-            name = "ubo"
-            stages += ShaderStage.VERTEX_SHADER
-            +{ UniformMat4f("model") }
-            +{ UniformMat4f("view") }
-            +{ UniformMat4f("proj") }
-
-            onUpdate = { ubo, cmd ->
-                ubo.updateMvp(0, 1, 2, cmd)
-            }
         }
     }
 }
