@@ -9,7 +9,7 @@ import de.fabmax.kool.platform.vk.Buffer
 import de.fabmax.kool.platform.vk.VkSystem
 import de.fabmax.kool.platform.vk.callocVkDescriptorBufferInfoN
 import de.fabmax.kool.platform.vk.callocVkDescriptorImageInfoN
-import de.fabmax.kool.util.Float32BufferImpl
+import de.fabmax.kool.util.MixedBufferImpl
 import kotlinx.coroutines.Deferred
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10
@@ -45,7 +45,10 @@ class UboDescriptor(binding: Int, val ubo: UniformBuffer, val buffer: Buffer) : 
 
     override fun update(cmd: DrawCommand, sys: VkSystem) {
         ubo.onUpdate?.invoke(ubo, cmd)
-        buffer.mappedFloats { ubo.putTo(Float32BufferImpl(this)) }
+        buffer.mapped {
+            val mixBuf = MixedBufferImpl(this)
+            ubo.putTo(mixBuf)
+        }
     }
 }
 

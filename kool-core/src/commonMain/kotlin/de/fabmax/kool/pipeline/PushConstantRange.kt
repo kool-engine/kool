@@ -1,9 +1,9 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.drawqueue.DrawCommand
-import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.copy
-import de.fabmax.kool.util.createFloat32Buffer
+import de.fabmax.kool.util.createMixedBuffer
 
 class PushConstantRange private constructor(builder: Builder, val longHash: ULong, val pushConstants: List<Uniform<*>>) {
 
@@ -17,11 +17,11 @@ class PushConstantRange private constructor(builder: Builder, val longHash: ULon
     val size = pushConstants.sumBy { it.size }
 
     // fixme: push constants can be all kinds of types, not only floats...
-    private val buffer = createFloat32Buffer(size / 4)
+    private val buffer = createMixedBuffer(size)
 
     val onUpdate: ((PushConstantRange, DrawCommand) -> Unit) ? = builder.onUpdate
 
-    fun toBuffer(): Float32Buffer {
+    fun toBuffer(): MixedBuffer {
         for (i in pushConstants.indices) {
             pushConstants[i].putTo(buffer)
         }

@@ -1,34 +1,46 @@
 package de.fabmax.kool.pipeline.shadermodel
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.DescriptorSetLayout
+import de.fabmax.kool.pipeline.PushConstantRange
+import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.util.Color
 
 class ShaderInterfaceIoVar(val location: Int, val variable: ModelVar)
 
 open class ShaderGraph(val stage: ShaderStage) {
     val descriptorSet = DescriptorSetLayout.Builder()
-    val pushConstants = mutableListOf<PushConstantRange.Builder>()
+    val pushConstants = PushConstantRange.Builder()
 
     val inputs = mutableListOf<ShaderInterfaceIoVar>()
     val outputs = mutableListOf<ShaderInterfaceIoVar>()
 
-    val nodes = mutableListOf<ShaderNode>()
+    protected val mutNodes = mutableListOf<ShaderNode>()
+    val nodes: List<ShaderNode> get() = mutNodes
+
+    internal var nextNodeId = 1
+
+    fun addNode(node: ShaderNode) {
+        if (node.graph !== this) {
+            throw IllegalStateException("Node can only be added to it's parent graph")
+        }
+        mutNodes.add(node)
+    }
 
     open fun setup() {
         nodes.forEach { it.setup(this) }
     }
 
-    open fun generateCode(generator: CodeGenerator, pipeline: Pipeline, ctx: KoolContext) {
+    open fun generateCode(generator: CodeGenerator) {
         sortNodesByDependencies()
-        nodes.forEach { it.generateCode(generator, pipeline, ctx) }
+        nodes.forEach { it.generateCode(generator) }
     }
 
     private fun sortNodesByDependencies() {
         val sortedNodes = linkedSetOf<ShaderNode>()
         while (nodes.isNotEmpty()) {
-            val ndIt = nodes.iterator()
+            val ndIt = mutNodes.iterator()
             var anyAdded = false
             for (nd in ndIt) {
                 if (sortedNodes.containsAll(nd.dependencies)) {
@@ -43,15 +55,15 @@ open class ShaderGraph(val stage: ShaderStage) {
                 throw IllegalStateException("Unable to resolve shader graph (circular or missing dependency?)")
             }
         }
-        nodes.addAll(sortedNodes)
+        mutNodes.addAll(sortedNodes)
     }
 }
 
 class VertexShaderGraph : ShaderGraph(ShaderStage.VERTEX_SHADER) {
     val requiredVertexAttributes = mutableSetOf<Attribute>()
-    var positionOutput = ShaderNodeIoVar(null, ModelVar4fConst(Vec4f.ZERO))
+    var positionOutput = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO), null)
 }
 
 class FragmentShaderGraph : ShaderGraph(ShaderStage.FRAGMENT_SHADER) {
-    var colorOutput = ShaderNodeIoVar(null, ModelVar4fConst(Color.MAGENTA))
+    var colorOutput = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA), null)
 }

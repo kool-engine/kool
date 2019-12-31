@@ -2,60 +2,71 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shadermodel.CodeGenerator
+import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
+import de.fabmax.kool.pipeline.shadermodel.ShaderGraph
+import de.fabmax.kool.pipeline.shadermodel.ShaderModel
 
 class ShaderGeneratorImplVk : ShaderGenerator() {
 
     private val shaderCodes = mutableMapOf<String, ShaderCode>()
 
     override fun generateShader(model: ShaderModel, pipeline: Pipeline, ctx: KoolContext): ShaderCode {
-        val (vertShader, fragShader) = generateCode(model, pipeline, ctx)
+        val (vertShader, fragShader) = generateCode(model, pipeline)
         //return shaderCodes.computeIfAbsent(vertShader + fragShader) {  }
 
         val codeKey = vertShader + fragShader
         var code = shaderCodes[codeKey]
         if (code == null) {
-            println("Vertex shader:\n\n$vertShader\n\n")
-            println("Fragment shader:\n\n$fragShader\n\n")
+            println("Vertex shader:\n\n")
+            vertShader.lines().forEachIndexed { i, l ->
+                println(String.format("%3d: %s", i, l))
+            }
+            println("Fragment shader:\n\n")
+            fragShader.lines().forEachIndexed { i, l ->
+                println(String.format("%3d: %s", i+1, l))
+            }
             code = ShaderCode.codeFromSource(vertShader, fragShader)
             shaderCodes[codeKey] = code
         }
         return code
     }
 
-    private fun generateCode(model: ShaderModel, pipeline: Pipeline, ctx: KoolContext): Pair<String, String> {
-        val vertShader = generateVertexShaderCode(model.vertexStage, pipeline, ctx)
-        val fragShader = generateFragmentrShaderCode(model.fragmentStage, pipeline, ctx)
+    private fun generateCode(model: ShaderModel, pipeline: Pipeline): Pair<String, String> {
+        val vertShader = generateVertexShaderCode(model, pipeline)
+        val fragShader = generateFragmentrShaderCode(model, pipeline)
         return vertShader to fragShader
     }
 
-    private fun generateVertexShaderCode(vertGraph: VertexShaderGraph, pipeline: Pipeline, ctx: KoolContext): String {
+    private fun generateVertexShaderCode(model: ShaderModel, pipeline: Pipeline): String {
         val codeGen = CodeGen()
-        vertGraph.generateCode(codeGen, pipeline, ctx)
+        model.vertexStage.generateCode(codeGen)
         return """
             #version 450
+            ${model.infoStr()}
             
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.VERTEX_SHADER)}
             // vertex attributes ${generateAttributeBindings(pipeline)}
-            // outputs ${vertGraph.generateStageOutputs()}
+            // outputs ${model.vertexStage.generateStageOutputs()}
             // functions
             ${codeGen.generateFunctions()}
             
             void main() {
                 ${codeGen.generateMain()}
-                gl_Position = ${vertGraph.positionOutput.variable.ref4f()};
+                gl_Position = ${model.vertexStage.positionOutput.variable.ref4f()};
             }
         """.trimIndent()
     }
 
-    private fun generateFragmentrShaderCode(fragGraph: FragmentShaderGraph, pipeline: Pipeline, ctx: KoolContext): String {
+    private fun generateFragmentrShaderCode(model: ShaderModel, pipeline: Pipeline): String {
         val codeGen = CodeGen()
-        fragGraph.generateCode(codeGen, pipeline, ctx)
+        model.fragmentStage.generateCode(codeGen)
         return """
             #version 450
+            ${model.infoStr()}
             
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.FRAGMENT_SHADER)}
-            // inputs ${fragGraph.generateStageInputs()}
+            // inputs ${model.fragmentStage.generateStageInputs()}
             // outputs
             layout(location=0) out vec4 fragStage_outColor;
             // functions
@@ -63,9 +74,13 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             
             void main() {
                 ${codeGen.generateMain()}
-                fragStage_outColor = ${fragGraph.colorOutput.variable.ref4f()};
+                fragStage_outColor = ${model.fragmentStage.colorOutput.variable.ref4f()};
             }
         """.trimIndent()
+    }
+
+    private fun ShaderModel.infoStr(): String {
+        return modelInfo.lines().joinToString { "// $it\n"}
     }
 
     private fun generateDescriptorBindings(pipeline: Pipeline, stage: ShaderStage): String {
@@ -87,7 +102,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             pipeline.pushConstantRanges.forEach { pcr ->
                 srcBuilder.appendln(8, "layout(push_constant) uniform ${pcr.name} {")
                 pcr.pushConstants.forEach { u ->
-                    srcBuilder.appendln(12, "${u.type()} ${u.name};")
+                    srcBuilder.appendln(12, "${u.declare()};")
                 }
                 srcBuilder.appendln(8, "}${pcr.instanceName ?: ""};")
             }
@@ -100,7 +115,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
                 .appendln(8, "layout(set=${set.set}, binding=${desc.binding}) uniform ${desc.name} {")
 
         desc.uniforms.forEach { u ->
-            srcBuilder.appendln(12, "${u.type()} ${u.name};")
+            srcBuilder.appendln(12, "${u.declare()};")
         }
 
         srcBuilder.appendln(8, "}${desc.instanceName ?: ""};")
@@ -140,14 +155,19 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
     private fun StringBuilder.appendln(indent: Int, line: String) = append(indent, "$line\n")
     private fun StringBuilder.append(indent: Int, line: String) = append(String.format("%${indent}s%s", "", line))
 
-    private fun Uniform<*>.type(): String {
+    private fun Uniform<*>.declare(): String {
         return when (this) {
-            is Uniform1f -> "float"
-            is Uniform2f -> "vec2"
-            is Uniform3f -> "vec3"
-            is Uniform4f -> "vec4"
-            is UniformMat3f -> "mat3"
-            is UniformMat4f -> "mat4"
+            is Uniform1f -> "float $name"
+            is Uniform2f -> "vec2 $name"
+            is Uniform3f -> "vec3 $name"
+            is Uniform4f -> "vec4 $name"
+            is Uniform1fv -> "float $name[$n]"
+            is Uniform2fv -> "vec2 $name[$n]"
+            is Uniform3fv -> "vec3 $name[$n]"
+            is Uniform4fv -> "vec4 $name[$n]"
+            is UniformMat3f -> "mat3 $name"
+            is UniformMat4f -> "mat4 $name"
+            is Uniform1i -> "int $name"
             else -> TODO("Uniform type name not implemented: ${this::class.java.name}")
         }
     }

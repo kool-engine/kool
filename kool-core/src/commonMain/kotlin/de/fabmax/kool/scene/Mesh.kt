@@ -148,6 +148,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 //            rayTest.onMeshDataChanged(this)
 //        }
 
+        drawCommand.scene = scene
         drawCommand.pipeline = getPipeline(ctx)
         drawCommand.captureMvp(ctx)
         ctx.drawQueue += drawCommand

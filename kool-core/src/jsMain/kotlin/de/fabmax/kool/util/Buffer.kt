@@ -175,6 +175,8 @@ internal class Float32BufferImpl(capacity: Int) : Float32Buffer, GenericBuffer<F
 
 }
 
+// todo: MixedBuffer: hoffentlich irgendwie mit ArrayBuffer und DataView
+
 actual fun createUint8Buffer(capacity: Int): Uint8Buffer {
     return Uint8BufferImpl(capacity)
 }

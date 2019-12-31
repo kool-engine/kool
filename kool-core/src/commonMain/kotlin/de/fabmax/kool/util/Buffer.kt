@@ -1,5 +1,7 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.KoolException
+
 /**
  * Super class for platform-dependent buffers. In the JVM these buffers directly map to the corresponding NIO buffers.
  * However, not all operations of NIO buffers are supported.
@@ -119,6 +121,37 @@ interface Float32Buffer : Buffer {
     }
 }
 
+/**
+ * Represents a buffer containing mixed type data. All buffer positions are in bytes.
+ *
+ * @author fabmax
+ */
+interface MixedBuffer : Buffer {
+    fun putUint8(value: Byte): MixedBuffer
+    fun putUint8(data: ByteArray): MixedBuffer = putUint8(data, 0, data.size)
+    fun putUint8(data: ByteArray, offset: Int, len: Int): MixedBuffer
+    fun putUint8(data: Uint8Buffer): MixedBuffer
+
+    fun putUint16(value: Short): MixedBuffer
+    fun putUint16(data: ShortArray): MixedBuffer = putUint16(data, 0, data.size)
+    fun putUint16(data: ShortArray, offset: Int, len: Int): MixedBuffer
+    fun putUint16(data: Uint16Buffer): MixedBuffer
+
+    fun putUint32(value: Int): MixedBuffer
+    fun putUint32(data: IntArray): MixedBuffer = putUint32(data, 0, data.size)
+    fun putUint32(data: IntArray, offset: Int, len: Int): MixedBuffer
+    fun putUint32(data: Uint32Buffer): MixedBuffer
+
+    fun putFloat32(value: Float): MixedBuffer
+    fun putFloat32(data: FloatArray): MixedBuffer = putFloat32(data, 0, data.size)
+    fun putFloat32(data: FloatArray, offset: Int, len: Int): MixedBuffer
+    fun putFloat32(data: Float32Buffer): MixedBuffer
+
+    override fun removeAt(index: Int) {
+        throw KoolException("MixedBuffer does not support element removal")
+    }
+}
+
 expect fun createUint8Buffer(capacity: Int): Uint8Buffer
 
 expect fun createUint16Buffer(capacity: Int): Uint16Buffer
@@ -126,3 +159,5 @@ expect fun createUint16Buffer(capacity: Int): Uint16Buffer
 expect fun createUint32Buffer(capacity: Int): Uint32Buffer
 
 expect fun createFloat32Buffer(capacity: Int): Float32Buffer
+
+expect fun createMixedBuffer(capacity: Int): MixedBuffer

@@ -1,15 +1,12 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.DesktopImpl
-import de.fabmax.kool.GlCapabilities
-import de.fabmax.kool.InputManager
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.*
 import de.fabmax.kool.drawqueue.DrawCommandMesh
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Float32BufferImpl
+import de.fabmax.kool.util.MixedBufferImpl
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
@@ -114,10 +111,6 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
 
     private fun setupInput(window: Long) {
         // install window callbacks
-        glfwSetFramebufferSizeCallback(window) { _, w, h ->
-            windowWidth = w
-            windowHeight = h
-        }
         glfwSetWindowPosCallback(window) { _, x, y ->
             screenDpi = getResolutionAt(x, y)
         }
@@ -253,7 +246,7 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
 
                 var prevPipeline = 0UL
                 drawQueue.commands.forEach { cmd ->
-                    val pipelineCfg = cmd.pipeline!!
+                    val pipelineCfg = cmd.pipeline ?: throw KoolException("Mesh pipeline not set")
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg)) {
                         sys.pipelineManager.addPipelineConfig(pipelineCfg)
                     }
@@ -284,7 +277,7 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
 
                         pipelineCfg.pushConstantRanges.forEach {
                             val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
-                            vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as Float32BufferImpl).buffer)
+                            vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as MixedBufferImpl).buffer)
                         }
 
                         vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))

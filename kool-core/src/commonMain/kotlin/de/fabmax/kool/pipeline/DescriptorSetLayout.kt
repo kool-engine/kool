@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.drawqueue.DrawCommand
-import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.MixedBuffer
 import de.fabmax.kool.util.copy
 
 class DescriptorSetLayout private constructor(val set: Int, val descriptors: List<Descriptor>) {
@@ -96,8 +96,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
      */
     val size = uniforms.sumBy { it.size }
 
-    // fixme: uniforms can contain all kinds of types, not only floats...
-    fun putTo(buffer: Float32Buffer) {
+    fun putTo(buffer: MixedBuffer) {
         // fixme: ensure proper alignment! also might be platform specific...
         for (i in uniforms.indices) {
             uniforms[i].putTo(buffer)

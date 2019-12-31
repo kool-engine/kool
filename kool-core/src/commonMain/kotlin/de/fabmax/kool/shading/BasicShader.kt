@@ -197,9 +197,10 @@ open class BasicShader(val props: ShaderProps, protected val generator: GlslGene
         uCamPosition.bind(ctx)
 
         val lighting = scene.lighting
-        uLightDirection.value.set(lighting.primaryLight.direction)
+        val primaryLight = lighting.lights[0]
+        uLightDirection.value.set(primaryLight.direction)
         uLightDirection.bind(ctx)
-        uLightColor.value.set(lighting.primaryLight.color.r, lighting.primaryLight.color.g, lighting.primaryLight.color.b)
+        uLightColor.value.set(primaryLight.color.r, primaryLight.color.g, primaryLight.color.b)
         uLightColor.bind(ctx)
 
         super.bindMesh(mesh, ctx)

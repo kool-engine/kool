@@ -58,6 +58,11 @@ open class ModelVar2f(name: String) : ModelVar(name, AttributeType.VEC_2F)
 open class ModelVar3f(name: String) : ModelVar(name, AttributeType.VEC_3F)
 open class ModelVar4f(name: String) : ModelVar(name, AttributeType.VEC_4F)
 
+open class ModelVar1i(name: String) : ModelVar(name, AttributeType.INT)
+open class ModelVar2i(name: String) : ModelVar(name, AttributeType.VEC_2I)
+open class ModelVar3i(name: String) : ModelVar(name, AttributeType.VEC_3I)
+open class ModelVar4i(name: String) : ModelVar(name, AttributeType.VEC_4I)
+
 open class ModelVarMat2f(name: String) : ModelVar(name, AttributeType.MAT_2F)
 open class ModelVarMat3f(name: String) : ModelVar(name, AttributeType.MAT_3F)
 open class ModelVarMat4f(name: String) : ModelVar(name, AttributeType.MAT_4F)

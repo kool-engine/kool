@@ -1,7 +1,11 @@
 package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.ShaderCode
+import de.fabmax.kool.pipeline.TextureSampler
+import de.fabmax.kool.pipeline.Uniform4f
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 
@@ -26,13 +30,14 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
     companion object {
         fun staticColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> StaticColor = { mesh, buildCtx, ctx ->
             val staticColorNode: PushConstantNode4f
-            val model = ShaderModel().apply {
+            val model = ShaderModel("ModeledShader.staticColor()").apply {
                 vertexStage {
                     simpleVertexPositionNode()
                 }
                 fragmentStage {
                     staticColorNode = pushConstantNode4f("uStaticColor")
-                    unlitMaterialNode(staticColorNode.output)
+                    val preMultColor = premultiplyColorNode(staticColorNode.output)
+                    unlitMaterialNode(preMultColor.outColor)
                 }
             }
             model.setup(mesh, buildCtx, ctx)
@@ -40,11 +45,12 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
         }
 
         fun vertexColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> VertexColor = { mesh, buildCtx, ctx ->
-            val model = ShaderModel().apply {
+            val model = ShaderModel("ModeledShader.vertexColor()").apply {
                 val ifColors: StageInterfaceNode
 
                 vertexStage {
-                    ifColors = stageInterfaceNode("ifColors", attributeNode(Attribute.COLORS).output)
+                    val preMultColor = premultiplyColorNode(attrColors().output)
+                    ifColors = stageInterfaceNode("ifColors", preMultColor.outColor)
                     simpleVertexPositionNode()
                 }
                 fragmentStage {
@@ -55,13 +61,77 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
             VertexColor(model)
         }
 
+        fun vertexColorPhong(): (Mesh, Pipeline.BuildContext, KoolContext) -> VertexColor = { mesh, buildCtx, ctx ->
+            val model = ShaderModel("ModeledShader.vertexColorPhong()").apply {
+                val ifColors: StageInterfaceNode
+
+                val ifNormals: StageInterfaceNode
+                val ifEyeDir: StageInterfaceNode
+                val ifLightDir: StageInterfaceNode
+
+                vertexStage {
+                    val preMultColor = premultiplyColorNode(attrColors().output)
+                    ifColors = stageInterfaceNode("ifColors", preMultColor.outColor)
+                    val mvp = mvpNode()
+
+                    // transform normals, eye direction and light direction to view space
+                    val worldNrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
+                    val viewNrm = transformNode(worldNrm.output, mvp.outViewMat, 0f)
+                    ifNormals = stageInterfaceNode("ifNormals", viewNrm.output)
+
+                    val worldPos = transformNode(attrPositions().output, mvp.outModelMat,  1f)
+                    val eyeDir = transformNode(worldPos.output, mvp.outViewMat, 1f, true)
+                    ifEyeDir = stageInterfaceNode("ifEyeDir", eyeDir.output)
+
+                    val lightDir = transformNode(ShaderNodeIoVar(ModelVar3fConst(Vec3f(1f, 1f, 1f))), mvp.outViewMat, 0f)
+                    ifLightDir = stageInterfaceNode("ifLightDir", lightDir.output)
+
+                    vertexPositionNode(attrPositions().output, mvp.outMvpMat)
+                }
+                fragmentStage {
+                    phongMaterialNode(ifColors.output, ifNormals.output, ifEyeDir.output, ifLightDir.output)
+                }
+            }
+            model.setup(mesh, buildCtx, ctx)
+            VertexColor(model)
+        }
+
+        fun vertexColorPhongMultiLight(): (Mesh, Pipeline.BuildContext, KoolContext) -> VertexColor = { mesh, buildCtx, ctx ->
+            val model = ShaderModel("ModeledShader.vertexColorPhong()").apply {
+                val ifColors: StageInterfaceNode
+
+                val ifNormals: StageInterfaceNode
+                val ifFragPos: StageInterfaceNode
+                val mvp: UniformBufferMvp
+
+                vertexStage {
+                    mvp = mvpNode()
+                    val preMultColor = premultiplyColorNode(attrColors().output)
+                    ifColors = stageInterfaceNode("ifColors", preMultColor.outColor)
+                    val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
+                    ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+                    val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
+                    ifFragPos = stageInterfaceNode("ifFragPos", worldPos.output)
+
+                    vertexPositionNode(attrPositions().output, mvp.outMvpMat)
+                }
+                fragmentStage {
+                    val mvpFrag = mvp.addToStage(fragmentStage)
+                    val lightNode = addNode(LightNode(stage))
+                    phongMaterialMultiLightNode(ifColors.output, ifNormals.output, ifFragPos.output, mvpFrag.outCamPos, lightNode)
+                }
+            }
+            model.setup(mesh, buildCtx, ctx)
+            VertexColor(model)
+        }
+
         fun textureColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> TextureColor = { mesh, buildCtx, ctx ->
             val texName = "tex"
-            val model = ShaderModel().apply {
+            val model = ShaderModel("ModeledShader.textureColor()").apply {
                 val ifTexCoords: StageInterfaceNode
 
                 vertexStage {
-                    ifTexCoords = stageInterfaceNode("ifTexCoords", attributeNode(Attribute.TEXTURE_COORDS).output)
+                    ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
                     simpleVertexPositionNode()
                 }
                 fragmentStage {

@@ -6,7 +6,7 @@ import de.fabmax.kool.scene.Mesh
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-class ShaderModel {
+class ShaderModel(val modelInfo: String = "") {
     val stages = mutableMapOf(
             ShaderStage.VERTEX_SHADER to VertexShaderGraph(),
             ShaderStage.FRAGMENT_SHADER to FragmentShaderGraph()
@@ -22,11 +22,15 @@ class ShaderModel {
 
         setupAttributes(mesh, buildCtx)
         val descBuilder = DescriptorSetLayout.Builder()
+        val pushBuilder = PushConstantRange.Builder()
         buildCtx.descriptorSetLayouts += descBuilder
+        buildCtx.pushConstantRanges += pushBuilder
         stages.values.forEach { stage ->
             descBuilder.descriptors += stage.descriptorSet.descriptors
-            buildCtx.pushConstantRanges += stage.pushConstants
+            pushBuilder.pushConstants += stage.pushConstants.pushConstants
+            pushBuilder.stages += stage.pushConstants.stages
         }
+
     }
 
     private fun setupAttributes(mesh: Mesh, buildCtx: Pipeline.BuildContext) {
@@ -49,49 +53,64 @@ class ShaderModel {
     }
 
     abstract inner class StageBuilder(val stage: ShaderGraph) {
-        operator fun ShaderNode.unaryPlus() {
-            stage.nodes += this
-        }
-
         fun <T: ShaderNode> addNode(node: T): T {
-            +node
+            stage.addNode(node)
             return node
         }
 
-        fun pushConstantNode1f(name: String) = addNode(PushConstantNode1f(name))
-        fun pushConstantNode2f(name: String) = addNode(PushConstantNode2f(name))
-        fun pushConstantNode3f(name: String) = addNode(PushConstantNode3f(name))
-        fun pushConstantNode4f(name: String) = addNode(PushConstantNode4f(name))
+        fun premultiplyColorNode(inColor: ShaderNodeIoVar? = null): PremultiplyColorNode {
+            val preMult = addNode(PremultiplyColorNode(stage))
+            inColor?.let { preMult.inColor = it }
+            return preMult
+        }
 
-        fun textureNode(texName: String) = addNode(TextureNode(texName))
+        fun pushConstantNode1f(name: String) = addNode(PushConstantNode1f(name, stage))
+        fun pushConstantNode2f(name: String) = addNode(PushConstantNode2f(name, stage))
+        fun pushConstantNode3f(name: String) = addNode(PushConstantNode3f(name, stage))
+        fun pushConstantNode4f(name: String) = addNode(PushConstantNode4f(name, stage))
 
-        fun textureSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null): TextureSamplerNode {
-            val texSampler = addNode(TextureSamplerNode(texNode))
+        fun textureNode(texName: String) = addNode(TextureNode(texName, stage))
+
+        fun textureSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = true): TextureSamplerNode {
+            val texSampler = addNode(TextureSamplerNode(texNode, stage, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
         }
     }
 
     inner class VertexStageBuilder : StageBuilder(vertexStage) {
-        fun attributeNode(attribute: Attribute) = addNode(AttributeNode(attribute))
+
+        fun attrColors() = attributeNode(Attribute.COLORS)
+        fun attrNormals() = attributeNode(Attribute.NORMALS)
+        fun attrPositions() = attributeNode(Attribute.POSITIONS)
+        fun attrTangents() = attributeNode(Attribute.TANGENTS)
+        fun attrTexCoords() = attributeNode(Attribute.TEXTURE_COORDS)
+        fun attributeNode(attribute: Attribute) = addNode(AttributeNode(attribute, stage))
 
         fun stageInterfaceNode(name: String, input: ShaderNodeIoVar?): StageInterfaceNode {
-            val ifNode = StageInterfaceNode(name)
+            val ifNode = StageInterfaceNode(name, vertexStage, fragmentStage)
             input?.let { ifNode.input = it }
             addNode(ifNode.vertexNode)
-            fragmentStage.nodes += ifNode.fragmentNode
+            fragmentStage.addNode(ifNode.fragmentNode)
             return ifNode
         }
 
-        fun mvpNode() = addNode(UniformBufferMvp())
+        fun mvpNode() = addNode(UniformBufferMvp(stage))
 
-        fun premultipliedMvpNode() = addNode(UniformBufferPremultipliedMvp())
+        fun premultipliedMvpNode() = addNode(UniformBufferPremultipliedMvp(stage))
 
-        fun simpleVertexPositionNode() =
-                vertexPositionNode(attributeNode(Attribute.POSITIONS).output, premultipliedMvpNode().outMvpMat)
+        fun simpleVertexPositionNode() = vertexPositionNode(attrPositions().output, premultipliedMvpNode().outMvpMat)
+
+        fun transformNode(input: ShaderNodeIoVar? = null, inMat: ShaderNodeIoVar? = null,
+                          w: Float = 1f, invert: Boolean = false): TransformNode {
+            val tf = addNode(TransformNode(stage, w, invert))
+            input?.let { tf.input = it }
+            inMat?.let { tf.inMat = it }
+            return tf
+        }
 
         fun vertexPositionNode(inPosition: ShaderNodeIoVar? = null, inMvp: ShaderNodeIoVar? = null): VertexPosTransformNode {
-            val pos = addNode(VertexPosTransformNode())
+            val pos = addNode(VertexPosTransformNode(stage))
             inPosition?.let { pos.inPosition = it }
             inMvp?.let { pos.inMvp = it }
             return pos
@@ -100,8 +119,36 @@ class ShaderModel {
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStage) {
         fun unlitMaterialNode(albedo: ShaderNodeIoVar? = null): UnlitMaterialNode {
-            val mat = addNode(UnlitMaterialNode())
+            val mat = addNode(UnlitMaterialNode(stage))
             albedo?.let { mat.inAlbedo = it }
+            return mat
+        }
+
+        /**
+         * Simple Phong shader with a single light source. The shader assumes normal, eye and light direction are in
+         * view space (in contrast to multi-light Phong variant were everything is in world space).
+         */
+        fun phongMaterialNode(albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
+                              eyeDir: ShaderNodeIoVar? = null, lightDir: ShaderNodeIoVar? = null): PhongMaterialNode {
+            val mat = addNode(PhongMaterialNode(stage))
+            albedo?.let { mat.inAlbedo = it }
+            normal?.let { mat.inNormal = it }
+            eyeDir?.let { mat.inEyeDir = it }
+            lightDir?.let { mat.inLightDir = it }
+            return mat
+        }
+
+        /**
+         * Phong shader with multiple light sources. The shader assumes normals, fragment and cam positions are in
+         * world space (in contrast to single-light Phong variant were everything is in view space).
+         */
+        fun phongMaterialMultiLightNode(albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
+                              fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null, lightNode: LightNode): PhongMaterialMultiLightNode {
+            val mat = addNode(PhongMaterialMultiLightNode(lightNode, stage))
+            albedo?.let { mat.inAlbedo = it }
+            normal?.let { mat.inNormal = it }
+            camPos?.let { mat.inCamPos = it }
+            fragPos?.let { mat.inFragPos = it }
             return mat
         }
     }

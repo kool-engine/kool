@@ -84,8 +84,9 @@ data class ModelMeshData(
         hasTangents = attributes.containsKey(ATTRIB_TANGENTS)
 
         for ((name, attrib) in attributes) {
-            if (attrib.size / attrib.type.size != numVertices) {
-                throw KoolException("Mesh attribute $name has wrong value count: ${attrib.size} (should be ${numVertices * attrib.type.size}, type: ${attrib.type})")
+            val attribTypeValCnt = attrib.type.size / 4
+            if (attrib.size / attribTypeValCnt != numVertices) {
+                throw KoolException("Mesh attribute $name has wrong value count: ${attrib.size} (should be ${numVertices * attribTypeValCnt}, type: ${attrib.type})")
             }
         }
     }
@@ -144,7 +145,7 @@ data class ModelMeshData(
             meshData.generateTangents()
         }
 
-        val mesh = if (!armature.isEmpty()) {
+        val mesh = if (armature.isNotEmpty()) {
             buildAramature(meshData)
         } else {
             Mesh(meshData, name)

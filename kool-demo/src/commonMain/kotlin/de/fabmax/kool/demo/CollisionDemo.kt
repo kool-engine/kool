@@ -69,7 +69,7 @@ fun collisionDemo(ctx: KoolContext): List<Scene> {
     var boxCnt = 40
 
     val boxScene = scene {
-        lighting.primaryLight.direction.set(1f, 0.8f, 0.4f)
+        lighting.lights[0].direction.set(1f, 0.8f, 0.4f)
         lighting.useDefaultShadowMap(ctx)
 
         +orbitInputTransform {
