@@ -45,10 +45,7 @@ class UboDescriptor(binding: Int, val ubo: UniformBuffer, val buffer: Buffer) : 
 
     override fun update(cmd: DrawCommand, sys: VkSystem) {
         ubo.onUpdate?.invoke(ubo, cmd)
-        buffer.mapped {
-            val mixBuf = MixedBufferImpl(this)
-            ubo.putTo(mixBuf)
-        }
+        buffer.mapped { ubo.putTo(MixedBufferImpl(this)) }
     }
 }
 

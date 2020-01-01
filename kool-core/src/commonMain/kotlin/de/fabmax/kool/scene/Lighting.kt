@@ -1,7 +1,8 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.ShadowMap
@@ -60,7 +61,7 @@ class Light {
     var type = Type.DIRECTIONAL
     val direction = MutableVec3f(1f)
     val position = MutableVec3f()
-    val spotConfig = MutableVec2f()
+    var spotAngle = 60f
 
     fun setColor(color: Color, intensity: Float): Light {
         this.color.set(color)
@@ -73,7 +74,7 @@ class Light {
         direction.set(dir)
 
         position.set(Vec3f.ZERO)
-        spotConfig.set(Vec2f.ZERO)
+        spotAngle = 0f
         return this
     }
 
@@ -82,15 +83,15 @@ class Light {
         position.set(pos)
 
         direction.set(Vec3f.ZERO)
-        spotConfig.set(Vec2f.ZERO)
+        spotAngle = 0f
         return this
     }
 
-    fun setSpot(pos: Vec3f, dir: Vec3f, innerAngle: Float, outerAngle: Float): Light {
+    fun setSpot(pos: Vec3f, dir: Vec3f, angle: Float): Light {
         type = Type.SPOT
         position.set(pos)
         direction.set(dir)
-        spotConfig.set(innerAngle.toRad(), outerAngle.toRad())
+        spotAngle = angle
         return this
     }
 

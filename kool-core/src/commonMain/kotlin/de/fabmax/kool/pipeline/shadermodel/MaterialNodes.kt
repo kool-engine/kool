@@ -91,10 +91,9 @@ class PhongMaterialMultiLightNode(val lightNode: LightNode, graph: ShaderGraph) 
             vec3 phongMat_diffuse = vec3(0);
             vec3 phongMat_specular = vec3(0);
             for (int i = 0; i < ${lightNode.outLightCount.name}; i++) {
-                vec3 phongMat_l = -${lightNode.generateGetDirection("i", inFragPos.ref3f())};
-                float dist = length(phongMat_l);
+                vec3 phongMat_l = ${lightNode.generateGetDirection("i", inFragPos.ref3f())};
+                float strength = ${lightNode.generateGetStrength("i", "phongMat_l", "0.95")};
                 phongMat_l = normalize(phongMat_l);
-                float strength = ${lightNode.generateGetStrength("i", "dist", "phongMat_l")};
                 
                 float phongMat_cosTheta = clamp(dot(phongMat_n, phongMat_l), 0.0, 1.0);
                 vec3 phongMat_r = reflect(phongMat_l, phongMat_n);

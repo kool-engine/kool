@@ -4,6 +4,7 @@ import de.fabmax.kool.AssetManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.randomF
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
@@ -38,21 +39,23 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
 
     ctx.clearColor = Color.fromHsv(0f, 0f, 0.15f, 1f)
 
-    val cyanLight = Light().setPoint(Vec3f(8f, 5f, -8f)).setColor(Color.MD_CYAN, 150f)
-    val redLight = Light().setPoint(Vec3f(-8f, 5f, 8f)).setColor(Color.MD_RED, 150f)
-    val yellowLight = Light().setPoint(Vec3f(-8f, 5f, -8f)).setColor(Color.MD_AMBER, 150f)
-    val greenLight = Light().setPoint(Vec3f(8f, 5f, 8f)).setColor(Color.MD_GREEN, 150f)
+    val cyanLight = Light().setSpot(Vec3f(10f, 7f, -10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_CYAN, 300f)
+    val redLight = Light().setSpot(Vec3f(-10f, 7f, 10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_RED, 300f)
+//    val cyanLight = Light().setSpot(Vec3f(10f, 7f, -10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_CYAN, 150f)
+//    val redLight = Light().setSpot(Vec3f(-10f, 7f, 10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_RED, 150f)
+//    val yellowLight = Light().setSpot(Vec3f(-10f, 7f, -10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_AMBER, 150f)
+//    val greenLight = Light().setSpot(Vec3f(10f, 7f, 10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_GREEN, 150f)
 
     lighting.lights.clear()
     lighting.lights.add(cyanLight)
     lighting.lights.add(redLight)
-    lighting.lights.add(yellowLight)
-    lighting.lights.add(greenLight)
+//    lighting.lights.add(yellowLight)
+//    lighting.lights.add(greenLight)
 
     +LightMesh(cyanLight)
     +LightMesh(redLight)
-    +LightMesh(yellowLight)
-    +LightMesh(greenLight)
+//    +LightMesh(yellowLight)
+//    +LightMesh(greenLight)
 
     +transformGroup {
 //        +colorMesh {
@@ -76,6 +79,8 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
 ////            }
 //        }
 
+        translate(0f, 1.5f, 0f)
+
         +colorMesh {
             generator = {
                 color = Color.GRAY
@@ -91,7 +96,7 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
             pipelineConfig { shaderLoader = ModeledShader.vertexColorPhongMultiLight() }
         }
 
-        loadCow(ctx.assetMgr) { model ->
+        loadModel(ctx.assetMgr) { model ->
             println("adding mesh: ${model.meshData.numVertices} verts, ${model.meshData.numIndices / 3} tris")
 
             val colorMesh = mesh(setOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS)) {
@@ -175,6 +180,7 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
 
 class LightMesh(val light: Light) : TransformGroup() {
     private val lightPos = Vec3f(light.position)
+    private val rotOff = randomF(0f, 3f)
     init {
         val lightMesh = colorMesh {
             generator = {
@@ -186,16 +192,22 @@ class LightMesh(val light: Light) : TransformGroup() {
             pipelineConfig { shaderLoader = ModeledShader.vertexColor() }
         }
         +lightMesh
+
         onPreRender += { ctx ->
             setIdentity()
             rotate(ctx.time.toFloat() * -20f, Vec3f.Y_AXIS)
             translate(lightPos)
             light.position.set(lightMesh.globalCenter)
+            light.direction.set(lightMesh.globalCenter).scale(-1f).norm()
+
+//            val r = cos(ctx.time / 15 + rotOff).toFloat()
+//            light.direction.rotate(r * 10f, Vec3f.X_AXIS)
+//            light.direction.rotate(r * 10f, Vec3f.Z_AXIS)
         }
     }
 }
 
-fun loadCow(assetMgr: AssetManager, recv: (Mesh) -> Unit) {
+fun loadModel(assetMgr: AssetManager, recv: (Mesh) -> Unit) {
     assetMgr.loadModel("bunny.kmfz") { model ->
         val scale = 0.05f
         if (model != null) {
