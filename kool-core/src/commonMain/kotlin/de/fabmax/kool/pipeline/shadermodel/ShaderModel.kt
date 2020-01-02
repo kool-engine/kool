@@ -17,6 +17,18 @@ class ShaderModel(val modelInfo: String = "") {
     val fragmentStage: FragmentShaderGraph
         get() = stages[ShaderStage.FRAGMENT_SHADER] as FragmentShaderGraph
 
+    fun <T: ShaderNode> findNode(name: String, stage: ShaderStage = ShaderStage.ALL): T? {
+        stages.values.forEach {
+            if (it.stage.mask and stage.mask != 0) {
+                val node = it.findNode<T>(name)
+                if (node != null) {
+                    return node
+                }
+            }
+        }
+        return null
+    }
+
     fun setup(mesh: Mesh, buildCtx: Pipeline.BuildContext, ctx: KoolContext) {
         stages.values.forEach { it.setup() }
 
@@ -64,10 +76,17 @@ class ShaderModel(val modelInfo: String = "") {
             return preMult
         }
 
-        fun pushConstantNode1f(name: String) = addNode(PushConstantNode1f(name, stage))
-        fun pushConstantNode2f(name: String) = addNode(PushConstantNode2f(name, stage))
-        fun pushConstantNode3f(name: String) = addNode(PushConstantNode3f(name, stage))
-        fun pushConstantNode4f(name: String) = addNode(PushConstantNode4f(name, stage))
+        fun pushConstantNode1f(name: String) = addNode(PushConstantNode1f(Uniform1f(name), stage))
+        fun pushConstantNode2f(name: String) = addNode(PushConstantNode2f(Uniform2f(name), stage))
+        fun pushConstantNode3f(name: String) = addNode(PushConstantNode3f(Uniform3f(name), stage))
+        fun pushConstantNode4f(name: String) = addNode(PushConstantNode4f(Uniform4f(name), stage))
+        fun pushConstantNodeColor(name: String) = addNode(PushConstantNodeColor(UniformColor(name), stage))
+
+        fun pushConstantNode1f(u: Uniform1f) = addNode(PushConstantNode1f(u, stage))
+        fun pushConstantNode2f(u: Uniform2f) = addNode(PushConstantNode2f(u, stage))
+        fun pushConstantNode3f(u: Uniform3f) = addNode(PushConstantNode3f(u, stage))
+        fun pushConstantNode4f(u: Uniform4f) = addNode(PushConstantNode4f(u, stage))
+        fun pushConstantNodeColor(u: UniformColor) = addNode(PushConstantNodeColor(u, stage))
 
         fun textureNode(texName: String) = addNode(TextureNode(texName, stage))
 

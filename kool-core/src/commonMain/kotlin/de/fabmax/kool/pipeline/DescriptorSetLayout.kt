@@ -91,16 +91,15 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
     val instanceName = builder.instanceName
     val onUpdate: ((UniformBuffer, DrawCommand) -> Unit) ? = builder.onUpdate
 
+    private val layout = Std140Layout(uniforms)
+
     /**
-     * Overall size of buffer in bytes (i.e. all containing uniforms)
+     * Overall size of buffer in bytes (i.e. all containing uniforms, including padding)
      */
-    val size = uniforms.sumBy { it.size }
+    val size = layout.size
 
     fun putTo(buffer: MixedBuffer) {
-        // fixme: ensure proper alignment! also might be platform specific...
-        for (i in uniforms.indices) {
-            uniforms[i].putTo(buffer)
-        }
+        layout.putTo(buffer)
         buffer.flip()
     }
 

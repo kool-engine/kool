@@ -178,7 +178,7 @@ class PbrMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNode
                 Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
             }
   
-            vec3 ambient = $inAmbient * albedo;
+            vec3 ambient = ${inAmbient.ref3f()} * albedo;
             vec3 color = ambient + Lo;
             color = color / (color + vec3(1.0));
             color = pow(color, vec3(1.0/2.2));  

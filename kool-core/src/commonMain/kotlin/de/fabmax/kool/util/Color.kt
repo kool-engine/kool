@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.Vec4f
+import kotlin.math.pow
 
 /**
  * @author fabmax
@@ -24,6 +25,10 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
 
     fun withAlpha(alpha: Float): MutableColor {
         return MutableColor(r, g, b, alpha)
+    }
+
+    fun gamma(gamma: Float = 2.2f): Color {
+        return Color(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
     }
 
     companion object {
@@ -435,6 +440,9 @@ open class MutableColor(r: Float, g: Float, b: Float, a: Float) : Color(r, g, b,
     override var a
         get() = this[3]
         set(value) { this[3] = value }
+
+    val array: FloatArray
+        get() = fields
 
     constructor() : this(0f, 0f, 0f, 1f)
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)

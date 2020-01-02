@@ -21,6 +21,8 @@ fun main() {
 //    demo("modelDemo")
 
     testScene()
+
+//    pbrDemo()
 }
 
 fun testScene() {
@@ -39,12 +41,13 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
 
     ctx.clearColor = Color.fromHsv(0f, 0f, 0.15f, 1f)
 
-    val cyanLight = Light().setSpot(Vec3f(10f, 7f, -10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_CYAN, 300f)
-    val redLight = Light().setSpot(Vec3f(-10f, 7f, 10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_RED, 300f)
-//    val cyanLight = Light().setSpot(Vec3f(10f, 7f, -10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_CYAN, 150f)
-//    val redLight = Light().setSpot(Vec3f(-10f, 7f, 10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_RED, 150f)
-//    val yellowLight = Light().setSpot(Vec3f(-10f, 7f, -10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_AMBER, 150f)
-//    val greenLight = Light().setSpot(Vec3f(10f, 7f, 10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_GREEN, 150f)
+    val cyanLight = Light().setSpot(Vec3f(10f, 7f, -10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_CYAN.gamma(), 500f)
+    val redLight = Light().setSpot(Vec3f(-10f, 7f, 10f), Vec3f.X_AXIS, 45f).setColor(Color.MD_RED.gamma(), 500f)
+
+//    val cyanLight = Light().setPoint(Vec3f(10f, 7f, -10f)).setColor(Color.MD_CYAN.gamma(), 150f)
+//    val redLight = Light().setPoint(Vec3f(-10f, 7f, 10f)).setColor(Color.MD_RED.gamma(), 150f)
+//    val yellowLight = Light().setPoint(Vec3f(-10f, 7f, -10f)).setColor(Color.MD_AMBER.gamma(), 150f)
+//    val greenLight = Light().setPoint(Vec3f(10f, 7f, 10f)).setColor(Color.MD_GREEN.gamma(), 150f)
 
     lighting.lights.clear()
     lighting.lights.add(cyanLight)
@@ -58,27 +61,6 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
 //    +LightMesh(greenLight)
 
     +transformGroup {
-//        +colorMesh {
-//            generator = {
-//                color = Color.GRAY
-//                cube {
-//                    centerOrigin()
-//                    //colorCube()
-//                }
-//            }
-//            pipelineConfig {
-//                //shaderLoader = ModeledShader.staticColor()
-//                //shaderLoader = ModeledShader.vertexColorPhong()
-//                shaderLoader = ModeledShader.vertexColorPhongMultiLight()
-//            }
-//
-////            onPreRender += { ctx ->
-////                getPipeline(ctx)?.let {
-////                    (it.shader as ModeledShader.StaticColor).uStaticColor.value.set(Color.fromHsv((ctx.time.toFloat() * 60f) % 360f, 0.8f, 1f, 1f))
-////                }
-////            }
-//        }
-
         translate(0f, 1.5f, 0f)
 
         +colorMesh {
@@ -93,18 +75,22 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
                     }
                 }
             }
-            pipelineConfig { shaderLoader = ModeledShader.vertexColorPhongMultiLight() }
+            val shader = ModeledShader.PbrShader()
+            shader.roughness = 0.5f
+            pipelineConfig { shaderLoader = shader::loadShader }
         }
 
         loadModel(ctx.assetMgr) { model ->
             println("adding mesh: ${model.meshData.numVertices} verts, ${model.meshData.numIndices / 3} tris")
 
             val colorMesh = mesh(setOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS)) {
-                pipelineConfig { shaderLoader = ModeledShader.vertexColorPhongMultiLight() }
+                val shader = ModeledShader.PbrShader()
+                shader.roughness = 0.15f
+                pipelineConfig { shaderLoader = shader::loadShader }
 
                 val target = meshData
                 target.vertexList.addFrom(model.meshData.vertexList)
-                target.vertexList.forEach { it.color.set(Color.GRAY) }
+                target.vertexList.forEach { it.color.set(Color.WHITE) }
             }
             +colorMesh
             println("done")
@@ -114,22 +100,6 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
             rotate(10f * ctx.deltaT, 0f, 1f, 0f)
         }
     }
-
-//    +colorMesh {
-//        generator = {
-//            color = Color.MD_RED
-//            sphere {
-//                radius = 0.2f
-//                center.set(-10f, 5f, 5f)
-//            }
-//            color = Color.MD_CYAN
-//            sphere {
-//                radius = 0.2f
-//                center.set(10f, 5f, 5f)
-//            }
-//        }
-//        pipelineConfig { shaderLoader = ModeledShader.vertexColor() }
-//    }
 
 //    +transformGroup {
 //        translate(3f, 0f, 0f)
@@ -153,26 +123,6 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
 //
 //            onPreRender += { ctx ->
 //                rotate(90f * ctx.deltaT, 0f, 1f, 0f)
-//            }
-//        }
-//    }
-
-//    val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN), ctx)
-//    +mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
-//        generator = {
-//            color = Color.LIME
-//            text(font, 1f) {
-//                // Set the text to render, for now only characters defined in [Font.STD_CHARS] can be rendered
-//                text = "kool@Vulkan!"
-//                // Make the text centered
-//                origin.set(-font.textWidth(text) / 2f, 0f, 200f)
-//            }
-//        }
-//
-//        pipelineConfig {
-//            shaderLoader = BasicMeshShader.MaskedColor.loader
-//            onPipelineCreated += {
-//                (it.shader as BasicMeshShader.MaskedColor).textureSampler.texture = font
 //            }
 //        }
 //    }

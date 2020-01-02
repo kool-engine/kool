@@ -282,7 +282,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
     fun getDescriptorSetInstance(pipeline: Pipeline): DescriptorSet {
         return descriptorSetInstances.computeIfAbsent(pipeline.pipelineInstanceId) {
             logD { "Creating new descriptor set instance [${descriptorSetInstances.size+1} / $descriptorSetPoolSize, pipeline: ${pipeline.pipelineHash}]" }
-            if (descriptorSetInstances.size == descriptorSetPoolSize - 1) {
+            if (descriptorSetInstances.size == descriptorSetPoolSize) {
                 throw IllegalStateException("Descriptor set pool exhausted. Use larger descriptorSetPoolSize")
             }
             DescriptorSet(this, pipeline)

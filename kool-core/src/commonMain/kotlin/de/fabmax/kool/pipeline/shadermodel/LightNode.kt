@@ -27,15 +27,12 @@ class LightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderNode("
                 +{ uPositions }
                 +{ uColors }
                 +{ uDirections }
+                +{ uLightCnt }
 
                 onUpdate = { _, cmd ->
                     encodeLightSetup(cmd)
                 }
             }
-        }
-        shaderGraph.pushConstants.apply {
-            stages += shaderGraph.stage
-            +{ uLightCnt }
         }
     }
 

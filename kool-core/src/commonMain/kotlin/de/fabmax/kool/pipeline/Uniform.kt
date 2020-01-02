@@ -1,13 +1,26 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBuffer
+import de.fabmax.kool.util.MutableColor
 
 abstract class Uniform<T>(var value: T, val name: String) {
     /**
-     * Size of value type in bytes
+     * Size of value in bytes including padding.
      */
     abstract val size: Int
+
+    /**
+     * Size of value type in bytes (excluding any padding)
+     */
+    open val typeSize
+        get() = size
+
+    /**
+     * Number of array elements (1 for non array types)
+     */
+    open val length = 1
 
     abstract fun putTo(buffer: MixedBuffer)
 }
@@ -24,16 +37,6 @@ class Uniform1f(name: String) : Uniform<Float>(0f, name) {
     }
 }
 
-class Uniform1fv(name: String, val n: Int) : Uniform<FloatArray>(FloatArray(n), name) {
-    override val size: Int = 4 * n
-
-    override fun putTo(buffer: MixedBuffer) {
-        for (i in 0 until n) {
-            buffer.putFloat32(value[i])
-        }
-    }
-}
-
 class Uniform2f(name: String) : Uniform<MutableVec2f>(MutableVec2f(), name) {
     override val size: Int = 2 * 4
 
@@ -46,18 +49,8 @@ class Uniform2f(name: String) : Uniform<MutableVec2f>(MutableVec2f(), name) {
     }
 }
 
-class Uniform2fv(name: String, val n: Int) : Uniform<Array<MutableVec2f>>(Array(n) { MutableVec2f() }, name) {
-    override val size: Int = 2 * 4 * n
-
-    override fun putTo(buffer: MixedBuffer) {
-        for (i in 0 until n) {
-            buffer.putFloat32(value[i].array)
-        }
-    }
-}
-
 class Uniform3f(name: String) : Uniform<MutableVec3f>(MutableVec3f(), name) {
-    override val size: Int = 3 * 4
+    override val size: Int = 4 * 4
 
     constructor(initValue: Vec3f, name: String) : this(name) {
         value.set(initValue)
@@ -65,16 +58,8 @@ class Uniform3f(name: String) : Uniform<MutableVec3f>(MutableVec3f(), name) {
 
     override fun putTo(buffer: MixedBuffer) {
         buffer.putFloat32(value.array)
-    }
-}
-
-class Uniform3fv(name: String, val n: Int) : Uniform<Array<MutableVec3f>>(Array(n) { MutableVec3f() }, name) {
-    override val size: Int = 3 * 4 * n
-
-    override fun putTo(buffer: MixedBuffer) {
-        for (i in 0 until n) {
-            buffer.putFloat32(value[i].array)
-        }
+        // padding (std140 layout)
+        buffer.putUint32(0)
     }
 }
 
@@ -90,11 +75,63 @@ class Uniform4f(name: String) : Uniform<MutableVec4f>(MutableVec4f(), name) {
     }
 }
 
-class Uniform4fv(name: String, val n: Int) : Uniform<Array<MutableVec4f>>(Array(n) { MutableVec4f() }, name) {
-    override val size: Int = 4 * 4 * n
+class UniformColor(name: String) : Uniform<MutableColor>(MutableColor(), name) {
+    override val size: Int = 4 * 4
+
+    constructor(initValue: Color, name: String) : this(name) {
+        value.set(initValue)
+    }
 
     override fun putTo(buffer: MixedBuffer) {
-        for (i in 0 until n) {
+        buffer.putFloat32(value.array)
+    }
+}
+
+class Uniform1fv(name: String, override val length: Int) : Uniform<FloatArray>(FloatArray(length), name) {
+    override val size = 4 * 4 * length
+    override val typeSize = 4
+
+    override fun putTo(buffer: MixedBuffer) {
+        for (i in 0 until length) {
+            buffer.putFloat32(value[i])
+            // padding (std140 layout)
+            buffer.putUint32(0)
+            buffer.putUint32(0)
+            buffer.putUint32(0)
+        }
+    }
+}
+
+class Uniform2fv(name: String, override val length: Int) : Uniform<Array<MutableVec2f>>(Array(length) { MutableVec2f() }, name) {
+    override val size: Int = 4 * 4 * length
+
+    override fun putTo(buffer: MixedBuffer) {
+        for (i in 0 until length) {
+            buffer.putFloat32(value[i].array)
+            // padding (std140 layout)
+            buffer.putUint32(0)
+            buffer.putUint32(0)
+        }
+    }
+}
+
+class Uniform3fv(name: String, override val length: Int) : Uniform<Array<MutableVec3f>>(Array(length) { MutableVec3f() }, name) {
+    override val size: Int = 4 * 4 * length
+
+    override fun putTo(buffer: MixedBuffer) {
+        for (i in 0 until length) {
+            buffer.putFloat32(value[i].array)
+            // padding (std140 layout)
+            buffer.putUint32(0)
+        }
+    }
+}
+
+class Uniform4fv(name: String, override val length: Int) : Uniform<Array<MutableVec4f>>(Array(length) { MutableVec4f() }, name) {
+    override val size: Int = 4 * 4 * length
+
+    override fun putTo(buffer: MixedBuffer) {
+        for (i in 0 until length) {
             buffer.putFloat32(value[i].array)
         }
     }
@@ -128,12 +165,17 @@ class Uniform1i(name: String) : Uniform<Int>(0, name) {
     }
 }
 
-class Uniform1iv(name: String, val n: Int) : Uniform<IntArray>(IntArray(n), name) {
-    override val size: Int = 4 * n
+class Uniform1iv(name: String, override val length: Int) : Uniform<IntArray>(IntArray(length), name) {
+    override val size = 4 * 4 * length
+    override val typeSize = 4
 
     override fun putTo(buffer: MixedBuffer) {
-        for (i in 0 until n) {
+        for (i in 0 until length) {
             buffer.putUint32(value[i])
+            // padding (std140 layout)
+            buffer.putUint32(0)
+            buffer.putUint32(0)
+            buffer.putUint32(0)
         }
     }
 }

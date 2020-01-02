@@ -21,6 +21,10 @@ open class ShaderGraph(val stage: ShaderStage) {
 
     internal var nextNodeId = 1
 
+    fun <T: ShaderNode> findNode(name: String): T? {
+        return nodes.find { it.name == name } as? T
+    }
+
     fun addNode(node: ShaderNode) {
         if (node.graph !== this) {
             throw IllegalStateException("Node can only be added to it's parent graph")

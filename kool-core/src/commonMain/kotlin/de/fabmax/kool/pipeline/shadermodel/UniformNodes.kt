@@ -107,39 +107,36 @@ class TextureNode(val texName: String, graph: ShaderGraph) : ShaderNode("Texture
 }
 
 abstract class PushConstantNode<T: Uniform<*>>(name: String, graph: ShaderGraph) : ShaderNode(name, graph) {
+    abstract val uniform: T
     abstract val output: ShaderNodeIoVar
-    lateinit var uniform: T
 
     val visibleIn = mutableSetOf(graph.stage)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        uniform = createUniform()
         shaderGraph.pushConstants.apply {
             stages += visibleIn
             +{ uniform }
         }
     }
-
-    protected abstract fun createUniform(): T
 }
 
-class PushConstantNode1f(name: String, graph: ShaderGraph) : PushConstantNode<Uniform1f>(name, graph) {
+class PushConstantNode1f(override val uniform: Uniform1f, graph: ShaderGraph) : PushConstantNode<Uniform1f>(uniform.name, graph) {
     override val output = ShaderNodeIoVar(ModelVar1f(name), this)
-    override fun createUniform(): Uniform1f = Uniform1f(output.variable.name)
 }
 
-class PushConstantNode2f(name: String, graph: ShaderGraph) : PushConstantNode<Uniform2f>(name, graph) {
+class PushConstantNode2f(override val uniform: Uniform2f, graph: ShaderGraph) : PushConstantNode<Uniform2f>(uniform.name, graph) {
     override val output = ShaderNodeIoVar(ModelVar2f(name), this)
-    override fun createUniform(): Uniform2f = Uniform2f(output.variable.name)
 }
 
-class PushConstantNode3f(name: String, graph: ShaderGraph) : PushConstantNode<Uniform3f>(name, graph) {
+class PushConstantNode3f(override val uniform: Uniform3f, graph: ShaderGraph) : PushConstantNode<Uniform3f>(uniform.name, graph) {
     override val output = ShaderNodeIoVar(ModelVar3f(name), this)
-    override fun createUniform(): Uniform3f = Uniform3f(output.variable.name)
 }
 
-class PushConstantNode4f(name: String, graph: ShaderGraph) : PushConstantNode<Uniform4f>(name, graph) {
+class PushConstantNode4f(override val uniform: Uniform4f, graph: ShaderGraph) : PushConstantNode<Uniform4f>(uniform.name, graph) {
     override val output = ShaderNodeIoVar(ModelVar4f(name), this)
-    override fun createUniform(): Uniform4f = Uniform4f(output.variable.name)
+}
+
+class PushConstantNodeColor(override val uniform: UniformColor, graph: ShaderGraph) : PushConstantNode<UniformColor>(uniform.name, graph) {
+    override val output = ShaderNodeIoVar(ModelVar4f(name), this)
 }
