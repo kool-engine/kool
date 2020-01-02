@@ -5,6 +5,7 @@ import de.fabmax.kool.math.toRad
 import de.fabmax.kool.pipeline.Uniform1i
 import de.fabmax.kool.pipeline.Uniform4fv
 import de.fabmax.kool.scene.Light
+import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 
@@ -53,8 +54,8 @@ class LightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderNode("
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendFunction("light_getDirection", """
-            vec3 light_getDirection(int idx, vec3 fragPos) {
+        generator.appendFunction("light_getFragToLight", """
+            vec3 light_getFragToLight(int idx, vec3 fragPos) {
                 if (${uPositions.name}[idx].w == ${Light.Type.DIRECTIONAL.encoded}) {
                     return -${uDirections.name}[idx].xyz;
                 }
@@ -63,31 +64,32 @@ class LightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderNode("
             }
             """)
 
-        generator.appendFunction("light_getStrength", """
-            float light_getStrength(int idx, vec3 lightDir, float innerAngle) {
+        generator.appendFunction("light_getRadiance", """
+            vec3 light_getRadiance(int idx, vec3 fragToLight, float innerAngle) {
                 if (${uPositions.name}[idx].w == ${Light.Type.DIRECTIONAL.encoded}) {
-                    return ${uColors.name}[idx].w;
+                    return ${uColors.name}[idx].rgb * ${uColors.name}[idx].w;
                 }
-                float dist = length(lightDir);
+                float dist = length(fragToLight);
                 if (${uPositions.name}[idx].w == ${Light.Type.POINT.encoded}) {
-                    return ${uColors.name}[idx].w / (dist * dist);
+                    return ${uColors.name}[idx].rgb * ${uColors.name}[idx].w / (dist * dist);
                 } else {
                     // spot light
-                    lightDir = -normalize(lightDir);
+                    vec3 lightDir = -normalize(fragToLight);
                     float spotAng = ${uDirections.name}[idx].w;
+                    float innerAng = spotAng + (1 - spotAng) * (1 - innerAngle);
                     float ang = dot(lightDir, ${uDirections.name}[idx].xyz);
-                    float angVal = cos(clamp((spotAng - ang) / (1.0 - innerAngle), 0.0, 1.0) * 3.141592) * 0.5 + 0.5;
-                    return ${uColors.name}[idx].w / (dist * dist) * angVal;
+                    float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * $PI) * 0.5 + 0.5;
+                    return ${uColors.name}[idx].rgb * ${uColors.name}[idx].w / (dist * dist) * angVal;
                 }
             }
             """)
     }
 
-    fun generateGetDirection(idx: String, fragPos: String): String {
-        return "light_getDirection($idx, $fragPos)"
+    fun generateGetFragToLight(idx: String, fragPos: String): String {
+        return "light_getFragToLight($idx, $fragPos)"
     }
 
-    fun generateGetStrength(idx: String, lightDir: String, innerAngle: String): String {
-        return "light_getStrength($idx, $lightDir, $innerAngle)"
+    fun generateGetRadiance(idx: String, fragToLight: String, innerAngle: String): String {
+        return "light_getRadiance($idx, $fragToLight, $innerAngle)"
     }
 }

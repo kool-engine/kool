@@ -118,6 +118,8 @@ class ShaderModel(val modelInfo: String = "") {
     }
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStage) {
+        fun defaultLightNode(maxLights: Int = 4) = addNode(LightNode(stage, maxLights))
+
         fun unlitMaterialNode(albedo: ShaderNodeIoVar? = null): UnlitMaterialNode {
             val mat = addNode(UnlitMaterialNode(stage))
             albedo?.let { mat.inAlbedo = it }
@@ -125,26 +127,22 @@ class ShaderModel(val modelInfo: String = "") {
         }
 
         /**
-         * Simple Phong shader with a single light source. The shader assumes normal, eye and light direction are in
-         * view space (in contrast to multi-light Phong variant were everything is in world space).
+         * Phong shader with multiple light sources. The shader assumes normals, fragment and cam positions are in
+         * world space.
          */
         fun phongMaterialNode(albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
-                              eyeDir: ShaderNodeIoVar? = null, lightDir: ShaderNodeIoVar? = null): PhongMaterialNode {
-            val mat = addNode(PhongMaterialNode(stage))
+                              fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null, lightNode: LightNode): PhongMaterialNode {
+            val mat = addNode(PhongMaterialNode(lightNode, stage))
             albedo?.let { mat.inAlbedo = it }
             normal?.let { mat.inNormal = it }
-            eyeDir?.let { mat.inEyeDir = it }
-            lightDir?.let { mat.inLightDir = it }
+            camPos?.let { mat.inCamPos = it }
+            fragPos?.let { mat.inFragPos = it }
             return mat
         }
 
-        /**
-         * Phong shader with multiple light sources. The shader assumes normals, fragment and cam positions are in
-         * world space (in contrast to single-light Phong variant were everything is in view space).
-         */
-        fun phongMaterialMultiLightNode(albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
-                              fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null, lightNode: LightNode): PhongMaterialMultiLightNode {
-            val mat = addNode(PhongMaterialMultiLightNode(lightNode, stage))
+        fun pbrMaterialNode(albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
+                              fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null, lightNode: LightNode): PbrMaterialNode {
+            val mat = addNode(PbrMaterialNode(lightNode, stage))
             albedo?.let { mat.inAlbedo = it }
             normal?.let { mat.inNormal = it }
             camPos?.let { mat.inCamPos = it }

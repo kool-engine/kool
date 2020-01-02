@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.pipeline.TextureSampler
@@ -66,38 +65,32 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
                 val ifColors: StageInterfaceNode
 
                 val ifNormals: StageInterfaceNode
-                val ifEyeDir: StageInterfaceNode
-                val ifLightDir: StageInterfaceNode
+                val ifFragPos: StageInterfaceNode
+                val mvp: UniformBufferMvp
 
                 vertexStage {
+                    mvp = mvpNode()
                     val preMultColor = premultiplyColorNode(attrColors().output)
                     ifColors = stageInterfaceNode("ifColors", preMultColor.outColor)
-                    val mvp = mvpNode()
-
-                    // transform normals, eye direction and light direction to view space
-                    val worldNrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
-                    val viewNrm = transformNode(worldNrm.output, mvp.outViewMat, 0f)
-                    ifNormals = stageInterfaceNode("ifNormals", viewNrm.output)
-
-                    val worldPos = transformNode(attrPositions().output, mvp.outModelMat,  1f)
-                    val eyeDir = transformNode(worldPos.output, mvp.outViewMat, 1f, true)
-                    ifEyeDir = stageInterfaceNode("ifEyeDir", eyeDir.output)
-
-                    val lightDir = transformNode(ShaderNodeIoVar(ModelVar3fConst(Vec3f(1f, 1f, 1f))), mvp.outViewMat, 0f)
-                    ifLightDir = stageInterfaceNode("ifLightDir", lightDir.output)
+                    val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
+                    ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+                    val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
+                    ifFragPos = stageInterfaceNode("ifFragPos", worldPos.output)
 
                     vertexPositionNode(attrPositions().output, mvp.outMvpMat)
                 }
                 fragmentStage {
-                    phongMaterialNode(ifColors.output, ifNormals.output, ifEyeDir.output, ifLightDir.output)
+                    val mvpFrag = mvp.addToStage(fragmentStage)
+                    val lightNode = defaultLightNode()
+                    phongMaterialNode(ifColors.output, ifNormals.output, ifFragPos.output, mvpFrag.outCamPos, lightNode)
                 }
             }
             model.setup(mesh, buildCtx, ctx)
             VertexColor(model)
         }
 
-        fun vertexColorPhongMultiLight(): (Mesh, Pipeline.BuildContext, KoolContext) -> VertexColor = { mesh, buildCtx, ctx ->
-            val model = ShaderModel("ModeledShader.vertexColorPhong()").apply {
+        fun vertexColorPbr(): (Mesh, Pipeline.BuildContext, KoolContext) -> VertexColor = { mesh, buildCtx, ctx ->
+            val model = ShaderModel("ModeledShader.vertexColorPbr()").apply {
                 val ifColors: StageInterfaceNode
 
                 val ifNormals: StageInterfaceNode
@@ -117,8 +110,8 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
                 }
                 fragmentStage {
                     val mvpFrag = mvp.addToStage(fragmentStage)
-                    val lightNode = addNode(LightNode(stage))
-                    phongMaterialMultiLightNode(ifColors.output, ifNormals.output, ifFragPos.output, mvpFrag.outCamPos, lightNode)
+                    val lightNode = defaultLightNode()
+                    pbrMaterialNode(ifColors.output, ifNormals.output, ifFragPos.output, mvpFrag.outCamPos, lightNode)
                 }
             }
             model.setup(mesh, buildCtx, ctx)

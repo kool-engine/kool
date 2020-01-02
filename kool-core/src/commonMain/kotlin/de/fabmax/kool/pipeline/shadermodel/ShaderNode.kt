@@ -41,4 +41,14 @@ class ShaderNodeIoVar(val variable: ModelVar, val node: ShaderNode? = null) {
     fun ref4f() = variable.ref4f()
 
     fun refAsType(targetType: AttributeType) = variable.refAsType(targetType)
+
+    override fun toString(): String {
+        return when (variable.type) {
+            AttributeType.FLOAT -> ref1f()
+            AttributeType.VEC_2F -> ref2f()
+            AttributeType.VEC_3F -> ref3f()
+            AttributeType.VEC_4F -> ref4f()
+            else -> refAsType(variable.type)
+        }
+    }
 }
