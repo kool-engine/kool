@@ -3,7 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import kotlin.math.max
 import kotlin.math.round
 
@@ -58,6 +58,9 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
         val offsets = mutableMapOf<Attribute, Int>()
         for (attrib in vertexAttributes) {
+            if (attrib.type == GlslType.MAT_2F || attrib.type == GlslType.MAT_3F || attrib.type == GlslType.MAT_4F) {
+                throw IllegalArgumentException("Matrix types are not supported as vertex attributes")
+            }
             if (attrib.type.isInt) {
                 offsets[attrib] = cntI
                 cntI += attrib.type.size
@@ -279,14 +282,15 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
             for (offset in attributeOffsets) {
                 when (offset.key.type) {
-                    AttributeType.FLOAT -> attribViews[offset.key] = FloatView(offset.value / 4)
-                    AttributeType.VEC_2F -> attribViews[offset.key] = Vec2fView(offset.value / 4)
-                    AttributeType.VEC_3F -> attribViews[offset.key] = Vec3fView(offset.value / 4)
-                    AttributeType.VEC_4F -> attribViews[offset.key] = Vec4fView(offset.value / 4)
-                    AttributeType.INT -> attribViews[offset.key] = IntView(offset.value / 4)
-                    AttributeType.VEC_2I -> attribViews[offset.key] = Vec2iView(offset.value / 4)
-                    AttributeType.VEC_3I -> attribViews[offset.key] = Vec3iView(offset.value / 4)
-                    AttributeType.VEC_4I -> attribViews[offset.key] = Vec4iView(offset.value / 4)
+                    GlslType.FLOAT -> attribViews[offset.key] = FloatView(offset.value / 4)
+                    GlslType.VEC_2F -> attribViews[offset.key] = Vec2fView(offset.value / 4)
+                    GlslType.VEC_3F -> attribViews[offset.key] = Vec3fView(offset.value / 4)
+                    GlslType.VEC_4F -> attribViews[offset.key] = Vec4fView(offset.value / 4)
+                    GlslType.INT -> attribViews[offset.key] = IntView(offset.value / 4)
+                    GlslType.VEC_2I -> attribViews[offset.key] = Vec2iView(offset.value / 4)
+                    GlslType.VEC_3I -> attribViews[offset.key] = Vec3iView(offset.value / 4)
+                    GlslType.VEC_4I -> attribViews[offset.key] = Vec4iView(offset.value / 4)
+                    else -> throw IllegalArgumentException("${offset.key.type} is not a valid vertex attribute")
                 }
             }
 

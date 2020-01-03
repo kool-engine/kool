@@ -4,7 +4,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
 import java.io.File
@@ -42,21 +42,21 @@ object ModelConverter {
                 else -> emptyList()
             }
 
-            attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(AttributeType.VEC_3F, posList)
+            attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(GlslType.VEC_3F, posList)
             if (normalList.isNotEmpty()) {
                 if (normalBits > 0) {
                     val octNormals = encodeNormals(normalList, normalBits)
                     tags += "${ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED}=$normalBits"
-                    intAttribs[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED] = IntAttributeList(AttributeType.VEC_2I, octNormals)
+                    intAttribs[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED] = IntAttributeList(GlslType.VEC_2I, octNormals)
                 } else {
-                    attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
+                    attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(GlslType.VEC_3F, normalList)
                 }
             }
             if (uvList.isNotEmpty()) {
-                attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(AttributeType.VEC_2F, uvList)
+                attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(GlslType.VEC_2F, uvList)
             }
             if (colorList.isNotEmpty()) {
-                attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(AttributeType.VEC_4F, colorList)
+                attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(GlslType.VEC_4F, colorList)
             }
             meshes += ModelMeshData(meshName, PrimitiveType.TRIANGLES, attribs, indices, armature, animations,
                     aiMesh.mMaterialIndex(), tags, intAttribs)

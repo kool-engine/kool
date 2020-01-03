@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.shading.Shader
+import de.fabmax.kool.scene.CullMethod
 import de.fabmax.kool.scene.Mesh
 
 class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContext) {
@@ -88,7 +89,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
     }
 
     class Builder {
-        var cullMethod = CullMethod.BACK_FACE
+        var cullMethod = CullMethod.CULL_BACK_FACES
         var depthTest = DepthTest.LESS
         var isWriteDepth = true
         var lineWidth = 1f
@@ -114,12 +115,6 @@ fun Mesh.pipelineConfig(block: Pipeline.Builder.() -> Unit) {
         builder.block()
         builder.create(this, ctx)
     }
-}
-
-enum class CullMethod {
-    FRONT_FACE,
-    BACK_FACE,
-    NO_CULL
 }
 
 enum class DepthTest {

@@ -29,7 +29,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
     var inCamPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
     var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
-    var inAmbient = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
+    var inAmbient = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.3f)))
     var inShininess = ShaderNodeIoVar(ModelVar1fConst(20f))
     var inSpecularIntensity = ShaderNodeIoVar(ModelVar1fConst(1f))
 
@@ -67,8 +67,6 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
             } 
             
             vec3 phongMat_color = phongMat_ambient + phongMat_diffuse + phongMat_specular;
-            phongMat_color = phongMat_color / (phongMat_color + vec3(1.0));
-            phongMat_color = pow(phongMat_color, vec3(1.0/2.2));  
             ${outColor.declare()} = vec4(phongMat_color, ${inAlbedo.ref4f()}.a);
             """)
     }

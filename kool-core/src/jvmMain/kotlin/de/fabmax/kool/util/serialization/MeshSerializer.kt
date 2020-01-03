@@ -4,7 +4,7 @@ import de.fabmax.kool.gl.GL_LINES
 import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.MeshData
 
 class MeshSerializer {
@@ -71,22 +71,22 @@ class MeshSerializer {
         val tags = mutableListOf<String>()
         val intAttribs = mutableMapOf<String, IntAttributeList>()
 
-        attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(AttributeType.VEC_3F, posList)
+        attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(GlslType.VEC_3F, posList)
         if (normalList.isNotEmpty()) {
-            attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
+            attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(GlslType.VEC_3F, normalList)
         }
         if (encNormalList.isNotEmpty()) {
-            intAttribs[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED] = IntAttributeList(AttributeType.VEC_2I, encNormalList)
+            intAttribs[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED] = IntAttributeList(GlslType.VEC_2I, encNormalList)
             tags += "${ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED}=$normalBits"
         }
         if (uvList.isNotEmpty()) {
-            attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(AttributeType.VEC_2F, uvList)
+            attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(GlslType.VEC_2F, uvList)
         }
         if (colorList.isNotEmpty()) {
-            attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(AttributeType.VEC_4F, colorList)
+            attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(GlslType.VEC_4F, colorList)
         }
         if (tangentList.isNotEmpty()) {
-            attribs[ModelMeshData.ATTRIB_TANGENTS] = AttributeList(AttributeType.VEC_3F, tangentList)
+            attribs[ModelMeshData.ATTRIB_TANGENTS] = AttributeList(GlslType.VEC_3F, tangentList)
         }
 
         val primitiveType = when(mesh.primitiveType) {

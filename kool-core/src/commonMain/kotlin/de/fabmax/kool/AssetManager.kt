@@ -120,6 +120,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract suspend fun loadImageData(assetPath: String): TextureData
 
+    abstract suspend fun loadCubeMapImageData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData
+
     fun loadTextureAsset(assetPath: String): TextureData  {
         val proxy = TextureDataProxy()
         launch {
@@ -153,8 +155,8 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
         override val isValid: Boolean
             get() = proxyData?.isValid ?: false
-        override val data: Uint8Buffer?
-            get() = proxyData?.data
+        override val data: Uint8Buffer
+            get() = proxyData!!.data
     }
 
     companion object {

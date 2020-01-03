@@ -1,79 +1,66 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.CubeMapTexture
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.shading.*
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.pipeline.shading.ModeledShader
 
-class Skybox(camera: Camera, var environmentMap: CubeMapTexture) : Scene() {
+class Skybox(val environmentMap: de.fabmax.kool.pipeline.CubeMapTexture) : Mesh(MeshData(Attribute.POSITIONS)) {
+    constructor(ft: String, bk: String, lt: String, rt: String, up: String, dn: String) : this(CubeMapTexture {
+        it.loadCubeMapImageData(ft, bk, lt, rt, up, dn)
+    })
 
     init {
-        this.camera = SkyboxCamera(camera)
-        clearMask = 0
-
-        +mesh(setOf(Attribute.POSITIONS), "skybox") {
-            isFrustumChecked = false
-            generator = {
-                cube {
-                    size.set(1f, 1f, 1f)
-                    centerOrigin()
-                }
+        generator = {
+            cube {
+                centerOrigin()
             }
-            shader = SkyboxShader(environmentMap)
+        }
+        generateGeometry()
+        isFrustumChecked = false
+
+        pipelineConfig {
             cullMethod = CullMethod.CULL_FRONT_FACES
-        }
-    }
+            depthTest = DepthTest.LESS_EQUAL
 
-    private class SkyboxCamera(val mainCam: Camera) : Camera() {
-        override fun updateViewMatrix() {
-            view.set(mainCam.view)
-        }
+            shaderLoader = { mesh, buildCtx, ctx ->
+                val texName = "envMap"
+                val model = ShaderModel("Skybox Shader").apply {
+                    val ifLocalPos: StageInterfaceNode
 
-        override fun updateProjectionMatrix() {
-            proj.set(mainCam.proj)
-        }
-
-        override fun computeFrustumPlane(z: Float, result: FrustumPlane) { }
-
-        override fun isInFrustum(globalCenter: Vec3f, globalRadius: Float): Boolean = true
-    }
-
-    private class SkyboxShader(environmentMap: CubeMapTexture) : BasicShader(ShaderProps().apply {
-        colorModel = ColorModel.CUSTOM_COLOR
-        lightModel = LightModel.NO_LIGHTING
-        this.environmentMap = environmentMap
-    }) {
-        private val projMatrix = addUniform(UniformMatrix4("uProjMatrix"))
-
-        init {
-            generator.customUniforms += projMatrix
-            generator.injectors += object : GlslGenerator.GlslInjector {
-                override fun vsAfterInput(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
-                    text.append("${generator.vsOut} vec3 texCoord;\n")
+                    vertexStage {
+                        val mvp = mvpNode()
+                        val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
+                        ifLocalPos = stageInterfaceNode("ifLocalPos", worldPos.output)
+                        addNode(SkyboxPosNode(mvp, attrPositions().output, stage))
+                    }
+                    fragmentStage {
+                        val sampler = cubeMapSamplerNode(cubeMapNode(texName), ifLocalPos.output)
+                        unlitMaterialNode(sampler.outColor)
+                    }
                 }
-
-                override fun vsAfterProj(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
-                    text.append("texCoord = ${Attribute.POSITIONS};\n")
-                    text.append("vec4 pos = uProjMatrix * mat4(mat3(${GlslGenerator.U_VIEW_MATRIX})) * vec4(${Attribute.POSITIONS}, 1.0);\n")
-                    text.append("gl_Position = pos.xyww;\n")
-                }
-
-                override fun fsAfterInput(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
-                    text.append("${generator.fsIn} vec3 texCoord;\n")
-                    text.append("uniform samplerCube ${GlslGenerator.U_ENVIRONMENT_MAP};\n")
-                }
-
-                override fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
-                    text.append("${generator.fsOutBody} = texture(${GlslGenerator.U_ENVIRONMENT_MAP}, texCoord);\n")
-                }
+                model.setup(mesh, buildCtx, ctx)
+                ModeledShader.CubeMapColor(model, texName)
+            }
+            onPipelineCreated += {
+                (it.shader as ModeledShader.CubeMapColor).cubeMapSampler.texture = environmentMap
             }
         }
+    }
 
-        override fun onMatrixUpdate(ctx: KoolContext) {
-            projMatrix.value = ctx.mvpState.projMatrixBuffer
-            projMatrix.bind(ctx)
-            super.onMatrixUpdate(ctx)
+    private class SkyboxPosNode(val mvp: UniformBufferMvp, val inPos: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("skyboxPos", graph, ShaderStage.VERTEX_SHADER.mask) {
+        val outPosition = ShaderNodeIoVar(ModelVar4f("skyboxPos_outPosition"), this)
+
+        override fun setup(shaderGraph: ShaderGraph) {
+            super.setup(shaderGraph)
+            dependsOn(inPos)
+            dependsOn(mvp)
+
+            shaderGraph as VertexShaderGraph
+            shaderGraph.positionOutput = outPosition
+        }
+
+        override fun generateCode(generator: CodeGenerator) {
+            generator.appendMain("${outPosition.declare()} = (${mvp.outProjMat} * ${mvp.outViewMat} * vec4(${inPos.ref3f()}, 0.0)).xyww;")
         }
     }
 }

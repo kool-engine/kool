@@ -138,7 +138,7 @@ class FbColorTexData(width: Int, height: Int) : TextureData() {
         this.height = height
     }
 
-    override val data: Uint8Buffer?
+    override val data: Uint8Buffer
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
     fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
@@ -165,7 +165,7 @@ class FbDepthTexData(width: Int, height: Int) : TextureData() {
         this.height = height
     }
 
-    override val data: Uint8Buffer?
+    override val data: Uint8Buffer
         get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
     fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {

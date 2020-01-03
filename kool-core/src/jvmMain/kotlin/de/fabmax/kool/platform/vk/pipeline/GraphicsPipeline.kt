@@ -3,6 +3,7 @@ package de.fabmax.kool.platform.vk.pipeline
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.bitValue
+import de.fabmax.kool.scene.CullMethod
 import de.fabmax.kool.util.logD
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
@@ -53,10 +54,10 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
                             location(attrib.location)
                             offset(attrib.offset)
                             format(when (attrib.type) {
-                                AttributeType.FLOAT -> VK_FORMAT_R32_SFLOAT
-                                AttributeType.VEC_2F -> VK_FORMAT_R32G32_SFLOAT
-                                AttributeType.VEC_3F -> VK_FORMAT_R32G32B32_SFLOAT
-                                AttributeType.VEC_4F -> VK_FORMAT_R32G32B32A32_SFLOAT
+                                GlslType.FLOAT -> VK_FORMAT_R32_SFLOAT
+                                GlslType.VEC_2F -> VK_FORMAT_R32G32_SFLOAT
+                                GlslType.VEC_3F -> VK_FORMAT_R32G32B32_SFLOAT
+                                GlslType.VEC_4F -> VK_FORMAT_R32G32B32A32_SFLOAT
                                 else -> throw IllegalStateException("Attribute is not a float type")
                             })
                         }
@@ -106,9 +107,10 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
                 //polygonMode(VK_POLYGON_MODE_LINE)
                 lineWidth(pipeline.lineWidth)
                 cullMode(when (pipeline.cullMethod) {
-                    CullMethod.FRONT_FACE -> VK_CULL_MODE_FRONT_BIT
-                    CullMethod.BACK_FACE -> VK_CULL_MODE_BACK_BIT
-                    CullMethod.NO_CULL -> VK_CULL_MODE_NONE
+                    CullMethod.DEFAULT -> VK_CULL_MODE_BACK_BIT
+                    CullMethod.CULL_BACK_FACES -> VK_CULL_MODE_BACK_BIT
+                    CullMethod.CULL_FRONT_FACES -> VK_CULL_MODE_FRONT_BIT
+                    CullMethod.NO_CULLING -> VK_CULL_MODE_NONE
                 })
                 frontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE)
                 depthBiasEnable(false)
@@ -235,6 +237,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
 
     private fun DescriptorType.intType() = when (this) {
         DescriptorType.IMAGE_SAMPLER -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+        DescriptorType.CUBE_IMAGE_SAMPLER -> VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
         DescriptorType.UNIFORM_BUFFER -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
     }
 

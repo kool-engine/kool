@@ -7,7 +7,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Node
@@ -187,9 +187,9 @@ open class BillboardMesh(name: String? = null) : Mesh(MeshData(Attribute.POSITIO
     }
 
     companion object {
-        val ATTR_EXTENTS = Attribute("aExtents", AttributeType.VEC_2F)
-        val ATTR_TEX_EXTENTS = Attribute("aTexExtents", AttributeType.VEC_2F)
-        val ATTR_ROTATION = Attribute("aRotation", AttributeType.FLOAT)
+        val ATTR_EXTENTS = Attribute("aExtents", GlslType.VEC_2F)
+        val ATTR_TEX_EXTENTS = Attribute("aTexExtents", GlslType.VEC_2F)
+        val ATTR_ROTATION = Attribute("aRotation", GlslType.FLOAT)
 
         val TEX_SIZE_FULL = Vec2f(1f, 1f)
         val TEX_CENTER = Vec2f(0.5f, 0.5f)

@@ -39,7 +39,7 @@ private class MaskNode(graph: ShaderGraph) : ShaderNode("Font Mask Node", graph)
 }
 
 fun fontShaderLoader(): (Mesh, Pipeline.BuildContext, KoolContext) -> ModeledShader.TextureColor = { mesh, buildCtx, ctx ->
-    val texName = "fontTex"
+    val texName = "fontMap"
     val model = ShaderModel("fontShader").apply {
         val ifTexCoords: StageInterfaceNode
         val ifColors: StageInterfaceNode

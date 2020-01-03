@@ -76,7 +76,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
             vkGetSwapchainImagesKHR(sys.device.vkDevice, vkSwapChain, ip, imgs)
             for (i in 0 until ip[0]) {
                 images += imgs[i]
-                imageViews += ImageView(sys, imgs[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1)
+                imageViews += ImageView(sys, imgs[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, VK_IMAGE_TYPE_2D)
                     .also { addDependingResource(it) }
             }
 
@@ -98,18 +98,34 @@ class SwapChain(val sys: VkSystem) : VkResource() {
     }
 
     private fun createColorResources(): Pair<Image, ImageView> {
-        val image = Image(sys, extent.width(), extent.height(), 1, sys.physicalDevice.msaaSamples, imageFormat,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-            VMA_MEMORY_USAGE_GPU_ONLY)
+        val imgConfig = Image.Config()
+        imgConfig.width = extent.width()
+        imgConfig.height = extent.height()
+        imgConfig.mipLevels = 1
+        imgConfig.numSamples = sys.physicalDevice.msaaSamples
+        imgConfig.format = imageFormat
+        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
+        imgConfig.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+        imgConfig.allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
+        val image = Image(sys, imgConfig)
+
         val imageView = ImageView(sys, image, VK_IMAGE_ASPECT_COLOR_BIT)
         image.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
         return image to imageView
     }
 
     private fun createDepthResources(): Pair<Image, ImageView> {
-        val depthFormat = findDepthFormat()
-        val image = Image(sys, extent.width(), extent.height(), 1, sys.physicalDevice.msaaSamples, depthFormat,
-            VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY)
+        val imgConfig = Image.Config()
+        imgConfig.width = extent.width()
+        imgConfig.height = extent.height()
+        imgConfig.mipLevels = 1
+        imgConfig.numSamples = sys.physicalDevice.msaaSamples
+        imgConfig.format = findDepthFormat()
+        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
+        imgConfig.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+        imgConfig.allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
+        val image = Image(sys, imgConfig)
+
         val imageView = ImageView(sys, image, VK_IMAGE_ASPECT_DEPTH_BIT)
         image.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
         return image to imageView

@@ -5,7 +5,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Mat4fStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.InstancedMesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.BasicShader
@@ -259,7 +259,7 @@ open class Armature(meshData: MeshData, name: String? = null,
     }
 
     companion object {
-        val BONE_WEIGHTS = Attribute("attrib_bone_weights", AttributeType.VEC_4F)
-        val BONE_INDICES = Attribute("attrib_bone_indices", AttributeType.VEC_4I)
+        val BONE_WEIGHTS = Attribute("attrib_bone_weights", GlslType.VEC_4F)
+        val BONE_INDICES = Attribute("attrib_bone_indices", GlslType.VEC_4I)
     }
 }

@@ -35,14 +35,17 @@ class ShaderModel(val modelInfo: String = "") {
         setupAttributes(mesh, buildCtx)
         val descBuilder = DescriptorSetLayout.Builder()
         val pushBuilder = PushConstantRange.Builder()
-        buildCtx.descriptorSetLayouts += descBuilder
-        buildCtx.pushConstantRanges += pushBuilder
         stages.values.forEach { stage ->
             descBuilder.descriptors += stage.descriptorSet.descriptors
             pushBuilder.pushConstants += stage.pushConstants.pushConstants
             pushBuilder.stages += stage.pushConstants.stages
         }
-
+        if (descBuilder.descriptors.isNotEmpty()) {
+            buildCtx.descriptorSetLayouts += descBuilder
+        }
+        if (pushBuilder.pushConstants.isNotEmpty()) {
+            buildCtx.pushConstantRanges += pushBuilder
+        }
     }
 
     private fun setupAttributes(mesh: Mesh, buildCtx: Pipeline.BuildContext) {
@@ -70,6 +73,12 @@ class ShaderModel(val modelInfo: String = "") {
             return node
         }
 
+        fun normalizeNode(input: ShaderNodeIoVar? = null): NormalizeNode {
+            val nrmNode = addNode(NormalizeNode(stage))
+            input?.let { nrmNode.input = input }
+            return nrmNode
+        }
+
         fun premultiplyColorNode(inColor: ShaderNodeIoVar? = null): PremultiplyColorNode {
             val preMult = addNode(PremultiplyColorNode(stage))
             inColor?.let { preMult.inColor = it }
@@ -88,10 +97,18 @@ class ShaderModel(val modelInfo: String = "") {
         fun pushConstantNode4f(u: Uniform4f) = addNode(PushConstantNode4f(u, stage))
         fun pushConstantNodeColor(u: UniformColor) = addNode(PushConstantNodeColor(u, stage))
 
-        fun textureNode(texName: String) = addNode(TextureNode(texName, stage))
+        fun textureNode(texName: String) = addNode(TextureNode(stage, texName))
 
         fun textureSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = true): TextureSamplerNode {
             val texSampler = addNode(TextureSamplerNode(texNode, stage, premultiply))
+            texCoords?.let { texSampler.inTexCoord = it }
+            return texSampler
+        }
+
+        fun cubeMapNode(texName: String) = addNode(CubeMapNode(stage, texName))
+
+        fun cubeMapSamplerNode(texNode: CubeMapNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = true): CubeMapSamplerNode {
+            val texSampler = addNode(CubeMapSamplerNode(texNode, stage, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
         }

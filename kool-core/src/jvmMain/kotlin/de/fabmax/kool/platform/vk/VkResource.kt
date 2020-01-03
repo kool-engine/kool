@@ -34,8 +34,8 @@ abstract class VkResource {
         }
     }
 
-    fun checkVk(code: Int, msg: () -> String = { "Check failed" }) {
-        check(code == VK10.VK_SUCCESS, msg)
+    fun checkVk(code: Int, msg: (Int) -> String = { "Check failed" }) {
+        check(code == VK10.VK_SUCCESS) { msg(code) }
     }
 
     inline fun MemoryStack.checkCreatePointer(block: MemoryStack.(LongBuffer) -> Int): Long {

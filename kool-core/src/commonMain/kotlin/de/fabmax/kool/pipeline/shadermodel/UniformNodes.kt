@@ -91,16 +91,35 @@ class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
     }
 }
 
-class TextureNode(val texName: String, graph: ShaderGraph) : ShaderNode("Texture $texName", graph) {
+class TextureNode(graph: ShaderGraph, name: String = "tex2d_${graph.nextNodeId}") : ShaderNode(name, graph) {
     val visibleIn = mutableSetOf(graph.stage)
+    lateinit var sampler: TextureSampler
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph.descriptorSet.apply {
             +TextureSampler.Builder().apply {
                 stages += visibleIn
-                name = texName
+                name = this@TextureNode.name
                 stages += shaderGraph.stage
+                onCreate = { sampler = it }
+            }
+        }
+    }
+}
+
+class CubeMapNode(graph: ShaderGraph, name: String = "texCube_${graph.nextNodeId}") : ShaderNode(name, graph) {
+    val visibleIn = mutableSetOf(graph.stage)
+    lateinit var sampler: CubeMapSampler
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        shaderGraph.descriptorSet.apply {
+            +CubeMapSampler.Builder().apply {
+                stages += visibleIn
+                name = this@CubeMapNode.name
+                stages += shaderGraph.stage
+                onCreate = { sampler = it }
             }
         }
     }

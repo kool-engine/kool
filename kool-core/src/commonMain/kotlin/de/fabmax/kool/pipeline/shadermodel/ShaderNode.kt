@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.shadermodel
 
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.ShaderStage
 
 abstract class ShaderNode(val name: String, val graph: ShaderGraph, val allowedStages: Int = ShaderStage.ALL.mask) {
@@ -8,7 +8,7 @@ abstract class ShaderNode(val name: String, val graph: ShaderGraph, val allowedS
     val nodeId = graph.nextNodeId++
 
     fun dependsOn(nd: ShaderNode?) {
-        if (nd != null) {
+        if (nd != null && nd !== this) {
             dependencies += nd
         }
     }
@@ -40,14 +40,14 @@ class ShaderNodeIoVar(val variable: ModelVar, val node: ShaderNode? = null) {
     fun ref3f() = variable.ref3f()
     fun ref4f() = variable.ref4f()
 
-    fun refAsType(targetType: AttributeType) = variable.refAsType(targetType)
+    fun refAsType(targetType: GlslType) = variable.refAsType(targetType)
 
     override fun toString(): String {
         return when (variable.type) {
-            AttributeType.FLOAT -> ref1f()
-            AttributeType.VEC_2F -> ref2f()
-            AttributeType.VEC_3F -> ref3f()
-            AttributeType.VEC_4F -> ref4f()
+            GlslType.FLOAT -> ref1f()
+            GlslType.VEC_2F -> ref2f()
+            GlslType.VEC_3F -> ref3f()
+            GlslType.VEC_4F -> ref4f()
             else -> refAsType(variable.type)
         }
     }

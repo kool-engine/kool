@@ -35,7 +35,7 @@ class VertexLayout(val bindings: List<Binding>) {
         }
     }
 
-    data class Attribute(val location: Int, val offset: Int, val type: AttributeType, val name: String)
+    data class Attribute(val location: Int, val offset: Int, val type: GlslType, val name: String)
 
     class Builder {
         val bindings = mutableListOf<Binding>()

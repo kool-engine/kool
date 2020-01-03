@@ -3,19 +3,19 @@ package de.fabmax.kool.platform.vk
 import de.fabmax.kool.util.logD
 import org.lwjgl.vulkan.VK10.*
 
-class ImageView(val sys: VkSystem, image: Long, format: Int, aspectFlags: Int, mipLevels: Int) : VkResource() {
+class ImageView(val sys: VkSystem, image: Long, format: Int, aspectFlags: Int, mipLevels: Int, viewType: Int) : VkResource() {
 
     val vkImageView: Long
 
     constructor(sys: VkSystem, image: Image, aspectFlags: Int):
-            this(sys, image.vkImage, image.format, aspectFlags, image.mipLevels)
+            this(sys, image.vkImage, image.format, aspectFlags, image.mipLevels, VK_IMAGE_TYPE_2D)
 
     init {
         memStack {
             val createInfo = callocVkImageViewCreateInfo {
                 sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO)
                 image(image)
-                viewType(VK_IMAGE_TYPE_2D)
+                viewType(viewType)
                 format(format)
                 subresourceRange {
                     it.aspectMask(aspectFlags)

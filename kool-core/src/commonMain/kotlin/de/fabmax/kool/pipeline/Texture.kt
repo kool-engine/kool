@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.AssetManager
+import de.fabmax.kool.CubeMapTextureData
 import de.fabmax.kool.TextureData
 import kotlinx.coroutines.CoroutineScope
 
@@ -42,4 +43,17 @@ open class Texture(
         MIRRORED_REPEAT,
         REPEAT
     }
+}
+
+class CubeMapTexture(
+        addressModeU: AddressMode = AddressMode.CLAMP_TO_EDGE,
+        addressModeV: AddressMode = AddressMode.CLAMP_TO_EDGE,
+        addressModeW: AddressMode = AddressMode.CLAMP_TO_EDGE,
+        minFilter: FilterMethod = FilterMethod.LINEAR,
+        magFilter: FilterMethod = FilterMethod.LINEAR,
+        maxAnisotropy: Int = 16,
+        loader: suspend CoroutineScope.(AssetManager) -> CubeMapTextureData) :
+
+        Texture(addressModeU, addressModeV, addressModeW, minFilter, magFilter, maxAnisotropy, loader) {
+
 }

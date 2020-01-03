@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.shading.*
@@ -183,6 +183,6 @@ private class ModelShader(props: ShaderProps.() -> Unit) :
     }
 
     companion object {
-        val INSTANCE_COLOR = Attribute("attrib_inst_color", AttributeType.VEC_4F).apply { divisor = 1 }
+        val INSTANCE_COLOR = Attribute("attrib_inst_color", GlslType.VEC_4F).apply { divisor = 1 }
     }
 }

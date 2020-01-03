@@ -96,6 +96,16 @@ class JvmAssetManager internal constructor(props: Lwjgl3ContextGL.InitProps) : A
         return ref.data!!
     }
 
+    override  suspend fun loadCubeMapImageData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
+        val ftd = loadImageData(ft)
+        val bkd = loadImageData(bk)
+        val ltd = loadImageData(lt)
+        val rtd = loadImageData(rt)
+        val upd = loadImageData(up)
+        val dnd = loadImageData(dn)
+        return CubeMapTextureData(ftd, bkd, ltd, rtd, upd, dnd)
+    }
+
     fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {
         return async { loader(this@JvmAssetManager) }
     }

@@ -1,10 +1,7 @@
 package de.fabmax.kool.platform.vk.pipeline
 
 import de.fabmax.kool.drawqueue.DrawCommand
-import de.fabmax.kool.pipeline.DescriptorType
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.TextureSampler
-import de.fabmax.kool.pipeline.UniformBuffer
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10
@@ -64,10 +61,8 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
                         UboDescriptor(idx, desc, buffer)
                     }
 
-                    DescriptorType.IMAGE_SAMPLER -> {
-                        desc as TextureSampler
-                        SamplerDescriptor(idx, desc)
-                    }
+                    DescriptorType.IMAGE_SAMPLER -> SamplerDescriptor(idx, desc as TextureSampler)
+                    DescriptorType.CUBE_IMAGE_SAMPLER -> SamplerDescriptor(idx, desc as CubeMapSampler)
                 }
             }
         }

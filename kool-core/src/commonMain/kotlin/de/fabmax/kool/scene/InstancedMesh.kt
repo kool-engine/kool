@@ -6,7 +6,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.shading.VboBinder
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Float32Buffer
@@ -195,22 +195,22 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
     }
 
     companion object {
-        val MODEL_INSTANCES_0 = Attribute("attrib_model_insts_0", AttributeType.VEC_4F).apply {
+        val MODEL_INSTANCES_0 = Attribute("attrib_model_insts_0", GlslType.VEC_4F).apply {
             glslSrcName = "attrib_model_insts"
             locationOffset = 0
             divisor = 1
         }
-        val MODEL_INSTANCES_1 = Attribute("attrib_model_insts_1", AttributeType.VEC_4F).apply {
+        val MODEL_INSTANCES_1 = Attribute("attrib_model_insts_1", GlslType.VEC_4F).apply {
             glslSrcName = "attrib_model_insts"
             locationOffset = 1
             divisor = 1
         }
-        val MODEL_INSTANCES_2 = Attribute("attrib_model_insts_2", AttributeType.VEC_4F).apply {
+        val MODEL_INSTANCES_2 = Attribute("attrib_model_insts_2", GlslType.VEC_4F).apply {
             glslSrcName = "attrib_model_insts"
             locationOffset = 2
             divisor = 1
         }
-        val MODEL_INSTANCES_3 = Attribute("attrib_model_insts_3", AttributeType.VEC_4F).apply {
+        val MODEL_INSTANCES_3 = Attribute("attrib_model_insts_3", GlslType.VEC_4F).apply {
             glslSrcName = "attrib_model_insts"
             locationOffset = 3
             divisor = 1

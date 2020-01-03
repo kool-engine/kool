@@ -1,7 +1,6 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.assetTextureCubeMap
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.shading.ColorModel
@@ -17,6 +16,10 @@ fun reflectionDemo(ctx: KoolContext): List<Scene> {
 
     val mainScene = scene {
         val envRenderer = EnvironmentMapRenderer().apply { origin.set(0f, 3f, 0f) }
+
+        +Skybox("skybox/y-up/sky_ft.jpg", "skybox/y-up/sky_bk.jpg",
+                "skybox/y-up/sky_lt.jpg", "skybox/y-up/sky_rt.jpg",
+                "skybox/y-up/sky_up.jpg", "skybox/y-up/sky_dn.jpg").also { reflectedObjects += it }
 
         // setup camera
         +orbitInputTransform {
@@ -104,10 +107,5 @@ fun reflectionDemo(ctx: KoolContext): List<Scene> {
         }
     }
 
-    val skybox = Skybox(mainScene.camera, assetTextureCubeMap("skybox/y-up/sky_ft.jpg", "skybox/y-up/sky_bk.jpg",
-            "skybox/y-up/sky_lt.jpg", "skybox/y-up/sky_rt.jpg",
-            "skybox/y-up/sky_up.jpg", "skybox/y-up/sky_dn.jpg"))
-    reflectedObjects += skybox
-
-    return listOf(mainScene, skybox)
+    return listOf(mainScene)
 }

@@ -47,7 +47,8 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
         for (x in 0 until nCols) {
             +colorMesh {
                 generator = {
-                    color = Color.MD_INDIGO.gamma()
+                    //color = Color.MD_PINK.gamma()
+                    color = Color.DARK_RED
                     sphere {
                         steps = 100
                         center.set((-nCols * 0.5f + x) * spacing, (-nRows * 0.5f + y) * spacing, 0f)

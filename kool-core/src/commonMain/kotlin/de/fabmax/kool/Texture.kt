@@ -69,9 +69,10 @@ abstract class TextureData {
     open var format = TexFormat.RGBA
         protected set
 
+    @Deprecated("not needed any more, TextureData objects are always valid")
     abstract val isValid: Boolean
 
-    abstract val data: Uint8Buffer?
+    abstract val data: Uint8Buffer
 }
 
 /**
@@ -83,8 +84,7 @@ abstract class TextureData {
  * @param height height of texture in pixels
  * @param format texture data format
  */
-class BufferedTextureData(buffer: Uint8Buffer, width: Int, height: Int, format: TexFormat) : TextureData() {
-
+open class BufferedTextureData(buffer: Uint8Buffer, width: Int, height: Int, format: TexFormat) : TextureData() {
     init {
         this.width = width
         this.height = height
@@ -95,8 +95,20 @@ class BufferedTextureData(buffer: Uint8Buffer, width: Int, height: Int, format: 
     override val isValid = true
 }
 
-open class CubeMapTextureData(val front: TextureData, val back: TextureData, val left: TextureData,
+class CubeMapTextureData(val front: TextureData, val back: TextureData, val left: TextureData,
                               val right: TextureData, val up: TextureData, val down: TextureData) : TextureData() {
+    init {
+        width = front.width
+        height = front.height
+        format = front.format
+    }
+
+    override val data: Uint8Buffer
+        get() = front.data
+
+    override val isValid: Boolean
+        get() = front.isValid && back.isValid && left.isValid && right.isValid && up.isValid && down.isValid
+
 //    override val isAvailable: Boolean get() = front.isAvailable && back.isAvailable && left.isAvailable &&
 //            right.isAvailable && up.isAvailable && down.isAvailable
 //
@@ -115,11 +127,6 @@ open class CubeMapTextureData(val front: TextureData, val back: TextureData, val
 //
 //        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
 //    }
-
-    override val isValid: Boolean
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
-    override val data: Uint8Buffer?
-        get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 }
 
 open class Texture(val props: TextureProps, val generator: Texture.(ctx: KoolContext) -> TextureData) :

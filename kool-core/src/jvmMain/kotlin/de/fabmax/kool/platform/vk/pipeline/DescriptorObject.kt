@@ -1,10 +1,8 @@
 package de.fabmax.kool.platform.vk.pipeline
 
-import de.fabmax.kool.BufferedTextureData
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.vk.Buffer
 import de.fabmax.kool.platform.vk.VkSystem
 import de.fabmax.kool.platform.vk.callocVkDescriptorBufferInfoN
@@ -49,10 +47,13 @@ class UboDescriptor(binding: Int, val ubo: UniformBuffer, val buffer: Buffer) : 
     }
 }
 
-class SamplerDescriptor(binding: Int, val sampler: TextureSampler) : DescriptorObject(binding, sampler) {
+class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Descriptor) : DescriptorObject(binding, desc) {
     private var boundTex: LoadedTexture? = null
 
     private val loadingTextures = mutableListOf<LoadingTex>()
+
+    constructor(binding: Int, sampler2d: TextureSampler) : this(binding, TexSamplerWrapper(sampler2d), sampler2d)
+    constructor(binding: Int, samplerCube: CubeMapSampler) : this(binding, TexSamplerWrapper(samplerCube), samplerCube)
 
     init {
         isValid = false
@@ -100,7 +101,7 @@ class SamplerDescriptor(binding: Int, val sampler: TextureSampler) : DescriptorO
                 boundTex = tex.loadedTexture
             }
         }
-        sampler.onUpdate?.invoke(sampler, cmd)
+        sampler.onUpdate(cmd)
 
         isValid = sampler.texture?.loadingState == Texture.LoadingState.LOADED
     }
@@ -118,6 +119,7 @@ class SamplerDescriptor(binding: Int, val sampler: TextureSampler) : DescriptorO
         }
 
         fun pollCompleted(): Boolean {
+            //if (isCompleted && tex.loadingState != Texture.LoadingState.LOADING_FAILED) {
             if (isCompleted && tex.loadingState != Texture.LoadingState.LOADING_FAILED) {
                 tex.loadedTexture = getLoadedTex(deferredTex.getCompleted(), sys)
                 tex.loadingState = Texture.LoadingState.LOADED
@@ -129,16 +131,35 @@ class SamplerDescriptor(binding: Int, val sampler: TextureSampler) : DescriptorO
     companion object {
         // todo: integrate texture manager
         private val loadedTextures = mutableMapOf<TextureData, LoadedTexture>()
+
         private fun getLoadedTex(texData: TextureData, sys: VkSystem): LoadedTexture {
             return loadedTextures.computeIfAbsent(texData) { k ->
-                val loaded = when (k) {
-                    is ImageTextureData -> LoadedTexture.fromImageTextureData(sys, k)
-                    is BufferedTextureData -> LoadedTexture.fromBufferedTextureData(sys, k)
-                    else -> throw IllegalArgumentException("Unsupported texture format")
-                }
+                val loaded = LoadedTexture(sys, k)
                 sys.device.addDependingResource(loaded)
                 loaded
             }
+        }
+    }
+
+    private class TexSamplerWrapper private constructor(
+            val mode: Int,
+            val sampler2d: TextureSampler? = null,
+            val samplerCube: CubeMapSampler? = null) {
+
+        constructor(sampler2d: TextureSampler) : this(MODE_2D, sampler2d, null)
+        constructor(samplerCube: CubeMapSampler) : this(MODE_CUBE, null, samplerCube)
+
+        val texture: Texture?
+            get() = if (mode == MODE_2D) { sampler2d!!.texture } else { samplerCube!!.texture }
+
+        fun onUpdate(cmd: DrawCommand) {
+            if (mode == MODE_2D) { sampler2d!!.onUpdate?.invoke(sampler2d, cmd) }
+            else { samplerCube!!.onUpdate?.invoke(samplerCube, cmd) }
+        }
+
+        companion object {
+            const val MODE_2D = 1
+            const val MODE_CUBE = 2
         }
     }
 }

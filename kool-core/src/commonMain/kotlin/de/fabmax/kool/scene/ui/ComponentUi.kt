@@ -3,9 +3,9 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.scene.CullMethod
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.shading.*
@@ -49,7 +49,7 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 //        mesh.shader = shader
 
         mesh.pipelineConfig {
-            cullMethod = CullMethod.NO_CULL
+            cullMethod = CullMethod.NO_CULLING
             shaderLoader = ModeledShader.vertexColor()
         }
 

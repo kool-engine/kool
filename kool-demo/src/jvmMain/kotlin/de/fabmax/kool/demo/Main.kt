@@ -21,7 +21,6 @@ fun main() {
 //    demo("modelDemo")
 
     testScene()
-
 //    pbrDemo()
 }
 
@@ -60,25 +59,29 @@ fun simpleTestScene(ctx: KoolContext): Scene = scene {
 //    +LightMesh(yellowLight)
 //    +LightMesh(greenLight)
 
+    +Skybox("skybox/y-up/sky_ft.jpg", "skybox/y-up/sky_bk.jpg",
+            "skybox/y-up/sky_lt.jpg", "skybox/y-up/sky_rt.jpg",
+            "skybox/y-up/sky_up.jpg", "skybox/y-up/sky_dn.jpg")
+
     +transformGroup {
         translate(0f, 1.5f, 0f)
 
-        +colorMesh {
-            generator = {
-                color = Color.GRAY
-                withTransform {
-                    translate(0f, -3.75f, 0f)
-                    rotate(90f, Vec3f.NEG_X_AXIS)
-                    rect {
-                        size.set(50f, 50f)
-                        origin.set(-size.x / 2, -size.y/2, 0f)
-                    }
-                }
-            }
-            val shader = ModeledShader.PbrShader()
-            shader.roughness = 0.5f
-            pipelineConfig { shaderLoader = shader::loadShader }
-        }
+//        +colorMesh {
+//            generator = {
+//                color = Color.GRAY
+//                withTransform {
+//                    translate(0f, -3.75f, 0f)
+//                    rotate(90f, Vec3f.NEG_X_AXIS)
+//                    rect {
+//                        size.set(50f, 50f)
+//                        origin.set(-size.x / 2, -size.y/2, 0f)
+//                    }
+//                }
+//            }
+//            val shader = ModeledShader.PbrShader()
+//            shader.roughness = 0.5f
+//            pipelineConfig { shaderLoader = shader::loadShader }
+//        }
 
         loadModel(ctx.assetMgr) { model ->
             println("adding mesh: ${model.meshData.numVertices} verts, ${model.meshData.numIndices / 3} tris")

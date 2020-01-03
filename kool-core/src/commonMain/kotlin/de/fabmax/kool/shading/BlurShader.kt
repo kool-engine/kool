@@ -259,7 +259,7 @@ class BlurredBackgroundHelper(private val texSize: Int = 256,
         var x = 0
         var y = 0
 
-        override val data: Uint8Buffer?
+        override val data: Uint8Buffer
             get() = TODO("not implemented") //To change initializer of created properties use File | Settings | File Templates.
 
         fun setCopyWidth(value: Int) {

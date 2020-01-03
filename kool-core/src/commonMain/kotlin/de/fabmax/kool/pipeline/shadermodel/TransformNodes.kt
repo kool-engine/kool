@@ -2,7 +2,7 @@ package de.fabmax.kool.pipeline.shadermodel
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.pipeline.ShaderStage
 
 class TransformNode(graph: ShaderGraph, var w: Float = 1.0f, var invert: Boolean = false) : ShaderNode("Matrix Transform", graph) {
@@ -18,9 +18,9 @@ class TransformNode(graph: ShaderGraph, var w: Float = 1.0f, var invert: Boolean
 
     override fun generateCode(generator: CodeGenerator) {
         val mat = inMat ?: throw KoolException("View matrix input not set")
-        val input = if (input.variable.type == AttributeType.VEC_4F) { input.ref4f() } else { "vec4(${input.ref3f()}, $w)" }
+        val input = if (input.variable.type == GlslType.VEC_4F) { input.ref4f() } else { "vec4(${input.ref3f()}, $w)" }
         val sign = if (invert) { "-" } else { "" }
-        generator.appendMain("${output.declare()} = $sign(${mat.refAsType(AttributeType.MAT_4F)} * $input).xyz;")
+        generator.appendMain("${output.declare()} = $sign(${mat.refAsType(GlslType.MAT_4F)} * $input).xyz;")
     }
 }
 
@@ -40,6 +40,6 @@ class VertexPosTransformNode(graph: ShaderGraph) : ShaderNode("Vertex Pos Transf
     override fun generateCode(generator: CodeGenerator) {
         val mvp = inMvp?.variable ?: throw KoolException("MVP matrix input not set")
         generator.appendMain("${outPosition.declare()} = " +
-                "${mvp.refAsType(AttributeType.MAT_4F)} * vec4(${inPosition.ref3f()}, 1.0);")
+                "${mvp.refAsType(GlslType.MAT_4F)} * vec4(${inPosition.ref3f()}, 1.0);")
     }
 }

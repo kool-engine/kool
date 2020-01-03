@@ -68,6 +68,7 @@ kotlin {
                 api "org.lwjgl:lwjgl-assimp:${lwjglVersion}"
                 api "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}"
                 api "org.lwjgl:lwjgl-opengl:${lwjglVersion}"
+                api "org.lwjgl:lwjgl-stb:${lwjglVersion}"
                 api "org.lwjgl:lwjgl-vulkan:$lwjglVersion"
                 api "org.lwjgl:lwjgl-vma:$lwjglVersion"
                 api "org.lwjgl:lwjgl-shaderc:$lwjglVersion"
@@ -78,6 +79,7 @@ kotlin {
                 api "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
                 api "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
                 api "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
+                api "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
                 api "org.lwjgl:lwjgl-vma:${lwjglVersion}:$lwjglNatives"
                 api "org.lwjgl:lwjgl-shaderc:${lwjglVersion}:$lwjglNatives"
             }

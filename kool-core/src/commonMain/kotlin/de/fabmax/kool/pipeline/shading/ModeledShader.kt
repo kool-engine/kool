@@ -20,7 +20,16 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
 
         override fun onPipelineCreated(pipeline: Pipeline) {
             super.onPipelineCreated(pipeline)
-            textureSampler = pipeline.descriptorSetLayouts[0].getTextureSampler(texName)
+            textureSampler = model.findNode<TextureNode>(texName)!!.sampler
+        }
+    }
+
+    class CubeMapColor(model: ShaderModel, private val texName: String) : ModeledShader(model) {
+        lateinit var cubeMapSampler: CubeMapSampler
+
+        override fun onPipelineCreated(pipeline: Pipeline) {
+            super.onPipelineCreated(pipeline)
+            cubeMapSampler = model.findNode<CubeMapNode>(texName)!!.sampler
         }
     }
 
@@ -144,7 +153,7 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
         }
 
         fun textureColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> TextureColor = { mesh, buildCtx, ctx ->
-            val texName = "tex"
+            val texName = "colorTex"
             val model = ShaderModel("ModeledShader.textureColor()").apply {
                 val ifTexCoords: StageInterfaceNode
 
@@ -159,6 +168,28 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
             }
             model.setup(mesh, buildCtx, ctx)
             TextureColor(model, texName)
+        }
+
+        fun cubeMapColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> CubeMapColor = { mesh, buildCtx, ctx ->
+            val texName = "cubeMap"
+            val model = ShaderModel("ModeledShader.cubeMapColor()").apply {
+                val ifFragPos: StageInterfaceNode
+
+                vertexStage {
+                    val mvp = mvpNode()
+                    val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
+                    ifFragPos = stageInterfaceNode("ifFragPos", worldPos.output)
+                    vertexPositionNode(attrPositions().output, mvp.outMvpMat)
+                }
+                fragmentStage {
+                    val nrmPos = normalizeNode(ifFragPos.output)
+                    val sampler = cubeMapSamplerNode(cubeMapNode(texName), nrmPos.output)
+                    //val sampler = cubeMapSamplerNode(cubeMapNode(texName))
+                    unlitMaterialNode(sampler.outColor)
+                }
+            }
+            model.setup(mesh, buildCtx, ctx)
+            CubeMapColor(model, texName)
         }
     }
 }

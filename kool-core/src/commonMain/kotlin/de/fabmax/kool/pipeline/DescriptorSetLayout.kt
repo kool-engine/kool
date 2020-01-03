@@ -39,6 +39,22 @@ class DescriptorSetLayout private constructor(val set: Int, val descriptors: Lis
             +uniformBuilder
         }
 
+        fun texture(name: String, vararg stages: ShaderStage, block: TextureSampler.Builder.() -> Unit) {
+            val sampler = TextureSampler.Builder()
+            sampler.name = name
+            sampler.stages += stages
+            sampler.block()
+            +sampler
+        }
+
+        fun cubeMap(name: String, vararg stages: ShaderStage, block: CubeMapSampler.Builder.() -> Unit) {
+            val sampler = CubeMapSampler.Builder()
+            sampler.name = name
+            sampler.stages += stages
+            sampler.block()
+            +sampler
+        }
+
         fun create(set: Int): DescriptorSetLayout {
             return DescriptorSetLayout(set, List(descriptors.size) { i -> descriptors[i].create(i) })
         }
@@ -74,13 +90,38 @@ class TextureSampler private constructor(builder: Builder, binding: Int, hash: U
 
     class Builder : Descriptor.Builder<TextureSampler>() {
         var onUpdate: ((TextureSampler, DrawCommand) -> Unit) ? = null
+        var onCreate: ((TextureSampler) -> Unit) ? = null
 
         init {
             name = "texture"
         }
 
         override fun create(binding: Int): TextureSampler {
-            return TextureSampler(this, binding, DescriptorType.IMAGE_SAMPLER.hashCode().toULong() * 71023UL)
+            val sampler = TextureSampler(this, binding, DescriptorType.IMAGE_SAMPLER.hashCode().toULong() * 71023UL)
+            onCreate?.invoke(sampler)
+            return sampler
+        }
+    }
+}
+
+class CubeMapSampler private constructor(builder: Builder, binding: Int, hash: ULong) :
+        Descriptor(builder, binding, DescriptorType.CUBE_IMAGE_SAMPLER, hash) {
+
+    val onUpdate: ((CubeMapSampler, DrawCommand) -> Unit) ? = builder.onUpdate
+    var texture: CubeMapTexture? = null
+
+    class Builder : Descriptor.Builder<CubeMapSampler>() {
+        var onUpdate: ((CubeMapSampler, DrawCommand) -> Unit) ? = null
+        var onCreate: ((CubeMapSampler) -> Unit) ? = null
+
+        init {
+            name = "cubeTexture"
+        }
+
+        override fun create(binding: Int): CubeMapSampler {
+            val sampler = CubeMapSampler(this, binding, DescriptorType.CUBE_IMAGE_SAMPLER.hashCode().toULong() * 71023UL)
+            onCreate?.invoke(sampler)
+            return sampler
         }
     }
 }
@@ -111,6 +152,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
 
         val uniforms = mutableListOf<() -> Uniform<*>>()
         var onUpdate: ((UniformBuffer, DrawCommand) -> Unit) ? = null
+        var onCreate: ((UniformBuffer) -> Unit) ? = null
 
         init {
             name = "Ubo"
@@ -127,7 +169,9 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
                 hash = (hash * 71023UL) + it::class.hashCode().toULong()
                 hash = (hash * 71023UL) + it.name.hashCode().toULong()
             }
-            return UniformBuffer(this, binding, uniforms, hash)
+            val ubo = UniformBuffer(this, binding, uniforms, hash)
+            onCreate?.invoke(ubo)
+            return ubo
         }
     }
 }
@@ -135,6 +179,7 @@ class UniformBuffer private constructor(builder: Builder, binding: Int, val unif
 
 enum class DescriptorType {
     IMAGE_SAMPLER,
+    CUBE_IMAGE_SAMPLER,
     UNIFORM_BUFFER
 }
 

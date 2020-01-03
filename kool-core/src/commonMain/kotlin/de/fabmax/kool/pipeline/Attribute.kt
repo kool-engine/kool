@@ -4,7 +4,7 @@ package de.fabmax.kool.pipeline
  * @author fabmax
  */
 
-enum class AttributeType(val size: Int, val isInt: Boolean, val glslType: String) {
+enum class GlslType(val size: Int, val isInt: Boolean, val glslType: String) {
     FLOAT(4, false, "float"),
     VEC_2F(8, false, "vec2"),
     VEC_3F(12, false, "vec3"),
@@ -20,7 +20,7 @@ enum class AttributeType(val size: Int, val isInt: Boolean, val glslType: String
     MAT_4F(64, false, "mat4")
 }
 
-data class Attribute(val name: String, val type: AttributeType) {
+data class Attribute(val name: String, val type: GlslType) {
     var glslSrcName = name
     var locationOffset = 0
     var divisor = 0
@@ -30,10 +30,10 @@ data class Attribute(val name: String, val type: AttributeType) {
     }
 
     companion object {
-        val POSITIONS = Attribute("attrib_positions", AttributeType.VEC_3F)
-        val NORMALS = Attribute("attrib_normals", AttributeType.VEC_3F)
-        val TANGENTS = Attribute("attrib_tangents", AttributeType.VEC_3F)
-        val TEXTURE_COORDS = Attribute("attrib_texture_coords", AttributeType.VEC_2F)
-        val COLORS = Attribute("attrib_colors", AttributeType.VEC_4F)
+        val POSITIONS = Attribute("attrib_positions", GlslType.VEC_3F)
+        val NORMALS = Attribute("attrib_normals", GlslType.VEC_3F)
+        val TANGENTS = Attribute("attrib_tangents", GlslType.VEC_3F)
+        val TEXTURE_COORDS = Attribute("attrib_texture_coords", GlslType.VEC_2F)
+        val COLORS = Attribute("attrib_colors", GlslType.VEC_4F)
     }
 }

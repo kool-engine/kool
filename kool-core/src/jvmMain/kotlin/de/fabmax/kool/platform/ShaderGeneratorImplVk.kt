@@ -90,7 +90,8 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
                 if (desc.stages.contains(stage)) {
                     when (desc) {
                         is UniformBuffer -> srcBuilder.append(generateUniformBuffer(set, desc))
-                        is TextureSampler ->srcBuilder.append(generateTextureSampler(set, desc))
+                        is TextureSampler -> srcBuilder.append(generateTextureSampler(set, desc))
+                        is CubeMapSampler -> srcBuilder.append(generateCubeMapSampler(set, desc))
                         else -> TODO("Descriptor type not implemented: ${desc::class.java.name}")
                     }
                 }
@@ -124,6 +125,10 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
 
     private fun generateTextureSampler(set: DescriptorSetLayout, desc: TextureSampler): String {
         return "layout(set=${set.set}, binding=${desc.binding}) uniform sampler2D ${desc.name};\n"
+    }
+
+    private fun generateCubeMapSampler(set: DescriptorSetLayout, desc: CubeMapSampler): String {
+        return "layout(set=${set.set}, binding=${desc.binding}) uniform samplerCube ${desc.name};\n"
     }
 
     private fun generateAttributeBindings(pipeline: Pipeline): String {
@@ -186,6 +191,8 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         }
 
         override fun sampleTexture2d(texName: String, texCoords: String) = "texture($texName, $texCoords)"
+
+        override fun sampleTextureCube(texName: String, texCoords: String) = "texture($texName, $texCoords)"
 
         fun generateFunctions(): String = functions.values.joinToString("\n")
 

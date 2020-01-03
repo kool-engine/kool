@@ -2,7 +2,7 @@ package de.fabmax.kool.util.serialization
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.AttributeType
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.animation.Armature
@@ -238,7 +238,7 @@ data class AttributeList(
         /**
          * Type of the attribute
          */
-        @SerialId(1) val type: AttributeType,
+        @SerialId(1) val type: GlslType,
 
         /**
          * Attribute values. There are [type].size values per vertex
@@ -255,7 +255,7 @@ data class IntAttributeList(
         /**
          * Type of the attribute
          */
-        @SerialId(1) val type: AttributeType,
+        @SerialId(1) val type: GlslType,
 
         /**
          * Attribute values. There are [type].size values per vertex
