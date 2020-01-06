@@ -32,9 +32,6 @@ class VertexPosTransformNode(graph: ShaderGraph) : ShaderNode("Vertex Pos Transf
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(inPosition, inMvp ?: throw KoolException("MVP matrix input not set"))
-
-        shaderGraph as VertexShaderGraph
-        shaderGraph.positionOutput = outPosition
     }
 
     override fun generateCode(generator: CodeGenerator) {

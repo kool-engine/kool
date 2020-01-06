@@ -2,7 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.RenderPass
-import de.fabmax.kool.drawqueue.DrawCommandMesh
+import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.gl.glDrawElements
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.Attribute
@@ -104,7 +104,7 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     var cullMethod = CullMethod.DEFAULT
     var rayTest = MeshRayTest.boundsTest()
 
-    private val drawCommand = DrawCommandMesh(this)
+    //private val drawCommand = DrawCommand(this)
 
     override val bounds: BoundingBox
         get() = meshData.bounds
@@ -148,10 +148,13 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
 //            rayTest.onMeshDataChanged(this)
 //        }
 
+        // fixme: use some caching, to avoid per-frame allocation of new DrawCommand object
+        // multiple draw command objects are needed if object is rendered by multiple render passes (shadow maps, etc.)
+        val drawCommand = DrawCommand(this)
         drawCommand.scene = scene
         drawCommand.pipeline = getPipeline(ctx)
         drawCommand.captureMvp(ctx)
-        ctx.drawQueue += drawCommand
+        scene!!.drawQueue!! += drawCommand
     }
 
     open fun drawElements(ctx: KoolContext) {

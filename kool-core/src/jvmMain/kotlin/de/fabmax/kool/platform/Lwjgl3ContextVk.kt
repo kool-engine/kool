@@ -1,14 +1,17 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
-import de.fabmax.kool.drawqueue.DrawCommandMesh
+import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBufferImpl
 import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkClearValue
 import org.lwjgl.vulkan.VkCommandBuffer
 import java.awt.Desktop
 import java.net.URI
@@ -205,7 +208,7 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             cmdBuffers[imageIndex].destroy()
             val pool = cmdPools[imageIndex]
             pool.reset()
-            val cmdBufs = pool.createCommandBuffers(swapChain.images.size)
+            val cmdBufs = pool.createCommandBuffers(1)
             cmdBuffers[imageIndex] = cmdBufs
 
             // record command list
@@ -215,13 +218,12 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                 val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
                 check(vkBeginCommandBuffer(commandBuffer, beginInfo) == VK_SUCCESS)
 
+                for (i in 0 until offscreenPasses.size) {
+                    renderOffscreen(commandBuffer, offscreenPasses[i])
+                }
+
                 val clearValues = callocVkClearValueN(2) {
-                    this[0].color {
-                        it.float32(0, clearColor.r)
-                        it.float32(1, clearColor.g)
-                        it.float32(2, clearColor.b)
-                        it.float32(3, clearColor.a)
-                    }
+                    this[0].setColor(clearColor)
                     this[1].depthStencil {
                         it.depth(1f)
                         it.stencil(0)
@@ -239,56 +241,12 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                 }
 
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
+                //setViewport(commandBuffer, viewport.x, viewport.y, viewport.width, viewport.height)
 
                 // optimize draw queue order
                 // fixme: more sophisticated sorting, customizable draw order, etc.
                 //drawQueue.commands.sortBy { it.pipeline!!.pipelineHash }
-
-                var prevPipeline = 0UL
-                drawQueue.commands.forEach { cmd ->
-                    val pipelineCfg = cmd.pipeline ?: throw KoolException("Mesh pipeline not set")
-                    if (!sys.pipelineManager.hasPipeline(pipelineCfg)) {
-                        sys.pipelineManager.addPipelineConfig(pipelineCfg)
-                    }
-                    val pipeline = sys.pipelineManager.getPipeline(pipelineCfg)
-                    if (pipelineCfg.pipelineHash != prevPipeline) {
-                        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.vkGraphicsPipeline)
-                        prevPipeline = pipelineCfg.pipelineHash
-                    }
-                    val descriptorSet = pipeline.getDescriptorSetInstance(pipelineCfg)
-
-                    cmd as DrawCommandMesh
-                    if (descriptorSet.updateDescriptors(cmd, imageIndex, sys)) {
-                        descriptorSet.updateDescriptorSets()
-
-                        var model = meshMap[cmd.mesh]
-                        if (cmd.mesh.meshData.isSyncRequired || model == null) {
-                            cmd.mesh.meshData.isSyncRequired = false
-
-                            // (re-)build buffer
-                            // fixme: don't do this here, should have happened before (async?)
-                            meshMap.remove(cmd.mesh)?.let {
-                                meshDeleteQueue.addLast(DeleteMesh(it, swapChain.nImages))
-                            }
-                            model = IndexedMesh(sys, cmd.mesh.meshData.vertexList)
-                            meshMap[cmd.mesh] = model
-                            sys.device.addDependingResource(model)
-                        }
-
-                        pipelineCfg.pushConstantRanges.forEach {
-                            val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
-                            vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as MixedBufferImpl).buffer)
-                        }
-
-                        vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
-                        vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
-
-                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
-
-                        vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0)
-                    }
-                }
+                renderDrawQueue(commandBuffer, drawQueue, imageIndex, swapChain.renderPass.vkRenderPass, swapChain.nImages, swapChain.extent.width(), swapChain.extent.height())
 
                 vkCmdEndRenderPass(commandBuffer)
                 check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
@@ -305,6 +263,118 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             }
 
             return cmdBufs.vkCommandBuffers[0]
+        }
+
+        private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: DrawQueue, imageIndex: Int, renderPass: Long, nImages: Int, vpWidth: Int, vpHeight: Int) {
+            var prevPipeline = 0UL
+            drawQueue.commands.forEach { cmd ->
+                val pipelineCfg = cmd.pipeline ?: throw KoolException("Mesh pipeline not set")
+                if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass)) {
+                    sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, renderPass, vpWidth, vpHeight)
+                }
+                val pipeline = sys.pipelineManager.getPipeline(pipelineCfg, renderPass)
+                if (pipelineCfg.pipelineHash != prevPipeline) {
+                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.vkGraphicsPipeline)
+                    prevPipeline = pipelineCfg.pipelineHash
+                }
+                val descriptorSet = pipeline.getDescriptorSetInstance(pipelineCfg)
+
+                if (descriptorSet.updateDescriptors(cmd, imageIndex, sys)) {
+                    descriptorSet.updateDescriptorSets()
+
+                    var model = meshMap[cmd.mesh]
+                    if (cmd.mesh.meshData.isSyncRequired || model == null) {
+                        cmd.mesh.meshData.isSyncRequired = false
+
+                        // (re-)build buffer
+                        // fixme: don't do this here, should have happened before (async?)
+                        meshMap.remove(cmd.mesh)?.let {
+                            //meshDeleteQueue.addLast(DeleteMesh(it, swapChain.nImages))
+                            meshDeleteQueue.addLast(DeleteMesh(it, 3))
+                        }
+                        model = IndexedMesh(sys, cmd.mesh.meshData.vertexList)
+                        meshMap[cmd.mesh] = model
+                        sys.device.addDependingResource(model)
+                    }
+
+                    pipelineCfg.pushConstantRanges.forEach {
+                        val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
+                        vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as MixedBufferImpl).buffer)
+                    }
+
+                    vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
+                    vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
+
+                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                            pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
+
+                    vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0)
+                }
+            }
+        }
+
+        private fun MemoryStack.setViewport(commandBuffer: VkCommandBuffer, x: Int, y: Int, width: Int, height: Int) {
+            val viewport = callocVkViewportN(1) {
+                x(x.toFloat())
+                y(y.toFloat())
+                width(width.toFloat())
+                height(height.toFloat())
+                minDepth(0f)
+                maxDepth(1f)
+            }
+            vkCmdSetViewport(commandBuffer, 0, viewport)
+
+            val scissor = callocVkRect2DN(1) {
+                offset { it.set(x, y) }
+                extent { it.width(width); it.height(height) }
+            }
+            vkCmdSetScissor(commandBuffer, 0, scissor)
+        }
+
+        private fun MemoryStack.renderOffscreen(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenPassImpl) {
+            val clearValues = callocVkClearValueN(2) {
+                this[0].setColor(offscreenPass.clearColor)
+                this[1].depthStencil {
+                    it.depth(1f)
+                    it.stencil(0)
+                }
+            }
+
+            val offscreenRp = offscreenPass.getRenderPass(sys)
+            val renderPassInfo = callocVkRenderPassBeginInfo {
+                sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
+                renderPass(offscreenRp.renderPass)
+                framebuffer(offscreenRp.frameBuffer)
+                renderArea { r ->
+                    r.offset { it.x(0); it.y(0) }
+                    r.extent { it.width(offscreenRp.fbWidth); it.height(offscreenRp.fbHeight) }
+                }
+                pClearValues(clearValues)
+            }
+
+            if (offscreenPass.isCube) {
+                for (view in ViewDirection.values()) {
+                    vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
+                    renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index], view.index, offscreenRp.renderPass, 6, offscreenRp.fbWidth, offscreenRp.fbHeight)
+                    vkCmdEndRenderPass(commandBuffer)
+                    offscreenPass.copyView(commandBuffer, view)
+                    //vkDeviceWaitIdle(sys.device.vkDevice)
+                }
+            } else {
+                vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
+                renderDrawQueue(commandBuffer, offscreenPass.drawQueues[0], 0, offscreenRp.renderPass, 1, offscreenRp.fbWidth, offscreenRp.fbHeight)
+                vkCmdEndRenderPass(commandBuffer)
+            }
+
+        }
+    }
+
+    private fun VkClearValue.setColor(color: Color) {
+        color {
+            it.float32(0, color.r)
+            it.float32(1, color.g)
+            it.float32(2, color.b)
+            it.float32(3, color.a)
         }
     }
 }

@@ -1,6 +1,9 @@
 package de.fabmax.kool.platform.vk.util
 
+import de.fabmax.kool.gl.GL_ALPHA
 import de.fabmax.kool.pipeline.ShaderStage
+import de.fabmax.kool.pipeline.TexFormat
+import org.lwjgl.opengl.GL11
 import org.lwjgl.vulkan.VK10.*
 
 fun ShaderStage.bitValue(): Int {
@@ -13,6 +16,20 @@ fun ShaderStage.bitValue(): Int {
         ShaderStage.ALL -> VK_SHADER_STAGE_ALL
     }
 }
+
+val TexFormat.vkFormat: Int
+    get() = when(this) {
+        TexFormat.ALPHA -> VK_FORMAT_R8_UNORM
+        TexFormat.RGB -> VK_FORMAT_R8G8B8_UNORM
+        TexFormat.RGBA -> VK_FORMAT_R8G8B8A8_UNORM
+    }
+
+val TexFormat.glFormat: Int
+    get() = when(this) {
+        TexFormat.ALPHA -> GL_ALPHA
+        TexFormat.RGB -> GL11.GL_RGB
+        TexFormat.RGBA -> GL11.GL_RGBA
+    }
 
 //fun Mat4f.setPerspective2(fovy: Float, aspect: Float, near: Float, far: Float): Mat4f {
 //    val s = 1f / tan(fovy * (PI / 360.0)).toFloat()

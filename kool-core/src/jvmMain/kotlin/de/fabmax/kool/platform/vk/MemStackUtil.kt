@@ -93,6 +93,9 @@ inline fun MemoryStack.callocVkImageBlitN(n: Int, block: VkImageBlit.Buffer.() -
 inline fun MemoryStack.callocVkImageCreateInfo(block: VkImageCreateInfo.() -> Unit): VkImageCreateInfo =
     allocStruct(block) { VkImageCreateInfo.callocStack(it) }
 
+inline fun MemoryStack.callocVkImageCopyN(n: Int, block: VkImageCopy.Buffer.() -> Unit): VkImageCopy.Buffer =
+        allocStruct(block) { VkImageCopy.callocStack(n, it) }
+
 inline fun MemoryStack.callocVkImageMemoryBarrierN(n: Int, block: VkImageMemoryBarrier.Buffer.() -> Unit): VkImageMemoryBarrier.Buffer =
     allocStruct(block) { VkImageMemoryBarrier.callocStack(n, it) }
 

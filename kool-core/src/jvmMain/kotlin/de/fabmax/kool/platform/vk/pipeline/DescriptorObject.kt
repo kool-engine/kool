@@ -8,6 +8,7 @@ import de.fabmax.kool.platform.vk.VkSystem
 import de.fabmax.kool.platform.vk.callocVkDescriptorBufferInfoN
 import de.fabmax.kool.platform.vk.callocVkDescriptorImageInfoN
 import de.fabmax.kool.util.MixedBufferImpl
+import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10
@@ -92,9 +93,13 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
         sampler.texture?.let { tex ->
             if (tex.loadingState == Texture.LoadingState.NOT_LOADED) {
-                tex.loadingState = Texture.LoadingState.LOADING
-                val deferred = sys.ctx.assetMgr.loadTextureAsync(tex.loader)
-                loadingTextures += LoadingTex(sys, tex, deferred)
+                if (tex.loader != null) {
+                    tex.loadingState = Texture.LoadingState.LOADING
+                    val deferred = sys.ctx.assetMgr.loadTextureAsync(tex.loader)
+                    loadingTextures += LoadingTex(sys, tex, deferred)
+                } else {
+                    tex.loadingState = Texture.LoadingState.LOADING_FAILED
+                }
             }
 
             if (tex.loadingState == Texture.LoadingState.LOADED && boundTex != tex.loadedTexture) {
@@ -113,13 +118,13 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
             deferredTex.invokeOnCompletion { ex ->
                 if (ex != null) {
                     tex.loadingState = Texture.LoadingState.LOADING_FAILED
+                    logE { "Texture loading failed: $ex" }
                 }
                 isCompleted = true
             }
         }
 
         fun pollCompleted(): Boolean {
-            //if (isCompleted && tex.loadingState != Texture.LoadingState.LOADING_FAILED) {
             if (isCompleted && tex.loadingState != Texture.LoadingState.LOADING_FAILED) {
                 tex.loadedTexture = getLoadedTex(deferredTex.getCompleted(), sys)
                 tex.loadingState = Texture.LoadingState.LOADED
@@ -134,7 +139,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
         private fun getLoadedTex(texData: TextureData, sys: VkSystem): LoadedTexture {
             return loadedTextures.computeIfAbsent(texData) { k ->
-                val loaded = LoadedTexture(sys, k)
+                val loaded = LoadedTexture.fromTexData(sys, k)
                 sys.device.addDependingResource(loaded)
                 loaded
             }

@@ -19,6 +19,8 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
     val apiVersion: String
     val driverVersion: String
 
+    val depthFormat: Int
+
     init {
         memStack {
             val ip = mallocInt(1)
@@ -53,6 +55,10 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
                         "transfer: ${queueFamiliyIndices.transferFamily}"
             }
         }
+
+        depthFormat = findSupportedFormat(
+                    listOf(VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT),
+                    VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
 
         sys.instance.addDependingResource(this)
     }

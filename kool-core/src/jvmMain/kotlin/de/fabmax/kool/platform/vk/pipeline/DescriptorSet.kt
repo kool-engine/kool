@@ -8,7 +8,7 @@ import org.lwjgl.vulkan.VK10
 
 class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) {
     private val descriptorSets = mutableListOf<Long>()
-    private val objects = Array<MutableList<DescriptorObject>>(graphicsPipeline.swapChain.nImages) { mutableListOf() }
+    private val objects = Array<MutableList<DescriptorObject>>(graphicsPipeline.nImages) { mutableListOf() }
 
     var allValid = true
         private set
@@ -24,9 +24,8 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
 
     private fun createDescriptorSets() {
         memStack {
-            val swapChain = graphicsPipeline.swapChain
-            val layouts = mallocLong(swapChain.images.size)
-            for (i in swapChain.images.indices) {
+            val layouts = mallocLong(graphicsPipeline.nImages)
+            for (i in 0 until graphicsPipeline.nImages) {
                 layouts.put(i, graphicsPipeline.descriptorSetLayout)
             }
             val allocInfo = callocVkDescriptorSetAllocateInfo {
@@ -35,9 +34,9 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
                 pSetLayouts(layouts)
             }
 
-            val sets = mallocLong(swapChain.images.size)
-            check(VK10.vkAllocateDescriptorSets(swapChain.sys.device.vkDevice, allocInfo, sets) == VK10.VK_SUCCESS)
-            for (i in swapChain.images.indices) {
+            val sets = mallocLong(graphicsPipeline.nImages)
+            check(VK10.vkAllocateDescriptorSets(graphicsPipeline.sys.device.vkDevice, allocInfo, sets) == VK10.VK_SUCCESS)
+            for (i in 0 until graphicsPipeline.nImages) {
                 descriptorSets += sets[i]
             }
         }
@@ -55,7 +54,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
                         desc as UniformBuffer
                         val usage = VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
                         val allocUsage = Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
-                        val buffer = Buffer(graphicsPipeline.swapChain.sys, desc.size.toLong(), usage, allocUsage).also {
+                        val buffer = Buffer(graphicsPipeline.sys, desc.size.toLong(), usage, allocUsage).also {
                             graphicsPipeline.addDependingResource(it)
                         }
                         UboDescriptor(idx, desc, buffer)
@@ -69,7 +68,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
     }
 
     private fun addDescriptor(block: () -> DescriptorObject): Int {
-        for (i in 0 until graphicsPipeline.swapChain.nImages) {
+        for (i in 0 until graphicsPipeline.nImages) {
             objects[i].add(block())
         }
         return objects[0].size - 1
@@ -87,9 +86,8 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
                 TODO()
             }
 
-            val swapChain = graphicsPipeline.swapChain
             val descriptors = graphicsPipeline.pipeline.descriptorSetLayouts[0].descriptors
-            for (imageIndex in 0 until swapChain.nImages) {
+            for (imageIndex in 0 until graphicsPipeline.nImages) {
                 memStack {
                     val descriptorWrite = callocVkWriteDescriptorSetN(descriptors.size) {
                         for (descIdx in descriptors.indices) {
@@ -97,7 +95,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
                             descObj.setDescriptorSet(this@memStack, this[descIdx], descriptorSets[imageIndex])
                         }
                     }
-                    VK10.vkUpdateDescriptorSets(swapChain.sys.device.vkDevice, descriptorWrite, null)
+                    VK10.vkUpdateDescriptorSets(graphicsPipeline.sys.device.vkDevice, descriptorWrite, null)
                 }
             }
         }

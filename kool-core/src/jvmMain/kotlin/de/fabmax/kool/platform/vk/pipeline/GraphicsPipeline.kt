@@ -9,7 +9,8 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkPushConstantRange
 
-class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val descriptorSetPoolSize: Int = 100) : VkResource() {
+class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, val height: Int, val msaaSamples: Int,
+                       val pipeline: Pipeline, val nImages: Int, val descriptorSetPoolSize: Int = 100) : VkResource() {
 
     val descriptorSetLayout: Long
     val descriptorPool: Long
@@ -77,18 +78,18 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
             }
 
             val viewport = callocVkViewportN(1) {
-                // set negative viewport height -> flips viewport y-direction to be compatible with OpenGL, requires KHR_Maintenance1 extension
+                // actual viewport size is set on render
                 x(0f)
                 y(0f)
-                width(swapChain.extent.width().toFloat())
-                height(swapChain.extent.height().toFloat())
+                width(this@GraphicsPipeline.width.toFloat())
+                height(this@GraphicsPipeline.height.toFloat())
                 minDepth(0f)
                 maxDepth(1f)
             }
 
             val scissor = callocVkRect2DN(1) {
                 offset { it.set(0, 0) }
-                extent(swapChain.extent)
+                extent { it.width(this@GraphicsPipeline.width); it.height(this@GraphicsPipeline.height) }
             }
 
             val viewportState = callocVkPipelineViewportStateCreateInfo {
@@ -122,7 +123,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
             val multisampling = callocVkPipelineMultisampleStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO)
                 sampleShadingEnable(false)
-                rasterizationSamples(swapChain.sys.physicalDevice.msaaSamples)
+                rasterizationSamples(msaaSamples)
                 minSampleShading(1f)
                 pSampleMask(null)
                 alphaToCoverageEnable(false)
@@ -185,7 +186,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
                 pPushConstantRanges(pushConstantRanges)
             }
             pipelineLayout = checkCreatePointer {
-                vkCreatePipelineLayout(swapChain.sys.device.vkDevice, pipelineLayoutInfo, null, it )
+                vkCreatePipelineLayout(sys.device.vkDevice, pipelineLayoutInfo, null, it )
             }
 
             val pipelineInfo = callocVkGraphicsPipelineCreateInfoN(1) {
@@ -200,14 +201,14 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
                 pColorBlendState(colorBlending)
                 pDynamicState(null)
                 layout(pipelineLayout)
-                renderPass(swapChain.renderPass.vkRenderPass)
+                renderPass(renderPass)
                 subpass(0)
                 basePipelineHandle(VK_NULL_HANDLE)
                 basePipelineIndex(-1)
             }
             vkGraphicsPipeline = checkCreatePointer {
                 vkCreateGraphicsPipelines(
-                    swapChain.sys.device.vkDevice,
+                    sys.device.vkDevice,
                     VK_NULL_HANDLE,
                     pipelineInfo,
                     null,
@@ -216,11 +217,11 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
             }
 
             for (module in shaderStageModules) {
-                vkDestroyShaderModule(swapChain.sys.device.vkDevice, module, null)
+                vkDestroyShaderModule(sys.device.vkDevice, module, null)
             }
         }
 
-        swapChain.addDependingResource(this)
+        //swapChain.addDependingResource(this)
         logD { "Created graphics pipeline, pipelineHash: ${pipeline.pipelineHash}" }
     }
 
@@ -231,7 +232,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
                 sType(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)
                 pCode(code)
             }
-            checkCreatePointer { vkCreateShaderModule(swapChain.sys.device.vkDevice, createInfo, null, it) }
+            checkCreatePointer { vkCreateShaderModule(sys.device.vkDevice, createInfo, null, it) }
         }
     }
 
@@ -258,7 +259,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
             pBindings(bindings)
         }
 
-        return checkCreatePointer { vkCreateDescriptorSetLayout(swapChain.sys.device.vkDevice, layoutInfo, null, it) }
+        return checkCreatePointer { vkCreateDescriptorSetLayout(sys.device.vkDevice, layoutInfo, null, it) }
     }
 
     private fun createDescriptorPool(descriptorSetLayout: DescriptorSetLayout): Long {
@@ -267,7 +268,7 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
                 descriptorSetLayout.descriptors.forEachIndexed { i, b ->
                     this[i].apply {
                         type(b.type.intType())
-                        descriptorCount(swapChain.images.size * descriptorSetPoolSize)
+                        descriptorCount(nImages * descriptorSetPoolSize)
                     }
                 }
             }
@@ -275,10 +276,10 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
             val poolInfo = callocVkDescriptorPoolCreateInfo {
                 sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO)
                 pPoolSizes(poolSize)
-                maxSets(swapChain.images.size * descriptorSetPoolSize)
+                maxSets(nImages * descriptorSetPoolSize)
             }
 
-            return checkCreatePointer { vkCreateDescriptorPool(swapChain.sys.device.vkDevice, poolInfo, null, it) }
+            return checkCreatePointer { vkCreateDescriptorPool(sys.device.vkDevice, poolInfo, null, it) }
         }
     }
 
@@ -293,10 +294,10 @@ class GraphicsPipeline(val swapChain: SwapChain, val pipeline: Pipeline, val des
     }
 
     override fun freeResources() {
-        vkDestroyPipeline(swapChain.sys.device.vkDevice, vkGraphicsPipeline, null)
-        vkDestroyPipelineLayout(swapChain.sys.device.vkDevice, pipelineLayout, null)
-        vkDestroyDescriptorSetLayout(swapChain.sys.device.vkDevice, descriptorSetLayout, null)
-        vkDestroyDescriptorPool(swapChain.sys.device.vkDevice, descriptorPool, null)
+        vkDestroyPipeline(sys.device.vkDevice, vkGraphicsPipeline, null)
+        vkDestroyPipelineLayout(sys.device.vkDevice, pipelineLayout, null)
+        vkDestroyDescriptorSetLayout(sys.device.vkDevice, descriptorSetLayout, null)
+        vkDestroyDescriptorPool(sys.device.vkDevice, descriptorPool, null)
 
         descriptorSetInstances.clear()
 

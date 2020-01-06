@@ -15,7 +15,7 @@ open class Texture(
         val minFilter: FilterMethod = FilterMethod.LINEAR,
         val magFilter: FilterMethod = FilterMethod.LINEAR,
         val maxAnisotropy: Int = 16,
-        val loader: suspend CoroutineScope.(AssetManager) -> TextureData) {
+        val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)?) {
 
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
@@ -45,15 +45,13 @@ open class Texture(
     }
 }
 
-class CubeMapTexture(
+open class CubeMapTexture(
         addressModeU: AddressMode = AddressMode.CLAMP_TO_EDGE,
         addressModeV: AddressMode = AddressMode.CLAMP_TO_EDGE,
         addressModeW: AddressMode = AddressMode.CLAMP_TO_EDGE,
         minFilter: FilterMethod = FilterMethod.LINEAR,
         magFilter: FilterMethod = FilterMethod.LINEAR,
         maxAnisotropy: Int = 16,
-        loader: suspend CoroutineScope.(AssetManager) -> CubeMapTextureData) :
+        loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)?) :
 
-        Texture(addressModeU, addressModeV, addressModeW, minFilter, magFilter, maxAnisotropy, loader) {
-
-}
+        Texture(addressModeU, addressModeV, addressModeW, minFilter, magFilter, maxAnisotropy, loader)

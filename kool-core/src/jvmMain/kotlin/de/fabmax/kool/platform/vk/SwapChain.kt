@@ -30,7 +30,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
     val depthImage: Image
     val depthImageView: ImageView
 
-    val renderPass: RenderPass
+    val renderPass: OnScreenRenderPass
 
     init {
         memStack {
@@ -76,11 +76,11 @@ class SwapChain(val sys: VkSystem) : VkResource() {
             vkGetSwapchainImagesKHR(sys.device.vkDevice, vkSwapChain, ip, imgs)
             for (i in 0 until ip[0]) {
                 images += imgs[i]
-                imageViews += ImageView(sys, imgs[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, VK_IMAGE_TYPE_2D)
+                imageViews += ImageView(sys, imgs[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, VK_IMAGE_VIEW_TYPE_2D)
                     .also { addDependingResource(it) }
             }
 
-            renderPass = RenderPass(this@SwapChain)
+            renderPass = OnScreenRenderPass(this@SwapChain)
 
             val (cImage, cImageView) = createColorResources()
             colorImage = cImage.also { addDependingResource(it) }
@@ -120,7 +120,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
         imgConfig.height = extent.height()
         imgConfig.mipLevels = 1
         imgConfig.numSamples = sys.physicalDevice.msaaSamples
-        imgConfig.format = findDepthFormat()
+        imgConfig.format = sys.physicalDevice.depthFormat
         imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
         imgConfig.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
         imgConfig.allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
@@ -145,10 +145,10 @@ class SwapChain(val sys: VkSystem) : VkResource() {
         }
     }
 
-    private fun findDepthFormat(): Int =
-        sys.physicalDevice.findSupportedFormat(
-            listOf(VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT),
-            VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+//    private fun findDepthFormat(): Int =
+//        sys.physicalDevice.findSupportedFormat(
+//            listOf(VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT),
+//            VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
 
     private fun MemoryStack.querySwapChainSupport(): SwapChainSupportDetails {
         val ip = mallocInt(1)

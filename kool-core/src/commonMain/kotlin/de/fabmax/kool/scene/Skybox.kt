@@ -18,31 +18,30 @@ class Skybox(val environmentMap: de.fabmax.kool.pipeline.CubeMapTexture) : Mesh(
         generateGeometry()
         isFrustumChecked = false
 
+        val texName = "envMap"
+        val model = ShaderModel("Skybox Shader").apply {
+            val ifLocalPos: StageInterfaceNode
+
+            vertexStage {
+                val mvp = mvpNode()
+                val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
+                ifLocalPos = stageInterfaceNode("ifLocalPos", worldPos.output)
+                positionOutput = addNode(SkyboxPosNode(mvp, attrPositions().output, stage)).outPosition
+            }
+            fragmentStage {
+                val sampler = cubeMapSamplerNode(cubeMapNode(texName), ifLocalPos.output, false)
+                colorOutput = sampler.outColor
+            }
+        }
+        val shader = ModeledShader.CubeMapColor(model, texName)
+
         pipelineConfig {
             cullMethod = CullMethod.CULL_FRONT_FACES
             depthTest = DepthTest.LESS_EQUAL
 
-            shaderLoader = { mesh, buildCtx, ctx ->
-                val texName = "envMap"
-                val model = ShaderModel("Skybox Shader").apply {
-                    val ifLocalPos: StageInterfaceNode
-
-                    vertexStage {
-                        val mvp = mvpNode()
-                        val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
-                        ifLocalPos = stageInterfaceNode("ifLocalPos", worldPos.output)
-                        addNode(SkyboxPosNode(mvp, attrPositions().output, stage))
-                    }
-                    fragmentStage {
-                        val sampler = cubeMapSamplerNode(cubeMapNode(texName), ifLocalPos.output)
-                        unlitMaterialNode(sampler.outColor)
-                    }
-                }
-                model.setup(mesh, buildCtx, ctx)
-                ModeledShader.CubeMapColor(model, texName)
-            }
+            shaderLoader = shader::setup
             onPipelineCreated += {
-                (it.shader as ModeledShader.CubeMapColor).cubeMapSampler.texture = environmentMap
+                shader.cubeMapSampler.texture = environmentMap
             }
         }
     }

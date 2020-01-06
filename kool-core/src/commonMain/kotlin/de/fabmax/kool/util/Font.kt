@@ -47,16 +47,15 @@ fun fontShaderLoader(): (Mesh, Pipeline.BuildContext, KoolContext) -> ModeledSha
         vertexStage {
             ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
             ifColors = stageInterfaceNode("ifColors", attrColors().output)
-            simpleVertexPositionNode()
+            positionOutput = simpleVertexPositionNode().outPosition
         }
         fragmentStage {
             val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output, false)
             val maskedColor = addNode(MaskNode(fragmentStage).apply { inColor = ifColors.output; inMask = sampler.outColor })
-            unlitMaterialNode(maskedColor.outMaskedColor)
+            colorOutput = unlitMaterialNode(maskedColor.outMaskedColor).outColor
         }
     }
-    model.setup(mesh, buildCtx, ctx)
-    ModeledShader.TextureColor(model, texName)
+    ModeledShader.TextureColor(model, texName).setup(mesh, buildCtx, ctx) as ModeledShader.TextureColor
 }
 
 fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): BasicShader {

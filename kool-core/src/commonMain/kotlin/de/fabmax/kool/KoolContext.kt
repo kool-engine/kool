@@ -1,7 +1,9 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.drawqueue.DrawQueue
-import de.fabmax.kool.gl.*
+import de.fabmax.kool.gl.BufferResource
+import de.fabmax.kool.gl.GL_BACK
+import de.fabmax.kool.gl.GL_LEQUAL
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
@@ -65,6 +67,7 @@ abstract class KoolContext {
         private set
 
     val scenes: MutableList<Scene> = mutableListOf()
+    val offscreenPasses = mutableListOf<OffscreenPassImpl>()
 
     private val attribs = Attribs()
     private val attribsStack = Array(16) { Attribs() }
@@ -117,8 +120,14 @@ abstract class KoolContext {
 //            applyAttributes()
 //        }
 
-        drawQueue.clear()
+        for (i in offscreenPasses.indices.reversed()) {
+            offscreenPasses[i].render(this)
+            if (offscreenPasses[i].isSingleShot) {
+                offscreenPasses.removeAt(i)
+            }
+        }
 
+        drawQueue.clear()
         for (i in onRender.indices) {
             onRender[i](this)
         }
@@ -133,6 +142,7 @@ abstract class KoolContext {
         // draw scene contents (back to front)
         for (i in scenes.indices) {
             if (scenes[i].isVisible) {
+                scenes[i].drawQueue = drawQueue
                 scenes[i].renderScene(this)
             }
         }
@@ -164,46 +174,46 @@ abstract class KoolContext {
         private val attribs = mutableListOf(
                 Property("viewport", Viewport(0, 0, 0, 0)) {
                     val dimen = clear
-                    glViewport(dimen.x, dimen.y, dimen.width, dimen.height)
+                    //glViewport(dimen.x, dimen.y, dimen.width, dimen.height)
                 },
                 Property("clearColor", Color(0.05f, 0.15f, 0.25f, 1f)) {
                     val color = clear
-                    glClearColor(color.r, color.g, color.b, color.a)
+                    //glClearColor(color.r, color.g, color.b, color.a)
                 },
                 Property("cullFace", GL_BACK) {
-                    glCullFace(clear)
+                    //glCullFace(clear)
                 },
                 Property("depthFunc", GL_LEQUAL) {
-                    glDepthFunc(clear)
+                    //glDepthFunc(clear)
                 },
                 Property("isDepthTest", true) {
-                    if (clear) {
-                        glEnable(GL_DEPTH_TEST)
-                    } else {
-                        glDisable(GL_DEPTH_TEST)
-                    }
+//                    if (clear) {
+//                        glEnable(GL_DEPTH_TEST)
+//                    } else {
+//                        glDisable(GL_DEPTH_TEST)
+//                    }
                 },
                 Property("isDepthMask", true) {
-                    glDepthMask(clear)
+                    //glDepthMask(clear)
                 },
                 Property("isCullFace", true) {
-                    if (clear) {
-                        glEnable(GL_CULL_FACE)
-                    } else {
-                        glDisable(GL_CULL_FACE)
-                    }
+//                    if (clear) {
+//                        glEnable(GL_CULL_FACE)
+//                    } else {
+//                        glDisable(GL_CULL_FACE)
+//                    }
                 },
                 Property("isBlend", true) {
-                    if (clear) {
-                        glEnable(GL_BLEND)
-                        // use blending with pre-multiplied alpha
-                        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
-                    } else {
-                        glDisable(GL_BLEND)
-                    }
+//                    if (clear) {
+//                        glEnable(GL_BLEND)
+//                        // use blending with pre-multiplied alpha
+//                        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)
+//                    } else {
+//                        glDisable(GL_BLEND)
+//                    }
                 },
                 Property("lineWidth", 1f) {
-                    glLineWidth(clear)
+                    //glLineWidth(clear)
                 }
         )
 

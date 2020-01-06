@@ -71,6 +71,34 @@ class PremultiplyColorNode(graph: ShaderGraph) : ShaderNode("Pre-Multiply Color"
     }
 }
 
+class HdrToLdrNode(graph: ShaderGraph) : ShaderNode("hdrToLdr_${graph.nextNodeId}", graph) {
+    var inColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
+    var inGamma = ShaderNodeIoVar(ModelVar1fConst(2.2f))
+    var inExposure = ShaderNodeIoVar(ModelVar1fConst(0.4f))
+    var inContrast = ShaderNodeIoVar(ModelVar1fConst(0.85f))
+    val outColor = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inColor, inGamma, inExposure, inContrast)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("""
+            // tone mapping
+            // simple method: 0..infinity -> [0..1)
+            //vec3 ${name}_color = ${inColor.ref3f()} / (${inColor.ref3f()} + vec3(1.0));
+            
+            // slightly advanced method 0..exposure^(-1/contrast) -> [0..1]
+            // exposure = 0.4, contrast = 0.85 -> [0..~3] with decent saturation
+            vec3 ${name}_color = ${inExposure.ref1f()} * pow(${inColor.ref3f()}, vec3(${inContrast.ref1f()}));
+            
+            // gamma correction
+            ${outColor.declare()} = vec4(pow(${name}_color, vec3(1.0/${inGamma.ref1f()})), ${inColor.ref4f()}.a);
+        """)
+    }
+}
+
 class NormalizeNode(graph: ShaderGraph) : ShaderNode("normalize_${graph.nextNodeId}", graph) {
     var input = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
     val output = ShaderNodeIoVar(ModelVar3f("${name}_out"), this)

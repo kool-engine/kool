@@ -26,12 +26,14 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
 
     ctx.clearColor = Color.fromHsv(0f, 0f, 0.1f, 1f)
 
-    val lightStrength = 300f
+//    val light1 = Light().setDirectional(Vec3f(-1f, -1f, -3f)).setColor(Color.WHITE, 5f)
+
+    val lightStrength = 500f
     val zPos = 10f
-    val light1 = Light().setPoint(Vec3f(-10f, -10f, zPos)).setColor(Color.WHITE, lightStrength)
-    val light2 = Light().setPoint(Vec3f(-10f, 10f, zPos)).setColor(Color.WHITE, lightStrength)
-    val light3 = Light().setPoint(Vec3f(10f, -10f, zPos)).setColor(Color.WHITE, lightStrength)
-    val light4 = Light().setPoint(Vec3f(10f, 10f, zPos)).setColor(Color.WHITE, lightStrength)
+    val light1 = Light().setPoint(Vec3f(10f, 10f, zPos)).setColor(Color.WHITE, lightStrength)
+    val light2 = Light().setPoint(Vec3f(-10f, -10f, zPos)).setColor(Color.WHITE, lightStrength)
+    val light3 = Light().setPoint(Vec3f(-10f, 10f, zPos)).setColor(Color.WHITE, lightStrength)
+    val light4 = Light().setPoint(Vec3f(10f, -10f, zPos)).setColor(Color.WHITE, lightStrength)
 
     lighting.lights.clear()
     lighting.lights.add(light1)
@@ -39,6 +41,55 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
     lighting.lights.add(light3)
     lighting.lights.add(light4)
 
+//    colorGrid()
+    roughnessMetallicGrid()
+
+    val cubeMapPass = hdriToCubeMapPass()
+    ctx.offscreenPasses += cubeMapPass
+    +Skybox(cubeMapPass.textureCube)
+//    +Skybox("skybox/y-up/sky_ft.jpg", "skybox/y-up/sky_bk.jpg",
+//            "skybox/y-up/sky_lt.jpg", "skybox/y-up/sky_rt.jpg",
+//            "skybox/y-up/sky_up.jpg", "skybox/y-up/sky_dn.jpg")
+}
+
+private fun Scene.colorGrid() {
+    val nRows = 4
+    val nCols = 5
+    val spacing = 4.5f
+
+    val colors = mutableListOf<Color>()
+    colors += Color.MD_COLORS
+    colors.remove(Color.MD_LIGHT_BLUE)
+    colors.remove(Color.MD_GREY)
+    colors.remove(Color.MD_BLUE_GREY)
+    colors += Color.WHITE
+    colors += Color.MD_GREY
+    colors += Color.MD_BLUE_GREY
+    colors += Color.BLACK
+
+    for (y in 0 until nRows) {
+        for (x in 0 until nCols) {
+            +colorMesh {
+                generator = {
+                    //color = colors[(x * nRows + y) % colors.size].gamma()
+                    color = colors[(y * nCols + x) % colors.size].gamma()
+                    sphere {
+                        steps = 100
+                        center.set((-(nCols-1) * 0.5f + x) * spacing, ((nRows-1) * 0.5f - y) * spacing, 0f)
+                        radius = 1.5f
+                    }
+                }
+
+                val shader = ModeledShader.PbrShader()
+                shader.roughness = 0.1f
+                shader.metallic = 0f
+                pipelineConfig { shaderLoader = shader::setup }
+            }
+        }
+    }
+}
+
+private fun Scene.roughnessMetallicGrid() {
     val nRows = 7
     val nCols = 7
     val spacing = 2.5f
@@ -47,11 +98,10 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
         for (x in 0 until nCols) {
             +colorMesh {
                 generator = {
-                    //color = Color.MD_PINK.gamma()
                     color = Color.DARK_RED
                     sphere {
                         steps = 100
-                        center.set((-nCols * 0.5f + x) * spacing, (-nRows * 0.5f + y) * spacing, 0f)
+                        center.set((-(nCols-1) * 0.5f + x) * spacing, (-(nRows-1) * 0.5f + y) * spacing, 0f)
                         radius = 1f
                     }
                 }
@@ -59,7 +109,7 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
                 val shader = ModeledShader.PbrShader()
                 shader.roughness = max(x / (nCols - 1).toFloat(), 0.05f)
                 shader.metallic = y / (nRows - 1).toFloat()
-                pipelineConfig { shaderLoader = shader::loadShader }
+                pipelineConfig { shaderLoader = shader::setup }
             }
         }
     }

@@ -123,19 +123,20 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     abstract suspend fun loadCubeMapImageData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData
 
     fun loadTextureAsset(assetPath: String): TextureData  {
-        val proxy = TextureDataProxy()
-        launch {
-            val ref = if (isHttpAsset(assetPath)) {
-                HttpTextureAssetRef(assetPath)
-            } else {
-                LocalTextureAssetRef("$assetsBaseDir/$assetPath")
-            }
-            val awaitedAsset = AwaitedAsset(ref)
-            awaitedAssetsChannel.send(awaitedAsset)
-            val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-            proxy.proxyData = loaded.data
-        }
-        return proxy
+        throw RuntimeException("Use loadImageData()")
+//        val proxy = TextureDataProxy()
+//        launch {
+//            val ref = if (isHttpAsset(assetPath)) {
+//                HttpTextureAssetRef(assetPath)
+//            } else {
+//                LocalTextureAssetRef("$assetsBaseDir/$assetPath")
+//            }
+//            val awaitedAsset = AwaitedAsset(ref)
+//            awaitedAssetsChannel.send(awaitedAsset)
+//            val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
+//            proxy.proxyData = loaded.data
+//        }
+//        return proxy
     }
 
     private inner class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset> = CompletableDeferred(job))

@@ -12,9 +12,6 @@ class UnlitMaterialNode(graph: ShaderGraph) : ShaderNode("Unlit Material", graph
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(inAlbedo)
-
-        shaderGraph as FragmentShaderGraph
-        shaderGraph.colorOutput = outColor
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -39,9 +36,6 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
         super.setup(shaderGraph)
         dependsOn(inAlbedo, inNormal, inFragPos, inCamPos)
         dependsOn(lightNode)
-
-        shaderGraph as FragmentShaderGraph
-        shaderGraph.colorOutput = outColor
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -92,9 +86,6 @@ class PbrMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNode
         super.setup(shaderGraph)
         dependsOn(inAlbedo, inNormal, inFragPos, inCamPos)
         dependsOn(lightNode)
-
-        shaderGraph as FragmentShaderGraph
-        shaderGraph.colorOutput = outColor
     }
 
     override fun generateCode(generator: CodeGenerator) {
@@ -178,8 +169,6 @@ class PbrMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNode
   
             vec3 ambient = ${inAmbient.ref3f()} * albedo;
             vec3 color = ambient + Lo;
-            color = color / (color + vec3(1.0));
-            color = pow(color, vec3(1.0/2.2));  
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
             """)
     }

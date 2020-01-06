@@ -6,7 +6,7 @@ import de.fabmax.kool.gl.GL_ALPHA
 import de.fabmax.kool.gl.GL_RGB
 import de.fabmax.kool.gl.GL_RGBA
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.glFormat
+import de.fabmax.kool.platform.vk.util.glFormat
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.createUint8Buffer
 import java.awt.Transparency

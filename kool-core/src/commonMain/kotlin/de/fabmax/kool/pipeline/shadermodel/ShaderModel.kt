@@ -79,6 +79,12 @@ class ShaderModel(val modelInfo: String = "") {
             return nrmNode
         }
 
+        fun hdrToLdrNode(inputColor: ShaderNodeIoVar? = null): HdrToLdrNode {
+            val hdr2ldr = addNode(HdrToLdrNode(stage))
+            inputColor?.let { hdr2ldr.inColor = it }
+            return hdr2ldr
+        }
+
         fun premultiplyColorNode(inColor: ShaderNodeIoVar? = null): PremultiplyColorNode {
             val preMult = addNode(PremultiplyColorNode(stage))
             inColor?.let { preMult.inColor = it }
@@ -115,6 +121,9 @@ class ShaderModel(val modelInfo: String = "") {
     }
 
     inner class VertexStageBuilder : StageBuilder(vertexStage) {
+        var positionOutput: ShaderNodeIoVar
+            get() = vertexStage.positionOutput
+            set(value) { vertexStage.positionOutput = value }
 
         fun attrColors() = attributeNode(Attribute.COLORS)
         fun attrNormals() = attributeNode(Attribute.NORMALS)
@@ -154,6 +163,10 @@ class ShaderModel(val modelInfo: String = "") {
     }
 
     inner class FragmentStageBuilder : StageBuilder(fragmentStage) {
+        var colorOutput: ShaderNodeIoVar
+            get() = fragmentStage.colorOutput
+            set(value) { fragmentStage.colorOutput = value }
+
         fun defaultLightNode(maxLights: Int = 4) = addNode(LightNode(stage, maxLights))
 
         fun unlitMaterialNode(albedo: ShaderNodeIoVar? = null): UnlitMaterialNode {
