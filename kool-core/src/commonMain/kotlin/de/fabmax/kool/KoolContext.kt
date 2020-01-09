@@ -69,6 +69,8 @@ abstract class KoolContext {
     val scenes: MutableList<Scene> = mutableListOf()
     val offscreenPasses = mutableListOf<OffscreenPassImpl>()
 
+    private val delayedCallbacks = mutableListOf<DelayedCallback>()
+
     private val attribs = Attribs()
     private val attribsStack = Array(16) { Attribs() }
     private var attribsStackIdx = 0
@@ -100,7 +102,21 @@ abstract class KoolContext {
 
     abstract fun getSysInfos(): List<String>
 
+    fun delay(frames: Int, callback: (KoolContext) -> Unit) {
+        delayedCallbacks += DelayedCallback(frameIdx + frames, callback)
+    }
+
     protected fun render(dt: Double) {
+        if (delayedCallbacks.isNotEmpty()) {
+            val it = delayedCallbacks.iterator()
+            for (callback in it) {
+                if (callback.callOnFrame <= frameIdx) {
+                    callback.callback(this)
+                    it.remove()
+                }
+            }
+        }
+
         this.deltaT = dt.toFloat()
         time += dt
         frameIdx++
@@ -121,9 +137,11 @@ abstract class KoolContext {
 //        }
 
         for (i in offscreenPasses.indices.reversed()) {
-            offscreenPasses[i].render(this)
-            if (offscreenPasses[i].isSingleShot) {
+            if (offscreenPasses[i].isSingleShot && offscreenPasses[i].frameIdx > 0) {
                 offscreenPasses.removeAt(i)
+            } else {
+                offscreenPasses[i].render(this)
+                offscreenPasses[i].frameIdx++
             }
         }
 
@@ -247,6 +265,8 @@ abstract class KoolContext {
         fun isInViewport(x: Float, y: Float) = x >= this.x && x < this.x + width &&
                 y >= this.y && y < this.y + height
     }
+
+    private class DelayedCallback(val callOnFrame: Int, val callback: (KoolContext) -> Unit)
 }
 
 enum class RenderPass {

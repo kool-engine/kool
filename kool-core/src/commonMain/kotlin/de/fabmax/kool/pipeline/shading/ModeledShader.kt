@@ -51,6 +51,15 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
             get() = cfg.ambient.value
             set(value) { cfg.ambient.value.set(value) }
 
+        var cubeMapSampler: CubeMapSampler? = null
+            private set
+
+        override fun onPipelineCreated(pipeline: Pipeline) {
+            super.onPipelineCreated(pipeline)
+            cubeMapSampler = model.findNode<CubeMapNode>("irradianceMap")?.sampler
+            cubeMapSampler?.let { it.texture = cfg.irradianceMap }
+        }
+
         companion object {
             private fun defaultPbrModel(cfg: PbrConfig) = ShaderModel("defaultPbrModel()").apply {
                 val ifColors: StageInterfaceNode
@@ -80,7 +89,14 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
                     }
                     colorOutput = hdrToLdr.outColor
 
-                    mat.inAmbient = pushConstantNodeColor(cfg.ambient).output
+                    if (cfg.irradianceMap != null) {
+                        val cubeMap = cubeMapNode("irradianceMap")
+                        val sampler = cubeMapSamplerNode(cubeMap, ifNormals.output)
+                        mat.inIrradiance = sampler.outColor
+                    } else {
+                        mat.inIrradiance = pushConstantNodeColor(cfg.ambient).output
+                    }
+
                     mat.inMetallic = pushConstantNode1f(cfg.metallic).output
                     mat.inRoughness = pushConstantNode1f(cfg.roughness).output
                 }
@@ -90,6 +106,8 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
         class PbrConfig {
             val roughness = Uniform1f(0.5f, "uRoughness")
             val metallic = Uniform1f(0.0f, "uMetallic")
+
+            var irradianceMap: CubeMapTexture? = null
             val ambient = UniformColor(Color(0.03f, 0.03f, 0.03f, 1f), "uAmbient")
         }
     }

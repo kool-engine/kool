@@ -16,6 +16,7 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import java.awt.Desktop
 import java.net.URI
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 
 /**
@@ -24,7 +25,7 @@ import java.util.*
 class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
     override val glCapabilities = GlCapabilities.UNKNOWN_CAPABILITIES
 
-    override val assetMgr = JvmAssetManager(props)
+    override val assetMgr = JvmAssetManager(props, this)
 
     override val shaderGenerator = ShaderGeneratorImplVk()
 
@@ -34,7 +35,9 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
         private set
 
     private val vkScene = KoolVkScene()
-    private val vkSystem: VkSystem
+    internal val vkSystem: VkSystem
+
+    private val gpuThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
     private object SysInfo : ArrayList<String>() {
         fun set(api: String, dev: String) {
@@ -86,6 +89,16 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             SysInfo.update()
             glfwPollEvents()
 
+            synchronized(gpuThreadRunnables) {
+                if (gpuThreadRunnables.isNotEmpty()) {
+                    for (r in gpuThreadRunnables) {
+                        r.r()
+                        r.future.complete(null)
+                    }
+                    gpuThreadRunnables.clear()
+                }
+            }
+
             // determine time delta
             val time = System.nanoTime()
             val dt = (time - prevTime) / 1e9
@@ -111,6 +124,15 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
     override fun checkIsGlThread() { }
 
     override fun getSysInfos(): List<String> = SysInfo
+
+    // fixme: use Coroutine stuff instead
+    fun runOnGpuThread(r: () -> Unit): CompletableFuture<Void> {
+        synchronized(gpuThreadRunnables) {
+            val r = GpuThreadRunnable(r)
+            gpuThreadRunnables += r
+            return r.future
+        }
+    }
 
     private fun setupInput(window: Long) {
         // install window callbacks
@@ -257,8 +279,8 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                     if (delMesh.deleteDelay-- <= 0) {
                         sys.device.removeDependingResource(delMesh.mesh)
                         delMesh.mesh.destroy()
+                        delIt.remove()
                     }
-                    delIt.remove()
                 }
             }
 
@@ -280,7 +302,7 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                 val descriptorSet = pipeline.getDescriptorSetInstance(pipelineCfg)
 
                 if (descriptorSet.updateDescriptors(cmd, imageIndex, sys)) {
-                    descriptorSet.updateDescriptorSets()
+                    descriptorSet.updateDescriptorSets(imageIndex)
 
                     var model = meshMap[cmd.mesh]
                     if (cmd.mesh.meshData.isSyncRequired || model == null) {
@@ -289,8 +311,7 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                         // (re-)build buffer
                         // fixme: don't do this here, should have happened before (async?)
                         meshMap.remove(cmd.mesh)?.let {
-                            //meshDeleteQueue.addLast(DeleteMesh(it, swapChain.nImages))
-                            meshDeleteQueue.addLast(DeleteMesh(it, 3))
+                            meshDeleteQueue.addLast(DeleteMesh(it, nImages))
                         }
                         model = IndexedMesh(sys, cmd.mesh.meshData.vertexList)
                         meshMap[cmd.mesh] = model
@@ -376,6 +397,10 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             it.float32(2, color.b)
             it.float32(3, color.a)
         }
+    }
+
+    private class GpuThreadRunnable(val r: () -> Unit) {
+        val future = CompletableFuture<Void>()
     }
 }
 

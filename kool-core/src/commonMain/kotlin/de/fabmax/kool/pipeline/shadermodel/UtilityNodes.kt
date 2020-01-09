@@ -91,10 +91,15 @@ class HdrToLdrNode(graph: ShaderGraph) : ShaderNode("hdrToLdr_${graph.nextNodeId
             
             // slightly advanced method 0..exposure^(-1/contrast) -> [0..1]
             // exposure = 0.4, contrast = 0.85 -> [0..~3] with decent saturation
-            vec3 ${name}_color = ${inExposure.ref1f()} * pow(${inColor.ref3f()}, vec3(${inContrast.ref1f()}));
+            //vec3 ${name}_color = ${inExposure.ref1f()} * pow(${inColor.ref3f()}, vec3(${inContrast.ref1f()}));
             
             // gamma correction
-            ${outColor.declare()} = vec4(pow(${name}_color, vec3(1.0/${inGamma.ref1f()})), ${inColor.ref4f()}.a);
+            //${outColor.declare()} = vec4(pow(${name}_color, vec3(1.0/${inGamma.ref1f()})), ${inColor.ref4f()}.a);
+            
+//            ${outColor.declare()} = vec4(pow(${inColor.ref3f()}, vec3(1.0 / 2.2)), ${inColor.ref4f()}.a);
+
+            vec3 ${name}_color = max(vec3(0), ${inColor.ref3f()} - 0.004);
+            ${outColor.declare()} = vec4((${name}_color * (6.2 * ${name}_color + 0.5)) / (${name}_color * (6.2 * ${name}_color + 1.7) + 0.06), 1.0);
         """)
     }
 }

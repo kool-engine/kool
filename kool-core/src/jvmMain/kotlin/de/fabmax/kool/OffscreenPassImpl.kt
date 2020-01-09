@@ -125,37 +125,39 @@ actual class OffscreenPassImpl actual constructor(texWidth: Int, texHeight: Int,
             imageView = ImageView(sys, image.vkImage, image.format, VK_IMAGE_ASPECT_COLOR_BIT, image.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE)
             sampler = createSampler(sys, image)
 
+            image.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+
             val loadedTex = LoadedTexture(sys, rp.texFormat, image, imageView, sampler)
             rp.addDependingResource(loadedTex)
 
             loadedTexture = loadedTex
             loadingState = LoadingState.LOADING
         }
-    }
 
-    private fun createSampler(sys: VkSystem, texImage: Image): Long {
-        memStack {
-            val samplerInfo = callocVkSamplerCreateInfo {
-                sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
-                magFilter(VK_FILTER_LINEAR)
-                minFilter(VK_FILTER_LINEAR)
-                addressModeU(VK_SAMPLER_ADDRESS_MODE_REPEAT)
-                addressModeV(VK_SAMPLER_ADDRESS_MODE_REPEAT)
-                addressModeW(VK_SAMPLER_ADDRESS_MODE_REPEAT)
-                anisotropyEnable(true)
-                maxAnisotropy(16f)
-                borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
-                unnormalizedCoordinates(false)
-                compareEnable(false)
-                compareOp(VK_COMPARE_OP_ALWAYS)
-                mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
-                mipLodBias(0f)
-                minLod(0f)
-                maxLod(texImage.mipLevels.toFloat())
+        private fun createSampler(sys: VkSystem, texImage: Image): Long {
+            memStack {
+                val samplerInfo = callocVkSamplerCreateInfo {
+                    sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
+                    magFilter(VK_FILTER_LINEAR)
+                    minFilter(VK_FILTER_LINEAR)
+                    addressModeU(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                    addressModeV(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                    addressModeW(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                    anisotropyEnable(false)
+                    maxAnisotropy(16f)
+                    borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
+                    unnormalizedCoordinates(false)
+                    compareEnable(false)
+                    compareOp(VK_COMPARE_OP_ALWAYS)
+                    mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                    mipLodBias(0f)
+                    minLod(0f)
+                    maxLod(texImage.mipLevels.toFloat())
+                }
+                val ptr = mallocLong(1)
+                check(vkCreateSampler(sys.device.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
+                return ptr[0]
             }
-            val ptr = mallocLong(1)
-            check(vkCreateSampler(sys.device.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
-            return ptr[0]
         }
     }
 }

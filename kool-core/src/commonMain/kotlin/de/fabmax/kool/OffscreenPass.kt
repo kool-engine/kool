@@ -13,6 +13,7 @@ abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val isCube: 
     val drawQueues: List<DrawQueue>
 
     var onRender: ((ViewDirection, KoolContext) -> Unit)? = null
+    var frameIdx = 0
     var isSingleShot = false
 
     init {

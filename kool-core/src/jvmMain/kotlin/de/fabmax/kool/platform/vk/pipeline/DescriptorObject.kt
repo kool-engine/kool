@@ -104,6 +104,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
             if (tex.loadingState == Texture.LoadingState.LOADED && boundTex != tex.loadedTexture) {
                 boundTex = tex.loadedTexture
+                isDescriptorSetUpdateRequired = true
             }
         }
         sampler.onUpdate(cmd)

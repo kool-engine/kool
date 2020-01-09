@@ -18,18 +18,22 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         val codeKey = vertShader + fragShader
         var code = shaderCodes[codeKey]
         if (code == null) {
-            println("Vertex shader:\n\n")
-            vertShader.lines().forEachIndexed { i, l ->
-                println(String.format("%3d: %s", i, l))
-            }
-            println("Fragment shader:\n\n")
-            fragShader.lines().forEachIndexed { i, l ->
-                println(String.format("%3d: %s", i+1, l))
-            }
+            printCode(vertShader, fragShader)
             code = ShaderCode.codeFromSource(vertShader, fragShader)
             shaderCodes[codeKey] = code
         }
         return code
+    }
+
+    private fun printCode(vertShader: String, fragShader: String) {
+        println("Vertex shader:\n\n")
+        vertShader.lines().forEachIndexed { i, l ->
+            println(String.format("%3d: %s", i, l))
+        }
+        println("Fragment shader:\n\n")
+        fragShader.lines().forEachIndexed { i, l ->
+            println(String.format("%3d: %s", i+1, l))
+        }
     }
 
     private fun generateCode(model: ShaderModel, pipeline: Pipeline): Pair<String, String> {

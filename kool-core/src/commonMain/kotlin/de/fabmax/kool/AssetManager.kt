@@ -122,6 +122,10 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 
     abstract suspend fun loadCubeMapImageData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData
 
+    abstract fun loadAndPrepareTexture(assetPath: String, recv: (de.fabmax.kool.pipeline.Texture) -> Unit)
+
+    abstract fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String, recv: (de.fabmax.kool.pipeline.CubeMapTexture) -> Unit)
+
     fun loadTextureAsset(assetPath: String): TextureData  {
         throw RuntimeException("Use loadImageData()")
 //        val proxy = TextureDataProxy()

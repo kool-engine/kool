@@ -12,8 +12,10 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
 
     var allValid = true
         private set
-    var isDescriptorSetUpdateRequired = false
-        private set
+//    var isDescriptorSetUpdateRequired = false
+//        private set
+
+    private val isDescriptorSetUpdateRequired = BooleanArray(graphicsPipeline.nImages) { false }
 
     init {
         createDescriptorSets()
@@ -78,44 +80,43 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
         objects.forEach { it.clear() }
     }
 
-    fun updateDescriptorSets() {
-        if (isDescriptorSetUpdateRequired) {
-            clearUpdateRequired()
+    fun updateDescriptorSets(imageIdx: Int) {
+        if (isDescriptorSetUpdateRequired[imageIdx]) {
+            clearUpdateRequired(imageIdx)
 
             if (graphicsPipeline.pipeline.descriptorSetLayouts.size != 1) {
                 TODO()
             }
 
             val descriptors = graphicsPipeline.pipeline.descriptorSetLayouts[0].descriptors
-            for (imageIndex in 0 until graphicsPipeline.nImages) {
-                memStack {
-                    val descriptorWrite = callocVkWriteDescriptorSetN(descriptors.size) {
-                        for (descIdx in descriptors.indices) {
-                            val descObj = objects[imageIndex][descIdx]
-                            descObj.setDescriptorSet(this@memStack, this[descIdx], descriptorSets[imageIndex])
-                        }
+            memStack {
+                val descriptorWrite = callocVkWriteDescriptorSetN(descriptors.size) {
+                    for (descIdx in descriptors.indices) {
+                        val descObj = objects[imageIdx][descIdx]
+                        descObj.setDescriptorSet(this@memStack, this[descIdx], descriptorSets[imageIdx])
                     }
-                    VK10.vkUpdateDescriptorSets(graphicsPipeline.sys.device.vkDevice, descriptorWrite, null)
                 }
+                VK10.vkUpdateDescriptorSets(graphicsPipeline.sys.device.vkDevice, descriptorWrite, null)
             }
         }
     }
 
-    private fun clearUpdateRequired() {
-        isDescriptorSetUpdateRequired = false
-        objects.forEach { descs -> descs.forEach { it.isDescriptorSetUpdateRequired = false } }
+    private fun clearUpdateRequired(imageIdx: Int) {
+        isDescriptorSetUpdateRequired[imageIdx] = false
+        objects[imageIdx].forEach { it.isDescriptorSetUpdateRequired = false }
     }
 
     fun updateDescriptors(cmd: DrawCommand, imageIndex: Int, sys: VkSystem): Boolean {
         val descs = objects[imageIndex]
         allValid = true
-        isDescriptorSetUpdateRequired = false
+        var updateRequired = false
         for (i in descs.indices) {
             val desc = descs[i]
             desc.update(cmd, sys)
             allValid = allValid && desc.isValid
-            isDescriptorSetUpdateRequired = isDescriptorSetUpdateRequired || desc.isDescriptorSetUpdateRequired
+            updateRequired = updateRequired || desc.isDescriptorSetUpdateRequired
         }
+        isDescriptorSetUpdateRequired[imageIndex] = updateRequired
         return allValid
     }
 }

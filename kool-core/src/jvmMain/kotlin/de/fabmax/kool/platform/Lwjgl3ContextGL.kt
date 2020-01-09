@@ -24,7 +24,7 @@ class Lwjgl3ContextGL(props: InitProps) : KoolContext() {
 
     override val glCapabilities: GlCapabilities
 
-    override val assetMgr = JvmAssetManager(props)
+    override val assetMgr = JvmAssetManager(props, this)
 
     override val shaderGenerator = ShaderGeneratorImplGL()
 

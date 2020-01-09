@@ -29,48 +29,44 @@ fun testScene() {
     ctx.assetMgr.assetsBaseDir = "./docs/assets"
 
 //    ctx.scenes += uiTestScene(ctx)
-//    ctx.scenes += simpleTestScene(ctx)
-    offscreenTest(ctx)
+    ctx.scenes += simpleTestScene(ctx)
+//    offscreenTest(ctx)
     ctx.scenes += debugOverlay(ctx)
 
     ctx.run()
 }
 
 fun offscreenTest(ctx: KoolContext) {
-    val cubeMapPass = hdriToCubeMapPass()
-
-    ctx.scenes += scene {
+    val scene = scene {
         defaultCamTransform()
-
-        +Skybox(cubeMapPass.textureCube)
 
         +colorMesh {
             generator = {
                 cube {
                     colorCube()
                     centerOrigin()
-                    origin.x -= 3
                 }
             }
             pipelineConfig {
                 shaderLoader = ModeledShader.vertexColor()
             }
         }
+    }
 
-        +mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)) {
-            generator = {
-                cube {
-                    centerOrigin()
-                }
-            }
+    ctx.scenes += scene
 
-            pipelineConfig {
-                shaderLoader = ModeledShader.cubeMapColor()
-                onPipelineCreated += {
-                    (it.shader as ModeledShader.CubeMapColor).cubeMapSampler.texture = cubeMapPass.textureCube
-                }
-            }
-        }
+//    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/newport_loft.rgbe.png") { tex ->
+    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/vignaioli_night_2k.rgbe.png") { tex ->
+//    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/spruit_sunrise_2k.rgbe.png") { tex ->
+//    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/lakeside_2k.rgbe.png") { tex ->
+
+        val cubeMapPass = hdriToIrradianceMapPass(tex)
+        ctx.offscreenPasses += cubeMapPass.offscreenPass
+        scene += Skybox(cubeMapPass.irradianceMap)
+
+//        val cubeMapPass = hdriToCubeMapPass(tex)
+//        ctx.offscreenPasses += cubeMapPass
+//        scene += Skybox(cubeMapPass.textureCube)
     }
 }
 

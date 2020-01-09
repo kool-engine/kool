@@ -1,6 +1,9 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.pipeline.CubeMapTexture
+import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.TextureLoader
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
@@ -13,7 +16,7 @@ import java.io.InputStream
 import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(props: Lwjgl3ContextGL.InitProps) : AssetManager(props.assetsBaseDir) {
+class JvmAssetManager internal constructor(props: Lwjgl3ContextGL.InitProps, val ctx: KoolContext) : AssetManager(props.assetsBaseDir) {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
 
@@ -104,6 +107,37 @@ class JvmAssetManager internal constructor(props: Lwjgl3ContextGL.InitProps) : A
         val upd = loadImageData(up)
         val dnd = loadImageData(dn)
         return CubeMapTextureData(ftd, bkd, ltd, rtd, upd, dnd)
+    }
+
+    /**
+     * fixme: this belongs in the not yet existing all new texture manager which should check if the texture was already loaded before
+     */
+    override fun loadAndPrepareTexture(assetPath: String, recv: (Texture) -> Unit) {
+        val tex = Texture { it.loadImageData(assetPath) }
+        launch {
+            val data = loadImageData(assetPath) as BufferedTextureData
+            val sys = (ctx as Lwjgl3ContextVk).vkSystem
+            ctx.runOnGpuThread {
+                tex.loadedTexture = TextureLoader.loadTexture(sys, data)
+                tex.loadingState = Texture.LoadingState.LOADED
+                sys.device.addDependingResource(tex.loadedTexture!!)
+                recv(tex)
+            }
+        }
+    }
+
+    override fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String, recv: (CubeMapTexture) -> Unit) {
+        val tex = CubeMapTexture { it.loadCubeMapImageData(ft, bk, lt, rt, up, dn) }
+        launch {
+            val data = loadCubeMapImageData(ft, bk, lt, rt, up, dn)
+            val sys = (ctx as Lwjgl3ContextVk).vkSystem
+            ctx.runOnGpuThread {
+                tex.loadedTexture = TextureLoader.loadCubeMap(sys, data)
+                tex.loadingState = Texture.LoadingState.LOADED
+                sys.device.addDependingResource(tex.loadedTexture!!)
+                recv(tex)
+            }
+        }
     }
 
     fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {

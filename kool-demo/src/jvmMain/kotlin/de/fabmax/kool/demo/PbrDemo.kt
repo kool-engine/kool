@@ -1,8 +1,11 @@
 package de.fabmax.kool.demo
 
+import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.CubeMapTexture
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
@@ -28,7 +31,7 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
 
 //    val light1 = Light().setDirectional(Vec3f(-1f, -1f, -3f)).setColor(Color.WHITE, 5f)
 
-    val lightStrength = 500f
+    val lightStrength = 250f
     val zPos = 10f
     val light1 = Light().setPoint(Vec3f(10f, 10f, zPos)).setColor(Color.WHITE, lightStrength)
     val light2 = Light().setPoint(Vec3f(-10f, -10f, zPos)).setColor(Color.WHITE, lightStrength)
@@ -41,18 +44,66 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
     lighting.lights.add(light3)
     lighting.lights.add(light4)
 
-//    colorGrid()
-    roughnessMetallicGrid()
+    var irradianceMapPass: IrradianceMapPass? = null
 
-    val cubeMapPass = hdriToCubeMapPass()
-    ctx.offscreenPasses += cubeMapPass
-    +Skybox(cubeMapPass.textureCube)
-//    +Skybox("skybox/y-up/sky_ft.jpg", "skybox/y-up/sky_bk.jpg",
-//            "skybox/y-up/sky_lt.jpg", "skybox/y-up/sky_rt.jpg",
-//            "skybox/y-up/sky_up.jpg", "skybox/y-up/sky_dn.jpg")
+    val hdris = listOf(
+            "skybox/hdri/newport_loft.rgbe.png",
+            "skybox/hdri/lakeside_2k.rgbe.png",
+            "skybox/hdri/spruit_sunrise_2k.rgbe.png",
+            "skybox/hdri/driving_school.rgbe.png",
+            "skybox/hdri/royal_esplanade_2k.rgbe.png",
+            "skybox/hdri/shanghai_bund_2k.rgbe.png",
+            "skybox/hdri/vignaioli_night_2k.rgbe.png"
+    )
+    val hdriTextures = MutableList<Texture?>(hdris.size) { null }
+    var hdriIndex = 0
+
+    fun getHdriTex(idx: Int, recv: (Texture) -> Unit) {
+        val tex = hdriTextures[idx]
+        if (tex == null) {
+            ctx.assetMgr.loadAndPrepareTexture(hdris[idx]) {
+                hdriTextures[idx] = it
+                recv(it)
+            }
+        } else {
+            recv(tex)
+        }
+    }
+
+    fun updateHdri(idx: Int) {
+        getHdriTex(idx) { tex ->
+            irradianceMapPass?.let {
+                it.hdriTexture = tex
+                it.offscreenPass.frameIdx = 0
+                ctx.offscreenPasses += it.offscreenPass
+            }
+        }
+    }
+
+
+    getHdriTex(hdriIndex) { tex ->
+        val irrMapPass = hdriToIrradianceMapPass(tex)
+        irradianceMapPass = irrMapPass
+
+        ctx.offscreenPasses += irrMapPass.offscreenPass
+        this += Skybox(irrMapPass.irradianceMap)
+
+        colorGrid(irrMapPass.irradianceMap)
+//        roughnessMetallicGrid(irrMapPass.irradianceMap)
+    }
+
+
+    ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "switch hdri left", { it.isPressed }) {
+        hdriIndex = (--hdriIndex + hdris.size) % hdris.size
+        updateHdri(hdriIndex)
+    }
+    ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_RIGHT, "switch hdri right", { it.isPressed }) {
+        hdriIndex = ++hdriIndex % hdris.size
+        updateHdri(hdriIndex)
+    }
 }
 
-private fun Scene.colorGrid() {
+private fun Scene.colorGrid(irradianceMap: CubeMapTexture?): List<ModeledShader.PbrShader> {
     val nRows = 4
     val nCols = 5
     val spacing = 4.5f
@@ -67,6 +118,8 @@ private fun Scene.colorGrid() {
     colors += Color.MD_BLUE_GREY
     colors += Color.BLACK
 
+    val shaders = mutableListOf<ModeledShader.PbrShader>()
+
     for (y in 0 until nRows) {
         for (x in 0 until nCols) {
             +colorMesh {
@@ -80,25 +133,33 @@ private fun Scene.colorGrid() {
                     }
                 }
 
-                val shader = ModeledShader.PbrShader()
+                val pbrConfig = ModeledShader.PbrShader.PbrConfig()
+                pbrConfig.irradianceMap = irradianceMap
+
+                val shader = ModeledShader.PbrShader(pbrConfig)
                 shader.roughness = 0.1f
                 shader.metallic = 0f
                 pipelineConfig { shaderLoader = shader::setup }
+                shaders += shader
             }
         }
     }
+    return shaders
 }
 
-private fun Scene.roughnessMetallicGrid() {
+private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture?): List<ModeledShader.PbrShader> {
     val nRows = 7
     val nCols = 7
     val spacing = 2.5f
+
+    val shaders = mutableListOf<ModeledShader.PbrShader>()
 
     for (y in 0 until nRows) {
         for (x in 0 until nCols) {
             +colorMesh {
                 generator = {
-                    color = Color.DARK_RED
+                    //color = Color.DARK_RED
+                    color = Color.MD_GREEN.gamma()
                     sphere {
                         steps = 100
                         center.set((-(nCols-1) * 0.5f + x) * spacing, (-(nRows-1) * 0.5f + y) * spacing, 0f)
@@ -106,11 +167,17 @@ private fun Scene.roughnessMetallicGrid() {
                     }
                 }
 
-                val shader = ModeledShader.PbrShader()
+                val pbrConfig = ModeledShader.PbrShader.PbrConfig()
+                pbrConfig.irradianceMap = irradianceMap
+
+                val shader = ModeledShader.PbrShader(pbrConfig)
                 shader.roughness = max(x / (nCols - 1).toFloat(), 0.05f)
                 shader.metallic = y / (nRows - 1).toFloat()
                 pipelineConfig { shaderLoader = shader::setup }
+                shaders += shader
             }
         }
     }
+
+    return shaders
 }

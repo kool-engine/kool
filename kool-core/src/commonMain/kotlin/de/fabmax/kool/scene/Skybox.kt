@@ -4,7 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 
-class Skybox(val environmentMap: de.fabmax.kool.pipeline.CubeMapTexture) : Mesh(MeshData(Attribute.POSITIONS)) {
+class Skybox(val environmentMap: CubeMapTexture) : Mesh(MeshData(Attribute.POSITIONS)) {
     constructor(ft: String, bk: String, lt: String, rt: String, up: String, dn: String) : this(CubeMapTexture {
         it.loadCubeMapImageData(ft, bk, lt, rt, up, dn)
     })
@@ -30,7 +30,8 @@ class Skybox(val environmentMap: de.fabmax.kool.pipeline.CubeMapTexture) : Mesh(
             }
             fragmentStage {
                 val sampler = cubeMapSamplerNode(cubeMapNode(texName), ifLocalPos.output, false)
-                colorOutput = sampler.outColor
+                val gamma = hdrToLdrNode(sampler.outColor)
+                colorOutput = gamma.outColor
             }
         }
         val shader = ModeledShader.CubeMapColor(model, texName)

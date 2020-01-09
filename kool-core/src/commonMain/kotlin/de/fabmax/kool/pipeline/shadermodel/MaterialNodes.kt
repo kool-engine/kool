@@ -76,15 +76,17 @@ class PbrMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNode
     var inCamPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
     var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
-    var inAmbient = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
+    //var inAmbient = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
     var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0.0f))
     var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.1f))
+
+    var inIrradiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
 
     val outColor = ShaderNodeIoVar(ModelVar4f("pbrMat_outColor"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inAlbedo, inNormal, inFragPos, inCamPos)
+        dependsOn(inAlbedo, inNormal, inFragPos, inCamPos, inIrradiance)
         dependsOn(lightNode)
     }
 
@@ -92,6 +94,12 @@ class PbrMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNode
         generator.appendFunction("fresnelSchlick", """
             vec3 fresnelSchlick(float cosTheta, vec3 F0) {
                 return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+            }
+        """)
+
+        generator.appendFunction("fresnelSchlickRoughness", """
+            vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
+                return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
             }
         """)
 
@@ -166,8 +174,12 @@ class PbrMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNode
                 float NdotL = max(dot(N, L), 0.0);
                 Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
             }
-  
-            vec3 ambient = ${inAmbient.ref3f()} * albedo;
+
+            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, $inRoughness); 
+            vec3 kD = 1.0 - kS;
+            vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
+            vec3 ambient = (kD * diffuse) ;//* ao;
+
             vec3 color = ambient + Lo;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
             """)
