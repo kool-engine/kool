@@ -244,33 +244,17 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                     renderOffscreen(commandBuffer, offscreenPasses[i])
                 }
 
-                val clearValues = callocVkClearValueN(2) {
-                    this[0].setColor(clearColor)
-                    this[1].depthStencil {
-                        it.depth(1f)
-                        it.stencil(0)
-                    }
-                }
-                val renderPassInfo = callocVkRenderPassBeginInfo {
-                    sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
-                    renderPass(swapChain.renderPass.vkRenderPass)
-                    framebuffer(swapChain.framebuffers[imageIndex])
-                    renderArea {
-                        it.offset().apply { x(0); y(0) }
-                        it.extent(swapChain.extent)
-                    }
-                    pClearValues(clearValues)
-                }
-
-                vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                //setViewport(commandBuffer, viewport.x, viewport.y, viewport.width, viewport.height)
+                val renderPassInfo = renderPassBeginInfo(swapChain.renderPass.vkRenderPass, swapChain.framebuffers[imageIndex],
+                        swapChain.extent.width(), swapChain.extent.height(), clearColor)
 
                 // optimize draw queue order
                 // fixme: more sophisticated sorting, customizable draw order, etc.
                 //drawQueue.commands.sortBy { it.pipeline!!.pipelineHash }
-                renderDrawQueue(commandBuffer, drawQueue, imageIndex, swapChain.renderPass.vkRenderPass, swapChain.nImages, swapChain.extent.width(), swapChain.extent.height())
 
+                vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
+                renderDrawQueue(commandBuffer, drawQueue, imageIndex, swapChain.renderPass.vkRenderPass, swapChain.nImages, swapChain.extent.width(), swapChain.extent.height())
                 vkCmdEndRenderPass(commandBuffer)
+
                 check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
 
                 // delete discarded meshes
@@ -352,43 +336,56 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             vkCmdSetScissor(commandBuffer, 0, scissor)
         }
 
-        private fun MemoryStack.renderOffscreen(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenPassImpl) {
-            val clearValues = callocVkClearValueN(2) {
-                this[0].setColor(offscreenPass.clearColor)
-                this[1].depthStencil {
-                    it.depth(1f)
-                    it.stencil(0)
-                }
+        private fun MemoryStack.renderOffscreen(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenPass) {
+            when (offscreenPass) {
+                is OffscreenPass2d -> renderOffscreen2d(commandBuffer, offscreenPass)
+                is OffscreenPassCube -> renderOffscreenCube(commandBuffer, offscreenPass)
+                else -> throw IllegalArgumentException("Not implemented: ${offscreenPass::class.java}")
             }
+        }
 
-            val offscreenRp = offscreenPass.getRenderPass(sys)
-            val renderPassInfo = callocVkRenderPassBeginInfo {
-                sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
-                renderPass(offscreenRp.renderPass)
-                framebuffer(offscreenRp.frameBuffer)
-                renderArea { r ->
-                    r.offset { it.x(0); it.y(0) }
-                    r.extent { it.width(offscreenRp.fbWidth); it.height(offscreenRp.fbHeight) }
-                }
-                pClearValues(clearValues)
-            }
+        private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenPass2d) {
+            val rp = offscreenPass.impl.getRenderPass(sys)
+            val renderPassInfo = renderPassBeginInfo(rp.renderPass, rp.frameBuffer, rp.fbWidth, rp.fbHeight, offscreenPass.clearColor)
 
-            if (offscreenPass.isCube) {
-                for (view in ViewDirection.values()) {
-                    vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                    renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index], view.index, offscreenRp.renderPass, 6, offscreenRp.fbWidth, offscreenRp.fbHeight)
-                    vkCmdEndRenderPass(commandBuffer)
-                    offscreenPass.copyView(commandBuffer, view)
-                    //vkDeviceWaitIdle(sys.device.vkDevice)
-                }
-            } else {
+            vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
+            renderDrawQueue(commandBuffer, offscreenPass.drawQueues[0], 0, rp.renderPass, 1, rp.fbWidth, rp.fbHeight)
+            vkCmdEndRenderPass(commandBuffer)
+        }
+
+        private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenPassCube) {
+            val rp = offscreenPass.impl.getRenderPass(sys)
+            val renderPassInfo = renderPassBeginInfo(rp.renderPass, rp.frameBuffer, rp.fbWidth, rp.fbHeight, offscreenPass.clearColor)
+
+            offscreenPass.impl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+            for (view in OffscreenPassCube.ViewDirection.values()) {
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                renderDrawQueue(commandBuffer, offscreenPass.drawQueues[0], 0, offscreenRp.renderPass, 1, offscreenRp.fbWidth, offscreenRp.fbHeight)
+                renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index], view.index, rp.renderPass, 6, rp.fbWidth, rp.fbHeight)
                 vkCmdEndRenderPass(commandBuffer)
+                offscreenPass.impl.copyView(sys, commandBuffer, view)
             }
-
+            if (offscreenPass.mipLevels > 1) {
+                offscreenPass.impl.generateMipmaps(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            } else {
+                offscreenPass.impl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            }
         }
     }
+
+    private fun MemoryStack.renderPassBeginInfo(renderPass: Long, frameBuffer: Long, fbWidth: Int, fbHeight: Int, clearColor: Color) =
+            callocVkRenderPassBeginInfo {
+                sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
+                renderPass(renderPass)
+                framebuffer(frameBuffer)
+                renderArea { r ->
+                    r.offset { it.x(0); it.y(0) }
+                    r.extent { it.width(fbWidth); it.height(fbHeight) }
+                }
+                pClearValues(callocVkClearValueN(2) {
+                    this[0].setColor(clearColor)
+                    this[1].depthStencil { it.depth(1f); it.stencil(0) }
+                })
+            }
 
     private fun VkClearValue.setColor(color: Color) {
         color {

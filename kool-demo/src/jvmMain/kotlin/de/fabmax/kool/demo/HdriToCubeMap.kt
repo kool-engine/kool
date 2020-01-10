@@ -1,7 +1,6 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.OffscreenPassImpl
-import de.fabmax.kool.ViewDirection
+import de.fabmax.kool.OffscreenPassCube
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CubeMapTexture
@@ -10,7 +9,6 @@ import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.CullMethod
-import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.Color
@@ -132,28 +130,11 @@ class DecodeAndToneMapRgbeNode(graph: ShaderGraph) : ShaderNode("decodeRgbe", gr
     }
 }
 
-fun hdriToCubeMapPass(): OffscreenPassImpl {
-    //assets.loadImageData("skybox/hdri/driving_school.rgbe.png")
-    //assets.loadImageData("skybox/hdri/newport_loft-js.rgbe.png")
-    //assets.loadImageData("skybox/hdri/newport_loft.rgbe.png")
-    //assets.loadImageData("skybox/hdri/lakeside_2k.rgbe.png")
-    //assets.loadImageData("skybox/hdri/spruit_sunrise_2k.rgbe.png")
-
-    return hdriToCubeMapPass(Texture { it.loadImageData("skybox/hdri/newport_loft.rgbe.png") })
-}
-
-fun hdriToCubeMapPass(hdri: Texture): OffscreenPassImpl {
-    return OffscreenPassImpl(512, 512, true).apply {
+fun hdriToCubeMapPass(hdri: Texture): OffscreenPassCube {
+    return OffscreenPassCube(512, 512, 1).apply {
         clearColor = Color.GRAY
 
-        val cube = scene {
-            (camera as PerspectiveCamera).let {
-                it.position.set(Vec3f.ZERO)
-                it.fovy = 90f
-                it.clipNear = 0.1f
-                it.clipFar = 10f
-            }
-
+        scene = scene {
             +mesh(setOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                 generator = {
                     cube { centerOrigin() }
@@ -190,39 +171,16 @@ fun hdriToCubeMapPass(hdri: Texture): OffscreenPassImpl {
                 }
             }
         }
-        scene = cube
-
-        val pos = 1f
-        val camPositions = mutableMapOf(
-                ViewDirection.FRONT to Vec3f(0f, 0f, pos),
-                ViewDirection.BACK to Vec3f(0f, 0f, -pos),
-                ViewDirection.LEFT to Vec3f(-pos, 0f, 0f),
-                ViewDirection.RIGHT to Vec3f(pos, 0f, 0f),
-                ViewDirection.UP to Vec3f(0f, -pos, 0f),
-                ViewDirection.DOWN to Vec3f(0f, pos, 0f)
-        )
-        onRender = { viewDir, _ ->
-            cube.camera.lookAt.set(camPositions[viewDir]!!)
-            when (viewDir) {
-                ViewDirection.UP -> cube.camera.up.set(Vec3f.NEG_Z_AXIS)
-                ViewDirection.DOWN -> cube.camera.up.set(Vec3f.Z_AXIS)
-                else -> cube.camera.up.set(Vec3f.NEG_Y_AXIS)
-            }
-        }
     }
 }
 
 class ConvoluteIrradianceNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
     var inLocalPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
-//    var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
-//    var inTangent = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
     val outColor = ShaderNodeIoVar(ModelVar4f("convIrradiance_outColor"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(inLocalPos)
-//        dependsOn(inNormal)
-//        dependsOn(inTangent)
         dependsOn(texture)
     }
 
@@ -249,8 +207,6 @@ class ConvoluteIrradianceNode(val texture: TextureNode, graph: ShaderGraph) : Sh
         val thetaMin = 0.0 * PI
         val thetaMax = 0.5 * PI
         generator.appendMain("""
-            //vec3 normal = normalize({inNormal.ref3f()});
-            //vec3 up = normalize({inTangent.ref3f()});
             vec3 normal = normalize(${inLocalPos.ref3f()});
             vec3 up = vec3(0.0, 1.0, 0.0);
             vec3 right = normalize(cross(up, normal));
@@ -276,10 +232,9 @@ class ConvoluteIrradianceNode(val texture: TextureNode, graph: ShaderGraph) : Sh
 }
 
 class IrradianceMapPass(hdriTexture: Texture) {
-
-    val offscreenPass: OffscreenPassImpl
+    val offscreenPass: OffscreenPassCube
     val irradianceMap: CubeMapTexture
-        get() = offscreenPass.textureCube
+        get() = offscreenPass.impl.texture
     var hdriTexture = hdriTexture
         set(value) {
             irrMapShader?.textureSampler?.texture = value
@@ -289,23 +244,12 @@ class IrradianceMapPass(hdriTexture: Texture) {
     private var irrMapShader: ModeledShader.TextureColor? = null
 
     init {
-        offscreenPass = OffscreenPassImpl(32, 32, true).apply {
+        offscreenPass = OffscreenPassCube(32, 32, 1).apply {
             isSingleShot = true
-            val cube = scene {
-                (camera as PerspectiveCamera).let {
-                    it.position.set(Vec3f.ZERO)
-                    it.fovy = 90f
-                    it.clipNear = 0.1f
-                    it.clipFar = 10f
-                }
-
+            scene = scene {
                 +mesh(setOf(Attribute.POSITIONS)) {
                     generator = {
                         cube { centerOrigin() }
-//                        sphere {
-//                            steps = 100
-//                            radius = 1f
-//                        }
                         meshData.generateTangents()
                     }
 
@@ -317,20 +261,14 @@ class IrradianceMapPass(hdriTexture: Texture) {
                             val texName = "colorTex"
                             val model = ShaderModel("Irradiance Convolution Sampler").apply {
                                 val ifLocalPos: StageInterfaceNode
-                                //val ifNormal: StageInterfaceNode
-                                //val ifTangent: StageInterfaceNode
                                 vertexStage {
                                     ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                                    //ifNormal = stageInterfaceNode("ifNormals", attrNormals().output)
-                                    //ifTangent = stageInterfaceNode("ifTangents", attrTangents().output)
                                     positionOutput = simpleVertexPositionNode().outPosition
                                 }
                                 fragmentStage {
                                     val tex = textureNode(texName)
                                     val convNd = addNode(ConvoluteIrradianceNode(tex, stage)).apply {
                                         inLocalPos = ifLocalPos.output
-                                        //inNormal = ifNormal.output
-                                        //inTangent = ifTangent.output
                                     }
                                     colorOutput = convNd.outColor
                                 }
@@ -343,25 +281,6 @@ class IrradianceMapPass(hdriTexture: Texture) {
                             irrMapShader!!.textureSampler.texture = hdriTexture
                         }
                     }
-                }
-            }
-            scene = cube
-
-            val pos = 1f
-            val camPositions = mutableMapOf(
-                    ViewDirection.FRONT to Vec3f(0f, 0f, pos),
-                    ViewDirection.BACK to Vec3f(0f, 0f, -pos),
-                    ViewDirection.LEFT to Vec3f(-pos, 0f, 0f),
-                    ViewDirection.RIGHT to Vec3f(pos, 0f, 0f),
-                    ViewDirection.UP to Vec3f(0f, -pos, 0f),
-                    ViewDirection.DOWN to Vec3f(0f, pos, 0f)
-            )
-            onRender = { viewDir, _ ->
-                cube.camera.lookAt.set(camPositions[viewDir]!!)
-                when (viewDir) {
-                    ViewDirection.UP -> cube.camera.up.set(Vec3f.NEG_Z_AXIS)
-                    ViewDirection.DOWN -> cube.camera.up.set(Vec3f.Z_AXIS)
-                    else -> cube.camera.up.set(Vec3f.NEG_Y_AXIS)
                 }
             }
         }

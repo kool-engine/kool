@@ -9,7 +9,6 @@ import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.createUint8Buffer
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkFormatProperties
 import java.nio.ByteBuffer
 import kotlin.math.floor
 import kotlin.math.log2
@@ -46,9 +45,9 @@ object TextureLoader {
         imgConfig.arrayLayers = 6
         imgConfig.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
         val textureImage = Image(sys, imgConfig)
-        textureImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+        textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
         copyCubeBufferToImage(sys, stagingBuffer, textureImage, width, height)
-        textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         stagingBuffer.destroy()
 
         val textureImageView = ImageView(sys, textureImage.vkImage, textureImage.format, VK_IMAGE_ASPECT_COLOR_BIT,
@@ -83,12 +82,12 @@ object TextureLoader {
         imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
         imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
         val textureImage = Image(sys, imgConfig)
-        textureImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+        textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
         copyBufferToImage(sys, stagingBuffer, textureImage, width, height)
         if (mipLevels > 1) {
-            generateMipmaps(sys, textureImage)
+            textureImage.generateMipmaps(sys)
         } else {
-            textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         }
         stagingBuffer.destroy()
 
@@ -148,96 +147,6 @@ object TextureLoader {
             }
         }
         return (img.data as Uint8BufferImpl).buffer
-    }
-
-    private fun generateMipmaps(sys: VkSystem, texImage: Image) {
-        memStack {
-            val formatProperties = VkFormatProperties.mallocStack(this)
-            vkGetPhysicalDeviceFormatProperties(sys.physicalDevice.vkPhysicalDevice, texImage.format, formatProperties)
-            check(formatProperties.optimalTilingFeatures() and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT != 0) {
-                "Texture image format does not support linear blitting!"
-            }
-
-            sys.commandPool.singleTimeCommands { commandBuffer ->
-                val barrier = callocVkImageMemoryBarrierN(1) {
-                    sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
-                    image(texImage.vkImage)
-                    srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                    dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                    subresourceRange {
-                        it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                        it.baseArrayLayer(0)
-                        it.layerCount(1)
-                        it.levelCount(1)
-                    }
-                }
-
-                var mipWidth = texImage.width
-                var mipHeight = texImage.height
-                for (i in 1 until texImage.mipLevels) {
-                    barrier
-                            .subresourceRange { it.baseMipLevel(i - 1) }
-                            .oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                            .newLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-                            .srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
-                            .dstAccessMask(VK_ACCESS_TRANSFER_READ_BIT)
-
-                    vkCmdPipelineBarrier(commandBuffer,
-                            VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-                            null, null, barrier)
-
-                    val blit = callocVkImageBlitN(1) {
-                        srcOffsets(0).set(0, 0, 0)
-                        srcOffsets(1).set(mipWidth, mipHeight, 1)
-                        srcSubresource {
-                            it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                            it.mipLevel(i - 1)
-                            it.baseArrayLayer(0)
-                            it.layerCount(1)
-                        }
-                        dstOffsets(0).set(0, 0, 0)
-                        dstOffsets(1)
-                                .x(if (mipWidth > 1) mipWidth / 2 else 1)
-                                .y(if (mipHeight > 1) mipHeight / 2 else 1)
-                                .z(1)
-                        dstSubresource {
-                            it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                            it.mipLevel(i)
-                            it.baseArrayLayer(0)
-                            it.layerCount(1)
-                        }
-                    }
-
-                    vkCmdBlitImage(commandBuffer,
-                            texImage.vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                            texImage.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                            blit, VK_FILTER_LINEAR)
-
-                    barrier
-                            .oldLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-                            .newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                            .srcAccessMask(VK_ACCESS_TRANSFER_READ_BIT)
-                            .dstAccessMask(VK_ACCESS_SHADER_READ_BIT)
-
-                    vkCmdPipelineBarrier(commandBuffer,
-                            VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-                            null, null, barrier)
-
-                    if (mipWidth > 1) { mipWidth /= 2 }
-                    if (mipHeight > 1) { mipHeight /= 2 }
-                }
-
-                barrier.subresourceRange { it.baseMipLevel(texImage.mipLevels - 1) }
-                        .oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                        .newLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                        .srcAccessMask(VK_ACCESS_TRANSFER_WRITE_BIT)
-                        .dstAccessMask(VK_ACCESS_SHADER_READ_BIT)
-
-                vkCmdPipelineBarrier(commandBuffer,
-                        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-                        null, null, barrier)
-            }
-        }
     }
 
     private fun copyBufferToImage(sys: VkSystem, buffer: Buffer, image: Image, width: Int, height: Int) {

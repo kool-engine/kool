@@ -30,7 +30,7 @@ class OffscreenRenderPass(val sys: VkSystem, width: Int, height: Int, val isCopi
 
         image = Image(sys, fbImageCfg)
         imageView = ImageView(sys, image, VK_IMAGE_ASPECT_COLOR_BIT)
-        sampler = createSampler(image)
+        sampler = createSampler()
 
         fbImageCfg.format = sys.physicalDevice.depthFormat
         fbImageCfg.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
@@ -51,7 +51,7 @@ class OffscreenRenderPass(val sys: VkSystem, width: Int, height: Int, val isCopi
     }
 
     // fixme: duplicate from Image, add ImageSampler class?
-    private fun createSampler(texImage: Image): Long {
+    private fun createSampler(): Long {
         memStack {
             val samplerInfo = callocVkSamplerCreateInfo {
                 sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)

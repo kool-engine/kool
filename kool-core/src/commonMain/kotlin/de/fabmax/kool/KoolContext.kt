@@ -67,7 +67,7 @@ abstract class KoolContext {
         private set
 
     val scenes: MutableList<Scene> = mutableListOf()
-    val offscreenPasses = mutableListOf<OffscreenPassImpl>()
+    val offscreenPasses = mutableListOf<OffscreenPass>()
 
     private val delayedCallbacks = mutableListOf<DelayedCallback>()
 
@@ -141,7 +141,6 @@ abstract class KoolContext {
                 offscreenPasses.removeAt(i)
             } else {
                 offscreenPasses[i].render(this)
-                offscreenPasses[i].frameIdx++
             }
         }
 

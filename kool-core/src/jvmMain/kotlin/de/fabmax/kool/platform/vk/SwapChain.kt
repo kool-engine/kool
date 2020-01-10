@@ -110,7 +110,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
         val image = Image(sys, imgConfig)
 
         val imageView = ImageView(sys, image, VK_IMAGE_ASPECT_COLOR_BIT)
-        image.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        image.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
         return image to imageView
     }
 
@@ -127,7 +127,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
         val image = Image(sys, imgConfig)
 
         val imageView = ImageView(sys, image, VK_IMAGE_ASPECT_DEPTH_BIT)
-        image.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+        image.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
         return image to imageView
     }
 
