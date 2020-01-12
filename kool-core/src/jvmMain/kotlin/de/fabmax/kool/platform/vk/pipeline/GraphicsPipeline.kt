@@ -7,10 +7,13 @@ import de.fabmax.kool.scene.CullMethod
 import de.fabmax.kool.util.logD
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkPipelineDynamicStateCreateInfo
+import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo
 import org.lwjgl.vulkan.VkPushConstantRange
+import java.nio.ByteBuffer
 
 class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, val height: Int, val msaaSamples: Int,
-                       val pipeline: Pipeline, val nImages: Int, val descriptorSetPoolSize: Int = 100) : VkResource() {
+                       val dynamicViewPort: Boolean, val pipeline: Pipeline, val nImages: Int, val descriptorSetPoolSize: Int = 100) : VkResource() {
 
     val descriptorSetLayout: Long
     val descriptorPool: Long
@@ -77,6 +80,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, 
                 primitiveRestartEnable(false)
             }
 
+            val viewportState: VkPipelineViewportStateCreateInfo?
             val viewport = callocVkViewportN(1) {
                 // actual viewport size is set on render
                 x(0f)
@@ -92,12 +96,21 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, 
                 extent { it.width(this@GraphicsPipeline.width); it.height(this@GraphicsPipeline.height) }
             }
 
-            val viewportState = callocVkPipelineViewportStateCreateInfo {
+            viewportState = callocVkPipelineViewportStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO)
                 viewportCount(1)
                 pViewports(viewport)
                 scissorCount(1)
                 pScissors(scissor)
+            }
+
+            val dynamicState = if (dynamicViewPort) {
+                callocVkPipelineDynamicStateCreateInfo {
+                    sType(VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO)
+                    pDynamicStates(ints(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR))
+                }
+            } else {
+                null
             }
 
             val rasterizer = callocVkPipelineRasterizationStateCreateInfo {
@@ -195,11 +208,11 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, 
                 pVertexInputState(vertexInputInfo)
                 pInputAssemblyState(inputAssembly)
                 pViewportState(viewportState)
+                pDynamicState(dynamicState)
                 pRasterizationState(rasterizer)
                 pMultisampleState(multisampling)
                 pDepthStencilState(depthStencil)
                 pColorBlendState(colorBlending)
-                pDynamicState(null)
                 layout(pipelineLayout)
                 renderPass(renderPass)
                 subpass(0)
@@ -227,7 +240,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, 
 
     private fun createShaderModule(shaderStage: ShaderStage): Long {
         return memStack {
-            val code = malloc(shaderStage.code.size).put(shaderStage.code).flip()
+            val code = malloc(shaderStage.code.size).put(shaderStage.code).flip() as ByteBuffer
             val createInfo = callocVkShaderModuleCreateInfo {
                 sType(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)
                 pCode(code)

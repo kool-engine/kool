@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
+import kotlin.math.max
 
 abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevels: Int, nQueues: Int) {
     var clearColor = Color.BLACK
@@ -16,6 +17,7 @@ abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevel
 
     var frameIdx = 0
     var isSingleShot = false
+    var targetMipLevel = -1
 
     init {
         drawQueues = List(nQueues) { DrawQueue() }
@@ -23,20 +25,36 @@ abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevel
 
     abstract fun render(ctx: KoolContext)
 
+    fun mipWidth(mipLevel: Int): Int {
+        return if (mipLevel <= 0) {
+            texWidth
+        } else {
+            texWidth shr mipLevel
+        }
+    }
+
+    fun mipHeight(mipLevel: Int): Int {
+        return if (mipLevel <= 0) {
+            texHeight
+        } else {
+            texHeight shr mipLevel
+        }
+    }
+
 }
 
 class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int) : OffscreenPass(texWidth, texHeight, mipLevels, 1) {
-    val impl = OffscreenPass2dImpl(texWidth, texHeight, mipLevels)
+    val impl = OffscreenPass2dImpl(this)
 
-    var onRender: ((KoolContext) -> Unit)? = null
+    var onSetup: ((KoolContext) -> Unit)? = null
 
     override fun render(ctx: KoolContext) {
         scene?.let { scene ->
             ctx.pushAttributes()
-            ctx.viewport = KoolContext.Viewport(0, 0, texWidth, texHeight)
+            ctx.viewport = KoolContext.Viewport(0, 0, mipWidth(targetMipLevel), mipHeight(targetMipLevel))
+            onSetup?.invoke(ctx)
 
             scene.drawQueue = drawQueues[0].also { it.clear() }
-            onRender?.invoke(ctx)
             scene.renderScene(ctx)
 
             ctx.popAttributes()
@@ -46,9 +64,10 @@ class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int) : Offscreen
 }
 
 class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int) : OffscreenPass(texWidth, texHeight, mipLevels, 6) {
-    val impl = OffscreenPassCubeImpl(texWidth, texHeight, mipLevels)
+    val impl = OffscreenPassCubeImpl(this)
 
-    var onRender: ((ViewDirection, KoolContext) -> Unit)? = null
+    var onSetup: ((KoolContext) -> Unit)? = null
+    var onSetupView: ((ViewDirection, KoolContext) -> Unit)? = null
 
     init {
         defaultCubeMapCameraConfig()
@@ -57,10 +76,12 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int) : Offscre
     override fun render(ctx: KoolContext) {
         scene?.let { scene ->
             ctx.pushAttributes()
-            ctx.viewport = KoolContext.Viewport(0, 0, texWidth, texHeight)
+            ctx.viewport = KoolContext.Viewport(0, 0, mipWidth(targetMipLevel), mipHeight(targetMipLevel))
+            onSetup?.invoke(ctx)
+
             for (v in ViewDirection.values()) {
+                onSetupView?.invoke(v, ctx)
                 scene.drawQueue = drawQueues[v.index].also { it.clear() }
-                onRender?.invoke(v, ctx)
                 scene.renderScene(ctx)
             }
             ctx.popAttributes()
@@ -78,7 +99,7 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int) : Offscre
                 ViewDirection.DOWN to Vec3f(0f, 1f, 0f)
         )
 
-        onRender = { viewDir, _ ->
+        onSetupView = { viewDir, _ ->
             scene?.apply {
                 if (camera !is PerspectiveCamera) {
                     camera = PerspectiveCamera()
@@ -110,10 +131,10 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int) : Offscre
     }
 }
 
-expect class OffscreenPass2dImpl(texWidth: Int, texHeight: Int, mipLevels: Int) {
+expect class OffscreenPass2dImpl(offscreenPass: OffscreenPass2d) {
     val texture: Texture
 }
 
-expect class OffscreenPassCubeImpl(texWidth: Int, texHeight: Int, mipLevels: Int) {
+expect class OffscreenPassCubeImpl(offscreenPass: OffscreenPassCube) {
     val texture: CubeMapTexture
 }

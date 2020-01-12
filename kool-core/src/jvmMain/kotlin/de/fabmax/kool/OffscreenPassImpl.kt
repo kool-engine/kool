@@ -9,15 +9,17 @@ import de.fabmax.kool.platform.vk.util.vkFormat
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
+import kotlin.math.pow
+import kotlin.math.roundToInt
 
-actual class OffscreenPass2dImpl actual constructor(val texWidth: Int, val texHeight: Int, val mipLevels: Int) {
+actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenPass2d) {
     actual val texture: Texture = OffscreenTexture2d()
 
     var renderPass: OffscreenRenderPass? = null
         private set
 
     init {
-        if (mipLevels > 1) {
+        if (offscreenPass.mipLevels > 1) {
             TODO("not yet implemented, requires copying framebuffer color attachment")
         }
     }
@@ -30,7 +32,7 @@ actual class OffscreenPass2dImpl actual constructor(val texWidth: Int, val texHe
     }
 
     private fun createRenderPass(sys: VkSystem) {
-        val rp = OffscreenRenderPass(sys, texWidth, texHeight, false)
+        val rp = OffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, false)
         (texture as OffscreenTexture2d).create(sys, rp)
         renderPass = rp
     }
@@ -44,7 +46,7 @@ actual class OffscreenPass2dImpl actual constructor(val texWidth: Int, val texHe
 }
 
 
-actual class OffscreenPassCubeImpl actual constructor(val texWidth: Int, val texHeight: Int, val mipLevels: Int) {
+actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenPassCube) {
     actual val texture: CubeMapTexture = OffscreenTextureCube()
 
     var renderPass: OffscreenRenderPass? = null
@@ -58,7 +60,7 @@ actual class OffscreenPassCubeImpl actual constructor(val texWidth: Int, val tex
     }
 
     fun generateMipmaps(commandBuffer: VkCommandBuffer, dstLayout: Int) {
-        if (mipLevels > 1) {
+        if (offscreenPass.mipLevels > 1) {
             memStack {
                 (texture as OffscreenTextureCube).image.generateMipmaps(this, commandBuffer, dstLayout)
             }
@@ -67,6 +69,15 @@ actual class OffscreenPassCubeImpl actual constructor(val texWidth: Int, val tex
 
     fun copyView(sys: VkSystem, commandBuffer: VkCommandBuffer, viewDir: OffscreenPassCube.ViewDirection) {
         val rp = renderPass ?: return
+
+        var mipLevel = 0
+        var width = offscreenPass.texWidth
+        var height = offscreenPass.texHeight
+        if (offscreenPass.targetMipLevel > 0) {
+            width = (width * 0.5.pow(offscreenPass.targetMipLevel)).roundToInt()
+            height = (height * 0.5.pow(offscreenPass.targetMipLevel)).roundToInt()
+            mipLevel = offscreenPass.targetMipLevel
+        }
 
         texture as OffscreenTextureCube
 
@@ -84,16 +95,12 @@ actual class OffscreenPassCubeImpl actual constructor(val texWidth: Int, val tex
                 srcOffset { it.set(0, 0, 0) }
                 dstSubresource {
                     it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-                    it.mipLevel(0)
+                    it.mipLevel(mipLevel)
                     it.baseArrayLayer(layer)
                     it.layerCount(1)
                 }
                 dstOffset { it.set(0, 0, 0) }
-                extent {
-                    it.width(rp.fbWidth)
-                    it.height(rp.fbHeight)
-                    it.depth(1)
-                }
+                extent { it.set(width, height, 1) }
             }
             vkCmdCopyImage(commandBuffer, rp.image.vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, texture.image.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
             rp.image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
@@ -109,7 +116,7 @@ actual class OffscreenPassCubeImpl actual constructor(val texWidth: Int, val tex
     }
 
     private fun createRenderPass(sys: VkSystem) {
-        val rp = OffscreenRenderPass(sys, texWidth, texHeight, true)
+        val rp = OffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, true)
         (texture as OffscreenTextureCube).create(sys, rp)
         renderPass = rp
     }
@@ -137,7 +144,7 @@ actual class OffscreenPassCubeImpl actual constructor(val texWidth: Int, val tex
             val imgConfig = Image.Config()
             imgConfig.width = rp.fbWidth
             imgConfig.height = rp.fbHeight
-            imgConfig.mipLevels = mipLevels
+            imgConfig.mipLevels = offscreenPass.mipLevels
             imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
             imgConfig.format = rp.texFormat.vkFormat
             imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL

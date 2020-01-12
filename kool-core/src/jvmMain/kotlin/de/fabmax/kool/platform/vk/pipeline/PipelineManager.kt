@@ -24,13 +24,13 @@ class PipelineManager(val sys: VkSystem) {
 
     fun hasPipeline(pipeline: Pipeline, renderPass: Long): Boolean = pipelines.containsKey(makeKey(pipeline, renderPass))
 
-    fun addPipelineConfig(pipeline: Pipeline, nImages: Int, renderPass: Long, vpWidth: Int, vpHeight: Int) {
+    fun addPipelineConfig(pipeline: Pipeline, nImages: Int, renderPass: Long, vpWidth: Int, vpHeight: Int, dynVp: Boolean) {
         if (renderPass == swapChain?.renderPass?.vkRenderPass ?: 0L) {
             if (onScreenPipelineConfigs.add(pipeline)) {
                 createOnScreenPipeline(pipeline, vpWidth, vpHeight)
             }
         } else {
-            val gp = GraphicsPipeline(sys, renderPass, vpWidth, vpHeight, 1, pipeline, nImages)
+            val gp = GraphicsPipeline(sys, renderPass, vpWidth, vpHeight, 1, dynVp, pipeline, nImages)
             sys.device.addDependingResource(gp)
             mutPipelines[makeKey(pipeline, renderPass)] = gp
         }
@@ -38,7 +38,7 @@ class PipelineManager(val sys: VkSystem) {
 
     private fun createOnScreenPipeline(pipeline: Pipeline, vpWidth: Int, vpHeight: Int) {
         val swapChain = this.swapChain ?: return
-        val gp = GraphicsPipeline(sys, swapChain.renderPass.vkRenderPass, vpWidth, vpHeight, sys.physicalDevice.msaaSamples, pipeline, swapChain.nImages)
+        val gp = GraphicsPipeline(sys, swapChain.renderPass.vkRenderPass, vpWidth, vpHeight, sys.physicalDevice.msaaSamples, false, pipeline, swapChain.nImages)
         swapChain.addDependingResource(gp)
         mutPipelines[makeKey(pipeline, swapChain.renderPass.vkRenderPass)] = gp
     }

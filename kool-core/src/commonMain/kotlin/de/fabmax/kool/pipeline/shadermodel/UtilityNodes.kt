@@ -39,7 +39,7 @@ class CubeMapSamplerNode(val cubeMap: CubeMapNode, graph: ShaderGraph, val premu
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${outColor.declare()} = ${generator.sampleTextureCube(cubeMap.name, inTexCoord.ref3f())};")
+        generator.appendMain("${outColor.declare()} = ${generator.sampleTextureCube(cubeMap.name, inTexCoord.ref3f(), "1.2")};")
         if (premultiply) {
             generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")
         }

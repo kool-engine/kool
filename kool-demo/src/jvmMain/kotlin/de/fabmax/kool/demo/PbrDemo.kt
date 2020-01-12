@@ -4,6 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.pipelineConfig
@@ -11,6 +12,9 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.debugOverlay
+import de.fabmax.kool.util.pbrMapGen.BrdfLutPass
+import de.fabmax.kool.util.pbrMapGen.IrradianceMapPass
+import de.fabmax.kool.util.pbrMapGen.ReflectionMapPass
 import kotlin.math.max
 
 /**
@@ -45,6 +49,7 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
     lighting.lights.add(light4)
 
     var irradianceMapPass: IrradianceMapPass? = null
+    var reflectionMapPass: ReflectionMapPass? = null
 
     val hdris = listOf(
             "skybox/hdri/newport_loft.rgbe.png",
@@ -77,19 +82,32 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
                 it.offscreenPass.frameIdx = 0
                 ctx.offscreenPasses += it.offscreenPass
             }
+            reflectionMapPass?.let {
+                it.hdriTexture = tex
+                it.offscreenPass.frameIdx = 0
+                ctx.offscreenPasses += it.offscreenPass
+            }
         }
     }
 
 
     getHdriTex(hdriIndex) { tex ->
-        val irrMapPass = hdriToIrradianceMapPass(tex)
+        val irrMapPass = IrradianceMapPass(tex)
+        val reflMapPass = ReflectionMapPass(tex)
+        val brdfLutPass = BrdfLutPass()
         irradianceMapPass = irrMapPass
+        reflectionMapPass = reflMapPass
 
         ctx.offscreenPasses += irrMapPass.offscreenPass
-        this += Skybox(irrMapPass.irradianceMap)
+        ctx.offscreenPasses += reflMapPass.offscreenPass
+        ctx.offscreenPasses += brdfLutPass.offscreenPass
 
-        colorGrid(irrMapPass.irradianceMap)
-//        roughnessMetallicGrid(irrMapPass.irradianceMap)
+        //this += Skybox(irrMapPass.irradianceMap)
+        this += Skybox(reflMapPass.reflectionMap)
+
+        colorGrid(irrMapPass.irradianceMap, reflMapPass.reflectionMap, brdfLutPass.brdfLut)
+//        roughnessMetallicGrid(irrMapPass.irradianceMap, reflMapPass.reflectionMap, brdfLutPass.brdfLut)
+//        bunny(irrMapPass.irradianceMap, reflMapPass.reflectionMap, brdfLutPass.brdfLut, ctx)
     }
 
 
@@ -103,7 +121,7 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
     }
 }
 
-private fun Scene.colorGrid(irradianceMap: CubeMapTexture?): List<ModeledShader.PbrShader> {
+private fun Scene.colorGrid(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture): List<ModeledShader.PbrShader> {
     val nRows = 4
     val nCols = 5
     val spacing = 4.5f
@@ -135,10 +153,12 @@ private fun Scene.colorGrid(irradianceMap: CubeMapTexture?): List<ModeledShader.
 
                 val pbrConfig = ModeledShader.PbrShader.PbrConfig()
                 pbrConfig.irradianceMap = irradianceMap
+                pbrConfig.reflectionMap = reflectionMap
+                pbrConfig.brdfLut = brdfLut
 
                 val shader = ModeledShader.PbrShader(pbrConfig)
                 shader.roughness = 0.1f
-                shader.metallic = 0f
+                shader.metallic = 1f
                 pipelineConfig { shaderLoader = shader::setup }
                 shaders += shader
             }
@@ -147,7 +167,7 @@ private fun Scene.colorGrid(irradianceMap: CubeMapTexture?): List<ModeledShader.
     return shaders
 }
 
-private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture?): List<ModeledShader.PbrShader> {
+private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture): List<ModeledShader.PbrShader> {
     val nRows = 7
     val nCols = 7
     val spacing = 2.5f
@@ -158,8 +178,8 @@ private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture?): List<Mo
         for (x in 0 until nCols) {
             +colorMesh {
                 generator = {
-                    //color = Color.DARK_RED
-                    color = Color.MD_GREEN.gamma()
+                    color = Color.DARK_RED
+                    //color = Color.MD_GREEN.gamma()
                     sphere {
                         steps = 100
                         center.set((-(nCols-1) * 0.5f + x) * spacing, (-(nRows-1) * 0.5f + y) * spacing, 0f)
@@ -169,6 +189,8 @@ private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture?): List<Mo
 
                 val pbrConfig = ModeledShader.PbrShader.PbrConfig()
                 pbrConfig.irradianceMap = irradianceMap
+                pbrConfig.reflectionMap = reflectionMap
+                pbrConfig.brdfLut = brdfLut
 
                 val shader = ModeledShader.PbrShader(pbrConfig)
                 shader.roughness = max(x / (nCols - 1).toFloat(), 0.05f)
@@ -180,4 +202,25 @@ private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture?): List<Mo
     }
 
     return shaders
+}
+
+
+private fun Scene.bunny(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture, ctx: KoolContext) {
+    loadModel(ctx.assetMgr) { model ->
+        val colorMesh = mesh(setOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS)) {
+            meshData.vertexList.addFrom(model.meshData.vertexList)
+            meshData.vertexList.forEach { it.color.set(Color(1.00f, 0.86f, 0.57f).gamma()) }
+
+            val pbrConfig = ModeledShader.PbrShader.PbrConfig()
+            pbrConfig.irradianceMap = irradianceMap
+            pbrConfig.reflectionMap = reflectionMap
+            pbrConfig.brdfLut = brdfLut
+
+            val shader = ModeledShader.PbrShader(pbrConfig)
+            shader.roughness = 0.05f
+            shader.metallic = 1.0f
+            pipelineConfig { shaderLoader = shader::setup }
+        }
+        +colorMesh
+    }
 }

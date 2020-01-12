@@ -11,6 +11,8 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.debugOverlay
+import de.fabmax.kool.util.pbrMapGen.BrdfLutPass
+import de.fabmax.kool.util.pbrMapGen.IrradianceMapPass
 
 /**
  * @author fabmax
@@ -29,7 +31,8 @@ fun testScene() {
     ctx.assetMgr.assetsBaseDir = "./docs/assets"
 
 //    ctx.scenes += uiTestScene(ctx)
-    ctx.scenes += simpleTestScene(ctx)
+//    ctx.scenes += bunnyScene(ctx)
+    ctx.scenes += brdfLutTestScene(ctx)
 //    offscreenTest(ctx)
     ctx.scenes += debugOverlay(ctx)
 
@@ -60,7 +63,7 @@ fun offscreenTest(ctx: KoolContext) {
 //    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/spruit_sunrise_2k.rgbe.png") { tex ->
 //    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/lakeside_2k.rgbe.png") { tex ->
 
-        val cubeMapPass = hdriToIrradianceMapPass(tex)
+        val cubeMapPass = IrradianceMapPass(tex)
         ctx.offscreenPasses += cubeMapPass.offscreenPass
         scene += Skybox(cubeMapPass.irradianceMap)
 
@@ -70,7 +73,36 @@ fun offscreenTest(ctx: KoolContext) {
     }
 }
 
-fun simpleTestScene(ctx: KoolContext): Scene = scene {
+
+fun brdfLutTestScene(ctx: KoolContext): Scene = scene {
+    camera = OrthographicCamera().apply {
+        left = 0f
+        right = 1f
+        top = 1f
+        bottom = 0f
+        isKeepAspectRatio = false
+    }
+
+    val brdfLutPass = BrdfLutPass()
+    ctx.offscreenPasses += brdfLutPass.offscreenPass
+
+    +mesh(setOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+        generator = {
+            rect {
+                size.set(1f, 1f)
+                fullTexCoords()
+            }
+        }
+        pipelineConfig {
+            shaderLoader = ModeledShader.textureColor()
+            onPipelineCreated += {
+                (it.shader as ModeledShader.TextureColor).textureSampler.texture = brdfLutPass.brdfLut
+            }
+        }
+    }
+}
+
+fun bunnyScene(ctx: KoolContext): Scene = scene {
     defaultCamTransform()
 
     ctx.clearColor = Color.fromHsv(0f, 0f, 0.15f, 1f)

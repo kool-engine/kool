@@ -190,8 +190,18 @@ class ShaderModel(val modelInfo: String = "") {
         }
 
         fun pbrMaterialNode(albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
-                              fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null, lightNode: LightNode): PbrMaterialNode {
+                            fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null, lightNode: LightNode): PbrMaterialNode {
             val mat = addNode(PbrMaterialNode(lightNode, stage))
+            albedo?.let { mat.inAlbedo = it }
+            normal?.let { mat.inNormal = it }
+            camPos?.let { mat.inCamPos = it }
+            fragPos?.let { mat.inFragPos = it }
+            return mat
+        }
+
+        fun pbrIblMaterialNode(reflectionMap: CubeMapNode, brdfLut: TextureNode, albedo: ShaderNodeIoVar? = null, normal: ShaderNodeIoVar? = null,
+                            fragPos: ShaderNodeIoVar? = null, camPos: ShaderNodeIoVar? = null, lightNode: LightNode): PbrIblMaterialNode {
+            val mat = addNode(PbrIblMaterialNode(lightNode, reflectionMap, brdfLut, stage))
             albedo?.let { mat.inAlbedo = it }
             normal?.let { mat.inNormal = it }
             camPos?.let { mat.inCamPos = it }

@@ -51,13 +51,21 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
             get() = cfg.ambient.value
             set(value) { cfg.ambient.value.set(value) }
 
-        var cubeMapSampler: CubeMapSampler? = null
+        var irradianceMapSampler: CubeMapSampler? = null
+            private set
+        var reflectionMapSampler: CubeMapSampler? = null
+            private set
+        var brdfLutSampler: TextureSampler? = null
             private set
 
         override fun onPipelineCreated(pipeline: Pipeline) {
             super.onPipelineCreated(pipeline)
-            cubeMapSampler = model.findNode<CubeMapNode>("irradianceMap")?.sampler
-            cubeMapSampler?.let { it.texture = cfg.irradianceMap }
+            irradianceMapSampler = model.findNode<CubeMapNode>("irradianceMap")?.sampler
+            irradianceMapSampler?.let { it.texture = cfg.irradianceMap }
+            reflectionMapSampler = model.findNode<CubeMapNode>("reflectionMap")?.sampler
+            reflectionMapSampler?.let { it.texture = cfg.reflectionMap }
+            brdfLutSampler = model.findNode<TextureNode>("brdfLut")?.sampler
+            brdfLutSampler?.let { it.texture = cfg.brdfLut }
         }
 
         companion object {
@@ -82,23 +90,20 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
                 fragmentStage {
                     val mvpFrag = mvp.addToStage(fragmentStage)
                     val lightNode = defaultLightNode()
-                    val mat = pbrMaterialNode(ifColors.output, ifNormals.output, ifFragPos.output, mvpFrag.outCamPos, lightNode)
+                    val irrMap = cubeMapNode("irradianceMap")
+                    val reflMap = cubeMapNode("reflectionMap")
+                    val brdfLut = textureNode("brdfLut")
+                    val irrSampler = cubeMapSamplerNode(irrMap, ifNormals.output)
+                    val mat = pbrIblMaterialNode(reflMap, brdfLut, ifColors.output, ifNormals.output, ifFragPos.output, mvpFrag.outCamPos, lightNode).apply {
+                        inIrradiance = irrSampler.outColor
+                        inMetallic = pushConstantNode1f(cfg.metallic).output
+                        inRoughness = pushConstantNode1f(cfg.roughness).output
+                    }
                     val hdrToLdr = hdrToLdrNode(mat.outColor).apply {
                         inExposure = ShaderNodeIoVar(ModelVar1fConst(0.5f))
                         inContrast = ShaderNodeIoVar(ModelVar1fConst(0.9f))
                     }
                     colorOutput = hdrToLdr.outColor
-
-                    if (cfg.irradianceMap != null) {
-                        val cubeMap = cubeMapNode("irradianceMap")
-                        val sampler = cubeMapSamplerNode(cubeMap, ifNormals.output)
-                        mat.inIrradiance = sampler.outColor
-                    } else {
-                        mat.inIrradiance = pushConstantNodeColor(cfg.ambient).output
-                    }
-
-                    mat.inMetallic = pushConstantNode1f(cfg.metallic).output
-                    mat.inRoughness = pushConstantNode1f(cfg.roughness).output
                 }
             }
         }
@@ -108,6 +113,8 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
             val metallic = Uniform1f(0.0f, "uMetallic")
 
             var irradianceMap: CubeMapTexture? = null
+            var reflectionMap: CubeMapTexture? = null
+            var brdfLut: Texture? = null
             val ambient = UniformColor(Color(0.03f, 0.03f, 0.03f, 1f), "uAmbient")
         }
     }

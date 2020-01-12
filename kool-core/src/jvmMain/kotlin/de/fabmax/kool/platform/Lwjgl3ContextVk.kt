@@ -252,7 +252,8 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
                 //drawQueue.commands.sortBy { it.pipeline!!.pipelineHash }
 
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                renderDrawQueue(commandBuffer, drawQueue, imageIndex, swapChain.renderPass.vkRenderPass, swapChain.nImages, swapChain.extent.width(), swapChain.extent.height())
+                renderDrawQueue(commandBuffer, drawQueue, imageIndex, swapChain.renderPass.vkRenderPass, swapChain.nImages,
+                        swapChain.extent.width(), swapChain.extent.height(), false)
                 vkCmdEndRenderPass(commandBuffer)
 
                 check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
@@ -271,12 +272,13 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             return cmdBufs.vkCommandBuffers[0]
         }
 
-        private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: DrawQueue, imageIndex: Int, renderPass: Long, nImages: Int, vpWidth: Int, vpHeight: Int) {
+        private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: DrawQueue, imageIndex: Int,
+                                                renderPass: Long, nImages: Int, vpWidth: Int, vpHeight: Int, dynVp: Boolean) {
             var prevPipeline = 0UL
             drawQueue.commands.forEach { cmd ->
                 val pipelineCfg = cmd.pipeline ?: throw KoolException("Mesh pipeline not set")
                 if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass)) {
-                    sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, renderPass, vpWidth, vpHeight)
+                    sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, renderPass, vpWidth, vpHeight, dynVp)
                 }
                 val pipeline = sys.pipelineManager.getPipeline(pipelineCfg, renderPass)
                 if (pipelineCfg.pipelineHash != prevPipeline) {
@@ -348,8 +350,10 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             val rp = offscreenPass.impl.getRenderPass(sys)
             val renderPassInfo = renderPassBeginInfo(rp.renderPass, rp.frameBuffer, rp.fbWidth, rp.fbHeight, offscreenPass.clearColor)
 
+            println("render 2d")
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-            renderDrawQueue(commandBuffer, offscreenPass.drawQueues[0], 0, rp.renderPass, 1, rp.fbWidth, rp.fbHeight)
+            setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
+            renderDrawQueue(commandBuffer, offscreenPass.drawQueues[0], 0, rp.renderPass, 1, rp.fbWidth, rp.fbHeight, true)
             vkCmdEndRenderPass(commandBuffer)
         }
 
@@ -358,13 +362,15 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             val renderPassInfo = renderPassBeginInfo(rp.renderPass, rp.frameBuffer, rp.fbWidth, rp.fbHeight, offscreenPass.clearColor)
 
             offscreenPass.impl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-            for (view in OffscreenPassCube.ViewDirection.values()) {
+            // fixme: for some reason last view is not copied sometimes? super duper fix: render last view twice
+            for (view in cubeRenderPassViews) {
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index], view.index, rp.renderPass, 6, rp.fbWidth, rp.fbHeight)
+                setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
+                renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index], view.index, rp.renderPass, 6, rp.fbWidth, rp.fbHeight, true)
                 vkCmdEndRenderPass(commandBuffer)
                 offscreenPass.impl.copyView(sys, commandBuffer, view)
             }
-            if (offscreenPass.mipLevels > 1) {
+            if (offscreenPass.mipLevels > 1 && offscreenPass.targetMipLevel < 0) {
                 offscreenPass.impl.generateMipmaps(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
             } else {
                 offscreenPass.impl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
@@ -393,6 +399,12 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             it.float32(1, color.g)
             it.float32(2, color.b)
             it.float32(3, color.a)
+        }
+    }
+
+    companion object {
+        val cubeRenderPassViews = Array(7) {
+            i -> OffscreenPassCube.ViewDirection.values()[i % OffscreenPassCube.ViewDirection.values().size]
         }
     }
 

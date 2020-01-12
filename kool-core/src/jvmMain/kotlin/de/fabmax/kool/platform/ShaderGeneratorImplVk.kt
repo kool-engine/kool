@@ -194,9 +194,15 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             mainCode += glslCode
         }
 
-        override fun sampleTexture2d(texName: String, texCoords: String) = "texture($texName, $texCoords)"
+        override fun sampleTexture2d(texName: String, texCoords: String, lod: String?): String {
+            return if (lod == null) {
+                "texture($texName, $texCoords)"
+            } else {
+                "textureLod($texName, $texCoords, $lod)"
+            }
+        }
 
-        override fun sampleTextureCube(texName: String, texCoords: String) = "texture($texName, $texCoords)"
+        override fun sampleTextureCube(texName: String, texCoords: String, lod: String?) = sampleTexture2d(texName, texCoords, lod)
 
         fun generateFunctions(): String = functions.values.joinToString("\n")
 

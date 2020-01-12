@@ -120,6 +120,9 @@ inline fun MemoryStack.callocVkPipelineColorBlendStateCreateInfo(block: VkPipeli
 inline fun MemoryStack.callocVkPipelineDepthStencilStateCreateInfo(block: VkPipelineDepthStencilStateCreateInfo.() -> Unit): VkPipelineDepthStencilStateCreateInfo =
     allocStruct(block) { VkPipelineDepthStencilStateCreateInfo.callocStack(it) }
 
+inline fun MemoryStack.callocVkPipelineDynamicStateCreateInfo(block: VkPipelineDynamicStateCreateInfo.() -> Unit): VkPipelineDynamicStateCreateInfo =
+        allocStruct(block) { VkPipelineDynamicStateCreateInfo.callocStack(it) }
+
 inline fun MemoryStack.callocVkPipelineInputAssemblyStateCreateInfo(block: VkPipelineInputAssemblyStateCreateInfo.() -> Unit): VkPipelineInputAssemblyStateCreateInfo =
     allocStruct(block) { VkPipelineInputAssemblyStateCreateInfo.callocStack(it) }
 

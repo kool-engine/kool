@@ -30,8 +30,8 @@ class Skybox(val environmentMap: CubeMapTexture) : Mesh(MeshData(Attribute.POSIT
             }
             fragmentStage {
                 val sampler = cubeMapSamplerNode(cubeMapNode(texName), ifLocalPos.output, false)
-                val gamma = hdrToLdrNode(sampler.outColor)
-                colorOutput = gamma.outColor
+                val ldr = hdrToLdrNode(sampler.outColor)
+                colorOutput = ldr.outColor
             }
         }
         val shader = ModeledShader.CubeMapColor(model, texName)
