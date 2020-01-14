@@ -1,9 +1,11 @@
 package de.fabmax.kool.pipeline
 
-enum class TexFormat(val channels: Int) {
+enum class TexFormat() {
 
-    ALPHA(1),
-    RGB(3),
-    RGBA( 4)
+    ALPHA,
+    RGB,
+    RGBA,
+    RG_F16,
+    RGBA_F16
 
 }

@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.shadermodel.CodeGenerator
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.pipeline.shadermodel.ShaderGraph
 import de.fabmax.kool.pipeline.shadermodel.ShaderModel
+import de.fabmax.kool.util.logE
 
 class ShaderGeneratorImplVk : ShaderGenerator() {
 
@@ -18,9 +19,14 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         val codeKey = vertShader + fragShader
         var code = shaderCodes[codeKey]
         if (code == null) {
-            printCode(vertShader, fragShader)
-            code = ShaderCode.codeFromSource(vertShader, fragShader)
-            shaderCodes[codeKey] = code
+            try {
+                code = ShaderCode.codeFromSource(vertShader, fragShader)
+                shaderCodes[codeKey] = code
+            } catch (e: Exception) {
+                logE { "Compilation failed: $e" }
+                printCode(vertShader, fragShader)
+                throw RuntimeException(e)
+            }
         }
         return code
     }
@@ -28,7 +34,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
     private fun printCode(vertShader: String, fragShader: String) {
         println("Vertex shader:\n\n")
         vertShader.lines().forEachIndexed { i, l ->
-            println(String.format("%3d: %s", i, l))
+            println(String.format("%3d: %s", i+1, l))
         }
         println("Fragment shader:\n\n")
         fragShader.lines().forEachIndexed { i, l ->

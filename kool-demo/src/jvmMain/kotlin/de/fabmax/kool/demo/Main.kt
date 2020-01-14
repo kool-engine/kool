@@ -8,6 +8,7 @@ import de.fabmax.kool.math.randomF
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.debugOverlay
@@ -31,8 +32,8 @@ fun testScene() {
     ctx.assetMgr.assetsBaseDir = "./docs/assets"
 
 //    ctx.scenes += uiTestScene(ctx)
-//    ctx.scenes += bunnyScene(ctx)
-    ctx.scenes += brdfLutTestScene(ctx)
+    ctx.scenes += bunnyScene(ctx)
+//    ctx.scenes += brdfLutTestScene(ctx)
 //    offscreenTest(ctx)
     ctx.scenes += debugOverlay(ctx)
 
@@ -145,7 +146,7 @@ fun bunnyScene(ctx: KoolContext): Scene = scene {
                     }
                 }
             }
-            val shader = ModeledShader.PbrShader()
+            val shader = PbrShader()
             shader.roughness = 0.5f
             pipelineConfig { shaderLoader = shader::setup }
         }
@@ -154,7 +155,7 @@ fun bunnyScene(ctx: KoolContext): Scene = scene {
             println("adding mesh: ${model.meshData.numVertices} verts, ${model.meshData.numIndices / 3} tris")
 
             val colorMesh = mesh(setOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS)) {
-                val shader = ModeledShader.PbrShader()
+                val shader = PbrShader()
                 shader.roughness = 0.15f
                 pipelineConfig { shaderLoader = shader::setup }
 

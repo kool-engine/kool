@@ -32,7 +32,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     }
 
     private fun createRenderPass(sys: VkSystem) {
-        val rp = OffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, false)
+        val rp = OffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, false, offscreenPass.colorFormat.vkFormat)
         (texture as OffscreenTexture2d).create(sys, rp)
         renderPass = rp
     }
@@ -116,7 +116,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
     }
 
     private fun createRenderPass(sys: VkSystem) {
-        val rp = OffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, true)
+        val rp = OffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, true, offscreenPass.colorFormat.vkFormat)
         (texture as OffscreenTextureCube).create(sys, rp)
         renderPass = rp
     }
@@ -142,11 +142,11 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
 
         fun create(sys: VkSystem, rp: OffscreenRenderPass) {
             val imgConfig = Image.Config()
-            imgConfig.width = rp.fbWidth
-            imgConfig.height = rp.fbHeight
+            imgConfig.width = rp.maxWidth
+            imgConfig.height = rp.maxHeight
             imgConfig.mipLevels = offscreenPass.mipLevels
             imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
-            imgConfig.format = rp.texFormat.vkFormat
+            imgConfig.format = rp.colorFormat
             imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
             imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
             imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY

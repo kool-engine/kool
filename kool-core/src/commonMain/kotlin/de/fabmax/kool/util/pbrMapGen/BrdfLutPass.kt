@@ -4,6 +4,7 @@ import de.fabmax.kool.OffscreenPass2d
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shadermodel.*
@@ -18,7 +19,7 @@ class BrdfLutPass {
         get() = offscreenPass.impl.texture
 
     init {
-        offscreenPass = OffscreenPass2d(512, 512, 1).apply {
+        offscreenPass = OffscreenPass2d(512, 512, 1, TexFormat.RG_F16).apply {
             isSingleShot = true
             scene = scene {
                 camera = OrthographicCamera().apply {

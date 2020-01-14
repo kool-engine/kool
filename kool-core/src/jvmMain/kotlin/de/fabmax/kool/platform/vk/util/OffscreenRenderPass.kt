@@ -1,28 +1,25 @@
 package de.fabmax.kool.platform.vk.util
 
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.util.logD
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 
-class OffscreenRenderPass(val sys: VkSystem, width: Int, height: Int, val isCopied: Boolean) : VkResource() {
+class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCopied: Boolean, texFormat: Int) :
+        RenderPass(sys, maxWidth, maxHeight, texFormat) {
 
-    val fbWidth = width
-    val fbHeight = height
-    val texFormat = TexFormat.RGBA
+    override val vkRenderPass: Long
 
     val image: Image
     val imageView: ImageView
-    val renderPass: Long
     val frameBuffer: Long
     val sampler: Long
 
     init {
         val fbImageCfg = Image.Config().apply {
-            this.width = fbWidth
-            this.height = fbHeight
-            format = texFormat.vkFormat
+            width = maxWidth
+            height = maxHeight
+            format = texFormat
             tiling = VK_IMAGE_TILING_OPTIMAL
             usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
             allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
@@ -37,8 +34,8 @@ class OffscreenRenderPass(val sys: VkSystem, width: Int, height: Int, val isCopi
         val depthImage = Image(sys, fbImageCfg)
         val depthStencilView = ImageView(sys, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
 
-        renderPass = createRenderPass()
-        frameBuffer = createFrameBuffer(renderPass, imageView, depthStencilView)
+        vkRenderPass = createRenderPass()
+        frameBuffer = createFrameBuffer(vkRenderPass, imageView, depthStencilView)
 
         addDependingResource(image)
         addDependingResource(imageView)
@@ -73,7 +70,7 @@ class OffscreenRenderPass(val sys: VkSystem, width: Int, height: Int, val isCopi
 
     override fun freeResources() {
         vkDestroySampler(sys.device.vkDevice, sampler, null)
-        vkDestroyRenderPass(sys.device.vkDevice, renderPass, null)
+        vkDestroyRenderPass(sys.device.vkDevice, vkRenderPass, null)
         vkDestroyFramebuffer(sys.device.vkDevice, frameBuffer, null)
         logD { "Destroyed offscreen render pass" }
     }
@@ -84,8 +81,8 @@ class OffscreenRenderPass(val sys: VkSystem, width: Int, height: Int, val isCopi
                 sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
                 renderPass(renderPass)
                 pAttachments(longs(imageView.vkImageView, depthView.vkImageView))
-                width(fbWidth)
-                height(fbHeight)
+                width(maxWidth)
+                height(maxHeight)
                 layers(1)
             }
             return checkCreatePointer { vkCreateFramebuffer(sys.device.vkDevice, framebufferInfo, null, it) }
@@ -97,7 +94,7 @@ class OffscreenRenderPass(val sys: VkSystem, width: Int, height: Int, val isCopi
         memStack {
             val attachments = callocVkAttachmentDescriptionN(2) {
                 this[0].apply {
-                    format(texFormat.vkFormat)
+                    format(colorFormat)
                     samples(VK_SAMPLE_COUNT_1_BIT)
                     loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                     storeOp(VK_ATTACHMENT_STORE_OP_STORE)

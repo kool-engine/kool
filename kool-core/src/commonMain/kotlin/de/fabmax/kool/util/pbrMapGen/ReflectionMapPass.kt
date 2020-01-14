@@ -25,12 +25,11 @@ class ReflectionMapPass(hdriTexture: Texture) {
     private var reflMapShader: ModeledShader.TextureColor? = null
 
     init {
-        offscreenPass = OffscreenPassCube(256, 256, 7).apply {
+        offscreenPass = OffscreenPassCube(256, 256, 7, TexFormat.RGBA_F16).apply {
             onSetup = { ctx ->
                 if (frameIdx >= mipLevels) {
                     ctx.offscreenPasses -= this
                 } else {
-                    logD { "Render reflection map mip level $frameIdx" }
                     uRoughness.value = frameIdx.toFloat() / (mipLevels - 1)
                     targetMipLevel = frameIdx
                 }

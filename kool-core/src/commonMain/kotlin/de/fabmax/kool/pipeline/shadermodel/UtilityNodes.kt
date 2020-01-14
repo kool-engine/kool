@@ -11,6 +11,7 @@ class TextureSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premu
 
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
     val outColor: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
+    var texLod: String? = null
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -19,7 +20,7 @@ class TextureSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premu
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${outColor.declare()} = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f())};")
+        generator.appendMain("${outColor.declare()} = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f(), texLod)};")
         if (premultiply) {
             generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")
         }
@@ -31,6 +32,7 @@ class CubeMapSamplerNode(val cubeMap: CubeMapNode, graph: ShaderGraph, val premu
 
     var inTexCoord = ShaderNodeIoVar(ModelVar3fConst(Vec3f.NEG_X_AXIS))
     val outColor: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
+    var texLod: String? = null
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
@@ -39,10 +41,44 @@ class CubeMapSamplerNode(val cubeMap: CubeMapNode, graph: ShaderGraph, val premu
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${outColor.declare()} = ${generator.sampleTextureCube(cubeMap.name, inTexCoord.ref3f(), "1.2")};")
+        generator.appendMain("${outColor.declare()} = ${generator.sampleTextureCube(cubeMap.name, inTexCoord.ref3f(), texLod)};")
         if (premultiply) {
             generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")
         }
+    }
+}
+
+class NormalMappingNode(val texture: TextureNode, graph: ShaderGraph) :
+        ShaderNode("normalMapping_${graph.nextNodeId}", graph) {
+
+    var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.NEG_X_AXIS))
+    var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
+    var inTangent = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
+    var inStrength = ShaderNodeIoVar(ModelVar1fConst(1f))
+    val outNormal: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3f("${name}_outNormal"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inTexCoord, inNormal, inTangent, inStrength)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        super.generateCode(generator)
+
+        generator.appendFunction("calcBumpedNormal", """
+            vec3 calcBumpedNormal(vec3 n, vec3 t, vec2 uv, float strength) {
+                vec3 normal = normalize(n);
+                vec3 tangent = normalize(t);
+                tangent = normalize(tangent - dot(tangent, normal) * normal);
+                vec3 bitangent = cross(tangent, normal);
+                vec3 bumpMapNormal = ${generator.sampleTexture2d(texture.name, "uv")}.xyz;
+                bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
+                mat3 tbn = mat3(tangent, bitangent, normal);
+                return normalize(mix(normal, tbn * bumpMapNormal, strength));
+            }
+        """)
+
+        generator.appendMain("${outNormal.declare()} = calcBumpedNormal(${inNormal.ref3f()}, ${inTangent.ref3f()}, ${inTexCoord.ref2f()}, ${inStrength.ref1f()});")
     }
 }
 
@@ -71,36 +107,74 @@ class PremultiplyColorNode(graph: ShaderGraph) : ShaderNode("Pre-Multiply Color"
     }
 }
 
+class GammaNode(graph: ShaderGraph) : ShaderNode("Pre-Multiply Color", graph) {
+    var inColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
+    var inGamma = ShaderNodeIoVar(ModelVar1fConst(1f / 2.2f))
+    val outColor = ShaderNodeIoVar(ModelVar4f("preMultColor_$nodeId"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inColor, inGamma)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${outColor.declare()} = vec4(pow(${inColor.ref3f()}, vec3(1.0/${inGamma.ref1f()})), ${inColor.ref4f()}.a);")
+    }
+}
+
 class HdrToLdrNode(graph: ShaderGraph) : ShaderNode("hdrToLdr_${graph.nextNodeId}", graph) {
     var inColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
     var inGamma = ShaderNodeIoVar(ModelVar1fConst(2.2f))
-    var inExposure = ShaderNodeIoVar(ModelVar1fConst(0.4f))
-    var inContrast = ShaderNodeIoVar(ModelVar1fConst(0.85f))
     val outColor = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inColor, inGamma, inExposure, inContrast)
+        dependsOn(inColor, inGamma)
     }
 
-    override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("""
-            // tone mapping
-            // simple method: 0..infinity -> [0..1)
-            //vec3 ${name}_color = ${inColor.ref3f()} / (${inColor.ref3f()} + vec3(1.0));
+    private fun generateUncharted2(generator: CodeGenerator) {
+        generator.appendFunction("uncharted2", """
+            vec3 uncharted2Tonemap_func(vec3 x) {
+                float A = 0.15;     // shoulder strength
+                float B = 0.50;     // linear strength
+                float C = 0.10;     // linear angle
+                float D = 0.20;     // toe strength
+                float E = 0.02;     // toe numerator
+                float F = 0.30;     // toe denominator  --> E/F = toe angle
+                return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
+            }
             
-            // slightly advanced method 0..exposure^(-1/contrast) -> [0..1]
-            // exposure = 0.4, contrast = 0.85 -> [0..~3] with decent saturation
-            //vec3 ${name}_color = ${inExposure.ref1f()} * pow(${inColor.ref3f()}, vec3(${inContrast.ref1f()}));
-            
-            // gamma correction
-            //${outColor.declare()} = vec4(pow(${name}_color, vec3(1.0/${inGamma.ref1f()})), ${inColor.ref4f()}.a);
-            
-//            ${outColor.declare()} = vec4(pow(${inColor.ref3f()}, vec3(1.0 / 2.2)), ${inColor.ref4f()}.a);
+            vec3 uncharted2Tonemap(vec3 rgbLinear) {
+                float W = 11.2;     // linear white point value
+                float ExposureBias = 2.0;
+                vec3 curr = uncharted2Tonemap_func(ExposureBias * rgbLinear);
+                vec3 whiteScale = 1.0 / uncharted2Tonemap_func(vec3(W));
+                return curr * whiteScale;
+            }
+        """)
 
+        generator.appendMain("""
+            vec3 ${name}_color = uncharted2Tonemap(${inColor.ref3f()});
+            ${outColor.declare()} = vec4(pow(${name}_color, vec3(1.0/${inGamma.ref1f()})), ${inColor.ref4f()}.a);
+        """)
+    }
+
+    private fun generateReinhard(generator: CodeGenerator) {
+        generator.appendMain("""
+            vec3 ${name}_color = ${inColor.ref3f()} / (${inColor.ref3f()} + vec3(1.0));
+            ${outColor.declare()} = vec4(pow(${name}_color, vec3(1.0/${inGamma.ref1f()})), ${inColor.ref4f()}.a);
+        """)
+    }
+
+    private fun generateJimHejlRichardBurgessDawson(generator: CodeGenerator) {
+        generator.appendMain("""
             vec3 ${name}_color = max(vec3(0), ${inColor.ref3f()} - 0.004);
             ${outColor.declare()} = vec4((${name}_color * (6.2 * ${name}_color + 0.5)) / (${name}_color * (6.2 * ${name}_color + 1.7) + 0.06), 1.0);
         """)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generateUncharted2(generator)
     }
 }
 
@@ -118,21 +192,41 @@ class NormalizeNode(graph: ShaderGraph) : ShaderNode("normalize_${graph.nextNode
     }
 }
 
+class MultiplyNode(graph: ShaderGraph) : ShaderNode("multiply_${graph.nextNodeId}", graph) {
+    var fac = ShaderNodeIoVar(ModelVar1fConst(1f))
+    var input = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
+        set(value) {
+            output = ShaderNodeIoVar(ModelVar("${name}_out", value.variable.type), this)
+            field = value
+        }
+    var output = ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
+        private set
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(input, fac)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("${output.declare()} = $input * $fac;")
+    }
+}
+
 // fixme: for now this assumes the only stages are vertex and fragment
 class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) {
     // written in source stage (i.e. vertex shader)
     var input = ShaderNodeIoVar(ModelVar1fConst(0f))
         set(value) {
-            field = value
             output = ShaderNodeIoVar(ModelVar("stageIf_${name}", value.variable.type), fragmentNode)
+            field = value
         }
-
     // accessible in target stage (i.e. fragment shader)
-    lateinit var output: ShaderNodeIoVar
+    var output = ShaderNodeIoVar(ModelVar1f("stageIf_${name}"))
+        private set
 
     private var layout = 0
 
-    val vertexNode = object : ShaderNode("Stage Interface Src $name", vertexGraph, ShaderStage.VERTEX_SHADER.mask) {
+    val vertexNode = object : ShaderNode(name, vertexGraph, ShaderStage.VERTEX_SHADER.mask) {
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
             dependsOn(input)
@@ -145,7 +239,7 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
         }
     }
 
-    val fragmentNode = object : ShaderNode("Stage Interface Dst $name", fragmentGraph, ShaderStage.FRAGMENT_SHADER.mask) {
+    val fragmentNode = object : ShaderNode(name, fragmentGraph, ShaderStage.FRAGMENT_SHADER.mask) {
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
             shaderGraph.inputs += ShaderInterfaceIoVar(layout, output.variable)

@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform.vk
 
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.system.MemoryStack
@@ -24,11 +25,11 @@ class SwapChain(val sys: VkSystem) : VkResource() {
     val nImages: Int
         get() = images.size
 
-    val colorImage: Image
-    val colorImageView: ImageView
+    private val colorImage: Image
+    private val colorImageView: ImageView
 
-    val depthImage: Image
-    val depthImageView: ImageView
+    private val depthImage: Image
+    private val depthImageView: ImageView
 
     val renderPass: OnScreenRenderPass
 
@@ -144,11 +145,6 @@ class SwapChain(val sys: VkSystem) : VkResource() {
             framebuffers += checkCreatePointer { vkCreateFramebuffer(sys.device.vkDevice, framebufferInfo, null, it) }
         }
     }
-
-//    private fun findDepthFormat(): Int =
-//        sys.physicalDevice.findSupportedFormat(
-//            listOf(VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT),
-//            VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
 
     private fun MemoryStack.querySwapChainSupport(): SwapChainSupportDetails {
         val ip = mallocInt(1)

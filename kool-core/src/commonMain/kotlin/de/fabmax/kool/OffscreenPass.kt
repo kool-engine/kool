@@ -3,25 +3,22 @@ package de.fabmax.kool
 import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CubeMapTexture
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import kotlin.math.max
 
-abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevels: Int, nQueues: Int) {
+abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevels: Int, val colorFormat: TexFormat, nQueues: Int) {
     var clearColor = Color.BLACK
     var scene: Scene? = null
 
-    val drawQueues: List<DrawQueue>
+    val drawQueues: List<DrawQueue> = List(nQueues) { DrawQueue() }
 
     var frameIdx = 0
     var isSingleShot = false
     var targetMipLevel = -1
-
-    init {
-        drawQueues = List(nQueues) { DrawQueue() }
-    }
 
     abstract fun render(ctx: KoolContext)
 
@@ -40,10 +37,10 @@ abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevel
             texHeight shr mipLevel
         }
     }
-
 }
 
-class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int) : OffscreenPass(texWidth, texHeight, mipLevels, 1) {
+class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int, colorFormat: TexFormat = TexFormat.RGBA) :
+        OffscreenPass(texWidth, texHeight, mipLevels, colorFormat, 1) {
     val impl = OffscreenPass2dImpl(this)
 
     var onSetup: ((KoolContext) -> Unit)? = null
@@ -63,7 +60,8 @@ class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int) : Offscreen
     }
 }
 
-class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int) : OffscreenPass(texWidth, texHeight, mipLevels, 6) {
+class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorFormat: TexFormat = TexFormat.RGBA) :
+        OffscreenPass(texWidth, texHeight, mipLevels, colorFormat, 6) {
     val impl = OffscreenPassCubeImpl(this)
 
     var onSetup: ((KoolContext) -> Unit)? = null

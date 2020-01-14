@@ -2,10 +2,7 @@ package de.fabmax.kool.util.pbrMapGen
 
 import de.fabmax.kool.OffscreenPassCube
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CubeMapTexture
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.pipelineConfig
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.CullMethod
@@ -26,7 +23,7 @@ class IrradianceMapPass(hdriTexture: Texture) {
     private var irrMapShader: ModeledShader.TextureColor? = null
 
     init {
-        offscreenPass = OffscreenPassCube(32, 32, 1).apply {
+        offscreenPass = OffscreenPassCube(32, 32, 1, TexFormat.RGBA_F16).apply {
             isSingleShot = true
             scene = scene {
                 +mesh(setOf(Attribute.POSITIONS)) {

@@ -22,6 +22,17 @@ val TexFormat.vkFormat: Int
         TexFormat.ALPHA -> VK_FORMAT_R8_UNORM
         TexFormat.RGB -> VK_FORMAT_R8G8B8_UNORM
         TexFormat.RGBA -> VK_FORMAT_R8G8B8A8_UNORM
+        TexFormat.RG_F16 -> VK_FORMAT_R16G16_SFLOAT
+        TexFormat.RGBA_F16 -> VK_FORMAT_R16G16B16A16_SFLOAT
+    }
+
+val TexFormat.vkBytesPerPx: Int
+    get() = when(this) {
+        TexFormat.ALPHA -> 1
+        TexFormat.RGB -> 3
+        TexFormat.RGBA -> 4
+        TexFormat.RG_F16 -> 4
+        TexFormat.RGBA_F16 -> 8
     }
 
 val TexFormat.glFormat: Int
@@ -29,6 +40,8 @@ val TexFormat.glFormat: Int
         TexFormat.ALPHA -> GL_ALPHA
         TexFormat.RGB -> GL11.GL_RGB
         TexFormat.RGBA -> GL11.GL_RGBA
+        TexFormat.RG_F16 -> GL11.GL_RGBA16
+        TexFormat.RGBA_F16 -> GL11.GL_RGBA16
     }
 
 //fun Mat4f.setPerspective2(fovy: Float, aspect: Float, near: Float, far: Float): Mat4f {

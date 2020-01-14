@@ -5,9 +5,10 @@ import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkFormatProperties
 
-class OnScreenRenderPass(val swapChain: SwapChain) : VkResource() {
+class OnScreenRenderPass(swapChain: SwapChain) :
+        RenderPass(swapChain.sys, swapChain.extent.width(), swapChain.extent.height(), swapChain.imageFormat) {
 
-    val vkRenderPass: Long
+    override val vkRenderPass: Long
 
     init {
         memStack {
@@ -22,7 +23,7 @@ class OnScreenRenderPass(val swapChain: SwapChain) : VkResource() {
                     .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
                     .finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                 this[1]
-                    .format(findDepthFormat())
+                    .format(swapChain.sys.physicalDevice.depthFormat)
                     .samples(swapChain.sys.physicalDevice.msaaSamples)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                     .storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
@@ -85,27 +86,8 @@ class OnScreenRenderPass(val swapChain: SwapChain) : VkResource() {
         logD { "Created render pass" }
     }
 
-    private fun findDepthFormat(): Int {
-        val candidates = listOf(VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT)
-        val tiling = VK_IMAGE_TILING_OPTIMAL
-        val features = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-
-        memStack {
-            val props = VkFormatProperties.mallocStack(this)
-            candidates.forEach { format ->
-                vkGetPhysicalDeviceFormatProperties(swapChain.sys.physicalDevice.vkPhysicalDevice, format, props)
-                if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures() and features) == features) {
-                    return format
-                } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures() and features) == features) {
-                    return format
-                }
-            }
-        }
-        throw RuntimeException("Failed to find supported format")
-    }
-
     override fun freeResources() {
-        vkDestroyRenderPass(swapChain.sys.device.vkDevice, vkRenderPass, null)
+        vkDestroyRenderPass(sys.device.vkDevice, vkRenderPass, null)
         logD { "Destroyed render pass" }
     }
 }

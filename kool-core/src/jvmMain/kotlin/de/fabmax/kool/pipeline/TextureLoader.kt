@@ -4,6 +4,7 @@ import de.fabmax.kool.BufferedTextureData
 import de.fabmax.kool.CubeMapTextureData
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.platform.vk.*
+import de.fabmax.kool.platform.vk.util.vkBytesPerPx
 import de.fabmax.kool.platform.vk.util.vkFormat
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.createUint8Buffer
@@ -19,7 +20,7 @@ object TextureLoader {
         val width = cubeImg.width
         val height = cubeImg.height
         val dstFmt = checkFormat(cubeImg.format)
-        val imageSize = width * height * dstFmt.channels.toLong() * 6
+        val imageSize = width * height * dstFmt.vkBytesPerPx.toLong() * 6
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -63,7 +64,7 @@ object TextureLoader {
         val dstFmt = checkFormat(img.format)
         val buf = reshape(dstFmt, img)
 
-        val imageSize = width * height * dstFmt.channels.toLong()
+        val imageSize = width * height * dstFmt.vkBytesPerPx.toLong()
         val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY

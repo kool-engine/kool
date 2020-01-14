@@ -69,126 +69,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
 /**
  * Physical Based Rendering Shader. Based on https://learnopengl.com/PBR/Lighting
  */
-class PbrMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNode("PBR Material", graph, ShaderStage.FRAGMENT_SHADER.mask) {
-    var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
-    var inNormal: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Z_AXIS))
-    var inFragPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-    var inCamPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-
-    var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
-    var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0.0f))
-    var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.1f))
-
-    var inIrradiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
-
-    val outColor = ShaderNodeIoVar(ModelVar4f("pbrMat_outColor"), this)
-
-    override fun setup(shaderGraph: ShaderGraph) {
-        super.setup(shaderGraph)
-        dependsOn(inAlbedo, inNormal, inFragPos, inCamPos, inIrradiance)
-        dependsOn(lightNode)
-    }
-
-    override fun generateCode(generator: CodeGenerator) {
-        generator.appendFunction("fresnelSchlick", """
-            vec3 fresnelSchlick(float cosTheta, vec3 F0) {
-                return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
-            }
-        """)
-
-        generator.appendFunction("fresnelSchlickRoughness", """
-            vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
-                return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
-            }
-        """)
-
-        generator.appendFunction("DistributionGGX", """
-            float DistributionGGX(vec3 N, vec3 H, float roughness) {
-                float a      = roughness*roughness;
-                float a2     = a*a;
-                float NdotH  = max(dot(N, H), 0.0);
-                float NdotH2 = NdotH*NdotH;
-            	
-                float num   = a2;
-                float denom = (NdotH2 * (a2 - 1.0) + 1.0);
-                denom = $PI * denom * denom;
-            	
-                return num / denom;
-            }
-        """)
-
-        generator.appendFunction("GeometrySchlickGGX", """
-            float GeometrySchlickGGX(float NdotV, float roughness) {
-                float r = (roughness + 1.0);
-                float k = (r*r) / 8.0;
-                
-                float num   = NdotV;
-                float denom = NdotV * (1.0 - k) + k;
-                
-                return num / denom;
-            }
-        """)
-
-        generator.appendFunction("GeometrySmith", """
-            float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
-                float NdotV = max(dot(N, V), 0.0);
-                float NdotL = max(dot(N, L), 0.0);
-                float ggx2  = GeometrySchlickGGX(NdotV, roughness);
-                float ggx1  = GeometrySchlickGGX(NdotL, roughness);
-                
-                return ggx1 * ggx2;
-            }
-        """)
-
-        generator.appendMain("""
-            vec3 albedo = ${inAlbedo.ref3f()};
-            vec3 V = normalize(${inCamPos.ref3f()} - ${inFragPos.ref3f()});
-            vec3 N = normalize(${inNormal.ref3f()});
-            
-            vec3 F0 = vec3(0.04); 
-            F0 = mix(F0, albedo, $inMetallic);
-    
-            vec3 Lo = vec3(0.0);
-            for (int i = 0; i < ${lightNode.outLightCount}; i++) {
-                // calculate per-light radiance
-                vec3 fragToLight = ${lightNode.generateGetFragToLight("i", inFragPos.ref3f())};
-                vec3 L = normalize(fragToLight);
-                vec3 H = normalize(V + L);
-                vec3 radiance = ${lightNode.generateGetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
-        
-                // cook-torrance BRDF
-                float NDF = DistributionGGX(N, H, $inRoughness); 
-                float G = GeometrySmith(N, V, L, $inRoughness);
-                vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
-                
-                vec3 kS = F;
-                vec3 kD = vec3(1.0) - kS;
-                kD *= 1.0 - $inMetallic;
-                
-                vec3 numerator = NDF * G * F;
-                float denominator = 1;//4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-                vec3 specular = numerator / max(denominator, 0.001);
-                    
-                // add to outgoing radiance Lo
-                float NdotL = max(dot(N, L), 0.0);
-                Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
-            }
-
-            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, $inRoughness); 
-            vec3 kD = 1.0 - kS;
-            vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
-            vec3 ambient = (kD * diffuse) ;//* ao;
-
-            vec3 color = ambient + Lo;
-            ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
-            """)
-    }
-}
-
-/**
- * Physical Based Rendering Shader. Based on https://learnopengl.com/PBR/Lighting
- */
-class PbrIblMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode, val brdfLut: TextureNode, graph: ShaderGraph) :
+class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?, val brdfLut: TextureNode?, graph: ShaderGraph) :
         ShaderNode("PBR IBL Material", graph, ShaderStage.FRAGMENT_SHADER.mask) {
 
     var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
@@ -199,6 +80,7 @@ class PbrIblMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNod
     var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
     var inMetallic = ShaderNodeIoVar(ModelVar1fConst(0.0f))
     var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0.1f))
+    var inAmbientOccl = ShaderNodeIoVar(ModelVar1fConst(1f))
 
     var inIrradiance = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.03f)))
 
@@ -206,7 +88,7 @@ class PbrIblMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNod
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inAlbedo, inNormal, inFragPos, inCamPos, inIrradiance)
+        dependsOn(inAlbedo, inNormal, inFragPos, inCamPos, inIrradiance, inAmbientOccl)
         dependsOn(lightNode)
         dependsOn(reflectionMap)
         dependsOn(brdfLut)
@@ -268,8 +150,12 @@ class PbrIblMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNod
             vec3 V = normalize(${inCamPos.ref3f()} - ${inFragPos.ref3f()});
             vec3 N = normalize(${inNormal.ref3f()});
             
+            //float rough = clamp(${inRoughness.ref1f()}, 0.2, 1.0);
+            float rough = ${inRoughness.ref1f()};
+            float metal = ${inMetallic.ref1f()};
+            
             vec3 F0 = vec3(0.04); 
-            F0 = mix(F0, albedo, $inMetallic);
+            F0 = mix(F0, albedo, metal);
     
             vec3 Lo = vec3(0.0);
             for (int i = 0; i < ${lightNode.outLightCount}; i++) {
@@ -280,13 +166,13 @@ class PbrIblMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNod
                 vec3 radiance = ${lightNode.generateGetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
         
                 // cook-torrance BRDF
-                float NDF = DistributionGGX(N, H, $inRoughness); 
-                float G = GeometrySmith(N, V, L, $inRoughness);
+                float NDF = DistributionGGX(N, H, rough); 
+                float G = GeometrySmith(N, V, L, rough);
                 vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
                 
                 vec3 kS = F;
                 vec3 kD = vec3(1.0) - kS;
-                kD *= 1.0 - $inMetallic;
+                kD *= 1.0 - metal;
                 
                 vec3 numerator = NDF * G * F;
                 float denominator = 1;//4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
@@ -296,11 +182,33 @@ class PbrIblMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNod
                 float NdotL = max(dot(N, L), 0.0);
                 Lo += (kD * albedo / $PI + specular) * radiance * NdotL;
             }
+            """)
 
-            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, $inRoughness);
+        if (reflectionMap != null && brdfLut != null) {
+            generateFinalIbl(generator, reflectionMap, brdfLut)
+        } else {
+            generateFinalNonIbl(generator)
+        }
+    }
+
+    private fun generateFinalNonIbl(generator: CodeGenerator) {
+        generator.appendMain("""
+            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, $inRoughness); 
+            vec3 kD = 1.0 - kS;
+            vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
+            vec3 ambient = (kD * diffuse) ;//* ao;
+
+            vec3 color = ambient + Lo;
+            ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
+        """)
+    }
+
+    private fun generateFinalIbl(generator: CodeGenerator, reflectionMap: CubeMapNode, brdfLut: TextureNode) {
+        generator.appendMain("""
+            vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough);
             vec3 kS = F;
             vec3 kD = 1.0 - kS;
-            kD *= 1.0 - $inMetallic;
+            kD *= 1.0 - metal;
             
             vec3 irradiance = ${inIrradiance.ref3f()};
             vec3 diffuse = irradiance * albedo;
@@ -308,16 +216,16 @@ class PbrIblMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNod
             // sample reflection map
             vec3 R = reflect(-V, N);
             const float MAX_REFLECTION_LOD = 6.0;
-            vec3 prefilteredColor = ${generator.sampleTexture2d(reflectionMap.name, "R", "$inRoughness * MAX_REFLECTION_LOD")}.rgb;
+            vec3 prefilteredColor = ${generator.sampleTexture2d(reflectionMap.name, "R", "rough * MAX_REFLECTION_LOD")}.rgb;
 
-            vec2 brdfUv = vec2(max(dot(N, V), 0.0), $inRoughness);
+            vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);
             vec2 envBRDF = ${generator.sampleTexture2d(brdfLut.name, "brdfUv")}.rg;
             vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
   
-            vec3 ambient = (kD * diffuse + specular);// * ao;
+            vec3 ambient = (kD * diffuse + specular) * ${inAmbientOccl.ref1f()};
             
             vec3 color = ambient + Lo;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
-            """)
+        """)
     }
 }
