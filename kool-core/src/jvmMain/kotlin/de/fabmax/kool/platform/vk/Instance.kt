@@ -21,7 +21,7 @@ class Instance(val sys: VkSystem) : VkResource() {
             var enabledLayers: PointerBuffer? = null
             if (sys.setup.isValidating) {
                 if (!checkValidationLayerSupport()) {
-                    logW { "Validation layers requested but not available, java.library.path and env variable VK_LAYER_PATH must include the validation layer path" }
+                    logW { "Validation layers requested but not available, VK_LAYER_PATH environment variable must include the validation layer path" }
 
                 } else {
                     enabledLayers = mallocPointer(sys.setup.validationLayers.size)

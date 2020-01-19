@@ -2,8 +2,11 @@ package de.fabmax.kool
 
 import de.fabmax.kool.gl.*
 import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.createUint8Buffer
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 /**
  * Texture related classes. Texture stuff is split among several classes:
@@ -93,6 +96,17 @@ open class BufferedTextureData(buffer: Uint8Buffer, width: Int, height: Int, for
 
     override val data = buffer
     override val isValid = true
+
+    companion object {
+        fun singleColor(color: Color): BufferedTextureData {
+            val buf = createUint8Buffer(4)
+            buf[0] = (color.r * 255f).roundToInt().toByte()
+            buf[1] = (color.g * 255f).roundToInt().toByte()
+            buf[2] = (color.b * 255f).roundToInt().toByte()
+            buf[3] = (color.a * 255f).roundToInt().toByte()
+            return BufferedTextureData(buf, 1, 1, TexFormat.RGBA)
+        }
+    }
 }
 
 class CubeMapTextureData(val front: TextureData, val back: TextureData, val left: TextureData,

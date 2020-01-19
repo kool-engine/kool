@@ -48,7 +48,7 @@ class CubeMapSamplerNode(val cubeMap: CubeMapNode, graph: ShaderGraph, val premu
     }
 }
 
-class NormalMappingNode(val texture: TextureNode, graph: ShaderGraph) :
+class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
         ShaderNode("normalMapping_${graph.nextNodeId}", graph) {
 
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.NEG_X_AXIS))
@@ -79,6 +79,27 @@ class NormalMappingNode(val texture: TextureNode, graph: ShaderGraph) :
         """)
 
         generator.appendMain("${outNormal.declare()} = calcBumpedNormal(${inNormal.ref3f()}, ${inTangent.ref3f()}, ${inTexCoord.ref2f()}, ${inStrength.ref1f()});")
+    }
+}
+
+class HeightMapNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("heightMap_${graph.nextNodeId}", graph) {
+    var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.NEG_X_AXIS))
+    var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
+    var inPosition = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inStrength = ShaderNodeIoVar(ModelVar1fConst(0.1f))
+    val outPosition = ShaderNodeIoVar(ModelVar3f("${name}_outPos"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inTexCoord, inNormal, inPosition, inStrength)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        super.generateCode(generator)
+        generator.appendMain("""
+            float ${name}_height = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f())}.x * ${inStrength.ref1f()};
+            ${outPosition.declare()} = ${inPosition.ref3f()} + ${inNormal.ref3f()} * ${name}_height;
+        """)
     }
 }
 

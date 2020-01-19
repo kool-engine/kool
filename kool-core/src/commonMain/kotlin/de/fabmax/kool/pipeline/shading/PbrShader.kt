@@ -29,6 +29,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var metallicSampler: TextureSampler? = null
     private var roughnessSampler: TextureSampler? = null
     private var ambientOcclusionSampler: TextureSampler? = null
+    private var heightSampler: TextureSampler? = null
 
     var albedoMap = cfg.albedoMap
         set(value) {
@@ -54,6 +55,11 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         set(value) {
             field = value
             ambientOcclusionSampler?.texture = value
+        }
+    var heightMap = cfg.heightMap
+        set(value) {
+            field = value
+            heightSampler?.texture = value
         }
 
     // Simple lighting props
@@ -112,6 +118,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         roughnessSampler?.let { it.texture = roughnessMap }
         ambientOcclusionSampler = model.findNode<TextureNode>("tAmbOccl")?.sampler
         ambientOcclusionSampler?.let { it.texture = ambientOcclusionMap }
+        heightSampler = model.findNode<TextureNode>("tHeight")?.sampler
+        heightSampler?.let { it.texture = heightMap }
     }
 
     companion object {
@@ -127,8 +135,24 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 mvp = mvpNode()
                 val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.output)
-                val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
-                ifFragPos = stageInterfaceNode("ifFragPos", worldPos.output)
+
+                ifTexCoords = if (cfg.albedoMap != null || cfg.normalMap != null || cfg.roughnessMap != null ||
+                        cfg.metallicMap != null || cfg.ambientOcclusionMap != null || cfg.heightMap != null) {
+                    val mulUv = multiplyNode(attrTexCoords().output, ShaderNodeIoVar(ModelVar2fConst(Vec2f(4f, 2f))))
+//                    val mulUv = multiplyNode(attrTexCoords().output, ShaderNodeIoVar(ModelVar2fConst(Vec2f(2f, 1f))))
+                    stageInterfaceNode("ifTexCoords", mulUv.output)
+                } else {
+                    null
+                }
+
+                val worldPos = if (cfg.heightMap != null) {
+                    val hgtTex = textureNode("tHeight")
+                    heightMapNode(hgtTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).outPosition
+                } else {
+                    attrPositions().output
+                }
+                val pos = transformNode(worldPos, mvp.outModelMat, 1f).output
+                ifFragPos = stageInterfaceNode("ifFragPos", pos)
 
                 ifColors = if (cfg.albedoMap == null) {
                     stageInterfaceNode("ifColors", attrColors().output)
@@ -141,15 +165,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 } else {
                     null
                 }
-                ifTexCoords = if (cfg.albedoMap != null || cfg.normalMap != null || cfg.roughnessMap != null ||
-                        cfg.metallicMap != null || cfg.ambientOcclusionMap != null) {
-                    val mulUv = multiplyNode(attrTexCoords().output, ShaderNodeIoVar(ModelVar2fConst(Vec2f(4f, 2.5f))))
-                    stageInterfaceNode("ifTexCoords", mulUv.output)
-                } else {
-                    null
-                }
 
-                positionOutput = vertexPositionNode(attrPositions().output, mvp.outMvpMat).outPosition
+                positionOutput = vertexPositionNode(worldPos, mvp.outMvpMat).outPosition
             }
             fragmentStage {
                 val mvpFrag = mvp.addToStage(fragmentStage)
@@ -184,7 +201,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                         albedoLin.outColor
                     }
                     inNormal = if (cfg.normalMap != null && ifTangents != null) {
-                        val bumpNormal = normalMappingNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
+                        val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                         bumpNormal.outNormal
                     } else {
                         ifNormals.output
@@ -215,10 +232,11 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var ambient = Color(0.03f, 0.03f, 0.03f, 1f)
 
         var albedoMap: Texture? = null
-        var ambientOcclusionMap: Texture? = null
         var normalMap: Texture? = null
         var roughnessMap: Texture? = null
         var metallicMap: Texture? = null
+        var ambientOcclusionMap: Texture? = null
+        var heightMap: Texture? = null
 
         var irradianceMap: CubeMapTexture? = null
         var reflectionMap: CubeMapTexture? = null

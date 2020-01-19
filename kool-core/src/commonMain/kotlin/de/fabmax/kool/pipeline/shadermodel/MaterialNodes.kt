@@ -151,7 +151,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 N = normalize(${inNormal.ref3f()});
             
             //float rough = clamp(${inRoughness.ref1f()}, 0.2, 1.0);
-            float rough = ${inRoughness.ref1f()};
+            float rough = clamp(${inRoughness.ref1f()}, 0.05, 1.0);
             float metal = ${inMetallic.ref1f()};
             
             vec3 F0 = vec3(0.04); 

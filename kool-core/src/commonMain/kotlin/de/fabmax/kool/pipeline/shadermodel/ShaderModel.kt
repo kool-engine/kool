@@ -90,13 +90,23 @@ class ShaderModel(val modelInfo: String = "") {
             return nrmNode
         }
 
-        fun normalMappingNode(texture: TextureNode, textureCoord: ShaderNodeIoVar? = null,
-                              normal: ShaderNodeIoVar? = null, tangent: ShaderNodeIoVar? = null): NormalMappingNode {
-            val nrmMappingNd = addNode(NormalMappingNode(texture, stage))
+        fun normalMapNode(texture: TextureNode, textureCoord: ShaderNodeIoVar? = null,
+                          normal: ShaderNodeIoVar? = null, tangent: ShaderNodeIoVar? = null): NormalMapNode {
+            val nrmMappingNd = addNode(NormalMapNode(texture, stage))
             textureCoord?.let { nrmMappingNd.inTexCoord = it }
             normal?.let { nrmMappingNd.inNormal = it }
             tangent?.let { nrmMappingNd.inTangent = it }
             return nrmMappingNd
+        }
+
+        fun heightMapNode(texture: TextureNode, textureCoord: ShaderNodeIoVar? = null, pos: ShaderNodeIoVar? = null,
+                          normal: ShaderNodeIoVar? = null, strength: ShaderNodeIoVar? = null): HeightMapNode {
+            val heightMappingNd = addNode(HeightMapNode(texture, stage))
+            textureCoord?.let { heightMappingNd.inTexCoord = it }
+            pos?.let { heightMappingNd.inPosition = it }
+            normal?.let { heightMappingNd.inNormal = it }
+            strength?.let { heightMappingNd.inStrength = it }
+            return heightMappingNd
         }
 
         fun gammaNode(inputColor: ShaderNodeIoVar? = null): GammaNode {

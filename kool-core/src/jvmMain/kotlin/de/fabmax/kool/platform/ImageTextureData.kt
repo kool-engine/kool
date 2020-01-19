@@ -13,7 +13,6 @@ import java.awt.Transparency
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferByte
 import kotlin.math.round
-import kotlin.math.roundToInt
 
 class ImageTextureData(image: BufferedImage) :
         BufferedTextureData(image.toBuffer(), image.width, image.height, image.format) {
@@ -124,6 +123,7 @@ class ImageTextureData(image: BufferedImage) :
         private fun slowCopyImage(image: BufferedImage, target: Uint8Buffer, format: Int, width: Int, height: Int) {
             val pixel = IntArray(4)
             val model = image.colorModel
+            val sizes = IntArray(4) { i -> 1 shl model.componentSize[i % model.componentSize.size] }
             val raster = image.data
             val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
             val indexed = image.type == BufferedImage.TYPE_BYTE_BINARY || image.type == BufferedImage.TYPE_BYTE_INDEXED
@@ -143,26 +143,30 @@ class ImageTextureData(image: BufferedImage) :
                         pixel[3] = 255
                     }
 
+                    var r = pixel[0] / sizes[0].toFloat()
+                    var g = pixel[1] / sizes[1].toFloat()
+                    var b = pixel[2] / sizes[2].toFloat()
+                    val a = pixel[3] / sizes[3].toFloat()
+
                     // pre-multiply alpha
-                    if (format == GL_RGBA && pixel[3] < 255) {
-                        if (pixel[3] == 0) {
-                            pixel[0] = 0
-                            pixel[1] = 0
-                            pixel[2] = 0
+                    if (format == GL_RGBA && a < 1f) {
+                        if (a == 0f) {
+                            r = 0f
+                            g = 0f
+                            b = 0f
                         } else {
-                            val f = pixel[3] / 255f
-                            pixel[0] = (pixel[0] * f).roundToInt()
-                            pixel[1] = (pixel[1] * f).roundToInt()
-                            pixel[2] = (pixel[2] * f).roundToInt()
+                            r *= a
+                            g *= a
+                            b *= a
                         }
                     }
 
                     // copy bytes to target buf
                     if (format == GL_RGBA || format == GL_RGB) {
-                        target.put(pixel[0].toByte()).put(pixel[1].toByte()).put(pixel[2].toByte())
+                        target.put((r * 255f).toByte()).put((g * 255f).toByte()).put((b * 255f).toByte())
                     }
                     if (format == GL_RGBA || format == GL_ALPHA) {
-                        target.put(pixel[3].toByte())
+                        target.put((a * 255f).toByte())
                     }
                 }
             }
