@@ -31,6 +31,14 @@ actual class LoadedTexture(val sys: VkSystem, val format: TexFormat, val texture
         logD { "Destroyed texture" }
     }
 
+    actual fun dispose() {
+        // fixme: kinda hacky... also might me depending resource of something else than sys.device
+        sys.renderLoop.runDelayed(sys.swapChain?.nImages ?: 3) {
+            destroy()
+            sys.device.removeDependingResource(this)
+        }
+    }
+
     companion object {
         fun fromFile(sys: VkSystem, path: String): LoadedTexture {
             return fromTexData(sys, ImageTextureData(ImageIO.read(FileInputStream(path))))
@@ -43,6 +51,5 @@ actual class LoadedTexture(val sys: VkSystem, val format: TexFormat, val texture
                 else -> TODO("texture data not implemented: ${data::class.java.name}")
             }
         }
-
     }
 }

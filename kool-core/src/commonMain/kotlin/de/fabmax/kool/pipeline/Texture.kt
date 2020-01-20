@@ -25,6 +25,12 @@ open class Texture(
 
     var loadingState = LoadingState.NOT_LOADED
 
+    fun dispose() {
+        loadedTexture?.dispose()
+        loadedTexture = null
+        loadingState = LoadingState.NOT_LOADED
+    }
+
     enum class LoadingState {
         NOT_LOADED,
         LOADING,

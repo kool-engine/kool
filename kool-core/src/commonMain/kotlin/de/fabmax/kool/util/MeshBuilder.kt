@@ -190,6 +190,128 @@ open class MeshBuilder(val meshData: MeshData) {
         }
     }
 
+    inline fun icoSphere(props: SphereProps.() -> Unit) {
+        sphereProps.defaults().props()
+        icoSphere(sphereProps)
+    }
+
+    fun icoSphere(props: SphereProps) {
+        // https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
+
+        val x = 0.525731112f
+        val z = 0.850650808f
+        val n = 0f
+
+        val verts = mutableListOf(
+                Vec3f(-x, n, z), Vec3f(x, n, z), Vec3f(-x, n, -z), Vec3f(x, n, -z),
+                Vec3f(n, z, x), Vec3f(n, z, -x), Vec3f(n, -z, x), Vec3f(n, -z, -x),
+                Vec3f(z, x, n), Vec3f(-z, x, n), Vec3f(z, -x, n), Vec3f(-z, -x, n)
+        )
+        var faces = mutableListOf(
+                4,0,1, 9,0,4, 5,9,4, 5,4,8, 8,4,1,
+                10,8,1, 3,8,10, 3,5,8, 2,5,3, 7,2,3,
+                10,7,3, 6,7,10, 11,7,6, 0,11,6, 1,0,6,
+                1,6,10, 0,9,11, 11,9,2, 2,9,5, 2,7,11
+        )
+
+        val midVerts = mutableMapOf<Long, Int>()
+        fun getMidVertex(fromIdx: Int, toIdx: Int): Int {
+            val key = (min(fromIdx, toIdx).toLong() shl 32) + max(fromIdx, toIdx)
+            return midVerts.getOrPut(key) {
+                val insertIdx = verts.size
+                verts += MutableVec3f(verts[fromIdx]).add(verts[toIdx]).norm()
+                insertIdx
+            }
+        }
+
+        // subdivide ico-sphere
+        val its = if (props.steps <= 8) { props.steps } else {
+            logW { "clamping too large number of iterations for ico-sphere (${props.steps}) to 8" }
+            8
+        }
+        for (i in 0 until its) {
+            val newFaces = mutableListOf<Int>()
+            for (j in faces.indices step 3) {
+                val v1 = faces[j]
+                val v2 = faces[j + 1]
+                val v3 = faces[j + 2]
+
+                // subdivide edges
+                val a = getMidVertex(v1, v2)
+                val b = getMidVertex(v2, v3)
+                val c = getMidVertex(v3, v1)
+
+                newFaces.addAll(listOf(v1, a, c))
+                newFaces.addAll(listOf(v2, b, a))
+                newFaces.addAll(listOf(v3, c, b))
+                newFaces.addAll(listOf(a, b, c))
+            }
+            faces = newFaces
+        }
+
+        val pif = PI.toFloat()
+        val uvVerts = verts.map { v -> v to Vec2f((atan2(v.x, v.z) + pif) / (2 * pif), acos(v.y) / pif) }.toMutableList()
+
+        // duplicate vertices at texture border
+        for (i in faces.indices step 3) {
+            val v1 = faces[i]
+            val v2 = faces[i + 1]
+            val v3 = faces[i + 2]
+
+            val u1 = uvVerts[v1].second.x
+            val u2 = uvVerts[v2].second.x
+            val u3 = uvVerts[v3].second.x
+
+            // check if triangle stretches across texture border and duplicate vertex with adjusted uv if it does
+            if (u1 - u2 > 0.5f && u1 - u3 > 0.5f) {
+                val dv1 = Vec3f(uvVerts[v1].first)
+                val du1 = MutableVec2f(uvVerts[v1].second).apply { this.x -= 1f }
+                faces[i] = uvVerts.size
+                uvVerts += dv1 to du1
+            } else if (u2 - u1 > 0.5f && u2 - u3 > 0.5f) {
+                val dv2 = Vec3f(uvVerts[v2].first)
+                val du2 = MutableVec2f(uvVerts[v2].second).apply { this.x -= 1f }
+                faces[i + 1] = uvVerts.size
+                uvVerts += dv2 to du2
+            } else if (u3 - u1 > 0.5f && u3 - u2 > 0.5f) {
+                val dv3 = Vec3f(uvVerts[v3].first)
+                val du3 = MutableVec2f(uvVerts[v3].second).apply { this.x -= 1f }
+                faces[i + 2] = uvVerts.size
+                uvVerts += dv3 to du3
+
+            } else if (u2 - u1 > 0.5f && u3 - u1 > 0.5f) {
+                val dv1 = Vec3f(uvVerts[v1].first)
+                val du1 = MutableVec2f(uvVerts[v1].second).apply { this.x += 1f }
+                faces[i] = uvVerts.size
+                uvVerts += dv1 to du1
+            } else if (u1 - u2 > 0.5f && u3 - u2 > 0.5f) {
+                val dv2 = Vec3f(uvVerts[v2].first)
+                val du2 = MutableVec2f(uvVerts[v2].second).apply { this.x += 1f }
+                faces[i + 1] = uvVerts.size
+                uvVerts += dv2 to du2
+            } else if (u1 - u3 > 0.5f && u2 - u3 > 0.5f) {
+                val dv3 = Vec3f(uvVerts[v3].first)
+                val du3 = MutableVec2f(uvVerts[v3].second).apply { this.x += 1f }
+                faces[i + 2] = uvVerts.size
+                uvVerts += dv3 to du3
+            }
+        }
+
+        // insert geometry
+        val nrm = MutableVec3f()
+        val pos = MutableVec3f()
+        val i0 = meshData.numIndices
+        for (v in uvVerts) {
+            nrm.set(v.first).norm()
+            pos.set(nrm).scale(props.radius).add(props.center)
+            val uv = props.texCoordGenerator(v.second.y * pif, v.second.x * 2 * pif)
+            vertex(pos, nrm, uv)
+        }
+        for (i in faces.indices step 3) {
+            meshData.addTriIndices(faces[i0 + i], faces[i0 + 1 + i], faces[i0 + 2 + i])
+        }
+    }
+
     inline fun rect(props: RectProps.() -> Unit) {
         rectProps.defaults().props()
         rect(rectProps)

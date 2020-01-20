@@ -60,13 +60,15 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
     var reflectionMapPass: ReflectionMapPass? = null
 
     val hdris = listOf(
+            "skybox/hdri/circus_arena_2k.rgbe.png",
             "skybox/hdri/newport_loft.rgbe.png",
             "skybox/hdri/lakeside_2k.rgbe.png",
             "skybox/hdri/spruit_sunrise_2k.rgbe.png",
             "skybox/hdri/driving_school.rgbe.png",
             "skybox/hdri/royal_esplanade_2k.rgbe.png",
             "skybox/hdri/shanghai_bund_2k.rgbe.png",
-            "skybox/hdri/vignaioli_night_2k.rgbe.png"
+            "skybox/hdri/vignaioli_night_2k.rgbe.png",
+            "skybox/hdri/winter_evening_2k.rgbe.png"
     )
     val hdriTextures = MutableList<Texture?>(hdris.size) { null }
     var hdriIndex = 0
@@ -235,9 +237,9 @@ private fun Scene.bunny(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTex
 
 private fun Scene.pbrMat(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture, ctx: KoolContext) {
     val matMaps = materials.values.toList()
-    var matIdx = 1
+    var matIdx = 0
 
-    val noHeight = Texture { BufferedTextureData.singleColor(Color.BLACK) }
+    val noDisp = Texture { BufferedTextureData.singleColor(Color.BLACK) }
     val noAo = Texture { BufferedTextureData.singleColor(Color.WHITE) }
 
     val pbrConfig = PbrShader.PbrConfig()
@@ -249,22 +251,29 @@ private fun Scene.pbrMat(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTe
     pbrConfig.metallicMap = matMaps[matIdx].metallic
     pbrConfig.roughnessMap = matMaps[matIdx].roughness
     pbrConfig.ambientOcclusionMap = matMaps[matIdx].ao ?: noAo
-    pbrConfig.heightMap = matMaps[matIdx].height ?: noHeight
+    pbrConfig.displacementMap = matMaps[matIdx].displacement ?: noDisp
 
     fun setMaterial(shader: PbrShader, mat: MaterialMaps) {
+        shader.albedoMap?.dispose()
+        shader.normalMap?.dispose()
+        shader.metallicMap?.dispose()
+        shader.roughnessMap?.dispose()
+        shader.ambientOcclusionMap?.dispose()
+        shader.displacementMap?.dispose()
+
         shader.albedoMap = mat.albedo
         shader.normalMap = mat.normal
         shader.metallicMap = mat.metallic
         shader.roughnessMap = mat.roughness
         shader.ambientOcclusionMap = mat.ao ?: noAo
-        shader.heightMap = mat.height ?: noHeight
+        shader.displacementMap = mat.displacement ?: noDisp
     }
 
     +transformGroup {
         +textureMesh(isNormalMapped = true) {
             generator = {
-                sphere {
-                    steps = 1000
+                icoSphere {
+                    steps = 7
                     radius = 3f
                 }
             }
@@ -290,7 +299,7 @@ private fun Scene.pbrMat(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTe
     }
 }
 
-data class MaterialMaps(val albedo: Texture, val normal: Texture, val metallic: Texture, val roughness: Texture, val ao: Texture?, val height: Texture?)
+data class MaterialMaps(val albedo: Texture, val normal: Texture, val metallic: Texture, val roughness: Texture, val ao: Texture?, val displacement: Texture?)
 
 val materials = mutableMapOf(
         "Bamboo" to MaterialMaps(
@@ -371,7 +380,7 @@ val materials = mutableMapOf(
             Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-metallic.png") },
             Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-roughness.png") },
             Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-ao.png") },
-            null //Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-height.png") }
+            Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-height.png") }
         ),
 
         "Harsh Bricks" to MaterialMaps(
@@ -469,6 +478,15 @@ val materials = mutableMapOf(
             Texture { it.loadImageData("reserve/pbr/streaked-marble/streaked-marble-normal.png") },
             Texture { it.loadImageData("reserve/pbr/streaked-marble/streaked-marble-metalness.png") },
             Texture { it.loadImageData("reserve/pbr/streaked-marble/streaked-marble-roughness1.png") },
+            null,
+            null
+        ),
+
+        "Scuffed Titanium" to MaterialMaps(
+            Texture { it.loadImageData("reserve/pbr/Titanium-Scuffed/Titanium-Scuffed_basecolor.png") },
+            Texture { it.loadImageData("reserve/pbr/Titanium-Scuffed/Titanium-Scuffed_normal.png") },
+            Texture { it.loadImageData("reserve/pbr/Titanium-Scuffed/Titanium-Scuffed_metallic.png") },
+            Texture { it.loadImageData("reserve/pbr/Titanium-Scuffed/Titanium-Scuffed_roughness.png") },
             null,
             null
         ),

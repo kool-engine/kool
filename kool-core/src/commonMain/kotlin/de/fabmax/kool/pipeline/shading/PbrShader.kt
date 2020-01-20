@@ -56,7 +56,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             field = value
             ambientOcclusionSampler?.texture = value
         }
-    var heightMap = cfg.heightMap
+    var displacementMap = cfg.displacementMap
         set(value) {
             field = value
             heightSampler?.texture = value
@@ -119,7 +119,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         ambientOcclusionSampler = model.findNode<TextureNode>("tAmbOccl")?.sampler
         ambientOcclusionSampler?.let { it.texture = ambientOcclusionMap }
         heightSampler = model.findNode<TextureNode>("tHeight")?.sampler
-        heightSampler?.let { it.texture = heightMap }
+        heightSampler?.let { it.texture = displacementMap }
     }
 
     companion object {
@@ -137,7 +137,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 ifNormals = stageInterfaceNode("ifNormals", nrm.output)
 
                 ifTexCoords = if (cfg.albedoMap != null || cfg.normalMap != null || cfg.roughnessMap != null ||
-                        cfg.metallicMap != null || cfg.ambientOcclusionMap != null || cfg.heightMap != null) {
+                        cfg.metallicMap != null || cfg.ambientOcclusionMap != null || cfg.displacementMap != null) {
                     val mulUv = multiplyNode(attrTexCoords().output, ShaderNodeIoVar(ModelVar2fConst(Vec2f(4f, 2f))))
 //                    val mulUv = multiplyNode(attrTexCoords().output, ShaderNodeIoVar(ModelVar2fConst(Vec2f(2f, 1f))))
                     stageInterfaceNode("ifTexCoords", mulUv.output)
@@ -145,7 +145,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
 
-                val worldPos = if (cfg.heightMap != null) {
+                val worldPos = if (cfg.displacementMap != null) {
                     val hgtTex = textureNode("tHeight")
                     heightMapNode(hgtTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).outPosition
                 } else {
@@ -236,7 +236,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var roughnessMap: Texture? = null
         var metallicMap: Texture? = null
         var ambientOcclusionMap: Texture? = null
-        var heightMap: Texture? = null
+        var displacementMap: Texture? = null
 
         var irradianceMap: CubeMapTexture? = null
         var reflectionMap: CubeMapTexture? = null
