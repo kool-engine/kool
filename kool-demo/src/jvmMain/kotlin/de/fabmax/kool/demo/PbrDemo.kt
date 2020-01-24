@@ -35,7 +35,7 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
         +camera
 
         onPreRender += { ctx ->
-            verticalRotation += ctx.deltaT * 5f
+            verticalRotation += ctx.deltaT * 2f
         }
     }
 
@@ -254,13 +254,6 @@ private fun Scene.pbrMat(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTe
     pbrConfig.displacementMap = matMaps[matIdx].displacement ?: noDisp
 
     fun setMaterial(shader: PbrShader, mat: MaterialMaps) {
-        shader.albedoMap?.dispose()
-        shader.normalMap?.dispose()
-        shader.metallicMap?.dispose()
-        shader.roughnessMap?.dispose()
-        shader.ambientOcclusionMap?.dispose()
-        shader.displacementMap?.dispose()
-
         shader.albedoMap = mat.albedo
         shader.normalMap = mat.normal
         shader.metallicMap = mat.metallic
@@ -272,6 +265,10 @@ private fun Scene.pbrMat(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTe
     +transformGroup {
         +textureMesh(isNormalMapped = true) {
             generator = {
+                vertexModFun = {
+                    texCoord.x *= 4
+                    texCoord.y *= 2
+                }
                 icoSphere {
                     steps = 7
                     radius = 3f
@@ -284,22 +281,33 @@ private fun Scene.pbrMat(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTe
             pipelineConfig { shaderLoader = shader::setup }
 
             ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "Change Mat +", { it.isPressed }) {
+                matMaps[matIdx].disposeMaps()
                 matIdx = (matIdx + 1) % matMaps.size
                 setMaterial(shader, matMaps[matIdx])
             }
             ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_DOWN, "Change Mat -", { it.isPressed }) {
+                matMaps[matIdx].disposeMaps()
                 matIdx = (matIdx + matMaps.size - 1) % matMaps.size
                 setMaterial(shader, matMaps[matIdx])
             }
         }
 
         onPreRender += { ctx ->
-            rotate(-5f * ctx.deltaT, Vec3f.Y_AXIS)
+            rotate(-2f * ctx.deltaT, Vec3f.Y_AXIS)
         }
     }
 }
 
-data class MaterialMaps(val albedo: Texture, val normal: Texture, val metallic: Texture, val roughness: Texture, val ao: Texture?, val displacement: Texture?)
+data class MaterialMaps(val albedo: Texture, val normal: Texture, val metallic: Texture, val roughness: Texture, val ao: Texture?, val displacement: Texture?) {
+    fun disposeMaps() {
+        albedo.dispose()
+        normal.dispose()
+        metallic.dispose()
+        roughness.dispose()
+        ao?.dispose()
+        displacement?.dispose()
+    }
+}
 
 val materials = mutableMapOf(
         "Bamboo" to MaterialMaps(
@@ -309,6 +317,15 @@ val materials = mutableMapOf(
             Texture { it.loadImageData("reserve/pbr/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.png") },
             Texture { it.loadImageData("reserve/pbr/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.png") },
             null
+        ),
+
+        "Brown Mud" to MaterialMaps(
+                Texture { it.loadImageData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg") },
+                Texture { it.loadImageData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_nor_2k.jpg") },
+                Texture { BufferedTextureData.singleColor(Color.BLACK) },
+                Texture { it.loadImageData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg") },
+                Texture { it.loadImageData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_ao_2k.jpg") },
+                Texture { it.loadImageData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg") }
         ),
 
         "Castle Brick" to MaterialMaps(
@@ -348,6 +365,7 @@ val materials = mutableMapOf(
         ),
 
         "Granite" to MaterialMaps(
+            //Texture { it.loadImageData("reserve/pbr/granitesmooth1/granitesmooth1-albedo2.png") },
             Texture { it.loadImageData("reserve/pbr/granitesmooth1/granitesmooth1-albedo4.png") },
             Texture { it.loadImageData("reserve/pbr/granitesmooth1/granitesmooth1-normal2.png") },
             Texture { it.loadImageData("reserve/pbr/granitesmooth1/granitesmooth1-metalness.png") },
@@ -365,14 +383,14 @@ val materials = mutableMapOf(
             null
         ),
 
-        "Greasy Pan" to MaterialMaps(
-            Texture { it.loadImageData("reserve/pbr/greasy_pan2/greasy-pan-2-albedo.png") },
-            Texture { it.loadImageData("reserve/pbr/greasy_pan2/greasy-pan-2-normal.png") },
-            Texture { it.loadImageData("reserve/pbr/greasy_pan2/greasy-pan-2-metal.png") },
-            Texture { it.loadImageData("reserve/pbr/greasy_pan2/greasy-pan-2-roughness.png") },
-            null,
-            null
-        ),
+//        "Greasy Pan" to MaterialMaps(
+//            Texture { it.loadImageData("reserve/pbr/greasy_pan2/greasy-pan-2-albedo.png") },
+//            Texture { it.loadImageData("reserve/pbr/greasy_pan2/greasy-pan-2-normal.png") },
+//            Texture { it.loadImageData("reserve/pbr/greasy_pan2/greasy-pan-2-metal.png") },
+//            Texture { it.loadImageData("reserve/pbr/greasy_pan2/greasy-pan-2-roughness.png") },
+//            null,
+//            null
+//        ),
 
         "Hardwood Planks" to MaterialMaps(
             Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-albedo.png") },
@@ -380,7 +398,7 @@ val materials = mutableMapOf(
             Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-metallic.png") },
             Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-roughness.png") },
             Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-ao.png") },
-            Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-height.png") }
+            null //Texture { it.loadImageData("reserve/pbr/hardwood_planks/hardwood-brown-planks-height.png") }
         ),
 
         "Harsh Bricks" to MaterialMaps(

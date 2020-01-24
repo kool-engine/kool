@@ -139,6 +139,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         private val loadedTextures = mutableMapOf<TextureData, LoadedTexture>()
 
         private fun getLoadedTex(texData: TextureData, sys: VkSystem): LoadedTexture {
+            loadedTextures.values.removeIf { it.isDestroyed }
             return loadedTextures.computeIfAbsent(texData) { k ->
                 val loaded = LoadedTexture.fromTexData(sys, k)
                 sys.device.addDependingResource(loaded)

@@ -254,46 +254,27 @@ open class MeshBuilder(val meshData: MeshData) {
 
         // duplicate vertices at texture border
         for (i in faces.indices step 3) {
-            val v1 = faces[i]
-            val v2 = faces[i + 1]
-            val v3 = faces[i + 2]
-
-            val u1 = uvVerts[v1].second.x
-            val u2 = uvVerts[v2].second.x
-            val u3 = uvVerts[v3].second.x
-
             // check if triangle stretches across texture border and duplicate vertex with adjusted uv if it does
-            if (u1 - u2 > 0.5f && u1 - u3 > 0.5f) {
-                val dv1 = Vec3f(uvVerts[v1].first)
-                val du1 = MutableVec2f(uvVerts[v1].second).apply { this.x -= 1f }
-                faces[i] = uvVerts.size
-                uvVerts += dv1 to du1
-            } else if (u2 - u1 > 0.5f && u2 - u3 > 0.5f) {
-                val dv2 = Vec3f(uvVerts[v2].first)
-                val du2 = MutableVec2f(uvVerts[v2].second).apply { this.x -= 1f }
-                faces[i + 1] = uvVerts.size
-                uvVerts += dv2 to du2
-            } else if (u3 - u1 > 0.5f && u3 - u2 > 0.5f) {
-                val dv3 = Vec3f(uvVerts[v3].first)
-                val du3 = MutableVec2f(uvVerts[v3].second).apply { this.x -= 1f }
-                faces[i + 2] = uvVerts.size
-                uvVerts += dv3 to du3
+            for (j in 0..2) {
+                val i1 = i + j
+                val i2 = i + (j+1) % 3
+                val i3 = i + (j+2) % 3
 
-            } else if (u2 - u1 > 0.5f && u3 - u1 > 0.5f) {
-                val dv1 = Vec3f(uvVerts[v1].first)
-                val du1 = MutableVec2f(uvVerts[v1].second).apply { this.x += 1f }
-                faces[i] = uvVerts.size
-                uvVerts += dv1 to du1
-            } else if (u1 - u2 > 0.5f && u3 - u2 > 0.5f) {
-                val dv2 = Vec3f(uvVerts[v2].first)
-                val du2 = MutableVec2f(uvVerts[v2].second).apply { this.x += 1f }
-                faces[i + 1] = uvVerts.size
-                uvVerts += dv2 to du2
-            } else if (u1 - u3 > 0.5f && u2 - u3 > 0.5f) {
-                val dv3 = Vec3f(uvVerts[v3].first)
-                val du3 = MutableVec2f(uvVerts[v3].second).apply { this.x += 1f }
-                faces[i + 2] = uvVerts.size
-                uvVerts += dv3 to du3
+                val u1 = uvVerts[faces[i1]].second.x
+                val u2 = uvVerts[faces[i2]].second.x
+                val u3 = uvVerts[faces[i3]].second.x
+
+                if (u1 - u2 > 0.5f && u1 - u3 > 0.5f) {
+                    val dv1 = Vec3f(uvVerts[faces[i1]].first)
+                    val du1 = MutableVec2f(uvVerts[faces[i1]].second).apply { this.x -= 1f }
+                    faces[i1] = uvVerts.size
+                    uvVerts += dv1 to du1
+                } else if (u2 - u1 > 0.5f && u3 - u1 > 0.5f) {
+                    val dv1 = Vec3f(uvVerts[faces[i1]].first)
+                    val du1 = MutableVec2f(uvVerts[faces[i1]].second).apply { this.x += 1f }
+                    faces[i1] = uvVerts.size
+                    uvVerts += dv1 to du1
+                }
             }
         }
 

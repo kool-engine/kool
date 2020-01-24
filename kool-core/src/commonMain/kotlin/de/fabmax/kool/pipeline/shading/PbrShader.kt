@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.shading
 
-import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.util.Color
@@ -29,7 +28,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var metallicSampler: TextureSampler? = null
     private var roughnessSampler: TextureSampler? = null
     private var ambientOcclusionSampler: TextureSampler? = null
-    private var heightSampler: TextureSampler? = null
+    private var displacementSampler: TextureSampler? = null
 
     var albedoMap = cfg.albedoMap
         set(value) {
@@ -59,7 +58,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     var displacementMap = cfg.displacementMap
         set(value) {
             field = value
-            heightSampler?.texture = value
+            displacementSampler?.texture = value
         }
 
     // Simple lighting props
@@ -118,8 +117,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         roughnessSampler?.let { it.texture = roughnessMap }
         ambientOcclusionSampler = model.findNode<TextureNode>("tAmbOccl")?.sampler
         ambientOcclusionSampler?.let { it.texture = ambientOcclusionMap }
-        heightSampler = model.findNode<TextureNode>("tHeight")?.sampler
-        heightSampler?.let { it.texture = displacementMap }
+        displacementSampler = model.findNode<TextureNode>("tDisplacement")?.sampler
+        displacementSampler?.let { it.texture = displacementMap }
     }
 
     companion object {
@@ -138,16 +137,14 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
                 ifTexCoords = if (cfg.albedoMap != null || cfg.normalMap != null || cfg.roughnessMap != null ||
                         cfg.metallicMap != null || cfg.ambientOcclusionMap != null || cfg.displacementMap != null) {
-                    val mulUv = multiplyNode(attrTexCoords().output, ShaderNodeIoVar(ModelVar2fConst(Vec2f(4f, 2f))))
-//                    val mulUv = multiplyNode(attrTexCoords().output, ShaderNodeIoVar(ModelVar2fConst(Vec2f(2f, 1f))))
-                    stageInterfaceNode("ifTexCoords", mulUv.output)
+                    stageInterfaceNode("ifTexCoords", attrTexCoords().output)
                 } else {
                     null
                 }
 
                 val worldPos = if (cfg.displacementMap != null) {
-                    val hgtTex = textureNode("tHeight")
-                    heightMapNode(hgtTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).outPosition
+                    val dispTex = textureNode("tDisplacement")
+                    displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).outPosition
                 } else {
                     attrPositions().output
                 }

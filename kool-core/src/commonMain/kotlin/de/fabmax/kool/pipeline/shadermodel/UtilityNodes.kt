@@ -70,7 +70,7 @@ class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
                 vec3 normal = normalize(n);
                 vec3 tangent = normalize(t);
                 tangent = normalize(tangent - dot(tangent, normal) * normal);
-                vec3 bitangent = cross(tangent, normal);
+                vec3 bitangent = cross(normal, tangent);
                 vec3 bumpMapNormal = ${generator.sampleTexture2d(texture.name, "uv")}.xyz;
                 bumpMapNormal = 2.0 * bumpMapNormal - vec3(1.0, 1.0, 1.0);
                 mat3 tbn = mat3(tangent, bitangent, normal);
@@ -82,7 +82,7 @@ class NormalMapNode(val texture: TextureNode, graph: ShaderGraph) :
     }
 }
 
-class HeightMapNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("heightMap_${graph.nextNodeId}", graph) {
+class DisplacementMapNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("dispMap_${graph.nextNodeId}", graph) {
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.NEG_X_AXIS))
     var inNormal = ShaderNodeIoVar(ModelVar3fConst(Vec3f.Y_AXIS))
     var inPosition = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
@@ -97,8 +97,8 @@ class HeightMapNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("
     override fun generateCode(generator: CodeGenerator) {
         super.generateCode(generator)
         generator.appendMain("""
-            float ${name}_height = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f())}.x * ${inStrength.ref1f()};
-            ${outPosition.declare()} = ${inPosition.ref3f()} + ${inNormal.ref3f()} * ${name}_height;
+            float ${name}_disp = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f())}.x * ${inStrength.ref1f()};
+            ${outPosition.declare()} = ${inPosition.ref3f()} + ${inNormal.ref3f()} * ${name}_disp;
         """)
     }
 }

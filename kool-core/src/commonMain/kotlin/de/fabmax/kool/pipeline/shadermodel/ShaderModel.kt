@@ -99,14 +99,14 @@ class ShaderModel(val modelInfo: String = "") {
             return nrmMappingNd
         }
 
-        fun heightMapNode(texture: TextureNode, textureCoord: ShaderNodeIoVar? = null, pos: ShaderNodeIoVar? = null,
-                          normal: ShaderNodeIoVar? = null, strength: ShaderNodeIoVar? = null): HeightMapNode {
-            val heightMappingNd = addNode(HeightMapNode(texture, stage))
-            textureCoord?.let { heightMappingNd.inTexCoord = it }
-            pos?.let { heightMappingNd.inPosition = it }
-            normal?.let { heightMappingNd.inNormal = it }
-            strength?.let { heightMappingNd.inStrength = it }
-            return heightMappingNd
+        fun displacementMapNode(texture: TextureNode, textureCoord: ShaderNodeIoVar? = null, pos: ShaderNodeIoVar? = null,
+                                normal: ShaderNodeIoVar? = null, strength: ShaderNodeIoVar? = null): DisplacementMapNode {
+            val dispMappingNd = addNode(DisplacementMapNode(texture, stage))
+            textureCoord?.let { dispMappingNd.inTexCoord = it }
+            pos?.let { dispMappingNd.inPosition = it }
+            normal?.let { dispMappingNd.inNormal = it }
+            strength?.let { dispMappingNd.inStrength = it }
+            return dispMappingNd
         }
 
         fun gammaNode(inputColor: ShaderNodeIoVar? = null): GammaNode {
