@@ -41,7 +41,7 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Mesh
 
         pipelineConfig {
             cullMethod = CullMethod.CULL_FRONT_FACES
-            depthTest = DepthTest.LESS_EQUAL
+            depthTest = DepthCompareOp.LESS_EQUAL
 
             shaderLoader = shader::setup
             onPipelineCreated += {

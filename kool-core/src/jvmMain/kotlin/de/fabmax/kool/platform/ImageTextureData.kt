@@ -2,11 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.BufferedTextureData
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.gl.GL_ALPHA
-import de.fabmax.kool.gl.GL_RGB
-import de.fabmax.kool.gl.GL_RGBA
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.platform.vk.util.glFormat
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.createUint8Buffer
 import java.awt.Transparency
@@ -35,16 +31,17 @@ class ImageTextureData(image: BufferedImage) :
         }
 
         private fun BufferedImage.toBuffer(): Uint8Buffer {
-            return bufferedImageToBuffer(this, format.glFormat, 0, 0)
+            return bufferedImageToBuffer(this, format, 0, 0)
         }
 
-        fun bufferedImageToBuffer(image: BufferedImage, format: Int, width: Int, height: Int): Uint8Buffer {
+        fun bufferedImageToBuffer(image: BufferedImage, format: TexFormat, width: Int, height: Int): Uint8Buffer {
             val w = if (width == 0) { image.width } else { width }
             val h = if (height == 0) { image.height} else { height }
             val stride = when (format) {
-                GL_RGB -> 3
-                GL_RGBA -> 4
-                GL_ALPHA -> 1
+                TexFormat.R -> 1
+                TexFormat.RG -> 2
+                TexFormat.RGB -> 3
+                TexFormat.RGBA -> 4
                 else -> throw KoolException("Invalid output format $format")
             }
 
@@ -54,10 +51,10 @@ class ImageTextureData(image: BufferedImage) :
             if (w == image.width && h == image.height) {
                 // Images loaded via ImageIO usually are of type 4BYTE_ABGR or 3BYTE_BGR, we can load them in a optimized way...
                 when {
-                    image.type == BufferedImage.TYPE_4BYTE_ABGR && format == GL_RGBA -> {
+                    image.type == BufferedImage.TYPE_4BYTE_ABGR && format == TexFormat.RGBA -> {
                         copied = fastCopyImage(image, buffer, format)
                     }
-                    image.type == BufferedImage.TYPE_3BYTE_BGR && format == GL_RGB -> {
+                    image.type == BufferedImage.TYPE_3BYTE_BGR && format == TexFormat.RGB -> {
                         copied = fastCopyImage(image, buffer, format)
                     }
                 }
@@ -72,13 +69,13 @@ class ImageTextureData(image: BufferedImage) :
             return buffer
         }
 
-        private fun fastCopyImage(image: BufferedImage, target: Uint8Buffer, format: Int): Boolean {
+        private fun fastCopyImage(image: BufferedImage, target: Uint8Buffer, format: TexFormat): Boolean {
             val imgBuf = image.data.dataBuffer as? DataBufferByte ?: return false
             val bytes = imgBuf.bankData[0]
-            val nPixels = image.width * image.height * if (format == GL_RGB) 3 else 4
+            val nPixels = image.width * image.height * if (format == TexFormat.RGB) 3 else 4
 
             // swap byte order and apply pre-multiplication if there is alpha
-            if (format == GL_RGBA && bytes.size == nPixels) {
+            if (format == TexFormat.RGBA && bytes.size == nPixels) {
                 for (i in 0 until nPixels step 4) {
                     val alpha = bytes[i].toInt() and 0xff
                     when (alpha) {
@@ -108,7 +105,7 @@ class ImageTextureData(image: BufferedImage) :
                 target.put(bytes)
                 return true
 
-            } else if (format == GL_RGB && bytes.size == nPixels) {
+            } else if (format == TexFormat.RGB && bytes.size == nPixels) {
                 for (i in 0 until nPixels step 3) {
                     val b = bytes[i]
                     bytes[i] = bytes[i+2]
@@ -120,7 +117,7 @@ class ImageTextureData(image: BufferedImage) :
             return false
         }
 
-        private fun slowCopyImage(image: BufferedImage, target: Uint8Buffer, format: Int, width: Int, height: Int) {
+        private fun slowCopyImage(image: BufferedImage, target: Uint8Buffer, format: TexFormat, width: Int, height: Int) {
             val pixel = IntArray(4)
             val model = image.colorModel
             val sizes = IntArray(4) { i -> 1 shl model.componentSize[i % model.componentSize.size] }
@@ -149,7 +146,7 @@ class ImageTextureData(image: BufferedImage) :
                     val a = pixel[3] / sizes[3].toFloat()
 
                     // pre-multiply alpha
-                    if (format == GL_RGBA && a < 1f) {
+                    if (format == TexFormat.RGBA && a < 1f) {
                         if (a == 0f) {
                             r = 0f
                             g = 0f
@@ -162,10 +159,10 @@ class ImageTextureData(image: BufferedImage) :
                     }
 
                     // copy bytes to target buf
-                    if (format == GL_RGBA || format == GL_RGB) {
+                    if (format == TexFormat.RGBA || format == TexFormat.RGB) {
                         target.put((r * 255f).toByte()).put((g * 255f).toByte()).put((b * 255f).toByte())
                     }
-                    if (format == GL_RGBA || format == GL_ALPHA) {
+                    if (format == TexFormat.RGBA || format == TexFormat.R) {
                         target.put((a * 255f).toByte())
                     }
                 }

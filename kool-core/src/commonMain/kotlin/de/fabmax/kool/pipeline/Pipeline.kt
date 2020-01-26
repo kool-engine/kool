@@ -13,10 +13,10 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
      * determine equality.
      */
     val pipelineHash: ULong
-    val pipelineInstanceId = (super.hashCode().toLong() shl 32) + instanceId++
+    val pipelineInstanceId = /*(super.hashCode().toLong() shl 32) +*/ instanceId++
 
     val cullMethod: CullMethod = builder.cullMethod
-    val depthTest: DepthTest = builder.depthTest
+    val depthCompareOp: DepthCompareOp = builder.depthTest
     val isWriteDepth: Boolean = builder.isWriteDepth
     val lineWidth: Float = builder.lineWidth
 
@@ -40,7 +40,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
 
         // compute pipelineHash
         var hash = cullMethod.hashCode().toULong()
-        hash = (hash * 71023UL) + depthTest.hashCode().toULong()
+        hash = (hash * 71023UL) + depthCompareOp.hashCode().toULong()
         hash = (hash * 71023UL) + isWriteDepth.hashCode().toULong()
         hash = (hash * 71023UL) + lineWidth.hashCode().toULong()
         hash = (hash * 71023UL) + vertexLayout.longHash
@@ -90,7 +90,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
 
     class Builder {
         var cullMethod = CullMethod.CULL_BACK_FACES
-        var depthTest = DepthTest.LESS
+        var depthTest = DepthCompareOp.LESS
         var isWriteDepth = true
         var lineWidth = 1f
 
@@ -117,7 +117,7 @@ fun Mesh.pipelineConfig(block: Pipeline.Builder.() -> Unit) {
     }
 }
 
-enum class DepthTest {
+enum class DepthCompareOp {
     DISABLED,
     ALWAYS,
     LESS,

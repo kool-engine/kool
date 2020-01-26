@@ -227,7 +227,6 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
              * calls, so you may be forced to split work up into multiple submits.
              */
 
-
             cmdBuffers[imageIndex].destroy()
             val pool = cmdPools[imageIndex]
             pool.reset()

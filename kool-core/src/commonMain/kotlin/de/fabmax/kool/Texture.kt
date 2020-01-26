@@ -75,7 +75,7 @@ abstract class TextureData {
     @Deprecated("not needed any more, TextureData objects are always valid")
     abstract val isValid: Boolean
 
-    abstract val data: Uint8Buffer
+    abstract val data: Any
 }
 
 /**
@@ -94,7 +94,7 @@ open class BufferedTextureData(buffer: Uint8Buffer, width: Int, height: Int, for
         this.format = format
     }
 
-    override val data = buffer
+    override val data: Uint8Buffer = buffer
     override val isValid = true
 
     companion object {
@@ -117,7 +117,7 @@ class CubeMapTextureData(val front: TextureData, val back: TextureData, val left
         format = front.format
     }
 
-    override val data: Uint8Buffer
+    override val data: Any
         get() = front.data
 
     override val isValid: Boolean

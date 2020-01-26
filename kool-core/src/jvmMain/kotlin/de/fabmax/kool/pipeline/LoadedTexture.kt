@@ -4,10 +4,7 @@ import de.fabmax.kool.BufferedTextureData
 import de.fabmax.kool.CubeMapTextureData
 import de.fabmax.kool.TextureData
 import de.fabmax.kool.platform.ImageTextureData
-import de.fabmax.kool.platform.vk.Image
-import de.fabmax.kool.platform.vk.ImageView
-import de.fabmax.kool.platform.vk.VkResource
-import de.fabmax.kool.platform.vk.VkSystem
+import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.util.logD
 import org.lwjgl.vulkan.VK10.vkDestroySampler
 import java.io.FileInputStream

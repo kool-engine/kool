@@ -2,7 +2,13 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.gl.*
+import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
+import de.fabmax.kool.platform.webgl.QueueRendererWebGl
+import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
 import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
+import org.khronos.webgl.WebGLRenderingContext.Companion.ONE
+import org.khronos.webgl.WebGLRenderingContext.Companion.ONE_MINUS_SRC_ALPHA
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
@@ -20,13 +26,17 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
     override val assetMgr = JsAssetManager(props.assetsBaseDir)
 
+    override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
+    private val queueRenderer = QueueRendererWebGl(this)
+
     override var windowWidth = 0
         private set
     override var windowHeight = 0
         private set
 
-    internal val canvas: HTMLCanvasElement
+    private val canvas: HTMLCanvasElement
     internal val gl: WebGLRenderingContext
+    private val sysInfo = mutableListOf<String>()
 
     private var animationMillis = 0.0
 
@@ -76,6 +86,12 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             maxTexUnits = gl.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS).asDynamic()
         }
 
+        if (JsImpl.isWebGl2Context) {
+            sysInfo += "WebGL 2"
+        } else {
+            sysInfo += "WebGL 1"
+        }
+
         val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:
         gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
         gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
@@ -83,6 +99,10 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             val max = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Float
             anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT)
         }
+
+        // use blending with pre-multiplied alpha
+        gl.blendFunc(ONE, ONE_MINUS_SRC_ALPHA)
+        gl.enable(BLEND)
 
         // unfortunately no support for geometry shaders in WebGL
         val geometryShader = false
@@ -109,6 +129,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         screenDpi = JsImpl.dpi
         windowWidth = canvas.clientWidth
         windowHeight = canvas.clientHeight
+        viewport = Viewport(0, 0, windowWidth, windowHeight)
 
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
@@ -245,10 +266,12 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             // resize canvas to viewport
             canvas.width = windowWidth
             canvas.height = windowHeight
+            viewport = Viewport(0, 0, windowWidth, windowHeight)
         }
 
         // render frame
         render(dt)
+        queueRenderer.renderQueue(drawQueue)
         gl.finish()
 
         // request next frame
@@ -269,6 +292,10 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
     override fun checkIsGlThread() {
         // in JS there is only one thread aka the GL thread
+    }
+
+    override fun getSysInfos(): List<String> {
+        return sysInfo
     }
 
     class InitProps {

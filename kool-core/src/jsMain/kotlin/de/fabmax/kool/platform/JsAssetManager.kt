@@ -1,19 +1,23 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.pipeline.CubeMapTexture
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
 import org.khronos.webgl.set
-import org.w3c.dom.HTMLImageElement
+import org.w3c.dom.Image
 import org.w3c.xhr.ARRAYBUFFER
 import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
-import kotlin.browser.document
 
 class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(assetsBaseDir) {
 
@@ -50,13 +54,23 @@ class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(
         return data.await()
     }
 
-    private fun loadImage(url: String): ImageTextureData {
-        val img = document.createElement("img") as HTMLImageElement
-        val data = ImageTextureData(img)
+    private suspend fun loadImage(url: String): ImageTextureData {
+        val deferred = CompletableDeferred<Image>()
+        val img = Image()
+        img.onload = {
+            deferred.complete(img)
+        }
+        img.onerror = { _, _, _, _, _ ->
+            deferred.completeExceptionally(KoolException("Failed loading tex from $url"))
+        }
         img.crossOrigin = ""
         js("if ('decoding' in img) { img.decoding = 'async'; }")
         img.src = url
-        return data
+        return ImageTextureData(deferred.await())
+    }
+
+    fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {
+        return async { loader(this@JsAssetManager) }
     }
 
     override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
@@ -68,6 +82,14 @@ class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(
         }
         val inflated = pako.inflate(uint8Data) as Uint8Array
         return ByteArray(inflated.length) { inflated[it] }
+    }
+
+    override fun loadAndPrepareTexture(assetPath: String, recv: (Texture) -> Unit) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String, recv: (CubeMapTexture) -> Unit) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     companion object {

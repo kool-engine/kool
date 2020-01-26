@@ -3,10 +3,8 @@ package de.fabmax.kool
 import de.fabmax.kool.gl.GL_CLAMP_TO_EDGE
 import de.fabmax.kool.gl.GL_LINEAR
 import de.fabmax.kool.gl.GL_TEXTURE_CUBE_MAP
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.serialization.ModelData
 import kotlinx.coroutines.CompletableDeferred
@@ -118,16 +116,34 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         }
     }
 
-    abstract suspend fun loadImageData(assetPath: String): TextureData
-
-    abstract suspend fun loadCubeMapImageData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData
+    open suspend fun loadCubeMapImageData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
+        val ftd = loadTextureData(ft)
+        val bkd = loadTextureData(bk)
+        val ltd = loadTextureData(lt)
+        val rtd = loadTextureData(rt)
+        val upd = loadTextureData(up)
+        val dnd = loadTextureData(dn)
+        return CubeMapTextureData(ftd, bkd, ltd, rtd, upd, dnd)
+    }
 
     abstract fun loadAndPrepareTexture(assetPath: String, recv: (de.fabmax.kool.pipeline.Texture) -> Unit)
 
     abstract fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String, recv: (de.fabmax.kool.pipeline.CubeMapTexture) -> Unit)
 
+    suspend fun loadTextureData(assetPath: String): TextureData {
+        val ref = if (isHttpAsset(assetPath)) {
+            HttpTextureAssetRef(assetPath)
+        } else {
+            LocalTextureAssetRef("$assetsBaseDir/$assetPath")
+        }
+        val awaitedAsset = AwaitedAsset(ref)
+        awaitedAssetsChannel.send(awaitedAsset)
+        val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
+        return loaded.data ?: throw KoolException("Failed loading texture")
+    }
+
     fun loadTextureAsset(assetPath: String): TextureData  {
-        throw RuntimeException("Use loadImageData()")
+        throw RuntimeException("Use loadTextureData()")
 //        val proxy = TextureDataProxy()
 //        launch {
 //            val ref = if (isHttpAsset(assetPath)) {
@@ -143,26 +159,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
 //        return proxy
     }
 
-    private inner class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset> = CompletableDeferred(job))
-
-    private class TextureDataProxy : TextureData() {
-        var proxyData: TextureData? = null
-
-        override var width: Int
-            get() = proxyData?.width ?: 0
-            set(_) {}
-        override var height: Int
-            get() = proxyData?.height ?: 0
-            set(_) {}
-        override var format: TexFormat
-            get() = proxyData?.format ?: TexFormat.RGBA
-            set(_) {}
-
-        override val isValid: Boolean
-            get() = proxyData?.isValid ?: false
-        override val data: Uint8Buffer
-            get() = proxyData!!.data
-    }
+    protected inner class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset> = CompletableDeferred(job))
 
     companion object {
         const val NUM_LOAD_WORKERS = 8

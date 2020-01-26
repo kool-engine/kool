@@ -10,11 +10,16 @@ abstract class RenderPass(val sys: VkSystem, val maxWidth: Int, val maxHeight: I
 
     val texFormat: TexFormat
         get() = when(colorFormat) {
-            VK10.VK_FORMAT_R8_UNORM -> TexFormat.ALPHA
+            VK10.VK_FORMAT_R8_UNORM -> TexFormat.R
+            VK10.VK_FORMAT_R8G8_UNORM -> TexFormat.RG
             VK10.VK_FORMAT_R8G8B8_UNORM -> TexFormat.RGB
             VK10.VK_FORMAT_R8G8B8A8_UNORM -> TexFormat.RGBA
+
+            VK10.VK_FORMAT_R16_SFLOAT -> TexFormat.R_F16
             VK10.VK_FORMAT_R16G16_SFLOAT -> TexFormat.RG_F16
+            VK10.VK_FORMAT_R16G16B16_SFLOAT -> TexFormat.RGB_F16
             VK10.VK_FORMAT_R16G16B16A16_SFLOAT -> TexFormat.RGBA_F16
+
             else -> throw KoolException("Unmapped format: $colorFormat")
         }
 }

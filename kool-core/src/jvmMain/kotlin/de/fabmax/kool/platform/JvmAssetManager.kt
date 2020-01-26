@@ -3,7 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.TextureLoader
+import de.fabmax.kool.platform.vk.TextureLoader
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
@@ -90,32 +90,13 @@ class JvmAssetManager internal constructor(props: Lwjgl3ContextGL.InitProps, val
 
     override fun inflate(zipData: ByteArray): ByteArray = GZIPInputStream(ByteArrayInputStream(zipData)).readBytes()
 
-    override suspend fun loadImageData(assetPath: String): TextureData {
-        val ref = if (isHttpAsset(assetPath)) {
-            loadHttpTexture(HttpTextureAssetRef(assetPath))
-        } else {
-            loadLocalTexture(LocalTextureAssetRef("$assetsBaseDir/$assetPath"))
-        }
-        return ref.data!!
-    }
-
-    override  suspend fun loadCubeMapImageData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
-        val ftd = loadImageData(ft)
-        val bkd = loadImageData(bk)
-        val ltd = loadImageData(lt)
-        val rtd = loadImageData(rt)
-        val upd = loadImageData(up)
-        val dnd = loadImageData(dn)
-        return CubeMapTextureData(ftd, bkd, ltd, rtd, upd, dnd)
-    }
-
     /**
      * fixme: this belongs in the not yet existing all new texture manager which should check if the texture was already loaded before
      */
     override fun loadAndPrepareTexture(assetPath: String, recv: (Texture) -> Unit) {
-        val tex = Texture { it.loadImageData(assetPath) }
+        val tex = Texture { it.loadTextureData(assetPath) }
         launch {
-            val data = loadImageData(assetPath) as BufferedTextureData
+            val data = loadTextureData(assetPath) as BufferedTextureData
             val sys = (ctx as Lwjgl3ContextVk).vkSystem
             ctx.runOnGpuThread {
                 tex.loadedTexture = TextureLoader.loadTexture(sys, data)

@@ -7,7 +7,6 @@ import de.fabmax.kool.scene.CullMethod
 import de.fabmax.kool.util.logD
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkPipelineDynamicStateCreateInfo
 import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo
 import org.lwjgl.vulkan.VkPushConstantRange
 import java.nio.ByteBuffer
@@ -170,15 +169,15 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, 
 
             val depthStencil = callocVkPipelineDepthStencilStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
-                depthTestEnable(pipeline.depthTest != DepthTest.DISABLED)
+                depthTestEnable(pipeline.depthCompareOp != DepthCompareOp.DISABLED)
                 depthWriteEnable(pipeline.isWriteDepth)
-                depthCompareOp(when (pipeline.depthTest) {
-                    DepthTest.DISABLED -> 0
-                    DepthTest.ALWAYS -> VK_COMPARE_OP_ALWAYS
-                    DepthTest.LESS -> VK_COMPARE_OP_LESS
-                    DepthTest.LESS_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
-                    DepthTest.GREATER -> VK_COMPARE_OP_GREATER
-                    DepthTest.GREATER_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
+                depthCompareOp(when (pipeline.depthCompareOp) {
+                    DepthCompareOp.DISABLED -> 0
+                    DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
+                    DepthCompareOp.LESS -> VK_COMPARE_OP_LESS
+                    DepthCompareOp.LESS_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
+                    DepthCompareOp.GREATER -> VK_COMPARE_OP_GREATER
+                    DepthCompareOp.GREATER_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
                 })
                 depthBoundsTestEnable(false)
                 stencilTestEnable(false)

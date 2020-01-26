@@ -1,9 +1,10 @@
-package de.fabmax.kool.pipeline
+package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.BufferedTextureData
 import de.fabmax.kool.CubeMapTextureData
 import de.fabmax.kool.TextureData
-import de.fabmax.kool.platform.vk.*
+import de.fabmax.kool.pipeline.LoadedTexture
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.platform.vk.util.vkBytesPerPx
 import de.fabmax.kool.platform.vk.util.vkFormat
 import de.fabmax.kool.util.Uint8BufferImpl
@@ -135,11 +136,12 @@ object TextureLoader {
     private fun reshape(dstFormat: TexFormat, img: TextureData): ByteBuffer {
         if (img.format != dstFormat) {
             if (img.format == TexFormat.RGB && dstFormat == TexFormat.RGBA) {
+                val imgData = img.data as Uint8BufferImpl
                 val reshaped = createUint8Buffer(img.width * img.height * 4)
                 for (i in 0 until img.width * img.height) {
-                    reshaped[i*4+0] = img.data[i*3+0]
-                    reshaped[i*4+1] = img.data[i*3+1]
-                    reshaped[i*4+2] = img.data[i*3+2]
+                    reshaped[i*4+0] = imgData[i*3+0]
+                    reshaped[i*4+1] = imgData[i*3+1]
+                    reshaped[i*4+2] = imgData[i*3+2]
                     reshaped[i*4+3] = 255.toByte()
                 }
                 return (reshaped as Uint8BufferImpl).buffer

@@ -1,9 +1,7 @@
 package de.fabmax.kool.platform.vk.util
 
-import de.fabmax.kool.gl.GL_ALPHA
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.pipeline.TexFormat
-import org.lwjgl.opengl.GL11
 import org.lwjgl.vulkan.VK10.*
 
 fun ShaderStage.bitValue(): Int {
@@ -19,29 +17,32 @@ fun ShaderStage.bitValue(): Int {
 
 val TexFormat.vkFormat: Int
     get() = when(this) {
-        TexFormat.ALPHA -> VK_FORMAT_R8_UNORM
+        //TexFormat.ALPHA -> VK_FORMAT_R8_UNORM
+
+        TexFormat.R -> VK_FORMAT_R8_UNORM
+        TexFormat.RG -> VK_FORMAT_R8G8_UNORM
         TexFormat.RGB -> VK_FORMAT_R8G8B8_UNORM
         TexFormat.RGBA -> VK_FORMAT_R8G8B8A8_UNORM
+
+        TexFormat.R_F16 -> VK_FORMAT_R16_SFLOAT
         TexFormat.RG_F16 -> VK_FORMAT_R16G16_SFLOAT
+        TexFormat.RGB_F16 -> VK_FORMAT_R16G16B16_SFLOAT
         TexFormat.RGBA_F16 -> VK_FORMAT_R16G16B16A16_SFLOAT
     }
 
 val TexFormat.vkBytesPerPx: Int
     get() = when(this) {
-        TexFormat.ALPHA -> 1
+        //TexFormat.ALPHA -> 1
+
+        TexFormat.R -> 1
+        TexFormat.RG -> 2
         TexFormat.RGB -> 3
         TexFormat.RGBA -> 4
-        TexFormat.RG_F16 -> 4
-        TexFormat.RGBA_F16 -> 8
-    }
 
-val TexFormat.glFormat: Int
-    get() = when(this) {
-        TexFormat.ALPHA -> GL_ALPHA
-        TexFormat.RGB -> GL11.GL_RGB
-        TexFormat.RGBA -> GL11.GL_RGBA
-        TexFormat.RG_F16 -> GL11.GL_RGBA16
-        TexFormat.RGBA_F16 -> GL11.GL_RGBA16
+        TexFormat.R_F16 -> 2
+        TexFormat.RG_F16 -> 4
+        TexFormat.RGB_F16 -> 6
+        TexFormat.RGBA_F16 -> 8
     }
 
 //fun Mat4f.setPerspective2(fovy: Float, aspect: Float, near: Float, far: Float): Mat4f {

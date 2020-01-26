@@ -19,9 +19,7 @@ actual fun createDefaultContext(): KoolContext = createContext(JsContext.InitPro
 
 fun createContext(props: JsContext.InitProps): KoolContext = JsImpl.createContext(props)
 
-actual fun now(): Double = js("performance.now()")
-
-actual fun getMemoryInfo(): String = ""
+actual fun now(): Double = js("performance.now()") as Double
 
 actual fun Double.toString(precision: Int): String {
     val p = precision.clamp(0, 12)
@@ -36,7 +34,6 @@ actual fun Double.toString(precision: Int): String {
         str = "0$str"
         i++
     }
-
     return str.substring(0 until i) + "." + str.substring(i)
 }
 

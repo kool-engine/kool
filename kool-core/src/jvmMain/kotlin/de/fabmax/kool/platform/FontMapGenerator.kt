@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.BufferedTextureData
-import de.fabmax.kool.gl.GL_ALPHA
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.*
 import java.awt.Color
@@ -85,8 +84,8 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
 
         val metrics: MutableMap<Char, CharMetrics> = mutableMapOf()
         val texHeight = makeMap(fontProps, g, metrics)
-        val buffer = ImageTextureData.bufferedImageToBuffer(canvas, GL_ALPHA, maxWidth, texHeight)
-        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, TexFormat.ALPHA), metrics, fontProps)
+        val buffer = ImageTextureData.bufferedImageToBuffer(canvas, TexFormat.R, maxWidth, texHeight)
+        return CharMap(BufferedTextureData(buffer, maxWidth, texHeight, TexFormat.R), metrics, fontProps)
     }
 
     private fun makeMap(fontProps: FontProps, g: Graphics2D, map: MutableMap<Char, CharMetrics>): Int {
