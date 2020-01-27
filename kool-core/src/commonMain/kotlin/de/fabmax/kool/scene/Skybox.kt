@@ -6,7 +6,7 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 
 class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(MeshData(Attribute.POSITIONS)) {
     constructor(ft: String, bk: String, lt: String, rt: String, up: String, dn: String) : this(CubeMapTexture {
-        it.loadCubeMapImageData(ft, bk, lt, rt, up, dn)
+        it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
     })
 
     init {

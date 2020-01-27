@@ -116,7 +116,7 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         }
     }
 
-    open suspend fun loadCubeMapImageData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
+    open suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
         val ftd = loadTextureData(ft)
         val bkd = loadTextureData(bk)
         val ltd = loadTextureData(lt)

@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline
 
 enum class TexFormat {
-
-    //ALPHA,
-
     R,
     RG,
     RGB,
@@ -13,5 +10,4 @@ enum class TexFormat {
     RG_F16,
     RGB_F16,
     RGBA_F16
-
 }

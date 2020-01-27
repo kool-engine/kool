@@ -108,9 +108,9 @@ class JvmAssetManager internal constructor(props: Lwjgl3ContextGL.InitProps, val
     }
 
     override fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String, recv: (CubeMapTexture) -> Unit) {
-        val tex = CubeMapTexture { it.loadCubeMapImageData(ft, bk, lt, rt, up, dn) }
+        val tex = CubeMapTexture { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         launch {
-            val data = loadCubeMapImageData(ft, bk, lt, rt, up, dn)
+            val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
             val sys = (ctx as Lwjgl3ContextVk).vkSystem
             ctx.runOnGpuThread {
                 tex.loadedTexture = TextureLoader.loadCubeMap(sys, data)

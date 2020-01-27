@@ -24,10 +24,10 @@ import kotlin.browser.window
 class JsContext internal constructor(val props: InitProps) : KoolContext() {
     override val glCapabilities: GlCapabilities
 
-    override val assetMgr = JsAssetManager(props.assetsBaseDir)
+    override val assetMgr = JsAssetManager(props.assetsBaseDir, this)
 
     override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
-    private val queueRenderer = QueueRendererWebGl(this)
+    internal val queueRenderer = QueueRendererWebGl(this)
 
     override var windowWidth = 0
         private set
@@ -71,19 +71,23 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             glVersion = GlVersion("WebGL", 2, 0)
             maxTexUnits = gl.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS).asDynamic()
 
+            val colorBufferFloat = gl.getExtension("EXT_color_buffer_float") != null
+
         } else {
             webGlCtx = canvas.getContext("webgl")
             if (webGlCtx == null) {
                 webGlCtx = canvas.getContext("experimental-webgl")
             }
             if (webGlCtx == null) {
-                js("alert(\"Unable to initialize WebGL. Your browser may not support it.\")")
+                js("alert(\"Unable to initialize WebGL context. Your browser may not support it.\")")
             }
             gl = webGlCtx as WebGLRenderingContext
 
             uint32Indices = gl.getExtension("OES_element_index_uint") != null
             depthTextures = gl.getExtension("WEBGL_depth_texture") != null
             maxTexUnits = gl.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS).asDynamic()
+
+            val colorBufferFloat = gl.getExtension("WEBGL_color_buffer_float") != null
         }
 
         if (JsImpl.isWebGl2Context) {
@@ -271,11 +275,30 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
         // render frame
         render(dt)
-        queueRenderer.renderQueue(drawQueue)
+        draw()
         gl.finish()
 
         // request next frame
         window.requestAnimationFrame { t -> renderFrame(t) }
+    }
+
+    private fun draw() {
+        for (i in 0 until offscreenPasses.size) {
+            drawOffscreen(offscreenPasses[i])
+        }
+
+        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+        gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a)
+        gl.clear(WebGLRenderingContext.DEPTH_BUFFER_BIT or WebGLRenderingContext.COLOR_BUFFER_BIT)
+        queueRenderer.renderQueue(drawQueue)
+    }
+
+    private fun drawOffscreen(offscreenPass: OffscreenPass) {
+        when (offscreenPass) {
+            is OffscreenPass2d -> TODO()
+            is OffscreenPassCube -> offscreenPass.impl.draw(this)
+            else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
+        }
     }
 
     override fun openUrl(url: String) {

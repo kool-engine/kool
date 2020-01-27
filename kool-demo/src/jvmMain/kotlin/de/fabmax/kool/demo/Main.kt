@@ -6,14 +6,14 @@ import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.CubeMapTexture
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.debugOverlay
-import de.fabmax.kool.util.pbrMapGen.BrdfLutPass
-import de.fabmax.kool.util.pbrMapGen.IrradianceMapPass
+import de.fabmax.kool.util.SphereProps
 
 /**
  * @author fabmax
@@ -24,18 +24,92 @@ fun main() {
 //    demo("modelDemo")
 
 //    testScene()
-    pbrDemo()
+//    pbrDemo()
+    jsTestScene()
+
+//    while (true) {
+//        val buf = createUint8Buffer(16 * 1024 * 1024)
+//        for (i in 0 until buf.capacity) {
+//            buf.put(i.toByte())
+//        }
+//        println("created direct 16mb buffer")
+//        Thread.sleep(100)
+//    }
+}
+
+fun jsTestScene() {
+    val ctx = createDefaultContext()
+    ctx.assetMgr.assetsBaseDir = "./docs/assets"
+
+    ctx.scenes += scene {
+        defaultCamTransform()
+
+        +textureMesh {
+            generator = {
+                icoSphere {
+                    steps = 4
+                    center.set(3f, 0f, 0f)
+                }
+            }
+            pipelineConfig {
+                shaderLoader = ModeledShader.textureColor()
+                onPipelineCreated += { pipeline ->
+                    (pipeline.shader as ModeledShader.TextureColor).textureSampler.texture = Texture { it.loadTextureData("world.jpg") }
+                }
+            }
+        }
+
+        +textureMesh {
+            generator = {
+                cube {
+                    colorCube()
+                    centerOrigin()
+                }
+            }
+            pipelineConfig {
+                shaderLoader = ModeledShader.cubeMapColor()
+                onPipelineCreated += { pipeline ->
+                    (pipeline.shader as ModeledShader.CubeMapColor).cubeMapSampler.texture = CubeMapTexture {
+                        it.loadCubeMapTextureData("skybox/y-up/sky_ft.jpg", "skybox/y-up/sky_bk.jpg",
+                                "skybox/y-up/sky_lt.jpg", "skybox/y-up/sky_rt.jpg",
+                                "skybox/y-up/sky_up.jpg", "skybox/y-up/sky_dn.jpg")
+                    }
+                }
+            }
+        }
+
+        +colorMesh {
+            generator = {
+                cube {
+                    colorCube()
+                    centerOrigin()
+                    origin.x -= 3f
+                }
+            }
+            pipelineConfig {
+                shaderLoader = ModeledShader.vertexColor()
+            }
+        }
+
+        val envTex = Texture { it.loadTextureData("skybox/hdri/newport_loft.rgbe.png") }
+        val cubeMapPass = hdriToCubeMapPass(envTex)
+        ctx.offscreenPasses += cubeMapPass
+        this += Skybox(cubeMapPass.impl.texture)
+    }
+
+    //ctx.scenes += debugOverlay(ctx, Position.LOWER_RIGHT)
+
+    ctx.run()
 }
 
 fun testScene() {
     val ctx = createDefaultContext()
     ctx.assetMgr.assetsBaseDir = "./docs/assets"
 
-//    ctx.scenes += uiTestScene(ctx)
-    ctx.scenes += bunnyScene(ctx)
-//    ctx.scenes += brdfLutTestScene(ctx)
-//    offscreenTest(ctx)
-    ctx.scenes += debugOverlay(ctx)
+//    ctx.scenes += bunnyScene(ctx)
+    offscreenTest(ctx)
+//    ctx.scenes += icoScene(ctx)
+//    ctx.scenes += debugOverlay(ctx)
 
     ctx.run()
 }
@@ -60,45 +134,47 @@ fun offscreenTest(ctx: KoolContext) {
     ctx.scenes += scene
 
 //    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/newport_loft.rgbe.png") { tex ->
-    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/vignaioli_night_2k.rgbe.png") { tex ->
+//    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/vignaioli_night_2k.rgbe.png") { tex ->
 //    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/spruit_sunrise_2k.rgbe.png") { tex ->
 //    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/lakeside_2k.rgbe.png") { tex ->
 
-        val cubeMapPass = IrradianceMapPass(tex)
-        ctx.offscreenPasses += cubeMapPass.offscreenPass
-        scene += Skybox(cubeMapPass.irradianceMap)
+//        val cubeMapPass = IrradianceMapPass(tex)
+//        ctx.offscreenPasses += cubeMapPass.offscreenPass
+//        scene += Skybox(cubeMapPass.irradianceMap)
 
 //        val cubeMapPass = hdriToCubeMapPass(tex)
 //        ctx.offscreenPasses += cubeMapPass
 //        scene += Skybox(cubeMapPass.textureCube)
-    }
+//    }
 }
 
 
-fun brdfLutTestScene(ctx: KoolContext): Scene = scene {
-    camera = OrthographicCamera().apply {
-        left = 0f
-        right = 1f
-        top = 1f
-        bottom = 0f
-        isKeepAspectRatio = false
-    }
+fun icoScene(ctx: KoolContext): Scene = scene {
+    defaultCamTransform()
 
-    val brdfLutPass = BrdfLutPass()
-    ctx.offscreenPasses += brdfLutPass.offscreenPass
-
-    +mesh(setOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+    +mesh(setOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
         generator = {
-            rect {
-                size.set(1f, 1f)
-                fullTexCoords()
+            vertexModFun = {
+                color.r = texCoord.x
+                color.g = texCoord.y
+            }
+
+            val p = SphereProps().apply {
+                steps = 2
+            }
+            icoSphere(p)
+
+            sphere {
+                center.set(3f, 0f, 0f)
+                steps = 1000
             }
         }
         pipelineConfig {
-            shaderLoader = ModeledShader.textureColor()
-            onPipelineCreated += {
-                (it.shader as ModeledShader.TextureColor).textureSampler.texture = brdfLutPass.brdfLut
-            }
+            shaderLoader = ModeledShader.vertexColor()
+//            shaderLoader = ModeledShader.textureColor()
+//            onPipelineCreated += { p ->
+//                (p.shader as ModeledShader.TextureColor).textureSampler.texture = Texture { it.loadImageData("world.jpg") }
+//            }
         }
     }
 }

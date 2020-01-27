@@ -3,13 +3,11 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.platform.webgl.TextureLoader
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import kotlinx.coroutines.*
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
@@ -19,7 +17,7 @@ import org.w3c.xhr.ARRAYBUFFER
 import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
 
-class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(assetsBaseDir) {
+class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsContext) : AssetManager(assetsBaseDir) {
 
     private val pako = js("require('pako_inflate.min');")
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
@@ -85,11 +83,23 @@ class JsAssetManager internal constructor(assetsBaseDir: String) : AssetManager(
     }
 
     override fun loadAndPrepareTexture(assetPath: String, recv: (Texture) -> Unit) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val tex = Texture { it.loadTextureData(assetPath) }
+        launch {
+            val data = loadTextureData(assetPath)
+            tex.loadedTexture = TextureLoader.loadTexture(ctx, data)
+            tex.loadingState = Texture.LoadingState.LOADED
+            recv(tex)
+        }
     }
 
     override fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String, recv: (CubeMapTexture) -> Unit) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val tex = CubeMapTexture { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
+        launch {
+            val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
+            tex.loadedTexture = TextureLoader.loadTexture(ctx, data)
+            tex.loadingState = Texture.LoadingState.LOADED
+            recv(tex)
+        }
     }
 
     companion object {

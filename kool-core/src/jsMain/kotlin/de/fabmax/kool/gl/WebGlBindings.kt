@@ -244,6 +244,24 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
     fun vertexAttribDivisor(index: Int, divisor: Int)
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
+
+    companion object {
+        val DEPTH_COMPONENT24: Int
+        val TEXTURE_WRAP_R: Int
+
+        val RED: Int
+        val RG: Int
+
+        val R8: Int
+        val RG8: Int
+        val RGB8: Int
+        val RGBA8: Int
+
+        val R16F: Int
+        val RG16F: Int
+        val RGB16F: Int
+        val RGBA16F: Int
+    }
 }
 
 private inline fun withWebGl2Ctx(block: (WebGL2RenderingContext) -> Unit) {

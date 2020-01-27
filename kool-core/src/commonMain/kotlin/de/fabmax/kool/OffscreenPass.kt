@@ -8,7 +8,6 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
-import kotlin.math.max
 
 abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevels: Int, val colorFormat: TexFormat, nQueues: Int) {
     var clearColor = Color.BLACK
@@ -93,8 +92,8 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorForm
                 ViewDirection.BACK to Vec3f(0f, 0f, -1f),
                 ViewDirection.LEFT to Vec3f(-1f, 0f, 0f),
                 ViewDirection.RIGHT to Vec3f(1f, 0f, 0f),
-                ViewDirection.UP to Vec3f(0f, -1f, 0f),
-                ViewDirection.DOWN to Vec3f(0f, 1f, 0f)
+                ViewDirection.UP to Vec3f(0f, 1f, 0f),
+                ViewDirection.DOWN to Vec3f(0f, -1f, 0f)
         )
 
         onSetupView = { viewDir, _ ->
@@ -111,8 +110,8 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorForm
 
                 camera.lookAt.set(camDirs[viewDir]!!)
                 when (viewDir) {
-                    ViewDirection.UP -> camera.up.set(Vec3f.NEG_Z_AXIS)
-                    ViewDirection.DOWN -> camera.up.set(Vec3f.Z_AXIS)
+                    ViewDirection.UP -> camera.up.set(Vec3f.Z_AXIS)
+                    ViewDirection.DOWN -> camera.up.set(Vec3f.NEG_Z_AXIS)
                     else -> camera.up.set(Vec3f.NEG_Y_AXIS)
                 }
             }

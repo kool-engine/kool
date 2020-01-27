@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.webgl
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Pipeline
@@ -9,9 +8,7 @@ import de.fabmax.kool.scene.CullMethod
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
 import org.khronos.webgl.WebGLRenderingContext.Companion.BACK
-import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.CULL_FACE
-import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_TEST
 import org.khronos.webgl.WebGLRenderingContext.Companion.FRONT
 import org.khronos.webgl.WebGLRenderingContext.Companion.GEQUAL
@@ -28,10 +25,6 @@ class QueueRendererWebGl(val ctx: JsContext) {
     private val shaderMgr = ShaderManager(ctx)
 
     fun renderQueue(queue: DrawQueue) {
-        glAttribs.updateViewport(ctx.viewport)
-        gl.clearColor(ctx.clearColor.r, ctx.clearColor.g, ctx.clearColor.b, ctx.clearColor.a)
-        gl.clear(DEPTH_BUFFER_BIT or COLOR_BUFFER_BIT)
-
         for (cmd in queue.commands) {
             cmd.pipeline?.let { pipeline ->
                 glAttribs.setupPipelineAttribs(pipeline)
@@ -43,17 +36,9 @@ class QueueRendererWebGl(val ctx: JsContext) {
     }
 
     private inner class GlAttribs {
-        var viewport: KoolContext.Viewport? = null
         var depthTest: DepthCompareOp? = null
         var cullMethod: CullMethod? = null
         var lineWidth = 0f
-
-        fun updateViewport(viewport: KoolContext.Viewport) {
-            if (viewport != this.viewport) {
-                this.viewport = viewport
-                gl.viewport(ctx.viewport.x, ctx.viewport.y, ctx.viewport.width, ctx.viewport.height)
-            }
-        }
 
         fun setupPipelineAttribs(pipeline: Pipeline) {
             setDepthTest(pipeline.depthCompareOp)
