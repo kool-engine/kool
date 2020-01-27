@@ -22,10 +22,10 @@ class ShaderManager(val ctx: JsContext) {
     fun setupShader(cmd: DrawCommand): CompiledShader.ShaderInstance {
         val pipeline = cmd.pipeline!!
         val shader = shaders.getOrPut(pipeline.shaderCode.longHash) { CompiledShader(compileShader(pipeline.shaderCode), pipeline, ctx) }
-//        if (shader !== currentShader) {
+        if (shader !== currentShader) {
             currentShader = shader
             shader.use()
-//        }
+        }
         return shader.bindInstance(cmd)
     }
 

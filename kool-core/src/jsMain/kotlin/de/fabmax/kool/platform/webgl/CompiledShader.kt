@@ -65,6 +65,8 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         private var dataBufferI: BufferResource? = null
         private var indexBuffer: BufferResource? = null
 
+        private var nextTexUnit = TEXTURE0
+
         var indexType = 0
         var numIndices = 0
         var primitiveType = 0
@@ -88,14 +90,13 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         }
 
         private fun mapTexture(tex: TextureSampler) {
-            val texUnit = TEXTURE0 + textures.size
             textures.add(tex)
-            mappings += MappedUniformTex2d(tex, texUnit, uniformLocations[tex.name])
+            mappings += MappedUniformTex2d(tex, nextTexUnit++, uniformLocations[tex.name])
         }
 
         private fun mapCubeMap(cubeMap: CubeMapSampler) {
             cubeMaps.add(cubeMap)
-            mappings += MappedUniformCubeMap(cubeMap, uniformLocations[cubeMap.name])
+            mappings += MappedUniformCubeMap(cubeMap, nextTexUnit++, uniformLocations[cubeMap.name])
         }
 
         fun bindInstance(drawCmd: DrawCommand) {
