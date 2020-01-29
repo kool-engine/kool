@@ -24,6 +24,7 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
             usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
             allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
         }
+        triFrontDirection = VK_FRONT_FACE_CLOCKWISE
 
         image = Image(sys, fbImageCfg)
         imageView = ImageView(sys, image, VK_IMAGE_ASPECT_COLOR_BIT)

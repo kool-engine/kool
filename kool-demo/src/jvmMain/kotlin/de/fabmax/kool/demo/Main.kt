@@ -24,8 +24,8 @@ fun main() {
 //    demo("modelDemo")
 
 //    testScene()
-//    pbrDemo()
-    jsTestScene()
+    pbrDemo("./docs/assets")
+//    jsTestScene()
 
 //    while (true) {
 //        val buf = createUint8Buffer(16 * 1024 * 1024)
@@ -90,11 +90,6 @@ fun jsTestScene() {
                 shaderLoader = ModeledShader.vertexColor()
             }
         }
-
-        val envTex = Texture { it.loadTextureData("skybox/hdri/newport_loft.rgbe.png") }
-        val cubeMapPass = hdriToCubeMapPass(envTex)
-        ctx.offscreenPasses += cubeMapPass
-        this += Skybox(cubeMapPass.impl.texture)
     }
 
     //ctx.scenes += debugOverlay(ctx, Position.LOWER_RIGHT)

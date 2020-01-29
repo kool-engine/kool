@@ -126,8 +126,8 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
             when (i) {
                 OffscreenPassCube.ViewDirection.RIGHT.index -> 0
                 OffscreenPassCube.ViewDirection.LEFT.index -> 1
-                OffscreenPassCube.ViewDirection.DOWN.index -> 2
-                OffscreenPassCube.ViewDirection.UP.index -> 3
+                OffscreenPassCube.ViewDirection.UP.index -> 2
+                OffscreenPassCube.ViewDirection.DOWN.index -> 3
                 OffscreenPassCube.ViewDirection.FRONT.index -> 4
                 OffscreenPassCube.ViewDirection.BACK.index -> 5
                 else -> 0

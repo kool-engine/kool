@@ -81,20 +81,18 @@ class IrradianceMapPass(hdriTexture: Texture) {
                 const vec2 invAtan = vec2(0.1591, 0.3183);
                 vec3 sampleEquiRect(vec3 texCoord) {
                     vec3 equiRect_in = normalize(texCoord);
-                    vec2 uv = vec2(atan(equiRect_in.z, equiRect_in.x), asin(equiRect_in.y));
+                    vec2 uv = vec2(atan(equiRect_in.z, equiRect_in.x), -asin(equiRect_in.y));
                     uv *= invAtan;
                     uv += 0.5;
                     
                     vec4 rgbe = ${generator.sampleTexture2d(texture.name, "uv")};
                     
                     // decode rgbe
-                    return rgbe.rgb * pow(2.0, rgbe.w * 255.0 - 127.0);
+                    return rgbe.rgb * pow(2.0, rgbe.w * 255.0 - 128.0);
                 }
             """)
 
-            val phiMin = 0.0 * PI
             val phiMax = 2.0 * PI
-            val thetaMin = 0.0 * PI
             val thetaMax = 0.5 * PI
             generator.appendMain("""
                 vec3 normal = normalize(${inLocalPos.ref3f()});
@@ -106,9 +104,9 @@ class IrradianceMapPass(hdriTexture: Texture) {
                 vec3 irradiance = vec3(0.0);
                 int nrSamples = 0; 
                 
-                for (float theta = $thetaMin; theta < $thetaMax; theta += sampleDelta) {
+                for (float theta = 0.0; theta < $thetaMax; theta += sampleDelta) {
                     float deltaPhi = sampleDelta / sin(theta);
-                    for (float phi = $phiMin; phi < $phiMax; phi += deltaPhi) {
+                    for (float phi = 0.0; phi < $phiMax; phi += deltaPhi) {
                         vec3 tempVec = cos(phi) * right + sin(phi) * up;
                         vec3 sampleVector = cos(theta) * normal + sin(theta) * tempVec;
                         irradiance += sampleEquiRect(sampleVector).rgb * cos(theta) * 0.6;

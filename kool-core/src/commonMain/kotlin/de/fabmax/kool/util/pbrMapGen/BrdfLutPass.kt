@@ -2,14 +2,15 @@ package de.fabmax.kool.util.pbrMapGen
 
 import de.fabmax.kool.OffscreenPass2d
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.OrthographicCamera
+import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.scene
 import kotlin.math.PI
 
 
@@ -23,6 +24,7 @@ class BrdfLutPass {
             isSingleShot = true
             scene = scene {
                 camera = OrthographicCamera().apply {
+                    isApplyProjCorrection = false
                     isKeepAspectRatio = false
                     left = 0f
                     right = 1f

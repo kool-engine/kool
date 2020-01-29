@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.vk.pipeline
 
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.platform.vk.RenderPass
 import de.fabmax.kool.platform.vk.SwapChain
 import de.fabmax.kool.platform.vk.VkSystem
 
@@ -19,26 +20,26 @@ class PipelineManager(val sys: VkSystem) {
 
     fun onSwapchainCreated(swapChain: SwapChain) {
         this.swapChain = swapChain
-        onScreenPipelineConfigs.forEach { createOnScreenPipeline(it, swapChain.extent.width(), swapChain.extent.height()) }
+        onScreenPipelineConfigs.forEach { createOnScreenPipeline(it, swapChain.renderPass) }
     }
 
     fun hasPipeline(pipeline: Pipeline, renderPass: Long): Boolean = pipelines.containsKey(makeKey(pipeline, renderPass))
 
-    fun addPipelineConfig(pipeline: Pipeline, nImages: Int, renderPass: Long, vpWidth: Int, vpHeight: Int, dynVp: Boolean) {
-        if (renderPass == swapChain?.renderPass?.vkRenderPass ?: 0L) {
+    fun addPipelineConfig(pipeline: Pipeline, nImages: Int, renderPass: RenderPass, dynVp: Boolean) {
+        if (renderPass === swapChain?.renderPass) {
             if (onScreenPipelineConfigs.add(pipeline)) {
-                createOnScreenPipeline(pipeline, vpWidth, vpHeight)
+                createOnScreenPipeline(pipeline, renderPass)
             }
         } else {
-            val gp = GraphicsPipeline(sys, renderPass, vpWidth, vpHeight, 1, dynVp, pipeline, nImages)
+            val gp = GraphicsPipeline(sys, renderPass, 1, dynVp, pipeline, nImages)
             sys.device.addDependingResource(gp)
-            mutPipelines[makeKey(pipeline, renderPass)] = gp
+            mutPipelines[makeKey(pipeline, renderPass.vkRenderPass)] = gp
         }
     }
 
-    private fun createOnScreenPipeline(pipeline: Pipeline, vpWidth: Int, vpHeight: Int) {
+    private fun createOnScreenPipeline(pipeline: Pipeline, renderPass: RenderPass) {
         val swapChain = this.swapChain ?: return
-        val gp = GraphicsPipeline(sys, swapChain.renderPass.vkRenderPass, vpWidth, vpHeight, sys.physicalDevice.msaaSamples, false, pipeline, swapChain.nImages)
+        val gp = GraphicsPipeline(sys, renderPass, sys.physicalDevice.msaaSamples, false, pipeline, swapChain.nImages)
         swapChain.addDependingResource(gp)
         mutPipelines[makeKey(pipeline, swapChain.renderPass.vkRenderPass)] = gp
     }

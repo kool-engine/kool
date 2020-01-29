@@ -122,7 +122,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     }
 
     companion object {
-        private fun defaultPbrModel(cfg: PbrConfig) = ShaderModel("defaultPbrModel()").apply {
+        fun defaultPbrModel(cfg: PbrConfig) = ShaderModel("defaultPbrModel()").apply {
             val ifColors: StageInterfaceNode?
             val ifNormals: StageInterfaceNode
             val ifTangents: StageInterfaceNode?

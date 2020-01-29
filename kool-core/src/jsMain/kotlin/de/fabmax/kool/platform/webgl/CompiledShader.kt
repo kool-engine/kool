@@ -2,10 +2,7 @@ package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.gl.*
-import de.fabmax.kool.pipeline.CubeMapSampler
-import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.pipeline.TextureSampler
-import de.fabmax.kool.pipeline.UniformBuffer
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.shading.VboBinder
@@ -37,6 +34,12 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 }
             }
         }
+        pipeline.pushConstantRanges.forEach { pcr ->
+            pcr.pushConstants.forEach { pc ->
+                // in WebGL push constants are mapped to regular uniforms
+                uniformLocations[pc.name] = ctx.gl.getUniformLocation(prog, pc.name)
+            }
+        }
     }
 
     fun use() {
@@ -55,6 +58,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     }
 
     inner class ShaderInstance(val mesh: Mesh, pipeline: Pipeline) {
+        private val pushConstants = mutableListOf<PushConstantRange>()
         private val ubos = mutableListOf<UniformBuffer>()
         private val textures = mutableListOf<TextureSampler>()
         private val cubeMaps = mutableListOf<CubeMapSampler>()
@@ -78,10 +82,18 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                         is UniformBuffer -> mapUbo(desc)
                         is TextureSampler -> mapTexture(desc)
                         is CubeMapSampler -> mapCubeMap(desc)
-                        else -> TODO()
+                        else -> TODO("$desc")
                     }
                 }
             }
+            pipeline.pushConstantRanges.forEach { pc ->
+                mapPushConstants(pc)
+            }
+        }
+
+        private fun mapPushConstants(pc: PushConstantRange) {
+            pushConstants.add(pc)
+            pc.pushConstants.forEach { mappings += MappedUniform.mappedUniform(it, uniformLocations[it.name]) }
         }
 
         private fun mapUbo(ubo: UniformBuffer) {
@@ -101,6 +113,9 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
 
         fun bindInstance(drawCmd: DrawCommand) {
             // call onUpdate callbacks
+            for (i in pushConstants.indices) {
+                pushConstants[i].onUpdate?.invoke(pushConstants[i], drawCmd)
+            }
             for (i in ubos.indices) {
                 ubos[i].onUpdate?.invoke(ubos[i], drawCmd)
             }

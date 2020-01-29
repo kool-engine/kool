@@ -276,8 +276,7 @@ class Lwjgl3ContextVk(props: Lwjgl3ContextGL.InitProps) : KoolContext() {
             drawQueue.commands.forEach { cmd ->
                 val pipelineCfg = cmd.pipeline ?: throw KoolException("Mesh pipeline not set")
                 if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
-                    sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, renderPass.vkRenderPass,
-                            renderPass.maxWidth, renderPass.maxHeight, dynVp)
+                    sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, renderPass, dynVp)
                 }
                 val pipeline = sys.pipelineManager.getPipeline(pipelineCfg, renderPass.vkRenderPass)
                 if (pipelineCfg.pipelineHash != prevPipeline) {

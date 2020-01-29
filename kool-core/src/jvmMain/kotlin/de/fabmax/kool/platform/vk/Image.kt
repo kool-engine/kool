@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.KoolException
+import de.fabmax.kool.util.logW
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
@@ -57,13 +58,16 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
     fun generateMipmaps(stack: MemoryStack, commandBuffer: VkCommandBuffer, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
         if (mipLevels <= 1) {
             // not much to generate...
+            transitionLayout(dstLayout)
             return
         }
 
         val formatProperties = VkFormatProperties.mallocStack(stack)
         vkGetPhysicalDeviceFormatProperties(sys.physicalDevice.vkPhysicalDevice, format, formatProperties)
-        check(formatProperties.optimalTilingFeatures() and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT != 0) {
-            "Texture image format does not support linear blitting!"
+        if (formatProperties.optimalTilingFeatures() and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT == 0) {
+            logW { "Texture image format does not support linear blitting!" }
+            transitionLayout(dstLayout)
+            return
         }
 
         val barrier = stack.callocVkImageMemoryBarrierN(1) {

@@ -1,3 +1,4 @@
+import de.fabmax.kool.demo.pbrDemo
 import kotlin.browser.window
 import kotlin.collections.set
 
@@ -12,7 +13,8 @@ fun main() {
 //    // launch demo
 //    demo(getParams()["demo"])
 
-    testScene()
+    //testScene()
+    pbrDemo("../assets")
 }
 
 @Suppress("UNUSED_VARIABLE")

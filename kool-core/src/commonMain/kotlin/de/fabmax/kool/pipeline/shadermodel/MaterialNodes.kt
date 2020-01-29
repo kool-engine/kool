@@ -175,7 +175,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
                 kD *= 1.0 - metal;
                 
                 vec3 numerator = NDF * G * F;
-                float denominator = 1;//4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+                float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
                 vec3 specular = numerator / max(denominator, 0.001);
                     
                 // add to outgoing radiance Lo
@@ -193,10 +193,10 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
 
     private fun generateFinalNonIbl(generator: CodeGenerator) {
         generator.appendMain("""
-            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, $inRoughness); 
+            vec3 kS = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, rough); 
             vec3 kD = 1.0 - kS;
             vec3 diffuse = ${inIrradiance.ref3f()} * albedo;
-            vec3 ambient = (kD * diffuse) ;//* ao;
+            vec3 ambient = (kD * diffuse) * ${inAmbientOccl.ref1f()};
 
             vec3 color = ambient + Lo;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);

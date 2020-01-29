@@ -39,6 +39,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
     val mvp = Mat4f()
     val invMvp = Mat4f()
 
+    var isApplyProjCorrection = true
+
     private val projCorrected = Mat4f()
 
     // we need a bunch of temporary vectors, keep them as members (#perfmatters)
@@ -52,7 +54,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
         updateProjectionMatrix()
 
         ctx.mvpState.viewMatrix.set(view)
-        ctx.mvpState.projMatrix.set(ctx.projCorrectionMatrix.mul(proj, projCorrected))
+        if (isApplyProjCorrection) {
+            ctx.mvpState.projMatrix.set(ctx.projCorrectionMatrix.mul(proj, projCorrected))
+        } else {
+            ctx.mvpState.projMatrix.set(proj)
+        }
         ctx.mvpState.update(ctx)
 
         mvp.set(ctx.mvpState.mvpMatrix)

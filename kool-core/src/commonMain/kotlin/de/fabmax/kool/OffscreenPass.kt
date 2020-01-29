@@ -38,7 +38,7 @@ abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevel
     }
 }
 
-class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int, colorFormat: TexFormat = TexFormat.RGBA) :
+class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int = 1, colorFormat: TexFormat = TexFormat.RGBA) :
         OffscreenPass(texWidth, texHeight, mipLevels, colorFormat, 1) {
     val impl = OffscreenPass2dImpl(this)
 
@@ -107,6 +107,7 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorForm
                     it.clipNear = 0.1f
                     it.clipFar = 10f
                 }
+                camera.isApplyProjCorrection = false
 
                 camera.lookAt.set(camDirs[viewDir]!!)
                 when (viewDir) {

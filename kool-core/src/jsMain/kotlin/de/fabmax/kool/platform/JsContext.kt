@@ -295,7 +295,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
     private fun drawOffscreen(offscreenPass: OffscreenPass) {
         when (offscreenPass) {
-            is OffscreenPass2d -> TODO()
+            is OffscreenPass2d -> offscreenPass.impl.draw(this)
             is OffscreenPassCube -> offscreenPass.impl.draw(this)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
         }

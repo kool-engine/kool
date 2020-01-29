@@ -17,8 +17,6 @@ fun ShaderStage.bitValue(): Int {
 
 val TexFormat.vkFormat: Int
     get() = when(this) {
-        //TexFormat.ALPHA -> VK_FORMAT_R8_UNORM
-
         TexFormat.R -> VK_FORMAT_R8_UNORM
         TexFormat.RG -> VK_FORMAT_R8G8_UNORM
         TexFormat.RGB -> VK_FORMAT_R8G8B8_UNORM
@@ -32,8 +30,6 @@ val TexFormat.vkFormat: Int
 
 val TexFormat.vkBytesPerPx: Int
     get() = when(this) {
-        //TexFormat.ALPHA -> 1
-
         TexFormat.R -> 1
         TexFormat.RG -> 2
         TexFormat.RGB -> 3

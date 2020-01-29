@@ -57,7 +57,6 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
             void main() {
                 ${codeGen.generateMain()}
                 fragColor = ${model.fragmentStage.colorOutput.variable.ref4f()};
-                //fragColor = vec4(1.0, 0.0, 1.0, 1.0);
             }
         """.trimIndent()
     }
@@ -103,12 +102,10 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
     }
 
     private fun generateTextureSampler(set: DescriptorSetLayout, desc: TextureSampler): String {
-        //return "layout(set=${set.set}, binding=${desc.binding}) uniform sampler2D ${desc.name};\n"
         return "uniform sampler2D ${desc.name};\n"
     }
 
     private fun generateCubeMapSampler(set: DescriptorSetLayout, desc: CubeMapSampler): String {
-        //return "layout(set=${set.set}, binding=${desc.binding}) uniform samplerCube ${desc.name};\n"
         return "uniform samplerCube ${desc.name};\n"
     }
 
@@ -178,7 +175,8 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
             }
         }
 
-        override fun sampleTextureCube(texName: String, texCoords: String, lod: String?) = sampleTexture2d(texName, texCoords, lod)
+        override fun sampleTextureCube(texName: String, texCoords: String, lod: String?) =
+                sampleTexture2d(texName, texCoords, lod)
 
         fun generateFunctions(): String = functions.values.joinToString("\n")
 

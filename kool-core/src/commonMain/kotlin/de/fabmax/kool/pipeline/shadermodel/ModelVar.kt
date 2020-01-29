@@ -68,26 +68,26 @@ open class ModelVarMat3f(name: String) : ModelVar(name, GlslType.MAT_3F)
 open class ModelVarMat4f(name: String) : ModelVar(name, GlslType.MAT_4F)
 
 class ModelVar1fConst(val value: Float) : ModelVar1f("_") {
-    override fun ref1f() = "$value"
-    override fun ref2f() = "vec2($value, 0.0)"
-    override fun ref3f() = "vec3($value, 0.0, 0.0)"
-    override fun ref4f() = "vec4($value, 0.0, 0.0, 0.0)"
+    override fun ref1f() = "float($value)"
+    override fun ref2f() = "vec2(float($value), 0.0)"
+    override fun ref3f() = "vec3(float($value), 0.0, 0.0)"
+    override fun ref4f() = "vec4(float($value), 0.0, 0.0, 0.0)"
 }
 class ModelVar2fConst(val value: Vec2f) : ModelVar2f("_") {
-    override fun ref1f() = "${value.x}"
-    override fun ref2f() = "vec2(${value.x}, ${value.y})"
-    override fun ref3f() = "vec3(${value.x}, ${value.y}, 0.0)"
-    override fun ref4f() = "vec4(${value.x}, ${value.y}, 0.0, 0.0)"
+    override fun ref1f() = "float(${value.x})"
+    override fun ref2f() = "vec2(float(${value.x}), float(${value.y}))"
+    override fun ref3f() = "vec3(float(${value.x}), float(${value.y}), 0.0)"
+    override fun ref4f() = "vec4(float(${value.x}), float(${value.y}), 0.0, 0.0)"
 }
 class ModelVar3fConst(val value: Vec3f) : ModelVar3f("_") {
-    override fun ref1f() = "${value.x}"
-    override fun ref2f() = "vec2(${value.x}, ${value.y})"
-    override fun ref3f() = "vec3(${value.x}, ${value.y}, ${value.z})"
-    override fun ref4f() = "vec4(${value.x}, ${value.y}, ${value.z}, 0.0)"
+    override fun ref1f() = "float(${value.x})"
+    override fun ref2f() = "vec2(float(${value.x}), float(${value.y}))"
+    override fun ref3f() = "vec3(float(${value.x}), float(${value.y}), float(${value.z}))"
+    override fun ref4f() = "vec4(float(${value.x}), float(${value.y}), float(${value.z}), 0.0)"
 }
 class ModelVar4fConst(val value: Vec4f) : ModelVar4f("_") {
-    override fun ref1f() = "${value.x}"
-    override fun ref2f() = "vec2(${value.x}, ${value.y})"
-    override fun ref3f() = "vec3(${value.x}, ${value.y}, ${value.z})"
-    override fun ref4f() = "vec4(${value.x}, ${value.y}, ${value.z}, ${value.w})"
+    override fun ref1f() = "float(${value.x})"
+    override fun ref2f() = "vec2(float(${value.x}), float(${value.y}))"
+    override fun ref3f() = "vec3(float(${value.x}), float(${value.y}), float(${value.z}))"
+    override fun ref4f() = "vec4(float(${value.x}), float(${value.y}), float(${value.z}), float(${value.w}))"
 }

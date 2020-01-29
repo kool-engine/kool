@@ -11,8 +11,8 @@ import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo
 import org.lwjgl.vulkan.VkPushConstantRange
 import java.nio.ByteBuffer
 
-class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, val height: Int, val msaaSamples: Int,
-                       val dynamicViewPort: Boolean, val pipeline: Pipeline, val nImages: Int, val descriptorSetPoolSize: Int = 100) : VkResource() {
+class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSamples: Int, val dynamicViewPort: Boolean,
+                       val pipeline: Pipeline, val nImages: Int, val descriptorSetPoolSize: Int = 100) : VkResource() {
 
     val descriptorSetLayout: Long
     val descriptorPool: Long
@@ -84,15 +84,15 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, 
                 // actual viewport size is set on render
                 x(0f)
                 y(0f)
-                width(this@GraphicsPipeline.width.toFloat())
-                height(this@GraphicsPipeline.height.toFloat())
+                width(renderPass.maxWidth.toFloat())
+                height(renderPass.maxHeight.toFloat())
                 minDepth(0f)
                 maxDepth(1f)
             }
 
             val scissor = callocVkRect2DN(1) {
                 offset { it.set(0, 0) }
-                extent { it.width(this@GraphicsPipeline.width); it.height(this@GraphicsPipeline.height) }
+                extent { it.width(renderPass.maxWidth); it.height(renderPass.maxHeight) }
             }
 
             viewportState = callocVkPipelineViewportStateCreateInfo {
@@ -125,7 +125,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, 
                     CullMethod.CULL_FRONT_FACES -> VK_CULL_MODE_FRONT_BIT
                     CullMethod.NO_CULLING -> VK_CULL_MODE_NONE
                 })
-                frontFace(VK_FRONT_FACE_COUNTER_CLOCKWISE)
+                frontFace(renderPass.triFrontDirection)
                 depthBiasEnable(false)
                 depthBiasConstantFactor(0f)
                 depthBiasClamp(0f)
@@ -213,7 +213,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: Long, val width: Int, 
                 pDepthStencilState(depthStencil)
                 pColorBlendState(colorBlending)
                 layout(pipelineLayout)
-                renderPass(renderPass)
+                renderPass(renderPass.vkRenderPass)
                 subpass(0)
                 basePipelineHandle(VK_NULL_HANDLE)
                 basePipelineIndex(-1)

@@ -242,6 +242,7 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun drawElementsInstanced(mode: Int, count: Int, type: Int, offset: Int, instanceCount: Int)
     fun readBuffer(src: Int)
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
+    fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int)
     fun vertexAttribDivisor(index: Int, divisor: Int)
     fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
 

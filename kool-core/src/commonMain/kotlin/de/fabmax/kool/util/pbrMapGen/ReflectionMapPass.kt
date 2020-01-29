@@ -8,7 +8,6 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.CullMethod
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.scene
-import de.fabmax.kool.util.logD
 import kotlin.math.PI
 
 class ReflectionMapPass(hdriTexture: Texture) {
@@ -94,14 +93,16 @@ class ReflectionMapPass(hdriTexture: Texture) {
                 const vec2 invAtan = vec2(0.1591, 0.3183);
                 vec3 sampleEquiRect(vec3 texCoord) {
                     vec3 equiRect_in = normalize(texCoord);
-                    vec2 uv = vec2(atan(equiRect_in.z, equiRect_in.x), asin(equiRect_in.y));
+                    vec2 uv = vec2(atan(equiRect_in.z, equiRect_in.x), -asin(equiRect_in.y));
                     uv *= invAtan;
                     uv += 0.5;
                     
                     vec4 rgbe = ${generator.sampleTexture2d(texture.name, "uv")};
                     
                     // decode rgbe
-                    return rgbe.rgb * pow(2.0, rgbe.w * 255.0 - 127.0);
+                    vec3 fRgb = rgbe.rgb;
+                    float fExp = rgbe.a * 255.0 - 128.0;
+                    return fRgb * pow(2.0, fExp);
                 }
                 
                 float RadicalInverse_VdC(uint bits) {

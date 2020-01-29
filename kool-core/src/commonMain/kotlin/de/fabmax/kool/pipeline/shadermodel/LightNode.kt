@@ -53,7 +53,7 @@ class LightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderNode("
     override fun generateCode(generator: CodeGenerator) {
         generator.appendFunction("light_getFragToLight", """
             vec3 light_getFragToLight(int idx, vec3 fragPos) {
-                if (${uPositions.name}[idx].w == ${Light.Type.DIRECTIONAL.encoded}) {
+                if (${uPositions.name}[idx].w == float(${Light.Type.DIRECTIONAL.encoded})) {
                     return -${uDirections.name}[idx].xyz;
                 }
                 // same for point and spot lights
@@ -63,17 +63,17 @@ class LightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderNode("
 
         generator.appendFunction("light_getRadiance", """
             vec3 light_getRadiance(int idx, vec3 fragToLight, float innerAngle) {
-                if (${uPositions.name}[idx].w == ${Light.Type.DIRECTIONAL.encoded}) {
+                if (${uPositions.name}[idx].w == float(${Light.Type.DIRECTIONAL.encoded})) {
                     return ${uColors.name}[idx].rgb * ${uColors.name}[idx].w;
                 }
                 float dist = length(fragToLight);
-                if (${uPositions.name}[idx].w == ${Light.Type.POINT.encoded}) {
+                if (${uPositions.name}[idx].w == float(${Light.Type.POINT.encoded})) {
                     return ${uColors.name}[idx].rgb * ${uColors.name}[idx].w / (dist * dist);
                 } else {
                     // spot light
                     vec3 lightDir = -normalize(fragToLight);
                     float spotAng = ${uDirections.name}[idx].w;
-                    float innerAng = spotAng + (1 - spotAng) * (1 - innerAngle);
+                    float innerAng = spotAng + (1.0 - spotAng) * (1.0 - innerAngle);
                     float ang = dot(lightDir, ${uDirections.name}[idx].xyz);
                     float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * $PI) * 0.5 + 0.5;
                     return ${uColors.name}[idx].rgb * ${uColors.name}[idx].w / (dist * dist) * angVal;
