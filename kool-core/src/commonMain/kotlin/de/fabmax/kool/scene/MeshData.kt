@@ -1,15 +1,9 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.gl.BufferResource
-import de.fabmax.kool.gl.GL_STATIC_DRAW
-import de.fabmax.kool.gl.GL_TRIANGLES
-import de.fabmax.kool.gl.GL_UNSIGNED_INT
 import de.fabmax.kool.lock
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.shading.VboBinder
 import de.fabmax.kool.util.*
 
 class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
@@ -20,13 +14,13 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
 
     private var referenceCount = 0
 
-    var usage = GL_STATIC_DRAW
-    var indexType = GL_UNSIGNED_INT
-    var primitiveType = GL_TRIANGLES
-
-    var dataBufferF: BufferResource? = null
-    var dataBufferI: BufferResource? = null
-    var indexBuffer: BufferResource? = null
+//    var usage = GL_STATIC_DRAW
+//    var indexType = GL_UNSIGNED_INT
+//    var primitiveType = GL_TRIANGLES
+//
+//    var dataBufferF: BufferResource? = null
+//    var dataBufferI: BufferResource? = null
+//    var indexBuffer: BufferResource? = null
 
     val numIndices: Int
         get() = vertexList.indices.position
@@ -42,8 +36,6 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
             }
         }
     private val vertexIt = vertexList[0]
-
-    val attributeBinders = mutableMapOf<Attribute, VboBinder>()
 
     constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toHashSet())
 
@@ -63,9 +55,9 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         if (!vertexAttributes.contains(Attribute.NORMALS)) {
             return
         }
-        if (primitiveType != GL_TRIANGLES) {
-            throw KoolException("Normal generation is only supported for triangle meshes")
-        }
+//        if (primitiveType != GL_TRIANGLES) {
+//            throw KoolException("Normal generation is only supported for triangle meshes")
+//        }
 
         val v0 = this[0]
         val v1 = this[1]
@@ -112,9 +104,9 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
         if (!vertexAttributes.contains(Attribute.TANGENTS)) {
             return
         }
-        if (primitiveType != GL_TRIANGLES) {
-            throw KoolException("Normal generation is only supported for triangle meshes")
-        }
+//        if (primitiveType != GL_TRIANGLES) {
+//            throw KoolException("Normal generation is only supported for triangle meshes")
+//        }
 
         val v0 = this[0]
         val v1 = this[1]
@@ -347,69 +339,14 @@ class MeshData(val vertexAttributes: Set<Attribute>) : Disposable {
      * Deletes all index and data buffer of this mesh.
      */
     override fun dispose(ctx: KoolContext) {
-        if (--referenceCount == 0) {
-            indexBuffer?.delete(ctx)
-            dataBufferF?.delete(ctx)
-            dataBufferI?.delete(ctx)
-            indexBuffer = null
-            dataBufferF = null
-            dataBufferI = null
-            attributeBinders.clear()
-        }
+//        if (--referenceCount == 0) {
+//            indexBuffer?.delete(ctx)
+//            dataBufferF?.delete(ctx)
+//            dataBufferI?.delete(ctx)
+//            indexBuffer = null
+//            dataBufferF = null
+//            dataBufferI = null
+//            attributeBinders.clear()
+//        }
     }
-
-//    fun checkBuffers(ctx: KoolContext): Boolean {
-//        if (indexBuffer == null) {
-//            indexBuffer = BufferResource.create(GL_ELEMENT_ARRAY_BUFFER, ctx)
-//        }
-//        var hasIntData = false
-//        if (dataBufferF == null) {
-//            dataBufferF = BufferResource.create(GL_ARRAY_BUFFER, ctx)
-//            for (vertexAttrib in vertexAttributes) {
-//                if (vertexAttrib.type.isInt) {
-//                    hasIntData = true
-//                } else {
-//                    attributeBinders[vertexAttrib] = VboBinder(dataBufferF!!, vertexAttrib.type.size,
-//                            vertexList.strideBytesF, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
-//                }
-//            }
-//        }
-//        if (hasIntData && dataBufferI == null) {
-//            dataBufferI = BufferResource.create(GL_ARRAY_BUFFER, ctx)
-//            for (vertexAttrib in vertexAttributes) {
-//                if (vertexAttrib.type.isInt) {
-//                    attributeBinders[vertexAttrib] = VboBinder(dataBufferI!!, vertexAttrib.type.size,
-//                            vertexList.strideBytesI, vertexList.attributeOffsets[vertexAttrib]!!, vertexAttrib.type.glType)
-//                }
-//            }
-//        }
-//
-//        return if (isSyncRequired && !isBatchUpdate) {
-//            lock(vertexList) {
-//                if (!isBatchUpdate) {
-//                    if (isRebuildBoundsOnSync) {
-//                        rebuildBounds()
-//                    }
-//                    if (!ctx.glCapabilities.uint32Indices) {
-//                        // convert index buffer to uint16
-//                        val uint16Buffer = createUint16Buffer(numIndices)
-//                        for (i in 0..(vertexList.indices.position - 1)) {
-//                            uint16Buffer.put(vertexList.indices[i].toShort())
-//                        }
-//                        indexType = GL_UNSIGNED_SHORT
-//                        indexBuffer?.setData(uint16Buffer, usage, ctx)
-//                    } else {
-//                        indexType = GL_UNSIGNED_INT
-//                        indexBuffer?.setData(vertexList.indices, usage, ctx)
-//                    }
-//                    dataBufferF?.setData(vertexList.dataF, usage, ctx)
-//                    dataBufferI?.setData(vertexList.dataI, usage, ctx)
-//                    isSyncRequired = false
-//                }
-//            }
-//            true
-//        } else {
-//            false
-//        }
-//    }
 }

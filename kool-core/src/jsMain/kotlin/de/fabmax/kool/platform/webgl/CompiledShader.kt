@@ -1,14 +1,20 @@
 package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.drawqueue.DrawCommand
-import de.fabmax.kool.gl.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.shading.VboBinder
 import de.fabmax.kool.util.createUint16Buffer
 import org.khronos.webgl.WebGLProgram
+import org.khronos.webgl.WebGLRenderingContext.Companion.ARRAY_BUFFER
+import org.khronos.webgl.WebGLRenderingContext.Companion.ELEMENT_ARRAY_BUFFER
+import org.khronos.webgl.WebGLRenderingContext.Companion.FLOAT
+import org.khronos.webgl.WebGLRenderingContext.Companion.INT
+import org.khronos.webgl.WebGLRenderingContext.Companion.STATIC_DRAW
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE0
+import org.khronos.webgl.WebGLRenderingContext.Companion.TRIANGLES
+import org.khronos.webgl.WebGLRenderingContext.Companion.UNSIGNED_INT
+import org.khronos.webgl.WebGLRenderingContext.Companion.UNSIGNED_SHORT
 import org.khronos.webgl.WebGLUniformLocation
 
 class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsContext) {
@@ -142,30 +148,30 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         private fun checkBuffers() {
             val md = mesh.meshData
             if (indexBuffer == null) {
-                indexBuffer = BufferResource.create(GL_ELEMENT_ARRAY_BUFFER, ctx)
+                indexBuffer = BufferResource(ELEMENT_ARRAY_BUFFER, ctx)
             }
             var hasIntData = false
             if (dataBufferF == null) {
-                dataBufferF = BufferResource.create(GL_ARRAY_BUFFER, ctx)
+                dataBufferF = BufferResource(ARRAY_BUFFER, ctx)
                 for (vertexAttrib in md.vertexAttributes) {
                     if (vertexAttrib.type.isInt) {
                         hasIntData = true
                     } else {
                         attributeLocations[vertexAttrib.glslSrcName]?.let { location ->
                             val vbo = VboBinder(dataBufferF!!, vertexAttrib.type.size / 4,
-                                    md.vertexList.strideBytesF, md.vertexList.attributeOffsets[vertexAttrib]!! / 4, GL_FLOAT)
+                                    md.vertexList.strideBytesF, md.vertexList.attributeOffsets[vertexAttrib]!! / 4, FLOAT)
                             attributeBinders[vertexAttrib.glslSrcName] = AttributeOnLocation(vbo, location)
                         }
                     }
                 }
             }
             if (hasIntData && dataBufferI == null) {
-                dataBufferI = BufferResource.create(GL_ARRAY_BUFFER, ctx)
+                dataBufferI = BufferResource(ARRAY_BUFFER, ctx)
                 for (vertexAttrib in md.vertexAttributes) {
                     if (vertexAttrib.type.isInt) {
                         attributeLocations[vertexAttrib.glslSrcName]?.let { location ->
                             val vbo = VboBinder(dataBufferI!!, vertexAttrib.type.size / 4,
-                                    md.vertexList.strideBytesI, md.vertexList.attributeOffsets[vertexAttrib]!! / 4, GL_INT)
+                                    md.vertexList.strideBytesI, md.vertexList.attributeOffsets[vertexAttrib]!! / 4, INT)
                             attributeBinders[vertexAttrib.glslSrcName] = AttributeOnLocation(vbo, location)
                         }
                     }
@@ -182,16 +188,17 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     for (i in 0 until md.vertexList.indices.position) {
                         uint16Buffer.put(md.vertexList.indices[i].toShort())
                     }
-                    indexType = GL_UNSIGNED_SHORT
-                    indexBuffer?.setData(uint16Buffer, md.usage, ctx)
+                    indexType = UNSIGNED_SHORT
+                    //indexBuffer?.setData(uint16Buffer, md.usage, ctx)
+                    indexBuffer?.setData(uint16Buffer, STATIC_DRAW, ctx)
                 } else {
-                    indexType = GL_UNSIGNED_INT
-                    indexBuffer?.setData(md.vertexList.indices, md.usage, ctx)
+                    indexType = UNSIGNED_INT
+                    indexBuffer?.setData(md.vertexList.indices, STATIC_DRAW, ctx)
                 }
-                primitiveType = md.primitiveType
+                primitiveType = TRIANGLES
                 numIndices = md.numIndices
-                dataBufferF?.setData(md.vertexList.dataF, md.usage, ctx)
-                dataBufferI?.setData(md.vertexList.dataI, md.usage, ctx)
+                dataBufferF?.setData(md.vertexList.dataF, STATIC_DRAW, ctx)
+                dataBufferI?.setData(md.vertexList.dataI, STATIC_DRAW, ctx)
                 md.isSyncRequired = false
             }
         }

@@ -1,8 +1,6 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
-import de.fabmax.kool.gl.GlResource
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
@@ -139,8 +137,8 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                 var last = -1
                 var lastMem = -1.0
                 onPreRender += { c ->
-                    val num = c.memoryMgr.numTextures
-                    val mem = c.memoryMgr.getTotalMemory(GlResource.Type.TEXTURE)
+                    val num = 0//c.memoryMgr.numTextures
+                    val mem = 0.0//c.memoryMgr.getTotalMemory(GlResource.Type.TEXTURE)
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
@@ -159,8 +157,8 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                 var last = -1
                 var lastMem = -1.0
                 onPreRender += { c ->
-                    val num = c.memoryMgr.numBuffers
-                    val mem = c.memoryMgr.getTotalMemory(GlResource.Type.BUFFER)
+                    val num = 0//c.memoryMgr.numBuffers
+                    val mem = 0.0//c.memoryMgr.getTotalMemory(GlResource.Type.BUFFER)
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
@@ -178,7 +176,7 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
 
                 var last = -1
                 onPreRender += { c ->
-                    val num = c.memoryMgr.numShaders
+                    val num = 0//c.memoryMgr.numShaders
                     if (num != last) {
                         last = num
                         text = "$num Shaders"
@@ -203,7 +201,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
 
     init {
         graphMesh = Mesh(graphData)
-        graphMesh.meshData.usage = GL_DYNAMIC_DRAW
+        //graphMesh.meshData.usage = GL_DYNAMIC_DRAW
         graphMesh.pipelineConfig { shaderLoader = ModeledShader.vertexColor() }
     }
 

@@ -2,8 +2,6 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.CosAnimator
 import de.fabmax.kool.util.InterpolatedFloat
@@ -81,10 +79,10 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                 menuAnimator.speed = if (tb.isEnabled) 1f else -1f
             }
 
-            mesh.shader = basicShader {
-                colorModel = ColorModel.VERTEX_COLOR
-                lightModel = tb.root.shaderLightModel
-            }
+//            mesh.shader = basicShader {
+//                colorModel = ColorModel.VERTEX_COLOR
+//                lightModel = tb.root.shaderLightModel
+//            }
         }
 
         override fun onRender(ctx: KoolContext) {

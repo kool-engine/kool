@@ -1,17 +1,10 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.gl.GL_ALWAYS
-import de.fabmax.kool.gl.GL_POINTS
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.scene.MeshRayTest
-import de.fabmax.kool.shading.BasicPointShader
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicPointShader
 
 /**
  * @author fabmax
@@ -23,19 +16,19 @@ fun pointMesh(name: String? = null, block: PointMesh.() -> Unit): PointMesh {
 
 open class PointMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
         Mesh(data, name) {
-    init {
-        data.primitiveType = GL_POINTS
-        rayTest = MeshRayTest.nopTest()
-        shader = basicPointShader {
-            colorModel = ColorModel.VERTEX_COLOR
-            lightModel = LightModel.NO_LIGHTING
-        }
-    }
+//    init {
+//        data.primitiveType = GL_POINTS
+//        rayTest = MeshRayTest.nopTest()
+//        shader = basicPointShader {
+//            colorModel = ColorModel.VERTEX_COLOR
+//            lightModel = LightModel.NO_LIGHTING
+//        }
+//    }
 
     var isXray = false
-    var pointSize: Float
-        get() = (shader as BasicPointShader).pointSize
-        set(value) { (shader as BasicPointShader).pointSize = value }
+    var pointSize: Float = 1f
+//        get() = (shader as BasicPointShader).pointSize
+//        set(value) { (shader as BasicPointShader).pointSize = value }
 
     fun addPoint(block: IndexedVertexList.Vertex.() -> Unit): Int {
         val idx =  meshData.addVertex(block)
@@ -55,14 +48,14 @@ open class PointMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.CO
     }
 
     override fun render(ctx: KoolContext) {
-        ctx.pushAttributes()
-        if (isXray) {
-            ctx.depthFunc = GL_ALWAYS
-        }
-        ctx.applyAttributes()
-
-        super.render(ctx)
-
-        ctx.popAttributes()
+//        ctx.pushAttributes()
+//        if (isXray) {
+//            ctx.depthFunc = GL_ALWAYS
+//        }
+//        ctx.applyAttributes()
+//
+//        super.render(ctx)
+//
+//        ctx.popAttributes()
     }
 }

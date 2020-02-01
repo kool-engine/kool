@@ -1,12 +1,12 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.gl.WebGL2RenderingContext
-import de.fabmax.kool.gl.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
-import de.fabmax.kool.gl.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.LoadedTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.WebGL2RenderingContext
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
 import de.fabmax.kool.platform.glInternalFormat
 import org.khronos.webgl.WebGLFramebuffer
 import org.khronos.webgl.WebGLRenderbuffer
@@ -179,7 +179,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         var offscreenTex: WebGLTexture? = null
 
         fun create(ctx: JsContext) {
-            val gl = ctx.gl as WebGL2RenderingContext
+            val gl = ctx.gl
 
             val intFormat = offscreenPass.colorFormat.glInternalFormat
             val width = offscreenPass.texWidth
@@ -194,7 +194,6 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
             gl.texParameteri(TEXTURE_CUBE_MAP, TEXTURE_WRAP_R, CLAMP_TO_EDGE)
             gl.texParameteri(TEXTURE_CUBE_MAP, TEXTURE_MIN_FILTER, LINEAR_MIPMAP_LINEAR)
             gl.texParameteri(TEXTURE_CUBE_MAP, TEXTURE_MAG_FILTER, LINEAR)
-            //gl.generateMipmap(TEXTURE_CUBE_MAP)
 
             loadedTexture = LoadedTexture(ctx, offscreenTex)
             loadingState = LoadingState.LOADED

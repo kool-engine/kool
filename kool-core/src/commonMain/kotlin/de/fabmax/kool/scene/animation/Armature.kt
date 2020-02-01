@@ -8,7 +8,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.InstancedMesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.createFloat32Buffer
@@ -155,10 +154,10 @@ open class Armature(meshData: MeshData, name: String? = null,
     }
 
     override fun render(ctx: KoolContext) {
-        val shader = this.shader
-        if (shader is BasicShader) {
-            shader.bones = boneTransforms
-        }
+//        val shader = this.shader
+//        if (shader is BasicShader) {
+//            shader.bones = boneTransforms
+//        }
         super.render(ctx)
     }
 

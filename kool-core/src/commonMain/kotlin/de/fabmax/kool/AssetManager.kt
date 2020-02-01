@@ -1,8 +1,7 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.gl.GL_CLAMP_TO_EDGE
-import de.fabmax.kool.gl.GL_LINEAR
-import de.fabmax.kool.gl.GL_TEXTURE_CUBE_MAP
+import de.fabmax.kool.pipeline.CubeMapTextureData
+import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
@@ -116,6 +115,18 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         }
     }
 
+    suspend fun loadTextureData(assetPath: String): TextureData {
+        val ref = if (isHttpAsset(assetPath)) {
+            HttpTextureAssetRef(assetPath)
+        } else {
+            LocalTextureAssetRef("$assetsBaseDir/$assetPath")
+        }
+        val awaitedAsset = AwaitedAsset(ref)
+        awaitedAssetsChannel.send(awaitedAsset)
+        val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
+        return loaded.data ?: throw KoolException("Failed loading texture")
+    }
+
     open suspend fun loadCubeMapTextureData(ft: String, bk: String, lt: String, rt: String, up: String, dn: String): CubeMapTextureData {
         val ftd = loadTextureData(ft)
         val bkd = loadTextureData(bk)
@@ -129,35 +140,6 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
     abstract fun loadAndPrepareTexture(assetPath: String, recv: (de.fabmax.kool.pipeline.Texture) -> Unit)
 
     abstract fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String, recv: (de.fabmax.kool.pipeline.CubeMapTexture) -> Unit)
-
-    suspend fun loadTextureData(assetPath: String): TextureData {
-        val ref = if (isHttpAsset(assetPath)) {
-            HttpTextureAssetRef(assetPath)
-        } else {
-            LocalTextureAssetRef("$assetsBaseDir/$assetPath")
-        }
-        val awaitedAsset = AwaitedAsset(ref)
-        awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-        return loaded.data ?: throw KoolException("Failed loading texture")
-    }
-
-    fun loadTextureAsset(assetPath: String): TextureData  {
-        throw RuntimeException("Use loadTextureData()")
-//        val proxy = TextureDataProxy()
-//        launch {
-//            val ref = if (isHttpAsset(assetPath)) {
-//                HttpTextureAssetRef(assetPath)
-//            } else {
-//                LocalTextureAssetRef("$assetsBaseDir/$assetPath")
-//            }
-//            val awaitedAsset = AwaitedAsset(ref)
-//            awaitedAssetsChannel.send(awaitedAsset)
-//            val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-//            proxy.proxyData = loaded.data
-//        }
-//        return proxy
-    }
 
     protected inner class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset> = CompletableDeferred(job))
 
@@ -175,30 +157,3 @@ data class HttpTextureAssetRef(val url: String) : AssetRef()
 sealed class LoadedAsset(val ref: AssetRef, val successfull: Boolean)
 class LoadedRawAsset(ref: AssetRef, val data: ByteArray?) : LoadedAsset(ref, data != null)
 class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(ref, data != null)
-
-fun assetTexture(assetPath: String, delayLoading: Boolean = true): Texture {
-    return assetTexture(defaultPropsRepeated(assetPath), delayLoading)
-}
-
-fun assetTexture(props: TextureProps, delayLoading: Boolean = true): Texture {
-    return Texture(props) { ctx ->
-        this.delayLoading = delayLoading
-        ctx.assetMgr.loadTextureAsset(props.id)
-    }
-}
-
-fun assetTextureCubeMap(frontPath: String, backPath: String, leftPath: String, rightPath: String, upPath: String,
-                        downPath: String, delayLoading: Boolean = true): CubeMapTexture {
-    val id = "$frontPath-$backPath-$leftPath-$rightPath-$upPath-$downPath"
-    val props = TextureProps(id, GL_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, 0, GL_TEXTURE_CUBE_MAP)
-    return CubeMapTexture(props) { ctx ->
-        this.delayLoading = delayLoading
-        val ft = ctx.assetMgr.loadTextureAsset(frontPath)
-        val bk = ctx.assetMgr.loadTextureAsset(backPath)
-        val lt = ctx.assetMgr.loadTextureAsset(leftPath)
-        val rt = ctx.assetMgr.loadTextureAsset(rightPath)
-        val up = ctx.assetMgr.loadTextureAsset(upPath)
-        val dn = ctx.assetMgr.loadTextureAsset(downPath)
-        CubeMapTextureData(ft, bk, lt, rt, up, dn)
-    }
-}

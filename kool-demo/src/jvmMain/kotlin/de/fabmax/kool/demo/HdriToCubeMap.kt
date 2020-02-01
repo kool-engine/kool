@@ -3,7 +3,6 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.OffscreenPassCube
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shadermodel.*
@@ -12,7 +11,6 @@ import de.fabmax.kool.scene.CullMethod
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.Color
-import kotlin.math.PI
 
 class EquiRectCoords(graph: ShaderGraph) : ShaderNode("equiRect", graph) {
     var input = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
@@ -105,7 +103,10 @@ class DecodeAndToneMapRgbeNode(graph: ShaderGraph) : ShaderNode("decodeRgbe", gr
 
         generator.appendMain("""
             // decode rgbe
-            ${outColor.declare()} = vec4(${input.ref3f()} * pow(2.0, ${input.ref4f()}.w * 255.0 - 127.0), 1.0);
+            vec3 fRgb = ${input.ref4f()}.rgb;
+            float fExp = ${input.ref4f()}.a * 255.0 - 128.0;
+            
+            ${outColor.declare()} = vec4(fRgb * pow(2.0, fExp), 1.0);
 
             //$outColor.rgb = 0.5 * pow($outColor.rgb, vec3(0.9));
             //$outColor.rgb = $outColor.rgb / ($outColor.rgb + vec3(1.0));

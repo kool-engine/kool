@@ -1,15 +1,8 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.TextureProps
-import de.fabmax.kool.assetTexture
-import de.fabmax.kool.gl.GL_LINEAR
-import de.fabmax.kool.gl.GL_REPEAT
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.textureMesh
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
 
 fun makeGroundGrid(cells: Int, y: Float = 0f): Node {
@@ -35,18 +28,18 @@ fun makeGroundGrid(cells: Int, y: Float = 0f): Node {
             }
             meshData.generateTangents()
         }
-        shader = basicShader {
-            lightModel = LightModel.PHONG_LIGHTING
-            colorModel = ColorModel.TEXTURE_COLOR
-            isReceivingShadows = true
-            isNormalMapped = true
-
-            specularIntensity = 0.25f
-
-            val props = TextureProps("ground_nrm.png", GL_LINEAR, GL_REPEAT)
-            normalMap = assetTexture(props)
-            val colorProps = TextureProps("ground_color.png", GL_LINEAR, GL_REPEAT)
-            texture = assetTexture(colorProps)
-        }
+//        shader = basicShader {
+//            lightModel = LightModel.PHONG_LIGHTING
+//            colorModel = ColorModel.TEXTURE_COLOR
+//            isReceivingShadows = true
+//            isNormalMapped = true
+//
+//            specularIntensity = 0.25f
+//
+//            val props = TextureProps("ground_nrm.png", GL_LINEAR, GL_REPEAT)
+//            normalMap = assetTexture(props)
+//            val colorProps = TextureProps("ground_color.png", GL_LINEAR, GL_REPEAT)
+//            texture = assetTexture(colorProps)
+//        }
     }
 }

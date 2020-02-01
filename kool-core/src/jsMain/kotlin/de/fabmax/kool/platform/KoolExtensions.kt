@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.gl.WebGL2RenderingContext
 import de.fabmax.kool.pipeline.TexFormat
 import org.khronos.webgl.WebGLRenderingContext
 

@@ -1,7 +1,5 @@
 package de.fabmax.kool.modules.mesh
 
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
@@ -49,9 +47,9 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
     }
 
     init {
-        if (meshData.primitiveType != GL_TRIANGLES) {
-            throw KoolException("Supplied meshData must be of primitive type GL_TRIANGLES")
-        }
+//        if (meshData.primitiveType != GL_TRIANGLES) {
+//            throw KoolException("Supplied meshData must be of primitive type GL_TRIANGLES")
+//        }
 
         verts = MutableList(meshData.numVertices) { HalfEdgeVertex(it) }
 

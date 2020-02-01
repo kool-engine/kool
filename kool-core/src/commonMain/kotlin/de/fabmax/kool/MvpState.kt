@@ -75,7 +75,7 @@ class MvpState internal constructor() {
         projMatrix.mul(viewMatrix.mul(modelMatrix, tempMatrix), mvpMatrix)
 
         // notify current shader about matrix update
-        ctx.shaderMgr.boundShader?.onMatrixUpdate(ctx)
+        //ctx.shaderMgr.boundShader?.onMatrixUpdate(ctx)
     }
 
 }

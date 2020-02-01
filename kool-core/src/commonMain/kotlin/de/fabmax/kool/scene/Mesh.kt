@@ -1,55 +1,19 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.RenderPass
 import de.fabmax.kool.drawqueue.DrawCommand
-import de.fabmax.kool.gl.glDrawElements
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.Shader
-import de.fabmax.kool.shading.VboBinder
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.fontShader
 
-
-//inline fun mesh(withNormals: Boolean, withColors: Boolean, withTexCoords: Boolean, name: String? = null,
-//         block: Mesh.() -> Unit): Mesh {
-//    val attributes = mutableSetOf(Attribute.POSITIONS)
-//    if (withNormals) {
-//        attributes += Attribute.NORMALS
-//    }
-//    if (withColors) {
-//        attributes += Attribute.COLORS
-//    }
-//    if (withTexCoords) {
-//        attributes += Attribute.TEXTURE_COORDS
-//    }
-//    return mesh(attributes, name, block)
-//}
 
 inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(MeshData(attributes), name)
 
-//    mesh.shader = basicShader {
-//        lightModel = if (attributes.contains(Attribute.NORMALS)) {
-//            LightModel.PHONG_LIGHTING
-//        } else {
-//            LightModel.NO_LIGHTING
-//        }
-//
-//        colorModel = when {
-//            attributes.contains(Attribute.TEXTURE_COORDS) -> ColorModel.TEXTURE_COLOR
-//            attributes.contains(Attribute.COLORS) -> ColorModel.VERTEX_COLOR
-//            else -> ColorModel.STATIC_COLOR
-//        }
-//    }
-
     mesh.block()
-
     // todo: Optionally generate geometry lazily
     mesh.generateGeometry()
 
@@ -63,7 +27,7 @@ fun colorMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
 
 fun textMesh(font: Font, name: String? = null, generate: Mesh.() -> Unit): Mesh {
     val text = mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS), name, generate)
-    text.shader = fontShader(font) { lightModel = LightModel.NO_LIGHTING }
+    //text.shader = fontShader(font) { lightModel = LightModel.NO_LIGHTING }
     return text
 }
 
@@ -100,8 +64,6 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     var pipelineLoader: (Mesh.(KoolContext) -> Pipeline)? = null
     private var pipeline: Pipeline? = null
 
-    var shader: Shader? = null
-    var cullMethod = CullMethod.DEFAULT
     var rayTest = MeshRayTest.boundsTest()
 
     //private val drawCommand = DrawCommand(this)
@@ -121,8 +83,6 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         return pipeline ?: pipelineLoader?.let { loader -> loader(this, ctx).also { pipeline = it } }
     }
 
-    open fun getAttributeBinder(attrib: Attribute): VboBinder? = meshData.attributeBinders[attrib]
-
     override fun rayTest(test: RayTest) = rayTest.rayTest(test)
 
     /**
@@ -131,13 +91,13 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         meshData.dispose(ctx)
-        shader?.dispose(ctx)
+        // todo: pipeline.dispose()
     }
 
     override fun render(ctx: KoolContext) {
         super.render(ctx)
 
-        if (!isRendered || (!ctx.isDepthTest && ctx.renderPass == RenderPass.SHADOW)) {
+        if (!isRendered) {
             // mesh is not visible (either hidden or outside frustum)
             return
         }
@@ -155,10 +115,6 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         drawCommand.pipeline = getPipeline(ctx)
         drawCommand.captureMvp(ctx)
         scene!!.drawQueue!! += drawCommand
-    }
-
-    open fun drawElements(ctx: KoolContext) {
-        glDrawElements(meshData.primitiveType, meshData.numIndices, meshData.indexType, 0)
     }
 }
 

@@ -7,9 +7,6 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.scene.animation.Bone
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_NORMALS_OCT_COMPRESSED
 import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_POSITIONS
 import kotlinx.serialization.SerialId
@@ -152,11 +149,11 @@ data class ModelMeshData(
         }
 
         if (model != null && material in model.materials.indices) {
-            mesh.shader = basicShader {
-                lightModel = LightModel.PHONG_LIGHTING
-                colorModel = ColorModel.STATIC_COLOR
-                staticColor = model.materials[material].getDiffuseColor()
-            }
+//            mesh.shader = basicShader {
+//                lightModel = LightModel.PHONG_LIGHTING
+//                colorModel = ColorModel.STATIC_COLOR
+//                staticColor = model.materials[material].getDiffuseColor()
+//            }
         }
 
         // add tags

@@ -71,7 +71,7 @@ class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : Transform
 
     override fun preRenderDp(ctx: KoolContext, modelMatDp: Mat4dStack) {
         // make sure default tile texture is loaded before other tiles block the texture loading queue
-        TileMesh.prepareDefaultTex(ctx)
+        //TileMesh.prepareDefaultTex(ctx)
 
         val cam = scene?.camera
         if (cam != null && cam is PerspectiveCamera) {

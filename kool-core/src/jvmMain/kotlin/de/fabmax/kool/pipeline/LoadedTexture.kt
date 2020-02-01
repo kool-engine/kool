@@ -1,8 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.BufferedTextureData
-import de.fabmax.kool.CubeMapTextureData
-import de.fabmax.kool.TextureData
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.util.logD

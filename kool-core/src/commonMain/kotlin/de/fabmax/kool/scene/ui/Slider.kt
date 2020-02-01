@@ -7,7 +7,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.MutableColor
@@ -127,21 +126,21 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
 
     override fun updateComponentAlpha() {
         baseUi.updateComponentAlpha()
-        val shader = mesh.shader
-        if (shader is BasicShader) {
-            shader.alpha = slider.alpha
-        }
+//        val shader = mesh.shader
+//        if (shader is BasicShader) {
+//            shader.alpha = slider.alpha
+//        }
     }
 
     override fun createUi(ctx: KoolContext) {
         baseUi.createUi(ctx)
 
-        mesh.shader = basicShader {
-            lightModel = LightModel.PHONG_LIGHTING
-            colorModel = ColorModel.VERTEX_COLOR
-            isAlpha = true
-            clipMethod = LocalPlaneClip(6)
-        }
+//        mesh.shader = basicShader {
+//            lightModel = LightModel.PHONG_LIGHTING
+//            colorModel = ColorModel.VERTEX_COLOR
+//            isAlpha = true
+//            clipMethod = LocalPlaneClip(6)
+//        }
         slider += mesh
     }
 
@@ -191,7 +190,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
     }
 
     override fun onRender(ctx: KoolContext) {
-        mesh.shader?.setDrawBounds(slider.drawBounds)
+//        mesh.shader?.setDrawBounds(slider.drawBounds)
         baseUi.onRender(ctx)
     }
 }

@@ -2,15 +2,15 @@ package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.drawqueue.DrawCommand
-import de.fabmax.kool.gl.GL_COMPILE_STATUS
-import de.fabmax.kool.gl.GL_FRAGMENT_SHADER
-import de.fabmax.kool.gl.GL_LINK_STATUS
-import de.fabmax.kool.gl.GL_VERTEX_SHADER
 import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.logE
 import org.khronos.webgl.WebGLProgram
 import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.WebGLRenderingContext.Companion.COMPILE_STATUS
+import org.khronos.webgl.WebGLRenderingContext.Companion.FRAGMENT_SHADER
+import org.khronos.webgl.WebGLRenderingContext.Companion.LINK_STATUS
+import org.khronos.webgl.WebGLRenderingContext.Companion.VERTEX_SHADER
 
 class ShaderManager(val ctx: JsContext) {
     private val gl: WebGLRenderingContext
@@ -30,10 +30,10 @@ class ShaderManager(val ctx: JsContext) {
     }
 
     private fun compileShader(code: ShaderCode): WebGLProgram? {
-        val vert = gl.createShader(GL_VERTEX_SHADER)
+        val vert = gl.createShader(VERTEX_SHADER)
         gl.shaderSource(vert, code.vertexSrc)
         gl.compileShader(vert)
-        val vsStatus = gl.getShaderParameter(vert, GL_COMPILE_STATUS)
+        val vsStatus = gl.getShaderParameter(vert, COMPILE_STATUS)
         if (vsStatus != true) {
             val log = gl.getShaderInfoLog(vert)
             logE { "Vertex shader compilation failed: $vsStatus\n$log" }
@@ -41,10 +41,10 @@ class ShaderManager(val ctx: JsContext) {
             throw KoolException("Vertex shader compilation failed: $log")
         }
 
-        val frag = gl.createShader(GL_FRAGMENT_SHADER)
+        val frag = gl.createShader(FRAGMENT_SHADER)
         gl.shaderSource(frag, code.fragmentSrc)
         gl.compileShader(frag)
-        val fsStatus = gl.getShaderParameter(frag, GL_COMPILE_STATUS)
+        val fsStatus = gl.getShaderParameter(frag, COMPILE_STATUS)
         if (fsStatus != true) {
             val log = gl.getShaderInfoLog(frag)
             logE { "Fragment shader compilation failed: $fsStatus\n$log" }
@@ -58,7 +58,7 @@ class ShaderManager(val ctx: JsContext) {
         gl.linkProgram(prog)
         gl.deleteShader(vert)
         gl.deleteShader(frag)
-        if (gl.getProgramParameter(prog, GL_LINK_STATUS) != true) {
+        if (gl.getProgramParameter(prog, LINK_STATUS) != true) {
             val log = gl.getProgramInfoLog(prog)
             logE { "Shader linkage failed: $log" }
             throw KoolException("Shader linkage failed: $log")

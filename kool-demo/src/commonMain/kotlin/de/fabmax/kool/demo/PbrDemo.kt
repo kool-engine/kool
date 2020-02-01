@@ -1,10 +1,10 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.BufferedTextureData
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.BufferedTextureData
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.pipelineConfig

@@ -3,11 +3,8 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.animation.Armature
-import de.fabmax.kool.shading.*
 import de.fabmax.kool.util.*
 import kotlin.math.atan2
 import kotlin.math.sqrt
@@ -73,7 +70,7 @@ private fun spawnMesh(proto: Armature, movementSpeed: Float): Armature {
 
     // loaded Armature is an InstancedMesh with default attributes, for this demo we also want a custom
     // attribute, hence we need to create a copy with additional attributes
-    val mesh = Armature(proto.meshData, proto.name, instances, InstancedMesh.makeAttributeList(ModelShader.INSTANCE_COLOR))
+    val mesh = Armature(proto.meshData, proto.name, instances, InstancedMesh.makeAttributeList(/*ModelShader.INSTANCE_COLOR*/))
     // also copy bone info
     mesh.copyBonesAndAnimations(proto)
 
@@ -85,18 +82,18 @@ private fun spawnMesh(proto: Armature, movementSpeed: Float): Armature {
     }
 
     // create shader
-    mesh.shader = ModelShader {
-        lightModel = LightModel.PHONG_LIGHTING
-        colorModel = ColorModel.CUSTOM_COLOR
-        isReceivingShadows = true
-        isInstanced = true
-
-        if (!mesh.isCpuAnimated) {
-            // do mesh animation on vertex shader if available.
-            // Works with GLSL version 300 and above (OpenGL (ES) 3.0 and WebGL2)
-            numBones = mesh.bones.size
-        }
-    }
+//    mesh.shader = ModelShader {
+//        lightModel = LightModel.PHONG_LIGHTING
+//        colorModel = ColorModel.CUSTOM_COLOR
+//        isReceivingShadows = true
+//        isInstanced = true
+//
+//        if (!mesh.isCpuAnimated) {
+//            // do mesh animation on vertex shader if available.
+//            // Works with GLSL version 300 and above (OpenGL (ES) 3.0 and WebGL2)
+//            numBones = mesh.bones.size
+//        }
+//    }
 
     computeAnimationWeights(sqrt(movementSpeed)).forEach { (name, weight) -> mesh.getAnimation(name)?.weight = weight }
     mesh.animationPos = randomF()
@@ -157,7 +154,7 @@ private class ModelInstance(val movementSpeed: Float) : InstancedMesh.Instance(M
     }
 }
 
-private class ModelShader(props: ShaderProps.() -> Unit) :
+/*private class ModelShader(props: ShaderProps.() -> Unit) :
         BasicShader(ShaderProps().apply(props), GlslGenerator()) {
 
     init {
@@ -185,4 +182,4 @@ private class ModelShader(props: ShaderProps.() -> Unit) :
     companion object {
         val INSTANCE_COLOR = Attribute("attrib_inst_color", GlslType.VEC_4F).apply { divisor = 1 }
     }
-}
+}*/

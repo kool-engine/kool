@@ -1,7 +1,5 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.gl.GL_LINES
-import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
@@ -183,9 +181,9 @@ open class Edge<T: Vec3f>(val pt0: T, val pt1: T) {
 
     companion object {
         fun getEdges(lineMeshData: MeshData): List<Edge<Vec3f>> {
-            if (lineMeshData.primitiveType != GL_LINES) {
-                throw IllegalArgumentException("Supplied meshData must have primitiveType GL_LINES")
-            }
+//            if (lineMeshData.primitiveType != GL_LINES) {
+//                throw IllegalArgumentException("Supplied meshData must have primitiveType GL_LINES")
+//            }
             val edges = mutableListOf<Edge<Vec3f>>()
             for (i in 0 until lineMeshData.numIndices step 2) {
                 val i0 = lineMeshData.vertexList.indices[i]
@@ -219,9 +217,9 @@ open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
             MutableVec3f().apply { data.vertexList.vertexIt.index = data.vertexList.indices[idx0+1]; set(data.vertexList.vertexIt.position) },
             MutableVec3f().apply { data.vertexList.vertexIt.index = data.vertexList.indices[idx0+2]; set(data.vertexList.vertexIt.position) }
     ) {
-        if (data.primitiveType != GL_TRIANGLES) {
-            throw IllegalArgumentException("Supplied meshData must have primitiveType GL_TRIANGLES")
-        }
+//        if (data.primitiveType != GL_TRIANGLES) {
+//            throw IllegalArgumentException("Supplied meshData must have primitiveType GL_TRIANGLES")
+//        }
     }
 
     init {

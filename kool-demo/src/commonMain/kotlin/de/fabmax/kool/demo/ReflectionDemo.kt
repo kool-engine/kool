@@ -3,19 +3,15 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.EnvironmentMapRenderer
 
 
 fun reflectionDemo(ctx: KoolContext): List<Scene> {
     val reflectedObjects = mutableListOf<Node>()
 
     val mainScene = scene {
-        val envRenderer = EnvironmentMapRenderer().apply { origin.set(0f, 3f, 0f) }
+        //val envRenderer = EnvironmentMapRenderer().apply { origin.set(0f, 3f, 0f) }
 
         +Skybox("skybox/y-up/sky_ft.jpg", "skybox/y-up/sky_bk.jpg",
                 "skybox/y-up/sky_lt.jpg", "skybox/y-up/sky_rt.jpg",
@@ -45,14 +41,14 @@ fun reflectionDemo(ctx: KoolContext): List<Scene> {
                 }
             }
         }
-        mesh.shader = basicShader {
-            colorModel = ColorModel.STATIC_COLOR
-            lightModel = LightModel.PHONG_LIGHTING
-            staticColor = Color.MD_ORANGE
-            isEnvironmentMapped = true
-            reflectivity = 0.75f
-            environmentMap = envRenderer.environmentMap
-        }
+//        mesh.shader = basicShader {
+//            colorModel = ColorModel.STATIC_COLOR
+//            lightModel = LightModel.PHONG_LIGHTING
+//            staticColor = Color.MD_ORANGE
+//            isEnvironmentMapped = true
+//            reflectivity = 0.75f
+//            environmentMap = envRenderer.environmentMap
+//        }
         +mesh
 
         +transformGroup {
@@ -103,7 +99,7 @@ fun reflectionDemo(ctx: KoolContext): List<Scene> {
         }
 
         onPreRender += { ctx ->
-            envRenderer.update(reflectedObjects, ctx)
+//            envRenderer.update(reflectedObjects, ctx)
         }
     }
 

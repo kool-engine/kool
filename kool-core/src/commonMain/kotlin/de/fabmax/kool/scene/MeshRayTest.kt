@@ -1,10 +1,6 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.gl.GL_LINES
-import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.util.*
 import kotlin.math.sqrt
 
 interface MeshRayTest {
@@ -34,41 +30,42 @@ interface MeshRayTest {
         }
 
         fun geometryTest(mesh: Mesh): MeshRayTest {
-            return when (mesh.meshData.primitiveType) {
-                GL_TRIANGLES -> object : MeshRayTest {
-                    var triangleTree: KdTree<Triangle>? = null
-                    val rayTraverser = TriangleHitTraverser<Triangle>()
-
-                    override fun onMeshDataChanged(mesh: Mesh) {
-                        triangleTree = triangleKdTree(Triangle.getTriangles(mesh.meshData))
-                    }
-
-                    override fun rayTest(test: RayTest) {
-                        rayTraverser.setup(test.ray)
-                        triangleTree?.let { rayTraverser.traverse(it) }
-                        if (rayTraverser.distanceSqr < test.hitDistanceSqr) {
-                            test.setHit(mesh, rayTraverser.distance)
-                        }
-                    }
-                }
-                GL_LINES -> object : MeshRayTest {
-                    var edgeTree: KdTree<Edge<Vec3f>>? = null
-                    val rayTraverser = NearestEdgeToRayTraverser<Edge<Vec3f>>()
-
-                    override fun onMeshDataChanged(mesh: Mesh) {
-                        edgeTree = edgeKdTree(Edge.getEdges(mesh.meshData))
-                    }
-
-                    override fun rayTest(test: RayTest) {
-                        rayTraverser.setup(test.ray)
-                        edgeTree?.let { rayTraverser.traverse(it) }
-                        if (rayTraverser.distanceSqr < test.hitDistanceSqr) {
-                            test.setHit(mesh, rayTraverser.distance)
-                        }
-                    }
-                }
-                else -> throw IllegalArgumentException("Mesh primitive type must be either GL_TRIANGLES or GL_LINES")
-            }
+            TODO()
+//            return when (mesh.meshData.primitiveType) {
+//                GL_TRIANGLES -> object : MeshRayTest {
+//                    var triangleTree: KdTree<Triangle>? = null
+//                    val rayTraverser = TriangleHitTraverser<Triangle>()
+//
+//                    override fun onMeshDataChanged(mesh: Mesh) {
+//                        triangleTree = triangleKdTree(Triangle.getTriangles(mesh.meshData))
+//                    }
+//
+//                    override fun rayTest(test: RayTest) {
+//                        rayTraverser.setup(test.ray)
+//                        triangleTree?.let { rayTraverser.traverse(it) }
+//                        if (rayTraverser.distanceSqr < test.hitDistanceSqr) {
+//                            test.setHit(mesh, rayTraverser.distance)
+//                        }
+//                    }
+//                }
+//                GL_LINES -> object : MeshRayTest {
+//                    var edgeTree: KdTree<Edge<Vec3f>>? = null
+//                    val rayTraverser = NearestEdgeToRayTraverser<Edge<Vec3f>>()
+//
+//                    override fun onMeshDataChanged(mesh: Mesh) {
+//                        edgeTree = edgeKdTree(Edge.getEdges(mesh.meshData))
+//                    }
+//
+//                    override fun rayTest(test: RayTest) {
+//                        rayTraverser.setup(test.ray)
+//                        edgeTree?.let { rayTraverser.traverse(it) }
+//                        if (rayTraverser.distanceSqr < test.hitDistanceSqr) {
+//                            test.setHit(mesh, rayTraverser.distance)
+//                        }
+//                    }
+//                }
+//                else -> throw IllegalArgumentException("Mesh primitive type must be either GL_TRIANGLES or GL_LINES")
+//            }
         }
     }
 }

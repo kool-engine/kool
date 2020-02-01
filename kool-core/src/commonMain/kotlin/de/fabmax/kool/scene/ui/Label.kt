@@ -6,7 +6,6 @@ import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.util.*
 
 /**
@@ -61,10 +60,10 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
 
     override fun updateComponentAlpha() {
         baseUi.updateComponentAlpha()
-        val shader = mesh.shader
-        if (shader is BasicShader) {
-            shader.alpha = label.alpha
-        }
+//        val shader = mesh.shader
+//        if (shader is BasicShader) {
+//            shader.alpha = label.alpha
+//        }
     }
 
     override fun createUi(ctx: KoolContext) {
@@ -96,10 +95,10 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
             font = label.font.apply()
         }
 
-        val shader = mesh.shader
-        if (shader is BasicShader) {
+//        val shader = mesh.shader
+//        if (shader is BasicShader) {
 //            shader.texture = font
-        }
+//        }
 
         label.setupBuilder(meshBuilder)
         updateTextColor()
@@ -108,7 +107,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
     }
 
     override fun onRender(ctx: KoolContext) {
-        mesh.shader?.setDrawBounds(label.drawBounds)
+//        mesh.shader?.setDrawBounds(label.drawBounds)
         baseUi.onRender(ctx)
     }
 

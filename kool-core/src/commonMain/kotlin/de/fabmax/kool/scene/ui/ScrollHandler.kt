@@ -10,10 +10,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LocalPlaneClip
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MeshBuilder
@@ -118,19 +114,19 @@ open class ScrollHandlerUi(val scrollHandler: ScrollHandler) : ComponentUi {
     protected val mesh = Mesh(meshData)
 
     override fun updateComponentAlpha() {
-        val shader = mesh.shader
-        if (shader is BasicShader) {
-            shader.alpha = scrollHandler.alpha
-        }
+//        val shader = mesh.shader
+//        if (shader is BasicShader) {
+//            shader.alpha = scrollHandler.alpha
+//        }
     }
 
     override fun createUi(ctx: KoolContext) {
-        mesh.shader = basicShader {
-            lightModel = scrollHandler.root.shaderLightModel
-            colorModel = ColorModel.VERTEX_COLOR
-            isAlpha = true
-            clipMethod = LocalPlaneClip(6)
-        }
+//        mesh.shader = basicShader {
+//            lightModel = scrollHandler.root.shaderLightModel
+//            colorModel = ColorModel.VERTEX_COLOR
+//            isAlpha = true
+//            clipMethod = LocalPlaneClip(6)
+//        }
         scrollHandler += mesh
     }
 
@@ -234,7 +230,7 @@ open class ScrollHandlerUi(val scrollHandler: ScrollHandler) : ComponentUi {
     }
 
     override fun onRender(ctx: KoolContext) {
-        mesh.shader?.setDrawBounds(scrollHandler.scrollTarget.drawBounds)
+//        mesh.shader?.setDrawBounds(scrollHandler.scrollTarget.drawBounds)
     }
 
     override fun dispose(ctx: KoolContext) {

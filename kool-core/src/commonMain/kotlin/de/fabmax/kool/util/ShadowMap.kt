@@ -1,10 +1,9 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.Texture
-import de.fabmax.kool.gl.Framebuffer
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.FrustumPlane
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
@@ -33,7 +32,7 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 100f, private val t
     private val bounds = BoundingBox()
     private val tmpVec4 = MutableVec4f()
 
-    private var fbo: Framebuffer = Framebuffer(texSize, texSize).withDepth()
+//    private var fbo: Framebuffer = Framebuffer(texSize, texSize).withDepth()
 
     private var clipSpaceFarZ = 0f
 
@@ -107,12 +106,14 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 100f, private val t
     }
 
     override fun dispose(ctx: KoolContext) {
-        fbo.dispose(ctx)
+//        fbo.dispose(ctx)
     }
 
     override fun getShadowMapSize(map: Int) = texSize
 
-    override fun getShadowMap(map: Int) = fbo.depthAttachment
+    override fun getShadowMap(map: Int): Texture {
+        TODO()
+    }
 
     override fun getClipSpaceFarZ(map: Int) = clipSpaceFarZ
 

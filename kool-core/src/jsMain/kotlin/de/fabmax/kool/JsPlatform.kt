@@ -2,8 +2,8 @@ package de.fabmax.kool
 
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.WebGL2RenderingContext
 import de.fabmax.kool.util.logW
-import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLDivElement
 import kotlin.browser.document
 import kotlin.math.pow
@@ -40,10 +40,9 @@ actual fun Double.toString(precision: Int): String {
 actual inline fun <R> lock(lock: Any, block: () -> R): R = block()
 
 internal object JsImpl {
-    var isWebGl2Context = false
     val dpi: Float
     var ctx: JsContext? = null
-    val gl: WebGLRenderingContext
+    val gl: WebGL2RenderingContext
         get() = ctx?.gl ?: throw KoolException("Platform.createContext() not called")
 
     init {

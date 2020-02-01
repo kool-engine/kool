@@ -1,13 +1,11 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.gl.*
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.shading.VboBinder
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.createFloat32Buffer
@@ -19,8 +17,8 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
                          val attributes: List<Attribute> = MODEL_INSTANCES) :
         Mesh(meshData, name) {
 
-    private var instanceBuffer: BufferResource? = null
-    private val instanceBinders = mutableMapOf<Attribute, VboBinder>()
+//    private var instanceBuffer: BufferResource? = null
+//    private val instanceBinders = mutableMapOf<Attribute, VboBinder>()
     private val instanceStride: Int
 
     /**
@@ -48,41 +46,34 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
         }
     }
 
-    override fun getAttributeBinder(attrib: Attribute) = instanceBinders[attrib] ?: super.getAttributeBinder(attrib)
-
     override fun render(ctx: KoolContext) {
-        if (instanceBuffer == null) {
-            // create buffer object with instance data
-            instanceBuffer = BufferResource.create(GL_ARRAY_BUFFER, ctx)
-
-            var pos  = 0
-            attributes.forEach {
-                instanceBinders[it] = VboBinder(instanceBuffer!!, it.type.size, instanceStride, pos, GL_FLOAT)
-                pos += it.type.size
-            }
-        }
-        // bind instance data buffer
-        instances.instanceData?.let {
-            instanceBuffer!!.setData(it, GL_DYNAMIC_DRAW, ctx)
-        }
-
-        // disable frustum check flag before calling render, standard frustum check doesn't work with InstancedMesh
-        val wasFrustumChecked = isFrustumChecked
-        isFrustumChecked = false
-        super.render(ctx)
-        isFrustumChecked = wasFrustumChecked
-    }
-
-    override fun drawElements(ctx: KoolContext) {
-        // todo: possible optimization: use glDrawElementsInstancedBaseVertex
-        glDrawElementsInstanced(meshData.primitiveType, meshData.numIndices, meshData.indexType, 0, instances.numInstances)
+//        if (instanceBuffer == null) {
+//            // create buffer object with instance data
+//            instanceBuffer = BufferResource.create(GL_ARRAY_BUFFER, ctx)
+//
+//            var pos  = 0
+//            attributes.forEach {
+//                instanceBinders[it] = VboBinder(instanceBuffer!!, it.type.size, instanceStride, pos, GL_FLOAT)
+//                pos += it.type.size
+//            }
+//        }
+//        // bind instance data buffer
+//        instances.instanceData?.let {
+//            instanceBuffer!!.setData(it, GL_DYNAMIC_DRAW, ctx)
+//        }
+//
+//        // disable frustum check flag before calling render, standard frustum check doesn't work with InstancedMesh
+//        val wasFrustumChecked = isFrustumChecked
+//        isFrustumChecked = false
+//        super.render(ctx)
+//        isFrustumChecked = wasFrustumChecked
     }
 
     override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
-        instanceBuffer?.delete(ctx)
-        instanceBuffer = null
-        instanceBinders.clear()
+//        super.dispose(ctx)
+//        instanceBuffer?.delete(ctx)
+//        instanceBuffer = null
+//        instanceBinders.clear()
     }
 
     open class Instance(val modelMat: Mat4f) {

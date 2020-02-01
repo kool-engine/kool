@@ -7,11 +7,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.Color
 import kotlin.math.sqrt
 
 /**
@@ -41,18 +37,18 @@ fun modelScene(ctx: KoolContext): Scene = scene {
             model += mesh
             armature = mesh
 
-            mesh.shader = basicShader {
-                lightModel = LightModel.PHONG_LIGHTING
-                colorModel = ColorModel.STATIC_COLOR
-                staticColor = Color.GRAY
-                isReceivingShadows = true
-
-                if (!mesh.isCpuAnimated) {
-                    // do mesh animation on vertex shader if available.
-                    // Works with GLSL version 300 and above (OpenGL (ES) 3.0 and WebGL2)
-                    numBones = mesh.bones.size
-                }
-            }
+//            mesh.shader = basicShader {
+//                lightModel = LightModel.PHONG_LIGHTING
+//                colorModel = ColorModel.STATIC_COLOR
+//                staticColor = Color.GRAY
+//                isReceivingShadows = true
+//
+//                if (!mesh.isCpuAnimated) {
+//                    // do mesh animation on vertex shader if available.
+//                    // Works with GLSL version 300 and above (OpenGL (ES) 3.0 and WebGL2)
+//                    numBones = mesh.bones.size
+//                }
+//            }
 
             mesh.getAnimation("Armature|walk")?.weight = 1f
 

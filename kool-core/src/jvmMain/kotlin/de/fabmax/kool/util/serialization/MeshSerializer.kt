@@ -1,7 +1,5 @@
 package de.fabmax.kool.util.serialization
 
-import de.fabmax.kool.gl.GL_LINES
-import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
@@ -89,15 +87,16 @@ class MeshSerializer {
             attribs[ModelMeshData.ATTRIB_TANGENTS] = AttributeList(GlslType.VEC_3F, tangentList)
         }
 
-        val primitiveType = when(mesh.primitiveType) {
-            GL_TRIANGLES -> PrimitiveType.TRIANGLES
-            GL_LINES -> PrimitiveType.LINES
-            else -> PrimitiveType.POINTS
-        }
-
-        return ModelMeshData(name = name, tags = tags, primitiveType = primitiveType, indices = indices,
-                attributes = attribs, intAttributes = intAttribs, material = materialIdx,
-                animations = emptyList(), armature = emptyList())
+        TODO("set primitive type")
+//        val primitiveType = when(mesh.primitiveType) {
+//            GL_TRIANGLES -> PrimitiveType.TRIANGLES
+//            GL_LINES -> PrimitiveType.LINES
+//            else -> PrimitiveType.POINTS
+//        }
+//
+//        return ModelMeshData(name = name, tags = tags, primitiveType = primitiveType, indices = indices,
+//                attributes = attribs, intAttributes = intAttribs, material = materialIdx,
+//                animations = emptyList(), armature = emptyList())
     }
 
     private fun encodeNormal(normal: Vec3f, bits: Int, target: MutableList<Int>) {

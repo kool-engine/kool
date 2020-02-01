@@ -1,19 +1,11 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.gl.GL_ALWAYS
-import de.fabmax.kool.gl.GL_LINES
-import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.scene.MeshRayTest
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import kotlin.math.max
 import kotlin.math.min
 
@@ -39,14 +31,14 @@ fun normalMesh(meshData: MeshData, lineColor: Color? = null, len: Float = 1f): L
 
 open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COLORS), name: String? = null) :
         Mesh(data, name) {
-    init {
-        data.primitiveType = GL_LINES
-        rayTest = MeshRayTest.nopTest()
-        shader = basicShader {
-            colorModel = ColorModel.VERTEX_COLOR
-            lightModel = LightModel.NO_LIGHTING
-        }
-    }
+//    init {
+//        data.primitiveType = GL_LINES
+//        rayTest = MeshRayTest.nopTest()
+//        shader = basicShader {
+//            colorModel = ColorModel.VERTEX_COLOR
+//            lightModel = LightModel.NO_LIGHTING
+//        }
+//    }
 
     var isXray = false
     var lineWidth = 1f
@@ -69,9 +61,9 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
     }
 
     fun addWireframe(triMesh: MeshData, lineColor: Color? = null) {
-        if (triMesh.primitiveType != GL_TRIANGLES) {
-            throw KoolException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")
-        }
+//        if (triMesh.primitiveType != GL_TRIANGLES) {
+//            throw KoolException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")
+//        }
 
         val addedEdges = mutableSetOf<Long>()
         meshData.batchUpdate {
@@ -166,15 +158,15 @@ open class LineMesh(data: MeshData = MeshData(Attribute.POSITIONS, Attribute.COL
     }
 
     override fun render(ctx: KoolContext) {
-        ctx.pushAttributes()
-        ctx.lineWidth = lineWidth
-        if (isXray) {
-            ctx.depthFunc = GL_ALWAYS
-        }
-        ctx.applyAttributes()
-
-        super.render(ctx)
-
-        ctx.popAttributes()
+//        ctx.pushAttributes()
+//        ctx.lineWidth = lineWidth
+//        if (isXray) {
+//            ctx.depthFunc = GL_ALWAYS
+//        }
+//        ctx.applyAttributes()
+//
+//        super.render(ctx)
+//
+//        ctx.popAttributes()
     }
 }

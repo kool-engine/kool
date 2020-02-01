@@ -1,15 +1,13 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.TextureData
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.ShaderProps
 
 /**
  * @author fabmax
@@ -56,29 +54,6 @@ fun fontShaderLoader(): (Mesh, Pipeline.BuildContext, KoolContext) -> ModeledSha
         }
     }
     ModeledShader.TextureColor(model, texName).setup(mesh, buildCtx, ctx) as ModeledShader.TextureColor
-}
-
-fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
-    TODO()
-//    val props = ShaderProps()
-//    props.propsInit()
-//    // vertex color and texture color are required to render fonts
-//    props.isVertexColor = true
-//    props.isTextureColor = true
-//    props.isDiscardTranslucent = true
-//    val generator = GlslGenerator()
-//
-//    // inject shader code to take color from static color and alpha from texture
-//    // static color rgb has to be pre-multiplied with texture alpha
-//    generator.injectors += object: GlslGenerator.GlslInjector {
-//        override fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
-//            text.append("${ctx.glCapabilities.glslDialect.fragColorBody} = ${GlslGenerator.L_FS_VERTEX_COLOR} * ${GlslGenerator.L_FS_TEX_COLOR}.a;\n")
-//        }
-//    }
-//
-//    val shader = BasicShader(props, generator)
-//    shader.texture = font
-//    return shader
 }
 
 data class FontProps(

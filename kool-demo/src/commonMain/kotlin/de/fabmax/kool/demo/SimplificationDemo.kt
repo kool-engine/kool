@@ -12,9 +12,6 @@ import de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.cos
@@ -52,11 +49,11 @@ class SimplificationDemo(ctx: KoolContext) {
     }
 
     init {
-        dispModel.shader = basicShader {
-            lightModel = LightModel.PHONG_LIGHTING
-            colorModel = ColorModel.STATIC_COLOR
-            staticColor = Color.MD_ORANGE
-        }
+//        dispModel.shader = basicShader {
+//            lightModel = LightModel.PHONG_LIGHTING
+//            colorModel = ColorModel.STATIC_COLOR
+//            staticColor = Color.MD_ORANGE
+//        }
 
         srcModel = makeCosGrid()
         models["cos"] = srcModel

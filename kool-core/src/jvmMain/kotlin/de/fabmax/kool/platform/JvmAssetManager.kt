@@ -1,8 +1,10 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.pipeline.BufferedTextureData
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.platform.vk.TextureLoader
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
@@ -16,7 +18,7 @@ import java.io.InputStream
 import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(props: Lwjgl3ContextGL.InitProps, val ctx: KoolContext) : AssetManager(props.assetsBaseDir) {
+class JvmAssetManager internal constructor(props: Lwjgl3ContextVk.InitProps, val ctx: KoolContext) : AssetManager(props.assetsBaseDir) {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
 

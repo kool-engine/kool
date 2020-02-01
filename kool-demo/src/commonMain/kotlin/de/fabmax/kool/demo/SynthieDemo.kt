@@ -2,16 +2,11 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.audio.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -247,7 +242,7 @@ private class SequenceButtonUi(btn: SequenceButton) : SimpleComponentUi(btn) {
     val bgColor = MutableColor()
 
     override fun onRender(ctx: KoolContext) {
-        (shader as BasicShader).staticColor.set(bgColor)
+//        (shader as BasicShader).staticColor.set(bgColor)
         super.onRender(ctx)
     }
 }
@@ -289,7 +284,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
     private inner class Heightmap(val width: Int, val length: Int) : TransformGroup() {
         val quads = colorMesh {
             isFrustumChecked = false
-            meshData.usage = GL_DYNAMIC_DRAW
+//            meshData.usage = GL_DYNAMIC_DRAW
             generator = {
                 // Set y-axis as surface normal for all quad vertices
                 vertexModFun = {
@@ -379,12 +374,12 @@ private class SynthieScene(ctx: KoolContext): Scene() {
                     }
                 }
                 lineWidth = 1f
-                shader = basicShader {
-                    colorModel = ColorModel.STATIC_COLOR
-                    lightModel = LightModel.NO_LIGHTING
-                }
-                (shader as BasicShader).staticColor.set(Color.LIME)
-                meshData.usage = GL_DYNAMIC_DRAW
+//                shader = basicShader {
+//                    colorModel = ColorModel.STATIC_COLOR
+//                    lightModel = LightModel.NO_LIGHTING
+//                }
+//                (shader as BasicShader).staticColor.set(Color.LIME)
+//                meshData.usage = GL_DYNAMIC_DRAW
             }
         }
         val vertices = Array(lines.size) { i -> lines[i].meshData[0] }
@@ -417,7 +412,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
                     if (idx < 0) {
                         idx += lines.size
                     }
-                    (lines[idx].shader as BasicShader).staticColor.w = 1f - i / lines.size.toFloat()
+//                    (lines[idx].shader as BasicShader).staticColor.w = 1f - i / lines.size.toFloat()
                 }
             }
 

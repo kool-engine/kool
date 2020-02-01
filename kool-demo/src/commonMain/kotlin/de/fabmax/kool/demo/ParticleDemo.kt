@@ -1,8 +1,8 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.assetTexture
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.orbitInputTransform
 import de.fabmax.kool.scene.scene
@@ -33,7 +33,7 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
 
         +makeGroundGrid(40)
 
-        +ParticleSystem(assetTexture("snowflakes.png"), 50_000).apply {
+        +ParticleSystem(Texture { it.loadTextureData("snowflakes.png") }, 50_000).apply {
             // disable depth buffer writing for particles
             isDepthMask = false
 

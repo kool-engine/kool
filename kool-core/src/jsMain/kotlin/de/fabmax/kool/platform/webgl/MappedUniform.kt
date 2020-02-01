@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.webgl
 
-import de.fabmax.kool.TextureData
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.logE

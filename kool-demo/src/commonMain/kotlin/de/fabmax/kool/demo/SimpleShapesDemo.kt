@@ -1,13 +1,8 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.assetTexture
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.*
 
 /**
@@ -55,7 +50,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
                 }
             }
             // load texture from assets
-            (shader as BasicShader).texture = assetTexture("world.jpg")
+//            (shader as BasicShader).texture = assetTexture("world.jpg")
         }
     }
 
@@ -88,16 +83,16 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
             speedAnimator.value.onUpdate = { v ->
                 // Update rotation animation speed and color intensity
                 cubeAnimator.speed = v
-                (shader as BasicShader).saturation = v
+//                (shader as BasicShader).saturation = v
             }
 
             // Customize the shader to include the saturation property
-            shader = basicShader {
-                colorModel = ColorModel.VERTEX_COLOR
-                lightModel = LightModel.PHONG_LIGHTING
-                // saturation property is needed to control the color intensity of the cube
-                isSaturation = true
-            }
+//            shader = basicShader {
+//                colorModel = ColorModel.VERTEX_COLOR
+//                lightModel = LightModel.PHONG_LIGHTING
+//                // saturation property is needed to control the color intensity of the cube
+//                isSaturation = true
+//            }
 
             // The generator function is called to initially generate the mesh geometry
             generator = {

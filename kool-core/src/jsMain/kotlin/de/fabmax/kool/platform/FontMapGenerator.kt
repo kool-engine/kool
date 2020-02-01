@@ -1,6 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.BufferedTextureData
+import de.fabmax.kool.pipeline.BufferedTextureData
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.*
 import org.khronos.webgl.get

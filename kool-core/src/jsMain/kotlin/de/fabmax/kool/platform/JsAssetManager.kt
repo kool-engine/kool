@@ -3,6 +3,7 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.platform.webgl.TextureLoader
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps

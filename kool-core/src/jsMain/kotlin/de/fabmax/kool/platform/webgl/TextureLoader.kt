@@ -1,9 +1,9 @@
 package de.fabmax.kool.platform.webgl
 
-import de.fabmax.kool.BufferedTextureData
-import de.fabmax.kool.CubeMapTextureData
-import de.fabmax.kool.TextureData
+import de.fabmax.kool.pipeline.BufferedTextureData
+import de.fabmax.kool.pipeline.CubeMapTextureData
 import de.fabmax.kool.pipeline.LoadedTexture
+import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.Uint8BufferImpl
 import org.khronos.webgl.WebGLRenderingContext

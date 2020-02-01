@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.vk.pipeline
 
-import de.fabmax.kool.TextureData
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.Buffer

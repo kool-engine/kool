@@ -46,14 +46,13 @@ class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int = 1, colorFo
 
     override fun render(ctx: KoolContext) {
         scene?.let { scene ->
-            ctx.pushAttributes()
+            // fixme: viewport management is worse than before
+            val vp = ctx.viewport
             ctx.viewport = KoolContext.Viewport(0, 0, mipWidth(targetMipLevel), mipHeight(targetMipLevel))
             onSetup?.invoke(ctx)
-
             scene.drawQueue = drawQueues[0].also { it.clear() }
             scene.renderScene(ctx)
-
-            ctx.popAttributes()
+            ctx.viewport = vp
         }
         frameIdx++
     }
@@ -72,16 +71,16 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorForm
 
     override fun render(ctx: KoolContext) {
         scene?.let { scene ->
-            ctx.pushAttributes()
+            // fixme: viewport management is worse than before
+            val vp = ctx.viewport
             ctx.viewport = KoolContext.Viewport(0, 0, mipWidth(targetMipLevel), mipHeight(targetMipLevel))
             onSetup?.invoke(ctx)
-
             for (v in ViewDirection.values()) {
                 onSetupView?.invoke(v, ctx)
                 scene.drawQueue = drawQueues[v.index].also { it.clear() }
                 scene.renderScene(ctx)
             }
-            ctx.popAttributes()
+            ctx.viewport = vp
         }
         frameIdx++
     }

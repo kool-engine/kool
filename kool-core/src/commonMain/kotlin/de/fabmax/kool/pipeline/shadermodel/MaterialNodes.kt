@@ -109,12 +109,12 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
 
         generator.appendFunction("DistributionGGX", """
             float DistributionGGX(vec3 N, vec3 H, float roughness) {
-                float a      = roughness*roughness;
-                float a2     = a*a;
-                float NdotH  = max(dot(N, H), 0.0);
+                float a = roughness*roughness;
+                float a2 = a*a;
+                float NdotH = max(dot(N, H), 0.0);
                 float NdotH2 = NdotH*NdotH;
             	
-                float num   = a2;
+                float num = a2;
                 float denom = (NdotH2 * (a2 - 1.0) + 1.0);
                 denom = $PI * denom * denom;
             	
@@ -150,7 +150,6 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 V = normalize(${inCamPos.ref3f()} - ${inFragPos.ref3f()});
             vec3 N = normalize(${inNormal.ref3f()});
             
-            //float rough = clamp(${inRoughness.ref1f()}, 0.2, 1.0);
             float rough = clamp(${inRoughness.ref1f()}, 0.05, 1.0);
             float metal = ${inMetallic.ref1f()};
             
@@ -221,9 +220,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec2 brdfUv = vec2(max(dot(N, V), 0.0), rough);
             vec2 envBRDF = ${generator.sampleTexture2d(brdfLut.name, "brdfUv")}.rg;
             vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
-  
             vec3 ambient = (kD * diffuse + specular) * ${inAmbientOccl.ref1f()};
-            
             vec3 color = ambient + Lo;
             ${outColor.declare()} = vec4(color, ${inAlbedo.ref4f()}.a);
         """)
