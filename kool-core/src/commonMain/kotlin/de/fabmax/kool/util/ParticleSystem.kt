@@ -6,6 +6,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.scene.BillboardMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 
@@ -114,7 +115,7 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name:
             mesh.addQuadIndex(idx.meshIndex)
             particles[idx.listIndex].drawIndex = i
         }
-        mesh.meshData.isSyncRequired = true
+        mesh.geometry.isSyncRequired = true
 
         // swap particles into draw order, will make following sort operations much faster (assuming that order won't
         // drastically change between consecutive frames)

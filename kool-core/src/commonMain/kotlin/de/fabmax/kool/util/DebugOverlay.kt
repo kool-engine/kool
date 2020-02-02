@@ -5,7 +5,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
@@ -192,15 +191,15 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
 
 private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
     val graphMesh: Mesh
-    val graphData = MeshData(Attribute.POSITIONS, Attribute.COLORS)
-    val graphBuilder = MeshBuilder(graphData)
-    val graphVertex = graphData[0]
+    val graphGeom = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS)
+    val graphBuilder = MeshBuilder(graphGeom)
+    val graphVertex = graphGeom[0]
 
     var graphIdx = 0
     var prevDeltaT = 0f
 
     init {
-        graphMesh = Mesh(graphData)
+        graphMesh = Mesh(graphGeom)
         //graphMesh.meshData.usage = GL_DYNAMIC_DRAW
         graphMesh.pipelineConfig { shaderLoader = ModeledShader.vertexColor() }
     }
@@ -227,7 +226,7 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
         graphVertex.position.y = y0 + h
 
         setCurrentBarColor(Color.MAGENTA)
-        graphData.isSyncRequired = true
+        graphGeom.isSyncRequired = true
 
         super.render(ctx)
     }

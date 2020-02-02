@@ -1,18 +1,16 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.triArea
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import kotlin.math.max
 import kotlin.math.round
 
-class IndexedVertexList(vertexAttributes: Set<Attribute>) {
-
-    companion object {
-        internal val INITIAL_SIZE = 1000
-        internal val GROW_FACTOR = 2.0f
-    }
+class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
 
     /**
      * Number of floats per vertex. E.g. a vertex containing only a position consists of 3 floats.
@@ -35,22 +33,48 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
     val strideBytesI: Int
 
     /**
+     * Vertex attribute offsets in bytes.
+     */
+    val attributeOffsets: Map<Attribute, Int>
+
+    /**
+     * Primitive type of geometry in this vertex list
+     */
+    var primitiveType = PrimitiveType.TRIANGLES
+
+    /**
+     * Expected usage of geometry in this vertex list: STATIC if geometry is expected to change very infrequently /
+     * never, DYNAMIC if it will be updated often.
+     */
+    var usage = Usage.STATIC
+
+    /**
      * Number of vertices. Equal to [dataF.position] / [vertexSizeF] and [dataI.position] / [vertexSizeI].
      */
-    var size = 0
+    var numVertices = 0
+
+    val numIndices: Int
+        get() = indices.position
+
+    val numPrimitives: Int
+        get() = numIndices / primitiveType.nVertices
+
     val lastIndex
-        get() = size - 1
+        get() = numVertices - 1
 
     var dataF: Float32Buffer
     var dataI: Uint32Buffer
     var indices = createUint32Buffer(INITIAL_SIZE)
 
-    /**
-     * Vertex attribute offsets in bytes.
-     */
-    val attributeOffsets: Map<Attribute, Int>
+    val bounds = BoundingBox()
 
-    val vertexIt: Vertex
+    val vertexIt: VertexView
+
+    var isRebuildBoundsOnSync = false
+    var isSyncRequired = false
+    var isBatchUpdate = false
+
+    constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toHashSet())
 
     init {
         var cntF = 0
@@ -78,7 +102,7 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
         dataF = createFloat32Buffer(cntF * INITIAL_SIZE)
         dataI = createUint32Buffer(cntI * INITIAL_SIZE)
-        vertexIt = Vertex(0)
+        vertexIt = VertexView(this, 0)
     }
 
     private fun increaseDataSizeF(newSize: Int) {
@@ -104,20 +128,33 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
 
     fun checkBufferSizes(reqSpace: Int = 1) {
         if (dataF.remaining < vertexSizeF * reqSpace) {
-            increaseDataSizeF(max(round(dataF.capacity * GROW_FACTOR).toInt(), (size + reqSpace) * vertexSizeF))
+            increaseDataSizeF(max(round(dataF.capacity * GROW_FACTOR).toInt(), (numVertices + reqSpace) * vertexSizeF))
         }
         if (dataI.remaining < vertexSizeI * reqSpace) {
-            increaseDataSizeI(max(round(dataI.capacity * GROW_FACTOR).toInt(), (size + reqSpace) * vertexSizeI))
+            increaseDataSizeI(max(round(dataI.capacity * GROW_FACTOR).toInt(), (numVertices + reqSpace) * vertexSizeI))
         }
     }
 
     fun checkIndexSize(reqSpace: Int = 1) {
         if (indices.remaining < reqSpace) {
-            increaseIndicesSize(max(round(indices.capacity * GROW_FACTOR).toInt(), size + reqSpace))
+            increaseIndicesSize(max(round(indices.capacity * GROW_FACTOR).toInt(), numVertices + reqSpace))
         }
     }
 
-    inline fun addVertex(updateBounds: BoundingBox? = null, block: Vertex.() -> Unit): Int {
+    fun hasAttribute(attribute: Attribute): Boolean = vertexAttributes.contains(attribute)
+
+    inline fun batchUpdate(rebuildBounds: Boolean = false, block: IndexedVertexList.() -> Unit) {
+        val wasBatchUpdate = isBatchUpdate
+        isBatchUpdate = true
+        block()
+        isSyncRequired = true
+        isBatchUpdate = wasBatchUpdate
+        if (rebuildBounds) {
+            TODO()
+        }
+    }
+
+    inline fun addVertex(block: VertexView.() -> Unit): Int {
         checkBufferSizes()
 
         // initialize all vertex values with 0
@@ -128,29 +165,11 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
             dataI += 0
         }
 
-        vertexIt.index = size++
+        vertexIt.index = numVertices++
         vertexIt.block()
-
-        updateBounds?.add(vertexIt.position)
-
-        return size - 1
-    }
-
-    fun addFrom(other: IndexedVertexList) {
-        val baseIdx = size
-
-        checkBufferSizes(other.size)
-        for (i in 0 until other.size) {
-            addVertex {
-                other.vertexIt.index = i
-                set(other.vertexIt)
-            }
-        }
-
-        checkIndexSize(other.indices.position)
-        for (i in 0 until other.indices.position) {
-            addIndex(baseIdx + other.indices[i])
-        }
+        bounds.add(vertexIt.position)
+        isSyncRequired = true
+        return numVertices - 1
     }
 
     fun addVertex(position: Vec3f, normal: Vec3f? = null, color: Color? = null, texCoord: Vec2f? = null): Int {
@@ -168,6 +187,23 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         }
     }
 
+    fun addGeometry(geometry: IndexedVertexList) {
+        val baseIdx = numVertices
+
+        checkBufferSizes(geometry.numVertices)
+        for (i in 0 until geometry.numVertices) {
+            addVertex {
+                geometry.vertexIt.index = i
+                set(geometry.vertexIt)
+            }
+        }
+
+        checkIndexSize(geometry.indices.position)
+        for (i in 0 until geometry.indices.position) {
+            addIndex(baseIdx + geometry.indices[i])
+        }
+    }
+
     fun addIndex(idx: Int) {
         if (indices.remaining == 0) {
             checkIndexSize()
@@ -175,10 +211,11 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         indices += idx
     }
 
-    fun addIndices(indices: IntArray) {
+    fun addIndices(vararg indices: Int) {
         for (idx in indices.indices) {
             addIndex(indices[idx])
         }
+        isSyncRequired = true
     }
 
     fun addIndices(indices: List<Int>) {
@@ -187,8 +224,22 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         }
     }
 
+    fun addTriIndices(i0: Int, i1: Int, i2: Int) {
+        addIndex(i0)
+        addIndex(i1)
+        addIndex(i2)
+    }
+
+    fun rebuildBounds() {
+        bounds.clear()
+        for (i in 0 until numVertices) {
+            vertexIt.index = i
+            bounds.add(vertexIt.position)
+        }
+    }
+
     fun clear() {
-        size = 0
+        numVertices = 0
 
         dataF.position = 0
         dataF.limit = dataF.capacity
@@ -215,11 +266,11 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
     }
 
     fun shrinkVertices(newSize: Int) {
-        if (newSize > size) {
+        if (newSize > numVertices) {
             throw KoolException("new size must be less (or equal) than old size")
         }
 
-        size = newSize
+        numVertices = newSize
 
         dataF.position = newSize * vertexSizeF
         dataF.limit = dataF.capacity
@@ -228,261 +279,221 @@ class IndexedVertexList(vertexAttributes: Set<Attribute>) {
         dataI.limit = dataI.capacity
     }
 
-    operator fun get(i: Int): Vertex {
+    operator fun get(i: Int): VertexView {
         if (i < 0 || i >= dataF.capacity / vertexSizeF) {
             throw KoolException("Vertex index out of bounds: $i")
         }
-        return Vertex(i)
+        return VertexView(this, i)
     }
 
-    inline fun forEach(block: (Vertex) -> Unit) {
-        for (i in 0 until size) {
+    inline fun forEach(block: (VertexView) -> Unit) {
+        for (i in 0 until numVertices) {
             vertexIt.index = i
             block(vertexIt)
         }
     }
 
-    inner class Vertex(index: Int) : MutableVec3f() {
-        private var offsetF = index * vertexSizeF
-        private var offsetI = index * vertexSizeI
-
-        /**
-         * Vertex index in the underlying vertex list. Can be set to navigate within the vertex list
-         */
-        var index = index
-            set(value) {
-                field = value
-                offsetF = value * vertexSizeF
-                offsetI = value * vertexSizeI
-            }
-
-        // standard attributes for easy access
-        val position: MutableVec3f
-        val normal: MutableVec3f
-        val tangent: MutableVec3f
-        val color: MutableColor
-        val texCoord: MutableVec2f
-
-        private val attributeViews: Map<Attribute, Any>
-
-
-        override var x: Float
-            get() = position.x
-            set(value) { position.x = value}
-        override var y: Float
-            get() = position.y
-            set(value) { position.y = value }
-        override var z: Float
-            get() = position.z
-            set(value) { position.z = value}
-
-        init {
-            val attribViews = mutableMapOf<Attribute, Any>()
-            attributeViews = attribViews
-
-            for (offset in attributeOffsets) {
-                when (offset.key.type) {
-                    GlslType.FLOAT -> attribViews[offset.key] = FloatView(offset.value / 4)
-                    GlslType.VEC_2F -> attribViews[offset.key] = Vec2fView(offset.value / 4)
-                    GlslType.VEC_3F -> attribViews[offset.key] = Vec3fView(offset.value / 4)
-                    GlslType.VEC_4F -> attribViews[offset.key] = Vec4fView(offset.value / 4)
-                    GlslType.INT -> attribViews[offset.key] = IntView(offset.value / 4)
-                    GlslType.VEC_2I -> attribViews[offset.key] = Vec2iView(offset.value / 4)
-                    GlslType.VEC_3I -> attribViews[offset.key] = Vec3iView(offset.value / 4)
-                    GlslType.VEC_4I -> attribViews[offset.key] = Vec4iView(offset.value / 4)
-                    else -> throw IllegalArgumentException("${offset.key.type} is not a valid vertex attribute")
-                }
-            }
-
-            position = getVec3fAttribute(Attribute.POSITIONS) ?: Vec3fView(-1)
-            normal = getVec3fAttribute(Attribute.NORMALS) ?: Vec3fView(-1)
-            tangent = getVec3fAttribute(Attribute.TANGENTS) ?: Vec3fView(-1)
-            texCoord = getVec2fAttribute(Attribute.TEXTURE_COORDS) ?: Vec2fView(-1)
-            color = getColorAttribute(Attribute.COLORS) ?: ColorWrapView(Vec4fView(-1))
+    fun generateNormals() {
+        if (!vertexAttributes.contains(Attribute.NORMALS)) {
+            return
+        }
+        if (primitiveType != PrimitiveType.TRIANGLES) {
+            throw KoolException("Normal generation is only supported for triangle meshes")
         }
 
-        fun set(other: Vertex) {
-            for (attrib in attributeViews.keys) {
-                val view = other.attributeViews[attrib]
-                if (view != null) {
-                    when (view) {
-                        is FloatView -> (attributeViews[attrib] as FloatView).f = view.f
-                        is Vec2fView -> (attributeViews[attrib] as Vec2fView).set(view)
-                        is Vec3fView -> (attributeViews[attrib] as Vec3fView).set(view)
-                        is Vec4fView -> (attributeViews[attrib] as Vec4fView).set(view)
-                        is IntView   -> (attributeViews[attrib] as IntView).i = view.i
-                        is Vec2iView -> (attributeViews[attrib] as Vec2iView).set(view)
-                        is Vec3iView -> (attributeViews[attrib] as Vec3iView).set(view)
-                        is Vec4iView -> (attributeViews[attrib] as Vec4iView).set(view)
-                    }
-                }
+        val v0 = this[0]
+        val v1 = this[1]
+        val v2 = this[2]
+        val e1 = MutableVec3f()
+        val e2 = MutableVec3f()
+        val nrm = MutableVec3f()
+
+        for (i in 0 until numVertices) {
+            v0.index = i
+            v0.normal.set(Vec3f.ZERO)
+        }
+
+        for (i in 0 until numIndices step 3) {
+            v0.index = indices[i]
+            v1.index = indices[i+1]
+            v2.index = indices[i+2]
+
+            if (v0.index > numVertices || v1.index > numVertices || v2.index > numVertices) {
+                logE { "index to large ${v0.index}, ${v1.index}, ${v2.index}, sz: $numVertices" }
+            }
+
+            v1.position.subtract(v0.position, e1).norm()
+            v2.position.subtract(v0.position, e2).norm()
+            val a = triArea(v0.position, v1.position, v2.position)
+
+            e1.cross(e2, nrm).norm().scale(a)
+            if (nrm.x.isNaN() || nrm.y.isNaN() || nrm.z.isNaN()) {
+                logW { "degenerated triangle" }
+            } else {
+                v0.normal += nrm
+                v1.normal += nrm
+                v2.normal += nrm
             }
         }
 
-        fun getFloatAttribute(attribute: Attribute): FloatView? = attributeViews[attribute] as FloatView?
-        fun getVec2fAttribute(attribute: Attribute): MutableVec2f? = attributeViews[attribute] as MutableVec2f?
-        fun getVec3fAttribute(attribute: Attribute): MutableVec3f? = attributeViews[attribute] as MutableVec3f?
-        fun getVec4fAttribute(attribute: Attribute): MutableVec4f? = attributeViews[attribute] as MutableVec4f?
-        fun getColorAttribute(attribute: Attribute): MutableColor? = attributeViews[attribute]?.let { ColorWrapView(it as Vec4fView) }
-        fun getIntAttribute(attribute: Attribute): IntView? = attributeViews[attribute] as IntView?
-        fun getVec2iAttribute(attribute: Attribute): Vec2iView? = attributeViews[attribute] as Vec2iView?
-        fun getVec3iAttribute(attribute: Attribute): Vec3iView? = attributeViews[attribute] as Vec3iView?
-        fun getVec4iAttribute(attribute: Attribute): Vec4iView? = attributeViews[attribute] as Vec4iView?
+        for (i in 0 until numVertices) {
+            v0.index = i
+            v0.normal.norm()
+        }
+    }
 
-        inner class FloatView(private val attribOffset: Int) {
-            var f: Float
-                get() = if (attribOffset < 0) { 0f } else { dataF[offsetF + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataF[offsetF + attribOffset] = value }
-                }
+    fun generateTangents() {
+        if (!vertexAttributes.contains(Attribute.TANGENTS)) {
+            return
+        }
+        if (primitiveType != PrimitiveType.TRIANGLES) {
+            throw KoolException("Normal generation is only supported for triangle meshes")
         }
 
-        private inner class Vec2fView(private val attribOffset: Int) : MutableVec2f() {
-            override operator fun get(i: Int): Float {
-                return if (attribOffset >= 0 && i in 0..1) {
-                    dataF[offsetF + attribOffset + i]
-                } else {
-                    0f
-                }
-            }
-            override operator fun set(i: Int, v: Float) {
-                if (attribOffset >= 0 && i in 0..1) {
-                    dataF[offsetF + attribOffset + i] = v
-                }
-            }
+        val v0 = this[0]
+        val v1 = this[1]
+        val v2 = this[2]
+        val e1 = MutableVec3f()
+        val e2 = MutableVec3f()
+        val tan = MutableVec3f()
+
+        for (i in 0 until numVertices) {
+            v0.index = i
+            v0.tangent.set(Vec3f.ZERO)
         }
 
-        private inner class Vec3fView(val attribOffset: Int) : MutableVec3f() {
-            override operator fun get(i: Int): Float {
-                return if (attribOffset >= 0 && i in 0..2) {
-                    dataF[offsetF + attribOffset + i]
-                } else {
-                    0f
-                }
-            }
-            override operator fun set(i: Int, v: Float) {
-                if (attribOffset >= 0 && i in 0..2) {
-                    dataF[offsetF + attribOffset + i] = v
-                }
-            }
-        }
+        for (i in 0 until numIndices step 3) {
+            v0.index = indices[i]
+            v1.index = indices[i+1]
+            v2.index = indices[i+2]
 
-        private inner class Vec4fView(val attribOffset: Int) : MutableVec4f() {
-            override operator fun get(i: Int): Float {
-                return if (attribOffset >= 0 && i in 0..3) {
-                    dataF[offsetF + attribOffset + i]
-                } else {
-                    0f
-                }
-            }
-            override operator fun set(i: Int, v: Float) {
-                if (attribOffset >= 0 && i in 0..3) {
-                    dataF[offsetF + attribOffset + i] = v
-                }
+            v1.position.subtract(v0.position, e1)
+            v2.position.subtract(v0.position, e2)
+
+            val du1 = v1.texCoord.x - v0.texCoord.x
+            val dv1 = v1.texCoord.y - v0.texCoord.y
+            val du2 = v2.texCoord.x - v0.texCoord.x
+            val dv2 = v2.texCoord.y - v0.texCoord.y
+            val f = 1f / (du1 * dv2 - du2 * dv1)
+            if (f.isNaN()) {
+                logW { "degenerated triangle" }
+            } else {
+                tan.x = f * (dv2 * e1.x - dv1 * e2.x)
+                tan.y = f * (dv2 * e1.y - dv1 * e2.y)
+                tan.z = f * (dv2 * e1.z - dv1 * e2.z)
+
+                v0.tangent += tan
+                v1.tangent += tan
+                v2.tangent += tan
             }
         }
 
-        private inner class ColorWrapView(val vecView: Vec4fView) : MutableColor() {
-            override operator fun get(i: Int) = vecView[i]
-            override operator fun set(i: Int, v: Float) { vecView[i] = v }
-        }
+        for (i in 0 until numVertices) {
+            v0.index = i
 
-        inner class IntView(private val attribOffset: Int) {
-            var i: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset] = value }
-                }
-        }
-
-        inner class Vec2iView(private val attribOffset: Int) {
-            var x: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset] = value }
-                }
-            var y: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset + 1] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset + 1] = value }
-                }
-
-            fun set(x: Int, y: Int) {
-                this.x = x
-                this.y = y
+            if (v0.normal.sqrLength() == 0f) {
+                logW { "singular normal" }
+                v0.normal.set(Vec3f.Y_AXIS)
             }
 
-            fun set(other: Vec2iView) {
-                x = other.x
-                y = other.y
-            }
-        }
-
-        inner class Vec3iView(private val attribOffset: Int) {
-            var x: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset] = value }
-                }
-            var y: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset + 1] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset + 1] = value }
-                }
-            var z: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset + 2] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset + 2] = value }
-                }
-
-            fun set(other: Vec3iView) {
-                x = other.x
-                y = other.y
-                z = other.z
-            }
-
-            fun set(x: Int, y: Int, z: Int) {
-                this.x = x
-                this.y = y
-                this.z = z
-            }
-        }
-
-        inner class Vec4iView(private val attribOffset: Int) {
-            var x: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset] = value }
-                }
-            var y: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset + 1] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset + 1] = value }
-                }
-            var z: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset + 2] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset + 2] = value }
-                }
-            var w: Int
-                get() = if (attribOffset < 0) { 0 } else { dataI[offsetI + attribOffset + 3] }
-                set(value) {
-                    if (attribOffset >= 0) { dataI[offsetI + attribOffset + 3] = value }
-                }
-
-            fun set(other: Vec4iView) {
-                x = other.x
-                y = other.y
-                z = other.z
-                w = other.w
-            }
-
-            fun set(x: Int, y: Int, z: Int, w: Int) {
-                this.x = x
-                this.y = y
-                this.z = z
-                this.w = w
+            if (v0.tangent.sqrLength() != 0f) {
+                v0.tangent.norm()
+            } else {
+                logW { "singular tangent" }
+                v0.normal.set(Vec3f.X_AXIS)
             }
         }
     }
+
+    /*fun joinCloseVertices(eps: Float = FUZZY_EQ_F) {
+        batchUpdate {
+            val verts = mutableListOf<VertexView>()
+            for (i in 0 until numVertices) {
+                verts += get(i)
+            }
+            val tree = pointKdTree(verts)
+            val trav = InRadiusTraverser<VertexView>()
+            val removeVerts = mutableListOf<VertexView>()
+            val replaceIndcs = mutableMapOf<Int, Int>()
+            var requiresRebuildNormals = false
+
+            for (v in verts) {
+                if (v !in removeVerts) {
+                    trav.setup(v, eps).traverse(tree)
+                    trav.result.removeAll { it.index == v.index || it.index in replaceIndcs.keys }
+
+                    if (trav.result.isNotEmpty()) {
+                        for (j in trav.result) {
+                            v.position += j.position
+                            v.normal += j.normal
+
+                            removeVerts += j
+                            replaceIndcs[j.index] = v.index
+                        }
+                        v.position.scale(1f / (1f + trav.result.size))
+
+                        if (hasAttribute(Attribute.NORMALS)) {
+                            v.normal.scale(1f / (1f + trav.result.size))
+                            requiresRebuildNormals = requiresRebuildNormals || v.normal.length().isFuzzyZero()
+                            if (!requiresRebuildNormals) {
+                                v.normal.norm()
+                            }
+                        }
+                    }
+                }
+            }
+
+            logD { "Found ${removeVerts.size} duplicate positions (of $numVertices vertices)" }
+
+            for (r in removeVerts.sortedBy { -it.index }) {
+                // remove int attributes of deleted vertex
+                for (i in r.index * vertexList.vertexSizeI until vertexList.dataI.position - vertexList.vertexSizeI) {
+                    vertexList.dataI[i] = vertexList.dataI[i + vertexList.vertexSizeI]
+                }
+                vertexList.dataI.position -= vertexList.vertexSizeI
+                vertexList.dataI.limit -= vertexList.vertexSizeI
+
+                // remove float attributes of deleted vertex
+                for (i in r.index * vertexList.vertexSizeF until vertexList.dataF.position - vertexList.vertexSizeF) {
+                    vertexList.dataF[i] = vertexList.dataF[i + vertexList.vertexSizeF]
+                }
+                vertexList.dataF.position -= vertexList.vertexSizeF
+                vertexList.dataF.limit -= vertexList.vertexSizeF
+
+                for (i in 0 until vertexList.indices.position) {
+                    if (vertexList.indices[i] == r.index) {
+                        // this index was replaced by a different one
+                        vertexList.indices[i] = replaceIndcs[r.index]!!
+                    } else if (vertexList.indices[i] > r.index) {
+                        vertexList.indices[i]--
+                    }
+                }
+            }
+            vertexList.size -= removeVerts.size
+
+            if (requiresRebuildNormals) {
+                logD { "Normal reconstruction required" }
+                generateNormals()
+            }
+
+            logD { "Removed ${removeVerts.size} duplicate vertices" }
+        }
+    }*/
+
+    companion object {
+        private const val INITIAL_SIZE = 1000
+        private const val GROW_FACTOR = 2.0f
+    }
+
+}
+
+enum class PrimitiveType(val nVertices: Int) {
+    LINES(2),
+    POINTS(1),
+    TRIANGLES(3)
+}
+
+enum class Usage {
+    DYNAMIC,
+    STATIC
 }

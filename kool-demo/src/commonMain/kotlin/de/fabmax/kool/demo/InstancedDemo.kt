@@ -70,7 +70,7 @@ private fun spawnMesh(proto: Armature, movementSpeed: Float): Armature {
 
     // loaded Armature is an InstancedMesh with default attributes, for this demo we also want a custom
     // attribute, hence we need to create a copy with additional attributes
-    val mesh = Armature(proto.meshData, proto.name, instances, InstancedMesh.makeAttributeList(/*ModelShader.INSTANCE_COLOR*/))
+    val mesh = Armature(proto.geometry, proto.name, instances, InstancedMesh.makeAttributeList(/*ModelShader.INSTANCE_COLOR*/))
     // also copy bone info
     mesh.copyBonesAndAnimations(proto)
 

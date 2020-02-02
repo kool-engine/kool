@@ -2,13 +2,13 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.scene.CullMethod
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Disposable
+import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.MeshBuilder
 
 interface ComponentUi : Disposable {
@@ -28,9 +28,9 @@ open class BlankComponentUi : ComponentUi
 
 open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 
-    protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
-    protected val meshBuilder = MeshBuilder(meshData)
-    protected val mesh = Mesh(meshData)
+    protected val geometry = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
+    protected val meshBuilder = MeshBuilder(geometry)
+    protected val mesh = Mesh(geometry)
 
     val color: ThemeOrCustomProp<Color> = ThemeOrCustomProp(Color.BLACK.withAlpha(0.5f))
 

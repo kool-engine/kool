@@ -287,15 +287,15 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                     descriptorSet.updateDescriptorSets(imageIndex)
 
                     var model = meshMap[cmd.mesh]
-                    if (cmd.mesh.meshData.isSyncRequired || model == null) {
-                        cmd.mesh.meshData.isSyncRequired = false
+                    if (cmd.mesh.geometry.isSyncRequired || model == null) {
+                        cmd.mesh.geometry.isSyncRequired = false
 
                         // (re-)build buffer
                         // fixme: don't do this here, should have happened before (async?)
                         meshMap.remove(cmd.mesh)?.let {
                             meshDeleteQueue.addLast(DeleteMesh(it, nImages))
                         }
-                        model = IndexedMesh(sys, cmd.mesh.meshData.vertexList)
+                        model = IndexedMesh(sys, cmd.mesh.geometry)
                         meshMap[cmd.mesh] = model
                         sys.device.addDependingResource(model)
                     }

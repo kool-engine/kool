@@ -6,16 +6,13 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.createFloat32Buffer
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 import kotlin.math.min
 
-open class InstancedMesh(meshData: MeshData, name: String? = null,
+open class InstancedMesh(geometry: IndexedVertexList, name: String? = null,
                          var instances: Instances<*> = identityInstance(),
                          val attributes: List<Attribute> = MODEL_INSTANCES) :
-        Mesh(meshData, name) {
+        Mesh(geometry, name) {
 
 //    private var instanceBuffer: BufferResource? = null
 //    private val instanceBinders = mutableMapOf<Attribute, VboBinder>()
@@ -153,7 +150,7 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
                 }
 
                 if (!bounds.isEmpty) {
-                    tmpVec.set(mesh.meshData.bounds.size).scale(0.5f)
+                    tmpVec.set(mesh.geometry.bounds.size).scale(0.5f)
                     bounds.expand(tmpVec)
                 }
             } else {

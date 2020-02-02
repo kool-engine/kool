@@ -1,17 +1,16 @@
 package de.fabmax.kool.modules.mesh
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.util.*
 import kotlin.math.min
 import kotlin.math.sqrt
 
-class MeshCutXy(val meshData: MeshData) {
+class MeshCutXy(val geometry: IndexedVertexList) {
 
-    val ocTreeHandler = OcTreeEdgeHandler(meshData)
-    val halfEdgeMesh = HalfEdgeMesh(meshData, ocTreeHandler)
+    val ocTreeHandler = OcTreeEdgeHandler(geometry)
+    val halfEdgeMesh = HalfEdgeMesh(geometry, ocTreeHandler)
 
-    private val eps: Float = meshData.bounds.min.distance(meshData.bounds.max) * FUZZY_EQ_F
+    private val eps: Float = geometry.bounds.min.distance(geometry.bounds.max) * FUZZY_EQ_F
     var shortEdgeThresh: Float
 
     init {

@@ -3,11 +3,11 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.scene.BillboardMesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.orbitInputTransform
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.BillboardMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.ParticleSystem

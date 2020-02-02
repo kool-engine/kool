@@ -26,7 +26,7 @@ fun makeGroundGrid(cells: Int, y: Float = 0f): Node {
                     texCoordLowerRight.set(uv, uv)
                 }
             }
-            meshData.generateTangents()
+            geometry.generateTangents()
         }
 //        shader = basicShader {
 //            lightModel = LightModel.PHONG_LIGHTING

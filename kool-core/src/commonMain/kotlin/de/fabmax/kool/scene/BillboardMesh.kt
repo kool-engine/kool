@@ -1,4 +1,4 @@
-package de.fabmax.kool.util
+package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
@@ -6,8 +6,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.logW
 
 /**
  * BillboardMesh draws Quads which always face to the camera. Can be used for particle systems etc. If supported
@@ -15,7 +16,7 @@ import de.fabmax.kool.scene.MeshData
  *
  * @author fabmax
  */
-open class BillboardMesh(name: String? = null) : Mesh(MeshData(Attribute.POSITIONS, Attribute.COLORS,
+open class BillboardMesh(name: String? = null) : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS,
         Attribute.TEXTURE_COORDS, ATTR_EXTENTS, ATTR_TEX_EXTENTS, ATTR_ROTATION), name) {
 
     var drawOrder = DrawOrder.AS_IS
@@ -69,37 +70,37 @@ open class BillboardMesh(name: String? = null) : Mesh(MeshData(Attribute.POSITIO
                 billboardIt.rotation.f = rotation.toRad()
             }
         }
-        meshData.isSyncRequired = true
+        geometry.isSyncRequired = true
     }
 
     fun clearIndices() {
-        meshData.vertexList.indices.clear()
+        geometry.indices.clear()
     }
 
     fun addQuadIndex(quadIdx: Int) {
         if (isWithGeometryShader) {
-            meshData.vertexList.addIndex(quadIdx)
+            geometry.addIndex(quadIdx)
         } else {
             val idx = quadIdx * 4
-            meshData.vertexList.addIndex(idx)
-            meshData.vertexList.addIndex(idx+1)
-            meshData.vertexList.addIndex(idx+2)
-            meshData.vertexList.addIndex(idx+3)
-            meshData.vertexList.addIndex(idx+2)
-            meshData.vertexList.addIndex(idx+1)
+            geometry.addIndex(idx)
+            geometry.addIndex(idx+1)
+            geometry.addIndex(idx+2)
+            geometry.addIndex(idx+3)
+            geometry.addIndex(idx+2)
+            geometry.addIndex(idx+1)
         }
     }
 
     private fun appendQuad(): Int {
         return if (isWithGeometryShader) {
             // add single point vertex
-            meshData.addVertex {  }
+            geometry.addVertex {  }
         } else {
             // add four quad vertices
-            meshData.addVertex {  }
-            meshData.addVertex {  }
-            meshData.addVertex {  }
-            meshData.addVertex {  } / 4
+            geometry.addVertex {  }
+            geometry.addVertex {  }
+            geometry.addVertex {  }
+            geometry.addVertex {  } / 4
         }
     }
 
@@ -120,8 +121,8 @@ open class BillboardMesh(name: String? = null) : Mesh(MeshData(Attribute.POSITIO
      * Converts the point mesh to a quad mesh, in case geometry shaders are not supported.
      */
     private fun convertToQuadMesh() {
-        val tmpData = MeshData(meshData.vertexAttributes)
-        meshData.vertexList.forEach { ptVertex ->
+        val tmpData = IndexedVertexList(geometry.vertexAttributes)
+        geometry.forEach { ptVertex ->
             for (i in 0..3) {
                 tmpData.addVertex {
                     set(ptVertex)
@@ -131,8 +132,8 @@ open class BillboardMesh(name: String? = null) : Mesh(MeshData(Attribute.POSITIO
             }
         }
 
-        for (i in 0 until meshData.numIndices) {
-            val idx = meshData.vertexList.indices[i] * 4
+        for (i in 0 until geometry.numIndices) {
+            val idx = geometry.indices[i] * 4
             tmpData.addIndex(idx)
             tmpData.addIndex(idx+1)
             tmpData.addIndex(idx+2)
@@ -141,36 +142,35 @@ open class BillboardMesh(name: String? = null) : Mesh(MeshData(Attribute.POSITIO
             tmpData.addIndex(idx+1)
         }
 
-        meshData.vertexList.clear()
-        meshData.vertexList.addFrom(tmpData.vertexList)
-//        meshData.primitiveType = GL_TRIANGLES
+        geometry.clear()
+        geometry.addGeometry(tmpData)
     }
 
     private fun sortElems() {
         val camPos = scene?.camera?.globalPos ?: return
         val vertCnt = if (isWithGeometryShader) { 1 } else { 4 }
 
-        if (indexList.size != meshData.numVertices / vertCnt) {
+        if (indexList.size != geometry.numVertices / vertCnt) {
             indexList.clear()
-            indexList.addAll(0 until meshData.numVertices / vertCnt)
+            indexList.addAll(0 until geometry.numVertices / vertCnt)
         }
 
         val s = if (drawOrder == DrawOrder.FAR_FIRST) -1 else 1
-        val v = meshData.vertexList.vertexIt
+        val v = geometry.vertexIt
         indexList.sortBy { idx ->
             v.index = idx * vertCnt
             v.position.sqrDistance(camPos) * s
         }
 
-        meshData.vertexList.indices.clear()
+        geometry.indices.clear()
         for (i in indexList.indices) {
             addQuadIndex(indexList[i])
         }
-        meshData.isSyncRequired = true
+        geometry.isSyncRequired = true
     }
 
     private inner class BillboardInstance {
-        val vertex = meshData.vertexList[0]
+        val vertex = geometry[0]
         val rotation = vertex.getFloatAttribute(ATTR_ROTATION)!!
         val extents =  vertex.getVec2fAttribute(ATTR_EXTENTS)!!
         val texExtents =  vertex.getVec2fAttribute(ATTR_TEX_EXTENTS)!!

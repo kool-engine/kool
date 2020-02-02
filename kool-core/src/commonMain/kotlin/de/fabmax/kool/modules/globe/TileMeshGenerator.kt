@@ -26,9 +26,9 @@ open class GridTileMeshGenerator : TileMeshGenerator {
 
     override suspend fun generateMesh(globe: Globe, tileMesh: TileMesh, stepsLog2: Int) {
         val frame = getFrame(globe, tileMesh.tileName)
-        val builder = MeshBuilder(tileMesh.meshData)
+        val builder = MeshBuilder(tileMesh.geometry)
 
-        tileMesh.meshData.isBatchUpdate = true
+        tileMesh.geometry.isBatchUpdate = true
 
         val steps = 1 shl stepsLog2
         val zoomDiv = 2 * PI / (1 shl (tileMesh.tileName.zoom + stepsLog2)).toDouble()
@@ -78,15 +78,15 @@ open class GridTileMeshGenerator : TileMeshGenerator {
                 val uv = Vec2f(i.toFloat() / steps, 1f - row.toFloat() / steps)
                 val iv = builder.vertex(pos.toMutableVec3f(posf), nrm, uv)
                 if (i > 0 && row > 0) {
-                    tileMesh.meshData.addTriIndices(iv - steps - 2, iv, iv - 1)
-                    tileMesh.meshData.addTriIndices(iv - steps - 2, iv - steps - 1, iv)
+                    tileMesh.geometry.addTriIndices(iv - steps - 2, iv, iv - 1)
+                    tileMesh.geometry.addTriIndices(iv - steps - 2, iv - steps - 1, iv)
                 }
             }
             yield()
         }
 
-        tileMesh.meshData.generateNormals()
-        tileMesh.meshData.isBatchUpdate = false
+        tileMesh.geometry.generateNormals()
+        tileMesh.geometry.isBatchUpdate = false
     }
 
     companion object {

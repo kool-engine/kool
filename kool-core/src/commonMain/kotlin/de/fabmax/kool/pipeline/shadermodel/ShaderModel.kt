@@ -50,10 +50,10 @@ class ShaderModel(val modelInfo: String = "") {
 
     private fun setupAttributes(mesh: Mesh, buildCtx: Pipeline.BuildContext) {
         val vertLayoutAttribs = mutableListOf<VertexLayout.Attribute>()
-        val verts = mesh.meshData.vertexList
+        val verts = mesh.geometry
 
         vertexStage.requiredVertexAttributes.forEachIndexed { iAttrib, attrib ->
-            if (!mesh.meshData.vertexAttributes.contains(attrib)) {
+            if (!mesh.geometry.vertexAttributes.contains(attrib)) {
                 throw NoSuchElementException("Mesh does not include required vertex attribute: ${attrib.name}")
             }
             val off = verts.attributeOffsets[attrib] ?: throw NoSuchElementException()

@@ -7,11 +7,12 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Font
+import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.MeshBuilder
 
 
 inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
-    val mesh = Mesh(MeshData(attributes), name)
+    val mesh = Mesh(IndexedVertexList(attributes), name)
 
     mesh.block()
     // todo: Optionally generate geometry lazily
@@ -38,45 +39,35 @@ fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate:
     }
     val mesh = mesh(attributes, name, generate)
     if (isNormalMapped) {
-        mesh.meshData.generateTangents()
+        mesh.geometry.generateTangents()
     }
     return mesh
 }
 
-enum class CullMethod {
-    DEFAULT,
-    CULL_BACK_FACES,
-    CULL_FRONT_FACES,
-    NO_CULLING
-}
-
 /**
- * Abstract base class for renderable geometry (triangles, lines, points, etc.).
+ * Class for renderable geometry (triangles, lines, points, etc.).
  *
  * @author fabmax
  */
-open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
+open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(name) {
 
-    open var generator: (MeshBuilder.() -> Unit)?
-        get() = meshData.generator
-        set(value) { meshData.generator = value }
+    open var generator: (MeshBuilder.() -> Unit)? = null
 
     var pipelineLoader: (Mesh.(KoolContext) -> Pipeline)? = null
     private var pipeline: Pipeline? = null
 
     var rayTest = MeshRayTest.boundsTest()
 
-    //private val drawCommand = DrawCommand(this)
-
     override val bounds: BoundingBox
-        get() = meshData.bounds
-
-    init {
-        meshData.incrementReferenceCount()
-    }
+        get() = geometry.bounds
 
     open fun generateGeometry() {
-        meshData.generateGeometry()
+        generator?.let { generatorFun ->
+            geometry.batchUpdate {
+                clear()
+                MeshBuilder(this).generatorFun()
+            }
+        }
     }
 
     open fun getPipeline(ctx: KoolContext): Pipeline? {
@@ -90,7 +81,6 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
      */
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
-        meshData.dispose(ctx)
         // todo: pipeline.dispose()
     }
 
@@ -117,4 +107,3 @@ open class Mesh(var meshData: MeshData, name: String? = null) : Node(name) {
         scene!!.drawQueue!! += drawCommand
     }
 }
-

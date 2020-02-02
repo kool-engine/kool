@@ -3,7 +3,8 @@ package de.fabmax.kool.util.serialization
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.PrimitiveType
 
 class MeshSerializer {
 
@@ -18,14 +19,14 @@ class MeshSerializer {
     // if > 0 normals will be oct encoded with the specified number of bits
     var normalBits = 0
 
-    fun convertToModel(mesh: MeshData, name: String = "", materialData: MaterialData? = null): ModelData {
+    fun convertToModel(mesh: IndexedVertexList, name: String = "", materialData: MaterialData? = null): ModelData {
         val materials = if (materialData != null) listOf(materialData) else emptyList()
         val meshData = convertMesh(mesh, name, 0)
         val node = ModelNodeData(name, Mat4f().setIdentity().toList(), meshes = listOf(0))
         return ModelData(ModelData.VERSION, name, listOf(meshData), listOf(node), materials)
     }
 
-    fun convertMesh(mesh: MeshData, name: String = "", materialIdx: Int = 0): ModelMeshData {
+    fun convertMesh(mesh: IndexedVertexList, name: String = "", materialIdx: Int = 0): ModelMeshData {
         if (generateNormals) {
             mesh.generateNormals()
         }
@@ -42,10 +43,10 @@ class MeshSerializer {
         val tangentList = mutableListOf<Float>()
 
         for (i in 0 until mesh.numIndices) {
-            indices += mesh.vertexList.indices[i]
+            indices += mesh.indices[i]
         }
 
-        mesh.vertexList.forEach {
+        mesh.forEach {
             posList += it.position
             if (mesh.hasAttribute(Attribute.NORMALS) && includeNormals) {
                 if (normalBits <= 0) {
@@ -87,16 +88,15 @@ class MeshSerializer {
             attribs[ModelMeshData.ATTRIB_TANGENTS] = AttributeList(GlslType.VEC_3F, tangentList)
         }
 
-        TODO("set primitive type")
-//        val primitiveType = when(mesh.primitiveType) {
-//            GL_TRIANGLES -> PrimitiveType.TRIANGLES
-//            GL_LINES -> PrimitiveType.LINES
-//            else -> PrimitiveType.POINTS
-//        }
-//
-//        return ModelMeshData(name = name, tags = tags, primitiveType = primitiveType, indices = indices,
-//                attributes = attribs, intAttributes = intAttribs, material = materialIdx,
-//                animations = emptyList(), armature = emptyList())
+        val primitiveType = when(mesh.primitiveType) {
+            PrimitiveType.TRIANGLES -> PrimitiveType.TRIANGLES
+            PrimitiveType.LINES -> PrimitiveType.LINES
+            else -> PrimitiveType.POINTS
+        }
+
+        return ModelMeshData(name = name, tags = tags, primitiveType = primitiveType, indices = indices,
+                attributes = attribs, intAttributes = intAttribs, material = materialIdx,
+                animations = emptyList(), armature = emptyList())
     }
 
     private fun encodeNormal(normal: Vec3f, bits: Int, target: MutableList<Int>) {

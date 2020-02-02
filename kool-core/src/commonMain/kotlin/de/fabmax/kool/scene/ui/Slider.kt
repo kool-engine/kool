@@ -5,9 +5,9 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.MeshBuilder
 import de.fabmax.kool.util.MutableColor
 
@@ -120,9 +120,9 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
 
 open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi by baseUi {
 
-    protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
-    protected val meshBuilder = MeshBuilder(meshData)
-    protected val mesh = Mesh(meshData)
+    protected val geom = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
+    protected val meshBuilder = MeshBuilder(geom)
+    protected val mesh = Mesh(geom)
 
     override fun updateComponentAlpha() {
         baseUi.updateComponentAlpha()

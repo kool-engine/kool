@@ -5,6 +5,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.util.PrimitiveType
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
 import java.io.File

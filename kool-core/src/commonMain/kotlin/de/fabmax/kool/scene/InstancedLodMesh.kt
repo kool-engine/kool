@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.util.IndexedVertexList
 
 open class InstancedLodMesh<T: LodInstance>(val lodDescs: List<LodDesc>, name: String? = null, attributes: List<Attribute> = InstancedMesh.MODEL_INSTANCES) : Group() {
     val instances = mutableListOf<T>()
@@ -16,7 +17,7 @@ open class InstancedLodMesh<T: LodInstance>(val lodDescs: List<LodDesc>, name: S
         lodDescs.forEachIndexed { i, lod ->
             val n = if (name != null) { "$name-lod-$i" } else { null }
             val insts = LodInstances<T>(lod.maxInstances)
-            val mesh = InstancedMesh(lod.meshData, n, insts, attributes)
+            val mesh = InstancedMesh(lod.geometry, n, insts, attributes)
             instancedLodMeshes += mesh
             lodInstances += insts
             +mesh
@@ -58,7 +59,7 @@ open class InstancedLodMesh<T: LodInstance>(val lodDescs: List<LodDesc>, name: S
         }
     }
 
-    class LodDesc(val meshData: MeshData, val minDist: Float, val maxDist: Float, val isCastingShadows: Boolean, val maxInstances: Int) {
+    class LodDesc(val geometry: IndexedVertexList, val minDist: Float, val maxDist: Float, val isCastingShadows: Boolean, val maxInstances: Int) {
         // notice that minDist and maxDist are separate fields instead of using a single field of type FloatRange
         // for some reason in the latter case an object is created during range check which produces lots of heap
         // garbage if many instances are checked

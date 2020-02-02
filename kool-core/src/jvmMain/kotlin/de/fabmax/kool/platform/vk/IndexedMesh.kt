@@ -13,7 +13,7 @@ import org.lwjgl.vulkan.VK10.*
 
 class IndexedMesh(val sys: VkSystem, val data: IndexedVertexList) : VkResource() {
 
-    val numVertices = data.size
+    val numVertices = data.numVertices
     val numIndices = data.indices.position
 
     val vertexBuffer = createVertexBuffer()

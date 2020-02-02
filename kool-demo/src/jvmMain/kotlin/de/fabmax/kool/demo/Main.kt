@@ -223,16 +223,16 @@ fun bunnyScene(ctx: KoolContext): Scene = scene {
         }
 
         loadModel(ctx.assetMgr) { model ->
-            println("adding mesh: ${model.meshData.numVertices} verts, ${model.meshData.numIndices / 3} tris")
+            println("adding mesh: ${model.geometry.numVertices} verts, ${model.geometry.numIndices / 3} tris")
 
             val colorMesh = mesh(setOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS)) {
                 val shader = PbrShader()
                 shader.roughness = 0.15f
                 pipelineConfig { shaderLoader = shader::setup }
 
-                val target = meshData
-                target.vertexList.addFrom(model.meshData.vertexList)
-                target.vertexList.forEach { it.color.set(Color.WHITE) }
+                val target = geometry
+                target.addGeometry(model.geometry)
+                target.forEach { it.color.set(Color.WHITE) }
             }
             +colorMesh
             println("done")
@@ -278,7 +278,7 @@ fun loadModel(assetMgr: AssetManager, recv: (Mesh) -> Unit) {
         val scale = 0.05f
         if (model != null) {
             val mesh = model.meshes[0].toMesh()
-            mesh.meshData.vertexList.forEach {
+            mesh.geometry.forEach {
                 it.position.scale(scale)
             }
             recv(mesh)

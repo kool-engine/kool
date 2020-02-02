@@ -3,14 +3,14 @@ package de.fabmax.kool.modules.globe
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
-        Mesh(MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS), "$tileName") {
+        Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS), "$tileName") {
 
     val key: Long get() = tileName.fusedKey
 
@@ -62,7 +62,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
         if (!generatorJob.isCompleted) {
             // wait while mesh is generated in background
             return
-        } else if (meshData.vertexList.size == 0) {
+        } else if (geometry.numVertices == 0) {
             logE { "mesh is still empty" }
         }
 

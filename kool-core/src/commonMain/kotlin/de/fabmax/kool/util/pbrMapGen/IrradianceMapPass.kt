@@ -5,7 +5,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.scene.CullMethod
 import de.fabmax.kool.scene.mesh
 import de.fabmax.kool.scene.scene
 import kotlin.math.PI

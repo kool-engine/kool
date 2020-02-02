@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.util.*
 import kotlin.math.*
 
@@ -243,38 +244,38 @@ class TreeGenerator(val distribution: PointDistribution,
             val idcs = mutableListOf<Int>()
             if (parent != null) {
                 if (children.isEmpty()) {
-                    val tipIdx = target.meshData.addVertex {
+                    val tipIdx = target.geometry.addVertex {
                         position.set(this@TreeNode)
                         this@TreeNode.subtract(parent!!, normal).norm()
                         texCoord.set(0f, texV)
                     }
                     for (i in 0..8) {
-                        idcs += target.meshData.addVertex {
+                        idcs += target.geometry.addVertex {
                             position.set(parent!!.circumPts[i%8])
                             parent!!.circumPts[i%8].subtract(parent!!, normal).norm()
                             texCoord.set(i / 8f, parent!!.texV)
                         }
                     }
                     for (i in 0 until 8) {
-                        target.meshData.addTriIndices(tipIdx, idcs[i], idcs[i + 1])
+                        target.geometry.addTriIndices(tipIdx, idcs[i], idcs[i + 1])
                     }
 
                 } else {
                     for (i in 0..8) {
-                        idcs += target.meshData.addVertex {
+                        idcs += target.geometry.addVertex {
                             position.set(circumPts[i%8])
                             circumPts[i%8].subtract(this@TreeNode, normal).norm()
                             texCoord.set(i / 8f, texV)
                         }
-                        idcs += target.meshData.addVertex {
+                        idcs += target.geometry.addVertex {
                             position.set(parent!!.circumPts[i%8])
                             parent!!.circumPts[i%8].subtract(parent!!, normal).norm()
                             texCoord.set(i / 8f, parent!!.texV)
                         }
                     }
                     for (i in 0 until 8) {
-                        target.meshData.addTriIndices(idcs[i * 2], idcs[i * 2 + 1], idcs[i * 2 + 2])
-                        target.meshData.addTriIndices(idcs[i * 2 + 1], idcs[i * 2 + 3], idcs[i * 2 + 2])
+                        target.geometry.addTriIndices(idcs[i * 2], idcs[i * 2 + 1], idcs[i * 2 + 2])
+                        target.geometry.addTriIndices(idcs[i * 2 + 1], idcs[i * 2 + 3], idcs[i * 2 + 2])
                     }
                 }
             }
@@ -299,7 +300,7 @@ class TreeGenerator(val distribution: PointDistribution,
                         val i1 = vertex(Vec3f(0f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 1f))
                         val i2 = vertex(Vec3f(0.1f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(1f, 1f))
                         val i3 = vertex(Vec3f(0.1f, -0.022f, 0f), NEG_Z_AXIS, Vec2f(1f, 0f))
-                        meshData.addIndices(i0, i1, i2, i0, i2, i3)
+                        geometry.addIndices(i0, i1, i2, i0, i2, i3)
                     }
                 }
             }

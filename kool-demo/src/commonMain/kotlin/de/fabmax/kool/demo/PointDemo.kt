@@ -17,7 +17,7 @@ fun pointScene(): Scene {
     val trav = InRadiusTraverser<MeshPoint>().setup(Vec3f.ZERO, 1f)
     //val trav = KNearestTraverser<MeshPoint>().setup(Vec3f.ZERO, 3000)
 
-    val data = pointMesh.meshData
+    val data = pointMesh.geometry
     val ptVertCnt = if (pointMesh is BillboardMesh) 4 else 1
 
     var frameCnt = 30

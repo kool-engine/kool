@@ -4,9 +4,11 @@ import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Usage
 import de.fabmax.kool.util.createUint16Buffer
 import org.khronos.webgl.WebGLProgram
 import org.khronos.webgl.WebGLRenderingContext.Companion.ARRAY_BUFFER
+import org.khronos.webgl.WebGLRenderingContext.Companion.DYNAMIC_DRAW
 import org.khronos.webgl.WebGLRenderingContext.Companion.ELEMENT_ARRAY_BUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.FLOAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.INT
@@ -146,7 +148,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         }
 
         private fun checkBuffers() {
-            val md = mesh.meshData
+            val md = mesh.geometry
             if (indexBuffer == null) {
                 indexBuffer = BufferResource(ELEMENT_ARRAY_BUFFER, ctx)
             }
@@ -159,7 +161,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     } else {
                         attributeLocations[vertexAttrib.glslSrcName]?.let { location ->
                             val vbo = VboBinder(dataBufferF!!, vertexAttrib.type.size / 4,
-                                    md.vertexList.strideBytesF, md.vertexList.attributeOffsets[vertexAttrib]!! / 4, FLOAT)
+                                    md.strideBytesF, md.attributeOffsets[vertexAttrib]!! / 4, FLOAT)
                             attributeBinders[vertexAttrib.glslSrcName] = AttributeOnLocation(vbo, location)
                         }
                     }
@@ -171,7 +173,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     if (vertexAttrib.type.isInt) {
                         attributeLocations[vertexAttrib.glslSrcName]?.let { location ->
                             val vbo = VboBinder(dataBufferI!!, vertexAttrib.type.size / 4,
-                                    md.vertexList.strideBytesI, md.vertexList.attributeOffsets[vertexAttrib]!! / 4, INT)
+                                    md.strideBytesI, md.attributeOffsets[vertexAttrib]!! / 4, INT)
                             attributeBinders[vertexAttrib.glslSrcName] = AttributeOnLocation(vbo, location)
                         }
                     }
@@ -182,27 +184,34 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 if (md.isRebuildBoundsOnSync) {
                     md.rebuildBounds()
                 }
+                val usage = md.usage.glUsage()
                 if (!ctx.glCapabilities.uint32Indices) {
                     // convert index buffer to uint16
                     val uint16Buffer = createUint16Buffer(md.numIndices)
-                    for (i in 0 until md.vertexList.indices.position) {
-                        uint16Buffer.put(md.vertexList.indices[i].toShort())
+                    for (i in 0 until md.indices.position) {
+                        uint16Buffer.put(md.indices[i].toShort())
                     }
                     indexType = UNSIGNED_SHORT
-                    //indexBuffer?.setData(uint16Buffer, md.usage, ctx)
-                    indexBuffer?.setData(uint16Buffer, STATIC_DRAW, ctx)
+                    indexBuffer?.setData(uint16Buffer, usage, ctx)
                 } else {
                     indexType = UNSIGNED_INT
-                    indexBuffer?.setData(md.vertexList.indices, STATIC_DRAW, ctx)
+                    indexBuffer?.setData(md.indices, usage, ctx)
                 }
                 primitiveType = TRIANGLES
                 numIndices = md.numIndices
-                dataBufferF?.setData(md.vertexList.dataF, STATIC_DRAW, ctx)
-                dataBufferI?.setData(md.vertexList.dataI, STATIC_DRAW, ctx)
+                dataBufferF?.setData(md.dataF, usage, ctx)
+                dataBufferI?.setData(md.dataI, usage, ctx)
                 md.isSyncRequired = false
             }
         }
     }
 
     private data class AttributeOnLocation(val vbo: VboBinder, val loc: Int)
+
+    private fun Usage.glUsage(): Int {
+        return when (this) {
+            Usage.DYNAMIC -> DYNAMIC_DRAW
+            Usage.STATIC -> STATIC_DRAW
+        }
+    }
 }

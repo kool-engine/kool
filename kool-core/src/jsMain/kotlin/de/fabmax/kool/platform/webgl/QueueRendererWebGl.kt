@@ -1,10 +1,10 @@
 package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.drawqueue.DrawQueue
+import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.scene.CullMethod
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
 import org.khronos.webgl.WebGLRenderingContext.Companion.BACK

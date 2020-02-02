@@ -8,12 +8,8 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.isFuzzyEqual
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.SpringDamperFloat
+import de.fabmax.kool.util.*
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -109,9 +105,9 @@ open class ScrollHandler(val scrollTarget: UiContainer, name: String = "${scroll
 
 open class ScrollHandlerUi(val scrollHandler: ScrollHandler) : ComponentUi {
 
-    protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS)
-    protected val meshBuilder = MeshBuilder(meshData)
-    protected val mesh = Mesh(meshData)
+    protected val geom = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS)
+    protected val meshBuilder = MeshBuilder(geom)
+    protected val mesh = Mesh(geom)
 
     override fun updateComponentAlpha() {
 //        val shader = mesh.shader

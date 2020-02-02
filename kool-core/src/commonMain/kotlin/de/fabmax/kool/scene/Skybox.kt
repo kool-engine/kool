@@ -3,8 +3,9 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.util.IndexedVertexList
 
-class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(MeshData(Attribute.POSITIONS)) {
+class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(IndexedVertexList(Attribute.POSITIONS)) {
     constructor(ft: String, bk: String, lt: String, rt: String, up: String, dn: String) : this(CubeMapTexture {
         it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
     })

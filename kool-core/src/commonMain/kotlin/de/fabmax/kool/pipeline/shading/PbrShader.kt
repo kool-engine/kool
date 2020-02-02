@@ -175,7 +175,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
                 if (cfg.isIbl) {
                     val irrMap = cubeMapNode("irradianceMap")
-                    irrSampler = cubeMapSamplerNode(irrMap, ifNormals.output)
+                    irrSampler = cubeMapSamplerNode(irrMap, ifNormals.output, false)
                     reflMap = cubeMapNode("reflectionMap")
                     brdfLut = textureNode("brdfLut")
                 } else {
@@ -193,7 +193,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     inAlbedo = if (ifColors != null) {
                         ifColors.output
                     } else {
-                        val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output)
+                        val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
                         val albedoLin = gammaNode(albedoSampler.outColor)
                         albedoLin.outColor
                     }
