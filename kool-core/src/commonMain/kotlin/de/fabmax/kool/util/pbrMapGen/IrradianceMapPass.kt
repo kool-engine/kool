@@ -26,7 +26,7 @@ class IrradianceMapPass(hdriTexture: Texture) {
             isSingleShot = true
             scene = scene {
                 +mesh(setOf(Attribute.POSITIONS)) {
-                    generator = {
+                    generate {
                         cube { centerOrigin() }
                     }
 

@@ -37,7 +37,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {
-            generator = {
+            generate {
                 timedMs({"Generated ${geometry.numIndices / 3} trunk triangles in"}) {
                     treeGen.buildTrunkMesh(this)
                 }
@@ -60,7 +60,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
         // generate tree leaf mesh
         leafMesh = textureMesh {
-            generator = {
+            generate {
                 timedMs({"Generated ${geometry.numIndices / 3} leaf triangles in"}) {
                     treeGen.buildLeafMesh(this)
                 }

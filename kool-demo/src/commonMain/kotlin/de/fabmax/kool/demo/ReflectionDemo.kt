@@ -33,7 +33,7 @@ fun reflectionDemo(ctx: KoolContext): List<Scene> {
         +makeGroundGrid(100).also { reflectedObjects += it }
 
         val mesh = colorMesh {
-            generator = {
+            generate {
                 sphere {
                     center.set(0f, 3f, 0f)
                     radius = 2.5f
@@ -54,7 +54,7 @@ fun reflectionDemo(ctx: KoolContext): List<Scene> {
         +transformGroup {
             reflectedObjects += this
             +colorMesh {
-                generator = {
+                generate {
                     withTransform {
                         color = Color.MD_PINK
                         translate(-8f, 1f, -8f)

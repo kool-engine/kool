@@ -1,7 +1,6 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
@@ -13,11 +12,7 @@ import de.fabmax.kool.util.MeshBuilder
 
 inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(IndexedVertexList(attributes), name)
-
     mesh.block()
-    // todo: Optionally generate geometry lazily
-    mesh.generateGeometry()
-
     return mesh
 
 }
@@ -51,8 +46,6 @@ fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate:
  */
 open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(name) {
 
-    open var generator: (MeshBuilder.() -> Unit)? = null
-
     var pipelineLoader: (Mesh.(KoolContext) -> Pipeline)? = null
     private var pipeline: Pipeline? = null
 
@@ -61,12 +54,10 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     override val bounds: BoundingBox
         get() = geometry.bounds
 
-    open fun generateGeometry() {
-        generator?.let { generatorFun ->
-            geometry.batchUpdate {
-                clear()
-                MeshBuilder(this).generatorFun()
-            }
+    open fun generate(generator: MeshBuilder.() -> Unit) {
+        geometry.batchUpdate {
+            clear()
+            MeshBuilder(this).generator()
         }
     }
 
@@ -100,10 +91,6 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
 
         // fixme: use some caching, to avoid per-frame allocation of new DrawCommand object
         // multiple draw command objects are needed if object is rendered by multiple render passes (shadow maps, etc.)
-        val drawCommand = DrawCommand(this)
-        drawCommand.scene = scene
-        drawCommand.pipeline = getPipeline(ctx)
-        drawCommand.captureMvp(ctx)
-        scene!!.drawQueue!! += drawCommand
+        scene?.drawQueue?.addMesh(this, ctx)
     }
 }

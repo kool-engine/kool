@@ -35,7 +35,7 @@ class ReflectionMapPass(hdriTexture: Texture) {
 
             scene = scene {
                 +mesh(setOf(Attribute.POSITIONS)) {
-                    generator = {
+                    generate {
                         cube { centerOrigin() }
                     }
 

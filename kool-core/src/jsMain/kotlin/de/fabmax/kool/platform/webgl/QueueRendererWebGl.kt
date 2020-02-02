@@ -29,8 +29,12 @@ class QueueRendererWebGl(val ctx: JsContext) {
             cmd.pipeline?.let { pipeline ->
                 glAttribs.setupPipelineAttribs(pipeline)
 
-                val inst = shaderMgr.setupShader(cmd)
-                gl.drawElements(inst.primitiveType, inst.numIndices, inst.indexType, 0)
+                if (cmd.mesh.geometry.numIndices > 0) {
+                    val inst = shaderMgr.setupShader(cmd)
+                    if (inst.primitiveType != 0 && inst.indexType != 0) {
+                        gl.drawElements(inst.primitiveType, inst.numIndices, inst.indexType, 0)
+                    }
+                }
             }
         }
     }

@@ -71,7 +71,7 @@ class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
     val vertexIt: VertexView
 
     var isRebuildBoundsOnSync = false
-    var isSyncRequired = false
+    var isSyncRequired = true
     var isBatchUpdate = false
 
     constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toHashSet())
@@ -150,7 +150,7 @@ class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
         isSyncRequired = true
         isBatchUpdate = wasBatchUpdate
         if (rebuildBounds) {
-            TODO()
+            rebuildBounds()
         }
     }
 

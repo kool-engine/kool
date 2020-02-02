@@ -19,7 +19,7 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
             rotate((ctx.time * 17).toFloat(), Vec3f.Y_AXIS)
         }
         +colorMesh {
-            generator = {
+            generate {
                 scale(5f, 5f, 5f)
                 cube {
                     centerOrigin()

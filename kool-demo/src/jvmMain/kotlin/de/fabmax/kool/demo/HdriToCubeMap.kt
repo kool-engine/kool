@@ -137,7 +137,7 @@ fun hdriToCubeMapPass(hdri: Texture): OffscreenPassCube {
 
         scene = scene {
             +mesh(setOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
-                generator = {
+                generate {
                     cube { centerOrigin() }
                 }
                 pipelineConfig {

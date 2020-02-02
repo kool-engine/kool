@@ -150,7 +150,7 @@ private fun Scene.colorGrid(irradianceMap: CubeMapTexture, reflectionMap: CubeMa
     for (y in 0 until nRows) {
         for (x in 0 until nCols) {
             +colorMesh {
-                generator = {
+                generate {
                     //color = colors[(x * nRows + y) % colors.size].gamma()
                     color = colors[(y * nCols + x) % colors.size].gamma()
                     sphere {
@@ -186,7 +186,7 @@ private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture, reflectio
     for (y in 0 until nRows) {
         for (x in 0 until nCols) {
             +colorMesh {
-                generator = {
+                generate {
                     color = Color.DARK_RED
                     //color = Color.MD_GREEN.gamma()
                     sphere {
@@ -242,7 +242,7 @@ private fun Scene.pbrMat(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTe
 
     +transformGroup {
         +textureMesh(isNormalMapped = true) {
-            generator = {
+            generate {
                 vertexModFun = {
                     texCoord.x *= 4
                     texCoord.y *= 2

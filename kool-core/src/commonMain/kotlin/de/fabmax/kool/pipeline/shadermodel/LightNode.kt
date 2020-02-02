@@ -37,7 +37,7 @@ class LightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : ShaderNode("
     }
 
     private fun encodeLightSetup(cmd: DrawCommand) {
-        val lights = cmd.scene?.lighting?.lights
+        val lights = cmd.mesh.scene?.lighting?.lights
         if (lights != null) {
             uLightCnt.value = min(lights.size, maxLights)
             for (i in 0 until uLightCnt.value) {

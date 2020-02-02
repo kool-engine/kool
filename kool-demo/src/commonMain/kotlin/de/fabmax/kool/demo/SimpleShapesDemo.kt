@@ -41,7 +41,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
         // Add a sphere mesh, node name is optional but nice for debugging
         +textureMesh("Sphere") {
             // The generator function is called to initially generate the mesh geometry
-            generator = {
+            generate {
                 // Generate the sphere mesh with a sphere radius of 1.5 units
                 sphere {
                     radius = 1.5f
@@ -95,7 +95,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
 //            }
 
             // The generator function is called to initially generate the mesh geometry
-            generator = {
+            generate {
                 // Make the generated mesh twice as large
                 scale(2f, 2f, 2f)
 
@@ -145,7 +145,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
         // units tall
         val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN), ctx)
         +textMesh(font) {
-            generator = {
+            generate {
                 color = Color.LIME
                 text(font) {
                     // Set the text to render, for now only characters defined in [Font.STD_CHARS] can be rendered

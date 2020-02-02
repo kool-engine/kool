@@ -68,7 +68,7 @@ class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
                     uViewMat.value.set(cmd.viewMat)
                     uProjMat.value.set(cmd.projMat)
 
-                    uCamPos.value.set(cmd.scene?.camera?.globalPos ?: Vec3f.ZERO, 1f)
+                    uCamPos.value.set(cmd.mesh.scene?.camera?.globalPos ?: Vec3f.ZERO, 1f)
                 }
             }
         }

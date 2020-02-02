@@ -10,7 +10,7 @@ fun makeGroundGrid(cells: Int, y: Float = 0f): Node {
 
     return textureMesh(isNormalMapped = true) {
         isCastingShadow = false
-        generator = {
+        generate {
             withTransform {
                 rotate(-90f, Vec3f.X_AXIS)
                 color = Color.LIGHT_GRAY.withAlpha(0.2f)

@@ -11,12 +11,11 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
     })
 
     init {
-        generator = {
+        generate {
             cube {
                 centerOrigin()
             }
         }
-        generateGeometry()
         isFrustumChecked = false
 
         val texName = "envMap"

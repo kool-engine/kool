@@ -285,7 +285,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
         val quads = colorMesh {
             isFrustumChecked = false
 //            meshData.usage = GL_DYNAMIC_DRAW
-            generator = {
+            generate {
                 // Set y-axis as surface normal for all quad vertices
                 vertexModFun = {
                     normal.set(Vec3f.Y_AXIS)

@@ -4,6 +4,7 @@ import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.PrimitiveType
 import de.fabmax.kool.util.Usage
 import de.fabmax.kool.util.createUint16Buffer
 import org.khronos.webgl.WebGLProgram
@@ -12,6 +13,8 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.DYNAMIC_DRAW
 import org.khronos.webgl.WebGLRenderingContext.Companion.ELEMENT_ARRAY_BUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.FLOAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.INT
+import org.khronos.webgl.WebGLRenderingContext.Companion.LINES
+import org.khronos.webgl.WebGLRenderingContext.Companion.POINTS
 import org.khronos.webgl.WebGLRenderingContext.Companion.STATIC_DRAW
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE0
 import org.khronos.webgl.WebGLRenderingContext.Companion.TRIANGLES
@@ -79,8 +82,8 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
 
         private var nextTexUnit = TEXTURE0
 
-        var indexType = 0
         var numIndices = 0
+        var indexType = 0
         var primitiveType = 0
 
         init {
@@ -197,7 +200,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     indexType = UNSIGNED_INT
                     indexBuffer?.setData(md.indices, usage, ctx)
                 }
-                primitiveType = TRIANGLES
+                primitiveType = md.primitiveType.glElemType()
                 numIndices = md.numIndices
                 dataBufferF?.setData(md.dataF, usage, ctx)
                 dataBufferI?.setData(md.dataI, usage, ctx)
@@ -207,6 +210,14 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     }
 
     private data class AttributeOnLocation(val vbo: VboBinder, val loc: Int)
+
+    private fun PrimitiveType.glElemType(): Int {
+        return when (this) {
+            PrimitiveType.LINES -> LINES
+            PrimitiveType.POINTS -> POINTS
+            PrimitiveType.TRIANGLES -> TRIANGLES
+        }
+    }
 
     private fun Usage.glUsage(): Int {
         return when (this) {

@@ -45,7 +45,7 @@ fun jsTestScene() {
         defaultCamTransform()
 
         +textureMesh {
-            generator = {
+            generate {
                 icoSphere {
                     steps = 4
                     center.set(3f, 0f, 0f)
@@ -60,7 +60,7 @@ fun jsTestScene() {
         }
 
         +textureMesh {
-            generator = {
+            generate {
                 cube {
                     colorCube()
                     centerOrigin()
@@ -79,7 +79,7 @@ fun jsTestScene() {
         }
 
         +colorMesh {
-            generator = {
+            generate {
                 cube {
                     colorCube()
                     centerOrigin()
@@ -114,7 +114,7 @@ fun offscreenTest(ctx: KoolContext) {
         defaultCamTransform()
 
         +colorMesh {
-            generator = {
+            generate {
                 cube {
                     colorCube()
                     centerOrigin()
@@ -148,7 +148,7 @@ fun icoScene(ctx: KoolContext): Scene = scene {
     defaultCamTransform()
 
     +mesh(setOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
-        generator = {
+        generate {
             vertexModFun = {
                 color.r = texCoord.x
                 color.g = texCoord.y
@@ -206,7 +206,7 @@ fun bunnyScene(ctx: KoolContext): Scene = scene {
         translate(0f, 1.5f, 0f)
 
         +colorMesh {
-            generator = {
+            generate {
                 color = Color.GRAY
                 withTransform {
                     translate(0f, -3.75f, 0f)
@@ -249,7 +249,7 @@ class LightMesh(val light: Light) : TransformGroup() {
     private val rotOff = randomF(0f, 3f)
     init {
         val lightMesh = colorMesh {
-            generator = {
+            generate {
                 color = light.color.withAlpha(1f)
                 sphere {
                     radius = 0.2f
