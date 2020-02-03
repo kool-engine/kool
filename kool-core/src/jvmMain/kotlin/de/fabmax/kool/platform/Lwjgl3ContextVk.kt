@@ -112,6 +112,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
             // drawQueue now contains actual draw commands
             // command buffer will be set up in onDrawFrame, called as a call back from render loop
 
+            engineStats.resetPrimitveCount()
             vkSystem.renderLoop.drawFrame()
         }
         vkDeviceWaitIdle(vkSystem.device.vkDevice)
@@ -307,11 +308,11 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
 
                     vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
                     vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
-
                     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                             pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
-
                     vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0)
+
+                    engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
                 }
             }
         }

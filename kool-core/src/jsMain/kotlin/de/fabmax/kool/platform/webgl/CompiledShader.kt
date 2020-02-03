@@ -23,6 +23,7 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.UNSIGNED_SHORT
 import org.khronos.webgl.WebGLUniformLocation
 
 class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsContext) {
+
     val attributeLocations = mutableMapOf<String, Int>()
     val uniformLocations = mutableMapOf<String, WebGLUniformLocation?>()
     val instances = mutableMapOf<Long, ShaderInstance>()
@@ -100,6 +101,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             pipeline.pushConstantRanges.forEach { pc ->
                 mapPushConstants(pc)
             }
+            ctx.engineStats.pipelineInstanceCreated(pipeline.pipelineHash.toLong())
         }
 
         private fun mapPushConstants(pc: PushConstantRange) {
@@ -209,8 +211,6 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         }
     }
 
-    private data class AttributeOnLocation(val vbo: VboBinder, val loc: Int)
-
     private fun PrimitiveType.glElemType(): Int {
         return when (this) {
             PrimitiveType.LINES -> LINES
@@ -224,5 +224,11 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             Usage.DYNAMIC -> DYNAMIC_DRAW
             Usage.STATIC -> STATIC_DRAW
         }
+    }
+
+    private data class AttributeOnLocation(val vbo: VboBinder, val loc: Int)
+
+    companion object {
+        private var nextPipelineId = 1L
     }
 }

@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform.webgl
 
-import de.fabmax.kool.pipeline.BufferedTextureData
-import de.fabmax.kool.pipeline.CubeMapTextureData
-import de.fabmax.kool.pipeline.LoadedTexture
-import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.Uint8BufferImpl
 import org.khronos.webgl.WebGLRenderingContext
@@ -39,25 +36,30 @@ object TextureLoader {
         texImage2d(gl, TEXTURE_CUBE_MAP_POSITIVE_Z, img.back)
         texImage2d(gl, TEXTURE_CUBE_MAP_NEGATIVE_Z, img.front)
         gl.generateMipmap(TEXTURE_CUBE_MAP)
-        return LoadedTexture(ctx, tex)
+
+        // todo: computze correct number of mip levels (used only for mem stats, doesn't matter that much...)
+        val estSize = Texture.estimatedTexSize(img.right.width, img.right.height, img.format.pxSize, 6, 10)
+        return LoadedTexture(ctx, tex, estSize)
     }
 
     private fun loadTexture2d(ctx: JsContext, img: TextureData) : LoadedTexture {
         val gl = ctx.gl
         // fixme: is there a way to find out if the image has an alpha channel and set the texture format accordingly?
         val tex = gl.createTexture()
-        gl.run {
-            bindTexture(TEXTURE_2D, tex)
-            texImage2d(this, TEXTURE_2D, img)
 
-//            texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, CLAMP_TO_EDGE)
-//            texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, CLAMP_TO_EDGE)
-//            texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR)
-//            texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR)
+        gl.bindTexture(TEXTURE_2D, tex)
+        texImage2d(gl, TEXTURE_2D, img)
 
-            generateMipmap(TEXTURE_2D)
-        }
-        return LoadedTexture(ctx, tex)
+//        gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, CLAMP_TO_EDGE)
+//        gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, CLAMP_TO_EDGE)
+//        gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR)
+//        gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR)
+
+        gl.generateMipmap(TEXTURE_2D)
+
+        // todo: computze correct number of mip levels (used only for mem stats, doesn't matter that much...)
+        val estSize = Texture.estimatedTexSize(img.width, img.height, img.format.pxSize, 1, 10)
+        return LoadedTexture(ctx, tex, estSize)
     }
 
     private fun texImage2d(gl: WebGLRenderingContext, target: Int, data: TextureData) {

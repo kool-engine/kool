@@ -32,8 +32,8 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
         content.ui.setCustom(BlankComponentUi())
 
         +container("dbgPanel") {
-            val height = 132 + ctx.getSysInfos().size * 18f
-            val width = 130f
+            val height = 150 + ctx.getSysInfos().size * 18f
+            val width = 150f
 
             when (position) {
                 Position.UPPER_LEFT -> layoutSpec.setOrigin(zero(), dps(-height, true), zero())
@@ -136,8 +136,8 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                 var last = -1
                 var lastMem = -1.0
                 onPreRender += { c ->
-                    val num = 0//c.memoryMgr.numTextures
-                    val mem = 0.0//c.memoryMgr.getTotalMemory(GlResource.Type.TEXTURE)
+                    val num = c.engineStats.textureAllocations.size
+                    val mem = c.engineStats.totalTextureSize.toDouble()
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
@@ -156,8 +156,8 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                 var last = -1
                 var lastMem = -1.0
                 onPreRender += { c ->
-                    val num = 0//c.memoryMgr.numBuffers
-                    val mem = 0.0//c.memoryMgr.getTotalMemory(GlResource.Type.BUFFER)
+                    val num = c.engineStats.bufferAllocations.size
+                    val mem = c.engineStats.totalBufferSize.toDouble()
                     if (num != last || mem != lastMem) {
                         last = num
                         lastMem = mem
@@ -173,12 +173,32 @@ fun debugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT): S
                 padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                 textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
-                var last = -1
+                var lastPipelines = -1
+                var lastInstances = -1
                 onPreRender += { c ->
-                    val num = 0//c.memoryMgr.numShaders
-                    if (num != last) {
-                        last = num
-                        text = "$num Shaders"
+                    val numPipelines = c.engineStats.pipelines.size
+                    val numInstances = c.engineStats.numPipelineInstances
+                    if (numInstances != lastInstances || numPipelines != lastPipelines) {
+                        lastPipelines = numPipelines
+                        lastInstances = numInstances
+                        text = "$numPipelines Shaders / $numInstances Instances"
+                    }
+                }
+            }
+
+            yOri -= 18f
+            +label("lblNumPrimitives") {
+                layoutSpec.setOrigin(zero(), dps(yOri, true), zero())
+                layoutSpec.setSize(dps(width, true), dps(18f, true), full())
+                padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+
+                var lastPrimitives = -1
+                onPreRender += { c ->
+                    val numPrimitives = c.engineStats.numPrimitives
+                    if (numPrimitives != lastPrimitives) {
+                        lastPrimitives = numPrimitives
+                        text = "$numPrimitives Primitives"
                     }
                 }
             }

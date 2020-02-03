@@ -4,10 +4,10 @@ import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.LoadedTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.WebGL2RenderingContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
 import de.fabmax.kool.platform.glInternalFormat
+import de.fabmax.kool.platform.pxSize
 import org.khronos.webgl.WebGLFramebuffer
 import org.khronos.webgl.WebGLRenderbuffer
 import org.khronos.webgl.WebGLRenderingContext.Companion.CLAMP_TO_EDGE
@@ -83,7 +83,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         var offscreenTex: WebGLTexture? = null
 
         fun create(ctx: JsContext) {
-            val gl = ctx.gl as WebGL2RenderingContext
+            val gl = ctx.gl
 
             val intFormat = offscreenPass.colorFormat.glInternalFormat
             val width = offscreenPass.texWidth
@@ -98,7 +98,8 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
             gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR_MIPMAP_LINEAR)
             gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR)
 
-            loadedTexture = LoadedTexture(ctx, offscreenTex)
+            val estSize = estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 1, offscreenPass.mipLevels)
+            loadedTexture = LoadedTexture(ctx, offscreenTex, estSize)
             loadingState = LoadingState.LOADED
         }
     }
@@ -195,7 +196,8 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
             gl.texParameteri(TEXTURE_CUBE_MAP, TEXTURE_MIN_FILTER, LINEAR_MIPMAP_LINEAR)
             gl.texParameteri(TEXTURE_CUBE_MAP, TEXTURE_MAG_FILTER, LINEAR)
 
-            loadedTexture = LoadedTexture(ctx, offscreenTex)
+            val estSize = estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 6, offscreenPass.mipLevels)
+            loadedTexture = LoadedTexture(ctx, offscreenTex, estSize)
             loadingState = LoadingState.LOADED
         }
     }

@@ -300,6 +300,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
             if (descriptorSetInstances.size == descriptorSetPoolSize) {
                 throw IllegalStateException("Descriptor set pool exhausted. Use larger descriptorSetPoolSize")
             }
+            sys.ctx.engineStats.pipelineInstanceCreated(vkGraphicsPipeline)
             DescriptorSet(this, pipeline)
         }
     }
@@ -311,6 +312,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
         vkDestroyDescriptorPool(sys.device.vkDevice, descriptorPool, null)
 
         descriptorSetInstances.clear()
+        sys.ctx.engineStats.pipelineDestroyed(vkGraphicsPipeline)
 
         logD { "Destroyed graphics pipeline" }
     }

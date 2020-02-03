@@ -24,6 +24,8 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
             checkVk(sys.memManager.createBuffer(bufferInfo, allocUsage, pBuffer, pAllocation))
             vkBuffer = pBuffer[0]
             allocation = pAllocation[0]
+
+            sys.ctx.engineStats.bufferAllocated(vkBuffer, bufferSize.toInt())
         }
     }
 
@@ -54,5 +56,6 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
 
     override fun freeResources() {
         sys.memManager.freeBuffer(vkBuffer, allocation)
+        sys.ctx.engineStats.bufferDeleted(vkBuffer)
     }
 }

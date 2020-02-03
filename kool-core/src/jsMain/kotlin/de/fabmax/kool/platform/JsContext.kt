@@ -289,6 +289,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     }
 
     private fun draw() {
+        engineStats.resetPrimitveCount()
+
         for (i in 0 until offscreenPasses.size) {
             drawOffscreen(offscreenPasses[i])
         }

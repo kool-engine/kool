@@ -24,9 +24,7 @@ abstract class KoolContext {
     abstract val shaderGenerator: ShaderGenerator
 
     val inputMgr = InputManager()
-    val memoryMgr = MemoryManager()
-    //val shaderMgr = ShaderManager()
-    //val textureMgr = TextureManager()
+    val engineStats = EngineStats()
 
     var viewport = Viewport(0, 0, 0, 0)
     var clearColor = Color(0.05f, 0.15f, 0.25f, 1f)
@@ -108,14 +106,6 @@ abstract class KoolContext {
         fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
 
         inputMgr.onNewFrame(this)
-//        textureMgr.onNewFrame(this)
-//        shaderMgr.onNewFrame(this)
-
-        // by default the viewport covers the full window
-//        if (windowWidth != viewport.width || windowHeight != viewport.height) {
-//            viewport = Viewport(0, 0, windowWidth, windowHeight)
-//            applyAttributes()
-//        }
 
         for (i in offscreenPasses.indices.reversed()) {
             if (offscreenPasses[i].isSingleShot && offscreenPasses[i].frameIdx > 0) {

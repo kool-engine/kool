@@ -33,6 +33,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
                     val inst = shaderMgr.setupShader(cmd)
                     if (inst.primitiveType != 0 && inst.indexType != 0) {
                         gl.drawElements(inst.primitiveType, inst.numIndices, inst.indexType, 0)
+                        ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
                     }
                 }
             }

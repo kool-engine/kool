@@ -42,3 +42,16 @@ val TexFormat.glFormat: Int
         TexFormat.RGB_F16 -> WebGLRenderingContext.RGB
         TexFormat.RGBA_F16 -> WebGLRenderingContext.RGBA
     }
+
+val TexFormat.pxSize: Int
+    get() = when(this) {
+        TexFormat.R -> 1
+        TexFormat.RG -> 2
+        TexFormat.RGB -> 3
+        TexFormat.RGBA -> 4
+
+        TexFormat.R_F16 -> 2
+        TexFormat.RG_F16 -> 4
+        TexFormat.RGB_F16 -> 6
+        TexFormat.RGBA_F16 -> 8
+    }

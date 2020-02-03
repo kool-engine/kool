@@ -5,6 +5,7 @@ import de.fabmax.kool.util.*
 
 class BufferResource(val target: Int, ctx: JsContext) {
 
+    val bufferId = nextBufferId++
     val buffer = ctx.gl.createBuffer()
 
     fun delete(ctx: JsContext) {
@@ -21,7 +22,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         data.flip()
         bind(ctx)
         ctx.gl.bufferData(target, (data as Float32BufferImpl).buffer, usage)
-        //ctx.memoryMgr.memoryAllocated(this, pos * 4)
+        ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
         data.limit = limit
         data.position = pos
     }
@@ -32,7 +33,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         data.flip()
         bind(ctx)
         ctx.gl.bufferData(target, (data as Uint8BufferImpl).buffer, usage)
-        //ctx.memoryMgr.memoryAllocated(this, pos)
+        ctx.engineStats.bufferAllocated(bufferId, data.capacity)
         data.limit = limit
         data.position = pos
     }
@@ -43,7 +44,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         data.flip()
         bind(ctx)
         ctx.gl.bufferData(target, (data as Uint16BufferImpl).buffer, usage)
-        //ctx.memoryMgr.memoryAllocated(this, pos * 2)
+        ctx.engineStats.bufferAllocated(bufferId, data.capacity * 2)
         data.limit = limit
         data.position = pos
     }
@@ -54,12 +55,16 @@ class BufferResource(val target: Int, ctx: JsContext) {
         data.flip()
         bind(ctx)
         ctx.gl.bufferData(target, (data as Uint32BufferImpl).buffer, usage)
-        //ctx.memoryMgr.memoryAllocated(this, pos * 4)
+        ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
         data.limit = limit
         data.position = pos
     }
 
     fun unbind(ctx: JsContext) {
         ctx.gl.bindBuffer(target, null)
+    }
+
+    companion object {
+        private var nextBufferId = 1L
     }
 }

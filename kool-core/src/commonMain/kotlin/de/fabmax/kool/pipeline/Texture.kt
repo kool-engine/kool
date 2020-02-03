@@ -51,6 +51,18 @@ open class Texture(
         MIRRORED_REPEAT,
         REPEAT
     }
+
+    companion object {
+        fun estimatedTexSize(width: Int, height: Int, bytesPerPx: Int, layers: Int, mipLevels: Int): Int {
+            var mipFac = 1.0
+            var mipAdd = 0.25
+            for (i in 1..mipLevels) {
+                mipFac += mipAdd
+                mipAdd *= 0.25
+            }
+            return (width * height * layers * bytesPerPx * mipFac).roundToInt()
+        }
+    }
 }
 
 open class CubeMapTexture(

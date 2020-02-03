@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Position
 import de.fabmax.kool.util.debugOverlay
 import de.fabmax.kool.util.pbrMapGen.BrdfLutPass
 import de.fabmax.kool.util.pbrMapGen.IrradianceMapPass
@@ -24,7 +25,7 @@ fun pbrDemo(assetsBaseDir: String) {
     val ctx = createDefaultContext()
     ctx.assetMgr.assetsBaseDir = assetsBaseDir
     ctx.scenes += pbrDemoScene(ctx)
-    ctx.scenes += debugOverlay(ctx)
+    ctx.scenes += debugOverlay(ctx, Position.LOWER_RIGHT)
     ctx.run()
 }
 
