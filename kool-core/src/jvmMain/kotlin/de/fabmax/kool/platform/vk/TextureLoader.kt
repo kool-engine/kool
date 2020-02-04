@@ -5,6 +5,7 @@ import de.fabmax.kool.platform.vk.util.vkBytesPerPx
 import de.fabmax.kool.platform.vk.util.vkFormat
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.createUint8Buffer
+import de.fabmax.kool.util.logW
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 import java.nio.ByteBuffer
@@ -13,11 +14,12 @@ import kotlin.math.log2
 import kotlin.math.max
 
 object TextureLoader {
-    fun loadCubeMap(sys: VkSystem, cubeImg: CubeMapTextureData) : LoadedTexture {
+    fun loadCubeMap(sys: VkSystem, props: TextureProps, cubeImg: CubeMapTextureData) : LoadedTexture {
         val width = cubeImg.width
         val height = cubeImg.height
         val dstFmt = checkFormat(cubeImg.format)
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong() * 6
+        val mipLevels = if (props.mipMapping) { floor(log2(max(width, height).toDouble())).toInt() + 1 } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -31,10 +33,14 @@ object TextureLoader {
             put(reshape(dstFmt, cubeImg.front))
         }
 
+        if (props.mipMapping) {
+            logW { "Mip-map generation for cube maps not yet implemented" }
+        }
+
         val imgConfig = Image.Config()
         imgConfig.width = width
         imgConfig.height = height
-        imgConfig.mipLevels = 1
+        imgConfig.mipLevels = 1 // todo: mipLevels
         imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
         imgConfig.format = dstFmt.vkFormat
         imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
@@ -51,18 +57,18 @@ object TextureLoader {
         val textureImageView = ImageView(sys, textureImage.vkImage, textureImage.format, VK_IMAGE_ASPECT_COLOR_BIT,
                 textureImage.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE)
 
-        val sampler = createSampler(sys, textureImage)
+        val sampler = createSampler(sys, props, textureImage)
         return LoadedTexture(sys, dstFmt, textureImage, textureImageView, sampler)
     }
 
-    fun loadTexture(sys: VkSystem, img: BufferedTextureData) : LoadedTexture {
+    fun loadTexture(sys: VkSystem, props: TextureProps, img: BufferedTextureData) : LoadedTexture {
         val width = img.width
         val height = img.height
         val dstFmt = checkFormat(img.format)
         val buf = reshape(dstFmt, img)
 
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong()
-        val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
+        val mipLevels = if (props.mipMapping) { floor(log2(max(width, height).toDouble())).toInt() + 1 } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -91,21 +97,37 @@ object TextureLoader {
 
         val textureImageView = ImageView(sys, textureImage, VK_IMAGE_ASPECT_COLOR_BIT)
 
-        val sampler = createSampler(sys, textureImage)
+        val sampler = createSampler(sys, props, textureImage)
         return LoadedTexture(sys, dstFmt, textureImage, textureImageView, sampler)
     }
 
-    private fun createSampler(sys: VkSystem, texImage: Image): Long {
+    private fun FilterMethod.vkFilterMethod(): Int {
+        return when (this) {
+            FilterMethod.NEAREST -> VK_FILTER_NEAREST
+            FilterMethod.LINEAR -> VK_FILTER_LINEAR
+        }
+    }
+
+    private fun AddressMode.vkAddressMode(): Int {
+        return when(this) {
+            AddressMode.CLAMP_TO_BORDER -> VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
+            AddressMode.CLAMP_TO_EDGE -> VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+            AddressMode.MIRRORED_REPEAT -> VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT
+            AddressMode.REPEAT -> VK_SAMPLER_ADDRESS_MODE_REPEAT
+        }
+    }
+
+    private fun createSampler(sys: VkSystem, props: TextureProps, texImage: Image): Long {
         memStack {
             val samplerInfo = callocVkSamplerCreateInfo {
                 sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
-                magFilter(VK_FILTER_LINEAR)
-                minFilter(VK_FILTER_LINEAR)
-                addressModeU(VK_SAMPLER_ADDRESS_MODE_REPEAT)
-                addressModeV(VK_SAMPLER_ADDRESS_MODE_REPEAT)
-                addressModeW(VK_SAMPLER_ADDRESS_MODE_REPEAT)
-                anisotropyEnable(true)
-                maxAnisotropy(16f)
+                magFilter(props.magFilter.vkFilterMethod())
+                minFilter(props.minFilter.vkFilterMethod())
+                addressModeU(props.addressModeU.vkAddressMode())
+                addressModeV(props.addressModeV.vkAddressMode())
+                addressModeW(props.addressModeW.vkAddressMode())
+                anisotropyEnable(props.maxAnisotropy > 1)
+                maxAnisotropy(props.maxAnisotropy.toFloat())
                 borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
                 unnormalizedCoordinates(false)
                 compareEnable(false)

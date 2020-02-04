@@ -1,8 +1,6 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.pipeline.CubeMapTexture
-import de.fabmax.kool.pipeline.LoadedTexture
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.OffscreenRenderPass
 import de.fabmax.kool.platform.vk.util.vkFormat
@@ -38,6 +36,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     }
 
     private inner class OffscreenTexture2d: Texture(loader = null) {
+
         fun create(sys: VkSystem, rp: OffscreenRenderPass) {
             loadedTexture = LoadedTexture(sys, rp.texFormat, rp.image, rp.imageView, rp.sampler, true)
             loadingState = LoadingState.LOADED
@@ -135,7 +134,10 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         }
     }
 
-    private inner class OffscreenTextureCube: CubeMapTexture(loader = null) {
+    private inner class OffscreenTextureCube: CubeMapTexture(
+            TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE, addressModeW = AddressMode.CLAMP_TO_EDGE),
+            loader = null) {
+
         lateinit var image: Image
         lateinit var imageView: ImageView
         var sampler: Long = 0L
@@ -176,7 +178,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
                     addressModeV(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                     addressModeW(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                     anisotropyEnable(false)
-                    maxAnisotropy(16f)
+                    maxAnisotropy(1f)
                     borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
                     unnormalizedCoordinates(false)
                     compareEnable(false)

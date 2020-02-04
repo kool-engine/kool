@@ -1,8 +1,6 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.pipeline.CubeMapTexture
-import de.fabmax.kool.pipeline.LoadedTexture
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
@@ -176,7 +174,10 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         }
     }
 
-    private inner class OffscreenTextureCube : CubeMapTexture(loader = null) {
+    private inner class OffscreenTextureCube : CubeMapTexture(
+            TextureProps(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE),
+            loader = null) {
+
         var offscreenTex: WebGLTexture? = null
 
         fun create(ctx: JsContext) {

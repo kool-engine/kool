@@ -10,14 +10,7 @@ import kotlin.math.roundToInt
 /**
  * Describes a texture by it's properties and a loader function which is called once the texture is used.
  */
-open class Texture(
-        val addressModeU: AddressMode = AddressMode.REPEAT,
-        val addressModeV: AddressMode = AddressMode.REPEAT,
-        val addressModeW: AddressMode = AddressMode.REPEAT,
-        val minFilter: FilterMethod = FilterMethod.LINEAR,
-        val magFilter: FilterMethod = FilterMethod.LINEAR,
-        val maxAnisotropy: Int = 16,
-        val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)?) {
+open class Texture(val props: TextureProps = TextureProps(), val loader: (suspend CoroutineScope.(AssetManager) -> TextureData)?) {
 
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
@@ -40,23 +33,11 @@ open class Texture(
         LOADING_FAILED
     }
 
-    enum class FilterMethod {
-        NEAREST,
-        LINEAR
-    }
-
-    enum class AddressMode {
-        CLAMP_TO_BORDER,
-        CLAMP_TO_EDGE,
-        MIRRORED_REPEAT,
-        REPEAT
-    }
-
     companion object {
         fun estimatedTexSize(width: Int, height: Int, bytesPerPx: Int, layers: Int, mipLevels: Int): Int {
             var mipFac = 1.0
             var mipAdd = 0.25
-            for (i in 1..mipLevels) {
+            for (i in 2..mipLevels) {
                 mipFac += mipAdd
                 mipAdd *= 0.25
             }
@@ -65,24 +46,37 @@ open class Texture(
     }
 }
 
-open class CubeMapTexture(
-        addressModeU: AddressMode = AddressMode.CLAMP_TO_EDGE,
-        addressModeV: AddressMode = AddressMode.CLAMP_TO_EDGE,
-        addressModeW: AddressMode = AddressMode.CLAMP_TO_EDGE,
-        minFilter: FilterMethod = FilterMethod.LINEAR,
-        magFilter: FilterMethod = FilterMethod.LINEAR,
-        maxAnisotropy: Int = 16,
-        loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)?) :
+open class CubeMapTexture(props: TextureProps = TextureProps(), loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)?) :
+        Texture(props, loader)
 
-        Texture(addressModeU, addressModeV, addressModeW, minFilter, magFilter, maxAnisotropy, loader)
+data class TextureProps(
+        val format: TexFormat = TexFormat.RGBA,
+        val addressModeU: AddressMode = AddressMode.REPEAT,
+        val addressModeV: AddressMode = AddressMode.REPEAT,
+        val addressModeW: AddressMode = AddressMode.REPEAT,
+        val minFilter: FilterMethod = FilterMethod.LINEAR,
+        val magFilter: FilterMethod = FilterMethod.LINEAR,
+        val mipMapping: Boolean = true,
+        val maxAnisotropy: Int = 16)
 
+enum class FilterMethod {
+    NEAREST,
+    LINEAR
+}
+
+enum class AddressMode {
+    CLAMP_TO_BORDER,
+    CLAMP_TO_EDGE,
+    MIRRORED_REPEAT,
+    REPEAT
+}
 
 abstract class TextureData {
-    open var width = 0
+    var width = 0
         protected set
-    open var height = 0
+    var height = 0
         protected set
-    open var format = TexFormat.RGBA
+    var format = TexFormat.RGBA
         protected set
 
     abstract val data: Any

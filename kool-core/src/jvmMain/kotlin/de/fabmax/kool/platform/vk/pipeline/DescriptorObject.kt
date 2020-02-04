@@ -126,7 +126,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
         fun pollCompleted(): Boolean {
             if (isCompleted && tex.loadingState != Texture.LoadingState.LOADING_FAILED) {
-                tex.loadedTexture = getLoadedTex(deferredTex.getCompleted(), sys)
+                tex.loadedTexture = getLoadedTex(tex, deferredTex.getCompleted(), sys)
                 tex.loadingState = Texture.LoadingState.LOADED
             }
             return isCompleted
@@ -137,10 +137,10 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         // todo: integrate texture manager
         private val loadedTextures = mutableMapOf<TextureData, LoadedTexture>()
 
-        private fun getLoadedTex(texData: TextureData, sys: VkSystem): LoadedTexture {
+        private fun getLoadedTex(tex: Texture, texData: TextureData, sys: VkSystem): LoadedTexture {
             loadedTextures.values.removeIf { it.isDestroyed }
             return loadedTextures.computeIfAbsent(texData) { k ->
-                val loaded = LoadedTexture.fromTexData(sys, k)
+                val loaded = LoadedTexture.fromTexData(sys, tex.props, k)
                 sys.device.addDependingResource(loaded)
                 loaded
             }

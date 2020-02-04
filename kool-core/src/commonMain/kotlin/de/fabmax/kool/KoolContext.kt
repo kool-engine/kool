@@ -16,8 +16,6 @@ abstract class KoolContext {
 
     var screenDpi = 96f
 
-    abstract val glCapabilities: GlCapabilities
-
     abstract val assetMgr: AssetManager
 
     // fixme: move to / join with ShaderManager?

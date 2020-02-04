@@ -41,11 +41,6 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 100f, private val t
     }
 
     override fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
-        if (!ctx.glCapabilities.depthTextures) {
-            // depth textures are not supported on current platform, there's no point in going ahead
-            return
-        }
-
         val scene = nodeToRender.scene ?: return
         val camera = scene.camera
 

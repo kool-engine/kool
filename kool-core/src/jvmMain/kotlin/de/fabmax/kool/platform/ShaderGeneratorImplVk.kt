@@ -73,6 +73,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         model.fragmentStage.generateCode(codeGen)
         return """
             #version 450
+            precision highp float;
             ${model.infoStr()}
             
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.FRAGMENT_SHADER)}

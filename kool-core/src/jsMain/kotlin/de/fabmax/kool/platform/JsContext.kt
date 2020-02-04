@@ -2,14 +2,11 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
-import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
 import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
-import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_COMPONENT
 import org.khronos.webgl.WebGLRenderingContext.Companion.MAX_TEXTURE_IMAGE_UNITS
-import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST
 import org.khronos.webgl.WebGLRenderingContext.Companion.ONE
 import org.khronos.webgl.WebGLRenderingContext.Companion.ONE_MINUS_SRC_ALPHA
 import org.w3c.dom.Element
@@ -25,8 +22,6 @@ import kotlin.browser.window
  */
 @Suppress("UnsafeCastFromDynamic")
 class JsContext internal constructor(val props: InitProps) : KoolContext() {
-    override val glCapabilities: GlCapabilities
-
     override val assetMgr = JsAssetManager(props.assetsBaseDir, this)
 
     override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
@@ -43,6 +38,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
     private var animationMillis = 0.0
 
+    val glCapabilities = GlCapabilities()
+
     init {
         canvas = document.getElementById(props.canvasName) as HTMLCanvasElement
         // try to get a WebGL2 context first and use WebGL version 1 as fallback
@@ -51,30 +48,12 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             webGlCtx = canvas.getContext("experimental-webgl2")
         }
 
-        // default attributes for minimal WebGL 1 context, are changed depending on available stuff
-        val uint32Indices: Boolean
-        val depthTextures: Boolean
-        val maxTexUnits: Int
-        var shaderIntAttribs = false
-        var depthComponentIntFormat = DEPTH_COMPONENT
-        val depthFilterMethod = NEAREST
-        var anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED
-        var glslDialect = GlslDialect.GLSL_DIALECT_100
-        var glVersion = GlVersion("WebGL", 1, 0)
-
         if (webGlCtx != null) {
             gl = webGlCtx as WebGL2RenderingContext
             sysInfo += "WebGL 2"
 
-            uint32Indices = true
-            depthTextures = true
-            shaderIntAttribs = true
-            depthComponentIntFormat = DEPTH_COMPONENT24
-            glslDialect = GlslDialect.GLSL_DIALECT_300_ES
-            glVersion = GlVersion("WebGL", 2, 0)
-            maxTexUnits = gl.getParameter(MAX_TEXTURE_IMAGE_UNITS).asDynamic()
-
-            val colorBufferFloat = gl.getExtension("EXT_color_buffer_float") != null
+            glCapabilities.maxTexUnits = gl.getParameter(MAX_TEXTURE_IMAGE_UNITS).asDynamic()
+            glCapabilities.hasFloatTextures = gl.getExtension("EXT_color_buffer_float") != null
 
         } else {
             js("alert(\"Unable to initialize WebGL2 context. Your browser may not support it.\")")
@@ -106,35 +85,13 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
         gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
         if (extAnisotropic != null) {
-            val max = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Float
-            anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT)
+            glCapabilities.maxAnisotropy = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Int
+            glCapabilities.glTextureMaxAnisotropyExt = extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT
         }
 
         // use blending with pre-multiplied alpha
         gl.blendFunc(ONE, ONE_MINUS_SRC_ALPHA)
         gl.enable(BLEND)
-
-        // unfortunately no support for geometry shaders in WebGL
-        val geometryShader = false
-
-        // by default javascript images don't offer pre-multiplied alpha
-        // Even if images are converted to an ImageBitmap with
-        // window.createImageBitmap(image, ImageBitmapOptions(premultiplyAlpha = PremultiplyAlpha.PREMULTIPLY))
-        // texture data inside WebGL shader apparently is not pre-multiplied...
-        val premultipliedAlphaTex = false
-
-        glCapabilities = GlCapabilities(
-                uint32Indices,
-                shaderIntAttribs,
-                maxTexUnits,
-                premultipliedAlphaTex,
-                depthTextures,
-                depthComponentIntFormat,
-                depthFilterMethod,
-                anisotropicTexFilterInfo,
-                geometryShader,
-                glslDialect,
-                glVersion)
 
         screenDpi = JsImpl.dpi
         windowWidth = canvas.clientWidth
@@ -379,6 +336,17 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     }
 }
 
+class GlCapabilities {
+    var maxTexUnits = 16
+        internal set
+    var hasFloatTextures = false
+        internal set
+    var maxAnisotropy = 1
+        internal set
+    var glTextureMaxAnisotropyExt = 0
+        internal set
+}
+
 external class TouchEvent: UIEvent {
     val altKey: Boolean
     val changedTouches: TouchList
@@ -429,6 +397,11 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val RG8: Int
         val RGB8: Int
         val RGBA8: Int
+
+        val R8UI: Int
+        val RG8UI: Int
+        val RGB8UI: Int
+        val RGBA8UI: Int
 
         val R16F: Int
         val RG16F: Int

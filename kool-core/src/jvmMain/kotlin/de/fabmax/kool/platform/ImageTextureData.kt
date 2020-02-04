@@ -8,7 +8,6 @@ import de.fabmax.kool.util.createUint8Buffer
 import java.awt.Transparency
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferByte
-import kotlin.math.round
 
 class ImageTextureData(image: BufferedImage) :
         BufferedTextureData(image.toBuffer(), image.width, image.height, image.format) {
@@ -77,30 +76,12 @@ class ImageTextureData(image: BufferedImage) :
             // swap byte order and apply pre-multiplication if there is alpha
             if (format == TexFormat.RGBA && bytes.size == nPixels) {
                 for (i in 0 until nPixels step 4) {
-                    val alpha = bytes[i].toInt() and 0xff
-                    when (alpha) {
-                        0 -> {
-                            bytes[i] = 0
-                            bytes[i+1] = 0
-                            bytes[i+2] = 0
-                            bytes[i+3] = 0
-                        }
-                        255 -> {
-                            bytes[i] = bytes[i+3]
-                            val b = bytes[i+1]
-                            bytes[i+1] = bytes[i+2]
-                            bytes[i+2] = b
-                            bytes[i+3] = 255.toByte()
-                        }
-                        else -> {
-                            val f = alpha / 255f
-                            bytes[i] = round((bytes[i+3].toInt() and 0xff) * f).toByte()
-                            val b = bytes[i+1]
-                            bytes[i+1] = round((bytes[i+2].toInt() and 0xff) * f).toByte()
-                            bytes[i+2] = round((b.toInt() and 0xff) * f).toByte()
-                            bytes[i+3] = alpha.toByte()
-                        }
-                    }
+                    val a = bytes[i]
+                    val b = bytes[i+1]
+                    bytes[i] = bytes[i+3]
+                    bytes[i+1] = bytes[i+2]
+                    bytes[i+2] = b
+                    bytes[i+3] = a
                 }
                 target.put(bytes)
                 return true
@@ -120,7 +101,7 @@ class ImageTextureData(image: BufferedImage) :
         private fun slowCopyImage(image: BufferedImage, target: Uint8Buffer, format: TexFormat, width: Int, height: Int) {
             val pixel = IntArray(4)
             val model = image.colorModel
-            val sizes = IntArray(4) { i -> 1 shl model.componentSize[i % model.componentSize.size] }
+            val sizes = IntArray(4) { i -> (1 shl model.componentSize[i % model.componentSize.size]) - 1 }
             val raster = image.data
             val alpha = image.transparency == Transparency.TRANSLUCENT || image.transparency == Transparency.BITMASK
             val indexed = image.type == BufferedImage.TYPE_BYTE_BINARY || image.type == BufferedImage.TYPE_BYTE_INDEXED
@@ -144,19 +125,6 @@ class ImageTextureData(image: BufferedImage) :
                     var g = pixel[1] / sizes[1].toFloat()
                     var b = pixel[2] / sizes[2].toFloat()
                     val a = pixel[3] / sizes[3].toFloat()
-
-                    // pre-multiply alpha
-                    if (format == TexFormat.RGBA && a < 1f) {
-                        if (a == 0f) {
-                            r = 0f
-                            g = 0f
-                            b = 0f
-                        } else {
-                            r *= a
-                            g *= a
-                            b *= a
-                        }
-                    }
 
                     // copy bytes to target buf
                     if (format == TexFormat.RGBA || format == TexFormat.RGB) {

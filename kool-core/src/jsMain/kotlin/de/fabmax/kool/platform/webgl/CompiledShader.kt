@@ -6,7 +6,6 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.PrimitiveType
 import de.fabmax.kool.util.Usage
-import de.fabmax.kool.util.createUint16Buffer
 import org.khronos.webgl.WebGLProgram
 import org.khronos.webgl.WebGLRenderingContext.Companion.ARRAY_BUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.DYNAMIC_DRAW
@@ -19,7 +18,6 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.STATIC_DRAW
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE0
 import org.khronos.webgl.WebGLRenderingContext.Companion.TRIANGLES
 import org.khronos.webgl.WebGLRenderingContext.Companion.UNSIGNED_INT
-import org.khronos.webgl.WebGLRenderingContext.Companion.UNSIGNED_SHORT
 import org.khronos.webgl.WebGLUniformLocation
 
 class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsContext) {
@@ -190,18 +188,10 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     md.rebuildBounds()
                 }
                 val usage = md.usage.glUsage()
-                if (!ctx.glCapabilities.uint32Indices) {
-                    // convert index buffer to uint16
-                    val uint16Buffer = createUint16Buffer(md.numIndices)
-                    for (i in 0 until md.indices.position) {
-                        uint16Buffer.put(md.indices[i].toShort())
-                    }
-                    indexType = UNSIGNED_SHORT
-                    indexBuffer?.setData(uint16Buffer, usage, ctx)
-                } else {
-                    indexType = UNSIGNED_INT
-                    indexBuffer?.setData(md.indices, usage, ctx)
-                }
+
+                indexType = UNSIGNED_INT
+                indexBuffer?.setData(md.indices, usage, ctx)
+
                 primitiveType = md.primitiveType.glElemType()
                 numIndices = md.numIndices
                 dataBufferF?.setData(md.dataF, usage, ctx)

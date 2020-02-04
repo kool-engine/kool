@@ -45,14 +45,14 @@ actual class LoadedTexture(val sys: VkSystem, val format: TexFormat, val texture
     companion object {
         private val nextTexId = AtomicLong(1L)
 
-        fun fromFile(sys: VkSystem, path: String): LoadedTexture {
-            return fromTexData(sys, ImageTextureData(ImageIO.read(FileInputStream(path))))
+        fun fromFile(sys: VkSystem, path: String, texProps: TextureProps = TextureProps()): LoadedTexture {
+            return fromTexData(sys, texProps, ImageTextureData(ImageIO.read(FileInputStream(path))))
         }
 
-        fun fromTexData(sys: VkSystem, data: TextureData): LoadedTexture {
+        fun fromTexData(sys: VkSystem, texProps: TextureProps, data: TextureData): LoadedTexture {
             return when(data) {
-                is BufferedTextureData -> TextureLoader.loadTexture(sys, data)
-                is CubeMapTextureData -> TextureLoader.loadCubeMap(sys, data)
+                is BufferedTextureData -> TextureLoader.loadTexture(sys, texProps, data)
+                is CubeMapTextureData -> TextureLoader.loadCubeMap(sys, texProps, data)
                 else -> TODO("texture data not implemented: ${data::class.java.name}")
             }
         }

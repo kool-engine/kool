@@ -4,6 +4,7 @@ import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.webgl.TextureLoader
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
@@ -83,21 +84,22 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         return ByteArray(inflated.length) { inflated[it] }
     }
 
-    override fun loadAndPrepareTexture(assetPath: String, recv: (Texture) -> Unit) {
-        val tex = Texture { it.loadTextureData(assetPath) }
+    override fun loadAndPrepareTexture(assetPath: String, props: TextureProps, recv: (Texture) -> Unit) {
+        val tex = Texture(props) { it.loadTextureData(assetPath) }
         launch {
             val data = loadTextureData(assetPath)
-            tex.loadedTexture = TextureLoader.loadTexture(ctx, data)
+            tex.loadedTexture = TextureLoader.loadTexture(ctx, props, data)
             tex.loadingState = Texture.LoadingState.LOADED
             recv(tex)
         }
     }
 
-    override fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String, recv: (CubeMapTexture) -> Unit) {
-        val tex = CubeMapTexture { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
+    override fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
+                                       props: TextureProps, recv: (CubeMapTexture) -> Unit) {
+        val tex = CubeMapTexture(props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         launch {
             val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
-            tex.loadedTexture = TextureLoader.loadTexture(ctx, data)
+            tex.loadedTexture = TextureLoader.loadTexture(ctx, props, data)
             tex.loadingState = Texture.LoadingState.LOADED
             recv(tex)
         }

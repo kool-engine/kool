@@ -7,7 +7,10 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.InstancedMesh
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.VertexView
+import de.fabmax.kool.util.createFloat32Buffer
 
 open class Armature(geometry: IndexedVertexList, name: String? = null,
                     instances: Instances<*> = identityInstance(),
@@ -181,11 +184,6 @@ open class Armature(geometry: IndexedVertexList, name: String? = null,
         }
 
         if (update) {
-            if (!isCpuAnimated && !ctx.glCapabilities.shaderIntAttribs) {
-                logW { "Vertex shader animation requested, but not supported by hardware. Falling back to CPU based mesh animation" }
-                isCpuAnimated = true
-            }
-
             // only update mesh if an animation was applied
             if (isCpuAnimated) {
                 // transform mesh vertex positions on CPU

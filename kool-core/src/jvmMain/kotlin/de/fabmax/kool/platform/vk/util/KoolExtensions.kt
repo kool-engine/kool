@@ -66,29 +66,3 @@ val TexFormat.vkBytesPerPx: Int
 //
 //    return this
 //}
-//
-//fun VkVertexInputBindingDescription.Buffer.setBindingDescription(vertices: IndexedVertexList, binding: Int = 0) {
-//    binding(binding)
-//    stride(vertices.strideBytesF)
-//    inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
-//}
-//
-//fun VkVertexInputAttributeDescription.Buffer.setAttributeDescription(vertices: IndexedVertexList, binding: Int = 0) {
-//    var iAttrib = 0
-//    vertices.attributeOffsets.forEach { (attrib, off) ->
-//        this[iAttrib].apply {
-//            binding(binding)
-//            location(iAttrib)
-//            offset(off * 4)
-//            when (attrib.type) {
-//                AttributeType.FLOAT -> format(VK_FORMAT_R32_SFLOAT)
-//                AttributeType.VEC_2F -> format(VK_FORMAT_R32G32_SFLOAT)
-//                AttributeType.VEC_3F -> format(VK_FORMAT_R32G32B32_SFLOAT)
-//                AttributeType.VEC_4F -> format(VK_FORMAT_R32G32B32A32_SFLOAT)
-//                AttributeType.COLOR_4F -> format(VK_FORMAT_R32G32B32A32_SFLOAT)
-//                else -> throw IllegalStateException("Attribute is not a float type")
-//            }
-//        }
-//        iAttrib++
-//    }
-//}

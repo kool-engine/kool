@@ -8,7 +8,6 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.logW
 
 /**
  * BillboardMesh draws Quads which always face to the camera. Can be used for particle systems etc. If supported
@@ -105,11 +104,11 @@ open class BillboardMesh(name: String? = null) : Mesh(IndexedVertexList(Attribut
     }
 
     override fun preRender(ctx: KoolContext) {
-        if (isWithGeometryShader && !ctx.glCapabilities.geometryShader) {
-            isWithGeometryShader = false
-            logW { "Falling back to non-geometry-shader billboard mesh" }
-            convertToQuadMesh()
-        }
+//        if (isWithGeometryShader && !ctx.glCapabilities.geometryShader) {
+//            isWithGeometryShader = false
+//            logW { "Falling back to non-geometry-shader billboard mesh" }
+//            convertToQuadMesh()
+//        }
 
         if (drawOrder != DrawOrder.AS_IS) {
             sortElems()

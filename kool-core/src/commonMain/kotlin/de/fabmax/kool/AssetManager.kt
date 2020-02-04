@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.pipeline.CubeMapTextureData
 import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
@@ -137,9 +138,10 @@ abstract class AssetManager(var assetsBaseDir: String) : CoroutineScope {
         return CubeMapTextureData(ftd, bkd, ltd, rtd, upd, dnd)
     }
 
-    abstract fun loadAndPrepareTexture(assetPath: String, recv: (de.fabmax.kool.pipeline.Texture) -> Unit)
+    abstract fun loadAndPrepareTexture(assetPath: String, props: TextureProps = TextureProps(), recv: (de.fabmax.kool.pipeline.Texture) -> Unit)
 
-    abstract fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String, recv: (de.fabmax.kool.pipeline.CubeMapTexture) -> Unit)
+    abstract fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
+                                       props: TextureProps = TextureProps(), recv: (de.fabmax.kool.pipeline.CubeMapTexture) -> Unit)
 
     protected inner class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset> = CompletableDeferred(job))
 

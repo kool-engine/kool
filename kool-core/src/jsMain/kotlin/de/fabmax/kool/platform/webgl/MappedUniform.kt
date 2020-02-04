@@ -154,7 +154,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
                         logE { "Texture loading failed: $ex" }
                         texture.loadingState = Texture.LoadingState.LOADING_FAILED
                     } else {
-                        texture.loadedTexture = getLoadedTex(defTex.getCompleted(), ctx)
+                        texture.loadedTexture = getLoadedTex(defTex.getCompleted(), texture.props, ctx)
                         texture.loadingState = Texture.LoadingState.LOADED
                     }
                 }
@@ -174,10 +174,10 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
         // todo: integrate texture manager
         private val loadedTextures = mutableMapOf<TextureData, LoadedTexture>()
 
-        protected fun getLoadedTex(texData: TextureData, ctx: JsContext): LoadedTexture {
+        protected fun getLoadedTex(texData: TextureData, props: TextureProps, ctx: JsContext): LoadedTexture {
             loadedTextures.values.removeAll { it.isDestroyed }
             return loadedTextures.getOrPut(texData) {
-                val loaded = TextureLoader.loadTexture(ctx, texData)
+                val loaded = TextureLoader.loadTexture(ctx, props, texData)
                 loaded
             }
         }

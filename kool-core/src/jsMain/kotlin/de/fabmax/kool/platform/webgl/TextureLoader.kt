@@ -4,6 +4,11 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.Uint8BufferImpl
 import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.WebGLRenderingContext.Companion.CLAMP_TO_EDGE
+import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
+import org.khronos.webgl.WebGLRenderingContext.Companion.MIRRORED_REPEAT
+import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST
+import org.khronos.webgl.WebGLRenderingContext.Companion.REPEAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.RGBA
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP
@@ -13,19 +18,27 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP_NEGATI
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP_POSITIVE_X
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP_POSITIVE_Y
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP_POSITIVE_Z
+import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_MAG_FILTER
+import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_MIN_FILTER
+import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_S
+import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_T
 import org.khronos.webgl.WebGLRenderingContext.Companion.UNSIGNED_BYTE
+import kotlin.math.floor
+import kotlin.math.log2
+import kotlin.math.max
+import kotlin.math.min
 
 object TextureLoader {
-    fun loadTexture(ctx: JsContext, data: TextureData) : LoadedTexture {
+    fun loadTexture(ctx: JsContext, props: TextureProps, data: TextureData) : LoadedTexture {
         return when (data) {
-            is BufferedTextureData -> loadTexture2d(ctx, data)
-            is ImageTextureData -> loadTexture2d(ctx, data)
-            is CubeMapTextureData -> loadTextureCube(ctx, data)
+            is BufferedTextureData -> loadTexture2d(ctx, props, data)
+            is ImageTextureData -> loadTexture2d(ctx, props, data)
+            is CubeMapTextureData -> loadTextureCube(ctx, props, data)
             else -> throw IllegalArgumentException("TextureData type not supported: $data")
         }
     }
 
-    private fun loadTextureCube(ctx: JsContext, img: CubeMapTextureData) : LoadedTexture {
+    private fun loadTextureCube(ctx: JsContext, props: TextureProps, img: CubeMapTextureData) : LoadedTexture {
         val gl = ctx.gl
         val tex = gl.createTexture()
         gl.bindTexture(TEXTURE_CUBE_MAP, tex)
@@ -35,14 +48,17 @@ object TextureLoader {
         texImage2d(gl, TEXTURE_CUBE_MAP_NEGATIVE_Y, img.down)
         texImage2d(gl, TEXTURE_CUBE_MAP_POSITIVE_Z, img.back)
         texImage2d(gl, TEXTURE_CUBE_MAP_NEGATIVE_Z, img.front)
-        gl.generateMipmap(TEXTURE_CUBE_MAP)
 
-        // todo: computze correct number of mip levels (used only for mem stats, doesn't matter that much...)
-        val estSize = Texture.estimatedTexSize(img.right.width, img.right.height, img.format.pxSize, 6, 10)
+        if (props.mipMapping) {
+            gl.generateMipmap(TEXTURE_CUBE_MAP)
+        }
+
+        val mipLevels = floor(log2(max(img.width, img.height).toDouble())).toInt() + 1
+        val estSize = Texture.estimatedTexSize(img.right.width, img.right.height, img.format.pxSize, 6, mipLevels)
         return LoadedTexture(ctx, tex, estSize)
     }
 
-    private fun loadTexture2d(ctx: JsContext, img: TextureData) : LoadedTexture {
+    private fun loadTexture2d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTexture {
         val gl = ctx.gl
         // fixme: is there a way to find out if the image has an alpha channel and set the texture format accordingly?
         val tex = gl.createTexture()
@@ -50,16 +66,37 @@ object TextureLoader {
         gl.bindTexture(TEXTURE_2D, tex)
         texImage2d(gl, TEXTURE_2D, img)
 
-//        gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, CLAMP_TO_EDGE)
-//        gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, CLAMP_TO_EDGE)
-//        gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR)
-//        gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR)
+        gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, props.minFilter.glFilterMethod())
+        gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, props.magFilter.glFilterMethod())
+        gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, props.addressModeU.glAddressMode())
+        gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, props.addressModeV.glAddressMode())
 
-        gl.generateMipmap(TEXTURE_2D)
+        if (props.maxAnisotropy > 1 && ctx.glCapabilities.maxAnisotropy > 1f) {
+            gl.texParameteri(TEXTURE_2D, ctx.glCapabilities.glTextureMaxAnisotropyExt, min(props.maxAnisotropy, ctx.glCapabilities.maxAnisotropy))
+        }
+        if (props.mipMapping) {
+            gl.generateMipmap(TEXTURE_2D)
+        }
 
-        // todo: computze correct number of mip levels (used only for mem stats, doesn't matter that much...)
-        val estSize = Texture.estimatedTexSize(img.width, img.height, img.format.pxSize, 1, 10)
+        val mipLevels = floor(log2(max(img.width, img.height).toDouble())).toInt() + 1
+        val estSize = Texture.estimatedTexSize(img.width, img.height, img.format.pxSize, 1, mipLevels)
         return LoadedTexture(ctx, tex, estSize)
+    }
+
+    private fun FilterMethod.glFilterMethod(): Int {
+        return when (this) {
+            FilterMethod.NEAREST -> NEAREST
+            FilterMethod.LINEAR -> LINEAR
+        }
+    }
+
+    private fun AddressMode.glAddressMode(): Int {
+        return when(this) {
+            AddressMode.CLAMP_TO_BORDER -> CLAMP_TO_EDGE
+            AddressMode.CLAMP_TO_EDGE -> CLAMP_TO_EDGE
+            AddressMode.MIRRORED_REPEAT -> MIRRORED_REPEAT
+            AddressMode.REPEAT -> REPEAT
+        }
     }
 
     private fun texImage2d(gl: WebGLRenderingContext, target: Int, data: TextureData) {

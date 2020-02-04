@@ -24,8 +24,6 @@ import java.util.concurrent.CompletableFuture
  * @author fabmax
  */
 class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
-    override val glCapabilities = GlCapabilities.UNKNOWN_CAPABILITIES
-
     override val assetMgr = JvmAssetManager(props, this)
 
     override val shaderGenerator = ShaderGeneratorImplVk()
