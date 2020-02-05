@@ -65,6 +65,7 @@ class IrradianceMapPass(hdriTexture: Texture) {
 
     private class ConvoluteIrradianceNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
         var inLocalPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
+        var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(1000f))
         val outColor = ShaderNodeIoVar(ModelVar4f("convIrradiance_outColor"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
@@ -84,10 +85,11 @@ class IrradianceMapPass(hdriTexture: Texture) {
                     uv *= invAtan;
                     uv += 0.5;
                     
-                    vec4 rgbe = ${generator.sampleTexture2d(texture.name, "uv")};
-                    
                     // decode rgbe
-                    return rgbe.rgb * pow(2.0, rgbe.w * 255.0 - 128.0);
+                    vec4 rgbe = ${generator.sampleTexture2d(texture.name, "uv", "0.0")};
+                    vec3 fRgb = rgbe.rgb;
+                    float fExp = rgbe.a * 255.0 - 128.0;
+                    return min(fRgb * pow(2.0, fExp), vec3(${maxLightIntensity.ref1f()}));
                 }
             """)
 
@@ -99,7 +101,7 @@ class IrradianceMapPass(hdriTexture: Texture) {
                 vec3 right = normalize(cross(up, normal));
                 up = cross(normal, right);
     
-                float sampleDelta = 0.00937;
+                float sampleDelta = 0.00737;
                 vec3 irradiance = vec3(0.0);
                 int nrSamples = 0; 
                 

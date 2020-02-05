@@ -6,42 +6,88 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.util.Color
 
-class TextureSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premultiply: Boolean = true) :
+class TextureSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premultiply: Boolean = false) :
         ShaderNode("tex_sampler_${texture.name}_${graph.nextNodeId}", graph) {
 
     var inTexCoord = ShaderNodeIoVar(ModelVar2fConst(Vec2f.ZERO))
     val outColor: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
-    var texLod: String? = null
+    var texLod: ShaderNodeIoVar? = null
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(texture)
         dependsOn(inTexCoord)
+        texLod?.let { dependsOn(it) }
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${outColor.declare()} = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f(), texLod)};")
+        val lod = texLod
+        if (lod != null) {
+            generator.appendMain("${outColor.declare()} = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f(), lod.ref1f())};")
+        } else {
+            generator.appendMain("${outColor.declare()} = ${generator.sampleTexture2d(texture.name, inTexCoord.ref2f())};")
+        }
         if (premultiply) {
             generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")
         }
     }
 }
 
-class CubeMapSamplerNode(val cubeMap: CubeMapNode, graph: ShaderGraph, val premultiply: Boolean = true) :
+class CubeMapSamplerNode(val cubeMap: CubeMapNode, graph: ShaderGraph, val premultiply: Boolean = false) :
         ShaderNode("cubeSampler_${cubeMap.name}_${graph.nextNodeId}", graph) {
 
     var inTexCoord = ShaderNodeIoVar(ModelVar3fConst(Vec3f.NEG_X_AXIS))
     val outColor: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
-    var texLod: String? = null
+    var texLod: ShaderNodeIoVar? = null
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         dependsOn(cubeMap)
         dependsOn(inTexCoord)
+        texLod?.let { dependsOn(it) }
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${outColor.declare()} = ${generator.sampleTextureCube(cubeMap.name, inTexCoord.ref3f(), texLod)};")
+        val lod = texLod
+        if (lod != null) {
+            generator.appendMain("${outColor.declare()} = ${generator.sampleTextureCube(cubeMap.name, inTexCoord.ref3f(), lod.ref1f())};")
+        } else {
+            generator.appendMain("${outColor.declare()} = ${generator.sampleTextureCube(cubeMap.name, inTexCoord.ref3f())};")
+        }
+        if (premultiply) {
+            generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")
+        }
+    }
+}
+
+class EquiRectSamplerNode(val texture: TextureNode, graph: ShaderGraph, val premultiply: Boolean = false) :
+        ShaderNode("equi_rect_sampler_${texture.name}_${graph.nextNodeId}", graph) {
+
+    var inTexCoord = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
+    val outColor: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
+    var texLod: ShaderNodeIoVar? = null
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(texture)
+        dependsOn(inTexCoord)
+        texLod?.let { dependsOn(it) }
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("""
+            vec3 ${name}_in = normalize(${inTexCoord.ref3f()});
+            vec2 ${name}_uv = vec2(atan(${name}_in.z, ${name}_in.x), -asin(${name}_in.y));
+            ${name}_uv *= vec2(0.1591, 0.3183);
+            ${name}_uv += 0.5;            
+        """)
+
+        val lod = texLod
+        if (lod != null) {
+            generator.appendMain("${outColor.declare()} = ${generator.sampleTexture2d(texture.name, name+"_uv", lod.ref1f())};")
+        } else {
+            generator.appendMain("${outColor.declare()} = ${generator.sampleTexture2d(texture.name, name+"_uv")};")
+        }
         if (premultiply) {
             generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")
         }

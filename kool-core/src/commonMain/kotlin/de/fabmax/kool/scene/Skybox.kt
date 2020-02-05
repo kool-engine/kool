@@ -30,11 +30,13 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
             }
             fragmentStage {
                 val sampler = cubeMapSamplerNode(cubeMapNode(texName), ifLocalPos.output, false)
+                if (texLod != 0f) {
+                    sampler.texLod = ShaderNodeIoVar(ModelVar1fConst(texLod))
+                }
                 val ldr = hdrToLdrNode(sampler.outColor)
                 colorOutput = ldr.outColor
-                if (texLod != 0f) {
-                    sampler.texLod = "$texLod"
-                }
+
+                //colorOutput = addNode(HdrTestNode(sampler.outColor, fragmentStage)).outColor
             }
         }
         val shader = ModeledShader.CubeMapColor(model, texName)
@@ -50,6 +52,22 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
         }
     }
 
+    private class HdrTestNode(val inColor: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("hdrTest", graph) {
+        val outColor = ShaderNodeIoVar(ModelVar4f("hdrTest_out"), this)
+
+        override fun setup(shaderGraph: ShaderGraph) {
+            super.setup(shaderGraph)
+            dependsOn(inColor)
+        }
+
+        override fun generateCode(generator: CodeGenerator) {
+            generator.appendMain("""
+                vec3 testRgb = vec3(log(length(${inColor.ref3f()})) / log(10.0) / 6.0);
+                ${outColor.declare()} = vec4(testRgb, 1.0);
+                """.trimIndent())
+        }
+    }
+
     private class SkyboxPosNode(val mvp: UniformBufferMvp, val inPos: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("skyboxPos", graph, ShaderStage.VERTEX_SHADER.mask) {
         val outPosition = ShaderNodeIoVar(ModelVar4f("skyboxPos_outPosition"), this)
 
@@ -57,9 +75,6 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
             super.setup(shaderGraph)
             dependsOn(inPos)
             dependsOn(mvp)
-
-            shaderGraph as VertexShaderGraph
-            shaderGraph.positionOutput = outPosition
         }
 
         override fun generateCode(generator: CodeGenerator) {

@@ -6,6 +6,7 @@ import de.fabmax.kool.util.Uint8BufferImpl
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.CLAMP_TO_EDGE
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
+import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR_MIPMAP_LINEAR
 import org.khronos.webgl.WebGLRenderingContext.Companion.MIRRORED_REPEAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST
 import org.khronos.webgl.WebGLRenderingContext.Companion.REPEAT
@@ -66,8 +67,10 @@ object TextureLoader {
         gl.bindTexture(TEXTURE_2D, tex)
         texImage2d(gl, TEXTURE_2D, img)
 
-        gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, props.minFilter.glFilterMethod())
-        gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, props.magFilter.glFilterMethod())
+        println("min filter: ${props.minFilter}, mag: ${props.magFilter}")
+
+        gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, props.minFilter.glMinFilterMethod())
+        gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, props.magFilter.glMagFilterMethod())
         gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, props.addressModeU.glAddressMode())
         gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, props.addressModeV.glAddressMode())
 
@@ -83,7 +86,14 @@ object TextureLoader {
         return LoadedTexture(ctx, tex, estSize)
     }
 
-    private fun FilterMethod.glFilterMethod(): Int {
+    private fun FilterMethod.glMinFilterMethod(): Int {
+        return when (this) {
+            FilterMethod.NEAREST -> NEAREST
+            FilterMethod.LINEAR -> LINEAR_MIPMAP_LINEAR
+        }
+    }
+
+    private fun FilterMethod.glMagFilterMethod(): Int {
         return when (this) {
             FilterMethod.NEAREST -> NEAREST
             FilterMethod.LINEAR -> LINEAR

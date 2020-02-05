@@ -77,11 +77,13 @@ class ReflectionMapPass(hdriTexture: Texture) {
     private class ConvoluteReflectionNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
         var inLocalPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
         var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0f))
+        var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(1000f))
         val outColor = ShaderNodeIoVar(ModelVar4f("convReflection_outColor"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
             dependsOn(inLocalPos)
+            dependsOn(maxLightIntensity)
             dependsOn(texture)
         }
 
@@ -90,18 +92,17 @@ class ReflectionMapPass(hdriTexture: Texture) {
 
             generator.appendFunction("reflMapFuncs", """
                 const vec2 invAtan = vec2(0.1591, 0.3183);
-                vec3 sampleEquiRect(vec3 texCoord) {
+                vec3 sampleEquiRect(vec3 texCoord, float mipLevel) {
                     vec3 equiRect_in = normalize(texCoord);
                     vec2 uv = vec2(atan(equiRect_in.z, equiRect_in.x), -asin(equiRect_in.y));
                     uv *= invAtan;
                     uv += 0.5;
                     
-                    vec4 rgbe = ${generator.sampleTexture2d(texture.name, "uv")};
-                    
                     // decode rgbe
+                    vec4 rgbe = ${generator.sampleTexture2d(texture.name, "uv", "mipLevel")};
                     vec3 fRgb = rgbe.rgb;
                     float fExp = rgbe.a * 255.0 - 128.0;
-                    return fRgb * pow(2.0, fExp);
+                    return min(fRgb * pow(2.0, fExp), vec3(${maxLightIntensity.ref1f()}));
                 }
                 
                 float RadicalInverse_VdC(uint bits) {
@@ -145,7 +146,8 @@ class ReflectionMapPass(hdriTexture: Texture) {
                 vec3 R = N;
                 vec3 V = R;
                 
-                const uint SAMPLE_COUNT = 1024u;
+                float mipLevel = ${inRoughness.ref1f()} * 16.0;
+                const uint SAMPLE_COUNT = uint(1024.0 * (1.0 + mipLevel));
                 float totalWeight = 0.0;   
                 vec3 prefilteredColor = vec3(0.0);     
                 for(uint i = 0u; i < SAMPLE_COUNT; ++i) {
@@ -155,7 +157,7 @@ class ReflectionMapPass(hdriTexture: Texture) {
             
                     float NdotL = max(dot(N, L), 0.0);
                     if(NdotL > 0.0) {
-                        prefilteredColor += sampleEquiRect(L).rgb * NdotL;
+                        prefilteredColor += sampleEquiRect(L, mipLevel).rgb * NdotL;
                         totalWeight += NdotL;
                     }
                 }

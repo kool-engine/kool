@@ -4,10 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.pipeline.BufferedTextureData
-import de.fabmax.kool.pipeline.CubeMapTexture
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.pipelineConfig
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
@@ -76,7 +73,8 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
     fun getHdriTex(idx: Int, recv: (Texture) -> Unit) {
         val tex = hdriTextures[idx]
         if (tex == null) {
-            ctx.assetMgr.loadAndPrepareTexture(hdris[idx]) {
+            val texProps = TextureProps(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST, mipMapping = true)
+            ctx.assetMgr.loadAndPrepareTexture(hdris[idx], texProps) {
                 hdriTextures[idx] = it
                 recv(it)
             }

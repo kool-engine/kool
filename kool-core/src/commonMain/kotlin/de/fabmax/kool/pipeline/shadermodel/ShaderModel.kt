@@ -141,15 +141,21 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun textureNode(texName: String) = addNode(TextureNode(stage, texName))
 
-        fun textureSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = true): TextureSamplerNode {
+        fun textureSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): TextureSamplerNode {
             val texSampler = addNode(TextureSamplerNode(texNode, stage, premultiply))
+            texCoords?.let { texSampler.inTexCoord = it }
+            return texSampler
+        }
+
+        fun equiRectSamplerNode(texNode: TextureNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): EquiRectSamplerNode {
+            val texSampler = addNode(EquiRectSamplerNode(texNode, stage, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
         }
 
         fun cubeMapNode(texName: String) = addNode(CubeMapNode(stage, texName))
 
-        fun cubeMapSamplerNode(texNode: CubeMapNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = true): CubeMapSamplerNode {
+        fun cubeMapSamplerNode(texNode: CubeMapNode, texCoords: ShaderNodeIoVar? = null, premultiply: Boolean = false): CubeMapSamplerNode {
             val texSampler = addNode(CubeMapSamplerNode(texNode, stage, premultiply))
             texCoords?.let { texSampler.inTexCoord = it }
             return texSampler
