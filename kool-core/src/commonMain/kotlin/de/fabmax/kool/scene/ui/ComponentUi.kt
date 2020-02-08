@@ -2,9 +2,6 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.pipelineConfig
-import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Disposable
@@ -31,24 +28,17 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
     protected val geometry = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
     protected val meshBuilder = MeshBuilder(geometry)
     protected val mesh = Mesh(geometry)
+    protected val shader = UiShader()
 
     val color: ThemeOrCustomProp<Color> = ThemeOrCustomProp(Color.BLACK.withAlpha(0.5f))
 
     override fun updateComponentAlpha() {
-//        shader?.alpha = component.alpha
+        shader.alpha = component.alpha
     }
 
     override fun createUi(ctx: KoolContext) {
         color.setTheme(component.root.theme.backgroundColor).apply()
-//        shader = createShader(ctx)
-//        shader?.staticColor?.set(color.prop)
-//        mesh.shader = shader
-
-        mesh.pipelineConfig {
-            cullMethod = CullMethod.NO_CULLING
-            shaderLoader = ModeledShader.vertexColor()
-        }
-
+        mesh.pipelineLoader = shader
         component.addNode(mesh, 0)
     }
 
@@ -59,24 +49,13 @@ open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 
     override fun updateUi(ctx: KoolContext) {
         color.setTheme(component.root.theme.backgroundColor).apply()
-//        shader?.staticColor?.set(color.prop)
-
         component.setupBuilder(meshBuilder)
         meshBuilder.color = color.prop
         meshBuilder.rect {
             size.set(component.width, component.height)
-            fullTexCoords()
+            zeroTexCoords()
         }
     }
-
-//    protected open fun createShader(ctx: KoolContext): BasicShader {
-//        return basicShader {
-//            lightModel = component.root.shaderLightModel
-//            colorModel = ColorModel.STATIC_COLOR
-//            isAlpha = true
-//            clipMethod = LocalPlaneClip(6)
-//        }
-//    }
 
     override fun onRender(ctx: KoolContext) {
 //        shader?.setDrawBounds(component.drawBounds)

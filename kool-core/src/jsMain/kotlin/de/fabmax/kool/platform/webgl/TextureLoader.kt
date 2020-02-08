@@ -9,6 +9,7 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR_MIPMAP_LINEAR
 import org.khronos.webgl.WebGLRenderingContext.Companion.MIRRORED_REPEAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST
+import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST_MIPMAP_NEAREST
 import org.khronos.webgl.WebGLRenderingContext.Companion.REPEAT
 import org.khronos.webgl.WebGLRenderingContext.Companion.RGBA
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
@@ -67,9 +68,7 @@ object TextureLoader {
         gl.bindTexture(TEXTURE_2D, tex)
         texImage2d(gl, TEXTURE_2D, img)
 
-        println("min filter: ${props.minFilter}, mag: ${props.magFilter}")
-
-        gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, props.minFilter.glMinFilterMethod())
+        gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, props.minFilter.glMinFilterMethod(props.mipMapping))
         gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, props.magFilter.glMagFilterMethod())
         gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, props.addressModeU.glAddressMode())
         gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, props.addressModeV.glAddressMode())
@@ -86,10 +85,10 @@ object TextureLoader {
         return LoadedTexture(ctx, tex, estSize)
     }
 
-    private fun FilterMethod.glMinFilterMethod(): Int {
-        return when (this) {
-            FilterMethod.NEAREST -> NEAREST
-            FilterMethod.LINEAR -> LINEAR_MIPMAP_LINEAR
+    private fun FilterMethod.glMinFilterMethod(mipMapping: Boolean): Int {
+        return when(this) {
+            FilterMethod.NEAREST -> if (mipMapping) NEAREST_MIPMAP_NEAREST else NEAREST
+            FilterMethod.LINEAR -> if (mipMapping) LINEAR_MIPMAP_LINEAR else LINEAR
         }
     }
 

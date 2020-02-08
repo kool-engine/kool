@@ -123,24 +123,16 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
     protected val geom = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
     protected val meshBuilder = MeshBuilder(geom)
     protected val mesh = Mesh(geom)
+    protected val shader = UiShader()
 
     override fun updateComponentAlpha() {
         baseUi.updateComponentAlpha()
-//        val shader = mesh.shader
-//        if (shader is BasicShader) {
-//            shader.alpha = slider.alpha
-//        }
+        shader.alpha = slider.alpha
     }
 
     override fun createUi(ctx: KoolContext) {
         baseUi.createUi(ctx)
-
-//        mesh.shader = basicShader {
-//            lightModel = LightModel.PHONG_LIGHTING
-//            colorModel = ColorModel.VERTEX_COLOR
-//            isAlpha = true
-//            clipMethod = LocalPlaneClip(6)
-//        }
+        mesh.pipelineLoader = shader
         slider += mesh
     }
 

@@ -12,7 +12,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
      * determine equality.
      */
     val pipelineHash: ULong
-    val pipelineInstanceId = /*(super.hashCode().toLong() shl 32) +*/ instanceId++
+    val pipelineInstanceId = instanceId++
 
     val cullMethod: CullMethod = builder.cullMethod
     val depthCompareOp: DepthCompareOp = builder.depthTest
@@ -108,12 +108,8 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
     }
 }
 
-fun Mesh.pipelineConfig(block: Pipeline.Builder.() -> Unit) {
-    pipelineLoader = { ctx ->
-        val builder = Pipeline.Builder()
-        builder.block()
-        builder.create(this, ctx)
-    }
+interface PipelineFactory {
+    fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline
 }
 
 enum class DepthCompareOp {

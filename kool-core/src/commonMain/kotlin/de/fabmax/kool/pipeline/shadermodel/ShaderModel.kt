@@ -127,6 +127,13 @@ class ShaderModel(val modelInfo: String = "") {
             return preMult
         }
 
+        fun colorAlphaNode(inColor: ShaderNodeIoVar? = null, inAlpha: ShaderNodeIoVar? = null): ColorAlphaNode {
+            val colAlpha = addNode(ColorAlphaNode(stage))
+            inColor?.let { colAlpha.inColor = it }
+            inAlpha?.let { colAlpha.inAlpha = it }
+            return colAlpha
+        }
+
         fun pushConstantNode1f(name: String) = addNode(PushConstantNode1f(Uniform1f(name), stage))
         fun pushConstantNode2f(name: String) = addNode(PushConstantNode2f(Uniform2f(name), stage))
         fun pushConstantNode3f(name: String) = addNode(PushConstantNode3f(Uniform3f(name), stage))
@@ -213,7 +220,7 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun unlitMaterialNode(albedo: ShaderNodeIoVar? = null): UnlitMaterialNode {
             val mat = addNode(UnlitMaterialNode(stage))
-            albedo?.let { mat.inAlbedo = it }
+            albedo?.let { mat.inColor = it }
             return mat
         }
 

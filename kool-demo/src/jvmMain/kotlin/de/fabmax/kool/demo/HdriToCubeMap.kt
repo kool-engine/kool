@@ -5,7 +5,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.mesh
@@ -140,35 +139,24 @@ fun hdriToCubeMapPass(hdri: Texture): OffscreenPassCube {
                 generate {
                     cube { centerOrigin() }
                 }
-                pipelineConfig {
-                    // cube is viewed from inside
-                    cullMethod = CullMethod.CULL_FRONT_FACES
 
-                    shaderLoader = { mesh, buildCtx, ctx ->
-                        val texName = "colorTex"
-                        val model = ShaderModel("Equi Rect Sampler").apply {
-                            val ifLocalPos: StageInterfaceNode
-                            vertexStage {
-                                ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                                positionOutput = simpleVertexPositionNode().outPosition
-                            }
-                            fragmentStage {
-                                val equiRect = addNode(EquiRectCoords(stage)).apply {
-                                    input = ifLocalPos.output
-                                }
-                                val sampler = textureSamplerNode(textureNode(texName), equiRect.outUv, false)
-                                val rgbeDec = addNode(DecodeAndToneMapRgbeNode(stage)).apply {
-                                    input = sampler.outColor
-                                }
-                                colorOutput = rgbeDec.outColor
-                            }
+                val model = ShaderModel("Equi Rect Sampler").apply {
+                    val ifLocalPos: StageInterfaceNode
+                    vertexStage {
+                        ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
+                        positionOutput = simpleVertexPositionNode().outPosition
+                    }
+                    fragmentStage {
+                        val sampler = equiRectSamplerNode(textureNode("colorTex"), ifLocalPos.output)
+                        val rgbeDec = addNode(DecodeAndToneMapRgbeNode(stage)).apply {
+                            input = sampler.outColor
                         }
-                        ModeledShader.TextureColor(model, texName).setup(mesh, buildCtx, ctx)
+                        colorOutput = rgbeDec.outColor
                     }
-
-                    onPipelineCreated += {
-                        (it.shader as ModeledShader.TextureColor).textureSampler.texture = hdri
-                    }
+                }
+                pipelineLoader = ModeledShader.TextureColor("colorTex", model).apply {
+                    onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
+                    onCreated += { textureSampler.texture = hdri }
                 }
             }
         }

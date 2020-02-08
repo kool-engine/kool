@@ -5,7 +5,6 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.OrthographicCamera
@@ -39,24 +38,20 @@ class BrdfLutPass {
                         }
                     }
 
-                    pipelineConfig {
-                        shaderLoader = { mesh, buildCtx, ctx ->
-                            val model = ShaderModel("BRDF LUT").apply {
-                                val ifTexCoords: StageInterfaceNode
-                                vertexStage {
-                                    ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                                    positionOutput = simpleVertexPositionNode().outPosition
-                                }
-                                fragmentStage {
-                                    val lutNd = addNode(BrdfLutNode(stage)).apply {
-                                        inTexCoords = ifTexCoords.output
-                                    }
-                                    colorOutput = lutNd.outColor
-                                }
+                    val model = ShaderModel("BRDF LUT").apply {
+                        val ifTexCoords: StageInterfaceNode
+                        vertexStage {
+                            ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
+                            positionOutput = simpleVertexPositionNode().outPosition
+                        }
+                        fragmentStage {
+                            val lutNd = addNode(BrdfLutNode(stage)).apply {
+                                inTexCoords = ifTexCoords.output
                             }
-                            ModeledShader.VertexColor(model).setup(mesh, buildCtx, ctx)
+                            colorOutput = lutNd.outColor
                         }
                     }
+                    pipelineLoader = ModeledShader.VertexColor(model)
                 }
             }
         }

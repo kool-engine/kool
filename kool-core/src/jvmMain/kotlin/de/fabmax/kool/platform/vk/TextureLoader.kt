@@ -132,7 +132,10 @@ object TextureLoader {
                 unnormalizedCoordinates(false)
                 compareEnable(false)
                 compareOp(VK_COMPARE_OP_ALWAYS)
-                mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                when (props.minFilter) {
+                    FilterMethod.NEAREST -> mipmapMode(VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                    FilterMethod.LINEAR -> mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                }
                 mipLodBias(0f)
                 minLod(0f)
                 maxLod(texImage.mipLevels.toFloat())

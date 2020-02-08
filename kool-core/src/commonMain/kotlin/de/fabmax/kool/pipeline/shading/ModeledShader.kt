@@ -5,8 +5,11 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 
-abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
-    fun setup(mesh: Mesh, buildCtx: Pipeline.BuildContext, ctx: KoolContext): ModeledShader {
+abstract class ModeledShader(protected val model: ShaderModel) : Shader(), PipelineFactory {
+
+    val onSetup = mutableListOf<((builder: Pipeline.Builder) -> Unit)>()
+
+    protected open fun setup(mesh: Mesh, buildCtx: Pipeline.BuildContext, ctx: KoolContext): ModeledShader {
         model.setup(mesh, buildCtx, ctx)
         return this
     }
@@ -15,58 +18,45 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
         return ctx.shaderGenerator.generateShader(model, pipeline, ctx)
     }
 
-    class StaticColor(model: ShaderModel, val uStaticColor: Uniform4f) : ModeledShader(model)
+    override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+        builder.shaderLoader = this::setup
+        onSetup.forEach { it(builder) }
+        return builder.create(mesh, ctx)
+    }
 
-    class VertexColor(model: ShaderModel) : ModeledShader(model)
+    //class StaticColor(model: ShaderModel, val uStaticColor: Uniform4f) : ModeledShader(model)
 
-    class TextureColor(model: ShaderModel, private val texName: String) : ModeledShader(model) {
+    class VertexColor(model: ShaderModel = vertexColorModel()) : ModeledShader(model)
+
+    class TextureColor(private val texName: String = "colorTex", model: ShaderModel = textureColorModel(texName)) : ModeledShader(model) {
         lateinit var textureSampler: TextureSampler
 
         override fun onPipelineCreated(pipeline: Pipeline) {
-            super.onPipelineCreated(pipeline)
             textureSampler = model.findNode<TextureNode>(texName)!!.sampler
+            super.onPipelineCreated(pipeline)
         }
     }
 
-    class CubeMapColor(model: ShaderModel, private val texName: String) : ModeledShader(model) {
+    class CubeMapColor(private val texName: String = "cubeMap", model: ShaderModel = cubeMapColorModel(texName)) : ModeledShader(model) {
         lateinit var cubeMapSampler: CubeMapSampler
 
         override fun onPipelineCreated(pipeline: Pipeline) {
-            super.onPipelineCreated(pipeline)
             cubeMapSampler = model.findNode<CubeMapNode>(texName)!!.sampler
+            super.onPipelineCreated(pipeline)
         }
     }
 
     companion object {
-        fun staticColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> StaticColor = { mesh, buildCtx, ctx ->
-            val staticColorNode: PushConstantNode4f
-            val model = ShaderModel("ModeledShader.staticColor()").apply {
-                vertexStage {
-                    positionOutput = simpleVertexPositionNode().outPosition
-                }
-                fragmentStage {
-                    staticColorNode = pushConstantNode4f("uStaticColor")
-                    val preMultColor = premultiplyColorNode(staticColorNode.output)
-                    colorOutput = unlitMaterialNode(preMultColor.outColor).outColor
-                }
-            }
-            StaticColor(model, staticColorNode.uniform).setup(mesh, buildCtx, ctx) as StaticColor
-        }
+        private fun vertexColorModel(): ShaderModel = ShaderModel("ModeledShader.vertexColor()").apply {
+            val ifColors: StageInterfaceNode
 
-        fun vertexColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> VertexColor = { mesh, buildCtx, ctx ->
-            val model = ShaderModel("ModeledShader.vertexColor()").apply {
-                val ifColors: StageInterfaceNode
-
-                vertexStage {
-                    val preMultColor = premultiplyColorNode(attrColors().output)
-                    ifColors = stageInterfaceNode("ifColors", preMultColor.outColor)
-                    positionOutput = simpleVertexPositionNode().outPosition
-                }
-                fragmentStage {
-                    colorOutput = unlitMaterialNode(ifColors.output).outColor
-                }
+            vertexStage {
+                ifColors = stageInterfaceNode("ifColors", attrColors().output)
+                positionOutput = simpleVertexPositionNode().outPosition
             }
-            VertexColor(model).setup(mesh, buildCtx, ctx) as VertexColor
+            fragmentStage {
+                colorOutput = unlitMaterialNode(ifColors.output).outColor
+            }
         }
 
         fun vertexColorPhong(): (Mesh, Pipeline.BuildContext, KoolContext) -> VertexColor = { mesh, buildCtx, ctx ->
@@ -97,41 +87,33 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader() {
             VertexColor(model).setup(mesh, buildCtx, ctx) as VertexColor
         }
 
-        fun textureColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> TextureColor = { mesh, buildCtx, ctx ->
-            val texName = "colorTex"
-            val model = ShaderModel("ModeledShader.textureColor()").apply {
-                val ifTexCoords: StageInterfaceNode
+        private fun textureColorModel(texName: String) = ShaderModel("ModeledShader.textureColor()").apply {
+            val ifTexCoords: StageInterfaceNode
 
-                vertexStage {
-                    ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                    positionOutput = simpleVertexPositionNode().outPosition
-                }
-                fragmentStage {
-                    val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output)
-                    colorOutput = unlitMaterialNode(sampler.outColor).outColor
-                }
+            vertexStage {
+                ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
+                positionOutput = simpleVertexPositionNode().outPosition
             }
-            TextureColor(model, texName).setup(mesh, buildCtx, ctx) as TextureColor
+            fragmentStage {
+                val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output)
+                colorOutput = unlitMaterialNode(sampler.outColor).outColor
+            }
         }
 
-        fun cubeMapColor(): (Mesh, Pipeline.BuildContext, KoolContext) -> CubeMapColor = { mesh, buildCtx, ctx ->
-            val texName = "cubeMap"
-            val model = ShaderModel("ModeledShader.cubeMapColor()").apply {
-                val ifFragPos: StageInterfaceNode
+        private fun cubeMapColorModel(texName: String) = ShaderModel("ModeledShader.cubeMapColor()").apply {
+            val ifFragPos: StageInterfaceNode
 
-                vertexStage {
-                    val mvp = mvpNode()
-                    val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
-                    ifFragPos = stageInterfaceNode("ifFragPos", worldPos.output)
-                    positionOutput = vertexPositionNode(attrPositions().output, mvp.outMvpMat).outPosition
-                }
-                fragmentStage {
-                    val nrmPos = normalizeNode(ifFragPos.output)
-                    val sampler = cubeMapSamplerNode(cubeMapNode(texName), nrmPos.output)
-                    colorOutput = unlitMaterialNode(sampler.outColor).outColor
-                }
+            vertexStage {
+                val mvp = mvpNode()
+                val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
+                ifFragPos = stageInterfaceNode("ifFragPos", worldPos.output)
+                positionOutput = vertexPositionNode(attrPositions().output, mvp.outMvpMat).outPosition
             }
-            CubeMapColor(model, texName).setup(mesh, buildCtx, ctx) as CubeMapColor
+            fragmentStage {
+                val nrmPos = normalizeNode(ifFragPos.output)
+                val sampler = cubeMapSamplerNode(cubeMapNode(texName), nrmPos.output)
+                colorOutput = unlitMaterialNode(sampler.outColor).outColor
+            }
         }
     }
 }

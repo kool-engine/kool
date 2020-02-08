@@ -46,6 +46,23 @@ open class Texture(val props: TextureProps = TextureProps(), val loader: (suspen
     }
 }
 
+class SingleColorTexture(color: Color) : Texture(
+        TextureProps(
+                minFilter = FilterMethod.NEAREST,
+                magFilter = FilterMethod.NEAREST,
+                mipMapping = false,
+                maxAnisotropy = 1),
+        loader = { getColorTextureData(color) }) {
+
+    companion object {
+        private val colorData = mutableMapOf<Color, BufferedTextureData>()
+
+        private fun getColorTextureData(color: Color): BufferedTextureData {
+            return colorData.getOrPut(color) { BufferedTextureData.singleColor(color) }
+        }
+    }
+}
+
 open class CubeMapTexture(props: TextureProps = TextureProps(), loader: (suspend CoroutineScope.(AssetManager) -> CubeMapTextureData)?) :
         Texture(props, loader)
 

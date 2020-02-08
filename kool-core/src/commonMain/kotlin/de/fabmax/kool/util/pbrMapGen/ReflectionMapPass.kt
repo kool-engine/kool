@@ -39,36 +39,28 @@ class ReflectionMapPass(hdriTexture: Texture) {
                         cube { centerOrigin() }
                     }
 
-                    pipelineConfig {
-                        // cube is viewed from inside
-                        cullMethod = CullMethod.CULL_FRONT_FACES
-
-                        shaderLoader = { mesh, buildCtx, ctx ->
-                            val texName = "colorTex"
-                            val model = ShaderModel("Reflectance Convolution Sampler").apply {
-                                val ifLocalPos: StageInterfaceNode
-                                vertexStage {
-                                    ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                                    positionOutput = simpleVertexPositionNode().outPosition
-                                }
-                                fragmentStage {
-                                    val roughness = pushConstantNode1f(uRoughness)
-                                    val tex = textureNode(texName)
-                                    val convNd = addNode(ConvoluteReflectionNode(tex, stage)).apply {
-                                        inLocalPos = ifLocalPos.output
-                                        inRoughness = roughness.output
-                                    }
-                                    colorOutput = convNd.outColor
-                                }
-                            }
-                            ModeledShader.TextureColor(model, texName).setup(mesh, buildCtx, ctx)
+                    val texName = "colorTex"
+                    val model = ShaderModel("Reflectance Convolution Sampler").apply {
+                        val ifLocalPos: StageInterfaceNode
+                        vertexStage {
+                            ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
+                            positionOutput = simpleVertexPositionNode().outPosition
                         }
-
-                        onPipelineCreated += {
-                            reflMapShader = (it.shader as ModeledShader.TextureColor)
-                            reflMapShader!!.textureSampler.texture = hdriTexture
+                        fragmentStage {
+                            val roughness = pushConstantNode1f(uRoughness)
+                            val tex = textureNode(texName)
+                            val convNd = addNode(ConvoluteReflectionNode(tex, stage)).apply {
+                                inLocalPos = ifLocalPos.output
+                                inRoughness = roughness.output
+                            }
+                            colorOutput = convNd.outColor
                         }
                     }
+                    reflMapShader = ModeledShader.TextureColor(texName, model).apply {
+                        onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
+                        onCreated += { textureSampler.texture = hdriTexture }
+                    }
+                    pipelineLoader = reflMapShader
                 }
             }
         }
@@ -77,7 +69,7 @@ class ReflectionMapPass(hdriTexture: Texture) {
     private class ConvoluteReflectionNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
         var inLocalPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
         var inRoughness = ShaderNodeIoVar(ModelVar1fConst(0f))
-        var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(1000f))
+        var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(5000f))
         val outColor = ShaderNodeIoVar(ModelVar4f("convReflection_outColor"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {
@@ -147,7 +139,7 @@ class ReflectionMapPass(hdriTexture: Texture) {
                 vec3 V = R;
                 
                 float mipLevel = ${inRoughness.ref1f()} * 16.0;
-                const uint SAMPLE_COUNT = uint(1024.0 * (1.0 + mipLevel));
+                uint SAMPLE_COUNT = uint(1024.0 * (1.0 + mipLevel));
                 float totalWeight = 0.0;   
                 vec3 prefilteredColor = vec3(0.0);     
                 for(uint i = 0u; i < SAMPLE_COUNT; ++i) {

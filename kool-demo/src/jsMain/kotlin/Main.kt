@@ -15,6 +15,7 @@ fun main() {
 
     //testScene()
     pbrDemo("../assets")
+//    hdrTest("../assets")
 }
 
 @Suppress("UNUSED_VARIABLE")

@@ -30,34 +30,26 @@ class IrradianceMapPass(hdriTexture: Texture) {
                         cube { centerOrigin() }
                     }
 
-                    pipelineConfig {
-                        // cube is viewed from inside
-                        cullMethod = CullMethod.CULL_FRONT_FACES
-
-                        shaderLoader = { mesh, buildCtx, ctx ->
-                            val texName = "colorTex"
-                            val model = ShaderModel("Irradiance Convolution Sampler").apply {
-                                val ifLocalPos: StageInterfaceNode
-                                vertexStage {
-                                    ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                                    positionOutput = simpleVertexPositionNode().outPosition
-                                }
-                                fragmentStage {
-                                    val tex = textureNode(texName)
-                                    val convNd = addNode(ConvoluteIrradianceNode(tex, stage)).apply {
-                                        inLocalPos = ifLocalPos.output
-                                    }
-                                    colorOutput = convNd.outColor
-                                }
-                            }
-                            ModeledShader.TextureColor(model, texName).setup(mesh, buildCtx, ctx)
+                    val texName = "colorTex"
+                    val model = ShaderModel("Irradiance Convolution Sampler").apply {
+                        val ifLocalPos: StageInterfaceNode
+                        vertexStage {
+                            ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
+                            positionOutput = simpleVertexPositionNode().outPosition
                         }
-
-                        onPipelineCreated += {
-                            irrMapShader = (it.shader as ModeledShader.TextureColor)
-                            irrMapShader!!.textureSampler.texture = hdriTexture
+                        fragmentStage {
+                            val tex = textureNode(texName)
+                            val convNd = addNode(ConvoluteIrradianceNode(tex, stage)).apply {
+                                inLocalPos = ifLocalPos.output
+                            }
+                            colorOutput = convNd.outColor
                         }
                     }
+                    irrMapShader = ModeledShader.TextureColor(texName, model).apply {
+                        onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
+                        onCreated += { textureSampler.texture = hdriTexture }
+                    }
+                    pipelineLoader = irrMapShader
                 }
             }
         }
@@ -65,7 +57,7 @@ class IrradianceMapPass(hdriTexture: Texture) {
 
     private class ConvoluteIrradianceNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {
         var inLocalPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
-        var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(1000f))
+        var maxLightIntensity = ShaderNodeIoVar(ModelVar1fConst(5000f))
         val outColor = ShaderNodeIoVar(ModelVar4f("convIrradiance_outColor"), this)
 
         override fun setup(shaderGraph: ShaderGraph) {

@@ -160,7 +160,24 @@ class AttributeNode(val attribute: Attribute, graph: ShaderGraph) :
     }
 }
 
-class PremultiplyColorNode(graph: ShaderGraph) : ShaderNode("Pre-Multiply Color", graph) {
+class ColorAlphaNode(graph: ShaderGraph) : ShaderNode("colorAlphaNode_${graph.nextNodeId}", graph) {
+    var inColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA), null)
+    var inAlpha = ShaderNodeIoVar(ModelVar1fConst(1f), null)
+    val outAlphaColor = ShaderNodeIoVar(ModelVar4f("${name}_outColor"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inColor, inAlpha)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("""
+            ${outAlphaColor.declare()} = vec4(${inColor.ref3f()}, ${inColor.ref4f()}.a * ${inAlpha.ref1f()});
+            """)
+    }
+}
+
+class PremultiplyColorNode(graph: ShaderGraph) : ShaderNode("colorPreMult_${graph.nextNodeId}", graph) {
     var inColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
     val outColor = ShaderNodeIoVar(ModelVar4f("preMultColor_$nodeId"), this)
 

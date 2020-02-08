@@ -2,7 +2,6 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
@@ -220,8 +219,8 @@ private class DeltaTGraph(root: UiRoot) : UiComponent("deltaT", root) {
 
     init {
         graphMesh = Mesh(graphGeom)
-        //graphMesh.meshData.usage = GL_DYNAMIC_DRAW
-        graphMesh.pipelineConfig { shaderLoader = ModeledShader.vertexColor() }
+        graphMesh.geometry.usage = Usage.DYNAMIC
+        graphMesh.pipelineLoader = ModeledShader.VertexColor()
     }
 
     override fun render(ctx: KoolContext) {

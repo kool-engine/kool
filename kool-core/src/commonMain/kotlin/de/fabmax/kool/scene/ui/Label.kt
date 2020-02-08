@@ -2,8 +2,6 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.pipelineConfig
-import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.*
 
@@ -46,12 +44,13 @@ open class Label(name: String, root: UiRoot) : UiComponent(name, root) {
 
 open class LabelUi(val label: Label, private val baseUi: ComponentUi) : ComponentUi by baseUi {
 
+    protected var font = label.font.prop
+    protected var textColor = MutableColor()
+
     protected val geom = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
     protected val meshBuilder = MeshBuilder(geom)
     protected val mesh = Mesh(geom)
-
-    protected var font = label.font.prop
-    protected var textColor = MutableColor()
+    protected val shader = UiShader()
 
     protected var textStartX = 0f
     protected var textWidth = 0f
@@ -59,27 +58,12 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
 
     override fun updateComponentAlpha() {
         baseUi.updateComponentAlpha()
-//        val shader = mesh.shader
-//        if (shader is BasicShader) {
-//            shader.alpha = label.alpha
-//        }
+        shader.alpha = label.alpha
     }
 
     override fun createUi(ctx: KoolContext) {
         baseUi.createUi(ctx)
-        mesh.pipelineConfig {
-            shaderLoader = fontShaderLoader()
-            onPipelineCreated += {
-                (it.shader as ModeledShader.TextureColor).textureSampler.texture = font
-            }
-        }
-
-//        mesh.shader = fontShader {
-//            lightModel = label.root.shaderLightModel
-//            colorModel = ColorModel.VERTEX_COLOR
-//            isAlpha = true
-//            clipMethod = LocalPlaneClip(6)
-//        }
+        mesh.pipelineLoader = shader
         label += mesh
     }
 
@@ -92,12 +76,8 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
         if (label.font.isUpdate) {
 //            label.font.prop?.dispose(ctx)
             font = label.font.apply()
+            shader.font = font
         }
-
-//        val shader = mesh.shader
-//        if (shader is BasicShader) {
-//            shader.texture = font
-//        }
 
         label.setupBuilder(meshBuilder)
         updateTextColor()
@@ -106,7 +86,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
     }
 
     override fun onRender(ctx: KoolContext) {
-//        mesh.shader?.setDrawBounds(label.drawBounds)
+//        shader.setDrawBounds(label.drawBounds)
         baseUi.onRender(ctx)
     }
 

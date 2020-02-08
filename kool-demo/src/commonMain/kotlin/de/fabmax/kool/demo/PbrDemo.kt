@@ -128,7 +128,7 @@ fun pbrDemoScene(ctx: KoolContext): Scene = scene {
     }
 }
 
-private fun Scene.colorGrid(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture): List<PbrShader> {
+private fun Scene.colorGrid(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture) {
     val nRows = 4
     val nCols = 5
     val spacing = 4.5f
@@ -143,8 +143,6 @@ private fun Scene.colorGrid(irradianceMap: CubeMapTexture, reflectionMap: CubeMa
     colors += Color.MD_BLUE_GREY
     //colors += Color.BLACK
     colors += Color(0.1f, 0.1f, 0.1f)
-
-    val shaders = mutableListOf<PbrShader>()
 
     for (y in 0 until nRows) {
         for (x in 0 until nCols) {
@@ -167,20 +165,16 @@ private fun Scene.colorGrid(irradianceMap: CubeMapTexture, reflectionMap: CubeMa
                 val shader = PbrShader(pbrConfig)
                 shader.roughness = 0.1f
                 shader.metallic = 1f
-                pipelineConfig { shaderLoader = shader::setup }
-                shaders += shader
+                pipelineLoader = shader
             }
         }
     }
-    return shaders
 }
 
-private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture): List<PbrShader> {
+private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture) {
     val nRows = 7
     val nCols = 7
     val spacing = 2.5f
-
-    val shaders = mutableListOf<PbrShader>()
 
     for (y in 0 until nRows) {
         for (x in 0 until nCols) {
@@ -203,13 +197,10 @@ private fun Scene.roughnessMetallicGrid(irradianceMap: CubeMapTexture, reflectio
                 val shader = PbrShader(pbrConfig)
                 shader.roughness = max(x / (nCols - 1).toFloat(), 0.05f)
                 shader.metallic = y / (nRows - 1).toFloat()
-                pipelineConfig { shaderLoader = shader::setup }
-                shaders += shader
+                pipelineLoader = shader
             }
         }
     }
-
-    return shaders
 }
 
 private fun Scene.pbrMat(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTexture, brdfLut: Texture, ctx: KoolContext) {
@@ -260,7 +251,7 @@ private fun Scene.pbrMat(irradianceMap: CubeMapTexture, reflectionMap: CubeMapTe
             val shader = PbrShader(pbrConfig)
             shader.roughness = 0.1f
             shader.metallic = 1f
-            pipelineConfig { shaderLoader = shader::setup }
+            pipelineLoader = shader
 
             ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_UP, "Change Mat +", { it.isPressed }) {
                 matMaps[matIdx].disposeMaps()

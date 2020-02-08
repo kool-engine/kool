@@ -6,14 +6,11 @@ import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CubeMapTexture
-import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.pipelineConfig
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.SphereProps
+import de.fabmax.kool.util.debugOverlay
 
 /**
  * @author fabmax
@@ -23,155 +20,20 @@ fun main() {
 //    // launch demo
 //    demo("modelDemo")
 
-//    testScene()
-    pbrDemo("./docs/assets")
-//    jsTestScene()
-
-//    while (true) {
-//        val buf = createUint8Buffer(16 * 1024 * 1024)
-//        for (i in 0 until buf.capacity) {
-//            buf.put(i.toByte())
-//        }
-//        println("created direct 16mb buffer")
-//        Thread.sleep(100)
-//    }
-}
-
-fun jsTestScene() {
-    val ctx = createDefaultContext()
-    ctx.assetMgr.assetsBaseDir = "./docs/assets"
-
-    ctx.scenes += scene {
-        defaultCamTransform()
-
-        +textureMesh {
-            generate {
-                icoSphere {
-                    steps = 4
-                    center.set(3f, 0f, 0f)
-                }
-            }
-            pipelineConfig {
-                shaderLoader = ModeledShader.textureColor()
-                onPipelineCreated += { pipeline ->
-                    (pipeline.shader as ModeledShader.TextureColor).textureSampler.texture = Texture { it.loadTextureData("world.jpg") }
-                }
-            }
-        }
-
-        +textureMesh {
-            generate {
-                cube {
-                    colorCube()
-                    centerOrigin()
-                }
-            }
-            pipelineConfig {
-                shaderLoader = ModeledShader.cubeMapColor()
-                onPipelineCreated += { pipeline ->
-                    (pipeline.shader as ModeledShader.CubeMapColor).cubeMapSampler.texture = CubeMapTexture {
-                        it.loadCubeMapTextureData("skybox/y-up/sky_ft.jpg", "skybox/y-up/sky_bk.jpg",
-                                "skybox/y-up/sky_lt.jpg", "skybox/y-up/sky_rt.jpg",
-                                "skybox/y-up/sky_up.jpg", "skybox/y-up/sky_dn.jpg")
-                    }
-                }
-            }
-        }
-
-        +colorMesh {
-            generate {
-                cube {
-                    colorCube()
-                    centerOrigin()
-                    origin.x -= 3f
-                }
-            }
-            pipelineConfig {
-                shaderLoader = ModeledShader.vertexColor()
-            }
-        }
-    }
-
-    //ctx.scenes += debugOverlay(ctx, Position.LOWER_RIGHT)
-
-    ctx.run()
+    testScene()
+//    pbrDemo("./docs/assets")
+//    hdrTest("./docs/assets")
 }
 
 fun testScene() {
     val ctx = createDefaultContext()
     ctx.assetMgr.assetsBaseDir = "./docs/assets"
 
+    ctx.scenes += uiDemoScene()
 //    ctx.scenes += bunnyScene(ctx)
-    offscreenTest(ctx)
-//    ctx.scenes += icoScene(ctx)
-//    ctx.scenes += debugOverlay(ctx)
+    ctx.scenes += debugOverlay(ctx)
 
     ctx.run()
-}
-
-fun offscreenTest(ctx: KoolContext) {
-    val scene = scene {
-        defaultCamTransform()
-
-        +colorMesh {
-            generate {
-                cube {
-                    colorCube()
-                    centerOrigin()
-                }
-            }
-            pipelineConfig {
-                shaderLoader = ModeledShader.vertexColor()
-            }
-        }
-    }
-
-    ctx.scenes += scene
-
-//    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/newport_loft.rgbe.png") { tex ->
-//    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/vignaioli_night_2k.rgbe.png") { tex ->
-//    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/spruit_sunrise_2k.rgbe.png") { tex ->
-//    ctx.assetMgr.loadAndPrepareTexture("skybox/hdri/lakeside_2k.rgbe.png") { tex ->
-
-//        val cubeMapPass = IrradianceMapPass(tex)
-//        ctx.offscreenPasses += cubeMapPass.offscreenPass
-//        scene += Skybox(cubeMapPass.irradianceMap)
-
-//        val cubeMapPass = hdriToCubeMapPass(tex)
-//        ctx.offscreenPasses += cubeMapPass
-//        scene += Skybox(cubeMapPass.textureCube)
-//    }
-}
-
-
-fun icoScene(ctx: KoolContext): Scene = scene {
-    defaultCamTransform()
-
-    +mesh(setOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.TEXTURE_COORDS)) {
-        generate {
-            vertexModFun = {
-                color.r = texCoord.x
-                color.g = texCoord.y
-            }
-
-            val p = SphereProps().apply {
-                steps = 2
-            }
-            icoSphere(p)
-
-            sphere {
-                center.set(3f, 0f, 0f)
-                steps = 1000
-            }
-        }
-        pipelineConfig {
-            shaderLoader = ModeledShader.vertexColor()
-//            shaderLoader = ModeledShader.textureColor()
-//            onPipelineCreated += { p ->
-//                (p.shader as ModeledShader.TextureColor).textureSampler.texture = Texture { it.loadImageData("world.jpg") }
-//            }
-        }
-    }
 }
 
 fun bunnyScene(ctx: KoolContext): Scene = scene {
@@ -219,7 +81,7 @@ fun bunnyScene(ctx: KoolContext): Scene = scene {
             }
             val shader = PbrShader()
             shader.roughness = 0.5f
-            pipelineConfig { shaderLoader = shader::setup }
+            pipelineLoader = shader
         }
 
         loadModel(ctx.assetMgr) { model ->
@@ -228,7 +90,7 @@ fun bunnyScene(ctx: KoolContext): Scene = scene {
             val colorMesh = mesh(setOf(Attribute.POSITIONS, Attribute.COLORS, Attribute.NORMALS)) {
                 val shader = PbrShader()
                 shader.roughness = 0.15f
-                pipelineConfig { shaderLoader = shader::setup }
+                pipelineLoader = shader
 
                 val target = geometry
                 target.addGeometry(model.geometry)
@@ -255,7 +117,7 @@ class LightMesh(val light: Light) : TransformGroup() {
                     radius = 0.2f
                 }
             }
-            pipelineConfig { shaderLoader = ModeledShader.vertexColor() }
+            pipelineLoader = ModeledShader.VertexColor()
         }
         +lightMesh
 

@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 
@@ -26,6 +27,7 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
                     colorCube()
                 }
             }
+            pipelineLoader = ModeledShader.VertexColor()
         }
     }
 
@@ -56,24 +58,24 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
             }
         }
 
-        +textField("text-field") {
-            layoutSpec.setOrigin(pcs(15f), pcs(-65f), zero())
-            layoutSpec.setSize(pcs(70f), pcs(15f), full())
-        }
-
-        +button("toggle-theme") {
-            layoutSpec.setOrigin(pcs(15f), pcs(-85f), zero())
-            layoutSpec.setSize(pcs(70f), pcs(15f), full())
-            text = "Toggle Theme"
-
-            onClick += { _,_,_ ->
-                if (theme == UiTheme.DARK) {
-                    theme = UiTheme.LIGHT
-                } else {
-                    theme = UiTheme.DARK
-                }
-            }
-        }
+//        +textField("text-field") {
+//            layoutSpec.setOrigin(pcs(15f), pcs(-65f), zero())
+//            layoutSpec.setSize(pcs(70f), pcs(15f), full())
+//        }
+//
+//        +button("toggle-theme") {
+//            layoutSpec.setOrigin(pcs(15f), pcs(-85f), zero())
+//            layoutSpec.setSize(pcs(70f), pcs(15f), full())
+//            text = "Toggle Theme"
+//
+//            onClick += { _,_,_ ->
+//                if (theme == UiTheme.DARK) {
+//                    theme = UiTheme.LIGHT
+//                } else {
+//                    theme = UiTheme.DARK
+//                }
+//            }
+//        }
     }
 }
 

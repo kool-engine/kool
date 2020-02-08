@@ -39,15 +39,13 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
                 //colorOutput = addNode(HdrTestNode(sampler.outColor, fragmentStage)).outColor
             }
         }
-        val shader = ModeledShader.CubeMapColor(model, texName)
-
-        pipelineConfig {
-            cullMethod = CullMethod.CULL_FRONT_FACES
-            depthTest = DepthCompareOp.LESS_EQUAL
-
-            shaderLoader = shader::setup
-            onPipelineCreated += {
-                shader.cubeMapSampler.texture = environmentMap
+        pipelineLoader = ModeledShader.CubeMapColor(texName, model).apply {
+            onSetup += {
+                it.cullMethod = CullMethod.CULL_FRONT_FACES
+                it.depthTest = DepthCompareOp.LESS_EQUAL
+            }
+            onCreated += {
+                cubeMapSampler.texture = environmentMap
             }
         }
     }

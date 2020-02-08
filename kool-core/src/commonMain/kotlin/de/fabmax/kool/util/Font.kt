@@ -2,12 +2,8 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureData
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.scene.Mesh
 
 /**
  * @author fabmax
@@ -16,44 +12,6 @@ import de.fabmax.kool.scene.Mesh
 fun uiFont(family: String, sizeDp: Float, uiDpi: Float, ctx: KoolContext, style: Int = Font.PLAIN, chars: String = Font.STD_CHARS): Font {
     val pts = (sizeDp * uiDpi / 96f)
     return Font(FontProps(family, pts, style, chars), ctx)
-}
-
-private class MaskNode(graph: ShaderGraph) : ShaderNode("Font Mask Node", graph) {
-    var inColor = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA), null)
-    var inMask = ShaderNodeIoVar(ModelVar1fConst(1f), null)
-    val outMaskedColor = ShaderNodeIoVar(ModelVar4f("maskedColor_outColor"), this)
-
-    override fun setup(shaderGraph: ShaderGraph) {
-        super.setup(shaderGraph)
-        dependsOn(inColor, inMask)
-    }
-
-    override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("""
-            float fontMask_a = ${inMask.ref1f()};
-            ${outMaskedColor.declare()} = vec4(${inColor.ref3f()} * fontMask_a, fontMask_a);
-            """)
-    }
-}
-
-fun fontShaderLoader(): (Mesh, Pipeline.BuildContext, KoolContext) -> ModeledShader.TextureColor = { mesh, buildCtx, ctx ->
-    val texName = "fontMap"
-    val model = ShaderModel("fontShader").apply {
-        val ifTexCoords: StageInterfaceNode
-        val ifColors: StageInterfaceNode
-
-        vertexStage {
-            ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-            ifColors = stageInterfaceNode("ifColors", attrColors().output)
-            positionOutput = simpleVertexPositionNode().outPosition
-        }
-        fragmentStage {
-            val sampler = textureSamplerNode(textureNode(texName), ifTexCoords.output, false)
-            val maskedColor = addNode(MaskNode(fragmentStage).apply { inColor = ifColors.output; inMask = sampler.outColor })
-            colorOutput = unlitMaterialNode(maskedColor.outMaskedColor).outColor
-        }
-    }
-    ModeledShader.TextureColor(model, texName).setup(mesh, buildCtx, ctx) as ModeledShader.TextureColor
 }
 
 data class FontProps(

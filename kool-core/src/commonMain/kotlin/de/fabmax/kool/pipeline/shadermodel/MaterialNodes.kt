@@ -6,16 +6,16 @@ import de.fabmax.kool.util.Color
 import kotlin.math.PI
 
 class UnlitMaterialNode(graph: ShaderGraph) : ShaderNode("Unlit Material", graph, ShaderStage.FRAGMENT_SHADER.mask) {
-    var inAlbedo: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
+    var inColor: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA))
     val outColor = ShaderNodeIoVar(ModelVar4f("unlitMat_outColor"), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(inAlbedo)
+        dependsOn(inColor)
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${outColor.declare()} = ${inAlbedo.ref4f()};")
+        generator.appendMain("${outColor.declare()} = vec4(${inColor.ref3f()} * ${inColor.ref4f()}.a, ${inColor.ref4f()}.a);")
     }
 }
 

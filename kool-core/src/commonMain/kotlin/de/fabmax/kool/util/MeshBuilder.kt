@@ -855,12 +855,12 @@ class CubeProps {
     }
 
     fun colorCube() {
-        frontColor = Color.RED
-        rightColor = Color.GREEN
-        backColor = Color.BLUE
-        leftColor = Color.YELLOW
-        topColor = Color.MAGENTA
-        bottomColor = Color.CYAN
+        frontColor = Color.MD_RED
+        rightColor = Color.MD_GREEN
+        backColor = Color.MD_INDIGO
+        leftColor = Color.MD_AMBER
+        topColor = Color.MD_PURPLE
+        bottomColor = Color.MD_CYAN
     }
 
     fun defaults(): CubeProps {

@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.PipelineFactory
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Font
 import de.fabmax.kool.util.IndexedVertexList
@@ -46,7 +47,8 @@ fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate:
  */
 open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(name) {
 
-    var pipelineLoader: (Mesh.(KoolContext) -> Pipeline)? = null
+    //var pipelineLoader: (Mesh.(KoolContext) -> Pipeline)? = null
+    var pipelineLoader: PipelineFactory? = null
     private var pipeline: Pipeline? = null
 
     var rayTest = MeshRayTest.boundsTest()
@@ -62,7 +64,9 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     }
 
     open fun getPipeline(ctx: KoolContext): Pipeline? {
-        return pipeline ?: pipelineLoader?.let { loader -> loader(this, ctx).also { pipeline = it } }
+        return pipeline ?: pipelineLoader?.let { loader ->
+            loader.createPipeline(this, Pipeline.Builder(), ctx).also { pipeline = it }
+        }
     }
 
     override fun rayTest(test: RayTest) = rayTest.rayTest(test)
