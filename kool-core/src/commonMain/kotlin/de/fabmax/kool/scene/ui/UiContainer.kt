@@ -165,7 +165,13 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
     fun setScrollOffset(offset: Vec3f) = setScrollOffset(offset.x, offset.y, offset.z)
 
     fun setScrollOffset(offX: Float, offY: Float, offZ: Float) {
-        scrollOffsetMut.set(offX, offY, offZ)
+        if (offX != scrollOffsetMut.x || offY != scrollOffsetMut.y || offZ != scrollOffsetMut.z) {
+            scrollOffsetMut.set(offX, offY, offZ)
+            isScrollDirty = true
+        }
+    }
+
+    fun requestUpdateTransform() {
         isScrollDirty = true
     }
 

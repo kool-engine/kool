@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -65,6 +66,7 @@ abstract class KoolContext {
     val offscreenPasses = mutableListOf<OffscreenPass>()
 
     private val delayedCallbacks = mutableListOf<DelayedCallback>()
+    protected val disposablePipelines = mutableListOf<Pipeline>()
 
     private val frameTimes = DoubleArray(25) { 0.017 }
 
@@ -81,6 +83,10 @@ abstract class KoolContext {
 
     fun delay(frames: Int, callback: (KoolContext) -> Unit) {
         delayedCallbacks += DelayedCallback(frameIdx + frames, callback)
+    }
+
+    internal fun disposePipeline(pipeline: Pipeline) {
+        disposablePipelines += pipeline
     }
 
     protected fun render(dt: Double) {

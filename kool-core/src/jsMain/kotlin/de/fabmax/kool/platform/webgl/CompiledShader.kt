@@ -22,9 +22,11 @@ import org.khronos.webgl.WebGLUniformLocation
 
 class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsContext) {
 
-    val attributeLocations = mutableMapOf<String, Int>()
-    val uniformLocations = mutableMapOf<String, WebGLUniformLocation?>()
-    val instances = mutableMapOf<Long, ShaderInstance>()
+    private val pipelineId = pipeline.pipelineHash.toLong()
+
+    private val attributeLocations = mutableMapOf<String, Int>()
+    private val uniformLocations = mutableMapOf<String, WebGLUniformLocation?>()
+    private val instances = mutableMapOf<Long, ShaderInstance>()
 
     private var firstUse = true
 
@@ -67,6 +69,20 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         return inst
     }
 
+    fun destroyInstance(pipeline: Pipeline) {
+        instances.remove(pipeline.pipelineInstanceId)?.let {
+            it.destroyInstance()
+            ctx.engineStats.pipelineInstanceDestroyed(pipelineId)
+        }
+    }
+
+    fun isEmpty(): Boolean = instances.isEmpty()
+
+    fun destroy() {
+        ctx.engineStats.pipelineDestroyed(pipelineId)
+        ctx.gl.deleteProgram(prog)
+    }
+
     inner class ShaderInstance(val mesh: Mesh, pipeline: Pipeline) {
         private val pushConstants = mutableListOf<PushConstantRange>()
         private val ubos = mutableListOf<UniformBuffer>()
@@ -99,7 +115,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             pipeline.pushConstantRanges.forEach { pc ->
                 mapPushConstants(pc)
             }
-            ctx.engineStats.pipelineInstanceCreated(pipeline.pipelineHash.toLong())
+            ctx.engineStats.pipelineInstanceCreated(pipelineId)
         }
 
         private fun mapPushConstants(pc: PushConstantRange) {
@@ -150,6 +166,22 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             attributeBinders.values.forEach { it.vbo.bindAttribute(it.loc, ctx) }
         }
 
+        fun destroyInstance() {
+            dataBufferF?.delete(ctx)
+            dataBufferI?.delete(ctx)
+            indexBuffer?.delete(ctx)
+            dataBufferF = null
+            dataBufferI = null
+            indexBuffer = null
+
+            pushConstants.clear()
+            ubos.clear()
+            textures.clear()
+            cubeMaps.clear()
+            mappings.clear()
+            attributeBinders.clear()
+        }
+
         private fun checkBuffers() {
             val md = mesh.geometry
             if (indexBuffer == null) {
@@ -183,10 +215,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 }
             }
 
-            if (md.isSyncRequired && !md.isBatchUpdate) {
-                if (md.isRebuildBoundsOnSync) {
-                    md.rebuildBounds()
-                }
+            if (md.hasChanged && !md.isBatchUpdate) {
                 val usage = md.usage.glUsage()
 
                 indexType = UNSIGNED_INT
@@ -196,7 +225,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 numIndices = md.numIndices
                 dataBufferF?.setData(md.dataF, usage, ctx)
                 dataBufferI?.setData(md.dataI, usage, ctx)
-                md.isSyncRequired = false
+                md.hasChanged = false
             }
         }
     }

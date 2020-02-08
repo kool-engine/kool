@@ -3,7 +3,6 @@ package de.fabmax.kool.scene.ui
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -120,7 +119,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
 
 open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi by baseUi {
 
-    protected val geom = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
+    protected val geom = IndexedVertexList(UiShader.UI_MESH_ATTRIBS)
     protected val meshBuilder = MeshBuilder(geom)
     protected val mesh = Mesh(geom)
     protected val shader = UiShader()

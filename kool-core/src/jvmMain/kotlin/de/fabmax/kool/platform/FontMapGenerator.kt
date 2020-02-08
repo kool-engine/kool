@@ -15,7 +15,7 @@ import kotlin.math.roundToInt
  * @author fabmax
  */
 
-internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lwjgl3ContextVk.InitProps, val assetManager: JvmAssetManager) {
+internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lwjgl3ContextVk.InitProps, assetManager: JvmAssetManager) {
 
     private val canvas = BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_ARGB)
     private val clearColor = Color(0, 0, 0, 0)
@@ -99,7 +99,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int, props: Lw
         val fm = g.fontMetrics
 
         // first pixel is opaque
-        g.drawLine(0, 0, 0, 1)
+        g.fillRect(0, 0, 1, 1)
 
         var x = 1
         var y = hab

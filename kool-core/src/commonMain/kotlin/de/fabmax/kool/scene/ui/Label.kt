@@ -1,7 +1,6 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.*
 
@@ -47,7 +46,7 @@ open class LabelUi(val label: Label, private val baseUi: ComponentUi) : Componen
     protected var font = label.font.prop
     protected var textColor = MutableColor()
 
-    protected val geom = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
+    protected val geom = IndexedVertexList(UiShader.UI_MESH_ATTRIBS)
     protected val meshBuilder = MeshBuilder(geom)
     protected val mesh = Mesh(geom)
     protected val shader = UiShader()

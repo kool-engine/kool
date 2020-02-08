@@ -1,7 +1,6 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Disposable
@@ -25,7 +24,7 @@ open class BlankComponentUi : ComponentUi
 
 open class SimpleComponentUi(val component: UiComponent) : ComponentUi {
 
-    protected val geometry = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS)
+    protected val geometry = IndexedVertexList(UiShader.UI_MESH_ATTRIBS)
     protected val meshBuilder = MeshBuilder(geometry)
     protected val mesh = Mesh(geometry)
     protected val shader = UiShader()
@@ -74,14 +73,14 @@ open class BlurredComponentUi(component: UiComponent) : SimpleComponentUi(compon
 //        }
 //    }
 
-    override fun updateUi(ctx: KoolContext) {
-        super.updateUi(ctx)
+//    override fun updateUi(ctx: KoolContext) {
+//        super.updateUi(ctx)
 //        val bs = shader
 //        if (bs is BlurShader) {
 //            bs.colorMix = bs.staticColor.w
 //            bs.staticColor.w = 1f
 //        }
-    }
+//    }
 }
 
 //fun Shader.setDrawBounds(drawBounds: BoundingBox) {

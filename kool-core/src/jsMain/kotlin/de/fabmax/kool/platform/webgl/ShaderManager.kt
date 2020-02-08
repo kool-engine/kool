@@ -2,6 +2,7 @@ package de.fabmax.kool.platform.webgl
 
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.drawqueue.DrawCommand
+import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.ShaderCode
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.logE
@@ -21,12 +22,23 @@ class ShaderManager(val ctx: JsContext) {
 
     fun setupShader(cmd: DrawCommand): CompiledShader.ShaderInstance {
         val pipeline = cmd.pipeline!!
-        val shader = shaders.getOrPut(pipeline.shaderCode.longHash) { CompiledShader(compileShader(pipeline.shaderCode), pipeline, ctx) }
+        val shader = shaders.getOrPut(pipeline.pipelineHash) { CompiledShader(compileShader(pipeline.shaderCode), pipeline, ctx) }
         if (shader !== currentShader) {
             currentShader = shader
             shader.use()
         }
         return shader.bindInstance(cmd)
+    }
+
+    fun deleteShader(pipeline: Pipeline) {
+        val shader = shaders[pipeline.pipelineHash]
+        if (shader != null) {
+            shader.destroyInstance(pipeline)
+            if (shader.isEmpty()) {
+                shader.destroy()
+                shaders.remove(pipeline.pipelineHash)
+            }
+        }
     }
 
     private fun compileShader(code: ShaderCode): WebGLProgram? {

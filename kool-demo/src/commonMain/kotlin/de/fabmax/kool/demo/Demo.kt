@@ -4,8 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
+import de.fabmax.kool.util.DebugOverlay
 import de.fabmax.kool.util.Position
-import de.fabmax.kool.util.debugOverlay
 
 /**
  * @author fabmax
@@ -25,28 +25,29 @@ fun demo(startScene: String? = null) {
 
 class Demo(ctx: KoolContext, startScene: String? = null) {
 
-    private val dbgOverlay = debugOverlay(ctx, Position.LOWER_LEFT)
+    private val dbgOverlay = DebugOverlay(ctx, Position.LOWER_LEFT)
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
-    private val defaultScene = DemoEntry("Simple Demo") { add(simpleShapesScene(it)) }
+    //private val defaultScene = DemoEntry("Simple Demo") { add(simpleShapesScene(it)) }
+    private val defaultScene = DemoEntry("Simple Demo") { add(uiDemoScene()) }
 
     private val demos = mutableMapOf(
-            "simpleDemo" to defaultScene,
-            "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene(it)) },
-            "pointDemo" to DemoEntry("Point Tree Demo") { add(pointScene()) },
-            "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
-            "globeDemo" to DemoEntry("Globe Demo") { addAll(globeScene(it)) },
-            "modelDemo" to DemoEntry("Model Demo") { add(modelScene(it)) },
-            "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
-            "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) },
-            "instancedDemo" to DemoEntry("Instanced Demo") { add(instancedDemo(it)) },
-            "reflectionDemo" to DemoEntry("Reflection Demo") { addAll(reflectionDemo(it)) },
-            "particleDemo" to DemoEntry("Particle Demo") { addAll(particleDemo(it)) }
+            "simpleDemo" to defaultScene
+//            "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene(it)) },
+//            "pointDemo" to DemoEntry("Point Tree Demo") { add(pointScene()) },
+//            "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
+//            "globeDemo" to DemoEntry("Globe Demo") { addAll(globeScene(it)) },
+//            "modelDemo" to DemoEntry("Model Demo") { add(modelScene(it)) },
+//            "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
+//            "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) },
+//            "instancedDemo" to DemoEntry("Instanced Demo") { add(instancedDemo(it)) },
+//            "reflectionDemo" to DemoEntry("Reflection Demo") { addAll(reflectionDemo(it)) },
+//            "particleDemo" to DemoEntry("Particle Demo") { addAll(particleDemo(it)) }
     )
 
     init {
-        ctx.scenes += dbgOverlay
+        ctx.scenes += dbgOverlay.ui
         ctx.scenes += demoOverlay(ctx)
         ctx.onRender += this::onRender
 
@@ -90,7 +91,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
                 layoutSpec.setOrigin(zero(), dps(45f, true), zero())
                 layoutSpec.setSize(full(), pcs(100f, true) - dps(110f, true), full())
 
-                +ScrollHandler(this)
+                //+ScrollHandler(this)
 
                 var y = -30f
                 for (demo in demos) {
@@ -113,9 +114,13 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
                 layoutSpec.setOrigin(zero(), dps(10f, true), zero())
                 layoutSpec.setSize(pcs(100f, true), dps(30f, true), full())
                 text = "Debug Info"
-                isEnabled = dbgOverlay.isVisible
+                isEnabled = dbgOverlay.ui.isVisible
 
-                onClick += { _,_,_ -> dbgOverlay.isVisible = isEnabled }
+                onClick += { _,_,_ -> dbgOverlay.ui.isVisible = isEnabled }
+            }
+
+            onPreRender += {
+                dbgOverlay.xOffset = animationPos * width
             }
         }
     }

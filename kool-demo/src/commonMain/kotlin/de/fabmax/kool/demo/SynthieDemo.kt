@@ -349,7 +349,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
                 if (zPos > 1000) {
                     zPos = -1000f
                 }
-                quads.geometry.isSyncRequired = true
+                quads.geometry.hasChanged = true
 
                 // set spectrum bounding box to avoid mesh being frustum clipped
                 quads.bounds.set(-width/2f, 0f, zPos - length, width/2f, 50f, zPos)
@@ -406,7 +406,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
 
                 drawTimeDomain()
 
-                lines[lineIdx].geometry.isSyncRequired = true
+                lines[lineIdx].geometry.hasChanged = true
                 for (i in lines.indices) {
                     var idx = (lineIdx - i)
                     if (idx < 0) {

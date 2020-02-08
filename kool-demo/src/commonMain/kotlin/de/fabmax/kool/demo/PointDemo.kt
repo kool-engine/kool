@@ -56,7 +56,7 @@ fun pointScene(): Scene {
                             "Point update took ${updateT.toString(3)} ms"
                 }
 
-                data.isSyncRequired = true
+                data.hasChanged = true
             }
         }
 

@@ -2,8 +2,10 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.pipeline.AddressMode
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.TextureProps
 
 /**
  * @author fabmax
@@ -20,7 +22,10 @@ data class FontProps(
         val style: Int = Font.PLAIN,
         val chars: String = Font.STD_CHARS)
 
-class Font(val charMap: CharMap) : Texture(loader = { charMap.textureData }) {
+class Font(val charMap: CharMap) : Texture(TextureProps(
+        addressModeU = AddressMode.CLAMP_TO_EDGE,
+        addressModeV = AddressMode.CLAMP_TO_EDGE
+), loader = { charMap.textureData }) {
 
     val lineSpace = charMap.fontProps.sizePts * 1.2f
     val normHeight = charMap.fontProps.sizePts * 0.7f

@@ -3,8 +3,7 @@ package de.fabmax.kool.platform.vk.pipeline
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
-import org.lwjgl.util.vma.Vma
-import org.lwjgl.vulkan.VK10
+import org.lwjgl.vulkan.VK10.*
 
 class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) {
     private val descriptorSets = mutableListOf<Long>()
@@ -19,7 +18,6 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
 
     init {
         createDescriptorSets()
-        createDescriptorObjects(pipeline)
     }
 
     fun getDescriptorSet(imageIdx: Int) = descriptorSets[imageIdx]
@@ -31,37 +29,34 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
                 layouts.put(i, graphicsPipeline.descriptorSetLayout)
             }
             val allocInfo = callocVkDescriptorSetAllocateInfo {
-                sType(VK10.VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
+                sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
                 descriptorPool(graphicsPipeline.descriptorPool)
                 pSetLayouts(layouts)
             }
 
             val sets = mallocLong(graphicsPipeline.nImages)
-            check(VK10.vkAllocateDescriptorSets(graphicsPipeline.sys.device.vkDevice, allocInfo, sets) == VK10.VK_SUCCESS)
+            check(vkAllocateDescriptorSets(graphicsPipeline.sys.device.vkDevice, allocInfo, sets) == VK_SUCCESS)
             for (i in 0 until graphicsPipeline.nImages) {
                 descriptorSets += sets[i]
             }
         }
     }
 
-    private fun createDescriptorObjects(pipeline: Pipeline) {
+    fun clearDescriptorObjects() {
+        objects.forEach {
+            it.forEach { desc -> desc.destroy(graphicsPipeline) }
+            it.clear()
+        }
+    }
+
+    fun createDescriptorObjects(pipeline: Pipeline) {
         if (pipeline.descriptorSetLayouts.size != 1) {
             TODO()
         }
         pipeline.descriptorSetLayouts[0].descriptors.forEachIndexed { idx, desc ->
             addDescriptor {
-                // fixme: more reasonable binding index needed?
                 when (desc.type) {
-                    DescriptorType.UNIFORM_BUFFER -> {
-                        desc as UniformBuffer
-                        val usage = VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
-                        val allocUsage = Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
-                        val buffer = Buffer(graphicsPipeline.sys, desc.size.toLong(), usage, allocUsage).also {
-                            graphicsPipeline.addDependingResource(it)
-                        }
-                        UboDescriptor(idx, desc, buffer)
-                    }
-
+                    DescriptorType.UNIFORM_BUFFER -> UboDescriptor(idx, graphicsPipeline, desc as UniformBuffer)
                     DescriptorType.IMAGE_SAMPLER -> SamplerDescriptor(idx, desc as TextureSampler)
                     DescriptorType.CUBE_IMAGE_SAMPLER -> SamplerDescriptor(idx, desc as CubeMapSampler)
                 }
@@ -74,10 +69,6 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
             objects[i].add(block())
         }
         return objects[0].size - 1
-    }
-
-    fun clear() {
-        objects.forEach { it.clear() }
     }
 
     fun updateDescriptorSets(imageIdx: Int) {
@@ -96,7 +87,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) 
                         descObj.setDescriptorSet(this@memStack, this[descIdx], descriptorSets[imageIdx])
                     }
                 }
-                VK10.vkUpdateDescriptorSets(graphicsPipeline.sys.device.vkDevice, descriptorWrite, null)
+                vkUpdateDescriptorSets(graphicsPipeline.sys.device.vkDevice, descriptorWrite, null)
             }
         }
     }

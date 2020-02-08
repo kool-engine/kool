@@ -19,6 +19,7 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader(), Pipel
     }
 
     override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
+        builder.name = model.modelInfo
         builder.shaderLoader = this::setup
         onSetup.forEach { it(builder) }
         return builder.create(mesh, ctx)

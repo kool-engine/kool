@@ -10,6 +10,7 @@ import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10
 import org.lwjgl.vulkan.VkWriteDescriptorSet
 
@@ -20,9 +21,21 @@ abstract class DescriptorObject(val binding: Int, val descriptor: Descriptor) {
     abstract fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long)
 
     abstract fun update(cmd: DrawCommand, sys: VkSystem)
+
+    open fun destroy(graphicsPipeline: GraphicsPipeline) { }
 }
 
-class UboDescriptor(binding: Int, val ubo: UniformBuffer, val buffer: Buffer) : DescriptorObject(binding, ubo) {
+class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBuffer) : DescriptorObject(binding, ubo) {
+    private val buffer: Buffer
+
+    init {
+        val usage = VK10.VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
+        val allocUsage = Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
+        buffer = Buffer(graphicsPipeline.sys, ubo.size.toLong(), usage, allocUsage).also {
+            graphicsPipeline.addDependingResource(it)
+        }
+    }
+
     override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long) {
         stack.apply {
             val buffereInfo = callocVkDescriptorBufferInfoN(1) {
@@ -44,6 +57,11 @@ class UboDescriptor(binding: Int, val ubo: UniformBuffer, val buffer: Buffer) : 
     override fun update(cmd: DrawCommand, sys: VkSystem) {
         ubo.onUpdate?.invoke(ubo, cmd)
         buffer.mapped { ubo.putTo(MixedBufferImpl(this)) }
+    }
+
+    override fun destroy(graphicsPipeline: GraphicsPipeline) {
+        graphicsPipeline.removeDependingResource(buffer)
+        buffer.destroy()
     }
 }
 

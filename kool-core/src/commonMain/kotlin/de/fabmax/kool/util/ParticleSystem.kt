@@ -115,7 +115,7 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name:
             mesh.addQuadIndex(idx.meshIndex)
             particles[idx.listIndex].drawIndex = i
         }
-        mesh.geometry.isSyncRequired = true
+        mesh.geometry.hasChanged = true
 
         // swap particles into draw order, will make following sort operations much faster (assuming that order won't
         // drastically change between consecutive frames)

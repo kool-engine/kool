@@ -9,6 +9,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
     val buffer = ctx.gl.createBuffer()
 
     fun delete(ctx: JsContext) {
+        ctx.engineStats.bufferDeleted(bufferId)
         ctx.gl.deleteBuffer(buffer)
     }
 
@@ -21,6 +22,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         val pos = data.position
         data.flip()
         bind(ctx)
+        ctx.engineStats.bufferDeleted(bufferId)
         ctx.gl.bufferData(target, (data as Float32BufferImpl).buffer, usage)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
         data.limit = limit
@@ -32,6 +34,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         val pos = data.position
         data.flip()
         bind(ctx)
+        ctx.engineStats.bufferDeleted(bufferId)
         ctx.gl.bufferData(target, (data as Uint8BufferImpl).buffer, usage)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity)
         data.limit = limit
@@ -43,6 +46,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         val pos = data.position
         data.flip()
         bind(ctx)
+        ctx.engineStats.bufferDeleted(bufferId)
         ctx.gl.bufferData(target, (data as Uint16BufferImpl).buffer, usage)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 2)
         data.limit = limit
@@ -54,6 +58,7 @@ class BufferResource(val target: Int, ctx: JsContext) {
         val pos = data.position
         data.flip()
         bind(ctx)
+        ctx.engineStats.bufferDeleted(bufferId)
         ctx.gl.bufferData(target, (data as Uint32BufferImpl).buffer, usage)
         ctx.engineStats.bufferAllocated(bufferId, data.capacity * 4)
         data.limit = limit

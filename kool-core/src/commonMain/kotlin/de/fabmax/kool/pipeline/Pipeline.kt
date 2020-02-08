@@ -6,6 +6,9 @@ import de.fabmax.kool.pipeline.shading.Shader
 import de.fabmax.kool.scene.Mesh
 
 class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContext) {
+
+    val name = builder.name
+
     /**
      * pipelineHash is used to determine pipeline equality. In contrast to standard java hashCode() a 64-bit hash is
      * used to make collisions less likely. For fast equality checks the equals() method only uses this value to
@@ -88,6 +91,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
     }
 
     class Builder {
+        var name = "pipeline"
         var cullMethod = CullMethod.CULL_BACK_FACES
         var depthTest = DepthCompareOp.LESS
         var isWriteDepth = true

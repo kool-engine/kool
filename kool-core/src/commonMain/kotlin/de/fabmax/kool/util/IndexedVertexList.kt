@@ -71,7 +71,7 @@ class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
     val vertexIt: VertexView
 
     var isRebuildBoundsOnSync = false
-    var isSyncRequired = true
+    var hasChanged = true
     var isBatchUpdate = false
 
     constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toHashSet())
@@ -147,7 +147,7 @@ class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
         val wasBatchUpdate = isBatchUpdate
         isBatchUpdate = true
         block()
-        isSyncRequired = true
+        hasChanged = true
         isBatchUpdate = wasBatchUpdate
         if (rebuildBounds) {
             rebuildBounds()
@@ -168,7 +168,7 @@ class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
         vertexIt.index = numVertices++
         vertexIt.block()
         bounds.add(vertexIt.position)
-        isSyncRequired = true
+        hasChanged = true
         return numVertices - 1
     }
 
@@ -215,7 +215,7 @@ class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
         for (idx in indices.indices) {
             addIndex(indices[idx])
         }
-        isSyncRequired = true
+        hasChanged = true
     }
 
     fun addIndices(indices: List<Int>) {

@@ -73,7 +73,7 @@ class JsAssetManager internal constructor(assetsBaseDir: String, val ctx: JsCont
         return async { loader(this@JsAssetManager) }
     }
 
-    override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
+    override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.getCharMap(fontProps)
 
     override fun inflate(zipData: ByteArray): ByteArray {
         val uint8Data = Uint8Array(zipData.size)

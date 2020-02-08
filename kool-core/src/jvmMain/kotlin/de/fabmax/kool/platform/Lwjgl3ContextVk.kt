@@ -6,7 +6,6 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.RenderPass
 import de.fabmax.kool.platform.vk.util.bitValue
-import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBufferImpl
 import org.lwjgl.glfw.GLFW.*
@@ -28,9 +27,9 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
 
     override val shaderGenerator = ShaderGeneratorImplVk()
 
-    override var windowWidth = 1024
+    override var windowWidth = props.width
         private set
-    override var windowHeight = 768
+    override var windowHeight = props.height
         private set
 
     private val vkScene = KoolVkScene()
@@ -190,10 +189,10 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
         val cmdPools = mutableListOf<CommandPool>()
         val cmdBuffers = mutableListOf<CommandBuffers>()
 
-        val meshMap = mutableMapOf<Mesh, IndexedMesh>()
+        val meshMap = mutableMapOf<Long, IndexedMesh>()
 
-        inner class DeleteMesh(val mesh: IndexedMesh, var deleteDelay: Int)
-        private val meshDeleteQueue = ArrayDeque<DeleteMesh>()
+        inner class DeleteAction(var deleteDelay: Int = sys.swapChain?.nImages ?: 3, val action: () -> Unit)
+        private val deleteQueue = ArrayDeque<DeleteAction>()
 
         override fun onLoad(sys: VkSystem) {
             this.sys = sys
@@ -223,6 +222,10 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
              * generally better. Note that VkSemaphore-based synchronization can only be done across vkQueueSubmit()
              * calls, so you may be forced to split work up into multiple submits.
              */
+
+            if (disposablePipelines.isNotEmpty()) {
+                disposePipelines()
+            }
 
             cmdBuffers[imageIndex].destroy()
             val pool = cmdPools[imageIndex]
@@ -254,17 +257,35 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                 check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
 
                 // delete discarded meshes
-                val delIt = meshDeleteQueue.iterator()
-                for (delMesh in delIt) {
-                    if (delMesh.deleteDelay-- <= 0) {
-                        sys.device.removeDependingResource(delMesh.mesh)
-                        delMesh.mesh.destroy()
+                val delIt = deleteQueue.iterator()
+                for (action in delIt) {
+                    if (action.deleteDelay-- <= 0) {
+                        //sys.device.removeDependingResource(delMesh.mesh)
+                        //delMesh.mesh.destroy()
+                        action.action()
                         delIt.remove()
                     }
                 }
             }
 
             return cmdBufs.vkCommandBuffers[0]
+        }
+
+        private fun disposePipelines() {
+            disposablePipelines.forEach { pipeline ->
+                val delMesh = meshMap.remove(pipeline.pipelineInstanceId)
+                val delPipeline = sys.pipelineManager.getPipeline(pipeline)
+
+                deleteQueue += DeleteAction {
+                    delMesh?.let {
+                        sys.device.removeDependingResource(it)
+                        it.destroy()
+                    }
+                    delPipeline?.freeDescriptorSetInstance(pipeline)
+                    // todo: dispose entire pipeline if no instances left
+                }
+            }
+            disposablePipelines.clear()
         }
 
         private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: DrawQueue, imageIndex: Int,
@@ -285,17 +306,20 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                 if (descriptorSet.updateDescriptors(cmd, imageIndex, sys)) {
                     descriptorSet.updateDescriptorSets(imageIndex)
 
-                    var model = meshMap[cmd.mesh]
-                    if (cmd.mesh.geometry.isSyncRequired || model == null) {
-                        cmd.mesh.geometry.isSyncRequired = false
+                    var model = meshMap[pipelineCfg.pipelineInstanceId]
+                    if ((cmd.mesh.geometry.hasChanged && !cmd.mesh.geometry.isBatchUpdate) || model == null) {
+                        cmd.mesh.geometry.hasChanged = false
 
                         // (re-)build buffer
                         // fixme: don't do this here, should have happened before (async?)
-                        meshMap.remove(cmd.mesh)?.let {
-                            meshDeleteQueue.addLast(DeleteMesh(it, nImages))
+                        meshMap.remove(pipelineCfg.pipelineInstanceId)?.let {
+                            deleteQueue += DeleteAction {
+                                sys.device.removeDependingResource(it)
+                                it.destroy()
+                            }
                         }
                         model = IndexedMesh(sys, cmd.mesh.geometry)
-                        meshMap[cmd.mesh] = model
+                        meshMap[pipelineCfg.pipelineInstanceId] = model
                         sys.device.addDependingResource(model)
                     }
 
@@ -450,8 +474,8 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
     }
 
     class InitProps(init: InitProps.() -> Unit = {}) {
-        var width = 1024
-        var height = 768
+        var width = 1200
+        var height = 800
         var title = "Kool"
         var monitor = 0L
         var share = 0L

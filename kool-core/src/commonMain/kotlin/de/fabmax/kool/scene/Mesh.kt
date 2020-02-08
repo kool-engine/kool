@@ -41,13 +41,10 @@ fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate:
 }
 
 /**
- * Class for renderable geometry (triangles, lines, points, etc.).
- *
- * @author fabmax
+ * Class for renderable geometry (triangles, lines, points).
  */
 open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(name) {
 
-    //var pipelineLoader: (Mesh.(KoolContext) -> Pipeline)? = null
     var pipelineLoader: PipelineFactory? = null
     private var pipeline: Pipeline? = null
 
@@ -76,7 +73,8 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
      */
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
-        // todo: pipeline.dispose()
+        pipeline?.let { ctx.disposePipeline(it) }
+        pipeline = null
     }
 
     override fun render(ctx: KoolContext) {
@@ -87,11 +85,14 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             return
         }
 
-        // create or update data buffers for this mesh
-//        if (meshData.checkBuffers(ctx)) {
-//            // meshData was updated
-//            rayTest.onMeshDataChanged(this)
-//        }
+        // update bounds and ray test if geometry has changed
+        if (geometry.hasChanged && !geometry.isBatchUpdate) {
+            // don't clear the hasChanged flag yet, is done by rendering backend after vertex buffers are updated
+            if (geometry.isRebuildBoundsOnSync) {
+                geometry.rebuildBounds()
+            }
+            rayTest.onMeshDataChanged(this)
+        }
 
         // fixme: use some caching, to avoid per-frame allocation of new DrawCommand object
         // multiple draw command objects are needed if object is rendered by multiple render passes (shadow maps, etc.)

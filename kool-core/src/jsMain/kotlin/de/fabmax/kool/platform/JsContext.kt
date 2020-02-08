@@ -58,28 +58,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         } else {
             js("alert(\"Unable to initialize WebGL2 context. Your browser may not support it.\")")
             throw KoolException("WebGL2 context required")
-
-//            webGlCtx = canvas.getContext("webgl")
-//            if (webGlCtx == null) {
-//                webGlCtx = canvas.getContext("experimental-webgl")
-//            }
-//            if (webGlCtx == null) {
-//                js("alert(\"Unable to initialize WebGL context. Your browser may not support it.\")")
-//            }
-//            gl = webGlCtx as WebGLRenderingContext
-//
-//            uint32Indices = gl.getExtension("OES_element_index_uint") != null
-//            depthTextures = gl.getExtension("WEBGL_depth_texture") != null
-//            maxTexUnits = gl.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS).asDynamic()
-//
-//            val colorBufferFloat = gl.getExtension("WEBGL_color_buffer_float") != null
         }
-
-//        if (JsImpl.isWebGl2Context) {
-//            sysInfo += "WebGL 2"
-//        } else {
-//            sysInfo += "WebGL 1"
-//        }
 
         val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:
         gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
@@ -246,6 +225,11 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     }
 
     private fun draw() {
+        if (disposablePipelines.isNotEmpty()) {
+            queueRenderer.disposePipelines(disposablePipelines)
+            disposablePipelines.clear()
+        }
+
         engineStats.resetPrimitveCount()
 
         for (i in 0 until offscreenPasses.size) {

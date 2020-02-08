@@ -18,13 +18,17 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
     private val canvas = document.createElement("canvas") as HTMLCanvasElement
     private val canvasCtx: CanvasRenderingContext2D
 
+    private val charMaps = mutableMapOf<FontProps, CharMap>()
+
     init {
         canvas.width = maxWidth
         canvas.height = maxHeight
         canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D
     }
 
-    fun createCharMap(fontProps: FontProps): CharMap {
+    fun getCharMap(fontProps: FontProps): CharMap = charMaps.getOrPut(fontProps) { generateCharMap(fontProps) }
+
+    private fun generateCharMap(fontProps: FontProps): CharMap {
         // clear canvas
         canvasCtx.clearRect(0.0, 0.0, maxWidth.toDouble(), maxHeight.toDouble())
 

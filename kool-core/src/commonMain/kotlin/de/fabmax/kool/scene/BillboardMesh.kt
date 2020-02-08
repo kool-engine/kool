@@ -69,7 +69,7 @@ open class BillboardMesh(name: String? = null) : Mesh(IndexedVertexList(Attribut
                 billboardIt.rotation.f = rotation.toRad()
             }
         }
-        geometry.isSyncRequired = true
+        geometry.hasChanged = true
     }
 
     fun clearIndices() {
@@ -165,7 +165,7 @@ open class BillboardMesh(name: String? = null) : Mesh(IndexedVertexList(Attribut
         for (i in indexList.indices) {
             addQuadIndex(indexList[i])
         }
-        geometry.isSyncRequired = true
+        geometry.hasChanged = true
     }
 
     private inner class BillboardInstance {

@@ -26,6 +26,7 @@ class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader
 
     override fun createPipeline(mesh: Mesh, builder: Pipeline.Builder, ctx: KoolContext): Pipeline {
         builder.cullMethod = CullMethod.NO_CULLING
+        builder.depthTest = DepthCompareOp.LESS_EQUAL
         return super.createPipeline(mesh, builder, ctx)
     }
 
@@ -40,6 +41,8 @@ class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader
     }
 
     companion object {
+        val UI_MESH_ATTRIBS = setOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, Attribute.COLORS)
+
         private const val U_ALPHA = "uAlpha"
         private const val U_FONT_TEX = "uFontTex"
 
@@ -54,7 +57,7 @@ class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader
             }
             fragmentStage {
                 val alpha = pushConstantNode1f(U_ALPHA)
-                val fontSampler = textureSamplerNode(textureNode(U_FONT_TEX), ifTexCoords.output, false)
+                val fontSampler = textureSamplerNode(textureNode(U_FONT_TEX), ifTexCoords.output)
                 val mulAlpha = multiplyNode(fontSampler.outColor, alpha.output)
                 val alphaColor = colorAlphaNode(ifColors.output, mulAlpha.output)
                 colorOutput = unlitMaterialNode(alphaColor.outAlphaColor).outColor

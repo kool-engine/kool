@@ -24,6 +24,12 @@ class QueueRendererWebGl(val ctx: JsContext) {
     private val glAttribs = GlAttribs()
     private val shaderMgr = ShaderManager(ctx)
 
+    fun disposePipelines(pipelines: List<Pipeline>) {
+        pipelines.forEach {
+            shaderMgr.deleteShader(it)
+        }
+    }
+
     fun renderQueue(queue: DrawQueue) {
         for (cmd in queue.commands) {
             cmd.pipeline?.let { pipeline ->

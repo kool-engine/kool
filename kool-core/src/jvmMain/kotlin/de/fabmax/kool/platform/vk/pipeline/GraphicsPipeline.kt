@@ -17,6 +17,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
     val descriptorPool: Long
 
     private val descriptorSetInstances = mutableMapOf<Long, DescriptorSet>()
+    private val reusableDescriptorSets = mutableListOf<DescriptorSet>()
 
     val vkGraphicsPipeline: Long
     val pipelineLayout: Long
@@ -295,13 +296,28 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
     }
 
     fun getDescriptorSetInstance(pipeline: Pipeline): DescriptorSet {
-        return descriptorSetInstances.computeIfAbsent(pipeline.pipelineInstanceId) {
-            logD { "Creating new descriptor set instance [${descriptorSetInstances.size+1} / $descriptorSetPoolSize, pipeline: ${pipeline.pipelineHash}]" }
-            if (descriptorSetInstances.size == descriptorSetPoolSize) {
-                throw IllegalStateException("Descriptor set pool exhausted. Use larger descriptorSetPoolSize")
+        return descriptorSetInstances.getOrPut(pipeline.pipelineInstanceId) {
+            val setInstance = if (reusableDescriptorSets.isNotEmpty()) {
+                logD { "Reusing recycled descriptor set instance, pipeline: ${pipeline.name} [${pipeline.pipelineHash}]" }
+                reusableDescriptorSets.removeAt(reusableDescriptorSets.lastIndex)
+            } else {
+                logD { "Creating new descriptor set instance ${descriptorSetInstances.size + 1} / $descriptorSetPoolSize, pipeline: ${pipeline.name} [${pipeline.pipelineHash}]" }
+                if (descriptorSetInstances.size == descriptorSetPoolSize) {
+                    throw IllegalStateException("Descriptor set pool exhausted. Use larger descriptorSetPoolSize")
+                }
+                DescriptorSet(this, pipeline)
             }
             sys.ctx.engineStats.pipelineInstanceCreated(vkGraphicsPipeline)
-            DescriptorSet(this, pipeline)
+            setInstance.createDescriptorObjects(pipeline)
+            setInstance
+        }
+    }
+
+    fun freeDescriptorSetInstance(pipeline: Pipeline) {
+        descriptorSetInstances.remove(pipeline.pipelineInstanceId)?.let {
+            sys.ctx.engineStats.pipelineInstanceDestroyed(vkGraphicsPipeline)
+            it.clearDescriptorObjects()
+            reusableDescriptorSets += it
         }
     }
 
