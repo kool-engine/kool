@@ -21,6 +21,10 @@ abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevel
 
     abstract fun render(ctx: KoolContext)
 
+    open fun dispose(ctx: KoolContext) {
+        scene?.dispose(ctx)
+    }
+
     fun mipWidth(mipLevel: Int): Int {
         return if (mipLevel <= 0) {
             texWidth
@@ -56,6 +60,11 @@ class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int = 1, colorFo
         }
         frameIdx++
     }
+
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
+        impl.dispose(ctx)
+    }
 }
 
 class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorFormat: TexFormat = TexFormat.RGBA) :
@@ -83,6 +92,11 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorForm
             ctx.viewport = vp
         }
         frameIdx++
+    }
+
+    override fun dispose(ctx: KoolContext) {
+        super.dispose(ctx)
+        impl.dispose(ctx)
     }
 
     private fun defaultCubeMapCameraConfig() {
@@ -130,8 +144,12 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorForm
 
 expect class OffscreenPass2dImpl(offscreenPass: OffscreenPass2d) {
     val texture: Texture
+
+    fun dispose(ctx: KoolContext)
 }
 
 expect class OffscreenPassCubeImpl(offscreenPass: OffscreenPassCube) {
     val texture: CubeMapTexture
+
+    fun dispose(ctx: KoolContext)
 }

@@ -22,13 +22,12 @@ import org.khronos.webgl.WebGLUniformLocation
 
 class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsContext) {
 
+    val pipelineName = pipeline.name
     private val pipelineId = pipeline.pipelineHash.toLong()
 
     private val attributeLocations = mutableMapOf<String, Int>()
     private val uniformLocations = mutableMapOf<String, WebGLUniformLocation?>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
-
-    private var firstUse = true
 
     init {
         pipeline.vertexLayout.bindings.forEach { bnd ->
@@ -56,15 +55,18 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
 
     fun use() {
         ctx.gl.useProgram(prog)
-        if (firstUse) {
-            firstUse = false
-            attributeLocations.values.forEach { loc -> ctx.gl.enableVertexAttribArray(loc) }
-        }
+        attributeLocations.values.forEach { loc -> ctx.gl.enableVertexAttribArray(loc) }
+    }
+
+    fun unUse() {
+        attributeLocations.values.forEach { loc -> ctx.gl.disableVertexAttribArray(loc) }
     }
 
     fun bindInstance(cmd: DrawCommand): ShaderInstance {
         val pipelineInst = cmd.pipeline!!
-        val inst = instances.getOrPut(pipelineInst.pipelineInstanceId) { ShaderInstance(cmd.mesh, pipelineInst) }
+        val inst = instances.getOrPut(pipelineInst.pipelineInstanceId) {
+            ShaderInstance(cmd.mesh, pipelineInst)
+        }
         inst.bindInstance(cmd)
         return inst
     }
@@ -153,7 +155,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 cubeMaps[i].onUpdate?.invoke(cubeMaps[i], drawCmd)
             }
 
-            // update unitform values
+            // update uniform values
             for (i in mappings.indices) {
                 mappings[i].setUniform(ctx)
             }
@@ -246,8 +248,4 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     }
 
     private data class AttributeOnLocation(val vbo: VboBinder, val loc: Int)
-
-    companion object {
-        private var nextPipelineId = 1L
-    }
 }

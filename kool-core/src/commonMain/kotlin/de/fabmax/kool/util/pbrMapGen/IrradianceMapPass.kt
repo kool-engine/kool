@@ -1,5 +1,6 @@
 package de.fabmax.kool.util.pbrMapGen
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.OffscreenPassCube
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
@@ -53,6 +54,15 @@ class IrradianceMapPass(hdriTexture: Texture) {
                 }
             }
         }
+    }
+
+    fun update(ctx: KoolContext) {
+        offscreenPass.frameIdx = 0
+        ctx.offscreenPasses += offscreenPass
+    }
+
+    fun dispose(ctx: KoolContext) {
+        offscreenPass.dispose(ctx)
     }
 
     private class ConvoluteIrradianceNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {

@@ -33,7 +33,10 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val defaultScene = DemoEntry("Simple Demo") { add(uiDemoScene()) }
 
     private val demos = mutableMapOf(
-            "simpleDemo" to defaultScene
+            "simpleDemo" to defaultScene,
+            "pbrDemo" to DemoEntry("PBR/IBL Demo") { add(pbrDemoScene(it)) }
+            //"simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) }
+
 //            "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene(it)) },
 //            "pointDemo" to DemoEntry("Point Tree Demo") { add(pointScene()) },
 //            "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
@@ -59,7 +62,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     }
 
     private fun onRender(ctx: KoolContext) {
-        if (!newScenes.isEmpty()) {
+        if (newScenes.isNotEmpty()) {
             currentScenes.forEach { s ->
                 ctx.scenes -= s
                 s.dispose(ctx)

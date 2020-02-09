@@ -19,10 +19,10 @@ actual class LoadedTexture(val sys: VkSystem, val format: TexFormat, val texture
         if (!isSharedRes) {
             addDependingResource(textureImage)
             addDependingResource(textureImageView)
-        }
 
-        sys.ctx.engineStats.textureAllocated(texId, Texture.estimatedTexSize(
-                textureImage.width, textureImage.height, format.vkBytesPerPx, textureImage.arrayLayers, textureImage.mipLevels))
+            sys.ctx.engineStats.textureAllocated(texId, Texture.estimatedTexSize(
+                    textureImage.width, textureImage.height, format.vkBytesPerPx, textureImage.arrayLayers, textureImage.mipLevels))
+        }
         logD { "Created texture: Image: ${textureImage.vkImage}, view: ${textureImageView.vkImageView}, sampler: $sampler" }
     }
 
@@ -37,8 +37,8 @@ actual class LoadedTexture(val sys: VkSystem, val format: TexFormat, val texture
     actual fun dispose() {
         // fixme: kinda hacky... also might me depending resource of something else than sys.device
         sys.renderLoop.runDelayed(sys.swapChain?.nImages ?: 3) {
-            destroy()
             sys.device.removeDependingResource(this)
+            destroy()
         }
     }
 

@@ -1,5 +1,6 @@
 package de.fabmax.kool.util.pbrMapGen
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.OffscreenPass2d
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.Attribute
@@ -55,6 +56,10 @@ class BrdfLutPass {
                 }
             }
         }
+    }
+
+    fun dispose(ctx: KoolContext) {
+        offscreenPass.dispose(ctx)
     }
 
     private class BrdfLutNode(graph: ShaderGraph) : ShaderNode("brdfLut", graph) {

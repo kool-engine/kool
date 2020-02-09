@@ -57,6 +57,13 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         isSetup = true
     }
 
+    actual fun dispose(ctx: KoolContext) {
+        ctx as JsContext
+        fbos.forEach { ctx.gl.deleteFramebuffer(it) }
+        rbos.forEach { ctx.gl.deleteRenderbuffer(it) }
+        texture.dispose()
+    }
+
     fun draw(ctx: JsContext) {
         if (!isSetup) {
             setup(ctx)
@@ -131,6 +138,13 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         }
 
         isSetup = true
+    }
+
+    actual fun dispose(ctx: KoolContext) {
+        ctx as JsContext
+        fbos.forEach { ctx.gl.deleteFramebuffer(it) }
+        rbos.forEach { ctx.gl.deleteRenderbuffer(it) }
+        texture.dispose()
     }
 
     fun draw(ctx: JsContext) {

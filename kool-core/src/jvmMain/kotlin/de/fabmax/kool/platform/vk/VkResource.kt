@@ -28,13 +28,8 @@ abstract class VkResource {
 
     fun destroy() {
         if (!isDestroyed) {
-//            val t = PerfTimer()
-//            val n = this::class.java.simpleName
             destroyDependingResources()
-//            logD { "[$n] Destroyed ${dependingResources.size} dependents in ${t.takeMs()} ms" }
-//            t.reset()
             freeResources()
-//            logD { "[$n] Freed resources in ${t.takeMs()} ms" }
             isDestroyed = true
         }
     }

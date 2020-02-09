@@ -17,13 +17,14 @@ class ShaderManager(val ctx: JsContext) {
     private val gl: WebGLRenderingContext
         get() = ctx.gl
 
-    val shaders = mutableMapOf<ULong, CompiledShader>()
+    val shaders = mutableMapOf<Pipeline, CompiledShader>()
     var currentShader: CompiledShader? = null
 
     fun setupShader(cmd: DrawCommand): CompiledShader.ShaderInstance {
         val pipeline = cmd.pipeline!!
-        val shader = shaders.getOrPut(pipeline.pipelineHash) { CompiledShader(compileShader(pipeline.shaderCode), pipeline, ctx) }
+        val shader = shaders.getOrPut(pipeline) { CompiledShader(compileShader(pipeline.shaderCode), pipeline, ctx) }
         if (shader !== currentShader) {
+            currentShader?.unUse()
             currentShader = shader
             shader.use()
         }
@@ -31,12 +32,16 @@ class ShaderManager(val ctx: JsContext) {
     }
 
     fun deleteShader(pipeline: Pipeline) {
-        val shader = shaders[pipeline.pipelineHash]
+        val shader = shaders[pipeline]
         if (shader != null) {
             shader.destroyInstance(pipeline)
             if (shader.isEmpty()) {
+                if (shader == currentShader) {
+                    shader.unUse()
+                    currentShader = null
+                }
                 shader.destroy()
-                shaders.remove(pipeline.pipelineHash)
+                shaders.remove(pipeline)
             }
         }
     }

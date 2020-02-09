@@ -1,6 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.platform.Lwjgl3ContextVk
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.OffscreenRenderPass
 import de.fabmax.kool.platform.vk.util.vkFormat
@@ -22,6 +23,14 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         }
     }
 
+    actual fun dispose(ctx: KoolContext) {
+        ctx as Lwjgl3ContextVk
+        ctx.vkSystem.renderLoop.runDelayed(3) {
+            renderPass?.destroyNow()
+            texture.dispose()
+        }
+    }
+
     fun getRenderPass(sys: VkSystem): OffscreenRenderPass {
         if (renderPass == null) {
             createRenderPass(sys)
@@ -36,7 +45,6 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     }
 
     private inner class OffscreenTexture2d: Texture(loader = null) {
-
         fun create(sys: VkSystem, rp: OffscreenRenderPass) {
             loadedTexture = LoadedTexture(sys, rp.texFormat, rp.image, rp.imageView, rp.sampler, true)
             loadingState = LoadingState.LOADED
@@ -50,6 +58,14 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
 
     var renderPass: OffscreenRenderPass? = null
         private set
+
+    actual fun dispose(ctx: KoolContext) {
+        ctx as Lwjgl3ContextVk
+        ctx.vkSystem.renderLoop.runDelayed(3) {
+            renderPass?.destroyNow()
+            texture.dispose()
+        }
+    }
 
     fun transitionTexLayout(commandBuffer: VkCommandBuffer, dstLayout: Int) {
         texture as OffscreenTextureCube

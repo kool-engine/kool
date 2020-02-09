@@ -69,6 +69,11 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
         }
     }
 
+    fun destroyNow() {
+        sys.device.removeDependingResource(this)
+        destroy()
+    }
+
     override fun freeResources() {
         vkDestroySampler(sys.device.vkDevice, sampler, null)
         vkDestroyRenderPass(sys.device.vkDevice, vkRenderPass, null)
