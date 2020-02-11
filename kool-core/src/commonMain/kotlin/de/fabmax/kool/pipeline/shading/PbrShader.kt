@@ -9,17 +9,24 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     // Simple material props
     private var uRoughness: PushConstantNode1f? = null
     private var uMetallic: PushConstantNode1f? = null
+    private var uAlbedo: PushConstantNodeColor? = null
 
-    var metallic = cfg.metallic
+    var metallic = 0f
         set(value) {
             field = value
             uMetallic?.uniform?.value = value
         }
 
-    var roughness = cfg.roughness
+    var roughness = 0.5f
         set(value) {
             field = value
             uRoughness?.uniform?.value = value
+        }
+
+    var albedo: Color = Color.WHITE
+        set(value) {
+            field = value
+            uAlbedo?.uniform?.value?.set(value)
         }
 
     // Material maps
@@ -30,32 +37,32 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var ambientOcclusionSampler: TextureSampler? = null
     private var displacementSampler: TextureSampler? = null
 
-    var albedoMap = cfg.albedoMap
+    var albedoMap: Texture? = null
         set(value) {
             field = value
             albedoSampler?.texture = value
         }
-    var normalMap = cfg.normalMap
+    var normalMap: Texture? = null
         set(value) {
             field = value
             normalSampler?.texture = value
         }
-    var metallicMap = cfg.metallicMap
+    var metallicMap: Texture? = null
         set(value) {
             field = value
             metallicSampler?.texture = value
         }
-    var roughnessMap = cfg.roughnessMap
+    var roughnessMap: Texture? = null
         set(value) {
             field = value
             roughnessSampler?.texture = value
         }
-    var ambientOcclusionMap = cfg.ambientOcclusionMap
+    var ambientOcclusionMap: Texture? = null
         set(value) {
             field = value
             ambientOcclusionSampler?.texture = value
         }
-    var displacementMap = cfg.displacementMap
+    var displacementMap: Texture? = null
         set(value) {
             field = value
             displacementSampler?.texture = value
@@ -64,7 +71,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     // Simple lighting props
     private var uAmbient: PushConstantNodeColor? = null
 
-    var ambient = cfg.ambient
+    var ambient = Color(0.03f, 0.03f, 0.03f, 1f)
         set(value) {
             field = value
             uAmbient?.uniform?.value?.set(value)
@@ -75,17 +82,17 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var reflectionMapSampler: CubeMapSampler? = null
     private var brdfLutSampler: TextureSampler? = null
 
-    var irradianceMap = cfg.irradianceMap
+    var irradianceMap: CubeMapTexture? = null
         set(value) {
             field = value
             irradianceMapSampler?.texture = value
         }
-    var reflectionMap = cfg.reflectionMap
+    var reflectionMap: CubeMapTexture? = null
         set(value) {
             field = value
             reflectionMapSampler?.texture = value
         }
-    var brdfLut = cfg.brdfLut
+    var brdfLut: Texture? = null
         set(value) {
             field = value
             brdfLutSampler?.texture = value
@@ -97,6 +104,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         uMetallic?.let { it.uniform.value = metallic }
         uRoughness = model.findNode("uRoughness")
         uRoughness?.let { it.uniform.value = roughness }
+        uAlbedo = model.findNode("uAlbedo")
+        uAlbedo?.uniform?.value?.set(albedo)
         uAmbient = model.findNode("uAmbient")
         uAmbient?.uniform?.value?.set(ambient)
 
@@ -135,14 +144,13 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.output)
 
-                ifTexCoords = if (cfg.albedoMap != null || cfg.normalMap != null || cfg.roughnessMap != null ||
-                        cfg.metallicMap != null || cfg.ambientOcclusionMap != null || cfg.displacementMap != null) {
+                ifTexCoords = if (cfg.requiresTexCoords()) {
                     stageInterfaceNode("ifTexCoords", attrTexCoords().output)
                 } else {
                     null
                 }
 
-                val worldPos = if (cfg.displacementMap != null) {
+                val worldPos = if (cfg.isDisplacementMapped) {
                     val dispTex = textureNode("tDisplacement")
                     displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).outPosition
                 } else {
@@ -151,12 +159,12 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 val pos = transformNode(worldPos, mvp.outModelMat, 1f).output
                 ifFragPos = stageInterfaceNode("ifFragPos", pos)
 
-                ifColors = if (cfg.albedoMap == null) {
+                ifColors = if (cfg.albedoSource == AlbedoSource.VERTEX_ALBEDO) {
                     stageInterfaceNode("ifColors", attrColors().output)
                 } else {
                     null
                 }
-                ifTangents = if (cfg.normalMap != null) {
+                ifTangents = if (cfg.isNormalMapped) {
                     val tan = transformNode(attrTangents().output, mvp.outModelMat, 0f)
                     stageInterfaceNode("ifTangents", tan.output)
                 } else {
@@ -173,7 +181,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 val brdfLut: TextureNode?
                 val irrSampler: CubeMapSamplerNode?
 
-                if (cfg.isIbl) {
+                if (cfg.isImageBasedLighting) {
                     val irrMap = cubeMapNode("irradianceMap")
                     irrSampler = cubeMapSamplerNode(irrMap, ifNormals.output, false)
                     reflMap = cubeMapNode("reflectionMap")
@@ -190,30 +198,32 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 
-                    inAlbedo = if (ifColors != null) {
-                        ifColors.output
-                    } else {
-                        val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
-                        val albedoLin = gammaNode(albedoSampler.outColor)
-                        albedoLin.outColor
+                    inAlbedo = when (cfg.albedoSource) {
+                        AlbedoSource.VERTEX_ALBEDO -> ifColors!!.output
+                        AlbedoSource.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
+                        AlbedoSource.TEXTURE_ALBEDO -> {
+                            val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
+                            val albedoLin = gammaNode(albedoSampler.outColor)
+                            albedoLin.outColor
+                        }
                     }
-                    inNormal = if (cfg.normalMap != null && ifTangents != null) {
+                    inNormal = if (cfg.isNormalMapped && ifTangents != null) {
                         val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
                         bumpNormal.outNormal
                     } else {
                         ifNormals.output
                     }
-                    inMetallic = if (cfg.roughnessMap != null) {
+                    inMetallic = if (cfg.isMetallicMapped) {
                         textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output, false).outColor
                     } else {
                         pushConstantNode1f("uMetallic").output
                     }
-                    inRoughness = if (cfg.roughnessMap != null) {
+                    inRoughness = if (cfg.isRoughnessMapped) {
                         textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output, false).outColor
                     } else {
                         pushConstantNode1f("uRoughness").output
                     }
-                    cfg.ambientOcclusionMap?.let {
+                    if (cfg.isAmbientOcclusionMapped) {
                         inAmbientOccl = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output, false).outColor
                     }
                 }
@@ -223,23 +233,43 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         }
     }
 
+    enum class AlbedoSource {
+        STATIC_ALBEDO,
+        TEXTURE_ALBEDO,
+        VERTEX_ALBEDO
+    }
+
     class PbrConfig {
-        var roughness = 0.5f
-        var metallic = 0.0f
-        var ambient = Color(0.03f, 0.03f, 0.03f, 1f)
+        var albedoSource = AlbedoSource.VERTEX_ALBEDO
+        var isNormalMapped = false
+        var isRoughnessMapped = false
+        var isMetallicMapped = false
+        var isAmbientOcclusionMapped = false
+        var isDisplacementMapped = false
 
-        var albedoMap: Texture? = null
-        var normalMap: Texture? = null
-        var roughnessMap: Texture? = null
-        var metallicMap: Texture? = null
-        var ambientOcclusionMap: Texture? = null
-        var displacementMap: Texture? = null
+        var isImageBasedLighting = false
 
-        var irradianceMap: CubeMapTexture? = null
-        var reflectionMap: CubeMapTexture? = null
-        var brdfLut: Texture? = null
+        fun requiresTexCoords(): Boolean {
+            return albedoSource == AlbedoSource.TEXTURE_ALBEDO ||
+                    isNormalMapped ||
+                    isRoughnessMapped ||
+                    isMetallicMapped ||
+                    isAmbientOcclusionMapped ||
+                    isDisplacementMapped
+        }
 
-        val isIbl: Boolean
-            get() = irradianceMap != null && reflectionMap != null && brdfLut != null
+//        var albedoMap: Texture? = null
+//        var normalMap: Texture? = null
+//        var roughnessMap: Texture? = null
+//        var metallicMap: Texture? = null
+//        var ambientOcclusionMap: Texture? = null
+//        var displacementMap: Texture? = null
+//
+//        var irradianceMap: CubeMapTexture? = null
+//        var reflectionMap: CubeMapTexture? = null
+//        var brdfLut: Texture? = null
+//
+//        val isIbl: Boolean
+//            get() = irradianceMap != null && reflectionMap != null && brdfLut != null
     }
 }

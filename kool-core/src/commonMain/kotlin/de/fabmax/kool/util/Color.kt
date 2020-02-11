@@ -27,7 +27,11 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
         return MutableColor(r, g, b, alpha)
     }
 
-    fun gamma(gamma: Float = 2.2f): Color {
+    fun toLinear(): Color = gamma(2.2f)
+
+    fun toSrgb(): Color = gamma(1f / 2.2f)
+
+    fun gamma(gamma: Float): Color {
         return Color(r.pow(gamma), g.pow(gamma), b.pow(gamma), a)
     }
 

@@ -313,13 +313,17 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
         }
     }
 
-    fun freeDescriptorSetInstance(pipeline: Pipeline) {
-        descriptorSetInstances.remove(pipeline.pipelineInstanceId)?.let {
+    fun freeDescriptorSetInstance(pipeline: Pipeline): Boolean {
+        val freeSet = descriptorSetInstances.remove(pipeline.pipelineInstanceId)
+        if (freeSet != null) {
             sys.ctx.engineStats.pipelineInstanceDestroyed(vkGraphicsPipeline)
-            it.clearDescriptorObjects()
-            reusableDescriptorSets += it
+            freeSet.clearDescriptorObjects()
+            reusableDescriptorSets += freeSet
         }
+        return freeSet != null
     }
+
+    fun isEmpty(): Boolean = descriptorSetInstances.isEmpty()
 
     override fun freeResources() {
         vkDestroyPipeline(sys.device.vkDevice, vkGraphicsPipeline, null)

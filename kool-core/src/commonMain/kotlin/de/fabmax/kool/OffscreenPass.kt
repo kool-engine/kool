@@ -116,7 +116,7 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorForm
                 }
                 (camera as PerspectiveCamera).let {
                     it.position.set(Vec3f.ZERO)
-                    it.fovy = 90f
+                    it.fovY = 90f
                     it.clipNear = 0.1f
                     it.clipFar = 10f
                 }

@@ -35,7 +35,7 @@ class PipelineManager(val sys: VkSystem) {
         } else {
             val gp = GraphicsPipeline(sys, renderPass, 1, dynVp, pipeline, nImages)
             sys.device.addDependingResource(gp)
-            val createdPipeline = createdPipelines.getOrPut(pipeline.pipelineHash) { CreatedPipeline() }
+            val createdPipeline = createdPipelines.getOrPut(pipeline.pipelineHash) { CreatedPipeline(false) }
             createdPipeline.addRenderPassPipeline(renderPass, gp)
         }
     }
@@ -44,7 +44,7 @@ class PipelineManager(val sys: VkSystem) {
         val swapChain = this.swapChain ?: return
         val gp = GraphicsPipeline(sys, renderPass, sys.physicalDevice.msaaSamples, false, pipeline, swapChain.nImages)
         swapChain.addDependingResource(gp)
-        val createdPipeline = createdPipelines.getOrPut(pipeline.pipelineHash) { CreatedPipeline() }
+        val createdPipeline = createdPipelines.getOrPut(pipeline.pipelineHash) { CreatedPipeline(true) }
         createdPipeline.addRenderPassPipeline(renderPass, gp)
     }
 
@@ -57,7 +57,7 @@ class PipelineManager(val sys: VkSystem) {
         return createdPipelines[pipeline.pipelineHash]
     }
 
-    class CreatedPipeline {
+    inner class CreatedPipeline(private val isOnScreen: Boolean) {
         val graphicsPipelines = mutableMapOf<Long, GraphicsPipeline>()
 
         fun existsForRenderPass(renderPass: Long) = graphicsPipelines.containsKey(renderPass)
@@ -67,7 +67,25 @@ class PipelineManager(val sys: VkSystem) {
         }
 
         fun freeDescriptorSetInstance(pipeline: Pipeline) {
-            graphicsPipelines.values.forEach { it.freeDescriptorSetInstance(pipeline) }
+            // find GraphicsPipeline containing pipelineInstance
+            val iterator = graphicsPipelines.values.iterator()
+            for (gp in iterator) {
+                if (gp.freeDescriptorSetInstance(pipeline) && gp.isEmpty()) {
+                    // all descriptor set instances of this particular pipeline are freed, destroy it..
+                    if (isOnScreen) {
+                        swapChain?.removeDependingResource(gp)
+                    } else {
+                        sys.device.removeDependingResource(gp)
+                    }
+                    gp.destroy()
+                    iterator.remove()
+                }
+            }
+            if (graphicsPipelines.isEmpty()) {
+                // all pipelines destroyed, remove CreatedPipeline instance
+                val succ = createdPipelines.remove(pipeline.pipelineHash) != null
+                onScreenPipelineConfigs.remove(pipeline)
+            }
         }
     }
 }

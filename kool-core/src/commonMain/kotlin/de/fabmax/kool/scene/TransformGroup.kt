@@ -18,7 +18,8 @@ fun transformGroup(name: String? = null, block: TransformGroup.() -> Unit): Tran
 }
 
 open class TransformGroup(name: String? = null) : Group(name) {
-    protected val transform = Mat4f()
+    val transform = Mat4f()
+
     protected val invTransform = Mat4f()
     protected var isIdentity = false
     protected var isDirty = false
@@ -37,7 +38,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
         }
     }
 
-    protected fun setDirty() {
+    fun setDirty() {
         isDirty = true
         isIdentity = false
     }

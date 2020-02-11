@@ -251,7 +251,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     var clipNear = 0.1f
     var clipFar = 100.0f
 
-    var fovy = 60.0f
+    var fovY = 60.0f
     var fovX = 0f
         private set
 
@@ -263,10 +263,10 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
 
     override fun updateProjectionMatrix() {
-        proj.setPerspective(fovy, aspectRatio, clipNear, clipFar)
+        proj.setPerspective(fovY, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling
-        val angY = fovy.toRad() / 2f
+        val angY = fovY.toRad() / 2f
         sphereFacY = 1f / cos(angY)
         tangY = tan(angY)
 

@@ -2,6 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.createDefaultContext
+import de.fabmax.kool.demo.pbr.pbrDemoScene
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.DebugOverlay
@@ -30,13 +31,13 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val currentScenes = mutableListOf<Scene>()
 
     //private val defaultScene = DemoEntry("Simple Demo") { add(simpleShapesScene(it)) }
-    private val defaultScene = DemoEntry("Simple Demo") { add(uiDemoScene()) }
+    private val defaultScene = DemoEntry("PBR/IBL Demo") { addAll(pbrDemoScene(it)) }
 
     private val demos = mutableMapOf(
-            "simpleDemo" to defaultScene,
-            "pbrDemo" to DemoEntry("PBR/IBL Demo") { add(pbrDemoScene(it)) }
+            "pbrDemo" to DemoEntry("PBR/IBL Demo") { addAll(pbrDemoScene(it)) }
             //"simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) }
 
+//            "simpleDemo" to DemoEntry("Simple Demo") { add(uiDemoScene()) },
 //            "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene(it)) },
 //            "pointDemo" to DemoEntry("Point Tree Demo") { add(pointScene()) },
 //            "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
@@ -53,8 +54,6 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
         ctx.scenes += dbgOverlay.ui
         ctx.scenes += demoOverlay(ctx)
         ctx.onRender += this::onRender
-
-        //dbgOverlay.isVisible = false
 
         (demos[startScene] ?: defaultScene).loadScene(newScenes, ctx)
 
