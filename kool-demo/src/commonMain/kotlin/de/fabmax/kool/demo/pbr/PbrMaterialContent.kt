@@ -175,143 +175,75 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
         private val defaultAoTex = SingleColorTexture(Color.WHITE)
         private val defaultDispTex = SingleColorTexture(Color.BLACK)
 
+        //private val assetPath = "reserve/pbr/materials"
+        private val assetPath = "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials"
+        
         private val materials = mutableListOf(
                 MaterialMaps(
                         "Bamboo",
-                        Texture { it.loadTextureData("reserve/pbr/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.png") },
-                        Texture { it.loadTextureData("reserve/pbr/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.png") },
+                        Texture { it.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg") },
+                        Texture { it.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg") },
+                        Texture { it.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg") },
                         null,
-                        Texture { it.loadTextureData("reserve/pbr/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.png") },
+                        Texture { it.loadTextureData("$assetPath/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg") },
                         null
-                ),
-
-                MaterialMaps(
-                        "Brown Mud",
-                        Texture { it.loadTextureData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_nor_2k.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg") },
-                        null,
-                        Texture { it.loadTextureData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_ao_2k.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg") }
                 ),
 
                 MaterialMaps(
                         "Castle Brick",
-                        Texture { it.loadTextureData("reserve/pbr/castle_brick/castle_brick_02_red_diff_2k.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/castle_brick/castle_brick_02_red_nor_2k.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/castle_brick/castle_brick_02_red_rough_2k.jpg") },
+                        Texture { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_diff_2k.jpg") },
+                        Texture { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_nor_2k.jpg") },
+                        Texture { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_rough_2k.jpg") },
                         null,
-                        Texture { it.loadTextureData("reserve/pbr/castle_brick/castle_brick_02_red_ao_2k.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/castle_brick/castle_brick_02_red_disp_2k.jpg") }
-                ),
-
-                MaterialMaps(
-                        "Copper Rock",
-                        Texture { it.loadTextureData("reserve/pbr/copper_rock/copper-rock1-alb.png") },
-                        Texture { it.loadTextureData("reserve/pbr/copper_rock/copper-rock1-normal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/copper_rock/copper-rock1-rough.png") },
-                        Texture { it.loadTextureData("reserve/pbr/copper_rock/copper-rock1-metal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/copper_rock/copper-rock1-ao.png") },
-                        Texture { it.loadTextureData("reserve/pbr/copper_rock/copper-rock1-height.png") }
-                ),
-
-                MaterialMaps(
-                        "Dungeon Stone",
-                        Texture { it.loadTextureData("reserve/pbr/dungeon-stone1/dungeon-stone1-albedo2.png") },
-                        Texture { it.loadTextureData("reserve/pbr/dungeon-stone1/dungeon-stone1-normal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/dungeon-stone1/dungeon-stone1-roughness.png") },
-                        null,
-                        Texture { it.loadTextureData("reserve/pbr/dungeon-stone1/dungeon-stone1-ao.png") },
-                        Texture { it.loadTextureData("reserve/pbr/dungeon-stone1/dungeon-stone1-height.png") }
+                        Texture { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_ao_2k.jpg") },
+                        Texture { it.loadTextureData("$assetPath/castle_brick/castle_brick_02_red_disp_2k.jpg") }
                 ),
 
                 MaterialMaps(
                         "Granite",
-                        //Texture { it.loadTextureData("reserve/pbr/granitesmooth1/granitesmooth1-albedo2.png") },
-                        Texture { it.loadTextureData("reserve/pbr/granitesmooth1/granitesmooth1-albedo4.png") },
-                        Texture { it.loadTextureData("reserve/pbr/granitesmooth1/granitesmooth1-normal2.png") },
-                        Texture { it.loadTextureData("reserve/pbr/granitesmooth1/granitesmooth1-roughness3.png") },
+                        Texture { it.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-albedo4.jpg") },
+                        Texture { it.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-normal2.jpg") },
+                        Texture { it.loadTextureData("$assetPath/granitesmooth1/granitesmooth1-roughness3.jpg") },
                         null,
-                        null,
-                        null
-                ),
-
-                MaterialMaps(
-                        "Greasy Metal",
-                        Texture { it.loadTextureData("reserve/pbr/greasy_pan/greasy-metal-pan1-albedo.png") },
-                        Texture { it.loadTextureData("reserve/pbr/greasy_pan/greasy-metal-pan1-normal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/greasy_pan/greasy-metal-pan1-roughness.png") },
-                        Texture { it.loadTextureData("reserve/pbr/greasy_pan/greasy-metal-pan1-metal.png") },
-                        null,
-                        null
-                ),
-
-                MaterialMaps(
-                        "Hardwood Planks",
-                        Texture { it.loadTextureData("reserve/pbr/hardwood_planks/hardwood-brown-planks-albedo.png") },
-                        Texture { it.loadTextureData("reserve/pbr/hardwood_planks/hardwood-brown-planks-normal-dx.png") },
-                        Texture { it.loadTextureData("reserve/pbr/hardwood_planks/hardwood-brown-planks-roughness.png") },
-                        null,
-                        Texture { it.loadTextureData("reserve/pbr/hardwood_planks/hardwood-brown-planks-ao.png") },
-                        null //Texture { it.loadTextureData("reserve/pbr/hardwood_planks/hardwood-brown-planks-height.png") }
-                ),
-
-                MaterialMaps(
-                        "Splotchy Metal",
-                        Texture { it.loadTextureData("reserve/pbr/metal_splotchy/metal-splotchy-albedo.png") },
-                        Texture { it.loadTextureData("reserve/pbr/metal_splotchy/metal-splotchy-normal-dx.png") },
-                        Texture { it.loadTextureData("reserve/pbr/metal_splotchy/metal-splotchy-rough.png") },
-                        Texture { it.loadTextureData("reserve/pbr/metal_splotchy/metal-splotchy-metal.png") },
                         null,
                         null
                 ),
 
                 MaterialMaps(
                         "Weave Steel",
-                        Texture { it.loadTextureData("reserve/pbr/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg") }
-                ),
-
-                MaterialMaps(
-                        "Rusted Iron",
-                        Texture { it.loadTextureData("reserve/pbr/rusted_iron2/rustediron2_basecolor.png") },
-                        Texture { it.loadTextureData("reserve/pbr/rusted_iron2/rustediron2_normal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/rusted_iron2/rustediron2_roughness.png") },
-                        Texture { it.loadTextureData("reserve/pbr/rusted_iron2/rustediron2_metallic.png") },
-                        null,
-                        null
+                        Texture { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg") },
+                        Texture { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg") },
+                        Texture { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg") },
+                        Texture { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg") },
+                        Texture { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg") },
+                        Texture { it.loadTextureData("$assetPath/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg") }
                 ),
 
                 MaterialMaps(
                         "Scuffed Plastic",
-                        Texture { it.loadTextureData("reserve/pbr/scuffed-plastic-1/scuffed-plastic4-alb.png") },
-                        Texture { it.loadTextureData("reserve/pbr/scuffed-plastic-1/scuffed-plastic-normal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/scuffed-plastic-1/scuffed-plastic-rough.png") },
+                        Texture { it.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic4-alb.jpg") },
+                        Texture { it.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-normal.jpg") },
+                        Texture { it.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-rough.jpg") },
                         null,
-                        Texture { it.loadTextureData("reserve/pbr/scuffed-plastic-1/scuffed-plastic-ao.png") },
+                        Texture { it.loadTextureData("$assetPath/scuffed-plastic-1/scuffed-plastic-ao.jpg") },
                         null
                 ),
 
                 MaterialMaps(
                         "Snow Covered Path",
-                        Texture { it.loadTextureData("reserve/pbr/snowcoveredpath/snowcoveredpath_albedo.png") },
-                        Texture { it.loadTextureData("reserve/pbr/snowcoveredpath/snowcoveredpath_normal-dx.png") },
-                        Texture { it.loadTextureData("reserve/pbr/snowcoveredpath/snowcoveredpath_roughness.png") },
+                        Texture { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_albedo.jpg") },
+                        Texture { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_normal-dx.jpg") },
+                        Texture { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_roughness.jpg") },
                         null,
-                        Texture { it.loadTextureData("reserve/pbr/snowcoveredpath/snowcoveredpath_ao.png") },
-                        Texture { it.loadTextureData("reserve/pbr/snowcoveredpath/snowcoveredpath_height.png") }
+                        Texture { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_ao.jpg") },
+                        Texture { it.loadTextureData("$assetPath/snowcoveredpath/snowcoveredpath_height.jpg") }
                 ),
 
                 MaterialMaps(
                         "Marble",
-                        Texture { it.loadTextureData("reserve/pbr/streaked-marble/streaked-marble-albedo2.png") },
-                        Texture { it.loadTextureData("reserve/pbr/streaked-marble/streaked-marble-normal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/streaked-marble/streaked-marble-roughness1.png") },
+                        Texture { it.loadTextureData("$assetPath/streaked-marble/streaked-marble-albedo2.jpg") },
+                        Texture { it.loadTextureData("$assetPath/streaked-marble/streaked-marble-normal.jpg") },
+                        Texture { it.loadTextureData("$assetPath/streaked-marble/streaked-marble-roughness1.jpg") },
                         null,
                         null,
                         null
@@ -319,32 +251,12 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
 
                 MaterialMaps(
                         "Onyx Tiles",
-                        Texture { it.loadTextureData("reserve/pbr/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg") },
-                        Texture { it.loadTextureData("reserve/pbr/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg") },
+                        Texture { it.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg") },
+                        Texture { it.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg") },
+                        Texture { it.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg") },
                         null,
                         null,
-                        Texture { it.loadTextureData("reserve/pbr/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg") }
-                ),
-
-                MaterialMaps(
-                        "Scuffed Titanium",
-                        Texture { it.loadTextureData("reserve/pbr/Titanium-Scuffed/Titanium-Scuffed_basecolor.png") },
-                        Texture { it.loadTextureData("reserve/pbr/Titanium-Scuffed/Titanium-Scuffed_normal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/Titanium-Scuffed/Titanium-Scuffed_roughness.png") },
-                        Texture { it.loadTextureData("reserve/pbr/Titanium-Scuffed/Titanium-Scuffed_metallic.png") },
-                        null,
-                        null
-                ),
-
-                MaterialMaps(
-                        "Water Worn Stone",
-                        Texture { it.loadTextureData("reserve/pbr/waterwornstone1/waterwornstone1_Base_Color.png") },
-                        Texture { it.loadTextureData("reserve/pbr/waterwornstone1/waterwornstone1_Normal.png") },
-                        Texture { it.loadTextureData("reserve/pbr/waterwornstone1/waterwornstone1_Roughness.png") },
-                        null,
-                        Texture { it.loadTextureData("reserve/pbr/waterwornstone1/waterwornstone1_Ambient_Occlusion.png") },
-                        Texture { it.loadTextureData("reserve/pbr/waterwornstone1/waterwornstone1_Height.png") }
+                        Texture { it.loadTextureData("$assetPath/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg") }
                 )
         )
     }

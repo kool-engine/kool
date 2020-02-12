@@ -20,7 +20,7 @@ class ShaderManager(val ctx: JsContext) {
     val shaders = mutableMapOf<Pipeline, CompiledShader>()
     var currentShader: CompiledShader? = null
 
-    fun setupShader(cmd: DrawCommand): CompiledShader.ShaderInstance {
+    fun setupShader(cmd: DrawCommand): CompiledShader.ShaderInstance? {
         val pipeline = cmd.pipeline!!
         val shader = shaders.getOrPut(pipeline) { CompiledShader(compileShader(pipeline.shaderCode), pipeline, ctx) }
         if (shader !== currentShader) {

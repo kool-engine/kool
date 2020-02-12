@@ -13,7 +13,7 @@ import org.khronos.webgl.set
 interface MappedUniform {
     val location: WebGLUniformLocation?
 
-    fun setUniform(ctx: JsContext)
+    fun setUniform(ctx: JsContext): Boolean
 
     companion object {
         fun mappedUniform(uniform: Uniform<*>, location: WebGLUniformLocation?): MappedUniform {
@@ -38,54 +38,60 @@ interface MappedUniform {
 }
 
 class MappedUniform1f(val uniform: Uniform1f, override val location: WebGLUniformLocation?) : MappedUniform {
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         ctx.gl.uniform1f(location, uniform.value)
+        return true
     }
 }
 
 class MappedUniform2f(val uniform: Uniform2f, override val location: WebGLUniformLocation?) : MappedUniform {
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         ctx.gl.uniform2f(location, uniform.value.x, uniform.value.y)
+        return true
     }
 }
 
 class MappedUniform3f(val uniform: Uniform3f, override val location: WebGLUniformLocation?) : MappedUniform {
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         ctx.gl.uniform3f(location, uniform.value.x, uniform.value.y, uniform.value.z)
+        return true
     }
 }
 
 class MappedUniform4f(val uniform: Uniform4f, override val location: WebGLUniformLocation?) : MappedUniform {
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         ctx.gl.uniform4f(location, uniform.value.x, uniform.value.y, uniform.value.z, uniform.value.w)
+        return true
     }
 }
 
 class MappedUniform1fv(val uniform: Uniform1fv, override val location: WebGLUniformLocation?) : MappedUniform {
     private val buffer = Float32Array(uniform.length)
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         for (i in 0 until uniform.length) {
             buffer[i] = uniform.value[i]
         }
         ctx.gl.uniform1fv(location, buffer)
+        return true
     }
 }
 
 class MappedUniform2fv(val uniform: Uniform2fv, override val location: WebGLUniformLocation?) : MappedUniform {
     private val buffer = Float32Array(2 * uniform.length)
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         var j = 0
         for (i in 0 until uniform.length) {
             buffer[j++] = uniform.value[i].x
             buffer[j++] = uniform.value[i].y
         }
         ctx.gl.uniform2fv(location, buffer)
+        return true
     }
 }
 
 class MappedUniform3fv(val uniform: Uniform3fv, override val location: WebGLUniformLocation?) : MappedUniform {
     private val buffer = Float32Array(3 * uniform.length)
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         var j = 0
         for (i in 0 until uniform.length) {
             buffer[j++] = uniform.value[i].x
@@ -93,12 +99,13 @@ class MappedUniform3fv(val uniform: Uniform3fv, override val location: WebGLUnif
             buffer[j++] = uniform.value[i].z
         }
         ctx.gl.uniform3fv(location, buffer)
+        return true
     }
 }
 
 class MappedUniform4fv(val uniform: Uniform4fv, override val location: WebGLUniformLocation?) : MappedUniform {
     private val buffer = Float32Array(4 * uniform.length)
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         var j = 0
         for (i in 0 until uniform.length) {
             buffer[j++] = uniform.value[i].x
@@ -107,38 +114,43 @@ class MappedUniform4fv(val uniform: Uniform4fv, override val location: WebGLUnif
             buffer[j++] = uniform.value[i].w
         }
         ctx.gl.uniform4fv(location, buffer)
+        return true
     }
 }
 
 class MappedUniformColor(val uniform: UniformColor, override val location: WebGLUniformLocation?) : MappedUniform {
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         ctx.gl.uniform4f(location, uniform.value.x, uniform.value.y, uniform.value.z, uniform.value.w)
+        return true
     }
 }
 
 class MappedUniformMat3f(val uniform: UniformMat3f, override val location: WebGLUniformLocation?) : MappedUniform {
     private val buf = Float32Array(9)
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         for (i in 0..8) {
             buf[i] = uniform.value.matrix[i]
         }
         ctx.gl.uniformMatrix3fv(location, false, buf)
+        return true
     }
 }
 
 class MappedUniformMat4f(val uniform: UniformMat4f, override val location: WebGLUniformLocation?) : MappedUniform {
     private val buf = Float32Array(16)
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         for (i in 0..15) {
             buf[i] = uniform.value.matrix[i]
         }
         ctx.gl.uniformMatrix4fv(location, false, buf)
+        return true
     }
 }
 
 class MappedUniform1i(val uniform: Uniform1i, override val location: WebGLUniformLocation?) : MappedUniform {
-    override fun setUniform(ctx: JsContext) {
+    override fun setUniform(ctx: JsContext): Boolean {
         ctx.gl.uniform1i(location, uniform.value)
+        return true
     }
 }
 
@@ -186,24 +198,28 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
 
 class MappedUniformTex2d(private val sampler2d: TextureSampler, texUnit: Int, override val location: WebGLUniformLocation?) :
         MappedUniformTex(texUnit, TEXTURE_2D) {
-    override fun setUniform(ctx: JsContext) {
-        //println("tex2d ${sampler2d.name}: $texUnit")
-        sampler2d.texture?.let {
+    override fun setUniform(ctx: JsContext): Boolean {
+        return sampler2d.texture?.let {
             if (checkLoadingState(ctx, it)) {
                 ctx.gl.uniform1i(location, texUnit - TEXTURE0)
+                true
+            } else {
+                false
             }
-        }
+        } ?: false
     }
 }
 
 class MappedUniformCubeMap(private val samplerCube: CubeMapSampler, texUnit: Int, override val location: WebGLUniformLocation?) :
         MappedUniformTex(texUnit, TEXTURE_CUBE_MAP) {
-    override fun setUniform(ctx: JsContext) {
-        //println("cube ${samplerCube.name}: $texUnit")
-        samplerCube.texture?.let {
+    override fun setUniform(ctx: JsContext): Boolean {
+        return samplerCube.texture?.let {
             if (checkLoadingState(ctx, it)) {
                 ctx.gl.uniform1i(location, texUnit - TEXTURE0)
+                true
+            } else {
+                false
             }
-        }
+        } ?: false
     }
 }

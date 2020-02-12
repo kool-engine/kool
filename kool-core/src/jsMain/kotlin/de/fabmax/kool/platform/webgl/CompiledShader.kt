@@ -62,13 +62,12 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         attributeLocations.values.forEach { loc -> ctx.gl.disableVertexAttribArray(loc) }
     }
 
-    fun bindInstance(cmd: DrawCommand): ShaderInstance {
+    fun bindInstance(cmd: DrawCommand): ShaderInstance? {
         val pipelineInst = cmd.pipeline!!
         val inst = instances.getOrPut(pipelineInst.pipelineInstanceId) {
             ShaderInstance(cmd.mesh, pipelineInst)
         }
-        inst.bindInstance(cmd)
-        return inst
+        return if (inst.bindInstance(cmd)) { inst } else { null }
     }
 
     fun destroyInstance(pipeline: Pipeline) {
@@ -140,7 +139,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             mappings += MappedUniformCubeMap(cubeMap, nextTexUnit++, uniformLocations[cubeMap.name])
         }
 
-        fun bindInstance(drawCmd: DrawCommand) {
+        fun bindInstance(drawCmd: DrawCommand): Boolean {
             // call onUpdate callbacks
             for (i in pushConstants.indices) {
                 pushConstants[i].onUpdate?.invoke(pushConstants[i], drawCmd)
@@ -156,16 +155,20 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             }
 
             // update uniform values
+            var uniformsValid = true
             for (i in mappings.indices) {
-                mappings[i].setUniform(ctx)
+                uniformsValid = uniformsValid && mappings[i].setUniform(ctx)
             }
 
             // update vertex data
             checkBuffers()
 
-            // bind vertex data
-            indexBuffer?.bind(ctx)
-            attributeBinders.values.forEach { it.vbo.bindAttribute(it.loc, ctx) }
+            if (uniformsValid) {
+                // bind vertex data
+                indexBuffer?.bind(ctx)
+                attributeBinders.values.forEach { it.vbo.bindAttribute(it.loc, ctx) }
+            }
+            return uniformsValid
         }
 
         fun destroyInstance() {

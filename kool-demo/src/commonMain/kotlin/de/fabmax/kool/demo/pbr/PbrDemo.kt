@@ -331,16 +331,14 @@ class PbrDemo(val ctx: KoolContext) {
                 magFilter = FilterMethod.NEAREST,
                 mipMapping = true)
 
+        //private val assetPath = "skybox/hdri"
+        private val assetPath = "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri"
+
         private val hdriTextures = listOf(
-                EnvironmentMap("skybox/hdri/circus_arena_2k.rgbe.png", "Circus"),
-                EnvironmentMap("skybox/hdri/newport_loft.rgbe.png", "Loft"),
-                EnvironmentMap("skybox/hdri/lakeside_2k.rgbe.png", "Lakeside"),
-                EnvironmentMap("skybox/hdri/spruit_sunrise_2k.rgbe.png", "Sunrise"),
-                EnvironmentMap("skybox/hdri/driving_school.rgbe.png", "Sunny"),
-                EnvironmentMap("skybox/hdri/royal_esplanade_2k.rgbe.png", "Hotel"),
-                EnvironmentMap("skybox/hdri/shanghai_bund_2k.rgbe.png", "Shanghai"),
-                EnvironmentMap("skybox/hdri/vignaioli_night_2k.rgbe.png", "Vignaioli"),
-                EnvironmentMap("skybox/hdri/winter_evening_2k.rgbe.png", "Winter")
+                EnvironmentMap("$assetPath/circus_arena_1k.rgbe.png", "Circus"),
+                EnvironmentMap("$assetPath/newport_loft.rgbe.png", "Loft"),
+                EnvironmentMap("$assetPath/spruit_sunrise_1k.rgbe.png", "Sunrise"),
+                EnvironmentMap("$assetPath/shanghai_bund_1k.rgbe.png", "Shanghai")
         )
 
         private const val lightStrength = 250f

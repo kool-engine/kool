@@ -36,13 +36,11 @@ class QueueRendererWebGl(val ctx: JsContext) {
                 glAttribs.setupPipelineAttribs(pipeline)
 
                 if (cmd.mesh.geometry.numIndices > 0) {
-                    val inst = shaderMgr.setupShader(cmd)
-                    if (inst.primitiveType != 0 && inst.indexType != 0) {
-                        gl.drawElements(inst.primitiveType, inst.numIndices, inst.indexType, 0)
-//                        if (gl.getError() != 0) {
-//                            println("error, ${cmd.pipeline!!.name}")
-//                        }
-                        ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
+                    shaderMgr.setupShader(cmd)?.let {
+                        if (it.primitiveType != 0 && it.indexType != 0) {
+                            gl.drawElements(it.primitiveType, it.numIndices, it.indexType, 0)
+                            ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
+                        }
                     }
                 }
             }
