@@ -22,4 +22,4 @@ generated and compiled from the node-based model on-the-fly for each backend.
 - Support for physical based rendering (with metallic workflow) and image-based lighting
 - Normal, roughness, metallic, ambient occlusion and Displacement mapping
 - HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
-
+- Lighting with multiple point, spot and directional lights
