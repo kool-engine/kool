@@ -1,13 +1,8 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.assetTexture
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.*
 
 /**
@@ -18,7 +13,7 @@ import de.fabmax.kool.util.*
 
 fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
     // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
-    +sphericalInputTransform {
+    +orbitInputTransform {
         // Set some initial rotation so that we look down on the scene
         setMouseRotation(20f, -30f)
         // panning / camera translation is limited to a certain area
@@ -46,7 +41,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
         // Add a sphere mesh, node name is optional but nice for debugging
         +textureMesh("Sphere") {
             // The generator function is called to initially generate the mesh geometry
-            generator = {
+            generate {
                 // Generate the sphere mesh with a sphere radius of 1.5 units
                 sphere {
                     radius = 1.5f
@@ -55,7 +50,7 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
                 }
             }
             // load texture from assets
-            (shader as BasicShader).texture = assetTexture("world.jpg")
+//            (shader as BasicShader).texture = assetTexture("world.jpg")
         }
     }
 
@@ -88,19 +83,19 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
             speedAnimator.value.onUpdate = { v ->
                 // Update rotation animation speed and color intensity
                 cubeAnimator.speed = v
-                (shader as BasicShader).saturation = v
+//                (shader as BasicShader).saturation = v
             }
 
             // Customize the shader to include the saturation property
-            shader = basicShader {
-                colorModel = ColorModel.VERTEX_COLOR
-                lightModel = LightModel.PHONG_LIGHTING
-                // saturation property is needed to control the color intensity of the cube
-                isSaturation = true
-            }
+//            shader = basicShader {
+//                colorModel = ColorModel.VERTEX_COLOR
+//                lightModel = LightModel.PHONG_LIGHTING
+//                // saturation property is needed to control the color intensity of the cube
+//                isSaturation = true
+//            }
 
             // The generator function is called to initially generate the mesh geometry
-            generator = {
+            generate {
                 // Make the generated mesh twice as large
                 scale(2f, 2f, 2f)
 
@@ -148,9 +143,9 @@ fun simpleShapesScene(ctx: KoolContext): Scene = scene("simpleShapes") {
 
         // Add the text, you can use any font you like. We us a font size of 72pts and characters will be 1.5
         // units tall
-        val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN, 1.5f), ctx)
+        val font = Font(FontProps(Font.SYSTEM_FONT, 72f, Font.PLAIN), ctx)
         +textMesh(font) {
-            generator = {
+            generate {
                 color = Color.LIME
                 text(font) {
                     // Set the text to render, for now only characters defined in [Font.STD_CHARS] can be rendered

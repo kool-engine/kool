@@ -4,7 +4,8 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.shading.AttributeType
+import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.util.PrimitiveType
 import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.*
 import java.io.File
@@ -12,7 +13,7 @@ import java.io.File
 object ModelConverter {
 
     fun convertModel(file: String, invertFaceOrientation: Boolean = false, normalBits: Int = 0): ModelData =
-            convertModel(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices)!!, File(file).name, invertFaceOrientation, normalBits)
+            convertModel(Assimp.aiImportFile(file, Assimp.aiProcess_JoinIdenticalVertices or Assimp.aiProcess_Triangulate)!!, File(file).name, invertFaceOrientation, normalBits)
 
     fun convertModel(aiScene: AIScene, modelName: String = "", invertFaceOrientation: Boolean = false, normalBits: Int = 0): ModelData {
         val meshes = mutableListOf<ModelMeshData>()
@@ -42,21 +43,21 @@ object ModelConverter {
                 else -> emptyList()
             }
 
-            attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(AttributeType.VEC_3F, posList)
-            if (!normalList.isEmpty()) {
+            attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(GlslType.VEC_3F, posList)
+            if (normalList.isNotEmpty()) {
                 if (normalBits > 0) {
                     val octNormals = encodeNormals(normalList, normalBits)
                     tags += "${ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED}=$normalBits"
-                    intAttribs[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED] = IntAttributeList(AttributeType.VEC_2I, octNormals)
+                    intAttribs[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED] = IntAttributeList(GlslType.VEC_2I, octNormals)
                 } else {
-                    attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
+                    attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(GlslType.VEC_3F, normalList)
                 }
             }
-            if (!uvList.isEmpty()) {
-                attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(AttributeType.VEC_2F, uvList)
+            if (uvList.isNotEmpty()) {
+                attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(GlslType.VEC_2F, uvList)
             }
-            if (!colorList.isEmpty()) {
-                attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(AttributeType.COLOR_4F, colorList)
+            if (colorList.isNotEmpty()) {
+                attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(GlslType.VEC_4F, colorList)
             }
             meshes += ModelMeshData(meshName, PrimitiveType.TRIANGLES, attribs, indices, armature, animations,
                     aiMesh.mMaterialIndex(), tags, intAttribs)

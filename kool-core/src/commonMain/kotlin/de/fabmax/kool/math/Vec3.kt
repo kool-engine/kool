@@ -157,6 +157,9 @@ open class MutableVec3f(x: Float, y: Float, z: Float) : Vec3f(x, y, z) {
         get() = this[2]
         set(value) { this[2] = value }
 
+    val array: FloatArray
+        get() = fields
+
     constructor() : this(0f, 0f, 0f)
     constructor(f: Float) : this(f, f, f)
     constructor(v: Vec3f) : this(v.x, v.y, v.z)

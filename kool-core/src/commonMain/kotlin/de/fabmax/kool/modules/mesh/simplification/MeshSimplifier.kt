@@ -2,11 +2,10 @@ package de.fabmax.kool.modules.mesh.simplification
 
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.modules.mesh.HalfEdgeMesh
-import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 
-fun MeshData.simplify(termCrit: TermCriterion) {
+fun IndexedVertexList.simplify(termCrit: TermCriterion) {
     HalfEdgeMesh(this).simplify(termCrit, emptySet())
 }
 

@@ -1,33 +1,29 @@
 package de.fabmax.kool.modules.globe
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.Texture
-import de.fabmax.kool.assetTexture
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.Shader
-import de.fabmax.kool.shading.basicShader
+import de.fabmax.kool.pipeline.Texture
 
 interface TileShaderProvider {
     fun getShader(tileName: TileName, ctx: KoolContext): TileShader
 }
 
-class TileShader(val shader: Shader, val attribution: TileMesh.AttributionInfo)
+class TileShader(val shader: Any, val attribution: TileMesh.AttributionInfo)
 
 abstract class TexImageTileShaderProvider : TileShaderProvider {
     protected var specularIntensity = 0.25f
     protected var shininess = 25f
 
     override fun getShader(tileName: TileName, ctx: KoolContext): TileShader{
-        val shader = basicShader {
-            colorModel = ColorModel.TEXTURE_COLOR
-            lightModel = LightModel.PHONG_LIGHTING
-
-            specularIntensity = this@TexImageTileShaderProvider.specularIntensity
-            shininess = this@TexImageTileShaderProvider.shininess
-            texture = getTexture(tileName, ctx)
-        }
-        return TileShader(shader, getAttributionInfo(tileName))
+//        val shader = basicShader {
+//            colorModel = ColorModel.TEXTURE_COLOR
+//            lightModel = LightModel.PHONG_LIGHTING
+//
+//            specularIntensity = this@TexImageTileShaderProvider.specularIntensity
+//            shininess = this@TexImageTileShaderProvider.shininess
+//            texture = getTexture(tileName, ctx)
+//        }
+//        return TileShader(shader, getAttributionInfo(tileName))
+        TODO()
     }
 
     abstract fun getAttributionInfo(tileName: TileName): TileMesh.AttributionInfo
@@ -37,7 +33,7 @@ abstract class TexImageTileShaderProvider : TileShaderProvider {
 
 open class OsmTexImageTileShaderProvider : TexImageTileShaderProvider() {
     override fun getTexture(tileName: TileName, ctx: KoolContext): Texture {
-        return assetTexture("https://tile.openstreetmap.org/${tileName.zoom}/${tileName.x}/${tileName.y}.png")
+        return Texture { it.loadTextureData("https://tile.openstreetmap.org/${tileName.zoom}/${tileName.x}/${tileName.y}.png") }
     }
 
     override fun getAttributionInfo(tileName: TileName): TileMesh.AttributionInfo =

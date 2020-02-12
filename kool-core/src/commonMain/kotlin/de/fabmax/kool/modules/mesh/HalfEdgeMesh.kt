@@ -1,11 +1,9 @@
 package de.fabmax.kool.modules.mesh
 
-import de.fabmax.kool.KoolException
-import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.LineMesh
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.Attribute
 import de.fabmax.kool.util.*
 
 /**
@@ -13,20 +11,20 @@ import de.fabmax.kool.util.*
  *
  * @author fabmax
  */
-class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHandler()): Mesh(meshData) {
+class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = ListEdgeHandler()): Mesh(geometry) {
 
     private val verts: MutableList<HalfEdgeVertex>
     val vertices: List<HalfEdgeVertex>
         get() = verts
 
-    private val positionOffset = meshData.vertexList.attributeOffsets[Attribute.POSITIONS]!!
+    private val positionOffset = geometry.attributeOffsets[Attribute.POSITIONS]!!
 
     private val tmpVec1 = MutableVec3f()
     private val tmpVec2 = MutableVec3f()
     private val tmpVec3 = MutableVec3f()
 
-    private val vertexIt1 = meshData[0]
-    private val vertexIt2 = meshData[0]
+    private val vertexIt1 = geometry[0]
+    private val vertexIt2 = geometry[0]
 
     val vertCount: Int
         get() = verts.size
@@ -49,17 +47,17 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
     }
 
     init {
-        if (meshData.primitiveType != GL_TRIANGLES) {
-            throw KoolException("Supplied meshData must be of primitive type GL_TRIANGLES")
-        }
+//        if (meshData.primitiveType != GL_TRIANGLES) {
+//            throw KoolException("Supplied meshData must be of primitive type GL_TRIANGLES")
+//        }
 
-        verts = MutableList(meshData.numVertices) { HalfEdgeVertex(it) }
+        verts = MutableList(geometry.numVertices) { HalfEdgeVertex(it) }
 
-        for (i in 0 until meshData.numIndices step 3) {
+        for (i in 0 until geometry.numIndices step 3) {
             // create triangle vertices
-            val v0 = verts[meshData.vertexList.indices[i]]
-            val v1 = verts[meshData.vertexList.indices[i+1]]
-            val v2 = verts[meshData.vertexList.indices[i+2]]
+            val v0 = verts[geometry.indices[i]]
+            val v1 = verts[geometry.indices[i+1]]
+            val v2 = verts[geometry.indices[i+2]]
 
             // create inner half-edges and connect them
             val e0 = HalfEdge(v0, v1)
@@ -146,13 +144,13 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
     fun rebuild(generateNormals: Boolean = true, generateTangents: Boolean = true) {
         sanitize()
 
-        meshData.batchUpdate(true) {
+        geometry.batchUpdate(true) {
             // apply new indices to mesh vertex list
-            val strideF = meshData.vertexList.vertexSizeF
-            val strideI = meshData.vertexList.vertexSizeI
+            val strideF = geometry.vertexSizeF
+            val strideI = geometry.vertexSizeI
             val vertCnt = verts.size
             val newDataF = createFloat32Buffer(vertCnt * strideF)
-            val newDataI = if (strideI > 0) createUint32Buffer(vertCnt * strideI) else meshData.vertexList.dataI
+            val newDataI = if (strideI > 0) createUint32Buffer(vertCnt * strideI) else geometry.dataI
 
             for (i in verts.indices) {
                 // copy data from previous location
@@ -160,35 +158,35 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
                 verts[i].meshDataIndex = verts[i].index
 
                 for (j in 0 until strideF) {
-                    newDataF.put(meshData.vertexList.dataF[oldIdx * strideF + j])
+                    newDataF.put(geometry.dataF[oldIdx * strideF + j])
                 }
                 if (strideI > 0) {
                     for (j in 0 until strideI) {
-                        newDataI.put(meshData.vertexList.dataI[oldIdx * strideI + j])
+                        newDataI.put(geometry.dataI[oldIdx * strideI + j])
                     }
                 }
             }
 
             // rebuild triangle index list
-            meshData.vertexList.clearIndices()
+            geometry.clearIndices()
             for (e in edgeHandler.distinctTriangleEdges()) {
-                meshData.vertexList.addIndex(e.from.index)
-                meshData.vertexList.addIndex(e.next.from.index)
-                meshData.vertexList.addIndex(e.next.next.from.index)
+                geometry.addIndex(e.from.index)
+                geometry.addIndex(e.next.from.index)
+                geometry.addIndex(e.next.next.from.index)
             }
 
-            if (meshData.numIndices != faceCount * 3) {
-                logW { "Inconsistent triangle count! MeshData: ${meshData.numIndices / 3}, HalfEdgeMesh: $faceCount" }
+            if (geometry.numIndices != faceCount * 3) {
+                logW { "Inconsistent triangle count! MeshData: ${geometry.numIndices / 3}, HalfEdgeMesh: $faceCount" }
             }
 
-            meshData.vertexList.dataF = newDataF
-            meshData.vertexList.dataI = newDataI
-            meshData.vertexList.size = vertCnt
+            geometry.dataF = newDataF
+            geometry.dataI = newDataI
+            geometry.numVertices = vertCnt
             if (generateNormals) {
-                meshData.generateNormals()
+                geometry.generateNormals()
             }
             if (generateTangents) {
-                meshData.generateTangents()
+                geometry.generateTangents()
             }
         }
     }
@@ -247,7 +245,7 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
 
     fun splitEdge(edge: HalfEdge, fraction: Float): HalfEdgeVertex {
         // spawn new vertex
-        val idx = meshData.vertexList.addVertex {
+        val idx = geometry.addVertex {
             position.set(edge.to).subtract(edge.from).scale(fraction).add(edge.from)
 
             // interpolate texture coordinates and normals
@@ -389,11 +387,11 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
         }
     }
 
-    fun subMeshOf(edges: List<HalfEdge>): MeshData {
-        val subData = MeshData(meshData.vertexAttributes)
+    fun subMeshOf(edges: List<HalfEdge>): IndexedVertexList {
+        val subData = IndexedVertexList(geometry.vertexAttributes)
         val indexMap = mutableMapOf<Int, Int>()
 
-        val v = meshData.vertexList.vertexIt
+        val v = geometry.vertexIt
         edges.forEach { he ->
             if (he.from.index !in indexMap.keys) {
                 indexMap[he.from.index] = subData.addVertex {
@@ -430,19 +428,19 @@ class HalfEdgeMesh(meshData: MeshData, val edgeHandler: EdgeHandler = ListEdgeHa
         internal var meshDataIndex = index
 
         override val x: Float
-            get() = meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset]
+            get() = geometry.dataF[index * geometry.vertexSizeF + positionOffset]
         override val y: Float
-            get() = meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 1]
+            get() = geometry.dataF[index * geometry.vertexSizeF + positionOffset + 1]
         override val z: Float
-            get() = meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 2]
+            get() = geometry.dataF[index * geometry.vertexSizeF + positionOffset + 2]
 
         internal fun setPosition(x: Float, y: Float, z: Float) {
-            meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset] = x
-            meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 1] = y
-            meshData.vertexList.dataF[index * meshData.vertexList.vertexSizeF + positionOffset + 2] = z
+            geometry.dataF[index * geometry.vertexSizeF + positionOffset] = x
+            geometry.dataF[index * geometry.vertexSizeF + positionOffset + 1] = y
+            geometry.dataF[index * geometry.vertexSizeF + positionOffset + 2] = z
         }
 
-        fun getMeshVertex(result: IndexedVertexList.Vertex): IndexedVertexList.Vertex {
+        fun getMeshVertex(result: VertexView): VertexView {
             result.index = this.index
             return result
         }

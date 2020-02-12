@@ -1,11 +1,10 @@
 package de.fabmax.kool.util.serialization
 
-import de.fabmax.kool.gl.GL_LINES
-import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.*
-import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.shading.AttributeType
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.PrimitiveType
 
 class MeshSerializer {
 
@@ -20,14 +19,14 @@ class MeshSerializer {
     // if > 0 normals will be oct encoded with the specified number of bits
     var normalBits = 0
 
-    fun convertToModel(mesh: MeshData, name: String = "", materialData: MaterialData? = null): ModelData {
+    fun convertToModel(mesh: IndexedVertexList, name: String = "", materialData: MaterialData? = null): ModelData {
         val materials = if (materialData != null) listOf(materialData) else emptyList()
         val meshData = convertMesh(mesh, name, 0)
         val node = ModelNodeData(name, Mat4f().setIdentity().toList(), meshes = listOf(0))
         return ModelData(ModelData.VERSION, name, listOf(meshData), listOf(node), materials)
     }
 
-    fun convertMesh(mesh: MeshData, name: String = "", materialIdx: Int = 0): ModelMeshData {
+    fun convertMesh(mesh: IndexedVertexList, name: String = "", materialIdx: Int = 0): ModelMeshData {
         if (generateNormals) {
             mesh.generateNormals()
         }
@@ -44,10 +43,10 @@ class MeshSerializer {
         val tangentList = mutableListOf<Float>()
 
         for (i in 0 until mesh.numIndices) {
-            indices += mesh.vertexList.indices[i]
+            indices += mesh.indices[i]
         }
 
-        mesh.vertexList.forEach {
+        mesh.forEach {
             posList += it.position
             if (mesh.hasAttribute(Attribute.NORMALS) && includeNormals) {
                 if (normalBits <= 0) {
@@ -71,27 +70,27 @@ class MeshSerializer {
         val tags = mutableListOf<String>()
         val intAttribs = mutableMapOf<String, IntAttributeList>()
 
-        attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(AttributeType.VEC_3F, posList)
+        attribs[ModelMeshData.ATTRIB_POSITIONS] = AttributeList(GlslType.VEC_3F, posList)
         if (normalList.isNotEmpty()) {
-            attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(AttributeType.VEC_3F, normalList)
+            attribs[ModelMeshData.ATTRIB_NORMALS] = AttributeList(GlslType.VEC_3F, normalList)
         }
         if (encNormalList.isNotEmpty()) {
-            intAttribs[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED] = IntAttributeList(AttributeType.VEC_2I, encNormalList)
+            intAttribs[ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED] = IntAttributeList(GlslType.VEC_2I, encNormalList)
             tags += "${ModelMeshData.ATTRIB_NORMALS_OCT_COMPRESSED}=$normalBits"
         }
         if (uvList.isNotEmpty()) {
-            attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(AttributeType.VEC_2F, uvList)
+            attribs[ModelMeshData.ATTRIB_TEXTURE_COORDS] = AttributeList(GlslType.VEC_2F, uvList)
         }
         if (colorList.isNotEmpty()) {
-            attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(AttributeType.VEC_4F, colorList)
+            attribs[ModelMeshData.ATTRIB_COLORS] = AttributeList(GlslType.VEC_4F, colorList)
         }
         if (tangentList.isNotEmpty()) {
-            attribs[ModelMeshData.ATTRIB_TANGENTS] = AttributeList(AttributeType.VEC_3F, tangentList)
+            attribs[ModelMeshData.ATTRIB_TANGENTS] = AttributeList(GlslType.VEC_3F, tangentList)
         }
 
         val primitiveType = when(mesh.primitiveType) {
-            GL_TRIANGLES -> PrimitiveType.TRIANGLES
-            GL_LINES -> PrimitiveType.LINES
+            PrimitiveType.TRIANGLES -> PrimitiveType.TRIANGLES
+            PrimitiveType.LINES -> PrimitiveType.LINES
             else -> PrimitiveType.POINTS
         }
 

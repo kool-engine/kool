@@ -2,8 +2,8 @@ package de.fabmax.kool
 
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.WebGL2RenderingContext
 import de.fabmax.kool.util.logW
-import org.khronos.webgl.WebGLRenderingContext
 import org.w3c.dom.HTMLDivElement
 import kotlin.browser.document
 import kotlin.math.pow
@@ -19,9 +19,7 @@ actual fun createDefaultContext(): KoolContext = createContext(JsContext.InitPro
 
 fun createContext(props: JsContext.InitProps): KoolContext = JsImpl.createContext(props)
 
-actual fun now(): Double = js("performance.now()")
-
-actual fun getMemoryInfo(): String = ""
+actual fun now(): Double = js("performance.now()") as Double
 
 actual fun Double.toString(precision: Int): String {
     val p = precision.clamp(0, 12)
@@ -36,17 +34,15 @@ actual fun Double.toString(precision: Int): String {
         str = "0$str"
         i++
     }
-
     return str.substring(0 until i) + "." + str.substring(i)
 }
 
 actual inline fun <R> lock(lock: Any, block: () -> R): R = block()
 
 internal object JsImpl {
-    var isWebGl2Context = false
     val dpi: Float
     var ctx: JsContext? = null
-    val gl: WebGLRenderingContext
+    val gl: WebGL2RenderingContext
         get() = ctx?.gl ?: throw KoolException("Platform.createContext() not called")
 
     init {

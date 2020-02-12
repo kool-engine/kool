@@ -1,14 +1,12 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
+import de.fabmax.kool.drawqueue.SceneSetup
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
-import de.fabmax.kool.shading.BlurredBackgroundHelper
-import de.fabmax.kool.shading.LightModel
 import de.fabmax.kool.util.BoundingBox
 
 fun embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
@@ -28,7 +26,7 @@ fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, blo
     }
 
     if (overlay) {
-        clearMask = GL_DEPTH_BUFFER_BIT
+        clearMask = SceneSetup.CLEAR_DEPTH
     }
 
     +embeddedUi(1f, 1f, null, dpi) {
@@ -79,7 +77,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
                 content.requestThemeUpdate()
             }
         }
-    var shaderLightModel = LightModel.NO_LIGHTING
+    //var shaderLightModel = LightModel.NO_LIGHTING
 
     val content = UiContainer("$name-content", this)
     var contentHeight: SizeSpec? = null
@@ -90,7 +88,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
     override val bounds: BoundingBox
         get() = content.bounds
 
-    private var blurHelper: BlurredBackgroundHelper? = null
+    //private var blurHelper: BlurredBackgroundHelper? = null
 
     private var isLayoutNeeded = true
 
@@ -102,14 +100,6 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
     override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
         super.onSceneChanged(oldScene, newScene)
         content.scene = newScene
-    }
-
-    fun createBlurHelper(): BlurredBackgroundHelper {
-        val helper = blurHelper ?: BlurredBackgroundHelper()
-        if (blurHelper == null) {
-            blurHelper = helper
-        }
-        return helper
     }
 
     fun setGlobalSize(width: Float, height: Float, depth: Float) {
@@ -156,16 +146,9 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
     }
 
     override fun render(ctx: KoolContext) {
-        blurHelper?.updateDistortionTexture(this, ctx, bounds)
-
-        ctx.pushAttributes()
-        ctx.isCullFace = false
-        ctx.applyAttributes()
-
+//        blurHelper?.updateDistortionTexture(this, ctx, bounds)
         super.render(ctx)
         content.render(ctx)
-
-        ctx.popAttributes()
     }
 
     override fun postRender(ctx: KoolContext) {
@@ -176,7 +159,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
     override fun dispose(ctx: KoolContext) {
         super.dispose(ctx)
         content.dispose(ctx)
-        blurHelper?.dispose(ctx)
+//        blurHelper?.dispose(ctx)
     }
 
     override fun rayTest(test: RayTest) {

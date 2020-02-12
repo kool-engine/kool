@@ -9,12 +9,9 @@ import de.fabmax.kool.modules.mesh.HalfEdgeMesh
 import de.fabmax.kool.modules.mesh.ListEdgeHandler
 import de.fabmax.kool.modules.mesh.simplification.simplify
 import de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.cos
@@ -28,15 +25,15 @@ fun simplificationDemo(ctx: KoolContext): List<Scene> {
 class SimplificationDemo(ctx: KoolContext) {
     val simplificationScene: Scene
     val scenes = mutableListOf<Scene>()
-    val models = mutableMapOf<String, MeshData>()
+    val models = mutableMapOf<String, IndexedVertexList>()
     val loadingModels = mutableSetOf<String>()
 
     val modelWireframe = LineMesh()
     val highlightedEdge = LineMesh().apply { isXray = true; lineWidth = 3f }
     val highlightedPt = PointMesh().apply { isXray = true; pointSize = 6f }
 
-    var srcModel: MeshData
-    val dispModel = Mesh(MeshData(Attribute.POSITIONS, Attribute.NORMALS))
+    var srcModel: IndexedVertexList
+    val dispModel = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
     var heMesh: HalfEdgeMesh
 
     var simplifcationGrade = 1f
@@ -52,11 +49,11 @@ class SimplificationDemo(ctx: KoolContext) {
     }
 
     init {
-        dispModel.shader = basicShader {
-            lightModel = LightModel.PHONG_LIGHTING
-            colorModel = ColorModel.STATIC_COLOR
-            staticColor = Color.MD_ORANGE
-        }
+//        dispModel.shader = basicShader {
+//            lightModel = LightModel.PHONG_LIGHTING
+//            colorModel = ColorModel.STATIC_COLOR
+//            staticColor = Color.MD_ORANGE
+//        }
 
         srcModel = makeCosGrid()
         models["cos"] = srcModel
@@ -273,17 +270,17 @@ class SimplificationDemo(ctx: KoolContext) {
 
     fun simplify() {
         val pt = PerfTimer()
-        dispModel.meshData.batchUpdate {
-            dispModel.meshData.clear()
-            dispModel.meshData.vertexList.addFrom(srcModel.vertexList)
+        dispModel.geometry.batchUpdate {
+            dispModel.geometry.clear()
+            dispModel.geometry.addGeometry(srcModel)
 
-            heMesh = HalfEdgeMesh(dispModel.meshData, ListEdgeHandler())
+            heMesh = HalfEdgeMesh(dispModel.geometry, ListEdgeHandler())
             //heMesh = HalfEdgeMesh(dispModel.meshData)
             if (simplifcationGrade < 0.999f) {
                 heMesh.simplify(terminateOnFaceCountRel(simplifcationGrade.toDouble()))
             }
 
-            modelWireframe.meshData.batchUpdate {
+            modelWireframe.geometry.batchUpdate {
                 modelWireframe.clear()
                 heMesh.generateWireframe(modelWireframe, Color.MD_LIGHT_BLUE)
             }
@@ -303,20 +300,20 @@ class SimplificationDemo(ctx: KoolContext) {
         ctx.assetMgr.loadModel(name) { model ->
             if (model != null) {
                 val mesh = model.meshes[0].toMesh()
-                val meshdata = mesh.meshData
-                for (i in 0 until meshdata.numVertices) {
-                    meshdata.vertexList.vertexIt.index = i
-                    meshdata.vertexList.vertexIt.position.scale(scale)
+                val geometry = mesh.geometry
+                for (i in 0 until geometry.numVertices) {
+                    geometry.vertexIt.index = i
+                    geometry.vertexIt.position.scale(scale)
                 }
-                models[name] = meshdata
+                models[name] = geometry
                 loadingModels -= name
                 logD { "loaded: $name, bounds: ${models[name]?.bounds}" }
             }
         }
     }
 
-    private fun makeCosGrid(): MeshData {
-        val builder = MeshBuilder(MeshData(Attribute.POSITIONS, Attribute.NORMALS))
+    private fun makeCosGrid(): IndexedVertexList {
+        val builder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
         builder.color = Color.MD_RED
         builder.grid {
             sizeX = 5f
@@ -330,7 +327,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 cos(sqrt(fx*fx + fy*fy))
             }
         }
-        return builder.meshData
+        return builder.geometry
     }
 
     class EdgeRayDistance : RayDistance<HalfEdgeMesh.HalfEdge> {

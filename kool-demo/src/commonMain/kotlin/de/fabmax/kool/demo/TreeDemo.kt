@@ -1,16 +1,9 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.TextureProps
-import de.fabmax.kool.assetTexture
-import de.fabmax.kool.gl.GL_LINEAR
-import de.fabmax.kool.gl.GL_REPEAT
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.MeshBuilder
@@ -44,54 +37,54 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
         // generate tree trunk mesh
         trunkMesh = textureMesh(isNormalMapped = true) {
-            generator = {
-                timedMs({"Generated ${meshData.numIndices / 3} trunk triangles in"}) {
+            generate {
+                timedMs({"Generated ${geometry.numIndices / 3} trunk triangles in"}) {
                     treeGen.buildTrunkMesh(this)
                 }
             }
 
-            shader = basicShader {
-                colorModel = ColorModel.TEXTURE_COLOR
-                lightModel = LightModel.PHONG_LIGHTING
-                isReceivingShadows = true
-                isNormalMapped = true
-                specularIntensity = 0.25f
-                ambientColorBrightness = 0.6f
-
-                val textureProps = TextureProps("tree_bark.png", GL_LINEAR, GL_REPEAT, 16)
-                val nrmMapProps = TextureProps("tree_bark_nrm.png", GL_LINEAR, GL_REPEAT, 16)
-                texture = assetTexture(textureProps)
-                normalMap = assetTexture(nrmMapProps)
-            }
+//            shader = basicShader {
+//                colorModel = ColorModel.TEXTURE_COLOR
+//                lightModel = LightModel.PHONG_LIGHTING
+//                isReceivingShadows = true
+//                isNormalMapped = true
+//                specularIntensity = 0.25f
+//                ambientColorBrightness = 0.6f
+//
+//                val textureProps = TextureProps("tree_bark.png", GL_LINEAR, GL_REPEAT, 16)
+//                val nrmMapProps = TextureProps("tree_bark_nrm.png", GL_LINEAR, GL_REPEAT, 16)
+//                texture = assetTexture(textureProps)
+//                normalMap = assetTexture(nrmMapProps)
+//            }
         }
 
         // generate tree leaf mesh
         leafMesh = textureMesh {
-            generator = {
-                timedMs({"Generated ${meshData.numIndices / 3} leaf triangles in"}) {
+            generate {
+                timedMs({"Generated ${geometry.numIndices / 3} leaf triangles in"}) {
                     treeGen.buildLeafMesh(this)
                 }
             }
 
             // disable culling, leafs are visible from both sides
-            cullMethod = CullMethod.NO_CULLING
-
-            shader = basicShader {
-                colorModel = ColorModel.TEXTURE_COLOR
-                lightModel = LightModel.PHONG_LIGHTING
-                isReceivingShadows = true
-                specularIntensity = 0.1f
-                isDiscardTranslucent = true
-                isTwoSidedLighting = true
-                texture = assetTexture("leaf.png")
-            }
+//            cullMethod = CullMethod.NO_CULLING
+//
+//            shader = basicShader {
+//                colorModel = ColorModel.TEXTURE_COLOR
+//                lightModel = LightModel.PHONG_LIGHTING
+//                isReceivingShadows = true
+//                specularIntensity = 0.1f
+//                isDiscardTranslucent = true
+//                isTwoSidedLighting = true
+//                texture = assetTexture("leaf.png")
+//            }
         }
 
         +trunkMesh!!
         +leafMesh!!
 
         // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
-        +sphericalInputTransform {
+        +orbitInputTransform {
             +camera
             setMouseRotation(0f, -30f)
             minZoom = 1f
@@ -212,7 +205,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     treeGen.generate()
 
                     trunkMesh?.apply {
-                        meshData.batchUpdate {
+                        geometry.batchUpdate {
                             clear()
                             val builder = MeshBuilder(this)
                             timedMs({"Generated ${numIndices / 3} trunk triangles in"}) {
@@ -222,7 +215,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                         }
                     }
                     leafMesh?.apply {
-                        meshData.batchUpdate {
+                        geometry.batchUpdate {
                             clear()
                             val builder = MeshBuilder(this)
                             timedMs({"Generated ${numIndices / 3} leaf triangles in"}) {

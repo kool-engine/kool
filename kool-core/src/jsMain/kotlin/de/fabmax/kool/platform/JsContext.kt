@@ -1,8 +1,14 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
-import de.fabmax.kool.gl.*
+import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
+import de.fabmax.kool.platform.webgl.QueueRendererWebGl
+import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
 import org.khronos.webgl.WebGLRenderingContext
+import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
+import org.khronos.webgl.WebGLRenderingContext.Companion.MAX_TEXTURE_IMAGE_UNITS
+import org.khronos.webgl.WebGLRenderingContext.Companion.ONE
+import org.khronos.webgl.WebGLRenderingContext.Companion.ONE_MINUS_SRC_ALPHA
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
@@ -16,19 +22,23 @@ import kotlin.browser.window
  */
 @Suppress("UnsafeCastFromDynamic")
 class JsContext internal constructor(val props: InitProps) : KoolContext() {
-    override val glCapabilities: GlCapabilities
+    override val assetMgr = JsAssetManager(props.assetsBaseDir, this)
 
-    override val assetMgr = JsAssetManager(props.assetsBaseDir)
+    override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
+    internal val queueRenderer = QueueRendererWebGl(this)
 
     override var windowWidth = 0
         private set
     override var windowHeight = 0
         private set
 
-    internal val canvas: HTMLCanvasElement
-    internal val gl: WebGLRenderingContext
+    private val canvas: HTMLCanvasElement
+    internal val gl: WebGL2RenderingContext
+    private val sysInfo = mutableListOf<String>()
 
     private var animationMillis = 0.0
+
+    val glCapabilities = GlCapabilities()
 
     init {
         canvas = document.getElementById(props.canvasName) as HTMLCanvasElement
@@ -37,78 +47,35 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         if (webGlCtx == null) {
             webGlCtx = canvas.getContext("experimental-webgl2")
         }
-        JsImpl.isWebGl2Context = webGlCtx != null
-
-        // default attributes for minimal WebGL 1 context, are changed depending on available stuff
-        val uint32Indices: Boolean
-        val depthTextures: Boolean
-        val maxTexUnits: Int
-        var shaderIntAttribs = false
-        var depthComponentIntFormat = GL_DEPTH_COMPONENT
-        val depthFilterMethod = GL_NEAREST
-        var anisotropicTexFilterInfo = AnisotropicTexFilterInfo.NOT_SUPPORTED
-        var glslDialect = GlslDialect.GLSL_DIALECT_100
-        var glVersion = GlVersion("WebGL", 1, 0)
 
         if (webGlCtx != null) {
             gl = webGlCtx as WebGL2RenderingContext
+            sysInfo += "WebGL 2"
 
-            uint32Indices = true
-            depthTextures = true
-            shaderIntAttribs = true
-            depthComponentIntFormat = GL_DEPTH_COMPONENT24
-            glslDialect = GlslDialect.GLSL_DIALECT_300_ES
-            glVersion = GlVersion("WebGL", 2, 0)
-            maxTexUnits = gl.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS).asDynamic()
+            glCapabilities.maxTexUnits = gl.getParameter(MAX_TEXTURE_IMAGE_UNITS).asDynamic()
+            glCapabilities.hasFloatTextures = gl.getExtension("EXT_color_buffer_float") != null
 
         } else {
-            webGlCtx = canvas.getContext("webgl")
-            if (webGlCtx == null) {
-                webGlCtx = canvas.getContext("experimental-webgl")
-            }
-            if (webGlCtx == null) {
-                js("alert(\"Unable to initialize WebGL. Your browser may not support it.\")")
-            }
-            gl = webGlCtx as WebGLRenderingContext
-
-            uint32Indices = gl.getExtension("OES_element_index_uint") != null
-            depthTextures = gl.getExtension("WEBGL_depth_texture") != null
-            maxTexUnits = gl.getParameter(GL_MAX_TEXTURE_IMAGE_UNITS).asDynamic()
+            js("alert(\"Unable to initialize WebGL2 context. Your browser may not support it.\")")
+            throw KoolException("WebGL2 context required")
         }
 
         val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:
         gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
         gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
         if (extAnisotropic != null) {
-            val max = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Float
-            anisotropicTexFilterInfo = AnisotropicTexFilterInfo(max, extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT)
+            glCapabilities.maxAnisotropy = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Int
+            glCapabilities.glTextureMaxAnisotropyExt = extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT
         }
 
-        // unfortunately no support for geometry shaders in WebGL
-        val geometryShader = false
-
-        // by default javascript images don't offer pre-multiplied alpha
-        // Even if images are converted to an ImageBitmap with
-        // window.createImageBitmap(image, ImageBitmapOptions(premultiplyAlpha = PremultiplyAlpha.PREMULTIPLY))
-        // texture data inside WebGL shader apparently is not pre-multiplied...
-        val premultipliedAlphaTex = false
-
-        glCapabilities = GlCapabilities(
-                uint32Indices,
-                shaderIntAttribs,
-                maxTexUnits,
-                premultipliedAlphaTex,
-                depthTextures,
-                depthComponentIntFormat,
-                depthFilterMethod,
-                anisotropicTexFilterInfo,
-                geometryShader,
-                glslDialect,
-                glVersion)
+        // use blending with pre-multiplied alpha
+        gl.blendFunc(ONE, ONE_MINUS_SRC_ALPHA)
+        gl.enable(BLEND)
 
         screenDpi = JsImpl.dpi
         windowWidth = canvas.clientWidth
         windowHeight = canvas.clientHeight
+        viewport = Viewport(0, 0, windowWidth, windowHeight)
 
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
@@ -245,14 +212,42 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             // resize canvas to viewport
             canvas.width = windowWidth
             canvas.height = windowHeight
+            viewport = Viewport(0, 0, windowWidth, windowHeight)
         }
 
         // render frame
         render(dt)
+        draw()
         gl.finish()
 
         // request next frame
         window.requestAnimationFrame { t -> renderFrame(t) }
+    }
+
+    private fun draw() {
+        if (disposablePipelines.isNotEmpty()) {
+            queueRenderer.disposePipelines(disposablePipelines)
+            disposablePipelines.clear()
+        }
+
+        engineStats.resetPrimitveCount()
+
+        for (i in 0 until offscreenPasses.size) {
+            drawOffscreen(offscreenPasses[i])
+        }
+
+        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+        gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a)
+        gl.clear(WebGLRenderingContext.DEPTH_BUFFER_BIT or WebGLRenderingContext.COLOR_BUFFER_BIT)
+        queueRenderer.renderQueue(drawQueue)
+    }
+
+    private fun drawOffscreen(offscreenPass: OffscreenPass) {
+        when (offscreenPass) {
+            is OffscreenPass2d -> offscreenPass.impl.draw(this)
+            is OffscreenPassCube -> offscreenPass.impl.draw(this)
+            else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
+        }
     }
 
     override fun openUrl(url: String) {
@@ -267,8 +262,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         // nothing to do here...
     }
 
-    override fun checkIsGlThread() {
-        // in JS there is only one thread aka the GL thread
+    override fun getSysInfos(): List<String> {
+        return sysInfo
     }
 
     class InitProps {
@@ -325,6 +320,17 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
     }
 }
 
+class GlCapabilities {
+    var maxTexUnits = 16
+        internal set
+    var hasFloatTextures = false
+        internal set
+    var maxAnisotropy = 1
+        internal set
+    var glTextureMaxAnisotropyExt = 0
+        internal set
+}
+
 external class TouchEvent: UIEvent {
     val altKey: Boolean
     val changedTouches: TouchList
@@ -353,6 +359,39 @@ external class Touch {
     val radiusY: Float
     val rotationAngle: Float
     val force: Float
+}
+
+abstract external class WebGL2RenderingContext : WebGLRenderingContext {
+    fun drawBuffers(buffers: IntArray)
+    fun drawElementsInstanced(mode: Int, count: Int, type: Int, offset: Int, instanceCount: Int)
+    fun readBuffer(src: Int)
+    fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
+    fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int)
+    fun vertexAttribDivisor(index: Int, divisor: Int)
+    fun vertexAttribIPointer(index: Int, size: Int, type: Int, stride: Int, offset: Int)
+
+    companion object {
+        val DEPTH_COMPONENT24: Int
+        val TEXTURE_WRAP_R: Int
+
+        val RED: Int
+        val RG: Int
+
+        val R8: Int
+        val RG8: Int
+        val RGB8: Int
+        val RGBA8: Int
+
+        val R8UI: Int
+        val RG8UI: Int
+        val RGB8UI: Int
+        val RGBA8UI: Int
+
+        val R16F: Int
+        val RG16F: Int
+        val RGB16F: Int
+        val RGBA16F: Int
+    }
 }
 
 val Touch.elementX: Float

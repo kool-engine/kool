@@ -39,6 +39,10 @@ abstract class Camera(name: String = "camera") : Node(name) {
     val mvp = Mat4f()
     val invMvp = Mat4f()
 
+    var isApplyProjCorrection = true
+
+    private val projCorrected = Mat4f()
+
     // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
@@ -50,7 +54,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
         updateProjectionMatrix()
 
         ctx.mvpState.viewMatrix.set(view)
-        ctx.mvpState.projMatrix.set(proj)
+        if (isApplyProjCorrection) {
+            ctx.mvpState.projMatrix.set(ctx.projCorrectionMatrix.mul(proj, projCorrected))
+        } else {
+            ctx.mvpState.projMatrix.set(proj)
+        }
         ctx.mvpState.update(ctx)
 
         mvp.set(ctx.mvpState.mvpMatrix)
@@ -129,14 +137,27 @@ abstract class Camera(name: String = "camera") : Node(name) {
             return false
         }
         result.x = (1 + result.x) * 0.5f * viewport.width + viewport.x
-        result.y = ctx.windowHeight - ((1 + result.y) * 0.5f * viewport.height + viewport.y)
+        result.y = (1 + result.y) * 0.5f * viewport.height + viewport.y
         result.z = (1 + result.z) * 0.5f
+
+        // fixme: rather hacky solution for inverted y-viewport direction in Vulkan
+        if (ctx.projCorrectionMatrix[1, 1] > 0) {
+            result.y = ctx.windowHeight - result.y
+        }
+
         return true
     }
 
     fun unProjectScreen(screen: Vec3f, viewport: KoolContext.Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
         val x = screen.x - viewport.x
-        val y = (ctx.windowHeight - screen.y) - viewport.y
+
+        // fixme: rather hacky solution for inverted y-viewport direction in Vulkan
+        val y = if (ctx.projCorrectionMatrix[1, 1] < 0) {
+            screen.y - viewport.y.toFloat()
+        } else {
+            (ctx.windowHeight - screen.y) - viewport.y
+        }
+
         tmpVec4.set(2f * x / viewport.width - 1f, 2f * y / viewport.height - 1f, 2f * screen.z - 1f, 1f)
         invMvp.transform(tmpVec4)
         val s = 1f / tmpVec4.w
@@ -230,7 +251,7 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     var clipNear = 0.1f
     var clipFar = 100.0f
 
-    var fovy = 60.0f
+    var fovY = 60.0f
     var fovX = 0f
         private set
 
@@ -242,11 +263,10 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private val tmpNodeCenter = MutableVec3f()
 
     override fun updateProjectionMatrix() {
-        //ctx.mvpState.projMatrix.setPerspective(fovy, aspectRatio, clipNear, clipFar)
-        proj.setPerspective(fovy, aspectRatio, clipNear, clipFar)
+        proj.setPerspective(fovY, aspectRatio, clipNear, clipFar)
 
         // compute intermediate values needed for view frustum culling
-        val angY = fovy.toRad() / 2f
+        val angY = fovY.toRad() / 2f
         sphereFacY = 1f / cos(angY)
         tangY = tan(angY)
 

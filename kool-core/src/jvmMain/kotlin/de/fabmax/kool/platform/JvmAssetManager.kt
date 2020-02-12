@@ -1,9 +1,13 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.platform.vk.TextureLoader
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
+import kotlinx.coroutines.*
+import kotlinx.io.IOException
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -11,7 +15,7 @@ import java.io.InputStream
 import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps) : AssetManager(props.assetsBaseDir) {
+class JvmAssetManager internal constructor(props: Lwjgl3ContextVk.InitProps, val ctx: KoolContext) : AssetManager(props.assetsBaseDir) {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
 
@@ -22,43 +26,52 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps) : Ass
 
     override suspend fun loadLocalRaw(localRawRef: LocalRawAssetRef): LoadedRawAsset {
         var data: ByteArray? = null
-        try {
-            openLocalStream(localRawRef.url).use { data = it.readBytes() }
-        } catch (e: Exception) {
-            logE { "Failed loading asset ${localRawRef.url}: $e" }
+        withContext(Dispatchers.IO) {
+            try {
+                openLocalStream(localRawRef.url).use { data = it.readBytes() }
+            } catch (e: Exception) {
+                logE { "Failed loading asset ${localRawRef.url}: $e" }
+            }
         }
         return LoadedRawAsset(localRawRef, data)
     }
 
     override suspend fun loadHttpRaw(httpRawRef: HttpRawAssetRef): LoadedRawAsset {
         var data: ByteArray? = null
-        try {
-            FileInputStream(HttpCache.loadHttpResource(httpRawRef.url)).use { data = it.readBytes() }
-        } catch (e: Exception) {
-            logE { "Failed loading asset ${httpRawRef.url}: $e" }
+        withContext(Dispatchers.IO) {
+            try {
+                val f = HttpCache.loadHttpResource(httpRawRef.url) ?: throw IOException("Failed downloading ${httpRawRef.url}")
+                FileInputStream(f).use { data = it.readBytes() }
+            } catch (e: Exception) {
+                logE { "Failed loading asset ${httpRawRef.url}: $e" }
+            }
         }
         return LoadedRawAsset(httpRawRef, data)
     }
 
     override suspend fun loadLocalTexture(localTextureRef: LocalTextureAssetRef): LoadedTextureAsset {
         var data: ImageTextureData? = null
-        try {
-            openLocalStream(localTextureRef.url).use { data = ImageTextureData(ImageIO.read(it)) }
-        } catch (e: Exception) {
-            logE { "Failed loading texture ${localTextureRef.url}: $e" }
+        withContext(Dispatchers.IO) {
+            try {
+                openLocalStream(localTextureRef.url).use { data = ImageTextureData(ImageIO.read(it)) }
+            } catch (e: Exception) {
+                logE { "Failed loading texture ${localTextureRef.url}: $e" }
+            }
         }
         return LoadedTextureAsset(localTextureRef, data)
     }
 
     override suspend fun loadHttpTexture(httpTextureRef: HttpTextureAssetRef): LoadedTextureAsset {
         var data: ImageTextureData? = null
-        try {
-            val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
-            FileInputStream(f).use {
-                data = ImageTextureData(ImageIO.read(it))
+        withContext(Dispatchers.IO) {
+            try {
+                val f = HttpCache.loadHttpResource(httpTextureRef.url)!!
+                FileInputStream(f).use {
+                    data = ImageTextureData(ImageIO.read(it))
+                }
+            } catch (e: Exception) {
+                logE { "Failed loading texture ${httpTextureRef.url}: $e" }
             }
-        } catch (e: Exception) {
-            logE { "Failed loading texture ${httpTextureRef.url}: $e" }
         }
         return LoadedTextureAsset(httpTextureRef, data)
     }
@@ -72,9 +85,45 @@ class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps) : Ass
         return inStream
     }
 
-    override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.createCharMap(fontProps)
+    override fun createCharMap(fontProps: FontProps): CharMap = fontGenerator.getCharMap(fontProps)
 
     override fun inflate(zipData: ByteArray): ByteArray = GZIPInputStream(ByteArrayInputStream(zipData)).readBytes()
+
+    /**
+     * fixme: this belongs in the not yet existing all new texture manager which should check if the texture was already loaded before
+     */
+    override fun loadAndPrepareTexture(assetPath: String, props: TextureProps, recv: (Texture) -> Unit) {
+        val tex = Texture(props) { it.loadTextureData(assetPath) }
+        launch {
+            val data = loadTextureData(assetPath) as BufferedTextureData
+            val sys = (ctx as Lwjgl3ContextVk).vkSystem
+            ctx.runOnGpuThread {
+                tex.loadedTexture = TextureLoader.loadTexture(sys, props, data)
+                tex.loadingState = Texture.LoadingState.LOADED
+                sys.device.addDependingResource(tex.loadedTexture!!)
+                recv(tex)
+            }
+        }
+    }
+
+    override fun loadAndPrepareCubeMap(ft: String, bk: String, lt: String, rt: String, up: String, dn: String,
+                                       props: TextureProps, recv: (CubeMapTexture) -> Unit) {
+        val tex = CubeMapTexture(props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
+        launch {
+            val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
+            val sys = (ctx as Lwjgl3ContextVk).vkSystem
+            ctx.runOnGpuThread {
+                tex.loadedTexture = TextureLoader.loadCubeMap(sys, props, data)
+                tex.loadingState = Texture.LoadingState.LOADED
+                sys.device.addDependingResource(tex.loadedTexture!!)
+                recv(tex)
+            }
+        }
+    }
+
+    fun loadTextureAsync(loader: suspend CoroutineScope.(AssetManager) -> TextureData): Deferred<TextureData> {
+        return async { loader(this@JvmAssetManager) }
+    }
 
     companion object {
         private const val MAX_GENERATED_TEX_WIDTH = 2048

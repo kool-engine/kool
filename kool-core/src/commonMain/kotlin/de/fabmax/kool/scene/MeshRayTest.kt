@@ -1,7 +1,5 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.gl.GL_LINES
-import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.*
@@ -34,13 +32,13 @@ interface MeshRayTest {
         }
 
         fun geometryTest(mesh: Mesh): MeshRayTest {
-            return when (mesh.meshData.primitiveType) {
-                GL_TRIANGLES -> object : MeshRayTest {
+            return when (mesh.geometry.primitiveType) {
+                PrimitiveType.TRIANGLES -> object : MeshRayTest {
                     var triangleTree: KdTree<Triangle>? = null
                     val rayTraverser = TriangleHitTraverser<Triangle>()
 
                     override fun onMeshDataChanged(mesh: Mesh) {
-                        triangleTree = triangleKdTree(Triangle.getTriangles(mesh.meshData))
+                        triangleTree = triangleKdTree(Triangle.getTriangles(mesh.geometry))
                     }
 
                     override fun rayTest(test: RayTest) {
@@ -51,12 +49,12 @@ interface MeshRayTest {
                         }
                     }
                 }
-                GL_LINES -> object : MeshRayTest {
+                PrimitiveType.LINES -> object : MeshRayTest {
                     var edgeTree: KdTree<Edge<Vec3f>>? = null
                     val rayTraverser = NearestEdgeToRayTraverser<Edge<Vec3f>>()
 
                     override fun onMeshDataChanged(mesh: Mesh) {
-                        edgeTree = edgeKdTree(Edge.getEdges(mesh.meshData))
+                        edgeTree = edgeKdTree(Edge.getEdges(mesh.geometry))
                     }
 
                     override fun rayTest(test: RayTest) {

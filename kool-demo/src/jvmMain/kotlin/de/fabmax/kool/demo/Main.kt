@@ -6,5 +6,5 @@ package de.fabmax.kool.demo
 fun main() {
     Demo.setProperty("assetsBaseDir", "./docs/assets")
     // launch demo
-    demo("modelDemo")
+    demo()
 }

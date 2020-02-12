@@ -1,12 +1,10 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.gl.GL_LINES
-import de.fabmax.kool.gl.GL_TRIANGLES
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.isFuzzyZero
-import de.fabmax.kool.scene.MeshData
+import de.fabmax.kool.scene.LineMesh
 import kotlin.math.min
 
 fun <T: Vec3f> pointKdTree(points: List<T>, bucketSz: Int = 20): KdTree<T> {
@@ -17,13 +15,13 @@ fun <T: Vec3f> pointOcTree(points: List<T> = emptyList(), bounds: BoundingBox = 
     return OcTree(Vec3fAdapter, points, bounds, bucketSz = bucketSz)
 }
 
-fun triangleKdTree(mesh: MeshData, bucketSz: Int = 10): KdTree<Triangle> {
+fun triangleKdTree(mesh: IndexedVertexList, bucketSz: Int = 10): KdTree<Triangle> {
     val triangles = mutableListOf<Triangle>()
-    val v = mesh.vertexList[0]
+    val v = mesh[0]
     for (i in 0 until mesh.numIndices step 3) {
-        val p0 = Vec3f(v.apply { index = mesh.vertexList.indices[i] })
-        val p1 = Vec3f(v.apply { index = mesh.vertexList.indices[i+1] })
-        val p2 = Vec3f(v.apply { index = mesh.vertexList.indices[i+2] })
+        val p0 = Vec3f(v.apply { index = mesh.indices[i] })
+        val p1 = Vec3f(v.apply { index = mesh.indices[i+1] })
+        val p2 = Vec3f(v.apply { index = mesh.indices[i+2] })
         triangles += Triangle(p0, p1, p2)
     }
     return triangleKdTree(triangles, bucketSz)
@@ -37,13 +35,13 @@ fun <T: Triangle> triangleOcTree(triangles: List<T> = emptyList(), bounds: Bound
     return OcTree(TriangleAdapter, triangles, bounds, bucketSz = bucketSz)
 }
 
-fun triangleOcTree(mesh: MeshData, bucketSz: Int = 10): OcTree<Triangle> {
+fun triangleOcTree(mesh: IndexedVertexList, bucketSz: Int = 10): OcTree<Triangle> {
     val triangles = mutableListOf<Triangle>()
-    val v = mesh.vertexList[0]
+    val v = mesh[0]
     for (i in 0 until mesh.numIndices step 3) {
-        val p0 = Vec3f(v.apply { index = mesh.vertexList.indices[i] })
-        val p1 = Vec3f(v.apply { index = mesh.vertexList.indices[i+1] })
-        val p2 = Vec3f(v.apply { index = mesh.vertexList.indices[i+2] })
+        val p0 = Vec3f(v.apply { index = mesh.indices[i] })
+        val p1 = Vec3f(v.apply { index = mesh.indices[i+1] })
+        val p2 = Vec3f(v.apply { index = mesh.indices[i+2] })
         triangles += Triangle(p0, p1, p2)
     }
     return triangleOcTree(triangles, mesh.bounds, bucketSz)
@@ -182,16 +180,16 @@ open class Edge<T: Vec3f>(val pt0: T, val pt1: T) {
     }
 
     companion object {
-        fun getEdges(lineMeshData: MeshData): List<Edge<Vec3f>> {
-            if (lineMeshData.primitiveType != GL_LINES) {
+        fun getEdges(lineMeshData: IndexedVertexList): List<Edge<Vec3f>> {
+            if (lineMeshData.primitiveType != PrimitiveType.LINES) {
                 throw IllegalArgumentException("Supplied meshData must have primitiveType GL_LINES")
             }
             val edges = mutableListOf<Edge<Vec3f>>()
             for (i in 0 until lineMeshData.numIndices step 2) {
-                val i0 = lineMeshData.vertexList.indices[i]
-                val i1 = lineMeshData.vertexList.indices[i+1]
-                val p0 = Vec3f(lineMeshData.vertexList.vertexIt.apply { index = i0 })
-                val p1 = Vec3f(lineMeshData.vertexList.vertexIt.apply { index = i1 })
+                val i0 = lineMeshData.indices[i]
+                val i1 = lineMeshData.indices[i+1]
+                val p0 = Vec3f(lineMeshData.vertexIt.apply { index = i0 })
+                val p1 = Vec3f(lineMeshData.vertexIt.apply { index = i1 })
                 edges += Edge(p0, p1)
             }
             return edges
@@ -214,14 +212,14 @@ open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
     private val tmpP = MutableVec3f()
     private val tmpQ = MutableVec3f()
 
-    constructor(data: MeshData, idx0: Int) : this(
-            MutableVec3f().apply { data.vertexList.vertexIt.index = data.vertexList.indices[idx0]; set(data.vertexList.vertexIt.position) },
-            MutableVec3f().apply { data.vertexList.vertexIt.index = data.vertexList.indices[idx0+1]; set(data.vertexList.vertexIt.position) },
-            MutableVec3f().apply { data.vertexList.vertexIt.index = data.vertexList.indices[idx0+2]; set(data.vertexList.vertexIt.position) }
+    constructor(data: IndexedVertexList, idx0: Int) : this(
+            MutableVec3f().apply { data.vertexIt.index = data.indices[idx0]; set(data.vertexIt.position) },
+            MutableVec3f().apply { data.vertexIt.index = data.indices[idx0+1]; set(data.vertexIt.position) },
+            MutableVec3f().apply { data.vertexIt.index = data.indices[idx0+2]; set(data.vertexIt.position) }
     ) {
-        if (data.primitiveType != GL_TRIANGLES) {
-            throw IllegalArgumentException("Supplied meshData must have primitiveType GL_TRIANGLES")
-        }
+//        if (data.primitiveType != GL_TRIANGLES) {
+//            throw IllegalArgumentException("Supplied meshData must have primitiveType GL_TRIANGLES")
+//        }
     }
 
     init {
@@ -250,7 +248,7 @@ open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
     }
 
     companion object {
-        fun getTriangles(meshData: MeshData): List<Triangle> {
+        fun getTriangles(meshData: IndexedVertexList): List<Triangle> {
             val triangles = mutableListOf<Triangle>()
             for (i in 0 until meshData.numIndices step 3) {
                 triangles += Triangle(meshData, i)

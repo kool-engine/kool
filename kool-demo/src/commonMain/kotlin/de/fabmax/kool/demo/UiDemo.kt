@@ -1,6 +1,7 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 
@@ -9,7 +10,7 @@ import de.fabmax.kool.scene.ui.*
  */
 
 fun uiDemoScene(): Scene = scene("UI Demo") {
-    +sphericalInputTransform { +camera }
+    +orbitInputTransform { +camera }
 
     +transformGroup {
         onPreRender += { ctx ->
@@ -19,13 +20,14 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
             rotate((ctx.time * 17).toFloat(), Vec3f.Y_AXIS)
         }
         +colorMesh {
-            generator = {
+            generate {
                 scale(5f, 5f, 5f)
                 cube {
                     centerOrigin()
                     colorCube()
                 }
             }
+            pipelineLoader = ModeledShader.VertexColor()
         }
     }
 
@@ -41,7 +43,7 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
 
         +label("label") {
             layoutSpec.setOrigin(pcs(15f), pcs(-45f), zero())
-            layoutSpec.setSize(pcs(21f), pcs(15f), full())
+            layoutSpec.setSize(pcs(20f), pcs(15f), full())
 
             text = "Slider"
         }
@@ -67,10 +69,10 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
             text = "Toggle Theme"
 
             onClick += { _,_,_ ->
-                if (theme == UiTheme.DARK) {
-                    theme = UiTheme.LIGHT
+                theme = if (theme == UiTheme.DARK) {
+                    UiTheme.LIGHT
                 } else {
-                    theme = UiTheme.DARK
+                    UiTheme.DARK
                 }
             }
         }

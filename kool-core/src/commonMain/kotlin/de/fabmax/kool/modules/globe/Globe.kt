@@ -71,7 +71,7 @@ class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : Transform
 
     override fun preRenderDp(ctx: KoolContext, modelMatDp: Mat4dStack) {
         // make sure default tile texture is loaded before other tiles block the texture loading queue
-        TileMesh.prepareDefaultTex(ctx)
+        //TileMesh.prepareDefaultTex(ctx)
 
         val cam = scene?.camera
         if (cam != null && cam is PerspectiveCamera) {
@@ -104,7 +104,7 @@ class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : Transform
             val height = getHeightAt(centerLat, centerLon)
             camDirection.scale(radius.toFloat() + height.toFloat())
             val camHeight = camDirection.distance(camPosition)
-            val meterPerPx = camHeight * tan(cam.fovy.toRad() * 0.5f) * 2f / (ctx.viewport.height * 96f / ctx.screenDpi)
+            val meterPerPx = camHeight * tan(cam.fovY.toRad() * 0.5f) * 2f / (ctx.viewport.height * 96f / ctx.screenDpi)
             val centerZoom = getBestZoom(meterPerPx, lat)
 
             val newCenter = TileName.forLatLon(lat.toDeg(), lon.toDeg(), centerZoom)

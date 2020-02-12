@@ -1,14 +1,11 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.Texture
-import de.fabmax.kool.TextureData
-import de.fabmax.kool.defaultProps
 import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.GlslGenerator
-import de.fabmax.kool.shading.ShaderProps
+import de.fabmax.kool.pipeline.AddressMode
+import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.TextureProps
 
 /**
  * @author fabmax
@@ -16,49 +13,24 @@ import de.fabmax.kool.shading.ShaderProps
 
 fun uiFont(family: String, sizeDp: Float, uiDpi: Float, ctx: KoolContext, style: Int = Font.PLAIN, chars: String = Font.STD_CHARS): Font {
     val pts = (sizeDp * uiDpi / 96f)
-    return Font(FontProps(family, pts, style, pts, chars), ctx)
-}
-
-fun fontShader(font: Font? = null, propsInit: ShaderProps.() -> Unit = { }): BasicShader {
-    val props = ShaderProps()
-    props.propsInit()
-    // vertex color and texture color are required to render fonts
-    props.isVertexColor = true
-    props.isTextureColor = true
-    props.isDiscardTranslucent = true
-    val generator = GlslGenerator()
-
-    // inject shader code to take color from static color and alpha from texture
-    // static color rgb has to be pre-multiplied with texture alpha
-    generator.injectors += object: GlslGenerator.GlslInjector {
-        override fun fsAfterSampling(shaderProps: ShaderProps, node: Node, text: StringBuilder, ctx: KoolContext) {
-            text.append("${ctx.glCapabilities.glslDialect.fragColorBody} = ${GlslGenerator.L_FS_VERTEX_COLOR} * ${GlslGenerator.L_FS_TEX_COLOR}.a;\n")
-        }
-    }
-
-    val shader = BasicShader(props, generator)
-    shader.texture = font
-    return shader
+    return Font(FontProps(family, pts, style, chars), ctx)
 }
 
 data class FontProps(
         val family: String,
         val sizePts: Float,
         val style: Int = Font.PLAIN,
-        val sizeUnits: Float = sizePts,
-        var chars: String = Font.STD_CHARS)
+        val chars: String = Font.STD_CHARS)
 
-class Font(val fontProps: FontProps, ctx: KoolContext) :
-        Texture(defaultProps(fontProps.toString()), { getCharMap(fontProps, it).textureData }) {
+class Font(val charMap: CharMap) : Texture(TextureProps(
+        addressModeU = AddressMode.CLAMP_TO_EDGE,
+        addressModeV = AddressMode.CLAMP_TO_EDGE
+), loader = { charMap.textureData }) {
 
-    val charMap: CharMap
+    val lineSpace = charMap.fontProps.sizePts * 1.2f
+    val normHeight = charMap.fontProps.sizePts * 0.7f
 
-    val lineSpace = fontProps.sizeUnits * 1.2f
-    val normHeight = fontProps.sizeUnits * 0.7f
-
-    init {
-        charMap = getCharMap(fontProps, ctx)
-    }
+    constructor(fontProps: FontProps, ctx: KoolContext) : this(ctx.assetMgr.createCharMap(fontProps))
 
     fun textWidth(string: String): Float {
         var width = 0f
@@ -82,7 +54,7 @@ class Font(val fontProps: FontProps, ctx: KoolContext) :
     }
 
     override fun toString(): String {
-        return "Font(${fontProps.family}, ${fontProps.sizePts}pts, ${fontProps.style})"
+        return "Font(${charMap.fontProps.family}, ${charMap.fontProps.sizePts}pts, ${charMap.fontProps.style})"
     }
 
     companion object {
@@ -95,8 +67,6 @@ class Font(val fontProps: FontProps, ctx: KoolContext) :
         val STD_CHARS: String
         val DEFAULT_FONT_PROPS: FontProps
 
-        private val charMaps: MutableMap<FontProps, CharMap> = mutableMapOf()
-
         init {
             var str = ""
             for (i in 32..126) {
@@ -108,15 +78,6 @@ class Font(val fontProps: FontProps, ctx: KoolContext) :
         }
 
         fun defaultFont(ctx: KoolContext): Font = Font(DEFAULT_FONT_PROPS, ctx)
-
-        private fun getCharMap(fontProps: FontProps, ctx: KoolContext): CharMap {
-            var map = charMaps[fontProps]
-            if (map == null) {
-                map = ctx.assetMgr.createCharMap(fontProps)
-                charMaps[fontProps] = map
-            }
-            return map
-        }
     }
 }
 

@@ -1,15 +1,14 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.Texture
-import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.scene.BillboardMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.shading.BasicShader
 
 class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name: String? = null) : Node() {
 
@@ -28,12 +27,12 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name:
         // don't let billboard mesh do any z-sorting, instead ParticleSystem does the sorting, this way only alive particles can be sorted
         mesh.drawOrder = BillboardMesh.DrawOrder.AS_IS
         // mesh data is frequently updated
-        mesh.meshData.usage = GL_DYNAMIC_DRAW
+        //mesh.meshData.usage = GL_DYNAMIC_DRAW
         // disable frustum checking, since particle bounds are not exactly known (and expensive to compute)
         isFrustumChecked = false
         mesh.isFrustumChecked = false
 
-        (mesh.shader as BasicShader).texture = particleTex
+        //(mesh.shader as BasicShader).texture = particleTex
 
         particles.forEach {
             mesh.addQuad(it.position, it.size)
@@ -75,18 +74,18 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name:
         super.render(ctx)
         if (isRendered) {
             var restoreAttribs = false
-            if (isDepthMask != ctx.isDepthMask) {
-                ctx.pushAttributes()
-                ctx.isDepthMask = isDepthMask
-                ctx.applyAttributes()
-                restoreAttribs = true
-            }
-
-            mesh.render(ctx)
-
-            if (restoreAttribs) {
-                ctx.popAttributes()
-            }
+//            if (isDepthMask != ctx.isDepthMask) {
+//                ctx.pushAttributes()
+//                ctx.isDepthMask = isDepthMask
+//                ctx.applyAttributes()
+//                restoreAttribs = true
+//            }
+//
+//            mesh.render(ctx)
+//
+//            if (restoreAttribs) {
+//                ctx.popAttributes()
+//            }
         }
     }
 
@@ -116,7 +115,7 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name:
             mesh.addQuadIndex(idx.meshIndex)
             particles[idx.listIndex].drawIndex = i
         }
-        mesh.meshData.isSyncRequired = true
+        mesh.geometry.hasChanged = true
 
         // swap particles into draw order, will make following sort operations much faster (assuming that order won't
         // drastically change between consecutive frames)

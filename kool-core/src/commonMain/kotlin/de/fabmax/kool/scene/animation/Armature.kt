@@ -4,20 +4,18 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.Mat4fStack
 import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.GlslType
 import de.fabmax.kool.scene.InstancedMesh
-import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.shading.AttributeType
-import de.fabmax.kool.shading.BasicShader
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.IndexedVertexList
+import de.fabmax.kool.util.VertexView
 import de.fabmax.kool.util.createFloat32Buffer
-import de.fabmax.kool.util.logW
 
-open class Armature(meshData: MeshData, name: String? = null,
+open class Armature(geometry: IndexedVertexList, name: String? = null,
                     instances: Instances<*> = identityInstance(),
                     attributes: List<Attribute> = MODEL_INSTANCES) :
-        InstancedMesh(meshData, name, instances, attributes) {
+        InstancedMesh(geometry, name, instances, attributes) {
 
     val rootBones = mutableListOf<Bone>()
     val bones = mutableMapOf<String, Bone>()
@@ -39,27 +37,27 @@ open class Armature(meshData: MeshData, name: String? = null,
     private val tmpTransform = Mat4f()
     private val tmpVec = MutableVec3f()
 
-    private val originalMeshData = meshData
-    private val meshV: IndexedVertexList.Vertex
-    private val origV: IndexedVertexList.Vertex
+    private val originalGeometry = geometry
+    private val meshV: VertexView
+    private val origV: VertexView
 
     private data class BoneWeight(var weight: Float, var id: Int)
 
     init {
         // extend mesh data with bone vertex attributes
         val armatureAttribs = mutableSetOf(BONE_WEIGHTS, BONE_INDICES)
-        armatureAttribs.addAll(meshData.vertexAttributes)
-        this.meshData = MeshData(armatureAttribs)
+        armatureAttribs.addAll(geometry.vertexAttributes)
+        this.geometry = IndexedVertexList(armatureAttribs)
 
-        origV = originalMeshData[0]
-        for (i in 0 until originalMeshData.numVertices) {
+        origV = originalGeometry[0]
+        for (i in 0 until originalGeometry.numVertices) {
             origV.index = i
-            this.meshData.addVertex { set(origV) }
+            this.geometry.addVertex { set(origV) }
         }
-        for (i in 0 until originalMeshData.numIndices) {
-            this.meshData.addIndex(originalMeshData.vertexList.indices[i])
+        for (i in 0 until originalGeometry.numIndices) {
+            this.geometry.addIndex(originalGeometry.indices[i])
         }
-        meshV = this.meshData[0]
+        meshV = this.geometry[0]
     }
 
     private fun addBoneWeight(boneWeights: Array<BoneWeight>, boneId: Int, boneWeight: Float) {
@@ -92,7 +90,7 @@ open class Armature(meshData: MeshData, name: String? = null,
         tmpTransform.setIdentity()
 
         // collect bone weights per vertex
-        val boneWeights = Array(meshData.numVertices) { Array(4) { BoneWeight(0f, 0) } }
+        val boneWeights = Array(geometry.numVertices) { Array(4) { BoneWeight(0f, 0) } }
         indexedBones.forEachIndexed { boneId, bone ->
             bone.id = boneId
             boneTransforms!!.position = boneId * 16
@@ -126,7 +124,7 @@ open class Armature(meshData: MeshData, name: String? = null,
         }
 
         // set bone vertex attributes
-        for (i in 0 until meshData.numVertices) {
+        for (i in 0 until geometry.numVertices) {
             val boneWs = boneWeights[i]
             meshV.index = i
             meshV.getVec4fAttribute(BONE_WEIGHTS)?.set(boneWs[0].weight, boneWs[1].weight, boneWs[2].weight, boneWs[3].weight)
@@ -155,10 +153,10 @@ open class Armature(meshData: MeshData, name: String? = null,
     }
 
     override fun render(ctx: KoolContext) {
-        val shader = this.shader
-        if (shader is BasicShader) {
-            shader.bones = boneTransforms
-        }
+//        val shader = this.shader
+//        if (shader is BasicShader) {
+//            shader.bones = boneTransforms
+//        }
         super.render(ctx)
     }
 
@@ -186,15 +184,10 @@ open class Armature(meshData: MeshData, name: String? = null,
         }
 
         if (update) {
-            if (!isCpuAnimated && !ctx.glCapabilities.shaderIntAttribs) {
-                logW { "Vertex shader animation requested, but not supported by hardware. Falling back to CPU based mesh animation" }
-                isCpuAnimated = true
-            }
-
             // only update mesh if an animation was applied
             if (isCpuAnimated) {
                 // transform mesh vertex positions on CPU
-                meshData.batchUpdate {
+                geometry.batchUpdate {
                     clearMesh()
                     for (i in rootBones.indices) {
                         applyBone(rootBones[i], transform, isCpuAnimated)
@@ -234,7 +227,7 @@ open class Armature(meshData: MeshData, name: String? = null,
     }
 
     private fun clearMesh() {
-        for (i in 0 until meshData.numVertices) {
+        for (i in 0 until geometry.numVertices) {
             meshV.index = i
             meshV.position.set(0f, 0f, 0f)
             meshV.normal.set(0f, 0f, 0f)
@@ -259,7 +252,7 @@ open class Armature(meshData: MeshData, name: String? = null,
     }
 
     companion object {
-        val BONE_WEIGHTS = Attribute("attrib_bone_weights", AttributeType.VEC_4F)
-        val BONE_INDICES = Attribute("attrib_bone_indices", AttributeType.VEC_4I)
+        val BONE_WEIGHTS = Attribute("attrib_bone_weights", GlslType.VEC_4F)
+        val BONE_INDICES = Attribute("attrib_bone_indices", GlslType.VEC_4I)
     }
 }

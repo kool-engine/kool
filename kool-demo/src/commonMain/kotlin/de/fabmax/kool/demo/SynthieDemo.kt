@@ -2,16 +2,11 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.gl.GL_DYNAMIC_DRAW
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.audio.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.shading.BasicShader
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.LightModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -247,7 +242,7 @@ private class SequenceButtonUi(btn: SequenceButton) : SimpleComponentUi(btn) {
     val bgColor = MutableColor()
 
     override fun onRender(ctx: KoolContext) {
-        (shader as BasicShader).staticColor.set(bgColor)
+//        (shader as BasicShader).staticColor.set(bgColor)
         super.onRender(ctx)
     }
 }
@@ -265,7 +260,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
     init {
         +waveform
         +Heightmap(256, 256)
-        +sphericalInputTransform {
+        +orbitInputTransform {
             +camera
             setMouseRotation(20f, -20f)
             zoom = 8f
@@ -289,8 +284,8 @@ private class SynthieScene(ctx: KoolContext): Scene() {
     private inner class Heightmap(val width: Int, val length: Int) : TransformGroup() {
         val quads = colorMesh {
             isFrustumChecked = false
-            meshData.usage = GL_DYNAMIC_DRAW
-            generator = {
+//            meshData.usage = GL_DYNAMIC_DRAW
+            generate {
                 // Set y-axis as surface normal for all quad vertices
                 vertexModFun = {
                     normal.set(Vec3f.Y_AXIS)
@@ -306,7 +301,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
                 }
             }
         }
-        val quadV = quads.meshData[0]
+        val quadV = quads.geometry[0]
         var zPos = -1000f
 
         val sampleInterval = .05f
@@ -354,7 +349,7 @@ private class SynthieScene(ctx: KoolContext): Scene() {
                 if (zPos > 1000) {
                     zPos = -1000f
                 }
-                quads.meshData.isSyncRequired = true
+                quads.geometry.hasChanged = true
 
                 // set spectrum bounding box to avoid mesh being frustum clipped
                 quads.bounds.set(-width/2f, 0f, zPos - length, width/2f, 50f, zPos)
@@ -371,23 +366,23 @@ private class SynthieScene(ctx: KoolContext): Scene() {
             lineMesh {
                 +this
                 for (i in 1..points) {
-                    val idx = meshData.addVertex {
-                        position.set((i - points/2) / 256f, 1f, 0f)
+                    val idx = geometry.addVertex {
+                        position.set((i - points / 2) / 256f, 1f, 0f)
                     }
                     if (i > 1) {
-                        meshData.addIndices(idx - 1, idx)
+                        geometry.addIndices(idx - 1, idx)
                     }
                 }
                 lineWidth = 1f
-                shader = basicShader {
-                    colorModel = ColorModel.STATIC_COLOR
-                    lightModel = LightModel.NO_LIGHTING
-                }
-                (shader as BasicShader).staticColor.set(Color.LIME)
-                meshData.usage = GL_DYNAMIC_DRAW
+//                shader = basicShader {
+//                    colorModel = ColorModel.STATIC_COLOR
+//                    lightModel = LightModel.NO_LIGHTING
+//                }
+//                (shader as BasicShader).staticColor.set(Color.LIME)
+//                meshData.usage = GL_DYNAMIC_DRAW
             }
         }
-        val vertices = Array(lines.size) { i -> lines[i].meshData[0] }
+        val vertices = Array(lines.size) { i -> lines[i].geometry[0] }
 
         val sampleBuf = FloatArray(sampleRate)
         var sampleIdx = 0
@@ -411,13 +406,13 @@ private class SynthieScene(ctx: KoolContext): Scene() {
 
                 drawTimeDomain()
 
-                lines[lineIdx].meshData.isSyncRequired = true
+                lines[lineIdx].geometry.hasChanged = true
                 for (i in lines.indices) {
                     var idx = (lineIdx - i)
                     if (idx < 0) {
                         idx += lines.size
                     }
-                    (lines[idx].shader as BasicShader).staticColor.w = 1f - i / lines.size.toFloat()
+//                    (lines[idx].shader as BasicShader).staticColor.w = 1f - i / lines.size.toFloat()
                 }
             }
 

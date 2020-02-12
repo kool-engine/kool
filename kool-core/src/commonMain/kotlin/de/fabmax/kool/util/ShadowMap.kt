@@ -1,14 +1,9 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.RenderPass
-import de.fabmax.kool.Texture
-import de.fabmax.kool.gl.Framebuffer
-import de.fabmax.kool.gl.GL_DEPTH_BUFFER_BIT
-import de.fabmax.kool.gl.GL_FRONT
-import de.fabmax.kool.gl.glClear
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec4f
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.FrustumPlane
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
@@ -37,7 +32,7 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 100f, private val t
     private val bounds = BoundingBox()
     private val tmpVec4 = MutableVec4f()
 
-    private var fbo: Framebuffer = Framebuffer(texSize, texSize).withDepth()
+//    private var fbo: Framebuffer = Framebuffer(texSize, texSize).withDepth()
 
     private var clipSpaceFarZ = 0f
 
@@ -46,76 +41,74 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 100f, private val t
     }
 
     override fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
-        if (!ctx.glCapabilities.depthTextures) {
-            // depth textures are not supported on current platform, there's no point in going ahead
-            return
-        }
-
         val scene = nodeToRender.scene ?: return
         val camera = scene.camera
 
-        depthCam.position.set(scene.lighting.primaryLight.direction)
-        depthCam.lookAt.set(0f, 0f, 0f)
-        depthView.setLookAt(depthCam.position, depthCam.lookAt, depthCam.up)
-
-        // compute bounding box of main camera's near and far frustum planes in light space
-        camera.computeFrustumPlane(near, nearPlane)
-        camera.computeFrustumPlane(far, farPlane)
-        clipSpaceFarZ = camera.project(farPlane.upperLeft, tmpVec4).z
-
-        depthView.transform(nearPlane)
-        depthView.transform(farPlane)
-        bounds.setPlanes(nearPlane, farPlane)
-
-        // set depth camera bounds to computed bounding box
-        depthCam.left = bounds.min.x
-        depthCam.right = bounds.max.x
-        depthCam.bottom = bounds.min.y
-        depthCam.top = bounds.max.y
-        depthCam.near = -bounds.max.z - 10
-        depthCam.far = -bounds.min.z
-
-        fbo.bind(ctx)
-
-        glClear(GL_DEPTH_BUFFER_BIT)
-
-        ctx.mvpState.pushMatrices()
-        ctx.mvpState.projMatrix.setIdentity()
-        ctx.mvpState.viewMatrix.setIdentity()
-        ctx.mvpState.modelMatrix.setIdentity()
-
-        depthCam.updateCamera(ctx)
-        BIAS_MATRIX.mul(ctx.mvpState.mvpMatrix, depthMvpMat).toBuffer(shadowMvp)
-
-        val prevRenderPass = ctx.renderPass
-        ctx.renderPass = RenderPass.SHADOW
-        scene.camera = depthCam
-
-        ctx.pushAttributes()
-        ctx.cullFace = GL_FRONT
-        ctx.applyAttributes()
-
-        nodeToRender.render(ctx)
-
-        ctx.popAttributes()
-
-        scene.camera = camera
-        ctx.renderPass = prevRenderPass
-        ctx.mvpState.popMatrices()
-        ctx.mvpState.update(ctx)
-        fbo.unbind(ctx)
-
-        // force re-binding shaders
-        ctx.shaderMgr.clearShader(ctx)
+        TODO("adjust to new light setup")
+//        depthCam.position.set(scene.lighting.lights[0].direction)
+//        depthCam.lookAt.set(0f, 0f, 0f)
+//        depthView.setLookAt(depthCam.position, depthCam.lookAt, depthCam.up)
+//
+//        // compute bounding box of main camera's near and far frustum planes in light space
+//        camera.computeFrustumPlane(near, nearPlane)
+//        camera.computeFrustumPlane(far, farPlane)
+//        clipSpaceFarZ = camera.project(farPlane.upperLeft, tmpVec4).z
+//
+//        depthView.transform(nearPlane)
+//        depthView.transform(farPlane)
+//        bounds.setPlanes(nearPlane, farPlane)
+//
+//        // set depth camera bounds to computed bounding box
+//        depthCam.left = bounds.min.x
+//        depthCam.right = bounds.max.x
+//        depthCam.bottom = bounds.min.y
+//        depthCam.top = bounds.max.y
+//        depthCam.near = -bounds.max.z - 10
+//        depthCam.far = -bounds.min.z
+//
+//        fbo.bind(ctx)
+//
+//        glClear(GL_DEPTH_BUFFER_BIT)
+//
+//        ctx.mvpState.pushMatrices()
+//        ctx.mvpState.projMatrix.setIdentity()
+//        ctx.mvpState.viewMatrix.setIdentity()
+//        ctx.mvpState.modelMatrix.setIdentity()
+//
+//        depthCam.updateCamera(ctx)
+//        BIAS_MATRIX.mul(ctx.mvpState.mvpMatrix, depthMvpMat).toBuffer(shadowMvp)
+//
+//        val prevRenderPass = ctx.renderPass
+//        ctx.renderPass = RenderPass.SHADOW
+//        scene.camera = depthCam
+//
+//        ctx.pushAttributes()
+//        ctx.cullFace = GL_FRONT
+//        ctx.applyAttributes()
+//
+//        nodeToRender.render(ctx)
+//
+//        ctx.popAttributes()
+//
+//        scene.camera = camera
+//        ctx.renderPass = prevRenderPass
+//        ctx.mvpState.popMatrices()
+//        ctx.mvpState.update(ctx)
+//        fbo.unbind(ctx)
+//
+//        // force re-binding shaders
+//        ctx.shaderMgr.clearShader(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {
-        fbo.dispose(ctx)
+//        fbo.dispose(ctx)
     }
 
     override fun getShadowMapSize(map: Int) = texSize
 
-    override fun getShadowMap(map: Int) = fbo.depthAttachment
+    override fun getShadowMap(map: Int): Texture {
+        TODO()
+    }
 
     override fun getClipSpaceFarZ(map: Int) = clipSpaceFarZ
 

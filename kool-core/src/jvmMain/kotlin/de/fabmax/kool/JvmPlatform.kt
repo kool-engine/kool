@@ -1,7 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.platform.Lwjgl3ContextVk
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.SimpleShadowMap
@@ -16,18 +16,14 @@ import java.util.*
  * @author fabmax
  */
 
-actual fun createDefaultContext(): KoolContext = createContext(Lwjgl3Context.InitProps())
+actual fun createDefaultContext(): KoolContext {
+    //return createContext(Lwjgl3ContextGL.InitProps())
+    return DesktopImpl.createVkContext(Lwjgl3ContextVk.InitProps())
+}
 
-fun createContext(props: Lwjgl3Context.InitProps): KoolContext = DesktopImpl.createContext(props)
+fun createContext(props: Lwjgl3ContextVk.InitProps): KoolContext = DesktopImpl.createContext(props)
 
 actual fun now(): Double = System.nanoTime() / 1e6
-
-actual fun getMemoryInfo(): String {
-    val rt = Runtime.getRuntime()
-    val freeMem = rt.freeMemory()
-    val totalMem = rt.totalMemory()
-    return "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB"
-}
 
 actual fun Double.toString(precision: Int): String =
         java.lang.String.format(Locale.ENGLISH, "%.${precision.clamp(0, 12)}f", this)
@@ -35,7 +31,7 @@ actual fun Double.toString(precision: Int): String =
 actual inline fun <R> lock(lock: Any, block: () -> R): R = synchronized(lock, block)
 
 internal object DesktopImpl {
-    private var ctx: Lwjgl3Context? = null
+    private var ctx: Lwjgl3ContextVk? = null
 
     val monitors: MutableList<MonitorSpec> = mutableListOf()
     val primaryMonitor: MonitorSpec
@@ -76,13 +72,17 @@ internal object DesktopImpl {
         primaryMonitor = primMon!!
     }
 
-    fun createContext(props: Lwjgl3Context.InitProps): KoolContext {
+    fun createContext(props: Lwjgl3ContextVk.InitProps): KoolContext {
         synchronized(this) {
             if (ctx == null) {
-                ctx = Lwjgl3Context(props)
+                ctx = Lwjgl3ContextVk(props)
             }
         }
         return ctx!!
+    }
+
+    fun createVkContext(props: Lwjgl3ContextVk.InitProps): KoolContext {
+        return Lwjgl3ContextVk(props)
     }
 }
 

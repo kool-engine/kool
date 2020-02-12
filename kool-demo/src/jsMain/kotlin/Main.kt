@@ -7,10 +7,7 @@ import kotlin.collections.set
  * @author fabmax
  */
 fun main() {
-    // load elevation map data in globe demo from AWS
-    Demo.setProperty("globe.elevationUrl", "https://s3.eu-central-1.amazonaws.com/fabmax-kool-globe/dem")
     Demo.setProperty("assetsBaseDir", "../assets")
-
     // launch demo
     demo(getParams()["demo"])
 }

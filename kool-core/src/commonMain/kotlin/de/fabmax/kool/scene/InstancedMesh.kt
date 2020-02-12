@@ -1,26 +1,21 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.gl.*
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.shading.Attribute
-import de.fabmax.kool.shading.AttributeType
-import de.fabmax.kool.shading.VboBinder
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.createFloat32Buffer
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.util.*
 import kotlin.math.min
 
-open class InstancedMesh(meshData: MeshData, name: String? = null,
+open class InstancedMesh(geometry: IndexedVertexList, name: String? = null,
                          var instances: Instances<*> = identityInstance(),
                          val attributes: List<Attribute> = MODEL_INSTANCES) :
-        Mesh(meshData, name) {
+        Mesh(geometry, name) {
 
-    private var instanceBuffer: BufferResource? = null
-    private val instanceBinders = mutableMapOf<Attribute, VboBinder>()
+//    private var instanceBuffer: BufferResource? = null
+//    private val instanceBinders = mutableMapOf<Attribute, VboBinder>()
     private val instanceStride: Int
 
     /**
@@ -36,7 +31,7 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
 
         // compute instance stride as size of all instance attributes
         // stride is in bytes, attribute type size is in elements with 4 bytes each
-        instanceStride = attributes.sumBy { it.type.size * 4 }
+        instanceStride = attributes.sumBy { it.type.size }
 
         attributes.filter { it.divisor == 0 }.forEach { logW { "InstancedMesh attribute ${it.name} has divisor = 0" } }
     }
@@ -48,41 +43,34 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
         }
     }
 
-    override fun getAttributeBinder(attrib: Attribute) = instanceBinders[attrib] ?: super.getAttributeBinder(attrib)
-
     override fun render(ctx: KoolContext) {
-        if (instanceBuffer == null) {
-            // create buffer object with instance data
-            instanceBuffer = BufferResource.create(GL_ARRAY_BUFFER, ctx)
-
-            var pos  = 0
-            attributes.forEach {
-                instanceBinders[it] = VboBinder(instanceBuffer!!, it.type.size, instanceStride, pos, GL_FLOAT)
-                pos += it.type.size
-            }
-        }
-        // bind instance data buffer
-        instances.instanceData?.let {
-            instanceBuffer!!.setData(it, GL_DYNAMIC_DRAW, ctx)
-        }
-
-        // disable frustum check flag before calling render, standard frustum check doesn't work with InstancedMesh
-        val wasFrustumChecked = isFrustumChecked
-        isFrustumChecked = false
-        super.render(ctx)
-        isFrustumChecked = wasFrustumChecked
-    }
-
-    override fun drawElements(ctx: KoolContext) {
-        // todo: possible optimization: use glDrawElementsInstancedBaseVertex
-        glDrawElementsInstanced(meshData.primitiveType, meshData.numIndices, meshData.indexType, 0, instances.numInstances)
+//        if (instanceBuffer == null) {
+//            // create buffer object with instance data
+//            instanceBuffer = BufferResource.create(GL_ARRAY_BUFFER, ctx)
+//
+//            var pos  = 0
+//            attributes.forEach {
+//                instanceBinders[it] = VboBinder(instanceBuffer!!, it.type.size, instanceStride, pos, GL_FLOAT)
+//                pos += it.type.size
+//            }
+//        }
+//        // bind instance data buffer
+//        instances.instanceData?.let {
+//            instanceBuffer!!.setData(it, GL_DYNAMIC_DRAW, ctx)
+//        }
+//
+//        // disable frustum check flag before calling render, standard frustum check doesn't work with InstancedMesh
+//        val wasFrustumChecked = isFrustumChecked
+//        isFrustumChecked = false
+//        super.render(ctx)
+//        isFrustumChecked = wasFrustumChecked
     }
 
     override fun dispose(ctx: KoolContext) {
-        super.dispose(ctx)
-        instanceBuffer?.delete(ctx)
-        instanceBuffer = null
-        instanceBinders.clear()
+//        super.dispose(ctx)
+//        instanceBuffer?.delete(ctx)
+//        instanceBuffer = null
+//        instanceBinders.clear()
     }
 
     open class Instance(val modelMat: Mat4f) {
@@ -162,7 +150,7 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
                 }
 
                 if (!bounds.isEmpty) {
-                    tmpVec.set(mesh.meshData.bounds.size).scale(0.5f)
+                    tmpVec.set(mesh.geometry.bounds.size).scale(0.5f)
                     bounds.expand(tmpVec)
                 }
             } else {
@@ -195,22 +183,22 @@ open class InstancedMesh(meshData: MeshData, name: String? = null,
     }
 
     companion object {
-        val MODEL_INSTANCES_0 = Attribute("attrib_model_insts_0", AttributeType.VEC_4F).apply {
+        val MODEL_INSTANCES_0 = Attribute("attrib_model_insts_0", GlslType.VEC_4F).apply {
             glslSrcName = "attrib_model_insts"
             locationOffset = 0
             divisor = 1
         }
-        val MODEL_INSTANCES_1 = Attribute("attrib_model_insts_1", AttributeType.VEC_4F).apply {
+        val MODEL_INSTANCES_1 = Attribute("attrib_model_insts_1", GlslType.VEC_4F).apply {
             glslSrcName = "attrib_model_insts"
             locationOffset = 1
             divisor = 1
         }
-        val MODEL_INSTANCES_2 = Attribute("attrib_model_insts_2", AttributeType.VEC_4F).apply {
+        val MODEL_INSTANCES_2 = Attribute("attrib_model_insts_2", GlslType.VEC_4F).apply {
             glslSrcName = "attrib_model_insts"
             locationOffset = 2
             divisor = 1
         }
-        val MODEL_INSTANCES_3 = Attribute("attrib_model_insts_3", AttributeType.VEC_4F).apply {
+        val MODEL_INSTANCES_3 = Attribute("attrib_model_insts_3", GlslType.VEC_4F).apply {
             glslSrcName = "attrib_model_insts"
             locationOffset = 3
             divisor = 1

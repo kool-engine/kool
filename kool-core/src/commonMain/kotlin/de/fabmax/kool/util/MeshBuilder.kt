@@ -1,21 +1,20 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.scene.MeshData
-import de.fabmax.kool.shading.Attribute
+import de.fabmax.kool.pipeline.Attribute
 import kotlin.math.*
 
 /**
  * @author fabmax
  */
-open class MeshBuilder(val meshData: MeshData) {
+open class MeshBuilder(val geometry: IndexedVertexList) {
 
     val transform = Mat4fStack()
 
     var color = Color.BLACK
-    var vertexModFun: (IndexedVertexList.Vertex.() -> Unit)? = null
+    var vertexModFun: (VertexView.() -> Unit)? = null
 
-    private val hasNormals = meshData.hasAttribute(Attribute.NORMALS)
+    private val hasNormals = geometry.hasAttribute(Attribute.NORMALS)
 
     private val tmpPos = MutableVec3f()
     private val tmpNrm = MutableVec3f()
@@ -30,7 +29,7 @@ open class MeshBuilder(val meshData: MeshData) {
     var textProps: TextProps? = null
 
     open fun vertex(pos: Vec3f, nrm: Vec3f, uv: Vec2f = Vec2f.ZERO): Int {
-        return meshData.addVertex {
+        return geometry.addVertex {
             position.set(pos)
             normal.set(nrm)
             texCoord.set(uv)
@@ -62,7 +61,7 @@ open class MeshBuilder(val meshData: MeshData) {
     }
 
     fun clear() {
-        meshData.clear()
+        geometry.clear()
         identity()
     }
 
@@ -120,7 +119,7 @@ open class MeshBuilder(val meshData: MeshData) {
             val idx = vertex(tmpPos.set(px, py, props.center.z), Vec3f.Z_AXIS, tmpUv)
 
             if (i > 0) {
-                meshData.addTriIndices(iCenter, i1, idx)
+                geometry.addTriIndices(iCenter, i1, idx)
             }
             i1 = idx
         }
@@ -153,7 +152,7 @@ open class MeshBuilder(val meshData: MeshData) {
                 uv = props.texCoordGenerator(PI.toFloat(), phi.toFloat())
                 tmpPos.set(props.center.x, props.center.y-props.radius, props.center.z)
                 val iCenter = vertex(tmpPos, Vec3f.NEG_Y_AXIS, uv)
-                meshData.addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
+                geometry.addTriIndices(iCenter, rowIndices[i], rowIndices[i - 1])
             }
         }
 
@@ -175,8 +174,8 @@ open class MeshBuilder(val meshData: MeshData) {
                         tmpNrm.set(x, y, z).scale(1f / props.radius), uv)
 
                 if (i > 0) {
-                    meshData.addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
-                    meshData.addTriIndices(prevIndices[i - 1], prevIndices[i], rowIndices[i])
+                    geometry.addTriIndices(prevIndices[i - 1], rowIndices[i], rowIndices[i - 1])
+                    geometry.addTriIndices(prevIndices[i - 1], prevIndices[i], rowIndices[i])
                 }
             }
         }
@@ -186,7 +185,110 @@ open class MeshBuilder(val meshData: MeshData) {
             val uv = props.texCoordGenerator(0f, (PI * i / steps).toFloat())
             val iCenter = vertex(tmpPos.set(props.center.x, props.center.y + props.radius, props.center.z),
                     Vec3f.Y_AXIS, uv)
-            meshData.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
+            geometry.addTriIndices(iCenter, rowIndices[i - 1], rowIndices[i])
+        }
+    }
+
+    inline fun icoSphere(props: SphereProps.() -> Unit) {
+        sphereProps.defaults().props()
+        icoSphere(sphereProps)
+    }
+
+    fun icoSphere(props: SphereProps) {
+        // https://schneide.blog/2016/07/15/generating-an-icosphere-in-c/
+
+        val x = 0.525731112f
+        val z = 0.850650808f
+        val n = 0f
+
+        val verts = mutableListOf(
+                Vec3f(-x, n, z), Vec3f(x, n, z), Vec3f(-x, n, -z), Vec3f(x, n, -z),
+                Vec3f(n, z, x), Vec3f(n, z, -x), Vec3f(n, -z, x), Vec3f(n, -z, -x),
+                Vec3f(z, x, n), Vec3f(-z, x, n), Vec3f(z, -x, n), Vec3f(-z, -x, n)
+        )
+        var faces = mutableListOf(
+                4,0,1, 9,0,4, 5,9,4, 5,4,8, 8,4,1,
+                10,8,1, 3,8,10, 3,5,8, 2,5,3, 7,2,3,
+                10,7,3, 6,7,10, 11,7,6, 0,11,6, 1,0,6,
+                1,6,10, 0,9,11, 11,9,2, 2,9,5, 2,7,11
+        )
+
+        val midVerts = mutableMapOf<Long, Int>()
+        fun getMidVertex(fromIdx: Int, toIdx: Int): Int {
+            val key = (min(fromIdx, toIdx).toLong() shl 32) + max(fromIdx, toIdx)
+            return midVerts.getOrPut(key) {
+                val insertIdx = verts.size
+                verts += MutableVec3f(verts[fromIdx]).add(verts[toIdx]).norm()
+                insertIdx
+            }
+        }
+
+        // subdivide ico-sphere
+        val its = if (props.steps <= 8) { props.steps } else {
+            logW { "clamping too large number of iterations for ico-sphere (${props.steps}) to 8" }
+            8
+        }
+        for (i in 0 until its) {
+            val newFaces = mutableListOf<Int>()
+            for (j in faces.indices step 3) {
+                val v1 = faces[j]
+                val v2 = faces[j + 1]
+                val v3 = faces[j + 2]
+
+                // subdivide edges
+                val a = getMidVertex(v1, v2)
+                val b = getMidVertex(v2, v3)
+                val c = getMidVertex(v3, v1)
+
+                newFaces.addAll(listOf(v1, a, c))
+                newFaces.addAll(listOf(v2, b, a))
+                newFaces.addAll(listOf(v3, c, b))
+                newFaces.addAll(listOf(a, b, c))
+            }
+            faces = newFaces
+        }
+
+        val pif = PI.toFloat()
+        val uvVerts = verts.map { v -> v to Vec2f((atan2(v.x, v.z) + pif) / (2 * pif), acos(v.y) / pif) }.toMutableList()
+
+        // duplicate vertices at texture border
+        for (i in faces.indices step 3) {
+            // check if triangle stretches across texture border and duplicate vertex with adjusted uv if it does
+            for (j in 0..2) {
+                val i1 = i + j
+                val i2 = i + (j+1) % 3
+                val i3 = i + (j+2) % 3
+
+                val u1 = uvVerts[faces[i1]].second.x
+                val u2 = uvVerts[faces[i2]].second.x
+                val u3 = uvVerts[faces[i3]].second.x
+
+                if (u1 - u2 > 0.5f && u1 - u3 > 0.5f) {
+                    val dv1 = Vec3f(uvVerts[faces[i1]].first)
+                    val du1 = MutableVec2f(uvVerts[faces[i1]].second).apply { this.x -= 1f }
+                    faces[i1] = uvVerts.size
+                    uvVerts += dv1 to du1
+                } else if (u2 - u1 > 0.5f && u3 - u1 > 0.5f) {
+                    val dv1 = Vec3f(uvVerts[faces[i1]].first)
+                    val du1 = MutableVec2f(uvVerts[faces[i1]].second).apply { this.x += 1f }
+                    faces[i1] = uvVerts.size
+                    uvVerts += dv1 to du1
+                }
+            }
+        }
+
+        // insert geometry
+        val nrm = MutableVec3f()
+        val pos = MutableVec3f()
+        val i0 = geometry.numIndices
+        for (v in uvVerts) {
+            nrm.set(v.first).norm()
+            pos.set(nrm).scale(props.radius).add(props.center)
+            val uv = props.texCoordGenerator(v.second.y * pif, v.second.x * 2 * pif)
+            vertex(pos, nrm, uv)
+        }
+        for (i in faces.indices step 3) {
+            geometry.addTriIndices(faces[i0 + i], faces[i0 + 1 + i], faces[i0 + 2 + i])
         }
     }
 
@@ -207,8 +309,8 @@ open class MeshBuilder(val meshData: MeshData) {
                     Vec3f.Z_AXIS, props.texCoordUpperRight)
             val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z),
                     Vec3f.Z_AXIS, props.texCoordUpperLeft)
-            meshData.addTriIndices(i0, i1, i2)
-            meshData.addTriIndices(i0, i2, i3)
+            geometry.addTriIndices(i0, i1, i2)
+            geometry.addTriIndices(i0, i2, i3)
 
         } else {
             val x = props.origin.x
@@ -231,8 +333,8 @@ open class MeshBuilder(val meshData: MeshData) {
                 val i1 = vertex(tmpPos.set(x + w, yI, z), nrm, tmpUv.set(0f, vI).add(props.texCoordLowerRight))
                 val i2 = vertex(tmpPos.set(x + w, yI + hI, z), nrm, tmpUv.set(0f, -vI).add(props.texCoordUpperRight))
                 val i3 = vertex(tmpPos.set(x, yI + hI, z), nrm, tmpUv.set(0f, -vI).add(props.texCoordUpperLeft))
-                meshData.addTriIndices(i0, i1, i2)
-                meshData.addTriIndices(i0, i2, i3)
+                geometry.addTriIndices(i0, i1, i2)
+                geometry.addTriIndices(i0, i2, i3)
             }
 
             if (wI > 0) {
@@ -240,15 +342,15 @@ open class MeshBuilder(val meshData: MeshData) {
                 var i1 = vertex(tmpPos.set(xI + wI, y, z), nrm, tmpUv.set(-uI, 0f).add(props.texCoordLowerRight))
                 var i2 = vertex(tmpPos.set(xI + wI, yI, z), nrm, tmpUv.set(-uI, vI).add(props.texCoordLowerRight))
                 var i3 = vertex(tmpPos.set(xI, yI, z), nrm, tmpUv.set(uI, vI).add(props.texCoordLowerLeft))
-                meshData.addTriIndices(i0, i1, i2)
-                meshData.addTriIndices(i0, i2, i3)
+                geometry.addTriIndices(i0, i1, i2)
+                geometry.addTriIndices(i0, i2, i3)
 
                 i0 = vertex(tmpPos.set(xI, yI + hI, z), nrm, tmpUv.set(uI, -vI).add(props.texCoordUpperLeft))
                 i1 = vertex(tmpPos.set(xI + wI, yI + hI, z), nrm, tmpUv.set(-uI, -vI).add(props.texCoordUpperRight))
                 i2 = vertex(tmpPos.set(xI + wI, y + h, z), nrm, tmpUv.set(-uI, 0f).add(props.texCoordUpperRight))
                 i3 = vertex(tmpPos.set(xI, y + h, z), nrm, tmpUv.set(uI, 0f).add(props.texCoordUpperLeft))
-                meshData.addTriIndices(i0, i1, i2)
-                meshData.addTriIndices(i0, i2, i3)
+                geometry.addTriIndices(i0, i1, i2)
+                geometry.addTriIndices(i0, i2, i3)
             }
 
             circle {
@@ -324,8 +426,8 @@ open class MeshBuilder(val meshData: MeshData) {
         val i1 = vertex(tmpPos.set(qx1, qy1, 0f), Vec3f.Z_AXIS)
         val i2 = vertex(tmpPos.set(qx2, qy2, 0f), Vec3f.Z_AXIS)
         val i3 = vertex(tmpPos.set(qx3, qy3, 0f), Vec3f.Z_AXIS)
-        meshData.addTriIndices(i0, i1, i2)
-        meshData.addTriIndices(i0, i2, i3)
+        geometry.addTriIndices(i0, i1, i2)
+        geometry.addTriIndices(i0, i2, i3)
     }
 
     fun lineArc(centerX: Float, centerY: Float, radius: Float, startDeg: Float, sweepDeg: Float, width: Float, resolution: Float = 3f) {
@@ -356,62 +458,62 @@ open class MeshBuilder(val meshData: MeshData) {
 
         // front
         withColor(props.frontColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS)
-            meshData.addTriIndices(i0, i1, i2)
-            meshData.addTriIndices(i0, i2, i3)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(0f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 1f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(1f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Z_AXIS, Vec2f(0f, 0f))
+            geometry.addTriIndices(i0, i1, i2)
+            geometry.addTriIndices(i0, i2, i3)
         }
 
         // right
         withColor(props.rightColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.X_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.X_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.X_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.X_AXIS)
-            meshData.addTriIndices(i0, i1, i2)
-            meshData.addTriIndices(i0, i2, i3)
+            val i0 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.X_AXIS, Vec2f(1f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.X_AXIS, Vec2f(1f, 0f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.X_AXIS, Vec2f(0f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.X_AXIS, Vec2f(0f, 1f))
+            geometry.addTriIndices(i0, i1, i2)
+            geometry.addTriIndices(i0, i2, i3)
         }
 
         // back
         withColor(props.backColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS)
-            meshData.addTriIndices(i0, i1, i2)
-            meshData.addTriIndices(i0, i2, i3)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(1f, 0f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 0f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(0f, 1f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Z_AXIS, Vec2f(1f, 1f))
+            geometry.addTriIndices(i0, i1, i2)
+            geometry.addTriIndices(i0, i2, i3)
         }
 
         // left
         withColor(props.leftColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_X_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_X_AXIS)
-            meshData.addTriIndices(i0, i1, i2)
-            meshData.addTriIndices(i0, i2, i3)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS, Vec2f(1f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.NEG_X_AXIS, Vec2f(1f, 0f))
+            val i2 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.NEG_X_AXIS, Vec2f(0f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_X_AXIS, Vec2f(0f, 1f))
+            geometry.addTriIndices(i0, i1, i2)
+            geometry.addTriIndices(i0, i2, i3)
         }
 
         // top
         withColor(props.topColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS)
-            meshData.addTriIndices(i0, i1, i2)
-            meshData.addTriIndices(i0, i2, i3)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS, Vec2f(0f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z + props.size.z), Vec3f.Y_AXIS, Vec2f(1f, 1f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS, Vec2f(1f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y + props.size.y, props.origin.z), Vec3f.Y_AXIS, Vec2f(0f, 0f))
+            geometry.addTriIndices(i0, i1, i2)
+            geometry.addTriIndices(i0, i2, i3)
         }
 
         // bottom
         withColor(props.bottomColor) {
-            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS)
-            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS)
-            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS)
-            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS)
-            meshData.addTriIndices(i0, i1, i2)
-            meshData.addTriIndices(i0, i2, i3)
+            val i0 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS, Vec2f(0f, 1f))
+            val i1 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 1f))
+            val i2 = vertex(tmpPos.set(props.origin.x + props.size.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS, Vec2f(1f, 0f))
+            val i3 = vertex(tmpPos.set(props.origin.x, props.origin.y, props.origin.z + props.size.z), Vec3f.NEG_Y_AXIS, Vec2f(0f, 0f))
+            geometry.addTriIndices(i0, i1, i2)
+            geometry.addTriIndices(i0, i2, i3)
         }
     }
 
@@ -464,8 +566,8 @@ open class MeshBuilder(val meshData: MeshData) {
             val i3 = vertex(tmpPos.set(px3, props.origin.y + props.height, pz3), tmpNrm)
 
             if (i > 0) {
-                meshData.addTriIndices(i0, i1, i2)
-                meshData.addTriIndices(i1, i3, i2)
+                geometry.addTriIndices(i0, i1, i2)
+                geometry.addTriIndices(i1, i3, i2)
             }
             i0 = i2
             i1 = i3
@@ -498,26 +600,26 @@ open class MeshBuilder(val meshData: MeshData) {
                 val idx = vertex(tmpPos, Vec3f.ZERO)
                 if (x > 0 && y > 0) {
                     if (x % 2 == y % 2) {
-                        meshData.addTriIndices(idx - nx - 1, idx, idx - 1)
-                        meshData.addTriIndices(idx - nx, idx, idx - nx - 1)
+                        geometry.addTriIndices(idx - nx - 1, idx, idx - 1)
+                        geometry.addTriIndices(idx - nx, idx, idx - nx - 1)
                     } else {
-                        meshData.addTriIndices(idx - nx, idx, idx - 1)
-                        meshData.addTriIndices(idx - nx, idx - 1, idx - nx - 1)
+                        geometry.addTriIndices(idx - nx, idx, idx - 1)
+                        geometry.addTriIndices(idx - nx, idx - 1, idx - nx - 1)
                     }
                 }
             }
         }
 
-        val iTri = meshData.numIndices - props.stepsX * props.stepsY * 6
+        val iTri = geometry.numIndices - props.stepsX * props.stepsY * 6
         val e1 = MutableVec3f()
         val e2 = MutableVec3f()
-        val v1 = meshData[0]
-        val v2 = meshData[0]
-        val v3 = meshData[0]
-        for (i in iTri until meshData.numIndices step 3) {
-            v1.index = meshData.vertexList.indices[i]
-            v2.index = meshData.vertexList.indices[i+1]
-            v3.index = meshData.vertexList.indices[i+2]
+        val v1 = geometry[0]
+        val v2 = geometry[0]
+        val v3 = geometry[0]
+        for (i in iTri until geometry.numIndices step 3) {
+            v1.index = geometry.indices[i]
+            v2.index = geometry.indices[i+1]
+            v3.index = geometry.indices[i+2]
             v2.position.subtract(v1.position, e1).norm()
             v3.position.subtract(v1.position, e2).norm()
             e1.cross(e2, tmpNrm).norm()
@@ -526,23 +628,27 @@ open class MeshBuilder(val meshData: MeshData) {
             v3.normal.add(tmpNrm)
         }
 
-        val iVert = meshData.numVertices - (props.stepsX + 1) * (props.stepsY + 1)
-        for (i in iVert until meshData.numVertices) {
+        val iVert = geometry.numVertices - (props.stepsX + 1) * (props.stepsY + 1)
+        for (i in iVert until geometry.numVertices) {
             v1.index = i
             v1.normal.norm()
         }
     }
 
-    inline fun text(font: Font, block: TextProps.() -> Unit) {
+    inline fun text(font: Font, fontSizeUnits: Float = 0f, block: TextProps.() -> Unit) {
         val props = textProps ?: TextProps(font).apply { textProps = this}
         props.defaults()
         props.font = font
         props.block()
-        text(props)
+        text(props, fontSizeUnits)
     }
 
-    fun text(props: TextProps) {
+    fun text(props: TextProps, fontSizeUnits: Float = 0f) {
         withTransform {
+            if (fontSizeUnits != 0f) {
+                val s = fontSizeUnits / props.font.charMap.fontProps.sizePts
+                scale(s, s, s)
+            }
             translate(props.origin)
 
             var advanced = 0f
@@ -749,12 +855,12 @@ class CubeProps {
     }
 
     fun colorCube() {
-        frontColor = Color.RED
-        rightColor = Color.GREEN
-        backColor = Color.BLUE
-        leftColor = Color.YELLOW
-        topColor = Color.MAGENTA
-        bottomColor = Color.CYAN
+        frontColor = Color.MD_RED
+        rightColor = Color.MD_GREEN
+        backColor = Color.MD_INDIGO
+        leftColor = Color.MD_AMBER
+        topColor = Color.MD_PURPLE
+        bottomColor = Color.MD_CYAN
     }
 
     fun defaults(): CubeProps {

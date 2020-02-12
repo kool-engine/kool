@@ -123,6 +123,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     }
 
     open fun update(ctx: KoolContext) {
+
         if (isThemeUpdate) {
             isThemeUpdate = false
             updateTheme(ctx)
@@ -130,6 +131,9 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         if (isUiUpdate) {
             isUiUpdate = false
             updateUi(ctx)
+
+            isFrustumChecked = root.isFrustumChecked
+            children.forEach { it.isFrustumChecked = root.isFrustumChecked }
         }
 
         setDrawBoundsFromWrappedComponentBounds(parent as? UiContainer, ctx)

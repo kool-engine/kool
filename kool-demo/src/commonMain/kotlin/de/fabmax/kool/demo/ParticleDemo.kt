@@ -1,13 +1,13 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.assetTexture
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.scene.BillboardMesh
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.orbitInputTransform
 import de.fabmax.kool.scene.scene
-import de.fabmax.kool.scene.sphericalInputTransform
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.BillboardMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.ParticleSystem
@@ -21,7 +21,7 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
     var maxParticleCount = 10000
 
     val scene = scene {
-        +sphericalInputTransform {
+        +orbitInputTransform {
             // Set some initial rotation so that we look down on the scene
             setMouseRotation(20f, -30f)
             // Add camera to the transform group
@@ -33,7 +33,7 @@ fun particleDemo(ctx: KoolContext): List<Scene> {
 
         +makeGroundGrid(40)
 
-        +ParticleSystem(assetTexture("snowflakes.png"), 50_000).apply {
+        +ParticleSystem(Texture { it.loadTextureData("snowflakes.png") }, 50_000).apply {
             // disable depth buffer writing for particles
             isDepthMask = false
 

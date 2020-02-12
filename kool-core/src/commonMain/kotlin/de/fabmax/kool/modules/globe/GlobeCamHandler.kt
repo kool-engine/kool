@@ -3,14 +3,14 @@ package de.fabmax.kool.modules.globe
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.scene.OrbitInputTransform
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.SphericalInputTransform
 import kotlin.math.PI
 import kotlin.math.acos
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : SphericalInputTransform() {
+class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : OrbitInputTransform() {
 
     private val globePan = GlobePan()
 
@@ -20,9 +20,9 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : Spheri
         // panning is handled by the globe itself (by rotating it's parent transform group around the globe center)
         // therefore we configure the camera transform to center-zoom and no panning
         // this way camera center is always at (0, 0, 0) in world coordinates
-        leftDragMethod = SphericalInputTransform.DragMethod.NONE
-        rightDragMethod = SphericalInputTransform.DragMethod.ROTATE
-        zoomMethod = SphericalInputTransform.ZoomMethod.ZOOM_CENTER
+        leftDragMethod = OrbitInputTransform.DragMethod.NONE
+        rightDragMethod = OrbitInputTransform.DragMethod.ROTATE
+        zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
 
         // zoom range is quite large: 20 meters to 20000 km above surface
         minZoom = 2e1f
@@ -89,7 +89,7 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : Spheri
         val cam
             get() = globe.scene?.camera!!
         val camTransform
-            get() = cam.parent as SphericalInputTransform
+            get() = cam.parent as OrbitInputTransform
 
         fun start(screenX: Float, screenY: Float, ctx: KoolContext) {
             globeCenter.set(globe.centerLon, globe.centerLat)

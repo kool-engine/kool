@@ -6,14 +6,10 @@ import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.isFuzzyEqual
+import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.shading.*
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MeshBuilder
-import de.fabmax.kool.util.SpringDamperFloat
+import de.fabmax.kool.util.*
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -109,24 +105,24 @@ open class ScrollHandler(val scrollTarget: UiContainer, name: String = "${scroll
 
 open class ScrollHandlerUi(val scrollHandler: ScrollHandler) : ComponentUi {
 
-    protected val meshData = MeshData(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS)
-    protected val meshBuilder = MeshBuilder(meshData)
-    protected val mesh = Mesh(meshData)
+    protected val geom = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS)
+    protected val meshBuilder = MeshBuilder(geom)
+    protected val mesh = Mesh(geom)
 
     override fun updateComponentAlpha() {
-        val shader = mesh.shader
-        if (shader is BasicShader) {
-            shader.alpha = scrollHandler.alpha
-        }
+//        val shader = mesh.shader
+//        if (shader is BasicShader) {
+//            shader.alpha = scrollHandler.alpha
+//        }
     }
 
     override fun createUi(ctx: KoolContext) {
-        mesh.shader = basicShader {
-            lightModel = scrollHandler.root.shaderLightModel
-            colorModel = ColorModel.VERTEX_COLOR
-            isAlpha = true
-            clipMethod = LocalPlaneClip(6)
-        }
+//        mesh.shader = basicShader {
+//            lightModel = scrollHandler.root.shaderLightModel
+//            colorModel = ColorModel.VERTEX_COLOR
+//            isAlpha = true
+//            clipMethod = LocalPlaneClip(6)
+//        }
         scrollHandler += mesh
     }
 
@@ -230,7 +226,7 @@ open class ScrollHandlerUi(val scrollHandler: ScrollHandler) : ComponentUi {
     }
 
     override fun onRender(ctx: KoolContext) {
-        mesh.shader?.setDrawBounds(scrollHandler.scrollTarget.drawBounds)
+//        mesh.shader?.setDrawBounds(scrollHandler.scrollTarget.drawBounds)
     }
 
     override fun dispose(ctx: KoolContext) {

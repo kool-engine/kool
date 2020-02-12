@@ -17,7 +17,7 @@ fun pointScene(): Scene {
     val trav = InRadiusTraverser<MeshPoint>().setup(Vec3f.ZERO, 1f)
     //val trav = KNearestTraverser<MeshPoint>().setup(Vec3f.ZERO, 3000)
 
-    val data = pointMesh.meshData
+    val data = pointMesh.geometry
     val ptVertCnt = if (pointMesh is BillboardMesh) 4 else 1
 
     var frameCnt = 30
@@ -56,12 +56,12 @@ fun pointScene(): Scene {
                             "Point update took ${updateT.toString(3)} ms"
                 }
 
-                data.isSyncRequired = true
+                data.hasChanged = true
             }
         }
 
         // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
-        +sphericalInputTransform {
+        +orbitInputTransform {
             +camera
             setMouseRotation(0f, -30f)
             minZoom = 5f

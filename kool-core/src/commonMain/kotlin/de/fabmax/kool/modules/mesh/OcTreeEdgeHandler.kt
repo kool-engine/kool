@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.mesh
 
-import de.fabmax.kool.scene.MeshData
 import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -11,10 +10,10 @@ class OcTreeEdgeHandler(treeBounds: BoundingBox) : HalfEdgeMesh.EdgeHandler {
     override val numEdges: Int
         get() = edgeTree.size
 
-    constructor(meshData: MeshData): this(BoundingBox().apply {
+    constructor(geometry: IndexedVertexList): this(BoundingBox().apply {
         batchUpdate {
-            val v = meshData.vertexList.vertexIt
-            for (i in 0 until meshData.numVertices) {
+            val v = geometry.vertexIt
+            for (i in 0 until geometry.numVertices) {
                 v.index = i
                 add(v.position)
             }

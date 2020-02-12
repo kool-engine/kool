@@ -410,6 +410,26 @@ open class Mat4f {
         return this
     }
 
+    fun setRotation(mat3: Mat3f) {
+        for (row in 0..2) {
+            for (col in 0..2) {
+                this[row, col] = mat3[row, col]
+            }
+        }
+        val s = 1f / getCol(0, MutableVec4f()).length()
+        scale(s, s, s)
+    }
+
+    fun setRotation(mat4: Mat4f) {
+        for (row in 0..2) {
+            for (col in 0..2) {
+                this[row, col] = mat4[row, col]
+            }
+        }
+        val s = 1f / getCol(0, MutableVec4f()).length()
+        scale(s, s, s)
+    }
+
     fun setLookAt(position: Vec3f, lookAt: Vec3f, up: Vec3f): Mat4f {
         // See the OpenGL GLUT documentation for gluLookAt for a description
         // of the algorithm. We implement it in a straightforward way:

@@ -66,8 +66,8 @@ open class UiTheme {
 
         val LIGHT = theme {
             backgroundColor(Color.WHITE.withAlpha(0.6f))
-            foregroundColor(Color.fromHex("3E2723"))
-            accentColor(Color.fromHex("BF360C"))
+            foregroundColor(Color.MD_BLUE_GREY_900)
+            accentColor(Color.MD_PINK)
         }
 
         val LIGHT_SIMPLE = theme(LIGHT) {

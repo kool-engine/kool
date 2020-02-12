@@ -2,8 +2,6 @@ package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.shading.ColorModel
-import de.fabmax.kool.shading.basicShader
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.CosAnimator
 import de.fabmax.kool.util.InterpolatedFloat
@@ -14,11 +12,12 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
     private val menuAnimator = CosAnimator(InterpolatedFloat(0f, 1f))
     internal lateinit var menuButton: ToggleButton
 
-    private var initFont = true
-
     var isOpen: Boolean
         get() = menuButton.isEnabled
         set(value) { menuButton.isEnabled = value }
+
+    val animationPos: Float
+        get() = menuAnimator.value.value
 
     init {
         menuAnimator.duration = 0.25f
@@ -45,6 +44,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                         textColor.setCustom(theme.accentColor)
 
                         // hacky: we need KoolContext to create the title font...
+                        var initFont = true
                         onPreRender += { ctx ->
                             if (initFont) {
                                 initFont = false
@@ -81,10 +81,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                 menuAnimator.speed = if (tb.isEnabled) 1f else -1f
             }
 
-            mesh.shader = basicShader {
-                colorModel = ColorModel.VERTEX_COLOR
-                lightModel = tb.root.shaderLightModel
-            }
+            mesh.pipelineLoader = UiShader()
         }
 
         override fun onRender(ctx: KoolContext) {
