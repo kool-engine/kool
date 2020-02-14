@@ -82,7 +82,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         }
     }
 
-    fun copyView(sys: VkSystem, commandBuffer: VkCommandBuffer, viewDir: OffscreenPassCube.ViewDirection) {
+    fun copyView(commandBuffer: VkCommandBuffer, viewDir: OffscreenPassCube.ViewDirection) {
         val rp = renderPass ?: return
 
         var mipLevel = 0

@@ -18,7 +18,7 @@ class DrawCommand {
     var indexBuffer = 0L
     var vertexBuffer = 0L
 
-    open fun captureMvp(ctx: KoolContext) {
+    fun captureMvp(ctx: KoolContext) {
         modelMat.set(ctx.mvpState.modelMatrix)
         viewMat.set(ctx.mvpState.viewMatrix)
         projMat.set(ctx.mvpState.projMatrix)

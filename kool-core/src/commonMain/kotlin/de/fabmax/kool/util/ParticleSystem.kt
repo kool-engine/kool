@@ -73,7 +73,7 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name:
     override fun render(ctx: KoolContext) {
         super.render(ctx)
         if (isRendered) {
-            var restoreAttribs = false
+//            var restoreAttribs = false
 //            if (isDepthMask != ctx.isDepthMask) {
 //                ctx.pushAttributes()
 //                ctx.isDepthMask = isDepthMask

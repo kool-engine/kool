@@ -21,8 +21,8 @@ open class ShaderGraph(val stage: ShaderStage) {
 
     internal var nextNodeId = 1
 
-    fun <T: ShaderNode> findNode(name: String): T? {
-        return nodes.find { it.name == name } as? T
+    inline fun <reified T: ShaderNode> findNode(name: String): T? {
+        return nodes.find { it.name == name && it is T } as T?
     }
 
     fun addNode(node: ShaderNode) {

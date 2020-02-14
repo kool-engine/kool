@@ -10,7 +10,7 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader(), Pipel
     val onSetup = mutableListOf<((builder: Pipeline.Builder) -> Unit)>()
 
     protected open fun setup(mesh: Mesh, buildCtx: Pipeline.BuildContext, ctx: KoolContext): ModeledShader {
-        model.setup(mesh, buildCtx, ctx)
+        model.setup(mesh, buildCtx)
         return this
     }
 

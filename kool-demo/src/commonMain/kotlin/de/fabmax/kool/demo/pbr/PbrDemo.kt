@@ -108,7 +108,7 @@ class PbrDemo(val ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-320f), dps(-430f), zero())
+            layoutSpec.setOrigin(dps(-370f), dps(-480f), zero())
             layoutSpec.setSize(dps(250f), dps(360f), full())
 
             // environment map selection

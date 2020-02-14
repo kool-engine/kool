@@ -12,7 +12,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 
 class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
-    val matCycler = PbrDemo.Cycler(materials)
+    val matCycler = PbrDemo.Cycler(materials).apply { index = 3 }
     val currentMat: MaterialMaps
         get() = matCycler.current
 
@@ -175,8 +175,8 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
         private val defaultAoTex = SingleColorTexture(Color.WHITE)
         private val defaultDispTex = SingleColorTexture(Color.BLACK)
 
-        //private val assetPath = "reserve/pbr/materials"
-        private val assetPath = "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials"
+        //private const val assetPath = "reserve/pbr/materials"
+        private const val assetPath = "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials"
         
         private val materials = mutableListOf(
                 MaterialMaps(

@@ -83,10 +83,10 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
             }
         }
 
-        val srcAccessMaskSrcOpt = srcAccessMask(layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-        val dstAccessMaskSrcOpt = dstAccessMask(layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-        val srcAccessMaskDst = srcAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstLayout)
-        val dstAccessMaskDst = dstAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dstLayout)
+        val srcAccessMaskSrcOpt = srcAccessMask(layout)
+        val dstAccessMaskSrcOpt = dstAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+        val srcAccessMaskDst = srcAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+        val dstAccessMaskDst = dstAccessMask(dstLayout)
 
         var mipWidth = width
         var mipHeight = height
@@ -145,8 +145,8 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
         barrier.subresourceRange { it.baseMipLevel(mipLevels - 1) }
                 .oldLayout(layout)
                 .newLayout(dstLayout)
-                .srcAccessMask(srcAccessMask(layout, dstLayout))
-                .dstAccessMask(dstAccessMask(layout, dstLayout))
+                .srcAccessMask(srcAccessMask(layout))
+                .dstAccessMask(dstAccessMask(dstLayout))
 
         vkCmdPipelineBarrier(commandBuffer,
                 VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
@@ -175,8 +175,8 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
         val srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
         val dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
 
-        val srcAccessMask = srcAccessMask(layout, newLayout)
-        val dstAccessMask = dstAccessMask(layout, newLayout)
+        val srcAccessMask = srcAccessMask(layout)
+        val dstAccessMask = dstAccessMask(newLayout)
 
         val barrier = stack.callocVkImageMemoryBarrierN(arrayLayers) {
             for (i in 0 until arrayLayers) {
@@ -204,7 +204,7 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
         layout = newLayout
     }
 
-    private fun srcAccessMask(srcLayout: Int, dstLayout: Int): Int = when (srcLayout) {
+    private fun srcAccessMask(srcLayout: Int): Int = when (srcLayout) {
         VK_IMAGE_LAYOUT_UNDEFINED -> 0
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_ACCESS_TRANSFER_WRITE_BIT
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
@@ -213,7 +213,7 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
         else -> throw KoolException("Layout not supported / implemented: $srcLayout")
     }
 
-    private fun dstAccessMask(srcLayout: Int, dstLayout: Int): Int = when (dstLayout) {
+    private fun dstAccessMask(dstLayout: Int): Int = when (dstLayout) {
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_ACCESS_TRANSFER_WRITE_BIT
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_ACCESS_SHADER_READ_BIT
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT or VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT

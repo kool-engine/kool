@@ -146,7 +146,7 @@ class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
     inline fun batchUpdate(rebuildBounds: Boolean = false, block: IndexedVertexList.() -> Unit) {
         val wasBatchUpdate = isBatchUpdate
         isBatchUpdate = true
-        block()
+        block.invoke(this)
         hasChanged = true
         isBatchUpdate = wasBatchUpdate
         if (rebuildBounds) {

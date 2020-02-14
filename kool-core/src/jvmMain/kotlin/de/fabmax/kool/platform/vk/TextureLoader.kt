@@ -19,7 +19,7 @@ object TextureLoader {
         val height = cubeImg.height
         val dstFmt = checkFormat(cubeImg.format)
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong() * 6
-        val mipLevels = if (props.mipMapping) { floor(log2(max(width, height).toDouble())).toInt() + 1 } else { 1 }
+        //val mipLevels = if (props.mipMapping) { floor(log2(max(width, height).toDouble())).toInt() + 1 } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)

@@ -149,8 +149,8 @@ class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
                 MatColor("Brown", Color.MD_BROWN.toLinear()),
                 MatColor("White", Color.WHITE.toLinear()),
                 MatColor("Grey", Color.MD_GREY.toLinear()),
-                MatColor("Blue Grey", Color.MD_RED.toLinear()),
-                MatColor("Black", Color(0.1f, 0.1f, 0.1f).toLinear())
+                MatColor("Blue Grey", Color.MD_BLUE_GREY.toLinear()),
+                MatColor("Almost Black", Color(0.1f, 0.1f, 0.1f).toLinear())
         )
     }
 }

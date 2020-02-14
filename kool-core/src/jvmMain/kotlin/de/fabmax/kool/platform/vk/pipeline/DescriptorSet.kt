@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
 import org.lwjgl.vulkan.VK10.*
 
-class DescriptorSet(val graphicsPipeline: GraphicsPipeline, pipeline: Pipeline) {
+class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
     private val descriptorSets = mutableListOf<Long>()
     private val objects = Array<MutableList<DescriptorObject>>(graphicsPipeline.nImages) { mutableListOf() }
 

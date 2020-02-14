@@ -123,9 +123,9 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
     override fun getSysInfos(): List<String> = SysInfo
 
     // fixme: use Coroutine stuff instead
-    fun runOnGpuThread(r: () -> Unit): CompletableFuture<Void> {
+    fun runOnGpuThread(action: () -> Unit): CompletableFuture<Void> {
         synchronized(gpuThreadRunnables) {
-            val r = GpuThreadRunnable(r)
+            val r = GpuThreadRunnable(action)
             gpuThreadRunnables += r
             return r.future
         }
@@ -386,7 +386,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                 setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
                 renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index], view.index, rp, 6, true)
                 vkCmdEndRenderPass(commandBuffer)
-                offscreenPass.impl.copyView(sys, commandBuffer, view)
+                offscreenPass.impl.copyView(commandBuffer, view)
             }
             if (offscreenPass.mipLevels > 1 && offscreenPass.targetMipLevel < 0) {
                 offscreenPass.impl.generateMipmaps(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)

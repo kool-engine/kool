@@ -41,10 +41,11 @@ class SimpleShadowMap(val near: Float = 0f, val far: Float = 100f, private val t
     }
 
     override fun renderShadowMap(nodeToRender: Node, ctx: KoolContext) {
-        val scene = nodeToRender.scene ?: return
-        val camera = scene.camera
-
         TODO("adjust to new light setup")
+
+//        val scene = nodeToRender.scene ?: return
+//        val camera = scene.camera
+//
 //        depthCam.position.set(scene.lighting.lights[0].direction)
 //        depthCam.lookAt.set(0f, 0f, 0f)
 //        depthView.setLookAt(depthCam.position, depthCam.lookAt, depthCam.up)

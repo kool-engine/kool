@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.shadermodel
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import kotlin.contracts.InvocationKind
@@ -17,7 +16,7 @@ class ShaderModel(val modelInfo: String = "") {
     val fragmentStage: FragmentShaderGraph
         get() = stages[ShaderStage.FRAGMENT_SHADER] as FragmentShaderGraph
 
-    fun <T: ShaderNode> findNode(name: String, stage: ShaderStage = ShaderStage.ALL): T? {
+    inline fun <reified T: ShaderNode> findNode(name: String, stage: ShaderStage = ShaderStage.ALL): T? {
         stages.values.forEach {
             if (it.stage.mask and stage.mask != 0) {
                 val node = it.findNode<T>(name)
@@ -29,7 +28,7 @@ class ShaderModel(val modelInfo: String = "") {
         return null
     }
 
-    fun setup(mesh: Mesh, buildCtx: Pipeline.BuildContext, ctx: KoolContext) {
+    fun setup(mesh: Mesh, buildCtx: Pipeline.BuildContext) {
         stages.values.forEach { it.setup() }
 
         setupAttributes(mesh, buildCtx)

@@ -73,9 +73,6 @@ class MvpState internal constructor() {
     fun update(ctx: KoolContext) {
         // Combine projection, model and view matrices
         projMatrix.mul(viewMatrix.mul(modelMatrix, tempMatrix), mvpMatrix)
-
-        // notify current shader about matrix update
-        //ctx.shaderMgr.boundShader?.onMatrixUpdate(ctx)
     }
 
 }

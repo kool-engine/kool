@@ -144,14 +144,14 @@ class ReflectionMapPass(hdriTexture: Texture) {
             """)
 
             generator.appendMain("""
-                vec3 N = normalize(${inLocalPos.ref3f()});   
+                vec3 N = normalize(${inLocalPos.ref3f()});
                 vec3 R = N;
                 vec3 V = R;
                 
                 float mipLevel = ${inRoughness.ref1f()} * 16.0;
                 uint SAMPLE_COUNT = uint(1024.0 * (1.0 + mipLevel));
-                float totalWeight = 0.0;   
-                vec3 prefilteredColor = vec3(0.0);     
+                float totalWeight = 0.0;
+                vec3 prefilteredColor = vec3(0.0);
                 for(uint i = 0u; i < SAMPLE_COUNT; ++i) {
                     vec2 Xi = Hammersley(i, SAMPLE_COUNT);
                     vec3 H  = ImportanceSampleGGX(Xi, N, ${inRoughness.ref1f()});

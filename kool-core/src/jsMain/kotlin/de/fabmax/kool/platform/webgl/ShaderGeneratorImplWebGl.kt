@@ -71,9 +71,9 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
             set.descriptors.forEach { desc ->
                 if (desc.stages.contains(stage)) {
                     when (desc) {
-                        is UniformBuffer -> srcBuilder.append(generateUniformBuffer(set, desc))
-                        is TextureSampler -> srcBuilder.append(generateTextureSampler(set, desc))
-                        is CubeMapSampler -> srcBuilder.append(generateCubeMapSampler(set, desc))
+                        is UniformBuffer -> srcBuilder.append(generateUniformBuffer(desc))
+                        is TextureSampler -> srcBuilder.append(generateTextureSampler(desc))
+                        is CubeMapSampler -> srcBuilder.append(generateCubeMapSampler(desc))
                         else -> TODO("Descriptor type not implemented: $desc")
                     }
                 }
@@ -92,7 +92,7 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
         return srcBuilder.toString()
     }
 
-    private fun generateUniformBuffer(set: DescriptorSetLayout, desc: UniformBuffer): String {
+    private fun generateUniformBuffer(desc: UniformBuffer): String {
         // fixme: implement support for UBOs (supported by WebGL2), for now individual uniforms are used
         val srcBuilder = StringBuilder()
         desc.uniforms.forEach { u ->
@@ -101,11 +101,11 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
         return srcBuilder.toString()
     }
 
-    private fun generateTextureSampler(set: DescriptorSetLayout, desc: TextureSampler): String {
+    private fun generateTextureSampler(desc: TextureSampler): String {
         return "uniform sampler2D ${desc.name};\n"
     }
 
-    private fun generateCubeMapSampler(set: DescriptorSetLayout, desc: CubeMapSampler): String {
+    private fun generateCubeMapSampler(desc: CubeMapSampler): String {
         return "uniform samplerCube ${desc.name};\n"
     }
 

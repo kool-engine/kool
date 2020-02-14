@@ -83,7 +83,7 @@ class PipelineManager(val sys: VkSystem) {
             }
             if (graphicsPipelines.isEmpty()) {
                 // all pipelines destroyed, remove CreatedPipeline instance
-                val succ = createdPipelines.remove(pipeline.pipelineHash) != null
+                createdPipelines.remove(pipeline.pipelineHash) != null
                 onScreenPipelineConfigs.remove(pipeline)
             }
         }
