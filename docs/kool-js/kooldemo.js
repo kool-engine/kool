@@ -22,12 +22,55 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var DebugOverlay = $module$kool.de.fabmax.kool.util.DebugOverlay;
   var to = Kotlin.kotlin.to_ujzrz7$;
   var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
+  var List = Kotlin.kotlin.collections.List;
   var ArrayList_init = Kotlin.kotlin.collections.ArrayList_init_287e2$;
   var Map = Kotlin.kotlin.collections.Map;
   var throwCCE = Kotlin.throwCCE;
   var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
+  var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
+  var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_iiyuln$;
+  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
+  var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
+  var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
+  var AlbedoSource = $module$kool.de.fabmax.kool.pipeline.shading.AlbedoSource;
+  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
+  var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
+  var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
+  var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
+  var Font = $module$kool.de.fabmax.kool.util.Font;
+  var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
+  var uiFont = $module$kool.de.fabmax.kool.util.uiFont_a4r08d$;
+  var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
+  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var Color = $module$kool.de.fabmax.kool.util.Color;
+  var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
+  var Light = $module$kool.de.fabmax.kool.scene.Light;
+  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
+  var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
+  var ModeledShader$VertexColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.VertexColor;
+  var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
+  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
+  var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
+  var Math_0 = Math;
+  var math = $module$kool.de.fabmax.kool.math;
+  var ensureNotNull = Kotlin.ensureNotNull;
+  var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
+  var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
+  var setOf = Kotlin.kotlin.collections.setOf_i5x0yv$;
+  var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
+  var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
+  var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList;
+  var Mesh_init = $module$kool.de.fabmax.kool.scene.Mesh;
+  var IrradianceMapPass = $module$kool.de.fabmax.kool.util.pbrMapGen.IrradianceMapPass;
+  var ReflectionMapPass = $module$kool.de.fabmax.kool.util.pbrMapGen.ReflectionMapPass;
+  var BrdfLutPass = $module$kool.de.fabmax.kool.util.pbrMapGen.BrdfLutPass;
+  var Skybox = $module$kool.de.fabmax.kool.scene.Skybox;
+  var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
+  var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
+  var Array_0 = Array;
+  var SingleColorTexture = $module$kool.de.fabmax.kool.pipeline.SingleColorTexture;
+  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var Globe = $module$kool.de.fabmax.kool.modules.globe.Globe;
   var DoublePrecisionRoot = $module$kool.de.fabmax.kool.scene.doubleprec.DoublePrecisionRoot;
   var GlobeCamHandler = $module$kool.de.fabmax.kool.modules.globe.GlobeCamHandler;
@@ -35,9 +78,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var ElevationMapMetaHierarchy = $module$kool.de.fabmax.kool.modules.globe.elevation.ElevationMapMetaHierarchy;
   var getKClass = Kotlin.getKClass;
   var ElevationMapHierarchy = $module$kool.de.fabmax.kool.modules.globe.elevation.ElevationMapHierarchy;
-  var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
-  var Font = $module$kool.de.fabmax.kool.util.Font;
-  var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
   var Margin = $module$kool.de.fabmax.kool.scene.ui.Margin;
   var Pair = Kotlin.kotlin.Pair;
   var toString = $module$kool.de.fabmax.kool.toString_j6vyb1$;
@@ -45,18 +85,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var getContextualOrDefault = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.modules.getContextualOrDefault_6za9kt$;
   var util = $module$kool.de.fabmax.kool.util;
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
-  var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
-  var Math_0 = Math;
-  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
-  var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var yPlanePan = $module$kool.de.fabmax.kool.scene.yPlanePan;
   var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
-  var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_iiyuln$;
   var KoolException_init = $module$kool.de.fabmax.kool.KoolException_init_61zpoe$;
   var Armature = $module$kool.de.fabmax.kool.scene.animation.Armature;
-  var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
-  var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
   var mapOf = Kotlin.kotlin.collections.mapOf_qfcya0$;
   var InstancedMesh = $module$kool.de.fabmax.kool.scene.InstancedMesh;
   var InstancedMesh$Instances = $module$kool.de.fabmax.kool.scene.InstancedMesh.Instances;
@@ -64,24 +97,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var InstancedMesh$Instance = $module$kool.de.fabmax.kool.scene.InstancedMesh.Instance;
   var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
-  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
-  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
   var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
   var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
-  var math = $module$kool.de.fabmax.kool.math;
-  var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
-  var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
   var OrbitInputTransform$DragMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.DragMethod;
   var Label = $module$kool.de.fabmax.kool.scene.ui.Label;
   var toString_0 = $module$kool.de.fabmax.kool.toString_lcymw2$;
   var Slider = $module$kool.de.fabmax.kool.scene.ui.Slider;
-  var ensureNotNull = Kotlin.ensureNotNull;
   var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_y4avn7$;
-  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
-  var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
-  var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
-  var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
   var ParticleSystem = $module$kool.de.fabmax.kool.util.ParticleSystem;
   var CubicPointDistribution = $module$kool.de.fabmax.kool.math.CubicPointDistribution;
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
@@ -91,27 +114,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var IntRange = Kotlin.kotlin.ranges.IntRange;
   var randomI = $module$kool.de.fabmax.kool.math.randomI_n8acyv$;
   var round = Kotlin.kotlin.math.round_14dthe$;
-  var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
-  var setOf = Kotlin.kotlin.collections.setOf_i5x0yv$;
-  var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
-  var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
-  var PbrShader$AlbedoSource = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.AlbedoSource;
-  var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
-  var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
-  var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList;
-  var Mesh_init = $module$kool.de.fabmax.kool.scene.Mesh;
-  var IrradianceMapPass = $module$kool.de.fabmax.kool.util.pbrMapGen.IrradianceMapPass;
-  var ReflectionMapPass = $module$kool.de.fabmax.kool.util.pbrMapGen.ReflectionMapPass;
-  var BrdfLutPass = $module$kool.de.fabmax.kool.util.pbrMapGen.BrdfLutPass;
-  var Skybox = $module$kool.de.fabmax.kool.scene.Skybox;
-  var uiFont = $module$kool.de.fabmax.kool.util.uiFont_a4r08d$;
-  var List = Kotlin.kotlin.collections.List;
-  var FilterMethod = $module$kool.de.fabmax.kool.pipeline.FilterMethod;
-  var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
-  var Light = $module$kool.de.fabmax.kool.scene.Light;
-  var Array_0 = Array;
-  var SingleColorTexture = $module$kool.de.fabmax.kool.pipeline.SingleColorTexture;
-  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var InRadiusTraverser = $module$kool.de.fabmax.kool.util.InRadiusTraverser;
   var BillboardMesh = $module$kool.de.fabmax.kool.scene.BillboardMesh;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
@@ -119,7 +121,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
   var now = $module$kool.de.fabmax.kool.now;
   var Skybox_init = $module$kool.de.fabmax.kool.scene.Skybox_init_r3y0ew$;
-  var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
   var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
   var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
   var Animator = $module$kool.de.fabmax.kool.util.Animator;
@@ -166,7 +167,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
-  var ModeledShader$VertexColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.VertexColor;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
   var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
@@ -179,14 +179,16 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var ModeledShader$CubeMapColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.CubeMapColor;
   var CubeMapTexture = $module$kool.de.fabmax.kool.pipeline.CubeMapTexture;
   var split = Kotlin.kotlin.text.split_ip8yn$;
-  ModelInstance.prototype = Object.create(InstancedMesh$Instance.prototype);
-  ModelInstance.prototype.constructor = ModelInstance;
+  MultiLightDemo$LightMesh.prototype = Object.create(TransformGroup.prototype);
+  MultiLightDemo$LightMesh.prototype.constructor = MultiLightDemo$LightMesh;
   ColorGridContent.prototype = Object.create(PbrDemo$PbrContent.prototype);
   ColorGridContent.prototype.constructor = ColorGridContent;
   PbrMaterialContent.prototype = Object.create(PbrDemo$PbrContent.prototype);
   PbrMaterialContent.prototype.constructor = PbrMaterialContent;
   RoughnesMetalGridContent.prototype = Object.create(PbrDemo$PbrContent.prototype);
   RoughnesMetalGridContent.prototype.constructor = RoughnesMetalGridContent;
+  ModelInstance.prototype = Object.create(InstancedMesh$Instance.prototype);
+  ModelInstance.prototype.constructor = ModelInstance;
   MeshPoint.prototype = Object.create(Vec3f.prototype);
   MeshPoint.prototype.constructor = MeshPoint;
   VerticalLayout.prototype = Object.create(UiContainer.prototype);
@@ -236,7 +238,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR/IBL Demo', Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR/IBL Demo', Demo$demos$lambda))]);
+    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR/IBL Demo', Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light Demo', Demo$demos$lambda_0))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -406,10 +408,3919 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.addAll_brywnq$(pbrDemoScene(it));
     return Unit;
   }
+  function Demo$demos$lambda_0($receiver, it) {
+    $receiver.addAll_brywnq$(multiLightDemo(it));
+    return Unit;
+  }
   Demo.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Demo',
     interfaces: []
+  };
+  function Cycler(elements) {
+    this.$delegate_ubybqq$_0 = elements;
+    this.index = 0;
+  }
+  Object.defineProperty(Cycler.prototype, 'current', {
+    get: function () {
+      return this.get_za3lpa$(this.index);
+    }
+  });
+  Cycler.prototype.next = function () {
+    this.index = (this.index + 1 | 0) % this.size;
+    return this.current;
+  };
+  Cycler.prototype.prev = function () {
+    this.index = (this.index + this.size - 1 + this.size | 0) % this.size;
+    return this.current;
+  };
+  Object.defineProperty(Cycler.prototype, 'size', {
+    get: function () {
+      return this.$delegate_ubybqq$_0.size;
+    }
+  });
+  Cycler.prototype.contains_11rb$ = function (element) {
+    return this.$delegate_ubybqq$_0.contains_11rb$(element);
+  };
+  Cycler.prototype.containsAll_brywnq$ = function (elements) {
+    return this.$delegate_ubybqq$_0.containsAll_brywnq$(elements);
+  };
+  Cycler.prototype.get_za3lpa$ = function (index) {
+    return this.$delegate_ubybqq$_0.get_za3lpa$(index);
+  };
+  Cycler.prototype.indexOf_11rb$ = function (element) {
+    return this.$delegate_ubybqq$_0.indexOf_11rb$(element);
+  };
+  Cycler.prototype.isEmpty = function () {
+    return this.$delegate_ubybqq$_0.isEmpty();
+  };
+  Cycler.prototype.iterator = function () {
+    return this.$delegate_ubybqq$_0.iterator();
+  };
+  Cycler.prototype.lastIndexOf_11rb$ = function (element) {
+    return this.$delegate_ubybqq$_0.lastIndexOf_11rb$(element);
+  };
+  Cycler.prototype.listIterator = function () {
+    return this.$delegate_ubybqq$_0.listIterator();
+  };
+  Cycler.prototype.listIterator_za3lpa$ = function (index) {
+    return this.$delegate_ubybqq$_0.listIterator_za3lpa$(index);
+  };
+  Cycler.prototype.subList_vux9f0$ = function (fromIndex, toIndex) {
+    return this.$delegate_ubybqq$_0.subList_vux9f0$(fromIndex, toIndex);
+  };
+  Cycler.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Cycler',
+    interfaces: [List]
+  };
+  function multiLightDemo(ctx) {
+    return (new MultiLightDemo(ctx)).scenes;
+  }
+  function MultiLightDemo(ctx) {
+    MultiLightDemo$Companion_getInstance();
+    this.scenes = ArrayList_init();
+    this.mainScene_0 = null;
+    this.lights_0 = listOf([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN.toLinear()), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED.toLinear()), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER.toLinear()), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN.toLinear())]);
+    this.lightCount_0 = 4;
+    this.isColoredLights_0 = true;
+    this.isSpotLights_0 = true;
+    this.isRandomSpots_0 = true;
+    this.lightPower_0 = 400.0;
+    this.colorCycler_0 = new Cycler(MultiLightDemo$Companion_getInstance().matColors_0);
+    this.modelShader_0 = null;
+    this.mainScene_0 = this.mainScene_1(ctx);
+    var $receiver = this.scenes;
+    var element = this.mainScene_0;
+    $receiver.add_11rb$(element);
+    var $receiver_0 = this.scenes;
+    var element_0 = this.menu_0(ctx);
+    $receiver_0.add_11rb$(element_0);
+  }
+  function MultiLightDemo$mainScene$lambda$lambda(this$) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(this$.camera);
+      $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
+      $receiver.zoom = 20.0;
+      $receiver.translation.set_y2kzbl$(0.0, 2.0, 0.0);
+      $receiver.setMouseRotation_dleff0$(20.0, -30.0);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$mainScene$lambda$lambda_0(this$, this$MultiLightDemo) {
+    return function (it) {
+      this$.unaryPlus_uv0sim$(it);
+      var $receiver = new PbrShader$PbrConfig();
+      $receiver.albedoSource = AlbedoSource.STATIC_ALBEDO;
+      var cfg = $receiver;
+      var tmp$ = this$MultiLightDemo;
+      var $receiver_0 = new PbrShader(cfg);
+      $receiver_0.albedo = this$MultiLightDemo.colorCycler_0.current.linColor;
+      $receiver_0.roughness = 0.1;
+      $receiver_0.metallic = 0.0;
+      tmp$.modelShader_0 = $receiver_0;
+      it.pipelineLoader = this$MultiLightDemo.modelShader_0;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$mainScene$lambda$lambda$lambda($receiver) {
+    var $receiver_0 = $receiver.rectProps.defaults();
+    $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
+    $receiver_0.size.set_dleff0$(40.0, 40.0);
+    $receiver_0.origin.set_y2kzbl$(-$receiver_0.size.x / 2, -$receiver_0.size.y / 2, 0.0);
+    $receiver_0.fullTexCoords_mx4ult$(1.5);
+    $receiver.rect_e5k3t5$($receiver.rectProps);
+    return Unit;
+  }
+  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda;
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0;
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1;
+  Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function MultiLightDemo$mainScene$lambda$lambda_1($receiver) {
+    $receiver.generate_v2sixm$(MultiLightDemo$mainScene$lambda$lambda$lambda);
+    var $receiver_0 = new PbrShader$PbrConfig();
+    $receiver_0.albedoSource = AlbedoSource.TEXTURE_ALBEDO;
+    $receiver_0.isNormalMapped = true;
+    $receiver_0.isRoughnessMapped = true;
+    var cfg = $receiver_0;
+    var $receiver_1 = new PbrShader(cfg);
+    var basePath = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials';
+    $receiver_1.albedoMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda);
+    $receiver_1.normalMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0);
+    $receiver_1.roughnessMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1);
+    $receiver_1.metallic = 0.0;
+    $receiver.pipelineLoader = $receiver_1;
+    return Unit;
+  }
+  MultiLightDemo.prototype.mainScene_1 = function (ctx) {
+    var $receiver = new Scene_init(null);
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, MultiLightDemo$mainScene$lambda$lambda($receiver)));
+    $receiver.lighting.lights.clear();
+    var tmp$;
+    tmp$ = this.lights_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      $receiver.unaryPlus_uv0sim$(element);
+    }
+    this.updateLighting_0();
+    this.loadModel_0(ctx, 'bunny.kmfz', 0.05, new Vec3f(0.0, 3.75, 0.0), MultiLightDemo$mainScene$lambda$lambda_0($receiver, this));
+    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$mainScene$lambda$lambda_1));
+    return $receiver;
+  };
+  function MultiLightDemo$menu$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_0(it) {
+    return new BlankComponentUi();
+  }
+  function MultiLightDemo$menu$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(MultiLightDemo$menu$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(MultiLightDemo$menu$lambda$lambda$lambda_0);
+    return Unit;
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Lights';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda(this$, this$MultiLightDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$MultiLightDemo.isColoredLights_0 = this$.isEnabled;
+      this$MultiLightDemo.updateLighting_0();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_2(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.text = 'Colored Lights:';
+      $receiver.isEnabled = this$MultiLightDemo.isColoredLights_0;
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda($receiver, this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_0(this$, this$MultiLightDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$MultiLightDemo.isSpotLights_0 = this$.isEnabled;
+      this$MultiLightDemo.updateLighting_0();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_3(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.text = 'Spot Lights:';
+      $receiver.isEnabled = this$MultiLightDemo.isSpotLights_0;
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_0($receiver, this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_1(this$, this$MultiLightDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$MultiLightDemo.isRandomSpots_0 = this$.isEnabled;
+      this$MultiLightDemo.updateLighting_0();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_4(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.text = 'Randomize Spots:';
+      $receiver.isEnabled = this$MultiLightDemo.isRandomSpots_0;
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_1($receiver, this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_5(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.text = 'Lights:';
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      tmp$ = this$MultiLightDemo.lightCount_0;
+      this$MultiLightDemo.lightCount_0 = tmp$ + 1 | 0;
+      if (this$MultiLightDemo.lightCount_0 > 4) {
+        this$MultiLightDemo.lightCount_0 = 1;
+      }
+      $receiver.text = this$MultiLightDemo.lightCount_0.toString();
+      this$MultiLightDemo.updateLighting_0();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_6(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(45.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(40.0), dps(35.0), full());
+      $receiver.text = this$MultiLightDemo.lightCount_0.toString();
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_3(this$MultiLightDemo, closure$btnLightCnt) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      tmp$ = this$MultiLightDemo.lightCount_0;
+      this$MultiLightDemo.lightCount_0 = tmp$ - 1 | 0;
+      if (this$MultiLightDemo.lightCount_0 < 1) {
+        this$MultiLightDemo.lightCount_0 = 4;
+      }
+      closure$btnLightCnt.text = this$MultiLightDemo.lightCount_0.toString();
+      this$MultiLightDemo.updateLighting_0();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_7(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_3(this$MultiLightDemo, closure$btnLightCnt);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_4(this$MultiLightDemo, closure$btnLightCnt) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      tmp$ = this$MultiLightDemo.lightCount_0;
+      this$MultiLightDemo.lightCount_0 = tmp$ + 1 | 0;
+      if (this$MultiLightDemo.lightCount_0 > 4) {
+        this$MultiLightDemo.lightCount_0 = 1;
+      }
+      closure$btnLightCnt.text = this$MultiLightDemo.lightCount_0.toString();
+      this$MultiLightDemo.updateLighting_0();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_8(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_4(this$MultiLightDemo, closure$btnLightCnt);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_9(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.text = 'Power:';
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_5(this$MultiLightDemo) {
+    return function ($receiver, it) {
+      this$MultiLightDemo.lightPower_0 = $receiver.value * 10.0;
+      this$MultiLightDemo.updateLighting_0();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_10(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.value = this$MultiLightDemo.lightPower_0 / 10.0;
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_5(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_11(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Material';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_12(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.text = 'Rough:';
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo) {
+    return function ($receiver, it) {
+      var tmp$;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.roughness = $receiver.value / 100.0) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_13(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.value = 10.0;
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_14(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.text = 'Color:';
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      $receiver.text = this$MultiLightDemo.colorCycler_0.next().name;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_15(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(45.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(40.0), dps(35.0), full());
+      $receiver.text = this$MultiLightDemo.colorCycler_0.current.name;
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.prev().name;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_16(closure$y, this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo, closure$matLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      closure$matLabel.text = this$MultiLightDemo.colorCycler_0.next().name;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.albedo = this$MultiLightDemo.colorCycler_0.current.linColor) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_17(closure$y, this$MultiLightDemo, closure$matLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo, closure$matLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-480.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(340.0), full());
+      var y = {v: -40.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lights', MultiLightDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('colorToggle', MultiLightDemo$menu$lambda$lambda$lambda_2(y, this$MultiLightDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('spotToggle', MultiLightDemo$menu$lambda$lambda$lambda_3(y, this$MultiLightDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('randomToggle', MultiLightDemo$menu$lambda$lambda$lambda_4(y, this$MultiLightDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lightCntLbl', MultiLightDemo$menu$lambda$lambda$lambda_5(y)));
+      var btnLightCnt = this$.button_9zrh0o$('lightCnt', MultiLightDemo$menu$lambda$lambda$lambda_6(y, this$MultiLightDemo));
+      $receiver.unaryPlus_uv0sim$(btnLightCnt);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('decLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_7(y, this$MultiLightDemo, btnLightCnt)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('incLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_8(y, this$MultiLightDemo, btnLightCnt)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lightPowerLbl', MultiLightDemo$menu$lambda$lambda$lambda_9(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('lightPowerSlider', MultiLightDemo$menu$lambda$lambda$lambda_10(y, this$MultiLightDemo)));
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('material', MultiLightDemo$menu$lambda$lambda$lambda_11(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('roughnessLbl', MultiLightDemo$menu$lambda$lambda$lambda_12(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('roughhnessSlider', MultiLightDemo$menu$lambda$lambda$lambda_13(y, this$MultiLightDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('colorLbl', MultiLightDemo$menu$lambda$lambda$lambda_14(y)));
+      var matLabel = this$.button_9zrh0o$('selected-color', MultiLightDemo$menu$lambda$lambda$lambda_15(y, this$MultiLightDemo));
+      $receiver.unaryPlus_uv0sim$(matLabel);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-left', MultiLightDemo$menu$lambda$lambda$lambda_16(y, this$MultiLightDemo, matLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-right', MultiLightDemo$menu$lambda$lambda$lambda_17(y, this$MultiLightDemo, matLabel)));
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda(closure$ctx, this$MultiLightDemo) {
+    return function ($receiver) {
+      var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
+      var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
+      $receiver.theme = theme(UiTheme.Companion.DARK, MultiLightDemo$menu$lambda$lambda);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', MultiLightDemo$menu$lambda$lambda_0(smallFont, $receiver, this$MultiLightDemo)));
+      return Unit;
+    };
+  }
+  MultiLightDemo.prototype.menu_0 = function (ctx) {
+    return uiScene(void 0, void 0, void 0, MultiLightDemo$menu$lambda(ctx, this));
+  };
+  MultiLightDemo.prototype.updateLighting_0 = function () {
+    var tmp$;
+    var tmp$_0;
+    tmp$_0 = this.lights_0.iterator();
+    while (tmp$_0.hasNext()) {
+      var element = tmp$_0.next();
+      element.disable();
+    }
+    var pos = 0.0;
+    var step = 360.0 / this.lightCount_0;
+    var a = this.lightCount_0;
+    var b = this.lights_0.size;
+    tmp$ = Math_0.min(a, b);
+    for (var i = 0; i < tmp$; i++) {
+      this.lights_0.get_za3lpa$(i).setup_anko18$(pos, this.isSpotLights_0, this.isColoredLights_0, this.lightPower_0);
+      this.lights_0.get_za3lpa$(i).enable();
+      pos += step;
+    }
+  };
+  function MultiLightDemo$LightMesh($outer, color) {
+    this.$outer = $outer;
+    TransformGroup.call(this);
+    this.color = color;
+    this.light = new Light();
+    this.meshPos_0 = MutableVec3f_init_0();
+    this.rotOff_0 = randomF(0.0, 3.0);
+    var lightMesh = colorMesh(void 0, MultiLightDemo$MultiLightDemo$LightMesh_init$lambda(this));
+    this.unaryPlus_uv0sim$(lightMesh);
+    var $receiver = this.onPreRender;
+    var element = MultiLightDemo$MultiLightDemo$LightMesh_init$lambda_0(this, lightMesh, this.$outer);
+    $receiver.add_11rb$(element);
+  }
+  MultiLightDemo$LightMesh.prototype.setup_anko18$ = function (angPos, isSpot, isColored, power) {
+    var tmp$;
+    var x = angPos * math.DEG_2_RAD;
+    var x_0 = Math_0.cos(x) * 10.0;
+    var x_1 = angPos * math.DEG_2_RAD;
+    var z = Math_0.sin(x_1) * 10.0;
+    this.meshPos_0.set_y2kzbl$(x_0, 9.0, z);
+    var dir = MutableVec3f_init(this.meshPos_0).scale_mx4ult$(-1.0).norm();
+    if (isColored) {
+      tmp$ = this.color;
+    }
+     else {
+      tmp$ = Color.Companion.WHITE;
+    }
+    var color = tmp$;
+    if (isSpot) {
+      this.light.setSpot_nve3wz$(this.meshPos_0, dir, 50.0).setColor_y83vuj$(color, power);
+    }
+     else {
+      this.light.setPoint_czzhiu$(this.meshPos_0).setColor_y83vuj$(color, power);
+    }
+  };
+  MultiLightDemo$LightMesh.prototype.enable = function () {
+    var tmp$, tmp$_0, tmp$_1;
+    this.isVisible = true;
+    if ((tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.lights : null) != null) {
+      if (!tmp$_1.contains_11rb$(this.light)) {
+        tmp$_1.add_11rb$(this.light);
+      }
+    }
+  };
+  MultiLightDemo$LightMesh.prototype.disable = function () {
+    var tmp$, tmp$_0, tmp$_1;
+    this.isVisible = false;
+    (tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.lights : null) != null ? tmp$_1.remove_11rb$(this.light) : null;
+  };
+  function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda$lambda(this$LightMesh) {
+    return function ($receiver) {
+      $receiver.color = this$LightMesh.color.toSrgb();
+      $receiver.sphereProps.defaults().radius = 0.2;
+      $receiver.sphere_mojs8w$($receiver.sphereProps);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda(this$LightMesh) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(MultiLightDemo$MultiLightDemo$LightMesh_init$lambda$lambda(this$LightMesh));
+      $receiver.pipelineLoader = new ModeledShader$VertexColor();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda_0(this$LightMesh, closure$lightMesh, this$MultiLightDemo) {
+    return function ($receiver, ctx) {
+      this$LightMesh.setIdentity();
+      this$LightMesh.rotate_ad55pp$(ctx.time * -10.0, Vec3f.Companion.Y_AXIS);
+      this$LightMesh.translate_czzhiu$(this$LightMesh.meshPos_0);
+      this$LightMesh.light.position.set_czzhiu$(closure$lightMesh.globalCenter);
+      this$LightMesh.light.direction.set_y2kzbl$(0.0, 2.0, 0.0).subtract_czzhiu$(closure$lightMesh.globalCenter).norm();
+      if (this$MultiLightDemo.isRandomSpots_0) {
+        var x = ctx.time / 15 + this$LightMesh.rotOff_0;
+        var r = Math_0.cos(x);
+        this$LightMesh.light.direction.rotate_ad55pp$(r * 20.0, Vec3f.Companion.X_AXIS);
+        this$LightMesh.light.direction.rotate_ad55pp$(r * 20.0, Vec3f.Companion.Z_AXIS);
+        this$LightMesh.light.spotAngle = 50.0 - r * 10.0;
+      }
+      return Unit;
+    };
+  }
+  MultiLightDemo$LightMesh.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LightMesh',
+    interfaces: [TransformGroup]
+  };
+  function MultiLightDemo$loadModel$lambda(closure$scale, closure$translation, closure$recv) {
+    return function (model) {
+      if (model != null) {
+        var mesh = model.meshes.get_za3lpa$(0).toMesh_8p8ifh$();
+        var $this = mesh.geometry;
+        var tmp$;
+        tmp$ = $this.numVertices;
+        for (var i = 0; i < tmp$; i++) {
+          $this.vertexIt.index = i;
+          var closure$scale_0 = closure$scale;
+          var closure$translation_0 = closure$translation;
+          $this.vertexIt.position.scale_mx4ult$(closure$scale_0).add_czzhiu$(closure$translation_0);
+        }
+        closure$recv(mesh);
+      }
+      return Unit;
+    };
+  }
+  MultiLightDemo.prototype.loadModel_0 = function ($receiver, path, scale, translation, recv) {
+    $receiver.assetMgr.loadModel_v5uqdg$(path, MultiLightDemo$loadModel$lambda(scale, translation, recv));
+  };
+  function MultiLightDemo$MatColor(name, linColor) {
+    this.name = name;
+    this.linColor = linColor;
+  }
+  MultiLightDemo$MatColor.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MatColor',
+    interfaces: []
+  };
+  MultiLightDemo$MatColor.prototype.component1 = function () {
+    return this.name;
+  };
+  MultiLightDemo$MatColor.prototype.component2 = function () {
+    return this.linColor;
+  };
+  MultiLightDemo$MatColor.prototype.copy_guvy9a$ = function (name, linColor) {
+    return new MultiLightDemo$MatColor(name === void 0 ? this.name : name, linColor === void 0 ? this.linColor : linColor);
+  };
+  MultiLightDemo$MatColor.prototype.toString = function () {
+    return 'MatColor(name=' + Kotlin.toString(this.name) + (', linColor=' + Kotlin.toString(this.linColor)) + ')';
+  };
+  MultiLightDemo$MatColor.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    result = result * 31 + Kotlin.hashCode(this.linColor) | 0;
+    return result;
+  };
+  MultiLightDemo$MatColor.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.linColor, other.linColor)))));
+  };
+  function MultiLightDemo$Companion() {
+    MultiLightDemo$Companion_instance = this;
+    this.matColors_0 = listOf([new MultiLightDemo$MatColor('White', Color.Companion.WHITE.toLinear()), new MultiLightDemo$MatColor('Red', Color.Companion.MD_RED.toLinear()), new MultiLightDemo$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new MultiLightDemo$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new MultiLightDemo$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new MultiLightDemo$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new MultiLightDemo$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new MultiLightDemo$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new MultiLightDemo$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new MultiLightDemo$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new MultiLightDemo$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new MultiLightDemo$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new MultiLightDemo$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new MultiLightDemo$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new MultiLightDemo$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new MultiLightDemo$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new MultiLightDemo$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new MultiLightDemo$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new MultiLightDemo$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new MultiLightDemo$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
+  }
+  MultiLightDemo$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var MultiLightDemo$Companion_instance = null;
+  function MultiLightDemo$Companion_getInstance() {
+    if (MultiLightDemo$Companion_instance === null) {
+      new MultiLightDemo$Companion();
+    }
+    return MultiLightDemo$Companion_instance;
+  }
+  MultiLightDemo.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MultiLightDemo',
+    interfaces: []
+  };
+  function ColorGridContent() {
+    PbrDemo$PbrContent.call(this, 'Color Grid');
+    this.shaders_0 = ArrayList_init();
+    this.iblContent_0 = null;
+    this.nonIblContent_0 = null;
+  }
+  function ColorGridContent$createMenu$lambda$lambda$lambda(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Material';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function ColorGridContent$createMenu$lambda$lambda$lambda_0(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = 'R:';
+      return Unit;
+    };
+  }
+  function ColorGridContent$createMenu$lambda$lambda$lambda$lambda(this$ColorGridContent) {
+    return function ($receiver, it) {
+      var tmp$;
+      tmp$ = this$ColorGridContent.shaders_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.roughness = $receiver.value / 100.0;
+      }
+      return Unit;
+    };
+  }
+  function ColorGridContent$createMenu$lambda$lambda$lambda_1(closure$y, this$ColorGridContent) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(85.0), dps(35.0), full());
+      $receiver.value = 10.0;
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = ColorGridContent$createMenu$lambda$lambda$lambda$lambda(this$ColorGridContent);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function ColorGridContent$createMenu$lambda$lambda$lambda_2(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = 'M:';
+      return Unit;
+    };
+  }
+  function ColorGridContent$createMenu$lambda$lambda$lambda$lambda_0(this$ColorGridContent) {
+    return function ($receiver, it) {
+      var tmp$;
+      tmp$ = this$ColorGridContent.shaders_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.metallic = $receiver.value / 100.0;
+      }
+      return Unit;
+    };
+  }
+  function ColorGridContent$createMenu$lambda$lambda$lambda_3(closure$y, this$ColorGridContent) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(85.0), dps(35.0), full());
+      $receiver.value = 0.0;
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = ColorGridContent$createMenu$lambda$lambda$lambda$lambda_0(this$ColorGridContent);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function ColorGridContent$createMenu$lambda$lambda(closure$yPos, closure$smallFont, this$, this$ColorGridContent) {
+    return function ($receiver) {
+      $receiver.isVisible = false;
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$yPos - 100.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(100.0), full());
+      var y = {v: -30.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('mat-lbl', ColorGridContent$createMenu$lambda$lambda$lambda(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('mat-roughness-lbl', ColorGridContent$createMenu$lambda$lambda$lambda_0(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('mat-roughness-slider', ColorGridContent$createMenu$lambda$lambda$lambda_1(y, this$ColorGridContent)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('mat-metallic-lbl', ColorGridContent$createMenu$lambda$lambda$lambda_2(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('mat-metallic-slider', ColorGridContent$createMenu$lambda$lambda$lambda_3(y, this$ColorGridContent)));
+      return Unit;
+    };
+  }
+  ColorGridContent.prototype.createMenu_7fm8wr$ = function (parent, smallFont, yPos) {
+    var $receiver = parent.root;
+    this.ui = $receiver.container_t34sov$('pbr-color-container', ColorGridContent$createMenu$lambda$lambda(yPos, smallFont, $receiver, this));
+    parent.plusAssign_f1kmr1$(ensureNotNull(this.ui));
+  };
+  ColorGridContent.prototype.setUseImageBasedLighting_6taknv$ = function (enabled) {
+    var tmp$, tmp$_0;
+    (tmp$ = this.iblContent_0) != null ? (tmp$.isVisible = enabled) : null;
+    (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
+  };
+  function ColorGridContent$createContent$lambda(closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$ColorGridContent) {
+    return function ($receiver) {
+      $receiver.isVisible = false;
+      var ibl = this$ColorGridContent.makeSpheres_0(true, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      var $receiver_0 = this$ColorGridContent.makeSpheres_0(false, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      $receiver_0.isVisible = false;
+      var nonIbl = $receiver_0;
+      $receiver.unaryPlus_uv0sim$(ibl);
+      $receiver.unaryPlus_uv0sim$(nonIbl);
+      this$ColorGridContent.iblContent_0 = ibl;
+      this$ColorGridContent.nonIblContent_0 = nonIbl;
+      return Unit;
+    };
+  }
+  ColorGridContent.prototype.createContent_wb8610$ = function (scene, irradianceMap, reflectionMap, brdfLut, ctx) {
+    this.content = transformGroup(void 0, ColorGridContent$createContent$lambda(irradianceMap, reflectionMap, brdfLut, this));
+    return ensureNotNull(this.content);
+  };
+  function ColorGridContent$makeSpheres$lambda$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y) {
+    return function ($receiver) {
+      var closure$nCols_0 = closure$nCols;
+      var closure$x_0 = closure$x;
+      var closure$spacing_0 = closure$spacing;
+      var closure$nRows_0 = closure$nRows;
+      var closure$y_0 = closure$y;
+      var $receiver_0 = $receiver.sphereProps.defaults();
+      $receiver_0.steps = 100;
+      $receiver_0.center.set_y2kzbl$(((-(closure$nCols_0 - 1 | 0) | 0) * 0.5 + closure$x_0) * closure$spacing_0, ((closure$nRows_0 - 1 | 0) * 0.5 - closure$y_0) * closure$spacing_0, 0.0);
+      $receiver_0.radius = 1.5;
+      $receiver.sphere_mojs8w$($receiver.sphereProps);
+      return Unit;
+    };
+  }
+  function ColorGridContent$makeSpheres$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$ColorGridContent) {
+    return function ($receiver) {
+      var nRows = 4;
+      var nCols = 5;
+      var spacing = 4.5;
+      var colors = ArrayList_init();
+      addAll(colors, Color.Companion.MD_COLORS);
+      colors.remove_11rb$(Color.Companion.MD_LIGHT_BLUE);
+      colors.remove_11rb$(Color.Companion.MD_GREY);
+      colors.remove_11rb$(Color.Companion.MD_BLUE_GREY);
+      var element = Color.Companion.WHITE;
+      colors.add_11rb$(element);
+      var element_0 = Color.Companion.MD_GREY;
+      colors.add_11rb$(element_0);
+      var element_1 = Color.Companion.MD_BLUE_GREY;
+      colors.add_11rb$(element_1);
+      var element_2 = new Color(0.1, 0.1, 0.1);
+      colors.add_11rb$(element_2);
+      for (var y = 0; y < nRows; y++) {
+        for (var x = 0; x < nCols; x++) {
+          var attributes = setOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+          var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
+          var closure$withIbl_0 = closure$withIbl;
+          var closure$irradianceMap_0 = closure$irradianceMap;
+          var closure$reflectionMap_0 = closure$reflectionMap;
+          var closure$brdfLut_0 = closure$brdfLut;
+          var this$ColorGridContent_0 = this$ColorGridContent;
+          mesh.generate_v2sixm$(ColorGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
+          var pbrConfig = new PbrShader$PbrConfig();
+          pbrConfig.albedoSource = AlbedoSource.STATIC_ALBEDO;
+          pbrConfig.isImageBasedLighting = closure$withIbl_0;
+          var shader = new PbrShader(pbrConfig);
+          shader.albedo = colors.get_za3lpa$((Kotlin.imul(y, nCols) + x | 0) % colors.size).toLinear();
+          shader.irradianceMap = closure$irradianceMap_0;
+          shader.reflectionMap = closure$reflectionMap_0;
+          shader.brdfLut = closure$brdfLut_0;
+          shader.roughness = 0.1;
+          shader.metallic = 0.0;
+          mesh.pipelineLoader = shader;
+          this$ColorGridContent_0.shaders_0.add_11rb$(shader);
+          $receiver.unaryPlus_uv0sim$(mesh);
+        }
+      }
+      return Unit;
+    };
+  }
+  ColorGridContent.prototype.makeSpheres_0 = function (withIbl, irradianceMap, reflectionMap, brdfLut) {
+    return group(void 0, ColorGridContent$makeSpheres$lambda(withIbl, irradianceMap, reflectionMap, brdfLut, this));
+  };
+  ColorGridContent.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ColorGridContent',
+    interfaces: [PbrDemo$PbrContent]
+  };
+  function pbrDemoScene(ctx) {
+    return (new PbrDemo(ctx)).scenes;
+  }
+  function PbrDemo(ctx) {
+    PbrDemo$Companion_getInstance();
+    this.ctx = ctx;
+    this.scenes = ArrayList_init();
+    this.contentScene_0 = null;
+    this.irradianceMapPass_0 = null;
+    this.reflectionMapPass_0 = null;
+    this.brdfLut_0 = null;
+    var $receiver = new Cycler(PbrDemo$Companion_getInstance().lightSetups_0);
+    $receiver.index = 2;
+    this.lightCycler_0 = $receiver;
+    this.hdriCycler_0 = new Cycler(PbrDemo$Companion_getInstance().hdriTextures_0);
+    var array = Array_0(PbrDemo$Companion_getInstance().hdriTextures_0.size);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = null;
+    }
+    this.loadedHdris_0 = array;
+    this.pbrContentCycler_0 = new Cycler(listOf([new PbrMaterialContent(), new ColorGridContent(), new RoughnesMetalGridContent()]));
+    var nextHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-25, 'Next environment map', PbrDemo_init$lambda, PbrDemo_init$lambda_0(this));
+    var prevHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-26, 'Prev environment map', PbrDemo_init$lambda_1, PbrDemo_init$lambda_2(this));
+    this.contentScene_0 = this.setupScene_0();
+    this.contentScene_0.onDispose.add_11rb$(PbrDemo_init$lambda_3(this, nextHdriKeyListener, prevHdriKeyListener));
+    var $receiver_0 = this.scenes;
+    var element = this.contentScene_0;
+    $receiver_0.add_11rb$(element);
+    var $receiver_1 = this.scenes;
+    var element_0 = this.pbrMenu_0();
+    $receiver_1.add_11rb$(element_0);
+  }
+  function PbrDemo$setupScene$lambda$lambda$lambda(this$) {
+    return function ($receiver, ctx) {
+      this$.verticalRotation += ctx.deltaT * 2.0;
+      return Unit;
+    };
+  }
+  function PbrDemo$setupScene$lambda$lambda(this$) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(this$.camera);
+      $receiver.onPreRender.add_11rb$(PbrDemo$setupScene$lambda$lambda$lambda($receiver));
+      $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
+      $receiver.zoom = 20.0;
+      return Unit;
+    };
+  }
+  function PbrDemo$setupScene$lambda$lambda_0(this$PbrDemo, this$) {
+    return function (tex) {
+      var irrMapPass = new IrradianceMapPass(tex);
+      var reflMapPass = new ReflectionMapPass(tex);
+      var brdfLutPass = new BrdfLutPass();
+      this$PbrDemo.irradianceMapPass_0 = irrMapPass;
+      this$PbrDemo.reflectionMapPass_0 = reflMapPass;
+      this$PbrDemo.brdfLut_0 = brdfLutPass;
+      var $receiver = this$PbrDemo.ctx.offscreenPasses;
+      var element = irrMapPass.offscreenPass;
+      $receiver.add_11rb$(element);
+      var $receiver_0 = this$PbrDemo.ctx.offscreenPasses;
+      var element_0 = reflMapPass.offscreenPass;
+      $receiver_0.add_11rb$(element_0);
+      var $receiver_1 = this$PbrDemo.ctx.offscreenPasses;
+      var element_1 = brdfLutPass.offscreenPass;
+      $receiver_1.add_11rb$(element_1);
+      this$.plusAssign_f1kmr1$(new Skybox(reflMapPass.reflectionMap, 1.25));
+      var $receiver_2 = this$PbrDemo.pbrContentCycler_0;
+      var tmp$;
+      tmp$ = $receiver_2.iterator();
+      while (tmp$.hasNext()) {
+        var element_2 = tmp$.next();
+        var this$_0 = this$;
+        var this$PbrDemo_0 = this$PbrDemo;
+        this$_0.unaryPlus_uv0sim$(element_2.createContent_wb8610$(this$_0, irrMapPass.irradianceMap, reflMapPass.reflectionMap, brdfLutPass.brdfLut, this$PbrDemo_0.ctx));
+      }
+      this$PbrDemo.pbrContentCycler_0.current.show();
+      return Unit;
+    };
+  }
+  PbrDemo.prototype.setupScene_0 = function () {
+    var $receiver = new Scene_init(null);
+    this.lightCycler_0.current.setup($receiver);
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, PbrDemo$setupScene$lambda$lambda($receiver)));
+    this.loadHdri_0(this.hdriCycler_0.index, PbrDemo$setupScene$lambda$lambda_0(this, $receiver));
+    return $receiver;
+  };
+  function PbrDemo$pbrMenu$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_0(it) {
+    return new BlankComponentUi();
+  }
+  function PbrDemo$pbrMenu$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(PbrDemo$pbrMenu$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(PbrDemo$pbrMenu$lambda$lambda$lambda_0);
+    return Unit;
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Environment';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda(this$PbrDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      $receiver.text = this$PbrDemo.hdriCycler_0.next().name;
+      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_2(closure$y, this$PbrDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.text = this$PbrDemo.hdriCycler_0.current.name;
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda(this$PbrDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_0(this$PbrDemo, closure$envLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$envLabel.text = this$PbrDemo.hdriCycler_0.prev().name;
+      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_3(closure$y, this$PbrDemo, closure$envLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_0(this$PbrDemo, closure$envLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_1(this$PbrDemo, closure$envLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$envLabel.text = this$PbrDemo.hdriCycler_0.next().name;
+      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_4(closure$y, this$PbrDemo, closure$envLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_1(this$PbrDemo, closure$envLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_5(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Lighting';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_2(this$PbrDemo, this$) {
+    return function ($receiver, f, f_0, f_1) {
+      var $receiver_0 = this$PbrDemo.pbrContentCycler_0;
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.setUseImageBasedLighting_6taknv$(this$.isEnabled);
+      }
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_6(closure$y, this$PbrDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(8.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(84.0), dps(35.0), full());
+      $receiver.text = 'Image Based';
+      $receiver.isEnabled = true;
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_2(this$PbrDemo, $receiver);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_3(this$PbrDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      $receiver.text = this$PbrDemo.lightCycler_0.next().name;
+      this$PbrDemo.lightCycler_0.current.setup(this$PbrDemo.contentScene_0);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_7(closure$y, this$PbrDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.text = this$PbrDemo.lightCycler_0.current.name;
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_3(this$PbrDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_4(this$PbrDemo, closure$lightLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$lightLabel.text = this$PbrDemo.lightCycler_0.prev().name;
+      this$PbrDemo.lightCycler_0.current.setup(this$PbrDemo.contentScene_0);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_8(closure$y, this$PbrDemo, closure$lightLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_4(this$PbrDemo, closure$lightLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_5(this$PbrDemo, closure$lightLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$lightLabel.text = this$PbrDemo.lightCycler_0.next().name;
+      this$PbrDemo.lightCycler_0.current.setup(this$PbrDemo.contentScene_0);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_9(closure$y, this$PbrDemo, closure$lightLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_5(this$PbrDemo, closure$lightLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_10(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Scene Content';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_6(this$PbrDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$PbrDemo.pbrContentCycler_0.current.hide();
+      this$PbrDemo.pbrContentCycler_0.next().show();
+      $receiver.text = this$PbrDemo.pbrContentCycler_0.current.name;
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_11(closure$y, this$PbrDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.text = this$PbrDemo.pbrContentCycler_0.current.name;
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_6(this$PbrDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_7(this$PbrDemo, closure$contentLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      this$PbrDemo.pbrContentCycler_0.current.hide();
+      this$PbrDemo.pbrContentCycler_0.prev().show();
+      closure$contentLabel.text = this$PbrDemo.pbrContentCycler_0.current.name;
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_12(closure$y, this$PbrDemo, closure$contentLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_7(this$PbrDemo, closure$contentLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_8(this$PbrDemo, closure$contentLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      this$PbrDemo.pbrContentCycler_0.current.hide();
+      this$PbrDemo.pbrContentCycler_0.next().show();
+      closure$contentLabel.text = this$PbrDemo.pbrContentCycler_0.current.name;
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda$lambda_13(closure$y, this$PbrDemo, closure$contentLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_8(this$PbrDemo, closure$contentLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda$lambda_0(closure$smallFont, this$, this$PbrDemo) {
+    return function ($receiver) {
+      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-480.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(360.0), full());
+      var y = {v: -35.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('env-lbl', PbrDemo$pbrMenu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      y.v -= 30.0;
+      var envLabel = this$.button_9zrh0o$('selected-env', PbrDemo$pbrMenu$lambda$lambda$lambda_2(y, this$PbrDemo));
+      $receiver.unaryPlus_uv0sim$(envLabel);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('env-left', PbrDemo$pbrMenu$lambda$lambda$lambda_3(y, this$PbrDemo, envLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('env-right', PbrDemo$pbrMenu$lambda$lambda$lambda_4(y, this$PbrDemo, envLabel)));
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('light-lbl', PbrDemo$pbrMenu$lambda$lambda$lambda_5(y, closure$smallFont, this$)));
+      y.v -= 30.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('env-lighting', PbrDemo$pbrMenu$lambda$lambda$lambda_6(y, this$PbrDemo)));
+      y.v -= 30.0;
+      var lightLabel = this$.button_9zrh0o$('selected-light', PbrDemo$pbrMenu$lambda$lambda$lambda_7(y, this$PbrDemo));
+      $receiver.unaryPlus_uv0sim$(lightLabel);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('light-left', PbrDemo$pbrMenu$lambda$lambda$lambda_8(y, this$PbrDemo, lightLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('light-right', PbrDemo$pbrMenu$lambda$lambda$lambda_9(y, this$PbrDemo, lightLabel)));
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('content-lbl', PbrDemo$pbrMenu$lambda$lambda$lambda_10(y, closure$smallFont, this$)));
+      y.v -= 30.0;
+      var contentLabel = this$.button_9zrh0o$('selected-content', PbrDemo$pbrMenu$lambda$lambda$lambda_11(y, this$PbrDemo));
+      $receiver.unaryPlus_uv0sim$(contentLabel);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('content-left', PbrDemo$pbrMenu$lambda$lambda$lambda_12(y, this$PbrDemo, contentLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('content-right', PbrDemo$pbrMenu$lambda$lambda$lambda_13(y, this$PbrDemo, contentLabel)));
+      y.v -= 10.0;
+      var $receiver_0 = this$PbrDemo.pbrContentCycler_0;
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.createMenu_7fm8wr$($receiver, closure$smallFont, y.v);
+      }
+      this$PbrDemo.pbrContentCycler_0.current.show();
+      return Unit;
+    };
+  }
+  function PbrDemo$pbrMenu$lambda(this$PbrDemo) {
+    return function ($receiver) {
+      var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
+      var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, this$PbrDemo.ctx, smallFontProps.style, smallFontProps.chars);
+      $receiver.theme = theme(UiTheme.Companion.DARK, PbrDemo$pbrMenu$lambda$lambda);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', PbrDemo$pbrMenu$lambda$lambda_0(smallFont, $receiver, this$PbrDemo)));
+      return Unit;
+    };
+  }
+  PbrDemo.prototype.pbrMenu_0 = function () {
+    return uiScene(void 0, void 0, void 0, PbrDemo$pbrMenu$lambda(this));
+  };
+  function PbrDemo$updateHdri$lambda(this$PbrDemo) {
+    return function (tex) {
+      var tmp$, tmp$_0;
+      if ((tmp$ = this$PbrDemo.irradianceMapPass_0) != null) {
+        var this$PbrDemo_0 = this$PbrDemo;
+        tmp$.hdriTexture = tex;
+        tmp$.update_aemszp$(this$PbrDemo_0.ctx);
+      }
+      if ((tmp$_0 = this$PbrDemo.reflectionMapPass_0) != null) {
+        var this$PbrDemo_1 = this$PbrDemo;
+        tmp$_0.hdriTexture = tex;
+        tmp$_0.update_aemszp$(this$PbrDemo_1.ctx);
+      }
+      return Unit;
+    };
+  }
+  PbrDemo.prototype.updateHdri_0 = function (idx) {
+    this.loadHdri_0(idx, PbrDemo$updateHdri$lambda(this));
+  };
+  function PbrDemo$loadHdri$lambda(this$PbrDemo, closure$idx, closure$recv) {
+    return function (it) {
+      this$PbrDemo.loadedHdris_0[closure$idx] = it;
+      closure$recv(it);
+      return Unit;
+    };
+  }
+  PbrDemo.prototype.loadHdri_0 = function (idx, recv) {
+    var tex = this.loadedHdris_0[idx];
+    if (tex == null) {
+      this.ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(PbrDemo$Companion_getInstance().hdriTextures_0.get_za3lpa$(idx).hdriPath, PbrDemo$Companion_getInstance().hdriTexProps_0, PbrDemo$loadHdri$lambda(this, idx, recv));
+    }
+     else {
+      recv(tex);
+    }
+  };
+  function PbrDemo$EnvironmentMap(hdriPath, name) {
+    this.hdriPath = hdriPath;
+    this.name = name;
+  }
+  PbrDemo$EnvironmentMap.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'EnvironmentMap',
+    interfaces: []
+  };
+  function PbrDemo$LightSetup(name, setup) {
+    this.name = name;
+    this.setup = setup;
+  }
+  PbrDemo$LightSetup.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'LightSetup',
+    interfaces: []
+  };
+  function PbrDemo$PbrContent(name) {
+    this.name = name;
+    this.content = null;
+    this.ui = null;
+  }
+  PbrDemo$PbrContent.prototype.show = function () {
+    var tmp$, tmp$_0;
+    (tmp$ = this.content) != null ? (tmp$.isVisible = true) : null;
+    (tmp$_0 = this.ui) != null ? (tmp$_0.isVisible = true) : null;
+  };
+  PbrDemo$PbrContent.prototype.hide = function () {
+    var tmp$, tmp$_0;
+    (tmp$ = this.content) != null ? (tmp$.isVisible = false) : null;
+    (tmp$_0 = this.ui) != null ? (tmp$_0.isVisible = false) : null;
+  };
+  PbrDemo$PbrContent.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PbrContent',
+    interfaces: []
+  };
+  function PbrDemo$Companion() {
+    PbrDemo$Companion_instance = this;
+    this.hdriTexProps_0 = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
+    var $this = Demo$Companion_getInstance();
+    var key = 'pbrDemo.envMaps';
+    var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri';
+    var tmp$, tmp$_0;
+    this.assetPath_0 = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
+    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(this.assetPath_0 + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(this.assetPath_0 + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(this.assetPath_0 + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(this.assetPath_0 + '/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
+    this.lightStrength_0 = 250.0;
+    this.lightExtent_0 = 10.0;
+    this.lightSetups_0 = listOf([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);
+  }
+  function PbrDemo$Companion$lightSetups$lambda($receiver) {
+    $receiver.lighting.lights.clear();
+    return Unit;
+  }
+  function PbrDemo$Companion$lightSetups$lambda_0(this$PbrDemo$) {
+    return function ($receiver) {
+      var light1 = (new Light()).setPoint_czzhiu$(new Vec3f(0.0, 0.0, this$PbrDemo$.lightExtent_0 * 1.5)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0 * 2.0);
+      $receiver.lighting.lights.clear();
+      $receiver.lighting.lights.add_11rb$(light1);
+      return Unit;
+    };
+  }
+  function PbrDemo$Companion$lightSetups$lambda_1(this$PbrDemo$) {
+    return function ($receiver) {
+      var light1 = (new Light()).setPoint_czzhiu$(new Vec3f(this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
+      var light2 = (new Light()).setPoint_czzhiu$(new Vec3f(-this$PbrDemo$.lightExtent_0, -this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
+      var light3 = (new Light()).setPoint_czzhiu$(new Vec3f(-this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
+      var light4 = (new Light()).setPoint_czzhiu$(new Vec3f(this$PbrDemo$.lightExtent_0, -this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
+      $receiver.lighting.lights.clear();
+      $receiver.lighting.lights.add_11rb$(light1);
+      $receiver.lighting.lights.add_11rb$(light2);
+      $receiver.lighting.lights.add_11rb$(light3);
+      $receiver.lighting.lights.add_11rb$(light4);
+      return Unit;
+    };
+  }
+  function PbrDemo$Companion$lightSetups$lambda_2(this$PbrDemo$) {
+    return function ($receiver) {
+      var light1 = (new Light()).setPoint_czzhiu$(new Vec3f(0.0, this$PbrDemo$.lightExtent_0 * 1.5, 0.0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0 * 2.0);
+      $receiver.lighting.lights.clear();
+      $receiver.lighting.lights.add_11rb$(light1);
+      return Unit;
+    };
+  }
+  function PbrDemo$Companion$lightSetups$lambda_3(this$PbrDemo$) {
+    return function ($receiver) {
+      var light1 = (new Light()).setPoint_czzhiu$(new Vec3f(this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
+      var light2 = (new Light()).setPoint_czzhiu$(new Vec3f(-this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, -this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
+      var light3 = (new Light()).setPoint_czzhiu$(new Vec3f(-this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
+      var light4 = (new Light()).setPoint_czzhiu$(new Vec3f(this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, -this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
+      $receiver.lighting.lights.clear();
+      $receiver.lighting.lights.add_11rb$(light1);
+      $receiver.lighting.lights.add_11rb$(light2);
+      $receiver.lighting.lights.add_11rb$(light3);
+      $receiver.lighting.lights.add_11rb$(light4);
+      return Unit;
+    };
+  }
+  PbrDemo$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var PbrDemo$Companion_instance = null;
+  function PbrDemo$Companion_getInstance() {
+    if (PbrDemo$Companion_instance === null) {
+      new PbrDemo$Companion();
+    }
+    return PbrDemo$Companion_instance;
+  }
+  function PbrDemo_init$lambda(it) {
+    return it.isPressed;
+  }
+  function PbrDemo_init$lambda_0(this$PbrDemo) {
+    return function (it) {
+      this$PbrDemo.hdriCycler_0.next();
+      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
+      return Unit;
+    };
+  }
+  function PbrDemo_init$lambda_1(it) {
+    return it.isPressed;
+  }
+  function PbrDemo_init$lambda_2(this$PbrDemo) {
+    return function (it) {
+      this$PbrDemo.hdriCycler_0.prev();
+      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
+      return Unit;
+    };
+  }
+  function PbrDemo_init$lambda_3(this$PbrDemo, closure$nextHdriKeyListener, closure$prevHdriKeyListener) {
+    return function ($receiver, it) {
+      var tmp$, tmp$_0, tmp$_1;
+      this$PbrDemo.ctx.inputMgr.removeKeyListener_abhb69$(closure$nextHdriKeyListener);
+      this$PbrDemo.ctx.inputMgr.removeKeyListener_abhb69$(closure$prevHdriKeyListener);
+      var $receiver_0 = this$PbrDemo.loadedHdris_0;
+      var tmp$_2;
+      for (tmp$_2 = 0; tmp$_2 !== $receiver_0.length; ++tmp$_2) {
+        var element = $receiver_0[tmp$_2];
+        element != null ? (element.dispose(), Unit) : null;
+      }
+      (tmp$ = this$PbrDemo.irradianceMapPass_0) != null ? (tmp$.dispose_aemszp$(this$PbrDemo.ctx), Unit) : null;
+      (tmp$_0 = this$PbrDemo.reflectionMapPass_0) != null ? (tmp$_0.dispose_aemszp$(this$PbrDemo.ctx), Unit) : null;
+      (tmp$_1 = this$PbrDemo.brdfLut_0) != null ? (tmp$_1.dispose_aemszp$(this$PbrDemo.ctx), Unit) : null;
+      return Unit;
+    };
+  }
+  PbrDemo.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PbrDemo',
+    interfaces: []
+  };
+  function PbrMaterialContent() {
+    PbrMaterialContent$Companion_getInstance();
+    PbrDemo$PbrContent.call(this, 'PBR Material');
+    var $receiver = new Cycler(PbrMaterialContent$Companion_getInstance().materials_0);
+    $receiver.index = 3;
+    this.matCycler = $receiver;
+    this.shaders_0 = ArrayList_init();
+    this.iblContent_0 = null;
+    this.nonIblContent_0 = null;
+  }
+  Object.defineProperty(PbrMaterialContent.prototype, 'currentMat', {
+    get: function () {
+      return this.matCycler.current;
+    }
+  });
+  PbrMaterialContent.prototype.nextMaterial = function () {
+    this.currentMat.disposeMaps();
+    this.matCycler.next();
+    this.updatePbrMaterial_0();
+    return this.currentMat;
+  };
+  PbrMaterialContent.prototype.prevMaterial = function () {
+    this.currentMat.disposeMaps();
+    this.matCycler.prev();
+    this.updatePbrMaterial_0();
+    return this.currentMat;
+  };
+  PbrMaterialContent.prototype.updatePbrMaterial_0 = function () {
+    var tmp$;
+    tmp$ = this.shaders_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var tmp$_0, tmp$_1, tmp$_2;
+      element.albedoMap = this.currentMat.albedo;
+      element.normalMap = this.currentMat.normal;
+      element.roughnessMap = this.currentMat.roughness;
+      element.metallicMap = (tmp$_0 = this.currentMat.metallic) != null ? tmp$_0 : PbrMaterialContent$Companion_getInstance().defaultMetallicTex_0;
+      element.ambientOcclusionMap = (tmp$_1 = this.currentMat.ao) != null ? tmp$_1 : PbrMaterialContent$Companion_getInstance().defaultAoTex_0;
+      element.displacementMap = (tmp$_2 = this.currentMat.displacement) != null ? tmp$_2 : PbrMaterialContent$Companion_getInstance().defaultDispTex_0;
+    }
+  };
+  function PbrMaterialContent$createMenu$lambda$lambda$lambda(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Material';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda(this$PbrMaterialContent) {
+    return function ($receiver, f, f_0, f_1) {
+      $receiver.text = this$PbrMaterialContent.nextMaterial().name;
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$createMenu$lambda$lambda$lambda_0(closure$y, this$PbrMaterialContent) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.text = this$PbrMaterialContent.currentMat.name;
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda(this$PbrMaterialContent);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_0(this$PbrMaterialContent, closure$matLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$matLabel.text = this$PbrMaterialContent.prevMaterial().name;
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$createMenu$lambda$lambda$lambda_1(closure$y, this$PbrMaterialContent, closure$matLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_0(this$PbrMaterialContent, closure$matLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_1(this$PbrMaterialContent, closure$matLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$matLabel.text = this$PbrMaterialContent.nextMaterial().name;
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$createMenu$lambda$lambda$lambda_2(closure$y, this$PbrMaterialContent, closure$matLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_1(this$PbrMaterialContent, closure$matLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$createMenu$lambda$lambda(closure$yPos, closure$smallFont, this$, this$PbrMaterialContent) {
+    return function ($receiver) {
+      $receiver.isVisible = false;
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$yPos - 60.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(60.0), full());
+      var y = {v: -30.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('mat-lbl', PbrMaterialContent$createMenu$lambda$lambda$lambda(y, closure$smallFont, this$)));
+      y.v -= 30.0;
+      var matLabel = this$.button_9zrh0o$('selected-mat', PbrMaterialContent$createMenu$lambda$lambda$lambda_0(y, this$PbrMaterialContent));
+      $receiver.unaryPlus_uv0sim$(matLabel);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('mat-left', PbrMaterialContent$createMenu$lambda$lambda$lambda_1(y, this$PbrMaterialContent, matLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('mat-right', PbrMaterialContent$createMenu$lambda$lambda$lambda_2(y, this$PbrMaterialContent, matLabel)));
+      return Unit;
+    };
+  }
+  PbrMaterialContent.prototype.createMenu_7fm8wr$ = function (parent, smallFont, yPos) {
+    var $receiver = parent.root;
+    this.ui = $receiver.container_t34sov$('pbr-mat-container', PbrMaterialContent$createMenu$lambda$lambda(yPos, smallFont, $receiver, this));
+    parent.plusAssign_f1kmr1$(ensureNotNull(this.ui));
+  };
+  PbrMaterialContent.prototype.setUseImageBasedLighting_6taknv$ = function (enabled) {
+    var tmp$, tmp$_0;
+    (tmp$ = this.iblContent_0) != null ? (tmp$.isVisible = enabled) : null;
+    (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
+  };
+  function PbrMaterialContent$createContent$lambda$lambda(this$) {
+    return function ($receiver, ctx) {
+      this$.rotate_ad55pp$(-2.0 * ctx.deltaT, Vec3f.Companion.Y_AXIS);
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$createContent$lambda(closure$scene, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent) {
+    return function ($receiver) {
+      $receiver.isVisible = false;
+      var ibl = this$PbrMaterialContent.makeSphere_0(true, closure$scene, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      var $receiver_0 = this$PbrMaterialContent.makeSphere_0(false, closure$scene, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      $receiver_0.isVisible = false;
+      var nonIbl = $receiver_0;
+      $receiver.unaryPlus_uv0sim$(ibl);
+      $receiver.unaryPlus_uv0sim$(nonIbl);
+      this$PbrMaterialContent.iblContent_0 = ibl;
+      this$PbrMaterialContent.nonIblContent_0 = nonIbl;
+      $receiver.onPreRender.add_11rb$(PbrMaterialContent$createContent$lambda$lambda($receiver));
+      return Unit;
+    };
+  }
+  PbrMaterialContent.prototype.createContent_wb8610$ = function (scene, irradianceMap, reflectionMap, brdfLut, ctx) {
+    this.content = transformGroup(void 0, PbrMaterialContent$createContent$lambda(scene, irradianceMap, reflectionMap, brdfLut, this));
+    return ensureNotNull(this.content);
+  };
+  function PbrMaterialContent$makeSphere$lambda$lambda$lambda$lambda($receiver) {
+    $receiver.texCoord.x = $receiver.texCoord.x * 4;
+    $receiver.texCoord.y = $receiver.texCoord.y * 2;
+    return Unit;
+  }
+  function PbrMaterialContent$makeSphere$lambda$lambda$lambda($receiver) {
+    $receiver.vertexModFun = PbrMaterialContent$makeSphere$lambda$lambda$lambda$lambda;
+    var $receiver_0 = $receiver.sphereProps.defaults();
+    $receiver_0.steps = 700;
+    $receiver_0.radius = 7.0;
+    $receiver.sphere_mojs8w$($receiver.sphereProps);
+    return Unit;
+  }
+  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(this$PbrMaterialContent) {
+    return function ($receiver, it) {
+      var tmp$;
+      tmp$ = this$PbrMaterialContent.matCycler.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.disposeMaps();
+      }
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(PbrMaterialContent$makeSphere$lambda$lambda$lambda);
+      var pbrConfig = new PbrShader$PbrConfig();
+      pbrConfig.isImageBasedLighting = closure$withIbl;
+      pbrConfig.albedoSource = AlbedoSource.TEXTURE_ALBEDO;
+      pbrConfig.isNormalMapped = true;
+      pbrConfig.isRoughnessMapped = true;
+      pbrConfig.isMetallicMapped = true;
+      pbrConfig.isAmbientOcclusionMapped = true;
+      pbrConfig.isDisplacementMapped = true;
+      var $receiver_0 = new PbrShader(pbrConfig);
+      var closure$irradianceMap_0 = closure$irradianceMap;
+      var closure$reflectionMap_0 = closure$reflectionMap;
+      var closure$brdfLut_0 = closure$brdfLut;
+      $receiver_0.irradianceMap = closure$irradianceMap_0;
+      $receiver_0.reflectionMap = closure$reflectionMap_0;
+      $receiver_0.brdfLut = closure$brdfLut_0;
+      $receiver_0.displacementStrength = 0.25;
+      var shader = $receiver_0;
+      $receiver.pipelineLoader = shader;
+      this$PbrMaterialContent.shaders_0.add_11rb$(shader);
+      this$PbrMaterialContent.updatePbrMaterial_0();
+      var $receiver_1 = closure$scene.onDispose;
+      var element = PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(this$PbrMaterialContent);
+      $receiver_1.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function PbrMaterialContent$makeSphere$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene)));
+      return Unit;
+    };
+  }
+  PbrMaterialContent.prototype.makeSphere_0 = function (withIbl, scene, irradianceMap, reflectionMap, brdfLut) {
+    return group(void 0, PbrMaterialContent$makeSphere$lambda(withIbl, irradianceMap, reflectionMap, brdfLut, this, scene));
+  };
+  function PbrMaterialContent$MaterialMaps(name, albedo, normal, roughness, metallic, ao, displacement) {
+    this.name = name;
+    this.albedo = albedo;
+    this.normal = normal;
+    this.roughness = roughness;
+    this.metallic = metallic;
+    this.ao = ao;
+    this.displacement = displacement;
+  }
+  PbrMaterialContent$MaterialMaps.prototype.disposeMaps = function () {
+    var tmp$, tmp$_0, tmp$_1;
+    this.albedo.dispose();
+    this.normal.dispose();
+    this.roughness.dispose();
+    (tmp$ = this.metallic) != null ? (tmp$.dispose(), Unit) : null;
+    (tmp$_0 = this.ao) != null ? (tmp$_0.dispose(), Unit) : null;
+    (tmp$_1 = this.displacement) != null ? (tmp$_1.dispose(), Unit) : null;
+  };
+  PbrMaterialContent$MaterialMaps.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MaterialMaps',
+    interfaces: []
+  };
+  PbrMaterialContent$MaterialMaps.prototype.component1 = function () {
+    return this.name;
+  };
+  PbrMaterialContent$MaterialMaps.prototype.component2 = function () {
+    return this.albedo;
+  };
+  PbrMaterialContent$MaterialMaps.prototype.component3 = function () {
+    return this.normal;
+  };
+  PbrMaterialContent$MaterialMaps.prototype.component4 = function () {
+    return this.roughness;
+  };
+  PbrMaterialContent$MaterialMaps.prototype.component5 = function () {
+    return this.metallic;
+  };
+  PbrMaterialContent$MaterialMaps.prototype.component6 = function () {
+    return this.ao;
+  };
+  PbrMaterialContent$MaterialMaps.prototype.component7 = function () {
+    return this.displacement;
+  };
+  PbrMaterialContent$MaterialMaps.prototype.copy_chv25t$ = function (name, albedo, normal, roughness, metallic, ao, displacement) {
+    return new PbrMaterialContent$MaterialMaps(name === void 0 ? this.name : name, albedo === void 0 ? this.albedo : albedo, normal === void 0 ? this.normal : normal, roughness === void 0 ? this.roughness : roughness, metallic === void 0 ? this.metallic : metallic, ao === void 0 ? this.ao : ao, displacement === void 0 ? this.displacement : displacement);
+  };
+  PbrMaterialContent$MaterialMaps.prototype.toString = function () {
+    return 'MaterialMaps(name=' + Kotlin.toString(this.name) + (', albedo=' + Kotlin.toString(this.albedo)) + (', normal=' + Kotlin.toString(this.normal)) + (', roughness=' + Kotlin.toString(this.roughness)) + (', metallic=' + Kotlin.toString(this.metallic)) + (', ao=' + Kotlin.toString(this.ao)) + (', displacement=' + Kotlin.toString(this.displacement)) + ')';
+  };
+  PbrMaterialContent$MaterialMaps.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    result = result * 31 + Kotlin.hashCode(this.albedo) | 0;
+    result = result * 31 + Kotlin.hashCode(this.normal) | 0;
+    result = result * 31 + Kotlin.hashCode(this.roughness) | 0;
+    result = result * 31 + Kotlin.hashCode(this.metallic) | 0;
+    result = result * 31 + Kotlin.hashCode(this.ao) | 0;
+    result = result * 31 + Kotlin.hashCode(this.displacement) | 0;
+    return result;
+  };
+  PbrMaterialContent$MaterialMaps.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.albedo, other.albedo) && Kotlin.equals(this.normal, other.normal) && Kotlin.equals(this.roughness, other.roughness) && Kotlin.equals(this.metallic, other.metallic) && Kotlin.equals(this.ao, other.ao) && Kotlin.equals(this.displacement, other.displacement)))));
+  };
+  function PbrMaterialContent$Companion() {
+    PbrMaterialContent$Companion_instance = this;
+    this.defaultMetallicTex_0 = new SingleColorTexture(Color.Companion.BLACK);
+    this.defaultAoTex_0 = new SingleColorTexture(Color.Companion.WHITE);
+    this.defaultDispTex_0 = new SingleColorTexture(Color.Companion.BLACK);
+    var $this = Demo$Companion_getInstance();
+    var key = 'pbrDemo.materials';
+    var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials';
+    var tmp$, tmp$_0;
+    this.assetPath_0 = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
+    this.materials_0 = mutableListOf([new PbrMaterialContent$MaterialMaps('Bamboo', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_0(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_1(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_2(this)), null), new PbrMaterialContent$MaterialMaps('Castle Brick', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_3(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_4(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_5(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_6(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_7(this))), new PbrMaterialContent$MaterialMaps('Granite', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_8(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_9(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_10(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Weave Steel', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_11(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_12(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_13(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_14(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_15(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_16(this))), new PbrMaterialContent$MaterialMaps('Scuffed Plastic', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_17(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_18(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_19(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_20(this)), null), new PbrMaterialContent$MaterialMaps('Snow Covered Path', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_21(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_22(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_23(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_24(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_25(this))), new PbrMaterialContent$MaterialMaps('Marble', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_26(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_27(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_28(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Onyx Tiles', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_29(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_30(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_31(this)), null, null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_32(this)))]);
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_0(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_0.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_0;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_0(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_0(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_1(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_1.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_1.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_1;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_1.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_1(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_1(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_2(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_2.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_2.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_2;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_2.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_2(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_2(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_3(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_3.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_3.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_3.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_3;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_3.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/castle_brick/castle_brick_02_red_diff_2k.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_3(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_3(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_4(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_4.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_4.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_4.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_4;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_4.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/castle_brick/castle_brick_02_red_nor_2k.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_4(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_4(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_5(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_5.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_5.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_5.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_5;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_5.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/castle_brick/castle_brick_02_red_rough_2k.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_5(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_5(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_6(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_6.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_6.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_6.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_6;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_6.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/castle_brick/castle_brick_02_red_ao_2k.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_6(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_6(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_7(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_7.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_7.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_7.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_7;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_7.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/castle_brick/castle_brick_02_red_disp_2k.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_7(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_7(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_8(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_8.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_8.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_8.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_8;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_8.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/granitesmooth1/granitesmooth1-albedo4.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_8(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_8(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_9(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_9.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_9.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_9.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_9;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_9.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/granitesmooth1/granitesmooth1-normal2.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_9(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_9(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_10(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_10.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_10.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_10.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_10;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_10.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/granitesmooth1/granitesmooth1-roughness3.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_10(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_10(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_11(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_11.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_11.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_11.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_11;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_11.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_11(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_11(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_12(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_12.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_12.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_12.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_12;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_12.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_12(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_12(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_13(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_13.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_13.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_13.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_13;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_13.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_13(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_13(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_14(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_14.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_14.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_14.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_14;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_14.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_14(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_14(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_15(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_15.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_15.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_15.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_15;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_15.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_15(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_15(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_16(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_16.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_16.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_16.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_16;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_16.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_16(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_16(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_17(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_17.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_17.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_17.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_17;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_17.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic4-alb.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_17(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_17(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_18(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_18.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_18.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_18.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_18;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_18.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic-normal.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_18(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_18(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_19(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_19.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_19.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_19.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_19;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_19.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic-rough.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_19(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_19(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_20(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_20.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_20.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_20.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_20;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_20.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/scuffed-plastic-1/scuffed-plastic-ao.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_20(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_20(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_21(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_21.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_21.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_21.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_21;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_21.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_albedo.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_21(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_21(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_22(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_22.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_22.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_22.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_22;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_22.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_normal-dx.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_22(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_22(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_23(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_23.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_23.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_23.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_23;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_23.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_roughness.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_23(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_23(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_24(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_24.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_24.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_24.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_24;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_24.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_ao.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_24(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_24(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_25(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_25.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_25.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_25.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_25;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_25.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/snowcoveredpath/snowcoveredpath_height.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_25(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_25(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_26(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_26.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_26.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_26.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_26;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_26.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/streaked-marble/streaked-marble-albedo2.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_26(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_26(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_27(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_27.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_27.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_27.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_27;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_27.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/streaked-marble/streaked-marble-normal.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_27(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_27(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_28(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_28.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_28.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_28.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_28;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_28.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/streaked-marble/streaked-marble-roughness1.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_28(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_28(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_29(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_29.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_29.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_29.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_29;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_29.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_29(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_29(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_30(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_30.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_30.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_30.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_30;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_30.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_30(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_30(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_31(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_31.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_31.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_31.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_31;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_31.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_31(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_31(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  function Coroutine$PbrMaterialContent$Companion$materials$lambda_32(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$this$PbrMaterialContent$ = this$PbrMaterialContent$_0;
+    this.local$it = it_0;
+  }
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_32.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_32.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_32.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_32;
+  Coroutine$PbrMaterialContent$Companion$materials$lambda_32.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$this$PbrMaterialContent$.assetPath_0 + '/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function PbrMaterialContent$Companion$materials$lambda_32(this$PbrMaterialContent$_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_32(this$PbrMaterialContent$_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
+  }
+  PbrMaterialContent$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var PbrMaterialContent$Companion_instance = null;
+  function PbrMaterialContent$Companion_getInstance() {
+    if (PbrMaterialContent$Companion_instance === null) {
+      new PbrMaterialContent$Companion();
+    }
+    return PbrMaterialContent$Companion_instance;
+  }
+  PbrMaterialContent.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PbrMaterialContent',
+    interfaces: [PbrDemo$PbrContent]
+  };
+  function RoughnesMetalGridContent() {
+    RoughnesMetalGridContent$Companion_getInstance();
+    PbrDemo$PbrContent.call(this, 'Roughness / Metal');
+    this.colors_0 = new Cycler(RoughnesMetalGridContent$Companion_getInstance().matColors_0);
+    this.shaders_0 = ArrayList_init();
+    this.iblContent_0 = null;
+    this.nonIblContent_0 = null;
+  }
+  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Color';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda(this$RoughnesMetalGridContent) {
+    return function ($receiver, f, f_0, f_1) {
+      $receiver.text = this$RoughnesMetalGridContent.colors_0.next().name;
+      var $receiver_0 = this$RoughnesMetalGridContent.shaders_0;
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
+      }
+      return Unit;
+    };
+  }
+  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_0(closure$y, this$RoughnesMetalGridContent) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.text = this$RoughnesMetalGridContent.colors_0.current.name;
+      var $receiver_0 = $receiver.onClick;
+      var element = RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda(this$RoughnesMetalGridContent);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda_0(this$RoughnesMetalGridContent, closure$matLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$matLabel.text = this$RoughnesMetalGridContent.colors_0.prev().name;
+      var $receiver_0 = this$RoughnesMetalGridContent.shaders_0;
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
+      }
+      return Unit;
+    };
+  }
+  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_1(closure$y, this$RoughnesMetalGridContent, closure$matLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda_0(this$RoughnesMetalGridContent, closure$matLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda_1(this$RoughnesMetalGridContent, closure$matLabel) {
+    return function ($receiver, f, f_0, f_1) {
+      closure$matLabel.text = this$RoughnesMetalGridContent.colors_0.next().name;
+      var $receiver_0 = this$RoughnesMetalGridContent.shaders_0;
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
+      }
+      return Unit;
+    };
+  }
+  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_2(closure$y, this$RoughnesMetalGridContent, closure$matLabel) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda_1(this$RoughnesMetalGridContent, closure$matLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function RoughnesMetalGridContent$createMenu$lambda$lambda(closure$yPos, closure$smallFont, this$, this$RoughnesMetalGridContent) {
+    return function ($receiver) {
+      $receiver.isVisible = false;
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$yPos - 60.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(60.0), full());
+      var y = {v: -30.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('color-lbl', RoughnesMetalGridContent$createMenu$lambda$lambda$lambda(y, closure$smallFont, this$)));
+      y.v -= 30.0;
+      var matLabel = this$.button_9zrh0o$('selected-color', RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_0(y, this$RoughnesMetalGridContent));
+      $receiver.unaryPlus_uv0sim$(matLabel);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-left', RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_1(y, this$RoughnesMetalGridContent, matLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-right', RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_2(y, this$RoughnesMetalGridContent, matLabel)));
+      return Unit;
+    };
+  }
+  RoughnesMetalGridContent.prototype.createMenu_7fm8wr$ = function (parent, smallFont, yPos) {
+    var $receiver = parent.root;
+    this.ui = $receiver.container_t34sov$('pbr-rough-metal-container', RoughnesMetalGridContent$createMenu$lambda$lambda(yPos, smallFont, $receiver, this));
+    parent.plusAssign_f1kmr1$(ensureNotNull(this.ui));
+  };
+  RoughnesMetalGridContent.prototype.setUseImageBasedLighting_6taknv$ = function (enabled) {
+    var tmp$, tmp$_0;
+    (tmp$ = this.iblContent_0) != null ? (tmp$.isVisible = enabled) : null;
+    (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
+  };
+  function RoughnesMetalGridContent$createContent$lambda(closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$RoughnesMetalGridContent) {
+    return function ($receiver) {
+      $receiver.isVisible = false;
+      var ibl = this$RoughnesMetalGridContent.makeSpheres_0(true, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      var $receiver_0 = this$RoughnesMetalGridContent.makeSpheres_0(false, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
+      $receiver_0.isVisible = false;
+      var nonIbl = $receiver_0;
+      $receiver.unaryPlus_uv0sim$(ibl);
+      $receiver.unaryPlus_uv0sim$(nonIbl);
+      this$RoughnesMetalGridContent.iblContent_0 = ibl;
+      this$RoughnesMetalGridContent.nonIblContent_0 = nonIbl;
+      return Unit;
+    };
+  }
+  RoughnesMetalGridContent.prototype.createContent_wb8610$ = function (scene, irradianceMap, reflectionMap, brdfLut, ctx) {
+    this.content = transformGroup(void 0, RoughnesMetalGridContent$createContent$lambda(irradianceMap, reflectionMap, brdfLut, this));
+    return ensureNotNull(this.content);
+  };
+  function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y) {
+    return function ($receiver) {
+      var closure$nCols_0 = closure$nCols;
+      var closure$x_0 = closure$x;
+      var closure$spacing_0 = closure$spacing;
+      var closure$nRows_0 = closure$nRows;
+      var closure$y_0 = closure$y;
+      var $receiver_0 = $receiver.sphereProps.defaults();
+      $receiver_0.steps = 100;
+      $receiver_0.center.set_y2kzbl$(((-(closure$nCols_0 - 1 | 0) | 0) * 0.5 + closure$x_0) * closure$spacing_0, ((-(closure$nRows_0 - 1 | 0) | 0) * 0.5 + closure$y_0) * closure$spacing_0, 0.0);
+      $receiver_0.radius = 1.0;
+      $receiver.sphere_mojs8w$($receiver.sphereProps);
+      return Unit;
+    };
+  }
+  function RoughnesMetalGridContent$makeSpheres$lambda(closure$withIbl, this$RoughnesMetalGridContent, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
+    return function ($receiver) {
+      var nRows = 7;
+      var nCols = 7;
+      var spacing = 2.5;
+      for (var y = 0; y < nRows; y++) {
+        for (var x = 0; x < nCols; x++) {
+          var attributes = setOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+          var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
+          var closure$withIbl_0 = closure$withIbl;
+          var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
+          var closure$irradianceMap_0 = closure$irradianceMap;
+          var closure$reflectionMap_0 = closure$reflectionMap;
+          var closure$brdfLut_0 = closure$brdfLut;
+          mesh.generate_v2sixm$(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
+          var pbrConfig = new PbrShader$PbrConfig();
+          pbrConfig.albedoSource = AlbedoSource.STATIC_ALBEDO;
+          pbrConfig.isImageBasedLighting = closure$withIbl_0;
+          var shader = new PbrShader(pbrConfig);
+          shader.albedo = this$RoughnesMetalGridContent_0.colors_0.current.linColor;
+          shader.irradianceMap = closure$irradianceMap_0;
+          shader.reflectionMap = closure$reflectionMap_0;
+          shader.brdfLut = closure$brdfLut_0;
+          var a = x / (nCols - 1 | 0);
+          shader.roughness = Math_0.max(a, 0.05);
+          shader.metallic = y / (nRows - 1 | 0);
+          mesh.pipelineLoader = shader;
+          this$RoughnesMetalGridContent_0.shaders_0.add_11rb$(shader);
+          $receiver.unaryPlus_uv0sim$(mesh);
+        }
+      }
+      return Unit;
+    };
+  }
+  RoughnesMetalGridContent.prototype.makeSpheres_0 = function (withIbl, irradianceMap, reflectionMap, brdfLut) {
+    return group(void 0, RoughnesMetalGridContent$makeSpheres$lambda(withIbl, this, irradianceMap, reflectionMap, brdfLut));
+  };
+  function RoughnesMetalGridContent$MatColor(name, linColor) {
+    this.name = name;
+    this.linColor = linColor;
+  }
+  RoughnesMetalGridContent$MatColor.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MatColor',
+    interfaces: []
+  };
+  RoughnesMetalGridContent$MatColor.prototype.component1 = function () {
+    return this.name;
+  };
+  RoughnesMetalGridContent$MatColor.prototype.component2 = function () {
+    return this.linColor;
+  };
+  RoughnesMetalGridContent$MatColor.prototype.copy_guvy9a$ = function (name, linColor) {
+    return new RoughnesMetalGridContent$MatColor(name === void 0 ? this.name : name, linColor === void 0 ? this.linColor : linColor);
+  };
+  RoughnesMetalGridContent$MatColor.prototype.toString = function () {
+    return 'MatColor(name=' + Kotlin.toString(this.name) + (', linColor=' + Kotlin.toString(this.linColor)) + ')';
+  };
+  RoughnesMetalGridContent$MatColor.prototype.hashCode = function () {
+    var result = 0;
+    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    result = result * 31 + Kotlin.hashCode(this.linColor) | 0;
+    return result;
+  };
+  RoughnesMetalGridContent$MatColor.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.linColor, other.linColor)))));
+  };
+  function RoughnesMetalGridContent$Companion() {
+    RoughnesMetalGridContent$Companion_instance = this;
+    this.matColors_0 = listOf([new RoughnesMetalGridContent$MatColor('Red', Color.Companion.MD_RED.toLinear()), new RoughnesMetalGridContent$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new RoughnesMetalGridContent$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new RoughnesMetalGridContent$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new RoughnesMetalGridContent$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new RoughnesMetalGridContent$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new RoughnesMetalGridContent$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new RoughnesMetalGridContent$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new RoughnesMetalGridContent$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new RoughnesMetalGridContent$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new RoughnesMetalGridContent$MatColor('White', Color.Companion.WHITE.toLinear()), new RoughnesMetalGridContent$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
+  }
+  RoughnesMetalGridContent$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var RoughnesMetalGridContent$Companion_instance = null;
+  function RoughnesMetalGridContent$Companion_getInstance() {
+    if (RoughnesMetalGridContent$Companion_instance === null) {
+      new RoughnesMetalGridContent$Companion();
+    }
+    return RoughnesMetalGridContent$Companion_instance;
+  }
+  RoughnesMetalGridContent.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RoughnesMetalGridContent',
+    interfaces: [PbrDemo$PbrContent]
   };
   function globeScene$lambda$lambda(closure$elevationUrl, closure$ctx, closure$globe, this$, closure$globeGroup) {
     return function (data) {
@@ -1283,3047 +5194,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var ui = uiScene(ctx.screenDpi, void 0, void 0, particleDemo$lambda(isColored, isSorted, currentParticleCount, maxParticleCount));
     return listOf([scene, ui]);
   }
-  function ColorGridContent() {
-    PbrDemo$PbrContent.call(this, 'Color Grid');
-    this.shaders_0 = ArrayList_init();
-    this.iblContent_0 = null;
-    this.nonIblContent_0 = null;
-  }
-  function ColorGridContent$createMenu$lambda$lambda$lambda(closure$y, closure$smallFont, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Material';
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
-      return Unit;
-    };
-  }
-  function ColorGridContent$createMenu$lambda$lambda$lambda_0(closure$y) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
-      $receiver.text = 'R:';
-      return Unit;
-    };
-  }
-  function ColorGridContent$createMenu$lambda$lambda$lambda$lambda(this$ColorGridContent) {
-    return function ($receiver, it) {
-      var tmp$;
-      tmp$ = this$ColorGridContent.shaders_0.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.roughness = $receiver.value / 100.0;
-      }
-      return Unit;
-    };
-  }
-  function ColorGridContent$createMenu$lambda$lambda$lambda_1(closure$y, this$ColorGridContent) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(85.0), dps(35.0), full());
-      $receiver.value = 10.0;
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = ColorGridContent$createMenu$lambda$lambda$lambda$lambda(this$ColorGridContent);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function ColorGridContent$createMenu$lambda$lambda$lambda_2(closure$y) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
-      $receiver.text = 'M:';
-      return Unit;
-    };
-  }
-  function ColorGridContent$createMenu$lambda$lambda$lambda$lambda_0(this$ColorGridContent) {
-    return function ($receiver, it) {
-      var tmp$;
-      tmp$ = this$ColorGridContent.shaders_0.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.metallic = $receiver.value / 100.0;
-      }
-      return Unit;
-    };
-  }
-  function ColorGridContent$createMenu$lambda$lambda$lambda_3(closure$y, this$ColorGridContent) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(85.0), dps(35.0), full());
-      $receiver.value = 0.0;
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = ColorGridContent$createMenu$lambda$lambda$lambda$lambda_0(this$ColorGridContent);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function ColorGridContent$createMenu$lambda$lambda(closure$yPos, closure$smallFont, this$, this$ColorGridContent) {
-    return function ($receiver) {
-      $receiver.isVisible = false;
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$yPos - 100.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(100.0), full());
-      var y = {v: -30.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('mat-lbl', ColorGridContent$createMenu$lambda$lambda$lambda(y, closure$smallFont, this$)));
-      y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('mat-roughness-lbl', ColorGridContent$createMenu$lambda$lambda$lambda_0(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('mat-roughness-slider', ColorGridContent$createMenu$lambda$lambda$lambda_1(y, this$ColorGridContent)));
-      y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('mat-metallic-lbl', ColorGridContent$createMenu$lambda$lambda$lambda_2(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('mat-metallic-slider', ColorGridContent$createMenu$lambda$lambda$lambda_3(y, this$ColorGridContent)));
-      return Unit;
-    };
-  }
-  ColorGridContent.prototype.createMenu_7fm8wr$ = function (parent, smallFont, yPos) {
-    var $receiver = parent.root;
-    this.ui = $receiver.container_t34sov$('pbr-color-container', ColorGridContent$createMenu$lambda$lambda(yPos, smallFont, $receiver, this));
-    parent.plusAssign_f1kmr1$(ensureNotNull(this.ui));
-  };
-  ColorGridContent.prototype.setUseImageBasedLighting_6taknv$ = function (enabled) {
-    var tmp$, tmp$_0;
-    (tmp$ = this.iblContent_0) != null ? (tmp$.isVisible = enabled) : null;
-    (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
-  };
-  function ColorGridContent$createContent$lambda(closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$ColorGridContent) {
-    return function ($receiver) {
-      $receiver.isVisible = false;
-      var ibl = this$ColorGridContent.makeSpheres_0(true, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
-      var $receiver_0 = this$ColorGridContent.makeSpheres_0(false, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
-      $receiver_0.isVisible = false;
-      var nonIbl = $receiver_0;
-      $receiver.unaryPlus_uv0sim$(ibl);
-      $receiver.unaryPlus_uv0sim$(nonIbl);
-      this$ColorGridContent.iblContent_0 = ibl;
-      this$ColorGridContent.nonIblContent_0 = nonIbl;
-      return Unit;
-    };
-  }
-  ColorGridContent.prototype.createContent_wb8610$ = function (scene, irradianceMap, reflectionMap, brdfLut, ctx) {
-    this.content = transformGroup(void 0, ColorGridContent$createContent$lambda(irradianceMap, reflectionMap, brdfLut, this));
-    return ensureNotNull(this.content);
-  };
-  function ColorGridContent$makeSpheres$lambda$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y) {
-    return function ($receiver) {
-      var closure$nCols_0 = closure$nCols;
-      var closure$x_0 = closure$x;
-      var closure$spacing_0 = closure$spacing;
-      var closure$nRows_0 = closure$nRows;
-      var closure$y_0 = closure$y;
-      var $receiver_0 = $receiver.sphereProps.defaults();
-      $receiver_0.steps = 100;
-      $receiver_0.center.set_y2kzbl$(((-(closure$nCols_0 - 1 | 0) | 0) * 0.5 + closure$x_0) * closure$spacing_0, ((closure$nRows_0 - 1 | 0) * 0.5 - closure$y_0) * closure$spacing_0, 0.0);
-      $receiver_0.radius = 1.5;
-      $receiver.sphere_mojs8w$($receiver.sphereProps);
-      return Unit;
-    };
-  }
-  function ColorGridContent$makeSpheres$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$ColorGridContent) {
-    return function ($receiver) {
-      var nRows = 4;
-      var nCols = 5;
-      var spacing = 4.5;
-      var colors = ArrayList_init();
-      addAll(colors, Color.Companion.MD_COLORS);
-      colors.remove_11rb$(Color.Companion.MD_LIGHT_BLUE);
-      colors.remove_11rb$(Color.Companion.MD_GREY);
-      colors.remove_11rb$(Color.Companion.MD_BLUE_GREY);
-      var element = Color.Companion.WHITE;
-      colors.add_11rb$(element);
-      var element_0 = Color.Companion.MD_GREY;
-      colors.add_11rb$(element_0);
-      var element_1 = Color.Companion.MD_BLUE_GREY;
-      colors.add_11rb$(element_1);
-      var element_2 = new Color(0.1, 0.1, 0.1);
-      colors.add_11rb$(element_2);
-      for (var y = 0; y < nRows; y++) {
-        for (var x = 0; x < nCols; x++) {
-          var attributes = setOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-          var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
-          var closure$withIbl_0 = closure$withIbl;
-          var closure$irradianceMap_0 = closure$irradianceMap;
-          var closure$reflectionMap_0 = closure$reflectionMap;
-          var closure$brdfLut_0 = closure$brdfLut;
-          var this$ColorGridContent_0 = this$ColorGridContent;
-          mesh.generate_v2sixm$(ColorGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
-          var pbrConfig = new PbrShader$PbrConfig();
-          pbrConfig.albedoSource = PbrShader$AlbedoSource.STATIC_ALBEDO;
-          pbrConfig.isImageBasedLighting = closure$withIbl_0;
-          var shader = new PbrShader(pbrConfig);
-          shader.albedo = colors.get_za3lpa$((Kotlin.imul(y, nCols) + x | 0) % colors.size).toLinear();
-          shader.irradianceMap = closure$irradianceMap_0;
-          shader.reflectionMap = closure$reflectionMap_0;
-          shader.brdfLut = closure$brdfLut_0;
-          shader.roughness = 0.1;
-          shader.metallic = 0.0;
-          mesh.pipelineLoader = shader;
-          this$ColorGridContent_0.shaders_0.add_11rb$(shader);
-          $receiver.unaryPlus_uv0sim$(mesh);
-        }
-      }
-      return Unit;
-    };
-  }
-  ColorGridContent.prototype.makeSpheres_0 = function (withIbl, irradianceMap, reflectionMap, brdfLut) {
-    return group(void 0, ColorGridContent$makeSpheres$lambda(withIbl, irradianceMap, reflectionMap, brdfLut, this));
-  };
-  ColorGridContent.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ColorGridContent',
-    interfaces: [PbrDemo$PbrContent]
-  };
-  function pbrDemoScene(ctx) {
-    return (new PbrDemo(ctx)).scenes;
-  }
-  function PbrDemo(ctx) {
-    PbrDemo$Companion_getInstance();
-    this.ctx = ctx;
-    this.scenes = ArrayList_init();
-    this.contentScene_0 = null;
-    this.irradianceMapPass_0 = null;
-    this.reflectionMapPass_0 = null;
-    this.brdfLut_0 = null;
-    var $receiver = new PbrDemo$Cycler(PbrDemo$Companion_getInstance().lightSetups_0);
-    $receiver.index = 2;
-    this.lightCycler_0 = $receiver;
-    this.hdriCycler_0 = new PbrDemo$Cycler(PbrDemo$Companion_getInstance().hdriTextures_0);
-    var array = Array_0(PbrDemo$Companion_getInstance().hdriTextures_0.size);
-    var tmp$;
-    tmp$ = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$; i++) {
-      array[i] = null;
-    }
-    this.loadedHdris_0 = array;
-    this.pbrContentCycler_0 = new PbrDemo$Cycler(listOf([new PbrMaterialContent(), new ColorGridContent(), new RoughnesMetalGridContent()]));
-    var nextHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-25, 'Next environment map', PbrDemo_init$lambda, PbrDemo_init$lambda_0(this));
-    var prevHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-26, 'Prev environment map', PbrDemo_init$lambda_1, PbrDemo_init$lambda_2(this));
-    this.contentScene_0 = this.setupScene_0();
-    this.contentScene_0.onDispose.add_11rb$(PbrDemo_init$lambda_3(this, nextHdriKeyListener, prevHdriKeyListener));
-    var $receiver_0 = this.scenes;
-    var element = this.contentScene_0;
-    $receiver_0.add_11rb$(element);
-    var $receiver_1 = this.scenes;
-    var element_0 = this.pbrMenu_0();
-    $receiver_1.add_11rb$(element_0);
-  }
-  function PbrDemo$setupScene$lambda$lambda$lambda(this$) {
-    return function ($receiver, ctx) {
-      this$.verticalRotation += ctx.deltaT * 2.0;
-      return Unit;
-    };
-  }
-  function PbrDemo$setupScene$lambda$lambda(this$) {
-    return function ($receiver) {
-      $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.onPreRender.add_11rb$(PbrDemo$setupScene$lambda$lambda$lambda($receiver));
-      $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
-      $receiver.zoom = 20.0;
-      return Unit;
-    };
-  }
-  function PbrDemo$setupScene$lambda$lambda_0(this$PbrDemo, this$) {
-    return function (tex) {
-      var irrMapPass = new IrradianceMapPass(tex);
-      var reflMapPass = new ReflectionMapPass(tex);
-      var brdfLutPass = new BrdfLutPass();
-      this$PbrDemo.irradianceMapPass_0 = irrMapPass;
-      this$PbrDemo.reflectionMapPass_0 = reflMapPass;
-      this$PbrDemo.brdfLut_0 = brdfLutPass;
-      var $receiver = this$PbrDemo.ctx.offscreenPasses;
-      var element = irrMapPass.offscreenPass;
-      $receiver.add_11rb$(element);
-      var $receiver_0 = this$PbrDemo.ctx.offscreenPasses;
-      var element_0 = reflMapPass.offscreenPass;
-      $receiver_0.add_11rb$(element_0);
-      var $receiver_1 = this$PbrDemo.ctx.offscreenPasses;
-      var element_1 = brdfLutPass.offscreenPass;
-      $receiver_1.add_11rb$(element_1);
-      this$.plusAssign_f1kmr1$(new Skybox(reflMapPass.reflectionMap, 1.25));
-      var $receiver_2 = this$PbrDemo.pbrContentCycler_0;
-      var tmp$;
-      tmp$ = $receiver_2.iterator();
-      while (tmp$.hasNext()) {
-        var element_2 = tmp$.next();
-        var this$_0 = this$;
-        var this$PbrDemo_0 = this$PbrDemo;
-        this$_0.unaryPlus_uv0sim$(element_2.createContent_wb8610$(this$_0, irrMapPass.irradianceMap, reflMapPass.reflectionMap, brdfLutPass.brdfLut, this$PbrDemo_0.ctx));
-      }
-      this$PbrDemo.pbrContentCycler_0.current.show();
-      return Unit;
-    };
-  }
-  PbrDemo.prototype.setupScene_0 = function () {
-    var $receiver = new Scene_init(null);
-    this.lightCycler_0.current.setup($receiver);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, PbrDemo$setupScene$lambda$lambda($receiver)));
-    this.loadHdri_0(this.hdriCycler_0.index, PbrDemo$setupScene$lambda$lambda_0(this, $receiver));
-    return $receiver;
-  };
-  function PbrDemo$pbrMenu$lambda$lambda$lambda(it) {
-    return new BlankComponentUi();
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_0(it) {
-    return new BlankComponentUi();
-  }
-  function PbrDemo$pbrMenu$lambda$lambda($receiver) {
-    $receiver.componentUi_mloaa0$(PbrDemo$pbrMenu$lambda$lambda$lambda);
-    $receiver.containerUi_2t3ptw$(PbrDemo$pbrMenu$lambda$lambda$lambda_0);
-    return Unit;
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Environment';
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda(this$PbrDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      $receiver.text = this$PbrDemo.hdriCycler_0.next().name;
-      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_2(closure$y, this$PbrDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.text = this$PbrDemo.hdriCycler_0.current.name;
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda(this$PbrDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_0(this$PbrDemo, closure$envLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$envLabel.text = this$PbrDemo.hdriCycler_0.prev().name;
-      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_3(closure$y, this$PbrDemo, closure$envLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '<';
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_0(this$PbrDemo, closure$envLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_1(this$PbrDemo, closure$envLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$envLabel.text = this$PbrDemo.hdriCycler_0.next().name;
-      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_4(closure$y, this$PbrDemo, closure$envLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '>';
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_1(this$PbrDemo, closure$envLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_5(closure$y, closure$smallFont, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Lighting';
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_2(this$PbrDemo, this$) {
-    return function ($receiver, f, f_0, f_1) {
-      var $receiver_0 = this$PbrDemo.pbrContentCycler_0;
-      var tmp$;
-      tmp$ = $receiver_0.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.setUseImageBasedLighting_6taknv$(this$.isEnabled);
-      }
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_6(closure$y, this$PbrDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(8.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(84.0), dps(35.0), full());
-      $receiver.text = 'Image Based';
-      $receiver.isEnabled = true;
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_2(this$PbrDemo, $receiver);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_3(this$PbrDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      $receiver.text = this$PbrDemo.lightCycler_0.next().name;
-      this$PbrDemo.lightCycler_0.current.setup(this$PbrDemo.contentScene_0);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_7(closure$y, this$PbrDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.text = this$PbrDemo.lightCycler_0.current.name;
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_3(this$PbrDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_4(this$PbrDemo, closure$lightLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$lightLabel.text = this$PbrDemo.lightCycler_0.prev().name;
-      this$PbrDemo.lightCycler_0.current.setup(this$PbrDemo.contentScene_0);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_8(closure$y, this$PbrDemo, closure$lightLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '<';
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_4(this$PbrDemo, closure$lightLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_5(this$PbrDemo, closure$lightLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$lightLabel.text = this$PbrDemo.lightCycler_0.next().name;
-      this$PbrDemo.lightCycler_0.current.setup(this$PbrDemo.contentScene_0);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_9(closure$y, this$PbrDemo, closure$lightLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '>';
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_5(this$PbrDemo, closure$lightLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_10(closure$y, closure$smallFont, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Scene Content';
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_6(this$PbrDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$PbrDemo.pbrContentCycler_0.current.hide();
-      this$PbrDemo.pbrContentCycler_0.next().show();
-      $receiver.text = this$PbrDemo.pbrContentCycler_0.current.name;
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_11(closure$y, this$PbrDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.text = this$PbrDemo.pbrContentCycler_0.current.name;
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_6(this$PbrDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_7(this$PbrDemo, closure$contentLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      this$PbrDemo.pbrContentCycler_0.current.hide();
-      this$PbrDemo.pbrContentCycler_0.prev().show();
-      closure$contentLabel.text = this$PbrDemo.pbrContentCycler_0.current.name;
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_12(closure$y, this$PbrDemo, closure$contentLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '<';
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_7(this$PbrDemo, closure$contentLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_8(this$PbrDemo, closure$contentLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      this$PbrDemo.pbrContentCycler_0.current.hide();
-      this$PbrDemo.pbrContentCycler_0.next().show();
-      closure$contentLabel.text = this$PbrDemo.pbrContentCycler_0.current.name;
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda$lambda_13(closure$y, this$PbrDemo, closure$contentLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '>';
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrDemo$pbrMenu$lambda$lambda$lambda$lambda_8(this$PbrDemo, closure$contentLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda$lambda_0(closure$smallFont, this$, this$PbrDemo) {
-    return function ($receiver) {
-      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-320.0), dps(-430.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(360.0), full());
-      var y = {v: -35.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('env-lbl', PbrDemo$pbrMenu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
-      y.v -= 30.0;
-      var envLabel = this$.button_9zrh0o$('selected-env', PbrDemo$pbrMenu$lambda$lambda$lambda_2(y, this$PbrDemo));
-      $receiver.unaryPlus_uv0sim$(envLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('env-left', PbrDemo$pbrMenu$lambda$lambda$lambda_3(y, this$PbrDemo, envLabel)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('env-right', PbrDemo$pbrMenu$lambda$lambda$lambda_4(y, this$PbrDemo, envLabel)));
-      y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('light-lbl', PbrDemo$pbrMenu$lambda$lambda$lambda_5(y, closure$smallFont, this$)));
-      y.v -= 30.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('env-lighting', PbrDemo$pbrMenu$lambda$lambda$lambda_6(y, this$PbrDemo)));
-      y.v -= 30.0;
-      var lightLabel = this$.button_9zrh0o$('selected-light', PbrDemo$pbrMenu$lambda$lambda$lambda_7(y, this$PbrDemo));
-      $receiver.unaryPlus_uv0sim$(lightLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('light-left', PbrDemo$pbrMenu$lambda$lambda$lambda_8(y, this$PbrDemo, lightLabel)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('light-right', PbrDemo$pbrMenu$lambda$lambda$lambda_9(y, this$PbrDemo, lightLabel)));
-      y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('content-lbl', PbrDemo$pbrMenu$lambda$lambda$lambda_10(y, closure$smallFont, this$)));
-      y.v -= 30.0;
-      var contentLabel = this$.button_9zrh0o$('selected-content', PbrDemo$pbrMenu$lambda$lambda$lambda_11(y, this$PbrDemo));
-      $receiver.unaryPlus_uv0sim$(contentLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('content-left', PbrDemo$pbrMenu$lambda$lambda$lambda_12(y, this$PbrDemo, contentLabel)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('content-right', PbrDemo$pbrMenu$lambda$lambda$lambda_13(y, this$PbrDemo, contentLabel)));
-      y.v -= 10.0;
-      var $receiver_0 = this$PbrDemo.pbrContentCycler_0;
-      var tmp$;
-      tmp$ = $receiver_0.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.createMenu_7fm8wr$($receiver, closure$smallFont, y.v);
-      }
-      this$PbrDemo.pbrContentCycler_0.current.show();
-      return Unit;
-    };
-  }
-  function PbrDemo$pbrMenu$lambda(this$PbrDemo) {
-    return function ($receiver) {
-      var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
-      var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, this$PbrDemo.ctx, smallFontProps.style, smallFontProps.chars);
-      $receiver.theme = theme(UiTheme.Companion.DARK, PbrDemo$pbrMenu$lambda$lambda);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', PbrDemo$pbrMenu$lambda$lambda_0(smallFont, $receiver, this$PbrDemo)));
-      return Unit;
-    };
-  }
-  PbrDemo.prototype.pbrMenu_0 = function () {
-    return uiScene(void 0, void 0, void 0, PbrDemo$pbrMenu$lambda(this));
-  };
-  function PbrDemo$updateHdri$lambda(this$PbrDemo) {
-    return function (tex) {
-      var tmp$, tmp$_0;
-      if ((tmp$ = this$PbrDemo.irradianceMapPass_0) != null) {
-        var this$PbrDemo_0 = this$PbrDemo;
-        tmp$.hdriTexture = tex;
-        tmp$.update_aemszp$(this$PbrDemo_0.ctx);
-      }
-      if ((tmp$_0 = this$PbrDemo.reflectionMapPass_0) != null) {
-        var this$PbrDemo_1 = this$PbrDemo;
-        tmp$_0.hdriTexture = tex;
-        tmp$_0.update_aemszp$(this$PbrDemo_1.ctx);
-      }
-      return Unit;
-    };
-  }
-  PbrDemo.prototype.updateHdri_0 = function (idx) {
-    this.loadHdri_0(idx, PbrDemo$updateHdri$lambda(this));
-  };
-  function PbrDemo$loadHdri$lambda(this$PbrDemo, closure$idx, closure$recv) {
-    return function (it) {
-      this$PbrDemo.loadedHdris_0[closure$idx] = it;
-      closure$recv(it);
-      return Unit;
-    };
-  }
-  PbrDemo.prototype.loadHdri_0 = function (idx, recv) {
-    var tex = this.loadedHdris_0[idx];
-    if (tex == null) {
-      this.ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(PbrDemo$Companion_getInstance().hdriTextures_0.get_za3lpa$(idx).hdriPath, PbrDemo$Companion_getInstance().hdriTexProps_0, PbrDemo$loadHdri$lambda(this, idx, recv));
-    }
-     else {
-      recv(tex);
-    }
-  };
-  function PbrDemo$EnvironmentMap(hdriPath, name) {
-    this.hdriPath = hdriPath;
-    this.name = name;
-  }
-  PbrDemo$EnvironmentMap.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'EnvironmentMap',
-    interfaces: []
-  };
-  function PbrDemo$LightSetup(name, setup) {
-    this.name = name;
-    this.setup = setup;
-  }
-  PbrDemo$LightSetup.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LightSetup',
-    interfaces: []
-  };
-  function PbrDemo$Cycler(elements) {
-    this.$delegate_onbihl$_0 = elements;
-    this.index = 0;
-  }
-  Object.defineProperty(PbrDemo$Cycler.prototype, 'current', {
-    get: function () {
-      return this.get_za3lpa$(this.index);
-    }
-  });
-  PbrDemo$Cycler.prototype.next = function () {
-    this.index = (this.index + 1 | 0) % this.size;
-    return this.current;
-  };
-  PbrDemo$Cycler.prototype.prev = function () {
-    this.index = (this.index + this.size - 1 + this.size | 0) % this.size;
-    return this.current;
-  };
-  Object.defineProperty(PbrDemo$Cycler.prototype, 'size', {
-    get: function () {
-      return this.$delegate_onbihl$_0.size;
-    }
-  });
-  PbrDemo$Cycler.prototype.contains_11rb$ = function (element) {
-    return this.$delegate_onbihl$_0.contains_11rb$(element);
-  };
-  PbrDemo$Cycler.prototype.containsAll_brywnq$ = function (elements) {
-    return this.$delegate_onbihl$_0.containsAll_brywnq$(elements);
-  };
-  PbrDemo$Cycler.prototype.get_za3lpa$ = function (index) {
-    return this.$delegate_onbihl$_0.get_za3lpa$(index);
-  };
-  PbrDemo$Cycler.prototype.indexOf_11rb$ = function (element) {
-    return this.$delegate_onbihl$_0.indexOf_11rb$(element);
-  };
-  PbrDemo$Cycler.prototype.isEmpty = function () {
-    return this.$delegate_onbihl$_0.isEmpty();
-  };
-  PbrDemo$Cycler.prototype.iterator = function () {
-    return this.$delegate_onbihl$_0.iterator();
-  };
-  PbrDemo$Cycler.prototype.lastIndexOf_11rb$ = function (element) {
-    return this.$delegate_onbihl$_0.lastIndexOf_11rb$(element);
-  };
-  PbrDemo$Cycler.prototype.listIterator = function () {
-    return this.$delegate_onbihl$_0.listIterator();
-  };
-  PbrDemo$Cycler.prototype.listIterator_za3lpa$ = function (index) {
-    return this.$delegate_onbihl$_0.listIterator_za3lpa$(index);
-  };
-  PbrDemo$Cycler.prototype.subList_vux9f0$ = function (fromIndex, toIndex) {
-    return this.$delegate_onbihl$_0.subList_vux9f0$(fromIndex, toIndex);
-  };
-  PbrDemo$Cycler.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Cycler',
-    interfaces: [List]
-  };
-  function PbrDemo$PbrContent(name) {
-    this.name = name;
-    this.content = null;
-    this.ui = null;
-  }
-  PbrDemo$PbrContent.prototype.show = function () {
-    var tmp$, tmp$_0;
-    (tmp$ = this.content) != null ? (tmp$.isVisible = true) : null;
-    (tmp$_0 = this.ui) != null ? (tmp$_0.isVisible = true) : null;
-  };
-  PbrDemo$PbrContent.prototype.hide = function () {
-    var tmp$, tmp$_0;
-    (tmp$ = this.content) != null ? (tmp$.isVisible = false) : null;
-    (tmp$_0 = this.ui) != null ? (tmp$_0.isVisible = false) : null;
-  };
-  PbrDemo$PbrContent.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'PbrContent',
-    interfaces: []
-  };
-  function PbrDemo$Companion() {
-    PbrDemo$Companion_instance = this;
-    this.hdriTexProps_0 = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    this.assetPath_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri';
-    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
-    this.lightStrength_0 = 250.0;
-    this.lightExtent_0 = 10.0;
-    this.lightSetups_0 = listOf([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);
-  }
-  function PbrDemo$Companion$lightSetups$lambda($receiver) {
-    $receiver.lighting.lights.clear();
-    return Unit;
-  }
-  function PbrDemo$Companion$lightSetups$lambda_0(this$PbrDemo$) {
-    return function ($receiver) {
-      var light1 = (new Light()).setPoint_czzhiu$(new Vec3f(0.0, 0.0, this$PbrDemo$.lightExtent_0 * 1.5)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0 * 2.0);
-      $receiver.lighting.lights.clear();
-      $receiver.lighting.lights.add_11rb$(light1);
-      return Unit;
-    };
-  }
-  function PbrDemo$Companion$lightSetups$lambda_1(this$PbrDemo$) {
-    return function ($receiver) {
-      var light1 = (new Light()).setPoint_czzhiu$(new Vec3f(this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
-      var light2 = (new Light()).setPoint_czzhiu$(new Vec3f(-this$PbrDemo$.lightExtent_0, -this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
-      var light3 = (new Light()).setPoint_czzhiu$(new Vec3f(-this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
-      var light4 = (new Light()).setPoint_czzhiu$(new Vec3f(this$PbrDemo$.lightExtent_0, -this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
-      $receiver.lighting.lights.clear();
-      $receiver.lighting.lights.add_11rb$(light1);
-      $receiver.lighting.lights.add_11rb$(light2);
-      $receiver.lighting.lights.add_11rb$(light3);
-      $receiver.lighting.lights.add_11rb$(light4);
-      return Unit;
-    };
-  }
-  function PbrDemo$Companion$lightSetups$lambda_2(this$PbrDemo$) {
-    return function ($receiver) {
-      var light1 = (new Light()).setPoint_czzhiu$(new Vec3f(0.0, this$PbrDemo$.lightExtent_0 * 1.5, 0.0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0 * 2.0);
-      $receiver.lighting.lights.clear();
-      $receiver.lighting.lights.add_11rb$(light1);
-      return Unit;
-    };
-  }
-  function PbrDemo$Companion$lightSetups$lambda_3(this$PbrDemo$) {
-    return function ($receiver) {
-      var light1 = (new Light()).setPoint_czzhiu$(new Vec3f(this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
-      var light2 = (new Light()).setPoint_czzhiu$(new Vec3f(-this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, -this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
-      var light3 = (new Light()).setPoint_czzhiu$(new Vec3f(-this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
-      var light4 = (new Light()).setPoint_czzhiu$(new Vec3f(this$PbrDemo$.lightExtent_0, this$PbrDemo$.lightExtent_0, -this$PbrDemo$.lightExtent_0)).setColor_y83vuj$(Color.Companion.WHITE, this$PbrDemo$.lightStrength_0);
-      $receiver.lighting.lights.clear();
-      $receiver.lighting.lights.add_11rb$(light1);
-      $receiver.lighting.lights.add_11rb$(light2);
-      $receiver.lighting.lights.add_11rb$(light3);
-      $receiver.lighting.lights.add_11rb$(light4);
-      return Unit;
-    };
-  }
-  PbrDemo$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var PbrDemo$Companion_instance = null;
-  function PbrDemo$Companion_getInstance() {
-    if (PbrDemo$Companion_instance === null) {
-      new PbrDemo$Companion();
-    }
-    return PbrDemo$Companion_instance;
-  }
-  function PbrDemo_init$lambda(it) {
-    return it.isPressed;
-  }
-  function PbrDemo_init$lambda_0(this$PbrDemo) {
-    return function (it) {
-      this$PbrDemo.hdriCycler_0.next();
-      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
-      return Unit;
-    };
-  }
-  function PbrDemo_init$lambda_1(it) {
-    return it.isPressed;
-  }
-  function PbrDemo_init$lambda_2(this$PbrDemo) {
-    return function (it) {
-      this$PbrDemo.hdriCycler_0.prev();
-      this$PbrDemo.updateHdri_0(this$PbrDemo.hdriCycler_0.index);
-      return Unit;
-    };
-  }
-  function PbrDemo_init$lambda_3(this$PbrDemo, closure$nextHdriKeyListener, closure$prevHdriKeyListener) {
-    return function ($receiver, it) {
-      var tmp$, tmp$_0, tmp$_1;
-      this$PbrDemo.ctx.inputMgr.removeKeyListener_abhb69$(closure$nextHdriKeyListener);
-      this$PbrDemo.ctx.inputMgr.removeKeyListener_abhb69$(closure$prevHdriKeyListener);
-      var $receiver_0 = this$PbrDemo.loadedHdris_0;
-      var tmp$_2;
-      for (tmp$_2 = 0; tmp$_2 !== $receiver_0.length; ++tmp$_2) {
-        var element = $receiver_0[tmp$_2];
-        element != null ? (element.dispose(), Unit) : null;
-      }
-      (tmp$ = this$PbrDemo.irradianceMapPass_0) != null ? (tmp$.dispose_aemszp$(this$PbrDemo.ctx), Unit) : null;
-      (tmp$_0 = this$PbrDemo.reflectionMapPass_0) != null ? (tmp$_0.dispose_aemszp$(this$PbrDemo.ctx), Unit) : null;
-      (tmp$_1 = this$PbrDemo.brdfLut_0) != null ? (tmp$_1.dispose_aemszp$(this$PbrDemo.ctx), Unit) : null;
-      return Unit;
-    };
-  }
-  PbrDemo.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'PbrDemo',
-    interfaces: []
-  };
-  function PbrMaterialContent() {
-    PbrMaterialContent$Companion_getInstance();
-    PbrDemo$PbrContent.call(this, 'PBR Material');
-    this.matCycler = new PbrDemo$Cycler(PbrMaterialContent$Companion_getInstance().materials_0);
-    this.shaders_0 = ArrayList_init();
-    this.iblContent_0 = null;
-    this.nonIblContent_0 = null;
-  }
-  Object.defineProperty(PbrMaterialContent.prototype, 'currentMat', {
-    get: function () {
-      return this.matCycler.current;
-    }
-  });
-  PbrMaterialContent.prototype.nextMaterial = function () {
-    this.currentMat.disposeMaps();
-    this.matCycler.next();
-    this.updatePbrMaterial_0();
-    return this.currentMat;
-  };
-  PbrMaterialContent.prototype.prevMaterial = function () {
-    this.currentMat.disposeMaps();
-    this.matCycler.prev();
-    this.updatePbrMaterial_0();
-    return this.currentMat;
-  };
-  PbrMaterialContent.prototype.updatePbrMaterial_0 = function () {
-    var tmp$;
-    tmp$ = this.shaders_0.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      var tmp$_0, tmp$_1, tmp$_2;
-      element.albedoMap = this.currentMat.albedo;
-      element.normalMap = this.currentMat.normal;
-      element.roughnessMap = this.currentMat.roughness;
-      element.metallicMap = (tmp$_0 = this.currentMat.metallic) != null ? tmp$_0 : PbrMaterialContent$Companion_getInstance().defaultMetallicTex_0;
-      element.ambientOcclusionMap = (tmp$_1 = this.currentMat.ao) != null ? tmp$_1 : PbrMaterialContent$Companion_getInstance().defaultAoTex_0;
-      element.displacementMap = (tmp$_2 = this.currentMat.displacement) != null ? tmp$_2 : PbrMaterialContent$Companion_getInstance().defaultDispTex_0;
-    }
-  };
-  function PbrMaterialContent$createMenu$lambda$lambda$lambda(closure$y, closure$smallFont, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Material';
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda(this$PbrMaterialContent) {
-    return function ($receiver, f, f_0, f_1) {
-      $receiver.text = this$PbrMaterialContent.nextMaterial().name;
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$createMenu$lambda$lambda$lambda_0(closure$y, this$PbrMaterialContent) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.text = this$PbrMaterialContent.currentMat.name;
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda(this$PbrMaterialContent);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_0(this$PbrMaterialContent, closure$matLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$matLabel.text = this$PbrMaterialContent.prevMaterial().name;
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$createMenu$lambda$lambda$lambda_1(closure$y, this$PbrMaterialContent, closure$matLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '<';
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_0(this$PbrMaterialContent, closure$matLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_1(this$PbrMaterialContent, closure$matLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$matLabel.text = this$PbrMaterialContent.nextMaterial().name;
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$createMenu$lambda$lambda$lambda_2(closure$y, this$PbrMaterialContent, closure$matLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '>';
-      var $receiver_0 = $receiver.onClick;
-      var element = PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_1(this$PbrMaterialContent, closure$matLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$createMenu$lambda$lambda(closure$yPos, closure$smallFont, this$, this$PbrMaterialContent) {
-    return function ($receiver) {
-      $receiver.isVisible = false;
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$yPos - 60.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(60.0), full());
-      var y = {v: -30.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('mat-lbl', PbrMaterialContent$createMenu$lambda$lambda$lambda(y, closure$smallFont, this$)));
-      y.v -= 30.0;
-      var matLabel = this$.button_9zrh0o$('selected-mat', PbrMaterialContent$createMenu$lambda$lambda$lambda_0(y, this$PbrMaterialContent));
-      $receiver.unaryPlus_uv0sim$(matLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('mat-left', PbrMaterialContent$createMenu$lambda$lambda$lambda_1(y, this$PbrMaterialContent, matLabel)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('mat-right', PbrMaterialContent$createMenu$lambda$lambda$lambda_2(y, this$PbrMaterialContent, matLabel)));
-      return Unit;
-    };
-  }
-  PbrMaterialContent.prototype.createMenu_7fm8wr$ = function (parent, smallFont, yPos) {
-    var $receiver = parent.root;
-    this.ui = $receiver.container_t34sov$('pbr-mat-container', PbrMaterialContent$createMenu$lambda$lambda(yPos, smallFont, $receiver, this));
-    parent.plusAssign_f1kmr1$(ensureNotNull(this.ui));
-  };
-  PbrMaterialContent.prototype.setUseImageBasedLighting_6taknv$ = function (enabled) {
-    var tmp$, tmp$_0;
-    (tmp$ = this.iblContent_0) != null ? (tmp$.isVisible = enabled) : null;
-    (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
-  };
-  function PbrMaterialContent$createContent$lambda$lambda(this$) {
-    return function ($receiver, ctx) {
-      this$.rotate_ad55pp$(-2.0 * ctx.deltaT, Vec3f.Companion.Y_AXIS);
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$createContent$lambda(closure$scene, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent) {
-    return function ($receiver) {
-      $receiver.isVisible = false;
-      var ibl = this$PbrMaterialContent.makeSphere_0(true, closure$scene, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
-      var $receiver_0 = this$PbrMaterialContent.makeSphere_0(false, closure$scene, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
-      $receiver_0.isVisible = false;
-      var nonIbl = $receiver_0;
-      $receiver.unaryPlus_uv0sim$(ibl);
-      $receiver.unaryPlus_uv0sim$(nonIbl);
-      this$PbrMaterialContent.iblContent_0 = ibl;
-      this$PbrMaterialContent.nonIblContent_0 = nonIbl;
-      $receiver.onPreRender.add_11rb$(PbrMaterialContent$createContent$lambda$lambda($receiver));
-      return Unit;
-    };
-  }
-  PbrMaterialContent.prototype.createContent_wb8610$ = function (scene, irradianceMap, reflectionMap, brdfLut, ctx) {
-    this.content = transformGroup(void 0, PbrMaterialContent$createContent$lambda(scene, irradianceMap, reflectionMap, brdfLut, this));
-    return ensureNotNull(this.content);
-  };
-  function PbrMaterialContent$makeSphere$lambda$lambda$lambda$lambda($receiver) {
-    $receiver.texCoord.x = $receiver.texCoord.x * 4;
-    $receiver.texCoord.y = $receiver.texCoord.y * 2;
-    return Unit;
-  }
-  function PbrMaterialContent$makeSphere$lambda$lambda$lambda($receiver) {
-    $receiver.vertexModFun = PbrMaterialContent$makeSphere$lambda$lambda$lambda$lambda;
-    var $receiver_0 = $receiver.sphereProps.defaults();
-    $receiver_0.steps = 700;
-    $receiver_0.radius = 7.0;
-    $receiver.sphere_mojs8w$($receiver.sphereProps);
-    return Unit;
-  }
-  function PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(this$PbrMaterialContent) {
-    return function ($receiver, it) {
-      var tmp$;
-      tmp$ = this$PbrMaterialContent.matCycler.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.disposeMaps();
-      }
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(PbrMaterialContent$makeSphere$lambda$lambda$lambda);
-      var pbrConfig = new PbrShader$PbrConfig();
-      pbrConfig.isImageBasedLighting = closure$withIbl;
-      pbrConfig.albedoSource = PbrShader$AlbedoSource.TEXTURE_ALBEDO;
-      pbrConfig.isNormalMapped = true;
-      pbrConfig.isRoughnessMapped = true;
-      pbrConfig.isMetallicMapped = true;
-      pbrConfig.isAmbientOcclusionMapped = true;
-      pbrConfig.isDisplacementMapped = true;
-      var $receiver_0 = new PbrShader(pbrConfig);
-      var closure$irradianceMap_0 = closure$irradianceMap;
-      var closure$reflectionMap_0 = closure$reflectionMap;
-      var closure$brdfLut_0 = closure$brdfLut;
-      $receiver_0.irradianceMap = closure$irradianceMap_0;
-      $receiver_0.reflectionMap = closure$reflectionMap_0;
-      $receiver_0.brdfLut = closure$brdfLut_0;
-      var shader = $receiver_0;
-      $receiver.pipelineLoader = shader;
-      this$PbrMaterialContent.shaders_0.add_11rb$(shader);
-      this$PbrMaterialContent.updatePbrMaterial_0();
-      var $receiver_1 = closure$scene.onDispose;
-      var element = PbrMaterialContent$makeSphere$lambda$lambda$lambda_0(this$PbrMaterialContent);
-      $receiver_1.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function PbrMaterialContent$makeSphere$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene) {
-    return function ($receiver) {
-      $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, PbrMaterialContent$makeSphere$lambda$lambda(closure$withIbl, closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$PbrMaterialContent, closure$scene)));
-      return Unit;
-    };
-  }
-  PbrMaterialContent.prototype.makeSphere_0 = function (withIbl, scene, irradianceMap, reflectionMap, brdfLut) {
-    return group(void 0, PbrMaterialContent$makeSphere$lambda(withIbl, irradianceMap, reflectionMap, brdfLut, this, scene));
-  };
-  function PbrMaterialContent$MaterialMaps(name, albedo, normal, roughness, metallic, ao, displacement) {
-    this.name = name;
-    this.albedo = albedo;
-    this.normal = normal;
-    this.roughness = roughness;
-    this.metallic = metallic;
-    this.ao = ao;
-    this.displacement = displacement;
-  }
-  PbrMaterialContent$MaterialMaps.prototype.disposeMaps = function () {
-    var tmp$, tmp$_0, tmp$_1;
-    this.albedo.dispose();
-    this.normal.dispose();
-    this.roughness.dispose();
-    (tmp$ = this.metallic) != null ? (tmp$.dispose(), Unit) : null;
-    (tmp$_0 = this.ao) != null ? (tmp$_0.dispose(), Unit) : null;
-    (tmp$_1 = this.displacement) != null ? (tmp$_1.dispose(), Unit) : null;
-  };
-  PbrMaterialContent$MaterialMaps.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MaterialMaps',
-    interfaces: []
-  };
-  PbrMaterialContent$MaterialMaps.prototype.component1 = function () {
-    return this.name;
-  };
-  PbrMaterialContent$MaterialMaps.prototype.component2 = function () {
-    return this.albedo;
-  };
-  PbrMaterialContent$MaterialMaps.prototype.component3 = function () {
-    return this.normal;
-  };
-  PbrMaterialContent$MaterialMaps.prototype.component4 = function () {
-    return this.roughness;
-  };
-  PbrMaterialContent$MaterialMaps.prototype.component5 = function () {
-    return this.metallic;
-  };
-  PbrMaterialContent$MaterialMaps.prototype.component6 = function () {
-    return this.ao;
-  };
-  PbrMaterialContent$MaterialMaps.prototype.component7 = function () {
-    return this.displacement;
-  };
-  PbrMaterialContent$MaterialMaps.prototype.copy_chv25t$ = function (name, albedo, normal, roughness, metallic, ao, displacement) {
-    return new PbrMaterialContent$MaterialMaps(name === void 0 ? this.name : name, albedo === void 0 ? this.albedo : albedo, normal === void 0 ? this.normal : normal, roughness === void 0 ? this.roughness : roughness, metallic === void 0 ? this.metallic : metallic, ao === void 0 ? this.ao : ao, displacement === void 0 ? this.displacement : displacement);
-  };
-  PbrMaterialContent$MaterialMaps.prototype.toString = function () {
-    return 'MaterialMaps(name=' + Kotlin.toString(this.name) + (', albedo=' + Kotlin.toString(this.albedo)) + (', normal=' + Kotlin.toString(this.normal)) + (', roughness=' + Kotlin.toString(this.roughness)) + (', metallic=' + Kotlin.toString(this.metallic)) + (', ao=' + Kotlin.toString(this.ao)) + (', displacement=' + Kotlin.toString(this.displacement)) + ')';
-  };
-  PbrMaterialContent$MaterialMaps.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    result = result * 31 + Kotlin.hashCode(this.albedo) | 0;
-    result = result * 31 + Kotlin.hashCode(this.normal) | 0;
-    result = result * 31 + Kotlin.hashCode(this.roughness) | 0;
-    result = result * 31 + Kotlin.hashCode(this.metallic) | 0;
-    result = result * 31 + Kotlin.hashCode(this.ao) | 0;
-    result = result * 31 + Kotlin.hashCode(this.displacement) | 0;
-    return result;
-  };
-  PbrMaterialContent$MaterialMaps.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.albedo, other.albedo) && Kotlin.equals(this.normal, other.normal) && Kotlin.equals(this.roughness, other.roughness) && Kotlin.equals(this.metallic, other.metallic) && Kotlin.equals(this.ao, other.ao) && Kotlin.equals(this.displacement, other.displacement)))));
-  };
-  function PbrMaterialContent$Companion() {
-    PbrMaterialContent$Companion_instance = this;
-    this.defaultMetallicTex_0 = new SingleColorTexture(Color.Companion.BLACK);
-    this.defaultAoTex_0 = new SingleColorTexture(Color.Companion.WHITE);
-    this.defaultDispTex_0 = new SingleColorTexture(Color.Companion.BLACK);
-    this.assetPath_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials';
-    this.materials_0 = mutableListOf([new PbrMaterialContent$MaterialMaps('Bamboo', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_0), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_1), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_2), null), new PbrMaterialContent$MaterialMaps('Castle Brick', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_3), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_4), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_5), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_6), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_7)), new PbrMaterialContent$MaterialMaps('Granite', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_8), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_9), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_10), null, null, null), new PbrMaterialContent$MaterialMaps('Weave Steel', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_11), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_12), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_13), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_14), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_15), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_16)), new PbrMaterialContent$MaterialMaps('Scuffed Plastic', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_17), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_18), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_19), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_20), null), new PbrMaterialContent$MaterialMaps('Snow Covered Path', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_21), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_22), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_23), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_24), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_25)), new PbrMaterialContent$MaterialMaps('Marble', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_26), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_27), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_28), null, null, null), new PbrMaterialContent$MaterialMaps('Onyx Tiles', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_29), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_30), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_31), null, null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_32))]);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_0.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_0;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_1($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_1.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_1.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_1;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_1.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_1($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_2($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_2.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_2.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_2;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_2.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_2($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_2($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_3($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_3.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_3.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_3.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_3;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_3.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/castle_brick/castle_brick_02_red_diff_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_3($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_3($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_4($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_4.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_4.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_4.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_4;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_4.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/castle_brick/castle_brick_02_red_nor_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_4($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_4($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_5($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_5.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_5.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_5.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_5;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_5.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/castle_brick/castle_brick_02_red_rough_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_5($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_5($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_6($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_6.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_6.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_6.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_6;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_6.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/castle_brick/castle_brick_02_red_ao_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_6($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_6($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_7($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_7.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_7.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_7.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_7;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_7.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/castle_brick/castle_brick_02_red_disp_2k.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_7($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_7($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_8($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_8.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_8.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_8.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_8;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_8.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/granitesmooth1/granitesmooth1-albedo4.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_8($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_8($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_9($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_9.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_9.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_9.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_9;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_9.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/granitesmooth1/granitesmooth1-normal2.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_9($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_9($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_10($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_10.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_10.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_10.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_10;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_10.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/granitesmooth1/granitesmooth1-roughness3.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_10($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_10($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_11($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_11.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_11.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_11.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_11;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_11.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_COL_2K_METALNESS.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_11($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_11($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_12($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_12.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_12.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_12.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_12;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_12.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_NRM_2K_METALNESS.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_12($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_12($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_13($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_13.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_13.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_13.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_13;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_13.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_ROUGHNESS_2K_METALNESS.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_13($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_13($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_14($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_14.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_14.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_14.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_14;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_14.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_METALNESS_2K_METALNESS.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_14($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_14($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_15($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_15.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_15.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_15.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_15;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_15.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_AO_2K_METALNESS.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_15($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_15($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_16($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_16.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_16.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_16.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_16;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_16.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/MetalDesignerWeaveSteel002/MetalDesignerWeaveSteel002_DISP_2K_METALNESS.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_16($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_16($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_17($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_17.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_17.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_17.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_17;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_17.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/scuffed-plastic-1/scuffed-plastic4-alb.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_17($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_17($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_18($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_18.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_18.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_18.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_18;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_18.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/scuffed-plastic-1/scuffed-plastic-normal.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_18($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_18($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_19($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_19.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_19.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_19.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_19;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_19.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/scuffed-plastic-1/scuffed-plastic-rough.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_19($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_19($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_20($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_20.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_20.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_20.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_20;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_20.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/scuffed-plastic-1/scuffed-plastic-ao.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_20($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_20($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_21($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_21.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_21.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_21.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_21;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_21.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/snowcoveredpath/snowcoveredpath_albedo.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_21($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_21($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_22($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_22.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_22.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_22.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_22;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_22.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/snowcoveredpath/snowcoveredpath_normal-dx.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_22($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_22($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_23($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_23.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_23.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_23.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_23;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_23.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/snowcoveredpath/snowcoveredpath_roughness.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_23($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_23($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_24($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_24.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_24.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_24.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_24;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_24.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/snowcoveredpath/snowcoveredpath_ao.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_24($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_24($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_25($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_25.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_25.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_25.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_25;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_25.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/snowcoveredpath/snowcoveredpath_height.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_25($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_25($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_26($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_26.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_26.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_26.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_26;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_26.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/streaked-marble/streaked-marble-albedo2.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_26($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_26($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_27($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_27.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_27.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_27.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_27;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_27.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/streaked-marble/streaked-marble-normal.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_27($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_27($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_28($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_28.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_28.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_28.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_28;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_28.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/streaked-marble/streaked-marble-roughness1.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_28($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_28($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_29($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_29.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_29.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_29.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_29;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_29.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_COL_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_29($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_29($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_30($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_30.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_30.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_30.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_30;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_30.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_NRM_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_30($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_30($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_31($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_31.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_31.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_31.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_31;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_31.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_REFL_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_31($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_31($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$PbrMaterialContent$Companion$materials$lambda_32($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_32.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_32.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_32.prototype.constructor = Coroutine$PbrMaterialContent$Companion$materials$lambda_32;
-  Coroutine$PbrMaterialContent$Companion$materials$lambda_32.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/TilesOnyxOpaloBlack001/TilesOnyxOpaloBlack001_DISP_2K.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      }
-       catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        }
-         else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function PbrMaterialContent$Companion$materials$lambda_32($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$PbrMaterialContent$Companion$materials$lambda_32($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  PbrMaterialContent$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var PbrMaterialContent$Companion_instance = null;
-  function PbrMaterialContent$Companion_getInstance() {
-    if (PbrMaterialContent$Companion_instance === null) {
-      new PbrMaterialContent$Companion();
-    }
-    return PbrMaterialContent$Companion_instance;
-  }
-  PbrMaterialContent.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'PbrMaterialContent',
-    interfaces: [PbrDemo$PbrContent]
-  };
-  function RoughnesMetalGridContent() {
-    RoughnesMetalGridContent$Companion_getInstance();
-    PbrDemo$PbrContent.call(this, 'Roughness / Metal');
-    this.colors_0 = new PbrDemo$Cycler(RoughnesMetalGridContent$Companion_getInstance().matColors_0);
-    this.shaders_0 = ArrayList_init();
-    this.iblContent_0 = null;
-    this.nonIblContent_0 = null;
-  }
-  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda(closure$y, closure$smallFont, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
-      $receiver.font.setCustom_11rb$(closure$smallFont);
-      $receiver.text = 'Color';
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda(this$RoughnesMetalGridContent) {
-    return function ($receiver, f, f_0, f_1) {
-      $receiver.text = this$RoughnesMetalGridContent.colors_0.next().name;
-      var $receiver_0 = this$RoughnesMetalGridContent.shaders_0;
-      var tmp$;
-      tmp$ = $receiver_0.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
-      }
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_0(closure$y, this$RoughnesMetalGridContent) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(15.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.text = this$RoughnesMetalGridContent.colors_0.current.name;
-      var $receiver_0 = $receiver.onClick;
-      var element = RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda(this$RoughnesMetalGridContent);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda_0(this$RoughnesMetalGridContent, closure$matLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$matLabel.text = this$RoughnesMetalGridContent.colors_0.prev().name;
-      var $receiver_0 = this$RoughnesMetalGridContent.shaders_0;
-      var tmp$;
-      tmp$ = $receiver_0.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
-      }
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_1(closure$y, this$RoughnesMetalGridContent, closure$matLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '<';
-      var $receiver_0 = $receiver.onClick;
-      var element = RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda_0(this$RoughnesMetalGridContent, closure$matLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda_1(this$RoughnesMetalGridContent, closure$matLabel) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$matLabel.text = this$RoughnesMetalGridContent.colors_0.next().name;
-      var $receiver_0 = this$RoughnesMetalGridContent.shaders_0;
-      var tmp$;
-      tmp$ = $receiver_0.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        element.albedo = this$RoughnesMetalGridContent.colors_0.current.linColor;
-      }
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_2(closure$y, this$RoughnesMetalGridContent, closure$matLabel) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(35.0), full());
-      $receiver.text = '>';
-      var $receiver_0 = $receiver.onClick;
-      var element = RoughnesMetalGridContent$createMenu$lambda$lambda$lambda$lambda_1(this$RoughnesMetalGridContent, closure$matLabel);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$createMenu$lambda$lambda(closure$yPos, closure$smallFont, this$, this$RoughnesMetalGridContent) {
-    return function ($receiver) {
-      $receiver.isVisible = false;
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$yPos - 60.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(60.0), full());
-      var y = {v: -30.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('color-lbl', RoughnesMetalGridContent$createMenu$lambda$lambda$lambda(y, closure$smallFont, this$)));
-      y.v -= 30.0;
-      var matLabel = this$.button_9zrh0o$('selected-color', RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_0(y, this$RoughnesMetalGridContent));
-      $receiver.unaryPlus_uv0sim$(matLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-left', RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_1(y, this$RoughnesMetalGridContent, matLabel)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-right', RoughnesMetalGridContent$createMenu$lambda$lambda$lambda_2(y, this$RoughnesMetalGridContent, matLabel)));
-      return Unit;
-    };
-  }
-  RoughnesMetalGridContent.prototype.createMenu_7fm8wr$ = function (parent, smallFont, yPos) {
-    var $receiver = parent.root;
-    this.ui = $receiver.container_t34sov$('pbr-rough-metal-container', RoughnesMetalGridContent$createMenu$lambda$lambda(yPos, smallFont, $receiver, this));
-    parent.plusAssign_f1kmr1$(ensureNotNull(this.ui));
-  };
-  RoughnesMetalGridContent.prototype.setUseImageBasedLighting_6taknv$ = function (enabled) {
-    var tmp$, tmp$_0;
-    (tmp$ = this.iblContent_0) != null ? (tmp$.isVisible = enabled) : null;
-    (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
-  };
-  function RoughnesMetalGridContent$createContent$lambda(closure$irradianceMap, closure$reflectionMap, closure$brdfLut, this$RoughnesMetalGridContent) {
-    return function ($receiver) {
-      $receiver.isVisible = false;
-      var ibl = this$RoughnesMetalGridContent.makeSpheres_0(true, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
-      var $receiver_0 = this$RoughnesMetalGridContent.makeSpheres_0(false, closure$irradianceMap, closure$reflectionMap, closure$brdfLut);
-      $receiver_0.isVisible = false;
-      var nonIbl = $receiver_0;
-      $receiver.unaryPlus_uv0sim$(ibl);
-      $receiver.unaryPlus_uv0sim$(nonIbl);
-      this$RoughnesMetalGridContent.iblContent_0 = ibl;
-      this$RoughnesMetalGridContent.nonIblContent_0 = nonIbl;
-      return Unit;
-    };
-  }
-  RoughnesMetalGridContent.prototype.createContent_wb8610$ = function (scene, irradianceMap, reflectionMap, brdfLut, ctx) {
-    this.content = transformGroup(void 0, RoughnesMetalGridContent$createContent$lambda(irradianceMap, reflectionMap, brdfLut, this));
-    return ensureNotNull(this.content);
-  };
-  function RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(closure$nCols, closure$x, closure$spacing, closure$nRows, closure$y) {
-    return function ($receiver) {
-      var closure$nCols_0 = closure$nCols;
-      var closure$x_0 = closure$x;
-      var closure$spacing_0 = closure$spacing;
-      var closure$nRows_0 = closure$nRows;
-      var closure$y_0 = closure$y;
-      var $receiver_0 = $receiver.sphereProps.defaults();
-      $receiver_0.steps = 100;
-      $receiver_0.center.set_y2kzbl$(((-(closure$nCols_0 - 1 | 0) | 0) * 0.5 + closure$x_0) * closure$spacing_0, ((-(closure$nRows_0 - 1 | 0) | 0) * 0.5 + closure$y_0) * closure$spacing_0, 0.0);
-      $receiver_0.radius = 1.0;
-      $receiver.sphere_mojs8w$($receiver.sphereProps);
-      return Unit;
-    };
-  }
-  function RoughnesMetalGridContent$makeSpheres$lambda(closure$withIbl, this$RoughnesMetalGridContent, closure$irradianceMap, closure$reflectionMap, closure$brdfLut) {
-    return function ($receiver) {
-      var nRows = 7;
-      var nCols = 7;
-      var spacing = 2.5;
-      for (var y = 0; y < nRows; y++) {
-        for (var x = 0; x < nCols; x++) {
-          var attributes = setOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
-          var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
-          var closure$withIbl_0 = closure$withIbl;
-          var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
-          var closure$irradianceMap_0 = closure$irradianceMap;
-          var closure$reflectionMap_0 = closure$reflectionMap;
-          var closure$brdfLut_0 = closure$brdfLut;
-          mesh.generate_v2sixm$(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
-          var pbrConfig = new PbrShader$PbrConfig();
-          pbrConfig.albedoSource = PbrShader$AlbedoSource.STATIC_ALBEDO;
-          pbrConfig.isImageBasedLighting = closure$withIbl_0;
-          var shader = new PbrShader(pbrConfig);
-          shader.albedo = this$RoughnesMetalGridContent_0.colors_0.current.linColor;
-          shader.irradianceMap = closure$irradianceMap_0;
-          shader.reflectionMap = closure$reflectionMap_0;
-          shader.brdfLut = closure$brdfLut_0;
-          var a = x / (nCols - 1 | 0);
-          shader.roughness = Math_0.max(a, 0.05);
-          shader.metallic = y / (nRows - 1 | 0);
-          mesh.pipelineLoader = shader;
-          this$RoughnesMetalGridContent_0.shaders_0.add_11rb$(shader);
-          $receiver.unaryPlus_uv0sim$(mesh);
-        }
-      }
-      return Unit;
-    };
-  }
-  RoughnesMetalGridContent.prototype.makeSpheres_0 = function (withIbl, irradianceMap, reflectionMap, brdfLut) {
-    return group(void 0, RoughnesMetalGridContent$makeSpheres$lambda(withIbl, this, irradianceMap, reflectionMap, brdfLut));
-  };
-  function RoughnesMetalGridContent$MatColor(name, linColor) {
-    this.name = name;
-    this.linColor = linColor;
-  }
-  RoughnesMetalGridContent$MatColor.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MatColor',
-    interfaces: []
-  };
-  RoughnesMetalGridContent$MatColor.prototype.component1 = function () {
-    return this.name;
-  };
-  RoughnesMetalGridContent$MatColor.prototype.component2 = function () {
-    return this.linColor;
-  };
-  RoughnesMetalGridContent$MatColor.prototype.copy_guvy9a$ = function (name, linColor) {
-    return new RoughnesMetalGridContent$MatColor(name === void 0 ? this.name : name, linColor === void 0 ? this.linColor : linColor);
-  };
-  RoughnesMetalGridContent$MatColor.prototype.toString = function () {
-    return 'MatColor(name=' + Kotlin.toString(this.name) + (', linColor=' + Kotlin.toString(this.linColor)) + ')';
-  };
-  RoughnesMetalGridContent$MatColor.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    result = result * 31 + Kotlin.hashCode(this.linColor) | 0;
-    return result;
-  };
-  RoughnesMetalGridContent$MatColor.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.linColor, other.linColor)))));
-  };
-  function RoughnesMetalGridContent$Companion() {
-    RoughnesMetalGridContent$Companion_instance = this;
-    this.matColors_0 = listOf([new RoughnesMetalGridContent$MatColor('Red', Color.Companion.MD_RED.toLinear()), new RoughnesMetalGridContent$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new RoughnesMetalGridContent$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new RoughnesMetalGridContent$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new RoughnesMetalGridContent$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new RoughnesMetalGridContent$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new RoughnesMetalGridContent$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new RoughnesMetalGridContent$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new RoughnesMetalGridContent$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new RoughnesMetalGridContent$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new RoughnesMetalGridContent$MatColor('White', Color.Companion.WHITE.toLinear()), new RoughnesMetalGridContent$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Blue Grey', Color.Companion.MD_RED.toLinear()), new RoughnesMetalGridContent$MatColor('Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
-  }
-  RoughnesMetalGridContent$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var RoughnesMetalGridContent$Companion_instance = null;
-  function RoughnesMetalGridContent$Companion_getInstance() {
-    if (RoughnesMetalGridContent$Companion_instance === null) {
-      new RoughnesMetalGridContent$Companion();
-    }
-    return RoughnesMetalGridContent$Companion_instance;
-  }
-  RoughnesMetalGridContent.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'RoughnesMetalGridContent',
-    interfaces: [PbrDemo$PbrContent]
-  };
   function pointScene$lambda$lambda(closure$frameCnt, closure$data, closure$trav, closure$ptVertCnt, closure$tree) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1;
@@ -4530,9 +5400,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function reflectionDemo$lambda$lambda_2($receiver, ctx) {
-    return Unit;
-  }
   function reflectionDemo(ctx) {
     var reflectedObjects = ArrayList_init();
     var $receiver = new Scene_init(null);
@@ -4546,7 +5413,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var mesh = colorMesh(void 0, reflectionDemo$lambda$lambda_0);
     $receiver.unaryPlus_uv0sim$(mesh);
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, reflectionDemo$lambda$lambda_1(reflectedObjects, ctx)));
-    $receiver.onPreRender.add_11rb$(reflectionDemo$lambda$lambda_2);
     var mainScene = $receiver;
     return listOf_0(mainScene);
   }
@@ -4603,8 +5469,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function simpleShapesScene$lambda$lambda$lambda$lambda_1($receiver) {
     $receiver.scale_y2kzbl$(2.0, 2.0, 2.0);
     var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colorCube();
-    $receiver_0.centerOrigin();
+    $receiver_0.colored();
+    $receiver_0.centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
@@ -4725,10 +5591,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.dispModel = new Mesh_init(IndexedVertexList_init_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
     this.heMesh = null;
     this.simplifcationGrade = 1.0;
-    this.autoRun_z6bycc$_0 = this.autoRun_z6bycc$_0;
-    this.facesValLbl_1vvnvx$_0 = this.facesValLbl_1vvnvx$_0;
-    this.vertsValLbl_bpoadb$_0 = this.vertsValLbl_bpoadb$_0;
-    this.timeValLbl_itlx8a$_0 = this.timeValLbl_itlx8a$_0;
+    this.autoRun_feo64c$_0 = this.autoRun_feo64c$_0;
+    this.facesValLbl_vro8vf$_0 = this.facesValLbl_vro8vf$_0;
+    this.vertsValLbl_pnvuuh$_0 = this.vertsValLbl_pnvuuh$_0;
+    this.timeValLbl_8kkr9u$_0 = this.timeValLbl_8kkr9u$_0;
     this.pickRay_0 = new Ray();
     this.edgeDistance_0 = new SimplificationDemo$EdgeRayDistance();
     var $receiver_1 = new NearestToRayTraverser();
@@ -4758,42 +5624,42 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   Object.defineProperty(SimplificationDemo.prototype, 'autoRun', {
     get: function () {
-      if (this.autoRun_z6bycc$_0 == null)
+      if (this.autoRun_feo64c$_0 == null)
         return throwUPAE('autoRun');
-      return this.autoRun_z6bycc$_0;
+      return this.autoRun_feo64c$_0;
     },
     set: function (autoRun) {
-      this.autoRun_z6bycc$_0 = autoRun;
+      this.autoRun_feo64c$_0 = autoRun;
     }
   });
   Object.defineProperty(SimplificationDemo.prototype, 'facesValLbl', {
     get: function () {
-      if (this.facesValLbl_1vvnvx$_0 == null)
+      if (this.facesValLbl_vro8vf$_0 == null)
         return throwUPAE('facesValLbl');
-      return this.facesValLbl_1vvnvx$_0;
+      return this.facesValLbl_vro8vf$_0;
     },
     set: function (facesValLbl) {
-      this.facesValLbl_1vvnvx$_0 = facesValLbl;
+      this.facesValLbl_vro8vf$_0 = facesValLbl;
     }
   });
   Object.defineProperty(SimplificationDemo.prototype, 'vertsValLbl', {
     get: function () {
-      if (this.vertsValLbl_bpoadb$_0 == null)
+      if (this.vertsValLbl_pnvuuh$_0 == null)
         return throwUPAE('vertsValLbl');
-      return this.vertsValLbl_bpoadb$_0;
+      return this.vertsValLbl_pnvuuh$_0;
     },
     set: function (vertsValLbl) {
-      this.vertsValLbl_bpoadb$_0 = vertsValLbl;
+      this.vertsValLbl_pnvuuh$_0 = vertsValLbl;
     }
   });
   Object.defineProperty(SimplificationDemo.prototype, 'timeValLbl', {
     get: function () {
-      if (this.timeValLbl_itlx8a$_0 == null)
+      if (this.timeValLbl_8kkr9u$_0 == null)
         return throwUPAE('timeValLbl');
-      return this.timeValLbl_itlx8a$_0;
+      return this.timeValLbl_8kkr9u$_0;
     },
     set: function (timeValLbl) {
-      this.timeValLbl_itlx8a$_0 = timeValLbl;
+      this.timeValLbl_8kkr9u$_0 = timeValLbl;
     }
   });
   SimplificationDemo.prototype.simplify = function () {
@@ -6175,7 +7041,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     while (prev.distance_czzhiu$(this.baseTop) > this.growDistance) {
       var newNd = new TreeGenerator$TreeNode(this);
       newNd.set_czzhiu$(prev).add_czzhiu$(d);
-      prev.addChild_15eqn9$(newNd);
+      prev.addChild_41t44z$(newNd);
       this.treeNodes_0.add_11rb$(newNd);
       prev = newNd;
     }
@@ -6217,7 +7083,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         while (tmp$_0.hasNext()) {
           var attracPt = tmp$_0.next();
           if (attracPt.isOpen) {
-            attracPt.checkNearest_15eqn9$(node);
+            attracPt.checkNearest_41t44z$(node);
           }
         }
       }
@@ -6244,8 +7110,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         growDir.norm().scale_mx4ult$(this.growDistance);
         var newNode = new TreeGenerator$TreeNode(this);
         newNode.set_czzhiu$(node_0).add_czzhiu$(growDir);
-        if (!node_0.containsChild_15eqn9$(newNode)) {
-          node_0.addChild_15eqn9$(newNode);
+        if (!node_0.containsChild_41t44z$(newNode)) {
+          node_0.addChild_41t44z$(newNode);
           newNodes.add_11rb$(newNode);
           this.attractionPointTrav_0.setup_2qa7tb$(newNode, this.actualKillDistance).traverse_m6hlto$(this.attractionPointsTree_0);
           var tmp$_7;
@@ -6285,8 +7151,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return Unit;
   }
   TreeGenerator.prototype.finishTree = function () {
-    this.root_0.forEachTopDown_ttqnr0$(TreeGenerator$finishTree$lambda(this));
-    this.root_0.forEachBottomUp_ttqnr0$(TreeGenerator$finishTree$lambda_0);
+    this.root_0.forEachTopDown_2m3084$(TreeGenerator$finishTree$lambda(this));
+    this.root_0.forEachBottomUp_2m3084$(TreeGenerator$finishTree$lambda_0);
   };
   TreeGenerator.prototype.buildTrunkMesh_84rojv$ = function (target) {
     var tmp$;
@@ -6318,16 +7184,16 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   };
   function TreeGenerator$AttractionPoint(pt) {
     MutableVec3f_init(pt, this);
-    this.nearestNode_3mwxa2$_0 = null;
-    this.nearestNodeDist_dewf4c$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+    this.nearestNode_mawy5q$_0 = null;
+    this.nearestNodeDist_3apek4$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     this.isOpen = true;
   }
   Object.defineProperty(TreeGenerator$AttractionPoint.prototype, 'nearestNode', {
     get: function () {
-      return this.nearestNode_3mwxa2$_0;
+      return this.nearestNode_mawy5q$_0;
     },
     set: function (value) {
-      this.nearestNode_3mwxa2$_0 = value;
+      this.nearestNode_mawy5q$_0 = value;
       if (value == null) {
         this.nearestNodeDist = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
       }
@@ -6335,13 +7201,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   });
   Object.defineProperty(TreeGenerator$AttractionPoint.prototype, 'nearestNodeDist', {
     get: function () {
-      return this.nearestNodeDist_dewf4c$_0;
+      return this.nearestNodeDist_3apek4$_0;
     },
     set: function (nearestNodeDist) {
-      this.nearestNodeDist_dewf4c$_0 = nearestNodeDist;
+      this.nearestNodeDist_3apek4$_0 = nearestNodeDist;
     }
   });
-  TreeGenerator$AttractionPoint.prototype.checkNearest_15eqn9$ = function (node) {
+  TreeGenerator$AttractionPoint.prototype.checkNearest_41t44z$ = function (node) {
     var dist = this.distance_czzhiu$(node);
     if (dist < this.nearestNodeDist) {
       this.nearestNode = node;
@@ -6365,11 +7231,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.texV = 0.0;
     this.circumPts = ArrayList_init();
   }
-  TreeGenerator$TreeNode.prototype.addChild_15eqn9$ = function (node) {
+  TreeGenerator$TreeNode.prototype.addChild_41t44z$ = function (node) {
     this.children.add_11rb$(node);
     node.parent = this;
   };
-  TreeGenerator$TreeNode.prototype.containsChild_15eqn9$ = function (node) {
+  TreeGenerator$TreeNode.prototype.containsChild_41t44z$ = function (node) {
     var tmp$;
     tmp$ = this.children.iterator();
     while (tmp$.hasNext()) {
@@ -6380,21 +7246,21 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     }
     return false;
   };
-  TreeGenerator$TreeNode.prototype.forEachBottomUp_ttqnr0$ = function (block) {
+  TreeGenerator$TreeNode.prototype.forEachBottomUp_2m3084$ = function (block) {
     block(this);
     var tmp$;
     tmp$ = this.children.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.forEachBottomUp_ttqnr0$(block);
+      element.forEachBottomUp_2m3084$(block);
     }
   };
-  TreeGenerator$TreeNode.prototype.forEachTopDown_ttqnr0$ = function (block) {
+  TreeGenerator$TreeNode.prototype.forEachTopDown_2m3084$ = function (block) {
     var tmp$;
     tmp$ = this.children.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      element.forEachTopDown_ttqnr0$(block);
+      element.forEachTopDown_2m3084$(block);
     }
     block(this);
   };
@@ -6814,8 +7680,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function uiDemoScene$lambda$lambda$lambda$lambda($receiver) {
     $receiver.scale_y2kzbl$(5.0, 5.0, 5.0);
     var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.centerOrigin();
-    $receiver_0.colorCube();
+    $receiver_0.centered();
+    $receiver_0.colored();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
@@ -7032,8 +7898,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function testScene$lambda$lambda$lambda_0($receiver) {
     var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colorCube();
-    $receiver_0.centerOrigin();
+    $receiver_0.colored();
+    $receiver_0.centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
@@ -7102,8 +7968,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function testScene$lambda$lambda$lambda_1($receiver) {
     var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colorCube();
-    $receiver_0.centerOrigin();
+    $receiver_0.colored();
+    $receiver_0.centered();
     $receiver_0.origin.x = $receiver_0.origin.x - 3.0;
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
@@ -7171,19 +8037,16 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     get: Demo$Companion_getInstance
   });
   package$demo.Demo = Demo;
-  $$importsForInline$$['kotlinx-serialization-kotlinx-serialization-runtime'] = $module$kotlinx_serialization_kotlinx_serialization_runtime;
+  package$demo.Cycler = Cycler;
+  package$demo.multiLightDemo_aemszp$ = multiLightDemo;
   $$importsForInline$$.kool = $module$kool;
-  package$demo.globeScene_aemszp$ = globeScene;
-  package$demo.GlobeUi = GlobeUi;
-  package$demo.makeGroundGrid_24o109$ = makeGroundGrid;
-  package$demo.instancedDemo_aemszp$ = instancedDemo;
-  package$demo.modelScene_aemszp$ = modelScene;
-  package$demo.multiScene_aemszp$ = multiScene;
-  package$demo.particleDemo_aemszp$ = particleDemo;
+  Object.defineProperty(MultiLightDemo, 'Companion', {
+    get: MultiLightDemo$Companion_getInstance
+  });
+  package$demo.MultiLightDemo = MultiLightDemo;
   var package$pbr = package$demo.pbr || (package$demo.pbr = {});
   package$pbr.ColorGridContent = ColorGridContent;
   package$pbr.pbrDemoScene_aemszp$ = pbrDemoScene;
-  PbrDemo.Cycler = PbrDemo$Cycler;
   PbrDemo.PbrContent = PbrDemo$PbrContent;
   Object.defineProperty(PbrDemo, 'Companion', {
     get: PbrDemo$Companion_getInstance
@@ -7198,18 +8061,27 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     get: RoughnesMetalGridContent$Companion_getInstance
   });
   package$pbr.RoughnesMetalGridContent = RoughnesMetalGridContent;
-  package$demo.pointScene = pointScene;
-  package$demo.makePointMesh = makePointMesh;
-  package$demo.MeshPoint = MeshPoint;
-  package$demo.reflectionDemo_aemszp$ = reflectionDemo;
-  package$demo.simpleShapesScene_aemszp$ = simpleShapesScene;
-  package$demo.simplificationDemo_aemszp$ = simplificationDemo;
+  $$importsForInline$$['kotlinx-serialization-kotlinx-serialization-runtime'] = $module$kotlinx_serialization_kotlinx_serialization_runtime;
+  var package$portingNeeded = package$demo.portingNeeded || (package$demo.portingNeeded = {});
+  package$portingNeeded.globeScene_aemszp$ = globeScene;
+  package$portingNeeded.GlobeUi = GlobeUi;
+  package$portingNeeded.makeGroundGrid_24o109$ = makeGroundGrid;
+  package$portingNeeded.instancedDemo_aemszp$ = instancedDemo;
+  package$portingNeeded.modelScene_aemszp$ = modelScene;
+  package$portingNeeded.multiScene_aemszp$ = multiScene;
+  package$portingNeeded.particleDemo_aemszp$ = particleDemo;
+  package$portingNeeded.pointScene = pointScene;
+  package$portingNeeded.makePointMesh = makePointMesh;
+  package$portingNeeded.MeshPoint = MeshPoint;
+  package$portingNeeded.reflectionDemo_aemszp$ = reflectionDemo;
+  package$portingNeeded.simpleShapesScene_aemszp$ = simpleShapesScene;
+  package$portingNeeded.simplificationDemo_aemszp$ = simplificationDemo;
   SimplificationDemo.EdgeRayDistance = SimplificationDemo$EdgeRayDistance;
-  package$demo.SimplificationDemo = SimplificationDemo;
-  package$demo.synthieScene_aemszp$ = synthieScene;
-  package$demo.treeScene_aemszp$ = treeScene;
-  package$demo.TreeGenerator = TreeGenerator;
-  package$demo.TreeTopPointDistribution = TreeTopPointDistribution;
+  package$portingNeeded.SimplificationDemo = SimplificationDemo;
+  package$portingNeeded.synthieScene_aemszp$ = synthieScene;
+  package$portingNeeded.treeScene_aemszp$ = treeScene;
+  package$portingNeeded.TreeGenerator = TreeGenerator;
+  package$portingNeeded.TreeTopPointDistribution = TreeTopPointDistribution;
   package$demo.uiDemoScene = uiDemoScene;
   _.EquiRectCoords = EquiRectCoords;
   _.DecodeRgbeNode = DecodeRgbeNode;

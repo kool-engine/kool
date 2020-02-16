@@ -30,13 +30,13 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
-    //private val defaultScene = DemoEntry("Simple Demo") { add(simpleShapesScene(it)) }
     private val defaultScene = DemoEntry("PBR/IBL Demo") { addAll(pbrDemoScene(it)) }
 
     private val demos = mutableMapOf(
-            "pbrDemo" to DemoEntry("PBR/IBL Demo") { addAll(pbrDemoScene(it)) }
-            //"simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) }
+            "pbrDemo" to DemoEntry("PBR/IBL Demo") { addAll(pbrDemoScene(it)) },
+            "multiLightDemo" to DemoEntry("Multi Light Demo") { addAll(multiLightDemo(it)) }
 
+            // todo: port old demos...
 //            "simpleDemo" to DemoEntry("Simple Demo") { add(uiDemoScene()) },
 //            "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene(it)) },
 //            "pointDemo" to DemoEntry("Point Tree Demo") { add(pointScene()) },
@@ -139,5 +139,22 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
         inline fun <reified T> getProperty(key: String, default: T): T {
             return demoProps[key] as? T ?: default
         }
+    }
+}
+
+class Cycler<T>(elements: List<T>) : List<T> by elements {
+    var index = 0
+
+    val current: T
+        get() = get(index)
+
+    fun next(): T {
+        index = (index + 1) % size
+        return current
+    }
+
+    fun prev(): T {
+        index = (index + size - 1 + size) % size
+        return current
     }
 }
