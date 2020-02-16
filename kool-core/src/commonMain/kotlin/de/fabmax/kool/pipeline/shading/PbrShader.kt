@@ -36,6 +36,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var roughnessSampler: TextureSampler? = null
     private var ambientOcclusionSampler: TextureSampler? = null
     private var displacementSampler: TextureSampler? = null
+    private var uDispStrength: PushConstantNode1f? = null
 
     var albedoMap: Texture? = null
         set(value) {
@@ -66,6 +67,11 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         set(value) {
             field = value
             displacementSampler?.texture = value
+        }
+    var displacementStrength = 0.1f
+        set(value) {
+            field = value
+            uDispStrength?.uniform?.value = value
         }
 
     // Simple lighting props
@@ -128,6 +134,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         ambientOcclusionSampler?.let { it.texture = ambientOcclusionMap }
         displacementSampler = model.findNode<TextureNode>("tDisplacement")?.sampler
         displacementSampler?.let { it.texture = displacementMap }
+        uDispStrength = model.findNode("uDispStrength")
+        uDispStrength?.let { it.uniform.value = displacementStrength }
     }
 
     companion object {
@@ -152,7 +160,10 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
                 val worldPos = if (cfg.isDisplacementMapped) {
                     val dispTex = textureNode("tDisplacement")
-                    displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).outPosition
+                    val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).apply {
+                        inStrength = pushConstantNode1f("uDispStrength").output
+                    }
+                    dispNd.outPosition
                 } else {
                     attrPositions().output
                 }

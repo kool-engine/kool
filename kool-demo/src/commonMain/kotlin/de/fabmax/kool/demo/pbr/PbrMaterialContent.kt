@@ -146,6 +146,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
                 this.irradianceMap = irradianceMap
                 this.reflectionMap = reflectionMap
                 this.brdfLut = brdfLut
+                this.displacementStrength = 0.25f
             }
             pipelineLoader = shader
             shaders += shader
