@@ -11,9 +11,9 @@ class ShaderModel(val modelInfo: String = "") {
             ShaderStage.FRAGMENT_SHADER to FragmentShaderGraph()
     )
 
-    val vertexStage: VertexShaderGraph
+    val vertexStageGraph: VertexShaderGraph
         get() = stages[ShaderStage.VERTEX_SHADER] as VertexShaderGraph
-    val fragmentStage: FragmentShaderGraph
+    val fragmentStageGraph: FragmentShaderGraph
         get() = stages[ShaderStage.FRAGMENT_SHADER] as FragmentShaderGraph
 
     inline fun <reified T: ShaderNode> findNode(name: String, stage: ShaderStage = ShaderStage.ALL): T? {
@@ -51,7 +51,7 @@ class ShaderModel(val modelInfo: String = "") {
         val vertLayoutAttribs = mutableListOf<VertexLayout.Attribute>()
         val verts = mesh.geometry
 
-        vertexStage.requiredVertexAttributes.forEachIndexed { iAttrib, attrib ->
+        vertexStageGraph.requiredVertexAttributes.forEachIndexed { iAttrib, attrib ->
             if (!mesh.geometry.vertexAttributes.contains(attrib)) {
                 throw NoSuchElementException("Mesh does not include required vertex attribute: ${attrib.name}")
             }
@@ -168,10 +168,10 @@ class ShaderModel(val modelInfo: String = "") {
         }
     }
 
-    inner class VertexStageBuilder : StageBuilder(vertexStage) {
+    inner class VertexStageBuilder : StageBuilder(vertexStageGraph) {
         var positionOutput: ShaderNodeIoVar
-            get() = vertexStage.positionOutput
-            set(value) { vertexStage.positionOutput = value }
+            get() = vertexStageGraph.positionOutput
+            set(value) { vertexStageGraph.positionOutput = value }
 
         fun attrColors() = attributeNode(Attribute.COLORS)
         fun attrNormals() = attributeNode(Attribute.NORMALS)
@@ -181,10 +181,10 @@ class ShaderModel(val modelInfo: String = "") {
         fun attributeNode(attribute: Attribute) = addNode(AttributeNode(attribute, stage))
 
         fun stageInterfaceNode(name: String, input: ShaderNodeIoVar?): StageInterfaceNode {
-            val ifNode = StageInterfaceNode(name, vertexStage, fragmentStage)
+            val ifNode = StageInterfaceNode(name, vertexStageGraph, fragmentStageGraph)
             input?.let { ifNode.input = it }
             addNode(ifNode.vertexNode)
-            fragmentStage.addNode(ifNode.fragmentNode)
+            fragmentStageGraph.addNode(ifNode.fragmentNode)
             return ifNode
         }
 
@@ -210,10 +210,10 @@ class ShaderModel(val modelInfo: String = "") {
         }
     }
 
-    inner class FragmentStageBuilder : StageBuilder(fragmentStage) {
+    inner class FragmentStageBuilder : StageBuilder(fragmentStageGraph) {
         var colorOutput: ShaderNodeIoVar
-            get() = fragmentStage.colorOutput
-            set(value) { fragmentStage.colorOutput = value }
+            get() = fragmentStageGraph.colorOutput
+            set(value) { fragmentStageGraph.colorOutput = value }
 
         fun defaultLightNode(maxLights: Int = 4) = addNode(LightNode(stage, maxLights))
 

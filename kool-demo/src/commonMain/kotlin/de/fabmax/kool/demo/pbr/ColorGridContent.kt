@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.shading.AlbedoSource
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -115,7 +116,7 @@ class ColorGridContent : PbrDemo.PbrContent("Color Grid") {
                     }
 
                     val pbrConfig = PbrShader.PbrConfig()
-                    pbrConfig.albedoSource = PbrShader.AlbedoSource.STATIC_ALBEDO
+                    pbrConfig.albedoSource = AlbedoSource.STATIC_ALBEDO
                     pbrConfig.isImageBasedLighting = withIbl
 
                     val shader = PbrShader(pbrConfig)

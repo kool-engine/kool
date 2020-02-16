@@ -12,7 +12,7 @@ import de.fabmax.kool.util.ShadowMap
  */
 class Lighting(val scene: Scene) {
     val lights = mutableListOf(
-            Light().setDirectional(Vec3f(1f)).setColor(Color.WHITE, 1f)
+            Light().setDirectional(Vec3f(-1f)).setColor(Color.WHITE, 1f)
     )
 
     var shadowMap: ShadowMap? = null

@@ -185,7 +185,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 positionOutput = vertexPositionNode(worldPos, mvp.outMvpMat).outPosition
             }
             fragmentStage {
-                val mvpFrag = mvp.addToStage(fragmentStage)
+                val mvpFrag = mvp.addToStage(fragmentStageGraph)
                 val lightNode = defaultLightNode()
 
                 val reflMap: CubeMapNode?
@@ -244,12 +244,6 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         }
     }
 
-    enum class AlbedoSource {
-        STATIC_ALBEDO,
-        TEXTURE_ALBEDO,
-        VERTEX_ALBEDO
-    }
-
     class PbrConfig {
         var albedoSource = AlbedoSource.VERTEX_ALBEDO
         var isNormalMapped = false
@@ -268,19 +262,5 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     isAmbientOcclusionMapped ||
                     isDisplacementMapped
         }
-
-//        var albedoMap: Texture? = null
-//        var normalMap: Texture? = null
-//        var roughnessMap: Texture? = null
-//        var metallicMap: Texture? = null
-//        var ambientOcclusionMap: Texture? = null
-//        var displacementMap: Texture? = null
-//
-//        var irradianceMap: CubeMapTexture? = null
-//        var reflectionMap: CubeMapTexture? = null
-//        var brdfLut: Texture? = null
-//
-//        val isIbl: Boolean
-//            get() = irradianceMap != null && reflectionMap != null && brdfLut != null
     }
 }

@@ -1,10 +1,13 @@
 package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.Cycler
+import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.shading.AlbedoSource
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -12,7 +15,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Font
 
 class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
-    val matCycler = PbrDemo.Cycler(materials).apply { index = 3 }
+    val matCycler = Cycler(materials).apply { index = 3 }
     val currentMat: MaterialMaps
         get() = matCycler.current
 
@@ -136,7 +139,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
 
             val pbrConfig = PbrShader.PbrConfig()
             pbrConfig.isImageBasedLighting = withIbl
-            pbrConfig.albedoSource = PbrShader.AlbedoSource.TEXTURE_ALBEDO
+            pbrConfig.albedoSource = AlbedoSource.TEXTURE_ALBEDO
             pbrConfig.isNormalMapped = true
             pbrConfig.isRoughnessMapped = true
             pbrConfig.isMetallicMapped = true
@@ -176,8 +179,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
         private val defaultAoTex = SingleColorTexture(Color.WHITE)
         private val defaultDispTex = SingleColorTexture(Color.BLACK)
 
-        //private const val assetPath = "reserve/pbr/materials"
-        private const val assetPath = "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials"
+        private val assetPath = Demo.getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")
         
         private val materials = mutableListOf(
                 MaterialMaps(

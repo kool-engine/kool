@@ -13,7 +13,7 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
     init {
         generate {
             cube {
-                centerOrigin()
+                centered()
             }
         }
         isFrustumChecked = false

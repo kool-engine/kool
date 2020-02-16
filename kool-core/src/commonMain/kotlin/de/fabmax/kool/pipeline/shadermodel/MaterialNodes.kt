@@ -61,7 +61,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
             } 
             
             vec3 phongMat_color = phongMat_ambient + phongMat_diffuse + phongMat_specular;
-            ${outColor.declare()} = vec4(phongMat_color, ${inAlbedo.ref4f()}.a);
+            ${outColor.declare()} = vec4(phongMat_color * ${inAlbedo.ref4f()}.a, ${inAlbedo.ref4f()}.a);
             """)
     }
 }

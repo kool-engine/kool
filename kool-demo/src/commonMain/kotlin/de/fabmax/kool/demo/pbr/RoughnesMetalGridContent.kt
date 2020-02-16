@@ -1,9 +1,11 @@
 package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.Cycler
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.shading.AlbedoSource
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -12,7 +14,7 @@ import de.fabmax.kool.util.Font
 import kotlin.math.max
 
 class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
-    private val colors = PbrDemo.Cycler(matColors)
+    private val colors = Cycler(matColors)
 
     private val shaders = mutableListOf<PbrShader>()
     private var iblContent: Group? = null
@@ -110,7 +112,7 @@ class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
                     }
 
                     val pbrConfig = PbrShader.PbrConfig()
-                    pbrConfig.albedoSource = PbrShader.AlbedoSource.STATIC_ALBEDO
+                    pbrConfig.albedoSource = AlbedoSource.STATIC_ALBEDO
                     pbrConfig.isImageBasedLighting = withIbl
 
                     val shader = PbrShader(pbrConfig)

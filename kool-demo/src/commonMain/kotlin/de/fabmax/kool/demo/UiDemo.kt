@@ -23,8 +23,8 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
             generate {
                 scale(5f, 5f, 5f)
                 cube {
-                    centerOrigin()
-                    colorCube()
+                    centered()
+                    colored()
                 }
             }
             pipelineLoader = ModeledShader.VertexColor()

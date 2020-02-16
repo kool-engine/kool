@@ -795,11 +795,11 @@ class RectProps {
         texCoordLowerRight.set(Vec2f.ZERO)
     }
 
-    fun fullTexCoords() {
+    fun fullTexCoords(scale: Float = 1f) {
         texCoordUpperLeft.set(0f, 0f)
-        texCoordUpperRight.set(1f, 0f)
-        texCoordLowerLeft.set(0f, 1f)
-        texCoordLowerRight.set(1f, 1f)
+        texCoordUpperRight.set(scale, 0f)
+        texCoordLowerLeft.set(0f, scale)
+        texCoordLowerRight.set(scale, scale)
     }
 
     fun defaults(): RectProps {
@@ -848,13 +848,13 @@ class CubeProps {
         }
     }
 
-    fun centerOrigin() {
+    fun centered() {
         origin.x -= size.x / 2f
         origin.y -= size.y / 2f
         origin.z -= size.z / 2f
     }
 
-    fun colorCube() {
+    fun colored() {
         frontColor = Color.MD_RED
         rightColor = Color.MD_GREEN
         backColor = Color.MD_INDIGO

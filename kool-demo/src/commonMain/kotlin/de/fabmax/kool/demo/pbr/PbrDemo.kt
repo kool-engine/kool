@@ -2,6 +2,8 @@ package de.fabmax.kool.demo.pbr
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.demo.Cycler
+import de.fabmax.kool.demo.Demo
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.FilterMethod
@@ -288,23 +290,6 @@ class PbrDemo(val ctx: KoolContext) {
 
     private class LightSetup(val name: String, val setup: Scene.() -> Unit)
 
-    class Cycler<T>(elements: List<T>) : List<T> by elements {
-        var index = 0
-
-        val current: T
-            get() = get(index)
-
-        fun next(): T {
-            index = (index + 1) % size
-            return current
-        }
-
-        fun prev(): T {
-            index = (index + size - 1 + size) % size
-            return current
-        }
-    }
-
     abstract class PbrContent(val name: String) {
         var content: TransformGroup? = null
         var ui: UiContainer? = null
@@ -331,8 +316,7 @@ class PbrDemo(val ctx: KoolContext) {
                 magFilter = FilterMethod.NEAREST,
                 mipMapping = true)
 
-        //private val assetPath = "skybox/hdri"
-        private val assetPath = "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri"
+        private val assetPath = Demo.getProperty("pbrDemo.envMaps", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri")
 
         private val hdriTextures = listOf(
                 EnvironmentMap("$assetPath/circus_arena_1k.rgbe.png", "Circus"),

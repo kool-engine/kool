@@ -50,34 +50,34 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
 
     private fun generateVertexShaderCode(model: ShaderModel, pipeline: Pipeline): String {
         val codeGen = CodeGen()
-        model.vertexStage.generateCode(codeGen)
+        model.vertexStageGraph.generateCode(codeGen)
         return """
             #version 450
             ${model.infoStr()}
             
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.VERTEX_SHADER)}
             // vertex attributes ${generateAttributeBindings(pipeline)}
-            // outputs ${model.vertexStage.generateStageOutputs()}
+            // outputs ${model.vertexStageGraph.generateStageOutputs()}
             // functions
             ${codeGen.generateFunctions()}
             
             void main() {
                 ${codeGen.generateMain()}
-                gl_Position = ${model.vertexStage.positionOutput.variable.ref4f()};
+                gl_Position = ${model.vertexStageGraph.positionOutput.variable.ref4f()};
             }
         """.trimIndent()
     }
 
     private fun generateFragmentShaderCode(model: ShaderModel, pipeline: Pipeline): String {
         val codeGen = CodeGen()
-        model.fragmentStage.generateCode(codeGen)
+        model.fragmentStageGraph.generateCode(codeGen)
         return """
             #version 450
             precision highp float;
             ${model.infoStr()}
             
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.FRAGMENT_SHADER)}
-            // inputs ${model.fragmentStage.generateStageInputs()}
+            // inputs ${model.fragmentStageGraph.generateStageInputs()}
             // outputs
             layout(location=0) out vec4 fragStage_outColor;
             // functions
@@ -85,7 +85,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             
             void main() {
                 ${codeGen.generateMain()}
-                fragStage_outColor = ${model.fragmentStage.colorOutput.variable.ref4f()};
+                fragStage_outColor = ${model.fragmentStageGraph.colorOutput.variable.ref4f()};
             }
         """.trimIndent()
     }

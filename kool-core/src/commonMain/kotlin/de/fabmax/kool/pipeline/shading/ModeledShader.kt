@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 
-abstract class ModeledShader(protected val model: ShaderModel) : Shader(), PipelineFactory {
+open class ModeledShader(protected val model: ShaderModel) : Shader(), PipelineFactory {
 
     val onSetup = mutableListOf<((builder: Pipeline.Builder) -> Unit)>()
 
@@ -24,8 +24,6 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader(), Pipel
         onSetup.forEach { it(builder) }
         return builder.create(mesh, ctx)
     }
-
-    //class StaticColor(model: ShaderModel, val uStaticColor: Uniform4f) : ModeledShader(model)
 
     class VertexColor(model: ShaderModel = vertexColorModel()) : ModeledShader(model)
 
@@ -50,7 +48,6 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader(), Pipel
     companion object {
         private fun vertexColorModel(): ShaderModel = ShaderModel("ModeledShader.vertexColor()").apply {
             val ifColors: StageInterfaceNode
-
             vertexStage {
                 ifColors = stageInterfaceNode("ifColors", attrColors().output)
                 positionOutput = simpleVertexPositionNode().outPosition
@@ -58,34 +55,6 @@ abstract class ModeledShader(protected val model: ShaderModel) : Shader(), Pipel
             fragmentStage {
                 colorOutput = unlitMaterialNode(ifColors.output).outColor
             }
-        }
-
-        fun vertexColorPhong(): (Mesh, Pipeline.BuildContext, KoolContext) -> VertexColor = { mesh, buildCtx, ctx ->
-            val model = ShaderModel("ModeledShader.vertexColorPhong()").apply {
-                val ifColors: StageInterfaceNode
-
-                val ifNormals: StageInterfaceNode
-                val ifFragPos: StageInterfaceNode
-                val mvp: UniformBufferMvp
-
-                vertexStage {
-                    mvp = mvpNode()
-                    val preMultColor = premultiplyColorNode(attrColors().output)
-                    ifColors = stageInterfaceNode("ifColors", preMultColor.outColor)
-                    val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
-                    ifNormals = stageInterfaceNode("ifNormals", nrm.output)
-                    val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f)
-                    ifFragPos = stageInterfaceNode("ifFragPos", worldPos.output)
-
-                    positionOutput = vertexPositionNode(attrPositions().output, mvp.outMvpMat).outPosition
-                }
-                fragmentStage {
-                    val mvpFrag = mvp.addToStage(fragmentStage)
-                    val lightNode = defaultLightNode()
-                    colorOutput = phongMaterialNode(ifColors.output, ifNormals.output, ifFragPos.output, mvpFrag.outCamPos, lightNode).outColor
-                }
-            }
-            VertexColor(model).setup(mesh, buildCtx, ctx) as VertexColor
         }
 
         private fun textureColorModel(texName: String) = ShaderModel("ModeledShader.textureColor()").apply {

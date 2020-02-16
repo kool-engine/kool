@@ -26,7 +26,7 @@ abstract class KoolContext {
     val engineStats = EngineStats()
 
     var viewport = Viewport(0, 0, 0, 0)
-    var clearColor = Color(0.05f, 0.15f, 0.25f, 1f)
+    var clearColor = Color(0.15f, 0.15f, 0.15f, 1f)
 
     val renderingHints = RenderingHints()
     var renderPass = RenderPass.SCREEN

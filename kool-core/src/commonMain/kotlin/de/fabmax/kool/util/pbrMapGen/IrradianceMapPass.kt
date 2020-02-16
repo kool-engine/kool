@@ -28,7 +28,7 @@ class IrradianceMapPass(hdriTexture: Texture) {
             scene = scene {
                 +mesh(setOf(Attribute.POSITIONS)) {
                     generate {
-                        cube { centerOrigin() }
+                        cube { centered() }
                     }
 
                     val texName = "colorTex"
