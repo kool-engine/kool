@@ -67,10 +67,6 @@ open class Scene(name: String? = null) : Group(name) {
         handleInput(ctx)
     }
 
-    fun onRenderingHintsChanged(ctx: KoolContext) {
-        lighting.onRenderingHintsChanged(ctx)
-    }
-
     override fun preRender(ctx: KoolContext) {
         lock(disposables) {
             for (i in disposables.indices) {

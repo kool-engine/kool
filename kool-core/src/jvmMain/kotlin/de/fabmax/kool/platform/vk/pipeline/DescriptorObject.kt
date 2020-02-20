@@ -79,12 +79,16 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
     override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long) {
         stack.apply {
-            val vkTex = sampler.texture?.loadedTexture
 
-            val imageInfo = callocVkDescriptorImageInfoN(1) {
-                imageLayout(VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                imageView(vkTex?.textureImageView?.vkImageView ?: 0L)
-                sampler(vkTex?.sampler ?: 0L)
+            val imageInfo = callocVkDescriptorImageInfoN(sampler.arraySize) {
+                for (i in 0 until sampler.arraySize) {
+                    this[i].apply {
+                        val vkTex = sampler.textures[i]?.loadedTexture
+                        imageLayout(VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                        imageView(vkTex?.textureImageView?.vkImageView ?: 0L)
+                        sampler(vkTex?.sampler ?: 0L)
+                    }
+                }
             }
             vkWriteDescriptorSet
                     .sType(VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
@@ -92,7 +96,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                     .dstBinding(binding)
                     .dstArrayElement(0)
                     .descriptorType(VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
-                    .descriptorCount(1)
+                    .descriptorCount(sampler.arraySize)
                     .pImageInfo(imageInfo)
         }
     }
@@ -108,25 +112,33 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
             }
         }
 
-        sampler.texture?.let { tex ->
-            if (tex.loadingState == Texture.LoadingState.NOT_LOADED) {
-                if (tex.loader != null) {
-                    tex.loadingState = Texture.LoadingState.LOADING
-                    val deferred = sys.ctx.assetMgr.loadTextureAsync(tex.loader)
-                    loadingTextures += LoadingTex(sys, tex, deferred)
-                } else {
-                    tex.loadingState = Texture.LoadingState.LOADING_FAILED
+        var allValid = true
+        for (i in 0 until sampler.arraySize) {
+            val tex = sampler.textures[i]
+            if (tex == null) {
+                allValid = false
+            } else {
+                if (tex.loadingState == Texture.LoadingState.NOT_LOADED) {
+                    if (tex.loader != null) {
+                        tex.loadingState = Texture.LoadingState.LOADING
+                        val deferred = sys.ctx.assetMgr.loadTextureAsync(tex.loader)
+                        loadingTextures += LoadingTex(sys, tex, deferred)
+                    } else {
+                        tex.loadingState = Texture.LoadingState.LOADING_FAILED
+                    }
                 }
-            }
 
-            if (tex.loadingState == Texture.LoadingState.LOADED && boundTex != tex.loadedTexture) {
-                boundTex = tex.loadedTexture
-                isDescriptorSetUpdateRequired = true
+                if (tex.loadingState == Texture.LoadingState.LOADED && boundTex != tex.loadedTexture) {
+                    boundTex = tex.loadedTexture
+                    isDescriptorSetUpdateRequired = true
+                }
+
+                allValid = allValid && tex.loadingState == Texture.LoadingState.LOADED
             }
         }
         sampler.onUpdate(cmd)
 
-        isValid = sampler.texture?.loadingState == Texture.LoadingState.LOADED
+        isValid = allValid
     }
 
     private class LoadingTex(val sys: VkSystem, val tex: Texture, val deferredTex: Deferred<TextureData>) {
@@ -168,13 +180,17 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
     private class TexSamplerWrapper private constructor(
             val mode: Int,
             val sampler2d: TextureSampler? = null,
-            val samplerCube: CubeMapSampler? = null) {
+            val samplerCube: CubeMapSampler? = null,
+            val arraySize: Int) {
 
-        constructor(sampler2d: TextureSampler) : this(MODE_2D, sampler2d, null)
-        constructor(samplerCube: CubeMapSampler) : this(MODE_CUBE, null, samplerCube)
+        constructor(sampler2d: TextureSampler) : this(MODE_2D, sampler2d, null, sampler2d.arraySize)
+        constructor(samplerCube: CubeMapSampler) : this(MODE_CUBE, null, samplerCube, samplerCube.arraySize)
 
-        val texture: Texture?
-            get() = if (mode == MODE_2D) { sampler2d!!.texture } else { samplerCube!!.texture }
+//        val texture: Texture?
+//            get() = if (mode == MODE_2D) { sampler2d!!.texture } else { samplerCube!!.texture }
+
+        val textures: Array<out Texture?>
+            get() = if (mode == MODE_2D) { sampler2d!!.textures } else { samplerCube!!.textures }
 
         fun onUpdate(cmd: DrawCommand) {
             if (mode == MODE_2D) { sampler2d!!.onUpdate?.invoke(sampler2d, cmd) }

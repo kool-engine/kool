@@ -7,7 +7,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.shading.AlbedoSource
+import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -139,7 +139,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
 
             val pbrConfig = PbrShader.PbrConfig()
             pbrConfig.isImageBasedLighting = withIbl
-            pbrConfig.albedoSource = AlbedoSource.TEXTURE_ALBEDO
+            pbrConfig.albedoSource = Albedo.TEXTURE_ALBEDO
             pbrConfig.isNormalMapped = true
             pbrConfig.isRoughnessMapped = true
             pbrConfig.isMetallicMapped = true

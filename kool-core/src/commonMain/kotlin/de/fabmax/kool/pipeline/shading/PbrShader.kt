@@ -170,7 +170,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 val pos = transformNode(worldPos, mvp.outModelMat, 1f).output
                 ifFragPos = stageInterfaceNode("ifFragPos", pos)
 
-                ifColors = if (cfg.albedoSource == AlbedoSource.VERTEX_ALBEDO) {
+                ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
                     stageInterfaceNode("ifColors", attrColors().output)
                 } else {
                     null
@@ -210,9 +210,9 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
 
                     inAlbedo = when (cfg.albedoSource) {
-                        AlbedoSource.VERTEX_ALBEDO -> ifColors!!.output
-                        AlbedoSource.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
-                        AlbedoSource.TEXTURE_ALBEDO -> {
+                        Albedo.VERTEX_ALBEDO -> ifColors!!.output
+                        Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
+                        Albedo.TEXTURE_ALBEDO -> {
                             val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
                             val albedoLin = gammaNode(albedoSampler.outColor)
                             albedoLin.outColor
@@ -245,7 +245,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     }
 
     class PbrConfig {
-        var albedoSource = AlbedoSource.VERTEX_ALBEDO
+        var albedoSource = Albedo.VERTEX_ALBEDO
         var isNormalMapped = false
         var isRoughnessMapped = false
         var isMetallicMapped = false
@@ -255,7 +255,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isImageBasedLighting = false
 
         fun requiresTexCoords(): Boolean {
-            return albedoSource == AlbedoSource.TEXTURE_ALBEDO ||
+            return albedoSource == Albedo.TEXTURE_ALBEDO ||
                     isNormalMapped ||
                     isRoughnessMapped ||
                     isMetallicMapped ||

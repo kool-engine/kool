@@ -11,8 +11,6 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
 
     var allValid = true
         private set
-//    var isDescriptorSetUpdateRequired = false
-//        private set
 
     private val isDescriptorSetUpdateRequired = BooleanArray(graphicsPipeline.nImages) { false }
 

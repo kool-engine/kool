@@ -296,16 +296,15 @@ class MultiplyNode(graph: ShaderGraph) : ShaderNode("multiply_${graph.nextNodeId
     }
 }
 
-// fixme: for now this assumes the only stages are vertex and fragment
 class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) {
     // written in source stage (i.e. vertex shader)
     var input = ShaderNodeIoVar(ModelVar1fConst(0f))
         set(value) {
-            output = ShaderNodeIoVar(ModelVar("stageIf_${name}", value.variable.type), fragmentNode)
+            output = ShaderNodeIoVar(ModelVar(name, value.variable.type), fragmentNode)
             field = value
         }
     // accessible in target stage (i.e. fragment shader)
-    var output = ShaderNodeIoVar(ModelVar1f("stageIf_${name}"))
+    var output = ShaderNodeIoVar(ModelVar1f(name))
         private set
 
     private var layout = 0

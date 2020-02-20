@@ -17,6 +17,7 @@ abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevel
 
     var frameIdx = 0
     var isSingleShot = false
+    var isMainPass = true
     var targetMipLevel = -1
 
     abstract fun render(ctx: KoolContext)
@@ -48,6 +49,9 @@ class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int = 1, colorFo
 
     var onSetup: ((KoolContext) -> Unit)? = null
 
+    val beforeRender = mutableListOf<((KoolContext) -> Unit)>()
+    val afterRender = mutableListOf<((KoolContext) -> Unit)>()
+
     override fun render(ctx: KoolContext) {
         scene?.let { scene ->
             // fixme: viewport management is worse than before
@@ -55,8 +59,18 @@ class OffscreenPass2d(texWidth: Int, texHeight: Int, mipLevels: Int = 1, colorFo
             ctx.viewport = KoolContext.Viewport(0, 0, mipWidth(targetMipLevel), mipHeight(targetMipLevel))
             onSetup?.invoke(ctx)
             scene.drawQueue = drawQueues[0].also { it.clear() }
-            scene.renderScene(ctx)
+
+            beforeRender.forEach { it(ctx) }
+
+            if (isMainPass) {
+                scene.renderScene(ctx)
+            } else {
+                scene.camera.updateCamera(ctx)
+                scene.render(ctx)
+            }
             ctx.viewport = vp
+
+            afterRender.forEach { it(ctx) }
         }
         frameIdx++
     }
@@ -87,7 +101,14 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorForm
             for (v in ViewDirection.values()) {
                 onSetupView?.invoke(v, ctx)
                 scene.drawQueue = drawQueues[v.index].also { it.clear() }
-                scene.renderScene(ctx)
+
+                if (isMainPass) {
+                    scene.renderScene(ctx)
+                } else {
+                    scene.camera.updateCamera(ctx)
+                    scene.render(ctx)
+                }
+
             }
             ctx.viewport = vp
         }
@@ -144,6 +165,7 @@ class OffscreenPassCube(texWidth: Int, texHeight: Int, mipLevels: Int, colorForm
 
 expect class OffscreenPass2dImpl(offscreenPass: OffscreenPass2d) {
     val texture: Texture
+    val depthTexture: Texture
 
     fun dispose(ctx: KoolContext)
 }

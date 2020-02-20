@@ -12,7 +12,8 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenPass2d) {
-    actual val texture: Texture = OffscreenTexture2d()
+    actual val texture: Texture = OffscreenTexture2d(true)
+    actual val depthTexture: Texture = OffscreenTexture2d(false)
 
     var renderPass: OffscreenRenderPass? = null
         private set
@@ -41,12 +42,17 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     private fun createRenderPass(sys: VkSystem) {
         val rp = OffscreenRenderPass(sys, offscreenPass.texWidth, offscreenPass.texHeight, false, offscreenPass.colorFormat.vkFormat)
         (texture as OffscreenTexture2d).create(sys, rp)
+        (depthTexture as OffscreenTexture2d).create(sys, rp)
         renderPass = rp
     }
 
-    private inner class OffscreenTexture2d: Texture(loader = null) {
+    private inner class OffscreenTexture2d(val isColor: Boolean): Texture(loader = null) {
         fun create(sys: VkSystem, rp: OffscreenRenderPass) {
-            loadedTexture = LoadedTexture(sys, rp.texFormat, rp.image, rp.imageView, rp.sampler, true)
+            loadedTexture = if (isColor) {
+                LoadedTexture(sys, rp.texFormat, rp.image, rp.imageView, rp.sampler, true)
+            } else {
+                LoadedTexture(sys, rp.texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
+            }
             loadingState = LoadingState.LOADED
         }
     }

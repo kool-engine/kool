@@ -6,7 +6,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.shading.AlbedoSource
+import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
@@ -65,7 +65,7 @@ class MultiLightDemo(ctx: KoolContext) {
             +it
 
             val cfg = PbrShader.PbrConfig().apply {
-                albedoSource = AlbedoSource.STATIC_ALBEDO
+                albedoSource = Albedo.STATIC_ALBEDO
             }
             modelShader = PbrShader(cfg).apply {
                 albedo = colorCycler.current.linColor
@@ -86,7 +86,7 @@ class MultiLightDemo(ctx: KoolContext) {
             }
 
             val cfg = PbrShader.PbrConfig().apply {
-                albedoSource = AlbedoSource.TEXTURE_ALBEDO
+                albedoSource = Albedo.TEXTURE_ALBEDO
                 isNormalMapped = true
                 isRoughnessMapped = true
             }

@@ -28,10 +28,11 @@ abstract class KoolContext {
     var viewport = Viewport(0, 0, 0, 0)
     var clearColor = Color(0.15f, 0.15f, 0.15f, 1f)
 
-    val renderingHints = RenderingHints()
     var renderPass = RenderPass.SCREEN
     val mvpState = MvpState()
+
     val projCorrectionMatrix = Mat4f()
+    val depthBiasMatrix = Mat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f, 0.5f, 0.5f)
 
     val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()
 
@@ -142,7 +143,7 @@ abstract class KoolContext {
 
     fun applyRenderingHints() {
         // apply scene specific hints (shadow map type, etc.)
-        scenes.forEach { it.onRenderingHintsChanged(this) }
+        //scenes.forEach { it.onRenderingHintsChanged(this) }
         // regenerate shaders
         //shaderMgr.onRenderingHintsChanged(this)
     }

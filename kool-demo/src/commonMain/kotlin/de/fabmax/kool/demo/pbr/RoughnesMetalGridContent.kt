@@ -5,7 +5,7 @@ import de.fabmax.kool.demo.Cycler
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CubeMapTexture
 import de.fabmax.kool.pipeline.Texture
-import de.fabmax.kool.pipeline.shading.AlbedoSource
+import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -112,7 +112,7 @@ class RoughnesMetalGridContent : PbrDemo.PbrContent("Roughness / Metal") {
                     }
 
                     val pbrConfig = PbrShader.PbrConfig()
-                    pbrConfig.albedoSource = AlbedoSource.STATIC_ALBEDO
+                    pbrConfig.albedoSource = Albedo.STATIC_ALBEDO
                     pbrConfig.isImageBasedLighting = withIbl
 
                     val shader = PbrShader(pbrConfig)

@@ -15,9 +15,6 @@ class DrawCommand {
     val projMat = Mat4f()
     val mvpMat = Mat4f()
 
-    var indexBuffer = 0L
-    var vertexBuffer = 0L
-
     fun captureMvp(ctx: KoolContext) {
         modelMat.set(ctx.mvpState.modelMatrix)
         viewMat.set(ctx.mvpState.viewMatrix)

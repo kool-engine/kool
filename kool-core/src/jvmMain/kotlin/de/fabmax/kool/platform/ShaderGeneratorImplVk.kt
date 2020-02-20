@@ -22,6 +22,11 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             try {
                 code = ShaderCode.codeFromSource(vertShader, fragShader)
                 shaderCodes[codeKey] = code
+
+                if (model.dumpCode) {
+                    printCode(vertShader, fragShader)
+                }
+
             } catch (e: Exception) {
                 logE { "Compilation failed: $e" }
                 printCode(vertShader, fragShader)
@@ -135,11 +140,13 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
     }
 
     private fun generateTextureSampler(set: DescriptorSetLayout, desc: TextureSampler): String {
-        return "layout(set=${set.set}, binding=${desc.binding}) uniform sampler2D ${desc.name};\n"
+        val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
+        return "layout(set=${set.set}, binding=${desc.binding}) uniform sampler2D ${desc.name}$arraySuffix;\n"
     }
 
     private fun generateCubeMapSampler(set: DescriptorSetLayout, desc: CubeMapSampler): String {
-        return "layout(set=${set.set}, binding=${desc.binding}) uniform samplerCube ${desc.name};\n"
+        val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
+        return "layout(set=${set.set}, binding=${desc.binding}) uniform samplerCube ${desc.name}$arraySuffix;\n"
     }
 
     private fun generateAttributeBindings(pipeline: Pipeline): String {
@@ -184,6 +191,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             is Uniform4fv -> "vec4 $name[$length]"
             is UniformMat3f -> "mat3 $name"
             is UniformMat4f -> "mat4 $name"
+            is UniformMat4fv -> "mat4 $name[$length]"
             is Uniform1i -> "int $name"
             else -> TODO("Uniform type name not implemented: ${this::class.java.name}")
         }

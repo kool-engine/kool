@@ -72,7 +72,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.output)
 
-                ifColors = if (cfg.albedoSource == AlbedoSource.VERTEX_ALBEDO) {
+                ifColors = if (cfg.albedo == Albedo.VERTEX_ALBEDO) {
                     stageInterfaceNode("ifColors", attrColors().output)
                 } else {
                     null
@@ -97,10 +97,10 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 val mvpFrag = mvp.addToStage(fragmentStageGraph)
                 val lightNode = defaultLightNode()
 
-                val albedo = when (cfg.albedoSource) {
-                    AlbedoSource.VERTEX_ALBEDO -> ifColors!!.output
-                    AlbedoSource.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
-                    AlbedoSource.TEXTURE_ALBEDO -> {
+                val albedo = when (cfg.albedo) {
+                    Albedo.VERTEX_ALBEDO -> ifColors!!.output
+                    Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
+                    Albedo.TEXTURE_ALBEDO -> {
                         val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
                         val albedoLin = gammaNode(albedoSampler.outColor)
                         albedoLin.outColor
@@ -124,11 +124,11 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
     }
 
     class PhongConfig {
-        var albedoSource = AlbedoSource.VERTEX_ALBEDO
+        var albedo = Albedo.VERTEX_ALBEDO
         var isNormalMapped = false
 
         fun requiresTexCoords(): Boolean {
-            return albedoSource == AlbedoSource.TEXTURE_ALBEDO ||
+            return albedo == Albedo.TEXTURE_ALBEDO ||
                     isNormalMapped
         }
     }

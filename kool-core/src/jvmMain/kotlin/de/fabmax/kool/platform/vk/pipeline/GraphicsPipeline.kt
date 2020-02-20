@@ -260,8 +260,14 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
                 this[i].apply {
                     binding(b.binding)
                     descriptorType(b.type.intType())
-                    descriptorCount(1)
                     stageFlags(b.stages.fold(0) { flags, stage -> flags or stage.bitValue() })
+
+                    val arraySize = when (b) {
+                        is TextureSampler -> b.arraySize
+                        is CubeMapSampler -> b.arraySize
+                        else -> 1
+                    }
+                    descriptorCount(arraySize)
                 }
             }
         }

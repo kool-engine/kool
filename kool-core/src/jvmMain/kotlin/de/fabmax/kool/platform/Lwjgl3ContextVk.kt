@@ -77,6 +77,13 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
             setRow(2, Vec4f(0f, 0f, 0.5f, 0.5f))
             setRow(3, Vec4f(0f, 0f, 0f, 1f))
         }
+
+        depthBiasMatrix.apply {
+            setRow(0, Vec4f(0.5f, 0.0f, 0.0f, 0.5f))
+            setRow(1, Vec4f(0.0f, 0.5f, 0.0f, 0.5f))
+            setRow(2, Vec4f(0.0f, 0.0f, 1.0f, 0.0f))
+            setRow(3, Vec4f(0.0f, 0.0f, 0.0f, 1.0f))
+        }
     }
 
     override fun openUrl(url: String)  = Desktop.getDesktop().browse(URI(url))

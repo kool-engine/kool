@@ -47,8 +47,8 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
             vec3 phongMat_diffuse = vec3(0);
             vec3 phongMat_specular = vec3(0);
             for (int i = 0; i < ${lightNode.outLightCount.name}; i++) {
-                vec3 phongMat_l = ${lightNode.generateGetFragToLight("i", inFragPos.ref3f())};
-                vec3 radiance = ${lightNode.generateGetRadiance("i", "phongMat_l", inSpotInnerAngle.ref1f())};
+                vec3 phongMat_l = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
+                vec3 radiance = ${lightNode.callVec3GetRadiance("i", "phongMat_l", inSpotInnerAngle.ref1f())};
                 phongMat_l = normalize(phongMat_l);
                 
                 float phongMat_cosTheta = clamp(dot(phongMat_n, phongMat_l), 0.0, 1.0);
@@ -159,10 +159,10 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
             vec3 Lo = vec3(0.0);
             for (int i = 0; i < ${lightNode.outLightCount}; i++) {
                 // calculate per-light radiance
-                vec3 fragToLight = ${lightNode.generateGetFragToLight("i", inFragPos.ref3f())};
+                vec3 fragToLight = ${lightNode.callVec3GetFragToLight("i", inFragPos.ref3f())};
                 vec3 L = normalize(fragToLight);
                 vec3 H = normalize(V + L);
-                vec3 radiance = ${lightNode.generateGetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
+                vec3 radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
         
                 // cook-torrance BRDF
                 float NDF = DistributionGGX(N, H, rough); 

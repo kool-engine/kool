@@ -7,9 +7,11 @@ import kotlin.contracts.contract
 
 class ShaderModel(val modelInfo: String = "") {
     val stages = mutableMapOf(
-            ShaderStage.VERTEX_SHADER to VertexShaderGraph(),
-            ShaderStage.FRAGMENT_SHADER to FragmentShaderGraph()
+            ShaderStage.VERTEX_SHADER to VertexShaderGraph(this),
+            ShaderStage.FRAGMENT_SHADER to FragmentShaderGraph(this)
     )
+
+    var dumpCode = false
 
     val vertexStageGraph: VertexShaderGraph
         get() = stages[ShaderStage.VERTEX_SHADER] as VertexShaderGraph
@@ -180,12 +182,29 @@ class ShaderModel(val modelInfo: String = "") {
         fun attrTexCoords() = attributeNode(Attribute.TEXTURE_COORDS)
         fun attributeNode(attribute: Attribute) = addNode(AttributeNode(attribute, stage))
 
-        fun stageInterfaceNode(name: String, input: ShaderNodeIoVar?): StageInterfaceNode {
+        fun stageInterfaceNode(name: String, input: ShaderNodeIoVar? = null): StageInterfaceNode {
             val ifNode = StageInterfaceNode(name, vertexStageGraph, fragmentStageGraph)
             input?.let { ifNode.input = it }
             addNode(ifNode.vertexNode)
             fragmentStageGraph.addNode(ifNode.fragmentNode)
             return ifNode
+        }
+
+        fun shadowedLightNode(inVertexPos: ShaderNodeIoVar? = null, inModelMat: ShaderNodeIoVar? = null, depthMapName: String = "depthMap", maxLights: Int = 4): ShadowedLightNode {
+            val lightNode = ShadowedLightNode(vertexStageGraph, fragmentStageGraph, maxLights)
+            addNode(lightNode.vertexNode)
+            fragmentStageGraph.addNode(lightNode.fragmentNode)
+
+            inVertexPos?.let { lightNode.inPosition = inVertexPos }
+            inModelMat?.let { lightNode.inModelMat = inModelMat }
+
+            val texNode = TextureNode(fragmentStageGraph, depthMapName).apply {
+                arraySize = maxLights
+            }
+            fragmentStageGraph.addNode(texNode)
+            lightNode.depthTextures = texNode
+
+            return lightNode
         }
 
         fun mvpNode() = addNode(UniformBufferMvp(stage))
@@ -215,7 +234,7 @@ class ShaderModel(val modelInfo: String = "") {
             get() = fragmentStageGraph.colorOutput
             set(value) { fragmentStageGraph.colorOutput = value }
 
-        fun defaultLightNode(maxLights: Int = 4) = addNode(LightNode(stage, maxLights))
+        fun defaultLightNode(maxLights: Int = 4) = addNode(MultiLightNode(stage, maxLights))
 
         fun unlitMaterialNode(albedo: ShaderNodeIoVar? = null): UnlitMaterialNode {
             val mat = addNode(UnlitMaterialNode(stage))

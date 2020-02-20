@@ -95,13 +95,15 @@ class TextureNode(graph: ShaderGraph, name: String = "tex2d_${graph.nextNodeId}"
     val visibleIn = mutableSetOf(graph.stage)
     lateinit var sampler: TextureSampler
 
+    var arraySize = 1
+
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph.descriptorSet.apply {
             +TextureSampler.Builder().apply {
+                arraySize = this@TextureNode.arraySize
                 stages += visibleIn
                 name = this@TextureNode.name
-                stages += shaderGraph.stage
                 onCreate = { sampler = it }
             }
         }
@@ -118,7 +120,6 @@ class CubeMapNode(graph: ShaderGraph, name: String = "texCube_${graph.nextNodeId
             +CubeMapSampler.Builder().apply {
                 stages += visibleIn
                 name = this@CubeMapNode.name
-                stages += shaderGraph.stage
                 onCreate = { sampler = it }
             }
         }

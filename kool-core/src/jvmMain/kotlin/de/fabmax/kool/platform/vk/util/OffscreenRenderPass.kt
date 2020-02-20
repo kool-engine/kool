@@ -12,8 +12,13 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
 
     val image: Image
     val imageView: ImageView
-    val frameBuffer: Long
     val sampler: Long
+
+    val depthImage: Image
+    val depthImageView: ImageView
+    val depthSampler: Long
+
+    val frameBuffer: Long
 
     init {
         val fbImageCfg = Image.Config().apply {
@@ -28,20 +33,21 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
 
         image = Image(sys, fbImageCfg)
         imageView = ImageView(sys, image, VK_IMAGE_ASPECT_COLOR_BIT)
-        sampler = createSampler()
+        sampler = createSampler(VK_FILTER_LINEAR)
 
         fbImageCfg.format = sys.physicalDevice.depthFormat
-        fbImageCfg.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-        val depthImage = Image(sys, fbImageCfg)
-        val depthStencilView = ImageView(sys, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
+        fbImageCfg.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
+        depthImage = Image(sys, fbImageCfg)
+        depthImageView = ImageView(sys, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
+        depthSampler = createSampler(VK_FILTER_NEAREST)
 
         vkRenderPass = createRenderPass()
-        frameBuffer = createFrameBuffer(vkRenderPass, imageView, depthStencilView)
+        frameBuffer = createFrameBuffer(vkRenderPass, imageView, depthImageView)
 
         addDependingResource(image)
         addDependingResource(imageView)
         addDependingResource(depthImage)
-        addDependingResource(depthStencilView)
+        addDependingResource(depthImageView)
 
         sys.device.addDependingResource(this)
 
@@ -49,12 +55,12 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
     }
 
     // fixme: duplicate from Image, add ImageSampler class?
-    private fun createSampler(): Long {
+    private fun createSampler(filter: Int): Long {
         memStack {
             val samplerInfo = callocVkSamplerCreateInfo {
                 sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
-                magFilter(VK_FILTER_LINEAR)
-                minFilter(VK_FILTER_LINEAR)
+                magFilter(filter)
+                minFilter(filter)
                 mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
                 addressModeU(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                 addressModeV(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
@@ -76,6 +82,7 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
 
     override fun freeResources() {
         vkDestroySampler(sys.device.vkDevice, sampler, null)
+        vkDestroySampler(sys.device.vkDevice, depthSampler, null)
         vkDestroyRenderPass(sys.device.vkDevice, vkRenderPass, null)
         vkDestroyFramebuffer(sys.device.vkDevice, frameBuffer, null)
         logD { "Destroyed offscreen render pass" }
@@ -114,15 +121,21 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
                         finalLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                     }
                 }
-                this[1]
-                        .format(sys.physicalDevice.depthFormat)
-                        .samples(VK_SAMPLE_COUNT_1_BIT)
-                        .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                        .storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                        .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                        .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                        .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
-                        .finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                this[1].apply {
+                    format(sys.physicalDevice.depthFormat)
+                    samples(VK_SAMPLE_COUNT_1_BIT)
+                    loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+                    storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+                    stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                    stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                    initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+
+                    if (isCopied) {
+                        finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                    } else {
+                        finalLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    }
+                }
             }
 
             val colorAttachmentRef = callocVkAttachmentReferenceN(1) {

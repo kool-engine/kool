@@ -102,6 +102,8 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         var indexType = 0
         var primitiveType = 0
 
+        private var isDataSet = false
+
         init {
             pipeline.descriptorSetLayouts.forEach { set ->
                 set.descriptors.forEach { desc ->
@@ -220,7 +222,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 }
             }
 
-            if (md.hasChanged && !md.isBatchUpdate) {
+            if (!md.isBatchUpdate && (!isDataSet || md.hasChanged)) {
                 val usage = md.usage.glUsage()
 
                 indexType = UNSIGNED_INT
@@ -231,6 +233,11 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 dataBufferF?.setData(md.dataF, usage, ctx)
                 dataBufferI?.setData(md.dataI, usage, ctx)
                 md.hasChanged = false
+
+                // fixme: isDataSet flag is only a hack, data buffers should be bound to mesh, not to shader instance
+                // if mesh is rendered multiple times per frame with different shaders (e.g. shadow pass + standard
+                // pass), buffers are duplicated and only updated for first pass
+                isDataSet = true
             }
         }
     }

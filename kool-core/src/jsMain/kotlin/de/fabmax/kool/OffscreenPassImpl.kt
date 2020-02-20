@@ -16,6 +16,7 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.FRAMEBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR_MIPMAP_LINEAR
+import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST
 import org.khronos.webgl.WebGLRenderingContext.Companion.RENDERBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP
@@ -28,6 +29,7 @@ import org.khronos.webgl.WebGLTexture
 
 actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenPass2d) {
     actual val texture: Texture = OffscreenTexture()
+    actual val depthTexture: Texture = OffscreenDepthTexture()
 
     private var fbos: List<WebGLFramebuffer?> = mutableListOf()
     private var rbos: List<WebGLRenderbuffer?> = mutableListOf()
@@ -40,18 +42,25 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         texture as OffscreenTexture
         texture.create(ctx)
 
+        depthTexture as OffscreenDepthTexture
+        depthTexture.create(ctx)
+
         for (i in 0 until offscreenPass.mipLevels) {
             val fbo = gl.createFramebuffer()
-            val rbo = gl.createRenderbuffer()
+            //val rbo = gl.createRenderbuffer()
 
             gl.bindFramebuffer(FRAMEBUFFER, fbo)
-            gl.bindRenderbuffer(RENDERBUFFER, rbo)
-            gl.renderbufferStorage(RENDERBUFFER, DEPTH_COMPONENT24, offscreenPass.texWidth shr i, offscreenPass.texHeight shr i)
-            gl.framebufferRenderbuffer(FRAMEBUFFER, DEPTH_ATTACHMENT, RENDERBUFFER, rbo)
+
+//            gl.bindRenderbuffer(RENDERBUFFER, rbo)
+//            gl.renderbufferStorage(RENDERBUFFER, DEPTH_COMPONENT24, offscreenPass.texWidth shr i, offscreenPass.texHeight shr i)
+//            gl.framebufferRenderbuffer(FRAMEBUFFER, DEPTH_ATTACHMENT, RENDERBUFFER, rbo)
+
             gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, texture.offscreenTex, i)
+            gl.framebufferTexture2D(FRAMEBUFFER, DEPTH_ATTACHMENT, TEXTURE_2D, depthTexture.offscreenDepthTex, i)
+
 
             fbos += fbo
-            rbos += rbo
+            //rbos += rbo
         }
 
         isSetup = true
@@ -105,6 +114,31 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
 
             val estSize = estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 1, offscreenPass.mipLevels)
             loadedTexture = LoadedTexture(ctx, offscreenTex, estSize)
+            loadingState = LoadingState.LOADED
+        }
+    }
+
+    private inner class OffscreenDepthTexture : Texture(loader = null) {
+        var offscreenDepthTex: WebGLTexture? = null
+
+        fun create(ctx: JsContext) {
+            val gl = ctx.gl
+
+            val intFormat = DEPTH_COMPONENT24
+            val width = offscreenPass.texWidth
+            val height = offscreenPass.texHeight
+
+            offscreenDepthTex = gl.createTexture()
+            gl.bindTexture(TEXTURE_2D, offscreenDepthTex)
+            gl.texStorage2D(TEXTURE_2D, offscreenPass.mipLevels, intFormat, width, height)
+
+            gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, CLAMP_TO_EDGE)
+            gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, CLAMP_TO_EDGE)
+            gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST)
+            gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST)
+
+            val estSize = estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 1, offscreenPass.mipLevels)
+            loadedTexture = LoadedTexture(ctx, offscreenDepthTex, estSize)
             loadingState = LoadingState.LOADED
         }
     }

@@ -153,6 +153,16 @@ class UniformMat4f(name: String) : Uniform<Mat4f>(Mat4f(), name) {
     }
 }
 
+class UniformMat4fv(name: String, override val length: Int) : Uniform<Array<Mat4f>>(Array(length) { Mat4f() }, name) {
+    override val size: Int = 16 * 4 * length
+
+    override fun putTo(buffer: MixedBuffer) {
+        for (i in 0 until length) {
+            buffer.putFloat32(value[i].matrix)
+        }
+    }
+}
+
 class Uniform1i(name: String) : Uniform<Int>(0, name) {
     override val size: Int = 4
 

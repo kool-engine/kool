@@ -9,7 +9,7 @@ import de.fabmax.kool.util.Color
 
 class ShaderInterfaceIoVar(val location: Int, val variable: ModelVar)
 
-open class ShaderGraph(val stage: ShaderStage) {
+open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
     val descriptorSet = DescriptorSetLayout.Builder()
     val pushConstants = PushConstantRange.Builder()
 
@@ -19,7 +19,8 @@ open class ShaderGraph(val stage: ShaderStage) {
     protected val mutNodes = mutableListOf<ShaderNode>()
     val nodes: List<ShaderNode> get() = mutNodes
 
-    internal var nextNodeId = 1
+    var nextNodeId = 1
+        internal set
 
     inline fun <reified T: ShaderNode> findNode(name: String): T? {
         return nodes.find { it.name == name && it is T } as T?
@@ -63,11 +64,11 @@ open class ShaderGraph(val stage: ShaderStage) {
     }
 }
 
-class VertexShaderGraph : ShaderGraph(ShaderStage.VERTEX_SHADER) {
+class VertexShaderGraph(model: ShaderModel) : ShaderGraph(model, ShaderStage.VERTEX_SHADER) {
     val requiredVertexAttributes = mutableSetOf<Attribute>()
     var positionOutput = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO), null)
 }
 
-class FragmentShaderGraph : ShaderGraph(ShaderStage.FRAGMENT_SHADER) {
+class FragmentShaderGraph(model: ShaderModel) : ShaderGraph(model, ShaderStage.FRAGMENT_SHADER) {
     var colorOutput = ShaderNodeIoVar(ModelVar4fConst(Color.MAGENTA), null)
 }
