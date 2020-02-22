@@ -11,10 +11,7 @@ import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.FontProps
-import de.fabmax.kool.util.uiFont
+import de.fabmax.kool.util.*
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
@@ -32,6 +29,8 @@ class MultiLightDemo(ctx: KoolContext) {
             LightMesh(Color.MD_RED.toLinear()),
             LightMesh(Color.MD_AMBER.toLinear()),
             LightMesh(Color.MD_GREEN.toLinear()))
+    private val depthPasses = mutableListOf<ShadowMapPass>()
+
     private var lightCount = 4
     private var isColoredLights = true
     private var isSpotLights = true
@@ -46,6 +45,12 @@ class MultiLightDemo(ctx: KoolContext) {
         mainScene = mainScene(ctx)
         scenes += mainScene
         scenes += menu(ctx)
+
+        lights.forEach {
+            val pass = ShadowMapPass(mainScene, it.light)
+            depthPasses += pass
+            ctx.offscreenPasses += pass.offscreenPass
+        }
     }
 
     private fun mainScene(ctx: KoolContext) = scene {
@@ -66,11 +71,22 @@ class MultiLightDemo(ctx: KoolContext) {
 
             val cfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.STATIC_ALBEDO
+                isReceivingShadows = true
             }
             modelShader = PbrShader(cfg).apply {
                 albedo = colorCycler.current.linColor
                 roughness = 0.1f
                 metallic = 0f
+
+                onCreated += {
+                    depthMaps?.let { maps ->
+                        depthPasses.forEachIndexed { i, pass ->
+                            if (i < maps.size) {
+                                maps[i] = pass.offscreenPass.impl.depthTexture
+                            }
+                        }
+                    }
+                }
             }
             it.pipelineLoader = modelShader
         }
@@ -89,13 +105,24 @@ class MultiLightDemo(ctx: KoolContext) {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isNormalMapped = true
                 isRoughnessMapped = true
+                isReceivingShadows = true
             }
             pipelineLoader = PbrShader(cfg).apply {
-                val basePath = "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials"
+                val basePath = Demo.getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")
                 albedoMap = Texture { it.loadTextureData("$basePath/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
                 normalMap = Texture { it.loadTextureData("$basePath/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
                 roughnessMap = Texture { it.loadTextureData("$basePath/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg") }
                 metallic = 0f
+
+                onCreated += {
+                    depthMaps?.let { maps ->
+                        depthPasses.forEachIndexed { i, pass ->
+                            if (i < maps.size) {
+                                maps[i] = pass.offscreenPass.impl.depthTexture
+                            }
+                        }
+                    }
+                }
             }
         }
     }

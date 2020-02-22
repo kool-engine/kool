@@ -53,8 +53,8 @@ class ShaderManager(val ctx: JsContext) {
         val vsStatus = gl.getShaderParameter(vert, COMPILE_STATUS)
         if (vsStatus != true) {
             val log = gl.getShaderInfoLog(vert)
-            logE { "Vertex shader compilation failed: $vsStatus\n$log" }
-            logE { "Shader source: \n${code.vertexSrc}" }
+            logE { "Vertex shader compilation failed:\n$log" }
+            logE { "Shader source: \n${formatShaderSrc(code.vertexSrc)}" }
             throw KoolException("Vertex shader compilation failed: $log")
         }
 
@@ -64,8 +64,8 @@ class ShaderManager(val ctx: JsContext) {
         val fsStatus = gl.getShaderParameter(frag, COMPILE_STATUS)
         if (fsStatus != true) {
             val log = gl.getShaderInfoLog(frag)
-            logE { "Fragment shader compilation failed: $fsStatus\n$log" }
-            logE { "Shader source: \n${code.fragmentSrc}" }
+            logE { "Fragment shader compilation failed:\n$log" }
+            logE { "Shader source: \n${formatShaderSrc(code.fragmentSrc)}" }
             throw KoolException("Fragment shader compilation failed: $log")
         }
 
@@ -77,9 +77,17 @@ class ShaderManager(val ctx: JsContext) {
         gl.deleteShader(frag)
         if (gl.getProgramParameter(prog, LINK_STATUS) != true) {
             val log = gl.getProgramInfoLog(prog)
-            logE { "Shader linkage failed: $log" }
+            logE { "Shader linkage failed:\n$log" }
+            logE { "Vertex shader source: \n${formatShaderSrc(code.vertexSrc)}" }
+            logE { "Fragment shader source: \n${formatShaderSrc(code.fragmentSrc)}" }
             throw KoolException("Shader linkage failed: $log")
         }
         return prog
+    }
+
+    private fun formatShaderSrc(src: String): String {
+        val srcBuilder = StringBuilder()
+        src.lines().forEachIndexed { ln, line -> srcBuilder.append("${ln+1} $line\n") }
+        return srcBuilder.toString()
     }
 }

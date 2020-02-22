@@ -26,7 +26,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     private val pipelineId = pipeline.pipelineHash.toLong()
 
     private val attributeLocations = mutableMapOf<String, Int>()
-    private val uniformLocations = mutableMapOf<String, WebGLUniformLocation?>()
+    private val uniformLocations = mutableMapOf<String, List<WebGLUniformLocation?>>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
 
     init {
@@ -37,20 +37,37 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         }
         pipeline.descriptorSetLayouts.forEach { set ->
             set.descriptors.forEach { desc ->
-                if (desc is UniformBuffer) {
-                    desc.uniforms.forEach { uniformLocations[it.name] = ctx.gl.getUniformLocation(prog, it.name) }
-                } else {
-                    // sampler (texture or cube map
-                    uniformLocations[desc.name] = ctx.gl.getUniformLocation(prog, desc.name)
+                when (desc) {
+                    is UniformBuffer -> {
+                        desc.uniforms.forEach { uniformLocations[it.name] = listOf(ctx.gl.getUniformLocation(prog, it.name)) }
+                    }
+                    is TextureSampler -> {
+                        uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
+                    }
+                    is CubeMapSampler -> {
+                        uniformLocations[desc.name] = getUniformLocations(desc.name, desc.arraySize)
+                    }
                 }
             }
         }
         pipeline.pushConstantRanges.forEach { pcr ->
             pcr.pushConstants.forEach { pc ->
                 // in WebGL push constants are mapped to regular uniforms
-                uniformLocations[pc.name] = ctx.gl.getUniformLocation(prog, pc.name)
+                uniformLocations[pc.name] = listOf(ctx.gl.getUniformLocation(prog, pc.name))
             }
         }
+    }
+
+    private fun getUniformLocations(name: String, arraySize: Int): List<WebGLUniformLocation?> {
+        val locations = mutableListOf<WebGLUniformLocation?>()
+        if (arraySize > 1) {
+            for (i in 0 until arraySize) {
+                locations += ctx.gl.getUniformLocation(prog, "$name[$i]")
+            }
+        } else {
+            locations += ctx.gl.getUniformLocation(prog, name)
+        }
+        return locations
     }
 
     fun use() {
@@ -123,22 +140,28 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
 
         private fun mapPushConstants(pc: PushConstantRange) {
             pushConstants.add(pc)
-            pc.pushConstants.forEach { mappings += MappedUniform.mappedUniform(it, uniformLocations[it.name]) }
+            pc.pushConstants.forEach { mappings += MappedUniform.mappedUniform(it, uniformLocations[it.name]?.get(0)) }
         }
 
         private fun mapUbo(ubo: UniformBuffer) {
             ubos.add(ubo)
-            ubo.uniforms.forEach { mappings += MappedUniform.mappedUniform(it, uniformLocations[it.name]) }
+            ubo.uniforms.forEach { mappings += MappedUniform.mappedUniform(it, uniformLocations[it.name]?.get(0)) }
         }
 
         private fun mapTexture(tex: TextureSampler) {
             textures.add(tex)
-            mappings += MappedUniformTex2d(tex, nextTexUnit++, uniformLocations[tex.name])
+            uniformLocations[tex.name]?.let { locs ->
+                mappings += MappedUniformTex2d(tex, nextTexUnit, locs)
+                nextTexUnit += locs.size
+            }
         }
 
         private fun mapCubeMap(cubeMap: CubeMapSampler) {
             cubeMaps.add(cubeMap)
-            mappings += MappedUniformCubeMap(cubeMap, nextTexUnit++, uniformLocations[cubeMap.name])
+            uniformLocations[cubeMap.name]?.let { locs ->
+                mappings += MappedUniformCubeMap(cubeMap, nextTexUnit, locs)
+                nextTexUnit += locs.size
+            }
         }
 
         fun bindInstance(drawCmd: DrawCommand): Boolean {

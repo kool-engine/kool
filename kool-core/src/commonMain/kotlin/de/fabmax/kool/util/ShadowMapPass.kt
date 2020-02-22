@@ -14,10 +14,7 @@ class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 2048) {
     val offscreenPass = OffscreenPass2d(mapSize, mapSize)
     val shadowCam = PerspectiveCamera().apply {
         clipNear = 1f
-        clipFar = 25f
-        position.set(light.position)
-        lookAt.set(light.position).add(light.direction)
-        fovY = light.spotAngle
+        clipFar = 100f
         isApplyProjCorrection = false
     }
 
@@ -30,6 +27,10 @@ class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 2048) {
 
         offscreenPass.beforeRender += { ctx ->
             tempCam = scene.camera
+
+            shadowCam.position.set(light.position)
+            shadowCam.lookAt.set(light.position).add(light.direction)
+            shadowCam.fovY = light.spotAngle
             scene.camera = shadowCam
 
             shadowCam.updateCamera(ctx)

@@ -147,31 +147,6 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
         }
 
         override fun generateCode(generator: CodeGenerator) {
-            generator.appendFunction("light_getShadowFac", """
-                float light_getShadowFac(int idx, vec4 projPos, vec2 off) {
-                    vec3 coord = projPos.xyz / projPos.w;
-                    float shadowMapDepth = ${generator.sampleTexture2d("${depthTextures.name}[idx]", "coord.xy + off")}.x;
-                    return step(coord.z - 0.001, shadowMapDepth);
-                }
-                """)
-
-            val shadowSamples = StringBuilder()
-            val n = 9
-            for (i in 0 until n) {
-                shadowSamples.append("fac += light_getShadowFac(idx, projPos, vec2(dx * ${shadowOffsets[i].x}, dy * ${shadowOffsets[i].y}));\n")
-            }
-            generator.appendFunction("light_getShadowFacPcf", """
-                float light_getShadowFacPcf(int idx, vec4 projPos) {
-                    ivec2 mapSize = textureSize(${depthTextures.name}[0], 0);
-                    float dx = 1.5 / float(mapSize.x);
-                    float dy = 1.5 / float(mapSize.y);
-    
-                    float fac = 0.0;
-                    $shadowSamples
-                    return fac / $n;
-                }
-                """)
-
             generator.appendFunction("light_getFragToLight", """
                 vec3 light_getFragToLight(int idx, vec3 fragPos) {
                     if (${uPositions.name}[idx].w == float(${Light.Type.DIRECTIONAL.encoded})) {
@@ -197,11 +172,47 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
                         float innerAng = spotAng + (1.0 - spotAng) * (1.0 - innerAngle);
                         float ang = dot(lightDir, ${uDirections.name}[idx].xyz);
                         float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * $PI) * 0.5 + 0.5;
-                        float shadow = light_getShadowFacPcf(idx, ifPosLightSpace[idx]);
-                        return ${uColors.name}[idx].rgb * ${uColors.name}[idx].w / (dist * dist) * angVal * shadow;
+                        return ${uColors.name}[idx].rgb * ${uColors.name}[idx].w / (dist * dist) * angVal;
                     }
                 }
                 """)
+
+            // compute shadow factors for all light sources in main function
+            // shadow factors are then multiplied to the result of light_getRadiance function when called from main()
+            // code would be much nicer (and faster if not all lights are used) if sampling would be done in
+            // light_getRadiance function, but that would require accessing the depth map sampler array with a
+            // dynamic index, which is not possible in WebGL...
+            generator.appendMain("""
+                float shadowFacs[$maxLights];
+                ivec2 shadowMapSize = textureSize(${depthTextures.name}[0], 0);
+                float shadowDx = 1.5 / float(shadowMapSize.x);
+                float shadowDy = 1.5 / float(shadowMapSize.y);
+                vec4 shadowProjPos;
+                vec3 shadowCoord;
+            """)
+            for (lightI in 0 until maxLights) {
+                generator.appendMain("""
+                    shadowProjPos = ifPosLightSpace[$lightI];
+                    shadowCoord = shadowProjPos.xyz / shadowProjPos.w;
+                    shadowFacs[$lightI] = 0.0;
+                """)
+
+                // multi sample shadow map for nicer edges
+                val nSamples = 9
+                for (j in 0 until nSamples) {
+                    val off = "vec2(shadowDx * ${shadowOffsets[j].x}, shadowDy * ${shadowOffsets[j].y})"
+                    generator.appendMain("shadowFacs[$lightI] += step(shadowCoord.z - 0.001, " +
+                            "${generator.sampleTexture2d("${depthTextures.name}[$lightI]", "shadowCoord.xy + $off")}.x);")
+                }
+                generator.appendMain("shadowFacs[$lightI] /= float($nSamples);")
+            }
+        }
+
+        override fun callVec3GetRadiance(idx: String, fragToLight: String, innerAngle: String): String {
+            // kinda hacky: call regular getRadiance function and multiply the result by the pre-computed shadow
+            // factor (only available in main function)
+            val call = super.callVec3GetRadiance(idx, fragToLight, innerAngle)
+            return "($call * shadowFacs[$idx])"
         }
     }
 

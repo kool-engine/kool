@@ -74,14 +74,17 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             uDispStrength?.uniform?.value = value
         }
 
-    // Simple lighting props
+    // Lighting props
     private var uAmbient: PushConstantNodeColor? = null
+    private var depthSampler: TextureSampler? = null
 
     var ambient = Color(0.03f, 0.03f, 0.03f, 1f)
         set(value) {
             field = value
             uAmbient?.uniform?.value?.set(value)
         }
+    val depthMaps: Array<Texture?>?
+        get() = depthSampler?.textures
 
     // Image based lighting maps
     private var irradianceMapSampler: CubeMapSampler? = null
@@ -105,15 +108,16 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         }
 
     override fun onPipelineCreated(pipeline: Pipeline) {
-        super.onPipelineCreated(pipeline)
         uMetallic = model.findNode("uMetallic")
         uMetallic?.let { it.uniform.value = metallic }
         uRoughness = model.findNode("uRoughness")
         uRoughness?.let { it.uniform.value = roughness }
         uAlbedo = model.findNode("uAlbedo")
         uAlbedo?.uniform?.value?.set(albedo)
+
         uAmbient = model.findNode("uAmbient")
         uAmbient?.uniform?.value?.set(ambient)
+        depthSampler = model.findNode<TextureNode>("depthMap")?.sampler
 
         irradianceMapSampler = model.findNode<CubeMapNode>("irradianceMap")?.sampler
         irradianceMapSampler?.let { it.texture = irradianceMap }
@@ -136,6 +140,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         displacementSampler?.let { it.texture = displacementMap }
         uDispStrength = model.findNode("uDispStrength")
         uDispStrength?.let { it.uniform.value = displacementStrength }
+
+        super.onPipelineCreated(pipeline)
     }
 
     companion object {
@@ -146,6 +152,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             val ifFragPos: StageInterfaceNode
             val ifTexCoords: StageInterfaceNode?
             val mvp: UniformBufferMvp
+            val shadowedLightNode: ShadowedLightNode?
 
             vertexStage {
                 mvp = mvpNode()
@@ -182,11 +189,17 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
 
+                shadowedLightNode = if (cfg.isReceivingShadows) {
+                    shadowedLightNode(worldPos, mvp.outModelMat, "depthMap")
+                } else {
+                    null
+                }
+
                 positionOutput = vertexPositionNode(worldPos, mvp.outMvpMat).outPosition
             }
             fragmentStage {
                 val mvpFrag = mvp.addToStage(fragmentStageGraph)
-                val lightNode = defaultLightNode()
+                val lightNode = shadowedLightNode?.fragmentNode ?: defaultLightNode()
 
                 val reflMap: CubeMapNode?
                 val brdfLut: TextureNode?
@@ -253,6 +266,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isDisplacementMapped = false
 
         var isImageBasedLighting = false
+
+        var isReceivingShadows = false
 
         fun requiresTexCoords(): Boolean {
             return albedoSource == Albedo.TEXTURE_ALBEDO ||

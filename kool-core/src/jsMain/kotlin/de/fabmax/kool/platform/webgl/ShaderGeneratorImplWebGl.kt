@@ -102,11 +102,13 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
     }
 
     private fun generateTextureSampler(desc: TextureSampler): String {
-        return "uniform sampler2D ${desc.name};\n"
+        val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
+        return "uniform sampler2D ${desc.name}$arraySuffix;\n"
     }
 
     private fun generateCubeMapSampler(desc: CubeMapSampler): String {
-        return "uniform samplerCube ${desc.name};\n"
+        val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
+        return "uniform samplerCube ${desc.name}$arraySuffix;\n"
     }
 
     private fun generateAttributeBindings(pipeline: Pipeline): String {
@@ -150,6 +152,7 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
             is Uniform4fv -> "vec4 $name[$length]"
             is UniformMat3f -> "mat3 $name"
             is UniformMat4f -> "mat4 $name"
+            is UniformMat4fv -> "mat4 $name[$length]"
             is Uniform1i -> "int $name"
             else -> TODO("Uniform type name not implemented: $this")
         }
