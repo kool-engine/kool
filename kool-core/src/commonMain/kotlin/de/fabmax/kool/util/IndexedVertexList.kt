@@ -105,6 +105,8 @@ class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
         vertexIt = VertexView(this, 0)
     }
 
+    fun isEmpty(): Boolean = numVertices == 0 || numIndices == 0
+
     private fun increaseDataSizeF(newSize: Int) {
         val newData = createFloat32Buffer(newSize)
         dataF.flip()

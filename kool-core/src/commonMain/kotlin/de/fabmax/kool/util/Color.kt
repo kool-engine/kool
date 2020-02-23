@@ -15,6 +15,10 @@ open class Color(r: Float, g: Float, b: Float, a: Float = 1f) : Vec4f(r, g, b, a
     open val b get() = this[2]
     open val a get() = this[3]
 
+    fun mix(other: Color, weight: Float): MutableColor {
+        return mix(other, weight, MutableColor())
+    }
+
     fun mix(other: Color, weight: Float, result: MutableColor): MutableColor {
         result.r = other.r * weight + r * (1f - weight)
         result.g = other.g * weight + g * (1f - weight)

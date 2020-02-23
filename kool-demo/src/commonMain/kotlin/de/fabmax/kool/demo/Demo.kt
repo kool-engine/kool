@@ -34,7 +34,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
 
     private val demos = mutableMapOf(
             "pbrDemo" to DemoEntry("PBR/IBL Demo") { addAll(pbrDemoScene(it)) },
-            "multiLightDemo" to DemoEntry("Multi Light Demo") { addAll(multiLightDemo(it)) }
+            "multiLightDemo" to DemoEntry("Multi Light Demo") { addAll(multiLightDemo(it)) },
+            "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) }
 
             // todo: port old demos...
 //            "simpleDemo" to DemoEntry("Simple Demo") { add(uiDemoScene()) },
@@ -44,7 +45,6 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
 //            "globeDemo" to DemoEntry("Globe Demo") { addAll(globeScene(it)) },
 //            "modelDemo" to DemoEntry("Model Demo") { add(modelScene(it)) },
 //            "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
-//            "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) },
 //            "instancedDemo" to DemoEntry("Instanced Demo") { add(instancedDemo(it)) },
 //            "reflectionDemo" to DemoEntry("Reflection Demo") { addAll(reflectionDemo(it)) },
 //            "particleDemo" to DemoEntry("Particle Demo") { addAll(particleDemo(it)) }

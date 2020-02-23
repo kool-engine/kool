@@ -299,49 +299,51 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                                                 renderPass: RenderPass, nImages: Int, dynVp: Boolean) {
             var prevPipeline = 0UL
             drawQueue.commands.forEach { cmd ->
-                val pipelineCfg = cmd.pipeline ?: throw KoolException("Mesh pipeline not set")
-                if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
-                    sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, renderPass, dynVp)
-                }
-                val pipeline = sys.pipelineManager.getPipeline(pipelineCfg, renderPass.vkRenderPass)
-                if (pipelineCfg.pipelineHash != prevPipeline) {
-                    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.vkGraphicsPipeline)
-                    prevPipeline = pipelineCfg.pipelineHash
-                }
-                val descriptorSet = pipeline.getDescriptorSetInstance(pipelineCfg)
+                if (!cmd.mesh.geometry.isEmpty()) {
+                    val pipelineCfg = cmd.pipeline ?: throw KoolException("Mesh pipeline not set")
+                    if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
+                        sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, renderPass, dynVp)
+                    }
+                    val pipeline = sys.pipelineManager.getPipeline(pipelineCfg, renderPass.vkRenderPass)
+                    if (pipelineCfg.pipelineHash != prevPipeline) {
+                        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.vkGraphicsPipeline)
+                        prevPipeline = pipelineCfg.pipelineHash
+                    }
+                    val descriptorSet = pipeline.getDescriptorSetInstance(pipelineCfg)
 
-                if (descriptorSet.updateDescriptors(cmd, imageIndex, sys)) {
-                    descriptorSet.updateDescriptorSets(imageIndex)
+                    if (descriptorSet.updateDescriptors(cmd, imageIndex, sys)) {
+                        descriptorSet.updateDescriptorSets(imageIndex)
 
-                    var model = meshMap[pipelineCfg.pipelineInstanceId]
-                    if ((cmd.mesh.geometry.hasChanged && !cmd.mesh.geometry.isBatchUpdate) || model == null) {
-                        cmd.mesh.geometry.hasChanged = false
+                        var model = meshMap[pipelineCfg.pipelineInstanceId]
+                        if ((cmd.mesh.geometry.hasChanged && !cmd.mesh.geometry.isBatchUpdate) || model == null) {
+                            cmd.mesh.geometry.hasChanged = false
 
-                        // (re-)build buffer
-                        // fixme: don't do this here, should have happened before (async?)
-                        meshMap.remove(pipelineCfg.pipelineInstanceId)?.let {
-                            deleteQueue += DeleteAction {
-                                sys.device.removeDependingResource(it)
-                                it.destroy()
+                            // (re-)build buffer
+                            // fixme: don't do this here, should have happened before (async?)
+                            meshMap.remove(pipelineCfg.pipelineInstanceId)?.let {
+                                deleteQueue += DeleteAction {
+                                    sys.device.removeDependingResource(it)
+                                    it.destroy()
+                                }
                             }
+                            model = IndexedMesh(sys, cmd.mesh.geometry)
+                            meshMap[pipelineCfg.pipelineInstanceId] = model
+                            sys.device.addDependingResource(model)
                         }
-                        model = IndexedMesh(sys, cmd.mesh.geometry)
-                        meshMap[pipelineCfg.pipelineInstanceId] = model
-                        sys.device.addDependingResource(model)
+
+                        pipelineCfg.pushConstantRanges.forEach {
+                            val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
+                            vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as MixedBufferImpl).buffer)
+                        }
+
+                        vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
+                        vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
+                        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
+                        vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0)
+
+                        engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
                     }
-
-                    pipelineCfg.pushConstantRanges.forEach {
-                        val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
-                        vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as MixedBufferImpl).buffer)
-                    }
-
-                    vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
-                    vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
-                    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                            pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
-                    vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0)
-
-                    engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
                 }
             }
         }
