@@ -50,6 +50,13 @@ class MultiLightDemo(ctx: KoolContext) {
             depthPasses += pass
             ctx.offscreenPasses += pass.offscreenPass
         }
+
+        mainScene.onDispose += {
+            depthPasses.forEach {
+                ctx.offscreenPasses -= it.offscreenPass
+                it.dispose(ctx)
+            }
+        }
     }
 
     private fun mainScene(ctx: KoolContext) = scene {
@@ -121,6 +128,12 @@ class MultiLightDemo(ctx: KoolContext) {
                 normalMap = Texture { it.loadTextureData("$basePath/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
                 roughnessMap = Texture { it.loadTextureData("$basePath/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg") }
                 metallic = 0f
+
+                onDispose += {
+                    albedoMap!!.dispose()
+                    normalMap!!.dispose()
+                    roughnessMap!!.dispose()
+                }
 
                 onCreated += {
                     depthMaps?.let { maps ->

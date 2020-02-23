@@ -35,7 +35,7 @@ actual class LoadedTexture(val sys: VkSystem, val format: TexFormat, val texture
     }
 
     actual fun dispose() {
-        // fixme: kinda hacky... also might me depending resource of something else than sys.device
+        // fixme: kinda hacky... also might be depending resource of something else than sys.device
         sys.renderLoop.runDelayed(sys.swapChain?.nImages ?: 3) {
             sys.device.removeDependingResource(this)
             destroy()

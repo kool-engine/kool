@@ -74,6 +74,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         fbos.forEach { ctx.gl.deleteFramebuffer(it) }
         rbos.forEach { ctx.gl.deleteRenderbuffer(it) }
         texture.dispose()
+        depthTexture.dispose()
     }
 
     fun draw(ctx: JsContext) {

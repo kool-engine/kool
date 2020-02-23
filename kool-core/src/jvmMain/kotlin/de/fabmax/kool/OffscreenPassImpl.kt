@@ -29,6 +29,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         ctx.vkSystem.renderLoop.runDelayed(3) {
             renderPass?.destroyNow()
             texture.dispose()
+            depthTexture.dispose()
         }
     }
 

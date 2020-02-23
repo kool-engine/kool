@@ -26,6 +26,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
     override val shaderGenerator: ShaderGenerator = ShaderGeneratorImplWebGl()
     internal val queueRenderer = QueueRendererWebGl(this)
+    internal val afterRenderActions = mutableListOf<() -> Unit>()
 
     override var windowWidth = 0
         private set
@@ -240,6 +241,11 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a)
         gl.clear(WebGLRenderingContext.DEPTH_BUFFER_BIT or WebGLRenderingContext.COLOR_BUFFER_BIT)
         queueRenderer.renderQueue(drawQueue)
+
+        if (afterRenderActions.isNotEmpty()) {
+            afterRenderActions.forEach { it() }
+            afterRenderActions.clear()
+        }
     }
 
     private fun drawOffscreen(offscreenPass: OffscreenPass) {

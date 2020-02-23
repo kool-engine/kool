@@ -112,14 +112,13 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         private var dataBufferF: BufferResource? = null
         private var dataBufferI: BufferResource? = null
         private var indexBuffer: BufferResource? = null
+        private var buffersSet = false
 
         private var nextTexUnit = TEXTURE0
 
         var numIndices = 0
         var indexType = 0
         var primitiveType = 0
-
-        private var isDataSet = false
 
         init {
             pipeline.descriptorSetLayouts.forEach { set ->
@@ -245,7 +244,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 }
             }
 
-            if (!md.isBatchUpdate && (!isDataSet || md.hasChanged)) {
+            if (!md.isBatchUpdate && (md.hasChanged || !buffersSet)) {
                 val usage = md.usage.glUsage()
 
                 indexType = UNSIGNED_INT
@@ -255,12 +254,12 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 numIndices = md.numIndices
                 dataBufferF?.setData(md.dataF, usage, ctx)
                 dataBufferI?.setData(md.dataI, usage, ctx)
-                md.hasChanged = false
 
-                // fixme: isDataSet flag is only a hack, data buffers should be bound to mesh, not to shader instance
-                // if mesh is rendered multiple times per frame with different shaders (e.g. shadow pass + standard
-                // pass), buffers are duplicated and only updated for first pass
-                isDataSet = true
+                // fixme: data buffers should be bound to mesh, not to shader instance
+                // if mesh is rendered multiple times (e.g. by additional shadow passes), clearing
+                // hasChanged flag early results in buffers not being updated
+                ctx.afterRenderActions += { md.hasChanged = false }
+                buffersSet = true
             }
         }
     }

@@ -39,8 +39,15 @@ class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 1024) {
         }
         offscreenPass.afterRender += { ctx ->
             scene.camera = tempCam
-            offscreenPass.drawQueues[0].commands.forEach {
-                it.pipeline = getShadowPipeline(it.mesh, ctx)
+            if (light.type != Light.Type.SPOT) {
+                // todo: support non spot lights...
+                offscreenPass.drawQueues[0].clear()
+                light.lightMvpMat.setIdentity()
+
+            } else {
+                offscreenPass.drawQueues[0].commands.forEach {
+                    it.pipeline = getShadowPipeline(it.mesh, ctx)
+                }
             }
         }
     }

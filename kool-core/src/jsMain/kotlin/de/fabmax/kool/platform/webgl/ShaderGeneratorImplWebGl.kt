@@ -45,7 +45,7 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
         return """
             #version 300 es
             precision highp float;
-            precision mediump sampler2DShadow;
+            precision highp sampler2DShadow;
             ${model.infoStr()}
 
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.FRAGMENT_SHADER)}

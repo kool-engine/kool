@@ -4,18 +4,26 @@
 A multi-platform Vulkan / OpenGL based graphics engine that works on Desktop Java and browsers with
 WebGL2. Android support is currently suspended but it should be quite easy to get that going again.
 
-This is just a personal pet-project. However, if you are curious
-you can checkout the [javascript demo](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo).
-The hamburger-button in the upper-left corner triggers the demo chooser menu. Code for
-all demos is available in kool-demo sub-project.
+This is just a personal pet-project. However, I have a few demos in place (once loaded, you can also switch between
+them via the hamburger button in the upper left corner):
+- [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
+  with image based lighting for various materials and environments (underlying PBR theory from
+  [this](https://learnopengl.com/PBR/Theory) awesome article series).
+- [Multi Light Shadow Mapping](https://fabmax.github.io/kool/kool-js/?demo=multiLightDemo): A simple PBR shaded
+  model with up to four spot lights and dynamic shadows.
+- [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo): Interactive mesh
+  simplification demo (based on traditional [error quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
+- [Procedural Tree](https://fabmax.github.io/kool/kool-js/?demo=treeDemo): A simple procedural tree generator
+  based on a [space colonization algorithm](http://algorithmicbotany.org/papers/colonization.egwnp2007.large.pdf)
+
+Code for all demos is available in kool-demo sub-project.
+
+Together with Vulkan support I implemented a new, much more flexible shader generator. Shaders are composed of nodes
+quite similar to Unity's Shader Graph (however it's completely code-based, no fancy editor). Shader code is
+generated and compiled from the node-based model on-the-fly for each backend.
 
 In order to add support for Vulkan, I had to drastically change some parts of the engine and this is an
 ongoing process. Hence, stuff is a still a bit messy but things are getting better.
-
-Together with Vulkan
-support I implemented a new, much more flexible shader generator. Shaders are composed of nodes quite
-similar to Unity's Shader Graph (however it's completely code-based, no fancy editor). Shader code is
-generated and compiled from the node-based model on-the-fly for each backend.
 
 ## A Hello World Example
 
@@ -85,8 +93,13 @@ which more or less directly feeds that color into the fragment shader output.
 
 Finally the shader model can be used to create a ```ModeledShader``` which can then be assigned to a mesh.
 
-This example is obviously very simple, however more complex shaders can be defined in exactly the same
-fashion. E.g. ```PhongShader``` and ```PbrShader``` use exactly the same mechanism.
+This example is obviously very simple but it shows the working principle: Nodes contain basic building blocks
+which can be composed to complete shaders. Nodes have inputs and outputs which are used to connect them.
+The shader generator uses the connectivity information to build a dependency graph and call the code generator
+functions of the individual nodes in the correct order.
+
+More complex shaders can be defined in exactly the same fashion. E.g. ```PhongShader``` and
+```PbrShader``` use exactly the same mechanism.
 
 ## Features / Noticeable Stuff:
 - Node based dynamic shader generation
@@ -95,16 +108,19 @@ fashion. E.g. ```PhongShader``` and ```PbrShader``` use exactly the same mechani
 - Normal, roughness, metallic, ambient occlusion and Displacement mapping
 - HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
 - Lighting with multiple point, spot and directional lights
+- Shadow mapping for multiple light sources (spot lights only for now)
 - A small GUI framework for simple in-game menus / controls
 
 ## What's Next?
 The new render pipeline still lacks a lot of features the old OpenGL-only one already included; hence 
-first step should be to get those working again:
-- (Cascaded) shadow mapping (possibly for multiple lights and all three light types)
+first step should be to get these working again:
+- (Cascaded) shadow mapping for non spot light types
 - Support for Instanced rendering
 - A vertex shader node for skeletal animations
 
-There are also a few slightly more sophisticated features on my wish list:
+There are also a few new features on my wish list:
+- New rendering backend for WebGPU (should actually be quite simple)
+- Loading of glTF models
 - Screen-space ambient occlusion
 - Screen-space reflections
 - Optional deferred rendering

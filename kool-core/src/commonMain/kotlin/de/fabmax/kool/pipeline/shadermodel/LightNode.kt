@@ -191,10 +191,11 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
             """)
             for (lightI in 0 until maxLights) {
                 generator.appendMain("""
-                    shadowProjPos = ifPosLightSpace[$lightI];
-                    shadowProjPos.z = shadowProjPos.z - 0.001 * shadowProjPos.w;
-                    shadowOffset = vec2(float(fract(shadowProjPos.x * shadowMapSize * 0.5) > 0.25), float(fract(shadowProjPos.y * shadowMapSize * 0.5) > 0.25));
-                    shadowFacs[$lightI] = 0.0;
+                    if (${uPositions.name}[$lightI].w == float(${Light.Type.SPOT.encoded})) {
+                        shadowProjPos = ifPosLightSpace[$lightI];
+                        shadowProjPos.z = shadowProjPos.z - 0.001 * shadowProjPos.w;
+                        shadowOffset = vec2(float(fract(shadowProjPos.x * shadowMapSize * 0.5) > 0.25), float(fract(shadowProjPos.y * shadowMapSize * 0.5) > 0.25));
+                        shadowFacs[$lightI] = 0.0;
                 """)
 
                 // dithered pcf shadow map sampling
@@ -205,7 +206,10 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
                     generator.appendMain("shadowFacs[$lightI] += ${generator.sampleTexture2dDepth("${depthTextures.name}[$lightI]", projCoord)};")
                     nSamples++
                 }
-                generator.appendMain("shadowFacs[$lightI] *= float(${1f / nSamples});")
+                generator.appendMain("""
+                        shadowFacs[$lightI] *= float(${1f / nSamples});
+                    } else { shadowFacs[$lightI] = 1.0; }
+                """)
             }
         }
 

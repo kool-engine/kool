@@ -33,28 +33,31 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
-  var AlbedoSource = $module$kool.de.fabmax.kool.pipeline.shading.AlbedoSource;
+  var Albedo = $module$kool.de.fabmax.kool.pipeline.shading.Albedo;
   var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
   var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
   var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
+  var ensureNotNull = Kotlin.ensureNotNull;
   var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
   var Font = $module$kool.de.fabmax.kool.util.Font;
   var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
   var uiFont = $module$kool.de.fabmax.kool.util.uiFont_a4r08d$;
   var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
-  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
+  var math = Kotlin.kotlin.math;
   var Color = $module$kool.de.fabmax.kool.util.Color;
+  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var Light = $module$kool.de.fabmax.kool.scene.Light;
-  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
+  var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
+  var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
+  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
-  var ModeledShader$VertexColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.VertexColor;
   var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
+  var ShadowMapPass = $module$kool.de.fabmax.kool.util.ShadowMapPass;
   var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
   var Math_0 = Math;
-  var math = $module$kool.de.fabmax.kool.math;
-  var ensureNotNull = Kotlin.ensureNotNull;
+  var math_0 = $module$kool.de.fabmax.kool.math;
   var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
   var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
   var setOf = Kotlin.kotlin.collections.setOf_i5x0yv$;
@@ -97,9 +100,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var InstancedMesh$Instance = $module$kool.de.fabmax.kool.scene.InstancedMesh.Instance;
   var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
   var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
+  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
   var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
-  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var OrbitInputTransform$DragMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.DragMethod;
   var Label = $module$kool.de.fabmax.kool.scene.ui.Label;
   var toString_0 = $module$kool.de.fabmax.kool.toString_lcymw2$;
@@ -128,21 +131,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var Font_init = $module$kool.de.fabmax.kool.util.Font_init_8tzsp9$;
   var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
   var TextProps_init = $module$kool.de.fabmax.kool.util.TextProps;
-  var throwUPAE = Kotlin.throwUPAE;
-  var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
-  var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
-  var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_14dthe$;
-  var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_hem9$;
-  var toString_1 = Kotlin.toString;
-  var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
-  var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
-  var RayDistance = $module$kool.de.fabmax.kool.util.RayDistance;
-  var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
-  var PointMesh = $module$kool.de.fabmax.kool.scene.PointMesh;
-  var Ray = $module$kool.de.fabmax.kool.math.Ray;
-  var NearestToRayTraverser = $module$kool.de.fabmax.kool.util.NearestToRayTraverser;
-  var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
-  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
   var UiContainer = $module$kool.de.fabmax.kool.scene.ui.UiContainer;
   var SampleNode = $module$kool.de.fabmax.kool.modules.audio.SampleNode;
@@ -158,7 +146,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var Kick = $module$kool.de.fabmax.kool.modules.audio.Kick;
   var Pad = $module$kool.de.fabmax.kool.modules.audio.Pad;
   var AudioGenerator = $module$kool.de.fabmax.kool.modules.audio.AudioGenerator;
-  var math_0 = Kotlin.kotlin.math;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
@@ -167,6 +154,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
   var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
+  var throwUPAE = Kotlin.throwUPAE;
+  var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
+  var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
+  var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
+  var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_14dthe$;
+  var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_hem9$;
+  var toString_1 = Kotlin.toString;
+  var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
+  var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
+  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
+  var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
+  var ModeledShader$VertexColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.VertexColor;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
   var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
@@ -238,7 +237,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR/IBL Demo', Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR/IBL Demo', Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light Demo', Demo$demos$lambda_0))]);
+    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR/IBL Demo', Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light Demo', Demo$demos$lambda_0)), to('simplificationDemo', new Demo$DemoEntry('Simplification Demo', Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_2))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -412,6 +411,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.addAll_brywnq$(multiLightDemo(it));
     return Unit;
   }
+  function Demo$demos$lambda_1($receiver, it) {
+    $receiver.addAll_brywnq$(simplificationDemo(it));
+    return Unit;
+  }
+  function Demo$demos$lambda_2($receiver, it) {
+    $receiver.addAll_brywnq$(treeScene(it));
+    return Unit;
+  }
   Demo.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Demo',
@@ -481,29 +488,73 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     MultiLightDemo$Companion_getInstance();
     this.scenes = ArrayList_init();
     this.mainScene_0 = null;
-    this.lights_0 = listOf([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN.toLinear()), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED.toLinear()), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER.toLinear()), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN.toLinear())]);
+    this.lights_0 = listOf([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN)]);
+    this.depthPasses_0 = ArrayList_init();
     this.lightCount_0 = 4;
-    this.isColoredLights_0 = true;
-    this.isSpotLights_0 = true;
-    this.isRandomSpots_0 = true;
-    this.lightPower_0 = 400.0;
-    this.colorCycler_0 = new Cycler(MultiLightDemo$Companion_getInstance().matColors_0);
+    this.lightPower_0 = 500.0;
+    this.lightSaturation_0 = 0.4;
+    this.lightRandomness_0 = 0.3;
+    this.autoRotate_0 = true;
+    this.showLightIndicators_0 = true;
+    var $receiver = new Cycler(MultiLightDemo$Companion_getInstance().matColors_0);
+    $receiver.index = 1;
+    this.colorCycler_0 = $receiver;
     this.modelShader_0 = null;
     this.mainScene_0 = this.mainScene_1(ctx);
-    var $receiver = this.scenes;
-    var element = this.mainScene_0;
-    $receiver.add_11rb$(element);
     var $receiver_0 = this.scenes;
+    var element = this.mainScene_0;
+    $receiver_0.add_11rb$(element);
+    var $receiver_1 = this.scenes;
     var element_0 = this.menu_0(ctx);
-    $receiver_0.add_11rb$(element_0);
+    $receiver_1.add_11rb$(element_0);
+    var tmp$;
+    tmp$ = this.lights_0.iterator();
+    while (tmp$.hasNext()) {
+      var element_1 = tmp$.next();
+      var pass = new ShadowMapPass(this.mainScene_0, element_1.light);
+      this.depthPasses_0.add_11rb$(pass);
+      var $receiver_2 = ctx.offscreenPasses;
+      var element_2 = pass.offscreenPass;
+      $receiver_2.add_11rb$(element_2);
+    }
+    this.mainScene_0.onDispose.add_11rb$(MultiLightDemo_init$lambda(this, ctx));
   }
-  function MultiLightDemo$mainScene$lambda$lambda(this$) {
+  function MultiLightDemo$mainScene$lambda$lambda$lambda(this$MultiLightDemo, this$) {
+    return function ($receiver, ctx) {
+      if (this$MultiLightDemo.autoRotate_0) {
+        this$.verticalRotation += ctx.deltaT * 3.0;
+      }
+      return Unit;
+    };
+  }
+  function MultiLightDemo$mainScene$lambda$lambda(this$, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
-      $receiver.zoom = 20.0;
+      $receiver.zoom = 17.0;
       $receiver.translation.set_y2kzbl$(0.0, 2.0, 0.0);
-      $receiver.setMouseRotation_dleff0$(20.0, -30.0);
+      $receiver.setMouseRotation_dleff0$(0.0, -20.0);
+      var $receiver_0 = $receiver.onPreRender;
+      var element = MultiLightDemo$mainScene$lambda$lambda$lambda(this$MultiLightDemo, $receiver);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda(this$, this$MultiLightDemo) {
+    return function (it) {
+      var tmp$;
+      if ((tmp$ = this$.depthMaps) != null) {
+        var tmp$_0, tmp$_0_0;
+        var index = 0;
+        tmp$_0 = this$MultiLightDemo.depthPasses_0.iterator();
+        while (tmp$_0.hasNext()) {
+          var item = tmp$_0.next();
+          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+          if (i < tmp$.length) {
+            tmp$[i] = item.offscreenPass.impl.depthTexture;
+          }
+        }
+      }
       return Unit;
     };
   }
@@ -511,31 +562,35 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return function (it) {
       this$.unaryPlus_uv0sim$(it);
       var $receiver = new PbrShader$PbrConfig();
-      $receiver.albedoSource = AlbedoSource.STATIC_ALBEDO;
+      $receiver.albedoSource = Albedo.STATIC_ALBEDO;
+      $receiver.isReceivingShadows = true;
       var cfg = $receiver;
       var tmp$ = this$MultiLightDemo;
       var $receiver_0 = new PbrShader(cfg);
-      $receiver_0.albedo = this$MultiLightDemo.colorCycler_0.current.linColor;
+      var this$MultiLightDemo_0 = this$MultiLightDemo;
+      $receiver_0.albedo = this$MultiLightDemo_0.colorCycler_0.current.linColor;
       $receiver_0.roughness = 0.1;
       $receiver_0.metallic = 0.0;
+      $receiver_0.onCreated.add_11rb$(MultiLightDemo$mainScene$lambda$lambda$lambda$lambda($receiver_0, this$MultiLightDemo_0));
       tmp$.modelShader_0 = $receiver_0;
       it.pipelineLoader = this$MultiLightDemo.modelShader_0;
       return Unit;
     };
   }
-  function MultiLightDemo$mainScene$lambda$lambda$lambda($receiver) {
+  function MultiLightDemo$mainScene$lambda$lambda$lambda_0($receiver) {
     var $receiver_0 = $receiver.rectProps.defaults();
     $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
-    $receiver_0.size.set_dleff0$(40.0, 40.0);
+    $receiver_0.size.set_dleff0$(100.0, 100.0);
     $receiver_0.origin.set_y2kzbl$(-$receiver_0.size.x / 2, -$receiver_0.size.y / 2, 0.0);
-    $receiver_0.fullTexCoords_mx4ult$(1.5);
+    $receiver_0.fullTexCoords_mx4ult$(4.0);
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
-  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda(closure$basePath_0, $receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
+    this.local$closure$basePath = closure$basePath_0;
     this.local$it = it_0;
   }
   Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda.$metadata$ = {
@@ -551,7 +606,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$closure$basePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -575,17 +630,20 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       }
      while (true);
   };
-  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0(closure$basePath_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda(closure$basePath_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
   }
-  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0(closure$basePath_0, $receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
+    this.local$closure$basePath = closure$basePath_0;
     this.local$it = it_0;
   }
   Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0.$metadata$ = {
@@ -601,7 +659,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$closure$basePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -625,17 +683,20 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       }
      while (true);
   };
-  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1(closure$basePath_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0(closure$basePath_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
   }
-  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1(closure$basePath_0, $receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
+    this.local$closure$basePath = closure$basePath_0;
     this.local$it = it_0;
   }
   Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1.$metadata$ = {
@@ -651,7 +712,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$closure$basePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -675,32 +736,71 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       }
      while (true);
   };
-  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_2(closure$basePath_0) {
+    return function ($receiver_0, it_0, continuation_0, suspended) {
+      var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1(closure$basePath_0, $receiver_0, it_0, this, continuation_0);
+      if (suspended)
+        return instance;
+      else
+        return instance.doResume(null);
+    };
   }
-  function MultiLightDemo$mainScene$lambda$lambda_1($receiver) {
-    $receiver.generate_v2sixm$(MultiLightDemo$mainScene$lambda$lambda$lambda);
-    var $receiver_0 = new PbrShader$PbrConfig();
-    $receiver_0.albedoSource = AlbedoSource.TEXTURE_ALBEDO;
-    $receiver_0.isNormalMapped = true;
-    $receiver_0.isRoughnessMapped = true;
-    var cfg = $receiver_0;
-    var $receiver_1 = new PbrShader(cfg);
-    var basePath = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials';
-    $receiver_1.albedoMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda);
-    $receiver_1.normalMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0);
-    $receiver_1.roughnessMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1);
-    $receiver_1.metallic = 0.0;
-    $receiver.pipelineLoader = $receiver_1;
-    return Unit;
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_3(this$) {
+    return function ($receiver, it) {
+      ensureNotNull(this$.albedoMap).dispose();
+      ensureNotNull(this$.normalMap).dispose();
+      ensureNotNull(this$.roughnessMap).dispose();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_4(this$, this$MultiLightDemo) {
+    return function (it) {
+      var tmp$;
+      if ((tmp$ = this$.depthMaps) != null) {
+        var tmp$_0, tmp$_0_0;
+        var index = 0;
+        tmp$_0 = this$MultiLightDemo.depthPasses_0.iterator();
+        while (tmp$_0.hasNext()) {
+          var item = tmp$_0.next();
+          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+          if (i < tmp$.length) {
+            tmp$[i] = item.offscreenPass.impl.depthTexture;
+          }
+        }
+      }
+      return Unit;
+    };
+  }
+  function MultiLightDemo$mainScene$lambda$lambda_1(this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.isCastingShadow = false;
+      $receiver.generate_v2sixm$(MultiLightDemo$mainScene$lambda$lambda$lambda_0);
+      var $receiver_0 = new PbrShader$PbrConfig();
+      $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver_0.isNormalMapped = true;
+      $receiver_0.isRoughnessMapped = true;
+      $receiver_0.isReceivingShadows = true;
+      var cfg = $receiver_0;
+      var $receiver_1 = new PbrShader(cfg);
+      var this$MultiLightDemo_0 = this$MultiLightDemo;
+      var $this = Demo$Companion_getInstance();
+      var key = 'pbrDemo.materials';
+      var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials';
+      var tmp$, tmp$_0;
+      var basePath = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
+      $receiver_1.albedoMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0(basePath));
+      $receiver_1.normalMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1(basePath));
+      $receiver_1.roughnessMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_2(basePath));
+      $receiver_1.metallic = 0.0;
+      $receiver.onDispose.add_11rb$(MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_3($receiver_1));
+      $receiver_1.onCreated.add_11rb$(MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_4($receiver_1, this$MultiLightDemo_0));
+      $receiver.pipelineLoader = $receiver_1;
+      return Unit;
+    };
   }
   MultiLightDemo.prototype.mainScene_1 = function (ctx) {
     var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, MultiLightDemo$mainScene$lambda$lambda($receiver)));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, MultiLightDemo$mainScene$lambda$lambda($receiver, this)));
     $receiver.lighting.lights.clear();
     var tmp$;
     tmp$ = this.lights_0.iterator();
@@ -710,7 +810,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     }
     this.updateLighting_0();
     this.loadModel_0(ctx, 'bunny.kmfz', 0.05, new Vec3f(0.0, 3.75, 0.0), MultiLightDemo$mainScene$lambda$lambda_0($receiver, this));
-    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$mainScene$lambda$lambda_1));
+    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$mainScene$lambda$lambda_1(this)));
     return $receiver;
   };
   function MultiLightDemo$menu$lambda$lambda$lambda(it) {
@@ -735,64 +835,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda(this$, this$MultiLightDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$MultiLightDemo.isColoredLights_0 = this$.isEnabled;
-      this$MultiLightDemo.updateLighting_0();
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_2(closure$y, this$MultiLightDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
-      $receiver.text = 'Colored Lights:';
-      $receiver.isEnabled = this$MultiLightDemo.isColoredLights_0;
-      var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda($receiver, this$MultiLightDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_0(this$, this$MultiLightDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$MultiLightDemo.isSpotLights_0 = this$.isEnabled;
-      this$MultiLightDemo.updateLighting_0();
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_3(closure$y, this$MultiLightDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
-      $receiver.text = 'Spot Lights:';
-      $receiver.isEnabled = this$MultiLightDemo.isSpotLights_0;
-      var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_0($receiver, this$MultiLightDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_1(this$, this$MultiLightDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$MultiLightDemo.isRandomSpots_0 = this$.isEnabled;
-      this$MultiLightDemo.updateLighting_0();
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_4(closure$y, this$MultiLightDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
-      $receiver.text = 'Randomize Spots:';
-      $receiver.isEnabled = this$MultiLightDemo.isRandomSpots_0;
-      var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_1($receiver, this$MultiLightDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_5(closure$y) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_2(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
@@ -800,7 +843,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda(this$MultiLightDemo) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
       tmp$ = this$MultiLightDemo.lightCount_0;
@@ -813,18 +856,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_6(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_3(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(45.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(40.0), dps(35.0), full());
       $receiver.text = this$MultiLightDemo.lightCount_0.toString();
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_3(this$MultiLightDemo, closure$btnLightCnt) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_0(this$MultiLightDemo, closure$btnLightCnt) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
       tmp$ = this$MultiLightDemo.lightCount_0;
@@ -837,18 +880,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_7(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_4(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
       $receiver.text = '<';
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_3(this$MultiLightDemo, closure$btnLightCnt);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_0(this$MultiLightDemo, closure$btnLightCnt);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_4(this$MultiLightDemo, closure$btnLightCnt) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_1(this$MultiLightDemo, closure$btnLightCnt) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
       tmp$ = this$MultiLightDemo.lightCount_0;
@@ -861,44 +904,95 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_8(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_5(closure$y, this$MultiLightDemo, closure$btnLightCnt) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
       $receiver.text = '>';
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_4(this$MultiLightDemo, closure$btnLightCnt);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_1(this$MultiLightDemo, closure$btnLightCnt);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_9(closure$y) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_6(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
-      $receiver.text = 'Power:';
+      $receiver.text = 'Strength:';
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_5(this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo) {
     return function ($receiver, it) {
       this$MultiLightDemo.lightPower_0 = $receiver.value * 10.0;
       this$MultiLightDemo.updateLighting_0();
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_10(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_7(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
       $receiver.value = this$MultiLightDemo.lightPower_0 / 10.0;
       var $receiver_0 = $receiver.onValueChanged;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_5(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_2(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_11(closure$y, closure$smallFont, this$) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_8(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.text = 'Saturation:';
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_3(this$MultiLightDemo) {
+    return function ($receiver, it) {
+      this$MultiLightDemo.lightSaturation_0 = $receiver.value / 100.0;
+      this$MultiLightDemo.updateLighting_0();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_9(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.value = this$MultiLightDemo.lightSaturation_0 * 100.0;
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_3(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_10(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.text = 'Random:';
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_4(this$MultiLightDemo) {
+    return function ($receiver, it) {
+      this$MultiLightDemo.lightRandomness_0 = $receiver.value / 100.0;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_11(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.value = this$MultiLightDemo.lightRandomness_0 * 100.0;
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_4(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_12(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -909,33 +1003,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_12(closure$y) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
-      $receiver.text = 'Rough:';
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo) {
-    return function ($receiver, it) {
-      var tmp$;
-      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.roughness = $receiver.value / 100.0) : null;
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_13(closure$y, this$MultiLightDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
-      $receiver.value = 10.0;
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function MultiLightDemo$menu$lambda$lambda$lambda_14(closure$y) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_13(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
@@ -943,7 +1011,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_5(this$MultiLightDemo) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
       $receiver.text = this$MultiLightDemo.colorCycler_0.next().name;
@@ -951,18 +1019,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_15(closure$y, this$MultiLightDemo) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_14(closure$y, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(45.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(40.0), dps(35.0), full());
       $receiver.text = this$MultiLightDemo.colorCycler_0.current.name;
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_5(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo, closure$matLabel) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo, closure$matLabel) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
       closure$matLabel.text = this$MultiLightDemo.colorCycler_0.prev().name;
@@ -970,18 +1038,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_16(closure$y, this$MultiLightDemo, closure$matLabel) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_15(closure$y, this$MultiLightDemo, closure$matLabel) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
       $receiver.text = '<';
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo, closure$matLabel);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_6(this$MultiLightDemo, closure$matLabel);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo, closure$matLabel) {
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo, closure$matLabel) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$;
       closure$matLabel.text = this$MultiLightDemo.colorCycler_0.next().name;
@@ -989,13 +1057,87 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function MultiLightDemo$menu$lambda$lambda$lambda_17(closure$y, this$MultiLightDemo, closure$matLabel) {
+  function MultiLightDemo$menu$lambda$lambda$lambda_16(closure$y, this$MultiLightDemo, closure$matLabel) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
       $receiver.text = '>';
       var $receiver_0 = $receiver.onClick;
-      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo, closure$matLabel);
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_7(this$MultiLightDemo, closure$matLabel);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_17(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.text = 'Roughness:';
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo) {
+    return function ($receiver, it) {
+      var tmp$;
+      (tmp$ = this$MultiLightDemo.modelShader_0) != null ? (tmp$.roughness = $receiver.value / 100.0) : null;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_18(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(30.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(70.0), dps(35.0), full());
+      $receiver.value = 10.0;
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_8(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_19(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Scene';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo) {
+    return function ($receiver) {
+      this$MultiLightDemo.autoRotate_0 = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_20(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.text = 'Auto Rotate';
+      $receiver.isEnabled = this$MultiLightDemo.autoRotate_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_9(this$MultiLightDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda$lambda_10(this$MultiLightDemo) {
+    return function ($receiver) {
+      this$MultiLightDemo.showLightIndicators_0 = $receiver.isEnabled;
+      this$MultiLightDemo.updateLighting_0();
+      return Unit;
+    };
+  }
+  function MultiLightDemo$menu$lambda$lambda$lambda_21(closure$y, this$MultiLightDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.text = 'Light Indicators';
+      $receiver.isEnabled = this$MultiLightDemo.showLightIndicators_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = MultiLightDemo$menu$lambda$lambda$lambda$lambda_10(this$MultiLightDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -1003,36 +1145,42 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function MultiLightDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-480.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(340.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-535.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(415.0), full());
       var y = {v: -40.0};
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lights', MultiLightDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('colorToggle', MultiLightDemo$menu$lambda$lambda$lambda_2(y, this$MultiLightDemo)));
-      y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('spotToggle', MultiLightDemo$menu$lambda$lambda$lambda_3(y, this$MultiLightDemo)));
-      y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('randomToggle', MultiLightDemo$menu$lambda$lambda$lambda_4(y, this$MultiLightDemo)));
-      y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lightCntLbl', MultiLightDemo$menu$lambda$lambda$lambda_5(y)));
-      var btnLightCnt = this$.button_9zrh0o$('lightCnt', MultiLightDemo$menu$lambda$lambda$lambda_6(y, this$MultiLightDemo));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lightCntLbl', MultiLightDemo$menu$lambda$lambda$lambda_2(y)));
+      var btnLightCnt = this$.button_9zrh0o$('lightCnt', MultiLightDemo$menu$lambda$lambda$lambda_3(y, this$MultiLightDemo));
       $receiver.unaryPlus_uv0sim$(btnLightCnt);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('decLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_7(y, this$MultiLightDemo, btnLightCnt)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('incLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_8(y, this$MultiLightDemo, btnLightCnt)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('decLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_4(y, this$MultiLightDemo, btnLightCnt)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('incLightCnt', MultiLightDemo$menu$lambda$lambda$lambda_5(y, this$MultiLightDemo, btnLightCnt)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lightPowerLbl', MultiLightDemo$menu$lambda$lambda$lambda_9(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('lightPowerSlider', MultiLightDemo$menu$lambda$lambda$lambda_10(y, this$MultiLightDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lightPowerLbl', MultiLightDemo$menu$lambda$lambda$lambda_6(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('lightPowerSlider', MultiLightDemo$menu$lambda$lambda$lambda_7(y, this$MultiLightDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('saturationLbl', MultiLightDemo$menu$lambda$lambda$lambda_8(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('saturationSlider', MultiLightDemo$menu$lambda$lambda$lambda_9(y, this$MultiLightDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('randomLbl', MultiLightDemo$menu$lambda$lambda$lambda_10(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('randomSlider', MultiLightDemo$menu$lambda$lambda$lambda_11(y, this$MultiLightDemo)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('material', MultiLightDemo$menu$lambda$lambda$lambda_11(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('material', MultiLightDemo$menu$lambda$lambda$lambda_12(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('roughnessLbl', MultiLightDemo$menu$lambda$lambda$lambda_12(y)));
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('roughhnessSlider', MultiLightDemo$menu$lambda$lambda$lambda_13(y, this$MultiLightDemo)));
-      y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('colorLbl', MultiLightDemo$menu$lambda$lambda$lambda_14(y)));
-      var matLabel = this$.button_9zrh0o$('selected-color', MultiLightDemo$menu$lambda$lambda$lambda_15(y, this$MultiLightDemo));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('colorLbl', MultiLightDemo$menu$lambda$lambda$lambda_13(y)));
+      var matLabel = this$.button_9zrh0o$('selected-color', MultiLightDemo$menu$lambda$lambda$lambda_14(y, this$MultiLightDemo));
       $receiver.unaryPlus_uv0sim$(matLabel);
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-left', MultiLightDemo$menu$lambda$lambda$lambda_16(y, this$MultiLightDemo, matLabel)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-right', MultiLightDemo$menu$lambda$lambda$lambda_17(y, this$MultiLightDemo, matLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-left', MultiLightDemo$menu$lambda$lambda$lambda_15(y, this$MultiLightDemo, matLabel)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('color-right', MultiLightDemo$menu$lambda$lambda$lambda_16(y, this$MultiLightDemo, matLabel)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('roughnessLbl', MultiLightDemo$menu$lambda$lambda$lambda_17(y)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('roughhnessSlider', MultiLightDemo$menu$lambda$lambda$lambda_18(y, this$MultiLightDemo)));
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('scene', MultiLightDemo$menu$lambda$lambda$lambda_19(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('tbAutoRot', MultiLightDemo$menu$lambda$lambda$lambda_20(y, this$MultiLightDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('tbLightIndicators', MultiLightDemo$menu$lambda$lambda$lambda_21(y, this$MultiLightDemo)));
       return Unit;
     };
   }
@@ -1062,9 +1210,15 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var b = this.lights_0.size;
     tmp$ = Math_0.min(a, b);
     for (var i = 0; i < tmp$; i++) {
-      this.lights_0.get_za3lpa$(i).setup_anko18$(pos, this.isSpotLights_0, this.isColoredLights_0, this.lightPower_0);
+      this.lights_0.get_za3lpa$(i).setup_mx4ult$(pos);
       this.lights_0.get_za3lpa$(i).enable();
       pos += step;
+    }
+    var tmp$_1;
+    tmp$_1 = this.lights_0.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_0 = tmp$_1.next();
+      element_0.updateVisibility();
     }
   };
   function MultiLightDemo$LightMesh($outer, color) {
@@ -1072,79 +1226,114 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     TransformGroup.call(this);
     this.color = color;
     this.light = new Light();
-    this.meshPos_0 = MutableVec3f_init_0();
+    var $receiver = new LineMesh();
+    $receiver.isCastingShadow = false;
+    this.spotAngleMesh_0 = $receiver;
+    this.isEnabled_0 = true;
+    this.animPos_0 = 0.0;
+    this.lightMeshShader_0 = new ModeledShader$StaticColor();
+    this.meshPos_0 = MutableVec3f_init();
+    this.anglePos_0 = 0.0;
     this.rotOff_0 = randomF(0.0, 3.0);
+    this.light.setSpot_nve3wz$(Vec3f.Companion.ZERO, Vec3f.Companion.X_AXIS, 50.0);
     var lightMesh = colorMesh(void 0, MultiLightDemo$MultiLightDemo$LightMesh_init$lambda(this));
     this.unaryPlus_uv0sim$(lightMesh);
-    var $receiver = this.onPreRender;
-    var element = MultiLightDemo$MultiLightDemo$LightMesh_init$lambda_0(this, lightMesh, this.$outer);
-    $receiver.add_11rb$(element);
+    this.unaryPlus_uv0sim$(this.spotAngleMesh_0);
+    var $receiver_0 = this.onPreRender;
+    var element = MultiLightDemo$MultiLightDemo$LightMesh_init$lambda_0(this.$outer, this);
+    $receiver_0.add_11rb$(element);
   }
-  MultiLightDemo$LightMesh.prototype.setup_anko18$ = function (angPos, isSpot, isColored, power) {
-    var tmp$;
-    var x = angPos * math.DEG_2_RAD;
+  MultiLightDemo$LightMesh.prototype.updateSpotAngleMesh_0 = function () {
+    var x = this.light.spotAngle * math_0.DEG_2_RAD / 2;
+    var r = 1.0 * Math_0.tan(x);
+    var c = this.lightMeshShader_0.color;
+    var n = 40;
+    this.spotAngleMesh_0.clear();
+    for (var i = 0; i < n; i++) {
+      var a0 = i / n * 2 * math.PI;
+      var a1 = (i + 1 | 0) / n * 2 * math.PI;
+      this.spotAngleMesh_0.addLine_b8opkg$(new Vec3f(-1.0, Math_0.cos(a0) * r, Math_0.sin(a0) * r), c, new Vec3f(-1.0, Math_0.cos(a1) * r, Math_0.sin(a1) * r), c);
+    }
+    var x_0 = 45.0 * math_0.DEG_2_RAD;
+    var e = Math_0.cos(x_0) * r;
+    this.spotAngleMesh_0.addLine_b8opkg$(Vec3f.Companion.ZERO, c, new Vec3f(-1.0, e, e), c);
+    this.spotAngleMesh_0.addLine_b8opkg$(Vec3f.Companion.ZERO, c, new Vec3f(-1.0, e, -e), c);
+    this.spotAngleMesh_0.addLine_b8opkg$(Vec3f.Companion.ZERO, c, new Vec3f(-1.0, -e, -e), c);
+    this.spotAngleMesh_0.addLine_b8opkg$(Vec3f.Companion.ZERO, c, new Vec3f(-1.0, -e, e), c);
+  };
+  MultiLightDemo$LightMesh.prototype.setup_mx4ult$ = function (angPos) {
+    var x = angPos * math_0.DEG_2_RAD;
     var x_0 = Math_0.cos(x) * 10.0;
-    var x_1 = angPos * math.DEG_2_RAD;
+    var x_1 = angPos * math_0.DEG_2_RAD;
     var z = Math_0.sin(x_1) * 10.0;
-    this.meshPos_0.set_y2kzbl$(x_0, 9.0, z);
-    var dir = MutableVec3f_init(this.meshPos_0).scale_mx4ult$(-1.0).norm();
-    if (isColored) {
-      tmp$ = this.color;
-    }
-     else {
-      tmp$ = Color.Companion.WHITE;
-    }
-    var color = tmp$;
-    if (isSpot) {
-      this.light.setSpot_nve3wz$(this.meshPos_0, dir, 50.0).setColor_y83vuj$(color, power);
-    }
-     else {
-      this.light.setPoint_czzhiu$(this.meshPos_0).setColor_y83vuj$(color, power);
-    }
+    this.meshPos_0.set_y2kzbl$(x_0, 9.0, -z);
+    this.anglePos_0 = angPos;
+    var color = Color.Companion.WHITE.mix_jpxij3$(this.color, this.$outer.lightSaturation_0, MutableColor_init());
+    this.light.setColor_y83vuj$(color.toLinear(), this.$outer.lightPower_0);
+    this.lightMeshShader_0.color = color;
+    this.updateSpotAngleMesh_0();
   };
   MultiLightDemo$LightMesh.prototype.enable = function () {
     var tmp$, tmp$_0, tmp$_1;
-    this.isVisible = true;
+    this.isEnabled_0 = true;
     if ((tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.lights : null) != null) {
       if (!tmp$_1.contains_11rb$(this.light)) {
         tmp$_1.add_11rb$(this.light);
       }
     }
+    this.updateVisibility();
   };
   MultiLightDemo$LightMesh.prototype.disable = function () {
     var tmp$, tmp$_0, tmp$_1;
-    this.isVisible = false;
+    this.isEnabled_0 = false;
     (tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.lights : null) != null ? tmp$_1.remove_11rb$(this.light) : null;
+    this.updateVisibility();
   };
-  function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda$lambda(this$LightMesh) {
-    return function ($receiver) {
-      $receiver.color = this$LightMesh.color.toSrgb();
-      $receiver.sphereProps.defaults().radius = 0.2;
-      $receiver.sphere_mojs8w$($receiver.sphereProps);
-      return Unit;
-    };
+  MultiLightDemo$LightMesh.prototype.updateVisibility = function () {
+    this.isVisible = (this.isEnabled_0 && this.$outer.showLightIndicators_0);
+  };
+  function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda$lambda($receiver) {
+    $receiver.sphereProps.defaults().radius = 0.1;
+    $receiver.sphere_mojs8w$($receiver.sphereProps);
+    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
+    var $receiver_0 = $receiver.cylinderProps.defaults();
+    $receiver_0.bottomRadius = 0.015;
+    $receiver_0.topRadius = 0.015;
+    $receiver_0.height = 0.85;
+    $receiver_0.steps = 4;
+    $receiver.cylinder_tnt2h$($receiver.cylinderProps);
+    $receiver.translate_y2kzbl$(0.0, 0.85, 0.0);
+    var $receiver_1 = $receiver.cylinderProps.defaults();
+    $receiver_1.bottomRadius = 0.1;
+    $receiver_1.topRadius = 0.0025;
+    $receiver_1.height = 0.15;
+    $receiver.cylinder_tnt2h$($receiver.cylinderProps);
+    return Unit;
   }
   function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda(this$LightMesh) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(MultiLightDemo$MultiLightDemo$LightMesh_init$lambda$lambda(this$LightMesh));
-      $receiver.pipelineLoader = new ModeledShader$VertexColor();
+      $receiver.isCastingShadow = false;
+      $receiver.generate_v2sixm$(MultiLightDemo$MultiLightDemo$LightMesh_init$lambda$lambda);
+      $receiver.pipelineLoader = this$LightMesh.lightMeshShader_0;
       return Unit;
     };
   }
-  function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda_0(this$LightMesh, closure$lightMesh, this$MultiLightDemo) {
+  function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda_0(this$MultiLightDemo, this$LightMesh) {
     return function ($receiver, ctx) {
-      this$LightMesh.setIdentity();
-      this$LightMesh.rotate_ad55pp$(ctx.time * -10.0, Vec3f.Companion.Y_AXIS);
-      this$LightMesh.translate_czzhiu$(this$LightMesh.meshPos_0);
-      this$LightMesh.light.position.set_czzhiu$(closure$lightMesh.globalCenter);
-      this$LightMesh.light.direction.set_y2kzbl$(0.0, 2.0, 0.0).subtract_czzhiu$(closure$lightMesh.globalCenter).norm();
-      if (this$MultiLightDemo.isRandomSpots_0) {
-        var x = ctx.time / 15 + this$LightMesh.rotOff_0;
-        var r = Math_0.cos(x);
-        this$LightMesh.light.direction.rotate_ad55pp$(r * 20.0, Vec3f.Companion.X_AXIS);
-        this$LightMesh.light.direction.rotate_ad55pp$(r * 20.0, Vec3f.Companion.Z_AXIS);
-        this$LightMesh.light.spotAngle = 50.0 - r * 10.0;
+      if (this$MultiLightDemo.autoRotate_0) {
+        this$LightMesh.animPos_0 += ctx.deltaT;
       }
+      var x = this$LightMesh.animPos_0 / 15 + this$LightMesh.rotOff_0;
+      var r = Math_0.cos(x) * this$MultiLightDemo.lightRandomness_0;
+      this$LightMesh.light.spotAngle = 60.0 - r * 20.0;
+      this$LightMesh.updateSpotAngleMesh_0();
+      this$LightMesh.setIdentity();
+      this$LightMesh.rotate_ad55pp$(this$LightMesh.animPos_0 * -10.0, Vec3f.Companion.Y_AXIS);
+      this$LightMesh.translate_czzhiu$(this$LightMesh.meshPos_0);
+      this$LightMesh.rotate_ad55pp$(this$LightMesh.anglePos_0, Vec3f.Companion.Y_AXIS);
+      this$LightMesh.rotate_ad55pp$(30.0 + 20.0 * r, Vec3f.Companion.Z_AXIS);
+      this$LightMesh.transform.transform_w1lst9$(this$LightMesh.light.position.set_czzhiu$(Vec3f.Companion.ZERO), 1.0);
+      this$LightMesh.transform.transform_w1lst9$(this$LightMesh.light.direction.set_czzhiu$(Vec3f.Companion.NEG_X_AXIS), 0.0);
       return Unit;
     };
   }
@@ -1219,6 +1408,22 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       new MultiLightDemo$Companion();
     }
     return MultiLightDemo$Companion_instance;
+  }
+  function MultiLightDemo_init$lambda(this$MultiLightDemo, closure$ctx) {
+    return function ($receiver, it) {
+      var $receiver_0 = this$MultiLightDemo.depthPasses_0;
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        var closure$ctx_0 = closure$ctx;
+        var $receiver_1 = closure$ctx_0.offscreenPasses;
+        var element_0 = element.offscreenPass;
+        $receiver_1.remove_11rb$(element_0);
+        element.dispose_aemszp$(closure$ctx_0);
+      }
+      return Unit;
+    };
   }
   MultiLightDemo.$metadata$ = {
     kind: Kind_CLASS,
@@ -1390,7 +1595,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var this$ColorGridContent_0 = this$ColorGridContent;
           mesh.generate_v2sixm$(ColorGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
           var pbrConfig = new PbrShader$PbrConfig();
-          pbrConfig.albedoSource = AlbedoSource.STATIC_ALBEDO;
+          pbrConfig.albedoSource = Albedo.STATIC_ALBEDO;
           pbrConfig.isImageBasedLighting = closure$withIbl_0;
           var shader = new PbrShader(pbrConfig);
           shader.albedo = colors.get_za3lpa$((Kotlin.imul(y, nCols) + x | 0) % colors.size).toLinear();
@@ -2157,7 +2362,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.generate_v2sixm$(PbrMaterialContent$makeSphere$lambda$lambda$lambda);
       var pbrConfig = new PbrShader$PbrConfig();
       pbrConfig.isImageBasedLighting = closure$withIbl;
-      pbrConfig.albedoSource = AlbedoSource.TEXTURE_ALBEDO;
+      pbrConfig.albedoSource = Albedo.TEXTURE_ALBEDO;
       pbrConfig.isNormalMapped = true;
       pbrConfig.isRoughnessMapped = true;
       pbrConfig.isMetallicMapped = true;
@@ -4250,7 +4455,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var closure$brdfLut_0 = closure$brdfLut;
           mesh.generate_v2sixm$(RoughnesMetalGridContent$makeSpheres$lambda$lambda$lambda(nCols, x, spacing, nRows, y));
           var pbrConfig = new PbrShader$PbrConfig();
-          pbrConfig.albedoSource = AlbedoSource.STATIC_ALBEDO;
+          pbrConfig.albedoSource = Albedo.STATIC_ALBEDO;
           pbrConfig.isImageBasedLighting = closure$withIbl_0;
           var shader = new PbrShader(pbrConfig);
           shader.albedo = this$RoughnesMetalGridContent_0.colors_0.current.linColor;
@@ -4524,10 +4729,118 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
+  function Coroutine$makeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeGroundGrid$lambda$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeGroundGrid$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeGroundGrid$lambda$lambda$lambda.prototype.constructor = Coroutine$makeGroundGrid$lambda$lambda$lambda;
+  Coroutine$makeGroundGrid$lambda$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('ground_color.png', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$makeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeGroundGrid$lambda$lambda$lambda_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeGroundGrid$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeGroundGrid$lambda$lambda$lambda_0.prototype.constructor = Coroutine$makeGroundGrid$lambda$lambda$lambda_0;
+  Coroutine$makeGroundGrid$lambda$lambda$lambda_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('ground_nrm.png', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
   function makeGroundGrid$lambda(closure$groundExt, closure$y) {
     return function ($receiver) {
       $receiver.isCastingShadow = false;
       $receiver.generate_v2sixm$(makeGroundGrid$lambda$lambda(closure$groundExt, closure$y));
+      var $receiver_0 = new PbrShader$PbrConfig();
+      $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver_0.isNormalMapped = true;
+      var pbrCfg = $receiver_0;
+      var $receiver_1 = new PbrShader(pbrCfg);
+      $receiver_1.albedoMap = new Texture(void 0, makeGroundGrid$lambda$lambda$lambda);
+      $receiver_1.normalMap = new Texture(void 0, makeGroundGrid$lambda$lambda$lambda_0);
+      $receiver.pipelineLoader = $receiver_1;
       return Unit;
     };
   }
@@ -4573,7 +4886,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function instancedDemo(ctx) {
     var $receiver = new Scene_init(null);
     $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, instancedDemo$lambda$lambda($receiver)));
-    $receiver.lighting.useDefaultShadowMap_aemszp$(ctx);
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(100));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, instancedDemo$lambda$lambda_0(ctx)));
     return $receiver;
@@ -4644,8 +4956,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     InstancedMesh$Instance.call(this, new Mat4f());
     this.movementSpeed = movementSpeed;
     this.spawnPosition_0 = new Vec3f(randomF(-20.0, 20.0), randomF(-20.0, 20.0), 0.0);
-    this.position_0 = MutableVec3f_init(this.spawnPosition_0);
-    this.headingVec_0 = MutableVec3f_init_0();
+    this.position_0 = MutableVec3f_init_0(this.spawnPosition_0);
+    this.headingVec_0 = MutableVec3f_init();
     this.heading_0 = new InterpolatedFloat(randomF(0.0, 360.0), randomF(0.0, 360.0));
     var $receiver = new CosAnimator(this.heading_0);
     $receiver.duration = 5.0;
@@ -4673,7 +4985,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
        else {
         var dx = this.spawnPosition_0.x - this.position_0.x;
         var dy = this.spawnPosition_0.y - this.position_0.y;
-        tmp$ = Math_0.atan2(dy, dx) * math.RAD_2_DEG + 90;
+        tmp$ = Math_0.atan2(dy, dx) * math_0.RAD_2_DEG + 90;
       }
       tmp$_0.to = tmp$;
     }
@@ -4873,7 +5185,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function modelScene(ctx) {
     var $receiver = new Scene_init(null);
-    $receiver.lighting.useDefaultShadowMap_aemszp$(ctx);
     $receiver.unaryPlus_uv0sim$(makeGroundGrid(40));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, modelScene$lambda$lambda(ctx, $receiver)));
     return $receiver;
@@ -5281,7 +5592,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function makePointMesh$lambda(closure$points) {
     return function ($receiver) {
-      $receiver.pointSize = 3.0;
       var dist = new CubicPointDistribution(5.0);
       for (var i = 1; i <= 100000; i++) {
         var pt = dist.nextPoint();
@@ -5570,505 +5880,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_2(ctx)));
     return $receiver;
   }
-  function simplificationDemo(ctx) {
-    return (new SimplificationDemo(ctx)).scenes;
-  }
-  function SimplificationDemo(ctx) {
-    this.simplificationScene = null;
-    this.scenes = ArrayList_init();
-    this.models = LinkedHashMap_init();
-    this.loadingModels = LinkedHashSet_init();
-    this.modelWireframe = new LineMesh();
-    var $receiver = new LineMesh();
-    $receiver.isXray = true;
-    $receiver.lineWidth = 3.0;
-    this.highlightedEdge = $receiver;
-    var $receiver_0 = new PointMesh();
-    $receiver_0.isXray = true;
-    $receiver_0.pointSize = 6.0;
-    this.highlightedPt = $receiver_0;
-    this.srcModel = null;
-    this.dispModel = new Mesh_init(IndexedVertexList_init_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
-    this.heMesh = null;
-    this.simplifcationGrade = 1.0;
-    this.autoRun_feo64c$_0 = this.autoRun_feo64c$_0;
-    this.facesValLbl_vro8vf$_0 = this.facesValLbl_vro8vf$_0;
-    this.vertsValLbl_pnvuuh$_0 = this.vertsValLbl_pnvuuh$_0;
-    this.timeValLbl_8kkr9u$_0 = this.timeValLbl_8kkr9u$_0;
-    this.pickRay_0 = new Ray();
-    this.edgeDistance_0 = new SimplificationDemo$EdgeRayDistance();
-    var $receiver_1 = new NearestToRayTraverser();
-    $receiver_1.rayDistance = this.edgeDistance_0;
-    this.nearestEdgeTraverser_0 = $receiver_1;
-    this.srcModel = this.makeCosGrid_0();
-    var $receiver_2 = this.models;
-    var value = this.srcModel;
-    $receiver_2.put_xwzc9p$('cos', value);
-    this.heMesh = new HalfEdgeMesh(this.srcModel);
-    this.loadModel_0('bunny.kmfz', 0.05, ctx);
-    this.loadModel_0('cow.kmfz', 1.0, ctx);
-    var $receiver_3 = new Scene_init(null);
-    defaultCamTransform($receiver_3);
-    $receiver_3.unaryPlus_uv0sim$(this.dispModel);
-    $receiver_3.unaryPlus_uv0sim$(this.modelWireframe);
-    $receiver_3.unaryPlus_uv0sim$(this.highlightedEdge);
-    $receiver_3.unaryPlus_uv0sim$(this.highlightedPt);
-    this.simplificationScene = $receiver_3;
-    var $receiver_4 = this.scenes;
-    var element = this.simplificationScene;
-    $receiver_4.add_11rb$(element);
-    var $receiver_5 = this.scenes;
-    var element_0 = uiScene(ctx.screenDpi, void 0, void 0, SimplificationDemo_init$lambda(this));
-    $receiver_5.add_11rb$(element_0);
-    this.simplify();
-  }
-  Object.defineProperty(SimplificationDemo.prototype, 'autoRun', {
-    get: function () {
-      if (this.autoRun_feo64c$_0 == null)
-        return throwUPAE('autoRun');
-      return this.autoRun_feo64c$_0;
-    },
-    set: function (autoRun) {
-      this.autoRun_feo64c$_0 = autoRun;
-    }
-  });
-  Object.defineProperty(SimplificationDemo.prototype, 'facesValLbl', {
-    get: function () {
-      if (this.facesValLbl_vro8vf$_0 == null)
-        return throwUPAE('facesValLbl');
-      return this.facesValLbl_vro8vf$_0;
-    },
-    set: function (facesValLbl) {
-      this.facesValLbl_vro8vf$_0 = facesValLbl;
-    }
-  });
-  Object.defineProperty(SimplificationDemo.prototype, 'vertsValLbl', {
-    get: function () {
-      if (this.vertsValLbl_pnvuuh$_0 == null)
-        return throwUPAE('vertsValLbl');
-      return this.vertsValLbl_pnvuuh$_0;
-    },
-    set: function (vertsValLbl) {
-      this.vertsValLbl_pnvuuh$_0 = vertsValLbl;
-    }
-  });
-  Object.defineProperty(SimplificationDemo.prototype, 'timeValLbl', {
-    get: function () {
-      if (this.timeValLbl_8kkr9u$_0 == null)
-        return throwUPAE('timeValLbl');
-      return this.timeValLbl_8kkr9u$_0;
-    },
-    set: function (timeValLbl) {
-      this.timeValLbl_8kkr9u$_0 = timeValLbl;
-    }
-  });
-  SimplificationDemo.prototype.simplify = function () {
-    var pt = new PerfTimer();
-    var $this = this.dispModel.geometry;
-    var wasBatchUpdate = $this.isBatchUpdate;
-    $this.isBatchUpdate = true;
-    this.dispModel.geometry.clear();
-    this.dispModel.geometry.addGeometry_r7nl2o$(this.srcModel);
-    this.heMesh = new HalfEdgeMesh(this.dispModel.geometry, new ListEdgeHandler());
-    if (this.simplifcationGrade < 0.999) {
-      simplify(this.heMesh, terminateOnFaceCountRel(this.simplifcationGrade));
-    }
-    var $this_0 = this.modelWireframe.geometry;
-    var wasBatchUpdate_0 = $this_0.isBatchUpdate;
-    $this_0.isBatchUpdate = true;
-    this.modelWireframe.clear();
-    this.heMesh.generateWireframe_6olbr4$(this.modelWireframe, Color.Companion.MD_LIGHT_BLUE);
-    $this_0.hasChanged = true;
-    $this_0.isBatchUpdate = wasBatchUpdate_0;
-    if (false) {
-      $this_0.rebuildBounds();
-    }
-    var time = pt.takeSecs();
-    if (time > 0.5) {
-      this.autoRun.isEnabled = false;
-    }
-    this.facesValLbl.text = this.heMesh.faceCount.toString();
-    this.vertsValLbl.text = this.heMesh.vertCount.toString();
-    this.timeValLbl.text = toString(time, 2) + ' s';
-    $this.hasChanged = true;
-    $this.isBatchUpdate = wasBatchUpdate;
-    if (false) {
-      $this.rebuildBounds();
-    }
-  };
-  function SimplificationDemo$loadModel$lambda(closure$scale, this$SimplificationDemo, closure$name) {
-    return function (model) {
-      var tmp$;
-      if (model != null) {
-        var mesh = model.meshes.get_za3lpa$(0).toMesh_8p8ifh$();
-        var geometry = mesh.geometry;
-        tmp$ = geometry.numVertices;
-        for (var i = 0; i < tmp$; i++) {
-          geometry.vertexIt.index = i;
-          geometry.vertexIt.position.scale_mx4ult$(closure$scale);
-        }
-        var $receiver = this$SimplificationDemo.models;
-        var key = closure$name;
-        $receiver.put_xwzc9p$(key, geometry);
-        var $receiver_0 = this$SimplificationDemo.loadingModels;
-        var element = closure$name;
-        $receiver_0.remove_11rb$(element);
-        var $receiver_1 = this$SimplificationDemo;
-        var $this = util.Log;
-        var level = Log$Level.DEBUG;
-        var tag = Kotlin.getKClassFromExpression($receiver_1).simpleName;
-        if (level.level >= $this.level.level) {
-          var tmp$_0 = $this.printer;
-          var closure$name_0 = closure$name;
-          var tmp$_1;
-          tmp$_0.call($this, level, tag, 'loaded: ' + closure$name_0 + ', bounds: ' + toString_1((tmp$_1 = this$SimplificationDemo.models.get_11rb$(closure$name_0)) != null ? tmp$_1.bounds : null));
-        }
-      }
-      return Unit;
-    };
-  }
-  SimplificationDemo.prototype.loadModel_0 = function (name, scale, ctx) {
-    this.loadingModels.add_11rb$(name);
-    ctx.assetMgr.loadModel_v5uqdg$(name, SimplificationDemo$loadModel$lambda(scale, this, name));
-  };
-  function SimplificationDemo$makeCosGrid$lambda$lambda(this$) {
-    return function (x, y) {
-      var fx = (x / this$.stepsX - 0.5) * 10.0;
-      var fy = (y / this$.stepsY - 0.5) * 10.0;
-      var x_0 = fx * fx + fy * fy;
-      var x_1 = Math_0.sqrt(x_0);
-      return Math_0.cos(x_1);
-    };
-  }
-  SimplificationDemo.prototype.makeCosGrid_0 = function () {
-    var builder = new MeshBuilder(IndexedVertexList_init_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
-    builder.color = Color.Companion.MD_RED;
-    var $receiver = builder.gridProps.defaults();
-    $receiver.sizeX = 5.0;
-    $receiver.sizeY = 5.0;
-    $receiver.stepsX = 30;
-    $receiver.stepsY = 30;
-    $receiver.heightFun = SimplificationDemo$makeCosGrid$lambda$lambda($receiver);
-    builder.grid_gtbnl3$(builder.gridProps);
-    return builder.geometry;
-  };
-  function SimplificationDemo$EdgeRayDistance() {
-    this.tmpVec1_0 = MutableVec3f_init_0();
-    this.tmpVec2_0 = MutableVec3f_init_0();
-    this.tmpVec3_0 = MutableVec3f_init_0();
-  }
-  SimplificationDemo$EdgeRayDistance.prototype.itemSqrDistanceToRay_t0er6w$ = function (tree, item, ray) {
-    var pt = this.nearestPointOnEdge_agp8x$(item, ray);
-    return ray.sqrDistanceToPoint_czzhiu$(pt);
-  };
-  SimplificationDemo$EdgeRayDistance.prototype.nearestPointOnEdge_agp8x$ = function (edge, ray) {
-    var tmp$, tmp$_0;
-    edge.to.subtract_2gj7b4$(edge.from, this.tmpVec1_0).norm();
-    this.tmpVec2_0.set_czzhiu$(ray.direction);
-    var dot = this.tmpVec1_0.times_czzhiu$(this.tmpVec2_0);
-    var n = 1.0 - dot * dot;
-    var eps;
-    eps = math.FUZZY_EQ_F;
-    if (Math_0.abs(n) <= eps) {
-      if (edge.from.sqrDistance_czzhiu$(ray.origin) < edge.to.sqrDistance_czzhiu$(ray.origin)) {
-        tmp$ = edge.from;
-      }
-       else {
-        tmp$ = edge.to;
-      }
-      return tmp$;
-    }
-    ray.origin.subtract_2gj7b4$(edge.from, this.tmpVec3_0);
-    var a = this.tmpVec3_0.times_czzhiu$(this.tmpVec1_0);
-    var b = this.tmpVec3_0.times_czzhiu$(this.tmpVec2_0);
-    var l = (a - b * dot) / n;
-    if (l > 0) {
-      var d = edge.from.distance_czzhiu$(edge.to);
-      tmp$_0 = this.tmpVec1_0.scale_mx4ult$(Math_0.min(l, d)).add_czzhiu$(edge.from);
-    }
-     else {
-      tmp$_0 = edge.from;
-    }
-    return tmp$_0;
-  };
-  SimplificationDemo$EdgeRayDistance.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'EdgeRayDistance',
-    interfaces: [RayDistance]
-  };
-  function SimplificationDemo_init$lambda$lambda$lambda(it) {
-    return new BlankComponentUi();
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_0(it) {
-    return new BlankComponentUi();
-  }
-  function SimplificationDemo_init$lambda$lambda($receiver) {
-    $receiver.componentUi_mloaa0$(SimplificationDemo_init$lambda$lambda$lambda);
-    $receiver.containerUi_2t3ptw$(SimplificationDemo_init$lambda$lambda$lambda_0);
-    return Unit;
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_1(closure$posY, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), full());
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_2(closure$posY, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), full());
-      var bg = new SimpleComponentUi($receiver);
-      bg.color.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.ui.setCustom_11rb$(bg);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda$lambda(this$SimplificationDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      var m = this$SimplificationDemo.models.get_11rb$('cow.kmfz');
-      if (m != null) {
-        this$SimplificationDemo.srcModel = m;
-        this$SimplificationDemo.simplify();
-      }
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_3(closure$posY, this$SimplificationDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      var $receiver_0 = $receiver.onClick;
-      var element = SimplificationDemo_init$lambda$lambda$lambda$lambda(this$SimplificationDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda$lambda_0(this$SimplificationDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      var m = this$SimplificationDemo.models.get_11rb$('bunny.kmfz');
-      if (m != null) {
-        this$SimplificationDemo.srcModel = m;
-        this$SimplificationDemo.simplify();
-      }
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_4(closure$posY, this$SimplificationDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      var $receiver_0 = $receiver.onClick;
-      var element = SimplificationDemo_init$lambda$lambda$lambda$lambda_0(this$SimplificationDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda$lambda_1(this$SimplificationDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$SimplificationDemo.srcModel = ensureNotNull(this$SimplificationDemo.models.get_11rb$('cos'));
-      this$SimplificationDemo.simplify();
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_5(closure$posY, this$SimplificationDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      var $receiver_0 = $receiver.onClick;
-      var element = SimplificationDemo_init$lambda$lambda$lambda$lambda_1(this$SimplificationDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_6(closure$posY, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), full());
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_7(closure$posY, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), full());
-      var bg = new SimpleComponentUi($receiver);
-      bg.color.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.ui.setCustom_11rb$(bg);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_8(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_9(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = '100 %';
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda$lambda_2(closure$faceCntVal, this$SimplificationDemo) {
-    return function ($receiver, value) {
-      closure$faceCntVal.text = toString_0(value * 100.0, 0) + ' %';
-      this$SimplificationDemo.simplifcationGrade = value;
-      if (this$SimplificationDemo.autoRun.isEnabled) {
-        this$SimplificationDemo.simplify();
-      }
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_10(closure$posY, closure$faceCntVal, this$SimplificationDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.setValue_y2kzbl$(0.01, 1.0, 1.0);
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = SimplificationDemo_init$lambda$lambda$lambda$lambda_2(closure$faceCntVal, this$SimplificationDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda$lambda_3(this$SimplificationDemo) {
-    return function ($receiver, f, f_0, f_1) {
-      this$SimplificationDemo.simplify();
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_11(closure$posY, this$SimplificationDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      var $receiver_0 = $receiver.onClick;
-      var element = SimplificationDemo_init$lambda$lambda$lambda$lambda_3(this$SimplificationDemo);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_12(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.isEnabled = true;
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_13(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_14(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = '';
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_15(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_16(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = '';
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_17(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda$lambda_18(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = '';
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda$lambda_0(this$, this$SimplificationDemo) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), pcs(100.0), full());
-      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      var posY = {v: -45.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Models', SimplificationDemo_init$lambda$lambda$lambda_1(posY, this$)));
-      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_2(posY, this$)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cow', SimplificationDemo_init$lambda$lambda$lambda_3(posY, this$SimplificationDemo)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Bunny', SimplificationDemo_init$lambda$lambda$lambda_4(posY, this$SimplificationDemo)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cosine Grid', SimplificationDemo_init$lambda$lambda$lambda_5(posY, this$SimplificationDemo)));
-      posY.v -= 50.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Simplify', SimplificationDemo_init$lambda$lambda$lambda_6(posY, this$)));
-      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', SimplificationDemo_init$lambda$lambda$lambda_7(posY, this$)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ratio:', SimplificationDemo_init$lambda$lambda$lambda_8(posY)));
-      var faceCntVal = this$.label_tokfmu$('faceCntVal', SimplificationDemo_init$lambda$lambda$lambda_9(posY));
-      $receiver.unaryPlus_uv0sim$(faceCntVal);
-      posY.v -= 25.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('faceCnt', SimplificationDemo_init$lambda$lambda$lambda_10(posY, faceCntVal, this$SimplificationDemo)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Update Mesh', SimplificationDemo_init$lambda$lambda$lambda_11(posY, this$SimplificationDemo)));
-      posY.v -= 35.0;
-      this$SimplificationDemo.autoRun = this$.toggleButton_6j87po$('Auto Update', SimplificationDemo_init$lambda$lambda$lambda_12(posY));
-      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.autoRun);
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Faces:', SimplificationDemo_init$lambda$lambda$lambda_13(posY)));
-      this$SimplificationDemo.facesValLbl = this$.label_tokfmu$('facesValLbl', SimplificationDemo_init$lambda$lambda$lambda_14(posY));
-      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.facesValLbl);
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Vertices:', SimplificationDemo_init$lambda$lambda$lambda_15(posY)));
-      this$SimplificationDemo.vertsValLbl = this$.label_tokfmu$('verticesValLbl', SimplificationDemo_init$lambda$lambda$lambda_16(posY));
-      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.vertsValLbl);
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Time:', SimplificationDemo_init$lambda$lambda$lambda_17(posY)));
-      this$SimplificationDemo.timeValLbl = this$.label_tokfmu$('timeValLbl', SimplificationDemo_init$lambda$lambda$lambda_18(posY));
-      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.timeValLbl);
-      return Unit;
-    };
-  }
-  function SimplificationDemo_init$lambda(this$SimplificationDemo) {
-    return function ($receiver) {
-      $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, SimplificationDemo_init$lambda$lambda);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', SimplificationDemo_init$lambda$lambda_0($receiver, this$SimplificationDemo)));
-      return Unit;
-    };
-  }
-  SimplificationDemo.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'SimplificationDemo',
-    interfaces: []
-  };
   function synthieScene(ctx) {
     var content = new SynthieScene(ctx);
     var menu = synthieMenu(content, ctx);
@@ -6638,7 +6449,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           $receiver.geometry.addIndices_pmhfmb$(new Int32Array([idx - 1 | 0, idx]));
         }
       }
-      $receiver.lineWidth = 1.0;
       return Unit;
     };
   }
@@ -6665,350 +6475,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     simpleName: 'SynthieScene',
     interfaces: [Scene_init]
   };
-  function treeScene$lambda$lambda$lambda(closure$treeGen) {
-    return function ($receiver) {
-      var level;
-      level = Log$Level.INFO;
-      var t = now();
-      closure$treeGen.buildTrunkMesh_84rojv$($receiver);
-      var ret = Unit;
-      var $this = util.Log;
-      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Generated ' + ($receiver.geometry.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + toString(now() - t, 3) + ' ms');
-      }
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda(closure$treeGen) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda(closure$treeGen));
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_0(closure$treeGen) {
-    return function ($receiver) {
-      var level;
-      level = Log$Level.INFO;
-      var t = now();
-      closure$treeGen.buildLeafMesh_84rojv$($receiver);
-      var ret = Unit;
-      var $this = util.Log;
-      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Generated ' + ($receiver.geometry.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + toString(now() - t, 3) + ' ms');
-      }
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda_0(closure$treeGen) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda_0(closure$treeGen));
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda_1(this$) {
-    return function ($receiver) {
-      $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.setMouseRotation_dleff0$(0.0, -30.0);
-      $receiver.minZoom = 1.0;
-      $receiver.maxZoom = 25.0;
-      $receiver.translationBounds = BoundingBox_init(new Vec3f(-10.0, -10.0, -10.0), new Vec3f(10.0, 10.0, 10.0));
-      $receiver.translate_y2kzbl$(0.0, 2.0, 0.0);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_1(it) {
-    return new BlankComponentUi();
-  }
-  function treeScene$lambda$lambda$lambda_2(it) {
-    return new BlankComponentUi();
-  }
-  function treeScene$lambda$lambda_2($receiver) {
-    $receiver.componentUi_mloaa0$(treeScene$lambda$lambda$lambda_1);
-    $receiver.containerUi_2t3ptw$(treeScene$lambda$lambda$lambda_2);
-    return Unit;
-  }
-  function treeScene$lambda$lambda$lambda_3($receiver) {
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(110.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
-    $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-    return Unit;
-  }
-  function treeScene$lambda$lambda$lambda_4(closure$treeGen) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(110.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      $receiver.text = toString_0(closure$treeGen.growDistance, 2);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda$lambda(closure$treeGen, closure$growDistVal) {
-    return function ($receiver, value) {
-      closure$treeGen.growDistance = value;
-      closure$growDistVal.text = toString_0(value, 2);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_5(closure$treeGen, closure$growDistVal) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(110.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
-      $receiver.setValue_y2kzbl$(0.05, 0.4, closure$treeGen.growDistance);
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda(closure$treeGen, closure$growDistVal);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_6($receiver) {
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(75.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
-    $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-    return Unit;
-  }
-  function treeScene$lambda$lambda$lambda_7(closure$treeGen) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(75.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      $receiver.text = toString_0(closure$treeGen.killDistance, 2);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda$lambda_0(closure$treeGen, closure$killDistVal) {
-    return function ($receiver, value) {
-      closure$treeGen.killDistance = value;
-      closure$killDistVal.text = toString_0(value, 2);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_8(closure$treeGen, closure$killDistVal) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(75.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
-      $receiver.setValue_y2kzbl$(1.0, 4.0, closure$treeGen.killDistance);
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_0(closure$treeGen, closure$killDistVal);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_9($receiver) {
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(40.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
-    $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-    return Unit;
-  }
-  function treeScene$lambda$lambda$lambda_10(closure$treeGen) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(40.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      $receiver.text = closure$treeGen.numberOfAttractionPoints.toString();
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda$lambda_1(closure$treeGen, closure$attractPtsVal) {
-    return function ($receiver, value) {
-      closure$treeGen.numberOfAttractionPoints = numberToInt(value);
-      closure$attractPtsVal.text = numberToInt(value).toString();
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_11(closure$treeGen, closure$attractPtsVal) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(40.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
-      $receiver.setValue_y2kzbl$(100.0, 10000.0, closure$treeGen.numberOfAttractionPoints);
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_1(closure$treeGen, closure$attractPtsVal);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_12($receiver) {
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(5.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
-    $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-    return Unit;
-  }
-  function treeScene$lambda$lambda$lambda_13(closure$treeGen) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(380.0, true), dps(5.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(35.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      $receiver.text = toString_0(closure$treeGen.radiusOfInfluence, 2);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda$lambda_2(closure$treeGen, closure$infRadiusVal) {
-    return function ($receiver, value) {
-      closure$treeGen.radiusOfInfluence = value;
-      closure$infRadiusVal.text = toString_0(value, 2);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_14(closure$treeGen, closure$infRadiusVal) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(200.0, true), dps(5.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(35.0, true), full());
-      $receiver.setValue_y2kzbl$(0.25, 10.0, closure$treeGen.radiusOfInfluence);
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_2(closure$treeGen, closure$infRadiusVal);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda$lambda_3(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
-    return function ($receiver, f, f_0, f_1) {
-      var tmp$, tmp$_0;
-      closure$treeGen.generate_za3lpa$();
-      if ((tmp$ = closure$trunkMesh.v) != null) {
-        var closure$treeGen_0 = closure$treeGen;
-        var $this = tmp$.geometry;
-        var wasBatchUpdate = $this.isBatchUpdate;
-        $this.isBatchUpdate = true;
-        $this.clear();
-        var builder = new MeshBuilder($this);
-        var level;
-        level = Log$Level.INFO;
-        var t = now();
-        closure$treeGen_0.buildTrunkMesh_84rojv$(builder);
-        $this.generateTangents();
-        var ret = Unit;
-        var $this_0 = util.Log;
-        var tag = Kotlin.getKClassFromExpression($this).simpleName;
-        if (level.level >= $this_0.level.level) {
-          $this_0.printer(level, tag, 'Generated ' + ($this.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + toString(now() - t, 3) + ' ms');
-        }
-        $this.hasChanged = true;
-        $this.isBatchUpdate = wasBatchUpdate;
-        if (false) {
-          $this.rebuildBounds();
-        }
-      }
-      if ((tmp$_0 = closure$leafMesh.v) != null) {
-        var closure$treeGen_1 = closure$treeGen;
-        var $this_1 = tmp$_0.geometry;
-        var wasBatchUpdate_0 = $this_1.isBatchUpdate;
-        $this_1.isBatchUpdate = true;
-        $this_1.clear();
-        var builder_0 = new MeshBuilder($this_1);
-        var level_0;
-        level_0 = Log$Level.INFO;
-        var t_0 = now();
-        closure$treeGen_1.buildLeafMesh_84rojv$(builder_0);
-        var ret_0 = Unit;
-        var $this_2 = util.Log;
-        var tag_0 = Kotlin.getKClassFromExpression($this_1).simpleName;
-        if (level_0.level >= $this_2.level.level) {
-          $this_2.printer(level_0, tag_0, 'Generated ' + ($this_1.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + toString(now() - t_0, 3) + ' ms');
-        }
-        $this_1.hasChanged = true;
-        $this_1.isBatchUpdate = wasBatchUpdate_0;
-        if (false) {
-          $this_1.rebuildBounds();
-        }
-      }
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_15(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(470.0, true), dps(110.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(220.0, true), dps(40.0, true), full());
-      $receiver.text = 'Generate Tree!';
-      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      var $receiver_0 = $receiver.onClick;
-      var element = treeScene$lambda$lambda$lambda$lambda_3(closure$treeGen, closure$trunkMesh, closure$leafMesh);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda$lambda_4(this$, closure$leafMesh) {
-    return function ($receiver, f, f_0, f_1) {
-      var tmp$;
-      (tmp$ = closure$leafMesh.v) != null ? (tmp$.isVisible = this$.isEnabled) : null;
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda$lambda_16(closure$leafMesh) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(470.0, true), dps(75.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(230.0, true), dps(40.0, true), full());
-      $receiver.text = 'Toggle Leafs';
-      $receiver.isEnabled = true;
-      var $receiver_0 = $receiver.onClick;
-      var element = treeScene$lambda$lambda$lambda$lambda_4($receiver, closure$leafMesh);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function treeScene$lambda$lambda_3(this$, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(150.0), full());
-      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Grow Distance:', treeScene$lambda$lambda$lambda_3));
-      var growDistVal = this$.label_tokfmu$('growDistVal', treeScene$lambda$lambda$lambda_4(closure$treeGen));
-      $receiver.unaryPlus_uv0sim$(growDistVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('growDist', treeScene$lambda$lambda$lambda_5(closure$treeGen, growDistVal)));
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Kill Distance:', treeScene$lambda$lambda$lambda_6));
-      var killDistVal = this$.label_tokfmu$('killDistVal', treeScene$lambda$lambda$lambda_7(closure$treeGen));
-      $receiver.unaryPlus_uv0sim$(killDistVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_8(closure$treeGen, killDistVal)));
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Attraction Points:', treeScene$lambda$lambda$lambda_9));
-      var attractPtsVal = this$.label_tokfmu$('attractPtsVal', treeScene$lambda$lambda$lambda_10(closure$treeGen));
-      $receiver.unaryPlus_uv0sim$(attractPtsVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('attractPts', treeScene$lambda$lambda$lambda_11(closure$treeGen, attractPtsVal)));
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius of Influence:', treeScene$lambda$lambda$lambda_12));
-      var infRadiusVal = this$.label_tokfmu$('killDistVal', treeScene$lambda$lambda$lambda_13(closure$treeGen));
-      $receiver.unaryPlus_uv0sim$(infRadiusVal);
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_14(closure$treeGen, infRadiusVal)));
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('generate', treeScene$lambda$lambda$lambda_15(closure$treeGen, closure$trunkMesh, closure$leafMesh)));
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('toggleLeafs', treeScene$lambda$lambda$lambda_16(closure$leafMesh)));
-      return Unit;
-    };
-  }
-  function treeScene$lambda(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
-    return function ($receiver) {
-      $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, treeScene$lambda$lambda_2);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu', treeScene$lambda$lambda_3($receiver, closure$treeGen, closure$trunkMesh, closure$leafMesh)));
-      return Unit;
-    };
-  }
-  function treeScene(ctx) {
-    var scenes = ArrayList_init();
-    var w = 3.0;
-    var h = 3.5;
-    var dist = new TreeTopPointDistribution(1.0 + h / 2.0, w, h);
-    var treeGen = new TreeGenerator(dist);
-    treeGen.generate_za3lpa$();
-    var trunkMesh = {v: null};
-    var leafMesh = {v: null};
-    var $receiver = new Scene_init(null);
-    $receiver.lighting.useDefaultShadowMap_aemszp$(ctx);
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40));
-    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda(treeGen));
-    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_0(treeGen));
-    $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
-    $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, treeScene$lambda$lambda_1($receiver)));
-    var treeScene = $receiver;
-    scenes.add_11rb$(treeScene);
-    var element = uiScene(ctx.screenDpi, void 0, void 0, treeScene$lambda(treeGen, trunkMesh, leafMesh));
-    scenes.add_11rb$(element);
-    return scenes;
-  }
   function TreeGenerator(distribution, baseTop, baseBot, random) {
     if (baseTop === void 0)
       baseTop = new Vec3f(0.0, 1.0, 0.0);
     if (baseBot === void 0)
       baseBot = Vec3f.Companion.ZERO;
     if (random === void 0)
-      random = math.defaultRandomInstance;
+      random = math_0.defaultRandomInstance;
     this.distribution = distribution;
     this.baseTop = baseTop;
     this.baseBot = baseBot;
@@ -7036,7 +6509,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var $receiver = this.treeNodes_0;
     var element = this.root_0;
     $receiver.add_11rb$(element);
-    var d = this.baseTop.subtract_2gj7b4$(this.baseBot, MutableVec3f_init_0()).norm().scale_mx4ult$(this.growDistance);
+    var d = this.baseTop.subtract_2gj7b4$(this.baseBot, MutableVec3f_init()).norm().scale_mx4ult$(this.growDistance);
     var prev = this.root_0;
     while (prev.distance_czzhiu$(this.baseTop) > this.growDistance) {
       var newNd = new TreeGenerator$TreeNode(this);
@@ -7101,11 +6574,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     while (tmp$_4.hasNext()) {
       var node_0 = tmp$_4.next();
       if (!node_0.influencingPts.isEmpty()) {
-        var growDir = MutableVec3f_init_0();
+        var growDir = MutableVec3f_init();
         tmp$_5 = node_0.influencingPts.iterator();
         while (tmp$_5.hasNext()) {
           var attracPt_1 = tmp$_5.next();
-          growDir.plusAssign_czzhiu$(attracPt_1.subtract_2gj7b4$(node_0, MutableVec3f_init_0()).norm());
+          growDir.plusAssign_czzhiu$(attracPt_1.subtract_2gj7b4$(node_0, MutableVec3f_init()).norm());
         }
         growDir.norm().scale_mx4ult$(this.growDistance);
         var newNode = new TreeGenerator$TreeNode(this);
@@ -7133,7 +6606,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function TreeGenerator$finishTree$lambda(this$TreeGenerator) {
     return function ($receiver) {
       if ($receiver.parent != null) {
-        $receiver.plusAssign_czzhiu$(MutableVec3f_init(ensureNotNull($receiver.parent)).subtract_czzhiu$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
+        $receiver.plusAssign_czzhiu$(MutableVec3f_init_0(ensureNotNull($receiver.parent)).subtract_czzhiu$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
         $receiver.x = $receiver.x + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
         $receiver.y = $receiver.y + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
         $receiver.z = $receiver.z + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
@@ -7146,7 +6619,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function TreeGenerator$finishTree$lambda_0($receiver) {
     if ($receiver.parent != null) {
       var baseV = ensureNotNull($receiver.parent).texV;
-      $receiver.texV = baseV + $receiver.distance_czzhiu$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math_0.PI * 1.5);
+      $receiver.texV = baseV + $receiver.distance_czzhiu$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math.PI * 1.5);
     }
     return Unit;
   }
@@ -7169,6 +6642,16 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var element = tmp$.next();
       element.buildLeafMesh_84rojv$(target);
     }
+    var $this = target.geometry;
+    var tmp$_0;
+    tmp$_0 = $this.numVertices;
+    for (var i = 0; i < tmp$_0; i++) {
+      $this.vertexIt.index = i;
+      var it = $this.vertexIt;
+      if (it.normal.y < 0) {
+        it.normal.scale_mx4ult$(-1.0);
+      }
+    }
   };
   TreeGenerator.prototype.populateAttractionPoints_0 = function () {
     var tmp$;
@@ -7183,7 +6666,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.attractionPointsTree_0 = pointKdTree(this.attractionPoints_0);
   };
   function TreeGenerator$AttractionPoint(pt) {
-    MutableVec3f_init(pt, this);
+    MutableVec3f_init_0(pt, this);
     this.nearestNode_mawy5q$_0 = null;
     this.nearestNodeDist_3apek4$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
     this.isOpen = true;
@@ -7221,7 +6704,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   };
   function TreeGenerator$TreeNode($outer) {
     this.$outer = $outer;
-    MutableVec3f_init_0(this);
+    MutableVec3f_init(this);
     this.children = ArrayList_init();
     this.parent = null;
     this.branchDepth = 0;
@@ -7321,18 +6804,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var tmp$;
     this.circumPts.clear();
     if (this.parent != null) {
-      tmp$ = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init_0()).norm();
+      tmp$ = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init()).norm();
     }
      else {
-      tmp$ = this.children.get_za3lpa$(0).subtract_2gj7b4$(this, MutableVec3f_init_0()).norm();
+      tmp$ = this.children.get_za3lpa$(0).subtract_2gj7b4$(this, MutableVec3f_init()).norm();
     }
     var n = tmp$;
-    var c = MutableVec3f_init(n).scale_mx4ult$(-n.times_czzhiu$(Vec3f.Companion.Z_AXIS)).add_czzhiu$(Vec3f.Companion.Z_AXIS).norm().scale_mx4ult$(this.radius);
+    var c = MutableVec3f_init_0(n).scale_mx4ult$(-n.times_czzhiu$(Vec3f.Companion.Z_AXIS)).add_czzhiu$(Vec3f.Companion.Z_AXIS).norm().scale_mx4ult$(this.radius);
     var y = c.z;
     var x = c.x;
     c.rotate_ad55pp$(-Math_0.atan2(y, x), n);
     for (var i = 0; i < 8; i++) {
-      var pt = MutableVec3f_init(c).add_czzhiu$(this);
+      var pt = MutableVec3f_init_0(c).add_czzhiu$(this);
       this.circumPts.add_11rb$(Vec3f_init_0(pt));
       c.rotate_ad55pp$(360.0 / 8, n);
     }
@@ -7438,16 +6921,16 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   };
   TreeGenerator$TreeNode.prototype.buildLeafMesh_84rojv$ = function (target) {
     if (this.branchDepth <= 1 && this.parent != null) {
-      var n = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init_0());
+      var n = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init());
       var len = n.length();
       n.norm();
       for (var i = 1; i <= 20; i++) {
         this.$outer;
         target.transform.push();
         var this$TreeGenerator = this.$outer;
-        var r = MutableVec3f_init(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + this$TreeGenerator.random.randomF_dleff0$(0.0, 0.15));
+        var r = MutableVec3f_init_0(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + this$TreeGenerator.random.randomF_dleff0$(0.0, 0.15));
         r.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
-        var p = MutableVec3f_init(n).scale_mx4ult$(this$TreeGenerator.random.randomF_dleff0$(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
+        var p = MutableVec3f_init_0(n).scale_mx4ult$(this$TreeGenerator.random.randomF_dleff0$(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
         target.translate_czzhiu$(p);
         target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
         var i0 = target.vertex_n440gp$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 0.0));
@@ -7471,14 +6954,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   };
   function TreeTopPointDistribution(centerY, width, height, random) {
     if (random === void 0)
-      random = math.defaultRandomInstance;
+      random = math_0.defaultRandomInstance;
     PointDistribution.call(this);
     this.centerY = centerY;
     this.width = width;
     this.height = height;
     this.random_0 = random;
     this.borders_0 = ArrayList_init();
-    this.tmpPt1_0 = MutableVec3f_init_0();
+    this.tmpPt1_0 = MutableVec3f_init();
     this.tmpPt2_0 = MutableVec2f_init();
     this.e00_0 = MutableVec2f_init();
     this.e01_0 = MutableVec2f_init();
@@ -7490,7 +6973,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var spline = new BSplineVec2f(3);
       var n = 7;
       for (var i = 0; i <= n; i++) {
-        var a = i / n * math_0.PI;
+        var a = i / n * math.PI;
         if (1 <= i && i < n) {
           tmp$ = this.random_0.randomF_dleff0$(0.4, 0.6);
         }
@@ -7530,7 +7013,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     tmp$ = this.borders_0;
     for (var i = 0; i !== tmp$.size; ++i) {
       var tmp$_0;
-      var a = i / this.borders_0.size * 2.0 * math_0.PI;
+      var a = i / this.borders_0.size * 2.0 * math.PI;
       var pts = this.borders_0.get_za3lpa$(i);
       tmp$_0 = pts.size;
       for (var j = 1; j < tmp$_0; j++) {
@@ -7591,7 +7074,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var py = this.tmpPt1_0.y;
       var y = this.tmpPt1_0.z;
       var x_0 = this.tmpPt1_0.x;
-      var $receiver = Math_0.atan2(y, x_0) / (2.0 * math_0.PI) + 0.5;
+      var $receiver = Math_0.atan2(y, x_0) / (2.0 * math.PI) + 0.5;
       var clamp$result;
       if ($receiver < 0.0) {
         clamp$result = 0.0;
@@ -7662,6 +7145,1348 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     simpleName: 'TreeTopPointDistribution',
     interfaces: [PointDistribution]
   };
+  function simplificationDemo(ctx) {
+    return (new SimplificationDemo(ctx)).scenes;
+  }
+  function SimplificationDemo(ctx) {
+    this.simplificationScene = null;
+    this.scenes = ArrayList_init();
+    this.models = LinkedHashMap_init();
+    this.loadingModels = LinkedHashSet_init();
+    this.modelWireframe = new LineMesh();
+    this.srcModel = null;
+    this.dispModel = new Mesh_init(IndexedVertexList_init_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
+    this.heMesh = null;
+    this.simplifcationGrade = 1.0;
+    this.autoRun_z6bycc$_0 = this.autoRun_z6bycc$_0;
+    this.facesValLbl_1vvnvx$_0 = this.facesValLbl_1vvnvx$_0;
+    this.vertsValLbl_bpoadb$_0 = this.vertsValLbl_bpoadb$_0;
+    this.timeValLbl_itlx8a$_0 = this.timeValLbl_itlx8a$_0;
+    this.autoRotate = true;
+    var tmp$ = this.dispModel;
+    var $receiver = new PbrShader$PbrConfig();
+    $receiver.albedoSource = Albedo.STATIC_ALBEDO;
+    var $receiver_0 = new PbrShader($receiver);
+    $receiver_0.albedo = Color.Companion.WHITE;
+    $receiver_0.roughness = 0.15;
+    tmp$.pipelineLoader = $receiver_0;
+    this.srcModel = this.makeCosGrid_0();
+    var $receiver_1 = this.models;
+    var value = this.srcModel;
+    $receiver_1.put_xwzc9p$('cos', value);
+    this.heMesh = new HalfEdgeMesh(this.srcModel);
+    this.loadModel_0('bunny.kmfz', 0.05, ctx);
+    this.loadModel_0('cow.kmfz', 1.0, ctx);
+    this.simplificationScene = this.mainScene_0(ctx);
+    var $receiver_2 = this.scenes;
+    var element = this.simplificationScene;
+    $receiver_2.add_11rb$(element);
+    var $receiver_3 = this.scenes;
+    var element_0 = this.menu_aemszp$(ctx);
+    $receiver_3.add_11rb$(element_0);
+    this.simplify();
+  }
+  Object.defineProperty(SimplificationDemo.prototype, 'autoRun', {
+    get: function () {
+      if (this.autoRun_z6bycc$_0 == null)
+        return throwUPAE('autoRun');
+      return this.autoRun_z6bycc$_0;
+    },
+    set: function (autoRun) {
+      this.autoRun_z6bycc$_0 = autoRun;
+    }
+  });
+  Object.defineProperty(SimplificationDemo.prototype, 'facesValLbl', {
+    get: function () {
+      if (this.facesValLbl_1vvnvx$_0 == null)
+        return throwUPAE('facesValLbl');
+      return this.facesValLbl_1vvnvx$_0;
+    },
+    set: function (facesValLbl) {
+      this.facesValLbl_1vvnvx$_0 = facesValLbl;
+    }
+  });
+  Object.defineProperty(SimplificationDemo.prototype, 'vertsValLbl', {
+    get: function () {
+      if (this.vertsValLbl_bpoadb$_0 == null)
+        return throwUPAE('vertsValLbl');
+      return this.vertsValLbl_bpoadb$_0;
+    },
+    set: function (vertsValLbl) {
+      this.vertsValLbl_bpoadb$_0 = vertsValLbl;
+    }
+  });
+  Object.defineProperty(SimplificationDemo.prototype, 'timeValLbl', {
+    get: function () {
+      if (this.timeValLbl_itlx8a$_0 == null)
+        return throwUPAE('timeValLbl');
+      return this.timeValLbl_itlx8a$_0;
+    },
+    set: function (timeValLbl) {
+      this.timeValLbl_itlx8a$_0 = timeValLbl;
+    }
+  });
+  function SimplificationDemo$mainScene$lambda$lambda$lambda(this$SimplificationDemo, closure$ctx, this$) {
+    return function ($receiver, it) {
+      if (this$SimplificationDemo.autoRotate) {
+        this$.rotate_ad55pp$(closure$ctx.deltaT * 3.0, Vec3f.Companion.Y_AXIS);
+      }
+      return Unit;
+    };
+  }
+  function SimplificationDemo$mainScene$lambda$lambda(this$SimplificationDemo, closure$ctx) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.dispModel);
+      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.modelWireframe);
+      var $receiver_0 = $receiver.onPreRender;
+      var element = SimplificationDemo$mainScene$lambda$lambda$lambda(this$SimplificationDemo, closure$ctx, $receiver);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  SimplificationDemo.prototype.mainScene_0 = function (ctx) {
+    var $receiver = new Scene_init(null);
+    defaultCamTransform($receiver);
+    var $receiver_0 = $receiver.lighting.lights;
+    $receiver_0.clear();
+    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(new Vec3f(-1.0, -1.0, 1.0)).setColor_y83vuj$(Color.Companion.MD_RED.mix_y83vuj$(Color.Companion.WHITE, 0.25).toLinear(), 2.0));
+    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(new Vec3f(1.0, -1.0, -1.0)).setColor_y83vuj$(Color.Companion.MD_CYAN.mix_y83vuj$(Color.Companion.WHITE, 0.25).toLinear(), 2.0));
+    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, SimplificationDemo$mainScene$lambda$lambda(this, ctx)));
+    return $receiver;
+  };
+  SimplificationDemo.prototype.simplify = function () {
+    var pt = new PerfTimer();
+    var $this = this.dispModel.geometry;
+    var wasBatchUpdate = $this.isBatchUpdate;
+    $this.isBatchUpdate = true;
+    this.dispModel.geometry.clear();
+    this.dispModel.geometry.addGeometry_r7nl2o$(this.srcModel);
+    this.heMesh = new HalfEdgeMesh(this.dispModel.geometry, new ListEdgeHandler());
+    if (this.simplifcationGrade < 0.999) {
+      simplify(this.heMesh, terminateOnFaceCountRel(this.simplifcationGrade));
+    }
+    var $this_0 = this.modelWireframe.geometry;
+    var wasBatchUpdate_0 = $this_0.isBatchUpdate;
+    $this_0.isBatchUpdate = true;
+    this.modelWireframe.clear();
+    this.heMesh.generateWireframe_6olbr4$(this.modelWireframe, Color.Companion.MD_LIME);
+    $this_0.hasChanged = true;
+    $this_0.isBatchUpdate = wasBatchUpdate_0;
+    if (false) {
+      $this_0.rebuildBounds();
+    }
+    var time = pt.takeSecs();
+    if (time > 0.5) {
+      this.autoRun.isEnabled = false;
+    }
+    this.facesValLbl.text = this.heMesh.faceCount.toString();
+    this.vertsValLbl.text = this.heMesh.vertCount.toString();
+    this.timeValLbl.text = toString(time, 2) + ' s';
+    $this.hasChanged = true;
+    $this.isBatchUpdate = wasBatchUpdate;
+    if (false) {
+      $this.rebuildBounds();
+    }
+  };
+  function SimplificationDemo$loadModel$lambda(closure$scale, this$SimplificationDemo, closure$name) {
+    return function (model) {
+      var tmp$;
+      if (model != null) {
+        var mesh = model.meshes.get_za3lpa$(0).toMesh_8p8ifh$();
+        var geometry = mesh.geometry;
+        tmp$ = geometry.numVertices;
+        for (var i = 0; i < tmp$; i++) {
+          geometry.vertexIt.index = i;
+          geometry.vertexIt.position.scale_mx4ult$(closure$scale);
+        }
+        var $receiver = this$SimplificationDemo.models;
+        var key = closure$name;
+        $receiver.put_xwzc9p$(key, geometry);
+        var $receiver_0 = this$SimplificationDemo.loadingModels;
+        var element = closure$name;
+        $receiver_0.remove_11rb$(element);
+        var $receiver_1 = this$SimplificationDemo;
+        var $this = util.Log;
+        var level = Log$Level.DEBUG;
+        var tag = Kotlin.getKClassFromExpression($receiver_1).simpleName;
+        if (level.level >= $this.level.level) {
+          var tmp$_0 = $this.printer;
+          var closure$name_0 = closure$name;
+          var tmp$_1;
+          tmp$_0.call($this, level, tag, 'loaded: ' + closure$name_0 + ', bounds: ' + toString_1((tmp$_1 = this$SimplificationDemo.models.get_11rb$(closure$name_0)) != null ? tmp$_1.bounds : null));
+        }
+      }
+      return Unit;
+    };
+  }
+  SimplificationDemo.prototype.loadModel_0 = function (name, scale, ctx) {
+    this.loadingModels.add_11rb$(name);
+    ctx.assetMgr.loadModel_v5uqdg$(name, SimplificationDemo$loadModel$lambda(scale, this, name));
+  };
+  function SimplificationDemo$makeCosGrid$lambda$lambda(this$) {
+    return function (x, y) {
+      var fx = (x / this$.stepsX - 0.5) * 10.0;
+      var fy = (y / this$.stepsY - 0.5) * 10.0;
+      var x_0 = fx * fx + fy * fy;
+      var x_1 = Math_0.sqrt(x_0);
+      return Math_0.cos(x_1) * 2;
+    };
+  }
+  SimplificationDemo.prototype.makeCosGrid_0 = function () {
+    var builder = new MeshBuilder(IndexedVertexList_init_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]));
+    builder.color = Color.Companion.MD_RED;
+    var $receiver = builder.gridProps.defaults();
+    $receiver.sizeX = 10.0;
+    $receiver.sizeY = 10.0;
+    $receiver.stepsX = 30;
+    $receiver.stepsY = 30;
+    $receiver.heightFun = SimplificationDemo$makeCosGrid$lambda$lambda($receiver);
+    builder.grid_gtbnl3$(builder.gridProps);
+    return builder.geometry;
+  };
+  function SimplificationDemo$menu$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_0(it) {
+    return new BlankComponentUi();
+  }
+  function SimplificationDemo$menu$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(SimplificationDemo$menu$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(SimplificationDemo$menu$lambda$lambda$lambda_0);
+    return Unit;
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.text = 'Model';
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda$lambda(this$SimplificationDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      this$SimplificationDemo.srcModel = (tmp$ = this$SimplificationDemo.models.get_11rb$('cow.kmfz')) != null ? tmp$ : this$SimplificationDemo.srcModel;
+      this$SimplificationDemo.simplify();
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_2(closure$y, this$SimplificationDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
+      var $receiver_0 = $receiver.onClick;
+      var element = SimplificationDemo$menu$lambda$lambda$lambda$lambda(this$SimplificationDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda$lambda_0(this$SimplificationDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      this$SimplificationDemo.srcModel = (tmp$ = this$SimplificationDemo.models.get_11rb$('bunny.kmfz')) != null ? tmp$ : this$SimplificationDemo.srcModel;
+      this$SimplificationDemo.simplify();
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_3(closure$y, this$SimplificationDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
+      var $receiver_0 = $receiver.onClick;
+      var element = SimplificationDemo$menu$lambda$lambda$lambda$lambda_0(this$SimplificationDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda$lambda_1(this$SimplificationDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      this$SimplificationDemo.srcModel = (tmp$ = this$SimplificationDemo.models.get_11rb$('cos')) != null ? tmp$ : this$SimplificationDemo.srcModel;
+      this$SimplificationDemo.simplify();
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_4(closure$y, this$SimplificationDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
+      var $receiver_0 = $receiver.onClick;
+      var element = SimplificationDemo$menu$lambda$lambda$lambda$lambda_1(this$SimplificationDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_5(closure$y, this$SimplificationDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.isEnabled = this$SimplificationDemo.dispModel.isVisible;
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_6(closure$y, this$SimplificationDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.isEnabled = this$SimplificationDemo.modelWireframe.isVisible;
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_7(this$SimplificationDemo, closure$tbDrawWireframe) {
+    return function ($receiver) {
+      this$SimplificationDemo.dispModel.isVisible = $receiver.isEnabled;
+      if (!$receiver.isEnabled && !closure$tbDrawWireframe.isEnabled) {
+        closure$tbDrawWireframe.isEnabled = true;
+      }
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_8(this$SimplificationDemo, closure$tbDrawSolid) {
+    return function ($receiver) {
+      this$SimplificationDemo.modelWireframe.isVisible = $receiver.isEnabled;
+      if (!$receiver.isEnabled && !closure$tbDrawSolid.isEnabled) {
+        closure$tbDrawSolid.isEnabled = true;
+      }
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda$lambda_2(this$SimplificationDemo) {
+    return function ($receiver) {
+      this$SimplificationDemo.autoRotate = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_9(closure$y, this$SimplificationDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.isEnabled = this$SimplificationDemo.autoRotate;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = SimplificationDemo$menu$lambda$lambda$lambda$lambda_2(this$SimplificationDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_10(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_11(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_12(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = '100 %';
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda$lambda_3(closure$faceCntVal, this$SimplificationDemo) {
+    return function ($receiver, value) {
+      closure$faceCntVal.text = toString_0(value * 100.0, 0) + ' %';
+      this$SimplificationDemo.simplifcationGrade = value;
+      if (this$SimplificationDemo.autoRun.isEnabled) {
+        this$SimplificationDemo.simplify();
+      }
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_13(closure$y, closure$faceCntVal, this$SimplificationDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.setValue_y2kzbl$(0.01, 1.0, 1.0);
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = SimplificationDemo$menu$lambda$lambda$lambda$lambda_3(closure$faceCntVal, this$SimplificationDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda$lambda_4(this$SimplificationDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      this$SimplificationDemo.simplify();
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_14(closure$y, this$SimplificationDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
+      var $receiver_0 = $receiver.onClick;
+      var element = SimplificationDemo$menu$lambda$lambda$lambda$lambda_4(this$SimplificationDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_15(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.isEnabled = true;
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_16(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_17(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = '';
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_18(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_19(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = '';
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_20(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda$lambda_21(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = '';
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$SimplificationDemo) {
+    return function ($receiver) {
+      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-670.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(550.0), full());
+      var y = {v: -40.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('lights', SimplificationDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cow', SimplificationDemo$menu$lambda$lambda$lambda_2(y, this$SimplificationDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Bunny', SimplificationDemo$menu$lambda$lambda$lambda_3(y, this$SimplificationDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Cosine Grid', SimplificationDemo$menu$lambda$lambda$lambda_4(y, this$SimplificationDemo)));
+      y.v -= 45.0;
+      var tbDrawSolid = this$.toggleButton_6j87po$('Draw Solid', SimplificationDemo$menu$lambda$lambda$lambda_5(y, this$SimplificationDemo));
+      y.v -= 35.0;
+      var tbDrawWireframe = this$.toggleButton_6j87po$('Draw Wireframe', SimplificationDemo$menu$lambda$lambda$lambda_6(y, this$SimplificationDemo));
+      var $receiver_0 = tbDrawSolid.onStateChange;
+      var element = SimplificationDemo$menu$lambda$lambda$lambda_7(this$SimplificationDemo, tbDrawWireframe);
+      $receiver_0.add_11rb$(element);
+      var $receiver_1 = tbDrawWireframe.onStateChange;
+      var element_0 = SimplificationDemo$menu$lambda$lambda$lambda_8(this$SimplificationDemo, tbDrawSolid);
+      $receiver_1.add_11rb$(element_0);
+      $receiver.unaryPlus_uv0sim$(tbDrawSolid);
+      $receiver.unaryPlus_uv0sim$(tbDrawWireframe);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', SimplificationDemo$menu$lambda$lambda$lambda_9(y, this$SimplificationDemo)));
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Simplification', SimplificationDemo$menu$lambda$lambda$lambda_10(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ratio:', SimplificationDemo$menu$lambda$lambda$lambda_11(y)));
+      var faceCntVal = this$.label_tokfmu$('faceCntVal', SimplificationDemo$menu$lambda$lambda$lambda_12(y));
+      $receiver.unaryPlus_uv0sim$(faceCntVal);
+      y.v -= 25.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('faceCnt', SimplificationDemo$menu$lambda$lambda$lambda_13(y, faceCntVal, this$SimplificationDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Update Mesh', SimplificationDemo$menu$lambda$lambda$lambda_14(y, this$SimplificationDemo)));
+      y.v -= 35.0;
+      this$SimplificationDemo.autoRun = this$.toggleButton_6j87po$('Auto Update', SimplificationDemo$menu$lambda$lambda$lambda_15(y));
+      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.autoRun);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Faces:', SimplificationDemo$menu$lambda$lambda$lambda_16(y)));
+      this$SimplificationDemo.facesValLbl = this$.label_tokfmu$('facesValLbl', SimplificationDemo$menu$lambda$lambda$lambda_17(y));
+      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.facesValLbl);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Vertices:', SimplificationDemo$menu$lambda$lambda$lambda_18(y)));
+      this$SimplificationDemo.vertsValLbl = this$.label_tokfmu$('verticesValLbl', SimplificationDemo$menu$lambda$lambda$lambda_19(y));
+      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.vertsValLbl);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Time:', SimplificationDemo$menu$lambda$lambda$lambda_20(y)));
+      this$SimplificationDemo.timeValLbl = this$.label_tokfmu$('timeValLbl', SimplificationDemo$menu$lambda$lambda$lambda_21(y));
+      $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.timeValLbl);
+      return Unit;
+    };
+  }
+  function SimplificationDemo$menu$lambda(closure$ctx, this$SimplificationDemo) {
+    return function ($receiver) {
+      var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
+      var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
+      $receiver.theme = theme(UiTheme.Companion.DARK, SimplificationDemo$menu$lambda$lambda);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', SimplificationDemo$menu$lambda$lambda_0(smallFont, $receiver, this$SimplificationDemo)));
+      return Unit;
+    };
+  }
+  SimplificationDemo.prototype.menu_aemszp$ = function (ctx) {
+    return uiScene(void 0, void 0, void 0, SimplificationDemo$menu$lambda(ctx, this));
+  };
+  SimplificationDemo.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'SimplificationDemo',
+    interfaces: []
+  };
+  function treeScene$lambda$lambda(closure$shadowMaps, closure$ctx) {
+    return function ($receiver, it) {
+      var $receiver_0 = closure$shadowMaps;
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        var closure$ctx_0 = closure$ctx;
+        var $receiver_1 = closure$ctx_0.offscreenPasses;
+        var element_0 = element.offscreenPass;
+        $receiver_1.remove_11rb$(element_0);
+        element.dispose_aemszp$(closure$ctx_0);
+      }
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda(closure$treeGen) {
+    return function ($receiver) {
+      var level;
+      level = Log$Level.INFO;
+      var t = now();
+      closure$treeGen.buildTrunkMesh_84rojv$($receiver);
+      var ret = Unit;
+      var $this = util.Log;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Generated ' + ($receiver.geometry.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + toString(now() - t, 3) + ' ms');
+      }
+      return Unit;
+    };
+  }
+  function Coroutine$treeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$treeScene$lambda$lambda$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$treeScene$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$treeScene$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda;
+  Coroutine$treeScene$lambda$lambda$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('tree_bark.png', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function treeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$treeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_0;
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('tree_bark_nrm.png', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function treeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function treeScene$lambda$lambda$lambda$lambda_1(this$) {
+    return function ($receiver, it) {
+      ensureNotNull(this$.albedoMap).dispose();
+      ensureNotNull(this$.normalMap).dispose();
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_2(this$, closure$shadowMaps) {
+    return function (it) {
+      var tmp$;
+      if ((tmp$ = this$.depthMaps) != null) {
+        var tmp$_0, tmp$_0_0;
+        var index = 0;
+        tmp$_0 = closure$shadowMaps.iterator();
+        while (tmp$_0.hasNext()) {
+          var item = tmp$_0.next();
+          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+          if (i < tmp$.length) {
+            tmp$[i] = item.offscreenPass.impl.depthTexture;
+          }
+        }
+      }
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda_0(closure$treeGen, closure$shadowMaps) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda(closure$treeGen));
+      var $receiver_0 = new PbrShader$PbrConfig();
+      $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver_0.isNormalMapped = true;
+      $receiver_0.isReceivingShadows = true;
+      $receiver_0.maxLights = 2;
+      var pbrCfg = $receiver_0;
+      var $receiver_1 = new PbrShader(pbrCfg);
+      var closure$shadowMaps_0 = closure$shadowMaps;
+      $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda);
+      $receiver_1.normalMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_0);
+      $receiver_1.roughness = 0.75;
+      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_1($receiver_1));
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_2($receiver_1, closure$shadowMaps_0));
+      $receiver.pipelineLoader = $receiver_1;
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_0(closure$treeGen) {
+    return function ($receiver) {
+      var level;
+      level = Log$Level.INFO;
+      var t = now();
+      closure$treeGen.buildLeafMesh_84rojv$($receiver);
+      var ret = Unit;
+      var $this = util.Log;
+      var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
+      if (level.level >= $this.level.level) {
+        $this.printer(level, tag, 'Generated ' + ($receiver.geometry.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + toString(now() - t, 3) + ' ms');
+      }
+      return Unit;
+    };
+  }
+  function Coroutine$treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_1;
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('leaf.png', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function treeScene$lambda$lambda$lambda$lambda_3($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function treeScene$lambda$lambda$lambda$lambda_4(this$) {
+    return function ($receiver, it) {
+      ensureNotNull(this$.albedoMap).dispose();
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_5(it) {
+    it.cullMethod = CullMethod.NO_CULLING;
+    return Unit;
+  }
+  function treeScene$lambda$lambda$lambda$lambda_6(this$, closure$shadowMaps) {
+    return function (it) {
+      var tmp$;
+      if ((tmp$ = this$.depthMaps) != null) {
+        var tmp$_0, tmp$_0_0;
+        var index = 0;
+        tmp$_0 = closure$shadowMaps.iterator();
+        while (tmp$_0.hasNext()) {
+          var item = tmp$_0.next();
+          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+          if (i < tmp$.length) {
+            tmp$[i] = item.offscreenPass.impl.depthTexture;
+          }
+        }
+      }
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda_1(closure$treeGen, closure$shadowMaps) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda_0(closure$treeGen));
+      var $receiver_0 = new PbrShader$PbrConfig();
+      $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver_0.isReceivingShadows = true;
+      $receiver_0.maxLights = 2;
+      var pbrCfg = $receiver_0;
+      var $receiver_1 = new PbrShader(pbrCfg);
+      var closure$shadowMaps_0 = closure$shadowMaps;
+      $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_3);
+      $receiver_1.roughness = 0.5;
+      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1));
+      $receiver_1.onSetup.add_11rb$(treeScene$lambda$lambda$lambda$lambda_5);
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_6($receiver_1, closure$shadowMaps_0));
+      $receiver.pipelineLoader = $receiver_1;
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_1(closure$autoRotate, this$) {
+    return function ($receiver, ctx) {
+      if (closure$autoRotate.v) {
+        this$.verticalRotation += ctx.deltaT * 3.0;
+      }
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda_2(this$, closure$autoRotate) {
+    return function ($receiver) {
+      $receiver.unaryPlus_uv0sim$(this$.camera);
+      $receiver.minZoom = 1.0;
+      $receiver.maxZoom = 25.0;
+      $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
+      $receiver.zoom = 6.0;
+      $receiver.setMouseRotation_dleff0$(0.0, -30.0);
+      $receiver.setMouseTranslation_y2kzbl$(0.0, 2.0, 0.0);
+      var $receiver_0 = $receiver.onPreRender;
+      var element = treeScene$lambda$lambda$lambda_1(closure$autoRotate, $receiver);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_2(it) {
+    return new BlankComponentUi();
+  }
+  function treeScene$lambda$lambda$lambda_3(it) {
+    return new BlankComponentUi();
+  }
+  function treeScene$lambda$lambda_3($receiver) {
+    $receiver.componentUi_mloaa0$(treeScene$lambda$lambda$lambda_2);
+    $receiver.containerUi_2t3ptw$(treeScene$lambda$lambda$lambda_3);
+    return Unit;
+  }
+  function treeScene$lambda$lambda$lambda_4(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_5(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_6(closure$y, closure$treeGen) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = toString_0(closure$treeGen.growDistance, 2);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_7(closure$treeGen, closure$growDistVal) {
+    return function ($receiver, value) {
+      closure$treeGen.growDistance = value;
+      closure$growDistVal.text = toString_0(value, 2);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_7(closure$y, closure$treeGen, closure$growDistVal) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.setValue_y2kzbl$(0.1, 0.4, closure$treeGen.growDistance);
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda_7(closure$treeGen, closure$growDistVal);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_8(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_9(closure$y, closure$treeGen) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = toString_0(closure$treeGen.killDistance, 2);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_8(closure$treeGen, closure$killDistVal) {
+    return function ($receiver, value) {
+      closure$treeGen.killDistance = value;
+      closure$killDistVal.text = toString_0(value, 2);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_10(closure$y, closure$treeGen, closure$killDistVal) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.setValue_y2kzbl$(1.0, 4.0, closure$treeGen.killDistance);
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda_8(closure$treeGen, closure$killDistVal);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_11(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_12(closure$y, closure$treeGen) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = closure$treeGen.numberOfAttractionPoints.toString();
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$attractPtsVal) {
+    return function ($receiver, value) {
+      closure$treeGen.numberOfAttractionPoints = numberToInt(value);
+      closure$attractPtsVal.text = numberToInt(value).toString();
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_13(closure$y, closure$treeGen, closure$attractPtsVal) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.setValue_y2kzbl$(100.0, 10000.0, closure$treeGen.numberOfAttractionPoints);
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$attractPtsVal);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_14(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_15(closure$y, closure$treeGen) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = toString_0(closure$treeGen.radiusOfInfluence, 2);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$infRadiusVal) {
+    return function ($receiver, value) {
+      closure$treeGen.radiusOfInfluence = value;
+      closure$infRadiusVal.text = toString_0(value, 2);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_16(closure$y, closure$treeGen, closure$infRadiusVal) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.setValue_y2kzbl$(0.25, 10.0, closure$treeGen.radiusOfInfluence);
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$infRadiusVal);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$, tmp$_0;
+      closure$treeGen.generate_za3lpa$();
+      if ((tmp$ = closure$trunkMesh.v) != null) {
+        var closure$treeGen_0 = closure$treeGen;
+        var $this = tmp$.geometry;
+        var wasBatchUpdate = $this.isBatchUpdate;
+        $this.isBatchUpdate = true;
+        $this.clear();
+        var builder = new MeshBuilder($this);
+        var level;
+        level = Log$Level.INFO;
+        var t = now();
+        closure$treeGen_0.buildTrunkMesh_84rojv$(builder);
+        $this.generateTangents();
+        var ret = Unit;
+        var $this_0 = util.Log;
+        var tag = Kotlin.getKClassFromExpression($this).simpleName;
+        if (level.level >= $this_0.level.level) {
+          $this_0.printer(level, tag, 'Generated ' + ($this.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + toString(now() - t, 3) + ' ms');
+        }
+        $this.hasChanged = true;
+        $this.isBatchUpdate = wasBatchUpdate;
+        if (false) {
+          $this.rebuildBounds();
+        }
+      }
+      if ((tmp$_0 = closure$leafMesh.v) != null) {
+        var closure$treeGen_1 = closure$treeGen;
+        var $this_1 = tmp$_0.geometry;
+        var wasBatchUpdate_0 = $this_1.isBatchUpdate;
+        $this_1.isBatchUpdate = true;
+        $this_1.clear();
+        var builder_0 = new MeshBuilder($this_1);
+        var level_0;
+        level_0 = Log$Level.INFO;
+        var t_0 = now();
+        closure$treeGen_1.buildLeafMesh_84rojv$(builder_0);
+        var ret_0 = Unit;
+        var $this_2 = util.Log;
+        var tag_0 = Kotlin.getKClassFromExpression($this_1).simpleName;
+        if (level_0.level >= $this_2.level.level) {
+          $this_2.printer(level_0, tag_0, 'Generated ' + ($this_1.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + toString(now() - t_0, 3) + ' ms');
+        }
+        $this_1.hasChanged = true;
+        $this_1.isBatchUpdate = wasBatchUpdate_0;
+        if (false) {
+          $this_1.rebuildBounds();
+        }
+      }
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_17(closure$y, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      var $receiver_0 = $receiver.onClick;
+      var element = treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$trunkMesh, closure$leafMesh);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_18(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_12(closure$leafMesh) {
+    return function ($receiver) {
+      var tmp$;
+      (tmp$ = closure$leafMesh.v) != null ? (tmp$.isVisible = $receiver.isEnabled) : null;
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_19(closure$y, closure$leafMesh) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.isEnabled = true;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = treeScene$lambda$lambda$lambda$lambda_12(closure$leafMesh);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda_4(closure$smallFont, this$, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+    return function ($receiver) {
+      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-535.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(415.0), full());
+      var y = {v: -40.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Tree Generation', treeScene$lambda$lambda$lambda_4(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Grow Distance:', treeScene$lambda$lambda$lambda_5(y)));
+      var growDistVal = this$.label_tokfmu$('growDistVal', treeScene$lambda$lambda$lambda_6(y, closure$treeGen));
+      $receiver.unaryPlus_uv0sim$(growDistVal);
+      y.v -= 25.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('growDist', treeScene$lambda$lambda$lambda_7(y, closure$treeGen, growDistVal)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Kill Distance:', treeScene$lambda$lambda$lambda_8(y)));
+      var killDistVal = this$.label_tokfmu$('killDistVal', treeScene$lambda$lambda$lambda_9(y, closure$treeGen));
+      $receiver.unaryPlus_uv0sim$(killDistVal);
+      y.v -= 25.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_10(y, closure$treeGen, killDistVal)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Attraction Points:', treeScene$lambda$lambda$lambda_11(y)));
+      var attractPtsVal = this$.label_tokfmu$('attractPtsVal', treeScene$lambda$lambda$lambda_12(y, closure$treeGen));
+      $receiver.unaryPlus_uv0sim$(attractPtsVal);
+      y.v -= 25.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('attractPts', treeScene$lambda$lambda$lambda_13(y, closure$treeGen, attractPtsVal)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius of Influence:', treeScene$lambda$lambda$lambda_14(y)));
+      var infRadiusVal = this$.label_tokfmu$('infRadiusVal', treeScene$lambda$lambda$lambda_15(y, closure$treeGen));
+      $receiver.unaryPlus_uv0sim$(infRadiusVal);
+      y.v -= 25.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_16(y, closure$treeGen, infRadiusVal)));
+      y.v -= 45.0;
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Generate Tree!', treeScene$lambda$lambda$lambda_17(y, closure$treeGen, closure$trunkMesh, closure$leafMesh)));
+      y.v -= 40;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', treeScene$lambda$lambda$lambda_18(y, closure$smallFont, this$)));
+      y.v -= 35;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Toggle Leafs', treeScene$lambda$lambda$lambda_19(y, closure$leafMesh)));
+      return Unit;
+    };
+  }
+  function treeScene$lambda(closure$ctx, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+    return function ($receiver) {
+      var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
+      var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
+      $receiver.theme = theme(UiTheme.Companion.DARK, treeScene$lambda$lambda_3);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', treeScene$lambda$lambda_4(smallFont, $receiver, closure$treeGen, closure$trunkMesh, closure$leafMesh)));
+      return Unit;
+    };
+  }
+  function treeScene(ctx) {
+    var scenes = ArrayList_init();
+    var w = 3.0;
+    var h = 3.5;
+    var dist = new TreeTopPointDistribution(1.0 + h / 2.0, w, h);
+    var treeGen = new TreeGenerator(dist);
+    treeGen.generate_za3lpa$();
+    var trunkMesh = {v: null};
+    var leafMesh = {v: null};
+    var autoRotate = {v: true};
+    var $receiver = new Scene_init(null);
+    var $receiver_0 = $receiver.lighting.lights;
+    $receiver_0.clear();
+    var pos = new Vec3f(10.0, 15.0, 10.0);
+    $receiver_0.add_11rb$((new Light()).setSpot_nve3wz$(pos, pos.scale_749b8l$(-1.0, MutableVec3f_init()).norm(), 45.0).setColor_y83vuj$(Color.Companion.YELLOW.mix_y83vuj$(Color.Companion.WHITE, 0.6), 1000.0));
+    pos = new Vec3f(-10.0, 15.0, -10.0);
+    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(pos.scale_749b8l$(-1.0, MutableVec3f_init()).norm()).setColor_y83vuj$(Color.Companion.LIGHT_BLUE.mix_y83vuj$(Color.Companion.WHITE, 0.5), 1.0));
+    var shadowMaps = mutableListOf([new ShadowMapPass($receiver, $receiver.lighting.lights.get_za3lpa$(0), 2048), new ShadowMapPass($receiver, $receiver.lighting.lights.get_za3lpa$(1), 32)]);
+    var tmp$;
+    tmp$ = shadowMaps.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      var $receiver_1 = ctx.offscreenPasses;
+      var element_0 = element.offscreenPass;
+      $receiver_1.add_11rb$(element_0);
+    }
+    $receiver.onDispose.add_11rb$(treeScene$lambda$lambda(shadowMaps, ctx));
+    $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps));
+    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda_0(treeGen, shadowMaps));
+    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_1(treeGen, shadowMaps));
+    $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
+    $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, treeScene$lambda$lambda_2($receiver, autoRotate)));
+    var treeScene = $receiver;
+    scenes.add_11rb$(treeScene);
+    var element_1 = uiScene(void 0, void 0, void 0, treeScene$lambda(ctx, treeGen, trunkMesh, leafMesh));
+    scenes.add_11rb$(element_1);
+    return scenes;
+  }
+  function makeTreeGroundGrid$lambda$lambda(closure$groundExt) {
+    return function ($receiver) {
+      $receiver.transform.push();
+      var closure$groundExt_0 = closure$groundExt;
+      $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
+      $receiver.color = Color.Companion.LIGHT_GRAY.withAlpha_mx4ult$(0.2);
+      var $receiver_0 = $receiver.rectProps.defaults();
+      $receiver_0.origin.set_y2kzbl$(-closure$groundExt_0, -closure$groundExt_0, 0.0);
+      $receiver_0.width = closure$groundExt_0 * 2.0;
+      $receiver_0.height = closure$groundExt_0 * 2.0;
+      var uv = closure$groundExt_0 / 2;
+      $receiver_0.texCoordUpperLeft.set_dleff0$(-uv, -uv);
+      $receiver_0.texCoordUpperRight.set_dleff0$(uv, -uv);
+      $receiver_0.texCoordLowerLeft.set_dleff0$(-uv, uv);
+      $receiver_0.texCoordLowerRight.set_dleff0$(uv, uv);
+      $receiver.rect_e5k3t5$($receiver.rectProps);
+      $receiver.transform.pop();
+      $receiver.geometry.generateTangents();
+      return Unit;
+    };
+  }
+  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda;
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('ground_color.png', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeTreeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0;
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$('ground_nrm.png', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeTreeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function makeTreeGroundGrid$lambda$lambda$lambda_1(this$, closure$shadowMaps) {
+    return function (it) {
+      var tmp$;
+      if ((tmp$ = this$.depthMaps) != null) {
+        var tmp$_0, tmp$_0_0;
+        var index = 0;
+        tmp$_0 = closure$shadowMaps.iterator();
+        while (tmp$_0.hasNext()) {
+          var item = tmp$_0.next();
+          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+          if (i < tmp$.length) {
+            tmp$[i] = item.offscreenPass.impl.depthTexture;
+          }
+        }
+      }
+      return Unit;
+    };
+  }
+  function makeTreeGroundGrid$lambda$lambda$lambda_2(this$) {
+    return function ($receiver, it) {
+      ensureNotNull(this$.albedoMap).dispose();
+      ensureNotNull(this$.normalMap).dispose();
+      return Unit;
+    };
+  }
+  function makeTreeGroundGrid$lambda(closure$groundExt, closure$shadowMaps) {
+    return function ($receiver) {
+      $receiver.isCastingShadow = false;
+      $receiver.generate_v2sixm$(makeTreeGroundGrid$lambda$lambda(closure$groundExt));
+      var $receiver_0 = new PbrShader$PbrConfig();
+      $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
+      $receiver_0.isNormalMapped = true;
+      $receiver_0.isReceivingShadows = true;
+      $receiver_0.normalStrength = 0.25;
+      $receiver_0.maxLights = 2;
+      var pbrCfg = $receiver_0;
+      var $receiver_1 = new PbrShader(pbrCfg);
+      var closure$shadowMaps_0 = closure$shadowMaps;
+      $receiver_1.albedoMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda);
+      $receiver_1.normalMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_0);
+      $receiver_1.roughness = 0.3;
+      $receiver_1.onCreated.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_1($receiver_1, closure$shadowMaps_0));
+      $receiver.onDispose.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_2($receiver_1));
+      $receiver.pipelineLoader = $receiver_1;
+      return Unit;
+    };
+  }
+  function makeTreeGroundGrid(cells, shadowMaps) {
+    var groundExt = cells / 2 | 0;
+    return textureMesh(void 0, true, makeTreeGroundGrid$lambda(groundExt, shadowMaps));
+  }
   function uiDemoScene$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
@@ -8075,13 +8900,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   package$portingNeeded.MeshPoint = MeshPoint;
   package$portingNeeded.reflectionDemo_aemszp$ = reflectionDemo;
   package$portingNeeded.simpleShapesScene_aemszp$ = simpleShapesScene;
-  package$portingNeeded.simplificationDemo_aemszp$ = simplificationDemo;
-  SimplificationDemo.EdgeRayDistance = SimplificationDemo$EdgeRayDistance;
-  package$portingNeeded.SimplificationDemo = SimplificationDemo;
   package$portingNeeded.synthieScene_aemszp$ = synthieScene;
-  package$portingNeeded.treeScene_aemszp$ = treeScene;
   package$portingNeeded.TreeGenerator = TreeGenerator;
   package$portingNeeded.TreeTopPointDistribution = TreeTopPointDistribution;
+  package$demo.simplificationDemo_aemszp$ = simplificationDemo;
+  package$demo.SimplificationDemo = SimplificationDemo;
+  package$demo.treeScene_aemszp$ = treeScene;
   package$demo.uiDemoScene = uiDemoScene;
   _.EquiRectCoords = EquiRectCoords;
   _.DecodeRgbeNode = DecodeRgbeNode;
@@ -8089,7 +8913,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   _.testScene = testScene;
   _.main = main;
   _.getParams = getParams;
-  SimplificationDemo$EdgeRayDistance.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
   main();
   Kotlin.defineModule('kooldemo', _);
   return _;

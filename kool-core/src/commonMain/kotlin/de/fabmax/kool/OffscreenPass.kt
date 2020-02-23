@@ -23,7 +23,9 @@ abstract class OffscreenPass(val texWidth: Int, val texHeight: Int, val mipLevel
     abstract fun render(ctx: KoolContext)
 
     open fun dispose(ctx: KoolContext) {
-        scene?.dispose(ctx)
+        if (isMainPass) {
+            scene?.dispose(ctx)
+        }
     }
 
     fun mipWidth(mipLevel: Int): Int {

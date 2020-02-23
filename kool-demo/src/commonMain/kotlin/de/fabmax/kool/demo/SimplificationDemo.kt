@@ -260,7 +260,7 @@ class SimplificationDemo(ctx: KoolContext) {
             y -= 25f
             +slider("faceCnt") {
                 layoutSpec.setOrigin(dps(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(25f, true), full())
+                layoutSpec.setSize(pcs(100f), dps(25f), full())
                 setValue(0.01f, 1f, 1f)
                 onValueChanged += { value ->
                     faceCntVal.text = "${(value * 100f).toString(0)} %"

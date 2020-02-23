@@ -198,8 +198,8 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
 
         val meshMap = mutableMapOf<Long, IndexedMesh>()
 
-        inner class DeleteAction(var deleteDelay: Int = sys.swapChain?.nImages ?: 3, val action: () -> Unit)
-        private val deleteQueue = ArrayDeque<DeleteAction>()
+        inner class DelayAction(var delay: Int = sys.swapChain?.nImages ?: 3, val action: () -> Unit)
+        private val actionQueue = ArrayDeque<DelayAction>()
 
         override fun onLoad(sys: VkSystem) {
             this.sys = sys
@@ -264,9 +264,9 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                 check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
 
                 // delete discarded meshes
-                val delIt = deleteQueue.iterator()
+                val delIt = actionQueue.iterator()
                 for (action in delIt) {
-                    if (action.deleteDelay-- <= 0) {
+                    if (action.delay-- <= 0) {
                         //sys.device.removeDependingResource(delMesh.mesh)
                         //delMesh.mesh.destroy()
                         action.action()
@@ -283,7 +283,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                 val delMesh = meshMap.remove(pipeline.pipelineInstanceId)
                 val delPipeline = sys.pipelineManager.getPipeline(pipeline)
 
-                deleteQueue += DeleteAction {
+                actionQueue += DelayAction {
                     delMesh?.let {
                         sys.device.removeDependingResource(it)
                         it.destroy()
@@ -316,12 +316,15 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
 
                         var model = meshMap[pipelineCfg.pipelineInstanceId]
                         if ((cmd.mesh.geometry.hasChanged && !cmd.mesh.geometry.isBatchUpdate) || model == null) {
-                            cmd.mesh.geometry.hasChanged = false
+                            // fixme: currently there is one IndexedMesh per pipeline, not per mesh
+                            // if mesh is rendered multiple times (e.g. by additional shadow passes), clearing
+                            // hasChanged flag early results in IndexedMeshes not being updated
+                            actionQueue += DelayAction(0) { cmd.mesh.geometry.hasChanged = false }
 
                             // (re-)build buffer
                             // fixme: don't do this here, should have happened before (async?)
                             meshMap.remove(pipelineCfg.pipelineInstanceId)?.let {
-                                deleteQueue += DeleteAction {
+                                actionQueue += DelayAction {
                                     sys.device.removeDependingResource(it)
                                     it.destroy()
                                 }

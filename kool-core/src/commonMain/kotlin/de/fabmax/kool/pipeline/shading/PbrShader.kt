@@ -190,7 +190,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 }
 
                 shadowedLightNode = if (cfg.isReceivingShadows) {
-                    shadowedLightNode(worldPos, mvp.outModelMat, "depthMap")
+                    shadowedLightNode(worldPos, mvp.outModelMat, "depthMap", cfg.maxLights)
                 } else {
                     null
                 }
@@ -199,7 +199,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             }
             fragmentStage {
                 val mvpFrag = mvp.addToStage(fragmentStageGraph)
-                val lightNode = shadowedLightNode?.fragmentNode ?: defaultLightNode()
+                val lightNode = shadowedLightNode?.fragmentNode ?: defaultLightNode(cfg.maxLights)
 
                 val reflMap: CubeMapNode?
                 val brdfLut: TextureNode?
@@ -233,6 +233,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     }
                     inNormal = if (cfg.isNormalMapped && ifTangents != null) {
                         val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
+                        bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
                         bumpNormal.outNormal
                     } else {
                         ifNormals.output
@@ -265,8 +266,11 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isAmbientOcclusionMapped = false
         var isDisplacementMapped = false
 
+        var normalStrength = 1f
+
         var isImageBasedLighting = false
 
+        var maxLights = 4
         var isReceivingShadows = false
 
         fun requiresTexCoords(): Boolean {
