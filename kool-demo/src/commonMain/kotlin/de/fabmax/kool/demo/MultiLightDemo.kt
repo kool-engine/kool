@@ -25,19 +25,18 @@ class MultiLightDemo(ctx: KoolContext) {
 
     private val mainScene: Scene
     private val lights = listOf(
-            LightMesh(Color.MD_CYAN.toLinear()),
-            LightMesh(Color.MD_RED.toLinear()),
-            LightMesh(Color.MD_AMBER.toLinear()),
-            LightMesh(Color.MD_GREEN.toLinear()))
+            LightMesh(Color.MD_CYAN),
+            LightMesh(Color.MD_RED),
+            LightMesh(Color.MD_AMBER),
+            LightMesh(Color.MD_GREEN))
     private val depthPasses = mutableListOf<ShadowMapPass>()
 
     private var lightCount = 4
-    private var isColoredLights = true
-    private var isSpotLights = true
-    private var isRandomSpots = true
-    private var lightPower = 400f
+    private var lightPower = 500f
+    private var lightSaturation = 0.4f
+    private var lightRandomness = 0.3f
 
-    private val colorCycler = Cycler(matColors)
+    private val colorCycler = Cycler(matColors).apply { index = 1 }
 
     private var modelShader: PbrShader? = null
 
@@ -57,9 +56,11 @@ class MultiLightDemo(ctx: KoolContext) {
         +orbitInputTransform {
             +camera
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 20f
+            zoom = 17f
             translation.set(0f, 2f, 0f)
-            setMouseRotation(20f, -30f)
+            setMouseRotation(0f, -20f)
+            // let the camera slowly rotate around vertical axis
+            onPreRender += { ctx -> verticalRotation += ctx.deltaT * 3f }
         }
 
         lighting.lights.clear()
@@ -137,8 +138,8 @@ class MultiLightDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-480f), zero())
-            layoutSpec.setSize(dps(250f), dps(340f), full())
+            layoutSpec.setOrigin(dps(-450f), dps(-425f), zero())
+            layoutSpec.setSize(dps(330f), dps(305f), full())
 
             // environment map selection
             var y = -40f
@@ -150,39 +151,8 @@ class MultiLightDemo(ctx: KoolContext) {
                 textColor.setCustom(theme.accentColor)
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
-            y -= 35f
-            +toggleButton("colorToggle") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                text = "Colored Lights:"
-                isEnabled = isColoredLights
-                onClick += { _, _, _ ->
-                    isColoredLights = isEnabled
-                    updateLighting()
-                }
-            }
-            y -= 35f
-            +toggleButton("spotToggle") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                text = "Spot Lights:"
-                isEnabled = isSpotLights
-                onClick += { _, _, _ ->
-                    isSpotLights = isEnabled
-                    updateLighting()
-                }
-            }
-            y -= 35f
-            +toggleButton("randomToggle") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(100f), dps(35f), full())
-                text = "Randomize Spots:"
-                isEnabled = isRandomSpots
-                onClick += { _, _, _ ->
-                    isRandomSpots = isEnabled
-                    updateLighting()
-                }
-            }
+
+            // light count
             y -= 35f
             +label("lightCntLbl") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
@@ -226,11 +196,13 @@ class MultiLightDemo(ctx: KoolContext) {
                     updateLighting()
                 }
             }
+
+            // light strength / brightness
             y -= 35f
             +label("lightPowerLbl") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(25f), dps(35f), full())
-                text = "Power:"
+                text = "Strength:"
             }
             +slider("lightPowerSlider") {
                 layoutSpec.setOrigin(pcs(30f), dps(y), zero())
@@ -243,6 +215,38 @@ class MultiLightDemo(ctx: KoolContext) {
                 }
             }
 
+            y -= 35f
+            +label("saturationLbl") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+                text = "Saturation:"
+            }
+            +slider("saturationSlider") {
+                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
+                layoutSpec.setSize(pcs(70f), dps(35f), full())
+                value = lightSaturation * 100f
+
+                onValueChanged += {
+                    lightSaturation = value / 100f
+                    updateLighting()
+                }
+            }
+            y -= 35f
+            +label("randomLbl") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+                text = "Random:"
+            }
+            +slider("randomSlider") {
+                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
+                layoutSpec.setSize(pcs(70f), dps(35f), full())
+                value = lightRandomness * 100f
+
+                onValueChanged += {
+                    lightRandomness = value / 100f
+                }
+            }
+
             y -= 40f
             +label("material") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
@@ -251,21 +255,6 @@ class MultiLightDemo(ctx: KoolContext) {
                 text = "Material"
                 textColor.setCustom(theme.accentColor)
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
-            }
-            y -= 35f
-            +label("roughnessLbl") {
-                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
-                layoutSpec.setSize(pcs(25f), dps(35f), full())
-                text = "Rough:"
-            }
-            +slider("roughhnessSlider") {
-                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
-                layoutSpec.setSize(pcs(70f), dps(35f), full())
-                value = 10f
-
-                onValueChanged += {
-                    modelShader?.roughness = value / 100f
-                }
             }
             y -= 35f
             +label("colorLbl") {
@@ -304,6 +293,21 @@ class MultiLightDemo(ctx: KoolContext) {
                     modelShader?.albedo = colorCycler.current.linColor
                 }
             }
+            y -= 35f
+            +label("roughnessLbl") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+                text = "Roughness:"
+            }
+            +slider("roughhnessSlider") {
+                layoutSpec.setOrigin(pcs(30f), dps(y), zero())
+                layoutSpec.setSize(pcs(70f), dps(35f), full())
+                value = 10f
+
+                onValueChanged += {
+                    modelShader?.roughness = value / 100f
+                }
+            }
         }
     }
 
@@ -313,7 +317,7 @@ class MultiLightDemo(ctx: KoolContext) {
         var pos = 0f
         val step = 360f / lightCount
         for (i in 0 until min(lightCount, lights.size)) {
-            lights[i].setup(pos, isSpotLights, isColoredLights, lightPower)
+            lights[i].setup(pos)
             lights[i].enable()
             pos += step
         }
@@ -322,18 +326,18 @@ class MultiLightDemo(ctx: KoolContext) {
     private inner class LightMesh(val color: Color) : TransformGroup() {
         val light = Light()
 
+        private val lightMeshShader = ModeledShader.StaticColor()
         private val meshPos = MutableVec3f()
         private val rotOff = randomF(0f, 3f)
 
         init {
             val lightMesh = colorMesh {
                 generate {
-                    color = this@LightMesh.color.toSrgb()
                     sphere {
                         radius = 0.2f
                     }
                 }
-                pipelineLoader = ModeledShader.VertexColor()
+                pipelineLoader = lightMeshShader
             }
             +lightMesh
 
@@ -344,27 +348,21 @@ class MultiLightDemo(ctx: KoolContext) {
                 light.position.set(lightMesh.globalCenter)
                 light.direction.set(0f, 2f, 0f).subtract(lightMesh.globalCenter).norm()
 
-                if (isRandomSpots) {
-                    val r = cos(ctx.time / 15 + rotOff).toFloat()
-                    light.direction.rotate(r * 20f, Vec3f.X_AXIS)
-                    light.direction.rotate(r * 20f, Vec3f.Z_AXIS)
-                    light.spotAngle = 50f - r * 10f
-                }
+                val r = cos(ctx.time / 15 + rotOff).toFloat() * lightRandomness
+                light.direction.rotate(r * 20f, Vec3f.X_AXIS)
+                light.direction.rotate(r * 20f, Vec3f.Z_AXIS)
+                light.spotAngle = 50f - r * 10f
             }
         }
 
-        fun setup(angPos: Float, isSpot: Boolean, isColored: Boolean, power: Float) {
+        fun setup(angPos: Float) {
             val x = cos(angPos.toRad()) * 10f
             val z = sin(angPos.toRad()) * 10f
             meshPos.set(x, 9f, z)
             val dir = MutableVec3f(meshPos).scale(-1f).norm()
-            val color = if (isColored) { this.color } else { Color.WHITE }
-
-            if (isSpot) {
-                light.setSpot(meshPos, dir, 50f).setColor(color, power)
-            } else {
-                light.setPoint(meshPos).setColor(color, power)
-            }
+            val color = Color.WHITE.mix(this.color, lightSaturation, MutableColor())
+            light.setSpot(meshPos, dir, 50f).setColor(color.toLinear(), lightPower)
+            lightMeshShader.color = color
         }
 
         fun enable() {

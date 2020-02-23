@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Color
 
 open class ModeledShader(protected val model: ShaderModel) : Shader(), PipelineFactory {
 
@@ -23,6 +24,22 @@ open class ModeledShader(protected val model: ShaderModel) : Shader(), PipelineF
         builder.shaderLoader = this::setup
         onSetup.forEach { it(builder) }
         return builder.create(mesh, ctx)
+    }
+
+    class StaticColor(model: ShaderModel = staticColorModel()) : ModeledShader(model) {
+        private var uColor: UniformColor? = null
+
+        var color: Color = Color.GRAY
+            set(value) {
+                field = value
+                uColor?.value?.set(value)
+            }
+
+        override fun onPipelineCreated(pipeline: Pipeline) {
+            uColor = model.findNode<PushConstantNodeColor>("uStaticColor")?.uniform
+            uColor?.value?.set(color)
+            super.onPipelineCreated(pipeline)
+        }
     }
 
     class VertexColor(model: ShaderModel = vertexColorModel()) : ModeledShader(model)
@@ -46,6 +63,16 @@ open class ModeledShader(protected val model: ShaderModel) : Shader(), PipelineF
     }
 
     companion object {
+        private fun staticColorModel(): ShaderModel = ShaderModel("ModeledShader.staticColor()").apply {
+            vertexStage {
+                positionOutput = simpleVertexPositionNode().outPosition
+            }
+            fragmentStage {
+                val color = pushConstantNodeColor("uStaticColor")
+                colorOutput = unlitMaterialNode(color.output).outColor
+            }
+        }
+
         private fun vertexColorModel(): ShaderModel = ShaderModel("ModeledShader.vertexColor()").apply {
             val ifColors: StageInterfaceNode
             vertexStage {
