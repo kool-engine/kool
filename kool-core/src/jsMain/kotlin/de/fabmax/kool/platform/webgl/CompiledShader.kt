@@ -101,7 +101,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         ctx.gl.deleteProgram(prog)
     }
 
-    inner class ShaderInstance(val mesh: Mesh, pipeline: Pipeline) {
+    inner class ShaderInstance(val mesh: Mesh, val pipeline: Pipeline) {
         private val pushConstants = mutableListOf<PushConstantRange>()
         private val ubos = mutableListOf<UniformBuffer>()
         private val textures = mutableListOf<TextureSampler>()
@@ -251,7 +251,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 indexType = UNSIGNED_INT
                 indexBuffer?.setData(md.indices, usage, ctx)
 
-                primitiveType = md.primitiveType.glElemType()
+                primitiveType = pipeline.vertexLayout.primitiveType.glElemType()
                 numIndices = md.numIndices
                 dataBufferF?.setData(md.dataF, usage, ctx)
                 dataBufferI?.setData(md.dataI, usage, ctx)

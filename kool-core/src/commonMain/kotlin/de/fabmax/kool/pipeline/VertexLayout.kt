@@ -1,13 +1,14 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.util.PrimitiveType
 import de.fabmax.kool.util.copy
 
-class VertexLayout(val bindings: List<Binding>) {
+class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType) {
 
     val longHash: ULong
 
     init {
-        var hash = 0UL
+        var hash = 71023UL * primitiveType.hashCode().toULong()
         bindings.forEach {
             hash = (hash * 71023UL) + it.longHash
         }
@@ -38,10 +39,11 @@ class VertexLayout(val bindings: List<Binding>) {
     data class Attribute(val location: Int, val offset: Int, val type: GlslType, val name: String)
 
     class Builder {
+        var primitiveType = PrimitiveType.TRIANGLES
         val bindings = mutableListOf<Binding>()
 
         fun create(): VertexLayout {
-            return VertexLayout(bindings.copy())
+            return VertexLayout(bindings.copy(), primitiveType)
         }
     }
 }

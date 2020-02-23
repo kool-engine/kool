@@ -3,6 +3,7 @@ package de.fabmax.kool.platform.vk.pipeline
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.bitValue
+import de.fabmax.kool.util.PrimitiveType
 import de.fabmax.kool.util.logD
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
@@ -75,7 +76,11 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
 
             val inputAssembly = callocVkPipelineInputAssemblyStateCreateInfo {
                 sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO)
-                topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+                when (pipeline.vertexLayout.primitiveType) {
+                    PrimitiveType.LINES -> topology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST)
+                    PrimitiveType.POINTS -> topology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
+                    PrimitiveType.TRIANGLES -> topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
+                }
                 primitiveRestartEnable(false)
             }
 

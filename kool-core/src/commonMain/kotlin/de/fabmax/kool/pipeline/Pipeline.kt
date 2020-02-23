@@ -31,6 +31,7 @@ class Pipeline private constructor(builder: Builder, mesh: Mesh, ctx: KoolContex
 
     init {
         val buildCtx = BuildContext(builder)
+        buildCtx.vertexLayout.primitiveType = mesh.geometry.primitiveType
         builder.onCreatePipeline.forEach { it(buildCtx) }
         shader = builder.shaderLoader(mesh, buildCtx, ctx)
         vertexLayout = buildCtx.vertexLayout.create()

@@ -93,9 +93,6 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             }
             rayTest.onMeshDataChanged(this)
         }
-
-        // fixme: use some caching, to avoid per-frame allocation of new DrawCommand object
-        // multiple draw command objects are needed if object is rendered by multiple render passes (shadow maps, etc.)
         scene?.drawQueue?.addMesh(this, ctx)
     }
 }

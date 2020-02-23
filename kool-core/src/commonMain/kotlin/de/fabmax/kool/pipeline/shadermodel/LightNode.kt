@@ -197,7 +197,8 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
                     shadowFacs[$lightI] = 0.0;
                 """)
 
-                // multi sample shadow map for nicer edges
+                // dithered pcf shadow map sampling
+                // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
                 var nSamples = 0
                 listOf(Vec2f(-1.5f, 0.5f), Vec2f(0.5f, 0.5f), Vec2f(-1.5f, -1.5f), Vec2f(0.5f, -1.5f)).forEach { off ->
                     val projCoord = "vec4(shadowProjPos.xy + (shadowOffset + vec2(${off.x}, ${off.y})) * shadowMapScale * shadowProjPos.w, shadowProjPos.z, shadowProjPos.w)"
@@ -214,26 +215,5 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
             val call = super.callVec3GetRadiance(idx, fragToLight, innerAngle)
             return "($call * shadowFacs[$idx])"
         }
-    }
-
-    companion object {
-        private val shadowOffsets = listOf(
-                Vec2f(-0.9420f, -0.3990f),
-                Vec2f(+0.9456f, -0.7689f),
-                Vec2f(-0.0942f, -0.9294f),
-                Vec2f(+0.3450f, +0.2939f),
-                Vec2f(-0.9159f, +0.4577f),
-                Vec2f(-0.8154f, -0.8791f),
-                Vec2f(-0.3828f, +0.2768f),
-                Vec2f(+0.9748f, +0.7565f),
-                Vec2f(+0.4432f, -0.9751f),
-                Vec2f(+0.5374f, -0.4737f),
-                Vec2f(-0.2650f, -0.4189f),
-                Vec2f(+0.7920f, +0.1909f),
-                Vec2f(-0.2419f, +0.9971f),
-                Vec2f(-0.8141f, +0.9144f),
-                Vec2f(+0.1998f, +0.7864f),
-                Vec2f(+0.1438f, -0.1410f)
-        )
     }
 }

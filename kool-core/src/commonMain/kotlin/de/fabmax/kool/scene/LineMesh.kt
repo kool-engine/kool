@@ -1,10 +1,10 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.util.*
 import kotlin.math.max
 import kotlin.math.min
@@ -33,15 +33,12 @@ open class LineMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.PO
         Mesh(geometry, name) {
     init {
         geometry.primitiveType = PrimitiveType.LINES
-//        rayTest = MeshRayTest.nopTest()
-//        shader = basicShader {
-//            colorModel = ColorModel.VERTEX_COLOR
-//            lightModel = LightModel.NO_LIGHTING
-//        }
+        rayTest = MeshRayTest.nopTest()
+        pipelineLoader = ModeledShader.VertexColor()
     }
 
-    var isXray = false
-    var lineWidth = 1f
+    //var isXray = false
+    //var lineWidth = 1f
 
     fun addLine(point0: Vec3f, color0: Color, point1: Vec3f, color1: Color): Int {
         var idx0 = 0
@@ -158,18 +155,5 @@ open class LineMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.PO
                     i4, i5, i5, i6, i6, i7, i7, i4,
                     i0, i4, i1, i5, i2, i6, i3, i7)
         }
-    }
-
-    override fun render(ctx: KoolContext) {
-//        ctx.pushAttributes()
-//        ctx.lineWidth = lineWidth
-//        if (isXray) {
-//            ctx.depthFunc = GL_ALWAYS
-//        }
-//        ctx.applyAttributes()
-//
-//        super.render(ctx)
-//
-//        ctx.popAttributes()
     }
 }

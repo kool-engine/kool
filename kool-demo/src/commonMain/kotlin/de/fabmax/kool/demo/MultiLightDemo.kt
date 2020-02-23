@@ -12,9 +12,7 @@ import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.util.*
-import kotlin.math.cos
-import kotlin.math.min
-import kotlin.math.sin
+import kotlin.math.*
 
 fun multiLightDemo(ctx: KoolContext): List<Scene> {
     return MultiLightDemo(ctx).scenes
@@ -31,11 +29,12 @@ class MultiLightDemo(ctx: KoolContext) {
             LightMesh(Color.MD_GREEN))
     private val depthPasses = mutableListOf<ShadowMapPass>()
 
-    private var autoRotate = true
     private var lightCount = 4
     private var lightPower = 500f
     private var lightSaturation = 0.4f
     private var lightRandomness = 0.3f
+    private var autoRotate = true
+    private var showLightIndicators = true
 
     private val colorCycler = Cycler(matColors).apply { index = 1 }
 
@@ -98,12 +97,15 @@ class MultiLightDemo(ctx: KoolContext) {
         }
 
         +textureMesh(isNormalMapped = true) {
+            // ground doesn't need to cast shadows (their's nothing underneath it...)
+            isCastingShadow = false
+
             generate {
                 rect {
                     rotate(-90f, Vec3f.X_AXIS)
-                    size.set(40f, 40f)
+                    size.set(100f, 100f)
                     origin.set(-size.x / 2, -size.y / 2, 0f)
-                    fullTexCoords(1.5f)
+                    fullTexCoords(4f)
                 }
             }
 
@@ -143,10 +145,10 @@ class MultiLightDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-450f), dps(-500f), zero())
-            layoutSpec.setSize(dps(330f), dps(380f), full())
+            layoutSpec.setOrigin(dps(-450f), dps(-535f), zero())
+            layoutSpec.setSize(dps(330f), dps(415f), full())
 
-            // environment map selection
+            // light setup
             var y = -40f
             +label("lights") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
@@ -333,6 +335,17 @@ class MultiLightDemo(ctx: KoolContext) {
                     autoRotate = isEnabled
                 }
             }
+            y -= 35f
+            +toggleButton("tbLightIndicators") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                text = "Light Indicators"
+                isEnabled = showLightIndicators
+                onStateChange += {
+                    showLightIndicators = isEnabled
+                    updateLighting()
+                }
+            }
         }
     }
 
@@ -346,66 +359,117 @@ class MultiLightDemo(ctx: KoolContext) {
             lights[i].enable()
             pos += step
         }
+
+        lights.forEach { it.updateVisibility() }
     }
 
     private inner class LightMesh(val color: Color) : TransformGroup() {
         val light = Light()
 
+        private val spotAngleMesh = LineMesh().apply { isCastingShadow = false }
+
+        private var isEnabled = true
         private var animPos = 0.0
         private val lightMeshShader = ModeledShader.StaticColor()
         private val meshPos = MutableVec3f()
+        private var anglePos = 0f
         private val rotOff = randomF(0f, 3f)
 
         init {
+            light.setSpot(Vec3f.ZERO, Vec3f.X_AXIS, 50f)
             val lightMesh = colorMesh {
+                isCastingShadow = false
                 generate {
                     sphere {
-                        radius = 0.2f
+                        radius = 0.1f
+                    }
+                    rotate(90f, Vec3f.Z_AXIS)
+                    cylinder {
+                        bottomRadius = 0.015f
+                        topRadius = 0.015f
+                        height = 0.85f
+                        steps = 4
+                    }
+                    translate(0f, 0.85f, 0f)
+                    cylinder {
+                        bottomRadius = 0.1f
+                        topRadius = 0.0025f
+                        height = 0.15f
                     }
                 }
                 pipelineLoader = lightMeshShader
             }
             +lightMesh
+            +spotAngleMesh
 
             onPreRender += { ctx ->
                 if (autoRotate) {
                     animPos += ctx.deltaT
-                    setIdentity()
-                    rotate(animPos.toFloat() * -10f, Vec3f.Y_AXIS)
-                    translate(meshPos)
-                    light.position.set(lightMesh.globalCenter)
-                    light.direction.set(0f, 2f, 0f).subtract(lightMesh.globalCenter).norm()
-
-                    val r = cos(animPos / 15 + rotOff).toFloat() * lightRandomness
-                    light.direction.rotate(r * 20f, Vec3f.X_AXIS)
-                    light.direction.rotate(r * 20f, Vec3f.Z_AXIS)
-                    light.spotAngle = 50f - r * 10f
                 }
+
+                val r = cos(animPos / 15 + rotOff).toFloat() * lightRandomness
+                light.spotAngle = 60f - r * 20f
+                updateSpotAngleMesh()
+
+                setIdentity()
+                rotate(animPos.toFloat() * -10f, Vec3f.Y_AXIS)
+                translate(meshPos)
+                rotate(anglePos, Vec3f.Y_AXIS)
+                rotate(30f + 20f * r, Vec3f.Z_AXIS)
+
+                transform.transform(light.position.set(Vec3f.ZERO), 1f)
+                transform.transform(light.direction.set(Vec3f.NEG_X_AXIS), 0f)
             }
+        }
+
+        private fun updateSpotAngleMesh() {
+            val r = 1f * tan(light.spotAngle.toRad() / 2)
+            val c = lightMeshShader.color
+            val n = 40
+
+            spotAngleMesh.clear()
+            for (i in 0 until n) {
+                val a0 = i.toFloat() / n * 2 * PI
+                val a1 = (i+1).toFloat() / n * 2 * PI
+                spotAngleMesh.addLine(Vec3f(-1f, cos(a0).toFloat() * r, sin(a0).toFloat() * r), c,
+                        Vec3f(-1f, cos(a1).toFloat() * r, sin(a1).toFloat() * r), c)
+            }
+            val e = cos(45f.toRad()) * r
+            spotAngleMesh.addLine(Vec3f.ZERO, c, Vec3f(-1f, e, e), c)
+            spotAngleMesh.addLine(Vec3f.ZERO, c, Vec3f(-1f, e, -e), c)
+            spotAngleMesh.addLine(Vec3f.ZERO, c, Vec3f(-1f, -e, -e), c)
+            spotAngleMesh.addLine(Vec3f.ZERO, c, Vec3f(-1f, -e, e), c)
         }
 
         fun setup(angPos: Float) {
             val x = cos(angPos.toRad()) * 10f
             val z = sin(angPos.toRad()) * 10f
-            meshPos.set(x, 9f, z)
-            val dir = MutableVec3f(meshPos).scale(-1f).norm()
-            val color = Color.WHITE.mix(this.color, lightSaturation, MutableColor())
-            light.setSpot(meshPos, dir, 50f).setColor(color.toLinear(), lightPower)
+            meshPos.set(x, 9f, -z)
+            anglePos = angPos
+            val color = Color.WHITE.mix(color, lightSaturation, MutableColor())
+            light.setColor(color.toLinear(), lightPower)
             lightMeshShader.color = color
+            updateSpotAngleMesh()
         }
 
         fun enable() {
-            isVisible = true
+            isEnabled = true
             scene?.lighting?.lights?.apply {
                 if (!contains(light)) {
                     add(light)
                 }
             }
+            updateVisibility()
         }
 
         fun disable() {
-            isVisible = false
+            isEnabled = false
             scene?.lighting?.lights?.remove(light)
+            updateVisibility()
+        }
+
+        fun updateVisibility() {
+            isVisible = isEnabled && showLightIndicators
         }
     }
 

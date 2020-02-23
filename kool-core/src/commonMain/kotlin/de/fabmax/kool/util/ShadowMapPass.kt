@@ -22,6 +22,7 @@ class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 1024) {
     private val dummyMeshes = mutableMapOf<Set<Attribute>, Pipeline>()
 
     init {
+        offscreenPass.drawQueues[0].meshFilter = { it.isCastingShadow }
         offscreenPass.scene = scene
         offscreenPass.isMainPass = false
 

@@ -387,7 +387,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
             val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColor)
 
             offscreenPass.impl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-            // fixme: for some reason last view is not copied sometimes? super duper fix: render last view twice
+            // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
             for (view in cubeRenderPassViews) {
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
                 setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))

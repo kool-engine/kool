@@ -1,8 +1,8 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.PrimitiveType
@@ -20,17 +20,12 @@ open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.P
         Mesh(geometry, name) {
     init {
         geometry.primitiveType = PrimitiveType.POINTS
-//        rayTest = MeshRayTest.nopTest()
-//        shader = basicPointShader {
-//            colorModel = ColorModel.VERTEX_COLOR
-//            lightModel = LightModel.NO_LIGHTING
-//        }
+        rayTest = MeshRayTest.nopTest()
+        pipelineLoader = ModeledShader.VertexColor()
     }
 
-    var isXray = false
-    var pointSize: Float = 1f
-//        get() = (shader as BasicPointShader).pointSize
-//        set(value) { (shader as BasicPointShader).pointSize = value }
+    //var isXray = false
+    //var pointSize: Float = 1f
 
     fun addPoint(block: VertexView.() -> Unit): Int {
         val idx =  geometry.addVertex(block)
@@ -47,17 +42,5 @@ open class PointMesh(geometry: IndexedVertexList = IndexedVertexList(Attribute.P
     fun clear() {
         geometry.clear()
         bounds.clear()
-    }
-
-    override fun render(ctx: KoolContext) {
-//        ctx.pushAttributes()
-//        if (isXray) {
-//            ctx.depthFunc = GL_ALWAYS
-//        }
-//        ctx.applyAttributes()
-//
-//        super.render(ctx)
-//
-//        ctx.popAttributes()
     }
 }
