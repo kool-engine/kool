@@ -200,6 +200,7 @@ class ShaderModel(val modelInfo: String = "") {
 
             val texNode = TextureNode(fragmentStageGraph, depthMapName).apply {
                 arraySize = maxLights
+                isDepthTexture = true
             }
             fragmentStageGraph.addNode(texNode)
             lightNode.depthTextures = texNode

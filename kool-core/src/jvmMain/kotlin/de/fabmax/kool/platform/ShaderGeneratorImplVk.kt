@@ -140,13 +140,15 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
     }
 
     private fun generateTextureSampler(set: DescriptorSetLayout, desc: TextureSampler): String {
+        val samplerType = if (desc.isDepthSampler) "sampler2DShadow" else "sampler2D"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
-        return "layout(set=${set.set}, binding=${desc.binding}) uniform sampler2D ${desc.name}$arraySuffix;\n"
+        return "layout(set=${set.set}, binding=${desc.binding}) uniform $samplerType ${desc.name}$arraySuffix;\n"
     }
 
     private fun generateCubeMapSampler(set: DescriptorSetLayout, desc: CubeMapSampler): String {
+        val samplerType = if (desc.isDepthSampler) "samplerCubeShadow" else "samplerCube"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
-        return "layout(set=${set.set}, binding=${desc.binding}) uniform samplerCube ${desc.name}$arraySuffix;\n"
+        return "layout(set=${set.set}, binding=${desc.binding}) uniform $samplerType ${desc.name}$arraySuffix;\n"
     }
 
     private fun generateAttributeBindings(pipeline: Pipeline): String {
@@ -215,6 +217,10 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             } else {
                 "textureLod($texName, $texCoords, $lod)"
             }
+        }
+
+        override fun sampleTexture2dDepth(texName: String, texCoords: String): String {
+            return "textureProj($texName, $texCoords).x"
         }
 
         override fun sampleTextureCube(texName: String, texCoords: String, lod: String?) = sampleTexture2d(texName, texCoords, lod)

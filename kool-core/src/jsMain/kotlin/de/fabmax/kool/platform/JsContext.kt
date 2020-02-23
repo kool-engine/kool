@@ -373,6 +373,9 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     companion object {
         val DEPTH_COMPONENT24: Int
         val TEXTURE_WRAP_R: Int
+        val TEXTURE_COMPARE_MODE: Int
+        val COMPARE_REF_TO_TEXTURE: Int
+        val TEXTURE_COMPARE_FUNC: Int
 
         val RED: Int
         val RG: Int

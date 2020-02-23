@@ -85,17 +85,18 @@ abstract class Descriptor(builder: Builder<*>, val binding: Int, val type: Descr
 class TextureSampler private constructor(builder: Builder, binding: Int, hash: ULong) :
         Descriptor(builder, binding, DescriptorType.IMAGE_SAMPLER, hash) {
 
+    val arraySize = builder.arraySize
+    val isDepthSampler = builder.isDepthSampler
+
     val onUpdate: ((TextureSampler, DrawCommand) -> Unit) ? = builder.onUpdate
+    val textures = Array<Texture?>(arraySize) { null }
     var texture: Texture?
         get() = textures[0]
         set(value) { textures[0] = value }
 
-    val textures = Array<Texture?>(builder.arraySize) { null }
-    val arraySize: Int
-        get() = textures.size
-
     class Builder : Descriptor.Builder<TextureSampler>() {
         var arraySize = 1
+        var isDepthSampler = false
         var onUpdate: ((TextureSampler, DrawCommand) -> Unit) ? = null
         var onCreate: ((TextureSampler) -> Unit) ? = null
 
@@ -114,17 +115,18 @@ class TextureSampler private constructor(builder: Builder, binding: Int, hash: U
 class CubeMapSampler private constructor(builder: Builder, binding: Int, hash: ULong) :
         Descriptor(builder, binding, DescriptorType.CUBE_IMAGE_SAMPLER, hash) {
 
+    val arraySize = builder.arraySize
+    val isDepthSampler = builder.isDepthSampler
+
     val onUpdate: ((CubeMapSampler, DrawCommand) -> Unit) ? = builder.onUpdate
+    val textures = Array<CubeMapTexture?>(arraySize) { null }
     var texture: CubeMapTexture?
         get() = textures[0]
         set(value) { textures[0] = value }
 
-    val textures = Array<CubeMapTexture?>(builder.arraySize) { null }
-    val arraySize: Int
-        get() = textures.size
-
     class Builder : Descriptor.Builder<CubeMapSampler>() {
         var arraySize = 1
+        var isDepthSampler = false
         var onUpdate: ((CubeMapSampler, DrawCommand) -> Unit) ? = null
         var onCreate: ((CubeMapSampler) -> Unit) ? = null
 

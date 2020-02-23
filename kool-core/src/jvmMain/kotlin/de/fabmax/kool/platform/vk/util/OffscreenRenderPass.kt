@@ -5,7 +5,7 @@ import de.fabmax.kool.util.logD
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 
-class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCopied: Boolean, texFormat: Int) :
+class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCopied: Boolean, texFormat: Int, private val depthCopmpareOp: Int = VK_COMPARE_OP_LESS) :
         RenderPass(sys, maxWidth, maxHeight, texFormat) {
 
     override val vkRenderPass: Long
@@ -33,13 +33,13 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
 
         image = Image(sys, fbImageCfg)
         imageView = ImageView(sys, image, VK_IMAGE_ASPECT_COLOR_BIT)
-        sampler = createSampler(VK_FILTER_LINEAR)
+        sampler = createSampler(false)
 
         fbImageCfg.format = sys.physicalDevice.depthFormat
         fbImageCfg.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or if (isCopied) { VK_IMAGE_USAGE_TRANSFER_SRC_BIT } else { VK_IMAGE_USAGE_SAMPLED_BIT }
         depthImage = Image(sys, fbImageCfg)
         depthImageView = ImageView(sys, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
-        depthSampler = createSampler(VK_FILTER_NEAREST)
+        depthSampler = createSampler(true)
 
         vkRenderPass = createRenderPass()
         frameBuffer = createFrameBuffer(vkRenderPass, imageView, depthImageView)
@@ -54,14 +54,14 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
         logD { "Created offscreen render pass" }
     }
 
-    // fixme: duplicate from Image, add ImageSampler class?
-    private fun createSampler(filter: Int): Long {
+    // fixme: somewhat duplicate from Image, add ImageSampler class?
+    private fun createSampler(isDepth: Boolean): Long {
         memStack {
             val samplerInfo = callocVkSamplerCreateInfo {
                 sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
-                magFilter(filter)
-                minFilter(filter)
-                mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                magFilter(VK_FILTER_LINEAR)
+                minFilter(VK_FILTER_LINEAR)
+                mipmapMode(VK_SAMPLER_MIPMAP_MODE_NEAREST)
                 addressModeU(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                 addressModeV(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                 addressModeW(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
@@ -70,6 +70,11 @@ class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCo
                 minLod(0f)
                 maxLod(1f)
                 borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
+
+                if (isDepth) {
+                    compareEnable(true)
+                    compareOp(depthCopmpareOp)
+                }
             }
             return checkCreatePointer { vkCreateSampler(sys.device.vkDevice, samplerInfo, null, it) }
         }

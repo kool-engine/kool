@@ -184,27 +184,27 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
             // dynamic index, which is not possible in WebGL...
             generator.appendMain("""
                 float shadowFacs[$maxLights];
-                ivec2 shadowMapSize = textureSize(${depthTextures.name}[0], 0);
-                float shadowDx = 1.5 / float(shadowMapSize.x);
-                float shadowDy = 1.5 / float(shadowMapSize.y);
+                float shadowMapSize = float(textureSize(${depthTextures.name}[0], 0).x);
+                float shadowMapScale = 1.0 / float(shadowMapSize);
                 vec4 shadowProjPos;
-                vec3 shadowCoord;
+                vec2 shadowOffset;
             """)
             for (lightI in 0 until maxLights) {
                 generator.appendMain("""
                     shadowProjPos = ifPosLightSpace[$lightI];
-                    shadowCoord = shadowProjPos.xyz / shadowProjPos.w;
+                    shadowProjPos.z = shadowProjPos.z - 0.001 * shadowProjPos.w;
+                    shadowOffset = vec2(float(fract(shadowProjPos.x * shadowMapSize * 0.5) > 0.25), float(fract(shadowProjPos.y * shadowMapSize * 0.5) > 0.25));
                     shadowFacs[$lightI] = 0.0;
                 """)
 
                 // multi sample shadow map for nicer edges
-                val nSamples = 9
-                for (j in 0 until nSamples) {
-                    val off = "vec2(shadowDx * ${shadowOffsets[j].x}, shadowDy * ${shadowOffsets[j].y})"
-                    generator.appendMain("shadowFacs[$lightI] += step(shadowCoord.z - 0.001, " +
-                            "${generator.sampleTexture2d("${depthTextures.name}[$lightI]", "shadowCoord.xy + $off")}.x);")
+                var nSamples = 0
+                listOf(Vec2f(-1.5f, 0.5f), Vec2f(0.5f, 0.5f), Vec2f(-1.5f, -1.5f), Vec2f(0.5f, -1.5f)).forEach { off ->
+                    val projCoord = "vec4(shadowProjPos.xy + (shadowOffset + vec2(${off.x}, ${off.y})) * shadowMapScale * shadowProjPos.w, shadowProjPos.z, shadowProjPos.w)"
+                    generator.appendMain("shadowFacs[$lightI] += ${generator.sampleTexture2dDepth("${depthTextures.name}[$lightI]", projCoord)};")
+                    nSamples++
                 }
-                generator.appendMain("shadowFacs[$lightI] /= float($nSamples);")
+                generator.appendMain("shadowFacs[$lightI] *= float(${1f / nSamples});")
             }
         }
 

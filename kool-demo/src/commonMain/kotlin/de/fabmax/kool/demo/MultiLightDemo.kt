@@ -31,6 +31,7 @@ class MultiLightDemo(ctx: KoolContext) {
             LightMesh(Color.MD_GREEN))
     private val depthPasses = mutableListOf<ShadowMapPass>()
 
+    private var autoRotate = true
     private var lightCount = 4
     private var lightPower = 500f
     private var lightSaturation = 0.4f
@@ -60,7 +61,11 @@ class MultiLightDemo(ctx: KoolContext) {
             translation.set(0f, 2f, 0f)
             setMouseRotation(0f, -20f)
             // let the camera slowly rotate around vertical axis
-            onPreRender += { ctx -> verticalRotation += ctx.deltaT * 3f }
+            onPreRender += { ctx ->
+                if (autoRotate) {
+                    verticalRotation += ctx.deltaT * 3f
+                }
+            }
         }
 
         lighting.lights.clear()
@@ -138,8 +143,8 @@ class MultiLightDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-450f), dps(-425f), zero())
-            layoutSpec.setSize(dps(330f), dps(305f), full())
+            layoutSpec.setOrigin(dps(-450f), dps(-500f), zero())
+            layoutSpec.setSize(dps(330f), dps(380f), full())
 
             // environment map selection
             var y = -40f
@@ -308,6 +313,26 @@ class MultiLightDemo(ctx: KoolContext) {
                     modelShader?.roughness = value / 100f
                 }
             }
+
+            y -= 40f
+            +label("scene") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                font.setCustom(smallFont)
+                text = "Scene"
+                textColor.setCustom(theme.accentColor)
+                textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
+            }
+            y -= 35f
+            +toggleButton("tbAutoRot") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(30f), full())
+                text = "Auto Rotate"
+                isEnabled = autoRotate
+                onStateChange += {
+                    autoRotate = isEnabled
+                }
+            }
         }
     }
 
@@ -326,6 +351,7 @@ class MultiLightDemo(ctx: KoolContext) {
     private inner class LightMesh(val color: Color) : TransformGroup() {
         val light = Light()
 
+        private var animPos = 0.0
         private val lightMeshShader = ModeledShader.StaticColor()
         private val meshPos = MutableVec3f()
         private val rotOff = randomF(0f, 3f)
@@ -342,16 +368,19 @@ class MultiLightDemo(ctx: KoolContext) {
             +lightMesh
 
             onPreRender += { ctx ->
-                setIdentity()
-                rotate(ctx.time.toFloat() * -10f, Vec3f.Y_AXIS)
-                translate(meshPos)
-                light.position.set(lightMesh.globalCenter)
-                light.direction.set(0f, 2f, 0f).subtract(lightMesh.globalCenter).norm()
+                if (autoRotate) {
+                    animPos += ctx.deltaT
+                    setIdentity()
+                    rotate(animPos.toFloat() * -10f, Vec3f.Y_AXIS)
+                    translate(meshPos)
+                    light.position.set(lightMesh.globalCenter)
+                    light.direction.set(0f, 2f, 0f).subtract(lightMesh.globalCenter).norm()
 
-                val r = cos(ctx.time / 15 + rotOff).toFloat() * lightRandomness
-                light.direction.rotate(r * 20f, Vec3f.X_AXIS)
-                light.direction.rotate(r * 20f, Vec3f.Z_AXIS)
-                light.spotAngle = 50f - r * 10f
+                    val r = cos(animPos / 15 + rotOff).toFloat() * lightRandomness
+                    light.direction.rotate(r * 20f, Vec3f.X_AXIS)
+                    light.direction.rotate(r * 20f, Vec3f.Z_AXIS)
+                    light.spotAngle = 50f - r * 10f
+                }
             }
         }
 

@@ -96,12 +96,14 @@ class TextureNode(graph: ShaderGraph, name: String = "tex2d_${graph.nextNodeId}"
     lateinit var sampler: TextureSampler
 
     var arraySize = 1
+    var isDepthTexture = false
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph.descriptorSet.apply {
             +TextureSampler.Builder().apply {
                 arraySize = this@TextureNode.arraySize
+                isDepthSampler = isDepthTexture
                 stages += visibleIn
                 name = this@TextureNode.name
                 onCreate = { sampler = it }

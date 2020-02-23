@@ -9,7 +9,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 
-class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 2048) {
+class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 1024) {
 
     val offscreenPass = OffscreenPass2d(mapSize, mapSize)
     val shadowCam = PerspectiveCamera().apply {

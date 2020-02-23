@@ -2,7 +2,10 @@ package de.fabmax.kool
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COMPARE_REF_TO_TEXTURE
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_FUNC
+import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_MODE
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
 import de.fabmax.kool.platform.glInternalFormat
 import de.fabmax.kool.platform.pxSize
@@ -14,9 +17,9 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_ATTACHMENT
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.FRAMEBUFFER
+import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR_MIPMAP_LINEAR
-import org.khronos.webgl.WebGLRenderingContext.Companion.NEAREST
 import org.khronos.webgl.WebGLRenderingContext.Companion.RENDERBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_2D
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_CUBE_MAP
@@ -134,8 +137,10 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
 
             gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_S, CLAMP_TO_EDGE)
             gl.texParameteri(TEXTURE_2D, TEXTURE_WRAP_T, CLAMP_TO_EDGE)
-            gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, NEAREST)
-            gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, NEAREST)
+            gl.texParameteri(TEXTURE_2D, TEXTURE_MIN_FILTER, LINEAR)
+            gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR)
+            gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_MODE, COMPARE_REF_TO_TEXTURE)
+            gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, LESS)
 
             val estSize = estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 1, offscreenPass.mipLevels)
             loadedTexture = LoadedTexture(ctx, offscreenDepthTex, estSize)

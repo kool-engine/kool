@@ -45,6 +45,7 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
         return """
             #version 300 es
             precision highp float;
+            precision mediump sampler2DShadow;
             ${model.infoStr()}
 
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.FRAGMENT_SHADER)}
@@ -102,13 +103,15 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
     }
 
     private fun generateTextureSampler(desc: TextureSampler): String {
+        val samplerType = if (desc.isDepthSampler) "sampler2DShadow" else "sampler2D"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
-        return "uniform sampler2D ${desc.name}$arraySuffix;\n"
+        return "uniform $samplerType ${desc.name}$arraySuffix;\n"
     }
 
     private fun generateCubeMapSampler(desc: CubeMapSampler): String {
+        val samplerType = if (desc.isDepthSampler) "samplerCubeShadow" else "samplerCube"
         val arraySuffix = if (desc.arraySize > 1) { "[${desc.arraySize}]" } else { "" }
-        return "uniform samplerCube ${desc.name}$arraySuffix;\n"
+        return "uniform $samplerType ${desc.name}$arraySuffix;\n"
     }
 
     private fun generateAttributeBindings(pipeline: Pipeline): String {
@@ -176,6 +179,10 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
             } else {
                 "textureLod($texName, $texCoords, $lod)"
             }
+        }
+
+        override fun sampleTexture2dDepth(texName: String, texCoords: String): String {
+            return "textureProj($texName, $texCoords)"
         }
 
         override fun sampleTextureCube(texName: String, texCoords: String, lod: String?) =
