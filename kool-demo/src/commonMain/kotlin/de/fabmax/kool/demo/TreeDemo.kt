@@ -38,7 +38,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     var autoRotate = true
 
     val treeScene = scene {
-        val dirLighDirection = Vec3f(1f, -1.5f, -1f)
+        val dirLighDirection = Vec3f(1f, -1.5f, 1f)
         val spotLightPos = Vec3f(10f, 15f, 10f)
         lighting.lights.apply {
             clear()
@@ -124,6 +124,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             pipelineLoader = PbrShader(pbrCfg).apply {
                 albedoMap = Texture { it.loadTextureData("leaf.png") }
                 roughness = 0.5f
+                ambient = Color(0.15f, 0.15f, 0.15f)
 
                 onDispose += {
                     albedoMap!!.dispose()
