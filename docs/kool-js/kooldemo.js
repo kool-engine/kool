@@ -146,14 +146,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var Kick = $module$kool.de.fabmax.kool.modules.audio.Kick;
   var Pad = $module$kool.de.fabmax.kool.modules.audio.Pad;
   var AudioGenerator = $module$kool.de.fabmax.kool.modules.audio.AudioGenerator;
-  var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
-  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
-  var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
-  var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
-  var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
-  var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
-  var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
-  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var throwUPAE = Kotlin.throwUPAE;
   var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
   var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
@@ -165,6 +157,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
+  var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
+  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
+  var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
+  var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
+  var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
+  var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
+  var MutableVec2f = $module$kool.de.fabmax.kool.math.MutableVec2f;
+  var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var ModeledShader$VertexColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.VertexColor;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
@@ -233,7 +233,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     Demo$Companion_getInstance();
     if (startScene === void 0)
       startScene = null;
-    this.dbgOverlay_0 = new DebugOverlay(ctx, Position.LOWER_LEFT);
+    this.dbgOverlay_0 = new DebugOverlay(ctx, Position.LOWER_RIGHT);
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR/IBL Demo', Demo$defaultScene$lambda);
@@ -380,6 +380,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     Demo$Companion_instance = this;
     this.demoProps = LinkedHashMap_init();
   }
+  Object.defineProperty(Demo$Companion.prototype, 'pbrBasePath', {
+    get: function () {
+      var key = 'pbrDemo.materials';
+      var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials';
+      var tmp$, tmp$_0;
+      return (tmp$_0 = typeof (tmp$ = this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
+    }
+  });
   Demo$Companion.prototype.setProperty_bm4g0d$ = function (key, value) {
     this.demoProps.put_xwzc9p$(key, value);
   };
@@ -586,11 +594,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
-  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda(closure$basePath_0, $receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
-    this.local$closure$basePath = closure$basePath_0;
     this.local$it = it_0;
   }
   Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda.$metadata$ = {
@@ -606,7 +613,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$closure$basePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -630,20 +637,17 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       }
      while (true);
   };
-  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0(closure$basePath_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda(closure$basePath_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   }
-  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0(closure$basePath_0, $receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
-    this.local$closure$basePath = closure$basePath_0;
     this.local$it = it_0;
   }
   Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0.$metadata$ = {
@@ -659,7 +663,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$closure$basePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -683,20 +687,17 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       }
      while (true);
   };
-  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1(closure$basePath_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0(closure$basePath_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   }
-  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1(closure$basePath_0, $receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
-    this.local$closure$basePath = closure$basePath_0;
     this.local$it = it_0;
   }
   Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1.$metadata$ = {
@@ -712,7 +713,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$(this.local$closure$basePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -736,14 +737,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       }
      while (true);
   };
-  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_2(closure$basePath_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1(closure$basePath_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
+  function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
   }
   function MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_3(this$) {
     return function ($receiver, it) {
@@ -783,14 +782,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var cfg = $receiver_0;
       var $receiver_1 = new PbrShader(cfg);
       var this$MultiLightDemo_0 = this$MultiLightDemo;
-      var $this = Demo$Companion_getInstance();
-      var key = 'pbrDemo.materials';
-      var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials';
-      var tmp$, tmp$_0;
-      var basePath = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
-      $receiver_1.albedoMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0(basePath));
-      $receiver_1.normalMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1(basePath));
-      $receiver_1.roughnessMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_2(basePath));
+      $receiver_1.albedoMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_0);
+      $receiver_1.normalMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_1);
+      $receiver_1.roughnessMap = new Texture(void 0, MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_2);
       $receiver_1.metallic = 0.0;
       $receiver.onDispose.add_11rb$(MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_3($receiver_1));
       $receiver_1.onCreated.add_11rb$(MultiLightDemo$mainScene$lambda$lambda$lambda$lambda_4($receiver_1, this$MultiLightDemo_0));
@@ -2068,12 +2062,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function PbrDemo$Companion() {
     PbrDemo$Companion_instance = this;
     this.hdriTexProps_0 = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    var $this = Demo$Companion_getInstance();
-    var key = 'pbrDemo.envMaps';
-    var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri';
-    var tmp$, tmp$_0;
-    this.assetPath_0 = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
-    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(this.assetPath_0 + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(this.assetPath_0 + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(this.assetPath_0 + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(this.assetPath_0 + '/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
+    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().pbrBasePath + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().pbrBasePath + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().pbrBasePath + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().pbrBasePath + '/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
     this.lightStrength_0 = 250.0;
     this.lightExtent_0 = 10.0;
     this.lightSetups_0 = listOf([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);
@@ -2464,11 +2453,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.defaultMetallicTex_0 = new SingleColorTexture(Color.Companion.BLACK);
     this.defaultAoTex_0 = new SingleColorTexture(Color.Companion.WHITE);
     this.defaultDispTex_0 = new SingleColorTexture(Color.Companion.BLACK);
-    var $this = Demo$Companion_getInstance();
-    var key = 'pbrDemo.materials';
-    var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials';
-    var tmp$, tmp$_0;
-    this.assetPath_0 = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
+    this.assetPath_0 = Demo$Companion_getInstance().pbrBasePath;
     this.materials_0 = mutableListOf([new PbrMaterialContent$MaterialMaps('Bamboo', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_0(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_1(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_2(this)), null), new PbrMaterialContent$MaterialMaps('Castle Brick', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_3(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_4(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_5(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_6(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_7(this))), new PbrMaterialContent$MaterialMaps('Granite', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_8(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_9(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_10(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Weave Steel', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_11(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_12(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_13(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_14(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_15(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_16(this))), new PbrMaterialContent$MaterialMaps('Scuffed Plastic', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_17(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_18(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_19(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_20(this)), null), new PbrMaterialContent$MaterialMaps('Snow Covered Path', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_21(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_22(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_23(this)), null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_24(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_25(this))), new PbrMaterialContent$MaterialMaps('Marble', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_26(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_27(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_28(this)), null, null, null), new PbrMaterialContent$MaterialMaps('Onyx Tiles', new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_29(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_30(this)), new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_31(this)), null, null, new Texture(void 0, PbrMaterialContent$Companion$materials$lambda_32(this)))]);
   }
   function Coroutine$PbrMaterialContent$Companion$materials$lambda(this$PbrMaterialContent$_0, $receiver_0, it_0, controller, continuation_0) {
@@ -6475,676 +6460,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     simpleName: 'SynthieScene',
     interfaces: [Scene_init]
   };
-  function TreeGenerator(distribution, baseTop, baseBot, random) {
-    if (baseTop === void 0)
-      baseTop = new Vec3f(0.0, 1.0, 0.0);
-    if (baseBot === void 0)
-      baseBot = Vec3f.Companion.ZERO;
-    if (random === void 0)
-      random = math_0.defaultRandomInstance;
-    this.distribution = distribution;
-    this.baseTop = baseTop;
-    this.baseBot = baseBot;
-    this.random = random;
-    this.radiusOfInfluence = 1.0;
-    this.growDistance = 0.15;
-    this.killDistance = 1.5;
-    this.numberOfAttractionPoints = 3000;
-    this.attractionPoints_0 = ArrayList_init();
-    this.attractionPointsTree_0 = pointKdTree(emptyList());
-    this.attractionPointTrav_0 = new InRadiusTraverser();
-    this.treeNodes_0 = ArrayList_init();
-    this.root_0 = new TreeGenerator$TreeNode(this);
-  }
-  Object.defineProperty(TreeGenerator.prototype, 'actualKillDistance', {
-    get: function () {
-      return this.growDistance * this.killDistance;
-    }
-  });
-  TreeGenerator.prototype.seedTree = function () {
-    this.populateAttractionPoints_0();
-    this.treeNodes_0.clear();
-    this.root_0 = new TreeGenerator$TreeNode(this);
-    this.root_0.set_czzhiu$(this.baseBot);
-    var $receiver = this.treeNodes_0;
-    var element = this.root_0;
-    $receiver.add_11rb$(element);
-    var d = this.baseTop.subtract_2gj7b4$(this.baseBot, MutableVec3f_init()).norm().scale_mx4ult$(this.growDistance);
-    var prev = this.root_0;
-    while (prev.distance_czzhiu$(this.baseTop) > this.growDistance) {
-      var newNd = new TreeGenerator$TreeNode(this);
-      newNd.set_czzhiu$(prev).add_czzhiu$(d);
-      prev.addChild_41t44z$(newNd);
-      this.treeNodes_0.add_11rb$(newNd);
-      prev = newNd;
-    }
-  };
-  TreeGenerator.prototype.generate_za3lpa$ = function (maxIterations) {
-    if (maxIterations === void 0)
-      maxIterations = 1000;
-    var i = {v: 0};
-    var level;
-    level = Log$Level.INFO;
-    var t = now();
-    var tmp$;
-    this.seedTree();
-    while ((tmp$ = i.v, i.v = tmp$ + 1 | 0, tmp$) < maxIterations && this.growSingleStep()) {
-    }
-    this.finishTree();
-    var ret = Unit;
-    var $this = util.Log;
-    var tag = Kotlin.getKClassFromExpression(this).simpleName;
-    if (level.level >= $this.level.level) {
-      $this.printer(level, tag, 'Generation done, took ' + i.v + ' iterations, ' + this.treeNodes_0.size + ' nodes in' + ' ' + toString(now() - t, 3) + ' ms');
-    }
-  };
-  TreeGenerator.prototype.growSingleStep = function () {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
-    var tmp$_6;
-    tmp$_6 = this.attractionPoints_0.iterator();
-    while (tmp$_6.hasNext()) {
-      var element = tmp$_6.next();
-      element.nearestNode = null;
-    }
-    tmp$ = this.treeNodes_0.iterator();
-    while (tmp$.hasNext()) {
-      var node = tmp$.next();
-      node.influencingPts.clear();
-      if (!node.isFinished) {
-        this.attractionPointTrav_0.setup_2qa7tb$(node, this.radiusOfInfluence).traverse_m6hlto$(this.attractionPointsTree_0);
-        tmp$_0 = this.attractionPointTrav_0.result.iterator();
-        while (tmp$_0.hasNext()) {
-          var attracPt = tmp$_0.next();
-          if (attracPt.isOpen) {
-            attracPt.checkNearest_41t44z$(node);
-          }
-        }
-      }
-    }
-    tmp$_1 = this.attractionPoints_0.iterator();
-    while (tmp$_1.hasNext()) {
-      var attracPt_0 = tmp$_1.next();
-      if (attracPt_0.isOpen) {
-        (tmp$_3 = (tmp$_2 = attracPt_0.nearestNode) != null ? tmp$_2.influencingPts : null) != null ? tmp$_3.add_11rb$(attracPt_0) : null;
-      }
-    }
-    var newNodes = ArrayList_init();
-    var changed = false;
-    tmp$_4 = this.treeNodes_0.iterator();
-    while (tmp$_4.hasNext()) {
-      var node_0 = tmp$_4.next();
-      if (!node_0.influencingPts.isEmpty()) {
-        var growDir = MutableVec3f_init();
-        tmp$_5 = node_0.influencingPts.iterator();
-        while (tmp$_5.hasNext()) {
-          var attracPt_1 = tmp$_5.next();
-          growDir.plusAssign_czzhiu$(attracPt_1.subtract_2gj7b4$(node_0, MutableVec3f_init()).norm());
-        }
-        growDir.norm().scale_mx4ult$(this.growDistance);
-        var newNode = new TreeGenerator$TreeNode(this);
-        newNode.set_czzhiu$(node_0).add_czzhiu$(growDir);
-        if (!node_0.containsChild_41t44z$(newNode)) {
-          node_0.addChild_41t44z$(newNode);
-          newNodes.add_11rb$(newNode);
-          this.attractionPointTrav_0.setup_2qa7tb$(newNode, this.actualKillDistance).traverse_m6hlto$(this.attractionPointsTree_0);
-          var tmp$_7;
-          tmp$_7 = this.attractionPointTrav_0.result.iterator();
-          while (tmp$_7.hasNext()) {
-            var element_0 = tmp$_7.next();
-            element_0.isOpen = false;
-          }
-          changed = true;
-        }
-      }
-       else {
-        node_0.isFinished = true;
-      }
-    }
-    this.treeNodes_0.addAll_brywnq$(newNodes);
-    return changed;
-  };
-  function TreeGenerator$finishTree$lambda(this$TreeGenerator) {
-    return function ($receiver) {
-      if ($receiver.parent != null) {
-        $receiver.plusAssign_czzhiu$(MutableVec3f_init_0(ensureNotNull($receiver.parent)).subtract_czzhiu$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
-        $receiver.x = $receiver.x + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
-        $receiver.y = $receiver.y + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
-        $receiver.z = $receiver.z + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
-      }
-      $receiver.computeTrunkRadiusAndDepth();
-      $receiver.computeCircumPoints();
-      return Unit;
-    };
-  }
-  function TreeGenerator$finishTree$lambda_0($receiver) {
-    if ($receiver.parent != null) {
-      var baseV = ensureNotNull($receiver.parent).texV;
-      $receiver.texV = baseV + $receiver.distance_czzhiu$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math.PI * 1.5);
-    }
-    return Unit;
-  }
-  TreeGenerator.prototype.finishTree = function () {
-    this.root_0.forEachTopDown_2m3084$(TreeGenerator$finishTree$lambda(this));
-    this.root_0.forEachBottomUp_2m3084$(TreeGenerator$finishTree$lambda_0);
-  };
-  TreeGenerator.prototype.buildTrunkMesh_84rojv$ = function (target) {
-    var tmp$;
-    tmp$ = this.treeNodes_0.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      element.buildTrunkMesh_84rojv$(target);
-    }
-  };
-  TreeGenerator.prototype.buildLeafMesh_84rojv$ = function (target) {
-    var tmp$;
-    tmp$ = this.treeNodes_0.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      element.buildLeafMesh_84rojv$(target);
-    }
-    var $this = target.geometry;
-    var tmp$_0;
-    tmp$_0 = $this.numVertices;
-    for (var i = 0; i < tmp$_0; i++) {
-      $this.vertexIt.index = i;
-      var it = $this.vertexIt;
-      if (it.normal.y < 0) {
-        it.normal.scale_mx4ult$(-1.0);
-      }
-    }
-  };
-  TreeGenerator.prototype.populateAttractionPoints_0 = function () {
-    var tmp$;
-    this.attractionPoints_0.clear();
-    tmp$ = this.distribution.nextPoints_za3lpa$(this.numberOfAttractionPoints).iterator();
-    while (tmp$.hasNext()) {
-      var pt = tmp$.next();
-      var $receiver = this.attractionPoints_0;
-      var element = new TreeGenerator$AttractionPoint(pt);
-      $receiver.add_11rb$(element);
-    }
-    this.attractionPointsTree_0 = pointKdTree(this.attractionPoints_0);
-  };
-  function TreeGenerator$AttractionPoint(pt) {
-    MutableVec3f_init_0(pt, this);
-    this.nearestNode_mawy5q$_0 = null;
-    this.nearestNodeDist_3apek4$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
-    this.isOpen = true;
-  }
-  Object.defineProperty(TreeGenerator$AttractionPoint.prototype, 'nearestNode', {
-    get: function () {
-      return this.nearestNode_mawy5q$_0;
-    },
-    set: function (value) {
-      this.nearestNode_mawy5q$_0 = value;
-      if (value == null) {
-        this.nearestNodeDist = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
-      }
-    }
-  });
-  Object.defineProperty(TreeGenerator$AttractionPoint.prototype, 'nearestNodeDist', {
-    get: function () {
-      return this.nearestNodeDist_3apek4$_0;
-    },
-    set: function (nearestNodeDist) {
-      this.nearestNodeDist_3apek4$_0 = nearestNodeDist;
-    }
-  });
-  TreeGenerator$AttractionPoint.prototype.checkNearest_41t44z$ = function (node) {
-    var dist = this.distance_czzhiu$(node);
-    if (dist < this.nearestNodeDist) {
-      this.nearestNode = node;
-      this.nearestNodeDist = dist;
-    }
-  };
-  TreeGenerator$AttractionPoint.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'AttractionPoint',
-    interfaces: [MutableVec3f]
-  };
-  function TreeGenerator$TreeNode($outer) {
-    this.$outer = $outer;
-    MutableVec3f_init(this);
-    this.children = ArrayList_init();
-    this.parent = null;
-    this.branchDepth = 0;
-    this.influencingPts = ArrayList_init();
-    this.isFinished = false;
-    this.radius = 0.005;
-    this.texV = 0.0;
-    this.circumPts = ArrayList_init();
-  }
-  TreeGenerator$TreeNode.prototype.addChild_41t44z$ = function (node) {
-    this.children.add_11rb$(node);
-    node.parent = this;
-  };
-  TreeGenerator$TreeNode.prototype.containsChild_41t44z$ = function (node) {
-    var tmp$;
-    tmp$ = this.children.iterator();
-    while (tmp$.hasNext()) {
-      var c = tmp$.next();
-      if (c.isFuzzyEqual_2qa7tb$(node)) {
-        return true;
-      }
-    }
-    return false;
-  };
-  TreeGenerator$TreeNode.prototype.forEachBottomUp_2m3084$ = function (block) {
-    block(this);
-    var tmp$;
-    tmp$ = this.children.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      element.forEachBottomUp_2m3084$(block);
-    }
-  };
-  TreeGenerator$TreeNode.prototype.forEachTopDown_2m3084$ = function (block) {
-    var tmp$;
-    tmp$ = this.children.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      element.forEachTopDown_2m3084$(block);
-    }
-    block(this);
-  };
-  TreeGenerator$TreeNode.prototype.computeTrunkRadiusAndDepth = function () {
-    var tmp$, tmp$_0, tmp$_1;
-    var p = 2.25;
-    if (this.children.isEmpty()) {
-      this.radius = 0.01;
-      this.branchDepth = 0;
-    }
-     else {
-      var tmp$_2;
-      var sum = 0.0;
-      tmp$_2 = this.children.iterator();
-      while (tmp$_2.hasNext()) {
-        var element = tmp$_2.next();
-        var $receiver = element.radius;
-        sum += Math_0.pow($receiver, p);
-      }
-      var x = 1.0 / p;
-      this.radius = Math_0.pow(sum, x);
-      if (this.children.size === 1) {
-        tmp$_1 = this.children.get_za3lpa$(0).branchDepth;
-      }
-       else {
-        var $receiver_0 = this.children;
-        var maxBy$result;
-        maxBy$break: do {
-          var iterator = $receiver_0.iterator();
-          if (!iterator.hasNext()) {
-            maxBy$result = null;
-            break maxBy$break;
-          }
-          var maxElem = iterator.next();
-          if (!iterator.hasNext()) {
-            maxBy$result = maxElem;
-            break maxBy$break;
-          }
-          var maxValue = maxElem.branchDepth;
-          do {
-            var e = iterator.next();
-            var v = e.branchDepth;
-            if (Kotlin.compareTo(maxValue, v) < 0) {
-              maxElem = e;
-              maxValue = v;
-            }
-          }
-           while (iterator.hasNext());
-          maxBy$result = maxElem;
-        }
-         while (false);
-        tmp$_1 = ((tmp$_0 = (tmp$ = maxBy$result) != null ? tmp$.branchDepth : null) != null ? tmp$_0 : 0) + 1 | 0;
-      }
-      this.branchDepth = tmp$_1;
-    }
-  };
-  TreeGenerator$TreeNode.prototype.computeCircumPoints = function () {
-    var tmp$;
-    this.circumPts.clear();
-    if (this.parent != null) {
-      tmp$ = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init()).norm();
-    }
-     else {
-      tmp$ = this.children.get_za3lpa$(0).subtract_2gj7b4$(this, MutableVec3f_init()).norm();
-    }
-    var n = tmp$;
-    var c = MutableVec3f_init_0(n).scale_mx4ult$(-n.times_czzhiu$(Vec3f.Companion.Z_AXIS)).add_czzhiu$(Vec3f.Companion.Z_AXIS).norm().scale_mx4ult$(this.radius);
-    var y = c.z;
-    var x = c.x;
-    c.rotate_ad55pp$(-Math_0.atan2(y, x), n);
-    for (var i = 0; i < 8; i++) {
-      var pt = MutableVec3f_init_0(c).add_czzhiu$(this);
-      this.circumPts.add_11rb$(Vec3f_init_0(pt));
-      c.rotate_ad55pp$(360.0 / 8, n);
-    }
-  };
-  TreeGenerator$TreeNode.prototype.buildTrunkMesh_84rojv$ = function (target) {
-    var idcs = ArrayList_init();
-    if (this.parent != null) {
-      if (this.children.isEmpty()) {
-        var $this = target.geometry;
-        var tmp$, tmp$_0, tmp$_1;
-        $this.checkBufferSizes_za3lpa$();
-        tmp$ = $this.vertexSizeF;
-        for (var i = 1; i <= tmp$; i++) {
-          $this.dataF.plusAssign_mx4ult$(0.0);
-        }
-        tmp$_0 = $this.vertexSizeI;
-        for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
-          $this.dataI.plusAssign_za3lpa$(0);
-        }
-        $this.vertexIt.index = (tmp$_1 = $this.numVertices, $this.numVertices = tmp$_1 + 1 | 0, tmp$_1);
-        var $receiver = $this.vertexIt;
-        $receiver.position.set_czzhiu$(this);
-        this.subtract_2gj7b4$(ensureNotNull(this.parent), $receiver.normal).norm();
-        $receiver.texCoord.set_dleff0$(0.0, this.texV);
-        $this.bounds.add_czzhiu$($this.vertexIt.position);
-        $this.hasChanged = true;
-        var tipIdx = $this.numVertices - 1 | 0;
-        for (var i_1 = 0; i_1 <= 8; i_1++) {
-          var $this_0 = target.geometry;
-          var tmp$_2, tmp$_0_0, tmp$_1_0;
-          $this_0.checkBufferSizes_za3lpa$();
-          tmp$_2 = $this_0.vertexSizeF;
-          for (var i_2 = 1; i_2 <= tmp$_2; i_2++) {
-            $this_0.dataF.plusAssign_mx4ult$(0.0);
-          }
-          tmp$_0_0 = $this_0.vertexSizeI;
-          for (var i_0_0 = 1; i_0_0 <= tmp$_0_0; i_0_0++) {
-            $this_0.dataI.plusAssign_za3lpa$(0);
-          }
-          $this_0.vertexIt.index = (tmp$_1_0 = $this_0.numVertices, $this_0.numVertices = tmp$_1_0 + 1 | 0, tmp$_1_0);
-          var $receiver_0 = $this_0.vertexIt;
-          $receiver_0.position.set_czzhiu$(ensureNotNull(this.parent).circumPts.get_za3lpa$(i_1 % 8));
-          ensureNotNull(this.parent).circumPts.get_za3lpa$(i_1 % 8).subtract_2gj7b4$(ensureNotNull(this.parent), $receiver_0.normal).norm();
-          $receiver_0.texCoord.set_dleff0$(i_1 / 8.0, ensureNotNull(this.parent).texV);
-          $this_0.bounds.add_czzhiu$($this_0.vertexIt.position);
-          $this_0.hasChanged = true;
-          var element = $this_0.numVertices - 1 | 0;
-          idcs.add_11rb$(element);
-        }
-        for (var i_3 = 0; i_3 < 8; i_3++) {
-          target.geometry.addTriIndices_qt1dr2$(tipIdx, idcs.get_za3lpa$(i_3), idcs.get_za3lpa$(i_3 + 1 | 0));
-        }
-      }
-       else {
-        for (var i_4 = 0; i_4 <= 8; i_4++) {
-          var $this_1 = target.geometry;
-          var tmp$_3, tmp$_0_1, tmp$_1_1;
-          $this_1.checkBufferSizes_za3lpa$();
-          tmp$_3 = $this_1.vertexSizeF;
-          for (var i_5 = 1; i_5 <= tmp$_3; i_5++) {
-            $this_1.dataF.plusAssign_mx4ult$(0.0);
-          }
-          tmp$_0_1 = $this_1.vertexSizeI;
-          for (var i_0_1 = 1; i_0_1 <= tmp$_0_1; i_0_1++) {
-            $this_1.dataI.plusAssign_za3lpa$(0);
-          }
-          $this_1.vertexIt.index = (tmp$_1_1 = $this_1.numVertices, $this_1.numVertices = tmp$_1_1 + 1 | 0, tmp$_1_1);
-          var $receiver_1 = $this_1.vertexIt;
-          $receiver_1.position.set_czzhiu$(this.circumPts.get_za3lpa$(i_4 % 8));
-          this.circumPts.get_za3lpa$(i_4 % 8).subtract_2gj7b4$(this, $receiver_1.normal).norm();
-          $receiver_1.texCoord.set_dleff0$(i_4 / 8.0, this.texV);
-          $this_1.bounds.add_czzhiu$($this_1.vertexIt.position);
-          $this_1.hasChanged = true;
-          var element_0 = $this_1.numVertices - 1 | 0;
-          idcs.add_11rb$(element_0);
-          var $this_2 = target.geometry;
-          var tmp$_4, tmp$_0_2, tmp$_1_2;
-          $this_2.checkBufferSizes_za3lpa$();
-          tmp$_4 = $this_2.vertexSizeF;
-          for (var i_6 = 1; i_6 <= tmp$_4; i_6++) {
-            $this_2.dataF.plusAssign_mx4ult$(0.0);
-          }
-          tmp$_0_2 = $this_2.vertexSizeI;
-          for (var i_0_2 = 1; i_0_2 <= tmp$_0_2; i_0_2++) {
-            $this_2.dataI.plusAssign_za3lpa$(0);
-          }
-          $this_2.vertexIt.index = (tmp$_1_2 = $this_2.numVertices, $this_2.numVertices = tmp$_1_2 + 1 | 0, tmp$_1_2);
-          var $receiver_2 = $this_2.vertexIt;
-          $receiver_2.position.set_czzhiu$(ensureNotNull(this.parent).circumPts.get_za3lpa$(i_4 % 8));
-          ensureNotNull(this.parent).circumPts.get_za3lpa$(i_4 % 8).subtract_2gj7b4$(ensureNotNull(this.parent), $receiver_2.normal).norm();
-          $receiver_2.texCoord.set_dleff0$(i_4 / 8.0, ensureNotNull(this.parent).texV);
-          $this_2.bounds.add_czzhiu$($this_2.vertexIt.position);
-          $this_2.hasChanged = true;
-          var element_1 = $this_2.numVertices - 1 | 0;
-          idcs.add_11rb$(element_1);
-        }
-        for (var i_7 = 0; i_7 < 8; i_7++) {
-          target.geometry.addTriIndices_qt1dr2$(idcs.get_za3lpa$(i_7 * 2 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 1 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 2 | 0));
-          target.geometry.addTriIndices_qt1dr2$(idcs.get_za3lpa$((i_7 * 2 | 0) + 1 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 3 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 2 | 0));
-        }
-      }
-    }
-  };
-  TreeGenerator$TreeNode.prototype.buildLeafMesh_84rojv$ = function (target) {
-    if (this.branchDepth <= 1 && this.parent != null) {
-      var n = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init());
-      var len = n.length();
-      n.norm();
-      for (var i = 1; i <= 20; i++) {
-        this.$outer;
-        target.transform.push();
-        var this$TreeGenerator = this.$outer;
-        var r = MutableVec3f_init_0(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + this$TreeGenerator.random.randomF_dleff0$(0.0, 0.15));
-        r.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
-        var p = MutableVec3f_init_0(n).scale_mx4ult$(this$TreeGenerator.random.randomF_dleff0$(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
-        target.translate_czzhiu$(p);
-        target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
-        var i0 = target.vertex_n440gp$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 0.0));
-        var i1 = target.vertex_n440gp$(new Vec3f(0.0, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 1.0));
-        var i2 = target.vertex_n440gp$(new Vec3f(0.1, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 1.0));
-        var i3 = target.vertex_n440gp$(new Vec3f(0.1, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 0.0));
-        target.geometry.addIndices_pmhfmb$(new Int32Array([i0, i1, i2, i0, i2, i3]));
-        target.transform.pop();
-      }
-    }
-  };
-  TreeGenerator$TreeNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TreeNode',
-    interfaces: [MutableVec3f]
-  };
-  TreeGenerator.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TreeGenerator',
-    interfaces: []
-  };
-  function TreeTopPointDistribution(centerY, width, height, random) {
-    if (random === void 0)
-      random = math_0.defaultRandomInstance;
-    PointDistribution.call(this);
-    this.centerY = centerY;
-    this.width = width;
-    this.height = height;
-    this.random_0 = random;
-    this.borders_0 = ArrayList_init();
-    this.tmpPt1_0 = MutableVec3f_init();
-    this.tmpPt2_0 = MutableVec2f_init();
-    this.e00_0 = MutableVec2f_init();
-    this.e01_0 = MutableVec2f_init();
-    this.e10_0 = MutableVec2f_init();
-    this.e11_0 = MutableVec2f_init();
-    this.seedPts_0 = ArrayList_init();
-    var tmp$;
-    for (var j = 1; j <= 8; j++) {
-      var spline = new BSplineVec2f(3);
-      var n = 7;
-      for (var i = 0; i <= n; i++) {
-        var a = i / n * math.PI;
-        if (1 <= i && i < n) {
-          tmp$ = this.random_0.randomF_dleff0$(0.4, 0.6);
-        }
-         else {
-          tmp$ = 0.5;
-        }
-        var f = tmp$;
-        var x = Math_0.sin(a) * (this.width - 0.4) * f + 0.2;
-        var y = Math_0.cos(a) * this.height * f + this.centerY;
-        var $receiver = spline.ctrlPoints;
-        var element = new MutableVec2f(x, y);
-        $receiver.add_11rb$(element);
-      }
-      spline.ctrlPoints.add_wxm5ur$(0, new MutableVec2f(0.0, this.centerY + this.height * 0.5));
-      spline.ctrlPoints.add_11rb$(new MutableVec2f(0.0, this.centerY - this.height * 0.5));
-      spline.addInterpolationEndpoints();
-      var pts = ArrayList_init();
-      var m = 20;
-      for (var i_0 = 0; i_0 <= m; i_0++) {
-        var element_0 = spline.evaluate_f6p79m$(i_0 / m, MutableVec2f_init());
-        pts.add_11rb$(element_0);
-      }
-      this.borders_0.add_11rb$(pts);
-    }
-    this.seed_0();
-  }
-  TreeTopPointDistribution.prototype.seed_0 = function () {
-    this.seedPts_0.clear();
-    for (var i = 1; i <= 10; i++) {
-      var $receiver = this.seedPts_0;
-      var element = this.nextPointInBounds_0();
-      $receiver.add_11rb$(element);
-    }
-  };
-  TreeTopPointDistribution.prototype.drawBorders_nl2my4$ = function (target) {
-    var tmp$;
-    tmp$ = this.borders_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      var tmp$_0;
-      var a = i / this.borders_0.size * 2.0 * math.PI;
-      var pts = this.borders_0.get_za3lpa$(i);
-      tmp$_0 = pts.size;
-      for (var j = 1; j < tmp$_0; j++) {
-        var p0 = new Vec3f(-Math_0.cos(a) * pts.get_za3lpa$(j - 1 | 0).x, pts.get_za3lpa$(j - 1 | 0).y, -Math_0.sin(a) * pts.get_za3lpa$(j - 1 | 0).x);
-        var p1 = new Vec3f(-Math_0.cos(a) * pts.get_za3lpa$(j).x, pts.get_za3lpa$(j).y, -Math_0.sin(a) * pts.get_za3lpa$(j).x);
-        target.addLine_b8opkg$(p0, Color.Companion.ORANGE, p1, Color.Companion.ORANGE);
-      }
-    }
-  };
-  TreeTopPointDistribution.prototype.nextPoints_za3lpa$ = function (n) {
-    this.seed_0();
-    return PointDistribution.prototype.nextPoints_za3lpa$.call(this, n);
-  };
-  TreeTopPointDistribution.prototype.nextPoint = function () {
-    var pt = {v: null};
-    loop_label: while (true) {
-      pt.v = this.nextPointInBounds_0();
-      var $receiver = this.seedPts_0;
-      var minBy$result;
-      minBy$break: do {
-        var iterator = $receiver.iterator();
-        if (!iterator.hasNext()) {
-          minBy$result = null;
-          break minBy$break;
-        }
-        var minElem = iterator.next();
-        if (!iterator.hasNext()) {
-          minBy$result = minElem;
-          break minBy$break;
-        }
-        var minValue = minElem.sqrDistance_czzhiu$(pt.v);
-        do {
-          var e = iterator.next();
-          var v = e.sqrDistance_czzhiu$(pt.v);
-          if (Kotlin.compareTo(minValue, v) > 0) {
-            minElem = e;
-            minValue = v;
-          }
-        }
-         while (iterator.hasNext());
-        minBy$result = minElem;
-      }
-       while (false);
-      var d = ensureNotNull(minBy$result).distance_czzhiu$(pt.v);
-      if (d < this.random_0.randomF()) {
-        break loop_label;
-      }
-    }
-    return pt.v;
-  };
-  TreeTopPointDistribution.prototype.nextPointInBounds_0 = function () {
-    var w = this.width * 0.5;
-    var h = this.height * 0.5;
-    while (true) {
-      this.tmpPt1_0.set_y2kzbl$(this.random_0.randomF_dleff0$(-w, w), this.centerY + this.random_0.randomF_dleff0$(-h, h), this.random_0.randomF_dleff0$(-w, w));
-      var x = this.tmpPt1_0.x * this.tmpPt1_0.x + this.tmpPt1_0.z * this.tmpPt1_0.z;
-      var px = Math_0.sqrt(x);
-      var py = this.tmpPt1_0.y;
-      var y = this.tmpPt1_0.z;
-      var x_0 = this.tmpPt1_0.x;
-      var $receiver = Math_0.atan2(y, x_0) / (2.0 * math.PI) + 0.5;
-      var clamp$result;
-      if ($receiver < 0.0) {
-        clamp$result = 0.0;
-      }
-       else if ($receiver > 1.0) {
-        clamp$result = 1.0;
-      }
-       else {
-        clamp$result = $receiver;
-      }
-      var a = clamp$result * this.borders_0.size;
-      var i0 = numberToInt(a);
-      var i1 = (i0 + 1 | 0) % this.borders_0.size;
-      var w1 = a - i0;
-      var w0 = 1.0 - w1;
-      this.nearestEdge_0(px, py, this.borders_0.get_za3lpa$(i0), this.e00_0, this.e01_0);
-      this.nearestEdge_0(px, py, this.borders_0.get_za3lpa$(i1), this.e10_0, this.e11_0);
-      this.e00_0.scale_mx4ult$(w0).add_czzhjp$(this.e10_0.scale_mx4ult$(w1));
-      this.e01_0.scale_mx4ult$(w0).add_czzhjp$(this.e11_0.scale_mx4ult$(w1));
-      var d = (px - this.e00_0.x) * (this.e01_0.y - this.e00_0.y) - (py - this.e00_0.y) * (this.e01_0.x - this.e00_0.x);
-      if (d > 0) {
-        return Vec3f_init_0(this.tmpPt1_0);
-      }
-    }
-  };
-  TreeTopPointDistribution.prototype.nearestEdge_0 = function (px, py, pts, e0, e1) {
-    var tmp$;
-    var minDist = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
-    var ni = 0;
-    tmp$ = pts.size - 1 | 0;
-    for (var i = 0; i < tmp$; i++) {
-      var d = this.edgeDist_0(px, py, e0.set_czzhjp$(pts.get_za3lpa$(i)), e1.set_czzhjp$(pts.get_za3lpa$(i + 1 | 0)));
-      if (d < minDist) {
-        minDist = d;
-        ni = i;
-      }
-    }
-    e0.set_czzhjp$(pts.get_za3lpa$(ni));
-    e1.set_czzhjp$(pts.get_za3lpa$(ni + 1 | 0));
-  };
-  TreeTopPointDistribution.prototype.edgeDist_0 = function (px, py, e0, e1) {
-    var tmp$;
-    e1.subtract_q2ruao$(e0, this.tmpPt2_0);
-    var l = (px * this.tmpPt2_0.x + py * this.tmpPt2_0.y - e0.times_czzhjp$(this.tmpPt2_0)) / this.tmpPt2_0.times_czzhjp$(this.tmpPt2_0);
-    if (l < 0) {
-      var dx = e0.x - px;
-      var dy = e0.y - py;
-      var x = dx * dx + dy * dy;
-      tmp$ = Math_0.sqrt(x);
-    }
-     else if (l > 1) {
-      var dx_0 = e1.x - px;
-      var dy_0 = e1.y - py;
-      var x_0 = dx_0 * dx_0 + dy_0 * dy_0;
-      tmp$ = Math_0.sqrt(x_0);
-    }
-     else {
-      this.tmpPt2_0.scale_mx4ult$(l).add_czzhjp$(e0);
-      var dx_1 = this.tmpPt2_0.x - px;
-      var dy_1 = this.tmpPt2_0.y - py;
-      var x_1 = dx_1 * dx_1 + dy_1 * dy_1;
-      tmp$ = Math_0.sqrt(x_1);
-    }
-    return tmp$;
-  };
-  TreeTopPointDistribution.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TreeTopPointDistribution',
-    interfaces: [PointDistribution]
-  };
   function simplificationDemo(ctx) {
     return (new SimplificationDemo(ctx)).scenes;
   }
@@ -7717,7 +7032,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('tree_bark.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_baseColor.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -7767,7 +7082,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('tree_bark_nrm.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_ambientOcclusion.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -7798,14 +7113,116 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     else
       return instance.doResume(null);
   }
-  function treeScene$lambda$lambda$lambda$lambda_1(this$) {
+  function Coroutine$treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_1;
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_normal.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$treeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_2.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_2.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_2;
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_2.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/bark_pine/Bark_Pine_roughness.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function treeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function treeScene$lambda$lambda$lambda$lambda_3(this$) {
     return function ($receiver, it) {
-      ensureNotNull(this$.albedoMap).dispose();
-      ensureNotNull(this$.normalMap).dispose();
+      var tmp$, tmp$_0, tmp$_1;
+      (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
+      (tmp$_0 = this$.normalMap) != null ? (tmp$_0.dispose(), Unit) : null;
+      (tmp$_1 = this$.roughnessMap) != null ? (tmp$_1.dispose(), Unit) : null;
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_2(this$, closure$shadowMaps) {
+  function treeScene$lambda$lambda$lambda$lambda_4(this$, closure$shadowMaps) {
     return function (it) {
       var tmp$;
       if ((tmp$ = this$.depthMaps) != null) {
@@ -7829,16 +7246,19 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var $receiver_0 = new PbrShader$PbrConfig();
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver_0.isNormalMapped = true;
+      $receiver_0.isAmbientOcclusionMapped = true;
+      $receiver_0.isRoughnessMapped = true;
       $receiver_0.isReceivingShadows = true;
       $receiver_0.maxLights = 2;
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg);
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda);
-      $receiver_1.normalMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_0);
-      $receiver_1.roughness = 0.75;
-      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_1($receiver_1));
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_2($receiver_1, closure$shadowMaps_0));
+      $receiver_1.ambientOcclusionMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_0);
+      $receiver_1.normalMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_1);
+      $receiver_1.roughnessMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_2);
+      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_3($receiver_1));
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1, closure$shadowMaps_0));
       $receiver.pipelineLoader = $receiver_1;
       return Unit;
     };
@@ -7858,20 +7278,20 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function Coroutine$treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+  function Coroutine$treeScene$lambda$lambda$lambda$lambda_3($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
     this.exceptionState_0 = 1;
     this.local$it = it_0;
   }
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.$metadata$ = {
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_3.$metadata$ = {
     kind: Kotlin.Kind.CLASS,
     simpleName: null,
     interfaces: [CoroutineImpl]
   };
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_1;
-  Coroutine$treeScene$lambda$lambda$lambda$lambda_1.prototype.doResume = function () {
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_3.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_3.prototype.constructor = Coroutine$treeScene$lambda$lambda$lambda$lambda_3;
+  Coroutine$treeScene$lambda$lambda$lambda$lambda_3.prototype.doResume = function () {
     do
       try {
         switch (this.state_0) {
@@ -7901,24 +7321,24 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       }
      while (true);
   };
-  function treeScene$lambda$lambda$lambda$lambda_3($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+  function treeScene$lambda$lambda$lambda$lambda_5($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$treeScene$lambda$lambda$lambda$lambda_3($receiver_0, it_0, this, continuation_0);
     if (suspended)
       return instance;
     else
       return instance.doResume(null);
   }
-  function treeScene$lambda$lambda$lambda$lambda_4(this$) {
+  function treeScene$lambda$lambda$lambda$lambda_6(this$) {
     return function ($receiver, it) {
       ensureNotNull(this$.albedoMap).dispose();
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_5(it) {
+  function treeScene$lambda$lambda$lambda$lambda_7(it) {
     it.cullMethod = CullMethod.NO_CULLING;
     return Unit;
   }
-  function treeScene$lambda$lambda$lambda$lambda_6(this$, closure$shadowMaps) {
+  function treeScene$lambda$lambda$lambda$lambda_8(this$, closure$shadowMaps) {
     return function (it) {
       var tmp$;
       if ((tmp$ = this$.depthMaps) != null) {
@@ -7946,11 +7366,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg);
       var closure$shadowMaps_0 = closure$shadowMaps;
-      $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_3);
+      $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_5);
       $receiver_1.roughness = 0.5;
-      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1));
-      $receiver_1.onSetup.add_11rb$(treeScene$lambda$lambda$lambda$lambda_5);
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_6($receiver_1, closure$shadowMaps_0));
+      $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_6($receiver_1));
+      $receiver_1.onSetup.add_11rb$(treeScene$lambda$lambda$lambda$lambda_7);
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_8($receiver_1, closure$shadowMaps_0));
       $receiver.pipelineLoader = $receiver_1;
       return Unit;
     };
@@ -7970,7 +7390,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.maxZoom = 25.0;
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
       $receiver.zoom = 6.0;
-      $receiver.setMouseRotation_dleff0$(0.0, -30.0);
+      $receiver.setMouseRotation_dleff0$(0.0, -10.0);
       $receiver.setMouseTranslation_y2kzbl$(0.0, 2.0, 0.0);
       var $receiver_0 = $receiver.onPreRender;
       var element = treeScene$lambda$lambda$lambda_1(closure$autoRotate, $receiver);
@@ -8015,7 +7435,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_7(closure$treeGen, closure$growDistVal) {
+  function treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$growDistVal) {
     return function ($receiver, value) {
       closure$treeGen.growDistance = value;
       closure$growDistVal.text = toString_0(value, 2);
@@ -8028,7 +7448,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.1, 0.4, closure$treeGen.growDistance);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_7(closure$treeGen, closure$growDistVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$growDistVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -8049,7 +7469,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_8(closure$treeGen, closure$killDistVal) {
+  function treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$killDistVal) {
     return function ($receiver, value) {
       closure$treeGen.killDistance = value;
       closure$killDistVal.text = toString_0(value, 2);
@@ -8062,7 +7482,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(1.0, 4.0, closure$treeGen.killDistance);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_8(closure$treeGen, closure$killDistVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$killDistVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -8083,7 +7503,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$attractPtsVal) {
+  function treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$attractPtsVal) {
     return function ($receiver, value) {
       closure$treeGen.numberOfAttractionPoints = numberToInt(value);
       closure$attractPtsVal.text = numberToInt(value).toString();
@@ -8096,7 +7516,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(100.0, 10000.0, closure$treeGen.numberOfAttractionPoints);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$attractPtsVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$attractPtsVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -8117,7 +7537,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$infRadiusVal) {
+  function treeScene$lambda$lambda$lambda$lambda_12(closure$treeGen, closure$infRadiusVal) {
     return function ($receiver, value) {
       closure$treeGen.radiusOfInfluence = value;
       closure$infRadiusVal.text = toString_0(value, 2);
@@ -8130,12 +7550,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
       $receiver.setValue_y2kzbl$(0.25, 10.0, closure$treeGen.radiusOfInfluence);
       var $receiver_0 = $receiver.onValueChanged;
-      var element = treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$infRadiusVal);
+      var element = treeScene$lambda$lambda$lambda$lambda_12(closure$treeGen, closure$infRadiusVal);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda$lambda_13(closure$treeGen, closure$trunkMesh, closure$leafMesh) {
     return function ($receiver, f, f_0, f_1) {
       var tmp$, tmp$_0;
       closure$treeGen.generate_za3lpa$();
@@ -8194,7 +7614,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       var $receiver_0 = $receiver.onClick;
-      var element = treeScene$lambda$lambda$lambda$lambda_11(closure$treeGen, closure$trunkMesh, closure$leafMesh);
+      var element = treeScene$lambda$lambda$lambda$lambda_13(closure$treeGen, closure$trunkMesh, closure$leafMesh);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -8209,7 +7629,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_12(closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda$lambda_14(closure$leafMesh) {
     return function ($receiver) {
       var tmp$;
       (tmp$ = closure$leafMesh.v) != null ? (tmp$.isVisible = $receiver.isEnabled) : null;
@@ -8222,18 +7642,35 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       $receiver.isEnabled = true;
       var $receiver_0 = $receiver.onStateChange;
-      var element = treeScene$lambda$lambda$lambda$lambda_12(closure$leafMesh);
+      var element = treeScene$lambda$lambda$lambda$lambda_14(closure$leafMesh);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_4(closure$smallFont, this$, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda$lambda_15(closure$autoRotate) {
+    return function ($receiver) {
+      closure$autoRotate.v = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_20(closure$y, closure$autoRotate) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      $receiver.isEnabled = closure$autoRotate.v;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = treeScene$lambda$lambda$lambda$lambda_15(closure$autoRotate);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda_4(closure$smallFont, this$, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$autoRotate) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-535.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(415.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-560.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(440.0), full());
       var y = {v: -40.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Tree Generation', treeScene$lambda$lambda$lambda_4(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Generator Settings', treeScene$lambda$lambda$lambda_4(y, closure$smallFont, this$)));
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Grow Distance:', treeScene$lambda$lambda$lambda_5(y)));
       var growDistVal = this$.label_tokfmu$('growDistVal', treeScene$lambda$lambda$lambda_6(y, closure$treeGen));
@@ -8264,15 +7701,17 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', treeScene$lambda$lambda$lambda_18(y, closure$smallFont, this$)));
       y.v -= 35;
       $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Toggle Leafs', treeScene$lambda$lambda$lambda_19(y, closure$leafMesh)));
+      y.v -= 35;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', treeScene$lambda$lambda$lambda_20(y, closure$autoRotate)));
       return Unit;
     };
   }
-  function treeScene$lambda(closure$ctx, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+  function treeScene$lambda(closure$ctx, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$autoRotate) {
     return function ($receiver) {
       var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
       var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
       $receiver.theme = theme(UiTheme.Companion.DARK, treeScene$lambda$lambda_3);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', treeScene$lambda$lambda_4(smallFont, $receiver, closure$treeGen, closure$trunkMesh, closure$leafMesh)));
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', treeScene$lambda$lambda_4(smallFont, $receiver, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$autoRotate)));
       return Unit;
     };
   }
@@ -8311,26 +7750,36 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, treeScene$lambda$lambda_2($receiver, autoRotate)));
     var treeScene = $receiver;
     scenes.add_11rb$(treeScene);
-    var element_1 = uiScene(void 0, void 0, void 0, treeScene$lambda(ctx, treeGen, trunkMesh, leafMesh));
+    var element_1 = uiScene(void 0, void 0, void 0, treeScene$lambda(ctx, treeGen, trunkMesh, leafMesh, autoRotate));
     scenes.add_11rb$(element_1);
     return scenes;
+  }
+  function makeTreeGroundGrid$lambda$lambda$lambda$lambda($receiver) {
+    $receiver.texCoord.set_dleff0$($receiver.position.x, $receiver.position.z).scale_mx4ult$(0.2);
+    return Unit;
+  }
+  function makeTreeGroundGrid$lambda$lambda$lambda$lambda$lambda(this$) {
+    return function (x, y) {
+      var fx = (x / this$.stepsX - 0.5) * 7.0;
+      var fy = (y / this$.stepsY - 0.5) * 7.0;
+      var x_0 = fx * fx + fy * fy;
+      var x_1 = Math_0.sqrt(x_0);
+      return Math_0.cos(x_1) * 0.2 - 0.2;
+    };
   }
   function makeTreeGroundGrid$lambda$lambda(closure$groundExt) {
     return function ($receiver) {
       $receiver.transform.push();
       var closure$groundExt_0 = closure$groundExt;
-      $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
       $receiver.color = Color.Companion.LIGHT_GRAY.withAlpha_mx4ult$(0.2);
-      var $receiver_0 = $receiver.rectProps.defaults();
-      $receiver_0.origin.set_y2kzbl$(-closure$groundExt_0, -closure$groundExt_0, 0.0);
-      $receiver_0.width = closure$groundExt_0 * 2.0;
-      $receiver_0.height = closure$groundExt_0 * 2.0;
-      var uv = closure$groundExt_0 / 2;
-      $receiver_0.texCoordUpperLeft.set_dleff0$(-uv, -uv);
-      $receiver_0.texCoordUpperRight.set_dleff0$(uv, -uv);
-      $receiver_0.texCoordLowerLeft.set_dleff0$(-uv, uv);
-      $receiver_0.texCoordLowerRight.set_dleff0$(uv, uv);
-      $receiver.rect_e5k3t5$($receiver.rectProps);
+      $receiver.vertexModFun = makeTreeGroundGrid$lambda$lambda$lambda$lambda;
+      var $receiver_0 = $receiver.gridProps.defaults();
+      $receiver_0.sizeX = closure$groundExt_0 * 2.0;
+      $receiver_0.sizeY = closure$groundExt_0 * 2.0;
+      $receiver_0.stepsX = 200;
+      $receiver_0.stepsY = 200;
+      $receiver_0.heightFun = makeTreeGroundGrid$lambda$lambda$lambda$lambda$lambda($receiver_0);
+      $receiver.grid_gtbnl3$($receiver.gridProps);
       $receiver.transform.pop();
       $receiver.geometry.generateTangents();
       return Unit;
@@ -8355,7 +7804,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('ground_color.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -8405,7 +7854,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         switch (this.state_0) {
           case 0:
             this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('ground_nrm.png', this);
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg', this);
             if (this.result_0 === COROUTINE_SUSPENDED)
               return COROUTINE_SUSPENDED;
             continue;
@@ -8436,7 +7885,157 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     else
       return instance.doResume(null);
   }
-  function makeTreeGroundGrid$lambda$lambda$lambda_1(this$, closure$shadowMaps) {
+  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1;
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeTreeGroundGrid$lambda$lambda$lambda_1($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_1($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2;
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeTreeGroundGrid$lambda$lambda$lambda_2($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_2($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3($receiver_0, it_0, controller, continuation_0) {
+    CoroutineImpl.call(this, continuation_0);
+    this.$controller = controller;
+    this.exceptionState_0 = 1;
+    this.local$it = it_0;
+  }
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3.$metadata$ = {
+    kind: Kotlin.Kind.CLASS,
+    simpleName: null,
+    interfaces: [CoroutineImpl]
+  };
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3.prototype = Object.create(CoroutineImpl.prototype);
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3.prototype.constructor = Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3;
+  Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3.prototype.doResume = function () {
+    do
+      try {
+        switch (this.state_0) {
+          case 0:
+            this.state_0 = 2;
+            this.result_0 = this.local$it.loadTextureData_61zpoe$(Demo$Companion_getInstance().pbrBasePath + '/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg', this);
+            if (this.result_0 === COROUTINE_SUSPENDED)
+              return COROUTINE_SUSPENDED;
+            continue;
+          case 1:
+            throw this.exception_0;
+          case 2:
+            return this.result_0;
+          default:this.state_0 = 1;
+            throw new Error('State Machine Unreachable execution');
+        }
+      }
+       catch (e) {
+        if (this.state_0 === 1) {
+          this.exceptionState_0 = this.state_0;
+          throw e;
+        }
+         else {
+          this.state_0 = this.exceptionState_0;
+          this.exception_0 = e;
+        }
+      }
+     while (true);
+  };
+  function makeTreeGroundGrid$lambda$lambda$lambda_3($receiver_0, it_0, continuation_0, suspended) {
+    var instance = new Coroutine$makeTreeGroundGrid$lambda$lambda$lambda_3($receiver_0, it_0, this, continuation_0);
+    if (suspended)
+      return instance;
+    else
+      return instance.doResume(null);
+  }
+  function makeTreeGroundGrid$lambda$lambda$lambda_4(this$, closure$shadowMaps) {
     return function (it) {
       var tmp$;
       if ((tmp$ = this$.depthMaps) != null) {
@@ -8454,10 +8053,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function makeTreeGroundGrid$lambda$lambda$lambda_2(this$) {
+  function makeTreeGroundGrid$lambda$lambda$lambda_5(this$) {
     return function ($receiver, it) {
-      ensureNotNull(this$.albedoMap).dispose();
-      ensureNotNull(this$.normalMap).dispose();
+      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+      (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
+      (tmp$_0 = this$.normalMap) != null ? (tmp$_0.dispose(), Unit) : null;
+      (tmp$_1 = this$.roughnessMap) != null ? (tmp$_1.dispose(), Unit) : null;
+      (tmp$_2 = this$.ambientOcclusionMap) != null ? (tmp$_2.dispose(), Unit) : null;
+      (tmp$_3 = this$.displacementMap) != null ? (tmp$_3.dispose(), Unit) : null;
       return Unit;
     };
   }
@@ -8468,17 +8071,21 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var $receiver_0 = new PbrShader$PbrConfig();
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver_0.isNormalMapped = true;
+      $receiver_0.isAmbientOcclusionMapped = true;
+      $receiver_0.isRoughnessMapped = true;
+      $receiver_0.isDisplacementMapped = true;
       $receiver_0.isReceivingShadows = true;
-      $receiver_0.normalStrength = 0.25;
       $receiver_0.maxLights = 2;
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg);
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_1.albedoMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda);
       $receiver_1.normalMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_0);
-      $receiver_1.roughness = 0.3;
-      $receiver_1.onCreated.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_1($receiver_1, closure$shadowMaps_0));
-      $receiver.onDispose.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_2($receiver_1));
+      $receiver_1.roughnessMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_1);
+      $receiver_1.ambientOcclusionMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_2);
+      $receiver_1.displacementMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_3);
+      $receiver_1.onCreated.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_4($receiver_1, closure$shadowMaps_0));
+      $receiver.onDispose.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_5($receiver_1));
       $receiver.pipelineLoader = $receiver_1;
       return Unit;
     };
@@ -8487,6 +8094,693 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var groundExt = cells / 2 | 0;
     return textureMesh(void 0, true, makeTreeGroundGrid$lambda(groundExt, shadowMaps));
   }
+  function TreeGenerator(distribution, baseTop, baseBot, random) {
+    if (baseTop === void 0)
+      baseTop = new Vec3f(0.0, 1.0, 0.0);
+    if (baseBot === void 0)
+      baseBot = Vec3f.Companion.ZERO;
+    if (random === void 0)
+      random = math_0.defaultRandomInstance;
+    this.distribution = distribution;
+    this.baseTop = baseTop;
+    this.baseBot = baseBot;
+    this.random = random;
+    this.radiusOfInfluence = 1.0;
+    this.growDistance = 0.15;
+    this.killDistance = 1.5;
+    this.numberOfAttractionPoints = 3000;
+    this.attractionPoints_0 = ArrayList_init();
+    this.attractionPointsTree_0 = pointKdTree(emptyList());
+    this.attractionPointTrav_0 = new InRadiusTraverser();
+    this.treeNodes_0 = ArrayList_init();
+    this.root_0 = new TreeGenerator$TreeNode(this);
+  }
+  Object.defineProperty(TreeGenerator.prototype, 'actualKillDistance', {
+    get: function () {
+      return this.growDistance * this.killDistance;
+    }
+  });
+  TreeGenerator.prototype.seedTree = function () {
+    this.populateAttractionPoints_0();
+    this.treeNodes_0.clear();
+    this.root_0 = new TreeGenerator$TreeNode(this);
+    this.root_0.set_czzhiu$(this.baseBot);
+    var $receiver = this.treeNodes_0;
+    var element = this.root_0;
+    $receiver.add_11rb$(element);
+    var d = this.baseTop.subtract_2gj7b4$(this.baseBot, MutableVec3f_init()).norm().scale_mx4ult$(this.growDistance);
+    var prev = this.root_0;
+    while (prev.distance_czzhiu$(this.baseTop) > this.growDistance) {
+      var newNd = new TreeGenerator$TreeNode(this);
+      newNd.set_czzhiu$(prev).add_czzhiu$(d);
+      prev.addChild_15eqn9$(newNd);
+      this.treeNodes_0.add_11rb$(newNd);
+      prev = newNd;
+    }
+  };
+  TreeGenerator.prototype.generate_za3lpa$ = function (maxIterations) {
+    if (maxIterations === void 0)
+      maxIterations = 1000;
+    var i = {v: 0};
+    var level;
+    level = Log$Level.INFO;
+    var t = now();
+    var tmp$;
+    this.seedTree();
+    while ((tmp$ = i.v, i.v = tmp$ + 1 | 0, tmp$) < maxIterations && this.growSingleStep()) {
+    }
+    this.finishTree();
+    var ret = Unit;
+    var $this = util.Log;
+    var tag = Kotlin.getKClassFromExpression(this).simpleName;
+    if (level.level >= $this.level.level) {
+      $this.printer(level, tag, 'Generation done, took ' + i.v + ' iterations, ' + this.treeNodes_0.size + ' nodes in' + ' ' + toString(now() - t, 3) + ' ms');
+    }
+  };
+  TreeGenerator.prototype.growSingleStep = function () {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
+    var tmp$_6;
+    tmp$_6 = this.attractionPoints_0.iterator();
+    while (tmp$_6.hasNext()) {
+      var element = tmp$_6.next();
+      element.nearestNode = null;
+    }
+    tmp$ = this.treeNodes_0.iterator();
+    while (tmp$.hasNext()) {
+      var node = tmp$.next();
+      node.influencingPts.clear();
+      if (!node.isFinished) {
+        this.attractionPointTrav_0.setup_2qa7tb$(node, this.radiusOfInfluence).traverse_m6hlto$(this.attractionPointsTree_0);
+        tmp$_0 = this.attractionPointTrav_0.result.iterator();
+        while (tmp$_0.hasNext()) {
+          var attracPt = tmp$_0.next();
+          if (attracPt.isOpen) {
+            attracPt.checkNearest_15eqn9$(node);
+          }
+        }
+      }
+    }
+    tmp$_1 = this.attractionPoints_0.iterator();
+    while (tmp$_1.hasNext()) {
+      var attracPt_0 = tmp$_1.next();
+      if (attracPt_0.isOpen) {
+        (tmp$_3 = (tmp$_2 = attracPt_0.nearestNode) != null ? tmp$_2.influencingPts : null) != null ? tmp$_3.add_11rb$(attracPt_0) : null;
+      }
+    }
+    var newNodes = ArrayList_init();
+    var changed = false;
+    tmp$_4 = this.treeNodes_0.iterator();
+    while (tmp$_4.hasNext()) {
+      var node_0 = tmp$_4.next();
+      if (!node_0.influencingPts.isEmpty()) {
+        var growDir = MutableVec3f_init();
+        tmp$_5 = node_0.influencingPts.iterator();
+        while (tmp$_5.hasNext()) {
+          var attracPt_1 = tmp$_5.next();
+          growDir.plusAssign_czzhiu$(attracPt_1.subtract_2gj7b4$(node_0, MutableVec3f_init()).norm());
+        }
+        growDir.norm().scale_mx4ult$(this.growDistance);
+        var newNode = new TreeGenerator$TreeNode(this);
+        newNode.set_czzhiu$(node_0).add_czzhiu$(growDir);
+        if (!node_0.containsChild_15eqn9$(newNode)) {
+          node_0.addChild_15eqn9$(newNode);
+          newNodes.add_11rb$(newNode);
+          this.attractionPointTrav_0.setup_2qa7tb$(newNode, this.actualKillDistance).traverse_m6hlto$(this.attractionPointsTree_0);
+          var tmp$_7;
+          tmp$_7 = this.attractionPointTrav_0.result.iterator();
+          while (tmp$_7.hasNext()) {
+            var element_0 = tmp$_7.next();
+            element_0.isOpen = false;
+          }
+          changed = true;
+        }
+      }
+       else {
+        node_0.isFinished = true;
+      }
+    }
+    this.treeNodes_0.addAll_brywnq$(newNodes);
+    return changed;
+  };
+  function TreeGenerator$finishTree$lambda(this$TreeGenerator) {
+    return function ($receiver) {
+      if ($receiver.parent != null) {
+        $receiver.plusAssign_czzhiu$(MutableVec3f_init_0(ensureNotNull($receiver.parent)).subtract_czzhiu$($receiver).norm().scale_mx4ult$(this$TreeGenerator.growDistance * 0.5));
+        $receiver.x = $receiver.x + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
+        $receiver.y = $receiver.y + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
+        $receiver.z = $receiver.z + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
+      }
+      $receiver.computeTrunkRadiusAndDepth();
+      $receiver.computeCircumPoints();
+      return Unit;
+    };
+  }
+  function TreeGenerator$finishTree$lambda_0($receiver) {
+    if ($receiver.parent != null) {
+      var baseV = ensureNotNull($receiver.parent).texV;
+      $receiver.texV = baseV + $receiver.distance_czzhiu$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math.PI * 1.5);
+    }
+    return Unit;
+  }
+  TreeGenerator.prototype.finishTree = function () {
+    this.root_0.forEachTopDown_ttqnr0$(TreeGenerator$finishTree$lambda(this));
+    this.root_0.forEachBottomUp_ttqnr0$(TreeGenerator$finishTree$lambda_0);
+  };
+  TreeGenerator.prototype.buildTrunkMesh_84rojv$ = function (target) {
+    var tmp$;
+    tmp$ = this.treeNodes_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.buildTrunkMesh_84rojv$(target);
+    }
+  };
+  TreeGenerator.prototype.buildLeafMesh_84rojv$ = function (target) {
+    var tmp$;
+    tmp$ = this.treeNodes_0.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.buildLeafMesh_84rojv$(target);
+    }
+    var $this = target.geometry;
+    var tmp$_0;
+    tmp$_0 = $this.numVertices;
+    for (var i = 0; i < tmp$_0; i++) {
+      $this.vertexIt.index = i;
+      var it = $this.vertexIt;
+      if (it.normal.y < 0) {
+        it.normal.scale_mx4ult$(-1.0);
+      }
+    }
+  };
+  TreeGenerator.prototype.populateAttractionPoints_0 = function () {
+    var tmp$;
+    this.attractionPoints_0.clear();
+    tmp$ = this.distribution.nextPoints_za3lpa$(this.numberOfAttractionPoints).iterator();
+    while (tmp$.hasNext()) {
+      var pt = tmp$.next();
+      var $receiver = this.attractionPoints_0;
+      var element = new TreeGenerator$AttractionPoint(pt);
+      $receiver.add_11rb$(element);
+    }
+    this.attractionPointsTree_0 = pointKdTree(this.attractionPoints_0);
+  };
+  function TreeGenerator$AttractionPoint(pt) {
+    MutableVec3f_init_0(pt, this);
+    this.nearestNode_3mwxa2$_0 = null;
+    this.nearestNodeDist_dewf4c$_0 = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+    this.isOpen = true;
+  }
+  Object.defineProperty(TreeGenerator$AttractionPoint.prototype, 'nearestNode', {
+    get: function () {
+      return this.nearestNode_3mwxa2$_0;
+    },
+    set: function (value) {
+      this.nearestNode_3mwxa2$_0 = value;
+      if (value == null) {
+        this.nearestNodeDist = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+      }
+    }
+  });
+  Object.defineProperty(TreeGenerator$AttractionPoint.prototype, 'nearestNodeDist', {
+    get: function () {
+      return this.nearestNodeDist_dewf4c$_0;
+    },
+    set: function (nearestNodeDist) {
+      this.nearestNodeDist_dewf4c$_0 = nearestNodeDist;
+    }
+  });
+  TreeGenerator$AttractionPoint.prototype.checkNearest_15eqn9$ = function (node) {
+    var dist = this.distance_czzhiu$(node);
+    if (dist < this.nearestNodeDist) {
+      this.nearestNode = node;
+      this.nearestNodeDist = dist;
+    }
+  };
+  TreeGenerator$AttractionPoint.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'AttractionPoint',
+    interfaces: [MutableVec3f]
+  };
+  function TreeGenerator$TreeNode($outer) {
+    this.$outer = $outer;
+    MutableVec3f_init(this);
+    this.children = ArrayList_init();
+    this.parent = null;
+    this.branchDepth = 0;
+    this.influencingPts = ArrayList_init();
+    this.isFinished = false;
+    this.radius = 0.005;
+    this.texV = 0.0;
+    this.uScale = 1.0;
+    this.vScale = 3.0;
+    this.circumPts = ArrayList_init();
+  }
+  TreeGenerator$TreeNode.prototype.addChild_15eqn9$ = function (node) {
+    this.children.add_11rb$(node);
+    node.parent = this;
+  };
+  TreeGenerator$TreeNode.prototype.containsChild_15eqn9$ = function (node) {
+    var tmp$;
+    tmp$ = this.children.iterator();
+    while (tmp$.hasNext()) {
+      var c = tmp$.next();
+      if (c.isFuzzyEqual_2qa7tb$(node)) {
+        return true;
+      }
+    }
+    return false;
+  };
+  TreeGenerator$TreeNode.prototype.forEachBottomUp_ttqnr0$ = function (block) {
+    block(this);
+    var tmp$;
+    tmp$ = this.children.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.forEachBottomUp_ttqnr0$(block);
+    }
+  };
+  TreeGenerator$TreeNode.prototype.forEachTopDown_ttqnr0$ = function (block) {
+    var tmp$;
+    tmp$ = this.children.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      element.forEachTopDown_ttqnr0$(block);
+    }
+    block(this);
+  };
+  TreeGenerator$TreeNode.prototype.computeTrunkRadiusAndDepth = function () {
+    var tmp$, tmp$_0, tmp$_1;
+    var p = 2.25;
+    if (this.children.isEmpty()) {
+      this.radius = 0.01;
+      this.branchDepth = 0;
+    }
+     else {
+      var tmp$_2;
+      var sum = 0.0;
+      tmp$_2 = this.children.iterator();
+      while (tmp$_2.hasNext()) {
+        var element = tmp$_2.next();
+        var $receiver = element.radius;
+        sum += Math_0.pow($receiver, p);
+      }
+      var x = 1.0 / p;
+      this.radius = Math_0.pow(sum, x);
+      if (this.children.size === 1) {
+        tmp$_1 = this.children.get_za3lpa$(0).branchDepth;
+      }
+       else {
+        var $receiver_0 = this.children;
+        var maxBy$result;
+        maxBy$break: do {
+          var iterator = $receiver_0.iterator();
+          if (!iterator.hasNext()) {
+            maxBy$result = null;
+            break maxBy$break;
+          }
+          var maxElem = iterator.next();
+          if (!iterator.hasNext()) {
+            maxBy$result = maxElem;
+            break maxBy$break;
+          }
+          var maxValue = maxElem.branchDepth;
+          do {
+            var e = iterator.next();
+            var v = e.branchDepth;
+            if (Kotlin.compareTo(maxValue, v) < 0) {
+              maxElem = e;
+              maxValue = v;
+            }
+          }
+           while (iterator.hasNext());
+          maxBy$result = maxElem;
+        }
+         while (false);
+        tmp$_1 = ((tmp$_0 = (tmp$ = maxBy$result) != null ? tmp$.branchDepth : null) != null ? tmp$_0 : 0) + 1 | 0;
+      }
+      this.branchDepth = tmp$_1;
+    }
+    if (this.parent == null) {
+      this.radius *= 3.0;
+      this.children.get_za3lpa$(0).radius = this.children.get_za3lpa$(0).radius * 1.5;
+      this.children.get_za3lpa$(0).computeCircumPoints();
+    }
+  };
+  TreeGenerator$TreeNode.prototype.computeCircumPoints = function () {
+    var tmp$;
+    this.circumPts.clear();
+    if (this.parent != null) {
+      tmp$ = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init()).norm();
+    }
+     else {
+      tmp$ = this.children.get_za3lpa$(0).subtract_2gj7b4$(this, MutableVec3f_init()).norm();
+    }
+    var n = tmp$;
+    var c = MutableVec3f_init_0(n).scale_mx4ult$(-n.times_czzhiu$(Vec3f.Companion.Z_AXIS)).add_czzhiu$(Vec3f.Companion.Z_AXIS).norm().scale_mx4ult$(this.radius);
+    var y = c.z;
+    var x = c.x;
+    c.rotate_ad55pp$(-Math_0.atan2(y, x), n);
+    for (var i = 0; i < 8; i++) {
+      var pt = MutableVec3f_init_0(c).add_czzhiu$(this);
+      this.circumPts.add_11rb$(Vec3f_init_0(pt));
+      c.rotate_ad55pp$(360.0 / 8, n);
+    }
+  };
+  TreeGenerator$TreeNode.prototype.buildTrunkMesh_84rojv$ = function (target) {
+    var tmp$;
+    if (this.radius > 0.05) {
+      tmp$ = 2.0;
+    }
+     else {
+      tmp$ = 1.0;
+    }
+    var uScale = tmp$ * this.uScale;
+    var idcs = ArrayList_init();
+    if (this.parent != null) {
+      if (this.children.isEmpty()) {
+        var $this = target.geometry;
+        var tmp$_0, tmp$_0_0, tmp$_1;
+        $this.checkBufferSizes_za3lpa$();
+        tmp$_0 = $this.vertexSizeF;
+        for (var i = 1; i <= tmp$_0; i++) {
+          $this.dataF.plusAssign_mx4ult$(0.0);
+        }
+        tmp$_0_0 = $this.vertexSizeI;
+        for (var i_0 = 1; i_0 <= tmp$_0_0; i_0++) {
+          $this.dataI.plusAssign_za3lpa$(0);
+        }
+        $this.vertexIt.index = (tmp$_1 = $this.numVertices, $this.numVertices = tmp$_1 + 1 | 0, tmp$_1);
+        var $receiver = $this.vertexIt;
+        $receiver.position.set_czzhiu$(this);
+        this.subtract_2gj7b4$(ensureNotNull(this.parent), $receiver.normal).norm();
+        $receiver.texCoord.set_dleff0$(0.0, this.texV * this.vScale);
+        $this.bounds.add_czzhiu$($this.vertexIt.position);
+        $this.hasChanged = true;
+        var tipIdx = $this.numVertices - 1 | 0;
+        for (var i_1 = 0; i_1 <= 8; i_1++) {
+          var $this_0 = target.geometry;
+          var tmp$_2, tmp$_0_1, tmp$_1_0;
+          $this_0.checkBufferSizes_za3lpa$();
+          tmp$_2 = $this_0.vertexSizeF;
+          for (var i_2 = 1; i_2 <= tmp$_2; i_2++) {
+            $this_0.dataF.plusAssign_mx4ult$(0.0);
+          }
+          tmp$_0_1 = $this_0.vertexSizeI;
+          for (var i_0_0 = 1; i_0_0 <= tmp$_0_1; i_0_0++) {
+            $this_0.dataI.plusAssign_za3lpa$(0);
+          }
+          $this_0.vertexIt.index = (tmp$_1_0 = $this_0.numVertices, $this_0.numVertices = tmp$_1_0 + 1 | 0, tmp$_1_0);
+          var $receiver_0 = $this_0.vertexIt;
+          $receiver_0.position.set_czzhiu$(ensureNotNull(this.parent).circumPts.get_za3lpa$(i_1 % 8));
+          ensureNotNull(this.parent).circumPts.get_za3lpa$(i_1 % 8).subtract_2gj7b4$(ensureNotNull(this.parent), $receiver_0.normal).norm();
+          $receiver_0.texCoord.set_dleff0$(i_1 / 8.0 * uScale, ensureNotNull(this.parent).texV * this.vScale);
+          $this_0.bounds.add_czzhiu$($this_0.vertexIt.position);
+          $this_0.hasChanged = true;
+          var element = $this_0.numVertices - 1 | 0;
+          idcs.add_11rb$(element);
+        }
+        for (var i_3 = 0; i_3 < 8; i_3++) {
+          target.geometry.addTriIndices_qt1dr2$(tipIdx, idcs.get_za3lpa$(i_3), idcs.get_za3lpa$(i_3 + 1 | 0));
+        }
+      }
+       else {
+        for (var i_4 = 0; i_4 <= 8; i_4++) {
+          var $this_1 = target.geometry;
+          var tmp$_3, tmp$_0_2, tmp$_1_1;
+          $this_1.checkBufferSizes_za3lpa$();
+          tmp$_3 = $this_1.vertexSizeF;
+          for (var i_5 = 1; i_5 <= tmp$_3; i_5++) {
+            $this_1.dataF.plusAssign_mx4ult$(0.0);
+          }
+          tmp$_0_2 = $this_1.vertexSizeI;
+          for (var i_0_1 = 1; i_0_1 <= tmp$_0_2; i_0_1++) {
+            $this_1.dataI.plusAssign_za3lpa$(0);
+          }
+          $this_1.vertexIt.index = (tmp$_1_1 = $this_1.numVertices, $this_1.numVertices = tmp$_1_1 + 1 | 0, tmp$_1_1);
+          var $receiver_1 = $this_1.vertexIt;
+          $receiver_1.position.set_czzhiu$(this.circumPts.get_za3lpa$(i_4 % 8));
+          this.circumPts.get_za3lpa$(i_4 % 8).subtract_2gj7b4$(this, $receiver_1.normal).norm();
+          $receiver_1.texCoord.set_dleff0$(i_4 / 8.0 * uScale, this.texV * this.vScale);
+          $this_1.bounds.add_czzhiu$($this_1.vertexIt.position);
+          $this_1.hasChanged = true;
+          var element_0 = $this_1.numVertices - 1 | 0;
+          idcs.add_11rb$(element_0);
+          var $this_2 = target.geometry;
+          var tmp$_4, tmp$_0_3, tmp$_1_2;
+          $this_2.checkBufferSizes_za3lpa$();
+          tmp$_4 = $this_2.vertexSizeF;
+          for (var i_6 = 1; i_6 <= tmp$_4; i_6++) {
+            $this_2.dataF.plusAssign_mx4ult$(0.0);
+          }
+          tmp$_0_3 = $this_2.vertexSizeI;
+          for (var i_0_2 = 1; i_0_2 <= tmp$_0_3; i_0_2++) {
+            $this_2.dataI.plusAssign_za3lpa$(0);
+          }
+          $this_2.vertexIt.index = (tmp$_1_2 = $this_2.numVertices, $this_2.numVertices = tmp$_1_2 + 1 | 0, tmp$_1_2);
+          var $receiver_2 = $this_2.vertexIt;
+          $receiver_2.position.set_czzhiu$(ensureNotNull(this.parent).circumPts.get_za3lpa$(i_4 % 8));
+          ensureNotNull(this.parent).circumPts.get_za3lpa$(i_4 % 8).subtract_2gj7b4$(ensureNotNull(this.parent), $receiver_2.normal).norm();
+          $receiver_2.texCoord.set_dleff0$(i_4 / 8.0 * uScale, ensureNotNull(this.parent).texV * this.vScale);
+          $this_2.bounds.add_czzhiu$($this_2.vertexIt.position);
+          $this_2.hasChanged = true;
+          var element_1 = $this_2.numVertices - 1 | 0;
+          idcs.add_11rb$(element_1);
+        }
+        for (var i_7 = 0; i_7 < 8; i_7++) {
+          target.geometry.addTriIndices_qt1dr2$(idcs.get_za3lpa$(i_7 * 2 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 1 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 2 | 0));
+          target.geometry.addTriIndices_qt1dr2$(idcs.get_za3lpa$((i_7 * 2 | 0) + 1 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 3 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 2 | 0));
+        }
+      }
+    }
+  };
+  TreeGenerator$TreeNode.prototype.buildLeafMesh_84rojv$ = function (target) {
+    if (this.branchDepth <= 1 && this.parent != null) {
+      var n = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init());
+      var len = n.length();
+      n.norm();
+      for (var i = 1; i <= 20; i++) {
+        this.$outer;
+        target.transform.push();
+        var this$TreeGenerator = this.$outer;
+        var r = MutableVec3f_init_0(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + this$TreeGenerator.random.randomF_dleff0$(0.0, 0.15));
+        r.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
+        var p = MutableVec3f_init_0(n).scale_mx4ult$(this$TreeGenerator.random.randomF_dleff0$(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
+        target.translate_czzhiu$(p);
+        target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
+        var i0 = target.vertex_n440gp$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 0.0));
+        var i1 = target.vertex_n440gp$(new Vec3f(0.0, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 1.0));
+        var i2 = target.vertex_n440gp$(new Vec3f(0.1, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 1.0));
+        var i3 = target.vertex_n440gp$(new Vec3f(0.1, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 0.0));
+        target.geometry.addIndices_pmhfmb$(new Int32Array([i0, i1, i2, i0, i2, i3]));
+        target.transform.pop();
+      }
+    }
+  };
+  TreeGenerator$TreeNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TreeNode',
+    interfaces: [MutableVec3f]
+  };
+  TreeGenerator.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TreeGenerator',
+    interfaces: []
+  };
+  function TreeTopPointDistribution(centerY, width, height, random) {
+    if (random === void 0)
+      random = math_0.defaultRandomInstance;
+    PointDistribution.call(this);
+    this.centerY = centerY;
+    this.width = width;
+    this.height = height;
+    this.random_0 = random;
+    this.borders_0 = ArrayList_init();
+    this.tmpPt1_0 = MutableVec3f_init();
+    this.tmpPt2_0 = MutableVec2f_init();
+    this.e00_0 = MutableVec2f_init();
+    this.e01_0 = MutableVec2f_init();
+    this.e10_0 = MutableVec2f_init();
+    this.e11_0 = MutableVec2f_init();
+    this.seedPts_0 = ArrayList_init();
+    var tmp$;
+    for (var j = 1; j <= 8; j++) {
+      var spline = new BSplineVec2f(3);
+      var n = 7;
+      for (var i = 0; i <= n; i++) {
+        var a = i / n * math.PI;
+        if (1 <= i && i < n) {
+          tmp$ = this.random_0.randomF_dleff0$(0.4, 0.6);
+        }
+         else {
+          tmp$ = 0.5;
+        }
+        var f = tmp$;
+        var x = Math_0.sin(a) * (this.width - 0.4) * f + 0.2;
+        var y = Math_0.cos(a) * this.height * f + this.centerY;
+        var $receiver = spline.ctrlPoints;
+        var element = new MutableVec2f(x, y);
+        $receiver.add_11rb$(element);
+      }
+      spline.ctrlPoints.add_wxm5ur$(0, new MutableVec2f(0.0, this.centerY + this.height * 0.5));
+      spline.ctrlPoints.add_11rb$(new MutableVec2f(0.0, this.centerY - this.height * 0.5));
+      spline.addInterpolationEndpoints();
+      var pts = ArrayList_init();
+      var m = 20;
+      for (var i_0 = 0; i_0 <= m; i_0++) {
+        var element_0 = spline.evaluate_f6p79m$(i_0 / m, MutableVec2f_init());
+        pts.add_11rb$(element_0);
+      }
+      this.borders_0.add_11rb$(pts);
+    }
+    this.seed_0();
+  }
+  TreeTopPointDistribution.prototype.seed_0 = function () {
+    this.seedPts_0.clear();
+    for (var i = 1; i <= 10; i++) {
+      var $receiver = this.seedPts_0;
+      var element = this.nextPointInBounds_0();
+      $receiver.add_11rb$(element);
+    }
+  };
+  TreeTopPointDistribution.prototype.drawBorders_nl2my4$ = function (target) {
+    var tmp$;
+    tmp$ = this.borders_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var tmp$_0;
+      var a = i / this.borders_0.size * 2.0 * math.PI;
+      var pts = this.borders_0.get_za3lpa$(i);
+      tmp$_0 = pts.size;
+      for (var j = 1; j < tmp$_0; j++) {
+        var p0 = new Vec3f(-Math_0.cos(a) * pts.get_za3lpa$(j - 1 | 0).x, pts.get_za3lpa$(j - 1 | 0).y, -Math_0.sin(a) * pts.get_za3lpa$(j - 1 | 0).x);
+        var p1 = new Vec3f(-Math_0.cos(a) * pts.get_za3lpa$(j).x, pts.get_za3lpa$(j).y, -Math_0.sin(a) * pts.get_za3lpa$(j).x);
+        target.addLine_b8opkg$(p0, Color.Companion.ORANGE, p1, Color.Companion.ORANGE);
+      }
+    }
+  };
+  TreeTopPointDistribution.prototype.nextPoints_za3lpa$ = function (n) {
+    this.seed_0();
+    return PointDistribution.prototype.nextPoints_za3lpa$.call(this, n);
+  };
+  TreeTopPointDistribution.prototype.nextPoint = function () {
+    var pt = {v: null};
+    loop_label: while (true) {
+      pt.v = this.nextPointInBounds_0();
+      var $receiver = this.seedPts_0;
+      var minBy$result;
+      minBy$break: do {
+        var iterator = $receiver.iterator();
+        if (!iterator.hasNext()) {
+          minBy$result = null;
+          break minBy$break;
+        }
+        var minElem = iterator.next();
+        if (!iterator.hasNext()) {
+          minBy$result = minElem;
+          break minBy$break;
+        }
+        var minValue = minElem.sqrDistance_czzhiu$(pt.v);
+        do {
+          var e = iterator.next();
+          var v = e.sqrDistance_czzhiu$(pt.v);
+          if (Kotlin.compareTo(minValue, v) > 0) {
+            minElem = e;
+            minValue = v;
+          }
+        }
+         while (iterator.hasNext());
+        minBy$result = minElem;
+      }
+       while (false);
+      var d = ensureNotNull(minBy$result).distance_czzhiu$(pt.v);
+      if (d < this.random_0.randomF()) {
+        break loop_label;
+      }
+    }
+    return pt.v;
+  };
+  TreeTopPointDistribution.prototype.nextPointInBounds_0 = function () {
+    var w = this.width * 0.5;
+    var h = this.height * 0.5;
+    while (true) {
+      this.tmpPt1_0.set_y2kzbl$(this.random_0.randomF_dleff0$(-w, w), this.centerY + this.random_0.randomF_dleff0$(-h, h), this.random_0.randomF_dleff0$(-w, w));
+      var x = this.tmpPt1_0.x * this.tmpPt1_0.x + this.tmpPt1_0.z * this.tmpPt1_0.z;
+      var px = Math_0.sqrt(x);
+      var py = this.tmpPt1_0.y;
+      var y = this.tmpPt1_0.z;
+      var x_0 = this.tmpPt1_0.x;
+      var $receiver = Math_0.atan2(y, x_0) / (2.0 * math.PI) + 0.5;
+      var clamp$result;
+      if ($receiver < 0.0) {
+        clamp$result = 0.0;
+      }
+       else if ($receiver > 1.0) {
+        clamp$result = 1.0;
+      }
+       else {
+        clamp$result = $receiver;
+      }
+      var a = clamp$result * this.borders_0.size;
+      var a_0 = numberToInt(a);
+      var b = this.borders_0.size - 1 | 0;
+      var i0 = Math_0.min(a_0, b);
+      var i1 = (i0 + 1 | 0) % this.borders_0.size;
+      var w1 = a - i0;
+      var w0 = 1.0 - w1;
+      this.nearestEdge_0(px, py, this.borders_0.get_za3lpa$(i0), this.e00_0, this.e01_0);
+      this.nearestEdge_0(px, py, this.borders_0.get_za3lpa$(i1), this.e10_0, this.e11_0);
+      this.e00_0.scale_mx4ult$(w0).add_czzhjp$(this.e10_0.scale_mx4ult$(w1));
+      this.e01_0.scale_mx4ult$(w0).add_czzhjp$(this.e11_0.scale_mx4ult$(w1));
+      var d = (px - this.e00_0.x) * (this.e01_0.y - this.e00_0.y) - (py - this.e00_0.y) * (this.e01_0.x - this.e00_0.x);
+      if (d > 0) {
+        return Vec3f_init_0(this.tmpPt1_0);
+      }
+    }
+  };
+  TreeTopPointDistribution.prototype.nearestEdge_0 = function (px, py, pts, e0, e1) {
+    var tmp$;
+    var minDist = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
+    var ni = 0;
+    tmp$ = pts.size - 1 | 0;
+    for (var i = 0; i < tmp$; i++) {
+      var d = this.edgeDist_0(px, py, e0.set_czzhjp$(pts.get_za3lpa$(i)), e1.set_czzhjp$(pts.get_za3lpa$(i + 1 | 0)));
+      if (d < minDist) {
+        minDist = d;
+        ni = i;
+      }
+    }
+    e0.set_czzhjp$(pts.get_za3lpa$(ni));
+    e1.set_czzhjp$(pts.get_za3lpa$(ni + 1 | 0));
+  };
+  TreeTopPointDistribution.prototype.edgeDist_0 = function (px, py, e0, e1) {
+    var tmp$;
+    e1.subtract_q2ruao$(e0, this.tmpPt2_0);
+    var l = (px * this.tmpPt2_0.x + py * this.tmpPt2_0.y - e0.times_czzhjp$(this.tmpPt2_0)) / this.tmpPt2_0.times_czzhjp$(this.tmpPt2_0);
+    if (l < 0) {
+      var dx = e0.x - px;
+      var dy = e0.y - py;
+      var x = dx * dx + dy * dy;
+      tmp$ = Math_0.sqrt(x);
+    }
+     else if (l > 1) {
+      var dx_0 = e1.x - px;
+      var dy_0 = e1.y - py;
+      var x_0 = dx_0 * dx_0 + dy_0 * dy_0;
+      tmp$ = Math_0.sqrt(x_0);
+    }
+     else {
+      this.tmpPt2_0.scale_mx4ult$(l).add_czzhjp$(e0);
+      var dx_1 = this.tmpPt2_0.x - px;
+      var dy_1 = this.tmpPt2_0.y - py;
+      var x_1 = dx_1 * dx_1 + dy_1 * dy_1;
+      tmp$ = Math_0.sqrt(x_1);
+    }
+    return tmp$;
+  };
+  TreeTopPointDistribution.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'TreeTopPointDistribution',
+    interfaces: [PointDistribution]
+  };
   function uiDemoScene$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
@@ -8901,11 +9195,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   package$portingNeeded.reflectionDemo_aemszp$ = reflectionDemo;
   package$portingNeeded.simpleShapesScene_aemszp$ = simpleShapesScene;
   package$portingNeeded.synthieScene_aemszp$ = synthieScene;
-  package$portingNeeded.TreeGenerator = TreeGenerator;
-  package$portingNeeded.TreeTopPointDistribution = TreeTopPointDistribution;
   package$demo.simplificationDemo_aemszp$ = simplificationDemo;
   package$demo.SimplificationDemo = SimplificationDemo;
   package$demo.treeScene_aemszp$ = treeScene;
+  package$demo.TreeGenerator = TreeGenerator;
+  package$demo.TreeTopPointDistribution = TreeTopPointDistribution;
   package$demo.uiDemoScene = uiDemoScene;
   _.EquiRectCoords = EquiRectCoords;
   _.DecodeRgbeNode = DecodeRgbeNode;

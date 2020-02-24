@@ -11,6 +11,8 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlin.math.cos
+import kotlin.math.sqrt
 
 
 /**
@@ -26,7 +28,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     val dist = TreeTopPointDistribution(1f + h / 2f, w, h)
     //val dist = SphericalPointDistribution(2f, Vec3f(0f, 3f, 0f))
     //val dist = CubicPointDistribution(4f, Vec3f(0f, 3f, 0f))
-    val treeGen = TreeGenerator(dist, baseBot = Vec3f(0f, -0.15f, 0f))
+    val treeGen = TreeGenerator(dist)
     treeGen.generate()
 
     // meshes
@@ -79,17 +81,21 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             val pbrCfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isNormalMapped = true
+                isAmbientOcclusionMapped = true
+                isRoughnessMapped = true
                 isReceivingShadows = true
                 maxLights = 2
             }
             pipelineLoader = PbrShader(pbrCfg).apply {
-                albedoMap = Texture { it.loadTextureData("tree_bark.png") }
-                normalMap = Texture { it.loadTextureData("tree_bark_nrm.png") }
-                roughness = 0.75f
+                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_baseColor.jpg") }
+                ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg") }
+                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg") }
+                roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_roughness.jpg") }
 
                 onDispose += {
-                    albedoMap!!.dispose()
-                    normalMap!!.dispose()
+                    albedoMap?.dispose()
+                    normalMap?.dispose()
+                    roughnessMap?.dispose()
                 }
                 onCreated += {
                     depthMaps?.let { maps ->
@@ -149,7 +155,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
             zoom = 6f
 
-            setMouseRotation(0f, -30f)
+            setMouseRotation(0f, -10f)
             setMouseTranslation(0f, 2f, 0f)
 
             onPreRender += { ctx ->
@@ -173,11 +179,11 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-450f), dps(-535f), zero())
-            layoutSpec.setSize(dps(330f), dps(415f), full())
+            layoutSpec.setOrigin(dps(-450f), dps(-560f), zero())
+            layoutSpec.setSize(dps(330f), dps(440f), full())
 
             var y = -40f
-            +label("Tree Generation") {
+            +label("Generator Settings") {
                 layoutSpec.setOrigin(pcs(0f), dps(y), zero())
                 layoutSpec.setSize(pcs(100f), dps(30f), full())
                 font.setCustom(smallFont)
@@ -324,6 +330,15 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     leafMesh?.isVisible = isEnabled
                 }
             }
+            y -= 35
+            +toggleButton("Auto Rotate") {
+                layoutSpec.setOrigin(dps(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+                isEnabled = autoRotate
+                onStateChange += {
+                    autoRotate = isEnabled
+                }
+            }
         }
     }
 
@@ -346,6 +361,12 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Nod
                     sizeY = groundExt * 2f
                     stepsX = 200
                     stepsY = 200
+
+                    heightFun = { x, y ->
+                        val fx = (x.toFloat() / stepsX - 0.5f) * 7f
+                        val fy = (y.toFloat() / stepsY - 0.5f) * 7f
+                        cos(sqrt(fx*fx + fy*fy)) * 0.2f - 0.2f
+                    }
                 }
             }
             geometry.generateTangents()
@@ -362,12 +383,11 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Nod
             maxLights = 2
         }
         pipelineLoader = PbrShader(pbrCfg).apply {
-            val basePath = Demo.getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")
-            albedoMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg") }
-            normalMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg") }
-            roughnessMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg") }
-            ambientOcclusionMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg") }
-            displacementMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg") }
+            albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg") }
+            normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg") }
+            roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg") }
+            ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg") }
+            displacementMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg") }
 
             onCreated += {
                 depthMaps?.let { maps ->

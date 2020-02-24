@@ -13577,6 +13577,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       maxLights = 4;
     this.depthTextures_rtkbun$_0 = this.depthTextures_rtkbun$_0;
     this.uLightMvps = new UniformMat4fv('lightMvp', maxLights);
+    this.inDepthOffset = new ShaderNodeIoVar(new ModelVar1fConst(-0.01));
     this.inPosition = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
     this.inModelMat = null;
     this.outLightPosLoc_0 = 0;
@@ -13680,7 +13681,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     generator.appendMain_61zpoe$('\n' + '                float shadowFacs[' + this.closure$maxLights + '];' + '\n' + '                float shadowMapSize = float(textureSize(' + this.this$ShadowedLightNode.depthTextures.name + '[0], 0).x);' + '\n' + '                float shadowMapScale = 1.0 / float(shadowMapSize);' + '\n' + '                vec4 shadowProjPos;' + '\n' + '                vec2 shadowOffset;' + '\n' + '            ');
     tmp$ = this.closure$maxLights;
     for (var lightI = 0; lightI < tmp$; lightI++) {
-      generator.appendMain_61zpoe$('\n' + '                    if (' + this.uPositions.name + '[' + lightI + '].w == float(' + Light$Type$SPOT_getInstance().encoded + ')) {' + '\n' + '                        shadowProjPos = ifPosLightSpace[' + lightI + '];' + '\n' + '                        shadowProjPos.z = shadowProjPos.z - 0.001 * shadowProjPos.w;' + '\n' + '                        shadowOffset = vec2(float(fract(shadowProjPos.x * shadowMapSize * 0.5) > 0.25), float(fract(shadowProjPos.y * shadowMapSize * 0.5) > 0.25));' + '\n' + '                        shadowFacs[' + lightI + '] = 0.0;' + '\n' + '                ');
+      generator.appendMain_61zpoe$('\n' + '                    if (' + this.uPositions.name + '[' + lightI + '].w == float(' + Light$Type$SPOT_getInstance().encoded + ')) {' + '\n' + '                        shadowProjPos = ifPosLightSpace[' + lightI + '];' + '\n' + '                        shadowProjPos.z = shadowProjPos.z + ' + this.this$ShadowedLightNode.inDepthOffset.ref1f() + ';' + '\n' + '                        shadowOffset = vec2(float(fract(shadowProjPos.x * shadowMapSize * 0.5) > 0.25), float(fract(shadowProjPos.y * shadowMapSize * 0.5) > 0.25));' + '\n' + '                        shadowFacs[' + lightI + '] = 0.0;' + '\n' + '                ');
       var nSamples = {v: 0};
       var $receiver = listOf([new Vec2f(-1.5, 0.5), new Vec2f(0.5, 0.5), new Vec2f(-1.5, -1.5), new Vec2f(0.5, -1.5)]);
       this.this$ShadowedLightNode;
@@ -38830,7 +38831,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         }
       }
     }
-    if (!md.isBatchUpdate && md.hasChanged || !this.buffersSet_0) {
+    if (!md.isBatchUpdate && (md.hasChanged || !this.buffersSet_0)) {
       var usage = this.$outer.glUsage_0(md.usage);
       this.indexType = WebGLRenderingContext.UNSIGNED_INT;
       (tmp$_3 = this.indexBuffer_0) != null ? (tmp$_3.setData_ysni9y$(md.indices, usage, this.$outer.ctx), Unit) : null;

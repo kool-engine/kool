@@ -187,6 +187,8 @@ class TreeGenerator(val distribution: PointDistribution,
 
         var radius = 0.005f
         var texV = 0f
+        var uScale = 1f
+        var vScale = 3f
         val circumPts = mutableListOf<Vec3f>()
 
         fun addChild(node: TreeNode) {
@@ -227,6 +229,12 @@ class TreeGenerator(val distribution: PointDistribution,
                     (children.maxBy { it.branchDepth }?.branchDepth ?: 0) + 1
                 }
             }
+            if (parent == null) {
+                // tree root
+                radius *= 3f
+                children[0].radius *= 1.5f
+                children[0].computeCircumPoints()
+            }
         }
 
         fun computeCircumPoints() {
@@ -247,19 +255,21 @@ class TreeGenerator(val distribution: PointDistribution,
         }
 
         fun buildTrunkMesh(target: MeshBuilder) {
+            val uScale = if (radius > 0.05f) { 2f } else { 1f } * this.uScale
+
             val idcs = mutableListOf<Int>()
             if (parent != null) {
                 if (children.isEmpty()) {
                     val tipIdx = target.geometry.addVertex {
                         position.set(this@TreeNode)
                         this@TreeNode.subtract(parent!!, normal).norm()
-                        texCoord.set(0f, texV)
+                        texCoord.set(0f, texV * vScale)
                     }
                     for (i in 0..8) {
                         idcs += target.geometry.addVertex {
                             position.set(parent!!.circumPts[i%8])
                             parent!!.circumPts[i%8].subtract(parent!!, normal).norm()
-                            texCoord.set(i / 8f, parent!!.texV)
+                            texCoord.set(i / 8f * uScale, parent!!.texV * vScale)
                         }
                     }
                     for (i in 0 until 8) {
@@ -271,12 +281,12 @@ class TreeGenerator(val distribution: PointDistribution,
                         idcs += target.geometry.addVertex {
                             position.set(circumPts[i%8])
                             circumPts[i%8].subtract(this@TreeNode, normal).norm()
-                            texCoord.set(i / 8f, texV)
+                            texCoord.set(i / 8f * uScale, texV * vScale)
                         }
                         idcs += target.geometry.addVertex {
                             position.set(parent!!.circumPts[i%8])
                             parent!!.circumPts[i%8].subtract(parent!!, normal).norm()
-                            texCoord.set(i / 8f, parent!!.texV)
+                            texCoord.set(i / 8f * uScale, parent!!.texV * vScale)
                         }
                     }
                     for (i in 0 until 8) {
