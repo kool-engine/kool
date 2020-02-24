@@ -102,6 +102,7 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
 
     val uLightMvps = UniformMat4fv("lightMvp", maxLights)
 
+    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar((ModelVar1fConst(-0.01f)))
     var inPosition: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
     var inModelMat: ShaderNodeIoVar? = null
 
@@ -193,7 +194,7 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
                 generator.appendMain("""
                     if (${uPositions.name}[$lightI].w == float(${Light.Type.SPOT.encoded})) {
                         shadowProjPos = ifPosLightSpace[$lightI];
-                        shadowProjPos.z = shadowProjPos.z - 0.001 * shadowProjPos.w;
+                        shadowProjPos.z = shadowProjPos.z + ${inDepthOffset.ref1f()};
                         shadowOffset = vec2(float(fract(shadowProjPos.x * shadowMapSize * 0.5) > 0.25), float(fract(shadowProjPos.y * shadowMapSize * 0.5) > 0.25));
                         shadowFacs[$lightI] = 0.0;
                 """)
