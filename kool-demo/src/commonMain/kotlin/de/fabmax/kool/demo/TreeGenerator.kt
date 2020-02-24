@@ -399,7 +399,7 @@ class TreeTopPointDistribution(val centerY: Float, val width: Float, val height:
             val py = tmpPt1.y
 
             val a = (atan2(tmpPt1.z, tmpPt1.x) / (2f * PI.toFloat()) + 0.5f).clamp(0f, 1f) * borders.size
-            val i0 = a.toInt()
+            val i0 = min(a.toInt(), borders.size-1)
             val i1 = (i0 + 1) % borders.size
             val w1 = a - i0
             val w0 = 1f - w1

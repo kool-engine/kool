@@ -26,7 +26,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     val dist = TreeTopPointDistribution(1f + h / 2f, w, h)
     //val dist = SphericalPointDistribution(2f, Vec3f(0f, 3f, 0f))
     //val dist = CubicPointDistribution(4f, Vec3f(0f, 3f, 0f))
-    val treeGen = TreeGenerator(dist)
+    val treeGen = TreeGenerator(dist, baseBot = Vec3f(0f, -0.15f, 0f))
     treeGen.generate()
 
     // meshes
@@ -337,18 +337,15 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Nod
         isCastingShadow = false
         generate {
             withTransform {
-                rotate(-90f, Vec3f.X_AXIS)
                 color = Color.LIGHT_GRAY.withAlpha(0.2f)
-                rect {
-                    origin.set(-groundExt.toFloat(), -groundExt.toFloat(), 0f)
-                    width = groundExt * 2f
-                    height = groundExt * 2f
-
-                    val uv = groundExt.toFloat() / 2
-                    texCoordUpperLeft.set(-uv, -uv)
-                    texCoordUpperRight.set(uv, -uv)
-                    texCoordLowerLeft.set(-uv, uv)
-                    texCoordLowerRight.set(uv, uv)
+                vertexModFun = {
+                    texCoord.set(position.x, position.z).scale(0.2f)
+                }
+                grid {
+                    sizeX = groundExt * 2f
+                    sizeY = groundExt * 2f
+                    stepsX = 200
+                    stepsY = 200
                 }
             }
             geometry.generateTangents()
@@ -357,14 +354,20 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Nod
         val pbrCfg = PbrShader.PbrConfig().apply {
             albedoSource = Albedo.TEXTURE_ALBEDO
             isNormalMapped = true
+            isAmbientOcclusionMapped = true
+            isRoughnessMapped = true
+            isDisplacementMapped = true
+
             isReceivingShadows = true
-            normalStrength = 0.25f
             maxLights = 2
         }
         pipelineLoader = PbrShader(pbrCfg).apply {
-            albedoMap = Texture { it.loadTextureData("ground_color.png") }
-            normalMap = Texture { it.loadTextureData("ground_nrm.png") }
-            roughness = 0.3f
+            val basePath = Demo.getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")
+            albedoMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg") }
+            normalMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_Nor_2k.jpg") }
+            roughnessMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg") }
+            ambientOcclusionMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg") }
+            displacementMap = Texture { it.loadTextureData("$basePath/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg") }
 
             onCreated += {
                 depthMaps?.let { maps ->
@@ -377,8 +380,11 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Nod
             }
 
             onDispose += {
-                albedoMap!!.dispose()
-                normalMap!!.dispose()
+                albedoMap?.dispose()
+                normalMap?.dispose()
+                roughnessMap?.dispose()
+                ambientOcclusionMap?.dispose()
+                displacementMap?.dispose()
             }
         }
     }
