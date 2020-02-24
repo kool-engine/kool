@@ -123,10 +123,9 @@ class MultiLightDemo(ctx: KoolContext) {
                 isReceivingShadows = true
             }
             pipelineLoader = PbrShader(cfg).apply {
-                val basePath = Demo.getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")
-                albedoMap = Texture { it.loadTextureData("$basePath/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
-                normalMap = Texture { it.loadTextureData("$basePath/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
-                roughnessMap = Texture { it.loadTextureData("$basePath/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg") }
+                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
+                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
+                roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg") }
                 metallic = 0f
 
                 onDispose += {

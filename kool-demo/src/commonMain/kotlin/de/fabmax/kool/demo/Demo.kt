@@ -26,7 +26,7 @@ fun demo(startScene: String? = null) {
 
 class Demo(ctx: KoolContext, startScene: String? = null) {
 
-    private val dbgOverlay = DebugOverlay(ctx, Position.LOWER_LEFT)
+    private val dbgOverlay = DebugOverlay(ctx, Position.LOWER_RIGHT)
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
@@ -131,6 +131,9 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
 
     companion object {
         val demoProps = mutableMapOf<String, Any>()
+
+        val pbrBasePath: String
+            get() = getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")
 
         fun setProperty(key: String, value: Any) {
             demoProps[key] = value

@@ -179,7 +179,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
         private val defaultAoTex = SingleColorTexture(Color.WHITE)
         private val defaultDispTex = SingleColorTexture(Color.BLACK)
 
-        private val assetPath = Demo.getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")
+        private val assetPath = Demo.pbrBasePath
         
         private val materials = mutableListOf(
                 MaterialMaps(
