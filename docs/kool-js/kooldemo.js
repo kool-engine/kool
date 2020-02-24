@@ -156,9 +156,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
+  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
-  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
   var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
@@ -340,19 +340,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function Demo$demoOverlay$lambda$lambda$lambda_2(this$, this$Demo) {
-    return function ($receiver, it) {
-      this$Demo.dbgOverlay_0.xOffset = this$.animationPos * this$.width;
-      return Unit;
-    };
-  }
   function Demo$demoOverlay$lambda$lambda_0(this$Demo, closure$ctx, this$) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.container_t34sov$('demos', Demo$demoOverlay$lambda$lambda$lambda_0(this$Demo, closure$ctx, $receiver, this$)));
       $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('showDbg', Demo$demoOverlay$lambda$lambda$lambda_1(this$Demo)));
-      var $receiver_0 = $receiver.onPreRender;
-      var element = Demo$demoOverlay$lambda$lambda$lambda_2($receiver, this$Demo);
-      $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
@@ -7720,18 +7711,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var w = 3.0;
     var h = 3.5;
     var dist = new TreeTopPointDistribution(1.0 + h / 2.0, w, h);
-    var treeGen = new TreeGenerator(dist);
+    var treeGen = new TreeGenerator(dist, void 0, void 0, (new MutableVec3f(-1.0, -1.5, -1.0)).norm());
     treeGen.generate_za3lpa$();
     var trunkMesh = {v: null};
     var leafMesh = {v: null};
     var autoRotate = {v: true};
     var $receiver = new Scene_init(null);
+    var dirLighDirection = new Vec3f(1.0, -1.5, -1.0);
+    var spotLightPos = new Vec3f(10.0, 15.0, 10.0);
     var $receiver_0 = $receiver.lighting.lights;
     $receiver_0.clear();
-    var pos = new Vec3f(10.0, 15.0, 10.0);
-    $receiver_0.add_11rb$((new Light()).setSpot_nve3wz$(pos, pos.scale_749b8l$(-1.0, MutableVec3f_init()).norm(), 45.0).setColor_y83vuj$(Color.Companion.YELLOW.mix_y83vuj$(Color.Companion.WHITE, 0.6), 1000.0));
-    pos = new Vec3f(-10.0, 15.0, -10.0);
-    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(pos.scale_749b8l$(-1.0, MutableVec3f_init()).norm()).setColor_y83vuj$(Color.Companion.LIGHT_BLUE.mix_y83vuj$(Color.Companion.WHITE, 0.5), 1.0));
+    $receiver_0.add_11rb$((new Light()).setSpot_nve3wz$(spotLightPos, spotLightPos.scale_749b8l$(-1.0, MutableVec3f_init()).norm(), 45.0).setColor_y83vuj$(Color.Companion.YELLOW.mix_y83vuj$(Color.Companion.WHITE, 0.6), 1000.0));
+    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(dirLighDirection.norm_5s4mqq$(MutableVec3f_init())).setColor_y83vuj$(Color.Companion.LIGHT_BLUE.mix_y83vuj$(Color.Companion.WHITE, 0.5), 1.0));
     var shadowMaps = mutableListOf([new ShadowMapPass($receiver, $receiver.lighting.lights.get_za3lpa$(0), 2048), new ShadowMapPass($receiver, $receiver.lighting.lights.get_za3lpa$(1), 32)]);
     var tmp$;
     tmp$ = shadowMaps.iterator();
@@ -8094,16 +8085,19 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var groundExt = cells / 2 | 0;
     return textureMesh(void 0, true, makeTreeGroundGrid$lambda(groundExt, shadowMaps));
   }
-  function TreeGenerator(distribution, baseTop, baseBot, random) {
+  function TreeGenerator(distribution, baseTop, baseBot, primaryLightDir, random) {
     if (baseTop === void 0)
       baseTop = new Vec3f(0.0, 1.0, 0.0);
     if (baseBot === void 0)
       baseBot = Vec3f.Companion.ZERO;
+    if (primaryLightDir === void 0)
+      primaryLightDir = null;
     if (random === void 0)
       random = math_0.defaultRandomInstance;
     this.distribution = distribution;
     this.baseTop = baseTop;
     this.baseBot = baseBot;
+    this.primaryLightDir = primaryLightDir;
     this.random = random;
     this.radiusOfInfluence = 1.0;
     this.growDistance = 0.15;
@@ -8267,8 +8261,15 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     for (var i = 0; i < tmp$_0; i++) {
       $this.vertexIt.index = i;
       var it = $this.vertexIt;
-      if (it.normal.y < 0) {
-        it.normal.scale_mx4ult$(-1.0);
+      if (this.primaryLightDir != null) {
+        if (it.normal.dot_czzhiu$(this.primaryLightDir) > 0) {
+          it.normal.scale_mx4ult$(-1.0);
+        }
+      }
+       else {
+        if (it.normal.y < 0) {
+          it.normal.scale_mx4ult$(-1.0);
+        }
       }
     }
   };
@@ -8562,11 +8563,27 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         this.$outer;
         target.transform.push();
         var this$TreeGenerator = this.$outer;
+        var tmp$;
         var r = MutableVec3f_init_0(this.circumPts.get_za3lpa$(0)).subtract_czzhiu$(this).norm().scale_mx4ult$(this.radius + this$TreeGenerator.random.randomF_dleff0$(0.0, 0.15));
         r.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
         var p = MutableVec3f_init_0(n).scale_mx4ult$(this$TreeGenerator.random.randomF_dleff0$(0.0, len)).add_czzhiu$(r).add_czzhiu$(this);
         target.translate_czzhiu$(p);
-        target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
+        var tries = 0;
+        do {
+          if (n.dot_czzhiu$(Vec3f.Companion.X_AXIS) < n.dot_czzhiu$(Vec3f.Companion.Z_AXIS)) {
+            target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), Vec3f.Companion.X_AXIS);
+          }
+           else {
+            target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), Vec3f.Companion.Z_AXIS);
+          }
+          target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
+          var tmp$_0 = this$TreeGenerator.primaryLightDir != null;
+          if (tmp$_0) {
+            var x = target.transform.transform_w1lst9$(MutableVec3f_init_0(Vec3f.Companion.NEG_Z_AXIS), 0.0).dot_czzhiu$(this$TreeGenerator.primaryLightDir);
+            tmp$_0 = Math_0.abs(x) < 0.1;
+          }
+        }
+         while (tmp$_0 && (tmp$ = tries, tries = tmp$ + 1 | 0, tmp$) < 3);
         var i0 = target.vertex_n440gp$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 0.0));
         var i1 = target.vertex_n440gp$(new Vec3f(0.0, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 1.0));
         var i2 = target.vertex_n440gp$(new Vec3f(0.1, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(1.0, 1.0));

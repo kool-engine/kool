@@ -28,7 +28,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     val dist = TreeTopPointDistribution(1f + h / 2f, w, h)
     //val dist = SphericalPointDistribution(2f, Vec3f(0f, 3f, 0f))
     //val dist = CubicPointDistribution(4f, Vec3f(0f, 3f, 0f))
-    val treeGen = TreeGenerator(dist)
+    val treeGen = TreeGenerator(dist, primaryLightDir = MutableVec3f(-1f, -1.5f, -1f).norm())
     treeGen.generate()
 
     // meshes
@@ -38,16 +38,15 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     var autoRotate = true
 
     val treeScene = scene {
-        //lighting.useDefaultShadowMap(ctx)
+        val dirLighDirection = Vec3f(1f, -1.5f, -1f)
+        val spotLightPos = Vec3f(10f, 15f, 10f)
         lighting.lights.apply {
             clear()
-            var pos = Vec3f(10f, 15f, 10f)
             add(Light()
-                    .setSpot(pos, pos.scale(-1f, MutableVec3f()).norm(), 45f)
+                    .setSpot(spotLightPos, spotLightPos.scale(-1f, MutableVec3f()).norm(), 45f)
                     .setColor(Color.YELLOW.mix(Color.WHITE, 0.6f), 1000f))
-            pos = Vec3f(-10f, 15f, -10f)
             add(Light()
-                    .setDirectional(pos.scale(-1f, MutableVec3f()).norm())
+                    .setDirectional(dirLighDirection.norm(MutableVec3f()))
                     .setColor(Color.LIGHT_BLUE.mix(Color.WHITE, 0.5f), 1f))
         }
 

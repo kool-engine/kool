@@ -121,9 +121,9 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
                 onClick += { _,_,_ -> dbgOverlay.ui.isVisible = isEnabled }
             }
 
-            onPreRender += {
-                dbgOverlay.xOffset = animationPos * width
-            }
+//            onPreRender += {
+//                dbgOverlay.xOffset = animationPos * width
+//            }
         }
     }
 

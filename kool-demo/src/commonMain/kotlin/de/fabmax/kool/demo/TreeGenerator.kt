@@ -8,6 +8,7 @@ import kotlin.math.*
 class TreeGenerator(val distribution: PointDistribution,
                     val baseTop: Vec3f = Vec3f(0f, 1f, 0f),
                     val baseBot: Vec3f = Vec3f.ZERO,
+                    val primaryLightDir: Vec3f? = null,
                     val random: Random = defaultRandomInstance) {
 
     var radiusOfInfluence = 1.0f
@@ -139,9 +140,15 @@ class TreeGenerator(val distribution: PointDistribution,
     fun buildLeafMesh(target: MeshBuilder) {
         treeNodes.forEach { it.buildLeafMesh(target) }
         target.geometry.forEach {
-            // ensure normals point upwards
-            if (it.normal.y < 0) {
-                it.normal.scale(-1f)
+            if (primaryLightDir != null) {
+                // ensure normals point towards light
+                if (it.normal.dot(primaryLightDir) > 0) {
+                    it.normal.scale(-1f)
+                }
+            } else {
+                if (it.normal.y < 0) {
+                    it.normal.scale(-1f)
+                }
             }
         }
     }
@@ -310,7 +317,18 @@ class TreeGenerator(val distribution: PointDistribution,
                         val p = MutableVec3f(n).scale(random.randomF(0f, len)).add(r).add(this@TreeNode)
 
                         translate(p)
-                        rotate(random.randomF(0f, 360f), n)
+
+                        var tries = 0
+                        do {
+                            if (n.dot(X_AXIS) < n.dot(Z_AXIS)) {
+                                rotate(random.randomF(0f, 360f), X_AXIS)
+                            } else {
+                                rotate(random.randomF(0f, 360f), Z_AXIS)
+                            }
+                            rotate(random.randomF(0f, 360f), n)
+                        } while (primaryLightDir != null &&
+                                abs(transform.transform(MutableVec3f(NEG_Z_AXIS), 0f).dot(primaryLightDir)) < 0.1 &&
+                                tries++ < 3)
 
                         val i0 = vertex(Vec3f(0f, -0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 0f))
                         val i1 = vertex(Vec3f(0f, 0.022f, 0f), NEG_Z_AXIS, Vec2f(0f, 1f))
