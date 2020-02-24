@@ -1,8 +1,6 @@
 package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.demo.portingNeeded.TreeGenerator
-import de.fabmax.kool.demo.portingNeeded.TreeTopPointDistribution
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CullMethod
