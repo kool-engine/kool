@@ -9,9 +9,6 @@ import kotlin.collections.set
 fun main() {
     Demo.setProperty("assetsBaseDir", "../assets")
 
-    Demo.setProperty("pbrDemo.envMaps", "skybox/hdri")
-    Demo.setProperty("pbrDemo.materials", "reserve/pbr/materials")
-
     // launch demo
     demo(getParams()["demo"])
 }

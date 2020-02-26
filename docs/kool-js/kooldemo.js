@@ -9147,8 +9147,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function main() {
     Demo$Companion_getInstance().setProperty_bm4g0d$('assetsBaseDir', '../assets');
-    Demo$Companion_getInstance().setProperty_bm4g0d$('pbrDemo.envMaps', 'skybox/hdri');
-    Demo$Companion_getInstance().setProperty_bm4g0d$('pbrDemo.materials', 'reserve/pbr/materials');
     demo(getParams().get_11rb$('demo'));
   }
   function getParams() {
