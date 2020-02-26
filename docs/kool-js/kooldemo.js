@@ -60,7 +60,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var math_0 = $module$kool.de.fabmax.kool.math;
   var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
   var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
-  var setOf = Kotlin.kotlin.collections.setOf_i5x0yv$;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
   var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList;
@@ -1571,7 +1570,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       colors.add_11rb$(element_2);
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
-          var attributes = setOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+          var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
           var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
           var closure$withIbl_0 = closure$withIbl;
           var closure$irradianceMap_0 = closure$irradianceMap;
@@ -2053,7 +2052,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function PbrDemo$Companion() {
     PbrDemo$Companion_instance = this;
     this.hdriTexProps_0 = new TextureProps(void 0, void 0, void 0, void 0, FilterMethod.NEAREST, FilterMethod.NEAREST, true);
-    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().pbrBasePath + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().pbrBasePath + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().pbrBasePath + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(Demo$Companion_getInstance().pbrBasePath + '/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
+    var $this = Demo$Companion_getInstance();
+    var key = 'pbrDemo.envMaps';
+    var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri';
+    var tmp$, tmp$_0;
+    this.hdriPath_0 = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
+    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
     this.lightStrength_0 = 250.0;
     this.lightExtent_0 = 10.0;
     this.lightSetups_0 = listOf([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);
@@ -4422,7 +4426,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var spacing = 2.5;
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
-          var attributes = setOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+          var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
           var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
           var closure$withIbl_0 = closure$withIbl;
           var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
@@ -7248,6 +7252,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver_1.ambientOcclusionMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_0);
       $receiver_1.normalMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_1);
       $receiver_1.roughnessMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_2);
+      $receiver_1.ambient = new Color(0.15, 0.15, 0.15);
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_3($receiver_1));
       $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1, closure$shadowMaps_0));
       $receiver.pipelineLoader = $receiver_1;
@@ -9142,6 +9147,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function main() {
     Demo$Companion_getInstance().setProperty_bm4g0d$('assetsBaseDir', '../assets');
+    Demo$Companion_getInstance().setProperty_bm4g0d$('pbrDemo.envMaps', 'skybox/hdri');
+    Demo$Companion_getInstance().setProperty_bm4g0d$('pbrDemo.materials', 'reserve/pbr/materials');
     demo(getParams().get_11rb$('demo'));
   }
   function getParams() {

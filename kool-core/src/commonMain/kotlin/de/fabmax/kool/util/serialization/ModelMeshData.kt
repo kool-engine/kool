@@ -90,7 +90,7 @@ data class ModelMeshData(
     }
 
     fun toMesh(model: ModelData? = null, generateNormals: Boolean = true, generateTangents: Boolean = false): Mesh {
-        val attribs = mutableSetOf(Attribute.POSITIONS)
+        val attribs = mutableListOf(Attribute.POSITIONS)
         if (hasNormals || generateNormals) { attribs += Attribute.NORMALS }
         if (hasTangents || generateTangents) { attribs += Attribute.TANGENTS }
         if (hasColors) { attribs += Attribute.COLORS }

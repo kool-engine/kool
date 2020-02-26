@@ -33964,6 +33964,18 @@
     function formatScientific(value) {
       return value.toExponential(2);
     }
+    function get_as_($receiver) {
+      return $receiver.as;
+    }
+    function set_as_($receiver, value) {
+      $receiver.as = value;
+    }
+    function get_is_($receiver) {
+      return $receiver.is;
+    }
+    function set_is_($receiver, value) {
+      $receiver.is = value;
+    }
     var WebGLContextAttributes = defineInlineFunction('kotlin.org.khronos.webgl.WebGLContextAttributes_2tn698$', function (alpha, depth, stencil, antialias, premultipliedAlpha, preserveDrawingBuffer, preferLowPowerToHighPerformance, failIfMajorPerformanceCaveat) {
       if (alpha === void 0)
         alpha = true;
@@ -35198,6 +35210,9 @@
       o['toBox'] = toBox;
       return o;
     });
+    var get_41 = defineInlineFunction('kotlin.org.w3c.dom.get_nc7obz$', function ($receiver, index) {
+      return $receiver[index];
+    });
     var get_LOADING = defineInlineFunction('kotlin.org.w3c.dom.get_LOADING_cuyr1n$', function ($receiver) {
       return 'loading';
     });
@@ -35975,37 +35990,37 @@
       o['clipped'] = clipped;
       return o;
     });
-    var get_41 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_2fgwj9$', function ($receiver, index) {
+    var get_42 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_2fgwj9$', function ($receiver, index) {
       return $receiver[index];
     });
     var set_13 = defineInlineFunction('kotlin.org.w3c.dom.svg.set_xg4o68$', function ($receiver, index, newItem) {
       $receiver[index] = newItem;
     });
-    var get_42 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_nujcb1$', function ($receiver, index) {
+    var get_43 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_nujcb1$', function ($receiver, index) {
       return $receiver[index];
     });
     var set_14 = defineInlineFunction('kotlin.org.w3c.dom.svg.set_vul1sp$', function ($receiver, index, newItem) {
       $receiver[index] = newItem;
     });
-    var get_43 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_ml6vgw$', function ($receiver, index) {
+    var get_44 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_ml6vgw$', function ($receiver, index) {
       return $receiver[index];
     });
     var set_15 = defineInlineFunction('kotlin.org.w3c.dom.svg.set_tsl60p$', function ($receiver, index, newItem) {
       $receiver[index] = newItem;
     });
-    var get_44 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_f2nmth$', function ($receiver, index) {
+    var get_45 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_f2nmth$', function ($receiver, index) {
       return $receiver[index];
     });
     var set_16 = defineInlineFunction('kotlin.org.w3c.dom.svg.set_nr97t$', function ($receiver, index, newItem) {
       $receiver[index] = newItem;
     });
-    var get_45 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_xcci3g$', function ($receiver, index) {
+    var get_46 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_xcci3g$', function ($receiver, index) {
       return $receiver[index];
     });
     var set_17 = defineInlineFunction('kotlin.org.w3c.dom.svg.set_7s907r$', function ($receiver, index, newItem) {
       $receiver[index] = newItem;
     });
-    var get_46 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_r7cbpc$', function ($receiver, index) {
+    var get_47 = defineInlineFunction('kotlin.org.w3c.dom.svg.get_r7cbpc$', function ($receiver, index) {
       return $receiver[index];
     });
     var set_18 = defineInlineFunction('kotlin.org.w3c.dom.svg.set_8k1hvb$', function ($receiver, index, newItem) {
@@ -36216,7 +36231,7 @@
       o['type'] = type;
       return o;
     });
-    var get_47 = defineInlineFunction('kotlin.org.w3c.files.get_frimup$', function ($receiver, index) {
+    var get_48 = defineInlineFunction('kotlin.org.w3c.files.get_frimup$', function ($receiver, index) {
       return $receiver[index];
     });
     var NotificationOptions = defineInlineFunction('kotlin.org.w3c.notifications.NotificationOptions_kxkl36$', function (dir, lang, body, tag, image, icon, badge, sound, vibrate, timestamp, renotify, silent, noscreen, requireInteraction, sticky, data, actions) {
@@ -38294,7 +38309,7 @@
         return (Kotlin.isType(tmp$ = $receiver, Map) ? tmp$ : throwCCE()).containsKey_11rb$(key);
       };
     }));
-    var get_48 = defineInlineFunction('kotlin.kotlin.collections.get_4pa84t$', wrapFunction(function () {
+    var get_49 = defineInlineFunction('kotlin.kotlin.collections.get_4pa84t$', wrapFunction(function () {
       var Map = _.kotlin.collections.Map;
       var throwCCE = Kotlin.throwCCE;
       return function ($receiver, key) {
@@ -44237,7 +44252,7 @@
     function KotlinVersion$Companion() {
       KotlinVersion$Companion_instance = this;
       this.MAX_COMPONENT_VALUE = 255;
-      this.CURRENT = new KotlinVersion(1, 3, 60);
+      this.CURRENT = new KotlinVersion(1, 3, 61);
     }
     KotlinVersion$Companion.$metadata$ = {kind: Kind_OBJECT, simpleName: 'Companion', interfaces: []};
     var KotlinVersion$Companion_instance = null;
@@ -49849,6 +49864,10 @@
     package$time.formatToExactDecimals_coldnx$ = formatToExactDecimals;
     package$time.formatUpToDecimals_coldnx$ = formatUpToDecimals;
     package$time.formatScientific_tq0o01$ = formatScientific;
+    package$dom_0.get_as__xbdrh1$ = get_as_;
+    package$dom_0.set_as__lprayv$ = set_as_;
+    package$dom_0.get_is__jkvip$ = get_is_;
+    package$dom_0.set_is__ri92sw$ = set_is_;
     package$dom_0.get_NONZERO_mhbikd$ = get_NONZERO;
     package$dom_0.get_NONE_xgljrz$ = get_NONE;
     package$dom_0.get_DEFAULT_b5608t$ = get_DEFAULT;

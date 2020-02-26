@@ -316,11 +316,12 @@ class PbrDemo(val ctx: KoolContext) {
                 magFilter = FilterMethod.NEAREST,
                 mipMapping = true)
 
+        private val hdriPath = Demo.getProperty("pbrDemo.envMaps", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri")
         private val hdriTextures = listOf(
-                EnvironmentMap("${Demo.pbrBasePath}/circus_arena_1k.rgbe.png", "Circus"),
-                EnvironmentMap("${Demo.pbrBasePath}/newport_loft.rgbe.png", "Loft"),
-                EnvironmentMap("${Demo.pbrBasePath}/spruit_sunrise_1k.rgbe.png", "Sunrise"),
-                EnvironmentMap("${Demo.pbrBasePath}/shanghai_bund_1k.rgbe.png", "Shanghai")
+                EnvironmentMap("${hdriPath}/circus_arena_1k.rgbe.png", "Circus"),
+                EnvironmentMap("${hdriPath}/newport_loft.rgbe.png", "Loft"),
+                EnvironmentMap("${hdriPath}/spruit_sunrise_1k.rgbe.png", "Sunrise"),
+                EnvironmentMap("${hdriPath}/shanghai_bund_1k.rgbe.png", "Shanghai")
         )
 
         private const val lightStrength = 250f

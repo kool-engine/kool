@@ -31,7 +31,7 @@ class BrdfLutPass {
                     top = 1f
                     bottom = 0f
                 }
-                +mesh(setOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+                +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
                     generate {
                         rect {
                             size.set(1f, 1f)

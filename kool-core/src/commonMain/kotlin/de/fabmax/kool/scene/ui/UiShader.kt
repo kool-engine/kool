@@ -41,7 +41,7 @@ class UiShader(font: Texture? = SingleColorTexture(Color.WHITE)) : ModeledShader
     }
 
     companion object {
-        val UI_MESH_ATTRIBS = setOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, Attribute.COLORS)
+        val UI_MESH_ATTRIBS = listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, Attribute.COLORS)
 
         private const val U_ALPHA = "uAlpha"
         private const val U_FONT_TEX = "uFontTex"

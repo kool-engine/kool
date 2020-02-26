@@ -26,7 +26,7 @@ class IrradianceMapPass(hdriTexture: Texture) {
         offscreenPass = OffscreenPassCube(32, 32, 1, TexFormat.RGBA_F16).apply {
             isSingleShot = true
             scene = scene {
-                +mesh(setOf(Attribute.POSITIONS)) {
+                +mesh(listOf(Attribute.POSITIONS)) {
                     generate {
                         cube { centered() }
                     }

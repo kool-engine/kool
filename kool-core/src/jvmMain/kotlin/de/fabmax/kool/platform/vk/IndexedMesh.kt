@@ -73,7 +73,7 @@ class IndexedMesh(val sys: VkSystem, val data: IndexedVertexList) : VkResource()
             val positions = model.meshes[0].attributes[ModelMeshData.ATTRIB_POSITIONS] ?: throw NoSuchElementException("No positions")
             val texCoords = model.meshes[0].attributes[ModelMeshData.ATTRIB_TEXTURE_COORDS] ?: throw NoSuchElementException("No texture coordinates")
 
-            val data = IndexedVertexList(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS))
+            val data = IndexedVertexList(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS))
             for (i in 0 until model.meshes[0].numVertices) {
                 data.addVertex {
                     position.set(positions[i*3 + 0], positions[i*3 + 1], positions[i*3 + 2])

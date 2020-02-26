@@ -10,7 +10,12 @@ import de.fabmax.kool.pipeline.GlslType
 import kotlin.math.max
 import kotlin.math.round
 
-class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
+class IndexedVertexList(val vertexAttributes: List<Attribute>) {
+
+    /**
+     * Hash of present vertexAttributes, can be used to check for same attributes (incl. order) of two IndexedVertexLists
+     */
+    val attributeHash: Long = vertexAttributes.fold(0L) { h, a -> h * 31 + a.hashCode() }
 
     /**
      * Number of floats per vertex. E.g. a vertex containing only a position consists of 3 floats.
@@ -74,7 +79,7 @@ class IndexedVertexList(val vertexAttributes: Set<Attribute>) {
     var hasChanged = true
     var isBatchUpdate = false
 
-    constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toHashSet())
+    constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toList())
 
     init {
         var cntF = 0

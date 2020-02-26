@@ -101,7 +101,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var toByte = Kotlin.toByte;
   var MutableCollection = Kotlin.kotlin.collections.MutableCollection;
   var toString = Kotlin.toString;
-  var setOf = Kotlin.kotlin.collections.setOf_i5x0yv$;
   var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
@@ -120,14 +119,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var get_indices_1 = Kotlin.kotlin.text.get_indices_gw00vp$;
   var Map = Kotlin.kotlin.collections.Map;
   var isNaN_0 = Kotlin.kotlin.isNaN_81szk$;
-  var toHashSet = Kotlin.kotlin.collections.toHashSet_us0mfu$;
+  var toList = Kotlin.kotlin.collections.toList_us0mfu$;
   var MutableList = Kotlin.kotlin.collections.MutableList;
   var step = Kotlin.kotlin.ranges.step_xsgg7u$;
   var toMutableList = Kotlin.kotlin.collections.toMutableList_4c7yge$;
   var iterator = Kotlin.kotlin.text.iterator_gw00vp$;
   var MutableIterator = Kotlin.kotlin.collections.MutableIterator;
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
-  var setOf_0 = Kotlin.kotlin.collections.setOf_mh5how$;
+  var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
   var Collection = Kotlin.kotlin.collections.Collection;
   var ProtoBuf = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.protobuf.ProtoBuf;
   var getKClass = Kotlin.getKClass;
@@ -140,7 +139,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var plus = Kotlin.kotlin.collections.plus_qloxvw$;
   var IllegalStateException_init_0 = Kotlin.kotlin.IllegalStateException_init;
   var async = $module$kotlinx_coroutines_core.kotlinx.coroutines.async_pda6u4$;
-  var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
   var lines = Kotlin.kotlin.text.lines_gw00vp$;
   var joinToString = Kotlin.kotlin.collections.joinToString_fmv235$;
   var StringBuilder = Kotlin.kotlin.text.StringBuilder;
@@ -18793,7 +18791,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.meshV_mh84a9$_0 = null;
     this.origV_nmaa6d$_0 = null;
     var tmp$, tmp$_0;
-    var armatureAttribs = mutableSetOf([Armature$Companion_getInstance().BONE_WEIGHTS, Armature$Companion_getInstance().BONE_INDICES]);
+    var armatureAttribs = mutableListOf([Armature$Companion_getInstance().BONE_WEIGHTS, Armature$Companion_getInstance().BONE_INDICES]);
     armatureAttribs.addAll_brywnq$(geometry.vertexAttributes);
     this.geometry = new IndexedVertexList(armatureAttribs);
     this.origV_nmaa6d$_0 = this.originalGeometry_x1vy6v$_0.get_za3lpa$(0);
@@ -21301,7 +21299,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'LineMesh',
     interfaces: [Mesh]
   };
-  var mesh = defineInlineFunction('kool.de.fabmax.kool.scene.mesh_4eyjyg$', wrapFunction(function () {
+  var mesh = defineInlineFunction('kool.de.fabmax.kool.scene.mesh_ycs46o$', wrapFunction(function () {
     var IndexedVertexList_init = _.de.fabmax.kool.util.IndexedVertexList;
     var Mesh_init = _.de.fabmax.kool.scene.Mesh;
     return function (attributes, name, block) {
@@ -21315,14 +21313,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function colorMesh(name, generate) {
     if (name === void 0)
       name = null;
-    var mesh = new Mesh(new IndexedVertexList(setOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().COLORS])), name);
+    var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().COLORS])), name);
     generate(mesh);
     return mesh;
   }
   function textMesh(font, name, generate) {
     if (name === void 0)
       name = null;
-    var mesh = new Mesh(new IndexedVertexList(setOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().TEXTURE_COORDS])), name);
+    var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().TEXTURE_COORDS])), name);
     generate(mesh);
     var text = mesh;
     return text;
@@ -21332,7 +21330,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       name = null;
     if (isNormalMapped === void 0)
       isNormalMapped = false;
-    var attributes = mutableSetOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().TEXTURE_COORDS]);
+    var attributes = mutableListOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().TEXTURE_COORDS]);
     if (isNormalMapped) {
       var element = Attribute$Companion_getInstance().TANGENTS;
       attributes.add_11rb$(element);
@@ -25503,7 +25501,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function UiShader$Companion() {
     UiShader$Companion_instance = this;
-    this.UI_MESH_ATTRIBS = setOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS, Attribute$Companion_getInstance().COLORS]);
+    this.UI_MESH_ATTRIBS = listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS, Attribute$Companion_getInstance().COLORS]);
     this.U_ALPHA_0 = 'uAlpha';
     this.U_FONT_TEX_0 = 'uFontTex';
   }
@@ -28068,6 +28066,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function IndexedVertexList(vertexAttributes) {
     IndexedVertexList$Companion_getInstance();
     this.vertexAttributes = vertexAttributes;
+    var $receiver = this.vertexAttributes;
+    var tmp$;
+    var accumulator = L0;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var element = tmp$.next();
+      accumulator = accumulator.multiply(Kotlin.Long.fromInt(31)).add(Kotlin.Long.fromInt(element.hashCode()));
+    }
+    this.attributeHash = accumulator;
     this.vertexSizeF = 0;
     this.strideBytesF = 0;
     this.vertexSizeI = 0;
@@ -28084,13 +28091,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isRebuildBoundsOnSync = false;
     this.hasChanged = true;
     this.isBatchUpdate = false;
-    var tmp$;
+    var tmp$_0;
     var cntF = 0;
     var cntI = 0;
     var offsets = LinkedHashMap_init();
-    tmp$ = this.vertexAttributes.iterator();
-    while (tmp$.hasNext()) {
-      var attrib = tmp$.next();
+    tmp$_0 = this.vertexAttributes.iterator();
+    while (tmp$_0.hasNext()) {
+      var attrib = tmp$_0.next();
       if (attrib.type === GlslType$MAT_2F_getInstance() || attrib.type === GlslType$MAT_3F_getInstance() || attrib.type === GlslType$MAT_4F_getInstance()) {
         throw IllegalArgumentException_init('Matrix types are not supported as vertex attributes');
       }
@@ -28497,7 +28504,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function IndexedVertexList_init(vertexAttributes, $this) {
     $this = $this || Object.create(IndexedVertexList.prototype);
-    IndexedVertexList.call($this, toHashSet(vertexAttributes));
+    IndexedVertexList.call($this, toList(vertexAttributes));
     return $this;
   }
   function PrimitiveType(name, ordinal, nVertices) {
@@ -31157,7 +31164,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_1.top = 1.0;
     $receiver_1.bottom = 0.0;
     $receiver_0.camera = $receiver_1;
-    var mesh = new Mesh(new IndexedVertexList(setOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
+    var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
     mesh.generate_v2sixm$(BrdfLutPass_init$lambda$lambda$lambda$lambda);
     var $receiver_2 = new ShaderModel('BRDF LUT');
     var ifTexCoords = {v: null};
@@ -31221,7 +31228,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver = new OffscreenPassCube(32, 32, 1, TexFormat$RGBA_F16_getInstance());
     $receiver.isSingleShot = true;
     var $receiver_0 = new Scene(null);
-    var mesh = new Mesh(new IndexedVertexList(setOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
+    var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
     mesh.generate_v2sixm$(IrradianceMapPass_init$lambda$lambda$lambda$lambda);
     var texName = 'colorTex';
     var $receiver_1 = new ShaderModel('Irradiance Convolution Sampler');
@@ -31321,7 +31328,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var $receiver = new OffscreenPassCube(256, 256, 7, TexFormat$RGBA_F16_getInstance());
     $receiver.onSetup = ReflectionMapPass_init$lambda$lambda($receiver, this);
     var $receiver_0 = new Scene(null);
-    var mesh = new Mesh(new IndexedVertexList(setOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
+    var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
     mesh.generate_v2sixm$(ReflectionMapPass_init$lambda$lambda$lambda$lambda);
     var texName = 'colorTex';
     var $receiver_1 = new ShaderModel('Reflectance Convolution Sampler');
@@ -33353,7 +33360,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (generateTangents === void 0)
       generateTangents = false;
     var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    var attribs = mutableSetOf([Attribute$Companion_getInstance().POSITIONS]);
+    var attribs = mutableListOf([Attribute$Companion_getInstance().POSITIONS]);
     if (this.hasNormals || generateNormals) {
       var element = Attribute$Companion_getInstance().NORMALS;
       attribs.add_11rb$(element);
@@ -34133,7 +34140,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.isApplyProjCorrection = false;
     this.shadowCam = $receiver;
     this.tempCam_0 = this.shadowCam;
-    this.dummyMeshes_0 = LinkedHashMap_init();
+    this.shadowPipelines_0 = LinkedHashMap_init();
     this.offscreenPass.drawQueues.get_za3lpa$(0).meshFilter = ShadowMapPass_init$lambda;
     this.offscreenPass.scene = this.scene;
     this.offscreenPass.isMainPass = false;
@@ -34141,8 +34148,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.offscreenPass.afterRender.add_11rb$(ShadowMapPass_init$lambda_1(this));
   }
   ShadowMapPass.prototype.getShadowPipeline_0 = function (actualMesh, ctx) {
-    var $receiver = this.dummyMeshes_0;
-    var key = actualMesh.geometry.vertexAttributes;
+    var $receiver = this.shadowPipelines_0;
+    var key = actualMesh.geometry.attributeHash;
     var tmp$;
     var value = $receiver.get_11rb$(key);
     if (value == null) {
@@ -41082,7 +41089,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$scene.wireframeMesh_hjnvxh$ = wireframeMesh;
   package$scene.normalMesh_325j0g$ = normalMesh;
   package$scene.LineMesh = LineMesh;
-  package$scene.mesh_4eyjyg$ = mesh;
+  package$scene.mesh_ycs46o$ = mesh;
   package$scene.colorMesh_gp9ews$ = colorMesh;
   package$scene.textMesh_8mgi8m$ = textMesh;
   package$scene.textureMesh_pyaqjj$ = textureMesh;

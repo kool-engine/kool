@@ -45,7 +45,7 @@ open class Armature(geometry: IndexedVertexList, name: String? = null,
 
     init {
         // extend mesh data with bone vertex attributes
-        val armatureAttribs = mutableSetOf(BONE_WEIGHTS, BONE_INDICES)
+        val armatureAttribs = mutableListOf(BONE_WEIGHTS, BONE_INDICES)
         armatureAttribs.addAll(geometry.vertexAttributes)
         this.geometry = IndexedVertexList(armatureAttribs)
 

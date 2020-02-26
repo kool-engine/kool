@@ -3,7 +3,6 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.OffscreenPass2d
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
@@ -19,7 +18,7 @@ class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 1024) {
     }
 
     private var tempCam: Camera = shadowCam
-    private val dummyMeshes = mutableMapOf<Set<Attribute>, Pipeline>()
+    private val shadowPipelines = mutableMapOf<Long, Pipeline>()
 
     init {
         offscreenPass.drawQueues[0].meshFilter = { it.isCastingShadow }
@@ -53,7 +52,7 @@ class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 1024) {
     }
 
     private fun getShadowPipeline(actualMesh: Mesh, ctx: KoolContext): Pipeline? {
-        return dummyMeshes.getOrPut(actualMesh.geometry.vertexAttributes) {
+        return shadowPipelines.getOrPut(actualMesh.geometry.attributeHash) {
             // create a minimal dummy shader for each attribute set
             val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
                 vertexStage { positionOutput = simpleVertexPositionNode().outPosition }

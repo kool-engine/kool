@@ -90,6 +90,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg") }
                 normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg") }
                 roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_roughness.jpg") }
+                ambient = Color(0.15f, 0.15f, 0.15f)
 
                 onDispose += {
                     albedoMap?.dispose()

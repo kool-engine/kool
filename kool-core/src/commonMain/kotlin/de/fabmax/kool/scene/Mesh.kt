@@ -11,7 +11,7 @@ import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.MeshBuilder
 
 
-inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
+inline fun mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
     val mesh = Mesh(IndexedVertexList(attributes), name)
     mesh.block()
     return mesh
@@ -19,17 +19,17 @@ inline fun mesh(attributes: Set<Attribute>, name: String? = null, block: Mesh.()
 }
 
 fun colorMesh(name: String? = null, generate: Mesh.() -> Unit): Mesh {
-    return mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS), name, generate)
+    return mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS), name, generate)
 }
 
 fun textMesh(font: Font, name: String? = null, generate: Mesh.() -> Unit): Mesh {
-    val text = mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS), name, generate)
+    val text = mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS), name, generate)
     //text.shader = fontShader(font) { lightModel = LightModel.NO_LIGHTING }
     return text
 }
 
 fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate: Mesh.() -> Unit): Mesh {
-    val attributes = mutableSetOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
+    val attributes = mutableListOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
     if (isNormalMapped) {
         attributes += Attribute.TANGENTS
     }

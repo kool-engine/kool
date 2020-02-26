@@ -106,7 +106,7 @@ class ColorGridContent : PbrDemo.PbrContent("Color Grid") {
 
         for (y in 0 until nRows) {
             for (x in 0 until nCols) {
-                +mesh(setOf(Attribute.POSITIONS, Attribute.NORMALS)) {
+                +mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
                     generate {
                         sphere {
                             steps = 100
