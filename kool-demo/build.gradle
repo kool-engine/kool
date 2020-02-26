@@ -15,10 +15,6 @@ buildscript {
 apply plugin: 'kotlin-multiplatform'
 apply plugin: 'kotlinx-serialization'
 
-if (enableAndroid) {
-    apply from: 'android.gradle'
-}
-
 kotlin {
     targets {
         fromPreset(presets.jvm, 'jvm') {

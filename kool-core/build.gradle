@@ -15,10 +15,6 @@ buildscript {
 apply plugin: 'kotlin-multiplatform'
 apply plugin: 'kotlinx-serialization'
 
-if (enableAndroid) {
-    apply from: 'android.gradle'
-}
-
 kotlin {
     targets {
         fromPreset(presets.jvm, 'jvm') {
@@ -112,17 +108,6 @@ kotlin {
     }
 }
 
-/*build.doLast {
-    copy {
-        includeEmptyDirs = false
-        from "${buildDir}/web"
-        into "${projectDir}/$webPath"
-        include { fileTreeElement ->
-            fileTreeElement.path.endsWith(".js")
-        }
-    }
-}*/
-
-//if (publishingAvailable) {
-//    apply from: "../publishing.gradle"
-//}
+if (publishingAvailable) {
+    apply from: "../publishing.gradle"
+}

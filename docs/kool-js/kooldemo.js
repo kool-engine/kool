@@ -7359,6 +7359,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_5);
       $receiver_1.roughness = 0.5;
+      $receiver_1.ambient = new Color(0.15, 0.15, 0.15);
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_6($receiver_1));
       $receiver_1.onSetup.add_11rb$(treeScene$lambda$lambda$lambda$lambda_7);
       $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_8($receiver_1, closure$shadowMaps_0));
@@ -7717,7 +7718,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var leafMesh = {v: null};
     var autoRotate = {v: true};
     var $receiver = new Scene_init(null);
-    var dirLighDirection = new Vec3f(1.0, -1.5, -1.0);
+    var dirLighDirection = new Vec3f(1.0, -1.5, 1.0);
     var spotLightPos = new Vec3f(10.0, 15.0, 10.0);
     var $receiver_0 = $receiver.lighting.lights;
     $receiver_0.clear();

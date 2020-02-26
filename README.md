@@ -25,6 +25,17 @@ generated and compiled from the node-based model on-the-fly for each backend.
 In order to add support for Vulkan, I had to drastically change some parts of the engine and this is an
 ongoing process. Hence, stuff is a still a bit messy but things are getting better.
 
+## Features / Noticeable Stuff:
+
+- Node based dynamic shader generation
+- All new Vulkan rendering backend (on JVM)
+- Support for physical based rendering (with metallic workflow) and image-based lighting
+- Normal, roughness, metallic, ambient occlusion and Displacement mapping
+- HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
+- Lighting with multiple point, spot and directional lights
+- Shadow mapping for multiple light sources (spot lights only for now)
+- A small GUI framework for simple in-game menus / controls
+
 ## A Hello World Example
 
 Getting a simple scene on the screen is quite simple:
@@ -101,17 +112,43 @@ functions of the individual nodes in the correct order.
 More complex shaders can be defined in exactly the same fashion. E.g. ```PhongShader``` and
 ```PbrShader``` use exactly the same mechanism.
 
-## Features / Noticeable Stuff:
-- Node based dynamic shader generation
-- All new Vulkan rendering backend (for JVM, based on lwjgl3)
-- Support for physical based rendering (with metallic workflow) and image-based lighting
-- Normal, roughness, metallic, ambient occlusion and Displacement mapping
-- HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
-- Lighting with multiple point, spot and directional lights
-- Shadow mapping for multiple light sources (spot lights only for now)
-- A small GUI framework for simple in-game menus / controls
+## Usage
+
+If you are adventurous, you can use kool as a library in your own projects.
+
+Gradle setup:
+```groovy
+repositories {
+    maven {
+        url = "https://dl.bintray.com/fabmax/kool"
+    }
+}
+
+// JVM dependencies
+dependencies {
+    implementation "de.fabmax.kool:kool-core-jvm:0.2.0"
+
+    // On JVM, lwjgl runtime dependencies have to be included as well
+    def lwjglVersion = "3.2.3"
+    def lwjglNatives = "natives-windows"    // alternatively: natives-linux or natives-macos, depending on your OS
+    runtime "org.lwjgl:lwjgl:${lwjglVersion}:${lwjglNatives}"
+    runtime "org.lwjgl:lwjgl-glfw:${lwjglVersion}:${lwjglNatives}"
+    runtime "org.lwjgl:lwjgl-assimp:${lwjglVersion}:${lwjglNatives}"
+    runtime "org.lwjgl:lwjgl-jemalloc:${lwjglVersion}:${lwjglNatives}"
+    runtime "org.lwjgl:lwjgl-opengl:${lwjglVersion}:${lwjglNatives}"
+    runtime "org.lwjgl:lwjgl-stb:${lwjglVersion}:${lwjglNatives}"
+    runtime "org.lwjgl:lwjgl-vma:${lwjglVersion}:$lwjglNatives"
+    runtime "org.lwjgl:lwjgl-shaderc:${lwjglVersion}:$lwjglNatives"
+}
+
+// or alternatively for javascript
+dependencies {
+    implementation "de.fabmax.kool:kool-core-js:0.2.0"
+}
+```
 
 ## What's Next?
+
 The new render pipeline still lacks a lot of features the old OpenGL-only one already included; hence 
 first step should be to get these working again:
 - (Cascaded) shadow mapping for non spot light types
