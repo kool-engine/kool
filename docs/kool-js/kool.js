@@ -16109,7 +16109,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
+          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
           if (node != null) {
             return node;
           }
@@ -29899,7 +29899,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         this.translate_y2kzbl$(0.0, -props.font.lineSpace, 0.0);
         advanced.v = 0.0;
       }
-      var metrics = props.font.charMap.get_11rb$(c);
+      var metrics = props.font.charMap.get_11rb$(toBoxedChar(c));
       if (metrics != null) {
         var $receiver = this.rectProps.defaults();
         $receiver.origin.set_y2kzbl$(advanced.v - metrics.xOffset, metrics.yBaseline - metrics.height, 0.0);
