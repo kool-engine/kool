@@ -854,13 +854,22 @@ class CubeProps {
         origin.z -= size.z / 2f
     }
 
-    fun colored() {
-        frontColor = Color.MD_RED
-        rightColor = Color.MD_GREEN
-        backColor = Color.MD_INDIGO
-        leftColor = Color.MD_AMBER
-        topColor = Color.MD_PURPLE
-        bottomColor = Color.MD_CYAN
+    fun colored(linearSpace: Boolean = true) {
+        if (linearSpace) {
+            frontColor = Color.MD_RED.toLinear()
+            rightColor = Color.MD_GREEN.toLinear()
+            backColor = Color.MD_INDIGO.toLinear()
+            leftColor = Color.MD_AMBER.toLinear()
+            topColor = Color.MD_PURPLE.toLinear()
+            bottomColor = Color.MD_CYAN.toLinear()
+        } else {
+            frontColor = Color.MD_RED
+            rightColor = Color.MD_GREEN
+            backColor = Color.MD_INDIGO
+            leftColor = Color.MD_AMBER
+            topColor = Color.MD_PURPLE
+            bottomColor = Color.MD_CYAN
+        }
     }
 
     fun defaults(): CubeProps {

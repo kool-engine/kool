@@ -11,6 +11,11 @@ import de.fabmax.kool.util.MutableColor
  */
 class Lighting(val scene: Scene) {
     val lights = mutableListOf(Light().setDirectional(Vec3f(-1f)).setColor(Color.WHITE, 1f))
+
+    fun singleLight(block: Light.() -> Unit) {
+        lights.clear()
+        lights += Light().apply(block)
+    }
 }
 
 class Light {

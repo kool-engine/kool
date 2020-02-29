@@ -4,6 +4,12 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.util.Color
 
+fun pbrShader(cfgBlock: PbrShader.PbrConfig.() -> Unit): PbrShader {
+    val cfg = PbrShader.PbrConfig()
+    cfg.cfgBlock()
+    return PbrShader(cfg)
+}
+
 class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
 
     // Simple material props
@@ -11,19 +17,19 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var uMetallic: PushConstantNode1f? = null
     private var uAlbedo: PushConstantNodeColor? = null
 
-    var metallic = 0f
+    var metallic = cfg.metallic
         set(value) {
             field = value
             uMetallic?.uniform?.value = value
         }
 
-    var roughness = 0.5f
+    var roughness = cfg.roughness
         set(value) {
             field = value
             uRoughness?.uniform?.value = value
         }
 
-    var albedo: Color = Color.WHITE
+    var albedo: Color = cfg.albedo
         set(value) {
             field = value
             uAlbedo?.uniform?.value?.set(value)
@@ -38,32 +44,32 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var displacementSampler: TextureSampler? = null
     private var uDispStrength: PushConstantNode1f? = null
 
-    var albedoMap: Texture? = null
+    var albedoMap: Texture? = cfg.albedoMap
         set(value) {
             field = value
             albedoSampler?.texture = value
         }
-    var normalMap: Texture? = null
+    var normalMap: Texture? = cfg.normalMap
         set(value) {
             field = value
             normalSampler?.texture = value
         }
-    var metallicMap: Texture? = null
+    var metallicMap: Texture? = cfg.metallicMap
         set(value) {
             field = value
             metallicSampler?.texture = value
         }
-    var roughnessMap: Texture? = null
+    var roughnessMap: Texture? = cfg.roughnessMap
         set(value) {
             field = value
             roughnessSampler?.texture = value
         }
-    var ambientOcclusionMap: Texture? = null
+    var ambientOcclusionMap: Texture? = cfg.ambientOcclusionMap
         set(value) {
             field = value
             ambientOcclusionSampler?.texture = value
         }
-    var displacementMap: Texture? = null
+    var displacementMap: Texture? = cfg.displacementMap
         set(value) {
             field = value
             displacementSampler?.texture = value
@@ -91,17 +97,17 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
     private var reflectionMapSampler: CubeMapSampler? = null
     private var brdfLutSampler: TextureSampler? = null
 
-    var irradianceMap: CubeMapTexture? = null
+    var irradianceMap: CubeMapTexture? = cfg.irradianceMap
         set(value) {
             field = value
             irradianceMapSampler?.texture = value
         }
-    var reflectionMap: CubeMapTexture? = null
+    var reflectionMap: CubeMapTexture? = cfg.reflectionMap
         set(value) {
             field = value
             reflectionMapSampler?.texture = value
         }
-    var brdfLut: Texture? = null
+    var brdfLut: Texture? = cfg.brdfLut
         set(value) {
             field = value
             brdfLutSampler?.texture = value
@@ -272,6 +278,22 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
         var maxLights = 4
         var isReceivingShadows = false
+
+        // initial shader values
+        var albedo = Color.GRAY
+        var roughness = 0.5f
+        var metallic = 0.0f
+
+        var albedoMap: Texture? = null
+        var normalMap: Texture? = null
+        var roughnessMap: Texture? = null
+        var metallicMap: Texture? = null
+        var ambientOcclusionMap: Texture? = null
+        var displacementMap: Texture? = null
+
+        var irradianceMap: CubeMapTexture? = null
+        var reflectionMap: CubeMapTexture? = null
+        var brdfLut: Texture? = null
 
         fun requiresTexCoords(): Boolean {
             return albedoSource == Albedo.TEXTURE_ALBEDO ||

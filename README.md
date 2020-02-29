@@ -1,10 +1,10 @@
-# Kotlin + OpenGL = kool
+# kool - A Vulkan / OpenGL graphics engine written in Kotlin
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/fabmax/kool/blob/master/LICENSE)
 
 A multi-platform Vulkan / OpenGL based graphics engine that works on Desktop Java and browsers with
 WebGL2. Android support is currently suspended but it should be quite easy to get that going again.
 
-This is just a personal pet-project. However, I have a few demos in place (once loaded, you can also switch between
+This is my personal pet-project. I have a few demos in place (once loaded, you can also switch between
 them via the hamburger button in the upper left corner):
 - [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
@@ -45,7 +45,7 @@ fun main() {
     
     ctx.scenes += scene {
         defaultCamTransform()
-        
+
         +colorMesh {
             generate {
                 cube {
@@ -53,7 +53,16 @@ fun main() {
                     centered()
                 }
             }
-            pipelineLoader = phongShader { albedoSource = AlbedoSource.VERTEX_ALBEDO }
+            pipelineLoader = pbrShader {
+                albedoSource = AlbedoSource.VERTEX_ALBEDO
+                metallic = 0.0f
+                roughness = 0.25f
+            }
+        }
+        
+        lighting.singleLight {
+            setDirectional(Vec3f(-1f, -1f, -1f))
+            setColor(Color.WHITE, 5f)
         }
     }
     
@@ -63,15 +72,14 @@ fun main() {
 The above example creates a new scene and sets up a mouse-controlled camera (with ```defaultCamTransform()```).
 As you might have guessed the ```+colorMesh { ... }``` block creates a colored cube and adds it to the scene.
 In order to draw the mesh on the screen it needs a shader, which is assigned with
-```pipelineLoader = phongShader { ... }```. In this case we use a simple pre-defined Phong shader.
-However, it's also possible to define custom shaders by combining a few shader nodes.
-
-A Phong shader also needs a light source. Every newly created scene already comes with a single directional
-light as it's default light source, so, for this example, we don't have to do any additional light setup.
+```pipelineLoader = pbrShader { ... }```. This creates a simple PBR shader for a dielectric material
+with a rather smooth surface. Color information is taken from the corresponding vertex attribute.
+Finally we set up a single directional scene light, so that our cube can shine in its full glory. The
+resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloWorldDemo).
 
 ## A Simple Custom Shader
 
-As mentioned above shaders can be composed from a set of predefined nodes (and even additional custom nodes).
+As mentioned above shaders can also be composed from a set of predefined nodes (and even additional custom nodes).
 Shader nodes are combined to a ```ShaderModel``` which is then used to generate the shader code for the
 rendering backend (currently Vulkan or WebGL2). A very simple shader model could look like this:
 ```kotlin

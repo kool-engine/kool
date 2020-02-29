@@ -16109,7 +16109,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
+          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
           if (node != null) {
             return node;
           }
@@ -16118,6 +16118,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       };
     };
   });
+  function pbrShader(cfgBlock) {
+    var cfg = new PbrShader$PbrConfig();
+    cfgBlock(cfg);
+    return new PbrShader(cfg);
+  }
   function PbrShader(cfg, model) {
     PbrShader$Companion_getInstance();
     if (cfg === void 0)
@@ -16128,9 +16133,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.uRoughness_0 = null;
     this.uMetallic_0 = null;
     this.uAlbedo_0 = null;
-    this.metallic_3y0qh7$_0 = 0.0;
-    this.roughness_6ti3qe$_0 = 0.5;
-    this.albedo_iz6fyn$_0 = Color$Companion_getInstance().WHITE;
+    this.metallic_3y0qh7$_0 = cfg.metallic;
+    this.roughness_6ti3qe$_0 = cfg.roughness;
+    this.albedo_iz6fyn$_0 = cfg.albedo;
     this.albedoSampler_0 = null;
     this.normalSampler_0 = null;
     this.metallicSampler_0 = null;
@@ -16138,12 +16143,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.ambientOcclusionSampler_0 = null;
     this.displacementSampler_0 = null;
     this.uDispStrength_0 = null;
-    this.albedoMap_el88rd$_0 = null;
-    this.normalMap_4f5ej9$_0 = null;
-    this.metallicMap_uadmur$_0 = null;
-    this.roughnessMap_c1s1r6$_0 = null;
-    this.ambientOcclusionMap_e3y8fx$_0 = null;
-    this.displacementMap_lffg8r$_0 = null;
+    this.albedoMap_el88rd$_0 = cfg.albedoMap;
+    this.normalMap_4f5ej9$_0 = cfg.normalMap;
+    this.metallicMap_uadmur$_0 = cfg.metallicMap;
+    this.roughnessMap_c1s1r6$_0 = cfg.roughnessMap;
+    this.ambientOcclusionMap_e3y8fx$_0 = cfg.ambientOcclusionMap;
+    this.displacementMap_lffg8r$_0 = cfg.displacementMap;
     this.displacementStrength_mpg4z2$_0 = 0.1;
     this.uAmbient_0 = null;
     this.depthSampler_0 = null;
@@ -16151,9 +16156,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.irradianceMapSampler_0 = null;
     this.reflectionMapSampler_0 = null;
     this.brdfLutSampler_0 = null;
-    this.irradianceMap_wb8dgm$_0 = null;
-    this.reflectionMap_oydyp3$_0 = null;
-    this.brdfLut_qrgoz5$_0 = null;
+    this.irradianceMap_wb8dgm$_0 = cfg.irradianceMap;
+    this.reflectionMap_oydyp3$_0 = cfg.reflectionMap;
+    this.brdfLut_qrgoz5$_0 = cfg.brdfLut;
   }
   Object.defineProperty(PbrShader.prototype, 'metallic', {
     get: function () {
@@ -17063,6 +17068,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isImageBasedLighting = false;
     this.maxLights = 4;
     this.isReceivingShadows = false;
+    this.albedo = Color$Companion_getInstance().GRAY;
+    this.roughness = 0.5;
+    this.metallic = 0.0;
+    this.albedoMap = null;
+    this.normalMap = null;
+    this.roughnessMap = null;
+    this.metallicMap = null;
+    this.ambientOcclusionMap = null;
+    this.displacementMap = null;
+    this.irradianceMap = null;
+    this.reflectionMap = null;
+    this.brdfLut = null;
   }
   PbrShader$PbrConfig.prototype.requiresTexCoords = function () {
     return this.albedoSource === Albedo$TEXTURE_ALBEDO_getInstance() || this.isNormalMapped || this.isRoughnessMapped || this.isMetallicMapped || this.isAmbientOcclusionMapped || this.isDisplacementMapped;
@@ -20861,6 +20878,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.scene = scene;
     this.lights = mutableListOf([(new Light()).setDirectional_czzhiu$(Vec3f_init(-1.0)).setColor_y83vuj$(Color$Companion_getInstance().WHITE, 1.0)]);
   }
+  Lighting.prototype.singleLight_q9zcvo$ = function (block) {
+    this.lights.clear();
+    var tmp$ = this.lights;
+    var $receiver = new Light();
+    block($receiver);
+    tmp$.add_11rb$($receiver);
+  };
   Lighting.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Lighting',
@@ -29875,7 +29899,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         this.translate_y2kzbl$(0.0, -props.font.lineSpace, 0.0);
         advanced.v = 0.0;
       }
-      var metrics = props.font.charMap.get_11rb$(toBoxedChar(c));
+      var metrics = props.font.charMap.get_11rb$(c);
       if (metrics != null) {
         var $receiver = this.rectProps.defaults();
         $receiver.origin.set_y2kzbl$(advanced.v - metrics.xOffset, metrics.yBaseline - metrics.height, 0.0);
@@ -30120,13 +30144,25 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.origin.y = this.origin.y - this.size.y / 2.0;
     this.origin.z = this.origin.z - this.size.z / 2.0;
   };
-  CubeProps.prototype.colored = function () {
-    this.frontColor = Color$Companion_getInstance().MD_RED;
-    this.rightColor = Color$Companion_getInstance().MD_GREEN;
-    this.backColor = Color$Companion_getInstance().MD_INDIGO;
-    this.leftColor = Color$Companion_getInstance().MD_AMBER;
-    this.topColor = Color$Companion_getInstance().MD_PURPLE;
-    this.bottomColor = Color$Companion_getInstance().MD_CYAN;
+  CubeProps.prototype.colored_6taknv$ = function (linearSpace) {
+    if (linearSpace === void 0)
+      linearSpace = true;
+    if (linearSpace) {
+      this.frontColor = Color$Companion_getInstance().MD_RED.toLinear();
+      this.rightColor = Color$Companion_getInstance().MD_GREEN.toLinear();
+      this.backColor = Color$Companion_getInstance().MD_INDIGO.toLinear();
+      this.leftColor = Color$Companion_getInstance().MD_AMBER.toLinear();
+      this.topColor = Color$Companion_getInstance().MD_PURPLE.toLinear();
+      this.bottomColor = Color$Companion_getInstance().MD_CYAN.toLinear();
+    }
+     else {
+      this.frontColor = Color$Companion_getInstance().MD_RED;
+      this.rightColor = Color$Companion_getInstance().MD_GREEN;
+      this.backColor = Color$Companion_getInstance().MD_INDIGO;
+      this.leftColor = Color$Companion_getInstance().MD_AMBER;
+      this.topColor = Color$Companion_getInstance().MD_PURPLE;
+      this.bottomColor = Color$Companion_getInstance().MD_CYAN;
+    }
   };
   CubeProps.prototype.defaults = function () {
     this.size.x = 1.0;
@@ -40902,6 +40938,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: ModeledShader$Companion_getInstance
   });
   package$shading.ModeledShader = ModeledShader;
+  package$shading.pbrShader_zfwrfj$ = pbrShader;
   Object.defineProperty(PbrShader, 'Companion', {
     get: PbrShader$Companion_getInstance
   });

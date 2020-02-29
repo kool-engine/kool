@@ -28,12 +28,17 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var throwCCE = Kotlin.throwCCE;
   var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
   var LinkedHashMap_init = Kotlin.kotlin.collections.LinkedHashMap_init_q3lmfv$;
+  var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
+  var Albedo = $module$kool.de.fabmax.kool.pipeline.shading.Albedo;
+  var pbrShader = $module$kool.de.fabmax.kool.pipeline.shading.pbrShader_zfwrfj$;
+  var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
+  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
+  var Color = $module$kool.de.fabmax.kool.util.Color;
+  var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
   var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_iiyuln$;
-  var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
-  var Albedo = $module$kool.de.fabmax.kool.pipeline.shading.Albedo;
   var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
   var CoroutineImpl = Kotlin.kotlin.coroutines.CoroutineImpl;
   var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
@@ -44,7 +49,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var uiFont = $module$kool.de.fabmax.kool.util.uiFont_a4r08d$;
   var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
   var math = Kotlin.kotlin.math;
-  var Color = $module$kool.de.fabmax.kool.util.Color;
   var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var Light = $module$kool.de.fabmax.kool.scene.Light;
@@ -52,10 +56,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
-  var colorMesh = $module$kool.de.fabmax.kool.scene.colorMesh_gp9ews$;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var ShadowMapPass = $module$kool.de.fabmax.kool.util.ShadowMapPass;
-  var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
   var Math_0 = Math;
   var math_0 = $module$kool.de.fabmax.kool.math;
   var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
@@ -146,7 +148,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var Pad = $module$kool.de.fabmax.kool.modules.audio.Pad;
   var AudioGenerator = $module$kool.de.fabmax.kool.modules.audio.AudioGenerator;
   var throwUPAE = Kotlin.throwUPAE;
-  var defaultCamTransform = $module$kool.de.fabmax.kool.scene.defaultCamTransform_v4keia$;
   var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
   var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
   var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_14dthe$;
@@ -235,8 +236,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.dbgOverlay_0 = new DebugOverlay(ctx, Position.LOWER_RIGHT);
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
-    this.defaultScene_0 = new Demo$DemoEntry('PBR/IBL Demo', Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR/IBL Demo', Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light Demo', Demo$demos$lambda_0)), to('simplificationDemo', new Demo$DemoEntry('Simplification Demo', Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Tree Demo', Demo$demos$lambda_2))]);
+    this.defaultScene_0 = new Demo$DemoEntry('PBR/IBL Demo', void 0, Demo$defaultScene$lambda);
+    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR/IBL Demo', void 0, Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light Demo', void 0, Demo$demos$lambda_0)), to('simplificationDemo', new Demo$DemoEntry('Simplification Demo', void 0, Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Tree Demo', void 0, Demo$demos$lambda_2)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_3))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -286,42 +287,53 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     }));
     return Unit;
   }
-  function Demo$demoOverlay$lambda$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, this$) {
+  function Demo$demoOverlay$lambda$lambda$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, this$) {
     return function ($receiver, f, f_0, f_1) {
-      closure$demo.value.loadScene(this$Demo.newScenes_0, closure$ctx);
+      closure$demo.loadScene(this$Demo.newScenes_0, closure$ctx);
       this$.isOpen = false;
       return Unit;
     };
   }
-  function Demo$demoOverlay$lambda$lambda$lambda$lambda(closure$y, closure$demo, this$Demo, closure$ctx, this$) {
+  function Demo$demoOverlay$lambda$lambda$lambda$lambda$lambda(closure$y, closure$demo, this$Demo, closure$ctx, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$y.v, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0, true), dps(30.0, true), full());
       $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-      $receiver.text = closure$demo.value.label;
       closure$y.v -= 35.0;
       var $receiver_0 = $receiver.onClick;
-      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, this$);
+      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda$lambda$lambda(closure$demo, this$Demo, closure$ctx, this$);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
   function Demo$demoOverlay$lambda$lambda$lambda_0(this$Demo, closure$ctx, this$, this$_0) {
     return function ($receiver) {
-      var tmp$;
       $receiver.ui.setCustom_11rb$(new BlankComponentUi());
       $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(45.0, true), zero());
       $receiver.layoutSpec.setSize_4ujscr$(full(), pcs(100.0, true).minus_m986jv$(dps(110.0, true)), full());
       var y = {v: -30.0};
-      tmp$ = this$Demo.demos_0.entries.iterator();
+      var $receiver_0 = this$Demo.demos_0.values;
+      var destination = ArrayList_init();
+      var tmp$;
+      tmp$ = $receiver_0.iterator();
       while (tmp$.hasNext()) {
-        var demo = tmp$.next();
-        $receiver.unaryPlus_uv0sim$(this$_0.button_9zrh0o$(demo.key, Demo$demoOverlay$lambda$lambda$lambda$lambda(y, demo, this$Demo, closure$ctx, this$)));
+        var element = tmp$.next();
+        if (!element.isHidden)
+          destination.add_11rb$(element);
+      }
+      var tmp$_0;
+      tmp$_0 = destination.iterator();
+      while (tmp$_0.hasNext()) {
+        var element_0 = tmp$_0.next();
+        var this$Demo_0 = this$Demo;
+        var closure$ctx_0 = closure$ctx;
+        var this$_1 = this$;
+        $receiver.unaryPlus_uv0sim$(this$_0.button_9zrh0o$(element_0.label, Demo$demoOverlay$lambda$lambda$lambda$lambda$lambda(y, element_0, this$Demo_0, closure$ctx_0, this$_1)));
       }
       return Unit;
     };
   }
-  function Demo$demoOverlay$lambda$lambda$lambda$lambda_0(this$, this$Demo) {
+  function Demo$demoOverlay$lambda$lambda$lambda$lambda(this$, this$Demo) {
     return function ($receiver, f, f_0, f_1) {
       this$Demo.dbgOverlay_0.ui.isVisible = this$.isEnabled;
       return Unit;
@@ -334,7 +346,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.text = 'Debug Info';
       $receiver.isEnabled = this$Demo.dbgOverlay_0.ui.isVisible;
       var $receiver_0 = $receiver.onClick;
-      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda_0($receiver, this$Demo);
+      var element = Demo$demoOverlay$lambda$lambda$lambda$lambda($receiver, this$Demo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -357,8 +369,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   Demo.prototype.demoOverlay_0 = function (ctx) {
     return uiScene(ctx.screenDpi, 'demo-overlay', void 0, Demo$demoOverlay$lambda(this, ctx));
   };
-  function Demo$DemoEntry(label, loadScene) {
+  function Demo$DemoEntry(label, isHidden, loadScene) {
+    if (isHidden === void 0)
+      isHidden = false;
     this.label = label;
+    this.isHidden = isHidden;
     this.loadScene = loadScene;
   }
   Demo$DemoEntry.$metadata$ = {
@@ -415,6 +430,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function Demo$demos$lambda_2($receiver, it) {
     $receiver.addAll_brywnq$(treeScene(it));
+    return Unit;
+  }
+  function Demo$demos$lambda_3($receiver, it) {
+    $receiver.add_11rb$(helloWorldScene());
     return Unit;
   }
   Demo.$metadata$ = {
@@ -479,6 +498,36 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     simpleName: 'Cycler',
     interfaces: [List]
   };
+  function helloWorldScene$lambda$lambda$lambda($receiver) {
+    var $receiver_0 = $receiver.cubeProps.defaults();
+    $receiver_0.colored_6taknv$();
+    $receiver_0.centered();
+    $receiver.cube_lhbb6w$($receiver.cubeProps);
+    return Unit;
+  }
+  function helloWorldScene$lambda$lambda$lambda_0($receiver) {
+    $receiver.albedoSource = Albedo.VERTEX_ALBEDO;
+    $receiver.metallic = 0.0;
+    $receiver.roughness = 0.25;
+    return Unit;
+  }
+  function helloWorldScene$lambda$lambda($receiver) {
+    $receiver.generate_v2sixm$(helloWorldScene$lambda$lambda$lambda);
+    $receiver.pipelineLoader = pbrShader(helloWorldScene$lambda$lambda$lambda_0);
+    return Unit;
+  }
+  function helloWorldScene$lambda$lambda_0($receiver) {
+    $receiver.setDirectional_czzhiu$(new Vec3f(-1.0, -1.0, -1.0));
+    $receiver.setColor_y83vuj$(Color.Companion.WHITE, 5.0);
+    return Unit;
+  }
+  function helloWorldScene() {
+    var $receiver = new Scene_init('Hello World Demo');
+    defaultCamTransform($receiver);
+    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, helloWorldScene$lambda$lambda));
+    $receiver.lighting.singleLight_q9zcvo$(helloWorldScene$lambda$lambda_0);
+    return $receiver;
+  }
   function multiLightDemo(ctx) {
     return (new MultiLightDemo(ctx)).scenes;
   }
@@ -5759,7 +5808,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function simpleShapesScene$lambda$lambda$lambda$lambda_1($receiver) {
     $receiver.scale_y2kzbl$(2.0, 2.0, 2.0);
     var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colored();
+    $receiver_0.colored_6taknv$();
     $receiver_0.centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
@@ -8823,7 +8872,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.scale_y2kzbl$(5.0, 5.0, 5.0);
     var $receiver_0 = $receiver.cubeProps.defaults();
     $receiver_0.centered();
-    $receiver_0.colored();
+    $receiver_0.colored_6taknv$();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
@@ -9040,7 +9089,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function testScene$lambda$lambda$lambda_0($receiver) {
     var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colored();
+    $receiver_0.colored_6taknv$();
     $receiver_0.centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
@@ -9110,7 +9159,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function testScene$lambda$lambda$lambda_1($receiver) {
     var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colored();
+    $receiver_0.colored_6taknv$();
     $receiver_0.centered();
     $receiver_0.origin.x = $receiver_0.origin.x - 3.0;
     $receiver.cube_lhbb6w$($receiver.cubeProps);
@@ -9180,8 +9229,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   });
   package$demo.Demo = Demo;
   package$demo.Cycler = Cycler;
-  package$demo.multiLightDemo_aemszp$ = multiLightDemo;
   $$importsForInline$$.kool = $module$kool;
+  package$demo.helloWorldScene = helloWorldScene;
+  package$demo.multiLightDemo_aemszp$ = multiLightDemo;
   Object.defineProperty(MultiLightDemo, 'Companion', {
     get: MultiLightDemo$Companion_getInstance
   });

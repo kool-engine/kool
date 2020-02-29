@@ -36,7 +36,8 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "pbrDemo" to DemoEntry("PBR/IBL Demo") { addAll(pbrDemoScene(it)) },
             "multiLightDemo" to DemoEntry("Multi Light Demo") { addAll(multiLightDemo(it)) },
             "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) },
-            "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) }
+            "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
+            "helloWorldDemo" to DemoEntry("Hello World", true) { add(helloWorldScene()) }
 
             // todo: port old demos...
 //            "simpleDemo" to DemoEntry("Simple Demo") { add(uiDemoScene()) },
@@ -96,16 +97,15 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
                 //+ScrollHandler(this)
 
                 var y = -30f
-                for (demo in demos) {
-                    +button(demo.key) {
+                demos.values.filter { !it.isHidden }.forEach { demo ->
+                    +button(demo.label) {
                         layoutSpec.setOrigin(zero(), dps(y, true), zero())
                         layoutSpec.setSize(pcs(100f, true), dps(30f, true), full())
                         textAlignment = Gravity(Alignment.START, Alignment.CENTER)
-                        text = demo.value.label
                         y -= 35f
 
                         onClick += { _,_,_ ->
-                            demo.value.loadScene.invoke(newScenes, ctx)
+                            demo.loadScene.invoke(newScenes, ctx)
                             isOpen = false
                         }
                     }
@@ -127,7 +127,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
         }
     }
 
-    private class DemoEntry(val label: String, val loadScene: MutableList<Scene>.(KoolContext) -> Unit)
+    private class DemoEntry(val label: String, val isHidden: Boolean = false, val loadScene: MutableList<Scene>.(KoolContext) -> Unit)
 
     companion object {
         val demoProps = mutableMapOf<String, Any>()
