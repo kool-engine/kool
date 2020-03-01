@@ -157,7 +157,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
+  var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
+  var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
+  var ModelVar3fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3fConst;
+  var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
+  var ModelVar1fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar1fConst;
+  var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
+  var ShaderModel = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel;
+  var ShaderStage = $module$kool.de.fabmax.kool.pipeline.ShaderStage;
+  var wrapFunction = Kotlin.wrapFunction;
+  var ShaderModel$ShaderModel$VertexStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.VertexStageBuilder;
+  var ShaderModel$ShaderModel$FragmentStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.FragmentStageBuilder;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
@@ -168,9 +179,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var ModeledShader$VertexColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.VertexColor;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
-  var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
-  var ModelVar3fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3fConst;
-  var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
   var ModelVar2f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar2f;
   var ModelVar4fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar4fConst;
   var ModelVar4f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar4f;
@@ -204,6 +212,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   SynthieScene$Waveform.prototype.constructor = SynthieScene$Waveform;
   SynthieScene.prototype = Object.create(Scene_init.prototype);
   SynthieScene.prototype.constructor = SynthieScene;
+  WindNode.prototype = Object.create(ShaderNode.prototype);
+  WindNode.prototype.constructor = WindNode;
   TreeGenerator$AttractionPoint.prototype = Object.create(MutableVec3f.prototype);
   TreeGenerator$AttractionPoint.prototype.constructor = TreeGenerator$AttractionPoint;
   TreeGenerator$TreeNode.prototype = Object.create(MutableVec3f.prototype);
@@ -7026,6 +7036,39 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     simpleName: 'SimplificationDemo',
     interfaces: []
   };
+  var ShaderModel$findNode$lambda = wrapFunction(function () {
+    var equals = Kotlin.equals;
+    var throwCCE = Kotlin.throwCCE;
+    return function (closure$stage, closure$name, typeClosure$T, isT) {
+      return function (it) {
+        if ((it.stage.mask & closure$stage.mask) !== 0) {
+          var isT_0 = isT;
+          var name = closure$name;
+          var tmp$;
+          var $receiver = it.nodes;
+          var firstOrNull$result;
+          firstOrNull$break: do {
+            var tmp$_0;
+            tmp$_0 = $receiver.iterator();
+            while (tmp$_0.hasNext()) {
+              var element = tmp$_0.next();
+              if (equals(element.name, name) && isT_0(element)) {
+                firstOrNull$result = element;
+                break firstOrNull$break;
+              }
+            }
+            firstOrNull$result = null;
+          }
+           while (false);
+          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
+          if (node != null) {
+            return node;
+          }
+        }
+        return Unit;
+      };
+    };
+  });
   function treeScene$lambda$lambda(closure$shadowMaps, closure$ctx) {
     return function ($receiver, it) {
       var $receiver_0 = closure$shadowMaps;
@@ -7266,27 +7309,116 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_4(this$, closure$shadowMaps) {
+  function treeScene$lambda$lambda$lambda$lambda_4(this$, closure$shadowMaps, closure$uWindSpeed, closure$uWindStrength) {
     return function (it) {
-      var tmp$;
+      var tmp$, tmp$_0, tmp$_1;
       if ((tmp$ = this$.depthMaps) != null) {
-        var tmp$_0, tmp$_0_0;
+        var tmp$_2, tmp$_0_0;
         var index = 0;
-        tmp$_0 = closure$shadowMaps.iterator();
-        while (tmp$_0.hasNext()) {
-          var item = tmp$_0.next();
+        tmp$_2 = closure$shadowMaps.iterator();
+        while (tmp$_2.hasNext()) {
+          var item = tmp$_2.next();
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
             tmp$[i] = item.offscreenPass.impl.depthTexture;
           }
         }
       }
+      var tmp$_3 = closure$uWindSpeed;
+      var $this = this$.model;
+      var name = 'windAnim';
+      var stage;
+      var findNode_3klnlw$result;
+      findNode_3klnlw$break: do {
+        stage = ShaderStage.ALL;
+        var tmp$_4;
+        tmp$_4 = $this.stages.values.iterator();
+        while (tmp$_4.hasNext()) {
+          var element = tmp$_4.next();
+          if ((element.stage.mask & stage.mask) !== 0) {
+            var tmp$_0_1;
+            var $receiver = element.nodes;
+            var firstOrNull$result;
+            firstOrNull$break: do {
+              var tmp$_1_0;
+              tmp$_1_0 = $receiver.iterator();
+              while (tmp$_1_0.hasNext()) {
+                var element_0 = tmp$_1_0.next();
+                if (equals(element_0.name, name) && Kotlin.isType(element_0, PushConstantNode1f)) {
+                  firstOrNull$result = element_0;
+                  break firstOrNull$break;
+                }
+              }
+              firstOrNull$result = null;
+            }
+             while (false);
+            var node = (tmp$_0_1 = firstOrNull$result) == null || Kotlin.isType(tmp$_0_1, PushConstantNode1f) ? tmp$_0_1 : throwCCE();
+            if (node != null) {
+              findNode_3klnlw$result = node;
+              break findNode_3klnlw$break;
+            }
+          }
+        }
+        findNode_3klnlw$result = null;
+      }
+       while (false);
+      tmp$_3.v = (tmp$_0 = findNode_3klnlw$result) != null ? tmp$_0.uniform : null;
+      var tmp$_5 = closure$uWindStrength;
+      var $this_0 = this$.model;
+      var name_0 = 'windStrength';
+      var stage_0;
+      var findNode_3klnlw$result_0;
+      findNode_3klnlw$break: do {
+        stage_0 = ShaderStage.ALL;
+        var tmp$_6;
+        tmp$_6 = $this_0.stages.values.iterator();
+        while (tmp$_6.hasNext()) {
+          var element_1 = tmp$_6.next();
+          if ((element_1.stage.mask & stage_0.mask) !== 0) {
+            var tmp$_0_2;
+            var $receiver_0 = element_1.nodes;
+            var firstOrNull$result_0;
+            firstOrNull$break: do {
+              var tmp$_1_1;
+              tmp$_1_1 = $receiver_0.iterator();
+              while (tmp$_1_1.hasNext()) {
+                var element_0_0 = tmp$_1_1.next();
+                if (equals(element_0_0.name, name_0) && Kotlin.isType(element_0_0, PushConstantNode1f)) {
+                  firstOrNull$result_0 = element_0_0;
+                  break firstOrNull$break;
+                }
+              }
+              firstOrNull$result_0 = null;
+            }
+             while (false);
+            var node_0 = (tmp$_0_2 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_0_2, PushConstantNode1f) ? tmp$_0_2 : throwCCE();
+            if (node_0 != null) {
+              findNode_3klnlw$result_0 = node_0;
+              break findNode_3klnlw$break;
+            }
+          }
+        }
+        findNode_3klnlw$result_0 = null;
+      }
+       while (false);
+      tmp$_5.v = (tmp$_1 = findNode_3klnlw$result_0) != null ? tmp$_1.uniform : null;
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_0(closure$treeGen, closure$shadowMaps) {
+  function treeScene$lambda$lambda$lambda_0(closure$windSpeed, closure$windAnimationPos, closure$uWindSpeed, closure$windStrength, closure$uWindStrength) {
+    return function ($receiver, ctx) {
+      var tmp$, tmp$_0;
+      closure$windAnimationPos.v += ctx.deltaT * closure$windSpeed.v;
+      (tmp$ = closure$uWindSpeed.v) != null ? (tmp$.value = closure$windAnimationPos.v) : null;
+      (tmp$_0 = closure$uWindStrength.v) != null ? (tmp$_0.value = closure$windStrength.v) : null;
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda_0(closure$treeGen, closure$shadowMaps, closure$windSpeed, closure$windAnimationPos, closure$windStrength) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda(closure$treeGen));
+      var uWindSpeed = {v: null};
+      var uWindStrength = {v: null};
       var $receiver_0 = new PbrShader$PbrConfig();
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver_0.isNormalMapped = true;
@@ -7295,7 +7427,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver_0.isReceivingShadows = true;
       $receiver_0.maxLights = 2;
       var pbrCfg = $receiver_0;
-      var $receiver_1 = new PbrShader(pbrCfg);
+      var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda);
       $receiver_1.ambientOcclusionMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_0);
@@ -7303,12 +7435,15 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver_1.roughnessMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_2);
       $receiver_1.ambient = new Color(0.15, 0.15, 0.15);
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_3($receiver_1));
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1, closure$shadowMaps_0));
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1, closure$shadowMaps_0, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
+      var $receiver_2 = $receiver.onPreRender;
+      var element = treeScene$lambda$lambda$lambda_0(closure$windSpeed, closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
+      $receiver_2.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_0(closure$treeGen) {
+  function treeScene$lambda$lambda$lambda_1(closure$treeGen) {
     return function ($receiver) {
       var level;
       level = Log$Level.INFO;
@@ -7383,45 +7518,136 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     it.cullMethod = CullMethod.NO_CULLING;
     return Unit;
   }
-  function treeScene$lambda$lambda$lambda$lambda_8(this$, closure$shadowMaps) {
+  function treeScene$lambda$lambda$lambda$lambda_8(this$, closure$shadowMaps, closure$uWindSpeed, closure$uWindStrength) {
     return function (it) {
-      var tmp$;
+      var tmp$, tmp$_0, tmp$_1;
       if ((tmp$ = this$.depthMaps) != null) {
-        var tmp$_0, tmp$_0_0;
+        var tmp$_2, tmp$_0_0;
         var index = 0;
-        tmp$_0 = closure$shadowMaps.iterator();
-        while (tmp$_0.hasNext()) {
-          var item = tmp$_0.next();
+        tmp$_2 = closure$shadowMaps.iterator();
+        while (tmp$_2.hasNext()) {
+          var item = tmp$_2.next();
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
             tmp$[i] = item.offscreenPass.impl.depthTexture;
           }
         }
       }
+      var tmp$_3 = closure$uWindSpeed;
+      var $this = this$.model;
+      var name = 'windAnim';
+      var stage;
+      var findNode_3klnlw$result;
+      findNode_3klnlw$break: do {
+        stage = ShaderStage.ALL;
+        var tmp$_4;
+        tmp$_4 = $this.stages.values.iterator();
+        while (tmp$_4.hasNext()) {
+          var element = tmp$_4.next();
+          if ((element.stage.mask & stage.mask) !== 0) {
+            var tmp$_0_1;
+            var $receiver = element.nodes;
+            var firstOrNull$result;
+            firstOrNull$break: do {
+              var tmp$_1_0;
+              tmp$_1_0 = $receiver.iterator();
+              while (tmp$_1_0.hasNext()) {
+                var element_0 = tmp$_1_0.next();
+                if (equals(element_0.name, name) && Kotlin.isType(element_0, PushConstantNode1f)) {
+                  firstOrNull$result = element_0;
+                  break firstOrNull$break;
+                }
+              }
+              firstOrNull$result = null;
+            }
+             while (false);
+            var node = (tmp$_0_1 = firstOrNull$result) == null || Kotlin.isType(tmp$_0_1, PushConstantNode1f) ? tmp$_0_1 : throwCCE();
+            if (node != null) {
+              findNode_3klnlw$result = node;
+              break findNode_3klnlw$break;
+            }
+          }
+        }
+        findNode_3klnlw$result = null;
+      }
+       while (false);
+      tmp$_3.v = (tmp$_0 = findNode_3klnlw$result) != null ? tmp$_0.uniform : null;
+      var tmp$_5 = closure$uWindStrength;
+      var $this_0 = this$.model;
+      var name_0 = 'windStrength';
+      var stage_0;
+      var findNode_3klnlw$result_0;
+      findNode_3klnlw$break: do {
+        stage_0 = ShaderStage.ALL;
+        var tmp$_6;
+        tmp$_6 = $this_0.stages.values.iterator();
+        while (tmp$_6.hasNext()) {
+          var element_1 = tmp$_6.next();
+          if ((element_1.stage.mask & stage_0.mask) !== 0) {
+            var tmp$_0_2;
+            var $receiver_0 = element_1.nodes;
+            var firstOrNull$result_0;
+            firstOrNull$break: do {
+              var tmp$_1_1;
+              tmp$_1_1 = $receiver_0.iterator();
+              while (tmp$_1_1.hasNext()) {
+                var element_0_0 = tmp$_1_1.next();
+                if (equals(element_0_0.name, name_0) && Kotlin.isType(element_0_0, PushConstantNode1f)) {
+                  firstOrNull$result_0 = element_0_0;
+                  break firstOrNull$break;
+                }
+              }
+              firstOrNull$result_0 = null;
+            }
+             while (false);
+            var node_0 = (tmp$_0_2 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_0_2, PushConstantNode1f) ? tmp$_0_2 : throwCCE();
+            if (node_0 != null) {
+              findNode_3klnlw$result_0 = node_0;
+              break findNode_3klnlw$break;
+            }
+          }
+        }
+        findNode_3klnlw$result_0 = null;
+      }
+       while (false);
+      tmp$_5.v = (tmp$_1 = findNode_3klnlw$result_0) != null ? tmp$_1.uniform : null;
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_1(closure$treeGen, closure$shadowMaps) {
+  function treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, closure$uWindSpeed, closure$windStrength, closure$uWindStrength) {
+    return function ($receiver, ctx) {
+      var tmp$, tmp$_0;
+      (tmp$ = closure$uWindSpeed.v) != null ? (tmp$.value = closure$windAnimationPos.v) : null;
+      (tmp$_0 = closure$uWindStrength.v) != null ? (tmp$_0.value = closure$windStrength.v) : null;
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda_1(closure$treeGen, closure$shadowMaps, closure$windAnimationPos, closure$windStrength) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda_0(closure$treeGen));
+      $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda_1(closure$treeGen));
+      var uWindSpeed = {v: null};
+      var uWindStrength = {v: null};
       var $receiver_0 = new PbrShader$PbrConfig();
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver_0.isReceivingShadows = true;
       $receiver_0.maxLights = 2;
       var pbrCfg = $receiver_0;
-      var $receiver_1 = new PbrShader(pbrCfg);
+      var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
       var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_5);
       $receiver_1.roughness = 0.5;
       $receiver_1.ambient = new Color(0.15, 0.15, 0.15);
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_6($receiver_1));
       $receiver_1.onSetup.add_11rb$(treeScene$lambda$lambda$lambda$lambda_7);
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_8($receiver_1, closure$shadowMaps_0));
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_8($receiver_1, closure$shadowMaps_0, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
+      var $receiver_2 = $receiver.onPreRender;
+      var element = treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
+      $receiver_2.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_1(closure$autoRotate, this$) {
+  function treeScene$lambda$lambda$lambda_3(closure$autoRotate, this$) {
     return function ($receiver, ctx) {
       if (closure$autoRotate.v) {
         this$.verticalRotation += ctx.deltaT * 3.0;
@@ -7439,23 +7665,23 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.setMouseRotation_dleff0$(0.0, -10.0);
       $receiver.setMouseTranslation_y2kzbl$(0.0, 2.0, 0.0);
       var $receiver_0 = $receiver.onPreRender;
-      var element = treeScene$lambda$lambda$lambda_1(closure$autoRotate, $receiver);
+      var element = treeScene$lambda$lambda$lambda_3(closure$autoRotate, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_2(it) {
+  function treeScene$lambda$lambda$lambda_4(it) {
     return new BlankComponentUi();
   }
-  function treeScene$lambda$lambda$lambda_3(it) {
+  function treeScene$lambda$lambda$lambda_5(it) {
     return new BlankComponentUi();
   }
   function treeScene$lambda$lambda_3($receiver) {
-    $receiver.componentUi_mloaa0$(treeScene$lambda$lambda$lambda_2);
-    $receiver.containerUi_2t3ptw$(treeScene$lambda$lambda$lambda_3);
+    $receiver.componentUi_mloaa0$(treeScene$lambda$lambda$lambda_4);
+    $receiver.containerUi_2t3ptw$(treeScene$lambda$lambda$lambda_5);
     return Unit;
   }
-  function treeScene$lambda$lambda$lambda_4(closure$y, closure$smallFont, this$) {
+  function treeScene$lambda$lambda$lambda_6(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -7465,14 +7691,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_5(closure$y) {
+  function treeScene$lambda$lambda$lambda_7(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_6(closure$y, closure$treeGen) {
+  function treeScene$lambda$lambda$lambda_8(closure$y, closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
@@ -7488,7 +7714,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_7(closure$y, closure$treeGen, closure$growDistVal) {
+  function treeScene$lambda$lambda$lambda_9(closure$y, closure$treeGen, closure$growDistVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
@@ -7499,14 +7725,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_8(closure$y) {
+  function treeScene$lambda$lambda$lambda_10(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_9(closure$y, closure$treeGen) {
+  function treeScene$lambda$lambda$lambda_11(closure$y, closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
@@ -7522,7 +7748,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_10(closure$y, closure$treeGen, closure$killDistVal) {
+  function treeScene$lambda$lambda$lambda_12(closure$y, closure$treeGen, closure$killDistVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
@@ -7533,14 +7759,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_11(closure$y) {
+  function treeScene$lambda$lambda$lambda_13(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_12(closure$y, closure$treeGen) {
+  function treeScene$lambda$lambda$lambda_14(closure$y, closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
@@ -7556,7 +7782,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_13(closure$y, closure$treeGen, closure$attractPtsVal) {
+  function treeScene$lambda$lambda$lambda_15(closure$y, closure$treeGen, closure$attractPtsVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
@@ -7567,14 +7793,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_14(closure$y) {
+  function treeScene$lambda$lambda$lambda_16(closure$y) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_15(closure$y, closure$treeGen) {
+  function treeScene$lambda$lambda$lambda_17(closure$y, closure$treeGen) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
@@ -7590,7 +7816,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_16(closure$y, closure$treeGen, closure$infRadiusVal) {
+  function treeScene$lambda$lambda$lambda_18(closure$y, closure$treeGen, closure$infRadiusVal) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
@@ -7655,7 +7881,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_17(closure$y, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda_19(closure$y, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
@@ -7665,7 +7891,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_18(closure$y, closure$smallFont, this$) {
+  function treeScene$lambda$lambda$lambda_20(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -7675,89 +7901,169 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_14(closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda_21(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_22(closure$y, closure$windSpeed) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = toString_0(closure$windSpeed.v, 1);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_14(closure$windSpeed, closure$windSpeedVal) {
+    return function ($receiver, value) {
+      closure$windSpeed.v = value;
+      closure$windSpeedVal.text = toString_0(value, 1);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_23(closure$y, closure$windSpeed, closure$windSpeedVal) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.setValue_y2kzbl$(0.0, 10.0, closure$windSpeed.v);
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda_14(closure$windSpeed, closure$windSpeedVal);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_24(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_25(closure$y, closure$windStrength) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      $receiver.text = toString_0(closure$windStrength.v, 1);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_15(closure$windStrength, closure$windStrengthVal) {
+    return function ($receiver, value) {
+      closure$windStrength.v = value;
+      closure$windStrengthVal.text = toString_0(value, 1);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda_26(closure$y, closure$treeGen, closure$windStrength, closure$windStrengthVal) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0), full());
+      $receiver.setValue_y2kzbl$(0.0, 5.0, closure$treeGen.radiusOfInfluence);
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = treeScene$lambda$lambda$lambda$lambda_15(closure$windStrength, closure$windStrengthVal);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function treeScene$lambda$lambda$lambda$lambda_16(closure$leafMesh) {
     return function ($receiver) {
       var tmp$;
       (tmp$ = closure$leafMesh.v) != null ? (tmp$.isVisible = $receiver.isEnabled) : null;
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_19(closure$y, closure$leafMesh) {
+  function treeScene$lambda$lambda$lambda_27(closure$y, closure$leafMesh) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       $receiver.isEnabled = true;
       var $receiver_0 = $receiver.onStateChange;
-      var element = treeScene$lambda$lambda$lambda$lambda_14(closure$leafMesh);
+      var element = treeScene$lambda$lambda$lambda$lambda_16(closure$leafMesh);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_15(closure$autoRotate) {
+  function treeScene$lambda$lambda$lambda$lambda_17(closure$autoRotate) {
     return function ($receiver) {
       closure$autoRotate.v = $receiver.isEnabled;
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda_20(closure$y, closure$autoRotate) {
+  function treeScene$lambda$lambda$lambda_28(closure$y, closure$autoRotate) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
       $receiver.isEnabled = closure$autoRotate.v;
       var $receiver_0 = $receiver.onStateChange;
-      var element = treeScene$lambda$lambda$lambda$lambda_15(closure$autoRotate);
+      var element = treeScene$lambda$lambda$lambda$lambda_17(closure$autoRotate);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_4(closure$smallFont, this$, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$autoRotate) {
+  function treeScene$lambda$lambda_4(closure$smallFont, this$, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$windSpeed, closure$windStrength, closure$autoRotate) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-560.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(440.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-680.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(560.0), full());
       var y = {v: -40.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Generator Settings', treeScene$lambda$lambda$lambda_4(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Generator Settings', treeScene$lambda$lambda$lambda_6(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Grow Distance:', treeScene$lambda$lambda$lambda_5(y)));
-      var growDistVal = this$.label_tokfmu$('growDistVal', treeScene$lambda$lambda$lambda_6(y, closure$treeGen));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Grow Distance:', treeScene$lambda$lambda$lambda_7(y)));
+      var growDistVal = this$.label_tokfmu$('growDistVal', treeScene$lambda$lambda$lambda_8(y, closure$treeGen));
       $receiver.unaryPlus_uv0sim$(growDistVal);
       y.v -= 25.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('growDist', treeScene$lambda$lambda$lambda_7(y, closure$treeGen, growDistVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('growDist', treeScene$lambda$lambda$lambda_9(y, closure$treeGen, growDistVal)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Kill Distance:', treeScene$lambda$lambda$lambda_8(y)));
-      var killDistVal = this$.label_tokfmu$('killDistVal', treeScene$lambda$lambda$lambda_9(y, closure$treeGen));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Kill Distance:', treeScene$lambda$lambda$lambda_10(y)));
+      var killDistVal = this$.label_tokfmu$('killDistVal', treeScene$lambda$lambda$lambda_11(y, closure$treeGen));
       $receiver.unaryPlus_uv0sim$(killDistVal);
       y.v -= 25.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_10(y, closure$treeGen, killDistVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_12(y, closure$treeGen, killDistVal)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Attraction Points:', treeScene$lambda$lambda$lambda_11(y)));
-      var attractPtsVal = this$.label_tokfmu$('attractPtsVal', treeScene$lambda$lambda$lambda_12(y, closure$treeGen));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Attraction Points:', treeScene$lambda$lambda$lambda_13(y)));
+      var attractPtsVal = this$.label_tokfmu$('attractPtsVal', treeScene$lambda$lambda$lambda_14(y, closure$treeGen));
       $receiver.unaryPlus_uv0sim$(attractPtsVal);
       y.v -= 25.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('attractPts', treeScene$lambda$lambda$lambda_13(y, closure$treeGen, attractPtsVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('attractPts', treeScene$lambda$lambda$lambda_15(y, closure$treeGen, attractPtsVal)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius of Influence:', treeScene$lambda$lambda$lambda_14(y)));
-      var infRadiusVal = this$.label_tokfmu$('infRadiusVal', treeScene$lambda$lambda$lambda_15(y, closure$treeGen));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Radius of Influence:', treeScene$lambda$lambda$lambda_16(y)));
+      var infRadiusVal = this$.label_tokfmu$('infRadiusVal', treeScene$lambda$lambda$lambda_17(y, closure$treeGen));
       $receiver.unaryPlus_uv0sim$(infRadiusVal);
       y.v -= 25.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_16(y, closure$treeGen, infRadiusVal)));
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('killDist', treeScene$lambda$lambda$lambda_18(y, closure$treeGen, infRadiusVal)));
       y.v -= 45.0;
-      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Generate Tree!', treeScene$lambda$lambda$lambda_17(y, closure$treeGen, closure$trunkMesh, closure$leafMesh)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('Generate Tree!', treeScene$lambda$lambda$lambda_19(y, closure$treeGen, closure$trunkMesh, closure$leafMesh)));
       y.v -= 40;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', treeScene$lambda$lambda$lambda_18(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', treeScene$lambda$lambda$lambda_20(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Animation Speed:', treeScene$lambda$lambda$lambda_21(y)));
+      var windSpeedVal = this$.label_tokfmu$('windSpeedVal', treeScene$lambda$lambda$lambda_22(y, closure$windSpeed));
+      $receiver.unaryPlus_uv0sim$(windSpeedVal);
+      y.v -= 25.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('windSpeed', treeScene$lambda$lambda$lambda_23(y, closure$windSpeed, windSpeedVal)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Animation Strength:', treeScene$lambda$lambda$lambda_24(y)));
+      var windStrengthVal = this$.label_tokfmu$('windStrengthVal', treeScene$lambda$lambda$lambda_25(y, closure$windStrength));
+      $receiver.unaryPlus_uv0sim$(windStrengthVal);
+      y.v -= 25.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('windStrength', treeScene$lambda$lambda$lambda_26(y, closure$treeGen, closure$windStrength, windStrengthVal)));
       y.v -= 35;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Toggle Leafs', treeScene$lambda$lambda$lambda_19(y, closure$leafMesh)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Toggle Leafs', treeScene$lambda$lambda$lambda_27(y, closure$leafMesh)));
       y.v -= 35;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', treeScene$lambda$lambda$lambda_20(y, closure$autoRotate)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', treeScene$lambda$lambda$lambda_28(y, closure$autoRotate)));
       return Unit;
     };
   }
-  function treeScene$lambda(closure$ctx, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$autoRotate) {
+  function treeScene$lambda(closure$ctx, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$windSpeed, closure$windStrength, closure$autoRotate) {
     return function ($receiver) {
       var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
       var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
       $receiver.theme = theme(UiTheme.Companion.DARK, treeScene$lambda$lambda_3);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', treeScene$lambda$lambda_4(smallFont, $receiver, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$autoRotate)));
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', treeScene$lambda$lambda_4(smallFont, $receiver, closure$treeGen, closure$trunkMesh, closure$leafMesh, closure$windSpeed, closure$windStrength, closure$autoRotate)));
       return Unit;
     };
   }
@@ -7771,6 +8077,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var trunkMesh = {v: null};
     var leafMesh = {v: null};
     var autoRotate = {v: true};
+    var windSpeed = {v: 2.5};
+    var windAnimationPos = {v: 0.0};
+    var windStrength = {v: 1.0};
     var $receiver = new Scene_init(null);
     var dirLighDirection = new Vec3f(1.0, -1.5, 1.0);
     var spotLightPos = new Vec3f(10.0, 15.0, 10.0);
@@ -7789,16 +8098,169 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     }
     $receiver.onDispose.add_11rb$(treeScene$lambda$lambda(shadowMaps, ctx));
     $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps));
-    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda_0(treeGen, shadowMaps));
-    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_1(treeGen, shadowMaps));
+    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda_0(treeGen, shadowMaps, windSpeed, windAnimationPos, windStrength));
+    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_1(treeGen, shadowMaps, windAnimationPos, windStrength));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
     $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, treeScene$lambda$lambda_2($receiver, autoRotate)));
     var treeScene = $receiver;
     scenes.add_11rb$(treeScene);
-    var element_1 = uiScene(void 0, void 0, void 0, treeScene$lambda(ctx, treeGen, trunkMesh, leafMesh, autoRotate));
+    var element_1 = uiScene(void 0, void 0, void 0, treeScene$lambda(ctx, treeGen, trunkMesh, leafMesh, windSpeed, windStrength, autoRotate));
     scenes.add_11rb$(element_1);
     return scenes;
+  }
+  function WindNode(graph) {
+    ShaderNode.call(this, 'windNode', graph);
+    this.inputPos = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f.Companion.ZERO));
+    this.inputAnim = new ShaderNodeIoVar(new ModelVar1fConst(0.0));
+    this.inputStrength = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
+    this.outputPos = new ShaderNodeIoVar(new ModelVar3f('windOutPos'), this);
+  }
+  WindNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_8ak6wm$([this.inputPos, this.inputAnim, this.inputStrength]);
+  };
+  WindNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$('\n' + '            float r = clamp(sqrt(' + this.inputPos.ref3f() + '.x * ' + this.inputPos.ref3f() + '.x + ' + this.inputPos.ref3f() + '.z * ' + this.inputPos.ref3f() + '.z) - 0.25, 0.0, 2.0) + ' + '\n' + '                        clamp(' + this.inputPos.ref3f() + '.z - 1.0, 0.0, 1.0);' + '\n' + '            float windTx = cos(' + this.inputPos.ref3f() + '.x * 10.0 + ' + this.inputPos.ref3f() + '.y * 2.0 + ' + this.inputAnim.ref1f() + ') * r * 0.01 * ' + this.inputStrength.ref1f() + ';' + '\n' + '            float windTz = sin(' + this.inputPos.ref3f() + '.z * 10.0 - ' + this.inputPos.ref3f() + '.y * 2.0 + ' + this.inputAnim.ref1f() + ' * 1.1f) * r * 0.01 * ' + this.inputStrength.ref1f() + ';' + '\n' + '            ' + this.outputPos.declare() + ' = ' + this.inputPos.ref3f() + ' + vec3(windTx, 0.0, windTz);' + '\n' + '        ');
+  };
+  WindNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'WindNode',
+    interfaces: [ShaderNode]
+  };
+  function treePbrModel(cfg) {
+    var $receiver = new ShaderModel('treePbrModel()');
+    var ifColors = {v: null};
+    var ifNormals = {v: null};
+    var ifTangents = {v: null};
+    var ifFragPos = {v: null};
+    var ifTexCoords = {v: null};
+    var mvp = {v: null};
+    var shadowedLightNode = {v: null};
+    var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    mvp.v = $receiver_0.mvpNode();
+    var nrm = $receiver_0.transformNode_vid4wo$($receiver_0.attrNormals().output, mvp.v.outModelMat, 0.0);
+    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.output);
+    if (cfg.requiresTexCoords()) {
+      tmp$ = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
+    }
+     else {
+      tmp$ = null;
+    }
+    ifTexCoords.v = tmp$;
+    if (cfg.isDisplacementMapped) {
+      var dispTex = $receiver_0.textureNode_61zpoe$('tDisplacement');
+      var $receiver_1 = $receiver_0.displacementMapNode_7fvjbk$(dispTex, ensureNotNull(ifTexCoords.v).input, $receiver_0.attrPositions().output, $receiver_0.attrNormals().output);
+      $receiver_1.inStrength = $receiver_0.pushConstantNode1f_61zpoe$('uDispStrength').output;
+      var dispNd = $receiver_1;
+      tmp$_0 = dispNd.outPosition;
+    }
+     else {
+      tmp$_0 = $receiver_0.attrPositions().output;
+    }
+    var staticWorldPos = tmp$_0;
+    var $receiver_2 = $receiver_0.addNode_u9w9by$(new WindNode($receiver.vertexStageGraph));
+    $receiver_2.inputPos = staticWorldPos;
+    $receiver_2.inputAnim = $receiver_0.pushConstantNode1f_61zpoe$('windAnim').output;
+    $receiver_2.inputStrength = $receiver_0.pushConstantNode1f_61zpoe$('windStrength').output;
+    var windNd = $receiver_2;
+    var worldPos = windNd.outputPos;
+    var pos = $receiver_0.transformNode_vid4wo$(worldPos, mvp.v.outModelMat, 1.0).output;
+    ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', pos);
+    if (cfg.albedoSource === Albedo.VERTEX_ALBEDO) {
+      tmp$_1 = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
+    }
+     else {
+      tmp$_1 = null;
+    }
+    ifColors.v = tmp$_1;
+    if (cfg.isNormalMapped) {
+      var tan = $receiver_0.transformNode_vid4wo$($receiver_0.attrTangents().output, mvp.v.outModelMat, 0.0);
+      tmp$_2 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.output);
+    }
+     else {
+      tmp$_2 = null;
+    }
+    ifTangents.v = tmp$_2;
+    if (cfg.isReceivingShadows) {
+      tmp$_3 = $receiver_0.shadowedLightNode_jciouo$(worldPos, mvp.v.outModelMat, 'depthMap', cfg.maxLights);
+    }
+     else {
+      tmp$_3 = null;
+    }
+    shadowedLightNode.v = tmp$_3;
+    $receiver_0.positionOutput = $receiver_0.vertexPositionNode_ze33is$(worldPos, mvp.v.outMvpMat).outPosition;
+    var $receiver_3 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
+    var tmp$_4, tmp$_5;
+    var mvpFrag = mvp.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
+    var lightNode = (tmp$_5 = (tmp$_4 = shadowedLightNode.v) != null ? tmp$_4.fragmentNode : null) != null ? tmp$_5 : $receiver_3.defaultLightNode_za3lpa$(cfg.maxLights);
+    var reflMap;
+    var brdfLut;
+    var irrSampler;
+    if (cfg.isImageBasedLighting) {
+      var irrMap = $receiver_3.cubeMapNode_61zpoe$('irradianceMap');
+      irrSampler = $receiver_3.cubeMapSamplerNode_2z3a2t$(irrMap, ifNormals.v.output, false);
+      reflMap = $receiver_3.cubeMapNode_61zpoe$('reflectionMap');
+      brdfLut = $receiver_3.textureNode_61zpoe$('brdfLut');
+    }
+     else {
+      irrSampler = null;
+      reflMap = null;
+      brdfLut = null;
+    }
+    var $receiver_4 = $receiver_3.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
+    var closure$irrSampler = irrSampler;
+    var tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10;
+    $receiver_4.inFragPos = ifFragPos.v.output;
+    $receiver_4.inCamPos = mvpFrag.outCamPos;
+    $receiver_4.inIrradiance = (tmp$_6 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_6 : $receiver_3.pushConstantNodeColor_61zpoe$('uAmbient').output;
+    switch (cfg.albedoSource.name) {
+      case 'VERTEX_ALBEDO':
+        tmp$_7 = ensureNotNull(ifColors.v).output;
+        break;
+      case 'STATIC_ALBEDO':
+        tmp$_7 = $receiver_3.pushConstantNodeColor_61zpoe$('uAlbedo').output;
+        break;
+      case 'TEXTURE_ALBEDO':
+        var albedoSampler = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output, false);
+        var albedoLin = $receiver_3.gammaNode_r20yfm$(albedoSampler.outColor);
+        tmp$_7 = albedoLin.outColor;
+        break;
+      default:tmp$_7 = Kotlin.noWhenBranchMatched();
+        break;
+    }
+    $receiver_4.inAlbedo = tmp$_7;
+    if (cfg.isNormalMapped && ifTangents.v != null) {
+      var bumpNormal = $receiver_3.normalMapNode_j8913i$($receiver_3.textureNode_61zpoe$('tNormal'), ensureNotNull(ifTexCoords.v).output, ifNormals.v.output, ifTangents.v.output);
+      bumpNormal.inStrength = new ShaderNodeIoVar(new ModelVar1fConst(cfg.normalStrength));
+      tmp$_8 = bumpNormal.outNormal;
+    }
+     else {
+      tmp$_8 = ifNormals.v.output;
+    }
+    $receiver_4.inNormal = tmp$_8;
+    if (cfg.isMetallicMapped) {
+      tmp$_9 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tMetallic'), ensureNotNull(ifTexCoords.v).output, false).outColor;
+    }
+     else {
+      tmp$_9 = $receiver_3.pushConstantNode1f_61zpoe$('uMetallic').output;
+    }
+    $receiver_4.inMetallic = tmp$_9;
+    if (cfg.isRoughnessMapped) {
+      tmp$_10 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tRoughness'), ensureNotNull(ifTexCoords.v).output, false).outColor;
+    }
+     else {
+      tmp$_10 = $receiver_3.pushConstantNode1f_61zpoe$('uRoughness').output;
+    }
+    $receiver_4.inRoughness = tmp$_10;
+    if (cfg.isAmbientOcclusionMapped) {
+      $receiver_4.inAmbientOccl = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAmbOccl'), ensureNotNull(ifTexCoords.v).output, false).outColor;
+    }
+    var mat = $receiver_4;
+    var hdrToLdr = $receiver_3.hdrToLdrNode_r20yfm$(mat.outColor);
+    $receiver_3.colorOutput = hdrToLdr.outColor;
+    return $receiver;
   }
   function makeTreeGroundGrid$lambda$lambda$lambda$lambda($receiver) {
     $receiver.texCoord.set_dleff0$($receiver.position.x, $receiver.position.z).scale_mx4ult$(0.2);

@@ -6,7 +6,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 
-open class ModeledShader(protected val model: ShaderModel) : Shader(), PipelineFactory {
+open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
 
     val onSetup = mutableListOf<((builder: Pipeline.Builder) -> Unit)>()
 

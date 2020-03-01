@@ -5,6 +5,8 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Uniform1f
+import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
@@ -36,6 +38,9 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     var leafMesh: Mesh? = null
 
     var autoRotate = true
+    var windSpeed = 2.5f
+    var windAnimationPos = 0f
+    var windStrength = 1f
 
     val treeScene = scene {
         val dirLighDirection = Vec3f(1f, -1.5f, 1f)
@@ -77,6 +82,8 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 }
             }
 
+            var uWindSpeed: Uniform1f? = null
+            var uWindStrength: Uniform1f? = null
             val pbrCfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isNormalMapped = true
@@ -85,7 +92,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 isReceivingShadows = true
                 maxLights = 2
             }
-            pipelineLoader = PbrShader(pbrCfg).apply {
+            pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_baseColor.jpg") }
                 ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg") }
                 normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg") }
@@ -105,7 +112,14 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                             }
                         }
                     }
+                    uWindSpeed = model.findNode<PushConstantNode1f>("windAnim")?.uniform
+                    uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
+            }
+            onPreRender += { ctx ->
+                windAnimationPos += ctx.deltaT * windSpeed
+                uWindSpeed?.value = windAnimationPos
+                uWindStrength?.value = windStrength
             }
         }
 
@@ -117,12 +131,14 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 }
             }
 
+            var uWindSpeed: Uniform1f? = null
+            var uWindStrength: Uniform1f? = null
             val pbrCfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isReceivingShadows = true
                 maxLights = 2
             }
-            pipelineLoader = PbrShader(pbrCfg).apply {
+            pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 albedoMap = Texture { it.loadTextureData("leaf.png") }
                 roughness = 0.5f
                 ambient = Color(0.15f, 0.15f, 0.15f)
@@ -141,7 +157,13 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                             }
                         }
                     }
+                    uWindSpeed = model.findNode<PushConstantNode1f>("windAnim")?.uniform
+                    uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
+            }
+            onPreRender += { ctx ->
+                uWindSpeed?.value = windAnimationPos
+                uWindStrength?.value = windStrength
             }
         }
 
@@ -180,8 +202,8 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-450f), dps(-560f), zero())
-            layoutSpec.setSize(dps(330f), dps(440f), full())
+            layoutSpec.setOrigin(dps(-450f), dps(-680f), zero())
+            layoutSpec.setSize(dps(330f), dps(560f), full())
 
             var y = -40f
             +label("Generator Settings") {
@@ -322,6 +344,52 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 textAlignment = Gravity(Alignment.CENTER, Alignment.CENTER)
             }
 
+            y -= 35f
+            +label("Animation Speed:") {
+                layoutSpec.setOrigin(dps(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+            }
+            val windSpeedVal = label("windSpeedVal") {
+                layoutSpec.setOrigin(pcs(70f), dps(y), zero())
+                layoutSpec.setSize(pcs(30f), dps(35f), full())
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+                text = windSpeed.toString(1)
+            }
+            +windSpeedVal
+            y -= 25f
+            +slider("windSpeed") {
+                layoutSpec.setOrigin(dps(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(25f), full())
+                setValue(0.0f, 10f, windSpeed)
+                onValueChanged += { value ->
+                    windSpeed = value
+                    windSpeedVal.text = value.toString(1)
+                }
+            }
+
+            y -= 35f
+            +label("Animation Strength:") {
+                layoutSpec.setOrigin(dps(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+            }
+            val windStrengthVal = label("windStrengthVal") {
+                layoutSpec.setOrigin(pcs(70f), dps(y), zero())
+                layoutSpec.setSize(pcs(30f), dps(35f), full())
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+                text = windStrength.toString(1)
+            }
+            +windStrengthVal
+            y -= 25f
+            +slider("windStrength") {
+                layoutSpec.setOrigin(dps(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(25f), full())
+                setValue(0.0f, 5f, treeGen.radiusOfInfluence)
+                onValueChanged += { value ->
+                    windStrength = value
+                    windStrengthVal.text = value.toString(1)
+                }
+            }
+
             y -= 35
             +toggleButton("Toggle Leafs") {
                 layoutSpec.setOrigin(dps(0f), dps(y), zero())
@@ -344,6 +412,146 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     }
 
     return scenes
+}
+
+private class WindNode(graph: ShaderGraph) : ShaderNode("windNode", graph) {
+    var inputPos = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
+    var inputAnim = ShaderNodeIoVar(ModelVar1fConst(0f))
+    var inputStrength = ShaderNodeIoVar(ModelVar1fConst(1f))
+    val outputPos = ShaderNodeIoVar(ModelVar3f("windOutPos"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        dependsOn(inputPos, inputAnim, inputStrength)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        generator.appendMain("""
+            float r = clamp(sqrt(${inputPos.ref3f()}.x * ${inputPos.ref3f()}.x + ${inputPos.ref3f()}.z * ${inputPos.ref3f()}.z) - 0.25, 0.0, 2.0) + 
+                        clamp(${inputPos.ref3f()}.z - 1.0, 0.0, 1.0);
+            float windTx = cos(${inputPos.ref3f()}.x * 10.0 + ${inputPos.ref3f()}.y * 2.0 + ${inputAnim.ref1f()}) * r * 0.01 * ${inputStrength.ref1f()};
+            float windTz = sin(${inputPos.ref3f()}.z * 10.0 - ${inputPos.ref3f()}.y * 2.0 + ${inputAnim.ref1f()} * 1.1f) * r * 0.01 * ${inputStrength.ref1f()};
+            ${outputPos.declare()} = ${inputPos.ref3f()} + vec3(windTx, 0.0, windTz);
+        """)
+    }
+}
+
+private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()").apply {
+    val ifColors: StageInterfaceNode?
+    val ifNormals: StageInterfaceNode
+    val ifTangents: StageInterfaceNode?
+    val ifFragPos: StageInterfaceNode
+    val ifTexCoords: StageInterfaceNode?
+    val mvp: UniformBufferMvp
+    val shadowedLightNode: ShadowedLightNode?
+
+    vertexStage {
+        mvp = mvpNode()
+        val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
+        ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+
+        ifTexCoords = if (cfg.requiresTexCoords()) {
+            stageInterfaceNode("ifTexCoords", attrTexCoords().output)
+        } else {
+            null
+        }
+
+        val staticWorldPos = if (cfg.isDisplacementMapped) {
+            val dispTex = textureNode("tDisplacement")
+            val dispNd = displacementMapNode(dispTex, ifTexCoords!!.input, attrPositions().output, attrNormals().output).apply {
+                inStrength = pushConstantNode1f("uDispStrength").output
+            }
+            dispNd.outPosition
+        } else {
+            attrPositions().output
+        }
+        val windNd = addNode(WindNode(vertexStageGraph)).apply {
+            inputPos = staticWorldPos
+            inputAnim = pushConstantNode1f("windAnim").output
+            inputStrength = pushConstantNode1f("windStrength").output
+        }
+        val worldPos = windNd.outputPos
+        val pos = transformNode(worldPos, mvp.outModelMat, 1f).output
+        ifFragPos = stageInterfaceNode("ifFragPos", pos)
+
+        ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
+            stageInterfaceNode("ifColors", attrColors().output)
+        } else {
+            null
+        }
+        ifTangents = if (cfg.isNormalMapped) {
+            val tan = transformNode(attrTangents().output, mvp.outModelMat, 0f)
+            stageInterfaceNode("ifTangents", tan.output)
+        } else {
+            null
+        }
+
+        shadowedLightNode = if (cfg.isReceivingShadows) {
+            shadowedLightNode(worldPos, mvp.outModelMat, "depthMap", cfg.maxLights)
+        } else {
+            null
+        }
+
+        positionOutput = vertexPositionNode(worldPos, mvp.outMvpMat).outPosition
+    }
+    fragmentStage {
+        val mvpFrag = mvp.addToStage(fragmentStageGraph)
+        val lightNode = shadowedLightNode?.fragmentNode ?: defaultLightNode(cfg.maxLights)
+
+        val reflMap: CubeMapNode?
+        val brdfLut: TextureNode?
+        val irrSampler: CubeMapSamplerNode?
+
+        if (cfg.isImageBasedLighting) {
+            val irrMap = cubeMapNode("irradianceMap")
+            irrSampler = cubeMapSamplerNode(irrMap, ifNormals.output, false)
+            reflMap = cubeMapNode("reflectionMap")
+            brdfLut = textureNode("brdfLut")
+        } else {
+            irrSampler = null
+            reflMap = null
+            brdfLut = null
+        }
+
+        val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
+            inFragPos = ifFragPos.output
+            inCamPos = mvpFrag.outCamPos
+
+            inIrradiance = irrSampler?.outColor ?: pushConstantNodeColor("uAmbient").output
+
+            inAlbedo = when (cfg.albedoSource) {
+                Albedo.VERTEX_ALBEDO -> ifColors!!.output
+                Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
+                Albedo.TEXTURE_ALBEDO -> {
+                    val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
+                    val albedoLin = gammaNode(albedoSampler.outColor)
+                    albedoLin.outColor
+                }
+            }
+            inNormal = if (cfg.isNormalMapped && ifTangents != null) {
+                val bumpNormal = normalMapNode(textureNode("tNormal"), ifTexCoords!!.output, ifNormals.output, ifTangents.output)
+                bumpNormal.inStrength = ShaderNodeIoVar(ModelVar1fConst(cfg.normalStrength))
+                bumpNormal.outNormal
+            } else {
+                ifNormals.output
+            }
+            inMetallic = if (cfg.isMetallicMapped) {
+                textureSamplerNode(textureNode("tMetallic"), ifTexCoords!!.output, false).outColor
+            } else {
+                pushConstantNode1f("uMetallic").output
+            }
+            inRoughness = if (cfg.isRoughnessMapped) {
+                textureSamplerNode(textureNode("tRoughness"), ifTexCoords!!.output, false).outColor
+            } else {
+                pushConstantNode1f("uRoughness").output
+            }
+            if (cfg.isAmbientOcclusionMapped) {
+                inAmbientOccl = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output, false).outColor
+            }
+        }
+        val hdrToLdr = hdrToLdrNode(mat.outColor)
+        colorOutput = hdrToLdr.outColor
+    }
 }
 
 private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Node {
