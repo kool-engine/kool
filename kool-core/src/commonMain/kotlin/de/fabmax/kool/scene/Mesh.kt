@@ -5,10 +5,7 @@ import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.PipelineFactory
-import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.Font
-import de.fabmax.kool.util.IndexedVertexList
-import de.fabmax.kool.util.MeshBuilder
+import de.fabmax.kool.util.*
 
 
 inline fun mesh(attributes: List<Attribute>, name: String? = null, block: Mesh.() -> Unit): Mesh {
@@ -44,6 +41,8 @@ fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate:
  * Class for renderable geometry (triangles, lines, points).
  */
 open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(name) {
+
+    var instances: MeshInstanceList? = null
 
     var pipelineLoader: PipelineFactory? = null
     private var pipeline: Pipeline? = null

@@ -15,28 +15,31 @@ class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType
         longHash = hash
     }
 
-    fun getAttributeLocation(attribName: String): Int {
-        for (i in bindings.indices) {
-            bindings[i].attributes.find { it.name == attribName }?.let { return it.location }
-        }
-        throw NoSuchElementException("Attribute $attribName not found")
-    }
-
-    data class Binding(val binding: Int, val inputRate: InputRate, val attributes: List<Attribute>, val strideBytes: Int = attributes.sumBy { it.type.size }) {
+    data class Binding(
+            val binding: Int,
+            val inputRate: InputRate,
+            val vertexAttributes: List<VertexAttribute>,
+            val strideBytes: Int = vertexAttributes.sumBy { it.attribute.type.size })
+    {
         val longHash: ULong
 
         init {
             var hash = binding.toULong()
             hash = (hash * 71023UL) + inputRate.hashCode().toULong()
             hash = (hash * 71023UL) + strideBytes.toULong()
-            attributes.forEach { attr ->
+            vertexAttributes.forEach { attr ->
                 hash = (hash * 71023UL) + attr.hashCode().toULong()
             }
             longHash = hash
         }
     }
 
-    data class Attribute(val location: Int, val offset: Int, val type: GlslType, val name: String)
+    data class VertexAttribute(val location: Int, val offset: Int, val attribute: Attribute) {
+        val name: String
+            get() = attribute.name
+        val type: GlslType
+            get() = attribute.type
+    }
 
     class Builder {
         var primitiveType = PrimitiveType.TRIANGLES

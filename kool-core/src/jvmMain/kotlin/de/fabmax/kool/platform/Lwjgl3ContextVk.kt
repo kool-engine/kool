@@ -329,7 +329,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                                     it.destroy()
                                 }
                             }
-                            model = IndexedMesh(sys, cmd.mesh.geometry)
+                            model = IndexedMesh(sys, cmd.mesh)
                             meshMap[pipelineCfg.pipelineInstanceId] = model
                             sys.device.addDependingResource(model)
                         }
@@ -339,13 +339,22 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                             vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as MixedBufferImpl).buffer)
                         }
 
-                        vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
+                        val instanceCnt: Int
+                        val insts = cmd.mesh.instances
+                        val instData = model.instanceBuffer
+                        if (insts != null && instData != null) {
+                            instanceCnt = insts.numInstances
+                            vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer, instData.vkBuffer), longs(0L, 0L))
+                        } else {
+                            instanceCnt = 1
+                            vkCmdBindVertexBuffers(commandBuffer, 0, longs(model.vertexBuffer.vkBuffer), longs(0L))
+                        }
                         vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer.vkBuffer, 0L, VK_INDEX_TYPE_UINT32)
                         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
-                        vkCmdDrawIndexed(commandBuffer, model.numIndices, 1, 0, 0, 0)
+                        vkCmdDrawIndexed(commandBuffer, model.numIndices, instanceCnt, 0, 0, 0)
 
-                        engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
+                        engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * instanceCnt)
                     }
                 }
             }

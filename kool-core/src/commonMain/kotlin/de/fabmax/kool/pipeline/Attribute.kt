@@ -21,9 +21,7 @@ enum class GlslType(val size: Int, val isInt: Boolean, val glslType: String) {
 }
 
 data class Attribute(val name: String, val type: GlslType) {
-    var glslSrcName = name
-    var locationOffset = 0
-    var divisor = 0
+    val props = PlatformAttributeProps(this)
 
     override fun toString(): String {
         return name
@@ -37,3 +35,5 @@ data class Attribute(val name: String, val type: GlslType) {
         val COLORS = Attribute("attrib_colors", GlslType.VEC_4F)
     }
 }
+
+expect class PlatformAttributeProps(attribute: Attribute)

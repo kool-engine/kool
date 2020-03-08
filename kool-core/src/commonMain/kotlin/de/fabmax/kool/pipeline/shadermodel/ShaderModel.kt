@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.shadermodel
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.MeshInstanceList
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -50,18 +51,28 @@ class ShaderModel(val modelInfo: String = "") {
     }
 
     private fun setupAttributes(mesh: Mesh, buildCtx: Pipeline.BuildContext) {
-        val vertLayoutAttribs = mutableListOf<VertexLayout.Attribute>()
+        var attribLocation = 0
         val verts = mesh.geometry
-
-        vertexStageGraph.requiredVertexAttributes.forEachIndexed { iAttrib, attrib ->
-            if (!mesh.geometry.vertexAttributes.contains(attrib)) {
-                throw NoSuchElementException("Mesh does not include required vertex attribute: ${attrib.name}")
-            }
-            val off = verts.attributeOffsets[attrib] ?: throw NoSuchElementException()
-            vertLayoutAttribs += VertexLayout.Attribute(iAttrib, off, attrib.type, attrib.name)
+        val vertLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
+        vertexStageGraph.requiredVertexAttributes.forEach { attrib ->
+            val off = verts.attributeOffsets[attrib] ?:
+                    throw NoSuchElementException("Mesh does not include required vertex attribute: ${attrib.name}")
+            vertLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, off, attrib)
         }
-
         buildCtx.vertexLayout.bindings += VertexLayout.Binding(0, InputRate.VERTEX, vertLayoutAttribs, verts.strideBytesF)
+
+        val insts = mesh.instances
+        if (insts != null) {
+            val instLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
+            vertexStageGraph.requiredInstanceAttributes.forEach { attrib ->
+                val off = insts.attributeOffsets[attrib] ?:
+                        throw NoSuchElementException("Mesh does not include required instance attribute: ${attrib.name}")
+                instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, off, attrib)
+            }
+            buildCtx.vertexLayout.bindings += VertexLayout.Binding(1, InputRate.INSTANCE, instLayoutAttribs, insts.strideBytesF)
+        } else if (vertexStageGraph.requiredInstanceAttributes.isNotEmpty()) {
+            throw IllegalStateException("Shader model requires instance attributes, but mesh doesn't provide any")
+        }
     }
 
     abstract inner class StageBuilder(val stage: ShaderGraph) {
@@ -70,14 +81,14 @@ class ShaderModel(val modelInfo: String = "") {
             return node
         }
 
-        fun multiplyNode(input: ShaderNodeIoVar?, fac: Float): MultiplyNode {
-            return multiplyNode(input, ShaderNodeIoVar(ModelVar1fConst(fac)))
+        fun multiplyNode(left: ShaderNodeIoVar?, right: Float): MultiplyNode {
+            return multiplyNode(left, ShaderNodeIoVar(ModelVar1fConst(right)))
         }
 
-        fun multiplyNode(input: ShaderNodeIoVar? = null, fac: ShaderNodeIoVar? = null): MultiplyNode {
+        fun multiplyNode(left: ShaderNodeIoVar? = null, right: ShaderNodeIoVar? = null): MultiplyNode {
             val mulNode = addNode(MultiplyNode(stage))
-            input?.let { mulNode.input = it }
-            fac?.let { mulNode.fac = it }
+            left?.let { mulNode.left = it }
+            right?.let { mulNode.right = it }
             return mulNode
         }
 
@@ -177,6 +188,9 @@ class ShaderModel(val modelInfo: String = "") {
         fun attrTangents() = attributeNode(Attribute.TANGENTS)
         fun attrTexCoords() = attributeNode(Attribute.TEXTURE_COORDS)
         fun attributeNode(attribute: Attribute) = addNode(AttributeNode(attribute, stage))
+
+        fun instanceAttrModelMat() = instanceAttributeNode(MeshInstanceList.MODEL_MAT)
+        fun instanceAttributeNode(attribute: Attribute) = addNode(InstanceAttributeNode(attribute, stage))
 
         fun stageInterfaceNode(name: String, input: ShaderNodeIoVar? = null): StageInterfaceNode {
             val ifNode = StageInterfaceNode(name, vertexStageGraph, fragmentStageGraph)

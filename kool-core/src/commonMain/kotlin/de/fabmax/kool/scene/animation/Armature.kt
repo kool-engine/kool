@@ -6,16 +6,14 @@ import de.fabmax.kool.math.Mat4fStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import de.fabmax.kool.scene.InstancedMesh
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.VertexView
 import de.fabmax.kool.util.createFloat32Buffer
 
-open class Armature(geometry: IndexedVertexList, name: String? = null,
-                    instances: Instances<*> = identityInstance(),
-                    attributes: List<Attribute> = MODEL_INSTANCES) :
-        InstancedMesh(geometry, name, instances, attributes) {
+open class Armature(geometry: IndexedVertexList, name: String? = null) :
+        Mesh(geometry, name) {
 
     val rootBones = mutableListOf<Bone>()
     val bones = mutableMapOf<String, Bone>()

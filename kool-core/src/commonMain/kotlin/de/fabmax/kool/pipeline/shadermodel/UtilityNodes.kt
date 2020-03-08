@@ -150,13 +150,24 @@ class DisplacementMapNode(val texture: TextureNode, graph: ShaderGraph) : Shader
 }
 
 class AttributeNode(val attribute: Attribute, graph: ShaderGraph) :
-        ShaderNode("Vertex Attribute ${attribute.name}", graph, ShaderStage.VERTEX_SHADER.mask) {
-    val output = ShaderNodeIoVar(ModelVar(attribute.glslSrcName, attribute.type), this)
+        ShaderNode(attribute.name, graph, ShaderStage.VERTEX_SHADER.mask) {
+    val output = ShaderNodeIoVar(ModelVar(attribute.name, attribute.type), this)
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
         shaderGraph as VertexShaderGraph
         shaderGraph.requiredVertexAttributes += attribute
+    }
+}
+
+class InstanceAttributeNode(val attribute: Attribute, graph: ShaderGraph) :
+        ShaderNode(attribute.name, graph, ShaderStage.VERTEX_SHADER.mask) {
+    val output = ShaderNodeIoVar(ModelVar(attribute.name, attribute.type), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        super.setup(shaderGraph)
+        shaderGraph as VertexShaderGraph
+        shaderGraph.requiredInstanceAttributes += attribute
     }
 }
 
@@ -277,22 +288,22 @@ class NormalizeNode(graph: ShaderGraph) : ShaderNode("normalize_${graph.nextNode
 }
 
 class MultiplyNode(graph: ShaderGraph) : ShaderNode("multiply_${graph.nextNodeId}", graph) {
-    var fac = ShaderNodeIoVar(ModelVar1fConst(1f))
-    var input = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
+    var left = ShaderNodeIoVar(ModelVar3fConst(Vec3f.X_AXIS))
         set(value) {
             output = ShaderNodeIoVar(ModelVar("${name}_out", value.variable.type), this)
             field = value
         }
+    var right = ShaderNodeIoVar(ModelVar1fConst(1f))
     var output = ShaderNodeIoVar(ModelVar3f("${name}_out"), this)
         private set
 
     override fun setup(shaderGraph: ShaderGraph) {
         super.setup(shaderGraph)
-        dependsOn(input, fac)
+        dependsOn(left, right)
     }
 
     override fun generateCode(generator: CodeGenerator) {
-        generator.appendMain("${output.declare()} = $input * $fac;")
+        generator.appendMain("${output.declare()} = $left * $right;")
     }
 }
 

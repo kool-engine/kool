@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.platform.JsContext
-import org.khronos.webgl.WebGLRenderingContext
+import de.fabmax.kool.platform.WebGL2RenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
 import org.khronos.webgl.WebGLRenderingContext.Companion.BACK
 import org.khronos.webgl.WebGLRenderingContext.Companion.CULL_FACE
@@ -18,7 +18,7 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
 
 class QueueRendererWebGl(val ctx: JsContext) {
 
-    private val gl: WebGLRenderingContext
+    private val gl: WebGL2RenderingContext
         get() = ctx.gl
 
     private val glAttribs = GlAttribs()
@@ -38,8 +38,14 @@ class QueueRendererWebGl(val ctx: JsContext) {
                 if (cmd.mesh.geometry.numIndices > 0) {
                     shaderMgr.setupShader(cmd)?.let {
                         if (it.primitiveType != 0 && it.indexType != 0) {
-                            gl.drawElements(it.primitiveType, it.numIndices, it.indexType, 0)
-                            ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
+                            val insts = cmd.mesh.instances
+                            if (insts == null) {
+                                gl.drawElements(it.primitiveType, it.numIndices, it.indexType, 0)
+                                ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
+                            } else {
+                                gl.drawElementsInstanced(it.primitiveType, it.numIndices, it.indexType, 0, insts.numInstances)
+                                ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * insts.numInstances)
+                            }
                         }
                     }
                 }

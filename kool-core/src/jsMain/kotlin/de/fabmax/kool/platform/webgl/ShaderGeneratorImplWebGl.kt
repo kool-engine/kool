@@ -16,6 +16,12 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
     private fun generateCode(model: ShaderModel, pipeline: Pipeline): Pair<String, String> {
         val vertShader = generateVertexShaderCode(model, pipeline)
         val fragShader = generateFragmentShaderCode(model, pipeline)
+
+        if (model.dumpCode) {
+            println("Vertex shader:\n$vertShader")
+            println("Fragment shader:\n$fragShader")
+        }
+
         return vertShader to fragShader
     }
 
@@ -117,7 +123,7 @@ class ShaderGeneratorImplWebGl : ShaderGenerator() {
     private fun generateAttributeBindings(pipeline: Pipeline): String {
         val srcBuilder = StringBuilder("\n")
         pipeline.vertexLayout.bindings.forEach { binding ->
-            binding.attributes.forEach { attr ->
+            binding.vertexAttributes.forEach { attr ->
                 srcBuilder.appendln("layout(location=${attr.location}) in ${attr.type.glslType} ${attr.name};")
             }
         }

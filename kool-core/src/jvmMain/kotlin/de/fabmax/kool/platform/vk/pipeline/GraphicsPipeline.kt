@@ -43,27 +43,35 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
                 }
             }
 
-            val bindingDescription = callocVkVertexInputBindingDescriptionN(1) {
-                binding(pipeline.vertexLayout.bindings[0].binding)
-                stride(pipeline.vertexLayout.bindings[0].strideBytes)
-                inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
+            val nBindings = pipeline.vertexLayout.bindings.size
+            val bindingDescription = callocVkVertexInputBindingDescriptionN(nBindings) {
+                var iBinding = 0
+                pipeline.vertexLayout.bindings.forEach { binding ->
+                    this[iBinding++].apply {
+                        binding(binding.binding)
+                        stride(binding.strideBytes)
+                        when (binding.inputRate) {
+                            InputRate.VERTEX -> inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
+                            InputRate.INSTANCE -> inputRate(VK_VERTEX_INPUT_RATE_INSTANCE)
+                        }
+                    }
+                }
             }
-            val nAttributes = pipeline.vertexLayout.bindings[0].attributes.size
+
+            val nAttributes = pipeline.vertexLayout.bindings.sumBy { binding ->
+                binding.vertexAttributes.sumBy { it.attribute.props.nSlots }
+            }
             val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nAttributes) {
                 var iAttrib = 0
                 pipeline.vertexLayout.bindings.forEach { binding ->
-                    binding.attributes.forEach { attrib ->
-                        this[iAttrib++].apply {
-                            binding(binding.binding)
-                            location(attrib.location)
-                            offset(attrib.offset)
-                            format(when (attrib.type) {
-                                GlslType.FLOAT -> VK_FORMAT_R32_SFLOAT
-                                GlslType.VEC_2F -> VK_FORMAT_R32G32_SFLOAT
-                                GlslType.VEC_3F -> VK_FORMAT_R32G32B32_SFLOAT
-                                GlslType.VEC_4F -> VK_FORMAT_R32G32B32A32_SFLOAT
-                                else -> throw IllegalStateException("Attribute is not a float type")
-                            })
+                    binding.vertexAttributes.forEach { attrib ->
+                        for (i in 0 until attrib.attribute.props.nSlots) {
+                            this[iAttrib++].apply {
+                                binding(binding.binding)
+                                location(attrib.location + i)
+                                offset(attrib.offset + attrib.attribute.props.slotOffset * i)
+                                format(attrib.attribute.props.slotType)
+                            }
                         }
                     }
                 }

@@ -29,16 +29,15 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
 
     private val attributeViews: Map<Attribute, Any>
 
-
     override var x: Float
         get() = position.x
-        set(value) { position.x = value}
+        set(value) { position.x = value }
     override var y: Float
         get() = position.y
         set(value) { position.y = value }
     override var z: Float
         get() = position.z
-        set(value) { position.z = value}
+        set(value) { position.z = value }
 
     init {
         val attribViews = mutableMapOf<Attribute, Any>()

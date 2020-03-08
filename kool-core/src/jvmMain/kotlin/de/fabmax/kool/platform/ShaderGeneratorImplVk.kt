@@ -154,7 +154,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
     private fun generateAttributeBindings(pipeline: Pipeline): String {
         val srcBuilder = StringBuilder("\n")
         pipeline.vertexLayout.bindings.forEach { binding ->
-            binding.attributes.forEach { attr ->
+            binding.vertexAttributes.forEach { attr ->
                 srcBuilder.appendln(8, "layout(location=${attr.location}) in ${attr.type.glslType} ${attr.name};")
             }
         }

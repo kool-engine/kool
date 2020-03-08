@@ -82,8 +82,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
     constructor(vararg vertexAttributes: Attribute) : this(vertexAttributes.toList())
 
     init {
-        var cntF = 0
-        var cntI = 0
+        var strideF = 0
+        var strideI = 0
 
         val offsets = mutableMapOf<Attribute, Int>()
         for (attrib in vertexAttributes) {
@@ -91,22 +91,22 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
                 throw IllegalArgumentException("Matrix types are not supported as vertex attributes")
             }
             if (attrib.type.isInt) {
-                offsets[attrib] = cntI
-                cntI += attrib.type.size
+                offsets[attrib] = strideI
+                strideI += attrib.type.size
             } else {
-                offsets[attrib] = cntF
-                cntF += attrib.type.size
+                offsets[attrib] = strideF
+                strideF += attrib.type.size
             }
         }
         attributeOffsets = offsets
 
-        vertexSizeF = cntF / 4
-        strideBytesF = cntF
-        vertexSizeI = cntI / 4
-        strideBytesI = cntI
+        vertexSizeF = strideF / 4
+        strideBytesF = strideF
+        vertexSizeI = strideI / 4
+        strideBytesI = strideI
 
-        dataF = createFloat32Buffer(cntF * INITIAL_SIZE)
-        dataI = createUint32Buffer(cntI * INITIAL_SIZE)
+        dataF = createFloat32Buffer(strideF * INITIAL_SIZE)
+        dataI = createUint32Buffer(strideI * INITIAL_SIZE)
         vertexIt = VertexView(this, 0)
     }
 

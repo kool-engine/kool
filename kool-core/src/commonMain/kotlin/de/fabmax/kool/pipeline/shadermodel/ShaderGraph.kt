@@ -66,6 +66,7 @@ open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
 
 class VertexShaderGraph(model: ShaderModel) : ShaderGraph(model, ShaderStage.VERTEX_SHADER) {
     val requiredVertexAttributes = mutableSetOf<Attribute>()
+    val requiredInstanceAttributes = mutableSetOf<Attribute>()
     var positionOutput = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO), null)
 }
 

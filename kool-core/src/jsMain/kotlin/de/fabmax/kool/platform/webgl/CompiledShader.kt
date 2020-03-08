@@ -25,14 +25,18 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
     val pipelineName = pipeline.name
     private val pipelineId = pipeline.pipelineHash.toLong()
 
-    private val attributeLocations = mutableMapOf<String, Int>()
+    private val attributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
+    private val instanceAttributes = mutableMapOf<String, VertexLayout.VertexAttribute>()
     private val uniformLocations = mutableMapOf<String, List<WebGLUniformLocation?>>()
     private val instances = mutableMapOf<Long, ShaderInstance>()
 
     init {
         pipeline.vertexLayout.bindings.forEach { bnd ->
-            bnd.attributes.forEach { attr ->
-                attributeLocations[attr.name] = attr.location
+            bnd.vertexAttributes.forEach { attr ->
+                when (bnd.inputRate) {
+                    InputRate.VERTEX -> attributes[attr.attribute.name] = attr
+                    InputRate.INSTANCE -> instanceAttributes[attr.attribute.name] = attr
+                }
             }
         }
         pipeline.descriptorSetLayouts.forEach { set ->
@@ -72,11 +76,31 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
 
     fun use() {
         ctx.gl.useProgram(prog)
-        attributeLocations.values.forEach { loc -> ctx.gl.enableVertexAttribArray(loc) }
+        attributes.values.forEach { attr ->
+            for (i in 0 until attr.attribute.props.nSlots) {
+                ctx.gl.enableVertexAttribArray(attr.location + i)
+            }
+        }
+        instanceAttributes.values.forEach { attr ->
+            for (i in 0 until attr.attribute.props.nSlots) {
+                val location = attr.location + i
+                ctx.gl.enableVertexAttribArray(location)
+                ctx.gl.vertexAttribDivisor(location, 1)
+            }
+        }
     }
 
     fun unUse() {
-        attributeLocations.values.forEach { loc -> ctx.gl.disableVertexAttribArray(loc) }
+        attributes.values.forEach { attr ->
+            for (i in 0 until attr.attribute.props.nSlots) {
+                ctx.gl.disableVertexAttribArray(attr.location + i)
+            }
+        }
+        instanceAttributes.values.forEach { attr ->
+            for (i in 0 until attr.attribute.props.nSlots) {
+                ctx.gl.disableVertexAttribArray(attr.location + i)
+            }
+        }
     }
 
     fun bindInstance(cmd: DrawCommand): ShaderInstance? {
@@ -107,11 +131,13 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         private val textures = mutableListOf<TextureSampler>()
         private val cubeMaps = mutableListOf<CubeMapSampler>()
         private val mappings = mutableListOf<MappedUniform>()
-        private val attributeBinders = mutableMapOf<String, AttributeOnLocation>()
+        private val attributeBinders = mutableListOf<AttributeOnLocation>()
+        private val instanceAttribBinders = mutableListOf<AttributeOnLocation>()
 
         private var dataBufferF: BufferResource? = null
         private var dataBufferI: BufferResource? = null
         private var indexBuffer: BufferResource? = null
+        private var instanceBuffer: BufferResource? = null
         private var buffersSet = false
 
         private var nextTexUnit = TEXTURE0
@@ -190,7 +216,8 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             if (uniformsValid) {
                 // bind vertex data
                 indexBuffer?.bind(ctx)
-                attributeBinders.values.forEach { it.vbo.bindAttribute(it.loc, ctx) }
+                attributeBinders.forEach { it.vbo.bindAttribute(it.loc, ctx) }
+                instanceAttribBinders.forEach { it.vbo.bindAttribute(it.loc, ctx) }
             }
             return uniformsValid
         }
@@ -199,9 +226,11 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             dataBufferF?.delete(ctx)
             dataBufferI?.delete(ctx)
             indexBuffer?.delete(ctx)
+            instanceBuffer?.delete(ctx)
             dataBufferF = null
             dataBufferI = null
             indexBuffer = null
+            instanceBuffer = null
 
             pushConstants.clear()
             ubos.clear()
@@ -209,6 +238,7 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
             cubeMaps.clear()
             mappings.clear()
             attributeBinders.clear()
+            instanceAttribBinders.clear()
         }
 
         private fun checkBuffers() {
@@ -223,11 +253,9 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                     if (vertexAttrib.type.isInt) {
                         hasIntData = true
                     } else {
-                        attributeLocations[vertexAttrib.glslSrcName]?.let { location ->
-                            val vbo = VboBinder(dataBufferF!!, vertexAttrib.type.size / 4,
-                                    md.strideBytesF, md.attributeOffsets[vertexAttrib]!! / 4, FLOAT)
-                            attributeBinders[vertexAttrib.glslSrcName] = AttributeOnLocation(vbo, location)
-                        }
+                        val stride = md.strideBytesF
+                        val offset = md.attributeOffsets[vertexAttrib]!! / 4
+                        instanceAttribBinders += attributes.makeAttribBinders(vertexAttrib, dataBufferF!!, stride, offset)
                     }
                 }
             }
@@ -235,11 +263,22 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 dataBufferI = BufferResource(ARRAY_BUFFER, ctx)
                 for (vertexAttrib in md.vertexAttributes) {
                     if (vertexAttrib.type.isInt) {
-                        attributeLocations[vertexAttrib.glslSrcName]?.let { location ->
+                        attributes[vertexAttrib.name]?.let { attr ->
                             val vbo = VboBinder(dataBufferI!!, vertexAttrib.type.size / 4,
                                     md.strideBytesI, md.attributeOffsets[vertexAttrib]!! / 4, INT)
-                            attributeBinders[vertexAttrib.glslSrcName] = AttributeOnLocation(vbo, location)
+                            attributeBinders += AttributeOnLocation(vbo, attr.location)
                         }
+                    }
+                }
+            }
+
+            if (instanceBuffer == null) {
+                mesh.instances?.let { instances ->
+                    instanceBuffer = BufferResource(ARRAY_BUFFER, ctx)
+                    for (instanceAttrib in instances.instanceAttributes) {
+                        val stride = instances.strideBytesF
+                        val offset = instances.attributeOffsets[instanceAttrib]!! / 4
+                        instanceAttribBinders += instanceAttributes.makeAttribBinders(instanceAttrib, instanceBuffer!!, stride, offset)
                     }
                 }
             }
@@ -254,6 +293,9 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 numIndices = md.numIndices
                 dataBufferF?.setData(md.dataF, usage, ctx)
                 dataBufferI?.setData(md.dataI, usage, ctx)
+                mesh.instances?.let { insts ->
+                    instanceBuffer?.setData(insts.dataF, insts.usage.glUsage(), ctx)
+                }
 
                 // fixme: data buffers should be bound to mesh, not to shader instance
                 // if mesh is rendered multiple times (e.g. by additional shadow passes), clearing
@@ -262,6 +304,18 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 buffersSet = true
             }
         }
+    }
+
+    private fun Map<String, VertexLayout.VertexAttribute>.makeAttribBinders(attr: Attribute, buffer: BufferResource, stride: Int, offset: Int): List<AttributeOnLocation> {
+        val binders = mutableListOf<AttributeOnLocation>()
+        get(attr.name)?.let { vertAttr ->
+            for (i in 0 until attr.props.nSlots) {
+                val off = offset + attr.props.attribSize * i
+                val vbo = VboBinder(buffer, attr.props.attribSize, stride, off, FLOAT)
+                binders += AttributeOnLocation(vbo, vertAttr.location + i)
+            }
+        }
+        return binders
     }
 
     private fun PrimitiveType.glElemType(): Int {
