@@ -1,27 +1,26 @@
 package de.fabmax.kool.modules.globe.elevation
 
 import de.fabmax.kool.AssetManager
-import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import kotlinx.serialization.protobuf.ProtoId
 
 @Serializable
 data class ElevationMapMeta(
-        @SerialId(1) val name: String,
-        @SerialId(2) val format: String,
-        @SerialId(3) val attr: String,
+        @ProtoId(1) val name: String,
+        @ProtoId(2) val format: String,
+        @ProtoId(3) val attr: String,
 
-        @SerialId(4) val width: Int,
-        @SerialId(5) val height: Int,
+        @ProtoId(4) val width: Int,
+        @ProtoId(5) val height: Int,
 
-        @SerialId(6) val north: Double,
-        @SerialId(7) val south: Double,
-        @SerialId(8) val east: Double,
-        @SerialId(9) val west: Double,
+        @ProtoId(6) val north: Double,
+        @ProtoId(7) val south: Double,
+        @ProtoId(8) val east: Double,
+        @ProtoId(9) val west: Double,
 
-        @SerialId(10) val scaleX: Double,
-        @SerialId(11) val scaleY: Double,
-        @SerialId(12) val scaleZ: Double
+        @ProtoId(10) val scaleX: Double,
+        @ProtoId(11) val scaleY: Double,
+        @ProtoId(12) val scaleZ: Double
 ) {
 
     /**
@@ -43,7 +42,7 @@ data class ElevationMapMeta(
 
 @Serializable
 data class ElevationMapMetaHierarchy(
-        @SerialId(1) val maps: Map<Double, List<ElevationMapMeta>>
+        @ProtoId(1) val maps: Map<Double, List<ElevationMapMeta>>
 )
 
 fun loadElevationMap(baseDir: String, meta: ElevationMapMeta, assetMgr: AssetManager): BoundedElevationMap {

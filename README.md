@@ -54,7 +54,7 @@ fun main() {
                 }
             }
             pipelineLoader = pbrShader {
-                albedoSource = AlbedoSource.VERTEX_ALBEDO
+                albedoSource = Albedo.VERTEX_ALBEDO
                 metallic = 0.0f
                 roughness = 0.25f
             }

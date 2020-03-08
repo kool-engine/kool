@@ -7,11 +7,7 @@ import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.*
-import kotlinx.io.IOException
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
+import java.io.*
 import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 

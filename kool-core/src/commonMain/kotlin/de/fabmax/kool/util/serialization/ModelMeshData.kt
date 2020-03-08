@@ -3,6 +3,8 @@ package de.fabmax.kool.util.serialization
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.phongShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.animation.Armature
 import de.fabmax.kool.scene.animation.Bone
@@ -10,57 +12,57 @@ import de.fabmax.kool.util.IndexedVertexList
 import de.fabmax.kool.util.PrimitiveType
 import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_NORMALS_OCT_COMPRESSED
 import de.fabmax.kool.util.serialization.ModelMeshData.Companion.ATTRIB_POSITIONS
-import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.protobuf.ProtoId
 
 @Serializable
 data class ModelMeshData(
-        /**
+    /**
      * Name of the mesh
      */
-    @SerialId(1) val name: String,
+    @ProtoId(1) val name: String,
 
-        /**
+    /**
      * Primitive type of included geometry
      */
-    @SerialId(2) val primitiveType: PrimitiveType,
+    @ProtoId(2) val primitiveType: PrimitiveType,
 
-        /**
+    /**
      * Map of vertex attributes. Must at least contain [ATTRIB_POSITIONS]. Can also contain custom attributes with
      * arbitrary names.
      */
-    @SerialId(3) val attributes: Map<String, AttributeList>,
+    @ProtoId(3) val attributes: Map<String, AttributeList>,
 
-        /**
+    /**
      * List of vertex indices. If empty each n vertices form a primitive with n = 1 (points), 2 (lines), 3 (triangles)
      */
-    @SerialId(4) val indices: List<Int> = emptyList(),
+    @ProtoId(4) val indices: List<Int> = emptyList(),
 
-        /**
+    /**
      * List of bones forming the mesh armature. Might be empty.
      */
-    @SerialId(5) val armature: List<BoneData> = emptyList(),
+    @ProtoId(5) val armature: List<BoneData> = emptyList(),
 
-        /**
+    /**
      * List of mesh armature animations. Might be empty.
      */
-    @SerialId(6) val animations: List<AnimationData> = emptyList(),
+    @ProtoId(6) val animations: List<AnimationData> = emptyList(),
 
-        /**
+    /**
      * Material index. -1 if not preset.
      */
-    @SerialId(7) val material: Int = -1,
+    @ProtoId(7) val material: Int = -1,
 
-        /**
+    /**
      * Optional list of arbitrary tags.
      */
-    @SerialId(8) val tags: List<String> = emptyList(),
+    @ProtoId(8) val tags: List<String> = emptyList(),
 
-        /**
+    /**
      * Optional map of additional integer vertex attributes. E.g. compressed normals [ATTRIB_NORMALS_OCT_COMPRESSED]
      */
-    @SerialId(9) val intAttributes: Map<String, IntAttributeList> = emptyMap()
+    @ProtoId(9) val intAttributes: Map<String, IntAttributeList> = emptyMap()
 ) {
 
     @Transient var numVertices: Int = 0
@@ -150,11 +152,10 @@ data class ModelMeshData(
         }
 
         if (model != null && material in model.materials.indices) {
-//            mesh.shader = basicShader {
-//                lightModel = LightModel.PHONG_LIGHTING
-//                colorModel = ColorModel.STATIC_COLOR
-//                staticColor = model.materials[material].getDiffuseColor()
-//            }
+            mesh.pipelineLoader = phongShader {
+                albedoSource = Albedo.STATIC_ALBEDO
+                albedo = model.materials[material].getDiffuseColor()
+            }
         }
 
         // add tags
@@ -227,15 +228,15 @@ data class ModelMeshData(
 
 @Serializable
 data class AttributeList(
-        /**
-         * Type of the attribute
-         */
-        @SerialId(1) val type: GlslType,
+    /**
+     * Type of the attribute
+     */
+    @ProtoId(1) val type: GlslType,
 
-        /**
-         * Attribute values. There are [type].size values per vertex
-         */
-        @SerialId(2) val values: List<Float>
+    /**
+     * Attribute values. There are [type].size values per vertex
+     */
+    @ProtoId(2) val values: List<Float>
 ) {
     @Transient val size: Int = values.size
 
@@ -244,15 +245,15 @@ data class AttributeList(
 
 @Serializable
 data class IntAttributeList(
-        /**
-         * Type of the attribute
-         */
-        @SerialId(1) val type: GlslType,
+    /**
+     * Type of the attribute
+     */
+    @ProtoId(1) val type: GlslType,
 
-        /**
-         * Attribute values. There are [type].size values per vertex
-         */
-        @SerialId(2) val values: List<Int>
+    /**
+     * Attribute values. There are [type].size values per vertex
+     */
+    @ProtoId(2) val values: List<Int>
 ) {
     @Transient val size: Int = values.size
 

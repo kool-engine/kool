@@ -43,6 +43,7 @@ kotlin {
                 api 'org.jetbrains.kotlin:kotlin-stdlib-common'
                 api "org.jetbrains.kotlinx:kotlinx-coroutines-core-common:$coroutines_version"
                 api "org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serialization_version"
+                api "org.jetbrains.kotlinx:kotlinx-serialization-protobuf-common:$serialization_version"
             }
         }
         
@@ -54,6 +55,7 @@ kotlin {
                 api 'org.jetbrains.kotlin:kotlin-reflect'
                 api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
                 api "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serialization_version"
+                api "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serialization_version"
 
                 // only needed for fft audio stuff
                 api 'com.github.wendykierp:JTransforms:3.1'
@@ -93,6 +95,7 @@ kotlin {
                 api 'org.jetbrains.kotlin:kotlin-stdlib-js'
                 api "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$coroutines_version"
                 api "org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$serialization_version"
+                api "org.jetbrains.kotlinx:kotlinx-serialization-protobuf-js:$serialization_version"
             }
         }
 

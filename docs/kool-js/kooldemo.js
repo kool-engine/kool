@@ -1,4 +1,4 @@
-define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serialization-runtime'], function (_, Kotlin, $module$kool, $module$kotlinx_serialization_kotlinx_serialization_runtime) {
+define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serialization-protobuf', 'kotlinx-serialization-kotlinx-serialization-runtime'], function (_, Kotlin, $module$kool, $module$kotlinx_serialization_kotlinx_serialization_protobuf, $module$kotlinx_serialization_kotlinx_serialization_runtime) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var createDefaultContext = $module$kool.de.fabmax.kool.createDefaultContext;
@@ -78,7 +78,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var Globe = $module$kool.de.fabmax.kool.modules.globe.Globe;
   var DoublePrecisionRoot = $module$kool.de.fabmax.kool.scene.doubleprec.DoublePrecisionRoot;
   var GlobeCamHandler = $module$kool.de.fabmax.kool.modules.globe.GlobeCamHandler;
-  var ProtoBuf = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.protobuf.ProtoBuf;
+  var ProtoBuf = $module$kotlinx_serialization_kotlinx_serialization_protobuf.kotlinx.serialization.protobuf.ProtoBuf;
   var ElevationMapMetaHierarchy = $module$kool.de.fabmax.kool.modules.globe.elevation.ElevationMapMetaHierarchy;
   var getKClass = Kotlin.getKClass;
   var ElevationMapHierarchy = $module$kool.de.fabmax.kool.modules.globe.elevation.ElevationMapHierarchy;
@@ -236,8 +236,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var assetsBaseDir = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : '';
     if (assetsBaseDir.length > 0) {
       ctx.assetMgr.assetsBaseDir = assetsBaseDir;
-    }
-    new Demo(ctx, startScene);
+    }new Demo(ctx, startScene);
   }
   function Demo(ctx, startScene) {
     Demo$Companion_getInstance();
@@ -285,8 +284,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         this.currentScenes_0.add_11rb$(item);
       }
       this.newScenes_0.clear();
-    }
-  };
+    }};
   function Demo$demoOverlay$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
   }
@@ -419,8 +417,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function Demo$Companion_getInstance() {
     if (Demo$Companion_instance === null) {
       new Demo$Companion();
-    }
-    return Demo$Companion_instance;
+    }return Demo$Companion_instance;
   }
   function Demo$defaultScene$lambda($receiver, it) {
     $receiver.addAll_brywnq$(pbrDemoScene(it));
@@ -580,8 +577,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return function ($receiver, ctx) {
       if (this$MultiLightDemo.autoRotate_0) {
         this$.verticalRotation += ctx.deltaT * 3.0;
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function MultiLightDemo$mainScene$lambda$lambda(this$, this$MultiLightDemo) {
@@ -609,10 +605,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
             tmp$[i] = item.offscreenPass.impl.depthTexture;
-          }
-        }
-      }
-      return Unit;
+          }}
+      }return Unit;
     };
   }
   function MultiLightDemo$mainScene$lambda$lambda_0(this$, this$MultiLightDemo) {
@@ -673,13 +667,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -723,13 +715,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -773,13 +763,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -813,10 +801,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
             tmp$[i] = item.offscreenPass.impl.depthTexture;
-          }
-        }
-      }
-      return Unit;
+          }}
+      }return Unit;
     };
   }
   function MultiLightDemo$mainScene$lambda$lambda_1(this$MultiLightDemo) {
@@ -893,8 +879,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       this$MultiLightDemo.lightCount_0 = tmp$ + 1 | 0;
       if (this$MultiLightDemo.lightCount_0 > 4) {
         this$MultiLightDemo.lightCount_0 = 1;
-      }
-      $receiver.text = this$MultiLightDemo.lightCount_0.toString();
+      }$receiver.text = this$MultiLightDemo.lightCount_0.toString();
       this$MultiLightDemo.updateLighting_0();
       return Unit;
     };
@@ -917,8 +902,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       this$MultiLightDemo.lightCount_0 = tmp$ - 1 | 0;
       if (this$MultiLightDemo.lightCount_0 < 1) {
         this$MultiLightDemo.lightCount_0 = 4;
-      }
-      closure$btnLightCnt.text = this$MultiLightDemo.lightCount_0.toString();
+      }closure$btnLightCnt.text = this$MultiLightDemo.lightCount_0.toString();
       this$MultiLightDemo.updateLighting_0();
       return Unit;
     };
@@ -941,8 +925,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       this$MultiLightDemo.lightCount_0 = tmp$ + 1 | 0;
       if (this$MultiLightDemo.lightCount_0 > 4) {
         this$MultiLightDemo.lightCount_0 = 1;
-      }
-      closure$btnLightCnt.text = this$MultiLightDemo.lightCount_0.toString();
+      }closure$btnLightCnt.text = this$MultiLightDemo.lightCount_0.toString();
       this$MultiLightDemo.updateLighting_0();
       return Unit;
     };
@@ -1322,9 +1305,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     if ((tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.lights : null) != null) {
       if (!tmp$_1.contains_11rb$(this.light)) {
         tmp$_1.add_11rb$(this.light);
-      }
-    }
-    this.updateVisibility();
+      }}this.updateVisibility();
   };
   MultiLightDemo$LightMesh.prototype.disable = function () {
     var tmp$, tmp$_0, tmp$_1;
@@ -1365,8 +1346,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return function ($receiver, ctx) {
       if (this$MultiLightDemo.autoRotate_0) {
         this$LightMesh.animPos_0 += ctx.deltaT;
-      }
-      var x = this$LightMesh.animPos_0 / 15 + this$LightMesh.rotOff_0;
+      }var x = this$LightMesh.animPos_0 / 15 + this$LightMesh.rotOff_0;
       var r = Math_0.cos(x) * this$MultiLightDemo.lightRandomness_0;
       this$LightMesh.light.spotAngle = 60.0 - r * 20.0;
       this$LightMesh.updateSpotAngleMesh_0();
@@ -1399,8 +1379,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           $this.vertexIt.position.scale_mx4ult$(closure$scale_0).add_czzhiu$(closure$translation_0);
         }
         closure$recv(mesh);
-      }
-      return Unit;
+      }return Unit;
     };
   }
   MultiLightDemo.prototype.loadModel_0 = function ($receiver, path, scale, translation, recv) {
@@ -1449,8 +1428,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function MultiLightDemo$Companion_getInstance() {
     if (MultiLightDemo$Companion_instance === null) {
       new MultiLightDemo$Companion();
-    }
-    return MultiLightDemo$Companion_instance;
+    }return MultiLightDemo$Companion_instance;
   }
   function MultiLightDemo_init$lambda(this$MultiLightDemo, closure$ctx) {
     return function ($receiver, it) {
@@ -2042,13 +2020,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var this$PbrDemo_0 = this$PbrDemo;
         tmp$.hdriTexture = tex;
         tmp$.update_aemszp$(this$PbrDemo_0.ctx);
-      }
-      if ((tmp$_0 = this$PbrDemo.reflectionMapPass_0) != null) {
+      }if ((tmp$_0 = this$PbrDemo.reflectionMapPass_0) != null) {
         var this$PbrDemo_1 = this$PbrDemo;
         tmp$_0.hdriTexture = tex;
         tmp$_0.update_aemszp$(this$PbrDemo_1.ctx);
-      }
-      return Unit;
+      }return Unit;
     };
   }
   PbrDemo.prototype.updateHdri_0 = function (idx) {
@@ -2065,8 +2041,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var tex = this.loadedHdris_0[idx];
     if (tex == null) {
       this.ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(PbrDemo$Companion_getInstance().hdriTextures_0.get_za3lpa$(idx).hdriPath, PbrDemo$Companion_getInstance().hdriTexProps_0, PbrDemo$loadHdri$lambda(this, idx, recv));
-    }
-     else {
+    } else {
       recv(tex);
     }
   };
@@ -2178,8 +2153,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function PbrDemo$Companion_getInstance() {
     if (PbrDemo$Companion_instance === null) {
       new PbrDemo$Companion();
-    }
-    return PbrDemo$Companion_instance;
+    }return PbrDemo$Companion_instance;
   }
   function PbrDemo_init$lambda(it) {
     return it.isPressed;
@@ -2541,13 +2515,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -2594,13 +2566,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -2647,13 +2617,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -2700,13 +2668,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -2753,13 +2719,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -2806,13 +2770,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -2859,13 +2821,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -2912,13 +2872,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -2965,13 +2923,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3018,13 +2974,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3071,13 +3025,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3124,13 +3076,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3177,13 +3127,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3230,13 +3178,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3283,13 +3229,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3336,13 +3280,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3389,13 +3331,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3442,13 +3382,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3495,13 +3433,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3548,13 +3484,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3601,13 +3535,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3654,13 +3586,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3707,13 +3637,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3760,13 +3688,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3813,13 +3739,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3866,13 +3790,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3919,13 +3841,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -3972,13 +3892,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -4025,13 +3943,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -4078,13 +3994,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -4131,13 +4045,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -4184,13 +4096,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -4237,13 +4147,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -4290,13 +4198,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -4321,8 +4227,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function PbrMaterialContent$Companion_getInstance() {
     if (PbrMaterialContent$Companion_instance === null) {
       new PbrMaterialContent$Companion();
-    }
-    return PbrMaterialContent$Companion_instance;
+    }return PbrMaterialContent$Companion_instance;
   }
   PbrMaterialContent.$metadata$ = {
     kind: Kind_CLASS,
@@ -4558,8 +4463,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function RoughnesMetalGridContent$Companion_getInstance() {
     if (RoughnesMetalGridContent$Companion_instance === null) {
       new RoughnesMetalGridContent$Companion();
-    }
-    return RoughnesMetalGridContent$Companion_instance;
+    }return RoughnesMetalGridContent$Companion_instance;
   }
   RoughnesMetalGridContent.$metadata$ = {
     kind: Kind_CLASS,
@@ -4569,20 +4473,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function globeScene$lambda$lambda(closure$elevationUrl, closure$ctx, closure$globe, this$, closure$globeGroup) {
     return function (data) {
       if (data != null) {
-        var $receiver = ProtoBuf.Companion;
+        var $receiver = ProtoBuf.Default;
         var metaHierarchy = $receiver.load_dntfbn$(getContextualOrDefault($receiver.context, getKClass(ElevationMapMetaHierarchy)), data);
         closure$globe.elevationMapProvider = new ElevationMapHierarchy(closure$elevationUrl, metaHierarchy, closure$ctx.assetMgr);
         closure$globe.meshDetailLevel = 6;
-      }
-       else {
+      } else {
         var $receiver_0 = this$;
         var $this = util.Log;
         var level = Log$Level.WARN;
         var tag = Kotlin.getKClassFromExpression($receiver_0).simpleName;
         if (level.level >= $this.level.level) {
           $this.printer(level, tag, 'Height map data not available');
-        }
-      }
+        }}
       this$.unaryPlus_uv0sim$(closure$globeGroup);
       return Unit;
     };
@@ -4640,8 +4542,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return function ($receiver, f, f_0, f_1) {
       if (!(closure$attributions.get_za3lpa$(closure$i).second.length === 0)) {
         this$GlobeUi.ctx.openUrl_61zpoe$(closure$attributions.get_za3lpa$(closure$i).second);
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function GlobeUi$scene$lambda$lambda$lambda_1(closure$i, closure$attributions, this$GlobeUi) {
@@ -4670,15 +4571,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var lon = toString(globe.centerLon, 5);
         if (globe.cameraHeight > 10000) {
           tmp$ = toString(globe.cameraHeight / 1000.0, 1) + ' km';
-        }
-         else {
+        } else {
           tmp$ = toString(globe.cameraHeight, 1) + ' m';
         }
         var hgt = tmp$;
         closure$posLbl.text = 'Center: ' + lat + '\xB0, ' + lon + '\xB0  ' + hgt;
         width.v = (tmp$_1 = (tmp$_0 = closure$posLbl.font.apply()) != null ? tmp$_0.textWidth_61zpoe$(closure$posLbl.text) : null) != null ? tmp$_1 : 0.0;
-      }
-      if ((tmp$_3 = (tmp$_2 = globe != null ? globe.tileManager : null) != null ? tmp$_2.getCenterTile() : null) != null) {
+      }if ((tmp$_3 = (tmp$_2 = globe != null ? globe.tileManager : null) != null ? tmp$_2.getCenterTile() : null) != null) {
         var closure$attributions_0 = closure$attributions;
         for (var i = 0; i !== closure$attributions_0.size; ++i) {
           closure$attributions_0.get_za3lpa$(i).first.text = '';
@@ -4695,21 +4594,17 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
             if (!equals(item.url, closure$attributions_0.get_za3lpa$(i_0).second)) {
               var $receiver_0 = closure$attributions_0.get_za3lpa$(i_0);
               closure$attributions_0.set_wxm5ur$(i_0, new Pair($receiver_0.first, $receiver_0.second));
-            }
-            var w = (tmp$_6 = (tmp$_5 = closure$attributions_0.get_za3lpa$(i_0).first.font.apply()) != null ? tmp$_5.textWidth_61zpoe$(closure$attributions_0.get_za3lpa$(i_0).first.text) : null) != null ? tmp$_6 : 0.0;
+            }var w = (tmp$_6 = (tmp$_5 = closure$attributions_0.get_za3lpa$(i_0).first.font.apply()) != null ? tmp$_5.textWidth_61zpoe$(closure$attributions_0.get_za3lpa$(i_0).first.text) : null) != null ? tmp$_6 : 0.0;
             var a = width.v;
             width.v = Math_0.max(a, w);
             lines.v = lines.v + 1 | 0;
-          }
-        }
-      }
-      if (width.v !== this$GlobeUi.containerWidth_0) {
+          }}
+      }if (width.v !== this$GlobeUi.containerWidth_0) {
         this$GlobeUi.containerWidth_0 = width.v;
         this$.layoutSpec.setSize_4ujscr$(dps(this$GlobeUi.containerWidth_0 + 8, true), dps(18.0 * lines.v), full());
         this$.layoutSpec.setOrigin_4ujscr$(dps(-this$GlobeUi.containerWidth_0 - 8, true), zero(), zero());
         this$.root.requestLayout();
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function GlobeUi$scene$lambda$lambda_0(this$, closure$maxAttributions, closure$attributions, this$GlobeUi) {
@@ -4798,13 +4693,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -4848,13 +4741,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -4907,8 +4798,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var tmp$;
       if (modelData == null) {
         throw KoolException_init('Fatal: Failed loading model');
-      }
-      var model = Kotlin.isType(tmp$ = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
+      }var model = Kotlin.isType(tmp$ = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
       for (var i = 1; i <= 5; i++) {
         this$.unaryPlus_uv0sim$(spawnMesh(model, randomF(0.2, 0.6)));
       }
@@ -4935,11 +4825,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var clamp$result;
     if ($receiver < 0.0) {
       clamp$result = 0.0;
-    }
-     else if ($receiver > 1.0) {
+    } else if ($receiver > 1.0) {
       clamp$result = 1.0;
-    }
-     else {
+    } else {
       clamp$result = $receiver;
     }
     var idleWeight = clamp$result;
@@ -4947,11 +4835,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var clamp$result_0;
     if ($receiver_0 < 0.0) {
       clamp$result_0 = 0.0;
-    }
-     else if ($receiver_0 > 1.0) {
+    } else if ($receiver_0 > 1.0) {
       clamp$result_0 = 1.0;
-    }
-     else {
+    } else {
       clamp$result_0 = $receiver_0;
     }
     var runWeight = clamp$result_0;
@@ -5020,15 +4906,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       tmp$_0 = this.heading_0;
       if (this.position_0.distance_czzhiu$(this.spawnPosition_0) < 15.0) {
         tmp$ = randomF(0.0, 360.0);
-      }
-       else {
+      } else {
         var dx = this.spawnPosition_0.x - this.position_0.x;
         var dy = this.spawnPosition_0.y - this.position_0.y;
         tmp$ = Math_0.atan2(dy, dx) * math_0.RAD_2_DEG + 90;
       }
       tmp$_0.to = tmp$;
-    }
-    this.headingVec_0.set_czzhiu$(Vec3f.Companion.NEG_Y_AXIS).rotate_ad55pp$(this.heading_0.value, Vec3f.Companion.Z_AXIS);
+    }this.headingVec_0.set_czzhiu$(Vec3f.Companion.NEG_Y_AXIS).rotate_ad55pp$(this.heading_0.value, Vec3f.Companion.Z_AXIS);
     this.position_0.plusAssign_czzhiu$(this.headingVec_0.scale_mx4ult$(5.0 * this.movementSpeed * ctx.deltaT));
     this.color_0.set_d7aj7k$(ColorGradient.Companion.PLASMA.getColor_y2kzbl$(this.position_0.distance_czzhiu$(this.spawnPosition_0), 0.0, 25.0));
     this.applyTransform_0();
@@ -5047,11 +4931,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var clamp$result;
       if ($receiver_0 < 0.0) {
         clamp$result = 0.0;
-      }
-       else if ($receiver_0 > 0.1) {
+      } else if ($receiver_0 > 0.1) {
         clamp$result = 0.1;
-      }
-       else {
+      } else {
         clamp$result = $receiver_0;
       }
       var dt = clamp$result;
@@ -5066,8 +4948,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var tmp$, tmp$_0;
       if (modelData == null) {
         throw KoolException_init('Fatal: Failed loading model');
-      }
-      var mesh = Kotlin.isType(tmp$ = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
+      }var mesh = Kotlin.isType(tmp$ = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
       closure$model.plusAssign_f1kmr1$(mesh);
       closure$armature.v = mesh;
       (tmp$_0 = mesh.getAnimation_61zpoe$('Armature|walk')) != null ? (tmp$_0.weight = 1.0) : null;
@@ -5115,11 +4996,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var clamp$result;
         if ($receiver_0 < 0.0) {
           clamp$result = 0.0;
-        }
-         else if ($receiver_0 > 1.0) {
+        } else if ($receiver_0 > 1.0) {
           clamp$result = 1.0;
-        }
-         else {
+        } else {
           clamp$result = $receiver_0;
         }
         var idleWeight = clamp$result;
@@ -5127,11 +5006,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var clamp$result_0;
         if ($receiver_1 < 0.0) {
           clamp$result_0 = 0.0;
-        }
-         else if ($receiver_1 > 1.0) {
+        } else if ($receiver_1 > 1.0) {
           clamp$result_0 = 1.0;
-        }
-         else {
+        } else {
           clamp$result_0 = $receiver_1;
         }
         var runWeight = clamp$result_0;
@@ -5144,8 +5021,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         (tmp$_0 = ensureNotNull(closure$armature.v).getAnimation_61zpoe$('Armature|idle')) != null ? (tmp$_0.weight = idleWeight) : null;
         (tmp$_1 = ensureNotNull(closure$armature.v).getAnimation_61zpoe$('Armature|walk')) != null ? (tmp$_1.weight = walkWeight) : null;
         (tmp$_2 = ensureNotNull(closure$armature.v).getAnimation_61zpoe$('Armature|run')) != null ? (tmp$_2.weight = runWeight) : null;
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function modelScene$lambda$lambda$lambda$lambda$lambda$lambda_1(closure$slowMotion, closure$slowMoLabel) {
@@ -5272,13 +5148,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -5302,8 +5176,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.angularVelocity = randomF(-45.0, 45.0);
       if (closure$isColored.v) {
         $receiver.color.set_d7aj7k$(ColorGradient.Companion.JET_MD.getColor_y2kzbl$(randomF_0()));
-      }
-       else {
+      } else {
         $receiver.color.set_d7aj7k$(Color.Companion.WHITE);
       }
       return Unit;
@@ -5314,8 +5187,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       if ($receiver.position.y < $receiver.size.y / 2) {
         $receiver.replaceBy_1rs1w0$(closure$types.get_za3lpa$(closure$i + 25 | 0));
         $receiver.lifeTime = 0.0;
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function particleDemo$lambda$lambda$lambda_1($receiver) {
@@ -5330,18 +5202,15 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var clamp$result;
     if ($receiver_0 < 0.0) {
       clamp$result = 0.0;
-    }
-     else if ($receiver_0 > 1.0) {
+    } else if ($receiver_0 > 1.0) {
       clamp$result = 1.0;
-    }
-     else {
+    } else {
       clamp$result = $receiver_0;
     }
     tmp$.a = clamp$result;
     if ($receiver.lifeTime > 5.0) {
       $receiver.die();
-    }
-    return Unit;
+    }return Unit;
   }
   function particleDemo$lambda$lambda$lambda_3(closure$isSorted, this$, closure$currentParticleCount, closure$maxParticleCount, closure$types) {
     return function ($receiver, ctx) {
@@ -5354,8 +5223,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         for (var i = 1; i <= spawnCount; i++) {
           this$.spawnParticle_1rs1w0$(closure$types.get_za3lpa$(randomI(new IntRange(0, 24))));
         }
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function particleDemo$lambda$lambda$lambda_4(it) {
@@ -5579,10 +5447,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
         if (level.level >= $this.level.level) {
           $this.printer(level, tag, 'Tree traversal retrieved ' + closure$trav.result.size + ' points, ' + ('took ' + toString(searchT, 3) + ' ms; ') + ('Point update took ' + toString(updateT, 3) + ' ms'));
-        }
-        closure$data.hasChanged = true;
-      }
-      return Unit;
+        }closure$data.hasChanged = true;
+      }return Unit;
     };
   }
   function pointScene$lambda$lambda_0(this$) {
@@ -5653,8 +5519,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var $this = util.Log;
     if (level.level >= $this.level.level) {
       $this.printer(level, tag, message + ' ' + toString(now() - t, 3) + ' ms');
-    }
-    var tree = ret;
+    }var tree = ret;
     return new Pair(mesh, tree);
   }
   function MeshPoint(x, y, z, index) {
@@ -6062,8 +5927,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return function ($receiver, f, rt, f_0) {
       if (!rt.isHit) {
         closure$content.isPickingEnabled = true;
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function synthieMenu$lambda$lambda_0(closure$content, this$) {
@@ -6112,14 +5976,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   VerticalLayout.prototype.doLayout_sq5703$ = function (layoutBounds, ctx) {
     if (!(layoutBounds != null ? layoutBounds.equals(this.componentBounds) : null)) {
       this.componentBounds.clear();
-    }
-    UiContainer.prototype.doLayout_sq5703$.call(this, layoutBounds, ctx);
+    }UiContainer.prototype.doLayout_sq5703$.call(this, layoutBounds, ctx);
     if (!(layoutBounds != null ? layoutBounds.equals(this.componentBounds) : null)) {
       this.translate_y2kzbl$(-this.posInParent.x, -this.posInParent.y, -this.posInParent.z);
       this.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
       this.translate_y2kzbl$(this.posInParent.y, -this.posInParent.x, this.posInParent.z);
-    }
-  };
+    }};
   VerticalLayout.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'VerticalLayout',
@@ -6160,8 +6022,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     if (n >= 0) {
       var f = SampleNode.Companion.note_vux9f0$(n + 7 | 0, 0);
       osc = this.osc1_0.next_dleff0$(dt, f) + this.osc2_0.next_dleff0$(dt, f / 2.0) + this.osc3_0.next_dleff0$(dt, f / 2.0) + this.osc4_0.next_dleff0$(dt, f * 3.0);
-    }
-    return this.moodFilter_0.filter_7b5o5w$(this.lfo1_0.next_mx4ult$(dt) + 1050, this.lfo2_0.next_mx4ult$(dt), SampleNode.Companion.perc_7b5o5w$(osc, 48.0, this.t % 0.125), dt) * 0.25;
+    }return this.moodFilter_0.filter_7b5o5w$(this.lfo1_0.next_mx4ult$(dt) + 1050, this.lfo2_0.next_mx4ult$(dt), SampleNode.Companion.perc_7b5o5w$(osc, 48.0, this.t % 0.125), dt) * 0.25;
   };
   Melody.$metadata$ = {
     kind: Kind_CLASS,
@@ -6188,29 +6049,24 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown) {
       if (this.melody.sequence[this.col] === this.row) {
         this.melody.sequence[this.col] = -1;
-      }
-       else {
+      } else {
         this.melody.sequence[this.col] = this.row;
       }
-    }
-     else if (!this.wasHovered_0 && ptr.isLeftButtonDown) {
+    } else if (!this.wasHovered_0 && ptr.isLeftButtonDown) {
       this.melody.sequence[this.col] = this.row;
-    }
-    this.wasHovered_0 = true;
+    }this.wasHovered_0 = true;
   };
   SequenceButton.prototype.render_aemszp$ = function (ctx) {
     if (this.melody.sequence[this.col] === this.row) {
       this.colorAnimator_0.speed = 1.0;
-    }
-     else {
+    } else {
       this.colorAnimator_0.speed = -1.0;
     }
     this.colorAnimator_0.tick_aemszp$(ctx);
     this.background_0.bgColor.set_d7aj7k$(this.colorAnimator_0.value.value);
     if (this.isHovered) {
       this.background_0.bgColor.a = this.background_0.bgColor.a + 0.4;
-    }
-     else {
+    } else {
       var a = this.melody.index - this.col;
       if (a > 0 && a <= 1) {
         var tmp$ = this.background_0.bgColor;
@@ -6220,16 +6076,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var clamp$result;
         if ($receiver < 0.0) {
           clamp$result = 0.0;
-        }
-         else if ($receiver > 0.1) {
+        } else if ($receiver > 0.1) {
           clamp$result = 0.1;
-        }
-         else {
+        } else {
           clamp$result = $receiver;
         }
         tmp$.a = tmp$_0 + clamp$result;
-      }
-    }
+      }}
     Button.prototype.render_aemszp$.call(this, ctx);
   };
   function SequenceButton_init$lambda(this$SequenceButton) {
@@ -6312,11 +6165,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var clamp$result;
         if ($receiver < min) {
           clamp$result = min;
-        }
-         else if ($receiver > 0.0) {
+        } else if ($receiver > 0.0) {
           clamp$result = 0.0;
-        }
-         else {
+        } else {
           clamp$result = $receiver;
         }
         var c = clamp$result + 1.0;
@@ -6346,15 +6197,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       }
       if (this.quadV.index === (Kotlin.imul(this.width, this.length) * 4 | 0)) {
         this.quadV.index = 0;
-      }
-      this.zPos += 1.0;
+      }this.zPos += 1.0;
       if (this.zPos > 1000) {
         this.zPos = -1000.0;
-      }
-      this.quads.geometry.hasChanged = true;
+      }this.quads.geometry.hasChanged = true;
       this.quads.bounds.set_w8lrqs$((-this.width | 0) / 2.0, 0.0, this.zPos - this.length, this.width / 2.0, 50.0, this.zPos);
-    }
-    this.setIdentity();
+    }this.setIdentity();
     this.scale_y2kzbl$(1.0 / 32.0, 1.0 / 32.0, 1.0 / 32.0);
     this.translate_y2kzbl$(0.0, -32.0, -this.zPos + this.length / 5.0);
   };
@@ -6425,8 +6273,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.sampleBuf[tmp$ = this.sampleIdx, this.sampleIdx = tmp$ + 1 | 0, tmp$] = value;
     if (this.sampleIdx === this.sampleBuf.length) {
       this.sampleIdx = 0;
-    }
-  };
+    }};
   SynthieScene$Waveform.prototype.render_aemszp$ = function (ctx) {
     var tmp$;
     this.playT += ctx.deltaT;
@@ -6440,10 +6287,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var idx = this.lineIdx - i | 0;
         if (idx < 0) {
           idx = idx + this.lines.length | 0;
-        }
-      }
-    }
-    Group.prototype.render_aemszp$.call(this, ctx);
+        }}
+    }Group.prototype.render_aemszp$.call(this, ctx);
   };
   SynthieScene$Waveform.prototype.drawTimeDomain_0 = function () {
     var tmp$, tmp$_0;
@@ -6451,15 +6296,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var pos = end - this.points | 0;
     if (pos < 0) {
       pos = pos + this.sampleBuf.length | 0;
-    }
-    tmp$ = this.points;
+    }tmp$ = this.points;
     for (var i = 0; i < tmp$; i++) {
       this.vertices[this.lineIdx].index = i;
       this.vertices[this.lineIdx].position.y = this.sampleBuf[tmp$_0 = pos, pos = tmp$_0 + 1 | 0, tmp$_0] * 2.0 + 2.0;
       if (pos >= this.sampleBuf.length) {
         pos = 0;
-      }
-    }
+      }}
   };
   function SynthieScene$Waveform$lines$lambda$lambda(this$Waveform) {
     return function ($receiver) {
@@ -6486,8 +6329,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var idx = $this.numVertices - 1 | 0;
         if (i > 1) {
           $receiver.geometry.addIndices_pmhfmb$(new Int32Array([idx - 1 | 0, idx]));
-        }
-      }
+        }}
       return Unit;
     };
   }
@@ -6599,8 +6441,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return function ($receiver, it) {
       if (this$SimplificationDemo.autoRotate) {
         this$.rotate_ad55pp$(closure$ctx.deltaT * 3.0, Vec3f.Companion.Y_AXIS);
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function SimplificationDemo$mainScene$lambda$lambda(this$SimplificationDemo, closure$ctx) {
@@ -6633,8 +6474,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.heMesh = new HalfEdgeMesh(this.dispModel.geometry, new ListEdgeHandler());
     if (this.simplifcationGrade < 0.999) {
       simplify(this.heMesh, terminateOnFaceCountRel(this.simplifcationGrade));
-    }
-    var $this_0 = this.modelWireframe.geometry;
+    }var $this_0 = this.modelWireframe.geometry;
     var wasBatchUpdate_0 = $this_0.isBatchUpdate;
     $this_0.isBatchUpdate = true;
     this.modelWireframe.clear();
@@ -6643,20 +6483,17 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $this_0.isBatchUpdate = wasBatchUpdate_0;
     if (false) {
       $this_0.rebuildBounds();
-    }
-    var time = pt.takeSecs();
+    }var time = pt.takeSecs();
     if (time > 0.5) {
       this.autoRun.isEnabled = false;
-    }
-    this.facesValLbl.text = this.heMesh.faceCount.toString();
+    }this.facesValLbl.text = this.heMesh.faceCount.toString();
     this.vertsValLbl.text = this.heMesh.vertCount.toString();
     this.timeValLbl.text = toString(time, 2) + ' s';
     $this.hasChanged = true;
     $this.isBatchUpdate = wasBatchUpdate;
     if (false) {
       $this.rebuildBounds();
-    }
-  };
+    }};
   function SimplificationDemo$loadModel$lambda(closure$scale, this$SimplificationDemo, closure$name) {
     return function (model) {
       var tmp$;
@@ -6683,9 +6520,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var closure$name_0 = closure$name;
           var tmp$_1;
           tmp$_0.call($this, level, tag, 'loaded: ' + closure$name_0 + ', bounds: ' + toString_1((tmp$_1 = this$SimplificationDemo.models.get_11rb$(closure$name_0)) != null ? tmp$_1.bounds : null));
-        }
-      }
-      return Unit;
+        }}return Unit;
     };
   }
   SimplificationDemo.prototype.loadModel_0 = function (name, scale, ctx) {
@@ -6813,8 +6648,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       this$SimplificationDemo.dispModel.isVisible = $receiver.isEnabled;
       if (!$receiver.isEnabled && !closure$tbDrawWireframe.isEnabled) {
         closure$tbDrawWireframe.isEnabled = true;
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function SimplificationDemo$menu$lambda$lambda$lambda_8(this$SimplificationDemo, closure$tbDrawSolid) {
@@ -6822,8 +6656,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       this$SimplificationDemo.modelWireframe.isVisible = $receiver.isEnabled;
       if (!$receiver.isEnabled && !closure$tbDrawSolid.isEnabled) {
         closure$tbDrawSolid.isEnabled = true;
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function SimplificationDemo$menu$lambda$lambda$lambda$lambda_2(this$SimplificationDemo) {
@@ -6876,8 +6709,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       this$SimplificationDemo.simplifcationGrade = value;
       if (this$SimplificationDemo.autoRun.isEnabled) {
         this$SimplificationDemo.simplify();
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function SimplificationDemo$menu$lambda$lambda$lambda_13(closure$y, closure$faceCntVal, this$SimplificationDemo) {
@@ -7055,17 +6887,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
               if (equals(element.name, name) && isT_0(element)) {
                 firstOrNull$result = element;
                 break firstOrNull$break;
-              }
-            }
+              }}
             firstOrNull$result = null;
           }
            while (false);
           var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
           if (node != null) {
             return node;
-          }
-        }
-        return Unit;
+          }}return Unit;
       };
     };
   });
@@ -7096,8 +6925,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
       if (level.level >= $this.level.level) {
         $this.printer(level, tag, 'Generated ' + ($receiver.geometry.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + toString(now() - t, 3) + ' ms');
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function Coroutine$treeScene$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
@@ -7130,13 +6958,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -7180,13 +7006,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -7230,13 +7054,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -7280,13 +7102,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -7321,10 +7141,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
             tmp$[i] = item.offscreenPass.impl.depthTexture;
-          }
-        }
-      }
-      var tmp$_3 = closure$uWindSpeed;
+          }}
+      }var tmp$_3 = closure$uWindSpeed;
       var $this = this$.model;
       var name = 'windAnim';
       var stage;
@@ -7347,8 +7165,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
                 if (equals(element_0.name, name) && Kotlin.isType(element_0, PushConstantNode1f)) {
                   firstOrNull$result = element_0;
                   break firstOrNull$break;
-                }
-              }
+                }}
               firstOrNull$result = null;
             }
              while (false);
@@ -7356,9 +7173,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
             if (node != null) {
               findNode_3klnlw$result = node;
               break findNode_3klnlw$break;
-            }
-          }
-        }
+            }}}
         findNode_3klnlw$result = null;
       }
        while (false);
@@ -7386,8 +7201,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
                 if (equals(element_0_0.name, name_0) && Kotlin.isType(element_0_0, PushConstantNode1f)) {
                   firstOrNull$result_0 = element_0_0;
                   break firstOrNull$break;
-                }
-              }
+                }}
               firstOrNull$result_0 = null;
             }
              while (false);
@@ -7395,9 +7209,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
             if (node_0 != null) {
               findNode_3klnlw$result_0 = node_0;
               break findNode_3klnlw$break;
-            }
-          }
-        }
+            }}}
         findNode_3klnlw$result_0 = null;
       }
        while (false);
@@ -7454,8 +7266,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
       if (level.level >= $this.level.level) {
         $this.printer(level, tag, 'Generated ' + ($receiver.geometry.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + toString(now() - t, 3) + ' ms');
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function Coroutine$treeScene$lambda$lambda$lambda$lambda_3($receiver_0, it_0, controller, continuation_0) {
@@ -7488,13 +7299,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -7530,10 +7339,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
             tmp$[i] = item.offscreenPass.impl.depthTexture;
-          }
-        }
-      }
-      var tmp$_3 = closure$uWindSpeed;
+          }}
+      }var tmp$_3 = closure$uWindSpeed;
       var $this = this$.model;
       var name = 'windAnim';
       var stage;
@@ -7556,8 +7363,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
                 if (equals(element_0.name, name) && Kotlin.isType(element_0, PushConstantNode1f)) {
                   firstOrNull$result = element_0;
                   break firstOrNull$break;
-                }
-              }
+                }}
               firstOrNull$result = null;
             }
              while (false);
@@ -7565,9 +7371,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
             if (node != null) {
               findNode_3klnlw$result = node;
               break findNode_3klnlw$break;
-            }
-          }
-        }
+            }}}
         findNode_3klnlw$result = null;
       }
        while (false);
@@ -7595,8 +7399,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
                 if (equals(element_0_0.name, name_0) && Kotlin.isType(element_0_0, PushConstantNode1f)) {
                   firstOrNull$result_0 = element_0_0;
                   break firstOrNull$break;
-                }
-              }
+                }}
               firstOrNull$result_0 = null;
             }
              while (false);
@@ -7604,9 +7407,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
             if (node_0 != null) {
               findNode_3klnlw$result_0 = node_0;
               break findNode_3klnlw$break;
-            }
-          }
-        }
+            }}}
         findNode_3klnlw$result_0 = null;
       }
        while (false);
@@ -7651,8 +7452,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return function ($receiver, ctx) {
       if (closure$autoRotate.v) {
         this$.verticalRotation += ctx.deltaT * 3.0;
-      }
-      return Unit;
+      }return Unit;
     };
   }
   function treeScene$lambda$lambda_2(this$, closure$autoRotate) {
@@ -7848,14 +7648,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var tag = Kotlin.getKClassFromExpression($this).simpleName;
         if (level.level >= $this_0.level.level) {
           $this_0.printer(level, tag, 'Generated ' + ($this.numIndices / 3 | 0) + ' trunk triangles in' + ' ' + toString(now() - t, 3) + ' ms');
-        }
-        $this.hasChanged = true;
+        }$this.hasChanged = true;
         $this.isBatchUpdate = wasBatchUpdate;
         if (false) {
           $this.rebuildBounds();
-        }
-      }
-      if ((tmp$_0 = closure$leafMesh.v) != null) {
+        }}if ((tmp$_0 = closure$leafMesh.v) != null) {
         var closure$treeGen_1 = closure$treeGen;
         var $this_1 = tmp$_0.geometry;
         var wasBatchUpdate_0 = $this_1.isBatchUpdate;
@@ -7871,14 +7668,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var tag_0 = Kotlin.getKClassFromExpression($this_1).simpleName;
         if (level_0.level >= $this_2.level.level) {
           $this_2.printer(level_0, tag_0, 'Generated ' + ($this_1.numIndices / 3 | 0) + ' leaf triangles in' + ' ' + toString(now() - t_0, 3) + ' ms');
-        }
-        $this_1.hasChanged = true;
+        }$this_1.hasChanged = true;
         $this_1.isBatchUpdate = wasBatchUpdate_0;
         if (false) {
           $this_1.rebuildBounds();
-        }
-      }
-      return Unit;
+        }}return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda_19(closure$y, closure$treeGen, closure$trunkMesh, closure$leafMesh) {
@@ -8144,8 +7938,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.output);
     if (cfg.requiresTexCoords()) {
       tmp$ = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
-    }
-     else {
+    } else {
       tmp$ = null;
     }
     ifTexCoords.v = tmp$;
@@ -8155,8 +7948,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver_1.inStrength = $receiver_0.pushConstantNode1f_61zpoe$('uDispStrength').output;
       var dispNd = $receiver_1;
       tmp$_0 = dispNd.outPosition;
-    }
-     else {
+    } else {
       tmp$_0 = $receiver_0.attrPositions().output;
     }
     var staticWorldPos = tmp$_0;
@@ -8170,23 +7962,20 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', pos);
     if (cfg.albedoSource === Albedo.VERTEX_ALBEDO) {
       tmp$_1 = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
-    }
-     else {
+    } else {
       tmp$_1 = null;
     }
     ifColors.v = tmp$_1;
     if (cfg.isNormalMapped) {
       var tan = $receiver_0.transformNode_vid4wo$($receiver_0.attrTangents().output, mvp.v.outModelMat, 0.0);
       tmp$_2 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.output);
-    }
-     else {
+    } else {
       tmp$_2 = null;
     }
     ifTangents.v = tmp$_2;
     if (cfg.isReceivingShadows) {
       tmp$_3 = $receiver_0.shadowedLightNode_jciouo$(worldPos, mvp.v.outModelMat, 'depthMap', cfg.maxLights);
-    }
-     else {
+    } else {
       tmp$_3 = null;
     }
     shadowedLightNode.v = tmp$_3;
@@ -8203,8 +7992,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       irrSampler = $receiver_3.cubeMapSamplerNode_2z3a2t$(irrMap, ifNormals.v.output, false);
       reflMap = $receiver_3.cubeMapNode_61zpoe$('reflectionMap');
       brdfLut = $receiver_3.textureNode_61zpoe$('brdfLut');
-    }
-     else {
+    } else {
       irrSampler = null;
       reflMap = null;
       brdfLut = null;
@@ -8235,29 +8023,25 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var bumpNormal = $receiver_3.normalMapNode_j8913i$($receiver_3.textureNode_61zpoe$('tNormal'), ensureNotNull(ifTexCoords.v).output, ifNormals.v.output, ifTangents.v.output);
       bumpNormal.inStrength = new ShaderNodeIoVar(new ModelVar1fConst(cfg.normalStrength));
       tmp$_8 = bumpNormal.outNormal;
-    }
-     else {
+    } else {
       tmp$_8 = ifNormals.v.output;
     }
     $receiver_4.inNormal = tmp$_8;
     if (cfg.isMetallicMapped) {
       tmp$_9 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tMetallic'), ensureNotNull(ifTexCoords.v).output, false).outColor;
-    }
-     else {
+    } else {
       tmp$_9 = $receiver_3.pushConstantNode1f_61zpoe$('uMetallic').output;
     }
     $receiver_4.inMetallic = tmp$_9;
     if (cfg.isRoughnessMapped) {
       tmp$_10 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tRoughness'), ensureNotNull(ifTexCoords.v).output, false).outColor;
-    }
-     else {
+    } else {
       tmp$_10 = $receiver_3.pushConstantNode1f_61zpoe$('uRoughness').output;
     }
     $receiver_4.inRoughness = tmp$_10;
     if (cfg.isAmbientOcclusionMapped) {
       $receiver_4.inAmbientOccl = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAmbOccl'), ensureNotNull(ifTexCoords.v).output, false).outColor;
-    }
-    var mat = $receiver_4;
+    }var mat = $receiver_4;
     var hdrToLdr = $receiver_3.hdrToLdrNode_r20yfm$(mat.outColor);
     $receiver_3.colorOutput = hdrToLdr.outColor;
     return $receiver;
@@ -8323,13 +8107,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -8373,13 +8155,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -8423,13 +8203,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -8473,13 +8251,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -8523,13 +8299,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -8555,10 +8329,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
             tmp$[i] = item.offscreenPass.impl.depthTexture;
-          }
-        }
-      }
-      return Unit;
+          }}
+      }return Unit;
     };
   }
   function makeTreeGroundGrid$lambda$lambda$lambda_5(this$) {
@@ -8666,8 +8438,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var tag = Kotlin.getKClassFromExpression(this).simpleName;
     if (level.level >= $this.level.level) {
       $this.printer(level, tag, 'Generation done, took ' + i.v + ' iterations, ' + this.treeNodes_0.size + ' nodes in' + ' ' + toString(now() - t, 3) + ' ms');
-    }
-  };
+    }};
   TreeGenerator.prototype.growSingleStep = function () {
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
     var tmp$_6;
@@ -8687,17 +8458,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var attracPt = tmp$_0.next();
           if (attracPt.isOpen) {
             attracPt.checkNearest_15eqn9$(node);
-          }
-        }
-      }
-    }
+          }}
+      }}
     tmp$_1 = this.attractionPoints_0.iterator();
     while (tmp$_1.hasNext()) {
       var attracPt_0 = tmp$_1.next();
       if (attracPt_0.isOpen) {
         (tmp$_3 = (tmp$_2 = attracPt_0.nearestNode) != null ? tmp$_2.influencingPts : null) != null ? tmp$_3.add_11rb$(attracPt_0) : null;
-      }
-    }
+      }}
     var newNodes = ArrayList_init();
     var changed = false;
     tmp$_4 = this.treeNodes_0.iterator();
@@ -8724,9 +8492,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
             element_0.isOpen = false;
           }
           changed = true;
-        }
-      }
-       else {
+        }} else {
         node_0.isFinished = true;
       }
     }
@@ -8740,8 +8506,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         $receiver.x = $receiver.x + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
         $receiver.y = $receiver.y + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
         $receiver.z = $receiver.z + this$TreeGenerator.random.randomF_dleff0$(-0.01, 0.01);
-      }
-      $receiver.computeTrunkRadiusAndDepth();
+      }$receiver.computeTrunkRadiusAndDepth();
       $receiver.computeCircumPoints();
       return Unit;
     };
@@ -8750,8 +8515,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     if ($receiver.parent != null) {
       var baseV = ensureNotNull($receiver.parent).texV;
       $receiver.texV = baseV + $receiver.distance_czzhiu$(ensureNotNull($receiver.parent)) / ($receiver.radius * 2.0 * math.PI * 1.5);
-    }
-    return Unit;
+    }return Unit;
   }
   TreeGenerator.prototype.finishTree = function () {
     this.root_0.forEachTopDown_ttqnr0$(TreeGenerator$finishTree$lambda(this));
@@ -8781,13 +8545,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       if (this.primaryLightDir != null) {
         if (it.normal.dot_czzhiu$(this.primaryLightDir) > 0) {
           it.normal.scale_mx4ult$(-1.0);
-        }
-      }
-       else {
+        }} else {
         if (it.normal.y < 0) {
           it.normal.scale_mx4ult$(-1.0);
-        }
-      }
+        }}
     }
   };
   TreeGenerator.prototype.populateAttractionPoints_0 = function () {
@@ -8816,8 +8577,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       this.nearestNode_3mwxa2$_0 = value;
       if (value == null) {
         this.nearestNodeDist = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
-      }
-    }
+      }}
   });
   Object.defineProperty(TreeGenerator$AttractionPoint.prototype, 'nearestNodeDist', {
     get: function () {
@@ -8832,8 +8592,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     if (dist < this.nearestNodeDist) {
       this.nearestNode = node;
       this.nearestNodeDist = dist;
-    }
-  };
+    }};
   TreeGenerator$AttractionPoint.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'AttractionPoint',
@@ -8864,8 +8623,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var c = tmp$.next();
       if (c.isFuzzyEqual_2qa7tb$(node)) {
         return true;
-      }
-    }
+      }}
     return false;
   };
   TreeGenerator$TreeNode.prototype.forEachBottomUp_ttqnr0$ = function (block) {
@@ -8892,8 +8650,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     if (this.children.isEmpty()) {
       this.radius = 0.01;
       this.branchDepth = 0;
-    }
-     else {
+    } else {
       var tmp$_2;
       var sum = 0.0;
       tmp$_2 = this.children.iterator();
@@ -8906,8 +8663,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       this.radius = Math_0.pow(sum, x);
       if (this.children.size === 1) {
         tmp$_1 = this.children.get_za3lpa$(0).branchDepth;
-      }
-       else {
+      } else {
         var $receiver_0 = this.children;
         var maxBy$result;
         maxBy$break: do {
@@ -8915,21 +8671,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           if (!iterator.hasNext()) {
             maxBy$result = null;
             break maxBy$break;
-          }
-          var maxElem = iterator.next();
+          }var maxElem = iterator.next();
           if (!iterator.hasNext()) {
             maxBy$result = maxElem;
             break maxBy$break;
-          }
-          var maxValue = maxElem.branchDepth;
+          }var maxValue = maxElem.branchDepth;
           do {
             var e = iterator.next();
             var v = e.branchDepth;
             if (Kotlin.compareTo(maxValue, v) < 0) {
               maxElem = e;
               maxValue = v;
-            }
-          }
+            }}
            while (iterator.hasNext());
           maxBy$result = maxElem;
         }
@@ -8942,15 +8695,13 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       this.radius *= 3.0;
       this.children.get_za3lpa$(0).radius = this.children.get_za3lpa$(0).radius * 1.5;
       this.children.get_za3lpa$(0).computeCircumPoints();
-    }
-  };
+    }};
   TreeGenerator$TreeNode.prototype.computeCircumPoints = function () {
     var tmp$;
     this.circumPts.clear();
     if (this.parent != null) {
       tmp$ = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init()).norm();
-    }
-     else {
+    } else {
       tmp$ = this.children.get_za3lpa$(0).subtract_2gj7b4$(this, MutableVec3f_init()).norm();
     }
     var n = tmp$;
@@ -8968,8 +8719,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var tmp$;
     if (this.radius > 0.05) {
       tmp$ = 2.0;
-    }
-     else {
+    } else {
       tmp$ = 1.0;
     }
     var uScale = tmp$ * this.uScale;
@@ -9020,8 +8770,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         for (var i_3 = 0; i_3 < 8; i_3++) {
           target.geometry.addTriIndices_qt1dr2$(tipIdx, idcs.get_za3lpa$(i_3), idcs.get_za3lpa$(i_3 + 1 | 0));
         }
-      }
-       else {
+      } else {
         for (var i_4 = 0; i_4 <= 8; i_4++) {
           var $this_1 = target.geometry;
           var tmp$_3, tmp$_0_2, tmp$_1_1;
@@ -9069,8 +8818,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           target.geometry.addTriIndices_qt1dr2$(idcs.get_za3lpa$((i_7 * 2 | 0) + 1 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 3 | 0), idcs.get_za3lpa$((i_7 * 2 | 0) + 2 | 0));
         }
       }
-    }
-  };
+    }};
   TreeGenerator$TreeNode.prototype.buildLeafMesh_84rojv$ = function (target) {
     if (this.branchDepth <= 1 && this.parent != null) {
       var n = this.subtract_2gj7b4$(ensureNotNull(this.parent), MutableVec3f_init());
@@ -9089,8 +8837,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         do {
           if (n.dot_czzhiu$(Vec3f.Companion.X_AXIS) < n.dot_czzhiu$(Vec3f.Companion.Z_AXIS)) {
             target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), Vec3f.Companion.X_AXIS);
-          }
-           else {
+          } else {
             target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), Vec3f.Companion.Z_AXIS);
           }
           target.rotate_ad55pp$(this$TreeGenerator.random.randomF_dleff0$(0.0, 360.0), n);
@@ -9098,8 +8845,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           if (tmp$_0) {
             var x = target.transform.transform_w1lst9$(MutableVec3f_init_0(Vec3f.Companion.NEG_Z_AXIS), 0.0).dot_czzhiu$(this$TreeGenerator.primaryLightDir);
             tmp$_0 = Math_0.abs(x) < 0.1;
-          }
-        }
+          }}
          while (tmp$_0 && (tmp$ = tries, tries = tmp$ + 1 | 0, tmp$) < 3);
         var i0 = target.vertex_n440gp$(new Vec3f(0.0, -0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 0.0));
         var i1 = target.vertex_n440gp$(new Vec3f(0.0, 0.022, 0.0), Vec3f.Companion.NEG_Z_AXIS, new Vec2f(0.0, 1.0));
@@ -9108,8 +8854,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         target.geometry.addIndices_pmhfmb$(new Int32Array([i0, i1, i2, i0, i2, i3]));
         target.transform.pop();
       }
-    }
-  };
+    }};
   TreeGenerator$TreeNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'TreeNode',
@@ -9144,8 +8889,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         var a = i / n * math.PI;
         if (1 <= i && i < n) {
           tmp$ = this.random_0.randomF_dleff0$(0.4, 0.6);
-        }
-         else {
+        } else {
           tmp$ = 0.5;
         }
         var f = tmp$;
@@ -9206,21 +8950,18 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         if (!iterator.hasNext()) {
           minBy$result = null;
           break minBy$break;
-        }
-        var minElem = iterator.next();
+        }var minElem = iterator.next();
         if (!iterator.hasNext()) {
           minBy$result = minElem;
           break minBy$break;
-        }
-        var minValue = minElem.sqrDistance_czzhiu$(pt.v);
+        }var minValue = minElem.sqrDistance_czzhiu$(pt.v);
         do {
           var e = iterator.next();
           var v = e.sqrDistance_czzhiu$(pt.v);
           if (Kotlin.compareTo(minValue, v) > 0) {
             minElem = e;
             minValue = v;
-          }
-        }
+          }}
          while (iterator.hasNext());
         minBy$result = minElem;
       }
@@ -9228,8 +8969,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var d = ensureNotNull(minBy$result).distance_czzhiu$(pt.v);
       if (d < this.random_0.randomF()) {
         break loop_label;
-      }
-    }
+      }}
     return pt.v;
   };
   TreeTopPointDistribution.prototype.nextPointInBounds_0 = function () {
@@ -9246,11 +8986,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var clamp$result;
       if ($receiver < 0.0) {
         clamp$result = 0.0;
-      }
-       else if ($receiver > 1.0) {
+      } else if ($receiver > 1.0) {
         clamp$result = 1.0;
-      }
-       else {
+      } else {
         clamp$result = $receiver;
       }
       var a = clamp$result * this.borders_0.size;
@@ -9267,8 +9005,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var d = (px - this.e00_0.x) * (this.e01_0.y - this.e00_0.y) - (py - this.e00_0.y) * (this.e01_0.x - this.e00_0.x);
       if (d > 0) {
         return Vec3f_init_0(this.tmpPt1_0);
-      }
-    }
+      }}
   };
   TreeTopPointDistribution.prototype.nearestEdge_0 = function (px, py, pts, e0, e1) {
     var tmp$;
@@ -9280,8 +9017,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       if (d < minDist) {
         minDist = d;
         ni = i;
-      }
-    }
+      }}
     e0.set_czzhjp$(pts.get_za3lpa$(ni));
     e1.set_czzhjp$(pts.get_za3lpa$(ni + 1 | 0));
   };
@@ -9294,14 +9030,12 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var dy = e0.y - py;
       var x = dx * dx + dy * dy;
       tmp$ = Math_0.sqrt(x);
-    }
-     else if (l > 1) {
+    } else if (l > 1) {
       var dx_0 = e1.x - px;
       var dy_0 = e1.y - py;
       var x_0 = dx_0 * dx_0 + dy_0 * dy_0;
       tmp$ = Math_0.sqrt(x_0);
-    }
-     else {
+    } else {
       this.tmpPt2_0.scale_mx4ult$(l).add_czzhjp$(e0);
       var dx_1 = this.tmpPt2_0.x - px;
       var dy_1 = this.tmpPt2_0.y - py;
@@ -9387,8 +9121,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var tmp$;
       if (equals(this$.theme, UiTheme.Companion.DARK)) {
         tmp$ = UiTheme.Companion.LIGHT;
-      }
-       else {
+      } else {
         tmp$ = UiTheme.Companion.DARK;
       }
       this$.theme = tmp$;
@@ -9516,13 +9249,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -9586,13 +9317,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           default:this.state_0 = 1;
             throw new Error('State Machine Unreachable execution');
         }
-      }
-       catch (e) {
+      } catch (e) {
         if (this.state_0 === 1) {
           this.exceptionState_0 = this.state_0;
           throw e;
-        }
-         else {
+        } else {
           this.state_0 = this.exceptionState_0;
           this.exception_0 = e;
         }
@@ -9658,6 +9387,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function main() {
     Demo$Companion_getInstance().setProperty_bm4g0d$('assetsBaseDir', '../assets');
+    Demo$Companion_getInstance().setProperty_bm4g0d$('pbrDemo.envMaps', 'skybox/hdri');
+    Demo$Companion_getInstance().setProperty_bm4g0d$('pbrDemo.materials', 'reserve/pbr/materials');
     demo(getParams().get_11rb$('demo'));
   }
   function getParams() {
@@ -9675,10 +9406,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var key = decodeURIComponent(keyEnc).toString();
           var value = decodeURIComponent(valEnc).toString();
           params.put_xwzc9p$(key, value);
-        }
-      }
-    }
-    return params;
+        }}
+    }return params;
   }
   $$importsForInline$$.kooldemo = _;
   var package$de = _.de || (_.de = {});

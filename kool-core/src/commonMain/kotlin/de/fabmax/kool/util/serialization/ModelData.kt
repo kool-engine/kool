@@ -6,37 +6,37 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
-import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.load
 import kotlinx.serialization.protobuf.ProtoBuf
+import kotlinx.serialization.protobuf.ProtoId
 
 @Serializable
 data class ModelData(
         /**
          * Version indicator should always be equal to [ModelData.VERSION]
          */
-        @SerialId(1) val version: Int,
+        @ProtoId(1) val version: Int,
 
         /**
          * Optional model name. Empty if not set.
          */
-        @SerialId(5) val name: String = "",
+        @ProtoId(5) val name: String = "",
 
         /**
          * List of meshes in this model. Meshes are referenced by index from [ModelNodeData].
          */
-        @SerialId(2) val meshes: List<ModelMeshData>,
+        @ProtoId(2) val meshes: List<ModelMeshData>,
 
         /**
          * Root nodes of the model hierarchy. Multiple root nodes correspond to different levels of detail.
          */
-        @SerialId(3) val lodRootNodes: List<ModelNodeData>,
+        @ProtoId(3) val lodRootNodes: List<ModelNodeData>,
 
         /**
          * List of materials in this model. Materials are references by index from [ModelMeshData]
          */
-        @SerialId(4) val materials: List<MaterialData> = emptyList()
+        @ProtoId(4) val materials: List<MaterialData> = emptyList()
 ) {
 
     fun toModel(lod: Int = 0): TransformGroup = toModel(lod, { TransformGroup(it.name).set(it.getTransformMatrix()) }, { it.toMesh(this) })
@@ -88,27 +88,27 @@ data class ModelNodeData(
         /**
          * Node name.
          */
-        @SerialId(1) val name: String,
+        @ProtoId(1) val name: String,
 
         /**
          * 4x4 transform matrix
          */
-        @SerialId(2) val transform: List<Float>,
+        @ProtoId(2) val transform: List<Float>,
 
         /**
          * Child nodes
          */
-        @SerialId(3) val children: List<ModelNodeData> = emptyList(),
+        @ProtoId(3) val children: List<ModelNodeData> = emptyList(),
 
         /**
          * Index list of included meshes
          */
-        @SerialId(4) val meshes: List<Int> = emptyList(),
+        @ProtoId(4) val meshes: List<Int> = emptyList(),
 
         /**
          * Optional list of arbitrary tags.
          */
-        @SerialId(5) val tags: List<String> = emptyList()
+        @ProtoId(5) val tags: List<String> = emptyList()
 ) {
 
     fun getTransformMatrix(result: Mat4f = Mat4f()): Mat4f = result.set(transform)

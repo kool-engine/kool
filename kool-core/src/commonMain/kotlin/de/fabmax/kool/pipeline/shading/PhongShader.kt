@@ -15,28 +15,28 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
     private var normalSampler: TextureSampler? = null
     private var uAlbedo: PushConstantNodeColor? = null
 
-    var shininess = 20f
+    var shininess = cfg.shininess
         set(value) {
             field = value
             uShininess?.uniform?.value = value
         }
-    var specularIntensity = 1f
+    var specularIntensity = cfg.specularIntensity
         set(value) {
             field = value
             uSpecularIntensity?.uniform?.value = value
         }
 
-    var albedo: Color = Color.WHITE
+    var albedo: Color = cfg.albedo
         set(value) {
             field = value
             uAlbedo?.uniform?.value?.set(value)
         }
-    var albedoMap: Texture? = null
+    var albedoMap: Texture? = cfg.albedoMap
         set(value) {
             field = value
             albedoSampler?.texture = value
         }
-    var normalMap: Texture? = null
+    var normalMap: Texture? = cfg.normalMap
         set(value) {
             field = value
             normalSampler?.texture = value
@@ -72,7 +72,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.output)
 
-                ifColors = if (cfg.albedo == Albedo.VERTEX_ALBEDO) {
+                ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
                     stageInterfaceNode("ifColors", attrColors().output)
                 } else {
                     null
@@ -97,7 +97,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 val mvpFrag = mvp.addToStage(fragmentStageGraph)
                 val lightNode = defaultLightNode()
 
-                val albedo = when (cfg.albedo) {
+                val albedo = when (cfg.albedoSource) {
                     Albedo.VERTEX_ALBEDO -> ifColors!!.output
                     Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
                     Albedo.TEXTURE_ALBEDO -> {
@@ -124,12 +124,19 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
     }
 
     class PhongConfig {
-        var albedo = Albedo.VERTEX_ALBEDO
+        var albedoSource = Albedo.VERTEX_ALBEDO
         var isNormalMapped = false
 
+        // initial shader values
+        var albedo = Color.GRAY
+        var shininess = 20f
+        var specularIntensity = 1f
+
+        var albedoMap: Texture? = null
+        var normalMap: Texture? = null
+
         fun requiresTexCoords(): Boolean {
-            return albedo == Albedo.TEXTURE_ALBEDO ||
-                    isNormalMapped
+            return albedoSource == Albedo.TEXTURE_ALBEDO || isNormalMapped
         }
     }
 }

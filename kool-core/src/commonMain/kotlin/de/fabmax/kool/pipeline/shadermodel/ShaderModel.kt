@@ -61,10 +61,6 @@ class ShaderModel(val modelInfo: String = "") {
             vertLayoutAttribs += VertexLayout.Attribute(iAttrib, off, attrib.type, attrib.name)
         }
 
-        if (buildCtx.vertexLayout.bindings.isNotEmpty()) {
-            TODO("multiple attribute bindings are not yet implemented: attribute location must be changed")
-        }
-
         buildCtx.vertexLayout.bindings += VertexLayout.Binding(0, InputRate.VERTEX, vertLayoutAttribs, verts.strideBytesF)
     }
 

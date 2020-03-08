@@ -1,16 +1,16 @@
 package de.fabmax.kool.util.serialization
 
-import kotlinx.serialization.SerialId
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.protobuf.ProtoId
 
 @Serializable
 data class BoneData(
-        @SerialId(1) val name: String,
+        @ProtoId(1) val name: String,
 
-        @SerialId(2) val parent: String,
-        @SerialId(3) val children: List<String> = emptyList(),
+        @ProtoId(2) val parent: String,
+        @ProtoId(3) val children: List<String> = emptyList(),
 
-        @SerialId(4) val offsetMatrix: List<Float>,
-        @SerialId(5) val vertexIds: List<Int>,
-        @SerialId(6) val vertexWeights: List<Float>
+        @ProtoId(4) val offsetMatrix: List<Float>,
+        @ProtoId(5) val vertexIds: List<Int>,
+        @ProtoId(6) val vertexWeights: List<Float>
 )
