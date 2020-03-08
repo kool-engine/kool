@@ -35,6 +35,17 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
   var Color = $module$kool.de.fabmax.kool.util.Color;
   var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
+  var MeshInstanceList = $module$kool.de.fabmax.kool.util.MeshInstanceList;
+  var listOf = Kotlin.kotlin.collections.listOf_mh5how$;
+  var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
+  var ShaderModel = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel;
+  var ModeledShader = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader;
+  var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
+  var ModelVar4f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar4f;
+  var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
+  var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
+  var ShaderModel$ShaderModel$VertexStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.VertexStageBuilder;
+  var ShaderModel$ShaderModel$FragmentStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.FragmentStageBuilder;
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
   var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_iiyuln$;
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
@@ -56,7 +67,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
-  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
+  var listOf_0 = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var ShadowMapPass = $module$kool.de.fabmax.kool.util.ShadowMapPass;
   var Math_0 = Math;
   var math_0 = $module$kool.de.fabmax.kool.math;
@@ -89,29 +100,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var getContextualOrDefault = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.modules.getContextualOrDefault_6za9kt$;
   var util = $module$kool.de.fabmax.kool.util;
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
-  var yPlanePan = $module$kool.de.fabmax.kool.scene.yPlanePan;
-  var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
-  var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
-  var KoolException_init = $module$kool.de.fabmax.kool.KoolException_init_61zpoe$;
-  var Armature = $module$kool.de.fabmax.kool.scene.animation.Armature;
-  var mapOf = Kotlin.kotlin.collections.mapOf_qfcya0$;
-  var InstancedMesh = $module$kool.de.fabmax.kool.scene.InstancedMesh;
-  var InstancedMesh$Instances = $module$kool.de.fabmax.kool.scene.InstancedMesh.Instances;
-  var randomF_0 = $module$kool.de.fabmax.kool.math.randomF;
-  var InstancedMesh$Instance = $module$kool.de.fabmax.kool.scene.InstancedMesh.Instance;
-  var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
-  var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
-  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
-  var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
-  var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
-  var OrbitInputTransform$DragMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.DragMethod;
-  var Label = $module$kool.de.fabmax.kool.scene.ui.Label;
-  var toString_0 = $module$kool.de.fabmax.kool.toString_lcymw2$;
-  var Slider = $module$kool.de.fabmax.kool.scene.ui.Slider;
-  var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_y4avn7$;
   var ParticleSystem = $module$kool.de.fabmax.kool.util.ParticleSystem;
   var CubicPointDistribution = $module$kool.de.fabmax.kool.math.CubicPointDistribution;
   var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
+  var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
+  var randomF_0 = $module$kool.de.fabmax.kool.math.randomF;
   var ParticleSystem$Type = $module$kool.de.fabmax.kool.util.ParticleSystem.Type;
   var BillboardMesh$DrawOrder = $module$kool.de.fabmax.kool.scene.BillboardMesh.DrawOrder;
   var numberToInt = Kotlin.numberToInt;
@@ -121,12 +114,15 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var InRadiusTraverser = $module$kool.de.fabmax.kool.util.InRadiusTraverser;
   var BillboardMesh = $module$kool.de.fabmax.kool.scene.BillboardMesh;
   var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
+  var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
   var pointMesh = $module$kool.de.fabmax.kool.scene.pointMesh_zhxjay$;
   var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
   var now = $module$kool.de.fabmax.kool.now;
   var Skybox_init = $module$kool.de.fabmax.kool.scene.Skybox_init_r3y0ew$;
-  var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
+  var yPlanePan = $module$kool.de.fabmax.kool.scene.yPlanePan;
   var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
+  var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
+  var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
   var Animator = $module$kool.de.fabmax.kool.util.Animator;
   var LinearAnimator = $module$kool.de.fabmax.kool.util.LinearAnimator;
   var Font_init = $module$kool.de.fabmax.kool.util.Font_init_8tzsp9$;
@@ -152,23 +148,20 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
   var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_14dthe$;
   var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_hem9$;
-  var toString_1 = Kotlin.toString;
+  var toString_0 = Kotlin.toString;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
+  var toString_1 = $module$kool.de.fabmax.kool.toString_lcymw2$;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
-  var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
   var ModelVar3fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3fConst;
-  var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
   var ModelVar1fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar1fConst;
   var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
-  var ShaderModel = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel;
   var ShaderStage = $module$kool.de.fabmax.kool.pipeline.ShaderStage;
   var wrapFunction = Kotlin.wrapFunction;
-  var ShaderModel$ShaderModel$VertexStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.VertexStageBuilder;
-  var ShaderModel$ShaderModel$FragmentStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.FragmentStageBuilder;
+  var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
@@ -179,13 +172,15 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var ModeledShader$VertexColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.VertexColor;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
+  var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_y4avn7$;
   var ModelVar2f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar2f;
   var ModelVar4fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar4fConst;
-  var ModelVar4f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar4f;
   var ModeledShader$TextureColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.TextureColor;
   var ModeledShader$CubeMapColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.CubeMapColor;
   var CubeMapTexture = $module$kool.de.fabmax.kool.pipeline.CubeMapTexture;
   var split = Kotlin.kotlin.text.split_ip8yn$;
+  MatColorNode.prototype = Object.create(ShaderNode.prototype);
+  MatColorNode.prototype.constructor = MatColorNode;
   MultiLightDemo$LightMesh.prototype = Object.create(TransformGroup.prototype);
   MultiLightDemo$LightMesh.prototype.constructor = MultiLightDemo$LightMesh;
   ColorGridContent.prototype = Object.create(PbrDemo$PbrContent.prototype);
@@ -194,8 +189,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   PbrMaterialContent.prototype.constructor = PbrMaterialContent;
   RoughnesMetalGridContent.prototype = Object.create(PbrDemo$PbrContent.prototype);
   RoughnesMetalGridContent.prototype.constructor = RoughnesMetalGridContent;
-  ModelInstance.prototype = Object.create(InstancedMesh$Instance.prototype);
-  ModelInstance.prototype.constructor = ModelInstance;
   MeshPoint.prototype = Object.create(Vec3f.prototype);
   MeshPoint.prototype.constructor = MeshPoint;
   VerticalLayout.prototype = Object.create(UiContainer.prototype);
@@ -535,6 +528,67 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.lighting.singleLight_q9zcvo$(helloWorldScene$lambda$lambda_0);
     return $receiver;
   }
+  function instanceTest$lambda$lambda$lambda($receiver) {
+    var $receiver_0 = $receiver.cubeProps.defaults();
+    $receiver_0.colored_6taknv$(false);
+    $receiver_0.centered();
+    $receiver.cube_lhbb6w$($receiver.cubeProps);
+    return Unit;
+  }
+  function instanceTest$lambda$lambda($receiver) {
+    $receiver.generate_v2sixm$(instanceTest$lambda$lambda$lambda);
+    var $receiver_0 = new MeshInstanceList(listOf(MeshInstanceList.Companion.MODEL_MAT));
+    for (var x = -1; x <= 1; x++) {
+      for (var y = -1; y <= 1; y++) {
+        $receiver_0.checkBufferSize_za3lpa$();
+        var szBefore = $receiver_0.dataF.position;
+        $receiver_0.dataF.put_q3cr5i$((new Mat4f()).translate_y2kzbl$(x * 3.0, y * 3.0, 0.0).matrix);
+        var growSz = $receiver_0.dataF.position - szBefore | 0;
+        if (growSz !== $receiver_0.instanceSizeF) {
+          throw IllegalStateException_init('Expected data to grow by ' + $receiver_0.instanceSizeF + ' elements, instead it grew by ' + growSz);
+        }$receiver_0.numInstances = $receiver_0.numInstances + 1 | 0;
+      }
+    }
+    $receiver.instances = $receiver_0;
+    var $receiver_1 = new ShaderModel();
+    var ifColors = {v: null};
+    var $receiver_2 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver_1);
+    ifColors.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifColors', $receiver_2.attrColors().output);
+    var instModelMat = $receiver_2.instanceAttrModelMat().output;
+    var mvpMat = $receiver_2.premultipliedMvpNode().outMvpMat;
+    var mvp = $receiver_2.multiplyNode_ze33is$(mvpMat, instModelMat).output;
+    $receiver_2.positionOutput = $receiver_2.vertexPositionNode_ze33is$($receiver_2.attrPositions().output, mvp).outPosition;
+    var $receiver_3 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver_1);
+    $receiver_3.colorOutput = $receiver_3.unlitMaterialNode_r20yfm$(ifColors.v.output).outColor;
+    $receiver.pipelineLoader = new ModeledShader($receiver_1);
+    return Unit;
+  }
+  function instanceTest() {
+    var ctx = createDefaultContext();
+    var tmp$ = ctx.scenes;
+    var $receiver = new Scene_init(null);
+    defaultCamTransform($receiver);
+    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, instanceTest$lambda$lambda));
+    tmp$.add_11rb$($receiver);
+    ctx.run();
+  }
+  function MatColorNode(graph, inputMat) {
+    ShaderNode.call(this, 'matColor', graph);
+    this.inputMat = inputMat;
+    this.output = new ShaderNodeIoVar(new ModelVar4f('matOutCol'));
+  }
+  MatColorNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.dependsOn_7qvs0d$(this.inputMat);
+  };
+  MatColorNode.prototype.generateCode_626509$ = function (generator) {
+    generator.appendMain_61zpoe$(this.output.declare() + ' = vec4(' + this.inputMat.name + '[1].xyz, 1.0);');
+  };
+  MatColorNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MatColorNode',
+    interfaces: [ShaderNode]
+  };
   function multiLightDemo(ctx) {
     return (new MultiLightDemo(ctx)).scenes;
   }
@@ -542,7 +596,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     MultiLightDemo$Companion_getInstance();
     this.scenes = ArrayList_init();
     this.mainScene_0 = null;
-    this.lights_0 = listOf([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN)]);
+    this.lights_0 = listOf_0([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN)]);
     this.depthPasses_0 = ArrayList_init();
     this.lightCount_0 = 4;
     this.lightPower_0 = 500.0;
@@ -1417,7 +1471,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   };
   function MultiLightDemo$Companion() {
     MultiLightDemo$Companion_instance = this;
-    this.matColors_0 = listOf([new MultiLightDemo$MatColor('White', Color.Companion.WHITE.toLinear()), new MultiLightDemo$MatColor('Red', Color.Companion.MD_RED.toLinear()), new MultiLightDemo$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new MultiLightDemo$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new MultiLightDemo$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new MultiLightDemo$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new MultiLightDemo$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new MultiLightDemo$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new MultiLightDemo$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new MultiLightDemo$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new MultiLightDemo$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new MultiLightDemo$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new MultiLightDemo$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new MultiLightDemo$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new MultiLightDemo$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new MultiLightDemo$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new MultiLightDemo$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new MultiLightDemo$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new MultiLightDemo$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new MultiLightDemo$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
+    this.matColors_0 = listOf_0([new MultiLightDemo$MatColor('White', Color.Companion.WHITE.toLinear()), new MultiLightDemo$MatColor('Red', Color.Companion.MD_RED.toLinear()), new MultiLightDemo$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new MultiLightDemo$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new MultiLightDemo$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new MultiLightDemo$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new MultiLightDemo$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new MultiLightDemo$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new MultiLightDemo$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new MultiLightDemo$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new MultiLightDemo$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new MultiLightDemo$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new MultiLightDemo$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new MultiLightDemo$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new MultiLightDemo$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new MultiLightDemo$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new MultiLightDemo$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new MultiLightDemo$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new MultiLightDemo$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new MultiLightDemo$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
   }
   MultiLightDemo$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -1607,7 +1661,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       colors.add_11rb$(element_2);
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
-          var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+          var attributes = listOf_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
           var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
           var closure$withIbl_0 = closure$withIbl;
           var closure$irradianceMap_0 = closure$irradianceMap;
@@ -1663,7 +1717,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       array[i] = null;
     }
     this.loadedHdris_0 = array;
-    this.pbrContentCycler_0 = new Cycler(listOf([new PbrMaterialContent(), new ColorGridContent(), new RoughnesMetalGridContent()]));
+    this.pbrContentCycler_0 = new Cycler(listOf_0([new PbrMaterialContent(), new ColorGridContent(), new RoughnesMetalGridContent()]));
     var nextHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-25, 'Next environment map', PbrDemo_init$lambda, PbrDemo_init$lambda_0(this));
     var prevHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-26, 'Prev environment map', PbrDemo_init$lambda_1, PbrDemo_init$lambda_2(this));
     this.contentScene_0 = this.setupScene_0();
@@ -2091,10 +2145,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri';
     var tmp$, tmp$_0;
     this.hdriPath_0 = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
-    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
+    this.hdriTextures_0 = listOf_0([new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
     this.lightStrength_0 = 250.0;
     this.lightExtent_0 = 10.0;
-    this.lightSetups_0 = listOf([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);
+    this.lightSetups_0 = listOf_0([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);
   }
   function PbrDemo$Companion$lightSetups$lambda($receiver) {
     $receiver.lighting.lights.clear();
@@ -4390,7 +4444,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var spacing = 2.5;
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
-          var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+          var attributes = listOf_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
           var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
           var closure$withIbl_0 = closure$withIbl;
           var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
@@ -4452,7 +4506,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   };
   function RoughnesMetalGridContent$Companion() {
     RoughnesMetalGridContent$Companion_instance = this;
-    this.matColors_0 = listOf([new RoughnesMetalGridContent$MatColor('Red', Color.Companion.MD_RED.toLinear()), new RoughnesMetalGridContent$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new RoughnesMetalGridContent$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new RoughnesMetalGridContent$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new RoughnesMetalGridContent$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new RoughnesMetalGridContent$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new RoughnesMetalGridContent$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new RoughnesMetalGridContent$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new RoughnesMetalGridContent$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new RoughnesMetalGridContent$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new RoughnesMetalGridContent$MatColor('White', Color.Companion.WHITE.toLinear()), new RoughnesMetalGridContent$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
+    this.matColors_0 = listOf_0([new RoughnesMetalGridContent$MatColor('Red', Color.Companion.MD_RED.toLinear()), new RoughnesMetalGridContent$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new RoughnesMetalGridContent$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new RoughnesMetalGridContent$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new RoughnesMetalGridContent$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new RoughnesMetalGridContent$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new RoughnesMetalGridContent$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new RoughnesMetalGridContent$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new RoughnesMetalGridContent$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new RoughnesMetalGridContent$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new RoughnesMetalGridContent$MatColor('White', Color.Companion.WHITE.toLinear()), new RoughnesMetalGridContent$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
   }
   RoughnesMetalGridContent$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -4780,334 +4834,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var groundExt = cells / 2 | 0;
     return textureMesh(void 0, true, makeGroundGrid$lambda(groundExt, y));
   }
-  function instancedDemo$lambda$lambda(this$) {
-    return function ($receiver) {
-      var tmp$;
-      $receiver.panMethod = yPlanePan();
-      $receiver.translationBounds = BoundingBox_init(new Vec3f(-50.0, 0.0, -50.0), new Vec3f(50.0, 0.0, 50.0));
-      $receiver.setMouseRotation_dleff0$(20.0, -30.0);
-      $receiver.unaryPlus_uv0sim$(this$.camera);
-      var $receiver_0 = Kotlin.isType(tmp$ = this$.camera, PerspectiveCamera) ? tmp$ : throwCCE();
-      $receiver_0.clipNear = 0.3;
-      $receiver_0.clipFar = 300.0;
-      return Unit;
-    };
-  }
-  function instancedDemo$lambda$lambda$lambda(this$) {
-    return function (modelData) {
-      var tmp$;
-      if (modelData == null) {
-        throw KoolException_init('Fatal: Failed loading model');
-      }var model = Kotlin.isType(tmp$ = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
-      for (var i = 1; i <= 5; i++) {
-        this$.unaryPlus_uv0sim$(spawnMesh(model, randomF(0.2, 0.6)));
-      }
-      return Unit;
-    };
-  }
-  function instancedDemo$lambda$lambda_0(closure$ctx) {
-    return function ($receiver) {
-      $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
-      closure$ctx.assetMgr.loadModel_v5uqdg$('player.kmfz', instancedDemo$lambda$lambda$lambda($receiver));
-      return Unit;
-    };
-  }
-  function instancedDemo(ctx) {
-    var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, instancedDemo$lambda$lambda($receiver)));
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(100));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, instancedDemo$lambda$lambda_0(ctx)));
-    return $receiver;
-  }
-  function computeAnimationWeights(speed) {
-    var tmp$;
-    var $receiver = 1.0 - speed * 2.0;
-    var clamp$result;
-    if ($receiver < 0.0) {
-      clamp$result = 0.0;
-    } else if ($receiver > 1.0) {
-      clamp$result = 1.0;
-    } else {
-      clamp$result = $receiver;
-    }
-    var idleWeight = clamp$result;
-    var $receiver_0 = (speed - 0.5) * 2.0;
-    var clamp$result_0;
-    if ($receiver_0 < 0.0) {
-      clamp$result_0 = 0.0;
-    } else if ($receiver_0 > 1.0) {
-      clamp$result_0 = 1.0;
-    } else {
-      clamp$result_0 = $receiver_0;
-    }
-    var runWeight = clamp$result_0;
-    if (runWeight > 0.0)
-      tmp$ = 1.0 - runWeight;
-    else
-      tmp$ = 1.0 - idleWeight;
-    var walkWeight = tmp$;
-    return mapOf([to('Armature|idle', idleWeight), to('Armature|walk', walkWeight), to('Armature|run', runWeight)]);
-  }
-  function spawnMesh$lambda(closure$agent) {
-    return function ($receiver, it) {
-      closure$agent.animate_aemszp$(it);
-      return Unit;
-    };
-  }
-  function spawnMesh(proto, movementSpeed) {
-    var tmp$;
-    var instances = new InstancedMesh$Instances(100);
-    var mesh = new Armature(proto.geometry, proto.name, instances, InstancedMesh.Companion.makeAttributeList_5jr6ei$([]));
-    mesh.copyBonesAndAnimations_rdsqcy$(proto);
-    tmp$ = instances.maxInstances;
-    for (var i = 1; i <= tmp$; i++) {
-      var agent = new ModelInstance(movementSpeed);
-      instances.instances.add_11rb$(agent);
-      mesh.onPreRender.add_11rb$(spawnMesh$lambda(agent));
-    }
-    var tmp$_0;
-    tmp$_0 = computeAnimationWeights(Math_0.sqrt(movementSpeed)).entries.iterator();
-    while (tmp$_0.hasNext()) {
-      var element = tmp$_0.next();
-      var name = element.key;
-      var weight = element.value;
-      var tmp$_1;
-      (tmp$_1 = mesh.getAnimation_61zpoe$(name)) != null ? (tmp$_1.weight = weight) : null;
-    }
-    mesh.animationPos = randomF_0();
-    return mesh;
-  }
-  function ModelInstance(movementSpeed) {
-    InstancedMesh$Instance.call(this, new Mat4f());
-    this.movementSpeed = movementSpeed;
-    this.spawnPosition_0 = new Vec3f(randomF(-20.0, 20.0), randomF(-20.0, 20.0), 0.0);
-    this.position_0 = MutableVec3f_init_0(this.spawnPosition_0);
-    this.headingVec_0 = MutableVec3f_init();
-    this.heading_0 = new InterpolatedFloat(randomF(0.0, 360.0), randomF(0.0, 360.0));
-    var $receiver = new CosAnimator(this.heading_0);
-    $receiver.duration = 5.0;
-    $receiver.progress = randomF_0();
-    this.headingAnimator_0 = $receiver;
-    this.color_0 = MutableColor_init();
-    this.applyTransform_0();
-    this.radius = 5.0;
-  }
-  ModelInstance.prototype.putInstanceAttributes_he122g$ = function (target) {
-    InstancedMesh$Instance.prototype.putInstanceAttributes_he122g$.call(this, target);
-    target.put_mx4ult$(this.color_0.r).put_mx4ult$(this.color_0.g).put_mx4ult$(this.color_0.b).put_mx4ult$(this.color_0.a);
-  };
-  ModelInstance.prototype.animate_aemszp$ = function (ctx) {
-    var tmp$, tmp$_0;
-    this.headingAnimator_0.tick_aemszp$(ctx);
-    if (this.headingAnimator_0.progress >= 1.0) {
-      this.headingAnimator_0.progress = 0.0;
-      this.headingAnimator_0.speed = 1.0;
-      this.heading_0.from = this.heading_0.to;
-      tmp$_0 = this.heading_0;
-      if (this.position_0.distance_czzhiu$(this.spawnPosition_0) < 15.0) {
-        tmp$ = randomF(0.0, 360.0);
-      } else {
-        var dx = this.spawnPosition_0.x - this.position_0.x;
-        var dy = this.spawnPosition_0.y - this.position_0.y;
-        tmp$ = Math_0.atan2(dy, dx) * math_0.RAD_2_DEG + 90;
-      }
-      tmp$_0.to = tmp$;
-    }this.headingVec_0.set_czzhiu$(Vec3f.Companion.NEG_Y_AXIS).rotate_ad55pp$(this.heading_0.value, Vec3f.Companion.Z_AXIS);
-    this.position_0.plusAssign_czzhiu$(this.headingVec_0.scale_mx4ult$(5.0 * this.movementSpeed * ctx.deltaT));
-    this.color_0.set_d7aj7k$(ColorGradient.Companion.PLASMA.getColor_y2kzbl$(this.position_0.distance_czzhiu$(this.spawnPosition_0), 0.0, 25.0));
-    this.applyTransform_0();
-  };
-  ModelInstance.prototype.applyTransform_0 = function () {
-    this.modelMat.setIdentity().translate_czzhiu$(this.position_0).rotate_ad55pp$(this.heading_0.value, Vec3f.Companion.Z_AXIS);
-  };
-  ModelInstance.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ModelInstance',
-    interfaces: [InstancedMesh$Instance]
-  };
-  function modelScene$lambda$lambda$lambda$lambda(closure$movementSpeed, closure$slowMotion, this$, closure$mesh) {
-    return function ($receiver, ctx) {
-      var $receiver_0 = ctx.deltaT;
-      var clamp$result;
-      if ($receiver_0 < 0.0) {
-        clamp$result = 0.0;
-      } else if ($receiver_0 > 0.1) {
-        clamp$result = 0.1;
-      } else {
-        clamp$result = $receiver_0;
-      }
-      var dt = clamp$result;
-      this$.translate_y2kzbl$(0.0, -dt * closure$movementSpeed.v * closure$slowMotion.v * 5.0, 0.0);
-      this$.rotate_ad55pp$(dt * closure$movementSpeed.v * closure$slowMotion.v * 50.0, Vec3f.Companion.Z_AXIS);
-      closure$mesh.animationSpeed = closure$slowMotion.v;
-      return Unit;
-    };
-  }
-  function modelScene$lambda$lambda$lambda(closure$model, closure$armature, closure$movementSpeed, closure$slowMotion, this$) {
-    return function (modelData) {
-      var tmp$, tmp$_0;
-      if (modelData == null) {
-        throw KoolException_init('Fatal: Failed loading model');
-      }var mesh = Kotlin.isType(tmp$ = modelData.meshes.get_za3lpa$(0).toMesh_8p8ifh$(), Armature) ? tmp$ : throwCCE();
-      closure$model.plusAssign_f1kmr1$(mesh);
-      closure$armature.v = mesh;
-      (tmp$_0 = mesh.getAnimation_61zpoe$('Armature|walk')) != null ? (tmp$_0.weight = 1.0) : null;
-      var $receiver = mesh.onPreRender;
-      var element = modelScene$lambda$lambda$lambda$lambda(closure$movementSpeed, closure$slowMotion, this$, mesh);
-      $receiver.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function modelScene$lambda$lambda$lambda_0(this$) {
-    return function ($receiver) {
-      $receiver.verticalAxis = Vec3f.Companion.Z_AXIS;
-      $receiver.minHorizontalRot = 0.0;
-      $receiver.maxHorizontalRot = 180.0;
-      $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
-      $receiver.rightDragMethod = OrbitInputTransform$DragMethod.NONE;
-      $receiver.translation.set_y2kzbl$(0.5, 0.0, 1.0);
-      $receiver.setMouseRotation_dleff0$(20.0, 75.0);
-      $receiver.resetZoom_mx4ult$(2.0);
-      $receiver.unaryPlus_uv0sim$(this$.camera);
-      return Unit;
-    };
-  }
-  function modelScene$lambda$lambda$lambda$lambda$lambda($receiver) {
-    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.X_AXIS);
-    $receiver.translate_y2kzbl$(500.0, 1500.0, 0.0);
-    return Unit;
-  }
-  function modelScene$lambda$lambda$lambda$lambda$lambda$lambda(it) {
-    return new BlankComponentUi();
-  }
-  function modelScene$lambda$lambda$lambda$lambda$lambda_0($receiver) {
-    $receiver.componentUi_mloaa0$(modelScene$lambda$lambda$lambda$lambda$lambda$lambda);
-    $receiver.containerUi_2t3ptw$(getCallableRef('BlurredComponentUi', function (component) {
-      return new BlurredComponentUi(component);
-    }));
-    return Unit;
-  }
-  function modelScene$lambda$lambda$lambda$lambda$lambda$lambda_0(closure$movementSpeed, closure$armature, closure$speedLabel) {
-    return function ($receiver, value) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2;
-      closure$movementSpeed.v = value * value;
-      if (closure$armature.v != null) {
-        var $receiver_0 = 1.0 - value * 2.0;
-        var clamp$result;
-        if ($receiver_0 < 0.0) {
-          clamp$result = 0.0;
-        } else if ($receiver_0 > 1.0) {
-          clamp$result = 1.0;
-        } else {
-          clamp$result = $receiver_0;
-        }
-        var idleWeight = clamp$result;
-        var $receiver_1 = (value - 0.5) * 2.0;
-        var clamp$result_0;
-        if ($receiver_1 < 0.0) {
-          clamp$result_0 = 0.0;
-        } else if ($receiver_1 > 1.0) {
-          clamp$result_0 = 1.0;
-        } else {
-          clamp$result_0 = $receiver_1;
-        }
-        var runWeight = clamp$result_0;
-        if (runWeight > 0.0)
-          tmp$ = 1.0 - runWeight;
-        else
-          tmp$ = 1.0 - idleWeight;
-        var walkWeight = tmp$;
-        closure$speedLabel.text = toString_0(value, 2);
-        (tmp$_0 = ensureNotNull(closure$armature.v).getAnimation_61zpoe$('Armature|idle')) != null ? (tmp$_0.weight = idleWeight) : null;
-        (tmp$_1 = ensureNotNull(closure$armature.v).getAnimation_61zpoe$('Armature|walk')) != null ? (tmp$_1.weight = walkWeight) : null;
-        (tmp$_2 = ensureNotNull(closure$armature.v).getAnimation_61zpoe$('Armature|run')) != null ? (tmp$_2.weight = runWeight) : null;
-      }return Unit;
-    };
-  }
-  function modelScene$lambda$lambda$lambda$lambda$lambda$lambda_1(closure$slowMotion, closure$slowMoLabel) {
-    return function ($receiver, value) {
-      closure$slowMotion.v = value;
-      closure$slowMoLabel.text = toString_0(closure$slowMotion.v, 2);
-      return Unit;
-    };
-  }
-  function modelScene$lambda$lambda$lambda_1(closure$movementSpeed, closure$armature, closure$slowMotion) {
-    return function ($receiver) {
-      var $receiver_0 = $receiver.content;
-      var closure$movementSpeed_0 = closure$movementSpeed;
-      var closure$armature_0 = closure$armature;
-      var closure$slowMotion_0 = closure$slowMotion;
-      $receiver_0.customTransform = modelScene$lambda$lambda$lambda$lambda$lambda;
-      $receiver.theme = theme(UiTheme.Companion.DARK, modelScene$lambda$lambda$lambda$lambda$lambda_0);
-      var $receiver_1 = new Label('label1', $receiver_0.root);
-      $receiver_1.layoutSpec.setOrigin_4ujscr$(zero(), dps(140.0), zero());
-      $receiver_1.layoutSpec.setSize_4ujscr$(pcs(75.0), dps(35.0), full());
-      $receiver_1.textAlignment = new Gravity(Alignment.START, Alignment.END);
-      $receiver_1.padding.bottom = dps(4.0);
-      $receiver_1.text = 'Movement Speed:';
-      $receiver_0.unaryPlus_uv0sim$($receiver_1);
-      var $receiver_2 = new Label('speedLabel', $receiver_0.root);
-      $receiver_2.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(140.0), zero());
-      $receiver_2.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
-      $receiver_2.textAlignment = new Gravity(Alignment.START, Alignment.END);
-      $receiver_2.padding.bottom = dps(4.0);
-      var x = closure$movementSpeed_0.v;
-      $receiver_2.text = toString_0(Math_0.sqrt(x), 2);
-      var speedLabel = $receiver_2;
-      $receiver_0.unaryPlus_uv0sim$(speedLabel);
-      var x_0 = closure$movementSpeed_0.v;
-      var $receiver_3 = new Slider('speedSlider', 0.0, 1.0, Math_0.sqrt(x_0), $receiver_0.root);
-      $receiver_3.layoutSpec.setOrigin_4ujscr$(zero(), dps(90.0), zero());
-      $receiver_3.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(50.0), full());
-      $receiver_3.onValueChanged.add_11rb$(modelScene$lambda$lambda$lambda$lambda$lambda$lambda_0(closure$movementSpeed_0, closure$armature_0, speedLabel));
-      $receiver_0.unaryPlus_uv0sim$($receiver_3);
-      var $receiver_4 = new Label('label2', $receiver_0.root);
-      $receiver_4.layoutSpec.setOrigin_4ujscr$(zero(), dps(50.0), zero());
-      $receiver_4.layoutSpec.setSize_4ujscr$(pcs(75.0), dps(40.0), full());
-      $receiver_4.textAlignment = new Gravity(Alignment.START, Alignment.END);
-      $receiver_4.padding.bottom = dps(4.0);
-      $receiver_4.text = 'Slow Motion:';
-      $receiver_0.unaryPlus_uv0sim$($receiver_4);
-      var $receiver_5 = new Label('slowMotion', $receiver_0.root);
-      $receiver_5.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(50.0), zero());
-      $receiver_5.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(40.0), full());
-      $receiver_5.textAlignment = new Gravity(Alignment.START, Alignment.END);
-      $receiver_5.padding.bottom = dps(4.0);
-      $receiver_5.text = toString_0(closure$slowMotion_0.v, 2);
-      var slowMoLabel = $receiver_5;
-      $receiver_0.unaryPlus_uv0sim$(slowMoLabel);
-      var $receiver_6 = new Slider('slowMoSlider', 0.0, 1.0, closure$slowMotion_0.v, $receiver_0.root);
-      $receiver_6.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
-      $receiver_6.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(50.0), full());
-      $receiver_6.onValueChanged.add_11rb$(modelScene$lambda$lambda$lambda$lambda$lambda$lambda_1(closure$slowMotion_0, slowMoLabel));
-      $receiver_0.unaryPlus_uv0sim$($receiver_6);
-      return Unit;
-    };
-  }
-  function modelScene$lambda$lambda(closure$ctx, this$) {
-    return function ($receiver) {
-      var model = new TransformGroup();
-      var movementSpeed = {v: 0.25};
-      var slowMotion = {v: 1.0};
-      var armature = {v: null};
-      $receiver.unaryPlus_uv0sim$(model);
-      closure$ctx.assetMgr.loadModel_v5uqdg$('player.kmfz', modelScene$lambda$lambda$lambda(model, armature, movementSpeed, slowMotion, $receiver));
-      $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
-      $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, modelScene$lambda$lambda$lambda_0(this$)));
-      $receiver.unaryPlus_uv0sim$(embeddedUi(0.75, 0.45, dps(175.0), void 0, modelScene$lambda$lambda$lambda_1(movementSpeed, armature, slowMotion)));
-      return Unit;
-    };
-  }
-  function modelScene(ctx) {
-    var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, modelScene$lambda$lambda(ctx, $receiver)));
-    return $receiver;
-  }
   function multiScene(koolCtx) {
     var leftScene = simpleShapesScene(koolCtx);
     var rightScene = uiDemoScene();
-    return listOf([leftScene, rightScene]);
+    return listOf_0([leftScene, rightScene]);
   }
   function particleDemo$lambda$lambda(this$) {
     return function ($receiver) {
@@ -5410,7 +5140,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.unaryPlus_uv0sim$($receiver_0);
     var scene = $receiver;
     var ui = uiScene(ctx.screenDpi, void 0, void 0, particleDemo$lambda(isColored, isSorted, currentParticleCount, maxParticleCount));
-    return listOf([scene, ui]);
+    return listOf_0([scene, ui]);
   }
   function pointScene$lambda$lambda(closure$frameCnt, closure$data, closure$trav, closure$ptVertCnt, closure$tree) {
     return function ($receiver, it) {
@@ -5628,7 +5358,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.unaryPlus_uv0sim$(mesh);
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, reflectionDemo$lambda$lambda_1(reflectedObjects, ctx)));
     var mainScene = $receiver;
-    return listOf_0(mainScene);
+    return listOf(mainScene);
   }
   function simpleShapesScene$lambda$lambda(this$) {
     return function ($receiver) {
@@ -5787,7 +5517,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   function synthieScene(ctx) {
     var content = new SynthieScene(ctx);
     var menu = synthieMenu(content, ctx);
-    return listOf([content, menu]);
+    return listOf_0([content, menu]);
   }
   function synthieMenu$lambda$lambda$lambda(it) {
     return new BlankComponentUi();
@@ -6519,7 +6249,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
           var tmp$_0 = $this.printer;
           var closure$name_0 = closure$name;
           var tmp$_1;
-          tmp$_0.call($this, level, tag, 'loaded: ' + closure$name_0 + ', bounds: ' + toString_1((tmp$_1 = this$SimplificationDemo.models.get_11rb$(closure$name_0)) != null ? tmp$_1.bounds : null));
+          tmp$_0.call($this, level, tag, 'loaded: ' + closure$name_0 + ', bounds: ' + toString_0((tmp$_1 = this$SimplificationDemo.models.get_11rb$(closure$name_0)) != null ? tmp$_1.bounds : null));
         }}return Unit;
     };
   }
@@ -6705,7 +6435,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function SimplificationDemo$menu$lambda$lambda$lambda$lambda_3(closure$faceCntVal, this$SimplificationDemo) {
     return function ($receiver, value) {
-      closure$faceCntVal.text = toString_0(value * 100.0, 0) + ' %';
+      closure$faceCntVal.text = toString_1(value * 100.0, 0) + ' %';
       this$SimplificationDemo.simplifcationGrade = value;
       if (this$SimplificationDemo.autoRun.isEnabled) {
         this$SimplificationDemo.simplify();
@@ -7503,14 +7233,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = toString_0(closure$treeGen.growDistance, 2);
+      $receiver.text = toString_1(closure$treeGen.growDistance, 2);
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda$lambda_9(closure$treeGen, closure$growDistVal) {
     return function ($receiver, value) {
       closure$treeGen.growDistance = value;
-      closure$growDistVal.text = toString_0(value, 2);
+      closure$growDistVal.text = toString_1(value, 2);
       return Unit;
     };
   }
@@ -7537,14 +7267,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = toString_0(closure$treeGen.killDistance, 2);
+      $receiver.text = toString_1(closure$treeGen.killDistance, 2);
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda$lambda_10(closure$treeGen, closure$killDistVal) {
     return function ($receiver, value) {
       closure$treeGen.killDistance = value;
-      closure$killDistVal.text = toString_0(value, 2);
+      closure$killDistVal.text = toString_1(value, 2);
       return Unit;
     };
   }
@@ -7605,14 +7335,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = toString_0(closure$treeGen.radiusOfInfluence, 2);
+      $receiver.text = toString_1(closure$treeGen.radiusOfInfluence, 2);
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda$lambda_12(closure$treeGen, closure$infRadiusVal) {
     return function ($receiver, value) {
       closure$treeGen.radiusOfInfluence = value;
-      closure$infRadiusVal.text = toString_0(value, 2);
+      closure$infRadiusVal.text = toString_1(value, 2);
       return Unit;
     };
   }
@@ -7707,14 +7437,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = toString_0(closure$windSpeed.v, 1);
+      $receiver.text = toString_1(closure$windSpeed.v, 1);
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda$lambda_14(closure$windSpeed, closure$windSpeedVal) {
     return function ($receiver, value) {
       closure$windSpeed.v = value;
-      closure$windSpeedVal.text = toString_0(value, 1);
+      closure$windSpeedVal.text = toString_1(value, 1);
       return Unit;
     };
   }
@@ -7741,14 +7471,14 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(70.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(30.0), dps(35.0), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.text = toString_0(closure$windStrength.v, 1);
+      $receiver.text = toString_1(closure$windStrength.v, 1);
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda$lambda_15(closure$windStrength, closure$windStrengthVal) {
     return function ($receiver, value) {
       closure$windStrength.v = value;
-      closure$windStrengthVal.text = toString_0(value, 1);
+      closure$windStrengthVal.text = toString_1(value, 1);
       return Unit;
     };
   }
@@ -9387,8 +9117,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   }
   function main() {
     Demo$Companion_getInstance().setProperty_bm4g0d$('assetsBaseDir', '../assets');
-    Demo$Companion_getInstance().setProperty_bm4g0d$('pbrDemo.envMaps', 'skybox/hdri');
-    Demo$Companion_getInstance().setProperty_bm4g0d$('pbrDemo.materials', 'reserve/pbr/materials');
     demo(getParams().get_11rb$('demo'));
   }
   function getParams() {
@@ -9422,6 +9150,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   package$demo.Cycler = Cycler;
   $$importsForInline$$.kool = $module$kool;
   package$demo.helloWorldScene = helloWorldScene;
+  package$demo.instanceTest = instanceTest;
+  package$demo.MatColorNode = MatColorNode;
   package$demo.multiLightDemo_aemszp$ = multiLightDemo;
   Object.defineProperty(MultiLightDemo, 'Companion', {
     get: MultiLightDemo$Companion_getInstance
@@ -9449,8 +9179,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   package$portingNeeded.globeScene_aemszp$ = globeScene;
   package$portingNeeded.GlobeUi = GlobeUi;
   package$portingNeeded.makeGroundGrid_24o109$ = makeGroundGrid;
-  package$portingNeeded.instancedDemo_aemszp$ = instancedDemo;
-  package$portingNeeded.modelScene_aemszp$ = modelScene;
   package$portingNeeded.multiScene_aemszp$ = multiScene;
   package$portingNeeded.particleDemo_aemszp$ = particleDemo;
   package$portingNeeded.pointScene = pointScene;

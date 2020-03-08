@@ -100,7 +100,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var toByte = Kotlin.toByte;
   var MutableCollection = Kotlin.kotlin.collections.MutableCollection;
-  var toString = Kotlin.toString;
   var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
@@ -108,6 +107,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var toInt = Kotlin.kotlin.text.toInt_pdl1vz$;
   var toDouble = Kotlin.kotlin.text.toDouble_pdl1vz$;
   var StringBuilder_init = Kotlin.kotlin.text.StringBuilder_init;
+  var toString = Kotlin.toString;
   var joinTo = Kotlin.kotlin.collections.joinTo_gcc71v$;
   var MutableMap = Kotlin.kotlin.collections.MutableMap;
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
@@ -376,6 +376,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DisplacementMapNode.prototype.constructor = DisplacementMapNode;
   AttributeNode.prototype = Object.create(ShaderNode.prototype);
   AttributeNode.prototype.constructor = AttributeNode;
+  InstanceAttributeNode.prototype = Object.create(ShaderNode.prototype);
+  InstanceAttributeNode.prototype.constructor = InstanceAttributeNode;
   ColorAlphaNode.prototype = Object.create(ShaderNode.prototype);
   ColorAlphaNode.prototype.constructor = ColorAlphaNode;
   PremultiplyColorNode.prototype = Object.create(ShaderNode.prototype);
@@ -458,9 +460,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Uniform1iv.prototype.constructor = Uniform1iv;
   InputRate.prototype = Object.create(Enum.prototype);
   InputRate.prototype.constructor = InputRate;
-  InstancedMesh.prototype = Object.create(Mesh.prototype);
-  InstancedMesh.prototype.constructor = InstancedMesh;
-  Armature.prototype = Object.create(InstancedMesh.prototype);
+  Armature.prototype = Object.create(Mesh.prototype);
   Armature.prototype.constructor = Armature;
   RotationKey.prototype = Object.create(AnimationKey.prototype);
   RotationKey.prototype.constructor = RotationKey;
@@ -482,14 +482,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   DoublePrecisionRoot.prototype.constructor = DoublePrecisionRoot;
   NodeProxy.prototype = Object.create(NodeDp.prototype);
   NodeProxy.prototype.constructor = NodeProxy;
-  InstancedLodMesh$LodInstances.prototype = Object.create(InstancedMesh$Instances.prototype);
-  InstancedLodMesh$LodInstances.prototype.constructor = InstancedLodMesh$LodInstances;
-  InstancedLodMesh.prototype = Object.create(Group.prototype);
-  InstancedLodMesh.prototype.constructor = InstancedLodMesh;
-  LodInstance.prototype = Object.create(InstancedMesh$Instance.prototype);
-  LodInstance.prototype.constructor = LodInstance;
-  InstancedMesh$SimpleInstances.prototype = Object.create(InstancedMesh$Instances.prototype);
-  InstancedMesh$SimpleInstances.prototype.constructor = InstancedMesh$SimpleInstances;
   Light$Type.prototype = Object.create(Enum.prototype);
   Light$Type.prototype.constructor = Light$Type;
   LineMesh.prototype = Object.create(Mesh.prototype);
@@ -12225,9 +12217,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     Attribute$Companion_getInstance();
     this.name = name;
     this.type = type;
-    this.glslSrcName = this.name;
-    this.locationOffset = 0;
-    this.divisor = 0;
+    this.props = new PlatformAttributeProps(this);
   }
   Attribute.prototype.toString = function () {
     return this.name;
@@ -13730,6 +13720,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function VertexShaderGraph(model) {
     ShaderGraph.call(this, model, ShaderStage$VERTEX_SHADER_getInstance());
     this.requiredVertexAttributes = LinkedHashSet_init();
+    this.requiredInstanceAttributes = LinkedHashSet_init();
     this.positionOutput = new ShaderNodeIoVar(new ModelVar4fConst(Vec4f$Companion_getInstance().ZERO), null);
   }
   VertexShaderGraph.$metadata$ = {
@@ -13855,27 +13846,48 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       buildCtx.pushConstantRanges.add_11rb$(pushBuilder);
     }};
   ShaderModel.prototype.setupAttributes_0 = function (mesh, buildCtx) {
-    var vertLayoutAttribs = ArrayList_init_0();
+    var attribLocation = {v: 0};
     var verts = mesh.geometry;
-    var tmp$, tmp$_0;
-    var index = 0;
+    var vertLayoutAttribs = ArrayList_init_0();
+    var tmp$;
     tmp$ = this.vertexStageGraph.requiredVertexAttributes.iterator();
     while (tmp$.hasNext()) {
-      var item = tmp$.next();
-      var iAttrib = checkIndexOverflow((tmp$_0 = index, index = tmp$_0 + 1 | 0, tmp$_0));
+      var element = tmp$.next();
+      var tmp$_0;
+      tmp$_0 = verts.attributeOffsets.get_11rb$(element);
+      if (tmp$_0 == null) {
+        throw new NoSuchElementException_init_0('Mesh does not include required vertex attribute: ' + element.name);
+      }var off = tmp$_0;
       var tmp$_1;
-      if (!mesh.geometry.vertexAttributes.contains_11rb$(item)) {
-        throw new NoSuchElementException_init_0('Mesh does not include required vertex attribute: ' + item.name);
-      }tmp$_1 = verts.attributeOffsets.get_11rb$(item);
-      if (tmp$_1 == null) {
-        throw NoSuchElementException_init();
-      }var off = tmp$_1;
-      var element = new VertexLayout$Attribute(iAttrib, off, item.type, item.name);
-      vertLayoutAttribs.add_11rb$(element);
+      var element_0 = new VertexLayout$VertexAttribute((tmp$_1 = attribLocation.v, attribLocation.v = tmp$_1 + 1 | 0, tmp$_1), off, element);
+      vertLayoutAttribs.add_11rb$(element_0);
     }
     var $receiver = buildCtx.vertexLayout.bindings;
-    var element_0 = new VertexLayout$Binding(0, InputRate$VERTEX_getInstance(), vertLayoutAttribs, verts.strideBytesF);
-    $receiver.add_11rb$(element_0);
+    var element_1 = new VertexLayout$Binding(0, InputRate$VERTEX_getInstance(), vertLayoutAttribs, verts.strideBytesF);
+    $receiver.add_11rb$(element_1);
+    var insts = mesh.instances;
+    if (insts != null) {
+      var instLayoutAttribs = ArrayList_init_0();
+      var tmp$_2;
+      tmp$_2 = this.vertexStageGraph.requiredInstanceAttributes.iterator();
+      while (tmp$_2.hasNext()) {
+        var element_2 = tmp$_2.next();
+        var tmp$_3;
+        tmp$_3 = insts.attributeOffsets.get_11rb$(element_2);
+        if (tmp$_3 == null) {
+          throw new NoSuchElementException_init_0('Mesh does not include required instance attribute: ' + element_2.name);
+        }var off_0 = tmp$_3;
+        var tmp$_4;
+        var element_3 = new VertexLayout$VertexAttribute((tmp$_4 = attribLocation.v, attribLocation.v = tmp$_4 + 1 | 0, tmp$_4), off_0, element_2);
+        instLayoutAttribs.add_11rb$(element_3);
+      }
+      var $receiver_0 = buildCtx.vertexLayout.bindings;
+      var element_4 = new VertexLayout$Binding(1, InputRate$INSTANCE_getInstance(), instLayoutAttribs, insts.strideBytesF);
+      $receiver_0.add_11rb$(element_4);
+    } else {
+      if (!this.vertexStageGraph.requiredInstanceAttributes.isEmpty()) {
+        throw IllegalStateException_init("Shader model requires instance attributes, but mesh doesn't provide any");
+      }}
   };
   function ShaderModel$StageBuilder($outer, stage) {
     this.$outer = $outer;
@@ -13885,19 +13897,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.stage.addNode_j0v1fw$(node);
     return node;
   };
-  ShaderModel$StageBuilder.prototype.multiplyNode_tuikh5$ = function (input, fac) {
-    return this.multiplyNode_ze33is$(input, new ShaderNodeIoVar(new ModelVar1fConst(fac)));
+  ShaderModel$StageBuilder.prototype.multiplyNode_tuikh5$ = function (left, right) {
+    return this.multiplyNode_ze33is$(left, new ShaderNodeIoVar(new ModelVar1fConst(right)));
   };
-  ShaderModel$StageBuilder.prototype.multiplyNode_ze33is$ = function (input, fac) {
-    if (input === void 0)
-      input = null;
-    if (fac === void 0)
-      fac = null;
+  ShaderModel$StageBuilder.prototype.multiplyNode_ze33is$ = function (left, right) {
+    if (left === void 0)
+      left = null;
+    if (right === void 0)
+      right = null;
     var mulNode = this.addNode_u9w9by$(new MultiplyNode(this.stage));
-    if (input != null) {
-      mulNode.input = input;
-    }if (fac != null) {
-      mulNode.fac = fac;
+    if (left != null) {
+      mulNode.left = left;
+    }if (right != null) {
+      mulNode.right = right;
     }return mulNode;
   };
   ShaderModel$StageBuilder.prototype.normalizeNode_r20yfm$ = function (input) {
@@ -14080,6 +14092,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   ShaderModel$VertexStageBuilder.prototype.attributeNode_nm2vx5$ = function (attribute) {
     return this.addNode_u9w9by$(new AttributeNode(attribute, this.stage));
+  };
+  ShaderModel$VertexStageBuilder.prototype.instanceAttrModelMat = function () {
+    return this.instanceAttributeNode_nm2vx5$(MeshInstanceList$Companion_getInstance().MODEL_MAT);
+  };
+  ShaderModel$VertexStageBuilder.prototype.instanceAttributeNode_nm2vx5$ = function (attribute) {
+    return this.addNode_u9w9by$(new InstanceAttributeNode(attribute, this.stage));
   };
   ShaderModel$VertexStageBuilder.prototype.stageInterfaceNode_wtmwsg$ = function (name, input) {
     if (input === void 0)
@@ -14899,9 +14917,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: [ShaderNode]
   };
   function AttributeNode(attribute, graph) {
-    ShaderNode.call(this, 'Vertex Attribute ' + attribute.name, graph, ShaderStage$VERTEX_SHADER_getInstance().mask);
+    ShaderNode.call(this, attribute.name, graph, ShaderStage$VERTEX_SHADER_getInstance().mask);
     this.attribute = attribute;
-    this.output = new ShaderNodeIoVar(new ModelVar(this.attribute.glslSrcName, this.attribute.type), this);
+    this.output = new ShaderNodeIoVar(new ModelVar(this.attribute.name, this.attribute.type), this);
   }
   AttributeNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     var tmp$;
@@ -14914,6 +14932,24 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   AttributeNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'AttributeNode',
+    interfaces: [ShaderNode]
+  };
+  function InstanceAttributeNode(attribute, graph) {
+    ShaderNode.call(this, attribute.name, graph, ShaderStage$VERTEX_SHADER_getInstance().mask);
+    this.attribute = attribute;
+    this.output = new ShaderNodeIoVar(new ModelVar(this.attribute.name, this.attribute.type), this);
+  }
+  InstanceAttributeNode.prototype.setup_llmhyc$ = function (shaderGraph) {
+    var tmp$;
+    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    Kotlin.isType(tmp$ = shaderGraph, VertexShaderGraph) ? tmp$ : throwCCE();
+    var $receiver = shaderGraph.requiredInstanceAttributes;
+    var element = this.attribute;
+    $receiver.add_11rb$(element);
+  };
+  InstanceAttributeNode.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'InstanceAttributeNode',
     interfaces: [ShaderNode]
   };
   function ColorAlphaNode(graph) {
@@ -15016,17 +15052,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function MultiplyNode(graph) {
     ShaderNode.call(this, 'multiply_' + graph.nextNodeId, graph);
-    this.fac = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
-    this.input_r7b5vv$_0 = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().X_AXIS));
+    this.left_oaacyw$_0 = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().X_AXIS));
+    this.right = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.output_bbyggu$_0 = new ShaderNodeIoVar(new ModelVar3f(this.name + '_out'), this);
   }
-  Object.defineProperty(MultiplyNode.prototype, 'input', {
+  Object.defineProperty(MultiplyNode.prototype, 'left', {
     get: function () {
-      return this.input_r7b5vv$_0;
+      return this.left_oaacyw$_0;
     },
     set: function (value) {
       this.output = new ShaderNodeIoVar(new ModelVar(this.name + '_out', value.variable.type), this);
-      this.input_r7b5vv$_0 = value;
+      this.left_oaacyw$_0 = value;
     }
   });
   Object.defineProperty(MultiplyNode.prototype, 'output', {
@@ -15039,10 +15075,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   MultiplyNode.prototype.setup_llmhyc$ = function (shaderGraph) {
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_8ak6wm$([this.input, this.fac]);
+    this.dependsOn_8ak6wm$([this.left, this.right]);
   };
   MultiplyNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$(this.output.declare() + ' = ' + this.input + ' * ' + this.fac + ';');
+    generator.appendMain_61zpoe$(this.output.declare() + ' = ' + this.left + ' * ' + this.right + ';');
   };
   MultiplyNode.$metadata$ = {
     kind: Kind_CLASS,
@@ -15270,7 +15306,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
+          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
           if (node != null) {
             return node;
           }}return Unit;
@@ -15585,7 +15621,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
+          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
           if (node != null) {
             return node;
           }}return Unit;
@@ -16523,7 +16559,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
+          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
           if (node != null) {
             return node;
           }}return Unit;
@@ -17931,43 +17967,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     this.longHash = hash.v;
   }
-  VertexLayout.prototype.getAttributeLocation_61zpoe$ = function (attribName) {
-    var tmp$;
-    tmp$ = this.bindings;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      var tmp$_0;
-      var $receiver = this.bindings.get_za3lpa$(i).attributes;
-      var firstOrNull$result;
-      firstOrNull$break: do {
-        var tmp$_1;
-        tmp$_1 = $receiver.iterator();
-        while (tmp$_1.hasNext()) {
-          var element = tmp$_1.next();
-          if (equals(element.name, attribName)) {
-            firstOrNull$result = element;
-            break firstOrNull$break;
-          }}
-        firstOrNull$result = null;
-      }
-       while (false);
-      if ((tmp$_0 = firstOrNull$result) != null) {
-        return tmp$_0.location;
-      }}
-    throw new NoSuchElementException_init_0('Attribute ' + attribName + ' not found');
-  };
-  function VertexLayout$Binding(binding, inputRate, attributes, strideBytes) {
+  function VertexLayout$Binding(binding, inputRate, vertexAttributes, strideBytes) {
     if (strideBytes === void 0) {
       var tmp$;
       var sum = 0;
-      tmp$ = attributes.iterator();
+      tmp$ = vertexAttributes.iterator();
       while (tmp$.hasNext()) {
         var element = tmp$.next();
-        sum = sum + element.type.size | 0;
+        sum = sum + element.attribute.type.size | 0;
       }
       strideBytes = sum;
     }this.binding = binding;
     this.inputRate = inputRate;
-    this.attributes = attributes;
+    this.vertexAttributes = vertexAttributes;
     this.strideBytes = strideBytes;
     this.longHash = null;
     var $receiver = this.binding;
@@ -17985,7 +17997,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var other_2 = new ULong(Kotlin.Long.fromInt($receiver_1));
     hash.v = new ULong(tmp$_1.data.add(other_2.data));
     var tmp$_2;
-    tmp$_2 = this.attributes.iterator();
+    tmp$_2 = this.vertexAttributes.iterator();
     while (tmp$_2.hasNext()) {
       var element_0 = tmp$_2.next();
       var $this_1 = hash.v;
@@ -18009,67 +18021,72 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return this.inputRate;
   };
   VertexLayout$Binding.prototype.component3 = function () {
-    return this.attributes;
+    return this.vertexAttributes;
   };
   VertexLayout$Binding.prototype.component4 = function () {
     return this.strideBytes;
   };
-  VertexLayout$Binding.prototype.copy_5kxqer$ = function (binding, inputRate, attributes, strideBytes) {
-    return new VertexLayout$Binding(binding === void 0 ? this.binding : binding, inputRate === void 0 ? this.inputRate : inputRate, attributes === void 0 ? this.attributes : attributes, strideBytes === void 0 ? this.strideBytes : strideBytes);
+  VertexLayout$Binding.prototype.copy_beujkh$ = function (binding, inputRate, vertexAttributes, strideBytes) {
+    return new VertexLayout$Binding(binding === void 0 ? this.binding : binding, inputRate === void 0 ? this.inputRate : inputRate, vertexAttributes === void 0 ? this.vertexAttributes : vertexAttributes, strideBytes === void 0 ? this.strideBytes : strideBytes);
   };
   VertexLayout$Binding.prototype.toString = function () {
-    return 'Binding(binding=' + Kotlin.toString(this.binding) + (', inputRate=' + Kotlin.toString(this.inputRate)) + (', attributes=' + Kotlin.toString(this.attributes)) + (', strideBytes=' + Kotlin.toString(this.strideBytes)) + ')';
+    return 'Binding(binding=' + Kotlin.toString(this.binding) + (', inputRate=' + Kotlin.toString(this.inputRate)) + (', vertexAttributes=' + Kotlin.toString(this.vertexAttributes)) + (', strideBytes=' + Kotlin.toString(this.strideBytes)) + ')';
   };
   VertexLayout$Binding.prototype.hashCode = function () {
     var result = 0;
     result = result * 31 + Kotlin.hashCode(this.binding) | 0;
     result = result * 31 + Kotlin.hashCode(this.inputRate) | 0;
-    result = result * 31 + Kotlin.hashCode(this.attributes) | 0;
+    result = result * 31 + Kotlin.hashCode(this.vertexAttributes) | 0;
     result = result * 31 + Kotlin.hashCode(this.strideBytes) | 0;
     return result;
   };
   VertexLayout$Binding.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.binding, other.binding) && Kotlin.equals(this.inputRate, other.inputRate) && Kotlin.equals(this.attributes, other.attributes) && Kotlin.equals(this.strideBytes, other.strideBytes)))));
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.binding, other.binding) && Kotlin.equals(this.inputRate, other.inputRate) && Kotlin.equals(this.vertexAttributes, other.vertexAttributes) && Kotlin.equals(this.strideBytes, other.strideBytes)))));
   };
-  function VertexLayout$Attribute(location, offset, type, name) {
+  function VertexLayout$VertexAttribute(location, offset, attribute) {
     this.location = location;
     this.offset = offset;
-    this.type = type;
-    this.name = name;
+    this.attribute = attribute;
   }
-  VertexLayout$Attribute.$metadata$ = {
+  Object.defineProperty(VertexLayout$VertexAttribute.prototype, 'name', {
+    get: function () {
+      return this.attribute.name;
+    }
+  });
+  Object.defineProperty(VertexLayout$VertexAttribute.prototype, 'type', {
+    get: function () {
+      return this.attribute.type;
+    }
+  });
+  VertexLayout$VertexAttribute.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'Attribute',
+    simpleName: 'VertexAttribute',
     interfaces: []
   };
-  VertexLayout$Attribute.prototype.component1 = function () {
+  VertexLayout$VertexAttribute.prototype.component1 = function () {
     return this.location;
   };
-  VertexLayout$Attribute.prototype.component2 = function () {
+  VertexLayout$VertexAttribute.prototype.component2 = function () {
     return this.offset;
   };
-  VertexLayout$Attribute.prototype.component3 = function () {
-    return this.type;
+  VertexLayout$VertexAttribute.prototype.component3 = function () {
+    return this.attribute;
   };
-  VertexLayout$Attribute.prototype.component4 = function () {
-    return this.name;
+  VertexLayout$VertexAttribute.prototype.copy_767q6x$ = function (location, offset, attribute) {
+    return new VertexLayout$VertexAttribute(location === void 0 ? this.location : location, offset === void 0 ? this.offset : offset, attribute === void 0 ? this.attribute : attribute);
   };
-  VertexLayout$Attribute.prototype.copy_m1fufh$ = function (location, offset, type, name) {
-    return new VertexLayout$Attribute(location === void 0 ? this.location : location, offset === void 0 ? this.offset : offset, type === void 0 ? this.type : type, name === void 0 ? this.name : name);
+  VertexLayout$VertexAttribute.prototype.toString = function () {
+    return 'VertexAttribute(location=' + Kotlin.toString(this.location) + (', offset=' + Kotlin.toString(this.offset)) + (', attribute=' + Kotlin.toString(this.attribute)) + ')';
   };
-  VertexLayout$Attribute.prototype.toString = function () {
-    return 'Attribute(location=' + Kotlin.toString(this.location) + (', offset=' + Kotlin.toString(this.offset)) + (', type=' + Kotlin.toString(this.type)) + (', name=' + Kotlin.toString(this.name)) + ')';
-  };
-  VertexLayout$Attribute.prototype.hashCode = function () {
+  VertexLayout$VertexAttribute.prototype.hashCode = function () {
     var result = 0;
     result = result * 31 + Kotlin.hashCode(this.location) | 0;
     result = result * 31 + Kotlin.hashCode(this.offset) | 0;
-    result = result * 31 + Kotlin.hashCode(this.type) | 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
+    result = result * 31 + Kotlin.hashCode(this.attribute) | 0;
     return result;
   };
-  VertexLayout$Attribute.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.location, other.location) && Kotlin.equals(this.offset, other.offset) && Kotlin.equals(this.type, other.type) && Kotlin.equals(this.name, other.name)))));
+  VertexLayout$VertexAttribute.prototype.equals = function (other) {
+    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.location, other.location) && Kotlin.equals(this.offset, other.offset) && Kotlin.equals(this.attribute, other.attribute)))));
   };
   function VertexLayout$Builder() {
     this.primitiveType = PrimitiveType$TRIANGLES_getInstance();
@@ -18160,15 +18177,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'Animation',
     interfaces: []
   };
-  function Armature(geometry, name, instances, attributes) {
+  function Armature(geometry, name) {
     Armature$Companion_getInstance();
     if (name === void 0)
       name = null;
-    if (instances === void 0)
-      instances = InstancedMesh$Companion_getInstance().identityInstance();
-    if (attributes === void 0)
-      attributes = InstancedMesh$Companion_getInstance().MODEL_INSTANCES;
-    InstancedMesh.call(this, geometry, name, instances, attributes);
+    Mesh.call(this, geometry, name);
     this.rootBones = ArrayList_init_0();
     this.bones = LinkedHashMap_init();
     this.indexedBones_emt8o4$_0 = ArrayList_init_0();
@@ -18364,10 +18377,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Armature.prototype.preRender_aemszp$ = function (ctx) {
     if (ctx.deltaT > 0) {
       this.applyAnimation_vkqu3b$_0(ctx);
-    }InstancedMesh.prototype.preRender_aemszp$.call(this, ctx);
+    }Mesh.prototype.preRender_aemszp$.call(this, ctx);
   };
   Armature.prototype.render_aemszp$ = function (ctx) {
-    InstancedMesh.prototype.render_aemszp$.call(this, ctx);
+    Mesh.prototype.render_aemszp$.call(this, ctx);
   };
   function Armature$applyAnimation$lambda(this$Armature) {
     return function ($receiver) {
@@ -18476,7 +18489,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Armature.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Armature',
-    interfaces: [InstancedMesh]
+    interfaces: [Mesh]
   };
   function Bone(name, numVertices) {
     this.name = name;
@@ -19821,350 +19834,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'Group',
     interfaces: [Node]
   };
-  function InstancedLodMesh(lodDescs, name, attributes) {
-    if (name === void 0)
-      name = null;
-    if (attributes === void 0)
-      attributes = InstancedMesh$Companion_getInstance().MODEL_INSTANCES;
-    Group.call(this);
-    this.lodDescs = lodDescs;
-    this.instances = ArrayList_init_0();
-    this.instancedLodMeshes = ArrayList_init_0();
-    this.lodInstances_cpo69l$_0 = ArrayList_init_0();
-    var tmp$, tmp$_0;
-    var index = 0;
-    tmp$ = this.lodDescs.iterator();
-    while (tmp$.hasNext()) {
-      var item = tmp$.next();
-      var closure$name = name;
-      var closure$attributes = attributes;
-      var i = checkIndexOverflow((tmp$_0 = index, index = tmp$_0 + 1 | 0, tmp$_0));
-      var tmp$_1;
-      if (closure$name != null) {
-        tmp$_1 = toString(closure$name) + '-lod-' + i;
-      } else {
-        tmp$_1 = null;
-      }
-      var n = tmp$_1;
-      var insts = new InstancedLodMesh$LodInstances(item.maxInstances);
-      var mesh = new InstancedMesh(item.geometry, n, insts, closure$attributes);
-      this.instancedLodMeshes.add_11rb$(mesh);
-      this.lodInstances_cpo69l$_0.add_11rb$(insts);
-      this.unaryPlus_uv0sim$(mesh);
-    }
-  }
-  InstancedLodMesh.prototype.preRender_aemszp$ = function (ctx) {
-    if (this.isVisible) {
-      this.updateInstances_t02h72$_0(ctx);
-    }Group.prototype.preRender_aemszp$.call(this, ctx);
-  };
-  InstancedLodMesh.prototype.updateInstances_t02h72$_0 = function (ctx) {
-    var tmp$, tmp$_0, tmp$_1;
-    var cam = (tmp$ = this.scene) != null ? tmp$.camera : null;
-    if (cam != null) {
-      var tmpVec = MutableVec3f_init();
-      tmp$_0 = this.lodInstances_cpo69l$_0;
-      for (var i = 0; i !== tmp$_0.size; ++i) {
-        this.lodInstances_cpo69l$_0.get_za3lpa$(i).clearInstances();
-      }
-      tmp$_1 = this.instances;
-      for (var i_0 = 0; i_0 !== tmp$_1.size; ++i_0) {
-        var tmp$_2;
-        var inst = this.instances.get_za3lpa$(i_0);
-        inst.lod = -1;
-        ctx.mvpState.modelMatrix.transform_w1lst9$(tmpVec.set_czzhiu$(inst.localOrigin));
-        if (cam.isInFrustum_2qa7tb$(tmpVec, inst.radius)) {
-          var camDist = cam.globalPos.distance_czzhiu$(tmpVec);
-          tmp$_2 = this.lodDescs;
-          for (var j = 0; j !== tmp$_2.size; ++j) {
-            if (this.lodDescs.get_za3lpa$(j).inRange_mx4ult$(camDist)) {
-              inst.lod = j;
-              this.lodInstances_cpo69l$_0.get_za3lpa$(j).addInstance_m661aa$(inst);
-              break;
-            }}
-        }}
-    }};
-  function InstancedLodMesh$LodDesc(geometry, minDist, maxDist, isCastingShadows, maxInstances) {
-    this.geometry = geometry;
-    this.minDist = minDist;
-    this.maxDist = maxDist;
-    this.isCastingShadows = isCastingShadows;
-    this.maxInstances = maxInstances;
-  }
-  InstancedLodMesh$LodDesc.prototype.inRange_mx4ult$ = function (dist) {
-    return dist >= this.minDist && dist <= this.maxDist;
-  };
-  InstancedLodMesh$LodDesc.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LodDesc',
-    interfaces: []
-  };
-  function InstancedLodMesh$LodInstances(maxInstances) {
-    InstancedMesh$Instances.call(this, maxInstances);
-  }
-  InstancedLodMesh$LodInstances.prototype.isIncludeInstance_fkvpwf$ = function (instance, localPos, cam, ctx) {
-    return true;
-  };
-  InstancedLodMesh$LodInstances.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LodInstances',
-    interfaces: [InstancedMesh$Instances]
-  };
-  InstancedLodMesh.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'InstancedLodMesh',
-    interfaces: [Group]
-  };
-  function LodInstance() {
-    InstancedMesh$Instance.call(this, new Mat4f());
-    this.localOrigin = MutableVec3f_init();
-    this.lod = -1;
-  }
-  LodInstance.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LodInstance',
-    interfaces: [InstancedMesh$Instance]
-  };
-  function InstancedMesh(geometry, name, instances, attributes) {
-    InstancedMesh$Companion_getInstance();
-    if (name === void 0)
-      name = null;
-    if (instances === void 0)
-      instances = InstancedMesh$Companion_getInstance().identityInstance();
-    if (attributes === void 0)
-      attributes = InstancedMesh$Companion_getInstance().MODEL_INSTANCES;
-    Mesh.call(this, geometry, name);
-    this.instances = instances;
-    this.attributes = attributes;
-    this.instanceStride_lhoub3$_0 = 0;
-    this.rayTest = MeshRayTest$Companion_getInstance().nopTest();
-    var tmp$;
-    var sum = 0;
-    tmp$ = this.attributes.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      sum = sum + element.type.size | 0;
-    }
-    this.instanceStride_lhoub3$_0 = sum;
-    var $receiver = this.attributes;
-    var destination = ArrayList_init_0();
-    var tmp$_0;
-    tmp$_0 = $receiver.iterator();
-    while (tmp$_0.hasNext()) {
-      var element_0 = tmp$_0.next();
-      if (element_0.divisor === 0)
-        destination.add_11rb$(element_0);
-    }
-    var tmp$_1;
-    tmp$_1 = destination.iterator();
-    while (tmp$_1.hasNext()) {
-      var element_1 = tmp$_1.next();
-      var $this = package$util.Log;
-      var level = Log$Level.WARN;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'InstancedMesh attribute ' + element_1.name + ' has divisor = 0');
-      }}
-  }
-  Object.defineProperty(InstancedMesh.prototype, 'bounds', {
-    get: function () {
-      return this.instances.bounds;
-    }
-  });
-  InstancedMesh.prototype.preRender_aemszp$ = function (ctx) {
-    Mesh.prototype.preRender_aemszp$.call(this, ctx);
-    if (this.isVisible) {
-      this.instances.setupInstances_yqauzk$(this, ctx);
-    }};
-  InstancedMesh.prototype.render_aemszp$ = function (ctx) {
-  };
-  InstancedMesh.prototype.dispose_aemszp$ = function (ctx) {
-  };
-  function InstancedMesh$Instance(modelMat) {
-    this.modelMat = modelMat;
-    this.radius = 1.0;
-  }
-  InstancedMesh$Instance.prototype.putInstanceAttributes_he122g$ = function (target) {
-    target.put_q3cr5i$(this.modelMat.matrix);
-  };
-  InstancedMesh$Instance.prototype.getLocalOrigin_5s4mqq$ = function (result) {
-    return this.modelMat.transform_w1lst9$(result.set_czzhiu$(Vec3f$Companion_getInstance().ZERO));
-  };
-  InstancedMesh$Instance.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Instance',
-    interfaces: []
-  };
-  function InstancedMesh$Instances(maxInstances) {
-    this.instances = ArrayList_init_0();
-    this.bounds = new BoundingBox();
-    this.maxInstances_dqdtpv$_0 = maxInstances;
-    this.instanceData_52xgya$_0 = null;
-    this.numInstances_nbmnv9$_0 = 0;
-    this.tmpVec_hx22mo$_0 = MutableVec3f_init();
-  }
-  Object.defineProperty(InstancedMesh$Instances.prototype, 'maxInstances', {
-    get: function () {
-      return this.maxInstances_dqdtpv$_0;
-    },
-    set: function (value) {
-      this.maxInstances_dqdtpv$_0 = value;
-      this.instanceData = null;
-    }
-  });
-  Object.defineProperty(InstancedMesh$Instances.prototype, 'instanceData', {
-    get: function () {
-      return this.instanceData_52xgya$_0;
-    },
-    set: function (instanceData) {
-      this.instanceData_52xgya$_0 = instanceData;
-    }
-  });
-  Object.defineProperty(InstancedMesh$Instances.prototype, 'numInstances', {
-    get: function () {
-      return this.numInstances_nbmnv9$_0;
-    },
-    set: function (numInstances) {
-      this.numInstances_nbmnv9$_0 = numInstances;
-    }
-  });
-  InstancedMesh$Instances.prototype.clearInstances = function () {
-    this.instances.clear();
-  };
-  InstancedMesh$Instances.prototype.addInstance_m661aa$ = function (instance) {
-    this.instances.add_11rb$(instance);
-  };
-  InstancedMesh$Instances.prototype.addInstances_tzquvz$ = function (instance) {
-    addAll(this.instances, instance);
-  };
-  InstancedMesh$Instances.prototype.plusAssign_m661aa$ = function (instance) {
-    this.addInstance_m661aa$(instance);
-  };
-  InstancedMesh$Instances.prototype.setupInstances_yqauzk$ = function (mesh, ctx) {
-    var tmp$;
-    var tmp$_0;
-    if ((tmp$ = this.instanceData) != null)
-      tmp$_0 = tmp$;
-    else {
-      var $receiver = createFloat32Buffer(Kotlin.imul(this.maxInstances, mesh.instanceStride_lhoub3$_0));
-      this.instanceData = $receiver;
-      tmp$_0 = $receiver;
-    }
-    var data = tmp$_0;
-    data.clear();
-    this.bounds.clear();
-    this.numInstances = 0;
-    this.putInstanceData_v9xxlg$(data, mesh, ctx);
-  };
-  InstancedMesh$Instances.prototype.putInstanceData_v9xxlg$ = function (target, mesh, ctx) {
-    var tmp$, tmp$_0, tmp$_1;
-    var cam = (tmp$ = mesh.scene) != null ? tmp$.camera : null;
-    if (mesh.isFrustumChecked && cam != null) {
-      tmp$_0 = this.instances;
-      for (var i = 0; i !== tmp$_0.size; ++i) {
-        this.instances.get_za3lpa$(i).getLocalOrigin_5s4mqq$(this.tmpVec_hx22mo$_0);
-        this.bounds.add_czzhiu$(this.tmpVec_hx22mo$_0);
-        if (this.isIncludeInstance_fkvpwf$(this.instances.get_za3lpa$(i), this.tmpVec_hx22mo$_0, cam, ctx)) {
-          this.putInstance_uo5pze$(this.instances.get_za3lpa$(i), target);
-        }if (this.numInstances === this.maxInstances) {
-          break;
-        }}
-      if (!this.bounds.isEmpty) {
-        this.tmpVec_hx22mo$_0.set_czzhiu$(mesh.geometry.bounds.size).scale_mx4ult$(0.5);
-        this.bounds.expand_czzhiu$(this.tmpVec_hx22mo$_0);
-      }} else {
-      var a = this.instances.size;
-      var b = this.maxInstances;
-      tmp$_1 = Math_0.min(a, b);
-      for (var i_0 = 0; i_0 < tmp$_1; i_0++) {
-        this.putInstance_uo5pze$(this.instances.get_za3lpa$(i_0), target);
-      }
-    }
-  };
-  InstancedMesh$Instances.prototype.isIncludeInstance_fkvpwf$ = function (instance, localPos, cam, ctx) {
-    ctx.mvpState.modelMatrix.transform_w1lst9$(this.tmpVec_hx22mo$_0);
-    return cam.isInFrustum_2qa7tb$(this.tmpVec_hx22mo$_0, instance.radius);
-  };
-  InstancedMesh$Instances.prototype.putInstance_uo5pze$ = function (instance, target) {
-    if (this.numInstances < this.maxInstances) {
-      instance.putInstanceAttributes_he122g$(target);
-      this.numInstances = this.numInstances + 1 | 0;
-    } else {
-      var $this = package$util.Log;
-      var level = Log$Level.WARN;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Discarding instance: max instance count reached');
-      }}
-  };
-  InstancedMesh$Instances.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Instances',
-    interfaces: []
-  };
-  function InstancedMesh$SimpleInstances(maxInstances) {
-    InstancedMesh$Instances.call(this, maxInstances);
-  }
-  InstancedMesh$SimpleInstances.prototype.addInstance_d4zu6j$ = function (modelMat) {
-    var $receiver = this.instances;
-    var element = new InstancedMesh$Instance(modelMat);
-    $receiver.add_11rb$(element);
-  };
-  InstancedMesh$SimpleInstances.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'SimpleInstances',
-    interfaces: [InstancedMesh$Instances]
-  };
-  function InstancedMesh$Companion() {
-    InstancedMesh$Companion_instance = this;
-    var $receiver = new Attribute('attrib_model_insts_0', GlslType$VEC_4F_getInstance());
-    $receiver.glslSrcName = 'attrib_model_insts';
-    $receiver.locationOffset = 0;
-    $receiver.divisor = 1;
-    this.MODEL_INSTANCES_0 = $receiver;
-    var $receiver_0 = new Attribute('attrib_model_insts_1', GlslType$VEC_4F_getInstance());
-    $receiver_0.glslSrcName = 'attrib_model_insts';
-    $receiver_0.locationOffset = 1;
-    $receiver_0.divisor = 1;
-    this.MODEL_INSTANCES_1 = $receiver_0;
-    var $receiver_1 = new Attribute('attrib_model_insts_2', GlslType$VEC_4F_getInstance());
-    $receiver_1.glslSrcName = 'attrib_model_insts';
-    $receiver_1.locationOffset = 2;
-    $receiver_1.divisor = 1;
-    this.MODEL_INSTANCES_2 = $receiver_1;
-    var $receiver_2 = new Attribute('attrib_model_insts_3', GlslType$VEC_4F_getInstance());
-    $receiver_2.glslSrcName = 'attrib_model_insts';
-    $receiver_2.locationOffset = 3;
-    $receiver_2.divisor = 1;
-    this.MODEL_INSTANCES_3 = $receiver_2;
-    this.MODEL_INSTANCES = listOf([this.MODEL_INSTANCES_0, this.MODEL_INSTANCES_1, this.MODEL_INSTANCES_2, this.MODEL_INSTANCES_3]);
-  }
-  InstancedMesh$Companion.prototype.makeAttributeList_5jr6ei$ = function (customAttribs) {
-    var attribs = mutableListOf([this.MODEL_INSTANCES_0, this.MODEL_INSTANCES_1, this.MODEL_INSTANCES_2, this.MODEL_INSTANCES_3]);
-    addAll_0(attribs, customAttribs);
-    return attribs;
-  };
-  InstancedMesh$Companion.prototype.identityInstance = function () {
-    var $receiver = new InstancedMesh$SimpleInstances(1);
-    $receiver.addInstance_d4zu6j$((new Mat4f()).setIdentity());
-    return $receiver;
-  };
-  InstancedMesh$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var InstancedMesh$Companion_instance = null;
-  function InstancedMesh$Companion_getInstance() {
-    if (InstancedMesh$Companion_instance === null) {
-      new InstancedMesh$Companion();
-    }return InstancedMesh$Companion_instance;
-  }
-  InstancedMesh.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'InstancedMesh',
-    interfaces: [Mesh]
-  };
   function Lighting(scene) {
     this.scene = scene;
     this.lights = mutableListOf([(new Light()).setDirectional_czzhiu$(Vec3f_init(-1.0)).setColor_y83vuj$(Color$Companion_getInstance().WHITE, 1.0)]);
@@ -20653,6 +20322,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       name = null;
     Node.call(this, name);
     this.geometry = geometry;
+    this.instances = null;
     this.pipelineLoader = null;
     this.pipeline_fj0dqa$_0 = null;
     this.rayTest = MeshRayTest$Companion_getInstance().boundsTest();
@@ -24475,7 +24145,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             firstOrNull$result = null;
           }
            while (false);
-          var node = Kotlin.orNull(isT_0)(tmp$ = firstOrNull$result) ? tmp$ : throwCCE();
+          var node = (tmp$ = firstOrNull$result) == null || isT_0(tmp$) ? tmp$ : throwCCE();
           if (node != null) {
             return node;
           }}return Unit;
@@ -27100,8 +26770,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.hasChanged = true;
     this.isBatchUpdate = false;
     var tmp$_0;
-    var cntF = 0;
-    var cntI = 0;
+    var strideF = 0;
+    var strideI = 0;
     var offsets = LinkedHashMap_init();
     tmp$_0 = this.vertexAttributes.iterator();
     while (tmp$_0.hasNext()) {
@@ -27109,22 +26779,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (attrib.type === GlslType$MAT_2F_getInstance() || attrib.type === GlslType$MAT_3F_getInstance() || attrib.type === GlslType$MAT_4F_getInstance()) {
         throw IllegalArgumentException_init('Matrix types are not supported as vertex attributes');
       }if (attrib.type.isInt) {
-        var value = cntI;
+        var value = strideI;
         offsets.put_xwzc9p$(attrib, value);
-        cntI = cntI + attrib.type.size | 0;
+        strideI = strideI + attrib.type.size | 0;
       } else {
-        var value_0 = cntF;
+        var value_0 = strideF;
         offsets.put_xwzc9p$(attrib, value_0);
-        cntF = cntF + attrib.type.size | 0;
+        strideF = strideF + attrib.type.size | 0;
       }
     }
     this.attributeOffsets = offsets;
-    this.vertexSizeF = cntF / 4 | 0;
-    this.strideBytesF = cntF;
-    this.vertexSizeI = cntI / 4 | 0;
-    this.strideBytesI = cntI;
-    this.dataF = createFloat32Buffer(cntF * 1000 | 0);
-    this.dataI = createUint32Buffer(cntI * 1000 | 0);
+    this.vertexSizeF = strideF / 4 | 0;
+    this.strideBytesF = strideF;
+    this.vertexSizeI = strideI / 4 | 0;
+    this.strideBytesI = strideI;
+    this.dataF = createFloat32Buffer(strideF * 1000 | 0);
+    this.dataI = createUint32Buffer(strideI * 1000 | 0);
     this.vertexIt = new VertexView(this, 0);
   }
   Object.defineProperty(IndexedVertexList.prototype, 'numIndices', {
@@ -28798,7 +28468,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (c === 10) {
         this.translate_y2kzbl$(0.0, -props.font.lineSpace, 0.0);
         advanced.v = 0.0;
-      }var metrics = props.font.charMap.get_11rb$(toBoxedChar(c));
+      }var metrics = props.font.charMap.get_11rb$(c);
       if (metrics != null) {
         var $receiver = this.rectProps.defaults();
         $receiver.origin.set_y2kzbl$(advanced.v - metrics.xOffset, metrics.yBaseline - metrics.height, 0.0);
@@ -29041,18 +28711,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       linearSpace = true;
     if (linearSpace) {
       this.frontColor = Color$Companion_getInstance().MD_RED.toLinear();
-      this.rightColor = Color$Companion_getInstance().MD_GREEN.toLinear();
+      this.rightColor = Color$Companion_getInstance().MD_AMBER.toLinear();
       this.backColor = Color$Companion_getInstance().MD_INDIGO.toLinear();
-      this.leftColor = Color$Companion_getInstance().MD_AMBER.toLinear();
+      this.leftColor = Color$Companion_getInstance().MD_CYAN.toLinear();
       this.topColor = Color$Companion_getInstance().MD_PURPLE.toLinear();
-      this.bottomColor = Color$Companion_getInstance().MD_CYAN.toLinear();
+      this.bottomColor = Color$Companion_getInstance().MD_GREEN.toLinear();
     } else {
       this.frontColor = Color$Companion_getInstance().MD_RED;
-      this.rightColor = Color$Companion_getInstance().MD_GREEN;
+      this.rightColor = Color$Companion_getInstance().MD_AMBER;
       this.backColor = Color$Companion_getInstance().MD_INDIGO;
-      this.leftColor = Color$Companion_getInstance().MD_AMBER;
+      this.leftColor = Color$Companion_getInstance().MD_CYAN;
       this.topColor = Color$Companion_getInstance().MD_PURPLE;
-      this.bottomColor = Color$Companion_getInstance().MD_CYAN;
+      this.bottomColor = Color$Companion_getInstance().MD_GREEN;
     }
   };
   CubeProps.prototype.defaults = function () {
@@ -29115,6 +28785,82 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   TextProps.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'TextProps',
+    interfaces: []
+  };
+  function MeshInstanceList(instanceAttributes) {
+    MeshInstanceList$Companion_getInstance();
+    this.instanceAttributes = instanceAttributes;
+    this.attributeOffsets = null;
+    this.instanceSizeF = 0;
+    this.strideBytesF = 0;
+    this.usage = Usage$DYNAMIC_getInstance();
+    this.numInstances = 0;
+    this.dataF = null;
+    var tmp$;
+    var strideF = 0;
+    var offsets = LinkedHashMap_init();
+    tmp$ = this.instanceAttributes.iterator();
+    while (tmp$.hasNext()) {
+      var attrib = tmp$.next();
+      if (attrib.type.isInt) {
+        throw IllegalArgumentException_init('For now only float attributes are supported');
+      } else {
+        var value = strideF;
+        offsets.put_xwzc9p$(attrib, value);
+        strideF = strideF + attrib.type.size | 0;
+      }
+    }
+    this.attributeOffsets = offsets;
+    this.instanceSizeF = strideF / 4 | 0;
+    this.strideBytesF = strideF;
+    this.dataF = createFloat32Buffer(strideF * 1000 | 0);
+  }
+  MeshInstanceList.prototype.increaseDataSizeF_0 = function (newSize) {
+    var newData = createFloat32Buffer(newSize);
+    this.dataF.flip();
+    newData.put_he122g$(this.dataF);
+    this.dataF = newData;
+  };
+  MeshInstanceList.prototype.checkBufferSize_za3lpa$ = function (reqSpace) {
+    if (reqSpace === void 0)
+      reqSpace = 1;
+    if (this.dataF.remaining < Kotlin.imul(this.instanceSizeF, reqSpace)) {
+      var a = numberToInt(round(this.dataF.capacity * MeshInstanceList$Companion_getInstance().GROW_FACTOR_0));
+      var b = Kotlin.imul(this.numInstances + reqSpace | 0, this.instanceSizeF);
+      this.increaseDataSizeF_0(Math_0.max(a, b));
+    }};
+  MeshInstanceList.prototype.addInstance_u9cxs7$ = defineInlineFunction('kool.de.fabmax.kool.util.MeshInstanceList.addInstance_u9cxs7$', wrapFunction(function () {
+    var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
+    return function (block) {
+      this.checkBufferSize_za3lpa$();
+      var szBefore = this.dataF.position;
+      block(this.dataF);
+      var growSz = this.dataF.position - szBefore | 0;
+      if (growSz !== this.instanceSizeF) {
+        throw IllegalStateException_init('Expected data to grow by ' + this.instanceSizeF + ' elements, instead it grew by ' + growSz);
+      }this.numInstances = this.numInstances + 1 | 0;
+    };
+  }));
+  function MeshInstanceList$Companion() {
+    MeshInstanceList$Companion_instance = this;
+    this.INITIAL_SIZE_0 = 1000;
+    this.GROW_FACTOR_0 = 2.0;
+    this.MODEL_MAT = new Attribute('attrib_model_mat', GlslType$MAT_4F_getInstance());
+  }
+  MeshInstanceList$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var MeshInstanceList$Companion_instance = null;
+  function MeshInstanceList$Companion_getInstance() {
+    if (MeshInstanceList$Companion_instance === null) {
+      new MeshInstanceList$Companion();
+    }return MeshInstanceList$Companion_instance;
+  }
+  MeshInstanceList.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'MeshInstanceList',
     interfaces: []
   };
   function ObjectRecycler(maxSize, factory) {
@@ -35751,6 +35497,46 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'LoadedTexture',
     interfaces: []
   };
+  function PlatformAttributeProps(attribute) {
+    this.nSlots = 0;
+    this.attribSize = 0;
+    switch (attribute.type.name) {
+      case 'FLOAT':
+        this.nSlots = 1;
+        this.attribSize = 1;
+        break;
+      case 'VEC_2F':
+        this.nSlots = 1;
+        this.attribSize = 2;
+        break;
+      case 'VEC_3F':
+        this.nSlots = 1;
+        this.attribSize = 3;
+        break;
+      case 'VEC_4F':
+        this.nSlots = 1;
+        this.attribSize = 4;
+        break;
+      case 'MAT_2F':
+        this.nSlots = 2;
+        this.attribSize = 2;
+        break;
+      case 'MAT_3F':
+        this.nSlots = 3;
+        this.attribSize = 3;
+        break;
+      case 'MAT_4F':
+        this.nSlots = 4;
+        this.attribSize = 4;
+        break;
+      default:throw IllegalArgumentException_init('Attribute type not supported: ' + attribute.type);
+    }
+  }
+  PlatformAttributeProps.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'PlatformAttributeProps',
+    interfaces: []
+  };
   function ShaderCode(vertexSrc, fragmentSrc) {
     this.vertexSrc = vertexSrc;
     this.fragmentSrc = fragmentSrc;
@@ -37068,7 +36854,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.ctx = ctx;
     this.pipelineName = pipeline.name;
     this.pipelineId_0 = pipeline.pipelineHash.data;
-    this.attributeLocations_0 = LinkedHashMap_init();
+    this.attributes_0 = LinkedHashMap_init();
+    this.instanceAttributes_0 = LinkedHashMap_init();
     this.uniformLocations_0 = LinkedHashMap_init();
     this.instances_0 = LinkedHashMap_init();
     var tmp$;
@@ -37076,13 +36863,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       var tmp$_0;
-      tmp$_0 = element.attributes.iterator();
+      tmp$_0 = element.vertexAttributes.iterator();
       while (tmp$_0.hasNext()) {
         var element_0 = tmp$_0.next();
-        var $receiver = this.attributeLocations_0;
-        var key = element_0.name;
-        var value = element_0.location;
-        $receiver.put_xwzc9p$(key, value);
+        switch (element.inputRate.name) {
+          case 'VERTEX':
+            var $receiver = this.attributes_0;
+            var key = element_0.attribute.name;
+            $receiver.put_xwzc9p$(key, element_0);
+            break;
+          case 'INSTANCE':
+            var $receiver_0 = this.instanceAttributes_0;
+            var key_0 = element_0.attribute.name;
+            $receiver_0.put_xwzc9p$(key_0, element_0);
+            break;
+        }
       }
     }
     var tmp$_1;
@@ -37098,21 +36893,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           tmp$_3 = element_2.uniforms.iterator();
           while (tmp$_3.hasNext()) {
             var element_3 = tmp$_3.next();
-            var $receiver_0 = this.uniformLocations_0;
-            var key_0 = element_3.name;
-            var value_0 = listOf_0(this.ctx.gl_8be2vx$.getUniformLocation(this.prog, element_3.name));
-            $receiver_0.put_xwzc9p$(key_0, value_0);
+            var $receiver_1 = this.uniformLocations_0;
+            var key_1 = element_3.name;
+            var value = listOf_0(this.ctx.gl_8be2vx$.getUniformLocation(this.prog, element_3.name));
+            $receiver_1.put_xwzc9p$(key_1, value);
           }
         } else if (Kotlin.isType(element_2, TextureSampler)) {
-          var $receiver_1 = this.uniformLocations_0;
-          var key_1 = element_2.name;
-          var value_1 = this.getUniformLocations_0(element_2.name, element_2.arraySize);
-          $receiver_1.put_xwzc9p$(key_1, value_1);
-        } else if (Kotlin.isType(element_2, CubeMapSampler)) {
           var $receiver_2 = this.uniformLocations_0;
           var key_2 = element_2.name;
-          var value_2 = this.getUniformLocations_0(element_2.name, element_2.arraySize);
-          $receiver_2.put_xwzc9p$(key_2, value_2);
+          var value_0 = this.getUniformLocations_0(element_2.name, element_2.arraySize);
+          $receiver_2.put_xwzc9p$(key_2, value_0);
+        } else if (Kotlin.isType(element_2, CubeMapSampler)) {
+          var $receiver_3 = this.uniformLocations_0;
+          var key_3 = element_2.name;
+          var value_1 = this.getUniformLocations_0(element_2.name, element_2.arraySize);
+          $receiver_3.put_xwzc9p$(key_3, value_1);
         }}
     }
     var tmp$_4;
@@ -37123,10 +36918,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$_5 = element_4.pushConstants.iterator();
       while (tmp$_5.hasNext()) {
         var element_5 = tmp$_5.next();
-        var $receiver_3 = this.uniformLocations_0;
-        var key_3 = element_5.name;
-        var value_3 = listOf_0(this.ctx.gl_8be2vx$.getUniformLocation(this.prog, element_5.name));
-        $receiver_3.put_xwzc9p$(key_3, value_3);
+        var $receiver_4 = this.uniformLocations_0;
+        var key_4 = element_5.name;
+        var value_2 = listOf_0(this.ctx.gl_8be2vx$.getUniformLocation(this.prog, element_5.name));
+        $receiver_4.put_xwzc9p$(key_4, value_2);
       }
     }
   }
@@ -37146,18 +36941,48 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   CompiledShader.prototype.use = function () {
     this.ctx.gl_8be2vx$.useProgram(this.prog);
     var tmp$;
-    tmp$ = this.attributeLocations_0.values.iterator();
+    tmp$ = this.attributes_0.values.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      this.ctx.gl_8be2vx$.enableVertexAttribArray(element);
+      var tmp$_0;
+      tmp$_0 = element.attribute.props.nSlots;
+      for (var i = 0; i < tmp$_0; i++) {
+        this.ctx.gl_8be2vx$.enableVertexAttribArray(element.location + i | 0);
+      }
+    }
+    var tmp$_1;
+    tmp$_1 = this.instanceAttributes_0.values.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_0 = tmp$_1.next();
+      var tmp$_2;
+      tmp$_2 = element_0.attribute.props.nSlots;
+      for (var i_0 = 0; i_0 < tmp$_2; i_0++) {
+        var location = element_0.location + i_0 | 0;
+        this.ctx.gl_8be2vx$.enableVertexAttribArray(location);
+        this.ctx.gl_8be2vx$.vertexAttribDivisor(location, 1);
+      }
     }
   };
   CompiledShader.prototype.unUse = function () {
     var tmp$;
-    tmp$ = this.attributeLocations_0.values.iterator();
+    tmp$ = this.attributes_0.values.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      this.ctx.gl_8be2vx$.disableVertexAttribArray(element);
+      var tmp$_0;
+      tmp$_0 = element.attribute.props.nSlots;
+      for (var i = 0; i < tmp$_0; i++) {
+        this.ctx.gl_8be2vx$.disableVertexAttribArray(element.location + i | 0);
+      }
+    }
+    var tmp$_1;
+    tmp$_1 = this.instanceAttributes_0.values.iterator();
+    while (tmp$_1.hasNext()) {
+      var element_0 = tmp$_1.next();
+      var tmp$_2;
+      tmp$_2 = element_0.attribute.props.nSlots;
+      for (var i_0 = 0; i_0 < tmp$_2; i_0++) {
+        this.ctx.gl_8be2vx$.disableVertexAttribArray(element_0.location + i_0 | 0);
+      }
     }
   };
   CompiledShader.prototype.bindInstance_m0ahst$ = function (cmd) {
@@ -37204,10 +37029,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.textures_0 = ArrayList_init_0();
     this.cubeMaps_0 = ArrayList_init_0();
     this.mappings_0 = ArrayList_init_0();
-    this.attributeBinders_0 = LinkedHashMap_init();
+    this.attributeBinders_0 = ArrayList_init_0();
+    this.instanceAttribBinders_0 = ArrayList_init_0();
     this.dataBufferF_0 = null;
     this.dataBufferI_0 = null;
     this.indexBuffer_0 = null;
+    this.instanceBuffer_0 = null;
     this.buffersSet_0 = false;
     this.nextTexUnit_0 = WebGLRenderingContext.TEXTURE0;
     this.numIndices = 0;
@@ -37320,7 +37147,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.checkBuffers_0();
     if (uniformsValid) {
       (tmp$_4 = this.indexBuffer_0) != null ? (tmp$_4.bind_44a5h0$(this.$outer.ctx), Unit) : null;
-      var $receiver = this.attributeBinders_0.values;
+      var $receiver = this.attributeBinders_0;
       this.$outer;
       var tmp$_9;
       tmp$_9 = $receiver.iterator();
@@ -37328,22 +37155,33 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         var element = tmp$_9.next();
         element.vbo.bindAttribute_9sni52$(element.loc, this.$outer.ctx);
       }
+      var $receiver_0 = this.instanceAttribBinders_0;
+      this.$outer;
+      var tmp$_10;
+      tmp$_10 = $receiver_0.iterator();
+      while (tmp$_10.hasNext()) {
+        var element_0 = tmp$_10.next();
+        element_0.vbo.bindAttribute_9sni52$(element_0.loc, this.$outer.ctx);
+      }
     }return uniformsValid;
   };
   CompiledShader$ShaderInstance.prototype.destroyInstance = function () {
-    var tmp$, tmp$_0, tmp$_1;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
     (tmp$ = this.dataBufferF_0) != null ? (tmp$.delete_44a5h0$(this.$outer.ctx), Unit) : null;
     (tmp$_0 = this.dataBufferI_0) != null ? (tmp$_0.delete_44a5h0$(this.$outer.ctx), Unit) : null;
     (tmp$_1 = this.indexBuffer_0) != null ? (tmp$_1.delete_44a5h0$(this.$outer.ctx), Unit) : null;
+    (tmp$_2 = this.instanceBuffer_0) != null ? (tmp$_2.delete_44a5h0$(this.$outer.ctx), Unit) : null;
     this.dataBufferF_0 = null;
     this.dataBufferI_0 = null;
     this.indexBuffer_0 = null;
+    this.instanceBuffer_0 = null;
     this.pushConstants_0.clear();
     this.ubos_0.clear();
     this.textures_0.clear();
     this.cubeMaps_0.clear();
     this.mappings_0.clear();
     this.attributeBinders_0.clear();
+    this.instanceAttribBinders_0.clear();
   };
   function CompiledShader$ShaderInstance$checkBuffers$lambda(closure$md) {
     return function () {
@@ -37352,7 +37190,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   CompiledShader$ShaderInstance.prototype.checkBuffers_0 = function () {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6;
     var md = this.mesh.geometry;
     if (this.indexBuffer_0 == null) {
       this.indexBuffer_0 = new BufferResource(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.$outer.ctx);
@@ -37365,28 +37203,37 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         if (vertexAttrib.type.isInt) {
           hasIntData = true;
         } else {
-          if ((tmp$_0 = this.$outer.attributeLocations_0.get_11rb$(vertexAttrib.glslSrcName)) != null) {
-            var vbo = new VboBinder(ensureNotNull(this.dataBufferF_0), vertexAttrib.type.size / 4 | 0, md.strideBytesF, ensureNotNull(md.attributeOffsets.get_11rb$(vertexAttrib)) / 4 | 0, WebGLRenderingContext.FLOAT);
-            var $receiver = this.attributeBinders_0;
-            var key = vertexAttrib.glslSrcName;
-            var value = new CompiledShader$AttributeOnLocation(vbo, tmp$_0);
-            $receiver.put_xwzc9p$(key, value);
-          }}
+          var stride = md.strideBytesF;
+          var offset = ensureNotNull(md.attributeOffsets.get_11rb$(vertexAttrib)) / 4 | 0;
+          addAll(this.instanceAttribBinders_0, this.$outer.makeAttribBinders_0(this.$outer.attributes_0, vertexAttrib, ensureNotNull(this.dataBufferF_0), stride, offset));
+        }
       }
     }if (hasIntData && this.dataBufferI_0 == null) {
       this.dataBufferI_0 = new BufferResource(WebGLRenderingContext.ARRAY_BUFFER, this.$outer.ctx);
-      tmp$_1 = md.vertexAttributes.iterator();
-      while (tmp$_1.hasNext()) {
-        var vertexAttrib_0 = tmp$_1.next();
+      tmp$_0 = md.vertexAttributes.iterator();
+      while (tmp$_0.hasNext()) {
+        var vertexAttrib_0 = tmp$_0.next();
         if (vertexAttrib_0.type.isInt) {
-          if ((tmp$_2 = this.$outer.attributeLocations_0.get_11rb$(vertexAttrib_0.glslSrcName)) != null) {
-            var vbo_0 = new VboBinder(ensureNotNull(this.dataBufferI_0), vertexAttrib_0.type.size / 4 | 0, md.strideBytesI, ensureNotNull(md.attributeOffsets.get_11rb$(vertexAttrib_0)) / 4 | 0, WebGLRenderingContext.INT);
-            var $receiver_0 = this.attributeBinders_0;
-            var key_0 = vertexAttrib_0.glslSrcName;
-            var value_0 = new CompiledShader$AttributeOnLocation(vbo_0, tmp$_2);
-            $receiver_0.put_xwzc9p$(key_0, value_0);
+          if ((tmp$_1 = this.$outer.attributes_0.get_11rb$(vertexAttrib_0.name)) != null) {
+            var vbo = new VboBinder(ensureNotNull(this.dataBufferI_0), vertexAttrib_0.type.size / 4 | 0, md.strideBytesI, ensureNotNull(md.attributeOffsets.get_11rb$(vertexAttrib_0)) / 4 | 0, WebGLRenderingContext.INT);
+            var $receiver = this.attributeBinders_0;
+            var element = new CompiledShader$AttributeOnLocation(vbo, tmp$_1.location);
+            $receiver.add_11rb$(element);
           }}}
-    }if (!md.isBatchUpdate && (md.hasChanged || !this.buffersSet_0)) {
+    }if (this.instanceBuffer_0 == null) {
+      if ((tmp$_2 = this.mesh.instances) != null) {
+        this.$outer;
+        var this$CompiledShader = this.$outer;
+        var tmp$_7;
+        this.instanceBuffer_0 = new BufferResource(WebGLRenderingContext.ARRAY_BUFFER, this$CompiledShader.ctx);
+        tmp$_7 = tmp$_2.instanceAttributes.iterator();
+        while (tmp$_7.hasNext()) {
+          var instanceAttrib = tmp$_7.next();
+          var stride_0 = tmp$_2.strideBytesF;
+          var offset_0 = ensureNotNull(tmp$_2.attributeOffsets.get_11rb$(instanceAttrib)) / 4 | 0;
+          addAll(this.instanceAttribBinders_0, this$CompiledShader.makeAttribBinders_0(this$CompiledShader.instanceAttributes_0, instanceAttrib, ensureNotNull(this.instanceBuffer_0), stride_0, offset_0));
+        }
+      }}if (!md.isBatchUpdate && (md.hasChanged || !this.buffersSet_0)) {
       var usage = this.$outer.glUsage_0(md.usage);
       this.indexType = WebGLRenderingContext.UNSIGNED_INT;
       (tmp$_3 = this.indexBuffer_0) != null ? (tmp$_3.setData_ysni9y$(md.indices, usage, this.$outer.ctx), Unit) : null;
@@ -37394,13 +37241,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.numIndices = md.numIndices;
       (tmp$_4 = this.dataBufferF_0) != null ? (tmp$_4.setData_phhdsy$(md.dataF, usage, this.$outer.ctx), Unit) : null;
       (tmp$_5 = this.dataBufferI_0) != null ? (tmp$_5.setData_ysni9y$(md.dataI, usage, this.$outer.ctx), Unit) : null;
-      this.$outer.ctx.afterRenderActions_8be2vx$.add_11rb$(CompiledShader$ShaderInstance$checkBuffers$lambda(md));
+      if ((tmp$_6 = this.mesh.instances) != null) {
+        this.$outer;
+        var this$CompiledShader_0 = this.$outer;
+        var tmp$_8;
+        (tmp$_8 = this.instanceBuffer_0) != null && (tmp$_8.setData_phhdsy$(tmp$_6.dataF, this$CompiledShader_0.glUsage_0(tmp$_6.usage), this$CompiledShader_0.ctx), Unit);
+      }this.$outer.ctx.afterRenderActions_8be2vx$.add_11rb$(CompiledShader$ShaderInstance$checkBuffers$lambda(md));
       this.buffersSet_0 = true;
     }};
   CompiledShader$ShaderInstance.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ShaderInstance',
     interfaces: []
+  };
+  CompiledShader.prototype.makeAttribBinders_0 = function ($receiver, attr, buffer, stride, offset) {
+    var tmp$;
+    var binders = ArrayList_init_0();
+    if ((tmp$ = $receiver.get_11rb$(attr.name)) != null) {
+      var tmp$_0;
+      tmp$_0 = attr.props.nSlots;
+      for (var i = 0; i < tmp$_0; i++) {
+        var off = offset + Kotlin.imul(attr.props.attribSize, i) | 0;
+        var vbo = new VboBinder(buffer, attr.props.attribSize, stride, off, WebGLRenderingContext.FLOAT);
+        var element = new CompiledShader$AttributeOnLocation(vbo, tmp$.location + i | 0);
+        binders.add_11rb$(element);
+      }
+    }return binders;
   };
   CompiledShader.prototype.glElemType_0 = function ($receiver) {
     var tmp$;
@@ -37898,8 +37764,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         if (cmd.mesh.geometry.numIndices > 0) {
           if ((tmp$_1 = this.shaderMgr_0.setupShader_m0ahst$(cmd)) != null) {
             if (tmp$_1.primitiveType !== 0 && tmp$_1.indexType !== 0) {
-              this.gl_0.drawElements(tmp$_1.primitiveType, tmp$_1.numIndices, tmp$_1.indexType, 0);
-              this.ctx.engineStats.addPrimitiveCount_za3lpa$(cmd.mesh.geometry.numPrimitives);
+              var insts = cmd.mesh.instances;
+              if (insts == null) {
+                this.gl_0.drawElements(tmp$_1.primitiveType, tmp$_1.numIndices, tmp$_1.indexType, 0);
+                this.ctx.engineStats.addPrimitiveCount_za3lpa$(cmd.mesh.geometry.numPrimitives);
+              } else {
+                this.gl_0.drawElementsInstanced(tmp$_1.primitiveType, tmp$_1.numIndices, tmp$_1.indexType, 0, insts.numInstances);
+                this.ctx.engineStats.addPrimitiveCount_za3lpa$(Kotlin.imul(cmd.mesh.geometry.numPrimitives, insts.numInstances));
+              }
             }}}}}
   };
   function QueueRendererWebGl$GlAttribs($outer) {
@@ -37987,7 +37859,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ShaderGeneratorImplWebGl.prototype.generateCode_0 = function (model, pipeline) {
     var vertShader = this.generateVertexShaderCode_0(model, pipeline);
     var fragShader = this.generateFragmentShaderCode_0(model, pipeline);
-    return to(vertShader, fragShader);
+    if (model.dumpCode) {
+      println_0('Vertex shader:' + '\n' + vertShader);
+      println_0('Fragment shader:' + '\n' + fragShader);
+    }return to(vertShader, fragShader);
   };
   ShaderGeneratorImplWebGl.prototype.generateVertexShaderCode_0 = function (model, pipeline) {
     var codeGen = new ShaderGeneratorImplWebGl$CodeGen();
@@ -38090,7 +37965,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     while (tmp$.hasNext()) {
       var element = tmp$.next();
       var tmp$_0;
-      tmp$_0 = element.attributes.iterator();
+      tmp$_0 = element.vertexAttributes.iterator();
       while (tmp$_0.hasNext()) {
         var element_0 = tmp$_0.next();
         this.appendln_0(srcBuilder, 'layout(location=' + element_0.location + ') in ' + element_0.type.glslType + ' ' + element_0.name + ';');
@@ -39359,6 +39234,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$shadermodel.NormalMapNode = NormalMapNode;
   package$shadermodel.DisplacementMapNode = DisplacementMapNode;
   package$shadermodel.AttributeNode = AttributeNode;
+  package$shadermodel.InstanceAttributeNode = InstanceAttributeNode;
   package$shadermodel.ColorAlphaNode = ColorAlphaNode;
   package$shadermodel.PremultiplyColorNode = PremultiplyColorNode;
   package$shadermodel.GammaNode = GammaNode;
@@ -39514,7 +39390,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$pipeline.Uniform1i = Uniform1i;
   package$pipeline.Uniform1iv = Uniform1iv;
   VertexLayout.Binding = VertexLayout$Binding;
-  VertexLayout.Attribute = VertexLayout$Attribute;
+  VertexLayout.VertexAttribute = VertexLayout$VertexAttribute;
   VertexLayout.Builder = VertexLayout$Builder;
   package$pipeline.VertexLayout = VertexLayout;
   Object.defineProperty(InputRate, 'VERTEX', {
@@ -39566,16 +39442,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$doubleprec.TransformGroupDp = TransformGroupDp;
   package$scene.group_2ylazs$ = group;
   package$scene.Group = Group;
-  InstancedLodMesh.LodDesc = InstancedLodMesh$LodDesc;
-  package$scene.InstancedLodMesh = InstancedLodMesh;
-  package$scene.LodInstance = LodInstance;
-  InstancedMesh.Instance = InstancedMesh$Instance;
-  InstancedMesh.Instances = InstancedMesh$Instances;
-  InstancedMesh.SimpleInstances = InstancedMesh$SimpleInstances;
-  Object.defineProperty(InstancedMesh, 'Companion', {
-    get: InstancedMesh$Companion_getInstance
-  });
-  package$scene.InstancedMesh = InstancedMesh;
   package$scene.Lighting = Lighting;
   Object.defineProperty(Light$Type, 'DIRECTIONAL', {
     get: Light$Type$DIRECTIONAL_getInstance
@@ -39851,6 +39717,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$util.CubeProps = CubeProps;
   package$util.CylinderProps = CylinderProps;
   package$util.TextProps = TextProps;
+  Object.defineProperty(MeshInstanceList, 'Companion', {
+    get: MeshInstanceList$Companion_getInstance
+  });
+  package$util.MeshInstanceList = MeshInstanceList;
   Object.defineProperty(ObjectRecycler, 'Companion', {
     get: ObjectRecycler$Companion_getInstance
   });
@@ -40056,6 +39926,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: LoadedTexture$Companion_getInstance
   });
   package$pipeline.LoadedTexture = LoadedTexture;
+  package$pipeline.PlatformAttributeProps = PlatformAttributeProps;
   package$pipeline.ShaderCode = ShaderCode;
   var package$platform = package$kool.platform || (package$kool.platform = {});
   package$platform.FontMapGenerator = FontMapGenerator;

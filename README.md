@@ -74,7 +74,7 @@ As you might have guessed the ```+colorMesh { ... }``` block creates a colored c
 In order to draw the mesh on the screen it needs a shader, which is assigned with
 ```pipelineLoader = pbrShader { ... }```. This creates a simple PBR shader for a dielectric material
 with a rather smooth surface. Color information is taken from the corresponding vertex attribute.
-Finally we set up a single directional scene light, so that our cube can shine in its full glory. The
+Finally we set up a single directional scene light (of white color and an intensity of 5), so that our cube can shine in its full glory. The
 resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloWorldDemo).
 
 ## A Simple Custom Shader
