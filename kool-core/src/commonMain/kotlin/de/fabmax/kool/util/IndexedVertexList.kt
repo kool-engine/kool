@@ -256,6 +256,8 @@ class IndexedVertexList(val vertexAttributes: List<Attribute>) {
 
         indices.position = 0
         indices.limit = indices.capacity
+
+        hasChanged = true
     }
 
     fun clearIndices() {

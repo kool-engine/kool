@@ -26982,6 +26982,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dataI.limit = this.dataI.capacity;
     this.indices.position = 0;
     this.indices.limit = this.indices.capacity;
+    this.hasChanged = true;
   };
   IndexedVertexList.prototype.clearIndices = function () {
     this.indices.position = 0;
@@ -28787,15 +28788,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'TextProps',
     interfaces: []
   };
-  function MeshInstanceList(instanceAttributes) {
+  function MeshInstanceList(instanceAttributes, maxInstances) {
     MeshInstanceList$Companion_getInstance();
+    if (maxInstances === void 0)
+      maxInstances = 1000;
     this.instanceAttributes = instanceAttributes;
+    this.maxInstances = maxInstances;
     this.attributeOffsets = null;
     this.instanceSizeF = 0;
     this.strideBytesF = 0;
     this.usage = Usage$DYNAMIC_getInstance();
     this.numInstances = 0;
     this.dataF = null;
+    this.hasChanged = true;
     var tmp$;
     var strideF = 0;
     var offsets = LinkedHashMap_init();
@@ -28813,21 +28818,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.attributeOffsets = offsets;
     this.instanceSizeF = strideF / 4 | 0;
     this.strideBytesF = strideF;
-    this.dataF = createFloat32Buffer(strideF * 1000 | 0);
+    this.dataF = createFloat32Buffer(Kotlin.imul(strideF, this.maxInstances));
   }
-  MeshInstanceList.prototype.increaseDataSizeF_0 = function (newSize) {
-    var newData = createFloat32Buffer(newSize);
-    this.dataF.flip();
-    newData.put_he122g$(this.dataF);
-    this.dataF = newData;
-  };
   MeshInstanceList.prototype.checkBufferSize_za3lpa$ = function (reqSpace) {
     if (reqSpace === void 0)
       reqSpace = 1;
-    if (this.dataF.remaining < Kotlin.imul(this.instanceSizeF, reqSpace)) {
-      var a = numberToInt(round(this.dataF.capacity * MeshInstanceList$Companion_getInstance().GROW_FACTOR_0));
-      var b = Kotlin.imul(this.numInstances + reqSpace | 0, this.instanceSizeF);
-      this.increaseDataSizeF_0(Math_0.max(a, b));
+    if ((this.numInstances + reqSpace | 0) > this.maxInstances) {
+      throw KoolException_init('Maximum number of instances exceeded, create with increased maxInstances');
     }};
   MeshInstanceList.prototype.addInstance_u9cxs7$ = defineInlineFunction('kool.de.fabmax.kool.util.MeshInstanceList.addInstance_u9cxs7$', wrapFunction(function () {
     var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
@@ -28839,8 +28836,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (growSz !== this.instanceSizeF) {
         throw IllegalStateException_init('Expected data to grow by ' + this.instanceSizeF + ' elements, instead it grew by ' + growSz);
       }this.numInstances = this.numInstances + 1 | 0;
+      this.hasChanged = true;
     };
   }));
+  MeshInstanceList.prototype.clear = function () {
+    this.numInstances = 0;
+    this.dataF.position = 0;
+    this.dataF.limit = this.dataF.capacity;
+    this.hasChanged = true;
+  };
   function MeshInstanceList$Companion() {
     MeshInstanceList$Companion_instance = this;
     this.INITIAL_SIZE_0 = 1000;
@@ -36947,7 +36951,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var tmp$_0;
       tmp$_0 = element.attribute.props.nSlots;
       for (var i = 0; i < tmp$_0; i++) {
-        this.ctx.gl_8be2vx$.enableVertexAttribArray(element.location + i | 0);
+        var location = element.location + i | 0;
+        this.ctx.gl_8be2vx$.enableVertexAttribArray(location);
+        this.ctx.gl_8be2vx$.vertexAttribDivisor(location, 0);
       }
     }
     var tmp$_1;
@@ -36957,9 +36963,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       var tmp$_2;
       tmp$_2 = element_0.attribute.props.nSlots;
       for (var i_0 = 0; i_0 < tmp$_2; i_0++) {
-        var location = element_0.location + i_0 | 0;
-        this.ctx.gl_8be2vx$.enableVertexAttribArray(location);
-        this.ctx.gl_8be2vx$.vertexAttribDivisor(location, 1);
+        var location_0 = element_0.location + i_0 | 0;
+        this.ctx.gl_8be2vx$.enableVertexAttribArray(location_0);
+        this.ctx.gl_8be2vx$.vertexAttribDivisor(location_0, 1);
       }
     }
   };
@@ -37183,14 +37189,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.attributeBinders_0.clear();
     this.instanceAttribBinders_0.clear();
   };
-  function CompiledShader$ShaderInstance$checkBuffers$lambda(closure$md) {
+  function CompiledShader$ShaderInstance$checkBuffers$lambda(closure$instanceList) {
+    return function () {
+      closure$instanceList.hasChanged = false;
+      return Unit;
+    };
+  }
+  function CompiledShader$ShaderInstance$checkBuffers$lambda_0(closure$md) {
     return function () {
       closure$md.hasChanged = false;
       return Unit;
     };
   }
   CompiledShader$ShaderInstance.prototype.checkBuffers_0 = function () {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
     var md = this.mesh.geometry;
     if (this.indexBuffer_0 == null) {
       this.indexBuffer_0 = new BufferResource(WebGLRenderingContext.ELEMENT_ARRAY_BUFFER, this.$outer.ctx);
@@ -37220,19 +37232,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
             var element = new CompiledShader$AttributeOnLocation(vbo, tmp$_1.location);
             $receiver.add_11rb$(element);
           }}}
-    }if (this.instanceBuffer_0 == null) {
-      if ((tmp$_2 = this.mesh.instances) != null) {
-        this.$outer;
-        var this$CompiledShader = this.$outer;
-        var tmp$_7;
-        this.instanceBuffer_0 = new BufferResource(WebGLRenderingContext.ARRAY_BUFFER, this$CompiledShader.ctx);
-        tmp$_7 = tmp$_2.instanceAttributes.iterator();
-        while (tmp$_7.hasNext()) {
-          var instanceAttrib = tmp$_7.next();
-          var stride_0 = tmp$_2.strideBytesF;
-          var offset_0 = ensureNotNull(tmp$_2.attributeOffsets.get_11rb$(instanceAttrib)) / 4 | 0;
-          addAll(this.instanceAttribBinders_0, this$CompiledShader.makeAttribBinders_0(this$CompiledShader.instanceAttributes_0, instanceAttrib, ensureNotNull(this.instanceBuffer_0), stride_0, offset_0));
+    }var instanceList = this.mesh.instances;
+    if (instanceList != null) {
+      var instBuf = this.instanceBuffer_0;
+      if (instBuf == null) {
+        instBuf = new BufferResource(WebGLRenderingContext.ARRAY_BUFFER, this.$outer.ctx);
+        this.instanceBuffer_0 = instBuf;
+        tmp$_2 = instanceList.instanceAttributes.iterator();
+        while (tmp$_2.hasNext()) {
+          var instanceAttrib = tmp$_2.next();
+          var stride_0 = instanceList.strideBytesF;
+          var offset_0 = ensureNotNull(instanceList.attributeOffsets.get_11rb$(instanceAttrib)) / 4 | 0;
+          addAll(this.instanceAttribBinders_0, this.$outer.makeAttribBinders_0(this.$outer.instanceAttributes_0, instanceAttrib, ensureNotNull(this.instanceBuffer_0), stride_0, offset_0));
         }
+      }if (instanceList.hasChanged) {
+        instBuf.setData_phhdsy$(instanceList.dataF, this.$outer.glUsage_0(instanceList.usage), this.$outer.ctx);
+        this.$outer.ctx.afterRenderActions_8be2vx$.add_11rb$(CompiledShader$ShaderInstance$checkBuffers$lambda(instanceList));
       }}if (!md.isBatchUpdate && (md.hasChanged || !this.buffersSet_0)) {
       var usage = this.$outer.glUsage_0(md.usage);
       this.indexType = WebGLRenderingContext.UNSIGNED_INT;
@@ -37241,12 +37256,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.numIndices = md.numIndices;
       (tmp$_4 = this.dataBufferF_0) != null ? (tmp$_4.setData_phhdsy$(md.dataF, usage, this.$outer.ctx), Unit) : null;
       (tmp$_5 = this.dataBufferI_0) != null ? (tmp$_5.setData_ysni9y$(md.dataI, usage, this.$outer.ctx), Unit) : null;
-      if ((tmp$_6 = this.mesh.instances) != null) {
-        this.$outer;
-        var this$CompiledShader_0 = this.$outer;
-        var tmp$_8;
-        (tmp$_8 = this.instanceBuffer_0) != null && (tmp$_8.setData_phhdsy$(tmp$_6.dataF, this$CompiledShader_0.glUsage_0(tmp$_6.usage), this$CompiledShader_0.ctx), Unit);
-      }this.$outer.ctx.afterRenderActions_8be2vx$.add_11rb$(CompiledShader$ShaderInstance$checkBuffers$lambda(md));
+      this.$outer.ctx.afterRenderActions_8be2vx$.add_11rb$(CompiledShader$ShaderInstance$checkBuffers$lambda_0(md));
       this.buffersSet_0 = true;
     }};
   CompiledShader$ShaderInstance.$metadata$ = {

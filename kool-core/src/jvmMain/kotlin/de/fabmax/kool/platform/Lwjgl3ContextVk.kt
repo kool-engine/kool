@@ -334,6 +334,11 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                             sys.device.addDependingResource(model)
                         }
 
+                        if (cmd.mesh.instances?.hasChanged == true) {
+                            model.updateInstanceBuffer()
+                            actionQueue += DelayAction(0) { cmd.mesh.instances?.hasChanged = false }
+                        }
+
                         pipelineCfg.pushConstantRanges.forEach {
                             val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
                             vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as MixedBufferImpl).buffer)

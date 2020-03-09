@@ -1,11 +1,10 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
-import kotlin.math.max
-import kotlin.math.round
 
-class MeshInstanceList(val instanceAttributes: List<Attribute>) {
+class MeshInstanceList(val instanceAttributes: List<Attribute>, val maxInstances: Int = 1000) {
 
     /**
      * Vertex attribute offsets in bytes.
@@ -35,6 +34,8 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>) {
 
     var dataF: Float32Buffer
 
+    var hasChanged = true
+
     init {
         var strideF = 0
         val offsets = mutableMapOf<Attribute, Int>()
@@ -50,19 +51,23 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>) {
         attributeOffsets = offsets
         instanceSizeF = strideF / 4
         strideBytesF = strideF
-        dataF = createFloat32Buffer(strideF * INITIAL_SIZE)
+        dataF = createFloat32Buffer(strideF * maxInstances)
     }
 
-    private fun increaseDataSizeF(newSize: Int) {
-        val newData = createFloat32Buffer(newSize)
-        dataF.flip()
-        newData.put(dataF)
-        dataF = newData
-    }
+//    private fun increaseDataSizeF(newSize: Int) {
+//        val newData = createFloat32Buffer(newSize)
+//        dataF.flip()
+//        newData.put(dataF)
+//        dataF = newData
+//    }
 
     fun checkBufferSize(reqSpace: Int = 1) {
-        if (dataF.remaining < instanceSizeF * reqSpace) {
-            increaseDataSizeF(max(round(dataF.capacity * GROW_FACTOR).toInt(), (numInstances + reqSpace) * instanceSizeF))
+//        if (dataF.remaining < instanceSizeF * reqSpace) {
+//            increaseDataSizeF(max(round(dataF.capacity * GROW_FACTOR).toInt(), (numInstances + reqSpace) * instanceSizeF))
+//        }
+
+        if (numInstances + reqSpace > maxInstances) {
+            throw KoolException("Maximum number of instances exceeded, create with increased maxInstances")
         }
     }
 
@@ -75,6 +80,14 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>) {
             throw IllegalStateException("Expected data to grow by $instanceSizeF elements, instead it grew by $growSz")
         }
         numInstances++
+        hasChanged = true
+    }
+
+    fun clear() {
+        numInstances = 0
+        dataF.position = 0
+        dataF.limit = dataF.capacity
+        hasChanged = true
     }
 
     companion object {

@@ -35,19 +35,19 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var Vec3f = $module$kool.de.fabmax.kool.math.Vec3f;
   var Color = $module$kool.de.fabmax.kool.util.Color;
   var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
+  var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
+  var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
+  var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_iiyuln$;
   var MeshInstanceList = $module$kool.de.fabmax.kool.util.MeshInstanceList;
   var listOf = Kotlin.kotlin.collections.listOf_mh5how$;
+  var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
+  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
   var ShaderModel = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel;
   var ModeledShader = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader;
-  var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
-  var ModelVar4f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar4f;
-  var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
   var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
   var ShaderModel$ShaderModel$VertexStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.VertexStageBuilder;
   var ShaderModel$ShaderModel$FragmentStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.FragmentStageBuilder;
-  var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
-  var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_iiyuln$;
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
   var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
@@ -66,7 +66,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
   var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
   var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
-  var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var listOf_0 = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var ShadowMapPass = $module$kool.de.fabmax.kool.util.ShadowMapPass;
   var Math_0 = Math;
@@ -153,10 +152,11 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var toString_1 = $module$kool.de.fabmax.kool.toString_lcymw2$;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
-  var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
+  var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
   var ModelVar3fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3fConst;
+  var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
   var ModelVar1fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar1fConst;
   var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
   var ShaderStage = $module$kool.de.fabmax.kool.pipeline.ShaderStage;
@@ -173,14 +173,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
   var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_y4avn7$;
-  var ModelVar2f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar2f;
-  var ModelVar4fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar4fConst;
-  var ModeledShader$TextureColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.TextureColor;
-  var ModeledShader$CubeMapColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.CubeMapColor;
-  var CubeMapTexture = $module$kool.de.fabmax.kool.pipeline.CubeMapTexture;
   var split = Kotlin.kotlin.text.split_ip8yn$;
-  MatColorNode.prototype = Object.create(ShaderNode.prototype);
-  MatColorNode.prototype.constructor = MatColorNode;
   MultiLightDemo$LightMesh.prototype = Object.create(TransformGroup.prototype);
   MultiLightDemo$LightMesh.prototype.constructor = MultiLightDemo$LightMesh;
   ColorGridContent.prototype = Object.create(PbrDemo$PbrContent.prototype);
@@ -213,12 +206,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   TreeGenerator$TreeNode.prototype.constructor = TreeGenerator$TreeNode;
   TreeTopPointDistribution.prototype = Object.create(PointDistribution.prototype);
   TreeTopPointDistribution.prototype.constructor = TreeTopPointDistribution;
-  EquiRectCoords.prototype = Object.create(ShaderNode.prototype);
-  EquiRectCoords.prototype.constructor = EquiRectCoords;
-  DecodeRgbeNode.prototype = Object.create(ShaderNode.prototype);
-  DecodeRgbeNode.prototype.constructor = DecodeRgbeNode;
-  DecodeAndToneMapRgbeNode.prototype = Object.create(ShaderNode.prototype);
-  DecodeAndToneMapRgbeNode.prototype.constructor = DecodeAndToneMapRgbeNode;
   function demo(startScene) {
     if (startScene === void 0)
       startScene = null;
@@ -239,7 +226,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     this.newScenes_0 = ArrayList_init();
     this.currentScenes_0 = ArrayList_init();
     this.defaultScene_0 = new Demo$DemoEntry('PBR/IBL Demo', void 0, Demo$defaultScene$lambda);
-    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR/IBL Demo', void 0, Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light Demo', void 0, Demo$demos$lambda_0)), to('simplificationDemo', new Demo$DemoEntry('Simplification Demo', void 0, Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Tree Demo', void 0, Demo$demos$lambda_2)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_3))]);
+    this.demos_0 = mutableMapOf([to('pbrDemo', new Demo$DemoEntry('PBR/IBL Demo', void 0, Demo$demos$lambda)), to('multiLightDemo', new Demo$DemoEntry('Multi Light Demo', void 0, Demo$demos$lambda_0)), to('simplificationDemo', new Demo$DemoEntry('Simplification Demo', void 0, Demo$demos$lambda_1)), to('treeDemo', new Demo$DemoEntry('Tree Demo', void 0, Demo$demos$lambda_2)), to('instanceDemo', new Demo$DemoEntry('Instanced Demo', void 0, Demo$demos$lambda_3)), to('helloWorldDemo', new Demo$DemoEntry('Hello World', true, Demo$demos$lambda_4))]);
     var tmp$;
     var $receiver = ctx.scenes;
     var element = this.dbgOverlay_0.ui;
@@ -433,6 +420,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return Unit;
   }
   function Demo$demos$lambda_3($receiver, it) {
+    $receiver.add_11rb$(instanceDemo(it));
+    return Unit;
+  }
+  function Demo$demos$lambda_4($receiver, it) {
     $receiver.add_11rb$(helloWorldScene());
     return Unit;
   }
@@ -528,67 +519,92 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.lighting.singleLight_q9zcvo$(helloWorldScene$lambda$lambda_0);
     return $receiver;
   }
-  function instanceTest$lambda$lambda$lambda($receiver) {
+  function instanceDemo$lambda$lambda(this$) {
+    return function ($receiver) {
+      var $receiver_0 = this$.camera;
+      var tmp$;
+      Kotlin.isType(tmp$ = $receiver_0, PerspectiveCamera) ? tmp$ : throwCCE();
+      $receiver_0.clipNear = 1.0;
+      $receiver_0.clipFar = 500.0;
+      $receiver.unaryPlus_uv0sim$($receiver_0);
+      $receiver.minZoom = 1.0;
+      $receiver.maxZoom = 250.0;
+      $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
+      $receiver.zoom = 150.0;
+      $receiver.setMouseRotation_dleff0$(30.0, -40.0);
+      return Unit;
+    };
+  }
+  function instanceDemo$lambda$lambda$lambda($receiver) {
     var $receiver_0 = $receiver.cubeProps.defaults();
     $receiver_0.colored_6taknv$(false);
     $receiver_0.centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
-  function instanceTest$lambda$lambda($receiver) {
-    $receiver.generate_v2sixm$(instanceTest$lambda$lambda$lambda);
-    var $receiver_0 = new MeshInstanceList(listOf(MeshInstanceList.Companion.MODEL_MAT));
-    for (var x = -1; x <= 1; x++) {
-      for (var y = -1; y <= 1; y++) {
+  function instanceDemo$lambda$lambda$lambda_0(closure$instanceList, closure$n3, closure$offsets, closure$ctx, closure$rotAxis) {
+    return function ($receiver, it) {
+      var $receiver_0 = closure$instanceList;
+      var closure$n3_0 = closure$n3;
+      var closure$offsets_0 = closure$offsets;
+      var closure$ctx_0 = closure$ctx;
+      var closure$rotAxis_0 = closure$rotAxis;
+      $receiver_0.clear();
+      for (var i = 0; i < closure$n3_0; i++) {
         $receiver_0.checkBufferSize_za3lpa$();
         var szBefore = $receiver_0.dataF.position;
-        $receiver_0.dataF.put_q3cr5i$((new Mat4f()).translate_y2kzbl$(x * 3.0, y * 3.0, 0.0).matrix);
+        $receiver_0.dataF.put_q3cr5i$((new Mat4f()).translate_czzhiu$(closure$offsets_0.get_za3lpa$(i)).rotate_ad55pp$(closure$ctx_0.time * 120 * closure$rotAxis_0.get_za3lpa$(i).length(), closure$rotAxis_0.get_za3lpa$(i)).matrix);
         var growSz = $receiver_0.dataF.position - szBefore | 0;
         if (growSz !== $receiver_0.instanceSizeF) {
           throw IllegalStateException_init('Expected data to grow by ' + $receiver_0.instanceSizeF + ' elements, instead it grew by ' + growSz);
         }$receiver_0.numInstances = $receiver_0.numInstances + 1 | 0;
+        $receiver_0.hasChanged = true;
       }
-    }
-    $receiver.instances = $receiver_0;
-    var $receiver_1 = new ShaderModel();
-    var ifColors = {v: null};
-    var $receiver_2 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver_1);
-    ifColors.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifColors', $receiver_2.attrColors().output);
-    var instModelMat = $receiver_2.instanceAttrModelMat().output;
-    var mvpMat = $receiver_2.premultipliedMvpNode().outMvpMat;
-    var mvp = $receiver_2.multiplyNode_ze33is$(mvpMat, instModelMat).output;
-    $receiver_2.positionOutput = $receiver_2.vertexPositionNode_ze33is$($receiver_2.attrPositions().output, mvp).outPosition;
-    var $receiver_3 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver_1);
-    $receiver_3.colorOutput = $receiver_3.unlitMaterialNode_r20yfm$(ifColors.v.output).outColor;
-    $receiver.pipelineLoader = new ModeledShader($receiver_1);
-    return Unit;
+      return Unit;
+    };
   }
-  function instanceTest() {
-    var ctx = createDefaultContext();
-    var tmp$ = ctx.scenes;
+  function instanceDemo$lambda$lambda_0(closure$ctx) {
+    return function ($receiver) {
+      $receiver.generate_v2sixm$(instanceDemo$lambda$lambda$lambda);
+      var n = 20;
+      var n3 = Kotlin.imul(Kotlin.imul(n, n), n);
+      var instanceList = new MeshInstanceList(listOf(MeshInstanceList.Companion.MODEL_MAT), n3);
+      $receiver.instances = instanceList;
+      var rotAxis = ArrayList_init();
+      var offsets = ArrayList_init();
+      for (var x = 0; x < n; x++) {
+        for (var y = 0; y < n; y++) {
+          for (var z = 0; z < n; z++) {
+            var element = new MutableVec3f((x - n * 0.5) * 5.0 + randomF(-2.0, 2.0), (y - n * 0.5) * 5.0 + randomF(-2.0, 2.0), (z - n * 0.5) * 5.0 + randomF(-2.0, 2.0));
+            offsets.add_11rb$(element);
+            var element_0 = new MutableVec3f(randomF(-1.0, 1.0), randomF(-1.0, 1.0), randomF(-1.0, 1.0));
+            rotAxis.add_11rb$(element_0);
+          }
+        }
+      }
+      var $receiver_0 = $receiver.onPreRender;
+      var element_1 = instanceDemo$lambda$lambda$lambda_0(instanceList, n3, offsets, closure$ctx, rotAxis);
+      $receiver_0.add_11rb$(element_1);
+      var $receiver_1 = new ShaderModel();
+      var ifColors = {v: null};
+      var $receiver_2 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver_1);
+      ifColors.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifColors', $receiver_2.attrColors().output);
+      var instModelMat = $receiver_2.instanceAttrModelMat().output;
+      var mvpMat = $receiver_2.premultipliedMvpNode().outMvpMat;
+      var mvp = $receiver_2.multiplyNode_ze33is$(mvpMat, instModelMat).output;
+      $receiver_2.positionOutput = $receiver_2.vertexPositionNode_ze33is$($receiver_2.attrPositions().output, mvp).outPosition;
+      var $receiver_3 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver_1);
+      $receiver_3.colorOutput = $receiver_3.unlitMaterialNode_r20yfm$(ifColors.v.output).outColor;
+      $receiver.pipelineLoader = new ModeledShader($receiver_1);
+      return Unit;
+    };
+  }
+  function instanceDemo(ctx) {
     var $receiver = new Scene_init(null);
-    defaultCamTransform($receiver);
-    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, instanceTest$lambda$lambda));
-    tmp$.add_11rb$($receiver);
-    ctx.run();
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, instanceDemo$lambda$lambda($receiver)));
+    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, instanceDemo$lambda$lambda_0(ctx)));
+    return $receiver;
   }
-  function MatColorNode(graph, inputMat) {
-    ShaderNode.call(this, 'matColor', graph);
-    this.inputMat = inputMat;
-    this.output = new ShaderNodeIoVar(new ModelVar4f('matOutCol'));
-  }
-  MatColorNode.prototype.setup_llmhyc$ = function (shaderGraph) {
-    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_7qvs0d$(this.inputMat);
-  };
-  MatColorNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$(this.output.declare() + ' = vec4(' + this.inputMat.name + '[1].xyz, 1.0);');
-  };
-  MatColorNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MatColorNode',
-    interfaces: [ShaderNode]
-  };
   function multiLightDemo(ctx) {
     return (new MultiLightDemo(ctx)).scenes;
   }
@@ -8885,236 +8901,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.unaryPlus_uv0sim$(embeddedUi(10.0, 10.0, dps(400.0), void 0, uiDemoScene$lambda$lambda_1));
     return $receiver;
   }
-  function EquiRectCoords(graph) {
-    ShaderNode.call(this, 'equiRect', graph);
-    this.input = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f.Companion.ZERO));
-    this.outUv = new ShaderNodeIoVar(new ModelVar2f('equiRect_uv'), this);
-  }
-  EquiRectCoords.prototype.setup_llmhyc$ = function (shaderGraph) {
-    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_7qvs0d$(this.input);
-  };
-  EquiRectCoords.prototype.generateCode_626509$ = function (generator) {
-    ShaderNode.prototype.generateCode_626509$.call(this, generator);
-    generator.appendFunction_puj7f4$('invAtan', 'const vec2 invAtan = vec2(0.1591, 0.3183);');
-    generator.appendMain_61zpoe$('\n' + '            vec3 equiRect_in = normalize(' + this.input.ref3f() + ');' + '\n' + '            ' + this.outUv.declare() + ' = vec2(atan(equiRect_in.z, equiRect_in.x), -asin(equiRect_in.y));' + '\n' + '            ' + this.outUv.ref2f() + ' *= invAtan;' + '\n' + '            ' + this.outUv.ref2f() + ' += 0.5;' + '\n' + '        ');
-  };
-  EquiRectCoords.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'EquiRectCoords',
-    interfaces: [ShaderNode]
-  };
-  function DecodeRgbeNode(graph) {
-    ShaderNode.call(this, 'decodeRgbe', graph);
-    this.input = new ShaderNodeIoVar(new ModelVar4fConst(Color.Companion.MAGENTA));
-    this.outColor = new ShaderNodeIoVar(new ModelVar4f('decodeRgbe_outColor'), this);
-  }
-  DecodeRgbeNode.prototype.setup_llmhyc$ = function (shaderGraph) {
-    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_7qvs0d$(this.input);
-  };
-  DecodeRgbeNode.prototype.generateCode_626509$ = function (generator) {
-    ShaderNode.prototype.generateCode_626509$.call(this, generator);
-    generator.appendMain_61zpoe$('\n' + '            // decode rgbe' + '\n' + '            ' + this.outColor.declare() + ' = vec4(' + this.input.ref3f() + ' * pow(2.0, ' + this.input.ref4f() + '.w * 255.0 - 127.0), 1.0);' + '\n' + '        ');
-  };
-  DecodeRgbeNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DecodeRgbeNode',
-    interfaces: [ShaderNode]
-  };
-  function DecodeAndToneMapRgbeNode(graph) {
-    ShaderNode.call(this, 'decodeRgbe', graph);
-    this.input = new ShaderNodeIoVar(new ModelVar4fConst(Color.Companion.MAGENTA));
-    this.outColor = new ShaderNodeIoVar(new ModelVar4f('decodeRgbe_outColor'), this);
-  }
-  DecodeAndToneMapRgbeNode.prototype.setup_llmhyc$ = function (shaderGraph) {
-    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_7qvs0d$(this.input);
-  };
-  DecodeAndToneMapRgbeNode.prototype.generateCode_626509$ = function (generator) {
-    ShaderNode.prototype.generateCode_626509$.call(this, generator);
-    generator.appendFunction_puj7f4$('uncharted2ToneMap', '\n            vec3 uncharted2Tonemap_func(vec3 x) {\n                float A = 0.15;\n                float B = 0.50;\n                float C = 0.10;\n                float D = 0.20;\n                float E = 0.02;\n                float F = 0.30;\n                \n                return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;\n            }\n            \n            vec3 uncharted2Tonemap(vec3 rgbLinear) {\n                float W = 11.2;\n                \n                float ExposureBias = 2.0;\n                vec3 curr = uncharted2Tonemap_func(ExposureBias * rgbLinear);\n                \n                vec3 whiteScale = 1.0 / uncharted2Tonemap_func(vec3(W));\n                vec3 color = curr * whiteScale;\n                \n                return pow(color, vec3(1.0 / 2.2));\n            }\n        ');
-    generator.appendFunction_puj7f4$('acesFilm', '\n            vec3 ACESFilm(vec3 x) {\n                float a = 2.51f;\n                float b = 0.03f;\n                float c = 2.43f;\n                float d = 0.59f;\n                float e = 0.14f;\n                vec3 color = clamp((x*(a*x+b))/(x*(c*x+d)+e), 0.0, 1.0);\n                return pow(color, vec3(1.0 / 2.2));\n            }\n        ');
-    generator.appendMain_61zpoe$('\n' + '            // decode rgbe' + '\n' + '            //' + this.outColor.declare() + ' = vec4(' + this.input.ref3f() + ' * pow(2.0, ' + this.input.ref4f() + '.w * 255.0 - 127.0), 1.0);' + '\n' + '            ' + this.outColor.declare() + ' = vec4(' + this.input.ref3f() + ' * pow(2.0, ' + this.input.ref4f() + '.w * 255.0 - 128.0), 1.0);' + '\n' + '\n' + '            //' + this.outColor + '.rgb = 0.5 * pow(' + this.outColor + '.rgb, vec3(0.9));' + '\n' + '            //' + this.outColor + '.rgb = ' + this.outColor + '.rgb / (' + this.outColor + '.rgb + vec3(1.0));' + '\n' + '            ' + '\n' + '            //' + this.outColor + '.rgb = pow(' + this.outColor + '.rgb, vec3(1.0 / 2.2));' + '\n' + '\n' + '            // from: http://filmicworlds.com/blog/filmic-tonemapping-operators/' + '\n' + '            // Jim Hejl and Richard Burgess-Dawson' + '\n' + '            // no need for pow(rgb, 1.0/2.2)!' + '\n' + '            vec3 x = max(vec3(0), ' + this.outColor + '.rgb - 0.004);' + '\n' + '            ' + this.outColor + '.rgb = (x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06);' + '\n' + '            ' + '\n' + '            // uncharted 2' + '\n' + '            //' + this.outColor + '.rgb = uncharted2Tonemap(' + this.outColor + '.rgb);' + '\n' + '            ' + '\n' + '            // https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/' + '\n' + '            //' + this.outColor + '.rgb = ACESFilm(' + this.outColor + '.rgb);' + '\n' + '            ' + '\n' + '            // maybe also worth a try:' + '\n' + '            //https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl' + '\n' + '        ');
-  };
-  DecodeAndToneMapRgbeNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DecodeAndToneMapRgbeNode',
-    interfaces: [ShaderNode]
-  };
-  function testScene$lambda$lambda$lambda($receiver) {
-    var $receiver_0 = $receiver.sphereProps.defaults();
-    $receiver_0.steps = 4;
-    $receiver_0.center.set_y2kzbl$(3.0, 0.0, 0.0);
-    $receiver.icoSphere_mojs8w$($receiver.sphereProps);
-    return Unit;
-  }
-  function Coroutine$testScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$testScene$lambda$lambda$lambda$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$testScene$lambda$lambda$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$testScene$lambda$lambda$lambda$lambda$lambda.prototype.constructor = Coroutine$testScene$lambda$lambda$lambda$lambda$lambda;
-  Coroutine$testScene$lambda$lambda$lambda$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('world.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function testScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$testScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function testScene$lambda$lambda$lambda$lambda(this$) {
-    return function (it) {
-      this$.textureSampler.texture = new Texture(void 0, testScene$lambda$lambda$lambda$lambda$lambda);
-      return Unit;
-    };
-  }
-  function testScene$lambda$lambda($receiver) {
-    $receiver.generate_v2sixm$(testScene$lambda$lambda$lambda);
-    var $receiver_0 = new ModeledShader$TextureColor();
-    $receiver_0.onCreated.add_11rb$(testScene$lambda$lambda$lambda$lambda($receiver_0));
-    $receiver.pipelineLoader = $receiver_0;
-    return Unit;
-  }
-  function testScene$lambda$lambda$lambda_0($receiver) {
-    var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colored_6taknv$();
-    $receiver_0.centered();
-    $receiver.cube_lhbb6w$($receiver.cubeProps);
-    return Unit;
-  }
-  function Coroutine$testScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$testScene$lambda$lambda$lambda$lambda$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$testScene$lambda$lambda$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$testScene$lambda$lambda$lambda$lambda$lambda_0.prototype.constructor = Coroutine$testScene$lambda$lambda$lambda$lambda$lambda_0;
-  Coroutine$testScene$lambda$lambda$lambda$lambda$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadCubeMapTextureData_r3y0ew$('skybox/y-up/sky_ft.jpg', 'skybox/y-up/sky_bk.jpg', 'skybox/y-up/sky_lt.jpg', 'skybox/y-up/sky_rt.jpg', 'skybox/y-up/sky_up.jpg', 'skybox/y-up/sky_dn.jpg', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function testScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$testScene$lambda$lambda$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function testScene$lambda$lambda$lambda$lambda_0(this$) {
-    return function (it) {
-      this$.cubeMapSampler.texture = new CubeMapTexture(void 0, testScene$lambda$lambda$lambda$lambda$lambda_0);
-      return Unit;
-    };
-  }
-  function testScene$lambda$lambda_0($receiver) {
-    $receiver.generate_v2sixm$(testScene$lambda$lambda$lambda_0);
-    var $receiver_0 = new ModeledShader$CubeMapColor();
-    $receiver_0.onCreated.add_11rb$(testScene$lambda$lambda$lambda$lambda_0($receiver_0));
-    $receiver.pipelineLoader = $receiver_0;
-    return Unit;
-  }
-  function testScene$lambda$lambda$lambda_1($receiver) {
-    var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colored_6taknv$();
-    $receiver_0.centered();
-    $receiver_0.origin.x = $receiver_0.origin.x - 3.0;
-    $receiver.cube_lhbb6w$($receiver.cubeProps);
-    return Unit;
-  }
-  function testScene$lambda$lambda_1($receiver) {
-    $receiver.generate_v2sixm$(testScene$lambda$lambda$lambda_1);
-    $receiver.pipelineLoader = new ModeledShader$VertexColor();
-    return Unit;
-  }
-  function testScene$lambda$lambda_2(closure$ctx, this$) {
-    return function (envTex) {
-      var cubeMapPass = new ReflectionMapPass(envTex);
-      var $receiver = closure$ctx.offscreenPasses;
-      var element = cubeMapPass.offscreenPass;
-      $receiver.add_11rb$(element);
-      var skyTex = cubeMapPass.reflectionMap;
-      this$.plusAssign_f1kmr1$(new Skybox(skyTex, 1.2));
-      return Unit;
-    };
-  }
-  function testScene() {
-    var ctx = createDefaultContext();
-    ctx.assetMgr.assetsBaseDir = '../assets';
-    var tmp$ = ctx.scenes;
-    var $receiver = new Scene_init(null);
-    defaultCamTransform($receiver);
-    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, testScene$lambda$lambda));
-    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, void 0, testScene$lambda$lambda_0));
-    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, testScene$lambda$lambda_1));
-    ctx.assetMgr.loadAndPrepareTexture_hd4f6p$('skybox/hdri/newport_loft.rgbe.png', void 0, testScene$lambda$lambda_2(ctx, $receiver));
-    tmp$.add_11rb$($receiver);
-    ctx.run();
-  }
   function main() {
     Demo$Companion_getInstance().setProperty_bm4g0d$('assetsBaseDir', '../assets');
     demo(getParams().get_11rb$('demo'));
@@ -9150,8 +8936,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   package$demo.Cycler = Cycler;
   $$importsForInline$$.kool = $module$kool;
   package$demo.helloWorldScene = helloWorldScene;
-  package$demo.instanceTest = instanceTest;
-  package$demo.MatColorNode = MatColorNode;
+  package$demo.instanceDemo_aemszp$ = instanceDemo;
   package$demo.multiLightDemo_aemszp$ = multiLightDemo;
   Object.defineProperty(MultiLightDemo, 'Companion', {
     get: MultiLightDemo$Companion_getInstance
@@ -9193,10 +8978,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   package$demo.TreeGenerator = TreeGenerator;
   package$demo.TreeTopPointDistribution = TreeTopPointDistribution;
   package$demo.uiDemoScene = uiDemoScene;
-  _.EquiRectCoords = EquiRectCoords;
-  _.DecodeRgbeNode = DecodeRgbeNode;
-  _.DecodeAndToneMapRgbeNode = DecodeAndToneMapRgbeNode;
-  _.testScene = testScene;
   _.main = main;
   _.getParams = getParams;
   main();

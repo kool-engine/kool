@@ -78,7 +78,9 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
         ctx.gl.useProgram(prog)
         attributes.values.forEach { attr ->
             for (i in 0 until attr.attribute.props.nSlots) {
-                ctx.gl.enableVertexAttribArray(attr.location + i)
+                val location = attr.location + i
+                ctx.gl.enableVertexAttribArray(location)
+                ctx.gl.vertexAttribDivisor(location, 0)
             }
         }
         instanceAttributes.values.forEach { attr ->
@@ -272,14 +274,21 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 }
             }
 
-            if (instanceBuffer == null) {
-                mesh.instances?.let { instances ->
-                    instanceBuffer = BufferResource(ARRAY_BUFFER, ctx)
-                    for (instanceAttrib in instances.instanceAttributes) {
-                        val stride = instances.strideBytesF
-                        val offset = instances.attributeOffsets[instanceAttrib]!! / 4
+            val instanceList = mesh.instances
+            if (instanceList != null) {
+                var instBuf = instanceBuffer
+                if (instBuf == null) {
+                    instBuf = BufferResource(ARRAY_BUFFER, ctx)
+                    instanceBuffer = instBuf
+                    for (instanceAttrib in instanceList.instanceAttributes) {
+                        val stride = instanceList.strideBytesF
+                        val offset = instanceList.attributeOffsets[instanceAttrib]!! / 4
                         instanceAttribBinders += instanceAttributes.makeAttribBinders(instanceAttrib, instanceBuffer!!, stride, offset)
                     }
+                }
+                if (instanceList.hasChanged) {
+                    instBuf.setData(instanceList.dataF, instanceList.usage.glUsage(), ctx)
+                    ctx.afterRenderActions += { instanceList.hasChanged = false }
                 }
             }
 
@@ -293,9 +302,6 @@ class CompiledShader(val prog: WebGLProgram?, pipeline: Pipeline, val ctx: JsCon
                 numIndices = md.numIndices
                 dataBufferF?.setData(md.dataF, usage, ctx)
                 dataBufferI?.setData(md.dataI, usage, ctx)
-                mesh.instances?.let { insts ->
-                    instanceBuffer?.setData(insts.dataF, insts.usage.glUsage(), ctx)
-                }
 
                 // fixme: data buffers should be bound to mesh, not to shader instance
                 // if mesh is rendered multiple times (e.g. by additional shadow passes), clearing
