@@ -157,12 +157,23 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             val ifTangents: StageInterfaceNode?
             val ifFragPos: StageInterfaceNode
             val ifTexCoords: StageInterfaceNode?
-            val mvp: UniformBufferMvp
+            val mvpNode: UniformBufferMvp
             val shadowedLightNode: ShadowedLightNode?
 
             vertexStage {
-                mvp = mvpNode()
-                val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
+                val modelMat: ShaderNodeIoVar
+                val mvpMat: ShaderNodeIoVar
+
+                mvpNode = mvpNode()
+                if (cfg.isInstanced) {
+                    modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
+                    mvpMat = multiplyNode(mvpNode.outMvpMat, instanceAttrModelMat().output).output
+                } else {
+                    modelMat = mvpNode.outModelMat
+                    mvpMat = mvpNode.outMvpMat
+                }
+
+                val nrm = transformNode(attrNormals().output, modelMat, 0f)
                 ifNormals = stageInterfaceNode("ifNormals", nrm.output)
 
                 ifTexCoords = if (cfg.requiresTexCoords()) {
@@ -180,7 +191,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 } else {
                     attrPositions().output
                 }
-                val pos = transformNode(worldPos, mvp.outModelMat, 1f).output
+                val pos = transformNode(worldPos, modelMat, 1f).output
                 ifFragPos = stageInterfaceNode("ifFragPos", pos)
 
                 ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
@@ -189,22 +200,22 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tan = transformNode(attrTangents().output, mvp.outModelMat, 0f)
+                    val tan = transformNode(attrTangents().output, modelMat, 0f)
                     stageInterfaceNode("ifTangents", tan.output)
                 } else {
                     null
                 }
 
                 shadowedLightNode = if (cfg.isReceivingShadows) {
-                    shadowedLightNode(worldPos, mvp.outModelMat, "depthMap", cfg.maxLights)
+                    shadowedLightNode(worldPos, modelMat, "depthMap", cfg.maxLights)
                 } else {
                     null
                 }
 
-                positionOutput = vertexPositionNode(worldPos, mvp.outMvpMat).outPosition
+                positionOutput = vertexPositionNode(worldPos, mvpMat).outPosition
             }
             fragmentStage {
-                val mvpFrag = mvp.addToStage(fragmentStageGraph)
+                val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
                 val lightNode = shadowedLightNode?.fragmentNode ?: defaultLightNode(cfg.maxLights)
 
                 val reflMap: CubeMapNode?
@@ -278,6 +289,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
         var maxLights = 4
         var isReceivingShadows = false
+
+        var isInstanced = false
 
         // initial shader values
         var albedo = Color.GRAY

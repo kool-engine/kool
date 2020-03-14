@@ -65,12 +65,20 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
             val ifTexCoords: StageInterfaceNode?
             val ifTangents: StageInterfaceNode?
             val ifFragPos: StageInterfaceNode
-            val mvp: UniformBufferMvp
+            val mvpNode: UniformBufferMvp
 
             vertexStage {
-                mvp = mvpNode()
-                val nrm = transformNode(attrNormals().output, mvp.outModelMat, 0f)
-                ifNormals = stageInterfaceNode("ifNormals", nrm.output)
+                val modelMat: ShaderNodeIoVar
+                val mvpMat: ShaderNodeIoVar
+
+                mvpNode = mvpNode()
+                if (cfg.isInstanced) {
+                    modelMat = multiplyNode(mvpNode.outModelMat, instanceAttrModelMat().output).output
+                    mvpMat = multiplyNode(mvpNode.outMvpMat, instanceAttrModelMat().output).output
+                } else {
+                    modelMat = mvpNode.outModelMat
+                    mvpMat = mvpNode.outMvpMat
+                }
 
                 ifColors = if (cfg.albedoSource == Albedo.VERTEX_ALBEDO) {
                     stageInterfaceNode("ifColors", attrColors().output)
@@ -83,18 +91,20 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                     null
                 }
                 ifTangents = if (cfg.isNormalMapped) {
-                    val tan = transformNode(attrTangents().output, mvp.outModelMat, 0f)
+                    val tan = transformNode(attrTangents().output, modelMat, 0f)
                     stageInterfaceNode("ifTangents", tan.output)
                 } else {
                     null
                 }
+                val nrm = transformNode(attrNormals().output, modelMat, 0f)
+                ifNormals = stageInterfaceNode("ifNormals", nrm.output)
 
-                val worldPos = transformNode(attrPositions().output, mvp.outModelMat, 1f).output
+                val worldPos = transformNode(attrPositions().output, modelMat, 1f).output
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
-                positionOutput = vertexPositionNode(attrPositions().output, mvp.outMvpMat).outPosition
+                positionOutput = vertexPositionNode(attrPositions().output, mvpMat).outPosition
             }
             fragmentStage {
-                val mvpFrag = mvp.addToStage(fragmentStageGraph)
+                val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
                 val lightNode = defaultLightNode()
 
                 val albedo = when (cfg.albedoSource) {
@@ -131,6 +141,8 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
         var albedo = Color.GRAY
         var shininess = 20f
         var specularIntensity = 1f
+
+        var isInstanced = false
 
         var albedoMap: Texture? = null
         var normalMap: Texture? = null
