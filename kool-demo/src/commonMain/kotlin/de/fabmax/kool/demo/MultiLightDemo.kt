@@ -78,7 +78,7 @@ class MultiLightDemo(ctx: KoolContext) {
         lights.forEach { +it }
         updateLighting()
 
-        ctx.loadModel("bunny.kmfz", 0.05f, Vec3f(0f, 3.75f, 0f)) {
+        ctx.loadModel("bunny.kmfz", 1f, Vec3f.ZERO) {
             +it
 
             val cfg = PbrShader.PbrConfig().apply {

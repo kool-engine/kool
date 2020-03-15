@@ -195,11 +195,11 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                     var lastInstances = -1
                     onPreRender += { c ->
                         val numPipelines = c.engineStats.pipelines.size
-                        val numInstances = c.engineStats.numPipelineInstances
-                        if (numInstances != lastInstances || numPipelines != lastPipelines) {
+                        val numDrawCmds = c.engineStats.numDrawCommands
+                        if (numDrawCmds != lastInstances || numPipelines != lastPipelines) {
                             lastPipelines = numPipelines
-                            lastInstances = numInstances
-                            text = "$numPipelines Shaders / $numInstances Instances"
+                            lastInstances = numDrawCmds
+                            text = "$numPipelines Shaders / $numDrawCmds Cmds"
                         }
                     }
                 }

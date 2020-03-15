@@ -572,6 +572,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   PrimitiveType.prototype.constructor = PrimitiveType;
   Usage.prototype = Object.create(Enum.prototype);
   Usage.prototype.constructor = Usage;
+  InstancedLodController.prototype = Object.create(Node.prototype);
+  InstancedLodController.prototype.constructor = InstancedLodController;
   KdTree$KdNode.prototype = Object.create(SpatialTree$Node.prototype);
   KdTree$KdNode.prototype.constructor = KdTree$KdNode;
   KdTree.prototype = Object.create(SpatialTree.prototype);
@@ -1591,6 +1593,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.totalTextureSize_4hd4e0$_0 = L0;
     this.pipelines = LinkedHashMap_init();
     this.numPipelineInstances_ikf7d6$_0 = 0;
+    this.numDrawCommands_4id88y$_0 = 0;
     this.numPrimitives_jhh8ci$_0 = 0;
   }
   Object.defineProperty(EngineStats.prototype, 'totalBufferSize', {
@@ -1615,6 +1618,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     },
     set: function (numPipelineInstances) {
       this.numPipelineInstances_ikf7d6$_0 = numPipelineInstances;
+    }
+  });
+  Object.defineProperty(EngineStats.prototype, 'numDrawCommands', {
+    get: function () {
+      return this.numDrawCommands_4id88y$_0;
+    },
+    set: function (numDrawCommands) {
+      this.numDrawCommands_4id88y$_0 = numDrawCommands;
     }
   });
   Object.defineProperty(EngineStats.prototype, 'numPrimitives', {
@@ -1665,8 +1676,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if ((tmp$ = this.pipelines.remove_11rb$(pipelineId)) != null) {
       this.numPipelineInstances = this.numPipelineInstances - tmp$ | 0;
     }};
-  EngineStats.prototype.resetPrimitveCount = function () {
+  EngineStats.prototype.resetPerFrameCounts = function () {
+    this.numDrawCommands = 0;
     this.numPrimitives = 0;
+  };
+  EngineStats.prototype.addDrawCommandCount_za3lpa$ = function (nCommands) {
+    this.numDrawCommands = this.numDrawCommands + nCommands | 0;
   };
   EngineStats.prototype.addPrimitiveCount_za3lpa$ = function (nPrimitives) {
     this.numPrimitives = this.numPrimitives + nPrimitives | 0;
@@ -16377,12 +16392,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var ifTangents = {v: null};
     var ifFragPos = {v: null};
     var ifTexCoords = {v: null};
-    var mvp = {v: null};
+    var mvpNode = {v: null};
     var shadowedLightNode = {v: null};
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
     var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-    mvp.v = $receiver_0.mvpNode();
-    var nrm = $receiver_0.transformNode_vid4wo$($receiver_0.attrNormals().output, mvp.v.outModelMat, 0.0);
+    var modelMat;
+    var mvpMat;
+    mvpNode.v = $receiver_0.mvpNode();
+    if (cfg.isInstanced) {
+      modelMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outModelMat, $receiver_0.instanceAttrModelMat().output).output;
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outMvpMat, $receiver_0.instanceAttrModelMat().output).output;
+    } else {
+      modelMat = mvpNode.v.outModelMat;
+      mvpMat = mvpNode.v.outMvpMat;
+    }
+    var nrm = $receiver_0.transformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
     ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.output);
     if (cfg.requiresTexCoords()) {
       tmp$ = $receiver_0.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_0.attrTexCoords().output);
@@ -16400,7 +16424,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       tmp$_0 = $receiver_0.attrPositions().output;
     }
     var worldPos = tmp$_0;
-    var pos = $receiver_0.transformNode_vid4wo$(worldPos, mvp.v.outModelMat, 1.0).output;
+    var pos = $receiver_0.transformNode_vid4wo$(worldPos, modelMat, 1.0).output;
     ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', pos);
     if (cfg.albedoSource === Albedo$VERTEX_ALBEDO_getInstance()) {
       tmp$_1 = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
@@ -16409,22 +16433,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     ifColors.v = tmp$_1;
     if (cfg.isNormalMapped) {
-      var tan = $receiver_0.transformNode_vid4wo$($receiver_0.attrTangents().output, mvp.v.outModelMat, 0.0);
+      var tan = $receiver_0.transformNode_vid4wo$($receiver_0.attrTangents().output, modelMat, 0.0);
       tmp$_2 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.output);
     } else {
       tmp$_2 = null;
     }
     ifTangents.v = tmp$_2;
     if (cfg.isReceivingShadows) {
-      tmp$_3 = $receiver_0.shadowedLightNode_jciouo$(worldPos, mvp.v.outModelMat, 'depthMap', cfg.maxLights);
+      tmp$_3 = $receiver_0.shadowedLightNode_jciouo$(worldPos, modelMat, 'depthMap', cfg.maxLights);
     } else {
       tmp$_3 = null;
     }
     shadowedLightNode.v = tmp$_3;
-    $receiver_0.positionOutput = $receiver_0.vertexPositionNode_ze33is$(worldPos, mvp.v.outMvpMat).outPosition;
+    $receiver_0.positionOutput = $receiver_0.vertexPositionNode_ze33is$(worldPos, mvpMat).outPosition;
     var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver);
     var tmp$_4, tmp$_5;
-    var mvpFrag = mvp.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
+    var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
     var lightNode = (tmp$_5 = (tmp$_4 = shadowedLightNode.v) != null ? tmp$_4.fragmentNode : null) != null ? tmp$_5 : $receiver_2.defaultLightNode_za3lpa$(cfg.maxLights);
     var reflMap;
     var brdfLut;
@@ -16510,6 +16534,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isImageBasedLighting = false;
     this.maxLights = 4;
     this.isReceivingShadows = false;
+    this.isInstanced = false;
     this.albedo = Color$Companion_getInstance().GRAY;
     this.roughness = 0.5;
     this.metallic = 0.0;
@@ -16827,12 +16852,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var ifTexCoords = {v: null};
     var ifTangents = {v: null};
     var ifFragPos = {v: null};
-    var mvp = {v: null};
+    var mvpNode = {v: null};
     var $receiver_0 = new ShaderModel$VertexStageBuilder($receiver);
     var tmp$, tmp$_0, tmp$_1;
-    mvp.v = $receiver_0.mvpNode();
-    var nrm = $receiver_0.transformNode_vid4wo$($receiver_0.attrNormals().output, mvp.v.outModelMat, 0.0);
-    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.output);
+    var modelMat;
+    var mvpMat;
+    mvpNode.v = $receiver_0.mvpNode();
+    if (cfg.isInstanced) {
+      modelMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outModelMat, $receiver_0.instanceAttrModelMat().output).output;
+      mvpMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outMvpMat, $receiver_0.instanceAttrModelMat().output).output;
+    } else {
+      modelMat = mvpNode.v.outModelMat;
+      mvpMat = mvpNode.v.outMvpMat;
+    }
     if (cfg.albedoSource === Albedo$VERTEX_ALBEDO_getInstance()) {
       tmp$ = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.attrColors().output);
     } else {
@@ -16846,18 +16878,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     ifTexCoords.v = tmp$_0;
     if (cfg.isNormalMapped) {
-      var tan = $receiver_0.transformNode_vid4wo$($receiver_0.attrTangents().output, mvp.v.outModelMat, 0.0);
+      var tan = $receiver_0.transformNode_vid4wo$($receiver_0.attrTangents().output, modelMat, 0.0);
       tmp$_1 = $receiver_0.stageInterfaceNode_wtmwsg$('ifTangents', tan.output);
     } else {
       tmp$_1 = null;
     }
     ifTangents.v = tmp$_1;
-    var worldPos = $receiver_0.transformNode_vid4wo$($receiver_0.attrPositions().output, mvp.v.outModelMat, 1.0).output;
+    var nrm = $receiver_0.transformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
+    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.output);
+    var worldPos = $receiver_0.transformNode_vid4wo$($receiver_0.attrPositions().output, modelMat, 1.0).output;
     ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', worldPos);
-    $receiver_0.positionOutput = $receiver_0.vertexPositionNode_ze33is$($receiver_0.attrPositions().output, mvp.v.outMvpMat).outPosition;
+    $receiver_0.positionOutput = $receiver_0.vertexPositionNode_ze33is$($receiver_0.attrPositions().output, mvpMat).outPosition;
     var $receiver_1 = new ShaderModel$FragmentStageBuilder($receiver);
     var tmp$_2, tmp$_3;
-    var mvpFrag = mvp.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
+    var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
     var lightNode = $receiver_1.defaultLightNode_za3lpa$();
     switch (cfg.albedoSource.name) {
       case 'VERTEX_ALBEDO':
@@ -16906,6 +16940,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.albedo = Color$Companion_getInstance().GRAY;
     this.shininess = 20.0;
     this.specularIntensity = 1.0;
+    this.isInstanced = false;
     this.albedoMap = null;
     this.normalMap = null;
   }
@@ -26341,11 +26376,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function DebugOverlay_init$lambda$lambda$lambda$lambda_5(closure$lastInstances, closure$lastPipelines, this$) {
     return function ($receiver, c) {
       var numPipelines = c.engineStats.pipelines.size;
-      var numInstances = c.engineStats.numPipelineInstances;
-      if (numInstances !== closure$lastInstances.v || numPipelines !== closure$lastPipelines.v) {
+      var numDrawCmds = c.engineStats.numDrawCommands;
+      if (numDrawCmds !== closure$lastInstances.v || numPipelines !== closure$lastPipelines.v) {
         closure$lastPipelines.v = numPipelines;
-        closure$lastInstances.v = numInstances;
-        this$.text = numPipelines.toString() + ' Shaders / ' + numInstances + ' Instances';
+        closure$lastInstances.v = numDrawCmds;
+        this$.text = numPipelines.toString() + ' Shaders / ' + numDrawCmds + ' Cmds';
       }return Unit;
     };
   }
@@ -27247,6 +27282,219 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   }
   Usage.valueOf_61zpoe$ = Usage$valueOf;
+  function Comparator$ObjectLiteral_6(closure$comparison) {
+    this.closure$comparison = closure$comparison;
+  }
+  Comparator$ObjectLiteral_6.prototype.compare = function (a, b) {
+    return this.closure$comparison(a, b);
+  };
+  Comparator$ObjectLiteral_6.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  var compareBy$lambda_6 = wrapFunction(function () {
+    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
+    return function (closure$selector) {
+      return function (a, b) {
+        var selector = closure$selector;
+        return compareValues(selector(a), selector(b));
+      };
+    };
+  });
+  function InstancedLodController(name) {
+    if (name === void 0)
+      name = null;
+    Node.call(this, name);
+    this.instances = ArrayList_init_0();
+    this.lods_0 = ArrayList_init_0();
+  }
+  Object.defineProperty(InstancedLodController.prototype, 'isFrustumChecked', {
+    get: function () {
+      return false;
+    },
+    set: function (f) {
+    }
+  });
+  InstancedLodController.prototype.getInstanceCount_za3lpa$ = function (lod) {
+    if (lod < this.lods_0.size) {
+      return this.lods_0.get_za3lpa$(lod).instances.size;
+    }return 0;
+  };
+  function InstancedLodController$addLod$lambda(it) {
+    return it.maxDistance;
+  }
+  InstancedLodController.prototype.addLod_od45r7$ = function (lodMesh, maxDistance) {
+    var $receiver = this.lods_0;
+    var element = new InstancedLodController$Lod(this, lodMesh, maxDistance);
+    $receiver.add_11rb$(element);
+    var $receiver_0 = this.lods_0;
+    if ($receiver_0.size > 1) {
+      sortWith($receiver_0, new Comparator$ObjectLiteral_6(compareBy$lambda_6(InstancedLodController$addLod$lambda)));
+    }lodMesh.parent = this;
+  };
+  InstancedLodController.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
+    var tmp$;
+    Node.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
+    tmp$ = this.lods_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.lods_0.get_za3lpa$(i).mesh.scene = newScene;
+    }
+  };
+  function InstancedLodController$preRender$lambda(it) {
+    return it.camDistance;
+  }
+  InstancedLodController.prototype.preRender_aemszp$ = function (ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+    tmp$ = this.lods_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.lods_0.get_za3lpa$(i).instances.clear();
+    }
+    var cam = (tmp$_0 = this.scene) != null ? tmp$_0.camera : null;
+    if (cam != null) {
+      tmp$_1 = this.instances;
+      for (var i_0 = 0; i_0 !== tmp$_1.size; ++i_0) {
+        var inst = this.instances.get_za3lpa$(i_0);
+        inst.preRender_6otzq7$(cam, ctx);
+        if (inst.isInFrustum) {
+          for (var j = get_lastIndex(this.lods_0); j >= 0; j--) {
+            if (j === 0 || inst.camDistance > this.lods_0.get_za3lpa$(j - 1 | 0).maxDistance) {
+              this.lods_0.get_za3lpa$(j).instances.add_11rb$(inst);
+              break;
+            }}
+        }}
+    }tmp$_2 = this.lods_0;
+    for (var i_1 = 0; i_1 !== tmp$_2.size; ++i_1) {
+      var lod = this.lods_0.get_za3lpa$(i_1);
+      if (lod.instances.size > lod.maxInstances) {
+        var $receiver = lod.instances;
+        if ($receiver.size > 1) {
+          sortWith($receiver, new Comparator$ObjectLiteral_6(compareBy$lambda_6(InstancedLodController$preRender$lambda)));
+        }while (lod.instances.size > lod.maxInstances) {
+          var rmInst = lod.instances.removeAt_za3lpa$(get_lastIndex(lod.instances));
+          if (i_1 < get_lastIndex(this.lods_0)) {
+            this.lods_0.get_za3lpa$(i_1 + 1 | 0).instances.add_11rb$(rmInst);
+          }}
+      }lod.updateInstances_2shagh$(i_1, ctx);
+      lod.mesh.preRender_aemszp$(ctx);
+    }
+  };
+  InstancedLodController.prototype.render_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.lods_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.lods_0.get_za3lpa$(i).mesh.render_aemszp$(ctx);
+    }
+  };
+  InstancedLodController.prototype.postRender_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.lods_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.lods_0.get_za3lpa$(i).mesh.postRender_aemszp$(ctx);
+    }
+  };
+  InstancedLodController.prototype.dispose_aemszp$ = function (ctx) {
+    var tmp$;
+    Node.prototype.dispose_aemszp$.call(this, ctx);
+    tmp$ = this.lods_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.lods_0.get_za3lpa$(i).mesh.dispose_aemszp$(ctx);
+    }
+  };
+  function InstancedLodController$Lod($outer, mesh, maxDistance) {
+    this.$outer = $outer;
+    this.mesh = mesh;
+    this.maxDistance = maxDistance;
+    this.instances = ArrayList_init_0();
+  }
+  Object.defineProperty(InstancedLodController$Lod.prototype, 'maxInstances', {
+    get: function () {
+      var tmp$, tmp$_0;
+      return (tmp$_0 = (tmp$ = this.mesh.instances) != null ? tmp$.maxInstances : null) != null ? tmp$_0 : 0;
+    }
+  });
+  InstancedLodController$Lod.prototype.updateInstances_2shagh$ = function (iLod, ctx) {
+    var tmp$;
+    if ((tmp$ = this.mesh.instances) != null) {
+      tmp$.clear();
+      var tmp$_0;
+      tmp$_0 = this.instances.iterator();
+      while (tmp$_0.hasNext()) {
+        var element = tmp$_0.next();
+        element.addInstanceData_bgc5cs$(iLod, tmp$, ctx);
+      }
+    }};
+  InstancedLodController$Lod.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Lod',
+    interfaces: []
+  };
+  function InstancedLodController$Instance() {
+    this.instanceModelMat = new Mat4f();
+    this.center = MutableVec3f_init();
+    this.radius = 1.0;
+    this.globalRadius_jgtua1$_0 = 0.0;
+    this.camDistance_n2u3ce$_0 = 0.0;
+    this.isInFrustum_77t0d9$_0 = false;
+    this.globalCenterMut = MutableVec3f_init();
+    this.globalExtentMut = MutableVec3f_init();
+  }
+  Object.defineProperty(InstancedLodController$Instance.prototype, 'globalCenter', {
+    get: function () {
+      return this.globalCenterMut;
+    }
+  });
+  Object.defineProperty(InstancedLodController$Instance.prototype, 'globalRadius', {
+    get: function () {
+      return this.globalRadius_jgtua1$_0;
+    },
+    set: function (globalRadius) {
+      this.globalRadius_jgtua1$_0 = globalRadius;
+    }
+  });
+  Object.defineProperty(InstancedLodController$Instance.prototype, 'camDistance', {
+    get: function () {
+      return this.camDistance_n2u3ce$_0;
+    },
+    set: function (camDistance) {
+      this.camDistance_n2u3ce$_0 = camDistance;
+    }
+  });
+  Object.defineProperty(InstancedLodController$Instance.prototype, 'isInFrustum', {
+    get: function () {
+      return this.isInFrustum_77t0d9$_0;
+    },
+    set: function (isInFrustum) {
+      this.isInFrustum_77t0d9$_0 = isInFrustum;
+    }
+  });
+  InstancedLodController$Instance.prototype.preRender_6otzq7$ = function (cam, ctx) {
+    this.globalCenterMut.set_czzhiu$(this.center);
+    this.globalExtentMut.set_czzhiu$(this.center).x = this.globalExtentMut.set_czzhiu$(this.center).x + this.radius;
+    this.instanceModelMat.transform_w1lst9$(this.globalCenterMut);
+    this.instanceModelMat.transform_w1lst9$(this.globalExtentMut);
+    ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalCenterMut);
+    ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalExtentMut);
+    this.globalRadius = this.globalCenterMut.distance_czzhiu$(this.globalExtentMut);
+    this.isInFrustum = cam.isInFrustum_2qa7tb$(this.globalCenterMut, this.globalRadius);
+    this.camDistance = cam.globalPos.distance_czzhiu$(this.globalCenterMut);
+  };
+  InstancedLodController$Instance.prototype.addInstanceData_bgc5cs$ = function (lod, instanceList, ctx) {
+    instanceList.checkBufferSize_za3lpa$();
+    var szBefore = instanceList.dataF.position;
+    instanceList.dataF.put_q3cr5i$(this.instanceModelMat.matrix);
+    var growSz = instanceList.dataF.position - szBefore | 0;
+    if (growSz !== instanceList.instanceSizeF) {
+      throw IllegalStateException_init('Expected data to grow by ' + instanceList.instanceSizeF + ' elements, instead it grew by ' + growSz);
+    }instanceList.numInstances = instanceList.numInstances + 1 | 0;
+    instanceList.hasChanged = true;
+  };
+  InstancedLodController$Instance.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Instance',
+    interfaces: []
+  };
+  InstancedLodController.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'InstancedLodController',
+    interfaces: [Node]
+  };
   function KdTree(items, itemAdapter, bucketSz) {
     if (bucketSz === void 0)
       bucketSz = 20;
@@ -29401,14 +29649,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'OcTree',
     interfaces: [MutableCollection, SpatialTree]
   };
-  function Comparator$ObjectLiteral_6(closure$comparison) {
+  function Comparator$ObjectLiteral_7(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_6.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_7.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_6.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_6 = wrapFunction(function () {
+  Comparator$ObjectLiteral_7.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  var compareBy$lambda_7 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -29511,7 +29759,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var s = this.drawOrder === BillboardMesh$DrawOrder$FAR_FIRST_getInstance() ? -1 : 1;
     var $receiver = this.sortedIndices_0;
     if ($receiver.size > 1) {
-      sortWith($receiver, new Comparator$ObjectLiteral_6(compareBy$lambda_6(ParticleSystem$zSortParticles$lambda(this, camPos, s))));
+      sortWith($receiver, new Comparator$ObjectLiteral_7(compareBy$lambda_7(ParticleSystem$zSortParticles$lambda(this, camPos, s))));
     }this.mesh_0.clearIndices();
     tmp$_2 = this.sortedIndices_0;
     for (var i = 0; i !== tmp$_2.size; ++i) {
@@ -30149,19 +30397,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }return ret;
     };
   }));
-  function Comparator$ObjectLiteral_7(closure$comparison) {
+  function Comparator$ObjectLiteral_8(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_7.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_8.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_7.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_8.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function PriorityQueue(comparator) {
     if (comparator === void 0)
       comparator = null;
     this.comparator_0 = null;
     this.elements_0 = ArrayList_init_0();
-    this.comparator_0 = comparator != null ? comparator : new Comparator$ObjectLiteral_7(PriorityQueue_init$lambda);
+    this.comparator_0 = comparator != null ? comparator : new Comparator$ObjectLiteral_8(PriorityQueue_init$lambda);
   }
   Object.defineProperty(PriorityQueue.prototype, 'size', {
     get: function () {
@@ -33183,14 +33431,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'SpatialTree',
     interfaces: [Collection]
   };
-  function Comparator$ObjectLiteral_8(closure$comparison) {
+  function Comparator$ObjectLiteral_9(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_8.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_9.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_8.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_7 = wrapFunction(function () {
+  Comparator$ObjectLiteral_9.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  var compareBy$lambda_8 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -33369,7 +33617,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.radiusSqr_9tgcx0$_0 = 9.9999998E17;
     this.result = ArrayList_init_0();
     this.maxDistance_1d7gth$_0 = 0.0;
-    this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_8(compareBy$lambda_7(KNearestTraverser$items$lambda)));
+    this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_9(compareBy$lambda_8(KNearestTraverser$items$lambda)));
     this.itemRecycler_b63bes$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
     this.childLists_142w3h$_0 = new ChildNodesWithDistance(KNearestTraverser$childLists$lambda(this));
   }
@@ -33718,7 +33966,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function ChildNodesWithDistance(childDist) {
     this.childDist = childDist;
     this.childListRecycler = new ObjectPool(ChildNodesWithDistance$childListRecycler$lambda);
-    this.childComparator = new Comparator$ObjectLiteral_8(compareBy$lambda_7(ChildNodesWithDistance$childComparator$lambda));
+    this.childComparator = new Comparator$ObjectLiteral_9(compareBy$lambda_8(ChildNodesWithDistance$childComparator$lambda));
   }
   ChildNodesWithDistance.prototype.use_5wl3jr$ = defineInlineFunction('kool.de.fabmax.kool.util.ChildNodesWithDistance.use_5wl3jr$', wrapFunction(function () {
     var ChildNodesWithDistance$ChildNodesWithDistance$Child_init = _.de.fabmax.kool.util.ChildNodesWithDistance.Child;
@@ -36459,7 +36707,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (!this.disposablePipelines.isEmpty()) {
       this.queueRenderer_8be2vx$.disposePipelines_z4np8a$(this.disposablePipelines);
       this.disposablePipelines.clear();
-    }this.engineStats.resetPrimitveCount();
+    }this.engineStats.resetPerFrameCounts();
     tmp$ = this.offscreenPasses.size;
     for (var i = 0; i < tmp$; i++) {
       this.drawOffscreen_0(this.offscreenPasses.get_za3lpa$(i));
@@ -37782,6 +38030,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
                 this.gl_0.drawElementsInstanced(tmp$_1.primitiveType, tmp$_1.numIndices, tmp$_1.indexType, 0, insts.numInstances);
                 this.ctx.engineStats.addPrimitiveCount_za3lpa$(Kotlin.imul(cmd.mesh.geometry.numPrimitives, insts.numInstances));
               }
+              this.ctx.engineStats.addDrawCommandCount_za3lpa$(1);
             }}}}}
   };
   function QueueRendererWebGl$GlAttribs($outer) {
@@ -39686,6 +39935,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: Usage$STATIC_getInstance
   });
   package$util.Usage = Usage;
+  InstancedLodController.Instance = InstancedLodController$Instance;
+  package$util.InstancedLodController = InstancedLodController;
   KdTree.KdNode = KdTree$KdNode;
   package$util.KdTree = KdTree;
   package$util.LineString = LineString;

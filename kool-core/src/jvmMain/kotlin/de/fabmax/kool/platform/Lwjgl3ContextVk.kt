@@ -116,7 +116,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
             // drawQueue now contains actual draw commands
             // command buffer will be set up in onDrawFrame, called as a call back from render loop
 
-            engineStats.resetPrimitveCount()
+            engineStats.resetPerFrameCounts()
             vkSystem.renderLoop.drawFrame()
         }
         vkDeviceWaitIdle(vkSystem.device.vkDevice)
@@ -359,6 +359,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                                 pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
                         vkCmdDrawIndexed(commandBuffer, model.numIndices, instanceCnt, 0, 0, 0)
 
+                        engineStats.addDrawCommandCount(1)
                         engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * instanceCnt)
                     }
                 }

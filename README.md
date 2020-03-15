@@ -15,6 +15,8 @@ them via the hamburger button in the upper left corner):
   simplification demo (based on traditional [error quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
 - [Procedural Tree](https://fabmax.github.io/kool/kool-js/?demo=treeDemo): A simple procedural tree generator
   based on a [space colonization algorithm](http://algorithmicbotany.org/papers/colonization.egwnp2007.large.pdf)
+- [Instanced / LOD Drawing](https://fabmax.github.io/kool/kool-js/?demo=instancedDemo): Instanced rendering
+  demo of the Stanford Bunny. Uses six levels of detail to render up to 8000 instances.
 
 Code for all demos is available in kool-demo sub-project.
 
@@ -160,7 +162,6 @@ dependencies {
 The new render pipeline still lacks a lot of features the old OpenGL-only one already included; hence 
 first step should be to get these working again:
 - (Cascaded) shadow mapping for non spot light types
-- Support for Instanced rendering
 - A vertex shader node for skeletal animations
 
 There are also a few new features on my wish list:

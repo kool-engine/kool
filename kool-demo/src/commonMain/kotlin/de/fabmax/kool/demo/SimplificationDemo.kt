@@ -50,8 +50,8 @@ class SimplificationDemo(ctx: KoolContext) {
         models["cos"] = srcModel
         heMesh = HalfEdgeMesh(srcModel)
 
-        loadModel("bunny.kmfz", 0.05f, ctx)
-        loadModel("cow.kmfz", 1f, ctx)
+        loadModel("bunny.kmfz", 1f, Vec3f(0f, -3f, 0f), ctx)
+        loadModel("cow.kmfz", 1f, Vec3f.ZERO, ctx)
 
 
         simplificationScene = mainScene(ctx)
@@ -108,7 +108,7 @@ class SimplificationDemo(ctx: KoolContext) {
         }
     }
 
-    private fun loadModel(name: String, scale: Float, ctx: KoolContext) {
+    private fun loadModel(name: String, scale: Float, offset: Vec3f, ctx: KoolContext) {
         loadingModels += name
         ctx.assetMgr.loadModel(name) { model ->
             if (model != null) {
@@ -116,7 +116,7 @@ class SimplificationDemo(ctx: KoolContext) {
                 val geometry = mesh.geometry
                 for (i in 0 until geometry.numVertices) {
                     geometry.vertexIt.index = i
-                    geometry.vertexIt.position.scale(scale)
+                    geometry.vertexIt.position.scale(scale).add(offset)
                 }
                 models[name] = geometry
                 loadingModels -= name

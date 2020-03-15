@@ -37,7 +37,7 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
             "multiLightDemo" to DemoEntry("Multi Light Demo") { addAll(multiLightDemo(it)) },
             "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) },
             "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
-            "instanceDemo" to DemoEntry("Instanced Demo") { add(instanceDemo(it)) },
+            "instanceDemo" to DemoEntry("Instanced Demo") { addAll(instanceDemo(it)) },
             "helloWorldDemo" to DemoEntry("Hello World", true) { add(helloWorldScene()) }
 
             // todo: port old demos...

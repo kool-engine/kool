@@ -1,4 +1,4 @@
-define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serialization-protobuf', 'kotlinx-serialization-kotlinx-serialization-runtime'], function (_, Kotlin, $module$kool, $module$kotlinx_serialization_kotlinx_serialization_protobuf, $module$kotlinx_serialization_kotlinx_serialization_runtime) {
+define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   'use strict';
   var $$importsForInline$$ = _.$$importsForInline$$ || (_.$$importsForInline$$ = {});
   var createDefaultContext = $module$kool.de.fabmax.kool.createDefaultContext;
@@ -38,16 +38,30 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
   var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_iiyuln$;
+  var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
+  var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
+  var PhongShader = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader;
   var MeshInstanceList = $module$kool.de.fabmax.kool.util.MeshInstanceList;
-  var listOf = Kotlin.kotlin.collections.listOf_mh5how$;
+  var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
+  var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
+  var Random = $module$kool.de.fabmax.kool.math.Random;
   var randomF = $module$kool.de.fabmax.kool.math.randomF_dleff0$;
   var MutableVec3f = $module$kool.de.fabmax.kool.math.MutableVec3f;
-  var Mat4f = $module$kool.de.fabmax.kool.math.Mat4f;
+  var get_indices = Kotlin.kotlin.collections.get_indices_gzk92b$;
   var ShaderModel = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel;
-  var ModeledShader = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader;
-  var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
+  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
+  var MutableColor = $module$kool.de.fabmax.kool.util.MutableColor;
+  var InstancedLodController$Instance = $module$kool.de.fabmax.kool.util.InstancedLodController.Instance;
+  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
+  var Font = $module$kool.de.fabmax.kool.util.Font;
+  var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
+  var uiFont = $module$kool.de.fabmax.kool.util.uiFont_a4r08d$;
+  var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
+  var InstancedLodController = $module$kool.de.fabmax.kool.util.InstancedLodController;
+  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
   var ShaderModel$ShaderModel$VertexStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.VertexStageBuilder;
   var ShaderModel$ShaderModel$FragmentStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.FragmentStageBuilder;
+  var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
   var PbrShader = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader;
   var PbrShader$PbrConfig = $module$kool.de.fabmax.kool.pipeline.shading.PbrShader.PbrConfig;
   var COROUTINE_SUSPENDED = Kotlin.kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED;
@@ -55,23 +69,15 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var Texture = $module$kool.de.fabmax.kool.pipeline.Texture;
   var ensureNotNull = Kotlin.ensureNotNull;
   var textureMesh = $module$kool.de.fabmax.kool.scene.textureMesh_pyaqjj$;
-  var Font = $module$kool.de.fabmax.kool.util.Font;
-  var FontProps = $module$kool.de.fabmax.kool.util.FontProps;
-  var uiFont = $module$kool.de.fabmax.kool.util.uiFont_a4r08d$;
-  var SimpleComponentUi = $module$kool.de.fabmax.kool.scene.ui.SimpleComponentUi;
   var math = Kotlin.kotlin.math;
-  var MutableColor_init = $module$kool.de.fabmax.kool.util.MutableColor_init;
   var TransformGroup = $module$kool.de.fabmax.kool.scene.TransformGroup;
   var Light = $module$kool.de.fabmax.kool.scene.Light;
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
   var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
-  var MutableVec3f_init = $module$kool.de.fabmax.kool.math.MutableVec3f_init;
-  var listOf_0 = Kotlin.kotlin.collections.listOf_i5x0yv$;
   var ShadowMapPass = $module$kool.de.fabmax.kool.util.ShadowMapPass;
   var Math_0 = Math;
   var math_0 = $module$kool.de.fabmax.kool.math;
   var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
-  var Attribute = $module$kool.de.fabmax.kool.pipeline.Attribute;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
   var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
   var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList;
@@ -84,86 +90,38 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var TextureProps = $module$kool.de.fabmax.kool.pipeline.TextureProps;
   var Array_0 = Array;
   var SingleColorTexture = $module$kool.de.fabmax.kool.pipeline.SingleColorTexture;
-  var mutableListOf = Kotlin.kotlin.collections.mutableListOf_i5x0yv$;
-  var Globe = $module$kool.de.fabmax.kool.modules.globe.Globe;
-  var DoublePrecisionRoot = $module$kool.de.fabmax.kool.scene.doubleprec.DoublePrecisionRoot;
-  var GlobeCamHandler = $module$kool.de.fabmax.kool.modules.globe.GlobeCamHandler;
-  var ProtoBuf = $module$kotlinx_serialization_kotlinx_serialization_protobuf.kotlinx.serialization.protobuf.ProtoBuf;
-  var ElevationMapMetaHierarchy = $module$kool.de.fabmax.kool.modules.globe.elevation.ElevationMapMetaHierarchy;
-  var getKClass = Kotlin.getKClass;
-  var ElevationMapHierarchy = $module$kool.de.fabmax.kool.modules.globe.elevation.ElevationMapHierarchy;
-  var Margin = $module$kool.de.fabmax.kool.scene.ui.Margin;
-  var Pair = Kotlin.kotlin.Pair;
-  var toString = $module$kool.de.fabmax.kool.toString_j6vyb1$;
-  var equals = Kotlin.equals;
-  var getContextualOrDefault = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.modules.getContextualOrDefault_6za9kt$;
-  var util = $module$kool.de.fabmax.kool.util;
-  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
-  var ParticleSystem = $module$kool.de.fabmax.kool.util.ParticleSystem;
-  var CubicPointDistribution = $module$kool.de.fabmax.kool.math.CubicPointDistribution;
-  var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
-  var ColorGradient = $module$kool.de.fabmax.kool.util.ColorGradient;
-  var randomF_0 = $module$kool.de.fabmax.kool.math.randomF;
-  var ParticleSystem$Type = $module$kool.de.fabmax.kool.util.ParticleSystem.Type;
-  var BillboardMesh$DrawOrder = $module$kool.de.fabmax.kool.scene.BillboardMesh.DrawOrder;
-  var numberToInt = Kotlin.numberToInt;
-  var IntRange = Kotlin.kotlin.ranges.IntRange;
-  var randomI = $module$kool.de.fabmax.kool.math.randomI_n8acyv$;
-  var round = Kotlin.kotlin.math.round_14dthe$;
-  var InRadiusTraverser = $module$kool.de.fabmax.kool.util.InRadiusTraverser;
-  var BillboardMesh = $module$kool.de.fabmax.kool.scene.BillboardMesh;
-  var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
-  var BoundingBox_init = $module$kool.de.fabmax.kool.util.BoundingBox_init_4lfkt4$;
-  var pointMesh = $module$kool.de.fabmax.kool.scene.pointMesh_zhxjay$;
-  var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
-  var now = $module$kool.de.fabmax.kool.now;
-  var Skybox_init = $module$kool.de.fabmax.kool.scene.Skybox_init_r3y0ew$;
-  var yPlanePan = $module$kool.de.fabmax.kool.scene.yPlanePan;
-  var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
-  var InterpolatedFloat = $module$kool.de.fabmax.kool.util.InterpolatedFloat;
-  var CosAnimator = $module$kool.de.fabmax.kool.util.CosAnimator;
-  var Animator = $module$kool.de.fabmax.kool.util.Animator;
-  var LinearAnimator = $module$kool.de.fabmax.kool.util.LinearAnimator;
-  var Font_init = $module$kool.de.fabmax.kool.util.Font_init_8tzsp9$;
-  var textMesh = $module$kool.de.fabmax.kool.scene.textMesh_8mgi8m$;
-  var TextProps_init = $module$kool.de.fabmax.kool.util.TextProps;
-  var reversed = Kotlin.kotlin.ranges.reversed_zf1xzc$;
-  var UiContainer = $module$kool.de.fabmax.kool.scene.ui.UiContainer;
-  var SampleNode = $module$kool.de.fabmax.kool.modules.audio.SampleNode;
-  var Wave = $module$kool.de.fabmax.kool.modules.audio.Wave;
-  var Oscillator = $module$kool.de.fabmax.kool.modules.audio.Oscillator;
-  var MoodFilter = $module$kool.de.fabmax.kool.modules.audio.MoodFilter;
-  var Button = $module$kool.de.fabmax.kool.scene.ui.Button;
-  var MutableColor_init_0 = $module$kool.de.fabmax.kool.util.MutableColor_init_d7aj7k$;
-  var InterpolatedColor = $module$kool.de.fabmax.kool.util.InterpolatedColor;
-  var Group = $module$kool.de.fabmax.kool.scene.Group;
-  var lineMesh = $module$kool.de.fabmax.kool.scene.lineMesh_sokaj4$;
-  var Shaker = $module$kool.de.fabmax.kool.modules.audio.Shaker;
-  var Kick = $module$kool.de.fabmax.kool.modules.audio.Kick;
-  var Pad = $module$kool.de.fabmax.kool.modules.audio.Pad;
-  var AudioGenerator = $module$kool.de.fabmax.kool.modules.audio.AudioGenerator;
   var throwUPAE = Kotlin.throwUPAE;
+  var PerfTimer = $module$kool.de.fabmax.kool.util.PerfTimer;
   var ListEdgeHandler = $module$kool.de.fabmax.kool.modules.mesh.ListEdgeHandler;
   var HalfEdgeMesh = $module$kool.de.fabmax.kool.modules.mesh.HalfEdgeMesh;
   var terminateOnFaceCountRel = $module$kool.de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel_14dthe$;
   var simplify = $module$kool.de.fabmax.kool.modules.mesh.simplification.simplify_hem9$;
+  var toString = $module$kool.de.fabmax.kool.toString_j6vyb1$;
   var toString_0 = Kotlin.toString;
   var IndexedVertexList_init_0 = $module$kool.de.fabmax.kool.util.IndexedVertexList_init_5jr6ei$;
   var MeshBuilder = $module$kool.de.fabmax.kool.util.MeshBuilder;
   var toString_1 = $module$kool.de.fabmax.kool.toString_lcymw2$;
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
+  var util = $module$kool.de.fabmax.kool.util;
+  var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
+  var numberToInt = Kotlin.numberToInt;
   var ShaderNode = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNode;
   var ModelVar3fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3fConst;
   var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
   var ModelVar1fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar1fConst;
   var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
+  var now = $module$kool.de.fabmax.kool.now;
   var ShaderStage = $module$kool.de.fabmax.kool.pipeline.ShaderStage;
   var wrapFunction = Kotlin.wrapFunction;
+  var equals = Kotlin.equals;
   var MutableVec3f_init_0 = $module$kool.de.fabmax.kool.math.MutableVec3f_init_czzhiu$;
+  var pointKdTree = $module$kool.de.fabmax.kool.util.pointKdTree_ffk80x$;
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var Vec3f_init_0 = $module$kool.de.fabmax.kool.math.Vec3f_init_czzhiu$;
+  var Vec2f = $module$kool.de.fabmax.kool.math.Vec2f;
+  var InRadiusTraverser = $module$kool.de.fabmax.kool.util.InRadiusTraverser;
   var PointDistribution = $module$kool.de.fabmax.kool.math.PointDistribution;
   var MutableVec2f_init = $module$kool.de.fabmax.kool.math.MutableVec2f_init;
   var BSplineVec2f = $module$kool.de.fabmax.kool.math.BSplineVec2f;
@@ -174,6 +132,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
   var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_y4avn7$;
   var split = Kotlin.kotlin.text.split_ip8yn$;
+  InstanceDemo$InstanceColor.prototype = Object.create(MutableColor.prototype);
+  InstanceDemo$InstanceColor.prototype.constructor = InstanceDemo$InstanceColor;
+  InstanceDemo$BunnyInstance.prototype = Object.create(InstancedLodController$Instance.prototype);
+  InstanceDemo$BunnyInstance.prototype.constructor = InstanceDemo$BunnyInstance;
   MultiLightDemo$LightMesh.prototype = Object.create(TransformGroup.prototype);
   MultiLightDemo$LightMesh.prototype.constructor = MultiLightDemo$LightMesh;
   ColorGridContent.prototype = Object.create(PbrDemo$PbrContent.prototype);
@@ -182,22 +144,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   PbrMaterialContent.prototype.constructor = PbrMaterialContent;
   RoughnesMetalGridContent.prototype = Object.create(PbrDemo$PbrContent.prototype);
   RoughnesMetalGridContent.prototype.constructor = RoughnesMetalGridContent;
-  MeshPoint.prototype = Object.create(Vec3f.prototype);
-  MeshPoint.prototype.constructor = MeshPoint;
-  VerticalLayout.prototype = Object.create(UiContainer.prototype);
-  VerticalLayout.prototype.constructor = VerticalLayout;
-  Melody.prototype = Object.create(SampleNode.prototype);
-  Melody.prototype.constructor = Melody;
-  SequenceButton.prototype = Object.create(Button.prototype);
-  SequenceButton.prototype.constructor = SequenceButton;
-  SequenceButtonUi.prototype = Object.create(SimpleComponentUi.prototype);
-  SequenceButtonUi.prototype.constructor = SequenceButtonUi;
-  SynthieScene$Heightmap.prototype = Object.create(TransformGroup.prototype);
-  SynthieScene$Heightmap.prototype.constructor = SynthieScene$Heightmap;
-  SynthieScene$Waveform.prototype = Object.create(Group.prototype);
-  SynthieScene$Waveform.prototype.constructor = SynthieScene$Waveform;
-  SynthieScene.prototype = Object.create(Scene_init.prototype);
-  SynthieScene.prototype.constructor = SynthieScene;
   WindNode.prototype = Object.create(ShaderNode.prototype);
   WindNode.prototype.constructor = WindNode;
   TreeGenerator$AttractionPoint.prototype = Object.create(MutableVec3f.prototype);
@@ -420,7 +366,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     return Unit;
   }
   function Demo$demos$lambda_3($receiver, it) {
-    $receiver.add_11rb$(instanceDemo(it));
+    $receiver.addAll_brywnq$(instanceDemo(it));
     return Unit;
   }
   function Demo$demos$lambda_4($receiver, it) {
@@ -519,7 +465,33 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     $receiver.lighting.singleLight_q9zcvo$(helloWorldScene$lambda$lambda_0);
     return $receiver;
   }
-  function instanceDemo$lambda$lambda(this$) {
+  function instanceDemo(ctx) {
+    return (new InstanceDemo(ctx)).scenes;
+  }
+  function InstanceDemo(ctx) {
+    this.scenes = ArrayList_init();
+    this.nBunnies_0 = 10;
+    this.isLodColors_0 = false;
+    this.isAutoRotate_0 = true;
+    this.modelCenter_0 = MutableVec3f_init();
+    this.modelRadius_0 = 1.0;
+    this.lodController_0 = new InstancedLodController();
+    this.lods_0 = mutableListOf([new InstanceDemo$Lod(8, 10.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_PURPLE)), new InstanceDemo$Lod(32, 20.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_RED)), new InstanceDemo$Lod(128, 30.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_AMBER)), new InstanceDemo$Lod(500, 40.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_LIME)), new InstanceDemo$Lod(2000, 50.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_GREEN)), new InstanceDemo$Lod(10000, 1000.0, InstanceDemo$InstanceDemo$InstanceColor_init(Color.Companion.MD_BLUE))]);
+    var $receiver = this.scenes;
+    var element = this.mainScene_0(ctx);
+    $receiver.add_11rb$(element);
+    var $receiver_0 = this.scenes;
+    var element_0 = this.menu_0(ctx);
+    $receiver_0.add_11rb$(element_0);
+  }
+  function InstanceDemo$mainScene$lambda$lambda$lambda(this$InstanceDemo, this$) {
+    return function ($receiver, ctx) {
+      if (this$InstanceDemo.isAutoRotate_0) {
+        this$.verticalRotation += ctx.deltaT * 3.0;
+      }return Unit;
+    };
+  }
+  function InstanceDemo$mainScene$lambda$lambda(this$, this$InstanceDemo) {
     return function ($receiver) {
       var $receiver_0 = this$.camera;
       var tmp$;
@@ -530,81 +502,384 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.minZoom = 1.0;
       $receiver.maxZoom = 250.0;
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
-      $receiver.zoom = 150.0;
+      $receiver.zoom = 40.0;
       $receiver.setMouseRotation_dleff0$(30.0, -40.0);
+      var $receiver_1 = $receiver.onPreRender;
+      var element = InstanceDemo$mainScene$lambda$lambda$lambda(this$InstanceDemo, $receiver);
+      $receiver_1.add_11rb$(element);
       return Unit;
     };
   }
-  function instanceDemo$lambda$lambda$lambda($receiver) {
-    var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colored_6taknv$(false);
-    $receiver_0.centered();
-    $receiver.cube_lhbb6w$($receiver.cubeProps);
+  function InstanceDemo$mainScene$lambda$lambda_0($receiver) {
+    $receiver.setDirectional_czzhiu$(Vec3f_init(-1.0));
+    $receiver.setColor_y83vuj$(Color.Companion.WHITE, 1.0);
     return Unit;
   }
-  function instanceDemo$lambda$lambda$lambda_0(closure$instanceList, closure$n3, closure$offsets, closure$ctx, closure$rotAxis) {
-    return function ($receiver, it) {
-      var $receiver_0 = closure$instanceList;
-      var closure$n3_0 = closure$n3;
-      var closure$offsets_0 = closure$offsets;
-      var closure$ctx_0 = closure$ctx;
-      var closure$rotAxis_0 = closure$rotAxis;
-      $receiver_0.clear();
-      for (var i = 0; i < closure$n3_0; i++) {
-        $receiver_0.checkBufferSize_za3lpa$();
-        var szBefore = $receiver_0.dataF.position;
-        $receiver_0.dataF.put_q3cr5i$((new Mat4f()).translate_czzhiu$(closure$offsets_0.get_za3lpa$(i)).rotate_ad55pp$(closure$ctx_0.time * 120 * closure$rotAxis_0.get_za3lpa$(i).length(), closure$rotAxis_0.get_za3lpa$(i)).matrix);
-        var growSz = $receiver_0.dataF.position - szBefore | 0;
-        if (growSz !== $receiver_0.instanceSizeF) {
-          throw IllegalStateException_init('Expected data to grow by ' + $receiver_0.instanceSizeF + ' elements, instead it grew by ' + growSz);
-        }$receiver_0.numInstances = $receiver_0.numInstances + 1 | 0;
-        $receiver_0.hasChanged = true;
-      }
-      return Unit;
+  function InstanceDemo$mainScene$lambda$lambda_1(this$InstanceDemo) {
+    return function (it) {
+      if (it != null) {
+        this$InstanceDemo.addLods_0(it);
+      }return Unit;
     };
   }
-  function instanceDemo$lambda$lambda_0(closure$ctx) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(instanceDemo$lambda$lambda$lambda);
-      var n = 20;
-      var n3 = Kotlin.imul(Kotlin.imul(n, n), n);
-      var instanceList = new MeshInstanceList(listOf(MeshInstanceList.Companion.MODEL_MAT), n3);
-      $receiver.instances = instanceList;
-      var rotAxis = ArrayList_init();
-      var offsets = ArrayList_init();
-      for (var x = 0; x < n; x++) {
-        for (var y = 0; y < n; y++) {
-          for (var z = 0; z < n; z++) {
-            var element = new MutableVec3f((x - n * 0.5) * 5.0 + randomF(-2.0, 2.0), (y - n * 0.5) * 5.0 + randomF(-2.0, 2.0), (z - n * 0.5) * 5.0 + randomF(-2.0, 2.0));
-            offsets.add_11rb$(element);
-            var element_0 = new MutableVec3f(randomF(-1.0, 1.0), randomF(-1.0, 1.0), randomF(-1.0, 1.0));
-            rotAxis.add_11rb$(element_0);
-          }
+  InstanceDemo.prototype.mainScene_0 = function (ctx) {
+    var $receiver = new Scene_init(null);
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, InstanceDemo$mainScene$lambda$lambda($receiver, this)));
+    $receiver.lighting.singleLight_q9zcvo$(InstanceDemo$mainScene$lambda$lambda_0);
+    $receiver.unaryPlus_uv0sim$(this.lodController_0);
+    ctx.assetMgr.loadModel_v5uqdg$('bunny.kmfz', InstanceDemo$mainScene$lambda$lambda_1(this));
+    return $receiver;
+  };
+  InstanceDemo.prototype.addLods_0 = function (model) {
+    var tmp$;
+    tmp$ = get_lastIndex(model.lodRootNodes);
+    for (var i = 0; i <= tmp$; i++) {
+      var $receiver = model.meshes.get_za3lpa$(model.lodRootNodes.get_za3lpa$(i).meshes.get_za3lpa$(0)).toMesh_8p8ifh$();
+      var $this = $receiver.geometry;
+      var tmp$_0;
+      tmp$_0 = $this.numVertices;
+      for (var i_0 = 0; i_0 < tmp$_0; i_0++) {
+        $this.vertexIt.index = i_0;
+        $this.vertexIt.position.scale_mx4ult$(0.3).add_czzhiu$(new Vec3f(0.0, -1.0, 0.0));
+      }
+      $receiver.geometry.rebuildBounds();
+      if (i === 0) {
+        this.modelCenter_0.set_czzhiu$($receiver.geometry.bounds.center);
+        this.modelRadius_0 = $receiver.geometry.bounds.max.distance_czzhiu$($receiver.geometry.bounds.center);
+      }$receiver.pipelineLoader = new PhongShader(void 0, this.instanceColorPhongModel_0());
+      $receiver.isFrustumChecked = false;
+      this.lods_0.get_za3lpa$(i).mesh = $receiver;
+      $receiver.instances = new MeshInstanceList(listOf([MeshInstanceList.Companion.MODEL_MAT, Attribute.Companion.COLORS]), this.lods_0.get_za3lpa$(i).maxInsts);
+      this.lodController_0.addLod_od45r7$($receiver, this.lods_0.get_za3lpa$(i).maxDist);
+    }
+    this.setupInstances_0(this.lodController_0);
+  };
+  InstanceDemo.prototype.setupInstances_0 = function ($receiver) {
+    var tmp$, tmp$_0, tmp$_1;
+    var colors = listOf([Color.Companion.WHITE.toLinear(), Color.Companion.MD_RED.toLinear(), Color.Companion.MD_PINK.toLinear(), Color.Companion.MD_PURPLE.toLinear(), Color.Companion.MD_DEEP_PURPLE.toLinear(), Color.Companion.MD_INDIGO.toLinear(), Color.Companion.MD_BLUE.toLinear(), Color.Companion.MD_CYAN.toLinear(), Color.Companion.MD_TEAL.toLinear(), Color.Companion.MD_GREEN.toLinear(), Color.Companion.MD_LIGHT_GREEN.toLinear(), Color.Companion.MD_LIME.toLinear(), Color.Companion.MD_YELLOW.toLinear(), Color.Companion.MD_AMBER.toLinear(), Color.Companion.MD_ORANGE.toLinear(), Color.Companion.MD_DEEP_ORANGE.toLinear(), Color.Companion.MD_BROWN.toLinear(), Color.Companion.MD_GREY.toLinear(), Color.Companion.MD_BLUE_GREY.toLinear()]);
+    $receiver.instances.clear();
+    var rand = new Random(17);
+    var off = (this.nBunnies_0 - 1 | 0) * 0.5;
+    tmp$ = this.nBunnies_0;
+    for (var x = 0; x < tmp$; x++) {
+      tmp$_0 = this.nBunnies_0;
+      for (var y = 0; y < tmp$_0; y++) {
+        tmp$_1 = this.nBunnies_0;
+        for (var z = 0; z < tmp$_1; z++) {
+          var position = new MutableVec3f((x - off) * 5.0 + randomF(-2.0, 2.0), (y - off) * 5.0 + randomF(-2.0, 2.0), (z - off) * 5.0 + randomF(-2.0, 2.0));
+          var rotAxis = new MutableVec3f(randomF(-1.0, 1.0), randomF(-1.0, 1.0), randomF(-1.0, 1.0));
+          var tmp$_2 = $receiver.instances;
+          var $receiver_0 = new InstanceDemo$BunnyInstance(this, position, rotAxis);
+          $receiver_0.color.set_d7aj7k$(colors.get_za3lpa$(rand.randomI_n8acyv$(get_indices(colors))));
+          $receiver_0.center.set_czzhiu$(this.modelCenter_0);
+          $receiver_0.radius = this.modelRadius_0;
+          tmp$_2.add_11rb$($receiver_0);
         }
       }
-      var $receiver_0 = $receiver.onPreRender;
-      var element_1 = instanceDemo$lambda$lambda$lambda_0(instanceList, n3, offsets, closure$ctx, rotAxis);
-      $receiver_0.add_11rb$(element_1);
-      var $receiver_1 = new ShaderModel();
-      var ifColors = {v: null};
-      var $receiver_2 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver_1);
-      ifColors.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifColors', $receiver_2.attrColors().output);
-      var instModelMat = $receiver_2.instanceAttrModelMat().output;
-      var mvpMat = $receiver_2.premultipliedMvpNode().outMvpMat;
-      var mvp = $receiver_2.multiplyNode_ze33is$(mvpMat, instModelMat).output;
-      $receiver_2.positionOutput = $receiver_2.vertexPositionNode_ze33is$($receiver_2.attrPositions().output, mvp).outPosition;
-      var $receiver_3 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver_1);
-      $receiver_3.colorOutput = $receiver_3.unlitMaterialNode_r20yfm$(ifColors.v.output).outColor;
-      $receiver.pipelineLoader = new ModeledShader($receiver_1);
+    }
+  };
+  InstanceDemo.prototype.instanceColorPhongModel_0 = function () {
+    var $receiver = new ShaderModel('instanceColorPhongModel()');
+    var ifNormals = {v: null};
+    var ifColors = {v: null};
+    var ifFragPos = {v: null};
+    var mvpNode = {v: null};
+    var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
+    ifColors.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifColors', $receiver_0.instanceAttributeNode_nm2vx5$(Attribute.Companion.COLORS).output);
+    mvpNode.v = $receiver_0.mvpNode();
+    var modelMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outModelMat, $receiver_0.instanceAttrModelMat().output).output;
+    var mvpMat = $receiver_0.multiplyNode_ze33is$(mvpNode.v.outMvpMat, $receiver_0.instanceAttrModelMat().output).output;
+    var nrm = $receiver_0.transformNode_vid4wo$($receiver_0.attrNormals().output, modelMat, 0.0);
+    ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.output);
+    var worldPos = $receiver_0.transformNode_vid4wo$($receiver_0.attrPositions().output, modelMat, 1.0).output;
+    ifFragPos.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifFragPos', worldPos);
+    $receiver_0.positionOutput = $receiver_0.vertexPositionNode_ze33is$($receiver_0.attrPositions().output, mvpMat).outPosition;
+    var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
+    var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
+    var lightNode = $receiver_1.defaultLightNode_za3lpa$();
+    var albedo = ifColors.v.output;
+    var normal = ifNormals.v.output;
+    var $receiver_2 = $receiver_1.phongMaterialNode_8rwtp1$(albedo, normal, ifFragPos.v.output, mvpFrag.outCamPos, lightNode);
+    $receiver_2.inShininess = $receiver_1.pushConstantNode1f_61zpoe$('uShininess').output;
+    $receiver_2.inSpecularIntensity = $receiver_1.pushConstantNode1f_61zpoe$('uSpecularIntensity').output;
+    var phongMat = $receiver_2;
+    $receiver_1.colorOutput = phongMat.outColor;
+    return $receiver;
+  };
+  function InstanceDemo$Lod(maxInsts, maxDist, color) {
+    this.maxInsts = maxInsts;
+    this.maxDist = maxDist;
+    this.color = color;
+    this.mesh = null;
+  }
+  InstanceDemo$Lod.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Lod',
+    interfaces: []
+  };
+  function InstanceDemo$InstanceColor() {
+    MutableColor_init(this);
+  }
+  InstanceDemo$InstanceColor.prototype.asArray = function () {
+    return this.fields;
+  };
+  InstanceDemo$InstanceColor.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'InstanceColor',
+    interfaces: [MutableColor]
+  };
+  function InstanceDemo$InstanceDemo$InstanceColor_init(color, $this) {
+    $this = $this || Object.create(InstanceDemo$InstanceColor.prototype);
+    InstanceDemo$InstanceColor.call($this);
+    $this.set_d7aj7k$(color);
+    return $this;
+  }
+  function InstanceDemo$BunnyInstance($outer, position, rotAxis) {
+    this.$outer = $outer;
+    InstancedLodController$Instance.call(this);
+    this.position = position;
+    this.rotSpeed = rotAxis.length() * 120.0;
+    this.rotAxis = rotAxis.norm_5s4mqq$(MutableVec3f_init());
+    this.color = new InstanceDemo$InstanceColor();
+  }
+  InstanceDemo$BunnyInstance.prototype.preRender_6otzq7$ = function (cam, ctx) {
+    this.instanceModelMat.setIdentity().translate_czzhiu$(this.position).rotate_ad55pp$(ctx.time * this.rotSpeed, this.rotAxis);
+    InstancedLodController$Instance.prototype.preRender_6otzq7$.call(this, cam, ctx);
+  };
+  InstanceDemo$BunnyInstance.prototype.addInstanceData_bgc5cs$ = function (lod, instanceList, ctx) {
+    this.$outer;
+    instanceList.checkBufferSize_za3lpa$();
+    var szBefore = instanceList.dataF.position;
+    var this$InstanceDemo = this.$outer;
+    var $receiver = instanceList.dataF;
+    $receiver.put_q3cr5i$(this.instanceModelMat.matrix);
+    if (this$InstanceDemo.isLodColors_0) {
+      $receiver.put_q3cr5i$(this$InstanceDemo.lods_0.get_za3lpa$(lod).color.asArray());
+    } else {
+      $receiver.put_q3cr5i$(this.color.asArray());
+    }
+    var growSz = instanceList.dataF.position - szBefore | 0;
+    if (growSz !== instanceList.instanceSizeF) {
+      throw IllegalStateException_init('Expected data to grow by ' + instanceList.instanceSizeF + ' elements, instead it grew by ' + growSz);
+    }instanceList.numInstances = instanceList.numInstances + 1 | 0;
+    instanceList.hasChanged = true;
+  };
+  InstanceDemo$BunnyInstance.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'BunnyInstance',
+    interfaces: [InstancedLodController$Instance]
+  };
+  function InstanceDemo$menu$lambda$lambda$lambda(it) {
+    return new BlankComponentUi();
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_0(it) {
+    return new BlankComponentUi();
+  }
+  function InstanceDemo$menu$lambda$lambda($receiver) {
+    $receiver.componentUi_mloaa0$(InstanceDemo$menu$lambda$lambda$lambda);
+    $receiver.containerUi_2t3ptw$(InstanceDemo$menu$lambda$lambda$lambda_0);
+    return Unit;
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_1(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
       return Unit;
     };
   }
-  function instanceDemo(ctx) {
-    var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, instanceDemo$lambda$lambda($receiver)));
-    $receiver.unaryPlus_uv0sim$(colorMesh(void 0, instanceDemo$lambda$lambda_0(ctx)));
-    return $receiver;
+  function InstanceDemo$menu$lambda$lambda$lambda_2(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      return Unit;
+    };
   }
+  function InstanceDemo$menu$lambda$lambda$lambda$lambda(this$InstanceDemo) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      if (this$InstanceDemo.nBunnies_0 < 20) {
+        tmp$ = this$InstanceDemo.nBunnies_0;
+        this$InstanceDemo.nBunnies_0 = tmp$ + 1 | 0;
+        $receiver.text = Kotlin.imul(Kotlin.imul(this$InstanceDemo.nBunnies_0, this$InstanceDemo.nBunnies_0), this$InstanceDemo.nBunnies_0).toString();
+        this$InstanceDemo.setupInstances_0(this$InstanceDemo.lodController_0);
+      }return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_3(closure$y, this$InstanceDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(45.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(40.0), dps(35.0), full());
+      $receiver.text = Kotlin.imul(Kotlin.imul(this$InstanceDemo.nBunnies_0, this$InstanceDemo.nBunnies_0), this$InstanceDemo.nBunnies_0).toString();
+      var $receiver_0 = $receiver.onClick;
+      var element = InstanceDemo$menu$lambda$lambda$lambda$lambda(this$InstanceDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda$lambda_0(this$InstanceDemo, closure$btnBunnyCnt) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      if (this$InstanceDemo.nBunnies_0 > 5) {
+        tmp$ = this$InstanceDemo.nBunnies_0;
+        this$InstanceDemo.nBunnies_0 = tmp$ - 1 | 0;
+        closure$btnBunnyCnt.text = Kotlin.imul(Kotlin.imul(this$InstanceDemo.nBunnies_0, this$InstanceDemo.nBunnies_0), this$InstanceDemo.nBunnies_0).toString();
+        this$InstanceDemo.setupInstances_0(this$InstanceDemo.lodController_0);
+      }return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_4(closure$y, this$InstanceDemo, closure$btnBunnyCnt) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(35.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = '<';
+      var $receiver_0 = $receiver.onClick;
+      var element = InstanceDemo$menu$lambda$lambda$lambda$lambda_0(this$InstanceDemo, closure$btnBunnyCnt);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda$lambda_1(this$InstanceDemo, closure$btnBunnyCnt) {
+    return function ($receiver, f, f_0, f_1) {
+      var tmp$;
+      if (this$InstanceDemo.nBunnies_0 < 20) {
+        tmp$ = this$InstanceDemo.nBunnies_0;
+        this$InstanceDemo.nBunnies_0 = tmp$ + 1 | 0;
+        closure$btnBunnyCnt.text = Kotlin.imul(Kotlin.imul(this$InstanceDemo.nBunnies_0, this$InstanceDemo.nBunnies_0), this$InstanceDemo.nBunnies_0).toString();
+        this$InstanceDemo.setupInstances_0(this$InstanceDemo.lodController_0);
+      }return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_5(closure$y, this$InstanceDemo, closure$btnBunnyCnt) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(85.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(10.0), dps(35.0), full());
+      $receiver.text = '>';
+      var $receiver_0 = $receiver.onClick;
+      var element = InstanceDemo$menu$lambda$lambda$lambda$lambda_1(this$InstanceDemo, closure$btnBunnyCnt);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda$lambda_2(this$InstanceDemo) {
+    return function ($receiver) {
+      this$InstanceDemo.isLodColors_0 = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_6(closure$y, this$InstanceDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$InstanceDemo.isLodColors_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = InstanceDemo$menu$lambda$lambda$lambda$lambda_2(this$InstanceDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda$lambda_3(this$InstanceDemo) {
+    return function ($receiver) {
+      this$InstanceDemo.isAutoRotate_0 = $receiver.isEnabled;
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_7(closure$y, this$InstanceDemo) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.isEnabled = this$InstanceDemo.isAutoRotate_0;
+      var $receiver_0 = $receiver.onStateChange;
+      var element = InstanceDemo$menu$lambda$lambda$lambda$lambda_3(this$InstanceDemo);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_8(closure$y, closure$smallFont, this$) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
+      $receiver.font.setCustom_11rb$(closure$smallFont);
+      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
+      $receiver.textAlignment = new Gravity(Alignment.CENTER, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_9(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(30.0), full());
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda$lambda_4(this$InstanceDemo, closure$i, this$) {
+    return function ($receiver, it) {
+      var tmp$, tmp$_0, tmp$_1;
+      var cnt = this$InstanceDemo.lodController_0.getInstanceCount_za3lpa$(closure$i);
+      var tris = Kotlin.imul(cnt, (tmp$_1 = (tmp$_0 = (tmp$ = this$InstanceDemo.lods_0.get_za3lpa$(closure$i).mesh) != null ? tmp$.geometry : null) != null ? tmp$_0.numPrimitives : null) != null ? tmp$_1 : 0);
+      this$.text = cnt.toString() + ' insts / ' + tris + ' tris';
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda$lambda_10(closure$y, this$InstanceDemo, closure$i) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(30.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      var $receiver_0 = $receiver.onPreRender;
+      var element = InstanceDemo$menu$lambda$lambda$lambda$lambda_4(this$InstanceDemo, closure$i, $receiver);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda$lambda_0(closure$smallFont, this$, this$InstanceDemo) {
+    return function ($receiver) {
+      var tmp$;
+      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-450.0), dps(-535.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(330.0), dps(415.0), full());
+      var y = {v: -40.0};
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', InstanceDemo$menu$lambda$lambda$lambda_1(y, closure$smallFont, this$)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Bunnies:', InstanceDemo$menu$lambda$lambda$lambda_2(y)));
+      var btnBunnyCnt = this$.button_9zrh0o$('bunnyCnt', InstanceDemo$menu$lambda$lambda$lambda_3(y, this$InstanceDemo));
+      $receiver.unaryPlus_uv0sim$(btnBunnyCnt);
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('decBunnyCnt', InstanceDemo$menu$lambda$lambda$lambda_4(y, this$InstanceDemo, btnBunnyCnt)));
+      $receiver.unaryPlus_uv0sim$(this$.button_9zrh0o$('incBunnyCnt', InstanceDemo$menu$lambda$lambda$lambda_5(y, this$InstanceDemo, btnBunnyCnt)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Color by LOD', InstanceDemo$menu$lambda$lambda$lambda_6(y, this$InstanceDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', InstanceDemo$menu$lambda$lambda$lambda_7(y, this$InstanceDemo)));
+      y.v -= 40.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Info', InstanceDemo$menu$lambda$lambda$lambda_8(y, closure$smallFont, this$)));
+      tmp$ = this$InstanceDemo.lods_0;
+      for (var i = 0; i !== tmp$.size; ++i) {
+        y.v -= 35.0;
+        $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('LOD ' + i + ':', InstanceDemo$menu$lambda$lambda$lambda_9(y)));
+        $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('LOD ' + i + ':', InstanceDemo$menu$lambda$lambda$lambda_10(y, this$InstanceDemo, i)));
+      }
+      return Unit;
+    };
+  }
+  function InstanceDemo$menu$lambda(closure$ctx, this$InstanceDemo) {
+    return function ($receiver) {
+      var smallFontProps = new FontProps(Font.Companion.SYSTEM_FONT, 14.0);
+      var smallFont = uiFont(smallFontProps.family, smallFontProps.sizePts, $receiver.uiDpi, closure$ctx, smallFontProps.style, smallFontProps.chars);
+      $receiver.theme = theme(UiTheme.Companion.DARK, InstanceDemo$menu$lambda$lambda);
+      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('menu container', InstanceDemo$menu$lambda$lambda_0(smallFont, $receiver, this$InstanceDemo)));
+      return Unit;
+    };
+  }
+  InstanceDemo.prototype.menu_0 = function (ctx) {
+    return uiScene(void 0, void 0, void 0, InstanceDemo$menu$lambda(ctx, this));
+  };
+  InstanceDemo.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'InstanceDemo',
+    interfaces: []
+  };
   function multiLightDemo(ctx) {
     return (new MultiLightDemo(ctx)).scenes;
   }
@@ -612,7 +887,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     MultiLightDemo$Companion_getInstance();
     this.scenes = ArrayList_init();
     this.mainScene_0 = null;
-    this.lights_0 = listOf_0([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN)]);
+    this.lights_0 = listOf([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN)]);
     this.depthPasses_0 = ArrayList_init();
     this.lightCount_0 = 4;
     this.lightPower_0 = 500.0;
@@ -908,7 +1183,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       $receiver.unaryPlus_uv0sim$(element);
     }
     this.updateLighting_0();
-    this.loadModel_0(ctx, 'bunny.kmfz', 0.05, new Vec3f(0.0, 3.75, 0.0), MultiLightDemo$mainScene$lambda$lambda_0($receiver, this));
+    this.loadModel_0(ctx, 'bunny.kmfz', 1.0, Vec3f.Companion.ZERO, MultiLightDemo$mainScene$lambda$lambda_0($receiver, this));
     $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$mainScene$lambda$lambda_1(this)));
     return $receiver;
   };
@@ -1487,7 +1762,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   };
   function MultiLightDemo$Companion() {
     MultiLightDemo$Companion_instance = this;
-    this.matColors_0 = listOf_0([new MultiLightDemo$MatColor('White', Color.Companion.WHITE.toLinear()), new MultiLightDemo$MatColor('Red', Color.Companion.MD_RED.toLinear()), new MultiLightDemo$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new MultiLightDemo$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new MultiLightDemo$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new MultiLightDemo$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new MultiLightDemo$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new MultiLightDemo$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new MultiLightDemo$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new MultiLightDemo$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new MultiLightDemo$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new MultiLightDemo$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new MultiLightDemo$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new MultiLightDemo$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new MultiLightDemo$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new MultiLightDemo$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new MultiLightDemo$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new MultiLightDemo$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new MultiLightDemo$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new MultiLightDemo$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
+    this.matColors_0 = listOf([new MultiLightDemo$MatColor('White', Color.Companion.WHITE.toLinear()), new MultiLightDemo$MatColor('Red', Color.Companion.MD_RED.toLinear()), new MultiLightDemo$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new MultiLightDemo$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new MultiLightDemo$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new MultiLightDemo$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new MultiLightDemo$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new MultiLightDemo$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new MultiLightDemo$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new MultiLightDemo$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new MultiLightDemo$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new MultiLightDemo$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new MultiLightDemo$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new MultiLightDemo$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new MultiLightDemo$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new MultiLightDemo$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new MultiLightDemo$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new MultiLightDemo$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new MultiLightDemo$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new MultiLightDemo$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
   }
   MultiLightDemo$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -1677,7 +1952,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       colors.add_11rb$(element_2);
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
-          var attributes = listOf_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+          var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
           var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
           var closure$withIbl_0 = closure$withIbl;
           var closure$irradianceMap_0 = closure$irradianceMap;
@@ -1733,7 +2008,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       array[i] = null;
     }
     this.loadedHdris_0 = array;
-    this.pbrContentCycler_0 = new Cycler(listOf_0([new PbrMaterialContent(), new ColorGridContent(), new RoughnesMetalGridContent()]));
+    this.pbrContentCycler_0 = new Cycler(listOf([new PbrMaterialContent(), new ColorGridContent(), new RoughnesMetalGridContent()]));
     var nextHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-25, 'Next environment map', PbrDemo_init$lambda, PbrDemo_init$lambda_0(this));
     var prevHdriKeyListener = this.ctx.inputMgr.registerKeyListener_aviy8w$(-26, 'Prev environment map', PbrDemo_init$lambda_1, PbrDemo_init$lambda_2(this));
     this.contentScene_0 = this.setupScene_0();
@@ -2161,10 +2436,10 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var default_0 = 'https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri';
     var tmp$, tmp$_0;
     this.hdriPath_0 = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
-    this.hdriTextures_0 = listOf_0([new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
+    this.hdriTextures_0 = listOf([new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/circus_arena_1k.rgbe.png', 'Circus'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/newport_loft.rgbe.png', 'Loft'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/spruit_sunrise_1k.rgbe.png', 'Sunrise'), new PbrDemo$EnvironmentMap(this.hdriPath_0 + '/shanghai_bund_1k.rgbe.png', 'Shanghai')]);
     this.lightStrength_0 = 250.0;
     this.lightExtent_0 = 10.0;
-    this.lightSetups_0 = listOf_0([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);
+    this.lightSetups_0 = listOf([new PbrDemo$LightSetup('Off', PbrDemo$Companion$lightSetups$lambda), new PbrDemo$LightSetup('Front x1', PbrDemo$Companion$lightSetups$lambda_0(this)), new PbrDemo$LightSetup('Front x4', PbrDemo$Companion$lightSetups$lambda_1(this)), new PbrDemo$LightSetup('Top x1', PbrDemo$Companion$lightSetups$lambda_2(this)), new PbrDemo$LightSetup('Top x4', PbrDemo$Companion$lightSetups$lambda_3(this))]);
   }
   function PbrDemo$Companion$lightSetups$lambda($receiver) {
     $receiver.lighting.lights.clear();
@@ -4460,7 +4735,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
       var spacing = 2.5;
       for (var y = 0; y < nRows; y++) {
         for (var x = 0; x < nCols; x++) {
-          var attributes = listOf_0([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
+          var attributes = listOf([Attribute.Companion.POSITIONS, Attribute.Companion.NORMALS]);
           var mesh = new Mesh_init(new IndexedVertexList_init(attributes), null);
           var closure$withIbl_0 = closure$withIbl;
           var this$RoughnesMetalGridContent_0 = this$RoughnesMetalGridContent;
@@ -4522,7 +4797,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   };
   function RoughnesMetalGridContent$Companion() {
     RoughnesMetalGridContent$Companion_instance = this;
-    this.matColors_0 = listOf_0([new RoughnesMetalGridContent$MatColor('Red', Color.Companion.MD_RED.toLinear()), new RoughnesMetalGridContent$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new RoughnesMetalGridContent$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new RoughnesMetalGridContent$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new RoughnesMetalGridContent$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new RoughnesMetalGridContent$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new RoughnesMetalGridContent$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new RoughnesMetalGridContent$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new RoughnesMetalGridContent$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new RoughnesMetalGridContent$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new RoughnesMetalGridContent$MatColor('White', Color.Companion.WHITE.toLinear()), new RoughnesMetalGridContent$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
+    this.matColors_0 = listOf([new RoughnesMetalGridContent$MatColor('Red', Color.Companion.MD_RED.toLinear()), new RoughnesMetalGridContent$MatColor('Pink', Color.Companion.MD_PINK.toLinear()), new RoughnesMetalGridContent$MatColor('Purple', Color.Companion.MD_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Purple', Color.Companion.MD_DEEP_PURPLE.toLinear()), new RoughnesMetalGridContent$MatColor('Indigo', Color.Companion.MD_INDIGO.toLinear()), new RoughnesMetalGridContent$MatColor('Blue', Color.Companion.MD_BLUE.toLinear()), new RoughnesMetalGridContent$MatColor('Cyan', Color.Companion.MD_CYAN.toLinear()), new RoughnesMetalGridContent$MatColor('Teal', Color.Companion.MD_TEAL.toLinear()), new RoughnesMetalGridContent$MatColor('Green', Color.Companion.MD_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Light Green', Color.Companion.MD_LIGHT_GREEN.toLinear()), new RoughnesMetalGridContent$MatColor('Lime', Color.Companion.MD_LIME.toLinear()), new RoughnesMetalGridContent$MatColor('Yellow', Color.Companion.MD_YELLOW.toLinear()), new RoughnesMetalGridContent$MatColor('Amber', Color.Companion.MD_AMBER.toLinear()), new RoughnesMetalGridContent$MatColor('Orange', Color.Companion.MD_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Deep Orange', Color.Companion.MD_DEEP_ORANGE.toLinear()), new RoughnesMetalGridContent$MatColor('Brown', Color.Companion.MD_BROWN.toLinear()), new RoughnesMetalGridContent$MatColor('White', Color.Companion.WHITE.toLinear()), new RoughnesMetalGridContent$MatColor('Grey', Color.Companion.MD_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Blue Grey', Color.Companion.MD_BLUE_GREY.toLinear()), new RoughnesMetalGridContent$MatColor('Almost Black', (new Color(0.1, 0.1, 0.1)).toLinear())]);
   }
   RoughnesMetalGridContent$Companion.$metadata$ = {
     kind: Kind_OBJECT,
@@ -4539,1568 +4814,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     kind: Kind_CLASS,
     simpleName: 'RoughnesMetalGridContent',
     interfaces: [PbrDemo$PbrContent]
-  };
-  function globeScene$lambda$lambda(closure$elevationUrl, closure$ctx, closure$globe, this$, closure$globeGroup) {
-    return function (data) {
-      if (data != null) {
-        var $receiver = ProtoBuf.Default;
-        var metaHierarchy = $receiver.load_dntfbn$(getContextualOrDefault($receiver.context, getKClass(ElevationMapMetaHierarchy)), data);
-        closure$globe.elevationMapProvider = new ElevationMapHierarchy(closure$elevationUrl, metaHierarchy, closure$ctx.assetMgr);
-        closure$globe.meshDetailLevel = 6;
-      } else {
-        var $receiver_0 = this$;
-        var $this = util.Log;
-        var level = Log$Level.WARN;
-        var tag = Kotlin.getKClassFromExpression($receiver_0).simpleName;
-        if (level.level >= $this.level.level) {
-          $this.printer(level, tag, 'Height map data not available');
-        }}
-      this$.unaryPlus_uv0sim$(closure$globeGroup);
-      return Unit;
-    };
-  }
-  function globeScene(ctx) {
-    var scenes = ArrayList_init();
-    var ui = new GlobeUi(null, ctx);
-    var $receiver = new Scene_init(null);
-    $receiver.lighting.lights.get_za3lpa$(0).color.set_d7aj7k$(Color.Companion.LIGHT_GRAY);
-    var globe = new Globe(6371000.8);
-    var globeGroup = new DoublePrecisionRoot(globe);
-    ui.globe = globe;
-    var $receiver_0 = new GlobeCamHandler(globe, $receiver, ctx);
-    globe.setCenter_lu1900$(47.05, 9.48);
-    $receiver_0.resetZoom_mx4ult$(15000.0);
-    $receiver_0.horizontalRotation = 60.0;
-    $receiver_0.verticalRotation = -30.0;
-    $receiver.unaryPlus_uv0sim$($receiver_0);
-    var $this = Demo$Companion_getInstance();
-    var key = 'globe.elevationUrl';
-    var default_0 = 'elevation';
-    var tmp$, tmp$_0;
-    var elevationUrl = (tmp$_0 = typeof (tmp$ = $this.demoProps.get_11rb$(key)) === 'string' ? tmp$ : null) != null ? tmp$_0 : default_0;
-    ctx.assetMgr.loadAsset_us385g$(elevationUrl + '/meta.pb', globeScene$lambda$lambda(elevationUrl, ctx, globe, $receiver, globeGroup));
-    scenes.add_11rb$($receiver);
-    var element = ui.scene;
-    scenes.add_11rb$(element);
-    return scenes;
-  }
-  function GlobeUi(globe, ctx) {
-    this.globe = globe;
-    this.ctx = ctx;
-    this.containerWidth_0 = 0.0;
-    this.scene = uiScene(void 0, void 0, void 0, GlobeUi$scene$lambda(this));
-  }
-  function GlobeUi$scene$lambda$lambda$lambda(it) {
-    return new BlankComponentUi();
-  }
-  function GlobeUi$scene$lambda$lambda($receiver) {
-    $receiver.containerUi_2t3ptw$(getCallableRef('SimpleComponentUi', function (component) {
-      return new SimpleComponentUi(component);
-    }));
-    $receiver.componentUi_mloaa0$(GlobeUi$scene$lambda$lambda$lambda);
-    $receiver.standardFont_ttufcy$(new FontProps(Font.Companion.SYSTEM_FONT, 12.0));
-    return Unit;
-  }
-  function GlobeUi$scene$lambda$lambda$lambda_0($receiver) {
-    $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(18.0), full());
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), zero(), zero());
-    $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
-    $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-    return Unit;
-  }
-  function GlobeUi$scene$lambda$lambda$lambda$lambda(closure$attributions, closure$i, this$GlobeUi) {
-    return function ($receiver, f, f_0, f_1) {
-      if (!(closure$attributions.get_za3lpa$(closure$i).second.length === 0)) {
-        this$GlobeUi.ctx.openUrl_61zpoe$(closure$attributions.get_za3lpa$(closure$i).second);
-      }return Unit;
-    };
-  }
-  function GlobeUi$scene$lambda$lambda$lambda_1(closure$i, closure$attributions, this$GlobeUi) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), dps(18.0), full());
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), dps(18.0 * (closure$i + 1 | 0), true), zero());
-      $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      $receiver.textColor.setCustom_11rb$(Color.Companion.LIME);
-      $receiver.textColorHovered.setCustom_11rb$(Color.Companion.fromHex_61zpoe$('#42A5F5'));
-      $receiver.text = '';
-      var $receiver_0 = $receiver.onClick;
-      var element = GlobeUi$scene$lambda$lambda$lambda$lambda(closure$attributions, closure$i, this$GlobeUi);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function GlobeUi$scene$lambda$lambda$lambda_2(this$GlobeUi, closure$posLbl, closure$attributions, this$) {
-    return function ($receiver, it) {
-      var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-      var width = {v: 0.0};
-      var lines = {v: 1};
-      var globe = this$GlobeUi.globe;
-      if (globe != null) {
-        var lat = toString(globe.centerLat, 5);
-        var lon = toString(globe.centerLon, 5);
-        if (globe.cameraHeight > 10000) {
-          tmp$ = toString(globe.cameraHeight / 1000.0, 1) + ' km';
-        } else {
-          tmp$ = toString(globe.cameraHeight, 1) + ' m';
-        }
-        var hgt = tmp$;
-        closure$posLbl.text = 'Center: ' + lat + '\xB0, ' + lon + '\xB0  ' + hgt;
-        width.v = (tmp$_1 = (tmp$_0 = closure$posLbl.font.apply()) != null ? tmp$_0.textWidth_61zpoe$(closure$posLbl.text) : null) != null ? tmp$_1 : 0.0;
-      }if ((tmp$_3 = (tmp$_2 = globe != null ? globe.tileManager : null) != null ? tmp$_2.getCenterTile() : null) != null) {
-        var closure$attributions_0 = closure$attributions;
-        for (var i = 0; i !== closure$attributions_0.size; ++i) {
-          closure$attributions_0.get_za3lpa$(i).first.text = '';
-        }
-        var tmp$_4, tmp$_0_0;
-        var index = 0;
-        tmp$_4 = tmp$_3.attributionInfo.iterator();
-        while (tmp$_4.hasNext()) {
-          var item = tmp$_4.next();
-          var i_0 = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-          var tmp$_5, tmp$_6;
-          if (i_0 < closure$attributions_0.size) {
-            closure$attributions_0.get_za3lpa$(i_0).first.text = item.text;
-            if (!equals(item.url, closure$attributions_0.get_za3lpa$(i_0).second)) {
-              var $receiver_0 = closure$attributions_0.get_za3lpa$(i_0);
-              closure$attributions_0.set_wxm5ur$(i_0, new Pair($receiver_0.first, $receiver_0.second));
-            }var w = (tmp$_6 = (tmp$_5 = closure$attributions_0.get_za3lpa$(i_0).first.font.apply()) != null ? tmp$_5.textWidth_61zpoe$(closure$attributions_0.get_za3lpa$(i_0).first.text) : null) != null ? tmp$_6 : 0.0;
-            var a = width.v;
-            width.v = Math_0.max(a, w);
-            lines.v = lines.v + 1 | 0;
-          }}
-      }if (width.v !== this$GlobeUi.containerWidth_0) {
-        this$GlobeUi.containerWidth_0 = width.v;
-        this$.layoutSpec.setSize_4ujscr$(dps(this$GlobeUi.containerWidth_0 + 8, true), dps(18.0 * lines.v), full());
-        this$.layoutSpec.setOrigin_4ujscr$(dps(-this$GlobeUi.containerWidth_0 - 8, true), zero(), zero());
-        this$.root.requestLayout();
-      }return Unit;
-    };
-  }
-  function GlobeUi$scene$lambda$lambda_0(this$, closure$maxAttributions, closure$attributions, this$GlobeUi) {
-    return function ($receiver) {
-      var tmp$;
-      var posLbl = this$.label_tokfmu$('posLabel', GlobeUi$scene$lambda$lambda$lambda_0);
-      $receiver.unaryPlus_uv0sim$(posLbl);
-      tmp$ = closure$maxAttributions;
-      for (var i = 0; i < tmp$; i++) {
-        var button = this$.button_9zrh0o$('attributionText_' + i, GlobeUi$scene$lambda$lambda$lambda_1(i, closure$attributions, this$GlobeUi));
-        var $receiver_0 = closure$attributions;
-        var element = new Pair(button, '');
-        $receiver_0.add_11rb$(element);
-        $receiver.unaryPlus_uv0sim$(button);
-      }
-      var $receiver_1 = $receiver.onPreRender;
-      var element_0 = GlobeUi$scene$lambda$lambda$lambda_2(this$GlobeUi, posLbl, closure$attributions, $receiver);
-      $receiver_1.add_11rb$(element_0);
-      return Unit;
-    };
-  }
-  function GlobeUi$scene$lambda(this$GlobeUi) {
-    return function ($receiver) {
-      $receiver.theme = theme(UiTheme.Companion.DARK, GlobeUi$scene$lambda$lambda);
-      $receiver.content.ui.setCustom_11rb$(new BlankComponentUi());
-      var attributions = ArrayList_init();
-      var maxAttributions = 2;
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('globeUI', GlobeUi$scene$lambda$lambda_0($receiver, maxAttributions, attributions, this$GlobeUi)));
-      return Unit;
-    };
-  }
-  GlobeUi.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'GlobeUi',
-    interfaces: []
-  };
-  function makeGroundGrid$lambda$lambda(closure$groundExt, closure$y) {
-    return function ($receiver) {
-      $receiver.transform.push();
-      var closure$groundExt_0 = closure$groundExt;
-      var closure$y_0 = closure$y;
-      $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
-      $receiver.color = Color.Companion.LIGHT_GRAY.withAlpha_mx4ult$(0.2);
-      var $receiver_0 = $receiver.rectProps.defaults();
-      $receiver_0.origin.set_y2kzbl$(-closure$groundExt_0, -closure$groundExt_0, closure$y_0);
-      $receiver_0.width = closure$groundExt_0 * 2.0;
-      $receiver_0.height = closure$groundExt_0 * 2.0;
-      var uv = closure$groundExt_0 / 2;
-      $receiver_0.texCoordUpperLeft.set_dleff0$(-uv, -uv);
-      $receiver_0.texCoordUpperRight.set_dleff0$(uv, -uv);
-      $receiver_0.texCoordLowerLeft.set_dleff0$(-uv, uv);
-      $receiver_0.texCoordLowerRight.set_dleff0$(uv, uv);
-      $receiver.rect_e5k3t5$($receiver.rectProps);
-      $receiver.transform.pop();
-      $receiver.geometry.generateTangents();
-      return Unit;
-    };
-  }
-  function Coroutine$makeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$makeGroundGrid$lambda$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$makeGroundGrid$lambda$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeGroundGrid$lambda$lambda$lambda.prototype.constructor = Coroutine$makeGroundGrid$lambda$lambda$lambda;
-  Coroutine$makeGroundGrid$lambda$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('ground_color.png', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function makeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeGroundGrid$lambda$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function Coroutine$makeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$makeGroundGrid$lambda$lambda$lambda_0.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$makeGroundGrid$lambda$lambda$lambda_0.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$makeGroundGrid$lambda$lambda$lambda_0.prototype.constructor = Coroutine$makeGroundGrid$lambda$lambda$lambda_0;
-  Coroutine$makeGroundGrid$lambda$lambda$lambda_0.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('ground_nrm.png', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function makeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$makeGroundGrid$lambda$lambda$lambda_0($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function makeGroundGrid$lambda(closure$groundExt, closure$y) {
-    return function ($receiver) {
-      $receiver.isCastingShadow = false;
-      $receiver.generate_v2sixm$(makeGroundGrid$lambda$lambda(closure$groundExt, closure$y));
-      var $receiver_0 = new PbrShader$PbrConfig();
-      $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
-      $receiver_0.isNormalMapped = true;
-      var pbrCfg = $receiver_0;
-      var $receiver_1 = new PbrShader(pbrCfg);
-      $receiver_1.albedoMap = new Texture(void 0, makeGroundGrid$lambda$lambda$lambda);
-      $receiver_1.normalMap = new Texture(void 0, makeGroundGrid$lambda$lambda$lambda_0);
-      $receiver.pipelineLoader = $receiver_1;
-      return Unit;
-    };
-  }
-  function makeGroundGrid(cells, y) {
-    if (y === void 0)
-      y = 0.0;
-    var groundExt = cells / 2 | 0;
-    return textureMesh(void 0, true, makeGroundGrid$lambda(groundExt, y));
-  }
-  function multiScene(koolCtx) {
-    var leftScene = simpleShapesScene(koolCtx);
-    var rightScene = uiDemoScene();
-    return listOf_0([leftScene, rightScene]);
-  }
-  function particleDemo$lambda$lambda(this$) {
-    return function ($receiver) {
-      $receiver.setMouseRotation_dleff0$(20.0, -30.0);
-      $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.resetZoom_mx4ult$(25.0);
-      $receiver.translation.set_y2kzbl$(2.5, 2.5, 2.5);
-      return Unit;
-    };
-  }
-  function Coroutine$particleDemo$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$it = it_0;
-  }
-  Coroutine$particleDemo$lambda$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$particleDemo$lambda$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$particleDemo$lambda$lambda.prototype.constructor = Coroutine$particleDemo$lambda$lambda;
-  Coroutine$particleDemo$lambda$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('snowflakes.png', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function particleDemo$lambda$lambda_0($receiver_0, it_0, continuation_0, suspended) {
-    var instance = new Coroutine$particleDemo$lambda$lambda($receiver_0, it_0, this, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  }
-  function particleDemo$lambda$lambda$lambda(closure$dist, closure$isColored) {
-    return function ($receiver) {
-      $receiver.position.set_czzhiu$(closure$dist.nextPoint());
-      $receiver.position.y = 15.0;
-      var sz = randomF(0.1, 0.2);
-      $receiver.size.set_dleff0$(sz, sz);
-      $receiver.velocity.set_y2kzbl$(0.0, -randomF(0.6, 1.4), 0.0);
-      $receiver.angularVelocity = randomF(-45.0, 45.0);
-      if (closure$isColored.v) {
-        $receiver.color.set_d7aj7k$(ColorGradient.Companion.JET_MD.getColor_y2kzbl$(randomF_0()));
-      } else {
-        $receiver.color.set_d7aj7k$(Color.Companion.WHITE);
-      }
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_0(closure$types, closure$i) {
-    return function ($receiver, it) {
-      if ($receiver.position.y < $receiver.size.y / 2) {
-        $receiver.replaceBy_1rs1w0$(closure$types.get_za3lpa$(closure$i + 25 | 0));
-        $receiver.lifeTime = 0.0;
-      }return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_1($receiver) {
-    $receiver.position.y = $receiver.size.y / 2;
-    $receiver.velocity.set_czzhiu$(Vec3f.Companion.ZERO);
-    $receiver.angularVelocity = 0.0;
-    return Unit;
-  }
-  function particleDemo$lambda$lambda$lambda_2($receiver, it) {
-    var tmp$ = $receiver.color;
-    var $receiver_0 = 5.0 - $receiver.lifeTime;
-    var clamp$result;
-    if ($receiver_0 < 0.0) {
-      clamp$result = 0.0;
-    } else if ($receiver_0 > 1.0) {
-      clamp$result = 1.0;
-    } else {
-      clamp$result = $receiver_0;
-    }
-    tmp$.a = clamp$result;
-    if ($receiver.lifeTime > 5.0) {
-      $receiver.die();
-    }return Unit;
-  }
-  function particleDemo$lambda$lambda$lambda_3(closure$isSorted, this$, closure$currentParticleCount, closure$maxParticleCount, closure$types) {
-    return function ($receiver, ctx) {
-      this$.drawOrder = closure$isSorted.v ? BillboardMesh$DrawOrder.FAR_FIRST : BillboardMesh$DrawOrder.AS_IS;
-      closure$currentParticleCount.v = this$.numParticles;
-      if (this$.numParticles < closure$maxParticleCount.v) {
-        var a = numberToInt((closure$maxParticleCount.v / 15 | 0) * ctx.deltaT);
-        var b = closure$maxParticleCount.v - this$.numParticles | 0;
-        var spawnCount = Math_0.min(a, b);
-        for (var i = 1; i <= spawnCount; i++) {
-          this$.spawnParticle_1rs1w0$(closure$types.get_za3lpa$(randomI(new IntRange(0, 24))));
-        }
-      }return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_4(it) {
-    return new BlankComponentUi();
-  }
-  function particleDemo$lambda$lambda$lambda_5(it) {
-    return new BlankComponentUi();
-  }
-  function particleDemo$lambda$lambda_1($receiver) {
-    $receiver.componentUi_mloaa0$(particleDemo$lambda$lambda$lambda_4);
-    $receiver.containerUi_2t3ptw$(particleDemo$lambda$lambda$lambda_5);
-    return Unit;
-  }
-  function particleDemo$lambda$lambda$lambda_6(closure$posY, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(40.0, true), full());
-      $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_7(closure$posY, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(5.0), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(90.0), dps(1.0, true), full());
-      var bg = new SimpleComponentUi($receiver);
-      bg.color.setCustom_11rb$(this$.theme.accentColor);
-      $receiver.ui.setCustom_11rb$(bg);
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda$lambda(closure$isColored) {
-    return function ($receiver) {
-      closure$isColored.v = $receiver.isEnabled;
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_8(closure$posY, closure$isColored) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.isEnabled = closure$isColored.v;
-      var $receiver_0 = $receiver.onStateChange;
-      var element = particleDemo$lambda$lambda$lambda$lambda(closure$isColored);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda$lambda_0(closure$isSorted) {
-    return function ($receiver) {
-      closure$isSorted.v = $receiver.isEnabled;
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_9(closure$posY, closure$isSorted) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.isEnabled = closure$isSorted.v;
-      var $receiver_0 = $receiver.onStateChange;
-      var element = particleDemo$lambda$lambda$lambda$lambda_0(closure$isSorted);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_10(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda$lambda_1(closure$currentParticleCount, this$) {
-    return function ($receiver, it) {
-      this$.text = closure$currentParticleCount.v.toString();
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_11(closure$posY, closure$currentParticleCount) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      var $receiver_0 = $receiver.onPreRender;
-      var element = particleDemo$lambda$lambda$lambda$lambda_1(closure$currentParticleCount, $receiver);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_12(closure$posY) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda$lambda_2(closure$maxParticleCount, this$) {
-    return function ($receiver, it) {
-      this$.text = closure$maxParticleCount.v.toString();
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_13(closure$posY, closure$maxParticleCount) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      var $receiver_0 = $receiver.onPreRender;
-      var element = particleDemo$lambda$lambda$lambda$lambda_2(closure$maxParticleCount, $receiver);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda$lambda_3(closure$maxParticleCount) {
-    return function ($receiver, value) {
-      closure$maxParticleCount.v = numberToInt(round(value)) * 1000 | 0;
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda$lambda_14(closure$posY, closure$maxParticleCount) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(0.0, true), dps(closure$posY.v, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(25.0, true), full());
-      $receiver.setValue_y2kzbl$(1.0, 50.0, 10.0);
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = particleDemo$lambda$lambda$lambda$lambda_3(closure$maxParticleCount);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function particleDemo$lambda$lambda_2(this$, closure$isColored, closure$isSorted, closure$currentParticleCount, closure$maxParticleCount) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-200.0, true), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(200.0, true), pcs(100.0), full());
-      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      var posY = {v: -45.0};
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Settings', particleDemo$lambda$lambda$lambda_6(posY, this$)));
-      $receiver.unaryPlus_uv0sim$(this$.component_qphi6d$('divider', particleDemo$lambda$lambda$lambda_7(posY, this$)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Colorful', particleDemo$lambda$lambda$lambda_8(posY, closure$isColored)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Z-Sorted', particleDemo$lambda$lambda$lambda_9(posY, closure$isSorted)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Current:', particleDemo$lambda$lambda$lambda_10(posY)));
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('currentCnt', particleDemo$lambda$lambda$lambda_11(posY, closure$currentParticleCount)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Max:', particleDemo$lambda$lambda$lambda_12(posY)));
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('maxCnt', particleDemo$lambda$lambda$lambda_13(posY, closure$maxParticleCount)));
-      posY.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.slider_87iqh3$('particleCnt', particleDemo$lambda$lambda$lambda_14(posY, closure$maxParticleCount)));
-      return Unit;
-    };
-  }
-  function particleDemo$lambda(closure$isColored, closure$isSorted, closure$currentParticleCount, closure$maxParticleCount) {
-    return function ($receiver) {
-      $receiver.theme = theme(UiTheme.Companion.DARK_SIMPLE, particleDemo$lambda$lambda_1);
-      $receiver.unaryPlus_uv0sim$($receiver.container_t34sov$('particle-menu', particleDemo$lambda$lambda_2($receiver, closure$isColored, closure$isSorted, closure$currentParticleCount, closure$maxParticleCount)));
-      return Unit;
-    };
-  }
-  function particleDemo(ctx) {
-    var isColored = {v: false};
-    var isSorted = {v: false};
-    var currentParticleCount = {v: 0};
-    var maxParticleCount = {v: 10000};
-    var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, particleDemo$lambda$lambda($receiver)));
-    $receiver.unaryPlus_uv0sim$(makeGroundGrid(40));
-    var $receiver_0 = new ParticleSystem(new Texture(void 0, particleDemo$lambda$lambda_0), 50000);
-    $receiver_0.isDepthMask = false;
-    var dist = new CubicPointDistribution(40.0);
-    var types = ArrayList_init();
-    for (var i = 0; i <= 24; i++) {
-      var texCenter = new Vec2f(0.1 + i % 5 / 5.0, 0.1 + (i / 5 | 0) / 5.0);
-      var element = new ParticleSystem$Type('FallingSnowflake-' + i, texCenter, new Vec2f(0.2, 0.2), void 0, particleDemo$lambda$lambda$lambda(dist, isColored), particleDemo$lambda$lambda$lambda_0(types, i));
-      types.add_11rb$(element);
-    }
-    for (var i_0 = 0; i_0 <= 24; i_0++) {
-      var texCenter_0 = new Vec2f(0.1 + i_0 % 5 / 5.0, 0.1 + (i_0 / 5 | 0) / 5.0);
-      var element_0 = new ParticleSystem$Type('MeltingSnowflake-' + i_0, texCenter_0, new Vec2f(0.2, 0.2), void 0, particleDemo$lambda$lambda$lambda_1, particleDemo$lambda$lambda$lambda_2);
-      types.add_11rb$(element_0);
-    }
-    $receiver_0.onPreRender.add_11rb$(particleDemo$lambda$lambda$lambda_3(isSorted, $receiver_0, currentParticleCount, maxParticleCount, types));
-    $receiver.unaryPlus_uv0sim$($receiver_0);
-    var scene = $receiver;
-    var ui = uiScene(ctx.screenDpi, void 0, void 0, particleDemo$lambda(isColored, isSorted, currentParticleCount, maxParticleCount));
-    return listOf_0([scene, ui]);
-  }
-  function pointScene$lambda$lambda(closure$frameCnt, closure$data, closure$trav, closure$ptVertCnt, closure$tree) {
-    return function ($receiver, it) {
-      var tmp$, tmp$_0, tmp$_1;
-      if ((closure$frameCnt.v = closure$frameCnt.v - 1 | 0, closure$frameCnt.v) === 0) {
-        closure$frameCnt.v = 30;
-        var vert = closure$data.get_za3lpa$(0);
-        tmp$ = closure$trav.result.iterator();
-        while (tmp$.hasNext()) {
-          var point = tmp$.next();
-          tmp$_0 = closure$ptVertCnt;
-          for (var i = 0; i < tmp$_0; i++) {
-            vert.index = point.index + i | 0;
-            vert.color.set_d7aj7k$(Color.Companion.DARK_GRAY);
-          }
-        }
-        closure$trav.center.set_y2kzbl$(randomF(-1.0, 1.0), randomF(-1.0, 1.0), randomF(-1.0, 1.0));
-        var t = new PerfTimer();
-        closure$trav.traverse_m6hlto$(closure$tree);
-        var searchT = t.takeMs();
-        t.reset();
-        tmp$_1 = closure$trav.result;
-        for (var i_0 = 0; i_0 !== tmp$_1.size; ++i_0) {
-          var tmp$_2;
-          tmp$_2 = closure$ptVertCnt;
-          for (var vi = 0; vi < tmp$_2; vi++) {
-            vert.index = closure$trav.result.get_za3lpa$(i_0).index + vi | 0;
-            vert.color.set_d7aj7k$(ColorGradient.Companion.PLASMA.getColor_y2kzbl$(i_0 / closure$trav.result.size));
-          }
-        }
-        var updateT = t.takeMs();
-        var $this = util.Log;
-        var level = Log$Level.INFO;
-        var tag = Kotlin.getKClassFromExpression($receiver).simpleName;
-        if (level.level >= $this.level.level) {
-          $this.printer(level, tag, 'Tree traversal retrieved ' + closure$trav.result.size + ' points, ' + ('took ' + toString(searchT, 3) + ' ms; ') + ('Point update took ' + toString(updateT, 3) + ' ms'));
-        }closure$data.hasChanged = true;
-      }return Unit;
-    };
-  }
-  function pointScene$lambda$lambda_0(this$) {
-    return function ($receiver) {
-      $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.setMouseRotation_dleff0$(0.0, -30.0);
-      $receiver.minZoom = 5.0;
-      $receiver.maxZoom = 25.0;
-      $receiver.translationBounds = BoundingBox_init(new Vec3f(-10.0, -10.0, -10.0), new Vec3f(10.0, 10.0, 10.0));
-      return Unit;
-    };
-  }
-  function pointScene$lambda$lambda$lambda(this$) {
-    return function ($receiver, it) {
-      this$.rotate_ad55pp$(it.deltaT * 45, Vec3f.Companion.Y_AXIS);
-      return Unit;
-    };
-  }
-  function pointScene$lambda$lambda_1(closure$pointMesh) {
-    return function ($receiver) {
-      $receiver.onPreRender.add_11rb$(pointScene$lambda$lambda$lambda($receiver));
-      $receiver.unaryPlus_uv0sim$(closure$pointMesh);
-      return Unit;
-    };
-  }
-  function pointScene() {
-    var tmp$ = makePointMesh();
-    var pointMesh = tmp$.component1()
-    , tree = tmp$.component2();
-    var trav = (new InRadiusTraverser()).setup_2qa7tb$(Vec3f.Companion.ZERO, 1.0);
-    var data = pointMesh.geometry;
-    var ptVertCnt = Kotlin.isType(pointMesh, BillboardMesh) ? 4 : 1;
-    var frameCnt = {v: 30};
-    var $receiver = new Scene_init(null);
-    $receiver.onPreRender.add_11rb$(pointScene$lambda$lambda(frameCnt, data, trav, ptVertCnt, tree));
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, pointScene$lambda$lambda_0($receiver)));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, pointScene$lambda$lambda_1(pointMesh)));
-    return $receiver;
-  }
-  function makePointMesh$lambda$lambda(closure$pt) {
-    return function ($receiver) {
-      $receiver.position.set_czzhiu$(closure$pt);
-      $receiver.color.set_d7aj7k$(Color.Companion.DARK_GRAY);
-      return Unit;
-    };
-  }
-  function makePointMesh$lambda(closure$points) {
-    return function ($receiver) {
-      var dist = new CubicPointDistribution(5.0);
-      for (var i = 1; i <= 100000; i++) {
-        var pt = dist.nextPoint();
-        var idx = $receiver.addPoint_tohjaj$(makePointMesh$lambda$lambda(pt));
-        closure$points.add_11rb$(new MeshPoint(pt.x, pt.y, pt.z, idx));
-      }
-      return Unit;
-    };
-  }
-  function makePointMesh() {
-    var points = ArrayList_init();
-    var mesh = pointMesh(void 0, makePointMesh$lambda(points));
-    var message = 'Constructed spatial tree with ' + points.size + ' points in ';
-    var tag;
-    var level;
-    tag = 'PerfTimer';
-    level = Log$Level.INFO;
-    var t = now();
-    var ret = pointKdTree(points);
-    var $this = util.Log;
-    if (level.level >= $this.level.level) {
-      $this.printer(level, tag, message + ' ' + toString(now() - t, 3) + ' ms');
-    }var tree = ret;
-    return new Pair(mesh, tree);
-  }
-  function MeshPoint(x, y, z, index) {
-    Vec3f.call(this, x, y, z);
-    this.index = index;
-  }
-  MeshPoint.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MeshPoint',
-    interfaces: [Vec3f]
-  };
-  function reflectionDemo$lambda$lambda(this$) {
-    return function ($receiver) {
-      $receiver.panMethod = yPlanePan();
-      $receiver.translationBounds = BoundingBox_init(new Vec3f(-20.0, 0.0, -20.0), new Vec3f(20.0, 0.0, 20.0));
-      $receiver.setMouseRotation_dleff0$(20.0, -15.0);
-      $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.minZoom = 1.0;
-      $receiver.maxZoom = 40.0;
-      $receiver.resetZoom_mx4ult$(20.0);
-      return Unit;
-    };
-  }
-  function reflectionDemo$lambda$lambda$lambda($receiver) {
-    var $receiver_0 = $receiver.sphereProps.defaults();
-    $receiver_0.center.set_y2kzbl$(0.0, 3.0, 0.0);
-    $receiver_0.radius = 2.5;
-    $receiver_0.steps = 100;
-    $receiver.sphere_mojs8w$($receiver.sphereProps);
-    return Unit;
-  }
-  function reflectionDemo$lambda$lambda_0($receiver) {
-    $receiver.generate_v2sixm$(reflectionDemo$lambda$lambda$lambda);
-    return Unit;
-  }
-  function reflectionDemo$lambda$lambda$lambda$lambda($receiver) {
-    $receiver.transform.push();
-    $receiver.color = Color.Companion.MD_PINK;
-    $receiver.translate_y2kzbl$(-8.0, 1.0, -8.0);
-    $receiver.rotate_ad55pp$(18.0, Vec3f.Companion.Y_AXIS);
-    var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.size.set_y2kzbl$(3.0, 4.0, 3.0);
-    $receiver_0.origin.set_y2kzbl$(-$receiver_0.size.x / 2.0, -$receiver_0.size.y / 2.0, 0.0);
-    $receiver.cube_lhbb6w$($receiver.cubeProps);
-    $receiver.transform.pop();
-    $receiver.transform.push();
-    $receiver.color = Color.Companion.MD_LIGHT_BLUE;
-    $receiver.translate_y2kzbl$(-8.0, 1.0, 8.0);
-    $receiver.rotate_ad55pp$(36.0, Vec3f.Companion.Y_AXIS);
-    var $receiver_1 = $receiver.cubeProps.defaults();
-    $receiver_1.size.set_y2kzbl$(4.0, 3.0, 3.0);
-    $receiver_1.origin.set_y2kzbl$(-$receiver_1.size.x / 2.0, -$receiver_1.size.y / 2.0, 0.0);
-    $receiver.cube_lhbb6w$($receiver.cubeProps);
-    $receiver.transform.pop();
-    $receiver.transform.push();
-    $receiver.color = Color.Companion.MD_LIME;
-    $receiver.translate_y2kzbl$(8.0, 1.0, 8.0);
-    $receiver.rotate_ad55pp$(54.0, Vec3f.Companion.Y_AXIS);
-    var $receiver_2 = $receiver.cubeProps.defaults();
-    $receiver_2.size.set_y2kzbl$(3.0, 3.0, 4.0);
-    $receiver_2.origin.set_y2kzbl$(-$receiver_2.size.x / 2.0, -$receiver_2.size.y / 2.0, 0.0);
-    $receiver.cube_lhbb6w$($receiver.cubeProps);
-    $receiver.transform.pop();
-    $receiver.transform.push();
-    $receiver.color = Color.Companion.MD_DEEP_PURPLE;
-    $receiver.translate_y2kzbl$(8.0, 1.0, -8.0);
-    $receiver.rotate_ad55pp$(72.0, Vec3f.Companion.Y_AXIS);
-    var $receiver_3 = $receiver.cubeProps.defaults();
-    $receiver_3.size.set_y2kzbl$(3.0, 3.0, 3.0);
-    $receiver_3.origin.set_y2kzbl$(-$receiver_3.size.x / 2.0, -$receiver_3.size.y / 2.0, 0.0);
-    $receiver.cube_lhbb6w$($receiver.cubeProps);
-    $receiver.transform.pop();
-    return Unit;
-  }
-  function reflectionDemo$lambda$lambda$lambda_0($receiver) {
-    $receiver.generate_v2sixm$(reflectionDemo$lambda$lambda$lambda$lambda);
-    return Unit;
-  }
-  function reflectionDemo$lambda$lambda$lambda_1(closure$ctx, this$) {
-    return function ($receiver, it) {
-      this$.rotate_ad55pp$(closure$ctx.deltaT * 90.0, Vec3f.Companion.Y_AXIS);
-      return Unit;
-    };
-  }
-  function reflectionDemo$lambda$lambda_1(closure$reflectedObjects, closure$ctx) {
-    return function ($receiver) {
-      closure$reflectedObjects.add_11rb$($receiver);
-      $receiver.unaryPlus_uv0sim$(colorMesh(void 0, reflectionDemo$lambda$lambda$lambda_0));
-      var $receiver_0 = $receiver.onPreRender;
-      var element = reflectionDemo$lambda$lambda$lambda_1(closure$ctx, $receiver);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function reflectionDemo(ctx) {
-    var reflectedObjects = ArrayList_init();
-    var $receiver = new Scene_init(null);
-    var $receiver_0 = Skybox_init('skybox/y-up/sky_ft.jpg', 'skybox/y-up/sky_bk.jpg', 'skybox/y-up/sky_lt.jpg', 'skybox/y-up/sky_rt.jpg', 'skybox/y-up/sky_up.jpg', 'skybox/y-up/sky_dn.jpg');
-    reflectedObjects.add_11rb$($receiver_0);
-    $receiver.unaryPlus_uv0sim$($receiver_0);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, reflectionDemo$lambda$lambda($receiver)));
-    var $receiver_1 = makeGroundGrid(100);
-    reflectedObjects.add_11rb$($receiver_1);
-    $receiver.unaryPlus_uv0sim$($receiver_1);
-    var mesh = colorMesh(void 0, reflectionDemo$lambda$lambda_0);
-    $receiver.unaryPlus_uv0sim$(mesh);
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, reflectionDemo$lambda$lambda_1(reflectedObjects, ctx)));
-    var mainScene = $receiver;
-    return listOf(mainScene);
-  }
-  function simpleShapesScene$lambda$lambda(this$) {
-    return function ($receiver) {
-      $receiver.setMouseRotation_dleff0$(20.0, -30.0);
-      $receiver.translationBounds = BoundingBox_init(Vec3f_init(-50.0), Vec3f_init(50.0));
-      $receiver.unaryPlus_uv0sim$(this$.camera);
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda$lambda(this$, closure$animator) {
-    return function ($receiver, ctx) {
-      this$.setIdentity();
-      this$.translate_y2kzbl$(-5.0, closure$animator.tick_aemszp$(ctx), 0.0);
-      this$.rotate_ad55pp$(ctx.time * 19, Vec3f.Companion.Y_AXIS);
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda$lambda$lambda($receiver) {
-    var $receiver_0 = $receiver.sphereProps.defaults();
-    $receiver_0.radius = 1.5;
-    $receiver_0.steps = 50;
-    $receiver.sphere_mojs8w$($receiver.sphereProps);
-    return Unit;
-  }
-  function simpleShapesScene$lambda$lambda$lambda_0($receiver) {
-    $receiver.generate_v2sixm$(simpleShapesScene$lambda$lambda$lambda$lambda);
-    return Unit;
-  }
-  function simpleShapesScene$lambda$lambda_0($receiver) {
-    var animator = new CosAnimator(new InterpolatedFloat(-1.0, 1.0));
-    animator.repeating = Animator.Companion.REPEAT_TOGGLE_DIR;
-    $receiver.onPreRender.add_11rb$(simpleShapesScene$lambda$lambda$lambda($receiver, animator));
-    $receiver.unaryPlus_uv0sim$(textureMesh('Sphere', void 0, simpleShapesScene$lambda$lambda$lambda_0));
-    return Unit;
-  }
-  function simpleShapesScene$lambda$lambda$lambda_1(closure$cubeAnimator, this$) {
-    return function ($receiver, ctx) {
-      var angle = closure$cubeAnimator.tick_aemszp$(ctx);
-      this$.setIdentity();
-      this$.translate_y2kzbl$(5.0, 0.0, 0.0);
-      this$.rotate_ad55pp$(angle * 5, Vec3f.Companion.Y_AXIS);
-      this$.rotate_ad55pp$(angle, Vec3f.Companion.X_AXIS);
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda$lambda$lambda_0(closure$cubeAnimator) {
-    return function (v) {
-      closure$cubeAnimator.speed = v;
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda$lambda$lambda_1($receiver) {
-    $receiver.scale_y2kzbl$(2.0, 2.0, 2.0);
-    var $receiver_0 = $receiver.cubeProps.defaults();
-    $receiver_0.colored_6taknv$();
-    $receiver_0.centered();
-    $receiver.cube_lhbb6w$($receiver.cubeProps);
-    return Unit;
-  }
-  function simpleShapesScene$lambda$lambda$lambda$lambda_2(closure$speedAnimator) {
-    return function ($receiver, ctx) {
-      closure$speedAnimator.tick_aemszp$(ctx);
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda$lambda$lambda_3(closure$speedAnimator) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$speedAnimator.speed = 1.0;
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda$lambda$lambda_4(closure$speedAnimator) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$speedAnimator.speed = -1.0;
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda$lambda_2(closure$cubeAnimator) {
-    return function ($receiver) {
-      var speedAnimator = new CosAnimator(new InterpolatedFloat(0.0, 1.0));
-      speedAnimator.speed = -1.0;
-      speedAnimator.duration = 0.5;
-      speedAnimator.value.onUpdate = simpleShapesScene$lambda$lambda$lambda$lambda_0(closure$cubeAnimator);
-      $receiver.generate_v2sixm$(simpleShapesScene$lambda$lambda$lambda$lambda_1);
-      $receiver.onPreRender.add_11rb$(simpleShapesScene$lambda$lambda$lambda$lambda_2(speedAnimator));
-      $receiver.onHoverEnter.add_11rb$(simpleShapesScene$lambda$lambda$lambda$lambda_3(speedAnimator));
-      $receiver.onHoverExit.add_11rb$(simpleShapesScene$lambda$lambda$lambda$lambda_4(speedAnimator));
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda_1($receiver) {
-    var cubeAnimator = new LinearAnimator(new InterpolatedFloat(0.0, 360.0));
-    cubeAnimator.repeating = Animator.Companion.REPEAT;
-    cubeAnimator.duration = 20.0;
-    $receiver.onPreRender.add_11rb$(simpleShapesScene$lambda$lambda$lambda_1(cubeAnimator, $receiver));
-    $receiver.unaryPlus_uv0sim$(colorMesh('Cube', simpleShapesScene$lambda$lambda$lambda_2(cubeAnimator)));
-    return Unit;
-  }
-  function simpleShapesScene$lambda$lambda$lambda_3(closure$animator, this$) {
-    return function ($receiver, ctx) {
-      var s = closure$animator.tick_aemszp$(ctx);
-      this$.setIdentity();
-      this$.translate_y2kzbl$(0.0, 0.0, -5.0);
-      this$.scale_y2kzbl$(s, s, s);
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda$lambda$lambda_5(closure$font) {
-    return function ($receiver) {
-      $receiver.color = Color.Companion.LIME;
-      var font = closure$font;
-      var tmp$;
-      var tmp$_0;
-      if ((tmp$ = $receiver.textProps) != null)
-        tmp$_0 = tmp$;
-      else {
-        var $receiver_0 = new TextProps_init(font);
-        $receiver.textProps = $receiver_0;
-        tmp$_0 = $receiver_0;
-      }
-      var props = tmp$_0;
-      props.defaults();
-      props.font = font;
-      var closure$font_0 = closure$font;
-      props.text = 'kool Text!';
-      props.origin.set_y2kzbl$(-closure$font_0.textWidth_61zpoe$(props.text) / 2.0, 0.0, 0.0);
-      $receiver.text_s8z339$(props, 0.0);
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda$lambda_4(closure$font) {
-    return function ($receiver) {
-      $receiver.generate_v2sixm$(simpleShapesScene$lambda$lambda$lambda$lambda_5(closure$font));
-      return Unit;
-    };
-  }
-  function simpleShapesScene$lambda$lambda_2(closure$ctx) {
-    return function ($receiver) {
-      var animator = new CosAnimator(new InterpolatedFloat(0.75, 1.25));
-      animator.repeating = Animator.Companion.REPEAT_TOGGLE_DIR;
-      animator.duration = 0.75;
-      $receiver.onPreRender.add_11rb$(simpleShapesScene$lambda$lambda$lambda_3(animator, $receiver));
-      var font = Font_init(new FontProps(Font.Companion.SYSTEM_FONT, 72.0, 0), closure$ctx);
-      $receiver.unaryPlus_uv0sim$(textMesh(font, void 0, simpleShapesScene$lambda$lambda$lambda_4(font)));
-      return Unit;
-    };
-  }
-  function simpleShapesScene(ctx) {
-    var $receiver = new Scene_init('simpleShapes');
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, simpleShapesScene$lambda$lambda($receiver)));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_0));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_1));
-    $receiver.unaryPlus_uv0sim$(transformGroup(void 0, simpleShapesScene$lambda$lambda_2(ctx)));
-    return $receiver;
-  }
-  function synthieScene(ctx) {
-    var content = new SynthieScene(ctx);
-    var menu = synthieMenu(content, ctx);
-    return listOf_0([content, menu]);
-  }
-  function synthieMenu$lambda$lambda$lambda(it) {
-    return new BlankComponentUi();
-  }
-  function synthieMenu$lambda$lambda$lambda_0(it) {
-    return new BlankComponentUi();
-  }
-  function synthieMenu$lambda$lambda($receiver) {
-    $receiver.componentUi_mloaa0$(synthieMenu$lambda$lambda$lambda);
-    $receiver.containerUi_2t3ptw$(synthieMenu$lambda$lambda$lambda_0);
-    return Unit;
-  }
-  function synthieMenu$lambda$lambda$lambda_1(closure$content, this$) {
-    return function ($receiver) {
-      var tmp$;
-      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(50.0).minus_m986jv$(dps(240.0)), dps(10.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(320.0), pcs(100.0), full());
-      tmp$ = closure$content.melody.sequence;
-      for (var col = 0; col !== tmp$.length; ++col) {
-        var tmp$_0;
-        tmp$_0 = reversed(new IntRange(0, 15)).iterator();
-        while (tmp$_0.hasNext()) {
-          var row = tmp$_0.next();
-          $receiver.unaryPlus_uv0sim$(new SequenceButton(col, row, closure$content.melody, this$));
-        }
-      }
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda($receiver) {
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(5.0), dps(120.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), full());
-    $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-    $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-    $receiver.text = 'Melody';
-    return Unit;
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda$lambda(closure$content) {
-    return function ($receiver, value) {
-      closure$content.melody.gain = value / 50.0;
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda_0(closure$content) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), dps(120.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
-      $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = synthieMenu$lambda$lambda$lambda$lambda$lambda(closure$content);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda_1($receiver) {
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(5.0), dps(80.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), full());
-    $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-    $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-    $receiver.text = 'Pad';
-    return Unit;
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda$lambda_0(closure$content) {
-    return function ($receiver, value) {
-      closure$content.pad.gain = value / 50.0;
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda_2(closure$content) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), dps(80.0, true), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
-      $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = synthieMenu$lambda$lambda$lambda$lambda$lambda_0(closure$content);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda_3($receiver) {
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(5.0), dps(40.0, true), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), full());
-    $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-    $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-    $receiver.text = 'Shaker';
-    return Unit;
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda$lambda_1(closure$content) {
-    return function ($receiver, value) {
-      closure$content.shaker.gain = value / 50.0;
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda_4(closure$content) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), dps(40.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
-      $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = synthieMenu$lambda$lambda$lambda$lambda$lambda_1(closure$content);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda_5($receiver) {
-    $receiver.layoutSpec.setOrigin_4ujscr$(dps(5.0), zero(), zero());
-    $receiver.layoutSpec.setSize_4ujscr$(dps(70.0, true), dps(40.0, true), full());
-    $receiver.textAlignment = new Gravity(Alignment.START, Alignment.CENTER);
-    $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-    $receiver.text = 'Kick';
-    return Unit;
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda$lambda_2(closure$content) {
-    return function ($receiver, value) {
-      closure$content.kick.gain = value / 50.0;
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda$lambda_6(closure$content) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(70.0), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(170.0), dps(40.0), full());
-      $receiver.padding = new Margin(zero(), zero(), zero(), zero());
-      var $receiver_0 = $receiver.onValueChanged;
-      var element = synthieMenu$lambda$lambda$lambda$lambda$lambda_2(closure$content);
-      $receiver_0.add_11rb$(element);
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda_2(closure$content) {
-    return function ($receiver, f, f_0, f_1) {
-      closure$content.isPickingEnabled = false;
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda$lambda_3(closure$content) {
-    return function ($receiver, f, rt, f_0) {
-      if (!rt.isHit) {
-        closure$content.isPickingEnabled = true;
-      }return Unit;
-    };
-  }
-  function synthieMenu$lambda$lambda_0(closure$content, this$) {
-    return function ($receiver) {
-      $receiver.layoutSpec.setOrigin_4ujscr$(zero(), zero(), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(260.0), full());
-      $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.unaryPlus_uv0sim$(this$.container_t34sov$('sequencer', synthieMenu$lambda$lambda$lambda_1(closure$content, this$)));
-      var $receiver_0 = new VerticalLayout('volumes', this$);
-      var this$_0 = this$;
-      var closure$content_0 = closure$content;
-      $receiver_0.layoutSpec.setOrigin_4ujscr$(pcs(50.0, true).plus_m986jv$(dps(250.0, true)), dps(10.0, true), zero());
-      $receiver_0.layoutSpec.setSize_4ujscr$(dps(240.0, true), dps(160.0, true), full());
-      $receiver_0.unaryPlus_uv0sim$(this$_0.label_tokfmu$('meloLbl', synthieMenu$lambda$lambda$lambda$lambda));
-      $receiver_0.unaryPlus_uv0sim$(this$_0.slider_87iqh3$('melo', synthieMenu$lambda$lambda$lambda$lambda_0(closure$content_0)));
-      $receiver_0.unaryPlus_uv0sim$(this$_0.label_tokfmu$('padLbl', synthieMenu$lambda$lambda$lambda$lambda_1));
-      $receiver_0.unaryPlus_uv0sim$(this$_0.slider_87iqh3$('pad', synthieMenu$lambda$lambda$lambda$lambda_2(closure$content_0)));
-      $receiver_0.unaryPlus_uv0sim$(this$_0.label_tokfmu$('shkLbl', synthieMenu$lambda$lambda$lambda$lambda_3));
-      $receiver_0.unaryPlus_uv0sim$(this$_0.slider_87iqh3$('shk', synthieMenu$lambda$lambda$lambda$lambda_4(closure$content_0)));
-      $receiver_0.unaryPlus_uv0sim$(this$_0.label_tokfmu$('kickLbl', synthieMenu$lambda$lambda$lambda$lambda_5));
-      $receiver_0.unaryPlus_uv0sim$(this$_0.slider_87iqh3$('kick', synthieMenu$lambda$lambda$lambda$lambda_6(closure$content_0)));
-      $receiver.unaryPlus_uv0sim$($receiver_0);
-      var $receiver_1 = $receiver.onHoverEnter;
-      var element = synthieMenu$lambda$lambda$lambda_2(closure$content);
-      $receiver_1.add_11rb$(element);
-      var $receiver_2 = $receiver.onHoverExit;
-      var element_0 = synthieMenu$lambda$lambda$lambda_3(closure$content);
-      $receiver_2.add_11rb$(element_0);
-      return Unit;
-    };
-  }
-  function synthieMenu$lambda(closure$content) {
-    return function ($receiver) {
-      $receiver.theme = theme(UiTheme.Companion.DARK, synthieMenu$lambda$lambda);
-      var menu = $receiver.container_t34sov$('menu', synthieMenu$lambda$lambda_0(closure$content, $receiver));
-      $receiver.unaryPlus_uv0sim$(menu);
-      return Unit;
-    };
-  }
-  function synthieMenu(content, ctx) {
-    return uiScene(ctx.screenDpi, void 0, void 0, synthieMenu$lambda(content));
-  }
-  function VerticalLayout(name, root) {
-    UiContainer.call(this, name, root);
-  }
-  VerticalLayout.prototype.doLayout_sq5703$ = function (layoutBounds, ctx) {
-    if (!(layoutBounds != null ? layoutBounds.equals(this.componentBounds) : null)) {
-      this.componentBounds.clear();
-    }UiContainer.prototype.doLayout_sq5703$.call(this, layoutBounds, ctx);
-    if (!(layoutBounds != null ? layoutBounds.equals(this.componentBounds) : null)) {
-      this.translate_y2kzbl$(-this.posInParent.x, -this.posInParent.y, -this.posInParent.z);
-      this.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
-      this.translate_y2kzbl$(this.posInParent.y, -this.posInParent.x, this.posInParent.z);
-    }};
-  VerticalLayout.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'VerticalLayout',
-    interfaces: [UiContainer]
-  };
-  function Melody() {
-    SampleNode.call(this);
-    this.sequence = [0, 0, 0, 5, 3, 3, 3, 8, 0, 0, 0, 8, 8, 10, 3, 15];
-    this.index = 0.0;
-    var $receiver = new Oscillator(Wave.Companion.SINE, 1.0 / 32.0);
-    $receiver.gain = 140.0;
-    this.lfo1_0 = $receiver;
-    var $receiver_0 = new Oscillator(Wave.Companion.SINE, 0.5);
-    $receiver_0.gain = 0.2;
-    $receiver_0.phaseShift = 0.5;
-    this.lfo2_0 = $receiver_0;
-    var $receiver_1 = new Oscillator(Wave.Companion.SAW);
-    $receiver_1.gain = 0.7;
-    this.osc1_0 = $receiver_1;
-    var $receiver_2 = new Oscillator(Wave.Companion.SQUARE);
-    $receiver_2.gain = 0.4;
-    this.osc2_0 = $receiver_2;
-    var $receiver_3 = new Oscillator(Wave.Companion.SINE);
-    $receiver_3.gain = 0.8;
-    this.osc3_0 = $receiver_3;
-    var $receiver_4 = new Oscillator(Wave.Companion.SQUARE);
-    $receiver_4.gain = 1.2;
-    this.osc4_0 = $receiver_4;
-    this.moodFilter_0 = new MoodFilter(this);
-  }
-  Melody.prototype.generate_mx4ult$ = function (dt) {
-    var p = this.t * 4;
-    var r = p - numberToInt(p);
-    var i = numberToInt(p) % this.sequence.length;
-    this.index = i + r;
-    var n = this.sequence[i];
-    var osc = 0.0;
-    if (n >= 0) {
-      var f = SampleNode.Companion.note_vux9f0$(n + 7 | 0, 0);
-      osc = this.osc1_0.next_dleff0$(dt, f) + this.osc2_0.next_dleff0$(dt, f / 2.0) + this.osc3_0.next_dleff0$(dt, f / 2.0) + this.osc4_0.next_dleff0$(dt, f * 3.0);
-    }return this.moodFilter_0.filter_7b5o5w$(this.lfo1_0.next_mx4ult$(dt) + 1050, this.lfo2_0.next_mx4ult$(dt), SampleNode.Companion.perc_7b5o5w$(osc, 48.0, this.t % 0.125), dt) * 0.25;
-  };
-  Melody.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Melody',
-    interfaces: [SampleNode]
-  };
-  function SequenceButton(col, row, melody, root) {
-    Button.call(this, 'seq-' + col + '-' + row, root);
-    this.col = col;
-    this.row = row;
-    this.melody = melody;
-    this.background_0 = new SequenceButtonUi(this);
-    this.colorAnimator_0 = new CosAnimator(new InterpolatedColor(MutableColor_init_0(Color.Companion.WHITE.withAlpha_mx4ult$(0.2)), MutableColor_init_0(Color.Companion.LIME.withAlpha_mx4ult$(0.6))));
-    this.wasHovered_0 = false;
-    this.layoutSpec.setOrigin_4ujscr$(dps(this.col * 20.0), dps(this.row * 15.0), zero());
-    this.layoutSpec.setSize_4ujscr$(dps(18.0), dps(13.0), full());
-    this.ui.setCustom_11rb$(this.background_0);
-    this.colorAnimator_0.duration = 0.3;
-    this.colorAnimator_0.speed = -1.0;
-    this.onHover.add_11rb$(SequenceButton_init$lambda(this));
-    this.onHoverExit.add_11rb$(SequenceButton_init$lambda_0(this));
-  }
-  SequenceButton.prototype.onHover_0 = function (ptr) {
-    if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown) {
-      if (this.melody.sequence[this.col] === this.row) {
-        this.melody.sequence[this.col] = -1;
-      } else {
-        this.melody.sequence[this.col] = this.row;
-      }
-    } else if (!this.wasHovered_0 && ptr.isLeftButtonDown) {
-      this.melody.sequence[this.col] = this.row;
-    }this.wasHovered_0 = true;
-  };
-  SequenceButton.prototype.render_aemszp$ = function (ctx) {
-    if (this.melody.sequence[this.col] === this.row) {
-      this.colorAnimator_0.speed = 1.0;
-    } else {
-      this.colorAnimator_0.speed = -1.0;
-    }
-    this.colorAnimator_0.tick_aemszp$(ctx);
-    this.background_0.bgColor.set_d7aj7k$(this.colorAnimator_0.value.value);
-    if (this.isHovered) {
-      this.background_0.bgColor.a = this.background_0.bgColor.a + 0.4;
-    } else {
-      var a = this.melody.index - this.col;
-      if (a > 0 && a <= 1) {
-        var tmp$ = this.background_0.bgColor;
-        var tmp$_0 = this.background_0.bgColor.a;
-        var x = a - 0.5;
-        var $receiver = 0.5 - Math_0.abs(x);
-        var clamp$result;
-        if ($receiver < 0.0) {
-          clamp$result = 0.0;
-        } else if ($receiver > 0.1) {
-          clamp$result = 0.1;
-        } else {
-          clamp$result = $receiver;
-        }
-        tmp$.a = tmp$_0 + clamp$result;
-      }}
-    Button.prototype.render_aemszp$.call(this, ctx);
-  };
-  function SequenceButton_init$lambda(this$SequenceButton) {
-    return function ($receiver, ptr, f, f_0) {
-      this$SequenceButton.onHover_0(ptr);
-      return Unit;
-    };
-  }
-  function SequenceButton_init$lambda_0(this$SequenceButton) {
-    return function ($receiver, f, f_0, f_1) {
-      this$SequenceButton.wasHovered_0 = false;
-      return Unit;
-    };
-  }
-  SequenceButton.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'SequenceButton',
-    interfaces: [Button]
-  };
-  function SequenceButtonUi(btn) {
-    SimpleComponentUi.call(this, btn);
-    this.bgColor = MutableColor_init();
-  }
-  SequenceButtonUi.prototype.onRender_aemszp$ = function (ctx) {
-    SimpleComponentUi.prototype.onRender_aemszp$.call(this, ctx);
-  };
-  SequenceButtonUi.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'SequenceButtonUi',
-    interfaces: [SimpleComponentUi]
-  };
-  function SynthieScene(ctx) {
-    Scene_init.call(this);
-    this.melody = new Melody();
-    this.shaker = new Shaker(60.0);
-    this.kick = new Kick(120.0);
-    this.pad = new Pad();
-    this.audioGen_0 = null;
-    this.waveform_0 = new SynthieScene$Waveform(this, 2048, 48000);
-    this.unaryPlus_uv0sim$(this.waveform_0);
-    this.unaryPlus_uv0sim$(new SynthieScene$Heightmap(this, 256, 256));
-    this.unaryPlus_uv0sim$(orbitInputTransform(void 0, SynthieScene_init$lambda(this)));
-    this.audioGen_0 = new AudioGenerator(ctx, SynthieScene_init$lambda_0(this));
-    this.audioGen_0.enableFftComputation_za3lpa$(1024);
-  }
-  SynthieScene.prototype.nextSample_0 = function (dt) {
-    var sample = this.kick.next_mx4ult$(dt) + this.shaker.next_mx4ult$(dt) + this.pad.next_mx4ult$(dt) + this.melody.next_mx4ult$(dt);
-    this.waveform_0.updateSample_mx4ult$(sample);
-    return sample;
-  };
-  SynthieScene.prototype.dispose_aemszp$ = function (ctx) {
-    this.audioGen_0.stop();
-    Scene_init.prototype.dispose_aemszp$.call(this, ctx);
-  };
-  function SynthieScene$Heightmap($outer, width, length) {
-    this.$outer = $outer;
-    TransformGroup.call(this);
-    this.width = width;
-    this.length = length;
-    this.quads = colorMesh(void 0, SynthieScene$Heightmap$quads$lambda(this));
-    this.quadV = this.quads.geometry.get_za3lpa$(0);
-    this.zPos = -1000.0;
-    this.sampleInterval = 0.05;
-    this.nextSample = 0.0;
-    this.unaryPlus_uv0sim$(this.quads);
-    this.onPreRender.add_11rb$(SynthieScene$SynthieScene$Heightmap_init$lambda(this));
-  }
-  SynthieScene$Heightmap.prototype.updateQuads_aemszp$ = function (ctx) {
-    var tmp$;
-    this.nextSample -= ctx.deltaT;
-    if (this.nextSample <= 0) {
-      var a = this.sampleInterval;
-      var b = -this.nextSample;
-      this.nextSample += Math_0.max(a, b);
-      var freqData = this.$outer.audioGen_0.getPowerSpectrum();
-      tmp$ = this.width;
-      for (var i = 0; i < tmp$; i++) {
-        var $receiver = freqData.get_za3lpa$(i) / 90.0;
-        var min = -1.0;
-        var clamp$result;
-        if ($receiver < min) {
-          clamp$result = min;
-        } else if ($receiver > 0.0) {
-          clamp$result = 0.0;
-        } else {
-          clamp$result = $receiver;
-        }
-        var c = clamp$result + 1.0;
-        var h = c * 50.0;
-        var x = i - this.width * 0.5;
-        var color = ColorGradient.Companion.VIRIDIS.getColor_y2kzbl$(c + 0.05, 0.0, 0.7);
-        this.quadV.position.set_y2kzbl$(x, h, this.zPos);
-        this.quadV.color.set_d7aj7k$(color);
-        var tmp$_0;
-        tmp$_0 = this.quadV;
-        tmp$_0.index = tmp$_0.index + 1 | 0;
-        this.quadV.position.set_y2kzbl$(x, h, this.zPos + 0.9);
-        this.quadV.color.set_d7aj7k$(color);
-        var tmp$_1;
-        tmp$_1 = this.quadV;
-        tmp$_1.index = tmp$_1.index + 1 | 0;
-        this.quadV.position.set_y2kzbl$(x + 0.9, h, this.zPos + 0.9);
-        this.quadV.color.set_d7aj7k$(color);
-        var tmp$_2;
-        tmp$_2 = this.quadV;
-        tmp$_2.index = tmp$_2.index + 1 | 0;
-        this.quadV.position.set_y2kzbl$(x + 0.9, h, this.zPos);
-        this.quadV.color.set_d7aj7k$(color);
-        var tmp$_3;
-        tmp$_3 = this.quadV;
-        tmp$_3.index = tmp$_3.index + 1 | 0;
-      }
-      if (this.quadV.index === (Kotlin.imul(this.width, this.length) * 4 | 0)) {
-        this.quadV.index = 0;
-      }this.zPos += 1.0;
-      if (this.zPos > 1000) {
-        this.zPos = -1000.0;
-      }this.quads.geometry.hasChanged = true;
-      this.quads.bounds.set_w8lrqs$((-this.width | 0) / 2.0, 0.0, this.zPos - this.length, this.width / 2.0, 50.0, this.zPos);
-    }this.setIdentity();
-    this.scale_y2kzbl$(1.0 / 32.0, 1.0 / 32.0, 1.0 / 32.0);
-    this.translate_y2kzbl$(0.0, -32.0, -this.zPos + this.length / 5.0);
-  };
-  function SynthieScene$Heightmap$quads$lambda$lambda$lambda($receiver) {
-    $receiver.normal.set_czzhiu$(Vec3f.Companion.Y_AXIS);
-    return Unit;
-  }
-  function SynthieScene$Heightmap$quads$lambda$lambda(this$Heightmap) {
-    return function ($receiver) {
-      var tmp$, tmp$_0;
-      $receiver.vertexModFun = SynthieScene$Heightmap$quads$lambda$lambda$lambda;
-      tmp$ = this$Heightmap.length;
-      for (var z = 1; z <= tmp$; z++) {
-        tmp$_0 = this$Heightmap.width;
-        for (var x = 1; x <= tmp$_0; x++) {
-          $receiver.rectProps.defaults().size.set_dleff0$(0.0, 0.0);
-          $receiver.rect_e5k3t5$($receiver.rectProps);
-        }
-      }
-      return Unit;
-    };
-  }
-  function SynthieScene$Heightmap$quads$lambda(this$Heightmap) {
-    return function ($receiver) {
-      $receiver.isFrustumChecked = false;
-      $receiver.generate_v2sixm$(SynthieScene$Heightmap$quads$lambda$lambda(this$Heightmap));
-      return Unit;
-    };
-  }
-  function SynthieScene$SynthieScene$Heightmap_init$lambda(this$Heightmap) {
-    return function ($receiver, ctx) {
-      this$Heightmap.updateQuads_aemszp$(ctx);
-      return Unit;
-    };
-  }
-  SynthieScene$Heightmap.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Heightmap',
-    interfaces: [TransformGroup]
-  };
-  function SynthieScene$Waveform($outer, points, sampleRate) {
-    this.$outer = $outer;
-    Group.call(this);
-    this.points = points;
-    this.sampleRate = sampleRate;
-    var array = Array_0(5);
-    var tmp$;
-    tmp$ = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$; i++) {
-      array[i] = lineMesh(void 0, SynthieScene$Waveform$lines$lambda$lambda(this));
-    }
-    this.lines = array;
-    var array_0 = Array_0(this.lines.length);
-    var tmp$_0;
-    tmp$_0 = array_0.length - 1 | 0;
-    for (var i_0 = 0; i_0 <= tmp$_0; i_0++) {
-      array_0[i_0] = this.lines[i_0].geometry.get_za3lpa$(0);
-    }
-    this.vertices = array_0;
-    this.sampleBuf = new Float32Array(this.sampleRate);
-    this.sampleIdx = 0;
-    this.updateFrms = 2;
-    this.playT = 0.0;
-    this.lineIdx = 0;
-  }
-  SynthieScene$Waveform.prototype.updateSample_mx4ult$ = function (value) {
-    var tmp$;
-    this.sampleBuf[tmp$ = this.sampleIdx, this.sampleIdx = tmp$ + 1 | 0, tmp$] = value;
-    if (this.sampleIdx === this.sampleBuf.length) {
-      this.sampleIdx = 0;
-    }};
-  SynthieScene$Waveform.prototype.render_aemszp$ = function (ctx) {
-    var tmp$;
-    this.playT += ctx.deltaT;
-    if ((this.updateFrms = this.updateFrms - 1 | 0, this.updateFrms) === 0) {
-      this.updateFrms = 2;
-      this.lineIdx = (this.lineIdx + 1 | 0) % this.lines.length;
-      this.drawTimeDomain_0();
-      this.lines[this.lineIdx].geometry.hasChanged = true;
-      tmp$ = this.lines;
-      for (var i = 0; i !== tmp$.length; ++i) {
-        var idx = this.lineIdx - i | 0;
-        if (idx < 0) {
-          idx = idx + this.lines.length | 0;
-        }}
-    }Group.prototype.render_aemszp$.call(this, ctx);
-  };
-  SynthieScene$Waveform.prototype.drawTimeDomain_0 = function () {
-    var tmp$, tmp$_0;
-    var end = numberToInt(this.playT * this.sampleRate % this.sampleBuf.length);
-    var pos = end - this.points | 0;
-    if (pos < 0) {
-      pos = pos + this.sampleBuf.length | 0;
-    }tmp$ = this.points;
-    for (var i = 0; i < tmp$; i++) {
-      this.vertices[this.lineIdx].index = i;
-      this.vertices[this.lineIdx].position.y = this.sampleBuf[tmp$_0 = pos, pos = tmp$_0 + 1 | 0, tmp$_0] * 2.0 + 2.0;
-      if (pos >= this.sampleBuf.length) {
-        pos = 0;
-      }}
-  };
-  function SynthieScene$Waveform$lines$lambda$lambda(this$Waveform) {
-    return function ($receiver) {
-      var tmp$;
-      this$Waveform.unaryPlus_uv0sim$($receiver);
-      tmp$ = this$Waveform.points;
-      for (var i = 1; i <= tmp$; i++) {
-        var $this = $receiver.geometry;
-        var tmp$_0, tmp$_0_0, tmp$_1;
-        $this.checkBufferSizes_za3lpa$();
-        tmp$_0 = $this.vertexSizeF;
-        for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
-          $this.dataF.plusAssign_mx4ult$(0.0);
-        }
-        tmp$_0_0 = $this.vertexSizeI;
-        for (var i_0_0 = 1; i_0_0 <= tmp$_0_0; i_0_0++) {
-          $this.dataI.plusAssign_za3lpa$(0);
-        }
-        $this.vertexIt.index = (tmp$_1 = $this.numVertices, $this.numVertices = tmp$_1 + 1 | 0, tmp$_1);
-        var this$Waveform_0 = this$Waveform;
-        $this.vertexIt.position.set_y2kzbl$((i - (this$Waveform_0.points / 2 | 0) | 0) / 256.0, 1.0, 0.0);
-        $this.bounds.add_czzhiu$($this.vertexIt.position);
-        $this.hasChanged = true;
-        var idx = $this.numVertices - 1 | 0;
-        if (i > 1) {
-          $receiver.geometry.addIndices_pmhfmb$(new Int32Array([idx - 1 | 0, idx]));
-        }}
-      return Unit;
-    };
-  }
-  SynthieScene$Waveform.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Waveform',
-    interfaces: [Group]
-  };
-  function SynthieScene_init$lambda(this$SynthieScene) {
-    return function ($receiver) {
-      $receiver.unaryPlus_uv0sim$(this$SynthieScene.camera);
-      $receiver.setMouseRotation_dleff0$(20.0, -20.0);
-      $receiver.zoom = 8.0;
-      return Unit;
-    };
-  }
-  function SynthieScene_init$lambda_0(this$SynthieScene) {
-    return function ($receiver, dt) {
-      return this$SynthieScene.nextSample_0(dt);
-    };
-  }
-  SynthieScene.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'SynthieScene',
-    interfaces: [Scene_init]
   };
   function simplificationDemo(ctx) {
     return (new SimplificationDemo(ctx)).scenes;
@@ -6132,8 +4845,8 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     var value = this.srcModel;
     $receiver_1.put_xwzc9p$('cos', value);
     this.heMesh = new HalfEdgeMesh(this.srcModel);
-    this.loadModel_0('bunny.kmfz', 0.05, ctx);
-    this.loadModel_0('cow.kmfz', 1.0, ctx);
+    this.loadModel_0('bunny.kmfz', 1.0, new Vec3f(0.0, -3.0, 0.0), ctx);
+    this.loadModel_0('cow.kmfz', 1.0, Vec3f.Companion.ZERO, ctx);
     this.simplificationScene = this.mainScene_0(ctx);
     var $receiver_2 = this.scenes;
     var element = this.simplificationScene;
@@ -6240,7 +4953,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     if (false) {
       $this.rebuildBounds();
     }};
-  function SimplificationDemo$loadModel$lambda(closure$scale, this$SimplificationDemo, closure$name) {
+  function SimplificationDemo$loadModel$lambda(closure$scale, closure$offset, this$SimplificationDemo, closure$name) {
     return function (model) {
       var tmp$;
       if (model != null) {
@@ -6249,7 +4962,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         tmp$ = geometry.numVertices;
         for (var i = 0; i < tmp$; i++) {
           geometry.vertexIt.index = i;
-          geometry.vertexIt.position.scale_mx4ult$(closure$scale);
+          geometry.vertexIt.position.scale_mx4ult$(closure$scale).add_czzhiu$(closure$offset);
         }
         var $receiver = this$SimplificationDemo.models;
         var key = closure$name;
@@ -6269,9 +4982,9 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
         }}return Unit;
     };
   }
-  SimplificationDemo.prototype.loadModel_0 = function (name, scale, ctx) {
+  SimplificationDemo.prototype.loadModel_0 = function (name, scale, offset, ctx) {
     this.loadingModels.add_11rb$(name);
-    ctx.assetMgr.loadModel_v5uqdg$(name, SimplificationDemo$loadModel$lambda(scale, this, name));
+    ctx.assetMgr.loadModel_v5uqdg$(name, SimplificationDemo$loadModel$lambda(scale, offset, this, name));
   };
   function SimplificationDemo$makeCosGrid$lambda$lambda(this$) {
     return function (x, y) {
@@ -8937,6 +7650,7 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
   $$importsForInline$$.kool = $module$kool;
   package$demo.helloWorldScene = helloWorldScene;
   package$demo.instanceDemo_aemszp$ = instanceDemo;
+  package$demo.InstanceDemo = InstanceDemo;
   package$demo.multiLightDemo_aemszp$ = multiLightDemo;
   Object.defineProperty(MultiLightDemo, 'Companion', {
     get: MultiLightDemo$Companion_getInstance
@@ -8959,19 +7673,6 @@ define(['exports', 'kotlin', 'kool', 'kotlinx-serialization-kotlinx-serializatio
     get: RoughnesMetalGridContent$Companion_getInstance
   });
   package$pbr.RoughnesMetalGridContent = RoughnesMetalGridContent;
-  $$importsForInline$$['kotlinx-serialization-kotlinx-serialization-runtime'] = $module$kotlinx_serialization_kotlinx_serialization_runtime;
-  var package$portingNeeded = package$demo.portingNeeded || (package$demo.portingNeeded = {});
-  package$portingNeeded.globeScene_aemszp$ = globeScene;
-  package$portingNeeded.GlobeUi = GlobeUi;
-  package$portingNeeded.makeGroundGrid_24o109$ = makeGroundGrid;
-  package$portingNeeded.multiScene_aemszp$ = multiScene;
-  package$portingNeeded.particleDemo_aemszp$ = particleDemo;
-  package$portingNeeded.pointScene = pointScene;
-  package$portingNeeded.makePointMesh = makePointMesh;
-  package$portingNeeded.MeshPoint = MeshPoint;
-  package$portingNeeded.reflectionDemo_aemszp$ = reflectionDemo;
-  package$portingNeeded.simpleShapesScene_aemszp$ = simpleShapesScene;
-  package$portingNeeded.synthieScene_aemszp$ = synthieScene;
   package$demo.simplificationDemo_aemszp$ = simplificationDemo;
   package$demo.SimplificationDemo = SimplificationDemo;
   package$demo.treeScene_aemszp$ = treeScene;

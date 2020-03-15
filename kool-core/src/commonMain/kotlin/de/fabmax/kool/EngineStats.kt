@@ -17,6 +17,8 @@ class EngineStats internal constructor() {
     var numPipelineInstances = 0
         private set
 
+    var numDrawCommands = 0
+        private set
     var numPrimitives = 0
         private set
 
@@ -56,8 +58,13 @@ class EngineStats internal constructor() {
         pipelines.remove(pipelineId)?.let { numPipelineInstances -= it }
     }
 
-    fun resetPrimitveCount() {
+    fun resetPerFrameCounts() {
+        numDrawCommands = 0
         numPrimitives = 0
+    }
+
+    fun addDrawCommandCount(nCommands: Int) {
+        numDrawCommands += nCommands
     }
 
     fun addPrimitiveCount(nPrimitives: Int) {

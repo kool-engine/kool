@@ -231,7 +231,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
             disposablePipelines.clear()
         }
 
-        engineStats.resetPrimitveCount()
+        engineStats.resetPerFrameCounts()
 
         for (i in 0 until offscreenPasses.size) {
             drawOffscreen(offscreenPasses[i])

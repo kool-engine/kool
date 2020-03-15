@@ -46,6 +46,7 @@ class QueueRendererWebGl(val ctx: JsContext) {
                                 gl.drawElementsInstanced(it.primitiveType, it.numIndices, it.indexType, 0, insts.numInstances)
                                 ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * insts.numInstances)
                             }
+                            ctx.engineStats.addDrawCommandCount(1)
                         }
                     }
                 }
