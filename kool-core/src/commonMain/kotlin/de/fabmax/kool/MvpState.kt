@@ -1,8 +1,7 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.Mat4fStack
-import de.fabmax.kool.util.createFloat32Buffer
+import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Mat4dStack
 
 
 /**
@@ -11,37 +10,17 @@ import de.fabmax.kool.util.createFloat32Buffer
 
 class MvpState internal constructor() {
 
-    val projMatrix = Mat4fStack()
-    val projMatrixBuffer = createFloat32Buffer(16)
-        get() {
-            projMatrix.toBuffer(field)
-            return field
-        }
+    val projMatrix = Mat4dStack()
 
-    val viewMatrix = Mat4fStack()
-    val viewMatrixBuffer = createFloat32Buffer(16)
-        get() {
-            viewMatrix.toBuffer(field)
-            return field
-        }
+    val viewMatrix = Mat4dStack()
 
-    val modelMatrix = Mat4fStack()
-    val modelMatrixBuffer = createFloat32Buffer(16)
-        get() {
-            modelMatrix.toBuffer(field)
-            return field
-        }
+    val modelMatrix = Mat4dStack()
 
     // combined model view projection matrix
-    val mvpMatrix = Mat4f()
-    val mvpMatrixBuffer = createFloat32Buffer(16)
-        get() {
-            mvpMatrix.toBuffer(field)
-            return field
-        }
+    val mvpMatrix = Mat4d()
 
     // temp matrix buffer for calculations
-    private val tempMatrix = Mat4f()
+    private val tempMatrix = Mat4d()
 
     init {
         reset()

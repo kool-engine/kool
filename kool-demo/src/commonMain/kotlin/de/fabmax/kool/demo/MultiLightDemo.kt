@@ -63,8 +63,8 @@ class MultiLightDemo(ctx: KoolContext) {
         +orbitInputTransform {
             +camera
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 17f
-            translation.set(0f, 2f, 0f)
+            zoom = 17.0
+            translation.set(0.0, 2.0, 0.0)
             setMouseRotation(0f, -20f)
             // let the camera slowly rotate around vertical axis
             onPreRender += { ctx ->

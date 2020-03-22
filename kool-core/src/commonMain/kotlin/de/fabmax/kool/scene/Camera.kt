@@ -33,15 +33,15 @@ abstract class Camera(name: String = "camera") : Node(name) {
     protected val globalRightMut = MutableVec3f()
     protected val globalLookDirMut = MutableVec3f()
 
-    val proj = Mat4f()
-    val view = Mat4f()
-    val invView = Mat4f()
-    val mvp = Mat4f()
-    val invMvp = Mat4f()
+    val proj = Mat4d()
+    val view = Mat4d()
+    val invView = Mat4d()
+    val mvp = Mat4d()
+    val invMvp = Mat4d()
 
     var isApplyProjCorrection = true
 
-    private val projCorrected = Mat4f()
+    private val projCorrected = Mat4d()
 
     // we need a bunch of temporary vectors, keep them as members (#perfmatters)
     private val tmpVec3 = MutableVec3f()

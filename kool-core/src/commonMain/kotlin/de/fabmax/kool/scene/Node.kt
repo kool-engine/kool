@@ -2,6 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
@@ -160,10 +161,20 @@ abstract class Node(val name: String? = null) : Disposable {
         return vec
     }
 
+    open fun toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
+        parent?.toGlobalCoords(vec, w)
+        return vec
+    }
+
     /**
      * Transforms [vec] in-place from global to local coordinates.
      */
     open fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
+        parent?.toLocalCoords(vec, w)
+        return vec
+    }
+
+    open fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
         parent?.toLocalCoords(vec, w)
         return vec
     }

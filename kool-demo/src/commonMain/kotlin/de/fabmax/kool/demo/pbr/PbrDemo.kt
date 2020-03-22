@@ -76,7 +76,7 @@ class PbrDemo(val ctx: KoolContext) {
             // let the camera slowly rotate around vertical axis
             onPreRender += { ctx -> verticalRotation += ctx.deltaT * 2f }
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 20f
+            zoom = 20.0
         }
 
         loadHdri(hdriCycler.index) { tex ->

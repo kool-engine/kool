@@ -49,10 +49,10 @@ class InstanceDemo(ctx: KoolContext) {
                 clipNear = 1f
                 clipFar = 500f
             }
-            minZoom = 1f
-            maxZoom = 250f
+            minZoom = 1.0
+            maxZoom = 250.0
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 40f
+            zoom = 40.0
 
             setMouseRotation(30f, -40f)
 

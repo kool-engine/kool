@@ -1,10 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolException
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Ray
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -217,6 +214,12 @@ class BoundingBox() {
         point.x = point.x.clamp(min.x, max.x)
         point.y = point.y.clamp(min.y, max.y)
         point.z = point.z.clamp(min.z, max.z)
+    }
+
+    fun clampToBounds(point: MutableVec3d) {
+        point.x = point.x.clamp(min.x.toDouble(), max.x.toDouble())
+        point.y = point.y.clamp(min.y.toDouble(), max.y.toDouble())
+        point.z = point.z.clamp(min.z.toDouble(), max.z.toDouble())
     }
 
     /**

@@ -2,7 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.drawqueue.DrawQueue
-import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.RenderPass
 import de.fabmax.kool.platform.vk.util.bitValue
@@ -72,17 +72,17 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
 
         // maps camera projection matrices to Vulkan coordinates
         projCorrectionMatrix.apply {
-            setRow(0, Vec4f(1f, 0f, 0f, 0f))
-            setRow(1, Vec4f(0f, -1f, 0f, 0f))
-            setRow(2, Vec4f(0f, 0f, 0.5f, 0.5f))
-            setRow(3, Vec4f(0f, 0f, 0f, 1f))
+            setRow(0, Vec4d(1.0, 0.0, 0.0, 0.0))
+            setRow(1, Vec4d(0.0, -1.0, 0.0, 0.0))
+            setRow(2, Vec4d(0.0, 0.0, 0.5, 0.5))
+            setRow(3, Vec4d(0.0, 0.0, 0.0, 1.0))
         }
 
         depthBiasMatrix.apply {
-            setRow(0, Vec4f(0.5f, 0.0f, 0.0f, 0.5f))
-            setRow(1, Vec4f(0.0f, 0.5f, 0.0f, 0.5f))
-            setRow(2, Vec4f(0.0f, 0.0f, 1.0f, 0.0f))
-            setRow(3, Vec4f(0.0f, 0.0f, 0.0f, 1.0f))
+            setRow(0, Vec4d(0.5, 0.0, 0.0, 0.5))
+            setRow(1, Vec4d(0.0, 0.5, 0.0, 0.5))
+            setRow(2, Vec4d(0.0, 0.0, 1.0, 0.0))
+            setRow(3, Vec4d(0.0, 0.0, 0.0, 1.0))
         }
     }
 

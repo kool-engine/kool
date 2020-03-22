@@ -4,7 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.BoundingBox
-import de.fabmax.kool.util.SpringDamperFloat
+import de.fabmax.kool.util.SpringDamperDouble
 
 /**
  * A special kind of transform group which translates mouse input into a orbit transform. This is mainly useful
@@ -35,15 +35,15 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
     var rightDragMethod = DragMethod.PAN
     var zoomMethod = ZoomMethod.ZOOM_TRANSLATE
 
-    var verticalAxis = Vec3f.Y_AXIS
-    var horizontalAxis = Vec3f.X_AXIS
-    var minHorizontalRot = -90f
-    var maxHorizontalRot = 90f
+    var verticalAxis = Vec3d.Y_AXIS
+    var horizontalAxis = Vec3d.X_AXIS
+    var minHorizontalRot = -90.0
+    var maxHorizontalRot = 90.0
 
-    val translation = MutableVec3f()
-    var verticalRotation = 0f
-    var horizontalRotation = 0f
-    var zoom = 10f
+    val translation = MutableVec3d()
+    var verticalRotation = 0.0
+    var horizontalRotation = 0.0
+    var zoom = 10.0
         set(value) {
             field = value.clamp(minZoom, maxZoom)
         }
@@ -53,15 +53,15 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
     var invertRotX = false
     var invertRotY = false
 
-    var minZoom = 1f
-    var maxZoom = 100f
+    var minZoom = 1.0
+    var maxZoom = 100.0
     var translationBounds: BoundingBox? = null
 
     var panMethod: PanBase = CameraOrthogonalPan()
 
-    val vertRotAnimator = SpringDamperFloat(0f)
-    val horiRotAnimator = SpringDamperFloat(0f)
-    val zoomAnimator = SpringDamperFloat(zoom)
+    val vertRotAnimator = SpringDamperDouble(0.0)
+    val horiRotAnimator = SpringDamperDouble(0.0)
+    val zoomAnimator = SpringDamperDouble(zoom)
 
     private var prevButtonMask = 0
     private var dragMethod = DragMethod.NONE
@@ -76,20 +76,20 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
     private val tmpVec1 = MutableVec3f()
     private val tmpVec2 = MutableVec3f()
 
-    private val mouseTransform = Mat4f()
-    private val mouseTransformInv = Mat4f()
+    private val mouseTransform = Mat4d()
+    private val mouseTransformInv = Mat4d()
 
-    var smoothness: Float = 0f
+    var smoothness: Double = 0.0
         set(value) {
             field = value
-            val stiffness = if (!value.isFuzzyZero()) { 50.0f / value } else { 0f }
+            val stiffness = if (!value.isFuzzyZero()) { 50.0 / value } else { 0.0 }
             vertRotAnimator.stiffness = stiffness
             horiRotAnimator.stiffness = stiffness
             zoomAnimator.stiffness = stiffness
         }
 
     init {
-        smoothness = 0.5f
+        smoothness = 0.5
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
 
@@ -98,18 +98,24 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
         }
     }
 
-    fun setMouseRotation(vertical: Float, horizontal: Float) {
+    fun setMouseRotation(vertical: Float, horizontal: Float) = setMouseRotation(vertical.toDouble(), horizontal.toDouble())
+
+    fun setMouseRotation(vertical: Double, horizontal: Double) {
         vertRotAnimator.set(vertical)
         horiRotAnimator.set(horizontal)
         verticalRotation = vertical
         horizontalRotation = horizontal
     }
 
-    fun setMouseTranslation(x: Float, y: Float, z: Float) {
+    fun setMouseTranslation(x: Float, y: Float, z: Float) = setMouseTranslation(x.toDouble(), y.toDouble(), z.toDouble())
+
+    fun setMouseTranslation(x: Double, y: Double, z: Double) {
         translation.set(x, y, z)
     }
 
-    fun resetZoom(newZoom: Float) {
+    fun resetZoom(newZoom: Float) = resetZoom(newZoom.toDouble())
+
+    fun resetZoom(newZoom: Double) {
         zoom = newZoom
         zoomAnimator.set(zoom)
     }
@@ -151,7 +157,7 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
                 stopSmoothMotion()
 
             } else if (dragMethod == DragMethod.PAN) {
-                val s = (1 - smoothness).clamp(0.1f, 1f)
+                val s = (1 - smoothness).clamp(0.1, 1.0).toFloat()
                 tmpVec1.set(pointerHitStart).subtract(pointerHit).scale(s)
                 parent?.toLocalCoords(tmpVec1, 0f)
 
@@ -198,11 +204,12 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
      * Computes the required camera translation so that the camera zooms to the point under the pointer (only works
      * with perspective cameras)
      */
-    protected open fun computeZoomTranslationPerspective(scene: Scene, oldZoom: Float, newZoom: Float) {
+    protected open fun computeZoomTranslationPerspective(scene: Scene, oldZoom: Double, newZoom: Double) {
         // tmpVec1 = zoomed pos on pointer ray
-        scene.camera.globalPos.subtract(pointerHit, tmpVec1).scale(newZoom / oldZoom).add(pointerHit)
+        val s = (newZoom / oldZoom).toFloat()
+        scene.camera.globalPos.subtract(pointerHit, tmpVec1).scale(s).add(pointerHit)
         // tmpVec2 = zoomed pos on view center ray
-        scene.camera.globalPos.subtract(scene.camera.globalLookAt, tmpVec2).scale(newZoom / oldZoom)
+        scene.camera.globalPos.subtract(scene.camera.globalLookAt, tmpVec2).scale(s)
                 .add(scene.camera.globalLookAt)
         tmpVec1.subtract(tmpVec2)
         parent?.toLocalCoords(tmpVec1, 0f)
@@ -226,7 +233,7 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
     }
 
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
-        if (!dragPtrs.isEmpty() && !dragPtrs[0].isConsumed() && dragPtrs[0].isInViewport(scene.viewport, ctx)) {
+        if (dragPtrs.isNotEmpty() && !dragPtrs[0].isConsumed() && dragPtrs[0].isInViewport(scene.viewport, ctx)) {
             if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
                 dragMethod = when {
                     dragPtrs[0].isLeftButtonDown -> leftDragMethod
@@ -247,6 +254,12 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
             deltaPos.set(Vec2f.ZERO)
             deltaScroll = 0f
         }
+    }
+
+    private fun MutableVec3d.add(v: Vec3f) {
+        x += v.x
+        y += v.y
+        z += v.z
     }
 
     enum class DragMethod {

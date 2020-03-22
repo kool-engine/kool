@@ -436,12 +436,20 @@ open class Mat4d {
         return this
     }
 
-    fun setLookAt(position: Vec3d, lookAt: Vec3d, up: Vec3d): Mat4d {
+    fun setLookAt(position: Vec3f, lookAt: Vec3f, up: Vec3f) = setLookAt(
+            position.x.toDouble(), position.y.toDouble(), position.z.toDouble(),
+            lookAt.x.toDouble(), lookAt.y.toDouble(), lookAt.z.toDouble(),
+            up.x.toDouble(), up.y.toDouble(), up.z.toDouble())
+
+    fun setLookAt(position: Vec3d, lookAt: Vec3d, up: Vec3d) =
+            setLookAt(position.x, position.y, position.z, lookAt.x, lookAt.y, lookAt.z, up.x, up.y, up.z)
+
+    private fun setLookAt(px: Double, py: Double, pz: Double, lx: Double, ly: Double, lz: Double, ux: Double, uy: Double, uz: Double): Mat4d {
         // See the OpenGL GLUT documentation for gluLookAt for a description
         // of the algorithm. We implement it in a straightforward way:
-        var fx = lookAt.x - position.x
-        var fy = lookAt.y - position.y
-        var fz = lookAt.z - position.z
+        var fx = lx - px
+        var fy = ly - py
+        var fz = lz - pz
 
         // Normalize f
         val rlf = 1.0 / sqrt(fx*fx + fy*fy + fz*fz)
@@ -450,9 +458,9 @@ open class Mat4d {
         fz *= rlf
 
         // compute s = f x up (x means "cross product")
-        var sx = fy * up.z - fz * up.y
-        var sy = fz * up.x - fx * up.z
-        var sz = fx * up.y - fy * up.x
+        var sx = fy * uz - fz * uy
+        var sy = fz * ux - fx * uz
+        var sz = fx * uy - fy * ux
 
         // and normalize s
         val rls = 1.0 / sqrt(sx*sx + sy*sy + sz*sz)
@@ -485,8 +493,11 @@ open class Mat4d {
         matrix[offset + 14] = 0.0
         matrix[offset + 15] = 1.0
 
-        return translate(-position.x, -position.y, -position.z)
+        return translate(-px, -py, -pz)
     }
+
+    fun setOrthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float) =
+            setOrthographic(left.toDouble(), right.toDouble(), bottom.toDouble(), top.toDouble(), near.toDouble(), far.toDouble())
 
     fun setOrthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double): Mat4d {
         if (left == right) {
@@ -527,6 +538,9 @@ open class Mat4d {
 
         return this
     }
+
+    fun setPerspective(fovy: Float, aspect: Float, near: Float, far: Float) =
+            setPerspective(fovy.toDouble(), aspect.toDouble(), near.toDouble(), far.toDouble())
 
     fun setPerspective(fovy: Double, aspect: Double, near: Double, far: Double): Mat4d {
         val f = 1.0 / tan(fovy * (PI / 360.0))

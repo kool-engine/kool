@@ -1,10 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.util.BoundingBox
 
 /**
@@ -18,9 +15,9 @@ fun transformGroup(name: String? = null, block: TransformGroup.() -> Unit): Tran
 }
 
 open class TransformGroup(name: String? = null) : Group(name) {
-    val transform = Mat4f()
+    val transform = Mat4d()
 
-    protected val invTransform = Mat4f()
+    protected val invTransform = Mat4d()
     protected var isIdentity = false
     protected var isDirty = false
 
@@ -110,7 +107,23 @@ open class TransformGroup(name: String? = null) : Group(name) {
         return super.toGlobalCoords(vec, w)
     }
 
+    override fun toGlobalCoords(vec: MutableVec3d, w: Double): MutableVec3d {
+        if (!isIdentity) {
+            transform.transform(vec, w)
+        }
+        return super.toGlobalCoords(vec, w)
+    }
+
     override fun toLocalCoords(vec: MutableVec3f, w: Float): MutableVec3f {
+        super.toLocalCoords(vec, w)
+        if (!isIdentity) {
+            checkInverse()
+            invTransform.transform(vec, w)
+        }
+        return vec
+    }
+
+    override fun toLocalCoords(vec: MutableVec3d, w: Double): MutableVec3d {
         super.toLocalCoords(vec, w)
         if (!isIdentity) {
             checkInverse()
@@ -139,11 +152,13 @@ open class TransformGroup(name: String? = null) : Group(name) {
         return result.set(invTransform)
     }
 
-    fun translate(t: Vec3f): TransformGroup {
-        return translate(t.x, t.y, t.z)
-    }
+    fun translate(t: Vec3f) = translate(t.x, t.y, t.z)
 
-    fun translate(tx: Float, ty: Float, tz: Float): TransformGroup {
+    fun translate(tx: Float, ty: Float, tz: Float) = translate(tx.toDouble(), ty.toDouble(), tz.toDouble())
+
+    fun translate(t: Vec3d) = translate(t.x, t.y, t.z)
+
+    fun translate(tx: Double, ty: Double, tz: Double): TransformGroup {
         transform.translate(tx, ty, tz)
         setDirty()
         return this
@@ -151,25 +166,38 @@ open class TransformGroup(name: String? = null) : Group(name) {
 
     fun rotate(angleDeg: Float, axis: Vec3f) = rotate(angleDeg, axis.x, axis.y, axis.z)
 
-    fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float): TransformGroup {
+    fun rotate(angleDeg: Float, axX: Float, axY: Float, axZ: Float) =
+            rotate(angleDeg.toDouble(), axX.toDouble(), axY.toDouble(), axZ.toDouble())
+
+    fun rotate(angleDeg: Double, axis: Vec3d) = rotate(angleDeg, axis.x, axis.y, axis.z)
+
+    fun rotate(angleDeg: Double, axX: Double, axY: Double, axZ: Double): TransformGroup {
         transform.rotate(angleDeg, axX, axY, axZ)
         setDirty()
         return this
     }
 
-    fun scale(sx: Float, sy: Float, sz: Float): TransformGroup {
+    fun scale(sx: Float, sy: Float, sz: Float) = scale(sx.toDouble(), sy.toDouble(), sz.toDouble())
+
+    fun scale(sx: Double, sy: Double, sz: Double): TransformGroup {
         transform.scale(sx, sy, sz)
         setDirty()
         return this
     }
 
-    fun mul(mat: Mat4f): TransformGroup {
+    fun mul(mat: Mat4d): TransformGroup {
         transform.mul(mat)
         setDirty()
         return this
     }
 
     fun set(mat: Mat4f): TransformGroup {
+        transform.set(mat)
+        setDirty()
+        return this
+    }
+
+    fun set(mat: Mat4d): TransformGroup {
         transform.set(mat)
         setDirty()
         return this

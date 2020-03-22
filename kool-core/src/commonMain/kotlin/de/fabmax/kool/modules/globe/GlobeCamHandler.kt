@@ -25,12 +25,12 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : OrbitI
         zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
 
         // zoom range is quite large: 20 meters to 20000 km above surface
-        minZoom = 2e1f
-        maxZoom = 2e7f
+        minZoom = 2e1
+        maxZoom = 2e7
 
-        verticalAxis = Vec3f.Z_AXIS
-        minHorizontalRot = 0f
-        maxHorizontalRot = 85f
+        verticalAxis = Vec3d.Z_AXIS
+        minHorizontalRot = 0.0
+        maxHorizontalRot = 85.0
 
         resetZoom(1e7f)
 
@@ -83,7 +83,7 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : OrbitI
         val globeCoords = MutableVec2d()
         val globeCenter = MutableVec2d()
         var startDist = 0.0
-        var startZoom = 0f
+        var startZoom = 0.0
         var isValid = false
 
         val cam
@@ -137,8 +137,8 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : OrbitI
                 // compute origin and direction of pick ray in globe coordinates
                 pickRay.origin.toMutableVec3d(tmpRayO)
                 pickRay.direction.toMutableVec3d(tmpRayL)
-                globe.toLocalCoordsDp(tmpRayO, 1.0)
-                globe.toLocalCoordsDp(tmpRayL, 0.0)
+                globe.toLocalCoords(tmpRayO, 1.0)
+                globe.toLocalCoords(tmpRayL, 0.0)
 
                 // compute hit point of pick ray on globe surface: ray-sphere intersection
                 // globe center is at (0, 0, 0) -> ray origin is the vector from sphere origin to ray origin
@@ -152,7 +152,7 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : OrbitI
 
                     result.x = atan2(hitPosWorld.x, hitPosWorld.z).toDeg()
                     result.y = (PI * 0.5 - acos(hitPosWorld.y / radius)).toDeg()
-                    globe.toGlobalCoordsDp(hitPosWorld)
+                    globe.toGlobalCoords(hitPosWorld)
 
                     return true
                 }

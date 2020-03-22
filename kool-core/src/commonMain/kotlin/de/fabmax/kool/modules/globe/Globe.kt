@@ -6,10 +6,10 @@ import de.fabmax.kool.modules.globe.elevation.ElevationMapProvider
 import de.fabmax.kool.modules.globe.elevation.NullElevationMap
 import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.PerspectiveCamera
-import de.fabmax.kool.scene.doubleprec.TransformGroupDp
+import de.fabmax.kool.scene.TransformGroup
 import kotlin.math.*
 
-class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : TransformGroupDp(name) {
+class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : TransformGroup(name) {
 
     var meterPerPxLvl0: Double = 156e3
     val frameZoomLvl = 11
@@ -69,7 +69,7 @@ class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : Transform
         rotate(longitudeDeg, 0.0, -1.0, 0.0)
     }
 
-    override fun preRenderDp(ctx: KoolContext, modelMatDp: Mat4dStack) {
+    override fun preRender(ctx: KoolContext) {
         // make sure default tile texture is loaded before other tiles block the texture loading queue
         //TileMesh.prepareDefaultTex(ctx)
 
@@ -128,7 +128,7 @@ class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : Transform
             removeTiles.clear()
         }
 
-        super.preRenderDp(ctx, modelMatDp)
+        super.preRender(ctx)
     }
 
     fun addTile(mesh: TileMesh) {

@@ -930,7 +930,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
       $receiver.zoom = 17.0;
-      $receiver.translation.set_y2kzbl$(0.0, 2.0, 0.0);
+      $receiver.translation.set_yvo9jy$(0.0, 2.0, 0.0);
       $receiver.setMouseRotation_dleff0$(0.0, -20.0);
       var $receiver_0 = $receiver.onPreRender;
       var element = MultiLightDemo$mainScene$lambda$lambda$lambda(this$MultiLightDemo, $receiver);

@@ -1,7 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.drawqueue.DrawQueue
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
@@ -31,8 +31,8 @@ abstract class KoolContext {
     var renderPass = RenderPass.SCREEN
     val mvpState = MvpState()
 
-    val projCorrectionMatrix = Mat4f()
-    val depthBiasMatrix = Mat4f().translate(0.5f, 0.5f, 0.5f).scale(0.5f, 0.5f, 0.5f)
+    val projCorrectionMatrix = Mat4d()
+    val depthBiasMatrix = Mat4d().translate(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
 
     val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()
 

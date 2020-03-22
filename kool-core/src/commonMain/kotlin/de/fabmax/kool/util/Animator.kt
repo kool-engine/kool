@@ -158,3 +158,51 @@ class SpringDamperFloat(value: Float) {
         return actual
     }
 }
+
+class SpringDamperDouble(value: Double) {
+    var desired = value
+    var actual = value
+    var speed = 0.0
+        private set
+
+    private var damping = 0.0
+    var stiffness = 0.0
+        set(value) {
+            field = value
+            damping = 2.0 * sqrt(stiffness)
+        }
+
+    init {
+        stiffness = 100.0
+    }
+
+    fun set(value: Double) {
+        desired = value
+        actual = value
+        speed = 0.0
+    }
+
+    fun animate(deltaT: Float): Double {
+        if (stiffness == 0.0 || deltaT > 0.2f) {
+            // don't care about smoothing on low frame rates
+            actual = desired
+            return actual
+        }
+
+        var t = 0.0
+        while (t < deltaT) {
+            val dt = min(0.05, (deltaT - t))
+            t += dt + 0.001
+
+            val err = desired - actual
+            speed += (err * stiffness - speed * damping) * dt
+            val delta = speed * dt
+            if (!abs(delta).isFuzzyZero()) {
+                actual += delta
+            } else {
+                actual = desired
+            }
+        }
+        return actual
+    }
+}

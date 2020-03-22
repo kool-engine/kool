@@ -31,6 +31,11 @@ class Ray {
         matrix.transform(direction, 0f).norm()
     }
 
+    fun transformBy(matrix: Mat4d) {
+        matrix.transform(origin)
+        matrix.transform(direction, 0f).norm()
+    }
+
     override fun toString(): String {
         return "{origin=$origin, direction=$direction}"
     }
@@ -71,6 +76,14 @@ class RayTest {
     }
 
     fun transformBy(matrix: Mat4f) {
+        ray.transformBy(matrix)
+        if (isHit) {
+            matrix.transform(intHitPosition)
+            hitDistanceSqr = hitPosition.sqrDistance(ray.origin)
+        }
+    }
+
+    fun transformBy(matrix: Mat4d) {
         ray.transformBy(matrix)
         if (isHit) {
             matrix.transform(intHitPosition)

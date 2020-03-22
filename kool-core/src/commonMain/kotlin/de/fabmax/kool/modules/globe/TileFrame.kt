@@ -3,9 +3,9 @@ package de.fabmax.kool.modules.globe
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.doubleprec.TransformGroupDp
+import de.fabmax.kool.scene.TransformGroup
 
-class TileFrame(val tileName: TileName, private val globe: Globe) : TransformGroupDp() {
+class TileFrame(val tileName: TileName, private val globe: Globe) : TransformGroup() {
 
     val transformToLocal: Mat4d get() = invTransform
     val transformToGlobal: Mat4d get() = transform

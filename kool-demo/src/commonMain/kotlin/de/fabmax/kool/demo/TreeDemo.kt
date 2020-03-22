@@ -173,10 +173,10 @@ fun treeScene(ctx: KoolContext): List<Scene> {
         // Add a mouse-controlled camera manipulator (actually a specialized TransformGroup)
         +orbitInputTransform {
             +camera
-            minZoom = 1f
-            maxZoom = 25f
+            minZoom = 1.0
+            maxZoom = 25.0
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 6f
+            zoom = 6.0
 
             setMouseRotation(0f, -10f)
             setMouseTranslation(0f, 2f, 0f)
