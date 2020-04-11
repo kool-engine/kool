@@ -42,8 +42,11 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
             normalSampler?.texture = value
         }
 
+    private var depthSampler: TextureSampler? = null
+    val depthMaps: Array<Texture?>?
+        get() = depthSampler?.textures
+
     override fun onPipelineCreated(pipeline: Pipeline) {
-        super.onPipelineCreated(pipeline)
         uShininess = model.findNode("uShininess")
         uShininess?.uniform?.value = shininess
         uSpecularIntensity = model.findNode("uSpecularIntensity")
@@ -56,6 +59,10 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
         albedoSampler?.let { it.texture = albedoMap }
         normalSampler = model.findNode<TextureNode>("tNormal")?.sampler
         normalSampler?.let { it.texture = normalMap }
+
+        depthSampler = model.findNode<TextureNode>("depthMap")?.sampler
+
+        super.onPipelineCreated(pipeline)
     }
 
     companion object {
@@ -66,6 +73,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
             val ifTangents: StageInterfaceNode?
             val ifFragPos: StageInterfaceNode
             val mvpNode: UniformBufferMvp
+            val shadowedLightNode: ShadowedLightNode?
 
             vertexStage {
                 val modelMat: ShaderNodeIoVar
@@ -101,19 +109,24 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
 
                 val worldPos = transformNode(attrPositions().output, modelMat, 1f).output
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
+
+                shadowedLightNode = if (cfg.isReceivingShadows) {
+                    shadowedLightNode(attrPositions().output, modelMat, "depthMap", cfg.maxLights)
+                } else {
+                    null
+                }
+
                 positionOutput = vertexPositionNode(attrPositions().output, mvpMat).outPosition
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
-                val lightNode = defaultLightNode()
+                val lightNode = shadowedLightNode?.fragmentNode ?: defaultLightNode(cfg.maxLights)
 
                 val albedo = when (cfg.albedoSource) {
                     Albedo.VERTEX_ALBEDO -> ifColors!!.output
                     Albedo.STATIC_ALBEDO -> pushConstantNodeColor("uAlbedo").output
                     Albedo.TEXTURE_ALBEDO -> {
-                        val albedoSampler = textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false)
-                        val albedoLin = gammaNode(albedoSampler.outColor)
-                        albedoLin.outColor
+                        textureSamplerNode(textureNode("tAlbedo"), ifTexCoords!!.output, false).outColor
                     }
                 }
 
@@ -141,6 +154,9 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
         var albedo = Color.GRAY
         var shininess = 20f
         var specularIntensity = 1f
+
+        var maxLights = 4
+        var isReceivingShadows = false
 
         var isInstanced = false
 

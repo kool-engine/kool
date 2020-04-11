@@ -788,14 +788,9 @@ class RectProps {
         }
     }
 
-    fun zeroTexCoords() {
-        texCoordUpperLeft.set(Vec2f.ZERO)
-        texCoordUpperRight.set(Vec2f.ZERO)
-        texCoordLowerLeft.set(Vec2f.ZERO)
-        texCoordLowerRight.set(Vec2f.ZERO)
-    }
+    fun zeroTexCoords() = generateTexCoords(0f)
 
-    fun fullTexCoords(scale: Float = 1f) {
+    fun generateTexCoords(scale: Float = 1f) {
         texCoordUpperLeft.set(0f, 0f)
         texCoordUpperRight.set(scale, 0f)
         texCoordLowerLeft.set(0f, scale)

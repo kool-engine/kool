@@ -45,7 +45,14 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     var instances: MeshInstanceList? = null
 
     var pipelineLoader: PipelineFactory? = null
+        set(value) {
+            field = value
+            pipeline?.let { discardedPipelines += it }
+            pipeline = null
+        }
+
     private var pipeline: Pipeline? = null
+    private val discardedPipelines = mutableListOf<Pipeline>()
 
     var rayTest = MeshRayTest.boundsTest()
 
@@ -60,6 +67,10 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
     }
 
     open fun getPipeline(ctx: KoolContext): Pipeline? {
+        if (discardedPipelines.isNotEmpty()) {
+            discardedPipelines.forEach { ctx.disposePipeline(it) }
+            discardedPipelines.clear()
+        }
         return pipeline ?: pipelineLoader?.let { loader ->
             loader.createPipeline(this, Pipeline.Builder(), ctx).also { pipeline = it }
         }

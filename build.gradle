@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.3.70'
+    ext.kotlin_version = '1.3.71'
     ext.serialization_version = '0.20.0'
     ext.coroutines_version = '1.3.4'
     ext.lwjglVersion = '3.2.3'
@@ -12,8 +12,6 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
-        //google()
-        //maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 
     dependencies {
@@ -24,12 +22,10 @@ buildscript {
 
 allprojects {
     group 'de.fabmax.kool'
-    version '0.2.0'
+    version '0.2.1-SNAPSHOT'
 
     repositories {
         jcenter()
         mavenCentral()
-        //google()
-        //maven { url "https://kotlin.bintray.com/kotlinx" }
     }
 }

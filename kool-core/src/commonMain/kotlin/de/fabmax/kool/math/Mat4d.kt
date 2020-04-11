@@ -444,7 +444,7 @@ open class Mat4d {
     fun setLookAt(position: Vec3d, lookAt: Vec3d, up: Vec3d) =
             setLookAt(position.x, position.y, position.z, lookAt.x, lookAt.y, lookAt.z, up.x, up.y, up.z)
 
-    private fun setLookAt(px: Double, py: Double, pz: Double, lx: Double, ly: Double, lz: Double, ux: Double, uy: Double, uz: Double): Mat4d {
+    private fun setLookAt(px: Double, py: Double, pz: Double, lx: Double, ly: Double, lz: Double, upx: Double, upy: Double, upz: Double): Mat4d {
         // See the OpenGL GLUT documentation for gluLookAt for a description
         // of the algorithm. We implement it in a straightforward way:
         var fx = lx - px
@@ -458,9 +458,9 @@ open class Mat4d {
         fz *= rlf
 
         // compute s = f x up (x means "cross product")
-        var sx = fy * uz - fz * uy
-        var sy = fz * ux - fx * uz
-        var sz = fx * uy - fy * ux
+        var sx = fy * upz - fz * upy
+        var sy = fz * upx - fx * upz
+        var sz = fx * upy - fy * upx
 
         // and normalize s
         val rls = 1.0 / sqrt(sx*sx + sy*sy + sz*sz)

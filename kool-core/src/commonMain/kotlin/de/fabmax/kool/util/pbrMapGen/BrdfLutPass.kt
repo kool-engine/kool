@@ -35,7 +35,7 @@ class BrdfLutPass {
                     generate {
                         rect {
                             size.set(1f, 1f)
-                            fullTexCoords()
+                            generateTexCoords()
                         }
                     }
 
