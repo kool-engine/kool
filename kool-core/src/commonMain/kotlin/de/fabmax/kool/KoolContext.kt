@@ -1,11 +1,9 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Color
 
 /**
  * @author fabmax
@@ -19,24 +17,19 @@ abstract class KoolContext {
 
     abstract val assetMgr: AssetManager
 
-    // fixme: move to / join with ShaderManager?
     abstract val shaderGenerator: ShaderGenerator
 
     val inputMgr = InputManager()
     val engineStats = EngineStats()
 
     var viewport = Viewport(0, 0, 0, 0)
-    var clearColor = Color(0.15f, 0.15f, 0.15f, 1f)
-
-    var renderPass = RenderPass.SCREEN
+        protected set
     val mvpState = MvpState()
 
     val projCorrectionMatrix = Mat4d()
     val depthBiasMatrix = Mat4d().translate(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
 
     val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()
-
-    val drawQueue = DrawQueue()
 
     /**
      * Run time of this render context in seconds. This is the wall clock time between now and the first time render()
@@ -64,7 +57,6 @@ abstract class KoolContext {
         private set
 
     val scenes: MutableList<Scene> = mutableListOf()
-    val offscreenPasses = mutableListOf<OffscreenPass>()
 
     private val delayedCallbacks = mutableListOf<DelayedCallback>()
     protected val disposablePipelines = mutableListOf<Pipeline>()
@@ -112,15 +104,6 @@ abstract class KoolContext {
 
         inputMgr.onNewFrame(this)
 
-        for (i in offscreenPasses.indices.reversed()) {
-            if (offscreenPasses[i].isSingleShot && offscreenPasses[i].frameIdx > 0) {
-                offscreenPasses.removeAt(i)
-            } else {
-                offscreenPasses[i].render(this)
-            }
-        }
-
-        drawQueue.clear()
         for (i in onRender.indices) {
             onRender[i](this)
         }
@@ -135,7 +118,6 @@ abstract class KoolContext {
         // draw scene contents (back to front)
         for (i in scenes.indices) {
             if (scenes[i].isVisible) {
-                scenes[i].drawQueue = drawQueue
                 scenes[i].renderScene(this)
             }
         }
@@ -156,9 +138,4 @@ abstract class KoolContext {
     }
 
     private class DelayedCallback(val callOnFrame: Int, val callback: (KoolContext) -> Unit)
-}
-
-enum class RenderPass {
-    SHADOW,
-    SCREEN
 }

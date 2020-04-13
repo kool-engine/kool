@@ -47,8 +47,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec3 = MutableVec3f()
     private val tmpVec4 = MutableVec4f()
 
-    open fun updateCamera(ctx: KoolContext) {
-        aspectRatio = ctx.viewport.aspectRatio
+    open fun updateCamera(ctx: KoolContext, viewport: KoolContext.Viewport) {
+        aspectRatio = viewport.aspectRatio
 
         updateViewMatrix()
         updateProjectionMatrix()
@@ -81,7 +81,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         view.invert(invView)
     }
 
-    abstract protected fun updateProjectionMatrix()
+    protected abstract fun updateProjectionMatrix()
 
     fun computePickRay(pickRay: Ray, ptr: InputManager.Pointer, viewport: KoolContext.Viewport, ctx: KoolContext): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.x, ptr.y, viewport, ctx)
@@ -188,21 +188,21 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         this.far = far
     }
 
-    override fun updateCamera(ctx: KoolContext) {
+    override fun updateCamera(ctx: KoolContext, viewport: KoolContext.Viewport) {
         if (isClipToViewport) {
             left = 0f
-            right = ctx.viewport.width.toFloat()
+            right = viewport.width.toFloat()
             bottom = 0f
-            top = ctx.viewport.height.toFloat()
+            top = viewport.height.toFloat()
 
         } else if (isKeepAspectRatio) {
             val h = top - bottom
-            val w = ctx.viewport.aspectRatio * h
+            val w = viewport.aspectRatio * h
             val xCenter = left + (right - left) * 0.5f
             left = xCenter - w * 0.5f
             right = xCenter + w * 0.5f
         }
-        super.updateCamera(ctx)
+        super.updateCamera(ctx, viewport)
     }
 
     override fun updateProjectionMatrix() {

@@ -45,7 +45,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
 
                         // hacky: we need KoolContext to create the title font...
                         var initFont = true
-                        onPreRender += { ctx ->
+                        onUpdate += { ctx ->
                             if (initFont) {
                                 initFont = false
                                 font.setCustom(titleFont(ctx))

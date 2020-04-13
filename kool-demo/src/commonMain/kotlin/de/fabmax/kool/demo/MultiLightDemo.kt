@@ -54,12 +54,12 @@ class MultiLightDemo(ctx: KoolContext) {
         lights.forEach {
             val pass = ShadowMapPass(mainScene, it.light)
             depthPasses += pass
-            ctx.offscreenPasses += pass.offscreenPass
+            mainScene.offscreenPasses += pass
         }
 
         mainScene.onDispose += {
             depthPasses.forEach {
-                ctx.offscreenPasses -= it.offscreenPass
+                mainScene.offscreenPasses -= it
                 it.dispose(ctx)
             }
         }
@@ -73,7 +73,7 @@ class MultiLightDemo(ctx: KoolContext) {
             translation.set(0.0, 2.0, 0.0)
             setMouseRotation(0f, -20f)
             // let the camera slowly rotate around vertical axis
-            onPreRender += { ctx ->
+            onUpdate += { ctx ->
                 if (autoRotate) {
                     verticalRotation += ctx.deltaT * 3f
                 }
@@ -133,7 +133,7 @@ class MultiLightDemo(ctx: KoolContext) {
                     depthMaps?.let { maps ->
                         depthPasses.forEachIndexed { i, pass ->
                             if (i < maps.size) {
-                                maps[i] = pass.offscreenPass.impl.depthTexture
+                                maps[i] = pass.depthTexture
                             }
                         }
                     }
@@ -155,7 +155,7 @@ class MultiLightDemo(ctx: KoolContext) {
                     depthMaps?.let { maps ->
                         depthPasses.forEachIndexed { i, pass ->
                             if (i < maps.size) {
-                                maps[i] = pass.offscreenPass.impl.depthTexture
+                                maps[i] = pass.depthTexture
                             }
                         }
                     }
@@ -190,7 +190,7 @@ class MultiLightDemo(ctx: KoolContext) {
                     depthMaps?.let { maps ->
                         depthPasses.forEachIndexed { i, pass ->
                             if (i < maps.size) {
-                                maps[i] = pass.offscreenPass.impl.depthTexture
+                                maps[i] = pass.depthTexture
                             }
                         }
                     }
@@ -221,7 +221,7 @@ class MultiLightDemo(ctx: KoolContext) {
                     depthMaps?.let { maps ->
                         depthPasses.forEachIndexed { i, pass ->
                             if (i < maps.size) {
-                                maps[i] = pass.offscreenPass.impl.depthTexture
+                                maps[i] = pass.depthTexture
                             }
                         }
                     }
@@ -544,7 +544,7 @@ class MultiLightDemo(ctx: KoolContext) {
             +lightMesh
             +spotAngleMesh
 
-            onPreRender += { ctx ->
+            onUpdate += { ctx ->
                 if (autoRotate) {
                     animPos += ctx.deltaT
                 }

@@ -5,6 +5,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.BillboardMesh
 import de.fabmax.kool.scene.Node
@@ -55,23 +56,23 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name:
         mesh.scene = newScene
     }
 
-    override fun preRender(ctx: KoolContext) {
-        super.preRender(ctx)
+    override fun update(ctx: KoolContext) {
+        super.update(ctx)
 
         //timedMs("particles update took") {
             for (i in 0 until numParticles) {
-                particles[i].update(ctx)
+                particles[i].updateParticle(ctx)
             }
             if (drawOrder != BillboardMesh.DrawOrder.AS_IS) {
                 zSortParticles()
             }
         //}
 
-        mesh.preRender(ctx)
+        mesh.update(ctx)
     }
 
-    override fun render(ctx: KoolContext) {
-        super.render(ctx)
+    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
+        super.collectDrawCommands(renderPass, ctx)
         if (isRendered) {
 //            var restoreAttribs = false
 //            if (isDepthMask != ctx.isDepthMask) {
@@ -87,11 +88,6 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name:
 //                ctx.popAttributes()
 //            }
         }
-    }
-
-    override fun postRender(ctx: KoolContext) {
-        super.postRender(ctx)
-        mesh.postRender(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {
@@ -144,7 +140,7 @@ class ParticleSystem(particleTex: Texture, val maxParticles: Int = 10_000, name:
         }
     }
 
-    private fun Particle.update(ctx: KoolContext) {
+    private fun Particle.updateParticle(ctx: KoolContext) {
         type.update(this, ctx)
 
         lifeTime += ctx.deltaT

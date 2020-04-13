@@ -1,19 +1,20 @@
 package de.fabmax.kool.util.pbrMapGen
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.OffscreenPassCube
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.scene.scene
 import kotlin.math.PI
 
-class IrradianceMapPass(hdriTexture: Texture) {
-    val offscreenPass: OffscreenPassCube
-    val irradianceMap: CubeMapTexture
-        get() = offscreenPass.impl.texture
+class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) : OffscreenRenderPassCube(Group(), 32, 32, 1, TexFormat.RGBA_F16) {
+//    val offscreenPass: OffscreenRenderPassCube
+//    val irradianceMap: CubeMapTexture
+//        get() = offscreenPass.colorTextureCube
+
     var hdriTexture = hdriTexture
         set(value) {
             irrMapShader?.textureSampler?.texture = value
@@ -23,46 +24,52 @@ class IrradianceMapPass(hdriTexture: Texture) {
     private var irrMapShader: ModeledShader.TextureColor? = null
 
     init {
-        offscreenPass = OffscreenPassCube(32, 32, 1, TexFormat.RGBA_F16).apply {
-            isSingleShot = true
-            scene = scene {
-                +mesh(listOf(Attribute.POSITIONS)) {
-                    generate {
-                        cube { centered() }
-                    }
+        clearColor = null
 
-                    val texName = "colorTex"
-                    val model = ShaderModel("Irradiance Convolution Sampler").apply {
-                        val ifLocalPos: StageInterfaceNode
-                        vertexStage {
-                            ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                            positionOutput = simpleVertexPositionNode().outPosition
-                        }
-                        fragmentStage {
-                            val tex = textureNode(texName)
-                            val convNd = addNode(ConvoluteIrradianceNode(tex, stage)).apply {
-                                inLocalPos = ifLocalPos.output
-                            }
-                            colorOutput = convNd.outColor
-                        }
-                    }
-                    irrMapShader = ModeledShader.TextureColor(texName, model).apply {
-                        onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
-                        onCreated += { textureSampler.texture = hdriTexture }
-                    }
-                    pipelineLoader = irrMapShader
+        // this pass only needs to be rendered once, set isFinished = true to immediately remove it after first render
+        isFinished = true
+
+        (drawNode as Group).apply {
+            +mesh(listOf(Attribute.POSITIONS)) {
+                generate {
+                    cube { centered() }
                 }
+
+                val texName = "colorTex"
+                val model = ShaderModel("Irradiance Convolution Sampler").apply {
+                    val ifLocalPos: StageInterfaceNode
+                    vertexStage {
+                        ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
+                        positionOutput = simpleVertexPositionNode().outPosition
+                    }
+                    fragmentStage {
+                        val tex = textureNode(texName)
+                        val convNd = addNode(ConvoluteIrradianceNode(tex, stage)).apply {
+                            inLocalPos = ifLocalPos.output
+                        }
+                        colorOutput = convNd.outColor
+                    }
+                }
+                irrMapShader = ModeledShader.TextureColor(texName, model).apply {
+                    onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
+                    onCreated += { textureSampler.texture = hdriTexture }
+                }
+                pipelineLoader = irrMapShader
             }
+        }
+
+        update()
+    }
+
+    fun update() {
+        if (this !in parentScene.offscreenPasses) {
+            parentScene.offscreenPasses += this
         }
     }
 
-    fun update(ctx: KoolContext) {
-        offscreenPass.frameIdx = 0
-        ctx.offscreenPasses += offscreenPass
-    }
-
-    fun dispose(ctx: KoolContext) {
-        offscreenPass.dispose(ctx)
+    override fun dispose(ctx: KoolContext) {
+        drawNode.dispose(ctx)
+        super.dispose(ctx)
     }
 
     private class ConvoluteIrradianceNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {

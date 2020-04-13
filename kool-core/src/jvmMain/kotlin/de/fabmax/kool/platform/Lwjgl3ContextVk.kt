@@ -1,10 +1,15 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.*
-import de.fabmax.kool.drawqueue.DrawQueue
+import de.fabmax.kool.DesktopImpl
+import de.fabmax.kool.InputManager
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolException
+import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.math.Vec4d
+import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.pipeline.OffscreenRenderPass2D
+import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.platform.vk.*
-import de.fabmax.kool.platform.vk.RenderPass
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBufferImpl
@@ -247,18 +252,32 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                 val beginInfo = callocVkCommandBufferBeginInfo { sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO) }
                 check(vkBeginCommandBuffer(commandBuffer, beginInfo) == VK_SUCCESS)
 
-                for (i in 0 until offscreenPasses.size) {
-                    renderOffscreen(commandBuffer, offscreenPasses[i])
+                // fixme: submit individual render passes instead of merging command queues
+                val mergeQueue = mutableListOf<DrawCommand>()
+                var clearColor: Color? = null
+                for (scene in scenes) {
+                    var removeFlag = false
+                    for (i in 0 until scene.offscreenPasses.size) {
+                        renderOffscreen(commandBuffer, scene.offscreenPasses[i])
+                        removeFlag = removeFlag || scene.offscreenPasses[i].isFinished
+                    }
+
+                    if (removeFlag) {
+                        scene.offscreenPasses.removeIf { it.isFinished }
+                    }
+
+                    mergeQueue += scene.mainRenderPass.drawQueue.commands
+                    if (scene.mainRenderPass.clearColor != null) {
+                        clearColor = scene.mainRenderPass.clearColor
+                    }
                 }
 
-                val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], clearColor)
+                val renderPassInfo = renderPassBeginInfo(swapChain.renderPass, swapChain.framebuffers[imageIndex], true, clearColor)
 
-                // optimize draw queue order
-                // fixme: more sophisticated sorting, customizable draw order, etc.
-                //drawQueue.commands.sortBy { it.pipeline!!.pipelineHash }
+                // fixme: optimize draw queue order (sort by distance, customizable draw order, etc.)
 
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-                renderDrawQueue(commandBuffer, drawQueue, imageIndex, swapChain.renderPass, swapChain.nImages, false)
+                renderDrawQueue(commandBuffer, mergeQueue, imageIndex, swapChain.renderPass, swapChain.nImages, false)
                 vkCmdEndRenderPass(commandBuffer)
 
                 check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
@@ -295,10 +314,10 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
             disposablePipelines.clear()
         }
 
-        private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: DrawQueue, imageIndex: Int,
+        private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: List<DrawCommand>, imageIndex: Int,
                                                 renderPass: RenderPass, nImages: Int, dynVp: Boolean) {
             var prevPipeline = 0UL
-            drawQueue.commands.forEach { cmd ->
+            drawQueue.forEach { cmd ->
                 if (!cmd.mesh.geometry.isEmpty()) {
                     val pipelineCfg = cmd.pipeline ?: throw KoolException("Mesh pipeline not set")
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
@@ -384,34 +403,34 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
             vkCmdSetScissor(commandBuffer, 0, scissor)
         }
 
-        private fun MemoryStack.renderOffscreen(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenPass) {
+        private fun MemoryStack.renderOffscreen(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass) {
             when (offscreenPass) {
-                is OffscreenPass2d -> renderOffscreen2d(commandBuffer, offscreenPass)
-                is OffscreenPassCube -> renderOffscreenCube(commandBuffer, offscreenPass)
+                is OffscreenRenderPass2D -> renderOffscreen2d(commandBuffer, offscreenPass)
+                is OffscreenRenderPassCube -> renderOffscreenCube(commandBuffer, offscreenPass)
                 else -> throw IllegalArgumentException("Not implemented: ${offscreenPass::class.java}")
             }
         }
 
-        private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenPass2d) {
+        private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2D) {
             val rp = offscreenPass.impl.getRenderPass(sys)
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColor)
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearDepth, offscreenPass.clearColor)
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
             setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
-            renderDrawQueue(commandBuffer, offscreenPass.drawQueues[0], 0, rp, 1, true)
+            renderDrawQueue(commandBuffer, offscreenPass.drawQueue.commands, 0, rp, 1, true)
             vkCmdEndRenderPass(commandBuffer)
         }
 
-        private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenPassCube) {
+        private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPassCube) {
             val rp = offscreenPass.impl.getRenderPass(sys)
-            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearColor)
+            val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearDepth, offscreenPass.clearColor)
 
             offscreenPass.impl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
             // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
             for (view in cubeRenderPassViews) {
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
                 setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
-                renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index], view.index, rp, 6, true)
+                renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index].commands, view.index, rp, 6, true)
                 vkCmdEndRenderPass(commandBuffer)
                 offscreenPass.impl.copyView(commandBuffer, view)
             }
@@ -423,7 +442,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
         }
     }
 
-    private fun MemoryStack.renderPassBeginInfo(renderPass: RenderPass, frameBuffer: Long, clearColor: Color) =
+    private fun MemoryStack.renderPassBeginInfo(renderPass: RenderPass, frameBuffer: Long, clearDepth: Boolean, clearColor: Color?) =
             callocVkRenderPassBeginInfo {
                 sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
                 renderPass(renderPass.vkRenderPass)
@@ -432,10 +451,29 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                     r.offset { it.x(0); it.y(0) }
                     r.extent { it.width(renderPass.maxWidth); it.height(renderPass.maxHeight) }
                 }
+
                 pClearValues(callocVkClearValueN(2) {
-                    this[0].setColor(clearColor)
+                    this[0].setColor(clearColor ?: Color.BLACK)
                     this[1].depthStencil { it.depth(1f); it.stencil(0) }
                 })
+
+                // fixme: make clear values optional
+//                var clearCnt = 0
+//                if (clearDepth) {
+//                    clearCnt++
+//                }
+//                if (clearColor != null) {
+//                    clearCnt++
+//                }
+//                pClearValues(callocVkClearValueN(clearCnt) {
+//                    var clearI = 0
+//                    if (clearColor != null) {
+//                        this[clearI++].setColor(clearColor)
+//                    }
+//                    if (clearDepth) {
+//                        this[clearI].depthStencil { it.depth(1f); it.stencil(0) }
+//                    }
+//                })
             }
 
     private fun VkClearValue.setColor(color: Color) {
@@ -453,7 +491,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
 
     companion object {
         private val cubeRenderPassViews = Array(7) {
-            i -> OffscreenPassCube.ViewDirection.values()[i % OffscreenPassCube.ViewDirection.values().size]
+            i -> OffscreenRenderPassCube.ViewDirection.values()[i % OffscreenRenderPassCube.ViewDirection.values().size]
         }
 
         val KEY_CODE_MAP: Map<Int, Int> = mutableMapOf(

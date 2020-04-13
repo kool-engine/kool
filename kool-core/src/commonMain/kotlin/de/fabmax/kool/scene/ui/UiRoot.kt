@@ -1,8 +1,8 @@
 package de.fabmax.kool.scene.ui
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.drawqueue.SceneSetup
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
@@ -26,7 +26,7 @@ fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, blo
     }
 
     if (overlay) {
-        clearMask = SceneSetup.CLEAR_DEPTH
+        mainRenderPass.clearColor = null
     }
 
     +embeddedUi(1f, 1f, null, dpi) {
@@ -77,7 +77,6 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
                 content.requestThemeUpdate()
             }
         }
-    //var shaderLightModel = LightModel.NO_LIGHTING
 
     val content = UiContainer("$name-content", this)
     var contentHeight: SizeSpec? = null
@@ -113,8 +112,8 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         isLayoutNeeded = true
     }
 
-    override fun preRender(ctx: KoolContext) {
-        val viewport = scene?.viewport ?: return
+    override fun update(ctx: KoolContext) {
+        val viewport = scene?.mainRenderPass?.viewport ?: return
 
         if (isFillViewport &&
                 (globalWidth != viewport.width.toFloat() || globalHeight != viewport.height.toFloat())) {
@@ -139,21 +138,16 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
             content.doLayout(contentBounds, ctx)
         }
 
-        content.preRender(ctx)
-        super.preRender(ctx)
-
         content.update(ctx)
+        super.update(ctx)
+
+        content.updateComponent(ctx)
     }
 
-    override fun render(ctx: KoolContext) {
+    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
 //        blurHelper?.updateDistortionTexture(this, ctx, bounds)
-        super.render(ctx)
-        content.render(ctx)
-    }
-
-    override fun postRender(ctx: KoolContext) {
-        content.postRender(ctx)
-        super.postRender(ctx)
+        super.collectDrawCommands(renderPass, ctx)
+        content.collectDrawCommands(renderPass, ctx)
     }
 
     override fun dispose(ctx: KoolContext) {

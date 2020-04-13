@@ -1,6 +1,6 @@
-package de.fabmax.kool
+package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.COMPARE_REF_TO_TEXTURE
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.DEPTH_COMPONENT24
@@ -30,7 +30,7 @@ import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_S
 import org.khronos.webgl.WebGLRenderingContext.Companion.TEXTURE_WRAP_T
 import org.khronos.webgl.WebGLTexture
 
-actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenPass2d) {
+actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenRenderPass2D) {
     actual val texture: Texture = OffscreenTexture()
     actual val depthTexture: Texture = OffscreenDepthTexture()
 
@@ -81,19 +81,21 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         if (!isSetup) {
             setup(ctx)
         }
-        texture as OffscreenTexture
 
         val mipLevel = offscreenPass.targetMipLevel
         val width = offscreenPass.mipWidth(mipLevel)
         val height = offscreenPass.mipHeight(mipLevel)
         val clearColor = offscreenPass.clearColor
+        val clearMask = offscreenPass.clearMask()
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
         ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[fboIdx])
         ctx.gl.viewport(0, 0, width, height)
-        ctx.gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a)
-        ctx.gl.clear(COLOR_BUFFER_BIT or DEPTH_BUFFER_BIT)
-        ctx.queueRenderer.renderQueue(offscreenPass.drawQueues[0])
+        clearColor?.let { ctx.gl.clearColor(it.r, it.g, it.b, it.a) }
+        if (clearMask != 0) {
+            ctx.gl.clear(clearMask)
+        }
+        ctx.queueRenderer.renderQueue(offscreenPass.drawQueue)
         ctx.gl.bindFramebuffer(FRAMEBUFFER, null)
     }
 
@@ -150,7 +152,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     }
 }
 
-actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenPassCube) {
+actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenRenderPassCube) {
     actual val texture: CubeMapTexture = OffscreenTextureCube()
 
     private var fbos: List<WebGLFramebuffer?> = mutableListOf()
@@ -201,10 +203,14 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
 
         ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[fboIdx])
         ctx.gl.viewport(0, 0, width, height)
-        ctx.gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a)
+        clearColor?.let { ctx.gl.clearColor(it.r, it.g, it.b, it.a) }
+        val clearMask = offscreenPass.clearMask()
+
         for (i in 0 until 6) {
             ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + i, texture.offscreenTex, fboIdx)
-            ctx.gl.clear(COLOR_BUFFER_BIT or DEPTH_BUFFER_BIT)
+            if (clearMask != 0) {
+                ctx.gl.clear(clearMask)
+            }
 
             val view = VIEWS[i]
             val queue = offscreenPass.drawQueues[view.index]
@@ -217,12 +223,12 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
     companion object {
         private val VIEWS = Array(6) { i ->
             when (i) {
-                0 -> OffscreenPassCube.ViewDirection.RIGHT
-                1 -> OffscreenPassCube.ViewDirection.LEFT
-                2 -> OffscreenPassCube.ViewDirection.UP
-                3 -> OffscreenPassCube.ViewDirection.DOWN
-                4 -> OffscreenPassCube.ViewDirection.FRONT
-                5 -> OffscreenPassCube.ViewDirection.BACK
+                0 -> OffscreenRenderPassCube.ViewDirection.RIGHT
+                1 -> OffscreenRenderPassCube.ViewDirection.LEFT
+                2 -> OffscreenRenderPassCube.ViewDirection.UP
+                3 -> OffscreenRenderPassCube.ViewDirection.DOWN
+                4 -> OffscreenRenderPassCube.ViewDirection.FRONT
+                5 -> OffscreenRenderPassCube.ViewDirection.BACK
                 else -> throw IllegalStateException()
             }
         }
@@ -256,4 +262,15 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
             loadingState = LoadingState.LOADED
         }
     }
+}
+
+private fun RenderPass.clearMask(): Int {
+    var mask = 0
+    if (clearDepth) {
+        mask = DEPTH_BUFFER_BIT
+    }
+    if (clearColor != null) {
+        mask = mask or COLOR_BUFFER_BIT
+    }
+    return mask
 }

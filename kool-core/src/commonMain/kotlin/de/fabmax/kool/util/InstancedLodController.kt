@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
@@ -39,7 +40,7 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
         }
     }
 
-    override fun preRender(ctx: KoolContext) {
+    override fun update(ctx: KoolContext) {
         // clear assigned lods
         for (i in lods.indices) {
             lods[i].instances.clear()
@@ -78,19 +79,13 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
             }
 
             lod.updateInstances(i, ctx)
-            lod.mesh.preRender(ctx)
+            lod.mesh.update(ctx)
         }
     }
 
-    override fun render(ctx: KoolContext) {
+    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
         for (i in lods.indices) {
-            lods[i].mesh.render(ctx)
-        }
-    }
-
-    override fun postRender(ctx: KoolContext) {
-        for (i in lods.indices) {
-            lods[i].mesh.postRender(ctx)
+            lods[i].mesh.collectDrawCommands(renderPass, ctx)
         }
     }
 
@@ -131,8 +126,8 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
         var isInFrustum = false
             protected set
 
-        protected val globalCenterMut = MutableVec3f()
-        protected val globalExtentMut = MutableVec3f()
+        private val globalCenterMut = MutableVec3f()
+        private val globalExtentMut = MutableVec3f()
 
         open fun preRender(cam: Camera, ctx: KoolContext) {
             // update global center and radius

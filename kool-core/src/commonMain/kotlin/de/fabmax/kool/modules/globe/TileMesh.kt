@@ -45,7 +45,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
         }
     }
 
-    override fun preRender(ctx: KoolContext) {
+    override fun update(ctx: KoolContext) {
         // check if texture is loaded
 //        val tex = tileTex
 //        if (tex != null) {
@@ -76,7 +76,7 @@ class TileMesh(val globe: Globe, val tileName: TileName, ctx: KoolContext) :
 //            shader = getFallbackShader()
 //        }
 
-        super.preRender(ctx)
+        super.update(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {

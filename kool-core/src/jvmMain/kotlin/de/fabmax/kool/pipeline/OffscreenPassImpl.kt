@@ -1,6 +1,6 @@
-package de.fabmax.kool
+package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.platform.Lwjgl3ContextVk
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.OffscreenRenderPass
@@ -11,7 +11,7 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
-actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenPass2d) {
+actual class OffscreenPass2dImpl actual constructor(val offscreenPass: OffscreenRenderPass2D) {
     actual val texture: Texture = OffscreenTexture2d(true)
     actual val depthTexture: Texture = OffscreenTexture2d(false)
 
@@ -60,7 +60,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
 }
 
 
-actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenPassCube) {
+actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: OffscreenRenderPassCube) {
     actual val texture: CubeMapTexture = OffscreenTextureCube()
 
     var renderPass: OffscreenRenderPass? = null
@@ -89,7 +89,7 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         }
     }
 
-    fun copyView(commandBuffer: VkCommandBuffer, viewDir: OffscreenPassCube.ViewDirection) {
+    fun copyView(commandBuffer: VkCommandBuffer, viewDir: OffscreenRenderPassCube.ViewDirection) {
         val rp = renderPass ?: return
 
         var mipLevel = 0
@@ -146,12 +146,12 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
     companion object {
         private val VIEW_TO_CUBE_LAYER_MAP = IntArray(6) { i ->
             when (i) {
-                OffscreenPassCube.ViewDirection.RIGHT.index -> 0
-                OffscreenPassCube.ViewDirection.LEFT.index -> 1
-                OffscreenPassCube.ViewDirection.UP.index -> 2
-                OffscreenPassCube.ViewDirection.DOWN.index -> 3
-                OffscreenPassCube.ViewDirection.FRONT.index -> 4
-                OffscreenPassCube.ViewDirection.BACK.index -> 5
+                OffscreenRenderPassCube.ViewDirection.RIGHT.index -> 0
+                OffscreenRenderPassCube.ViewDirection.LEFT.index -> 1
+                OffscreenRenderPassCube.ViewDirection.UP.index -> 2
+                OffscreenRenderPassCube.ViewDirection.DOWN.index -> 3
+                OffscreenRenderPassCube.ViewDirection.FRONT.index -> 4
+                OffscreenRenderPassCube.ViewDirection.BACK.index -> 5
                 else -> 0
             }
         }

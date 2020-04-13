@@ -2,10 +2,8 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.MutableVec3d
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.BoundingBox
 import de.fabmax.kool.util.Disposable
 
@@ -16,9 +14,8 @@ import de.fabmax.kool.util.Disposable
  */
 abstract class Node(val name: String? = null) : Disposable {
 
-    val onPreRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
-    val onRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
-    val onPostRender: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+    val onUpdate: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+    val onCollectDrawCommands: MutableList<Node.(RenderPass, KoolContext) -> Unit> = mutableListOf()
     val onDispose: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
 
     val onHoverEnter: MutableList<Node.(InputManager.Pointer, RayTest, KoolContext) -> Unit> = mutableListOf()
@@ -46,6 +43,12 @@ abstract class Node(val name: String? = null) : Disposable {
 
     protected val globalCenterMut = MutableVec3f()
     protected val globalExtentMut = MutableVec3f()
+
+    protected val modelMat = Mat4d()
+    protected val modelMatInv: Mat4d
+        get() = checkModelMatInv()
+    protected var modelMatDirty = false
+    private val modelMatInvLazy = Mat4d()
 
     /**
      * Parent node is set when this node is added to a [Group]
@@ -90,55 +93,45 @@ abstract class Node(val name: String? = null) : Disposable {
     open var isFrustumChecked = true
 
     /**
-     * Flag indicating if this node should be rendered. The flag is updated in the [render] method based on
+     * Flag indicating if this node should be rendered. The flag is updated in the [collectDrawCommands] method based on
      * the [isVisible] flag and [isFrustumChecked]. I.e. it is false if this node is either explicitly hidden or outside
      * of the camera frustum and frustum checking is enabled.
      */
     protected var isRendered = true
 
     /**
-     * Called before rendering a new frame. This method is only called once per frame, in contrast to render which
-     * can be called multiple times (e.g, once in shadow pass and another time in screen pass). Implementations should
-     * use this method to update their bounds, animation states, etc.
+     * Called once on every new frame before draw commands are collected. Implementations should use this method to
+     * update their transform matrices, bounding boxes, animation states, etc.
      */
-    open fun preRender(ctx: KoolContext) {
-        for (i in onPreRender.indices) {
-            onPreRender[i](ctx)
+    open fun update(ctx: KoolContext) {
+        for (i in onUpdate.indices) {
+            onUpdate[i](ctx)
         }
+
+        // keep a copy of the node's model matrix
+        modelMat.set(ctx.mvpState.modelMatrix)
+        modelMatDirty = true
 
         // update global center and radius
         globalCenterMut.set(bounds.center)
         globalExtentMut.set(bounds.max)
-        ctx.mvpState.modelMatrix.transform(globalCenterMut)
-        ctx.mvpState.modelMatrix.transform(globalExtentMut)
+        modelMat.transform(globalCenterMut)
+        modelMat.transform(globalExtentMut)
         globalRadius = globalCenter.distance(globalExtentMut)
     }
 
     /**
-     * Renders this node using the specified graphics engine context. Implementations should consider the [isRendered]
-     * flag and return without drawing anything if it is false. This method might be called multiple times per frame,
-     * e.g. during shadow depth texture rendering.
-     *
-     * @param ctx    the graphics engine context
+     * Called on a per-frame basis, when the draw queue is built. The actual number of times this method
+     * is called per frame depends on various factors (number of render passes, object visibility, etc.).
+     * When this message is called, implementations can, but don't have to, append a DrawCommand to the provided
+     * DrawQueue.
      */
-    open fun render(ctx: KoolContext) {
-        isRendered = checkIsVisible(ctx)
-
+    open fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
+        isRendered = checkIsVisible(renderPass.camera, ctx)
         if (isRendered) {
-            if (!onRender.isEmpty()) {
-                for (i in onRender.indices) {
-                    onRender[i](ctx)
-                }
+            for (i in onCollectDrawCommands.indices) {
+                onCollectDrawCommands[i](renderPass, ctx)
             }
-        }
-    }
-
-    /**
-     * Called after a frame was rendered.
-     */
-    open fun postRender(ctx: KoolContext) {
-        for (i in onPostRender.indices) {
-            onPostRender[i](ctx)
         }
     }
 
@@ -157,12 +150,12 @@ abstract class Node(val name: String? = null) : Disposable {
      * Transforms [vec] in-place from local to global coordinates.
      */
     open fun toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        parent?.toGlobalCoords(vec, w)
+        modelMat.transform(vec, w)
         return vec
     }
 
     open fun toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
-        parent?.toGlobalCoords(vec, w)
+        modelMat.transform(vec, w)
         return vec
     }
 
@@ -170,12 +163,12 @@ abstract class Node(val name: String? = null) : Disposable {
      * Transforms [vec] in-place from global to local coordinates.
      */
     open fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        parent?.toLocalCoords(vec, w)
+        modelMatInv.transform(vec, w)
         return vec
     }
 
     open fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
-        parent?.toLocalCoords(vec, w)
+        modelMatInv.transform(vec, w)
         return vec
     }
 
@@ -196,14 +189,14 @@ abstract class Node(val name: String? = null) : Disposable {
     }
 
     /**
-     * Called during [render]: Checks if this node is currently visible. If not rendering is skipped. Default
+     * Called during [collectDrawCommands]: Checks if this node is currently visible. If not rendering is skipped. Default
      * implementation considers [isVisible] flag and performs a camera frustum check if [isFrustumChecked] is true.
      */
-    protected open fun checkIsVisible(ctx: KoolContext): Boolean {
+    protected open fun checkIsVisible(cam: Camera, ctx: KoolContext): Boolean {
         if (!isVisible) {
             return false
         } else if (isFrustumChecked && !bounds.isEmpty) {
-            return scene?.camera?.isInFrustum(this) ?: true
+            return cam.isInFrustum(this)
         }
         return true
     }
@@ -229,4 +222,12 @@ abstract class Node(val name: String? = null) : Disposable {
      * because setting a overriden super-class property is super-slow in javascript.
      */
     protected open fun onParentChanged(oldParent: Node?, newParent: Node?) { }
+
+    private fun checkModelMatInv(): Mat4d {
+        if (modelMatDirty) {
+            modelMat.invert(modelMatInvLazy)
+            modelMatDirty = false
+        }
+        return modelMatInvLazy
+    }
 }

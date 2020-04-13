@@ -64,10 +64,10 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 ShadowMapPass(this, lighting.lights[0], 2048),
                 ShadowMapPass(this, lighting.lights[1], 32)
         )
-        shadowMaps.forEach { ctx.offscreenPasses += it.offscreenPass }
+        shadowMaps.forEach { offscreenPasses += it }
         onDispose += {
             shadowMaps.forEach {
-                ctx.offscreenPasses -= it.offscreenPass
+                offscreenPasses -= it
                 it.dispose(ctx)
             }
         }
@@ -108,7 +108,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     depthMaps?.let { maps ->
                         shadowMaps.forEachIndexed { i, pass ->
                             if (i < maps.size) {
-                                maps[i] = pass.offscreenPass.impl.depthTexture
+                                maps[i] = pass.depthTexture
                             }
                         }
                     }
@@ -116,7 +116,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
             }
-            onPreRender += { ctx ->
+            onUpdate += { ctx ->
                 windAnimationPos += ctx.deltaT * windSpeed
                 uWindSpeed?.value = windAnimationPos
                 uWindStrength?.value = windStrength
@@ -153,7 +153,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     depthMaps?.let { maps ->
                         shadowMaps.forEachIndexed { i, pass ->
                             if (i < maps.size) {
-                                maps[i] = pass.offscreenPass.impl.depthTexture
+                                maps[i] = pass.depthTexture
                             }
                         }
                     }
@@ -161,7 +161,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
             }
-            onPreRender += { ctx ->
+            onUpdate += { ctx ->
                 uWindSpeed?.value = windAnimationPos
                 uWindStrength?.value = windStrength
             }
@@ -181,7 +181,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             setMouseRotation(0f, -10f)
             setMouseTranslation(0f, 2f, 0f)
 
-            onPreRender += { ctx ->
+            onUpdate += { ctx ->
                 if (autoRotate) {
                     verticalRotation += ctx.deltaT * 3f
                 }
@@ -602,7 +602,7 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Nod
                 depthMaps?.let { maps ->
                     shadowMaps.forEachIndexed { i, pass ->
                         if (i < maps.size) {
-                            maps[i] = pass.offscreenPass.impl.depthTexture
+                            maps[i] = pass.depthTexture
                         }
                     }
                 }

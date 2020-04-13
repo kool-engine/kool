@@ -1,65 +1,67 @@
 package de.fabmax.kool.util.pbrMapGen
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.OffscreenPass2d
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.OffscreenRenderPass2D
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.scene.Group
 import de.fabmax.kool.scene.OrthographicCamera
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.scene.scene
 import kotlin.math.PI
 
 
-class BrdfLutPass {
-    val offscreenPass: OffscreenPass2d
-    val brdfLut: Texture
-        get() = offscreenPass.impl.texture
+class BrdfLutPass(private val parentScene: Scene) : OffscreenRenderPass2D(Group(), 512, 512, 1, TexFormat.RG_F16) {
 
     init {
-        offscreenPass = OffscreenPass2d(512, 512, 1, TexFormat.RG_F16).apply {
-            isSingleShot = true
-            scene = scene {
-                camera = OrthographicCamera().apply {
-                    isApplyProjCorrection = false
-                    isKeepAspectRatio = false
-                    left = 0f
-                    right = 1f
-                    top = 1f
-                    bottom = 0f
-                }
-                +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
-                    generate {
-                        rect {
-                            size.set(1f, 1f)
-                            generateTexCoords()
-                        }
-                    }
+        clearColor = null
 
-                    val model = ShaderModel("BRDF LUT").apply {
-                        val ifTexCoords: StageInterfaceNode
-                        vertexStage {
-                            ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
-                            positionOutput = simpleVertexPositionNode().outPosition
-                        }
-                        fragmentStage {
-                            val lutNd = addNode(BrdfLutNode(stage)).apply {
-                                inTexCoords = ifTexCoords.output
-                            }
-                            colorOutput = lutNd.outColor
-                        }
+        // this pass only needs to be rendered once, set isFinished = true to immediately remove it after first render
+        isFinished = true
+
+        (drawNode as Group).apply {
+            camera = OrthographicCamera().apply {
+                isApplyProjCorrection = false
+                isKeepAspectRatio = false
+                left = 0f
+                right = 1f
+                top = 1f
+                bottom = 0f
+            }
+            +mesh(listOf(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+                generate {
+                    rect {
+                        size.set(1f, 1f)
+                        generateTexCoords()
                     }
-                    pipelineLoader = ModeledShader.VertexColor(model)
                 }
+
+                val model = ShaderModel("BRDF LUT").apply {
+                    val ifTexCoords: StageInterfaceNode
+                    vertexStage {
+                        ifTexCoords = stageInterfaceNode("ifTexCoords", attrTexCoords().output)
+                        positionOutput = simpleVertexPositionNode().outPosition
+                    }
+                    fragmentStage {
+                        val lutNd = addNode(BrdfLutNode(stage)).apply {
+                            inTexCoords = ifTexCoords.output
+                        }
+                        colorOutput = lutNd.outColor
+                    }
+                }
+                pipelineLoader = ModeledShader(model)
             }
         }
+
+        parentScene.offscreenPasses += this
     }
 
-    fun dispose(ctx: KoolContext) {
-        offscreenPass.dispose(ctx)
+    override fun dispose(ctx: KoolContext) {
+        drawNode.dispose(ctx)
+        super.dispose(ctx)
     }
 
     private class BrdfLutNode(graph: ShaderGraph) : ShaderNode("brdfLut", graph) {
@@ -168,7 +170,6 @@ class BrdfLutPass {
             generator.appendMain("""
                 vec2 integratedBRDF = IntegrateBRDF(${inTexCoords.ref2f()}.x, ${inTexCoords.ref2f()}.y);
                 ${outColor.declare()} = vec4(integratedBRDF, 0.0, 1.0);
-                //${outColor.declare()} = vec4(1.0, 0.0, 0.0, 1.0);
             """)
         }
     }

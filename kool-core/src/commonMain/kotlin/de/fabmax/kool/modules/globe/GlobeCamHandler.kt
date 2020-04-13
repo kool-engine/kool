@@ -15,7 +15,7 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : OrbitI
     private val globePan = GlobePan()
 
     init {
-        globe.onPreRender += { onPreRender(it) }
+        globe.onUpdate += { onPreRender(it) }
 
         // panning is handled by the globe itself (by rotating it's parent transform group around the globe center)
         // therefore we configure the camera transform to center-zoom and no panning
@@ -36,7 +36,7 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : OrbitI
 
         +scene.camera
         updateTransform()
-        scene.camera.updateCamera(ctx)
+        scene.camera.updateCamera(ctx, ctx.viewport)
 
         scene.registerDragHandler(this)
     }
@@ -44,7 +44,7 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : OrbitI
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
         super.handleDrag(dragPtrs, scene, ctx)
 
-        if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(scene.viewport, ctx)) {
+        if (dragPtrs.size == 1 && dragPtrs[0].isInViewport(scene.mainRenderPass.viewport, ctx)) {
             val ptr = dragPtrs[0]
             val startPan = ptr.isLeftButtonEvent && ptr.isLeftButtonDown
             val startRotate = ptr.isRightButtonEvent && ptr.isRightButtonDown
@@ -132,7 +132,7 @@ class GlobeCamHandler(val globe: Globe, scene: Scene, ctx: KoolContext) : OrbitI
          * result vec: x = longitude in degrees, y = latitude in degrees
          */
         private fun screen2LatLon(screenX: Float, screenY: Float, result: MutableVec2d, ctx: KoolContext): Boolean {
-            val viewport = scene?.viewport ?: return false
+            val viewport = scene?.mainRenderPass?.viewport ?: return false
             if (cam.computePickRay(pickRay, screenX, screenY, viewport, ctx)) {
                 // compute origin and direction of pick ray in globe coordinates
                 pickRay.origin.toMutableVec3d(tmpRayO)

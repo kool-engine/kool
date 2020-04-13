@@ -69,7 +69,7 @@ class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : Transform
         rotate(longitudeDeg, 0.0, -1.0, 0.0)
     }
 
-    override fun preRender(ctx: KoolContext) {
+    override fun update(ctx: KoolContext) {
         // make sure default tile texture is loaded before other tiles block the texture loading queue
         //TileMesh.prepareDefaultTex(ctx)
 
@@ -128,7 +128,7 @@ class Globe(val radius: Double = EARTH_RADIUS, name: String? = null) : Transform
             removeTiles.clear()
         }
 
-        super.preRender(ctx)
+        super.update(ctx)
     }
 
     fun addTile(mesh: TileMesh) {

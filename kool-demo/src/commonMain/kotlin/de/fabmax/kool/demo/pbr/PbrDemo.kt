@@ -69,32 +69,29 @@ class PbrDemo(val ctx: KoolContext) {
     }
 
     private fun setupScene() = scene {
+        mainRenderPass.clearColor = null
         lightCycler.current.setup(this)
 
         +orbitInputTransform {
             +camera
             // let the camera slowly rotate around vertical axis
-            onPreRender += { ctx -> verticalRotation += ctx.deltaT * 2f }
+            onUpdate += { ctx -> verticalRotation += ctx.deltaT * 2f }
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
             zoom = 20.0
         }
 
         loadHdri(hdriCycler.index) { tex ->
-            val irrMapPass = IrradianceMapPass(tex)
-            val reflMapPass = ReflectionMapPass(tex)
-            val brdfLutPass = BrdfLutPass()
+            val irrMapPass = IrradianceMapPass(this, tex)
+            val reflMapPass = ReflectionMapPass(this, tex)
+            val brdfLutPass = BrdfLutPass(this)
             irradianceMapPass = irrMapPass
             reflectionMapPass = reflMapPass
             brdfLut = brdfLutPass
 
-            ctx.offscreenPasses += irrMapPass.offscreenPass
-            ctx.offscreenPasses += reflMapPass.offscreenPass
-            ctx.offscreenPasses += brdfLutPass.offscreenPass
-
-            this += Skybox(reflMapPass.reflectionMap, 1.25f)
+            this += Skybox(reflMapPass.colorTextureCube, 1.25f)
 
             pbrContentCycler.forEach {
-                +it.createContent(this, irrMapPass.irradianceMap, reflMapPass.reflectionMap, brdfLutPass.brdfLut, ctx)
+                +it.createContent(this, irrMapPass.colorTextureCube, reflMapPass.colorTextureCube, brdfLutPass.colorTexture, ctx)
             }
             pbrContentCycler.current.show()
         }
@@ -265,11 +262,11 @@ class PbrDemo(val ctx: KoolContext) {
         loadHdri(idx) { tex ->
             irradianceMapPass?.let {
                 it.hdriTexture = tex
-                it.update(ctx)
+                it.update()
             }
             reflectionMapPass?.let {
                 it.hdriTexture = tex
-                it.update(ctx)
+                it.update()
             }
         }
     }

@@ -1,53 +1,58 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.OffscreenPass2d
 import de.fabmax.kool.math.Vec4f
+import de.fabmax.kool.pipeline.OffscreenRenderPass2D
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Light
+import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.scene.Scene
 
-class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 1024) {
+class ShadowMapPass(scene: Scene, val light: Light, mapSize: Int = 1024) : OffscreenRenderPass2D(scene, mapSize, mapSize) {
 
-    val offscreenPass = OffscreenPass2d(mapSize, mapSize)
-    val shadowCam = PerspectiveCamera().apply {
-        clipNear = 1f
-        clipFar = 100f
-        isApplyProjCorrection = false
-    }
-
-    private var tempCam: Camera = shadowCam
     private val shadowPipelines = mutableMapOf<Long, Pipeline>()
 
     init {
-        offscreenPass.drawQueues[0].meshFilter = { it.isCastingShadow }
-        offscreenPass.scene = scene
-        offscreenPass.isMainPass = false
+        type = Type.SHADOW
+        isUpdateDrawNode = false
 
-        offscreenPass.beforeRender += { ctx ->
-            tempCam = scene.camera
+        val shadowCam = PerspectiveCamera().apply {
+            clipNear = 1f
+            clipFar = 100f
+            isApplyProjCorrection = false
+        }
+        camera = shadowCam
 
-            shadowCam.position.set(light.position)
-            shadowCam.lookAt.set(light.position).add(light.direction)
-            shadowCam.fovY = light.spotAngle
-            scene.camera = shadowCam
-
-            shadowCam.updateCamera(ctx)
+        onBeforeCollectDrawCommands += { ctx ->
+            // setup shadow camera
+            shadowCam.apply {
+                position.set(light.position)
+                lookAt.set(light.position).add(light.direction)
+                fovY = light.spotAngle
+            }
+            shadowCam.updateCamera(ctx, viewport)
             ctx.depthBiasMatrix.mul(ctx.mvpState.mvpMatrix, light.lightMvpMat)
         }
-        offscreenPass.afterRender += { ctx ->
-            scene.camera = tempCam
-            if (light.type != Light.Type.SPOT) {
-                // todo: support non spot lights...
-                offscreenPass.drawQueues[0].clear()
-                light.lightMvpMat.setIdentity()
 
-            } else {
-                offscreenPass.drawQueues[0].commands.forEach {
-                    it.pipeline = getShadowPipeline(it.mesh, ctx)
-                }
+        onAfterCollectDrawCommands += { ctx ->
+            // replace regular object shaders by cheaper shadow versions
+            drawQueue.commands.forEach {
+                it.pipeline = getShadowPipeline(it.mesh, ctx)
             }
+        }
+    }
+
+    override fun collectDrawCommands(ctx: KoolContext) {
+        if (light.type == Light.Type.SPOT) {
+            super.collectDrawCommands(ctx)
+
+        } else {
+            // todo: support non spot lights...
+            drawQueue.clear()
+            light.lightMvpMat.setIdentity()
         }
     }
 
@@ -60,9 +65,5 @@ class ShadowMapPass(val scene: Scene, val light: Light, mapSize: Int = 1024) {
             })
             shadowShader.createPipeline(actualMesh, Pipeline.Builder(), ctx)
         }
-    }
-
-    fun dispose(ctx: KoolContext) {
-        offscreenPass.dispose(ctx)
     }
 }

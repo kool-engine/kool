@@ -2,10 +2,10 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.drawqueue.DrawQueue
-import de.fabmax.kool.lock
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.pipeline.ScreenRenderPass
 import de.fabmax.kool.util.Disposable
 
 /**
@@ -16,7 +16,13 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
 }
 
-open class Scene(name: String? = null) : Group(name) {
+class Scene(name: String? = null) : Group(name) {
+
+    val mainRenderPass = ScreenRenderPass(this)
+    val offscreenPasses = mutableListOf<OffscreenRenderPass>()
+
+    val lighting = Lighting(this)
+    var camera: Camera = PerspectiveCamera()
 
     val onRenderScene: MutableList<Scene.(KoolContext) -> Unit> = mutableListOf()
 
@@ -24,17 +30,6 @@ open class Scene(name: String? = null) : Group(name) {
         // frustum check is force disabled for Scenes
         get() = false
         set(_) {}
-
-    var clearMask: Int = 0
-//        get() = drawQueue.sceneSetup.clearMask
-//        set(value) { drawQueue.sceneSetup.clearMask = value }
-
-    var camera: Camera = PerspectiveCamera()
-    var lighting = Lighting(this)
-    var viewport = KoolContext.Viewport(0, 0, 0, 0)
-        protected set
-
-    var drawQueue: DrawQueue? = null
 
     var isPickingEnabled = true
     private val rayTest = RayTest()
@@ -53,41 +48,39 @@ open class Scene(name: String? = null) : Group(name) {
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)
         }
-        viewport = ctx.viewport
 
-        camera.updateCamera(ctx)
-        preRender(ctx)
+        update(ctx)
 
-        render(ctx)
-
-        postRender(ctx)
+        for (i in offscreenPasses.indices.reversed()) {
+            offscreenPasses[i].update(ctx)
+            offscreenPasses[i].collectDrawCommands(ctx)
+        }
+        mainRenderPass.collectDrawCommands(ctx)
     }
 
     fun processInput(ctx: KoolContext) {
         handleInput(ctx)
     }
 
-    override fun preRender(ctx: KoolContext) {
-        lock(disposables) {
-            for (i in disposables.indices) {
-                disposables[i].dispose(ctx)
-            }
-            disposables.clear()
+    override fun update(ctx: KoolContext) {
+        for (i in disposables.indices) {
+            disposables[i].dispose(ctx)
         }
-        super.preRender(ctx)
+        disposables.clear()
+        super.update(ctx)
     }
 
     fun dispose(disposable: Disposable) {
-        lock(disposables) {
-            disposables += disposable
-        }
+        disposables += disposable
     }
 
     override fun dispose(ctx: KoolContext) {
-        lock(disposables) {
-            disposables.forEach { it.dispose(ctx) }
-            disposables.clear()
-        }
+        disposables.forEach { it.dispose(ctx) }
+        disposables.clear()
+
+        mainRenderPass.dispose(ctx)
+        offscreenPasses.forEach { it.dispose(ctx) }
+
         super.dispose(ctx)
     }
 
@@ -102,7 +95,7 @@ open class Scene(name: String? = null) : Group(name) {
     }
 
     fun computeRay(pointer: InputManager.Pointer, ctx: KoolContext, result: Ray): Boolean {
-        return camera.computePickRay(result, pointer, viewport, ctx)
+        return camera.computePickRay(result, pointer, mainRenderPass.viewport, ctx)
     }
 
     private fun handleInput(ctx: KoolContext) {
@@ -114,7 +107,7 @@ open class Scene(name: String? = null) : Group(name) {
             return
         }
 
-        if (ptr.isInViewport(viewport, ctx) && camera.initRayTes(rayTest, ptr, viewport, ctx)) {
+        if (ptr.isInViewport(mainRenderPass.viewport, ctx) && camera.initRayTes(rayTest, ptr, mainRenderPass.viewport, ctx)) {
             rayTest(rayTest)
             if (rayTest.isHit) {
                 hovered = rayTest.hitNode
@@ -147,7 +140,7 @@ open class Scene(name: String? = null) : Group(name) {
         dragPtrs.clear()
         for (i in ctx.inputMgr.pointerState.pointers.indices) {
             val ptr = ctx.inputMgr.pointerState.pointers[i]
-            if (ptr.isValid && ptr.isInViewport(viewport, ctx) &&
+            if (ptr.isValid && ptr.isInViewport(mainRenderPass.viewport, ctx) &&
                     (ptr.buttonMask != 0 || ptr.buttonEventMask != 0 || ptr.deltaScroll != 0f)) {
                 dragPtrs.add(ptr)
             }

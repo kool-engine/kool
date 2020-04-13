@@ -5,6 +5,7 @@ import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.PipelineFactory
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.*
 
 
@@ -87,8 +88,8 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
         pipeline = null
     }
 
-    override fun render(ctx: KoolContext) {
-        super.render(ctx)
+    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
+        super.collectDrawCommands(renderPass, ctx)
 
         if (!isRendered) {
             // mesh is not visible (either hidden or outside frustum)
@@ -103,6 +104,6 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             }
             rayTest.onMeshDataChanged(this)
         }
-        scene?.drawQueue?.addMesh(this, ctx)
+        renderPass.drawQueue.addMesh(this, ctx)
     }
 }

@@ -93,7 +93,7 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
 
-        onPreRender += { ctx ->
+        onUpdate += { ctx ->
             doCamTransform(ctx)
         }
     }
@@ -233,7 +233,7 @@ open class OrbitInputTransform(name: String? = null) : TransformGroup(name), Sce
     }
 
     override fun handleDrag(dragPtrs: List<InputManager.Pointer>, scene: Scene, ctx: KoolContext) {
-        if (dragPtrs.isNotEmpty() && !dragPtrs[0].isConsumed() && dragPtrs[0].isInViewport(scene.viewport, ctx)) {
+        if (dragPtrs.isNotEmpty() && !dragPtrs[0].isConsumed() && dragPtrs[0].isInViewport(scene.mainRenderPass.viewport, ctx)) {
             if (dragPtrs[0].buttonEventMask != 0 || dragPtrs[0].buttonMask != prevButtonMask) {
                 dragMethod = when {
                     dragPtrs[0].isLeftButtonDown -> leftDragMethod
@@ -285,7 +285,7 @@ class CameraOrthogonalPan : PanBase() {
     override fun computePanPoint(result: MutableVec3f, scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
         panPlane.p.set(scene.camera.globalLookAt)
         panPlane.n.set(scene.camera.globalLookDir)
-        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, scene.viewport, ctx) &&
+        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, scene.mainRenderPass.viewport, ctx) &&
                 panPlane.intersectionPoint(result, pointerRay)
     }
 }
@@ -300,7 +300,7 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
 
     override fun computePanPoint(result: MutableVec3f, scene: Scene, ptrPos: Vec2f, ctx: KoolContext): Boolean {
         panPlane.p.set(scene.camera.globalLookAt)
-        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, scene.viewport, ctx) &&
+        return scene.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, scene.mainRenderPass.viewport, ctx) &&
                 panPlane.intersectionPoint(result, pointerRay)
     }
 }

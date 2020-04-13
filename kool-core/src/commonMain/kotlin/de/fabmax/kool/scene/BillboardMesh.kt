@@ -103,7 +103,7 @@ open class BillboardMesh(name: String? = null) : Mesh(IndexedVertexList(Attribut
         }
     }
 
-    override fun preRender(ctx: KoolContext) {
+    override fun update(ctx: KoolContext) {
 //        if (isWithGeometryShader && !ctx.glCapabilities.geometryShader) {
 //            isWithGeometryShader = false
 //            logW { "Falling back to non-geometry-shader billboard mesh" }
@@ -113,7 +113,7 @@ open class BillboardMesh(name: String? = null) : Mesh(IndexedVertexList(Attribut
         if (drawOrder != DrawOrder.AS_IS) {
             sortElems()
         }
-        super.preRender(ctx)
+        super.update(ctx)
     }
 
     /**

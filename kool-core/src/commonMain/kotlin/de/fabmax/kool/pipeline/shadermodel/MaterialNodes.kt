@@ -26,7 +26,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
     var inCamPos: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
 
     var inSpotInnerAngle = ShaderNodeIoVar(ModelVar1fConst(0.8f))
-    var inAmbient = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.3f)))
+    var inAmbient = ShaderNodeIoVar(ModelVar3fConst(Vec3f(0.22f)))
     var inShininess = ShaderNodeIoVar(ModelVar1fConst(20f))
     var inSpecularIntensity = ShaderNodeIoVar(ModelVar1fConst(1f))
 

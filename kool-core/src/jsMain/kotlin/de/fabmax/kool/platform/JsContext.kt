@@ -1,6 +1,12 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.*
+import de.fabmax.kool.InputManager
+import de.fabmax.kool.JsImpl
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolException
+import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.pipeline.OffscreenRenderPass2D
+import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.shadermodel.ShaderGenerator
 import de.fabmax.kool.platform.webgl.QueueRendererWebGl
 import de.fabmax.kool.platform.webgl.ShaderGeneratorImplWebGl
@@ -233,14 +239,35 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
         engineStats.resetPerFrameCounts()
 
-        for (i in 0 until offscreenPasses.size) {
-            drawOffscreen(offscreenPasses[i])
-        }
+        for (i in scenes.indices) {
+            val scene = scenes[i]
 
-        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
-        gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a)
-        gl.clear(WebGLRenderingContext.DEPTH_BUFFER_BIT or WebGLRenderingContext.COLOR_BUFFER_BIT)
-        queueRenderer.renderQueue(drawQueue)
+            var removeFlag = false
+            for (j in 0 until scene.offscreenPasses.size) {
+                drawOffscreen(scene.offscreenPasses[j])
+                removeFlag = removeFlag || scene.offscreenPasses[j].isFinished
+            }
+            if (removeFlag) {
+                scene.offscreenPasses.removeAll { it.isFinished }
+            }
+
+            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
+            scene.mainRenderPass.apply {
+                var clearMask = 0
+                clearColor?.let {
+                    clearMask = WebGLRenderingContext.COLOR_BUFFER_BIT
+                    gl.clearColor(it.r, it.g, it.b, it.a)
+                }
+                if (clearDepth) {
+                    clearMask = clearMask or WebGLRenderingContext.DEPTH_BUFFER_BIT
+                }
+                if (clearMask != 0) {
+                    gl.clear(clearMask)
+                }
+
+                queueRenderer.renderQueue(drawQueue)
+            }
+        }
 
         if (afterRenderActions.isNotEmpty()) {
             afterRenderActions.forEach { it() }
@@ -248,10 +275,10 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         }
     }
 
-    private fun drawOffscreen(offscreenPass: OffscreenPass) {
+    private fun drawOffscreen(offscreenPass: OffscreenRenderPass) {
         when (offscreenPass) {
-            is OffscreenPass2d -> offscreenPass.impl.draw(this)
-            is OffscreenPassCube -> offscreenPass.impl.draw(this)
+            is OffscreenRenderPass2D -> offscreenPass.impl.draw(this)
+            is OffscreenRenderPassCube -> offscreenPass.impl.draw(this)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
         }
     }

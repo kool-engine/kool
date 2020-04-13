@@ -44,17 +44,17 @@ open class UiContainer(name: String, root: UiRoot) : UiComponent(name, root) {
         }
     }
 
-    override fun update(ctx: KoolContext) {
+    override fun updateComponent(ctx: KoolContext) {
         if (isScrollDirty) {
             isScrollDirty = false
             scrollHandler?.requestUiUpdate()
             updateTransform()
         }
 
-        super.update(ctx)
+        super.updateComponent(ctx)
 
         for (i in childComponents.indices) {
-            childComponents[i].update(ctx)
+            childComponents[i].updateComponent(ctx)
         }
     }
 

@@ -1,79 +1,85 @@
 package de.fabmax.kool.util.pbrMapGen
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.OffscreenPassCube
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
+import de.fabmax.kool.scene.Group
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.mesh
-import de.fabmax.kool.scene.scene
 import kotlin.math.PI
 
-class ReflectionMapPass(hdriTexture: Texture) {
-    val offscreenPass: OffscreenPassCube
-    val reflectionMap: CubeMapTexture
-        get() = offscreenPass.impl.texture
+class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : OffscreenRenderPassCube(Group(), 256, 256, 7, TexFormat.RGBA_F16) {
     var hdriTexture = hdriTexture
         set(value) {
             reflMapShader?.textureSampler?.texture = value
             field = value
         }
 
+    private var mipIdx = 0
+
     private val uRoughness = Uniform1f(0.5f, "uRoughness")
     private var reflMapShader: ModeledShader.TextureColor? = null
 
     init {
-        offscreenPass = OffscreenPassCube(256, 256, 7, TexFormat.RGBA_F16).apply {
-            onSetup = { ctx ->
-                if (frameIdx >= mipLevels) {
-                    ctx.offscreenPasses -= this
-                } else {
-                    uRoughness.value = frameIdx.toFloat() / (mipLevels - 1)
-                    targetMipLevel = frameIdx
-                }
-            }
+        clearColor = null
 
-            scene = scene {
-                +mesh(listOf(Attribute.POSITIONS)) {
-                    generate {
-                        cube { centered() }
-                    }
-
-                    val texName = "colorTex"
-                    val model = ShaderModel("Reflectance Convolution Sampler").apply {
-                        val ifLocalPos: StageInterfaceNode
-                        vertexStage {
-                            ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
-                            positionOutput = simpleVertexPositionNode().outPosition
-                        }
-                        fragmentStage {
-                            val roughness = pushConstantNode1f(uRoughness)
-                            val tex = textureNode(texName)
-                            val convNd = addNode(ConvoluteReflectionNode(tex, stage)).apply {
-                                inLocalPos = ifLocalPos.output
-                                inRoughness = roughness.output
-                            }
-                            colorOutput = convNd.outColor
-                        }
-                    }
-                    reflMapShader = ModeledShader.TextureColor(texName, model).apply {
-                        onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
-                        onCreated += { textureSampler.texture = hdriTexture }
-                    }
-                    pipelineLoader = reflMapShader
+        (drawNode as Group).apply {
+            +mesh(listOf(Attribute.POSITIONS)) {
+                isFrustumChecked = false
+                generate {
+                    cube { centered() }
                 }
+
+                val texName = "colorTex"
+                val model = ShaderModel("Reflectance Convolution Sampler").apply {
+                    val ifLocalPos: StageInterfaceNode
+                    vertexStage {
+                        ifLocalPos = stageInterfaceNode("ifLocalPos", attrPositions().output)
+                        positionOutput = simpleVertexPositionNode().outPosition
+                    }
+                    fragmentStage {
+                        val roughness = pushConstantNode1f(uRoughness)
+                        val tex = textureNode(texName)
+                        val convNd = addNode(ConvoluteReflectionNode(tex, stage)).apply {
+                            inLocalPos = ifLocalPos.output
+                            inRoughness = roughness.output
+                        }
+                        colorOutput = convNd.outColor
+                    }
+                }
+                reflMapShader = ModeledShader.TextureColor(texName, model).apply {
+                    onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
+                    onCreated += { textureSampler.texture = hdriTexture }
+                }
+                pipelineLoader = reflMapShader
             }
+        }
+
+        update()
+    }
+
+    override fun collectDrawCommands(ctx: KoolContext) {
+        uRoughness.value = mipIdx.toFloat() / (mipLevels - 1)
+        targetMipLevel = mipIdx
+        if (++mipIdx >= mipLevels) {
+            isFinished = true
+        }
+        super.collectDrawCommands(ctx)
+    }
+
+    fun update() {
+        mipIdx = 0
+        isFinished = false
+        if (this !in parentScene.offscreenPasses) {
+            parentScene.offscreenPasses += this
         }
     }
 
-    fun update(ctx: KoolContext) {
-        offscreenPass.frameIdx = 0
-        ctx.offscreenPasses += offscreenPass
-    }
-
-    fun dispose(ctx: KoolContext) {
-        offscreenPass.dispose(ctx)
+    override fun dispose(ctx: KoolContext) {
+        drawNode.dispose(ctx)
+        super.dispose(ctx)
     }
 
     private class ConvoluteReflectionNode(val texture: TextureNode, graph: ShaderGraph) : ShaderNode("convIrradiance", graph) {

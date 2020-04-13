@@ -35,8 +35,6 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
                 }
                 val ldr = hdrToLdrNode(sampler.outColor)
                 colorOutput = ldr.outColor
-
-                //colorOutput = addNode(HdrTestNode(sampler.outColor, fragmentStage)).outColor
             }
         }
         pipelineLoader = ModeledShader.CubeMapColor(texName, model).apply {
@@ -47,22 +45,6 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
             onCreated += {
                 cubeMapSampler.texture = environmentMap
             }
-        }
-    }
-
-    private class HdrTestNode(val inColor: ShaderNodeIoVar, graph: ShaderGraph) : ShaderNode("hdrTest", graph) {
-        val outColor = ShaderNodeIoVar(ModelVar4f("hdrTest_out"), this)
-
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            dependsOn(inColor)
-        }
-
-        override fun generateCode(generator: CodeGenerator) {
-            generator.appendMain("""
-                vec3 testRgb = vec3(log(length(${inColor.ref3f()})) / log(10.0) / 6.0);
-                ${outColor.declare()} = vec4(testRgb, 1.0);
-                """.trimIndent())
         }
     }
 

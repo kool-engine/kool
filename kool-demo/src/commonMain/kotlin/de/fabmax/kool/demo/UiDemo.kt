@@ -13,7 +13,7 @@ fun uiDemoScene(): Scene = scene("UI Demo") {
     +orbitInputTransform { +camera }
 
     +transformGroup {
-        onPreRender += { ctx ->
+        onUpdate += { ctx ->
             setIdentity()
             translate(0f, 0f, -7f)
             rotate((ctx.time * 60).toFloat(), Vec3f.X_AXIS)

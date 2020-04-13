@@ -2,6 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.BoundingBox
 
 /**
@@ -40,7 +41,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
         isIdentity = false
     }
 
-    override fun preRender(ctx: KoolContext) {
+    override fun update(ctx: KoolContext) {
         // apply transformation
         val wasIdentity = isIdentity
         if (!wasIdentity) {
@@ -50,7 +51,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
         }
 
         // compute global position and size based on group bounds and current model transform
-        super.preRender(ctx)
+        super.update(ctx)
 
         // Something to think about: In case transform changes during preRender (e.g. because a onPreRender listener
         // is animating this transform group) the computed bounds will not match the actual bounds during
@@ -79,7 +80,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
         }
     }
 
-    override fun render(ctx: KoolContext) {
+    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
         if (isVisible) {
             // apply transformation
             val wasIdentity = isIdentity
@@ -90,7 +91,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
             }
 
             // draw all child nodes
-            super.render(ctx)
+            super.collectDrawCommands(renderPass, ctx)
 
             // clear transformation
             if (!wasIdentity) {
@@ -98,38 +99,6 @@ open class TransformGroup(name: String? = null) : Group(name) {
                 ctx.mvpState.update(ctx)
             }
         }
-    }
-
-    override fun toGlobalCoords(vec: MutableVec3f, w: Float): MutableVec3f {
-        if (!isIdentity) {
-            transform.transform(vec, w)
-        }
-        return super.toGlobalCoords(vec, w)
-    }
-
-    override fun toGlobalCoords(vec: MutableVec3d, w: Double): MutableVec3d {
-        if (!isIdentity) {
-            transform.transform(vec, w)
-        }
-        return super.toGlobalCoords(vec, w)
-    }
-
-    override fun toLocalCoords(vec: MutableVec3f, w: Float): MutableVec3f {
-        super.toLocalCoords(vec, w)
-        if (!isIdentity) {
-            checkInverse()
-            invTransform.transform(vec, w)
-        }
-        return vec
-    }
-
-    override fun toLocalCoords(vec: MutableVec3d, w: Double): MutableVec3d {
-        super.toLocalCoords(vec, w)
-        if (!isIdentity) {
-            checkInverse()
-            invTransform.transform(vec, w)
-        }
-        return vec
     }
 
     override fun rayTest(test: RayTest) {

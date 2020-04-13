@@ -4,6 +4,7 @@ import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TransformGroup
 import de.fabmax.kool.util.BoundingBox
@@ -122,8 +123,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         requestUiUpdate()
     }
 
-    open fun update(ctx: KoolContext) {
-
+    open fun updateComponent(ctx: KoolContext) {
         if (isThemeUpdate) {
             isThemeUpdate = false
             updateTheme(ctx)
@@ -172,10 +172,10 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         return root.theme.componentUi(this)
     }
 
-    override fun render(ctx: KoolContext) {
+    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
         if (isVisible && alpha > 0f && !bounds.isEmpty) {
             ui.prop.onRender(ctx)
-            super.render(ctx)
+            super.collectDrawCommands(renderPass, ctx)
         }
     }
 

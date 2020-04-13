@@ -1,8 +1,8 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.RenderPass
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.BoundingBox
 
 /**
@@ -29,40 +29,33 @@ open class Group(name: String? = null) : Node(name) {
         }
     }
 
-    override fun preRender(ctx: KoolContext) {
+    override fun update(ctx: KoolContext) {
         // call preRender on all children and update group bounding box
         childrenBounds.clear()
         for (i in intChildren.indices) {
-            intChildren[i].preRender(ctx)
+            intChildren[i].update(ctx)
             childrenBounds.add(intChildren[i].bounds)
         }
         setLocalBounds()
 
         // compute global position and size based on group bounds and current model transform
-        super.preRender(ctx)
+        super.update(ctx)
     }
 
     protected open fun setLocalBounds() {
         bounds.set(childrenBounds)
     }
 
-    override fun render(ctx: KoolContext) {
-        super.render(ctx)
+    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
+        super.collectDrawCommands(renderPass, ctx)
 
         if (isRendered) {
             for (i in intChildren.indices) {
-                if (ctx.renderPass != RenderPass.SHADOW || intChildren[i].isCastingShadow) {
-                    intChildren[i].render(ctx)
+                if (renderPass.type != RenderPass.Type.SHADOW || intChildren[i].isCastingShadow) {
+                    intChildren[i].collectDrawCommands(renderPass, ctx)
                 }
             }
         }
-    }
-
-    override fun postRender(ctx: KoolContext) {
-        for (i in intChildren.indices) {
-            intChildren[i].postRender(ctx)
-        }
-        super.postRender(ctx)
     }
 
     override fun dispose(ctx: KoolContext) {

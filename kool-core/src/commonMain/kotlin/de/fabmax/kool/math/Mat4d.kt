@@ -176,7 +176,6 @@ open class Mat4d {
         // calculate determinant
         val det = src0 * dst0 + src1 * dst1 + src2 * dst2 + src3 * dst3
 
-        //if (det == 0.0) {
         if (det.isFuzzyZero(eps)) {
             return false
         }

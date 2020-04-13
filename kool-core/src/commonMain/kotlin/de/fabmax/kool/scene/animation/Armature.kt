@@ -6,6 +6,7 @@ import de.fabmax.kool.math.Mat4fStack
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GlslType
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.IndexedVertexList
@@ -143,19 +144,19 @@ open class Armature(geometry: IndexedVertexList, name: String? = null) :
         animationList.remove(animations.remove(name))
     }
 
-    override fun preRender(ctx: KoolContext) {
+    override fun update(ctx: KoolContext) {
         if (ctx.deltaT > 0) {
             applyAnimation(ctx)
         }
-        super.preRender(ctx)
+        super.update(ctx)
     }
 
-    override fun render(ctx: KoolContext) {
+    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
 //        val shader = this.shader
 //        if (shader is BasicShader) {
 //            shader.bones = boneTransforms
 //        }
-        super.render(ctx)
+        super.collectDrawCommands(renderPass, ctx)
     }
 
     private fun applyAnimation(ctx: KoolContext) {

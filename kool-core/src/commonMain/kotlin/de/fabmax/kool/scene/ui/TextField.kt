@@ -16,7 +16,7 @@ class TextField(name: String, root: UiRoot) : Label(name, root) {
     val editText = EditableText()
 
     init {
-        onPreRender += { ctx ->
+        onUpdate += { ctx ->
             if (!ctx.inputMgr.keyEvents.isEmpty()) {
                 for (e in ctx.inputMgr.keyEvents) {
                     if (e.isCharTyped) {

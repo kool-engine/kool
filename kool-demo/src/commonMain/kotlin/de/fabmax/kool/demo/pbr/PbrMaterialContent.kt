@@ -23,14 +23,14 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
     private var iblContent: Group? = null
     private var nonIblContent: Group? = null
 
-    fun nextMaterial(): MaterialMaps {
+    private fun nextMaterial(): MaterialMaps {
         currentMat.disposeMaps()
         matCycler.next()
         updatePbrMaterial()
         return currentMat
     }
 
-    fun prevMaterial(): MaterialMaps {
+    private fun prevMaterial(): MaterialMaps {
         currentMat.disposeMaps()
         matCycler.prev()
         updatePbrMaterial()
@@ -117,7 +117,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
             iblContent = ibl
             nonIblContent = nonIbl
 
-            onPreRender += { ctx ->
+            onUpdate += { ctx ->
                 rotate(-2f * ctx.deltaT, Vec3f.Y_AXIS)
             }
         }
