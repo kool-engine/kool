@@ -76,8 +76,8 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                     font.setCustom(UiTheme.DARK_SIMPLE.standardFont(dpi, ctx))
                     textColor.setCustom(root.theme.accentColor)
 
-                    onUpdate += { c ->
-                        text = "${c.fps.toString(1)} fps"
+                    onUpdate += { _, ctx ->
+                        text = "${ctx.fps.toString(1)} fps"
                     }
                 }
 
@@ -89,7 +89,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                         padding = Margin(zero(), zero(), dps(4f, true), dps(4f, true))
                         textAlignment = Gravity(Alignment.END, Alignment.CENTER)
                         text = ""
-                        onUpdate += {
+                        onUpdate += { _, _ ->
                             text = ctx.getSysInfos()[i]
                         }
                     }
@@ -104,11 +104,11 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
 
                     var lastWndW = -1
                     var lastWndH = -1
-                    onUpdate += { c ->
-                        if (c.windowWidth != lastWndW || c.windowHeight != lastWndH) {
-                            lastWndW = c.windowWidth
-                            lastWndH = c.windowHeight
-                            text = "Viewport: ${c.windowWidth}x${c.windowHeight}"
+                    onUpdate += { _, ctx ->
+                        if (ctx.windowWidth != lastWndW || ctx.windowHeight != lastWndH) {
+                            lastWndW = ctx.windowWidth
+                            lastWndH = ctx.windowHeight
+                            text = "Viewport: ${ctx.windowWidth}x${ctx.windowHeight}"
                         }
                     }
                 }
@@ -122,21 +122,21 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                     text = "Up: 00:00.00"
 
                     var updateT = 1f
-                    onUpdate += { c ->
-                        updateT -= c.deltaT
+                    onUpdate += { _, ctx ->
+                        updateT -= ctx.deltaT
                         if (updateT < 0) {
                             updateT += 1f
 
                             // still no javascript compatible string formatting in kotlin 1.1... :(
-                            var hh = "" + (c.time / 3600.0).toInt()
+                            var hh = "" + (ctx.time / 3600.0).toInt()
                             if (hh.length == 1) {
                                 hh = "0" + hh
                             }
-                            var mm = "" + (c.time % 3600.0 / 60.0).toInt()
+                            var mm = "" + (ctx.time % 3600.0 / 60.0).toInt()
                             if (mm.length == 1) {
                                 mm = "0" + mm
                             }
-                            var ss = "" + (c.time % 60.0).toInt()
+                            var ss = "" + (ctx.time % 60.0).toInt()
                             if (ss.length == 1) {
                                 ss = "0" + ss
                             }
@@ -154,9 +154,9 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
 
                     var last = -1
                     var lastMem = -1.0
-                    onUpdate += { c ->
-                        val num = c.engineStats.textureAllocations.size
-                        val mem = c.engineStats.totalTextureSize.toDouble()
+                    onUpdate += { _, ctx ->
+                        val num = ctx.engineStats.textureAllocations.size
+                        val mem = ctx.engineStats.totalTextureSize.toDouble()
                         if (num != last || mem != lastMem) {
                             last = num
                             lastMem = mem
@@ -174,9 +174,9 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
 
                     var last = -1
                     var lastMem = -1.0
-                    onUpdate += { c ->
-                        val num = c.engineStats.bufferAllocations.size
-                        val mem = c.engineStats.totalBufferSize.toDouble()
+                    onUpdate += { _, ctx ->
+                        val num = ctx.engineStats.bufferAllocations.size
+                        val mem = ctx.engineStats.totalBufferSize.toDouble()
                         if (num != last || mem != lastMem) {
                             last = num
                             lastMem = mem
@@ -194,9 +194,9 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
 
                     var lastPipelines = -1
                     var lastInstances = -1
-                    onUpdate += { c ->
-                        val numPipelines = c.engineStats.pipelines.size
-                        val numDrawCmds = c.engineStats.numDrawCommands
+                    onUpdate += { _, ctx ->
+                        val numPipelines = ctx.engineStats.pipelines.size
+                        val numDrawCmds = ctx.engineStats.numDrawCommands
                         if (numDrawCmds != lastInstances || numPipelines != lastPipelines) {
                             lastPipelines = numPipelines
                             lastInstances = numDrawCmds
@@ -213,8 +213,8 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                     textAlignment = Gravity(Alignment.END, Alignment.CENTER)
 
                     var lastPrimitives = -1
-                    onUpdate += { c ->
-                        val numPrimitives = c.engineStats.numPrimitives
+                    onUpdate += { _, ctx ->
+                        val numPrimitives = ctx.engineStats.numPrimitives
                         if (numPrimitives != lastPrimitives) {
                             lastPrimitives = numPrimitives
                             text = "$numPrimitives Primitives"

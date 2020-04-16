@@ -75,7 +75,7 @@ class PbrDemo(val ctx: KoolContext) {
         +orbitInputTransform {
             +camera
             // let the camera slowly rotate around vertical axis
-            onUpdate += { ctx -> verticalRotation += ctx.deltaT * 2f }
+            onUpdate += { _, ctx -> verticalRotation += ctx.deltaT * 2f }
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
             zoom = 20.0
         }

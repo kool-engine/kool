@@ -116,7 +116,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
             }
-            onUpdate += { ctx ->
+            onUpdate += { _, ctx ->
                 windAnimationPos += ctx.deltaT * windSpeed
                 uWindSpeed?.value = windAnimationPos
                 uWindStrength?.value = windStrength
@@ -161,7 +161,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
             }
-            onUpdate += { ctx ->
+            onUpdate += { _, ctx ->
                 uWindSpeed?.value = windAnimationPos
                 uWindStrength?.value = windStrength
             }
@@ -181,7 +181,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             setMouseRotation(0f, -10f)
             setMouseTranslation(0f, 2f, 0f)
 
-            onUpdate += { ctx ->
+            onUpdate += { _, ctx ->
                 if (autoRotate) {
                     verticalRotation += ctx.deltaT * 3f
                 }

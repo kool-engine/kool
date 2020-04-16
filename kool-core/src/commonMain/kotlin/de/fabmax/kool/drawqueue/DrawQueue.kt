@@ -1,9 +1,10 @@
 package de.fabmax.kool.drawqueue
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
 
-class DrawQueue {
+class DrawQueue(val renderPass: RenderPass) {
 
     val commands: List<DrawCommand>
         get() = mutCommands
@@ -25,7 +26,7 @@ class DrawQueue {
             val cmd = if (commandPool.isNotEmpty()) {
                 commandPool.removeAt(commandPool.lastIndex)
             } else {
-                DrawCommand()
+                DrawCommand(renderPass)
             }
             cmd.mesh = mesh
             cmd.pipeline = mesh.getPipeline(ctx)

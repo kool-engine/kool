@@ -41,7 +41,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
         isIdentity = false
     }
 
-    override fun update(ctx: KoolContext) {
+    override fun update(renderPass: RenderPass, ctx: KoolContext) {
         // apply transformation
         val wasIdentity = isIdentity
         if (!wasIdentity) {
@@ -51,7 +51,7 @@ open class TransformGroup(name: String? = null) : Group(name) {
         }
 
         // compute global position and size based on group bounds and current model transform
-        super.update(ctx)
+        super.update(renderPass, ctx)
 
         // Something to think about: In case transform changes during preRender (e.g. because a onPreRender listener
         // is animating this transform group) the computed bounds will not match the actual bounds during

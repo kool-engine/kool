@@ -74,7 +74,7 @@ class SimplificationDemo(ctx: KoolContext) {
             +dispModel
             +modelWireframe
 
-            onUpdate += {
+            onUpdate += { _, _ ->
                 if (autoRotate) {
                     rotate(ctx.deltaT * 3f, Vec3f.Y_AXIS)
                 }

@@ -117,7 +117,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
             iblContent = ibl
             nonIblContent = nonIbl
 
-            onUpdate += { ctx ->
+            onUpdate += { _, ctx ->
                 rotate(-2f * ctx.deltaT, Vec3f.Y_AXIS)
             }
         }

@@ -8,7 +8,6 @@ import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
 
 class InstancedLodController<T: InstancedLodController.Instance>(name: String? = null) : Node(name) {
 
@@ -33,32 +32,23 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
         lodMesh.parent = this
     }
 
-    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
-        super.onSceneChanged(oldScene, newScene)
-        for (i in lods.indices) {
-            lods[i].mesh.scene = newScene
-        }
-    }
-
-    override fun update(ctx: KoolContext) {
+    override fun update(renderPass: RenderPass, ctx: KoolContext) {
         // clear assigned lods
         for (i in lods.indices) {
             lods[i].instances.clear()
         }
 
         // assign lod to each instance
-        val cam = scene?.camera
-        if (cam != null) {
-            for (i in instances.indices) {
-                val inst = instances[i]
-                inst.preRender(cam, ctx)
+        val cam = renderPass.camera
+        for (i in instances.indices) {
+            val inst = instances[i]
+            inst.preRender(cam, ctx)
 
-                if (inst.isInFrustum) {
-                    for (j in lods.lastIndex downTo 0) {
-                        if (j == 0 || inst.camDistance > lods[j-1].maxDistance) {
-                            lods[j].instances += inst
-                            break
-                        }
+            if (inst.isInFrustum) {
+                for (j in lods.lastIndex downTo 0) {
+                    if (j == 0 || inst.camDistance > lods[j-1].maxDistance) {
+                        lods[j].instances += inst
+                        break
                     }
                 }
             }
@@ -79,7 +69,7 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
             }
 
             lod.updateInstances(i, ctx)
-            lod.mesh.update(ctx)
+            lod.mesh.update(renderPass, ctx)
         }
     }
 

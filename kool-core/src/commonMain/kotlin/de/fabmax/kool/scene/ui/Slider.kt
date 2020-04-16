@@ -68,7 +68,7 @@ class Slider(name: String, min: Float, max: Float, value: Float, root: UiRoot) :
             val ptY = rt.hitPositionLocal.y - componentBounds.min.y
             if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown && isOverKnob(ptX, ptY)) {
                 // register drag handler to handle knob movement
-                scene?.registerDragHandler(this@Slider)
+                root.scene.registerDragHandler(this@Slider)
                 startDrag = true
             }
         }

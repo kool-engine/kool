@@ -144,11 +144,11 @@ open class Armature(geometry: IndexedVertexList, name: String? = null) :
         animationList.remove(animations.remove(name))
     }
 
-    override fun update(ctx: KoolContext) {
+    override fun update(renderPass: RenderPass, ctx: KoolContext) {
         if (ctx.deltaT > 0) {
             applyAnimation(ctx)
         }
-        super.update(ctx)
+        super.update(renderPass, ctx)
     }
 
     override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {

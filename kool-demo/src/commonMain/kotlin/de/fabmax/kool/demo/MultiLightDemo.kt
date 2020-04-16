@@ -22,7 +22,7 @@ fun multiLightDemo(ctx: KoolContext): List<Scene> {
 class MultiLightDemo(ctx: KoolContext) {
     val scenes = mutableListOf<Scene>()
 
-    private val mainScene: Scene
+    private val mainScene = Scene()
     private val lights = listOf(
             LightMesh(Color.MD_CYAN),
             LightMesh(Color.MD_RED),
@@ -47,7 +47,7 @@ class MultiLightDemo(ctx: KoolContext) {
     private var modelShader: ModeledShader? = null
 
     init {
-        mainScene = mainScene(ctx)
+        initMainScene(ctx)
         scenes += mainScene
         scenes += menu(ctx)
 
@@ -65,45 +65,47 @@ class MultiLightDemo(ctx: KoolContext) {
         }
     }
 
-    private fun mainScene(ctx: KoolContext) = scene {
-        +orbitInputTransform {
-            +camera
-            zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
-            zoom = 17.0
-            translation.set(0.0, 2.0, 0.0)
-            setMouseRotation(0f, -20f)
-            // let the camera slowly rotate around vertical axis
-            onUpdate += { ctx ->
-                if (autoRotate) {
-                    verticalRotation += ctx.deltaT * 3f
-                }
-            }
-        }
-
-        lighting.lights.clear()
-        lights.forEach { +it }
-        updateLighting()
-
-        ctx.loadModel("bunny.kmfz", 1f, Vec3f.ZERO) {
-            bunnyMesh = it
-            applyShaders()
-            +it
-        }
-
-        +textureMesh(isNormalMapped = true) {
-            generate {
-                rect {
-                    rotate(-90f, Vec3f.X_AXIS)
-                    size.set(100f, 100f)
-                    origin.set(-size.x / 2, -size.y / 2, 0f)
-                    generateTexCoords(4f)
+    private fun initMainScene(ctx: KoolContext) {
+        mainScene.apply {
+            +orbitInputTransform {
+                +camera
+                zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
+                zoom = 17.0
+                translation.set(0.0, 2.0, 0.0)
+                setMouseRotation(0f, -20f)
+                // let the camera slowly rotate around vertical axis
+                onUpdate += { _, ctx ->
+                    if (autoRotate) {
+                        verticalRotation += ctx.deltaT * 3f
+                    }
                 }
             }
 
-            // ground doesn't need to cast shadows (their's nothing underneath it...)
-            isCastingShadow = false
-            groundMesh = this
-            applyShaders()
+            lighting.lights.clear()
+            lights.forEach { +it }
+            updateLighting()
+
+            ctx.loadModel("bunny.kmfz", 1f, Vec3f.ZERO) {
+                bunnyMesh = it
+                applyShaders()
+                +it
+            }
+
+            +textureMesh(isNormalMapped = true) {
+                generate {
+                    rect {
+                        rotate(-90f, Vec3f.X_AXIS)
+                        size.set(100f, 100f)
+                        origin.set(-size.x / 2, -size.y / 2, 0f)
+                        generateTexCoords(4f)
+                    }
+                }
+
+                // ground doesn't need to cast shadows (their's nothing underneath it...)
+                isCastingShadow = false
+                groundMesh = this
+                applyShaders()
+            }
         }
     }
 
@@ -492,13 +494,13 @@ class MultiLightDemo(ctx: KoolContext) {
     }
 
     private fun updateLighting() {
-        lights.forEach { it.disable() }
+        lights.forEach { it.disable(mainScene.lighting) }
 
         var pos = 0f
         val step = 360f / lightCount
         for (i in 0 until min(lightCount, lights.size)) {
             lights[i].setup(pos)
-            lights[i].enable()
+            lights[i].enable(mainScene.lighting)
             pos += step
         }
 
@@ -544,7 +546,7 @@ class MultiLightDemo(ctx: KoolContext) {
             +lightMesh
             +spotAngleMesh
 
-            onUpdate += { ctx ->
+            onUpdate += { _, ctx ->
                 if (autoRotate) {
                     animPos += ctx.deltaT
                 }
@@ -598,9 +600,9 @@ class MultiLightDemo(ctx: KoolContext) {
             updateSpotAngleMesh()
         }
 
-        fun enable() {
+        fun enable(lighting: Lighting) {
             isEnabled = true
-            scene?.lighting?.lights?.apply {
+            lighting.lights.apply {
                 if (!contains(light)) {
                     add(light)
                 }
@@ -608,9 +610,9 @@ class MultiLightDemo(ctx: KoolContext) {
             updateVisibility()
         }
 
-        fun disable() {
+        fun disable(lighting: Lighting) {
             isEnabled = false
-            scene?.lighting?.lights?.remove(light)
+            lighting.lights.remove(light)
             updateVisibility()
         }
 

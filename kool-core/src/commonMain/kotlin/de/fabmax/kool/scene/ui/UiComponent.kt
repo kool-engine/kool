@@ -85,11 +85,11 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
         }
     }
 
-    override fun onParentChanged(oldParent: Node?, newParent: Node?) {
-        if (newParent is UiComponent) {
-            alpha = newParent.alpha
+    override fun addNode(node: Node, index: Int) {
+        super.addNode(node, index)
+        if (node is UiComponent) {
+            node.alpha = alpha
         }
-        super.onParentChanged(oldParent, newParent)
     }
 
     open fun setupBuilder(builder: MeshBuilder) {
@@ -199,7 +199,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     }
 
     fun computeLocalPickRay(pointer: InputManager.Pointer, ctx: KoolContext, result: Ray): Boolean {
-        val success = scene?.computeRay(pointer, ctx, result) ?: false
+        val success = root.scene.computeRay(pointer, ctx, result) ?: false
         if (success) {
             toLocalCoords(result.origin)
             toLocalCoords(result.direction, 0f).norm()

@@ -14,7 +14,7 @@ import de.fabmax.kool.util.Disposable
  */
 abstract class Node(val name: String? = null) : Disposable {
 
-    val onUpdate: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
+    val onUpdate: MutableList<Node.(RenderPass, KoolContext) -> Unit> = mutableListOf()
     val onCollectDrawCommands: MutableList<Node.(RenderPass, KoolContext) -> Unit> = mutableListOf()
     val onDispose: MutableList<Node.(KoolContext) -> Unit> = mutableListOf()
 
@@ -54,21 +54,6 @@ abstract class Node(val name: String? = null) : Disposable {
      * Parent node is set when this node is added to a [Group]
      */
     open var parent: Node? = null
-        set(value) {
-            if (value !== field) {
-                onParentChanged(field, value)
-                field = value
-                scene = findParentOfType()
-            }
-        }
-
-    open var scene: Scene? = null
-        set(value) {
-            if (value !== field) {
-                onSceneChanged(field, value)
-                field = value
-            }
-        }
 
     /**
      * Determines the visibility of this node. If visible is false this node will be skipped on
@@ -103,9 +88,9 @@ abstract class Node(val name: String? = null) : Disposable {
      * Called once on every new frame before draw commands are collected. Implementations should use this method to
      * update their transform matrices, bounding boxes, animation states, etc.
      */
-    open fun update(ctx: KoolContext) {
+    open fun update(renderPass: RenderPass, ctx: KoolContext) {
         for (i in onUpdate.indices) {
-            onUpdate[i](ctx)
+            onUpdate[i](renderPass, ctx)
         }
 
         // keep a copy of the node's model matrix
@@ -208,20 +193,6 @@ abstract class Node(val name: String? = null) : Disposable {
         }
         return p as T
     }
-
-    /**
-     * Called when the scene of this node is changed. Sub-classes can override this method in order to be notified
-     * when this node's scene has changed. Overriding this method is better than overriding the property directly
-     * because setting a overriden super-class property is super-slow in javascript.
-     */
-    protected open fun onSceneChanged(oldScene: Scene?, newScene: Scene?) { }
-
-    /**
-     * Called when the parent of this node is changed. Sub-classes can override this method in order to be notified
-     * when this node's parent has changed. Overriding this method is better than overriding the property directly
-     * because setting a overriden super-class property is super-slow in javascript.
-     */
-    protected open fun onParentChanged(oldParent: Node?, newParent: Node?) { }
 
     private fun checkModelMatInv(): Mat4d {
         if (modelMatDirty) {

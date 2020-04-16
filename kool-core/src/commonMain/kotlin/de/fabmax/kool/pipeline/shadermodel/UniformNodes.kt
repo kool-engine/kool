@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.shadermodel
 
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
 
 class UniformBufferPremultipliedMvp(graph: ShaderGraph) : ShaderNode("UboPremultipliedMvp", graph) {
@@ -68,7 +67,7 @@ class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
                     uViewMat.value.set(cmd.viewMat)
                     uProjMat.value.set(cmd.projMat)
 
-                    uCamPos.value.set(cmd.mesh.scene?.camera?.globalPos ?: Vec3f.ZERO, 1f)
+                    uCamPos.value.set(cmd.renderPass.camera.globalPos, 1f)
                 }
             }
         }

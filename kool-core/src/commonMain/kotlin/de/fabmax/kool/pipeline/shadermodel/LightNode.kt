@@ -43,16 +43,18 @@ open class MultiLightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : Li
     }
 
     private fun encodeLightSetup(cmd: DrawCommand) {
-        val lights = cmd.mesh.scene?.lighting?.lights
-        if (lights != null) {
-            uLightCnt.value = min(lights.size, maxLights)
+        val lighting = cmd.renderPass.lighting
+        if (lighting != null) {
+            uLightCnt.value = min(lighting.lights.size, maxLights)
             for (i in 0 until uLightCnt.value) {
-                val light = lights[i]
+                val light = lighting.lights[i]
 
                 uColors.value[i].set(light.color)
                 uPositions.value[i].set(light.position, light.type.encoded)
                 uDirections.value[i].set(light.direction, cos((light.spotAngle / 2).toRad()))
             }
+        } else {
+            uLightCnt.value = 0
         }
     }
 
@@ -122,9 +124,9 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
                     +{ uLightMvps }
 
                     onUpdate = { _, cmd ->
-                        cmd.mesh.scene?.lighting?.lights?.let {
-                            for (i in 0 until min(maxLights, it.size)) {
-                                uLightMvps.value[i].set(it[i].lightMvpMat)
+                        cmd.renderPass.lighting?.let {
+                            for (i in 0 until min(maxLights, it.lights.size)) {
+                                uLightMvps.value[i].set(it.lights[i].lightMvpMat)
                             }
                         }
                     }

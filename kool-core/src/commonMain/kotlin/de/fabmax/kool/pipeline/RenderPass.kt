@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.scene.Camera
+import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -13,12 +14,14 @@ abstract class RenderPass(val drawNode: Node) {
     var viewport = KoolContext.Viewport(0, 0, 0, 0)
     abstract val camera: Camera
 
+    var lighting: Lighting? = null
+
     var isUpdateDrawNode = true
 
     var clearDepth = true
     var clearColor: Color? = Color(0.15f, 0.15f, 0.15f, 1f)
 
-    var drawQueue = DrawQueue()
+    var drawQueue = DrawQueue(this)
         protected set
 
     val onBeforeCollectDrawCommands = mutableListOf<((KoolContext) -> Unit)>()
@@ -26,7 +29,7 @@ abstract class RenderPass(val drawNode: Node) {
 
     open fun update(ctx: KoolContext) {
         if (isUpdateDrawNode) {
-            drawNode.update(ctx)
+            drawNode.update(this, ctx)
         }
     }
 
@@ -63,7 +66,7 @@ class ScreenRenderPass(val scene: Scene) : RenderPass(scene) {
         get() = scene.camera
 
     init {
-        isUpdateDrawNode = false
+        lighting = scene.lighting
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {

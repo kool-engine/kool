@@ -60,7 +60,7 @@ open class OffscreenRenderPassCube(drawNode: Node, texWidth: Int, texHeight: Int
 
     lateinit var onSetupView: ((ViewDirection, KoolContext) -> Unit)
 
-    val drawQueues = Array(6) { DrawQueue() }
+    val drawQueues = Array(6) { DrawQueue(this) }
 
     init {
         defaultCubeMapCameraConfig()

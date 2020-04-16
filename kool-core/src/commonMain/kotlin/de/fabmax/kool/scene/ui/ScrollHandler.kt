@@ -13,7 +13,7 @@ import de.fabmax.kool.util.*
 import kotlin.math.min
 import kotlin.math.sqrt
 
-open class ScrollHandler(val scrollTarget: UiContainer, name: String = "${scrollTarget.name}-scroll") : UiComponent(name, scrollTarget.root), Scene.DragHandler {
+open class ScrollHandler(scene: Scene, val scrollTarget: UiContainer, name: String = "${scrollTarget.name}-scroll") : UiComponent(name, scrollTarget.root), Scene.DragHandler {
 
     var trackColor: Color = Color.GRAY.withAlpha(0.2f)
     var handleColor: Color = Color.GRAY.withAlpha(0.75f)
@@ -35,12 +35,8 @@ open class ScrollHandler(val scrollTarget: UiContainer, name: String = "${scroll
 
         scrollPosY.stiffness = 300f
         scrollPosYGuard.stiffness = 500f
-    }
 
-    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
-        super.onSceneChanged(oldScene, newScene)
-        oldScene?.removeDragHandler(this)
-        newScene?.registerDragHandler(this)
+        scene.registerDragHandler(this)
     }
 
     override fun createThemeUi(ctx: KoolContext): ComponentUi {

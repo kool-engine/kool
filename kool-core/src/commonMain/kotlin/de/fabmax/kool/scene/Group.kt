@@ -22,24 +22,17 @@ open class Group(name: String? = null) : Node(name) {
     val children: List<Node> get() = intChildren
     val size: Int get() = intChildren.size
 
-    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
-        super.onSceneChanged(oldScene, newScene)
-        for (i in intChildren.indices) {
-            intChildren[i].scene = newScene
-        }
-    }
-
-    override fun update(ctx: KoolContext) {
+    override fun update(renderPass: RenderPass, ctx: KoolContext) {
         // call preRender on all children and update group bounding box
         childrenBounds.clear()
         for (i in intChildren.indices) {
-            intChildren[i].update(ctx)
+            intChildren[i].update(renderPass, ctx)
             childrenBounds.add(intChildren[i].bounds)
         }
         setLocalBounds()
 
         // compute global position and size based on group bounds and current model transform
-        super.update(ctx)
+        super.update(renderPass, ctx)
     }
 
     protected open fun setLocalBounds() {

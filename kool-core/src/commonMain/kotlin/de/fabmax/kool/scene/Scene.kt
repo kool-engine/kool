@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Ray
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.ScreenRenderPass
 import de.fabmax.kool.util.Disposable
 
@@ -18,11 +19,11 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
 
 class Scene(name: String? = null) : Group(name) {
 
+    val lighting = Lighting()
+    var camera: Camera = PerspectiveCamera()
+
     val mainRenderPass = ScreenRenderPass(this)
     val offscreenPasses = mutableListOf<OffscreenRenderPass>()
-
-    val lighting = Lighting(this)
-    var camera: Camera = PerspectiveCamera()
 
     val onRenderScene: MutableList<Scene.(KoolContext) -> Unit> = mutableListOf()
 
@@ -40,16 +41,12 @@ class Scene(name: String? = null) : Group(name) {
 
     private val disposables = mutableListOf<Disposable>()
 
-    init {
-        scene = this
-    }
-
     fun renderScene(ctx: KoolContext) {
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)
         }
 
-        update(ctx)
+        mainRenderPass.update(ctx)
 
         for (i in offscreenPasses.indices.reversed()) {
             offscreenPasses[i].update(ctx)
@@ -62,12 +59,12 @@ class Scene(name: String? = null) : Group(name) {
         handleInput(ctx)
     }
 
-    override fun update(ctx: KoolContext) {
+    override fun update(renderPass: RenderPass, ctx: KoolContext) {
         for (i in disposables.indices) {
             disposables[i].dispose(ctx)
         }
         disposables.clear()
-        super.update(ctx)
+        super.update(renderPass, ctx)
     }
 
     fun dispose(disposable: Disposable) {

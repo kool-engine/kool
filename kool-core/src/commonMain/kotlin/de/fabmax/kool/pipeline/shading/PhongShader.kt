@@ -6,6 +6,12 @@ import de.fabmax.kool.pipeline.TextureSampler
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.util.Color
 
+fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
+    val cfg = PhongShader.PhongConfig()
+    cfg.cfgBlock()
+    return PhongShader(cfg)
+}
+
 class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
 
     private var uShininess: PushConstantNode1f? = null
@@ -167,10 +173,4 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
             return albedoSource == Albedo.TEXTURE_ALBEDO || isNormalMapped
         }
     }
-}
-
-fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
-    val cfg = PhongShader.PhongConfig()
-    cfg.cfgBlock()
-    return PhongShader(cfg)
 }

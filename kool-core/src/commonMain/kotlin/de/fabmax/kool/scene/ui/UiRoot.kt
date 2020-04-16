@@ -9,8 +9,8 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.BoundingBox
 
-fun embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
-    val ui = UiRoot(dpi)
+fun Scene.embeddedUi(width: Float, height: Float, contentHeight: SizeSpec?, dpi: Float = 300f, block: UiRoot.() -> Unit): UiRoot {
+    val ui = UiRoot(this, dpi)
     ui.contentHeight = contentHeight
     ui.globalWidth = width
     ui.globalHeight = height
@@ -38,7 +38,7 @@ fun uiScene(dpi: Float = 96f, name: String? = null, overlay: Boolean = true, blo
 /**
  * @author fabmax
  */
-class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
+class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node(name) {
 
     var globalWidth = 1f
         set(value) {
@@ -96,11 +96,6 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         content.layoutSpec.setSize(pcs(100f), pcs(100f), pcs(100f))
     }
 
-    override fun onSceneChanged(oldScene: Scene?, newScene: Scene?) {
-        super.onSceneChanged(oldScene, newScene)
-        content.scene = newScene
-    }
-
     fun setGlobalSize(width: Float, height: Float, depth: Float) {
         isFillViewport = false
         this.globalWidth = width
@@ -112,7 +107,7 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
         isLayoutNeeded = true
     }
 
-    override fun update(ctx: KoolContext) {
+    override fun update(renderPass: RenderPass, ctx: KoolContext) {
         val viewport = scene?.mainRenderPass?.viewport ?: return
 
         if (isFillViewport &&
@@ -138,8 +133,8 @@ class UiRoot(val uiDpi: Float, name: String = "UiRoot") : Node(name) {
             content.doLayout(contentBounds, ctx)
         }
 
-        content.update(ctx)
-        super.update(ctx)
+        content.update(renderPass, ctx)
+        super.update(renderPass, ctx)
 
         content.updateComponent(ctx)
     }

@@ -3,9 +3,10 @@ package de.fabmax.kool.drawqueue
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Mesh
 
-class DrawCommand {
+class DrawCommand(val renderPass: RenderPass) {
 
     lateinit var mesh: Mesh
     var pipeline: Pipeline? = null
