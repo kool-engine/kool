@@ -35,10 +35,15 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     val proj = Mat4d()
     val view = Mat4d()
-    val invView = Mat4d()
 
-    val mvp = Mat4d()
-    val invMvp = Mat4d()
+    private val lazyInvView = LazyMatrix { view.invert(it) }
+    val invView: Mat4d get() = lazyInvView.get()
+
+    private val lazyViewProj = LazyMatrix { proj.mul(view, it) }
+    val viewProj: Mat4d get() = lazyViewProj.get()
+
+    private val lazyInvViewProj = LazyMatrix { viewProj.invert(it) }
+    val invViewProj: Mat4d get() = lazyInvViewProj.get()
 
     var isApplyProjCorrection = true
 
@@ -59,8 +64,8 @@ abstract class Camera(name: String = "camera") : Node(name) {
             proj.set(projCorrected)
         }
 
-        proj.mul(view, mvp)
-        mvp.invert(invMvp)
+        lazyViewProj.isDirty = true
+        lazyInvViewProj.isDirty = true
     }
 
     protected open fun updateViewMatrix() {
@@ -76,7 +81,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         globalRightMut.cross(globalLookDirMut, globalUpMut).norm()
 
         view.setLookAt(globalPosMut, globalLookAtMut, globalUpMut)
-        view.invert(invView)
+        lazyInvView.isDirty = true
     }
 
     protected abstract fun updateProjectionMatrix()
@@ -119,7 +124,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     fun project(world: Vec3f, result: MutableVec3f): Boolean {
         tmpVec4.set(world.x, world.y, world.z, 1f)
-        mvp.transform(tmpVec4)
+        viewProj.transform(tmpVec4)
         if (tmpVec4.w.isFuzzyZero()) {
             return false
         }
@@ -128,7 +133,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 
     fun project(world: Vec3f, result: MutableVec4f): MutableVec4f =
-            mvp.transform(result.set(world.x, world.y, world.z, 1f))
+            viewProj.transform(result.set(world.x, world.y, world.z, 1f))
 
     fun projectScreen(world: Vec3f, viewport: KoolContext.Viewport, ctx: KoolContext, result: MutableVec3f): Boolean {
         if (!project(world, result)) {
@@ -157,10 +162,24 @@ abstract class Camera(name: String = "camera") : Node(name) {
         }
 
         tmpVec4.set(2f * x / viewport.width - 1f, 2f * y / viewport.height - 1f, 2f * screen.z - 1f, 1f)
-        invMvp.transform(tmpVec4)
+        invViewProj.transform(tmpVec4)
         val s = 1f / tmpVec4.w
         result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)
         return true
+    }
+
+    private class LazyMatrix(val update: (Mat4d) -> Unit) {
+        var isDirty = true
+
+        private val mat = Mat4d()
+
+        fun get(): Mat4d {
+            if (isDirty) {
+                update(mat)
+                isDirty = false
+            }
+            return mat
+        }
     }
 }
 

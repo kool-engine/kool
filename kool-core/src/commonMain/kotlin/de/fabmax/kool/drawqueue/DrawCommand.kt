@@ -23,7 +23,7 @@ class DrawCommand(val renderPass: RenderPass) {
         viewMat.set(renderPass.camera.view)
         projMat.set(renderPass.camera.proj)
 
-        renderPass.camera.mvp.mul(mesh.modelMat, mvpMatD)
+        renderPass.camera.viewProj.mul(mesh.modelMat, mvpMatD)
         mvpMat.set(mvpMatD)
     }
 }

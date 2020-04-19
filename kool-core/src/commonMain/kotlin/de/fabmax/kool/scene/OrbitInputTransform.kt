@@ -148,7 +148,7 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : TransformGr
     }
 
     private fun doCamTransform(renderPass: RenderPass, ctx: KoolContext) {
-        if (panMethod.computePanPoint(pointerHit, renderPass, ptrPos, ctx)) {
+        if (dragMethod == DragMethod.PAN && panMethod.computePanPoint(pointerHit, renderPass, ptrPos, ctx)) {
             if (dragStart) {
                 dragStart = false
                 pointerHitStart.set(pointerHit)
@@ -156,7 +156,7 @@ open class OrbitInputTransform(scene: Scene, name: String? = null) : TransformGr
                 // stop any ongoing smooth motion, as we start a new one
                 stopSmoothMotion()
 
-            } else if (dragMethod == DragMethod.PAN) {
+            } else {
                 val s = (1 - smoothness).clamp(0.1, 1.0).toFloat()
                 tmpVec1.set(pointerHitStart).subtract(pointerHit).scale(s)
                 parent?.toLocalCoords(tmpVec1, 0f)
