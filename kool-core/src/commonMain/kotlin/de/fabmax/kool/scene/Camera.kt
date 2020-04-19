@@ -36,6 +36,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     val proj = Mat4d()
     val view = Mat4d()
     val invView = Mat4d()
+
     val mvp = Mat4d()
     val invMvp = Mat4d()
 
@@ -53,15 +54,12 @@ abstract class Camera(name: String = "camera") : Node(name) {
         updateViewMatrix()
         updateProjectionMatrix()
 
-        ctx.mvpState.viewMatrix.set(view)
         if (isApplyProjCorrection) {
-            ctx.mvpState.projMatrix.set(ctx.projCorrectionMatrix.mul(proj, projCorrected))
-        } else {
-            ctx.mvpState.projMatrix.set(proj)
+            ctx.projCorrectionMatrix.mul(proj, projCorrected)
+            proj.set(projCorrected)
         }
-        ctx.mvpState.update(ctx)
 
-        mvp.set(ctx.mvpState.mvpMatrix)
+        proj.mul(view, mvp)
         mvp.invert(invMvp)
     }
 

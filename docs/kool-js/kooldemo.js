@@ -37,7 +37,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
   var PerspectiveCamera = $module$kool.de.fabmax.kool.scene.PerspectiveCamera;
   var OrbitInputTransform$ZoomMethod = $module$kool.de.fabmax.kool.scene.OrbitInputTransform.ZoomMethod;
-  var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_iiyuln$;
+  var orbitInputTransform = $module$kool.de.fabmax.kool.scene.orbitInputTransform_uj7ww7$;
   var Vec3f_init = $module$kool.de.fabmax.kool.math.Vec3f_init_mx4ult$;
   var get_lastIndex = Kotlin.kotlin.collections.get_lastIndex_55thoc$;
   var PhongShader = $module$kool.de.fabmax.kool.pipeline.shading.PhongShader;
@@ -131,7 +131,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var ModeledShader$VertexColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.VertexColor;
   var dp = $module$kool.de.fabmax.kool.scene.ui.dp_wl4j30$;
   var uns = $module$kool.de.fabmax.kool.scene.ui.uns_8ca0d4$;
-  var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_y4avn7$;
+  var embeddedUi = $module$kool.de.fabmax.kool.scene.ui.embeddedUi_4gy91$;
   var split = Kotlin.kotlin.text.split_ip8yn$;
   InstanceDemo$InstanceColor.prototype = Object.create(MutableColor.prototype);
   InstanceDemo$InstanceColor.prototype.constructor = InstanceDemo$InstanceColor;
@@ -486,7 +486,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_0.add_11rb$(element_0);
   }
   function InstanceDemo$mainScene$lambda$lambda$lambda(this$InstanceDemo, this$) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       if (this$InstanceDemo.isAutoRotate_0) {
         this$.verticalRotation += ctx.deltaT * 3.0;
       }return Unit;
@@ -505,7 +505,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
       $receiver.zoom = 40.0;
       $receiver.setMouseRotation_dleff0$(30.0, -40.0);
-      var $receiver_1 = $receiver.onPreRender;
+      var $receiver_1 = $receiver.onUpdate;
       var element = InstanceDemo$mainScene$lambda$lambda$lambda(this$InstanceDemo, $receiver);
       $receiver_1.add_11rb$(element);
       return Unit;
@@ -525,7 +525,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   InstanceDemo.prototype.mainScene_0 = function (ctx) {
     var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, InstanceDemo$mainScene$lambda$lambda($receiver, this)));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, InstanceDemo$mainScene$lambda$lambda($receiver, this)));
     $receiver.lighting.singleLight_q9zcvo$(InstanceDemo$mainScene$lambda$lambda_0);
     $receiver.unaryPlus_uv0sim$(this.lodController_0);
     ctx.assetMgr.loadModel_v5uqdg$('bunny.kmfz', InstanceDemo$mainScene$lambda$lambda_1(this));
@@ -643,9 +643,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.rotAxis = rotAxis.norm_5s4mqq$(MutableVec3f_init());
     this.color = new InstanceDemo$InstanceColor();
   }
-  InstanceDemo$BunnyInstance.prototype.preRender_6otzq7$ = function (cam, ctx) {
+  InstanceDemo$BunnyInstance.prototype.update_l2cg23$ = function (lodCtrl, cam, ctx) {
     this.instanceModelMat.setIdentity().translate_czzhiu$(this.position).rotate_ad55pp$(ctx.time * this.rotSpeed, this.rotAxis);
-    InstancedLodController$Instance.prototype.preRender_6otzq7$.call(this, cam, ctx);
+    InstancedLodController$Instance.prototype.update_l2cg23$.call(this, lodCtrl, cam, ctx);
   };
   InstanceDemo$BunnyInstance.prototype.addInstanceData_bgc5cs$ = function (lod, instanceList, ctx) {
     this.$outer;
@@ -816,7 +816,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function InstanceDemo$menu$lambda$lambda$lambda$lambda_4(this$InstanceDemo, closure$i, this$) {
-    return function ($receiver, it) {
+    return function ($receiver, f, f_0) {
       var tmp$, tmp$_0, tmp$_1;
       var cnt = this$InstanceDemo.lodController_0.getInstanceCount_za3lpa$(closure$i);
       var tris = Kotlin.imul(cnt, (tmp$_1 = (tmp$_0 = (tmp$ = this$InstanceDemo.lods_0.get_za3lpa$(closure$i).mesh) != null ? tmp$.geometry : null) != null ? tmp$_0.numPrimitives : null) != null ? tmp$_1 : 0);
@@ -829,7 +829,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(80.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(20.0), dps(30.0), full());
       $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
-      var $receiver_0 = $receiver.onPreRender;
+      var $receiver_0 = $receiver.onUpdate;
       var element = InstanceDemo$menu$lambda$lambda$lambda$lambda_4(this$InstanceDemo, closure$i, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
@@ -887,7 +887,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function MultiLightDemo(ctx) {
     MultiLightDemo$Companion_getInstance();
     this.scenes = ArrayList_init();
-    this.mainScene_0 = null;
+    this.mainScene_0 = new Scene_init();
     this.lights_0 = listOf([new MultiLightDemo$LightMesh(this, Color.Companion.MD_CYAN), new MultiLightDemo$LightMesh(this, Color.Companion.MD_RED), new MultiLightDemo$LightMesh(this, Color.Companion.MD_AMBER), new MultiLightDemo$LightMesh(this, Color.Companion.MD_GREEN)]);
     this.depthPasses_0 = ArrayList_init();
     this.lightCount_0 = 4;
@@ -904,7 +904,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.bunnyMesh_0 = null;
     this.groundMesh_0 = null;
     this.modelShader_0 = null;
-    this.mainScene_0 = this.mainScene_1(ctx);
+    this.initMainScene_0(ctx);
     var $receiver_0 = this.scenes;
     var element = this.mainScene_0;
     $receiver_0.add_11rb$(element);
@@ -917,33 +917,31 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var element_1 = tmp$.next();
       var pass = new ShadowMapPass(this.mainScene_0, element_1.light);
       this.depthPasses_0.add_11rb$(pass);
-      var $receiver_2 = ctx.offscreenPasses;
-      var element_2 = pass.offscreenPass;
-      $receiver_2.add_11rb$(element_2);
+      this.mainScene_0.offscreenPasses.add_11rb$(pass);
     }
     this.mainScene_0.onDispose.add_11rb$(MultiLightDemo_init$lambda(this, ctx));
   }
-  function MultiLightDemo$mainScene$lambda$lambda$lambda(this$MultiLightDemo, this$) {
-    return function ($receiver, ctx) {
+  function MultiLightDemo$initMainScene$lambda$lambda$lambda(this$MultiLightDemo, this$) {
+    return function ($receiver, f, ctx) {
       if (this$MultiLightDemo.autoRotate_0) {
         this$.verticalRotation += ctx.deltaT * 3.0;
       }return Unit;
     };
   }
-  function MultiLightDemo$mainScene$lambda$lambda(this$, this$MultiLightDemo) {
+  function MultiLightDemo$initMainScene$lambda$lambda(this$, this$MultiLightDemo) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
       $receiver.zoom = 17.0;
       $receiver.translation.set_yvo9jy$(0.0, 2.0, 0.0);
       $receiver.setMouseRotation_dleff0$(0.0, -20.0);
-      var $receiver_0 = $receiver.onPreRender;
-      var element = MultiLightDemo$mainScene$lambda$lambda$lambda(this$MultiLightDemo, $receiver);
+      var $receiver_0 = $receiver.onUpdate;
+      var element = MultiLightDemo$initMainScene$lambda$lambda$lambda(this$MultiLightDemo, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function MultiLightDemo$mainScene$lambda$lambda_0(this$MultiLightDemo, this$) {
+  function MultiLightDemo$initMainScene$lambda$lambda_0(this$MultiLightDemo, this$) {
     return function (it) {
       this$MultiLightDemo.bunnyMesh_0 = it;
       this$MultiLightDemo.applyShaders_0();
@@ -951,7 +949,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$mainScene$lambda$lambda$lambda_0($receiver) {
+  function MultiLightDemo$initMainScene$lambda$lambda$lambda_0($receiver) {
     var $receiver_0 = $receiver.rectProps.defaults();
     $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.X_AXIS);
     $receiver_0.size.set_dleff0$(100.0, 100.0);
@@ -960,18 +958,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver.rect_e5k3t5$($receiver.rectProps);
     return Unit;
   }
-  function MultiLightDemo$mainScene$lambda$lambda_1(this$MultiLightDemo) {
+  function MultiLightDemo$initMainScene$lambda$lambda_1(this$MultiLightDemo) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(MultiLightDemo$mainScene$lambda$lambda$lambda_0);
+      $receiver.generate_v2sixm$(MultiLightDemo$initMainScene$lambda$lambda$lambda_0);
       $receiver.isCastingShadow = false;
       this$MultiLightDemo.groundMesh_0 = $receiver;
       this$MultiLightDemo.applyShaders_0();
       return Unit;
     };
   }
-  MultiLightDemo.prototype.mainScene_1 = function (ctx) {
-    var $receiver = new Scene_init(null);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, MultiLightDemo$mainScene$lambda$lambda($receiver, this)));
+  MultiLightDemo.prototype.initMainScene_0 = function (ctx) {
+    var $receiver = this.mainScene_0;
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, MultiLightDemo$initMainScene$lambda$lambda($receiver, this)));
     $receiver.lighting.lights.clear();
     var tmp$;
     tmp$ = this.lights_0.iterator();
@@ -980,9 +978,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(element);
     }
     this.updateLighting_0();
-    this.loadModel_0(ctx, 'bunny.kmfz', 1.0, Vec3f.Companion.ZERO, MultiLightDemo$mainScene$lambda$lambda_0(this, $receiver));
-    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$mainScene$lambda$lambda_1(this)));
-    return $receiver;
+    this.loadModel_0(ctx, 'bunny.kmfz', 1.0, Vec3f.Companion.ZERO, MultiLightDemo$initMainScene$lambda$lambda_0(this, $receiver));
+    $receiver.unaryPlus_uv0sim$(textureMesh(void 0, true, MultiLightDemo$initMainScene$lambda$lambda_1(this)));
   };
   MultiLightDemo.prototype.applyShaders_0 = function () {
     if (this.isPbrShading_0) {
@@ -1007,7 +1004,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var item = tmp$_0.next();
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
-            tmp$[i] = item.offscreenPass.impl.depthTexture;
+            tmp$[i] = item.depthTexture;
           }}
       }return Unit;
     };
@@ -1036,7 +1033,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var item = tmp$_0.next();
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
-            tmp$[i] = item.offscreenPass.impl.depthTexture;
+            tmp$[i] = item.depthTexture;
           }}
       }return Unit;
     };
@@ -1216,7 +1213,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var item = tmp$_0.next();
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
-            tmp$[i] = item.offscreenPass.impl.depthTexture;
+            tmp$[i] = item.depthTexture;
           }}
       }return Unit;
     };
@@ -1353,7 +1350,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var item = tmp$_0.next();
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
-            tmp$[i] = item.offscreenPass.impl.depthTexture;
+            tmp$[i] = item.depthTexture;
           }}
       }return Unit;
     };
@@ -1828,7 +1825,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     tmp$_0 = this.lights_0.iterator();
     while (tmp$_0.hasNext()) {
       var element = tmp$_0.next();
-      element.disable();
+      element.disable_kc3nav$(this.mainScene_0.lighting);
     }
     var pos = 0.0;
     var step = 360.0 / this.lightCount_0;
@@ -1837,7 +1834,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     tmp$ = Math_0.min(a, b);
     for (var i = 0; i < tmp$; i++) {
       this.lights_0.get_za3lpa$(i).setup_mx4ult$(pos);
-      this.lights_0.get_za3lpa$(i).enable();
+      this.lights_0.get_za3lpa$(i).enable_kc3nav$(this.mainScene_0.lighting);
       pos += step;
     }
     var tmp$_1;
@@ -1865,7 +1862,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var lightMesh = colorMesh(void 0, MultiLightDemo$MultiLightDemo$LightMesh_init$lambda(this));
     this.unaryPlus_uv0sim$(lightMesh);
     this.unaryPlus_uv0sim$(this.spotAngleMesh_0);
-    var $receiver_0 = this.onPreRender;
+    var $receiver_0 = this.onUpdate;
     var element = MultiLightDemo$MultiLightDemo$LightMesh_init$lambda_0(this.$outer, this);
     $receiver_0.add_11rb$(element);
   }
@@ -1903,18 +1900,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.lightMeshShader_0.color = color;
     this.updateSpotAngleMesh_0();
   };
-  MultiLightDemo$LightMesh.prototype.enable = function () {
-    var tmp$, tmp$_0, tmp$_1;
+  MultiLightDemo$LightMesh.prototype.enable_kc3nav$ = function (lighting) {
     this.isEnabled_0 = true;
-    if ((tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.lights : null) != null) {
-      if (!tmp$_1.contains_11rb$(this.light)) {
-        tmp$_1.add_11rb$(this.light);
-      }}this.updateVisibility();
+    var $receiver = lighting.lights;
+    if (!$receiver.contains_11rb$(this.light)) {
+      $receiver.add_11rb$(this.light);
+    }this.updateVisibility();
   };
-  MultiLightDemo$LightMesh.prototype.disable = function () {
-    var tmp$, tmp$_0, tmp$_1;
+  MultiLightDemo$LightMesh.prototype.disable_kc3nav$ = function (lighting) {
     this.isEnabled_0 = false;
-    (tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.lights : null) != null ? tmp$_1.remove_11rb$(this.light) : null;
+    lighting.lights.remove_11rb$(this.light);
     this.updateVisibility();
   };
   MultiLightDemo$LightMesh.prototype.updateVisibility = function () {
@@ -1947,7 +1942,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function MultiLightDemo$MultiLightDemo$LightMesh_init$lambda_0(this$MultiLightDemo, this$LightMesh) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       if (this$MultiLightDemo.autoRotate_0) {
         this$LightMesh.animPos_0 += ctx.deltaT;
       }var x = this$LightMesh.animPos_0 / 15 + this$LightMesh.rotOff_0;
@@ -2041,10 +2036,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       tmp$ = $receiver_0.iterator();
       while (tmp$.hasNext()) {
         var element = tmp$.next();
+        var this$MultiLightDemo_0 = this$MultiLightDemo;
         var closure$ctx_0 = closure$ctx;
-        var $receiver_1 = closure$ctx_0.offscreenPasses;
-        var element_0 = element.offscreenPass;
-        $receiver_1.remove_11rb$(element_0);
+        this$MultiLightDemo_0.mainScene_0.offscreenPasses.remove_11rb$(element);
         element.dispose_aemszp$(closure$ctx_0);
       }
       return Unit;
@@ -2280,7 +2274,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_1.add_11rb$(element_0);
   }
   function PbrDemo$setupScene$lambda$lambda$lambda(this$) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       this$.verticalRotation += ctx.deltaT * 2.0;
       return Unit;
     };
@@ -2288,38 +2282,29 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function PbrDemo$setupScene$lambda$lambda(this$) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$.camera);
-      $receiver.onPreRender.add_11rb$(PbrDemo$setupScene$lambda$lambda$lambda($receiver));
+      $receiver.onUpdate.add_11rb$(PbrDemo$setupScene$lambda$lambda$lambda($receiver));
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
       $receiver.zoom = 20.0;
       return Unit;
     };
   }
-  function PbrDemo$setupScene$lambda$lambda_0(this$PbrDemo, this$) {
+  function PbrDemo$setupScene$lambda$lambda_0(this$, this$PbrDemo) {
     return function (tex) {
-      var irrMapPass = new IrradianceMapPass(tex);
-      var reflMapPass = new ReflectionMapPass(tex);
-      var brdfLutPass = new BrdfLutPass();
+      var irrMapPass = new IrradianceMapPass(this$, tex);
+      var reflMapPass = new ReflectionMapPass(this$, tex);
+      var brdfLutPass = new BrdfLutPass(this$);
       this$PbrDemo.irradianceMapPass_0 = irrMapPass;
       this$PbrDemo.reflectionMapPass_0 = reflMapPass;
       this$PbrDemo.brdfLut_0 = brdfLutPass;
-      var $receiver = this$PbrDemo.ctx.offscreenPasses;
-      var element = irrMapPass.offscreenPass;
-      $receiver.add_11rb$(element);
-      var $receiver_0 = this$PbrDemo.ctx.offscreenPasses;
-      var element_0 = reflMapPass.offscreenPass;
-      $receiver_0.add_11rb$(element_0);
-      var $receiver_1 = this$PbrDemo.ctx.offscreenPasses;
-      var element_1 = brdfLutPass.offscreenPass;
-      $receiver_1.add_11rb$(element_1);
-      this$.plusAssign_f1kmr1$(new Skybox(reflMapPass.reflectionMap, 1.25));
-      var $receiver_2 = this$PbrDemo.pbrContentCycler_0;
+      this$.plusAssign_f1kmr1$(new Skybox(reflMapPass.colorTextureCube, 1.25));
+      var $receiver = this$PbrDemo.pbrContentCycler_0;
       var tmp$;
-      tmp$ = $receiver_2.iterator();
+      tmp$ = $receiver.iterator();
       while (tmp$.hasNext()) {
-        var element_2 = tmp$.next();
+        var element = tmp$.next();
         var this$_0 = this$;
         var this$PbrDemo_0 = this$PbrDemo;
-        this$_0.unaryPlus_uv0sim$(element_2.createContent_wb8610$(this$_0, irrMapPass.irradianceMap, reflMapPass.reflectionMap, brdfLutPass.brdfLut, this$PbrDemo_0.ctx));
+        this$_0.unaryPlus_uv0sim$(element.createContent_wb8610$(this$_0, irrMapPass.colorTextureCube, reflMapPass.colorTextureCube, brdfLutPass.colorTexture, this$PbrDemo_0.ctx));
       }
       this$PbrDemo.pbrContentCycler_0.current.show();
       return Unit;
@@ -2327,9 +2312,10 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   PbrDemo.prototype.setupScene_0 = function () {
     var $receiver = new Scene_init(null);
+    $receiver.mainRenderPass.clearColor = null;
     this.lightCycler_0.current.setup($receiver);
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, PbrDemo$setupScene$lambda$lambda($receiver)));
-    this.loadHdri_0(this.hdriCycler_0.index, PbrDemo$setupScene$lambda$lambda_0(this, $receiver));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, PbrDemo$setupScene$lambda$lambda($receiver)));
+    this.loadHdri_0(this.hdriCycler_0.index, PbrDemo$setupScene$lambda$lambda_0($receiver, this));
     return $receiver;
   };
   function PbrDemo$pbrMenu$lambda$lambda$lambda(it) {
@@ -2621,13 +2607,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function (tex) {
       var tmp$, tmp$_0;
       if ((tmp$ = this$PbrDemo.irradianceMapPass_0) != null) {
-        var this$PbrDemo_0 = this$PbrDemo;
         tmp$.hdriTexture = tex;
-        tmp$.update_aemszp$(this$PbrDemo_0.ctx);
+        tmp$.update();
       }if ((tmp$_0 = this$PbrDemo.reflectionMapPass_0) != null) {
-        var this$PbrDemo_1 = this$PbrDemo;
         tmp$_0.hdriTexture = tex;
-        tmp$_0.update_aemszp$(this$PbrDemo_1.ctx);
+        tmp$_0.update();
       }return Unit;
     };
   }
@@ -2816,13 +2800,13 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return this.matCycler.current;
     }
   });
-  PbrMaterialContent.prototype.nextMaterial = function () {
+  PbrMaterialContent.prototype.nextMaterial_0 = function () {
     this.currentMat.disposeMaps();
     this.matCycler.next();
     this.updatePbrMaterial_0();
     return this.currentMat;
   };
-  PbrMaterialContent.prototype.prevMaterial = function () {
+  PbrMaterialContent.prototype.prevMaterial_0 = function () {
     this.currentMat.disposeMaps();
     this.matCycler.prev();
     this.updatePbrMaterial_0();
@@ -2855,7 +2839,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda(this$PbrMaterialContent) {
     return function ($receiver, f, f_0, f_1) {
-      $receiver.text = this$PbrMaterialContent.nextMaterial().name;
+      $receiver.text = this$PbrMaterialContent.nextMaterial_0().name;
       return Unit;
     };
   }
@@ -2872,7 +2856,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_0(this$PbrMaterialContent, closure$matLabel) {
     return function ($receiver, f, f_0, f_1) {
-      closure$matLabel.text = this$PbrMaterialContent.prevMaterial().name;
+      closure$matLabel.text = this$PbrMaterialContent.prevMaterial_0().name;
       return Unit;
     };
   }
@@ -2889,7 +2873,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function PbrMaterialContent$createMenu$lambda$lambda$lambda$lambda_1(this$PbrMaterialContent, closure$matLabel) {
     return function ($receiver, f, f_0, f_1) {
-      closure$matLabel.text = this$PbrMaterialContent.nextMaterial().name;
+      closure$matLabel.text = this$PbrMaterialContent.nextMaterial_0().name;
       return Unit;
     };
   }
@@ -2930,7 +2914,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     (tmp$_0 = this.nonIblContent_0) != null ? (tmp$_0.isVisible = !enabled) : null;
   };
   function PbrMaterialContent$createContent$lambda$lambda(this$) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       this$.rotate_ad55pp$(-2.0 * ctx.deltaT, Vec3f.Companion.Y_AXIS);
       return Unit;
     };
@@ -2946,7 +2930,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(nonIbl);
       this$PbrMaterialContent.iblContent_0 = ibl;
       this$PbrMaterialContent.nonIblContent_0 = nonIbl;
-      $receiver.onPreRender.add_11rb$(PbrMaterialContent$createContent$lambda$lambda($receiver));
+      $receiver.onUpdate.add_11rb$(PbrMaterialContent$createContent$lambda$lambda($receiver));
       return Unit;
     };
   }
@@ -5156,7 +5140,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
   });
   function SimplificationDemo$mainScene$lambda$lambda$lambda(this$SimplificationDemo, closure$ctx, this$) {
-    return function ($receiver, it) {
+    return function ($receiver, f, f_0) {
       if (this$SimplificationDemo.autoRotate) {
         this$.rotate_ad55pp$(closure$ctx.deltaT * 3.0, Vec3f.Companion.Y_AXIS);
       }return Unit;
@@ -5166,7 +5150,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return function ($receiver) {
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.dispModel);
       $receiver.unaryPlus_uv0sim$(this$SimplificationDemo.modelWireframe);
-      var $receiver_0 = $receiver.onPreRender;
+      var $receiver_0 = $receiver.onUpdate;
       var element = SimplificationDemo$mainScene$lambda$lambda$lambda(this$SimplificationDemo, closure$ctx, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
@@ -5616,17 +5600,16 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       };
     };
   });
-  function treeScene$lambda$lambda(closure$shadowMaps, closure$ctx) {
+  function treeScene$lambda$lambda(closure$shadowMaps, this$, closure$ctx) {
     return function ($receiver, it) {
       var $receiver_0 = closure$shadowMaps;
       var tmp$;
       tmp$ = $receiver_0.iterator();
       while (tmp$.hasNext()) {
         var element = tmp$.next();
+        var this$_0 = this$;
         var closure$ctx_0 = closure$ctx;
-        var $receiver_1 = closure$ctx_0.offscreenPasses;
-        var element_0 = element.offscreenPass;
-        $receiver_1.remove_11rb$(element_0);
+        this$_0.offscreenPasses.remove_11rb$(element);
         element.dispose_aemszp$(closure$ctx_0);
       }
       return Unit;
@@ -5858,7 +5841,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var item = tmp$_2.next();
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
-            tmp$[i] = item.offscreenPass.impl.depthTexture;
+            tmp$[i] = item.depthTexture;
           }}
       }var tmp$_3 = closure$uWindSpeed;
       var $this = this$.model;
@@ -5936,7 +5919,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function treeScene$lambda$lambda$lambda_0(closure$windSpeed, closure$windAnimationPos, closure$uWindSpeed, closure$windStrength, closure$uWindStrength) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       var tmp$, tmp$_0;
       closure$windAnimationPos.v += ctx.deltaT * closure$windSpeed.v;
       (tmp$ = closure$uWindSpeed.v) != null ? (tmp$.value = closure$windAnimationPos.v) : null;
@@ -5967,7 +5950,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_3($receiver_1));
       $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1, closure$shadowMaps_0, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
-      var $receiver_2 = $receiver.onPreRender;
+      var $receiver_2 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_0(closure$windSpeed, closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
       $receiver_2.add_11rb$(element);
       return Unit;
@@ -6056,7 +6039,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var item = tmp$_2.next();
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
-            tmp$[i] = item.offscreenPass.impl.depthTexture;
+            tmp$[i] = item.depthTexture;
           }}
       }var tmp$_3 = closure$uWindSpeed;
       var $this = this$.model;
@@ -6134,7 +6117,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, closure$uWindSpeed, closure$windStrength, closure$uWindStrength) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       var tmp$, tmp$_0;
       (tmp$ = closure$uWindSpeed.v) != null ? (tmp$.value = closure$windAnimationPos.v) : null;
       (tmp$_0 = closure$uWindStrength.v) != null ? (tmp$_0.value = closure$windStrength.v) : null;
@@ -6160,14 +6143,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver_1.onSetup.add_11rb$(treeScene$lambda$lambda$lambda$lambda_7);
       $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_8($receiver_1, closure$shadowMaps_0, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
-      var $receiver_2 = $receiver.onPreRender;
+      var $receiver_2 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
       $receiver_2.add_11rb$(element);
       return Unit;
     };
   }
   function treeScene$lambda$lambda$lambda_3(closure$autoRotate, this$) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       if (closure$autoRotate.v) {
         this$.verticalRotation += ctx.deltaT * 3.0;
       }return Unit;
@@ -6182,7 +6165,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.zoom = 6.0;
       $receiver.setMouseRotation_dleff0$(0.0, -10.0);
       $receiver.setMouseTranslation_y2kzbl$(0.0, 2.0, 0.0);
-      var $receiver_0 = $receiver.onPreRender;
+      var $receiver_0 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_3(closure$autoRotate, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
@@ -6604,21 +6587,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     tmp$ = shadowMaps.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      var $receiver_1 = ctx.offscreenPasses;
-      var element_0 = element.offscreenPass;
-      $receiver_1.add_11rb$(element_0);
+      $receiver.offscreenPasses.add_11rb$(element);
     }
-    $receiver.onDispose.add_11rb$(treeScene$lambda$lambda(shadowMaps, ctx));
+    $receiver.onDispose.add_11rb$(treeScene$lambda$lambda(shadowMaps, $receiver, ctx));
     $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps));
     trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda_0(treeGen, shadowMaps, windSpeed, windAnimationPos, windStrength));
     leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_1(treeGen, shadowMaps, windAnimationPos, windStrength));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, treeScene$lambda$lambda_2($receiver, autoRotate)));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, treeScene$lambda$lambda_2($receiver, autoRotate)));
     var treeScene = $receiver;
     scenes.add_11rb$(treeScene);
-    var element_1 = uiScene(void 0, void 0, void 0, treeScene$lambda(ctx, treeGen, trunkMesh, leafMesh, windSpeed, windStrength, autoRotate));
-    scenes.add_11rb$(element_1);
+    var element_0 = uiScene(void 0, void 0, void 0, treeScene$lambda(ctx, treeGen, trunkMesh, leafMesh, windSpeed, windStrength, autoRotate));
+    scenes.add_11rb$(element_0);
     return scenes;
   }
   function WindNode(graph) {
@@ -7046,7 +7027,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
           var item = tmp$_0.next();
           var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
           if (i < tmp$.length) {
-            tmp$[i] = item.offscreenPass.impl.depthTexture;
+            tmp$[i] = item.depthTexture;
           }}
       }return Unit;
     };
@@ -7774,7 +7755,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     };
   }
   function uiDemoScene$lambda$lambda$lambda(this$) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       this$.setIdentity();
       this$.translate_y2kzbl$(0.0, 0.0, -7.0);
       this$.rotate_ad55pp$(ctx.time * 60, Vec3f.Companion.X_AXIS);
@@ -7796,7 +7777,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     return Unit;
   }
   function uiDemoScene$lambda$lambda_0($receiver) {
-    $receiver.onPreRender.add_11rb$(uiDemoScene$lambda$lambda$lambda($receiver));
+    $receiver.onUpdate.add_11rb$(uiDemoScene$lambda$lambda$lambda($receiver));
     $receiver.unaryPlus_uv0sim$(colorMesh(void 0, uiDemoScene$lambda$lambda$lambda_0));
     return Unit;
   }
@@ -7868,9 +7849,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function uiDemoScene() {
     var $receiver = new Scene_init('UI Demo');
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, uiDemoScene$lambda$lambda($receiver)));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, uiDemoScene$lambda$lambda($receiver)));
     $receiver.unaryPlus_uv0sim$(transformGroup(void 0, uiDemoScene$lambda$lambda_0));
-    $receiver.unaryPlus_uv0sim$(embeddedUi(10.0, 10.0, dps(400.0), void 0, uiDemoScene$lambda$lambda_1));
+    $receiver.unaryPlus_uv0sim$(embeddedUi($receiver, 10.0, 10.0, dps(400.0), void 0, uiDemoScene$lambda$lambda_1));
     return $receiver;
   }
   function main() {

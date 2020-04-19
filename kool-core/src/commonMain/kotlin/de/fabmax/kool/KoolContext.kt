@@ -24,7 +24,6 @@ abstract class KoolContext {
 
     var viewport = Viewport(0, 0, 0, 0)
         protected set
-    val mvpState = MvpState()
 
     val projCorrectionMatrix = Mat4d()
     val depthBiasMatrix = Mat4d().translate(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)

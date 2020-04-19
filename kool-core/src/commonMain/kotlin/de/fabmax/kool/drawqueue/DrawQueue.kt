@@ -30,7 +30,7 @@ class DrawQueue(val renderPass: RenderPass) {
             }
             cmd.mesh = mesh
             cmd.pipeline = mesh.getPipeline(ctx)
-            cmd.captureMvp(ctx)
+            cmd.captureMatrices()
             mutCommands.add(cmd)
             cmd
         }

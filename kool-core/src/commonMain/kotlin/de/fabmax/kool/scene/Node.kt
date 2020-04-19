@@ -44,8 +44,8 @@ abstract class Node(val name: String? = null) : Disposable {
     protected val globalCenterMut = MutableVec3f()
     protected val globalExtentMut = MutableVec3f()
 
-    protected val modelMat = Mat4d()
-    protected val modelMatInv: Mat4d
+    val modelMat = Mat4d()
+    val modelMatInv: Mat4d
         get() = checkModelMatInv()
     protected var modelMatDirty = false
     private val modelMatInvLazy = Mat4d()
@@ -93,9 +93,7 @@ abstract class Node(val name: String? = null) : Disposable {
             onUpdate[i](renderPass, ctx)
         }
 
-        // keep a copy of the node's model matrix
-        modelMat.set(ctx.mvpState.modelMatrix)
-        modelMatDirty = true
+        updateModelMat(renderPass, ctx)
 
         // update global center and radius
         globalCenterMut.set(bounds.center)
@@ -103,6 +101,11 @@ abstract class Node(val name: String? = null) : Disposable {
         modelMat.transform(globalCenterMut)
         modelMat.transform(globalExtentMut)
         globalRadius = globalCenter.distance(globalExtentMut)
+    }
+
+    protected open fun updateModelMat(renderPass: RenderPass, ctx: KoolContext) {
+        modelMat.set(parent?.modelMat ?: MODEL_MAT_IDENTITY)
+        modelMatDirty = true
     }
 
     /**
@@ -200,5 +203,9 @@ abstract class Node(val name: String? = null) : Disposable {
             modelMatDirty = false
         }
         return modelMatInvLazy
+    }
+
+    companion object {
+        private val MODEL_MAT_IDENTITY = Mat4d()
     }
 }

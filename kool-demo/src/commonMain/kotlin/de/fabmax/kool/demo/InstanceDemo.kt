@@ -171,18 +171,18 @@ class InstanceDemo(ctx: KoolContext) {
         fun asArray(): FloatArray = fields
     }
 
-    private inner class BunnyInstance(val position: Vec3f, rotAxis: Vec3f) : InstancedLodController.Instance() {
+    private inner class BunnyInstance(val position: Vec3f, rotAxis: Vec3f) : InstancedLodController.Instance<BunnyInstance>() {
         val rotSpeed = rotAxis.length() * 120f
         val rotAxis = rotAxis.norm(MutableVec3f())
 
         val color = InstanceColor()
 
-        override fun preRender(cam: Camera, ctx: KoolContext) {
+        override fun update(lodCtrl: InstancedLodController<BunnyInstance>, cam: Camera, ctx: KoolContext) {
             instanceModelMat
                     .setIdentity()
                     .translate(position)
                     .rotate(ctx.time.toFloat() * rotSpeed, rotAxis)
-            super.preRender(cam, ctx)
+            super.update(lodCtrl, cam, ctx)
         }
 
         override fun addInstanceData(lod: Int, instanceList: MeshInstanceList, ctx: KoolContext) {

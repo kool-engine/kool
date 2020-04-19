@@ -9,7 +9,7 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 
-class InstancedLodController<T: InstancedLodController.Instance>(name: String? = null) : Node(name) {
+class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String? = null) : Node(name) {
 
     val instances = mutableListOf<T>()
 
@@ -33,6 +33,8 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
     }
 
     override fun update(renderPass: RenderPass, ctx: KoolContext) {
+        super.update(renderPass, ctx)
+
         // clear assigned lods
         for (i in lods.indices) {
             lods[i].instances.clear()
@@ -42,7 +44,7 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
         val cam = renderPass.camera
         for (i in instances.indices) {
             val inst = instances[i]
-            inst.preRender(cam, ctx)
+            inst.update(this, cam, ctx)
 
             if (inst.isInFrustum) {
                 for (j in lods.lastIndex downTo 0) {
@@ -74,6 +76,8 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
     }
 
     override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
+        super.collectDrawCommands(renderPass, ctx)
+
         for (i in lods.indices) {
             lods[i].mesh.collectDrawCommands(renderPass, ctx)
         }
@@ -101,7 +105,7 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
         }
     }
 
-    open class Instance {
+    open class Instance<T: Instance<T>> {
         var instanceModelMat = Mat4f()
 
         val center = MutableVec3f()
@@ -119,15 +123,15 @@ class InstancedLodController<T: InstancedLodController.Instance>(name: String? =
         private val globalCenterMut = MutableVec3f()
         private val globalExtentMut = MutableVec3f()
 
-        open fun preRender(cam: Camera, ctx: KoolContext) {
+        open fun update(lodCtrl: InstancedLodController<T>, cam: Camera, ctx: KoolContext) {
             // update global center and radius
             globalCenterMut.set(center)
             globalExtentMut.set(center).x += radius
 
             instanceModelMat.transform(globalCenterMut)
             instanceModelMat.transform(globalExtentMut)
-            ctx.mvpState.modelMatrix.transform(globalCenterMut)
-            ctx.mvpState.modelMatrix.transform(globalExtentMut)
+            lodCtrl.modelMat.transform(globalCenterMut)
+            lodCtrl.modelMat.transform(globalExtentMut)
             globalRadius = globalCenterMut.distance(globalExtentMut)
 
             isInFrustum = cam.isInFrustum(globalCenterMut, globalRadius)

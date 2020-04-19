@@ -199,7 +199,7 @@ open class UiComponent(name: String, val root: UiRoot) : TransformGroup(name) {
     }
 
     fun computeLocalPickRay(pointer: InputManager.Pointer, ctx: KoolContext, result: Ray): Boolean {
-        val success = root.scene.computeRay(pointer, ctx, result) ?: false
+        val success = root.scene.computeRay(pointer, ctx, result)
         if (success) {
             toLocalCoords(result.origin)
             toLocalCoords(result.direction, 0f).norm()

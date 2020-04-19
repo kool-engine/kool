@@ -108,7 +108,7 @@ class UiRoot(val scene: Scene, val uiDpi: Float, name: String = "UiRoot") : Node
     }
 
     override fun update(renderPass: RenderPass, ctx: KoolContext) {
-        val viewport = scene?.mainRenderPass?.viewport ?: return
+        val viewport = scene.mainRenderPass.viewport
 
         if (isFillViewport &&
                 (globalWidth != viewport.width.toFloat() || globalHeight != viewport.height.toFloat())) {

@@ -17,7 +17,7 @@ inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
 }
 
-class Scene(name: String? = null) : Group(name) {
+open class Scene(name: String? = null) : Group(name) {
 
     val lighting = Lighting()
     var camera: Camera = PerspectiveCamera()

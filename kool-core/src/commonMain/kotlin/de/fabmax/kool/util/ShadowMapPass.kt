@@ -34,7 +34,7 @@ class ShadowMapPass(scene: Scene, val light: Light, mapSize: Int = 1024) : Offsc
                 fovY = light.spotAngle
             }
             shadowCam.updateCamera(ctx, viewport)
-            ctx.depthBiasMatrix.mul(ctx.mvpState.mvpMatrix, light.lightMvpMat)
+            ctx.depthBiasMatrix.mul(camera.mvp, light.lightMvpMat)
         }
 
         onAfterCollectDrawCommands += { ctx ->

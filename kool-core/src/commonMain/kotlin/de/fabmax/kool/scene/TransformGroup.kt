@@ -42,25 +42,11 @@ open class TransformGroup(name: String? = null) : Group(name) {
     }
 
     override fun update(renderPass: RenderPass, ctx: KoolContext) {
-        // apply transformation
-        val wasIdentity = isIdentity
-        if (!wasIdentity) {
-            ctx.mvpState.modelMatrix.push()
-            ctx.mvpState.modelMatrix.mul(transform)
-            ctx.mvpState.update(ctx)
-        }
-
         // compute global position and size based on group bounds and current model transform
         super.update(renderPass, ctx)
 
-        // Something to think about: In case transform changes during preRender (e.g. because a onPreRender listener
-        // is animating this transform group) the computed bounds will not match the actual bounds during
-        // render (because of the changed transform matrix). This could be solved by caching the transform used now
-        // and reuse it in render, but that would also introduce an delay of one frame before changed transform
-        // becomes visible. In most cases mismatch between bounds shouldn't be harmful.
-
         // transform group bounds
-        if (!bounds.isEmpty && !wasIdentity) {
+        if (!bounds.isEmpty && !isIdentity) {
             tmpBounds.clear()
             tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.min.z), 1f))
             tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.min.x, bounds.min.y, bounds.max.z), 1f))
@@ -72,33 +58,11 @@ open class TransformGroup(name: String? = null) : Group(name) {
             tmpBounds.add(transform.transform(tmpTransformVec.set(bounds.max.x, bounds.max.y, bounds.max.z), 1f))
             bounds.set(tmpBounds)
         }
-
-        // clear transformation
-        if (!wasIdentity) {
-            ctx.mvpState.modelMatrix.pop()
-            ctx.mvpState.update(ctx)
-        }
     }
 
-    override fun collectDrawCommands(renderPass: RenderPass, ctx: KoolContext) {
-        if (isVisible) {
-            // apply transformation
-            val wasIdentity = isIdentity
-            if (!wasIdentity) {
-                ctx.mvpState.modelMatrix.push()
-                ctx.mvpState.modelMatrix.mul(transform)
-                ctx.mvpState.update(ctx)
-            }
-
-            // draw all child nodes
-            super.collectDrawCommands(renderPass, ctx)
-
-            // clear transformation
-            if (!wasIdentity) {
-                ctx.mvpState.modelMatrix.pop()
-                ctx.mvpState.update(ctx)
-            }
-        }
+    override fun updateModelMat(renderPass: RenderPass, ctx: KoolContext) {
+        super.updateModelMat(renderPass, ctx)
+        modelMat.mul(transform)
     }
 
     override fun rayTest(test: RayTest) {

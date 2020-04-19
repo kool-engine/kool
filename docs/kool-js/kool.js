@@ -53,55 +53,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var kotlin_js_internal_FloatCompanionObject = Kotlin.kotlin.js.internal.FloatCompanionObject;
   var hashCode = Kotlin.hashCode;
   var round = Kotlin.kotlin.math.round_14dthe$;
-  var rangeTo = Kotlin.kotlin.ranges.rangeTo_38ydlf$;
   var Kind_INTERFACE = Kotlin.Kind.INTERFACE;
-  var SerialClassDescImpl = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.SerialClassDescImpl;
-  var ProtoId = $module$kotlinx_serialization_kotlinx_serialization_protobuf.kotlinx.serialization.protobuf.ProtoId;
-  var UnknownFieldException = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.UnknownFieldException;
-  var internal = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal;
-  var GeneratedSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.GeneratedSerializer;
-  var MissingFieldException = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.MissingFieldException;
-  var ArrayListSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.ArrayListSerializer;
-  var LinkedHashMapSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.LinkedHashMapSerializer;
-  var equals = Kotlin.equals;
-  var NotImplementedError = Kotlin.kotlin.NotImplementedError;
-  var sortWith = Kotlin.kotlin.collections.sortWith_nqfjgj$;
-  var Comparator = Kotlin.kotlin.Comparator;
-  var println_0 = Kotlin.kotlin.io.println_s8jyv4$;
-  var RuntimeException_init = Kotlin.kotlin.RuntimeException_init_pdl1vj$;
-  var sortedWith = Kotlin.kotlin.collections.sortedWith_eknfly$;
-  var kotlin_js_internal_DoubleCompanionObject = Kotlin.kotlin.js.internal.DoubleCompanionObject;
-  var IntRange = Kotlin.kotlin.ranges.IntRange;
-  var until = Kotlin.kotlin.ranges.until_dqglrj$;
-  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
-  var coroutines = $module$kotlinx_coroutines_core.kotlinx.coroutines;
-  var L50 = Kotlin.Long.fromInt(50);
-  var delay = $module$kotlinx_coroutines_core.kotlinx.coroutines.delay_s8cxhz$;
-  var yield_0 = $module$kotlinx_coroutines_core.kotlinx.coroutines.yield;
-  var L536870911 = Kotlin.Long.fromInt(536870911);
   var Iterable = Kotlin.kotlin.collections.Iterable;
   var removeAll = Kotlin.kotlin.collections.removeAll_qafx1e$;
   var Pair = Kotlin.kotlin.Pair;
+  var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var NoSuchElementException_init = Kotlin.kotlin.NoSuchElementException_init;
   var Iterator = Kotlin.kotlin.collections.Iterator;
   var to = Kotlin.kotlin.to_ujzrz7$;
   var NoSuchElementException_init_0 = Kotlin.kotlin.NoSuchElementException;
+  var sortWith = Kotlin.kotlin.collections.sortWith_nqfjgj$;
+  var Comparator = Kotlin.kotlin.Comparator;
+  var kotlin_js_internal_DoubleCompanionObject = Kotlin.kotlin.js.internal.DoubleCompanionObject;
   var emptySet = Kotlin.kotlin.collections.emptySet_287e2$;
   var IllegalStateException_init = Kotlin.kotlin.IllegalStateException_init_pdl1vj$;
   var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
-  var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
+  var equals = Kotlin.equals;
   var ULong = Kotlin.kotlin.ULong;
   var addAll_0 = Kotlin.kotlin.collections.addAll_ye1y7v$;
+  var mutableMapOf = Kotlin.kotlin.collections.mutableMapOf_qfcya0$;
   var L1 = Kotlin.Long.ONE;
   var checkIndexOverflow = Kotlin.kotlin.collections.checkIndexOverflow_za3lpa$;
   var listOf = Kotlin.kotlin.collections.listOf_i5x0yv$;
+  var println_0 = Kotlin.kotlin.io.println_s8jyv4$;
   var mutableSetOf = Kotlin.kotlin.collections.mutableSetOf_i5x0yv$;
   var getCallableRef = Kotlin.getCallableRef;
   var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var toByte = Kotlin.toByte;
   var MutableCollection = Kotlin.kotlin.collections.MutableCollection;
-  var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
   var indexOf = Kotlin.kotlin.text.indexOf_8eortd$;
+  var IntRange = Kotlin.kotlin.ranges.IntRange;
   var substring = Kotlin.kotlin.text.substring_fc3b62$;
   var toBoolean = Kotlin.kotlin.text.toBoolean_pdl1vz$;
   var toInt = Kotlin.kotlin.text.toInt_pdl1vz$;
@@ -128,17 +109,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var emptyList = Kotlin.kotlin.collections.emptyList_287e2$;
   var listOf_0 = Kotlin.kotlin.collections.listOf_mh5how$;
   var Collection = Kotlin.kotlin.collections.Collection;
+  var SerialClassDescImpl = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.SerialClassDescImpl;
+  var ProtoId = $module$kotlinx_serialization_kotlinx_serialization_protobuf.kotlinx.serialization.protobuf.ProtoId;
+  var ArrayListSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.ArrayListSerializer;
+  var UnknownFieldException = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.UnknownFieldException;
+  var internal = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal;
+  var GeneratedSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.GeneratedSerializer;
+  var MissingFieldException = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.MissingFieldException;
   var ProtoBuf = $module$kotlinx_serialization_kotlinx_serialization_protobuf.kotlinx.serialization.protobuf.ProtoBuf;
   var getKClass = Kotlin.getKClass;
   var getContextualOrDefault = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.modules.getContextualOrDefault_6za9kt$;
   var EnumSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.EnumSerializer;
+  var LinkedHashMapSerializer = $module$kotlinx_serialization_kotlinx_serialization_runtime.kotlinx.serialization.internal.LinkedHashMapSerializer;
   var emptyMap = Kotlin.kotlin.collections.emptyMap_q3lmfv$;
   var removeAll_0 = Kotlin.kotlin.collections.removeAll_uhyeqt$;
   var MutableMap$MutableEntry = Kotlin.kotlin.collections.MutableMap.MutableEntry;
-  var toShort = Kotlin.toShort;
+  var until = Kotlin.kotlin.ranges.until_dqglrj$;
   var plus = Kotlin.kotlin.collections.plus_qloxvw$;
   var IllegalStateException_init_0 = Kotlin.kotlin.IllegalStateException_init;
   var async = $module$kotlinx_coroutines_core.kotlinx.coroutines.async_pda6u4$;
+  var NotImplementedError_init = Kotlin.kotlin.NotImplementedError;
+  var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
   var lines = Kotlin.kotlin.text.lines_gw00vp$;
   var joinToString = Kotlin.kotlin.collections.joinToString_fmv235$;
   var StringBuilder = Kotlin.kotlin.text.StringBuilder;
@@ -170,8 +161,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   InputManager$BufferedPointerInput$UpdateState$INVALID.prototype.constructor = InputManager$BufferedPointerInput$UpdateState$INVALID;
   InputManager$BufferedPointerInput.prototype = Object.create(InputManager$Pointer.prototype);
   InputManager$BufferedPointerInput.prototype.constructor = InputManager$BufferedPointerInput;
-  RenderPass.prototype = Object.create(Enum.prototype);
-  RenderPass.prototype.constructor = RenderPass;
   KoolException.prototype = Object.create(Exception.prototype);
   KoolException.prototype.constructor = KoolException;
   BSplineVec2f.prototype = Object.create(BSpline.prototype);
@@ -218,26 +207,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Shaker.prototype.constructor = Shaker;
   Snare.prototype = Object.create(SampleNode.prototype);
   Snare.prototype.constructor = Snare;
-  Group.prototype = Object.create(Node.prototype);
-  Group.prototype.constructor = Group;
-  TransformGroup.prototype = Object.create(Group.prototype);
-  TransformGroup.prototype.constructor = TransformGroup;
-  Globe.prototype = Object.create(TransformGroup.prototype);
-  Globe.prototype.constructor = Globe;
-  OrbitInputTransform.prototype = Object.create(TransformGroup.prototype);
-  OrbitInputTransform.prototype.constructor = OrbitInputTransform;
-  GlobeCamHandler.prototype = Object.create(OrbitInputTransform.prototype);
-  GlobeCamHandler.prototype.constructor = GlobeCamHandler;
-  TileFrame.prototype = Object.create(TransformGroup.prototype);
-  TileFrame.prototype.constructor = TileFrame;
-  Mesh.prototype = Object.create(Node.prototype);
-  Mesh.prototype.constructor = Mesh;
-  TileMesh.prototype = Object.create(Mesh.prototype);
-  TileMesh.prototype.constructor = TileMesh;
-  OsmTexImageTileShaderProvider.prototype = Object.create(TexImageTileShaderProvider.prototype);
-  OsmTexImageTileShaderProvider.prototype.constructor = OsmTexImageTileShaderProvider;
   HalfEdgeMesh$HalfEdgeVertex.prototype = Object.create(Vec3f.prototype);
   HalfEdgeMesh$HalfEdgeVertex.prototype.constructor = HalfEdgeMesh$HalfEdgeVertex;
+  Mesh.prototype = Object.create(Node.prototype);
+  Mesh.prototype.constructor = Mesh;
   HalfEdgeMesh.prototype = Object.create(Mesh.prototype);
   HalfEdgeMesh.prototype.constructor = HalfEdgeMesh;
   CenterPointTraverser.prototype = Object.create(SpatialTreeTraverser.prototype);
@@ -254,12 +227,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   MeshCutXy$EdgeXyIntersectionTrav.prototype.constructor = MeshCutXy$EdgeXyIntersectionTrav;
   MeshSimplifier$CollapseCandidates.prototype = Object.create(TreeMap.prototype);
   MeshSimplifier$CollapseCandidates.prototype.constructor = MeshSimplifier$CollapseCandidates;
-  OffscreenPass2d.prototype = Object.create(OffscreenPass.prototype);
-  OffscreenPass2d.prototype.constructor = OffscreenPass2d;
-  OffscreenPassCube$ViewDirection.prototype = Object.create(Enum.prototype);
-  OffscreenPassCube$ViewDirection.prototype.constructor = OffscreenPassCube$ViewDirection;
-  OffscreenPassCube.prototype = Object.create(OffscreenPass.prototype);
-  OffscreenPassCube.prototype.constructor = OffscreenPassCube;
   GlslType.prototype = Object.create(Enum.prototype);
   GlslType.prototype.constructor = GlslType;
   TextureSampler$Builder.prototype = Object.create(Descriptor$Builder.prototype);
@@ -276,10 +243,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   UniformBuffer.prototype.constructor = UniformBuffer;
   DescriptorType.prototype = Object.create(Enum.prototype);
   DescriptorType.prototype.constructor = DescriptorType;
+  OffscreenRenderPass.prototype = Object.create(RenderPass.prototype);
+  OffscreenRenderPass.prototype.constructor = OffscreenRenderPass;
+  OffscreenRenderPass2D.prototype = Object.create(OffscreenRenderPass.prototype);
+  OffscreenRenderPass2D.prototype.constructor = OffscreenRenderPass2D;
+  OffscreenRenderPassCube$ViewDirection.prototype = Object.create(Enum.prototype);
+  OffscreenRenderPassCube$ViewDirection.prototype.constructor = OffscreenRenderPassCube$ViewDirection;
+  OffscreenRenderPassCube.prototype = Object.create(OffscreenRenderPass.prototype);
+  OffscreenRenderPassCube.prototype.constructor = OffscreenRenderPassCube;
   DepthCompareOp.prototype = Object.create(Enum.prototype);
   DepthCompareOp.prototype.constructor = DepthCompareOp;
   CullMethod.prototype = Object.create(Enum.prototype);
   CullMethod.prototype.constructor = CullMethod;
+  RenderPass$Type.prototype = Object.create(Enum.prototype);
+  RenderPass$Type.prototype.constructor = RenderPass$Type;
+  ScreenRenderPass.prototype = Object.create(RenderPass.prototype);
+  ScreenRenderPass.prototype.constructor = ScreenRenderPass;
   LightNode.prototype = Object.create(ShaderNode.prototype);
   LightNode.prototype.constructor = LightNode;
   MultiLightNode.prototype = Object.create(LightNode.prototype);
@@ -464,16 +443,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   PositionKey.prototype.constructor = PositionKey;
   ScalingKey.prototype = Object.create(AnimationKey.prototype);
   ScalingKey.prototype.constructor = ScalingKey;
-  BillboardMesh$DrawOrder.prototype = Object.create(Enum.prototype);
-  BillboardMesh$DrawOrder.prototype.constructor = BillboardMesh$DrawOrder;
-  BillboardMesh.prototype = Object.create(Mesh.prototype);
-  BillboardMesh.prototype.constructor = BillboardMesh;
   Camera.prototype = Object.create(Node.prototype);
   Camera.prototype.constructor = Camera;
   OrthographicCamera.prototype = Object.create(Camera.prototype);
   OrthographicCamera.prototype.constructor = OrthographicCamera;
   PerspectiveCamera.prototype = Object.create(Camera.prototype);
   PerspectiveCamera.prototype.constructor = PerspectiveCamera;
+  Group.prototype = Object.create(Node.prototype);
+  Group.prototype.constructor = Group;
   Light$Type.prototype = Object.create(Enum.prototype);
   Light$Type.prototype.constructor = Light$Type;
   LineMesh.prototype = Object.create(Mesh.prototype);
@@ -482,6 +459,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   OrbitInputTransform$DragMethod.prototype.constructor = OrbitInputTransform$DragMethod;
   OrbitInputTransform$ZoomMethod.prototype = Object.create(Enum.prototype);
   OrbitInputTransform$ZoomMethod.prototype.constructor = OrbitInputTransform$ZoomMethod;
+  TransformGroup.prototype = Object.create(Group.prototype);
+  TransformGroup.prototype.constructor = TransformGroup;
+  OrbitInputTransform.prototype = Object.create(TransformGroup.prototype);
+  OrbitInputTransform.prototype.constructor = OrbitInputTransform;
   CameraOrthogonalPan.prototype = Object.create(PanBase.prototype);
   CameraOrthogonalPan.prototype.constructor = CameraOrthogonalPan;
   FixedPlanePan.prototype = Object.create(PanBase.prototype);
@@ -490,8 +471,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   PointMesh.prototype.constructor = PointMesh;
   Scene.prototype = Object.create(Group.prototype);
   Scene.prototype.constructor = Scene;
-  Skybox$HdrTestNode.prototype = Object.create(ShaderNode.prototype);
-  Skybox$HdrTestNode.prototype.constructor = Skybox$HdrTestNode;
   Skybox$SkyboxPosNode.prototype = Object.create(ShaderNode.prototype);
   Skybox$SkyboxPosNode.prototype.constructor = Skybox$SkyboxPosNode;
   Skybox.prototype = Object.create(Mesh.prototype);
@@ -580,14 +559,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   OcTree$OcNode.prototype.constructor = OcTree$OcNode;
   OcTree.prototype = Object.create(SpatialTree.prototype);
   OcTree.prototype.constructor = OcTree;
-  ParticleSystem.prototype = Object.create(Node.prototype);
-  ParticleSystem.prototype.constructor = ParticleSystem;
   BrdfLutPass$BrdfLutNode.prototype = Object.create(ShaderNode.prototype);
   BrdfLutPass$BrdfLutNode.prototype.constructor = BrdfLutPass$BrdfLutNode;
+  BrdfLutPass.prototype = Object.create(OffscreenRenderPass2D.prototype);
+  BrdfLutPass.prototype.constructor = BrdfLutPass;
   IrradianceMapPass$ConvoluteIrradianceNode.prototype = Object.create(ShaderNode.prototype);
   IrradianceMapPass$ConvoluteIrradianceNode.prototype.constructor = IrradianceMapPass$ConvoluteIrradianceNode;
+  IrradianceMapPass.prototype = Object.create(OffscreenRenderPassCube.prototype);
+  IrradianceMapPass.prototype.constructor = IrradianceMapPass;
   ReflectionMapPass$ConvoluteReflectionNode.prototype = Object.create(ShaderNode.prototype);
   ReflectionMapPass$ConvoluteReflectionNode.prototype.constructor = ReflectionMapPass$ConvoluteReflectionNode;
+  ReflectionMapPass.prototype = Object.create(OffscreenRenderPassCube.prototype);
+  ReflectionMapPass.prototype.constructor = ReflectionMapPass;
+  ShadowMapPass.prototype = Object.create(OffscreenRenderPass2D.prototype);
+  ShadowMapPass.prototype.constructor = ShadowMapPass;
   BoundingSphereInRadiusTraverser.prototype = Object.create(InRadiusTraverser.prototype);
   BoundingSphereInRadiusTraverser.prototype.constructor = BoundingSphereInRadiusTraverser;
   NearestToRayTraverser.prototype = Object.create(SpatialTreeTraverser.prototype);
@@ -1482,13 +1467,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'LoadedTextureAsset',
     interfaces: [LoadedAsset]
   };
-  function DrawCommand() {
+  function DrawCommand(renderPass) {
+    this.renderPass = renderPass;
     this.mesh_61i9uk$_0 = this.mesh_61i9uk$_0;
     this.pipeline = null;
     this.modelMat = new Mat4f();
     this.viewMat = new Mat4f();
     this.projMat = new Mat4f();
     this.mvpMat = new Mat4f();
+    this.mvpMatD_0 = new Mat4d();
   }
   Object.defineProperty(DrawCommand.prototype, 'mesh', {
     get: function () {
@@ -1500,18 +1487,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.mesh_61i9uk$_0 = mesh;
     }
   });
-  DrawCommand.prototype.captureMvp_aemszp$ = function (ctx) {
-    this.modelMat.set_d4zu6l$(ctx.mvpState.modelMatrix);
-    this.viewMat.set_d4zu6l$(ctx.mvpState.viewMatrix);
-    this.projMat.set_d4zu6l$(ctx.mvpState.projMatrix);
-    this.mvpMat.set_d4zu6l$(ctx.mvpState.mvpMatrix);
+  DrawCommand.prototype.captureMatrices = function () {
+    this.modelMat.set_d4zu6l$(this.mesh.modelMat);
+    this.viewMat.set_d4zu6l$(this.renderPass.camera.view);
+    this.projMat.set_d4zu6l$(this.renderPass.camera.proj);
+    this.renderPass.camera.mvp.mul_u47j3u$(this.mesh.modelMat, this.mvpMatD_0);
+    this.mvpMat.set_d4zu6l$(this.mvpMatD_0);
   };
   DrawCommand.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'DrawCommand',
     interfaces: []
   };
-  function DrawQueue() {
+  function DrawQueue(renderPass) {
+    this.renderPass = renderPass;
     this.mutCommands_0 = ArrayList_init_0();
     this.commandPool_0 = ArrayList_init_0();
     this.meshFilter = DrawQueue$meshFilter$lambda;
@@ -1533,12 +1522,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       if (!this.commandPool_0.isEmpty()) {
         tmp$ = this.commandPool_0.removeAt_za3lpa$(get_lastIndex(this.commandPool_0));
       } else {
-        tmp$ = new DrawCommand();
+        tmp$ = new DrawCommand(this.renderPass);
       }
       var cmd = tmp$;
       cmd.mesh = mesh;
       cmd.pipeline = mesh.getPipeline_aemszp$(ctx);
-      cmd.captureMvp_aemszp$(ctx);
+      cmd.captureMatrices();
       this.mutCommands_0.add_11rb$(cmd);
       tmp$_0 = cmd;
     }
@@ -2685,20 +2674,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.screenDpi = 96.0;
     this.inputMgr = new InputManager();
     this.engineStats = new EngineStats();
-    this.viewport = new KoolContext$Viewport(0, 0, 0, 0);
-    this.clearColor = new Color(0.15, 0.15, 0.15, 1.0);
-    this.renderPass = RenderPass$SCREEN_getInstance();
-    this.mvpState = new MvpState();
+    this.viewport_xt8oob$_0 = new KoolContext$Viewport(0, 0, 0, 0);
     this.projCorrectionMatrix = new Mat4d();
     this.depthBiasMatrix = (new Mat4d()).translate_yvo9jy$(0.5, 0.5, 0.5).scale_yvo9jy$(0.5, 0.5, 0.5);
     this.onRender = ArrayList_init_0();
-    this.drawQueue = new DrawQueue();
     this.time_q5mkh0$_0 = 0.0;
     this.deltaT_wdv5hn$_0 = 0.0;
     this.frameIdx_2g8w1r$_0 = 0;
     this.fps_a02wsa$_0 = 60.0;
     this.scenes = ArrayList_init_0();
-    this.offscreenPasses = ArrayList_init_0();
     this.delayedCallbacks_puvmt7$_0 = ArrayList_init_0();
     this.disposablePipelines = ArrayList_init_0();
     var array = new Float64Array(25);
@@ -2709,6 +2693,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     this.frameTimes_6eiyeg$_0 = array;
   }
+  Object.defineProperty(KoolContext.prototype, 'viewport', {
+    get: function () {
+      return this.viewport_xt8oob$_0;
+    },
+    set: function (viewport) {
+      this.viewport_xt8oob$_0 = viewport;
+    }
+  });
   Object.defineProperty(KoolContext.prototype, 'time', {
     get: function () {
       return this.time_q5mkh0$_0;
@@ -2750,7 +2742,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.disposablePipelines.add_11rb$(pipeline);
   };
   KoolContext.prototype.render_14dthe$ = function (dt) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
     if (!this.delayedCallbacks_puvmt7$_0.isEmpty()) {
       var it = this.delayedCallbacks_puvmt7$_0.iterator();
       while (it.hasNext()) {
@@ -2770,31 +2762,20 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     this.fps = this.frameTimes_6eiyeg$_0.length / sum * 0.1 + this.fps * 0.9;
     this.inputMgr.onNewFrame_cwprtu$(this);
-    tmp$_0 = reversed(get_indices(this.offscreenPasses)).iterator();
-    while (tmp$_0.hasNext()) {
-      var i_0 = tmp$_0.next();
-      if (this.offscreenPasses.get_za3lpa$(i_0).isSingleShot && this.offscreenPasses.get_za3lpa$(i_0).frameIdx > 0) {
-        this.offscreenPasses.removeAt_za3lpa$(i_0);
-      } else {
-        this.offscreenPasses.get_za3lpa$(i_0).render_aemszp$(this);
-      }
+    tmp$_0 = this.onRender;
+    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+      this.onRender.get_za3lpa$(i_0)(this);
     }
-    this.drawQueue.clear();
-    tmp$_1 = this.onRender;
-    for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
-      this.onRender.get_za3lpa$(i_1)(this);
-    }
-    tmp$_2 = reversed(get_indices(this.scenes)).iterator();
-    while (tmp$_2.hasNext()) {
-      var i_2 = tmp$_2.next();
-      if (this.scenes.get_za3lpa$(i_2).isVisible) {
-        this.scenes.get_za3lpa$(i_2).processInput_aemszp$(this);
+    tmp$_1 = reversed(get_indices(this.scenes)).iterator();
+    while (tmp$_1.hasNext()) {
+      var i_1 = tmp$_1.next();
+      if (this.scenes.get_za3lpa$(i_1).isVisible) {
+        this.scenes.get_za3lpa$(i_1).processInput_aemszp$(this);
       }}
-    tmp$_3 = this.scenes;
-    for (var i_3 = 0; i_3 !== tmp$_3.size; ++i_3) {
-      if (this.scenes.get_za3lpa$(i_3).isVisible) {
-        this.scenes.get_za3lpa$(i_3).drawQueue = this.drawQueue;
-        this.scenes.get_za3lpa$(i_3).renderScene_aemszp$(this);
+    tmp$_2 = this.scenes;
+    for (var i_2 = 0; i_2 !== tmp$_2.size; ++i_2) {
+      if (this.scenes.get_za3lpa$(i_2).isVisible) {
+        this.scenes.get_za3lpa$(i_2).renderScene_aemszp$(this);
       }}
   };
   KoolContext.prototype.applyRenderingHints = function () {
@@ -2861,46 +2842,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'KoolContext',
     interfaces: []
   };
-  function RenderPass(name, ordinal) {
-    Enum.call(this);
-    this.name$ = name;
-    this.ordinal$ = ordinal;
-  }
-  function RenderPass_initFields() {
-    RenderPass_initFields = function () {
-    };
-    RenderPass$SHADOW_instance = new RenderPass('SHADOW', 0);
-    RenderPass$SCREEN_instance = new RenderPass('SCREEN', 1);
-  }
-  var RenderPass$SHADOW_instance;
-  function RenderPass$SHADOW_getInstance() {
-    RenderPass_initFields();
-    return RenderPass$SHADOW_instance;
-  }
-  var RenderPass$SCREEN_instance;
-  function RenderPass$SCREEN_getInstance() {
-    RenderPass_initFields();
-    return RenderPass$SCREEN_instance;
-  }
-  RenderPass.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'RenderPass',
-    interfaces: [Enum]
-  };
-  function RenderPass$values() {
-    return [RenderPass$SHADOW_getInstance(), RenderPass$SCREEN_getInstance()];
-  }
-  RenderPass.values = RenderPass$values;
-  function RenderPass$valueOf(name) {
-    switch (name) {
-      case 'SHADOW':
-        return RenderPass$SHADOW_getInstance();
-      case 'SCREEN':
-        return RenderPass$SCREEN_getInstance();
-      default:throwISE('No enum constant de.fabmax.kool.RenderPass.' + name);
-    }
-  }
-  RenderPass.valueOf_61zpoe$ = RenderPass$valueOf;
   function KoolException(message, cause) {
     Exception.call(this, message, cause);
     this.name = 'KoolException';
@@ -7674,2182 +7615,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'Wave',
     interfaces: []
   };
-  function BoundedElevationMap() {
-  }
-  Object.defineProperty(BoundedElevationMap.prototype, 'centerLat', {
-    get: function () {
-      return (this.north + this.south) / 2.0;
-    }
-  });
-  Object.defineProperty(BoundedElevationMap.prototype, 'centerLon', {
-    get: function () {
-      return (this.east + this.west) / 2.0;
-    }
-  });
-  BoundedElevationMap.prototype.contains_lu1900$ = function (lat, lon) {
-    return rangeTo(this.south - FUZZY_EQ_F, this.north + FUZZY_EQ_F).contains_mef7kx$(lat) && rangeTo(this.west - FUZZY_EQ_F, this.east + FUZZY_EQ_F).contains_mef7kx$(lon);
-  };
-  BoundedElevationMap.$metadata$ = {
-    kind: Kind_INTERFACE,
-    simpleName: 'BoundedElevationMap',
-    interfaces: [ElevationMap]
-  };
-  function ElevationMapProvider() {
-  }
-  ElevationMapProvider.prototype.getElevationAt_yvo9jy$ = function (lat, lon, resolution) {
-    var tmp$, tmp$_0;
-    return (tmp$_0 = (tmp$ = this.getElevationMapAt_yvo9jy$(lat, lon, resolution)) != null ? tmp$.getElevationAt_lu1900$(lat, lon) : null) != null ? tmp$_0 : 0.0;
-  };
-  ElevationMapProvider.$metadata$ = {
-    kind: Kind_INTERFACE,
-    simpleName: 'ElevationMapProvider',
-    interfaces: []
-  };
-  function ElevationMap() {
-  }
-  ElevationMap.$metadata$ = {
-    kind: Kind_INTERFACE,
-    simpleName: 'ElevationMap',
-    interfaces: []
-  };
-  function NullElevationMap() {
-    this.isAvailable_yiqgjj$_0 = true;
-    this.meta_ga7kfj$_0 = null;
-  }
-  Object.defineProperty(NullElevationMap.prototype, 'isAvailable', {
-    get: function () {
-      return this.isAvailable_yiqgjj$_0;
-    }
-  });
-  Object.defineProperty(NullElevationMap.prototype, 'meta', {
-    get: function () {
-      return this.meta_ga7kfj$_0;
-    }
-  });
-  NullElevationMap.prototype.getElevationMapAt_yvo9jy$ = function (lat, lon, resolution) {
-    return this;
-  };
-  NullElevationMap.prototype.contains_lu1900$ = function (lat, lon) {
-    return true;
-  };
-  NullElevationMap.prototype.getElevationAt_lu1900$ = function (lat, lon) {
-    return 0.0;
-  };
-  NullElevationMap.prototype.getNormalAt_bwm9xi$ = function (lat, lon, result) {
-    return result.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS);
-  };
-  NullElevationMap.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'NullElevationMap',
-    interfaces: [ElevationMap, ElevationMapProvider]
-  };
-  function ElevationMapMeta(name, format, attr, width, height, north, south, east, west, scaleX, scaleY, scaleZ) {
-    ElevationMapMeta$Companion_getInstance();
-    this.name = name;
-    this.format = format;
-    this.attr = attr;
-    this.width = width;
-    this.height = height;
-    this.north = north;
-    this.south = south;
-    this.east = east;
-    this.west = west;
-    this.scaleX = scaleX;
-    this.scaleY = scaleY;
-    this.scaleZ = scaleZ;
-  }
-  Object.defineProperty(ElevationMapMeta.prototype, 'resolutionLat', {
-    get: function () {
-      return (this.north - this.south) * 3600.0 / this.height;
-    }
-  });
-  Object.defineProperty(ElevationMapMeta.prototype, 'resolutionLon', {
-    get: function () {
-      return (this.east - this.west) * 3600.0 / this.height;
-    }
-  });
-  ElevationMapMeta.prototype.contains_lu1900$ = function (lat, lon) {
-    return rangeTo(this.south - this.scaleY, this.north + this.scaleY).contains_mef7kx$(lat) && rangeTo(this.west - this.scaleX, this.east + this.scaleX).contains_mef7kx$(lon);
-  };
-  function ElevationMapMeta$Companion() {
-    ElevationMapMeta$Companion_instance = this;
-  }
-  ElevationMapMeta$Companion.prototype.serializer = function () {
-    return ElevationMapMeta$$serializer_getInstance();
-  };
-  ElevationMapMeta$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var ElevationMapMeta$Companion_instance = null;
-  function ElevationMapMeta$Companion_getInstance() {
-    if (ElevationMapMeta$Companion_instance === null) {
-      new ElevationMapMeta$Companion();
-    }return ElevationMapMeta$Companion_instance;
-  }
-  function ElevationMapMeta$$serializer() {
-    this.descriptor_cvc8j9$_0 = new SerialClassDescImpl('de.fabmax.kool.modules.globe.elevation.ElevationMapMeta', this, 12);
-    this.descriptor.addElement_ivxn3r$('name', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(1));
-    this.descriptor.addElement_ivxn3r$('format', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(2));
-    this.descriptor.addElement_ivxn3r$('attr', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(3));
-    this.descriptor.addElement_ivxn3r$('width', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(4));
-    this.descriptor.addElement_ivxn3r$('height', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(5));
-    this.descriptor.addElement_ivxn3r$('north', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(6));
-    this.descriptor.addElement_ivxn3r$('south', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(7));
-    this.descriptor.addElement_ivxn3r$('east', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(8));
-    this.descriptor.addElement_ivxn3r$('west', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(9));
-    this.descriptor.addElement_ivxn3r$('scaleX', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(10));
-    this.descriptor.addElement_ivxn3r$('scaleY', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(11));
-    this.descriptor.addElement_ivxn3r$('scaleZ', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(12));
-    ElevationMapMeta$$serializer_instance = this;
-  }
-  Object.defineProperty(ElevationMapMeta$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_cvc8j9$_0;
-    }
-  });
-  ElevationMapMeta$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeStringElement_bgm7zs$(this.descriptor, 0, value.name);
-    output.encodeStringElement_bgm7zs$(this.descriptor, 1, value.format);
-    output.encodeStringElement_bgm7zs$(this.descriptor, 2, value.attr);
-    output.encodeIntElement_4wpqag$(this.descriptor, 3, value.width);
-    output.encodeIntElement_4wpqag$(this.descriptor, 4, value.height);
-    output.encodeDoubleElement_imzr5k$(this.descriptor, 5, value.north);
-    output.encodeDoubleElement_imzr5k$(this.descriptor, 6, value.south);
-    output.encodeDoubleElement_imzr5k$(this.descriptor, 7, value.east);
-    output.encodeDoubleElement_imzr5k$(this.descriptor, 8, value.west);
-    output.encodeDoubleElement_imzr5k$(this.descriptor, 9, value.scaleX);
-    output.encodeDoubleElement_imzr5k$(this.descriptor, 10, value.scaleY);
-    output.encodeDoubleElement_imzr5k$(this.descriptor, 11, value.scaleZ);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  ElevationMapMeta$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0
-    , local1
-    , local2
-    , local3
-    , local4
-    , local5
-    , local6
-    , local7
-    , local8
-    , local9
-    , local10
-    , local11;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = input.decodeStringElement_3zr2iy$(this.descriptor, 0);
-          bitMask0 |= 1;
-          break;
-        case 1:
-          local1 = input.decodeStringElement_3zr2iy$(this.descriptor, 1);
-          bitMask0 |= 2;
-          break;
-        case 2:
-          local2 = input.decodeStringElement_3zr2iy$(this.descriptor, 2);
-          bitMask0 |= 4;
-          break;
-        case 3:
-          local3 = input.decodeIntElement_3zr2iy$(this.descriptor, 3);
-          bitMask0 |= 8;
-          break;
-        case 4:
-          local4 = input.decodeIntElement_3zr2iy$(this.descriptor, 4);
-          bitMask0 |= 16;
-          break;
-        case 5:
-          local5 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 5);
-          bitMask0 |= 32;
-          break;
-        case 6:
-          local6 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 6);
-          bitMask0 |= 64;
-          break;
-        case 7:
-          local7 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 7);
-          bitMask0 |= 128;
-          break;
-        case 8:
-          local8 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 8);
-          bitMask0 |= 256;
-          break;
-        case 9:
-          local9 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 9);
-          bitMask0 |= 512;
-          break;
-        case 10:
-          local10 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 10);
-          bitMask0 |= 1024;
-          break;
-        case 11:
-          local11 = input.decodeDoubleElement_3zr2iy$(this.descriptor, 11);
-          bitMask0 |= 2048;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return ElevationMapMeta_init(bitMask0, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, null);
-  };
-  ElevationMapMeta$$serializer.prototype.childSerializers = function () {
-    return [internal.StringSerializer, internal.StringSerializer, internal.StringSerializer, internal.IntSerializer, internal.IntSerializer, internal.DoubleSerializer, internal.DoubleSerializer, internal.DoubleSerializer, internal.DoubleSerializer, internal.DoubleSerializer, internal.DoubleSerializer, internal.DoubleSerializer];
-  };
-  ElevationMapMeta$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var ElevationMapMeta$$serializer_instance = null;
-  function ElevationMapMeta$$serializer_getInstance() {
-    if (ElevationMapMeta$$serializer_instance === null) {
-      new ElevationMapMeta$$serializer();
-    }return ElevationMapMeta$$serializer_instance;
-  }
-  function ElevationMapMeta_init(seen1, name, format, attr, width, height, north, south, east, west, scaleX, scaleY, scaleZ, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(ElevationMapMeta.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('name');
-    else
-      $this.name = name;
-    if ((seen1 & 2) === 0)
-      throw new MissingFieldException('format');
-    else
-      $this.format = format;
-    if ((seen1 & 4) === 0)
-      throw new MissingFieldException('attr');
-    else
-      $this.attr = attr;
-    if ((seen1 & 8) === 0)
-      throw new MissingFieldException('width');
-    else
-      $this.width = width;
-    if ((seen1 & 16) === 0)
-      throw new MissingFieldException('height');
-    else
-      $this.height = height;
-    if ((seen1 & 32) === 0)
-      throw new MissingFieldException('north');
-    else
-      $this.north = north;
-    if ((seen1 & 64) === 0)
-      throw new MissingFieldException('south');
-    else
-      $this.south = south;
-    if ((seen1 & 128) === 0)
-      throw new MissingFieldException('east');
-    else
-      $this.east = east;
-    if ((seen1 & 256) === 0)
-      throw new MissingFieldException('west');
-    else
-      $this.west = west;
-    if ((seen1 & 512) === 0)
-      throw new MissingFieldException('scaleX');
-    else
-      $this.scaleX = scaleX;
-    if ((seen1 & 1024) === 0)
-      throw new MissingFieldException('scaleY');
-    else
-      $this.scaleY = scaleY;
-    if ((seen1 & 2048) === 0)
-      throw new MissingFieldException('scaleZ');
-    else
-      $this.scaleZ = scaleZ;
-    return $this;
-  }
-  ElevationMapMeta.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ElevationMapMeta',
-    interfaces: []
-  };
-  ElevationMapMeta.prototype.component1 = function () {
-    return this.name;
-  };
-  ElevationMapMeta.prototype.component2 = function () {
-    return this.format;
-  };
-  ElevationMapMeta.prototype.component3 = function () {
-    return this.attr;
-  };
-  ElevationMapMeta.prototype.component4 = function () {
-    return this.width;
-  };
-  ElevationMapMeta.prototype.component5 = function () {
-    return this.height;
-  };
-  ElevationMapMeta.prototype.component6 = function () {
-    return this.north;
-  };
-  ElevationMapMeta.prototype.component7 = function () {
-    return this.south;
-  };
-  ElevationMapMeta.prototype.component8 = function () {
-    return this.east;
-  };
-  ElevationMapMeta.prototype.component9 = function () {
-    return this.west;
-  };
-  ElevationMapMeta.prototype.component10 = function () {
-    return this.scaleX;
-  };
-  ElevationMapMeta.prototype.component11 = function () {
-    return this.scaleY;
-  };
-  ElevationMapMeta.prototype.component12 = function () {
-    return this.scaleZ;
-  };
-  ElevationMapMeta.prototype.copy_uodd0g$ = function (name, format, attr, width, height, north, south, east, west, scaleX, scaleY, scaleZ) {
-    return new ElevationMapMeta(name === void 0 ? this.name : name, format === void 0 ? this.format : format, attr === void 0 ? this.attr : attr, width === void 0 ? this.width : width, height === void 0 ? this.height : height, north === void 0 ? this.north : north, south === void 0 ? this.south : south, east === void 0 ? this.east : east, west === void 0 ? this.west : west, scaleX === void 0 ? this.scaleX : scaleX, scaleY === void 0 ? this.scaleY : scaleY, scaleZ === void 0 ? this.scaleZ : scaleZ);
-  };
-  ElevationMapMeta.prototype.toString = function () {
-    return 'ElevationMapMeta(name=' + Kotlin.toString(this.name) + (', format=' + Kotlin.toString(this.format)) + (', attr=' + Kotlin.toString(this.attr)) + (', width=' + Kotlin.toString(this.width)) + (', height=' + Kotlin.toString(this.height)) + (', north=' + Kotlin.toString(this.north)) + (', south=' + Kotlin.toString(this.south)) + (', east=' + Kotlin.toString(this.east)) + (', west=' + Kotlin.toString(this.west)) + (', scaleX=' + Kotlin.toString(this.scaleX)) + (', scaleY=' + Kotlin.toString(this.scaleY)) + (', scaleZ=' + Kotlin.toString(this.scaleZ)) + ')';
-  };
-  ElevationMapMeta.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    result = result * 31 + Kotlin.hashCode(this.format) | 0;
-    result = result * 31 + Kotlin.hashCode(this.attr) | 0;
-    result = result * 31 + Kotlin.hashCode(this.width) | 0;
-    result = result * 31 + Kotlin.hashCode(this.height) | 0;
-    result = result * 31 + Kotlin.hashCode(this.north) | 0;
-    result = result * 31 + Kotlin.hashCode(this.south) | 0;
-    result = result * 31 + Kotlin.hashCode(this.east) | 0;
-    result = result * 31 + Kotlin.hashCode(this.west) | 0;
-    result = result * 31 + Kotlin.hashCode(this.scaleX) | 0;
-    result = result * 31 + Kotlin.hashCode(this.scaleY) | 0;
-    result = result * 31 + Kotlin.hashCode(this.scaleZ) | 0;
-    return result;
-  };
-  ElevationMapMeta.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.format, other.format) && Kotlin.equals(this.attr, other.attr) && Kotlin.equals(this.width, other.width) && Kotlin.equals(this.height, other.height) && Kotlin.equals(this.north, other.north) && Kotlin.equals(this.south, other.south) && Kotlin.equals(this.east, other.east) && Kotlin.equals(this.west, other.west) && Kotlin.equals(this.scaleX, other.scaleX) && Kotlin.equals(this.scaleY, other.scaleY) && Kotlin.equals(this.scaleZ, other.scaleZ)))));
-  };
-  function ElevationMapMetaHierarchy(maps) {
-    ElevationMapMetaHierarchy$Companion_getInstance();
-    this.maps = maps;
-  }
-  function ElevationMapMetaHierarchy$Companion() {
-    ElevationMapMetaHierarchy$Companion_instance = this;
-  }
-  ElevationMapMetaHierarchy$Companion.prototype.serializer = function () {
-    return ElevationMapMetaHierarchy$$serializer_getInstance();
-  };
-  ElevationMapMetaHierarchy$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var ElevationMapMetaHierarchy$Companion_instance = null;
-  function ElevationMapMetaHierarchy$Companion_getInstance() {
-    if (ElevationMapMetaHierarchy$Companion_instance === null) {
-      new ElevationMapMetaHierarchy$Companion();
-    }return ElevationMapMetaHierarchy$Companion_instance;
-  }
-  function ElevationMapMetaHierarchy$$serializer() {
-    this.descriptor_u86u3w$_0 = new SerialClassDescImpl('de.fabmax.kool.modules.globe.elevation.ElevationMapMetaHierarchy', this, 1);
-    this.descriptor.addElement_ivxn3r$('maps', false);
-    this.descriptor.pushAnnotation_yj921w$(new ProtoId(1));
-    ElevationMapMetaHierarchy$$serializer_instance = this;
-  }
-  Object.defineProperty(ElevationMapMetaHierarchy$$serializer.prototype, 'descriptor', {
-    get: function () {
-      return this.descriptor_u86u3w$_0;
-    }
-  });
-  ElevationMapMetaHierarchy$$serializer.prototype.serialize_awe97i$ = function (encoder, value) {
-    var output = encoder.beginStructure_r0sa6z$(this.descriptor, []);
-    output.encodeSerializableElement_blecud$(this.descriptor, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance())), value.maps);
-    output.endStructure_qatsm0$(this.descriptor);
-  };
-  ElevationMapMetaHierarchy$$serializer.prototype.deserialize_nts5qn$ = function (decoder) {
-    var index;
-    var bitMask0 = 0;
-    var local0;
-    var input = decoder.beginStructure_r0sa6z$(this.descriptor, []);
-    loopLabel: while (true) {
-      index = input.decodeElementIndex_qatsm0$(this.descriptor);
-      switch (index) {
-        case 0:
-          local0 = (bitMask0 & 1) === 0 ? input.decodeSerializableElement_s44l7r$(this.descriptor, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance()))) : input.updateSerializableElement_ehubvl$(this.descriptor, 0, new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance())), local0);
-          bitMask0 |= 1;
-          break;
-        case -1:
-          break loopLabel;
-        default:throw new UnknownFieldException(index);
-      }
-    }
-    input.endStructure_qatsm0$(this.descriptor);
-    return ElevationMapMetaHierarchy_init(bitMask0, local0, null);
-  };
-  ElevationMapMetaHierarchy$$serializer.prototype.childSerializers = function () {
-    return [new LinkedHashMapSerializer(internal.DoubleSerializer, new ArrayListSerializer(ElevationMapMeta$$serializer_getInstance()))];
-  };
-  ElevationMapMetaHierarchy$$serializer.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: '$serializer',
-    interfaces: [GeneratedSerializer]
-  };
-  var ElevationMapMetaHierarchy$$serializer_instance = null;
-  function ElevationMapMetaHierarchy$$serializer_getInstance() {
-    if (ElevationMapMetaHierarchy$$serializer_instance === null) {
-      new ElevationMapMetaHierarchy$$serializer();
-    }return ElevationMapMetaHierarchy$$serializer_instance;
-  }
-  function ElevationMapMetaHierarchy_init(seen1, maps, serializationConstructorMarker) {
-    var $this = serializationConstructorMarker || Object.create(ElevationMapMetaHierarchy.prototype);
-    if ((seen1 & 1) === 0)
-      throw new MissingFieldException('maps');
-    else
-      $this.maps = maps;
-    return $this;
-  }
-  ElevationMapMetaHierarchy.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ElevationMapMetaHierarchy',
-    interfaces: []
-  };
-  ElevationMapMetaHierarchy.prototype.component1 = function () {
-    return this.maps;
-  };
-  ElevationMapMetaHierarchy.prototype.copy_vy0oiy$ = function (maps) {
-    return new ElevationMapMetaHierarchy(maps === void 0 ? this.maps : maps);
-  };
-  ElevationMapMetaHierarchy.prototype.toString = function () {
-    return 'ElevationMapMetaHierarchy(maps=' + Kotlin.toString(this.maps) + ')';
-  };
-  ElevationMapMetaHierarchy.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.maps) | 0;
-    return result;
-  };
-  ElevationMapMetaHierarchy.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && Kotlin.equals(this.maps, other.maps))));
-  };
-  function loadElevationMap(baseDir, meta, assetMgr) {
-    var tmp$;
-    if (equals(meta.format, 'png_s16_rg'))
-      tmp$ = loadPngS16ElevationMap(baseDir, meta, assetMgr);
-    else
-      throw new NotImplementedError('Unknown format ' + meta.format);
-    return tmp$;
-  }
-  function Comparator$ObjectLiteral(closure$comparison) {
-    this.closure$comparison = closure$comparison;
-  }
-  Comparator$ObjectLiteral.prototype.compare = function (a, b) {
-    return this.closure$comparison(a, b);
-  };
-  Comparator$ObjectLiteral.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda = wrapFunction(function () {
-    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
-    return function (closure$selector) {
-      return function (a, b) {
-        var selector = closure$selector;
-        return compareValues(selector(a), selector(b));
-      };
-    };
-  });
-  function ElevationMapHierarchy(baseDir, metaHierarchy, assetMgr) {
-    this.baseDir_0 = baseDir;
-    this.assetMgr_0 = assetMgr;
-    this.sets_0 = ArrayList_init_0();
-    this.loadedMaps_0 = new LoadedMapCache(64);
-    var tmp$;
-    tmp$ = metaHierarchy.maps.entries.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      var resolution = element.key;
-      var metas = element.value;
-      var $receiver = this.sets_0;
-      var element_0 = new ElevationMapHierarchy$ResolutionSet(resolution, new ElevationMapSet(metas));
-      $receiver.add_11rb$(element_0);
-    }
-    var $receiver_0 = this.sets_0;
-    if ($receiver_0.size > 1) {
-      sortWith($receiver_0, new Comparator$ObjectLiteral(compareBy$lambda(ElevationMapHierarchy_init$lambda)));
-    }var $this = package$util.Log;
-    var level = Log$Level.DEBUG;
-    var tag = Kotlin.getKClassFromExpression(this).simpleName;
-    if (level.level >= $this.level.level) {
-      $this.printer(level, tag, 'taking elevation data from: ' + this.baseDir_0);
-    }}
-  ElevationMapHierarchy.prototype.getElevationMapAt_yvo9jy$ = function (lat, lon, resolution) {
-    var tmp$;
-    var bestSet = first(this.sets_0);
-    tmp$ = this.sets_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      if (this.sets_0.get_za3lpa$(i).resolution < resolution) {
-        bestSet = this.sets_0.get_za3lpa$(i);
-      } else {
-        break;
-      }
-    }
-    var meta = bestSet.set.getMetaAt_lu1900$(lat, lon);
-    if (meta != null) {
-      return this.loadedMaps_0.getOrLoad_jn660e$(this.baseDir_0, meta, this.assetMgr_0);
-    }return null;
-  };
-  function ElevationMapHierarchy$ResolutionSet(resolution, set) {
-    this.resolution = resolution;
-    this.set = set;
-  }
-  ElevationMapHierarchy$ResolutionSet.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ResolutionSet',
-    interfaces: []
-  };
-  ElevationMapHierarchy$ResolutionSet.prototype.component1 = function () {
-    return this.resolution;
-  };
-  ElevationMapHierarchy$ResolutionSet.prototype.component2 = function () {
-    return this.set;
-  };
-  ElevationMapHierarchy$ResolutionSet.prototype.copy_kymqdt$ = function (resolution, set) {
-    return new ElevationMapHierarchy$ResolutionSet(resolution === void 0 ? this.resolution : resolution, set === void 0 ? this.set : set);
-  };
-  ElevationMapHierarchy$ResolutionSet.prototype.toString = function () {
-    return 'ResolutionSet(resolution=' + Kotlin.toString(this.resolution) + (', set=' + Kotlin.toString(this.set)) + ')';
-  };
-  ElevationMapHierarchy$ResolutionSet.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.resolution) | 0;
-    result = result * 31 + Kotlin.hashCode(this.set) | 0;
-    return result;
-  };
-  ElevationMapHierarchy$ResolutionSet.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.resolution, other.resolution) && Kotlin.equals(this.set, other.set)))));
-  };
-  function ElevationMapHierarchy_init$lambda(it) {
-    return it.resolution;
-  }
-  ElevationMapHierarchy.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ElevationMapHierarchy',
-    interfaces: [ElevationMapProvider]
-  };
-  function ElevationMapS16(data, meta) {
-    ElevationMapS16$Companion_getInstance();
-    this.data = data;
-    this.meta_hkqm5a$_0 = meta;
-    this.isAvailable_uxhgmq$_0 = true;
-    this.dx_0 = 0;
-    this.dy_0 = 0;
-    this.pixelScaleInv_0 = MutableVec2d_init();
-    var dLat = (this.meta.north - this.meta.south) / this.meta.height;
-    var dLon = (this.meta.east - this.meta.west) / this.meta.width;
-    var x = dLat * package$math.DEG_2_RAD;
-    this.dy_0 = Math_0.sin(x) * ElevationMapS16$Companion_getInstance().EARTH_RADIUS;
-    var x_0 = dLon * package$math.DEG_2_RAD;
-    var tmp$ = Math_0.sin(x_0);
-    var x_1 = (this.meta.north + this.meta.south) * package$math.DEG_2_RAD / 2.0;
-    this.dx_0 = tmp$ * Math_0.cos(x_1) * ElevationMapS16$Companion_getInstance().EARTH_RADIUS;
-    this.pixelScaleInv_0.set_lu1900$(1.0 / this.meta.scaleX, 1.0 / this.meta.scaleY);
-  }
-  Object.defineProperty(ElevationMapS16.prototype, 'meta', {
-    get: function () {
-      return this.meta_hkqm5a$_0;
-    }
-  });
-  Object.defineProperty(ElevationMapS16.prototype, 'west', {
-    get: function () {
-      return this.meta.west;
-    }
-  });
-  Object.defineProperty(ElevationMapS16.prototype, 'east', {
-    get: function () {
-      return this.meta.east;
-    }
-  });
-  Object.defineProperty(ElevationMapS16.prototype, 'south', {
-    get: function () {
-      return this.meta.south;
-    }
-  });
-  Object.defineProperty(ElevationMapS16.prototype, 'north', {
-    get: function () {
-      return this.meta.north;
-    }
-  });
-  Object.defineProperty(ElevationMapS16.prototype, 'isAvailable', {
-    get: function () {
-      return this.isAvailable_uxhgmq$_0;
-    }
-  });
-  ElevationMapS16.prototype.getElevationAt_lu1900$ = function (lat, lon) {
-    var tmp$;
-    if (!this.contains_lu1900$(lat, lon)) {
-      tmp$ = 0.0;
-    } else {
-      var x = (lon - this.meta.west) * this.pixelScaleInv_0.x;
-      var wx = 1.0 - x % 1.0;
-      var y = (lat - this.meta.south) * this.pixelScaleInv_0.y;
-      var wy = 1.0 - y % 1.0;
-      var h00 = this.get_vux9f0$(numberToInt(x), this.meta.height - 1 - numberToInt(y) | 0) * this.meta.scaleZ;
-      var h01 = this.get_vux9f0$(numberToInt(x) + 1 | 0, this.meta.height - 1 - numberToInt(y) | 0) * this.meta.scaleZ;
-      var h10 = this.get_vux9f0$(numberToInt(x), this.meta.height - 2 - numberToInt(y) | 0) * this.meta.scaleZ;
-      var h11 = this.get_vux9f0$(numberToInt(x) + 1 | 0, this.meta.height - 2 - numberToInt(y) | 0) * this.meta.scaleZ;
-      var h = (h00 * wx + h01 * (1 - wx)) * wy + (h10 * wx + h11 * (1 - wx)) * (1 - wy);
-      tmp$ = h;
-    }
-    return tmp$;
-  };
-  ElevationMapS16.prototype.getNormalAt_bwm9xi$ = function (lat, lon, result) {
-    if (!this.contains_lu1900$(lat, lon)) {
-      result.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS);
-    } else {
-      var x = numberToInt((lon - this.meta.west) * this.pixelScaleInv_0.x);
-      var y = numberToInt((lat - this.meta.south) * this.pixelScaleInv_0.y);
-      var h = this.get_vux9f0$(x, y);
-      result.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
-      if (x > 0) {
-        result.z = result.z + 1.0;
-        result.x = result.x + (this.get_vux9f0$(x - 1 | 0, this.meta.height - 1 - y | 0) - h) / this.dx_0 * this.meta.scaleZ;
-      }if (x < (this.meta.width - 1 | 0)) {
-        result.z = result.z + 1.0;
-        result.x = result.x - (this.get_vux9f0$(x + 1 | 0, this.meta.height - 1 - y | 0) - h) / this.dx_0 * this.meta.scaleZ;
-      }if (y > 0) {
-        result.z = result.z + 1.0;
-        result.y = result.y - (this.get_vux9f0$(x, this.meta.height - 2 - y | 0) - h) / this.dx_0 * this.meta.scaleZ;
-      }if (y < (this.meta.height - 1 | 0)) {
-        result.z = result.z + 1.0;
-        result.y = result.y + (this.get_vux9f0$(x, this.meta.height - y | 0) - h) / this.dx_0 * this.meta.scaleZ;
-      }result.norm();
-    }
-    return result;
-  };
-  ElevationMapS16.prototype.get_vux9f0$ = function (x, y) {
-    var tmp$ = this.data;
-    var max = this.meta.width - 1 | 0;
-    var clamp$result;
-    if (x < 0) {
-      clamp$result = 0;
-    } else if (x > max) {
-      clamp$result = max;
-    } else {
-      clamp$result = x;
-    }
-    var tmp$_0 = clamp$result;
-    var tmp$_1 = this.meta.width;
-    var max_0 = this.meta.height - 1 | 0;
-    var clamp$result_0;
-    if (y < 0) {
-      clamp$result_0 = 0;
-    } else if (y > max_0) {
-      clamp$result_0 = max_0;
-    } else {
-      clamp$result_0 = y;
-    }
-    return tmp$[tmp$_0 + Kotlin.imul(tmp$_1, clamp$result_0) | 0];
-  };
-  function ElevationMapS16$Companion() {
-    ElevationMapS16$Companion_instance = this;
-    this.EARTH_RADIUS = 6371000.8;
-  }
-  ElevationMapS16$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var ElevationMapS16$Companion_instance = null;
-  function ElevationMapS16$Companion_getInstance() {
-    if (ElevationMapS16$Companion_instance === null) {
-      new ElevationMapS16$Companion();
-    }return ElevationMapS16$Companion_instance;
-  }
-  ElevationMapS16.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ElevationMapS16',
-    interfaces: [BoundedElevationMap]
-  };
-  function ElevationMapSet(metas) {
-    ElevationMapSet$Companion_getInstance();
-    this.subMaps = LinkedHashMap_init();
-    this.tileDegX_0 = 0.0;
-    this.tileDegY_0 = 0.0;
-    var tmp$;
-    tmp$ = metas.iterator();
-    while (tmp$.hasNext()) {
-      var element = tmp$.next();
-      if (this.tileDegX_0 === 0.0) {
-        this.tileDegX_0 = element.east - element.west;
-      } else {
-        var a = this.tileDegX_0;
-        var b = element.east - element.west;
-        var eps;
-        eps = package$math.FUZZY_EQ_D;
-        var $receiver = a - b;
-        if (!(Math_0.abs($receiver) <= eps)) {
-          throw RuntimeException_init('All tiles in set must be of equal size [' + element.name + ': ' + (element.east - element.west) + ' != ' + this.tileDegX_0 + ']');
-        }}
-      if (this.tileDegY_0 === 0.0) {
-        this.tileDegY_0 = element.north - element.south;
-      } else {
-        var a_0 = this.tileDegY_0;
-        var b_0 = element.north - element.south;
-        var eps_0;
-        eps_0 = package$math.FUZZY_EQ_D;
-        var $receiver_0 = a_0 - b_0;
-        if (!(Math_0.abs($receiver_0) <= eps_0)) {
-          throw RuntimeException_init('All tiles in set must be of equal size [' + element.name + ': ' + (element.north - element.south) + ' != ' + this.tileDegY_0 + ']');
-        }}
-      var x = ElevationMapSet$Companion_getInstance().lonToX_lu1900$((element.west + element.east) / 2.0, this.tileDegX_0);
-      var y = ElevationMapSet$Companion_getInstance().latToY_lu1900$((element.south + element.north) / 2.0, this.tileDegY_0);
-      var $receiver_1 = this.subMaps;
-      var key = ElevationMapSet$Companion_getInstance().xyToKey_vux9f0$(x, y);
-      $receiver_1.put_xwzc9p$(key, element);
-    }
-  }
-  ElevationMapSet.prototype.getMetaAt_lu1900$ = function (lat, lon) {
-    var tmp$;
-    var tmp$_0;
-    if ((tmp$ = this.getMetaAt_vux9f0$(ElevationMapSet$Companion_getInstance().lonToX_lu1900$(lon, this.tileDegX_0), ElevationMapSet$Companion_getInstance().latToY_lu1900$(lat, this.tileDegY_0))) != null) {
-      if (!tmp$.contains_lu1900$(lat, lon)) {
-        println_0("map doesn't contain lat/lon!");
-      }tmp$_0 = tmp$;
-    } else
-      tmp$_0 = null;
-    return tmp$_0;
-  };
-  ElevationMapSet.prototype.getMetaAt_vux9f0$ = function (x, y) {
-    return this.subMaps.get_11rb$(ElevationMapSet$Companion_getInstance().xyToKey_vux9f0$(x, y));
-  };
-  function ElevationMapSet$Companion() {
-    ElevationMapSet$Companion_instance = this;
-  }
-  ElevationMapSet$Companion.prototype.lonToX_lu1900$ = function (lon, tileDegX) {
-    var x = (lon + 180.0) / tileDegX;
-    return numberToInt(Math_0.floor(x));
-  };
-  ElevationMapSet$Companion.prototype.latToY_lu1900$ = function (lat, tileDegY) {
-    var x = (lat + 90.0) / tileDegY;
-    return numberToInt(Math_0.floor(x));
-  };
-  ElevationMapSet$Companion.prototype.xyToKey_vux9f0$ = function (x, y) {
-    return y << 16 | x;
-  };
-  ElevationMapSet$Companion.prototype.keyToX_za3lpa$ = function (key) {
-    return key & 65535;
-  };
-  ElevationMapSet$Companion.prototype.keyToY_za3lpa$ = function (key) {
-    return key >> 16;
-  };
-  ElevationMapSet$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var ElevationMapSet$Companion_instance = null;
-  function ElevationMapSet$Companion_getInstance() {
-    if (ElevationMapSet$Companion_instance === null) {
-      new ElevationMapSet$Companion();
-    }return ElevationMapSet$Companion_instance;
-  }
-  ElevationMapSet.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ElevationMapSet',
-    interfaces: []
-  };
-  function Comparator$ObjectLiteral_0(closure$comparison) {
-    this.closure$comparison = closure$comparison;
-  }
-  Comparator$ObjectLiteral_0.prototype.compare = function (a, b) {
-    return this.closure$comparison(a, b);
-  };
-  Comparator$ObjectLiteral_0.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_0 = wrapFunction(function () {
-    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
-    return function (closure$selector) {
-      return function (a, b) {
-        var selector = closure$selector;
-        return compareValues(selector(a), selector(b));
-      };
-    };
-  });
-  function LoadedMapCache(maxMaps) {
-    this.maxMaps_0 = maxMaps;
-    this.loadedMaps_0 = LinkedHashMap_init();
-    this.useCnt_0 = L0;
-  }
-  function LoadedMapCache$getOrLoad$lambda(it) {
-    return it.lastUsed;
-  }
-  LoadedMapCache.prototype.getOrLoad_jn660e$ = function (baseDir, meta, assetMgr) {
-    var $receiver = this.loadedMaps_0;
-    var key = meta.name;
-    var tmp$;
-    var value = $receiver.get_11rb$(key);
-    if (value == null) {
-      var answer = new LoadedMapCache$LoadedMap(L0, meta.name, loadElevationMap(baseDir, meta, assetMgr));
-      $receiver.put_xwzc9p$(key, answer);
-      tmp$ = answer;
-    } else {
-      tmp$ = value;
-    }
-    var loaded = tmp$;
-    loaded.lastUsed = (this.useCnt_0 = this.useCnt_0.inc(), this.useCnt_0);
-    if (this.loadedMaps_0.size > this.maxMaps_0) {
-      var remCnt = this.loadedMaps_0.size - this.maxMaps_0 | 0;
-      var sorted = sortedWith(this.loadedMaps_0.values, new Comparator$ObjectLiteral_0(compareBy$lambda_0(LoadedMapCache$getOrLoad$lambda)));
-      for (var i = 0; i <= remCnt; i++) {
-        var $receiver_0 = this.loadedMaps_0;
-        var key_0 = sorted.get_za3lpa$(i).key;
-        $receiver_0.remove_11rb$(key_0);
-      }
-    }return loaded.map;
-  };
-  function LoadedMapCache$LoadedMap(lastUsed, key, map) {
-    this.lastUsed = lastUsed;
-    this.key = key;
-    this.map = map;
-  }
-  LoadedMapCache$LoadedMap.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LoadedMap',
-    interfaces: []
-  };
-  LoadedMapCache$LoadedMap.prototype.component1 = function () {
-    return this.lastUsed;
-  };
-  LoadedMapCache$LoadedMap.prototype.component2 = function () {
-    return this.key;
-  };
-  LoadedMapCache$LoadedMap.prototype.component3 = function () {
-    return this.map;
-  };
-  LoadedMapCache$LoadedMap.prototype.copy_ub8cls$ = function (lastUsed, key, map) {
-    return new LoadedMapCache$LoadedMap(lastUsed === void 0 ? this.lastUsed : lastUsed, key === void 0 ? this.key : key, map === void 0 ? this.map : map);
-  };
-  LoadedMapCache$LoadedMap.prototype.toString = function () {
-    return 'LoadedMap(lastUsed=' + Kotlin.toString(this.lastUsed) + (', key=' + Kotlin.toString(this.key)) + (', map=' + Kotlin.toString(this.map)) + ')';
-  };
-  LoadedMapCache$LoadedMap.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.lastUsed) | 0;
-    result = result * 31 + Kotlin.hashCode(this.key) | 0;
-    result = result * 31 + Kotlin.hashCode(this.map) | 0;
-    return result;
-  };
-  LoadedMapCache$LoadedMap.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.lastUsed, other.lastUsed) && Kotlin.equals(this.key, other.key) && Kotlin.equals(this.map, other.map)))));
-  };
-  LoadedMapCache.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LoadedMapCache',
-    interfaces: []
-  };
-  function Globe(radius, name) {
-    Globe$Companion_getInstance();
-    if (radius === void 0)
-      radius = Globe$Companion_getInstance().EARTH_RADIUS;
-    if (name === void 0)
-      name = null;
-    TransformGroup.call(this, name);
-    this.radius = radius;
-    this.meterPerPxLvl0 = 156000.0;
-    this.frameZoomLvl = 11;
-    this.frameZoomThresh = 14;
-    this.centerLat_ikjcua$_0 = 0.0;
-    this.centerLon_ikjn2u$_0 = 0.0;
-    this.cameraHeight_vk4iv0$_0 = 0.0;
-    this.tileManager = new TileManager(this);
-    this.elevationMapProvider = new NullElevationMap();
-    this.meshGenerator = new GridTileMeshGenerator();
-    this.meshDetailLevel = 4;
-    this.tileShaderProvider = new OsmTexImageTileShaderProvider();
-    this.tileFrames_0 = LinkedHashMap_init();
-    this.zoomGroups_0 = ArrayList_init_0();
-    this.removeTiles_0 = ArrayList_init_0();
-    this.camPosition_0 = MutableVec3f_init();
-    this.camDirection_0 = MutableVec3f_init();
-    this.prevCamDist_0 = 0.0;
-    this.prevLat_0 = 0.0;
-    this.prevLon_0 = 0.0;
-    this.tmpVec_0 = MutableVec3f_init();
-    var tmp$, tmp$_0;
-    this.translate_yvo9jy$(0.0, 0.0, -this.radius);
-    tmp$ = this.tileManager.minZoomLvl;
-    tmp$_0 = this.frameZoomThresh;
-    for (var i = tmp$; i <= tmp$_0; i++) {
-      var grp = new Group();
-      this.zoomGroups_0.add_11rb$(grp);
-      this.unaryPlus_uv0sim$(grp);
-    }
-  }
-  Object.defineProperty(Globe.prototype, 'minZoomLvl', {
-    get: function () {
-      return this.tileManager.minZoomLvl;
-    }
-  });
-  Object.defineProperty(Globe.prototype, 'maxZoomLvl', {
-    get: function () {
-      return this.tileManager.maxZoomLvl;
-    }
-  });
-  Object.defineProperty(Globe.prototype, 'centerLat', {
-    get: function () {
-      return this.centerLat_ikjcua$_0;
-    },
-    set: function (centerLat) {
-      this.centerLat_ikjcua$_0 = centerLat;
-    }
-  });
-  Object.defineProperty(Globe.prototype, 'centerLon', {
-    get: function () {
-      return this.centerLon_ikjn2u$_0;
-    },
-    set: function (centerLon) {
-      this.centerLon_ikjn2u$_0 = centerLon;
-    }
-  });
-  Object.defineProperty(Globe.prototype, 'cameraHeight', {
-    get: function () {
-      return this.cameraHeight_vk4iv0$_0;
-    },
-    set: function (cameraHeight) {
-      this.cameraHeight_vk4iv0$_0 = cameraHeight;
-    }
-  });
-  Globe.prototype.getHeightAt_lu1900$ = function (latitudeDeg, longitudeDeg) {
-    var heightRes = this.tileManager.center.arcSecondsLat();
-    return this.elevationMapProvider.getElevationAt_yvo9jy$(latitudeDeg, longitudeDeg, heightRes);
-  };
-  Globe.prototype.setCenter_lu1900$ = function (latitudeDeg, longitudeDeg) {
-    this.setCenter_yvo9jy$(latitudeDeg, longitudeDeg, this.getHeightAt_lu1900$(latitudeDeg, longitudeDeg));
-  };
-  Globe.prototype.setCenter_yvo9jy$ = function (latitudeDeg, longitudeDeg, height) {
-    this.setIdentity();
-    this.translate_yvo9jy$(0.0, 0.0, -(this.radius + height));
-    var min = -85.0;
-    var clamp$result;
-    if (latitudeDeg < min) {
-      clamp$result = min;
-    } else if (latitudeDeg > 85.0) {
-      clamp$result = 85.0;
-    } else {
-      clamp$result = latitudeDeg;
-    }
-    this.rotate_6y0v78$(clamp$result, 1.0, 0.0, 0.0);
-    this.rotate_6y0v78$(longitudeDeg, 0.0, -1.0, 0.0);
-  };
-  Globe.prototype.preRender_aemszp$ = function (ctx) {
-    var tmp$, tmp$_0;
-    var cam = (tmp$ = this.scene) != null ? tmp$.camera : null;
-    if (cam != null && Kotlin.isType(cam, PerspectiveCamera)) {
-      this.toGlobalCoords_w1lst9$(this.tmpVec_0.set_czzhiu$(Vec3f$Companion_getInstance().ZERO));
-      this.tmpVec_0.subtract_czzhiu$(cam.globalPos);
-      this.cameraHeight = this.tmpVec_0.length() - this.radius;
-      var camDist = cam.globalPos.length();
-      this.camPosition_0.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS).scale_mx4ult$(camDist);
-      this.toLocalCoords_w1lst9$(this.camPosition_0);
-      this.camPosition_0.norm_5s4mqq$(this.camDirection_0);
-      cam.clipNear = camDist * 0.05;
-      cam.clipFar = camDist * 10.0;
-      if (camDist > this.prevCamDist_0) {
-        tmp$_0 = this.prevCamDist_0 / camDist;
-      } else {
-        tmp$_0 = camDist / this.prevCamDist_0;
-      }
-      var dh = tmp$_0;
-      this.prevCamDist_0 = camDist;
-      var tmp$_1 = math.PI * 0.5;
-      var x = this.camDirection_0.y;
-      var $receiver = tmp$_1 - Math_0.acos(x);
-      var min = -Globe$Companion_getInstance().RAD_85_0;
-      var max = Globe$Companion_getInstance().RAD_85_0;
-      var clamp$result;
-      if ($receiver < min) {
-        clamp$result = min;
-      } else if ($receiver > max) {
-        clamp$result = max;
-      } else {
-        clamp$result = $receiver;
-      }
-      var lat = clamp$result;
-      var y = this.camDirection_0.x;
-      var x_0 = this.camDirection_0.z;
-      var lon = Math_0.atan2(y, x_0);
-      var tmp$_2 = dh < 0.99;
-      if (!tmp$_2) {
-        var x_1 = lat - this.prevLat_0;
-        tmp$_2 = Math_0.abs(x_1) > 1.0E-5;
-      }var tmp$_3 = tmp$_2;
-      if (!tmp$_3) {
-        var x_2 = lon - this.prevLon_0;
-        tmp$_3 = Math_0.abs(x_2) > 1.0E-5;
-      }var isMoving = tmp$_3;
-      this.prevLat_0 = lat;
-      this.prevLon_0 = lon;
-      this.centerLat = lat * package$math.RAD_2_DEG;
-      this.centerLon = lon * package$math.RAD_2_DEG;
-      var height = this.getHeightAt_lu1900$(this.centerLat, this.centerLon);
-      this.camDirection_0.scale_mx4ult$(this.radius + height);
-      var camHeight = this.camDirection_0.distance_czzhiu$(this.camPosition_0);
-      var x_3 = cam.fovY * package$math.DEG_2_RAD * 0.5;
-      var meterPerPx = camHeight * Math_0.tan(x_3) * 2.0 / (ctx.viewport.height * 96.0 / ctx.screenDpi);
-      var centerZoom = this.getBestZoom_0(meterPerPx, lat);
-      var newCenter = TileName$Companion_getInstance().forLatLon_syxxoe$(lat * package$math.RAD_2_DEG, lon * package$math.RAD_2_DEG, centerZoom);
-      this.tileManager.updateCenter_6i2c0k$(newCenter, isMoving, ctx);
-    }this.tileManager.onPreRender_aemszp$(ctx);
-    if (!this.removeTiles_0.isEmpty()) {
-      var tmp$_4;
-      tmp$_4 = this.removeTiles_0.iterator();
-      while (tmp$_4.hasNext()) {
-        var element = tmp$_4.next();
-        if (element.isRemovable) {
-          this.tileManager.onTileDeleted_xadgus$(element);
-          this.deleteTile_0(element);
-          element.dispose_aemszp$(ctx);
-        }}
-      this.removeTiles_0.clear();
-    }TransformGroup.prototype.preRender_aemszp$.call(this, ctx);
-  };
-  Globe.prototype.addTile_xadgus$ = function (mesh) {
-    var parentFrame = this.getTileFrame_xacwza$(mesh.tileName);
-    if (parentFrame != null) {
-      parentFrame.addTile_xadgus$(mesh);
-    } else {
-      this.getZoomGroup_za3lpa$(mesh.tileName.zoom).plusAssign_f1kmr1$(mesh);
-    }
-  };
-  Globe.prototype.removeTile_xadgus$ = function (mesh) {
-    this.removeTiles_0.add_11rb$(mesh);
-  };
-  Globe.prototype.tileLoaded_xadgus$ = function (tileMesh) {
-    this.tileManager.onTileLoaded_xadgus$(tileMesh);
-  };
-  Globe.prototype.deleteTile_0 = function (tile) {
-    var frame = this.getTileFrame_xacwza$(tile.tileName);
-    if (frame != null) {
-      frame.removeTile_xadgus$(tile);
-      if (frame.tileCount === 0) {
-        this.tileFrames_0.remove_11rb$(frame.tileName.fusedKey);
-        this.minusAssign_f1kmr1$(frame);
-      }} else {
-      this.getZoomGroup_za3lpa$(tile.tileName.zoom).removeNode_f1kmr1$(tile);
-    }
-  };
-  Globe.prototype.getBestZoom_0 = function (meterPerPx, lat) {
-    var x = this.meterPerPxLvl0 / meterPerPx * Math_0.cos(lat);
-    var $receiver = round(0.2 + Math_0.log2(x));
-    var min = this.minZoomLvl;
-    var max = this.maxZoomLvl;
-    var clamp$result;
-    if ($receiver < min) {
-      clamp$result = min;
-    } else if ($receiver > max) {
-      clamp$result = max;
-    } else {
-      clamp$result = $receiver;
-    }
-    return numberToInt(clamp$result);
-  };
-  Globe.prototype.getZoomGroup_za3lpa$ = function (level) {
-    return this.zoomGroups_0.get_za3lpa$(level - this.minZoomLvl | 0);
-  };
-  Globe.prototype.getTileFrame_xacwza$ = function (tileName) {
-    var tmp$;
-    if (tileName.zoom < this.frameZoomThresh) {
-      tmp$ = null;
-    } else {
-      var div = 1 << tileName.zoom - this.frameZoomLvl;
-      var frameX = tileName.x / div | 0;
-      var frameY = tileName.y / div | 0;
-      var frameKey = TileName$Companion_getInstance().fuesdKey_qt1dr2$(frameX, frameY, this.frameZoomLvl);
-      var $receiver = this.tileFrames_0;
-      var tmp$_0;
-      var value = $receiver.get_11rb$(frameKey);
-      if (value == null) {
-        var frame = new TileFrame(new TileName(frameX, frameY, this.frameZoomLvl), this);
-        this.plusAssign_f1kmr1$(frame);
-        var answer = frame;
-        $receiver.put_xwzc9p$(frameKey, answer);
-        tmp$_0 = answer;
-      } else {
-        tmp$_0 = value;
-      }
-      tmp$ = tmp$_0;
-    }
-    return tmp$;
-  };
-  function Globe$Companion() {
-    Globe$Companion_instance = this;
-    this.RAD_85_0 = 85.0 * package$math.DEG_2_RAD;
-    this.ALLOWED_MESH_REFINEMENTS_PER_FRAME = 1;
-    this.EARTH_RADIUS = 6378137.0;
-  }
-  Globe$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var Globe$Companion_instance = null;
-  function Globe$Companion_getInstance() {
-    if (Globe$Companion_instance === null) {
-      new Globe$Companion();
-    }return Globe$Companion_instance;
-  }
-  Globe.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Globe',
-    interfaces: [TransformGroup]
-  };
-  function GlobeCamHandler(globe, scene, ctx) {
-    OrbitInputTransform.call(this);
-    this.globe = globe;
-    this.globePan_0 = new GlobeCamHandler$GlobePan(this);
-    this.globe.onPreRender.add_11rb$(GlobeCamHandler_init$lambda(this));
-    this.leftDragMethod = OrbitInputTransform$DragMethod$NONE_getInstance();
-    this.rightDragMethod = OrbitInputTransform$DragMethod$ROTATE_getInstance();
-    this.zoomMethod = OrbitInputTransform$ZoomMethod$ZOOM_CENTER_getInstance();
-    this.minZoom = 20.0;
-    this.maxZoom = 2.0E7;
-    this.verticalAxis = Vec3d$Companion_getInstance().Z_AXIS;
-    this.minHorizontalRot = 0.0;
-    this.maxHorizontalRot = 85.0;
-    this.resetZoom_mx4ult$(1.0E7);
-    this.unaryPlus_uv0sim$(scene.camera);
-    this.updateTransform();
-    scene.camera.updateCamera_aemszp$(ctx);
-    scene.registerDragHandler_y44tw7$(this);
-  }
-  GlobeCamHandler.prototype.handleDrag_urvnay$ = function (dragPtrs, scene, ctx) {
-    OrbitInputTransform.prototype.handleDrag_urvnay$.call(this, dragPtrs, scene, ctx);
-    if (dragPtrs.size === 1 && dragPtrs.get_za3lpa$(0).isInViewport_n4xpoe$(scene.viewport, ctx)) {
-      var ptr = dragPtrs.get_za3lpa$(0);
-      var startPan = ptr.isLeftButtonEvent && ptr.isLeftButtonDown;
-      var startRotate = ptr.isRightButtonEvent && ptr.isRightButtonDown;
-      var startZoom = ptr.deltaScroll !== 0.0 && (ptr.x !== this.globePan_0.screenPosStart.x || ptr.y !== this.globePan_0.screenPosStart.y);
-      if (startPan || startRotate || startZoom) {
-        this.globePan_0.start_1nc7s5$(ptr.x, ptr.y, ctx);
-      }if (ptr.isLeftButtonDown) {
-        this.globePan_0.screenPos.set_dleff0$(ptr.x, ptr.y);
-      }}};
-  GlobeCamHandler.prototype.onPreRender_0 = function (ctx) {
-    if (this.globePan_0.isValid) {
-      this.globePan_0.apply_aemszp$(ctx);
-      this.globe.setCenter_lu1900$(this.globePan_0.globeCenter.y, this.globePan_0.globeCenter.x);
-    }};
-  function GlobeCamHandler$GlobePan($outer) {
-    this.$outer = $outer;
-    this.pickRay = new Ray();
-    this.tmpVec = MutableVec3d_init();
-    this.tmpRayO = MutableVec3d_init();
-    this.tmpRayL = MutableVec3d_init();
-    this.hitPosWorld = MutableVec3d_init();
-    this.screenPosStart = MutableVec2f_init();
-    this.screenPos = MutableVec2f_init();
-    this.globeCoordsStart = MutableVec2d_init();
-    this.globeCoords = MutableVec2d_init();
-    this.globeCenter = MutableVec2d_init();
-    this.startDist = 0.0;
-    this.startZoom = 0.0;
-    this.isValid = false;
-  }
-  Object.defineProperty(GlobeCamHandler$GlobePan.prototype, 'cam', {
-    get: function () {
-      var tmp$;
-      return ensureNotNull((tmp$ = this.$outer.globe.scene) != null ? tmp$.camera : null);
-    }
-  });
-  Object.defineProperty(GlobeCamHandler$GlobePan.prototype, 'camTransform', {
-    get: function () {
-      var tmp$;
-      return Kotlin.isType(tmp$ = this.cam.parent, OrbitInputTransform) ? tmp$ : throwCCE();
-    }
-  });
-  GlobeCamHandler$GlobePan.prototype.start_1nc7s5$ = function (screenX, screenY, ctx) {
-    this.globeCenter.set_lu1900$(this.$outer.globe.centerLon, this.$outer.globe.centerLat);
-    this.screenPosStart.set_dleff0$(screenX, screenY);
-    this.screenPos.set_czzhjp$(this.screenPosStart);
-    if (this.screen2LatLon_0(screenX, screenY, this.globeCoordsStart, ctx)) {
-      this.startDist = this.cam.globalPos.toMutableVec3d_5s4mqs$(this.tmpVec).distance_czzhiw$(this.hitPosWorld);
-      this.startZoom = this.camTransform.zoom;
-      this.globeCoords.set_czzhjr$(this.globeCoordsStart);
-    }this.isValid = true;
-  };
-  GlobeCamHandler$GlobePan.prototype.apply_aemszp$ = function (ctx) {
-    if (this.isValid) {
-      if (this.screen2LatLon_0(this.screenPos.x, this.screenPos.y, this.globeCoords, ctx)) {
-        this.globeCenter.x = this.globeCenter.x + (this.globeCoordsStart.x - this.globeCoords.x);
-        var tmp$ = this.globeCenter;
-        var $receiver = this.globeCenter.y + (this.globeCoordsStart.y - this.globeCoords.y);
-        var min = -85.0;
-        var clamp$result;
-        if ($receiver < min) {
-          clamp$result = min;
-        } else if ($receiver > 85.0) {
-          clamp$result = 85.0;
-        } else {
-          clamp$result = $receiver;
-        }
-        tmp$.y = clamp$result;
-      }}};
-  GlobeCamHandler$GlobePan.prototype.applyZoom_0 = function () {
-    this.cam.globalPos.toMutableVec3d_5s4mqs$(this.tmpRayO);
-    this.cam.globalLookDir.toMutableVec3d_5s4mqs$(this.tmpRayL).norm();
-    var d = this.hitDistSphere_0(this.tmpRayO, this.tmpRayL, this.hitPosWorld, this.startDist);
-    if (d < kotlin_js_internal_DoubleCompanionObject.MAX_VALUE) {
-      this.camTransform.resetZoom_14dthe$(this.camTransform.zoom - d / 4);
-      println_0('startDist = ' + this.startDist + ', d = ' + d);
-    }};
-  GlobeCamHandler$GlobePan.prototype.screen2LatLon_0 = function (screenX, screenY, result, ctx) {
-    var tmp$, tmp$_0;
-    tmp$_0 = (tmp$ = this.$outer.scene) != null ? tmp$.viewport : null;
-    if (tmp$_0 == null) {
-      return false;
-    }var viewport = tmp$_0;
-    if (this.cam.computePickRay_evt2sh$(this.pickRay, screenX, screenY, viewport, ctx)) {
-      this.pickRay.origin.toMutableVec3d_5s4mqs$(this.tmpRayO);
-      this.pickRay.direction.toMutableVec3d_5s4mqs$(this.tmpRayL);
-      this.$outer.globe.toLocalCoords_j7uy7i$(this.tmpRayO, 1.0);
-      this.$outer.globe.toLocalCoords_j7uy7i$(this.tmpRayL, 0.0);
-      var radius = this.$outer.globe.radius + this.$outer.globe.getHeightAt_lu1900$(this.$outer.globe.centerLat, this.$outer.globe.centerLon);
-      var ldo = this.tmpRayL.times_czzhiw$(this.tmpRayO);
-      var sqr = ldo * ldo - this.tmpRayO.sqrLength() + radius * radius;
-      if (sqr > 0) {
-        var hitDist = -ldo - Math_0.sqrt(sqr);
-        this.tmpRayL.scale_b0flbq$(hitDist, this.hitPosWorld).add_czzhiw$(this.tmpRayO);
-        var y = this.hitPosWorld.x;
-        var x = this.hitPosWorld.z;
-        result.x = Math_0.atan2(y, x) * package$math.RAD_2_DEG;
-        var tmp$_1 = math.PI * 0.5;
-        var x_0 = this.hitPosWorld.y / radius;
-        result.y = (tmp$_1 - Math_0.acos(x_0)) * package$math.RAD_2_DEG;
-        this.$outer.globe.toGlobalCoords_j7uy7i$(this.hitPosWorld);
-        return true;
-      }}return false;
-  };
-  GlobeCamHandler$GlobePan.prototype.hitDistSphere_0 = function (orig, dir, center, radius) {
-    center.subtract_vgki2o$(orig, this.tmpVec);
-    var tc = this.tmpVec.times_czzhiw$(dir);
-    if (tc < 0) {
-      return kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
-    }var rSqr = radius * radius;
-    var dSqr = this.tmpVec.sqrLength() - tc * tc;
-    if (dSqr > rSqr) {
-      return kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
-    }var x = rSqr - dSqr;
-    var t1c = Math_0.sqrt(x);
-    return tc - t1c;
-  };
-  GlobeCamHandler$GlobePan.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'GlobePan',
-    interfaces: []
-  };
-  function GlobeCamHandler_init$lambda(this$GlobeCamHandler) {
-    return function ($receiver, it) {
-      this$GlobeCamHandler.onPreRender_0(it);
-      return Unit;
-    };
-  }
-  GlobeCamHandler.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'GlobeCamHandler',
-    interfaces: [OrbitInputTransform]
-  };
-  function TileFrame(tileName, globe) {
-    TransformGroup.call(this);
-    this.tileName = tileName;
-    this.globe_0 = globe;
-    this.zoomGroups = ArrayList_init_0();
-    this.tileCount_sswiux$_0 = 0;
-    var tmp$, tmp$_0;
-    this.rotate_5820x2$(this.tileName.lonCenter, Vec3d$Companion_getInstance().Y_AXIS);
-    this.rotate_5820x2$(90.0 - this.tileName.latCenter, Vec3d$Companion_getInstance().X_AXIS);
-    this.translate_yvo9jy$(0.0, this.globe_0.radius, 0.0);
-    this.checkInverse();
-    tmp$ = this.tileName.zoom;
-    tmp$_0 = this.globe_0.maxZoomLvl;
-    for (var i = tmp$; i <= tmp$_0; i++) {
-      var grp = new Group();
-      this.zoomGroups.add_11rb$(grp);
-      this.unaryPlus_uv0sim$(grp);
-    }
-  }
-  Object.defineProperty(TileFrame.prototype, 'transformToLocal', {
-    get: function () {
-      return this.invTransform;
-    }
-  });
-  Object.defineProperty(TileFrame.prototype, 'transformToGlobal', {
-    get: function () {
-      return this.transform;
-    }
-  });
-  Object.defineProperty(TileFrame.prototype, 'tileCount', {
-    get: function () {
-      return this.tileCount_sswiux$_0;
-    },
-    set: function (tileCount) {
-      this.tileCount_sswiux$_0 = tileCount;
-    }
-  });
-  TileFrame.prototype.addTile_xadgus$ = function (tile) {
-    this.getZoomGroup_0(tile.tileName.zoom).plusAssign_f1kmr1$(tile);
-    this.tileCount = this.tileCount + 1 | 0;
-  };
-  TileFrame.prototype.removeTile_xadgus$ = function (tile) {
-    this.getZoomGroup_0(tile.tileName.zoom).minusAssign_f1kmr1$(tile);
-    this.tileCount = this.tileCount - 1 | 0;
-  };
-  TileFrame.prototype.getZoomGroup_0 = function (level) {
-    return this.zoomGroups.get_za3lpa$(level - this.tileName.zoom | 0);
-  };
-  TileFrame.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TileFrame',
-    interfaces: [TransformGroup]
-  };
-  function Comparator$ObjectLiteral_1(closure$comparison) {
-    this.closure$comparison = closure$comparison;
-  }
-  Comparator$ObjectLiteral_1.prototype.compare = function (a, b) {
-    return this.closure$comparison(a, b);
-  };
-  Comparator$ObjectLiteral_1.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_1 = wrapFunction(function () {
-    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
-    return function (closure$selector) {
-      return function (a, b) {
-        var selector = closure$selector;
-        return compareValues(selector(a), selector(b));
-      };
-    };
-  });
-  function TileManager(globe) {
-    this.globe = globe;
-    this.maxTiles = 300;
-    this.minZoomLvl = 3;
-    this.maxZoomLvl = 19;
-    this.tiles_0 = LinkedHashMap_init();
-    this.loadingTiles_0 = LinkedHashSet_init();
-    this.removingTiles_0 = LinkedHashMap_init();
-    this.center_zihcwr$_0 = new TileName(0, 0, 1);
-  }
-  Object.defineProperty(TileManager.prototype, 'center', {
-    get: function () {
-      return this.center_zihcwr$_0;
-    },
-    set: function (center) {
-      this.center_zihcwr$_0 = center;
-    }
-  });
-  TileManager.prototype.onTileLoaded_xadgus$ = function (tile) {
-    var $receiver = this.loadingTiles_0;
-    var element = tile.key;
-    $receiver.remove_11rb$(element);
-    this.removeObsoleteTiles_0(tile);
-  };
-  TileManager.prototype.onTileDeleted_xadgus$ = function (tile) {
-    if (!tile.isRemovable) {
-      var $this = package$util.Log;
-      var level = Log$Level.ERROR;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'removed non removable tile: ' + tile.tileName);
-      }}var $receiver = this.loadingTiles_0;
-    var element = tile.key;
-    $receiver.remove_11rb$(element);
-    var $receiver_0 = this.removingTiles_0;
-    var key = tile.key;
-    $receiver_0.remove_11rb$(key);
-    var $receiver_1 = this.tiles_0;
-    var key_0 = tile.key;
-    $receiver_1.remove_11rb$(key_0);
-  };
-  TileManager.prototype.onPreRender_aemszp$ = function (ctx) {
-    if (this.loadingTiles_0.isEmpty() && !this.removingTiles_0.isEmpty()) {
-      var tmp$;
-      tmp$ = this.removingTiles_0.values.iterator();
-      while (tmp$.hasNext()) {
-        var element = tmp$.next();
-        this.globe.removeTile_xadgus$(element);
-      }
-      this.removingTiles_0.clear();
-      var tmp$_0;
-      tmp$_0 = this.tiles_0.values.iterator();
-      while (tmp$_0.hasNext()) {
-        var element_0 = tmp$_0.next();
-        element_0.isVisible = true;
-      }
-    }};
-  TileManager.prototype.updateCenter_6i2c0k$ = function (newCenter, isMoving, ctx) {
-    if (!(newCenter != null ? newCenter.equals(this.center) : null) && (this.tiles_0.size < this.maxTiles || !isMoving)) {
-      this.center = newCenter;
-      this.updateTiles_0(ctx);
-    }};
-  TileManager.prototype.getCenterTile = function () {
-    return this.getTile_xacwza$(this.center);
-  };
-  TileManager.prototype.getTile_xacwza$ = function (tileName) {
-    return this.getTile_s8cxhz$(tileName.fusedKey);
-  };
-  TileManager.prototype.getTile_s8cxhz$ = function (key) {
-    return this.tiles_0.get_11rb$(key);
-  };
-  function TileManager$updateTiles$lambda(this$TileManager) {
-    return function (m) {
-      if (!m.isLoaded || !m.isCurrentlyVisible) {
-        return -kotlin_js_internal_DoubleCompanionObject.MAX_VALUE;
-      } else {
-        var dx = m.tileName.lonCenter - this$TileManager.center.lonCenter;
-        var dy = m.tileName.latCenter - this$TileManager.center.latCenter;
-        return -(dx * dx + dy * dy);
-      }
-    };
-  }
-  TileManager.prototype.updateTiles_0 = function (ctx) {
-    var tmp$;
-    var newTiles = this.computeNeededTileList_0();
-    this.removingTiles_0.putAll_a2k3zr$(this.tiles_0);
-    for (var i = 0; i !== newTiles.size; ++i) {
-      var key = newTiles.get_za3lpa$(i);
-      this.removingTiles_0.remove_11rb$(key);
-      var existing = this.tiles_0.get_11rb$(key);
-      if (existing == null) {
-        var tile = new TileMesh(this.globe, TileName$Companion_getInstance().fromFusedKey_s8cxhz$(key), ctx);
-        this.loadingTiles_0.add_11rb$(key);
-        this.tiles_0.put_xwzc9p$(key, tile);
-        this.globe.addTile_xadgus$(tile);
-      } else {
-        existing.isRemovable = false;
-      }
-    }
-    var tmp$_0;
-    tmp$_0 = this.removingTiles_0.values.iterator();
-    while (tmp$_0.hasNext()) {
-      var element = tmp$_0.next();
-      element.isRemovable = true;
-    }
-    var forceRemoveThresh = numberToInt(this.maxTiles * 1.5);
-    if (this.tiles_0.size > forceRemoveThresh) {
-      var $receiver = ArrayList_init_0();
-      $receiver.addAll_brywnq$(this.removingTiles_0.values);
-      var rmQueue = $receiver;
-      if (rmQueue.size > 1) {
-        sortWith(rmQueue, new Comparator$ObjectLiteral_1(compareBy$lambda_1(TileManager$updateTiles$lambda(this))));
-      }tmp$ = this.tiles_0.size - forceRemoveThresh | 0;
-      for (var i_0 = 0; i_0 <= tmp$; i_0++) {
-        this.globe.removeTile_xadgus$(rmQueue.get_za3lpa$(i_0));
-      }
-    }};
-  TileManager.prototype.computeNeededTileList_0 = function () {
-    var tileList = ArrayList_init_0();
-    var rng = 5;
-    var zoom = this.center.zoom;
-    var xStart = this.center.x - rng + 1 & -2;
-    var xEnd = (this.center.x + rng + 1 & -2) - 1 | 0;
-    var yStart = this.center.y - rng + 1 & -2;
-    var yEnd = (this.center.y + rng + 1 & -2) - 1 | 0;
-    this.addTilesWrappingX_0(xStart, xEnd, yStart, yEnd, zoom, tileList);
-    for (var i = 1; i <= 4; i++) {
-      zoom = zoom - 1 | 0;
-      if (zoom >= this.minZoomLvl) {
-        var xStShf = xStart >> 1;
-        var xEdShf = xEnd + 1 >> 1;
-        var yStShf = yStart >> 1;
-        var yEdShf = yEnd + 1 >> 1;
-        xStart = xStShf - 1 & -2;
-        xEnd = (xEdShf & -2) + 1 | 0;
-        yStart = yStShf - 1 & -2;
-        yEnd = (yEdShf & -2) + 1 | 0;
-        this.addTilesWrappingX_0(xStart, xStShf - 1 | 0, yStart, yEnd, zoom, tileList);
-        this.addTilesWrappingX_0(xEdShf, xEnd, yStart, yEnd, zoom, tileList);
-        this.addTilesWrappingX_0(xStShf, xEdShf - 1 | 0, yStart, yStShf - 1 | 0, zoom, tileList);
-        this.addTilesWrappingX_0(xStShf, xEdShf - 1 | 0, yEdShf, yEnd, zoom, tileList);
-      } else {
-        break;
-      }
-    }
-    return tileList;
-  };
-  TileManager.prototype.addTilesWrappingX_0 = function (xStart, xEnd, yStart, yEnd, zoom, tiles) {
-    var size = 1 << zoom;
-    var ys = Math_0.max(0, yStart);
-    var a = size - 1 | 0;
-    var ye = Math_0.min(a, yEnd);
-    var tmp$ = Math_0.max(0, xStart);
-    var a_0 = size - 1 | 0;
-    this.addTiles_0(new IntRange(tmp$, Math_0.min(a_0, xEnd)), new IntRange(ys, ye), zoom, tiles);
-    if (xStart < 0 && xEnd < (size - 1 | 0)) {
-      var a_1 = size + xStart | 0;
-      this.addTiles_0(until(Math_0.max(a_1, xEnd), size), new IntRange(ys, ye), zoom, tiles);
-    } else if (xStart > 0 && xEnd > (size - 1 | 0)) {
-      var b = xEnd - (size - 1) | 0;
-      this.addTiles_0(new IntRange(0, Math_0.min(xStart, b)), new IntRange(ys, ye), zoom, tiles);
-    }};
-  TileManager.prototype.addTiles_0 = function (xRng, yRng, zoom, tiles) {
-    if ((xRng.last - xRng.first | 0) > 2 && (yRng.last - yRng.first | 0) > 2) {
-      this.addTilesCircular_0(xRng, yRng, zoom, tiles);
-    } else {
-      this.addTilesRectRange_0(xRng, yRng, zoom, tiles);
-    }
-  };
-  TileManager.prototype.addTilesRectRange_0 = function (xRng, yRng, zoom, tiles) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4;
-    tmp$ = xRng.first;
-    tmp$_0 = xRng.last;
-    tmp$_1 = xRng.step;
-    for (var x = tmp$; x <= tmp$_0; x += tmp$_1) {
-      tmp$_2 = yRng.first;
-      tmp$_3 = yRng.last;
-      tmp$_4 = yRng.step;
-      for (var y = tmp$_2; y <= tmp$_3; y += tmp$_4) {
-        this.addTile_0(x, y, zoom, xRng, yRng, tiles);
-      }
-    }
-  };
-  TileManager.prototype.addTilesCircular_0 = function (xRng, yRng, zoom, tiles) {
-    var tmp$, tmp$_0;
-    var cx = xRng.first + ((xRng.last - xRng.first | 0) / 2 | 0) | 0;
-    var cy = yRng.first + ((yRng.last - yRng.first | 0) / 2 | 0) | 0;
-    var a = cx - xRng.first | 0;
-    var b = xRng.last - cx | 0;
-    var tmp$_1 = Math_0.max(a, b);
-    var a_0 = cy - yRng.first | 0;
-    var b_0 = yRng.last - cy | 0;
-    var b_1 = Math_0.max(a_0, b_0);
-    var r = Math_0.max(tmp$_1, b_1);
-    for (var i = 0; i <= r; i++) {
-      tmp$ = cx + i | 0;
-      for (var x = cx - i | 0; x <= tmp$; x++) {
-        this.addTile_0(x, cy - i | 0, zoom, xRng, yRng, tiles);
-        if (i > 0) {
-          this.addTile_0(x, cy + i | 0, zoom, xRng, yRng, tiles);
-        }}
-      if (i > 0) {
-        tmp$_0 = cy + i | 0;
-        for (var y = cy - i + 1 | 0; y < tmp$_0; y++) {
-          this.addTile_0(cx - i | 0, y, zoom, xRng, yRng, tiles);
-          this.addTile_0(cx + i | 0, y, zoom, xRng, yRng, tiles);
-        }
-      }}
-  };
-  TileManager.prototype.addTile_0 = function (x, y, zoom, xRng, yRng, tiles) {
-    if (xRng.contains_mef7kx$(x) && yRng.contains_mef7kx$(y)) {
-      var element = TileName$Companion_getInstance().fuesdKey_qt1dr2$(x, y, zoom);
-      tiles.add_11rb$(element);
-    }};
-  TileManager.prototype.removeObsoleteTiles_0 = function (tile) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
-    var makeVisible = true;
-    var it = this.removingTiles_0.values.iterator();
-    while (it.hasNext()) {
-      var mesh = it.next();
-      if (!mesh.isRemovable) {
-        var $this = package$util.Log;
-        var level = Log$Level.ERROR;
-        var tag = Kotlin.getKClassFromExpression(this).simpleName;
-        if (level.level >= $this.level.level) {
-          $this.printer(level, tag, 'mesh is not removable!');
-        }}if (mesh.tileName.isSubTileOf_xacwza$(tile.tileName)) {
-        this.globe.removeTile_xadgus$(mesh);
-        it.remove();
-      } else if (tile.tileName.isSubTileOf_xacwza$(mesh.tileName)) {
-        var z = mesh.tileName.zoom + 1 | 0;
-        var subKey1 = TileName$Companion_getInstance().fuesdKey_qt1dr2$(mesh.tileName.x * 2 | 0, mesh.tileName.y * 2 | 0, z);
-        var subKey2 = TileName$Companion_getInstance().fuesdKey_qt1dr2$(mesh.tileName.x * 2 | 0, (mesh.tileName.y * 2 | 0) + 1 | 0, z);
-        var subKey3 = TileName$Companion_getInstance().fuesdKey_qt1dr2$((mesh.tileName.x * 2 | 0) + 1 | 0, mesh.tileName.y * 2 | 0, z);
-        var subKey4 = TileName$Companion_getInstance().fuesdKey_qt1dr2$((mesh.tileName.x * 2 | 0) + 1 | 0, (mesh.tileName.y * 2 | 0) + 1 | 0, z);
-        if (((tmp$ = this.tiles_0.get_11rb$(subKey1)) != null ? tmp$.isLoaded : null) === true && ((tmp$_0 = this.tiles_0.get_11rb$(subKey2)) != null ? tmp$_0.isLoaded : null) === true && ((tmp$_1 = this.tiles_0.get_11rb$(subKey3)) != null ? tmp$_1.isLoaded : null) === true && ((tmp$_2 = this.tiles_0.get_11rb$(subKey4)) != null ? tmp$_2.isLoaded : null) === true) {
-          this.globe.removeTile_xadgus$(mesh);
-          it.remove();
-          ensureNotNull(this.tiles_0.get_11rb$(subKey1)).isVisible = true;
-          ensureNotNull(this.tiles_0.get_11rb$(subKey2)).isVisible = true;
-          ensureNotNull(this.tiles_0.get_11rb$(subKey3)).isVisible = true;
-          ensureNotNull(this.tiles_0.get_11rb$(subKey4)).isVisible = true;
-        } else {
-          makeVisible = false;
-        }
-      }}
-    tile.isVisible = makeVisible;
-  };
-  TileManager.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TileManager',
-    interfaces: []
-  };
-  function TileMesh(globe, tileName, ctx) {
-    TileMesh$Companion_getInstance();
-    Mesh.call(this, IndexedVertexList_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().NORMALS, Attribute$Companion_getInstance().TEXTURE_COORDS]), tileName.toString());
-    this.globe = globe;
-    this.tileName = tileName;
-    this.createTime_0 = ctx.time;
-    this.generatorJob_0 = null;
-    this.isRemovable = false;
-    this.isLoaded_s14qev$_0 = false;
-    this.isFallbackShader_0 = false;
-    this.attributionInfo = LinkedHashSet_init();
-    this.isVisible = false;
-    this.generatorJob_0 = launch(coroutines.GlobalScope, void 0, void 0, TileMesh_init$lambda(this));
-  }
-  Object.defineProperty(TileMesh.prototype, 'key', {
-    get: function () {
-      return this.tileName.fusedKey;
-    }
-  });
-  Object.defineProperty(TileMesh.prototype, 'isCurrentlyVisible', {
-    get: function () {
-      return this.isRendered;
-    }
-  });
-  Object.defineProperty(TileMesh.prototype, 'isLoaded', {
-    get: function () {
-      return this.isLoaded_s14qev$_0;
-    },
-    set: function (isLoaded) {
-      this.isLoaded_s14qev$_0 = isLoaded;
-    }
-  });
-  TileMesh.prototype.preRender_aemszp$ = function (ctx) {
-    if (!this.generatorJob_0.isCompleted) {
-      return;
-    } else if (this.geometry.numVertices === 0) {
-      var $this = package$util.Log;
-      var level = Log$Level.ERROR;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'mesh is still empty');
-      }}Mesh.prototype.preRender_aemszp$.call(this, ctx);
-  };
-  TileMesh.prototype.dispose_aemszp$ = function (ctx) {
-    Mesh.prototype.dispose_aemszp$.call(this, ctx);
-  };
-  function TileMesh$AttributionInfo(text, url) {
-    this.text = text;
-    this.url = url;
-  }
-  TileMesh$AttributionInfo.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'AttributionInfo',
-    interfaces: []
-  };
-  TileMesh$AttributionInfo.prototype.component1 = function () {
-    return this.text;
-  };
-  TileMesh$AttributionInfo.prototype.component2 = function () {
-    return this.url;
-  };
-  TileMesh$AttributionInfo.prototype.copy_jyasbz$ = function (text, url) {
-    return new TileMesh$AttributionInfo(text === void 0 ? this.text : text, url === void 0 ? this.url : url);
-  };
-  TileMesh$AttributionInfo.prototype.toString = function () {
-    return 'AttributionInfo(text=' + Kotlin.toString(this.text) + (', url=' + Kotlin.toString(this.url)) + ')';
-  };
-  TileMesh$AttributionInfo.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.text) | 0;
-    result = result * 31 + Kotlin.hashCode(this.url) | 0;
-    return result;
-  };
-  TileMesh$AttributionInfo.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.text, other.text) && Kotlin.equals(this.url, other.url)))));
-  };
-  function TileMesh$Companion() {
-    TileMesh$Companion_instance = this;
-    this.TILE_TIMEOUT = 3.0;
-  }
-  TileMesh$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var TileMesh$Companion_instance = null;
-  function TileMesh$Companion_getInstance() {
-    if (TileMesh$Companion_instance === null) {
-      new TileMesh$Companion();
-    }return TileMesh$Companion_instance;
-  }
-  function Coroutine$TileMesh_init$lambda(this$TileMesh_0, $receiver_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$this$TileMesh = this$TileMesh_0;
-  }
-  Coroutine$TileMesh_init$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$TileMesh_init$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$TileMesh_init$lambda.prototype.constructor = Coroutine$TileMesh_init$lambda;
-  Coroutine$TileMesh_init$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$this$TileMesh.globe.meshGenerator.generateMesh_gyuwlq$(this.local$this$TileMesh.globe, this.local$this$TileMesh, this.local$this$TileMesh.globe.meshDetailLevel, this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function TileMesh_init$lambda(this$TileMesh_0) {
-    return function ($receiver_0, continuation_0, suspended) {
-      var instance = new Coroutine$TileMesh_init$lambda(this$TileMesh_0, $receiver_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  TileMesh.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TileMesh',
-    interfaces: [Mesh]
-  };
-  function TileMeshGenerator() {
-  }
-  TileMeshGenerator.$metadata$ = {
-    kind: Kind_INTERFACE,
-    simpleName: 'TileMeshGenerator',
-    interfaces: []
-  };
-  function GridTileMeshGenerator() {
-    GridTileMeshGenerator$Companion_getInstance();
-  }
-  GridTileMeshGenerator.prototype.getFrame_uewq6o$_0 = function (globe, tileName) {
-    var tmp$;
-    if (tileName.zoom < globe.frameZoomThresh) {
-      tmp$ = null;
-    } else {
-      tmp$ = globe.getTileFrame_xacwza$(tileName);
-    }
-    return tmp$;
-  };
-  function Coroutine$generateMesh_gyuwlq$($this, globe_0, tileMesh_0, stepsLog2_0, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.exceptionState_0 = 1;
-    this.$this = $this;
-    this.local$frame = void 0;
-    this.local$builder = void 0;
-    this.local$steps = void 0;
-    this.local$zoomDiv = void 0;
-    this.local$heightResolution = void 0;
-    this.local$pos = void 0;
-    this.local$nrm = void 0;
-    this.local$posf = void 0;
-    this.local$map = void 0;
-    this.local$row = void 0;
-    this.local$latRad = void 0;
-    this.local$i = void 0;
-    this.local$lonRad = void 0;
-    this.local$lat = void 0;
-    this.local$lon = void 0;
-    this.local$tmp$ = void 0;
-    this.local$$receiver = void 0;
-    this.local$globe = globe_0;
-    this.local$tileMesh = tileMesh_0;
-    this.local$stepsLog2 = stepsLog2_0;
-  }
-  Coroutine$generateMesh_gyuwlq$.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$generateMesh_gyuwlq$.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$generateMesh_gyuwlq$.prototype.constructor = Coroutine$generateMesh_gyuwlq$;
-  Coroutine$generateMesh_gyuwlq$.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            var tmp$, tmp$_0;
-            this.local$frame = this.$this.getFrame_uewq6o$_0(this.local$globe, this.local$tileMesh.tileName);
-            this.local$builder = new MeshBuilder(this.local$tileMesh.geometry);
-            this.local$tileMesh.geometry.isBatchUpdate = true;
-            this.local$steps = 1 << this.local$stepsLog2;
-            this.local$zoomDiv = 2 * math.PI / (1 << this.local$tileMesh.tileName.zoom + this.local$stepsLog2);
-            this.local$heightResolution = this.local$tileMesh.tileName.arcSecondsLat() / this.local$steps;
-            this.local$pos = MutableVec3d_init();
-            this.local$nrm = MutableVec3f_init();
-            this.local$posf = MutableVec3f_init();
-            this.local$map = null;
-            this.local$row = 0;
-            this.state_0 = 2;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            if (this.local$row > this.local$steps) {
-              this.state_0 = 12;
-              continue;
-            }
-            var tys = Kotlin.imul(this.local$tileMesh.tileName.y + 1 | 0, this.local$steps) - this.local$row | 0;
-            var x = math.PI - tys * this.local$zoomDiv;
-            var x_0 = Math_0.sinh(x);
-            this.local$latRad = Math_0.atan(x_0);
-            this.local$i = 0;
-            this.state_0 = 3;
-            continue;
-          case 3:
-            if (this.local$i > this.local$steps) {
-              this.state_0 = 9;
-              continue;
-            }
-            this.local$lonRad = (Kotlin.imul(this.local$tileMesh.tileName.x, this.local$steps) + this.local$i | 0) * this.local$zoomDiv - math.PI;
-            this.local$lat = this.local$latRad * package$math.RAD_2_DEG;
-            this.local$lon = this.local$lonRad * package$math.RAD_2_DEG;
-            if (this.local$map == null || !this.local$map.contains_lu1900$(this.local$lat, this.local$lon)) {
-              this.local$map = this.local$globe.elevationMapProvider.getElevationMapAt_yvo9jy$(this.local$lat, this.local$lon, this.local$heightResolution);
-              if ((tmp$ = this.local$map != null ? this.local$map.meta : null) != null) {
-                var $receiver = this.local$tileMesh.attributionInfo;
-                var element = new TileMesh$AttributionInfo('Elevation-Data: ' + tmp$.attr, null);
-                $receiver.add_11rb$(element);
-              }}
-            if (this.local$map != null) {
-              this.local$$receiver = this.local$map;
-              this.state_0 = 4;
-              continue;
-            } else {
-              this.local$tmp$ = null;
-              this.state_0 = 7;
-              continue;
-            }
-
-          case 4:
-            if (this.local$$receiver.isAvailable) {
-              this.state_0 = 6;
-              continue;
-            }
-            this.state_0 = 5;
-            this.result_0 = delay(L50, this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 5:
-            this.state_0 = 4;
-            continue;
-          case 6:
-            this.local$tmp$ = this.local$$receiver.getElevationAt_lu1900$(this.local$lat, this.local$lon);
-            this.state_0 = 7;
-            continue;
-          case 7:
-            var height = (tmp$_0 = this.local$tmp$) != null ? tmp$_0 : 0.0;
-            GridTileMeshGenerator$Companion_getInstance().latLonToCartesian_dp1656$(this.local$latRad, this.local$lonRad, this.local$globe.radius + height, this.local$pos);
-            if (this.local$frame != null) {
-              this.local$frame.transformToLocal.transform_j7uy7i$(this.local$pos, 1.0);
-            }
-            var uv = new Vec2f(this.local$i / this.local$steps, 1.0 - this.local$row / this.local$steps);
-            var iv = this.local$builder.vertex_n440gp$(this.local$pos.toMutableVec3f_5s4mqq$(this.local$posf), this.local$nrm, uv);
-            if (this.local$i > 0 && this.local$row > 0) {
-              this.local$tileMesh.geometry.addTriIndices_qt1dr2$(iv - this.local$steps - 2 | 0, iv, iv - 1 | 0);
-              this.local$tileMesh.geometry.addTriIndices_qt1dr2$(iv - this.local$steps - 2 | 0, iv - this.local$steps - 1 | 0, iv);
-            }
-            this.state_0 = 8;
-            continue;
-          case 8:
-            this.local$i++;
-            this.state_0 = 3;
-            continue;
-          case 9:
-            this.state_0 = 10;
-            this.result_0 = yield_0(this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 10:
-            this.state_0 = 11;
-            continue;
-          case 11:
-            this.local$row++;
-            this.state_0 = 2;
-            continue;
-          case 12:
-            this.local$tileMesh.geometry.generateNormals();
-            this.local$tileMesh.geometry.isBatchUpdate = false;
-            return;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  GridTileMeshGenerator.prototype.generateMesh_gyuwlq$ = function (globe_0, tileMesh_0, stepsLog2_0, continuation_0, suspended) {
-    var instance = new Coroutine$generateMesh_gyuwlq$(this, globe_0, tileMesh_0, stepsLog2_0, continuation_0);
-    if (suspended)
-      return instance;
-    else
-      return instance.doResume(null);
-  };
-  function GridTileMeshGenerator$Companion() {
-    GridTileMeshGenerator$Companion_instance = this;
-  }
-  GridTileMeshGenerator$Companion.prototype.latLonToCartesian_dp1656$ = function (latRad, lonRad, radius, result) {
-    var theta = math.PI * 0.5 - latRad;
-    result.x = Math_0.sin(theta) * Math_0.sin(lonRad) * radius;
-    result.z = Math_0.sin(theta) * Math_0.cos(lonRad) * radius;
-    result.y = Math_0.cos(theta) * radius;
-    return result;
-  };
-  GridTileMeshGenerator$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var GridTileMeshGenerator$Companion_instance = null;
-  function GridTileMeshGenerator$Companion_getInstance() {
-    if (GridTileMeshGenerator$Companion_instance === null) {
-      new GridTileMeshGenerator$Companion();
-    }return GridTileMeshGenerator$Companion_instance;
-  }
-  GridTileMeshGenerator.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'GridTileMeshGenerator',
-    interfaces: [TileMeshGenerator]
-  };
-  function TileName(x, y, zoom) {
-    TileName$Companion_getInstance();
-    this.x = x;
-    this.y = y;
-    this.zoom = zoom;
-    this.latN = 0;
-    this.latS = 0;
-    this.lonE = 0;
-    this.lonW = 0;
-    this.latCenter = 0;
-    this.lonCenter = 0;
-    this.fusedKey = TileName$Companion_getInstance().fuesdKey_qt1dr2$(this.x, this.y, this.zoom);
-    this.sizeMeters = 0;
-    var zp = 1 << this.zoom;
-    var x_0 = math.PI - (this.y + 1 | 0) / (1 << this.zoom) * 2 * math.PI;
-    var x_1 = Math_0.sinh(x_0);
-    this.latS = Math_0.atan(x_1) * package$math.RAD_2_DEG;
-    this.lonW = this.x / zp * 360.0 - 180.0;
-    var x_2 = math.PI - this.y / (1 << this.zoom) * 2 * math.PI;
-    var x_3 = Math_0.sinh(x_2);
-    this.latN = Math_0.atan(x_3) * package$math.RAD_2_DEG;
-    this.lonE = (this.x + 1 | 0) / zp * 360.0 - 180.0;
-    this.latCenter = this.latS + (this.latN - this.latS) * 0.5;
-    this.lonCenter = this.lonE + (this.lonW - this.lonE) * 0.5;
-    var tmp$ = 2 * math.PI * Globe$Companion_getInstance().EARTH_RADIUS;
-    var x_4 = this.latCenter * package$math.DEG_2_RAD;
-    this.sizeMeters = tmp$ * Math_0.cos(x_4) / (1 << this.zoom);
-  }
-  TileName.prototype.isSubTileOf_xacwza$ = function (parent) {
-    var tmp$;
-    if (parent.zoom > this.zoom) {
-      tmp$ = false;
-    } else {
-      var projX = this.x >> this.zoom - parent.zoom;
-      var projY = this.y >> this.zoom - parent.zoom;
-      tmp$ = (projX === parent.x && projY === parent.y);
-    }
-    return tmp$;
-  };
-  TileName.prototype.toString = function () {
-    return this.zoom.toString() + '/' + this.x + '/' + this.y;
-  };
-  TileName.prototype.equals = function (other) {
-    if (this === other)
-      return true;
-    if (!Kotlin.isType(other, TileName))
-      return false;
-    if (!equals(this.fusedKey, other.fusedKey))
-      return false;
-    return true;
-  };
-  TileName.prototype.hashCode = function () {
-    return hashCode(this.fusedKey);
-  };
-  TileName.prototype.arcSecondsLat = function () {
-    return (this.latN - this.latS) * 3600.0;
-  };
-  function TileName$Companion() {
-    TileName$Companion_instance = this;
-  }
-  TileName$Companion.prototype.forLatLon_syxxoe$ = function (lat, lon, zoom) {
-    var latRad = lat * package$math.DEG_2_RAD;
-    var zp = 1 << zoom;
-    var $receiver = numberToInt((lon + 180.0) / 360 * zp);
-    var max = zp - 1 | 0;
-    var clamp$result;
-    if ($receiver < 0) {
-      clamp$result = 0;
-    } else if ($receiver > max) {
-      clamp$result = max;
-    } else {
-      clamp$result = $receiver;
-    }
-    var x = clamp$result;
-    var x_0 = Math_0.tan(latRad) + 1 / Math_0.cos(latRad);
-    var $receiver_0 = numberToInt((1 - Math_0.log(x_0) / math.PI) / 2 * zp);
-    var max_0 = zp - 1 | 0;
-    var clamp$result_0;
-    if ($receiver_0 < 0) {
-      clamp$result_0 = 0;
-    } else if ($receiver_0 > max_0) {
-      clamp$result_0 = max_0;
-    } else {
-      clamp$result_0 = $receiver_0;
-    }
-    var y = clamp$result_0;
-    return new TileName(x, y, zoom);
-  };
-  TileName$Companion.prototype.fuesdKey_qt1dr2$ = function (tx, ty, tz) {
-    return Kotlin.Long.fromInt(tz).shiftLeft(58).or(Kotlin.Long.fromInt(tx & 536870911).shiftLeft(29)).or(Kotlin.Long.fromInt(ty & 536870911));
-  };
-  TileName$Companion.prototype.fromFusedKey_s8cxhz$ = function (fusedKey) {
-    var zoom = fusedKey.shiftRight(58).toInt();
-    var x = fusedKey.shiftRight(29).and(L536870911).toInt();
-    var y = fusedKey.and(L536870911).toInt();
-    return new TileName(x, y, zoom);
-  };
-  TileName$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var TileName$Companion_instance = null;
-  function TileName$Companion_getInstance() {
-    if (TileName$Companion_instance === null) {
-      new TileName$Companion();
-    }return TileName$Companion_instance;
-  }
-  TileName.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TileName',
-    interfaces: []
-  };
-  function TileShaderProvider() {
-  }
-  TileShaderProvider.$metadata$ = {
-    kind: Kind_INTERFACE,
-    simpleName: 'TileShaderProvider',
-    interfaces: []
-  };
-  function TileShader(shader, attribution) {
-    this.shader = shader;
-    this.attribution = attribution;
-  }
-  TileShader.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TileShader',
-    interfaces: []
-  };
-  function TexImageTileShaderProvider() {
-    this.specularIntensity = 0.25;
-    this.shininess = 25.0;
-  }
-  TexImageTileShaderProvider.prototype.getShader_wqbs4n$ = function (tileName, ctx) {
-    throw new NotImplementedError();
-  };
-  TexImageTileShaderProvider.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'TexImageTileShaderProvider',
-    interfaces: [TileShaderProvider]
-  };
-  function OsmTexImageTileShaderProvider() {
-    TexImageTileShaderProvider.call(this);
-  }
-  function Coroutine$OsmTexImageTileShaderProvider$getTexture$lambda(closure$tileName_0, $receiver_0, it_0, controller, continuation_0) {
-    CoroutineImpl.call(this, continuation_0);
-    this.$controller = controller;
-    this.exceptionState_0 = 1;
-    this.local$closure$tileName = closure$tileName_0;
-    this.local$it = it_0;
-  }
-  Coroutine$OsmTexImageTileShaderProvider$getTexture$lambda.$metadata$ = {
-    kind: Kotlin.Kind.CLASS,
-    simpleName: null,
-    interfaces: [CoroutineImpl]
-  };
-  Coroutine$OsmTexImageTileShaderProvider$getTexture$lambda.prototype = Object.create(CoroutineImpl.prototype);
-  Coroutine$OsmTexImageTileShaderProvider$getTexture$lambda.prototype.constructor = Coroutine$OsmTexImageTileShaderProvider$getTexture$lambda;
-  Coroutine$OsmTexImageTileShaderProvider$getTexture$lambda.prototype.doResume = function () {
-    do
-      try {
-        switch (this.state_0) {
-          case 0:
-            this.state_0 = 2;
-            this.result_0 = this.local$it.loadTextureData_61zpoe$('https://tile.openstreetmap.org/' + this.local$closure$tileName.zoom + '/' + this.local$closure$tileName.x + '/' + this.local$closure$tileName.y + '.png', this);
-            if (this.result_0 === COROUTINE_SUSPENDED)
-              return COROUTINE_SUSPENDED;
-            continue;
-          case 1:
-            throw this.exception_0;
-          case 2:
-            return this.result_0;
-          default:this.state_0 = 1;
-            throw new Error('State Machine Unreachable execution');
-        }
-      } catch (e) {
-        if (this.state_0 === 1) {
-          this.exceptionState_0 = this.state_0;
-          throw e;
-        } else {
-          this.state_0 = this.exceptionState_0;
-          this.exception_0 = e;
-        }
-      }
-     while (true);
-  };
-  function OsmTexImageTileShaderProvider$getTexture$lambda(closure$tileName_0) {
-    return function ($receiver_0, it_0, continuation_0, suspended) {
-      var instance = new Coroutine$OsmTexImageTileShaderProvider$getTexture$lambda(closure$tileName_0, $receiver_0, it_0, this, continuation_0);
-      if (suspended)
-        return instance;
-      else
-        return instance.doResume(null);
-    };
-  }
-  OsmTexImageTileShaderProvider.prototype.getTexture_wqbs4n$ = function (tileName, ctx) {
-    return new Texture(void 0, OsmTexImageTileShaderProvider$getTexture$lambda(tileName));
-  };
-  OsmTexImageTileShaderProvider.prototype.getAttributionInfo_xacwza$ = function (tileName) {
-    return new TileMesh$AttributionInfo('Imagery: \xA9 OpenStreetMap', 'http://www.openstreetmap.org/copyright');
-  };
-  OsmTexImageTileShaderProvider.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OsmTexImageTileShaderProvider',
-    interfaces: [TexImageTileShaderProvider]
-  };
   function HalfEdgeMesh(geometry, edgeHandler) {
     if (edgeHandler === void 0)
       edgeHandler = new ListEdgeHandler();
@@ -10660,14 +8425,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'ListEdgeHandler',
     interfaces: [HalfEdgeMesh$EdgeHandler]
   };
-  function Comparator$ObjectLiteral_2(closure$comparison) {
+  function Comparator$ObjectLiteral(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_2.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_2.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_2 = wrapFunction(function () {
+  Comparator$ObjectLiteral.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  var compareBy$lambda = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -10968,7 +8733,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     InRadiusTraverser.prototype.traverse_m6hlto$.call(this, tree);
     var $receiver = this.splitEdges;
     if ($receiver.size > 1) {
-      sortWith($receiver, new Comparator$ObjectLiteral_2(compareBy$lambda_2(MeshCutXy$EdgeXyIntersectionTrav$traverse$lambda(this))));
+      sortWith($receiver, new Comparator$ObjectLiteral(compareBy$lambda(MeshCutXy$EdgeXyIntersectionTrav$traverse$lambda(this))));
     }};
   function MeshCutXy$EdgeXyIntersectionTrav$setup$ObjectLiteral(closure$edge, this$EdgeXyIntersectionTrav) {
     this.closure$edge = closure$edge;
@@ -11824,281 +9589,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function terminateOnError(targetError) {
     return new terminateOnError$ObjectLiteral(targetError);
   }
-  function MvpState() {
-    this.projMatrix = new Mat4dStack();
-    this.viewMatrix = new Mat4dStack();
-    this.modelMatrix = new Mat4dStack();
-    this.mvpMatrix = new Mat4d();
-    this.tempMatrix_0 = new Mat4d();
-    this.reset();
-  }
-  MvpState.prototype.reset = function () {
-    this.projMatrix.reset();
-    this.viewMatrix.reset();
-    this.modelMatrix.reset();
-    this.mvpMatrix.setIdentity();
-  };
-  MvpState.prototype.pushMatrices = function () {
-    this.projMatrix.push();
-    this.viewMatrix.push();
-    this.modelMatrix.push();
-  };
-  MvpState.prototype.popMatrices = function () {
-    this.projMatrix.pop();
-    this.viewMatrix.pop();
-    this.modelMatrix.pop();
-  };
-  MvpState.prototype.update_aemszp$ = function (ctx) {
-    this.projMatrix.mul_u47j3u$(this.viewMatrix.mul_u47j3u$(this.modelMatrix, this.tempMatrix_0), this.mvpMatrix);
-  };
-  MvpState.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'MvpState',
-    interfaces: []
-  };
-  function OffscreenPass(texWidth, texHeight, mipLevels, colorFormat, nQueues) {
-    this.texWidth = texWidth;
-    this.texHeight = texHeight;
-    this.mipLevels = mipLevels;
-    this.colorFormat = colorFormat;
-    this.clearColor = Color$Companion_getInstance().BLACK;
-    this.scene = null;
-    var list = ArrayList_init(nQueues);
-    for (var index = 0; index < nQueues; index++) {
-      list.add_11rb$(new DrawQueue());
-    }
-    this.drawQueues = list;
-    this.frameIdx = 0;
-    this.isSingleShot = false;
-    this.isMainPass = true;
-    this.targetMipLevel = -1;
-  }
-  OffscreenPass.prototype.dispose_aemszp$ = function (ctx) {
-    var tmp$;
-    if (this.isMainPass) {
-      (tmp$ = this.scene) != null ? (tmp$.dispose_aemszp$(ctx), Unit) : null;
-    }};
-  OffscreenPass.prototype.mipWidth_za3lpa$ = function (mipLevel) {
-    var tmp$;
-    if (mipLevel <= 0) {
-      tmp$ = this.texWidth;
-    } else {
-      tmp$ = this.texWidth >> mipLevel;
-    }
-    return tmp$;
-  };
-  OffscreenPass.prototype.mipHeight_za3lpa$ = function (mipLevel) {
-    var tmp$;
-    if (mipLevel <= 0) {
-      tmp$ = this.texHeight;
-    } else {
-      tmp$ = this.texHeight >> mipLevel;
-    }
-    return tmp$;
-  };
-  OffscreenPass.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OffscreenPass',
-    interfaces: []
-  };
-  function OffscreenPass2d(texWidth, texHeight, mipLevels, colorFormat) {
-    if (mipLevels === void 0)
-      mipLevels = 1;
-    if (colorFormat === void 0)
-      colorFormat = TexFormat$RGBA_getInstance();
-    OffscreenPass.call(this, texWidth, texHeight, mipLevels, colorFormat, 1);
-    this.impl = new OffscreenPass2dImpl(this);
-    this.onSetup = null;
-    this.beforeRender = ArrayList_init_0();
-    this.afterRender = ArrayList_init_0();
-  }
-  OffscreenPass2d.prototype.render_aemszp$ = function (ctx) {
-    var tmp$;
-    if ((tmp$ = this.scene) != null) {
-      var tmp$_0;
-      var vp = ctx.viewport;
-      ctx.viewport = new KoolContext$Viewport(0, 0, this.mipWidth_za3lpa$(this.targetMipLevel), this.mipHeight_za3lpa$(this.targetMipLevel));
-      (tmp$_0 = this.onSetup) != null ? tmp$_0(ctx) : null;
-      var $receiver = this.drawQueues.get_za3lpa$(0);
-      $receiver.clear();
-      tmp$.drawQueue = $receiver;
-      var tmp$_1;
-      tmp$_1 = this.beforeRender.iterator();
-      while (tmp$_1.hasNext()) {
-        var element = tmp$_1.next();
-        element(ctx);
-      }
-      if (this.isMainPass) {
-        tmp$.renderScene_aemszp$(ctx);
-      } else {
-        tmp$.camera.updateCamera_aemszp$(ctx);
-        tmp$.render_aemszp$(ctx);
-      }
-      ctx.viewport = vp;
-      var tmp$_2;
-      tmp$_2 = this.afterRender.iterator();
-      while (tmp$_2.hasNext()) {
-        var element_0 = tmp$_2.next();
-        element_0(ctx);
-      }
-    }this.frameIdx = this.frameIdx + 1 | 0;
-  };
-  OffscreenPass2d.prototype.dispose_aemszp$ = function (ctx) {
-    OffscreenPass.prototype.dispose_aemszp$.call(this, ctx);
-    this.impl.dispose_aemszp$(ctx);
-  };
-  OffscreenPass2d.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OffscreenPass2d',
-    interfaces: [OffscreenPass]
-  };
-  function OffscreenPassCube(texWidth, texHeight, mipLevels, colorFormat) {
-    if (colorFormat === void 0)
-      colorFormat = TexFormat$RGBA_getInstance();
-    OffscreenPass.call(this, texWidth, texHeight, mipLevels, colorFormat, 6);
-    this.impl = new OffscreenPassCubeImpl(this);
-    this.onSetup = null;
-    this.onSetupView = null;
-    this.defaultCubeMapCameraConfig_0();
-  }
-  OffscreenPassCube.prototype.render_aemszp$ = function (ctx) {
-    var tmp$;
-    if ((tmp$ = this.scene) != null) {
-      var tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-      var vp = ctx.viewport;
-      ctx.viewport = new KoolContext$Viewport(0, 0, this.mipWidth_za3lpa$(this.targetMipLevel), this.mipHeight_za3lpa$(this.targetMipLevel));
-      (tmp$_0 = this.onSetup) != null ? tmp$_0(ctx) : null;
-      tmp$_1 = OffscreenPassCube$ViewDirection$values();
-      for (tmp$_2 = 0; tmp$_2 !== tmp$_1.length; ++tmp$_2) {
-        var v = tmp$_1[tmp$_2];
-        (tmp$_3 = this.onSetupView) != null ? tmp$_3(v, ctx) : null;
-        var $receiver = this.drawQueues.get_za3lpa$(v.index);
-        $receiver.clear();
-        tmp$.drawQueue = $receiver;
-        if (this.isMainPass) {
-          tmp$.renderScene_aemszp$(ctx);
-        } else {
-          tmp$.camera.updateCamera_aemszp$(ctx);
-          tmp$.render_aemszp$(ctx);
-        }
-      }
-      ctx.viewport = vp;
-    }this.frameIdx = this.frameIdx + 1 | 0;
-  };
-  OffscreenPassCube.prototype.dispose_aemszp$ = function (ctx) {
-    OffscreenPass.prototype.dispose_aemszp$.call(this, ctx);
-    this.impl.dispose_aemszp$(ctx);
-  };
-  function OffscreenPassCube$defaultCubeMapCameraConfig$lambda(this$OffscreenPassCube, closure$camDirs) {
-    return function (viewDir, f) {
-      var tmp$;
-      if ((tmp$ = this$OffscreenPassCube.scene) != null) {
-        var closure$camDirs_0 = closure$camDirs;
-        var tmp$_0;
-        if (!Kotlin.isType(tmp$.camera, PerspectiveCamera)) {
-          tmp$.camera = new PerspectiveCamera();
-        }var it = Kotlin.isType(tmp$_0 = tmp$.camera, PerspectiveCamera) ? tmp$_0 : throwCCE();
-        it.position.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
-        it.fovY = 90.0;
-        it.clipNear = 0.1;
-        it.clipFar = 10.0;
-        tmp$.camera.isApplyProjCorrection = false;
-        tmp$.camera.lookAt.set_czzhiu$(ensureNotNull(closure$camDirs_0.get_11rb$(viewDir)));
-        switch (viewDir.name) {
-          case 'UP':
-            tmp$.camera.up.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS);
-            break;
-          case 'DOWN':
-            tmp$.camera.up.set_czzhiu$(Vec3f$Companion_getInstance().NEG_Z_AXIS);
-            break;
-          default:tmp$.camera.up.set_czzhiu$(Vec3f$Companion_getInstance().NEG_Y_AXIS);
-            break;
-        }
-      }return Unit;
-    };
-  }
-  OffscreenPassCube.prototype.defaultCubeMapCameraConfig_0 = function () {
-    var camDirs = mutableMapOf([to(OffscreenPassCube$ViewDirection$FRONT_getInstance(), new Vec3f(0.0, 0.0, 1.0)), to(OffscreenPassCube$ViewDirection$BACK_getInstance(), new Vec3f(0.0, 0.0, -1.0)), to(OffscreenPassCube$ViewDirection$LEFT_getInstance(), new Vec3f(-1.0, 0.0, 0.0)), to(OffscreenPassCube$ViewDirection$RIGHT_getInstance(), new Vec3f(1.0, 0.0, 0.0)), to(OffscreenPassCube$ViewDirection$UP_getInstance(), new Vec3f(0.0, 1.0, 0.0)), to(OffscreenPassCube$ViewDirection$DOWN_getInstance(), new Vec3f(0.0, -1.0, 0.0))]);
-    this.onSetupView = OffscreenPassCube$defaultCubeMapCameraConfig$lambda(this, camDirs);
-  };
-  function OffscreenPassCube$ViewDirection(name, ordinal, index) {
-    Enum.call(this);
-    this.index = index;
-    this.name$ = name;
-    this.ordinal$ = ordinal;
-  }
-  function OffscreenPassCube$ViewDirection_initFields() {
-    OffscreenPassCube$ViewDirection_initFields = function () {
-    };
-    OffscreenPassCube$ViewDirection$FRONT_instance = new OffscreenPassCube$ViewDirection('FRONT', 0, 0);
-    OffscreenPassCube$ViewDirection$BACK_instance = new OffscreenPassCube$ViewDirection('BACK', 1, 1);
-    OffscreenPassCube$ViewDirection$LEFT_instance = new OffscreenPassCube$ViewDirection('LEFT', 2, 2);
-    OffscreenPassCube$ViewDirection$RIGHT_instance = new OffscreenPassCube$ViewDirection('RIGHT', 3, 3);
-    OffscreenPassCube$ViewDirection$UP_instance = new OffscreenPassCube$ViewDirection('UP', 4, 4);
-    OffscreenPassCube$ViewDirection$DOWN_instance = new OffscreenPassCube$ViewDirection('DOWN', 5, 5);
-  }
-  var OffscreenPassCube$ViewDirection$FRONT_instance;
-  function OffscreenPassCube$ViewDirection$FRONT_getInstance() {
-    OffscreenPassCube$ViewDirection_initFields();
-    return OffscreenPassCube$ViewDirection$FRONT_instance;
-  }
-  var OffscreenPassCube$ViewDirection$BACK_instance;
-  function OffscreenPassCube$ViewDirection$BACK_getInstance() {
-    OffscreenPassCube$ViewDirection_initFields();
-    return OffscreenPassCube$ViewDirection$BACK_instance;
-  }
-  var OffscreenPassCube$ViewDirection$LEFT_instance;
-  function OffscreenPassCube$ViewDirection$LEFT_getInstance() {
-    OffscreenPassCube$ViewDirection_initFields();
-    return OffscreenPassCube$ViewDirection$LEFT_instance;
-  }
-  var OffscreenPassCube$ViewDirection$RIGHT_instance;
-  function OffscreenPassCube$ViewDirection$RIGHT_getInstance() {
-    OffscreenPassCube$ViewDirection_initFields();
-    return OffscreenPassCube$ViewDirection$RIGHT_instance;
-  }
-  var OffscreenPassCube$ViewDirection$UP_instance;
-  function OffscreenPassCube$ViewDirection$UP_getInstance() {
-    OffscreenPassCube$ViewDirection_initFields();
-    return OffscreenPassCube$ViewDirection$UP_instance;
-  }
-  var OffscreenPassCube$ViewDirection$DOWN_instance;
-  function OffscreenPassCube$ViewDirection$DOWN_getInstance() {
-    OffscreenPassCube$ViewDirection_initFields();
-    return OffscreenPassCube$ViewDirection$DOWN_instance;
-  }
-  OffscreenPassCube$ViewDirection.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ViewDirection',
-    interfaces: [Enum]
-  };
-  function OffscreenPassCube$ViewDirection$values() {
-    return [OffscreenPassCube$ViewDirection$FRONT_getInstance(), OffscreenPassCube$ViewDirection$BACK_getInstance(), OffscreenPassCube$ViewDirection$LEFT_getInstance(), OffscreenPassCube$ViewDirection$RIGHT_getInstance(), OffscreenPassCube$ViewDirection$UP_getInstance(), OffscreenPassCube$ViewDirection$DOWN_getInstance()];
-  }
-  OffscreenPassCube$ViewDirection.values = OffscreenPassCube$ViewDirection$values;
-  function OffscreenPassCube$ViewDirection$valueOf(name) {
-    switch (name) {
-      case 'FRONT':
-        return OffscreenPassCube$ViewDirection$FRONT_getInstance();
-      case 'BACK':
-        return OffscreenPassCube$ViewDirection$BACK_getInstance();
-      case 'LEFT':
-        return OffscreenPassCube$ViewDirection$LEFT_getInstance();
-      case 'RIGHT':
-        return OffscreenPassCube$ViewDirection$RIGHT_getInstance();
-      case 'UP':
-        return OffscreenPassCube$ViewDirection$UP_getInstance();
-      case 'DOWN':
-        return OffscreenPassCube$ViewDirection$DOWN_getInstance();
-      default:throwISE('No enum constant de.fabmax.kool.OffscreenPassCube.ViewDirection.' + name);
-    }
-  }
-  OffscreenPassCube$ViewDirection.valueOf_61zpoe$ = OffscreenPassCube$ViewDirection$valueOf;
-  OffscreenPassCube.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'OffscreenPassCube',
-    interfaces: [OffscreenPass]
-  };
   function GlslType(name, ordinal, size, isInt, glslType) {
     Enum.call(this);
     this.size = size;
@@ -12612,6 +10102,225 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   }
   DescriptorType.valueOf_61zpoe$ = DescriptorType$valueOf;
+  function OffscreenRenderPass(drawNode, texWidth, texHeight, mipLevels, colorFormat) {
+    RenderPass.call(this, drawNode);
+    this.texWidth = texWidth;
+    this.texHeight = texHeight;
+    this.mipLevels = mipLevels;
+    this.colorFormat = colorFormat;
+    this.targetMipLevel = -1;
+    this.isFinished = false;
+    this.camera_et6fa$_0 = new PerspectiveCamera();
+    this.viewport = new KoolContext$Viewport(0, 0, this.texWidth, this.texHeight);
+  }
+  Object.defineProperty(OffscreenRenderPass.prototype, 'camera', {
+    get: function () {
+      return this.camera_et6fa$_0;
+    },
+    set: function (camera) {
+      this.camera_et6fa$_0 = camera;
+    }
+  });
+  OffscreenRenderPass.prototype.mipWidth_za3lpa$ = function (mipLevel) {
+    var tmp$;
+    if (mipLevel <= 0) {
+      tmp$ = this.texWidth;
+    } else {
+      tmp$ = this.texWidth >> mipLevel;
+    }
+    return tmp$;
+  };
+  OffscreenRenderPass.prototype.mipHeight_za3lpa$ = function (mipLevel) {
+    var tmp$;
+    if (mipLevel <= 0) {
+      tmp$ = this.texHeight;
+    } else {
+      tmp$ = this.texHeight >> mipLevel;
+    }
+    return tmp$;
+  };
+  OffscreenRenderPass.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'OffscreenRenderPass',
+    interfaces: [RenderPass]
+  };
+  function OffscreenRenderPass2D(drawNode, texWidth, texHeight, mipLevels, colorFormat) {
+    if (mipLevels === void 0)
+      mipLevels = 1;
+    if (colorFormat === void 0)
+      colorFormat = TexFormat$RGBA_getInstance();
+    OffscreenRenderPass.call(this, drawNode, texWidth, texHeight, mipLevels, colorFormat);
+    this.impl_8be2vx$ = new OffscreenPass2dImpl(this);
+  }
+  Object.defineProperty(OffscreenRenderPass2D.prototype, 'colorTexture', {
+    get: function () {
+      return this.impl_8be2vx$.texture;
+    }
+  });
+  Object.defineProperty(OffscreenRenderPass2D.prototype, 'depthTexture', {
+    get: function () {
+      return this.impl_8be2vx$.depthTexture;
+    }
+  });
+  OffscreenRenderPass2D.prototype.dispose_aemszp$ = function (ctx) {
+    OffscreenRenderPass.prototype.dispose_aemszp$.call(this, ctx);
+    this.impl_8be2vx$.dispose_aemszp$(ctx);
+  };
+  OffscreenRenderPass2D.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'OffscreenRenderPass2D',
+    interfaces: [OffscreenRenderPass]
+  };
+  function OffscreenRenderPassCube(drawNode, texWidth, texHeight, mipLevels, colorFormat) {
+    if (colorFormat === void 0)
+      colorFormat = TexFormat$RGBA_getInstance();
+    OffscreenRenderPass.call(this, drawNode, texWidth, texHeight, mipLevels, colorFormat);
+    this.impl_8be2vx$ = new OffscreenPassCubeImpl(this);
+    this.onSetupView_3plctr$_0 = this.onSetupView_3plctr$_0;
+    var array = Array_0(6);
+    var tmp$;
+    tmp$ = array.length - 1 | 0;
+    for (var i = 0; i <= tmp$; i++) {
+      array[i] = new DrawQueue(this);
+    }
+    this.drawQueues = array;
+    this.defaultCubeMapCameraConfig_ubu93h$_0();
+  }
+  Object.defineProperty(OffscreenRenderPassCube.prototype, 'colorTextureCube', {
+    get: function () {
+      return this.impl_8be2vx$.texture;
+    }
+  });
+  Object.defineProperty(OffscreenRenderPassCube.prototype, 'onSetupView', {
+    get: function () {
+      if (this.onSetupView_3plctr$_0 == null)
+        return throwUPAE('onSetupView');
+      return this.onSetupView_3plctr$_0;
+    },
+    set: function (onSetupView) {
+      this.onSetupView_3plctr$_0 = onSetupView;
+    }
+  });
+  OffscreenRenderPassCube.prototype.collectDrawCommands_aemszp$ = function (ctx) {
+    var tmp$, tmp$_0;
+    tmp$ = OffscreenRenderPassCube$ViewDirection$values();
+    for (tmp$_0 = 0; tmp$_0 !== tmp$.length; ++tmp$_0) {
+      var v = tmp$[tmp$_0];
+      this.drawQueue = this.drawQueues[v.index];
+      this.onSetupView(v, ctx);
+      OffscreenRenderPass.prototype.collectDrawCommands_aemszp$.call(this, ctx);
+    }
+  };
+  OffscreenRenderPassCube.prototype.dispose_aemszp$ = function (ctx) {
+    OffscreenRenderPass.prototype.dispose_aemszp$.call(this, ctx);
+    this.impl_8be2vx$.dispose_aemszp$(ctx);
+  };
+  function OffscreenRenderPassCube$defaultCubeMapCameraConfig$lambda(closure$camDirs, this$OffscreenRenderPassCube) {
+    return function (viewDir, f) {
+      var viewCfg = ensureNotNull(closure$camDirs.get_11rb$(viewDir));
+      this$OffscreenRenderPassCube.camera.lookAt.set_czzhiu$(viewCfg.lookAt);
+      this$OffscreenRenderPassCube.camera.up.set_czzhiu$(viewCfg.up);
+      return Unit;
+    };
+  }
+  OffscreenRenderPassCube.prototype.defaultCubeMapCameraConfig_ubu93h$_0 = function () {
+    var camDirs = mutableMapOf([to(OffscreenRenderPassCube$ViewDirection$FRONT_getInstance(), new OffscreenRenderPassCube$ViewConfig(new Vec3f(0.0, 0.0, 1.0), Vec3f$Companion_getInstance().NEG_Y_AXIS)), to(OffscreenRenderPassCube$ViewDirection$BACK_getInstance(), new OffscreenRenderPassCube$ViewConfig(new Vec3f(0.0, 0.0, -1.0), Vec3f$Companion_getInstance().NEG_Y_AXIS)), to(OffscreenRenderPassCube$ViewDirection$LEFT_getInstance(), new OffscreenRenderPassCube$ViewConfig(new Vec3f(-1.0, 0.0, 0.0), Vec3f$Companion_getInstance().NEG_Y_AXIS)), to(OffscreenRenderPassCube$ViewDirection$RIGHT_getInstance(), new OffscreenRenderPassCube$ViewConfig(new Vec3f(1.0, 0.0, 0.0), Vec3f$Companion_getInstance().NEG_Y_AXIS)), to(OffscreenRenderPassCube$ViewDirection$UP_getInstance(), new OffscreenRenderPassCube$ViewConfig(new Vec3f(0.0, 1.0, 0.0), Vec3f$Companion_getInstance().Z_AXIS)), to(OffscreenRenderPassCube$ViewDirection$DOWN_getInstance(), new OffscreenRenderPassCube$ViewConfig(new Vec3f(0.0, -1.0, 0.0), Vec3f$Companion_getInstance().NEG_Z_AXIS))]);
+    var cam = this.camera;
+    if (Kotlin.isType(cam, PerspectiveCamera)) {
+      cam.position.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
+      cam.fovY = 90.0;
+      cam.clipNear = 0.1;
+      cam.clipFar = 10.0;
+      cam.isApplyProjCorrection = false;
+    }this.onSetupView = OffscreenRenderPassCube$defaultCubeMapCameraConfig$lambda(camDirs, this);
+  };
+  function OffscreenRenderPassCube$ViewConfig(lookAt, up) {
+    this.lookAt = lookAt;
+    this.up = up;
+  }
+  OffscreenRenderPassCube$ViewConfig.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ViewConfig',
+    interfaces: []
+  };
+  function OffscreenRenderPassCube$ViewDirection(name, ordinal, index) {
+    Enum.call(this);
+    this.index = index;
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function OffscreenRenderPassCube$ViewDirection_initFields() {
+    OffscreenRenderPassCube$ViewDirection_initFields = function () {
+    };
+    OffscreenRenderPassCube$ViewDirection$FRONT_instance = new OffscreenRenderPassCube$ViewDirection('FRONT', 0, 0);
+    OffscreenRenderPassCube$ViewDirection$BACK_instance = new OffscreenRenderPassCube$ViewDirection('BACK', 1, 1);
+    OffscreenRenderPassCube$ViewDirection$LEFT_instance = new OffscreenRenderPassCube$ViewDirection('LEFT', 2, 2);
+    OffscreenRenderPassCube$ViewDirection$RIGHT_instance = new OffscreenRenderPassCube$ViewDirection('RIGHT', 3, 3);
+    OffscreenRenderPassCube$ViewDirection$UP_instance = new OffscreenRenderPassCube$ViewDirection('UP', 4, 4);
+    OffscreenRenderPassCube$ViewDirection$DOWN_instance = new OffscreenRenderPassCube$ViewDirection('DOWN', 5, 5);
+  }
+  var OffscreenRenderPassCube$ViewDirection$FRONT_instance;
+  function OffscreenRenderPassCube$ViewDirection$FRONT_getInstance() {
+    OffscreenRenderPassCube$ViewDirection_initFields();
+    return OffscreenRenderPassCube$ViewDirection$FRONT_instance;
+  }
+  var OffscreenRenderPassCube$ViewDirection$BACK_instance;
+  function OffscreenRenderPassCube$ViewDirection$BACK_getInstance() {
+    OffscreenRenderPassCube$ViewDirection_initFields();
+    return OffscreenRenderPassCube$ViewDirection$BACK_instance;
+  }
+  var OffscreenRenderPassCube$ViewDirection$LEFT_instance;
+  function OffscreenRenderPassCube$ViewDirection$LEFT_getInstance() {
+    OffscreenRenderPassCube$ViewDirection_initFields();
+    return OffscreenRenderPassCube$ViewDirection$LEFT_instance;
+  }
+  var OffscreenRenderPassCube$ViewDirection$RIGHT_instance;
+  function OffscreenRenderPassCube$ViewDirection$RIGHT_getInstance() {
+    OffscreenRenderPassCube$ViewDirection_initFields();
+    return OffscreenRenderPassCube$ViewDirection$RIGHT_instance;
+  }
+  var OffscreenRenderPassCube$ViewDirection$UP_instance;
+  function OffscreenRenderPassCube$ViewDirection$UP_getInstance() {
+    OffscreenRenderPassCube$ViewDirection_initFields();
+    return OffscreenRenderPassCube$ViewDirection$UP_instance;
+  }
+  var OffscreenRenderPassCube$ViewDirection$DOWN_instance;
+  function OffscreenRenderPassCube$ViewDirection$DOWN_getInstance() {
+    OffscreenRenderPassCube$ViewDirection_initFields();
+    return OffscreenRenderPassCube$ViewDirection$DOWN_instance;
+  }
+  OffscreenRenderPassCube$ViewDirection.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ViewDirection',
+    interfaces: [Enum]
+  };
+  function OffscreenRenderPassCube$ViewDirection$values() {
+    return [OffscreenRenderPassCube$ViewDirection$FRONT_getInstance(), OffscreenRenderPassCube$ViewDirection$BACK_getInstance(), OffscreenRenderPassCube$ViewDirection$LEFT_getInstance(), OffscreenRenderPassCube$ViewDirection$RIGHT_getInstance(), OffscreenRenderPassCube$ViewDirection$UP_getInstance(), OffscreenRenderPassCube$ViewDirection$DOWN_getInstance()];
+  }
+  OffscreenRenderPassCube$ViewDirection.values = OffscreenRenderPassCube$ViewDirection$values;
+  function OffscreenRenderPassCube$ViewDirection$valueOf(name) {
+    switch (name) {
+      case 'FRONT':
+        return OffscreenRenderPassCube$ViewDirection$FRONT_getInstance();
+      case 'BACK':
+        return OffscreenRenderPassCube$ViewDirection$BACK_getInstance();
+      case 'LEFT':
+        return OffscreenRenderPassCube$ViewDirection$LEFT_getInstance();
+      case 'RIGHT':
+        return OffscreenRenderPassCube$ViewDirection$RIGHT_getInstance();
+      case 'UP':
+        return OffscreenRenderPassCube$ViewDirection$UP_getInstance();
+      case 'DOWN':
+        return OffscreenRenderPassCube$ViewDirection$DOWN_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.pipeline.OffscreenRenderPassCube.ViewDirection.' + name);
+    }
+  }
+  OffscreenRenderPassCube$ViewDirection.valueOf_61zpoe$ = OffscreenRenderPassCube$ViewDirection$valueOf;
+  OffscreenRenderPassCube.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'OffscreenRenderPassCube',
+    interfaces: [OffscreenRenderPass]
+  };
   function Pipeline(builder, mesh, ctx) {
     Pipeline$Companion_getInstance();
     this.name = builder.name;
@@ -13009,6 +10718,117 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'PushConstantRange',
     interfaces: []
   };
+  function RenderPass(drawNode) {
+    this.drawNode = drawNode;
+    this.type = RenderPass$Type$COLOR_getInstance();
+    this.viewport = new KoolContext$Viewport(0, 0, 0, 0);
+    this.lighting = null;
+    this.isUpdateDrawNode = true;
+    this.clearDepth = true;
+    this.clearColor = new Color(0.15, 0.15, 0.15, 1.0);
+    this.drawQueue_mxdtqn$_0 = new DrawQueue(this);
+    this.onBeforeCollectDrawCommands = ArrayList_init_0();
+    this.onAfterCollectDrawCommands = ArrayList_init_0();
+  }
+  Object.defineProperty(RenderPass.prototype, 'drawQueue', {
+    get: function () {
+      return this.drawQueue_mxdtqn$_0;
+    },
+    set: function (drawQueue) {
+      this.drawQueue_mxdtqn$_0 = drawQueue;
+    }
+  });
+  RenderPass.prototype.update_aemszp$ = function (ctx) {
+    if (this.isUpdateDrawNode) {
+      this.drawNode.update_oco14p$(this, ctx);
+    }};
+  RenderPass.prototype.collectDrawCommands_aemszp$ = function (ctx) {
+    this.beforeCollectDrawCommands_aemszp$(ctx);
+    this.drawNode.collectDrawCommands_oco14p$(this, ctx);
+    this.afterCollectDrawCommands_aemszp$(ctx);
+  };
+  RenderPass.prototype.beforeCollectDrawCommands_aemszp$ = function (ctx) {
+    var tmp$;
+    this.drawQueue.clear();
+    tmp$ = this.onBeforeCollectDrawCommands;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.onBeforeCollectDrawCommands.get_za3lpa$(i)(ctx);
+    }
+    this.camera.updateCamera_eazsrs$(ctx, this.viewport);
+  };
+  RenderPass.prototype.afterCollectDrawCommands_aemszp$ = function (ctx) {
+    var tmp$;
+    tmp$ = this.onAfterCollectDrawCommands;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      this.onAfterCollectDrawCommands.get_za3lpa$(i)(ctx);
+    }
+  };
+  RenderPass.prototype.dispose_aemszp$ = function (ctx) {
+  };
+  function RenderPass$Type(name, ordinal) {
+    Enum.call(this);
+    this.name$ = name;
+    this.ordinal$ = ordinal;
+  }
+  function RenderPass$Type_initFields() {
+    RenderPass$Type_initFields = function () {
+    };
+    RenderPass$Type$COLOR_instance = new RenderPass$Type('COLOR', 0);
+    RenderPass$Type$SHADOW_instance = new RenderPass$Type('SHADOW', 1);
+  }
+  var RenderPass$Type$COLOR_instance;
+  function RenderPass$Type$COLOR_getInstance() {
+    RenderPass$Type_initFields();
+    return RenderPass$Type$COLOR_instance;
+  }
+  var RenderPass$Type$SHADOW_instance;
+  function RenderPass$Type$SHADOW_getInstance() {
+    RenderPass$Type_initFields();
+    return RenderPass$Type$SHADOW_instance;
+  }
+  RenderPass$Type.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'Type',
+    interfaces: [Enum]
+  };
+  function RenderPass$Type$values() {
+    return [RenderPass$Type$COLOR_getInstance(), RenderPass$Type$SHADOW_getInstance()];
+  }
+  RenderPass$Type.values = RenderPass$Type$values;
+  function RenderPass$Type$valueOf(name) {
+    switch (name) {
+      case 'COLOR':
+        return RenderPass$Type$COLOR_getInstance();
+      case 'SHADOW':
+        return RenderPass$Type$SHADOW_getInstance();
+      default:throwISE('No enum constant de.fabmax.kool.pipeline.RenderPass.Type.' + name);
+    }
+  }
+  RenderPass$Type.valueOf_61zpoe$ = RenderPass$Type$valueOf;
+  RenderPass.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'RenderPass',
+    interfaces: []
+  };
+  function ScreenRenderPass(scene) {
+    RenderPass.call(this, scene);
+    this.scene = scene;
+    this.lighting = this.scene.lighting;
+  }
+  Object.defineProperty(ScreenRenderPass.prototype, 'camera', {
+    get: function () {
+      return this.scene.camera;
+    }
+  });
+  ScreenRenderPass.prototype.collectDrawCommands_aemszp$ = function (ctx) {
+    this.viewport = ctx.viewport;
+    RenderPass.prototype.collectDrawCommands_aemszp$.call(this, ctx);
+  };
+  ScreenRenderPass.$metadata$ = {
+    kind: Kind_CLASS,
+    simpleName: 'ScreenRenderPass',
+    interfaces: [RenderPass]
+  };
   function CodeGenerator() {
   }
   CodeGenerator.prototype.sampleTexture2d_buzeal$ = function (texName, texCoords, lod, callback$default) {
@@ -13091,24 +10911,27 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     shaderGraph.descriptorSet.uniformBuffer_2ydyu8$(this.name, [shaderGraph.stage], MultiLightNode$setup$lambda$lambda(this));
   };
   MultiLightNode.prototype.encodeLightSetup_c690eg$_0 = function (cmd) {
-    var tmp$, tmp$_0, tmp$_1;
-    var lights = (tmp$_0 = (tmp$ = cmd.mesh.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.lights : null;
-    if (lights != null) {
-      var tmp$_2 = this.uLightCnt;
-      var a = lights.size;
+    var tmp$;
+    var lighting = cmd.renderPass.lighting;
+    if (lighting != null) {
+      var tmp$_0 = this.uLightCnt;
+      var a = lighting.lights.size;
       var b = this.maxLights;
-      tmp$_2.value = Math_0.min(a, b);
-      tmp$_1 = this.uLightCnt.value;
-      for (var i = 0; i < tmp$_1; i++) {
-        var light = lights.get_za3lpa$(i);
+      tmp$_0.value = Math_0.min(a, b);
+      tmp$ = this.uLightCnt.value;
+      for (var i = 0; i < tmp$; i++) {
+        var light = lighting.lights.get_za3lpa$(i);
         this.uColors.value[i].set_czzhhz$(light.color);
         this.uPositions.value[i].set_2qa7tb$(light.position, light.type.encoded);
-        var tmp$_3 = this.uDirections.value[i];
-        var tmp$_4 = light.direction;
+        var tmp$_1 = this.uDirections.value[i];
+        var tmp$_2 = light.direction;
         var x = light.spotAngle / 2 * package$math.DEG_2_RAD;
-        tmp$_3.set_2qa7tb$(tmp$_4, Math_0.cos(x));
+        tmp$_1.set_2qa7tb$(tmp$_2, Math_0.cos(x));
       }
-    }};
+    } else {
+      this.uLightCnt.value = 0;
+    }
+  };
   MultiLightNode.prototype.generateCode_626509$ = function (generator) {
     generator.appendFunction_puj7f4$('light_getFragToLight', '\n' + '            vec3 light_getFragToLight(int idx, vec3 fragPos) {' + '\n' + '                if (' + this.uPositions.name + '[idx].w == float(' + Light$Type$DIRECTIONAL_getInstance().encoded + ')) {' + '\n' + '                    return -' + this.uDirections.name + '[idx].xyz;' + '\n' + '                }' + '\n' + '                // same for point and spot lights' + '\n' + '                return ' + this.uPositions.name + '[idx].xyz - fragPos;' + '\n' + '            }' + '\n' + '            ');
     generator.appendFunction_puj7f4$('light_getRadiance', '\n' + '            vec3 light_getRadiance(int idx, vec3 fragToLight, float innerAngle) {' + '\n' + '                if (' + this.uPositions.name + '[idx].w == float(' + Light$Type$DIRECTIONAL_getInstance().encoded + ')) {' + '\n' + '                    return ' + this.uColors.name + '[idx].rgb * ' + this.uColors.name + '[idx].w;' + '\n' + '                }' + '\n' + '                float dist = length(fragToLight);' + '\n' + '                if (' + this.uPositions.name + '[idx].w == float(' + Light$Type$POINT_getInstance().encoded + ')) {' + '\n' + '                    return ' + this.uColors.name + '[idx].rgb * ' + this.uColors.name + '[idx].w / (dist * dist);' + '\n' + '                } else {' + '\n' + '                    // spot light' + '\n' + '                    vec3 lightDir = -normalize(fragToLight);' + '\n' + '                    float spotAng = ' + this.uDirections.name + '[idx].w;' + '\n' + '                    float innerAng = spotAng + (1.0 - spotAng) * (1.0 - innerAngle);' + '\n' + '                    float ang = dot(lightDir, ' + this.uDirections.name + '[idx].xyz);' + '\n' + '                    float angVal = cos(clamp((innerAng - ang) / (innerAng - spotAng), 0.0, 1.0) * ' + math.PI + ') * 0.5 + 0.5;' + '\n' + '                    return ' + this.uColors.name + '[idx].rgb * ' + this.uColors.name + '[idx].w / (dist * dist) * angVal;' + '\n' + '                }' + '\n' + '            }' + '\n' + '            ');
@@ -13158,15 +10981,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function ShadowedLightNode$vertexNode$ObjectLiteral$setup$lambda$lambda$lambda_0(closure$maxLights, this$ShadowedLightNode) {
     return function (f, cmd) {
-      var tmp$, tmp$_0, tmp$_1;
-      if ((tmp$_1 = (tmp$_0 = (tmp$ = cmd.mesh.scene) != null ? tmp$.lighting : null) != null ? tmp$_0.lights : null) != null) {
+      var tmp$;
+      if ((tmp$ = cmd.renderPass.lighting) != null) {
         var closure$maxLights_0 = closure$maxLights;
         var this$ShadowedLightNode_0 = this$ShadowedLightNode;
-        var tmp$_2;
-        var b = tmp$_1.size;
-        tmp$_2 = Math_0.min(closure$maxLights_0, b);
-        for (var i = 0; i < tmp$_2; i++) {
-          this$ShadowedLightNode_0.uLightMvps.value[i].set_d4zu6l$(tmp$_1.get_za3lpa$(i).lightMvpMat);
+        var tmp$_0;
+        var b = tmp$.lights.size;
+        tmp$_0 = Math_0.min(closure$maxLights_0, b);
+        for (var i = 0; i < tmp$_0; i++) {
+          this$ShadowedLightNode_0.uLightMvps.value[i].set_d4zu6l$(tmp$.lights.get_za3lpa$(i).lightMvpMat);
         }
       }return Unit;
     };
@@ -13284,7 +11107,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.inFragPos = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
     this.inCamPos = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f$Companion_getInstance().ZERO));
     this.inSpotInnerAngle = new ShaderNodeIoVar(new ModelVar1fConst(0.8));
-    this.inAmbient = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f_init(0.3)));
+    this.inAmbient = new ShaderNodeIoVar(new ModelVar3fConst(Vec3f_init(0.22)));
     this.inShininess = new ShaderNodeIoVar(new ModelVar1fConst(20.0));
     this.inSpecularIntensity = new ShaderNodeIoVar(new ModelVar1fConst(1.0));
     this.outColor = new ShaderNodeIoVar(new ModelVar4f('phongMat_outColor'), this);
@@ -14526,11 +12349,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function UniformBufferMvp$setup$lambda$lambda$lambda_3(this$UniformBufferMvp) {
     return function (f, cmd) {
-      var tmp$, tmp$_0, tmp$_1;
       this$UniformBufferMvp.uModelMat.value.set_d4zu6j$(cmd.modelMat);
       this$UniformBufferMvp.uViewMat.value.set_d4zu6j$(cmd.viewMat);
       this$UniformBufferMvp.uProjMat.value.set_d4zu6j$(cmd.projMat);
-      this$UniformBufferMvp.uCamPos.value.set_2qa7tb$((tmp$_1 = (tmp$_0 = (tmp$ = cmd.mesh.scene) != null ? tmp$.camera : null) != null ? tmp$_0.globalPos : null) != null ? tmp$_1 : Vec3f$Companion_getInstance().ZERO, 1.0);
+      this$UniformBufferMvp.uCamPos.value.set_2qa7tb$(cmd.renderPass.camera.globalPos, 1.0);
       return Unit;
     };
   }
@@ -16577,6 +14399,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       };
     };
   });
+  function phongShader(cfgBlock) {
+    var cfg = new PhongShader$PhongConfig();
+    cfgBlock(cfg);
+    return new PhongShader(cfg);
+  }
   function PhongShader(cfg, model) {
     PhongShader$Companion_getInstance();
     if (cfg === void 0)
@@ -16992,11 +14819,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'PhongShader',
     interfaces: [ModeledShader]
   };
-  function phongShader(cfgBlock) {
-    var cfg = new PhongShader$PhongConfig();
-    cfgBlock(cfg);
-    return new PhongShader(cfg);
-  }
   function Shader() {
     this.onCreated = ArrayList_init_0();
   }
@@ -18444,13 +16266,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var tmp$;
     (Kotlin.isType(tmp$ = $receiver, MutableCollection) ? tmp$ : throwCCE()).remove_11rb$(element);
   };
-  Armature.prototype.preRender_aemszp$ = function (ctx) {
+  Armature.prototype.update_oco14p$ = function (renderPass, ctx) {
     if (ctx.deltaT > 0) {
       this.applyAnimation_vkqu3b$_0(ctx);
-    }Mesh.prototype.preRender_aemszp$.call(this, ctx);
+    }Mesh.prototype.update_oco14p$.call(this, renderPass, ctx);
   };
-  Armature.prototype.render_aemszp$ = function (ctx) {
-    Mesh.prototype.render_aemszp$.call(this, ctx);
+  Armature.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
+    Mesh.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
   };
   function Armature$applyAnimation$lambda(this$Armature) {
     return function ($receiver) {
@@ -18739,344 +16561,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'ScalingKey',
     interfaces: [AnimationKey]
   };
-  function Comparator$ObjectLiteral_3(closure$comparison) {
-    this.closure$comparison = closure$comparison;
-  }
-  Comparator$ObjectLiteral_3.prototype.compare = function (a, b) {
-    return this.closure$comparison(a, b);
-  };
-  Comparator$ObjectLiteral_3.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_3 = wrapFunction(function () {
-    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
-    return function (closure$selector) {
-      return function (a, b) {
-        var selector = closure$selector;
-        return compareValues(selector(a), selector(b));
-      };
-    };
-  });
-  function BillboardMesh(name) {
-    BillboardMesh$Companion_getInstance();
-    if (name === void 0)
-      name = null;
-    Mesh.call(this, IndexedVertexList_init([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().COLORS, Attribute$Companion_getInstance().TEXTURE_COORDS, BillboardMesh$Companion_getInstance().ATTR_EXTENTS, BillboardMesh$Companion_getInstance().ATTR_TEX_EXTENTS, BillboardMesh$Companion_getInstance().ATTR_ROTATION]), name);
-    this.drawOrder = BillboardMesh$DrawOrder$AS_IS_getInstance();
-    this.indexList_x8xrqv$_0 = ArrayList_init_0();
-    this.billboardIt_p0c58j$_0 = new BillboardMesh$BillboardInstance(this);
-    this.isWithGeometryShader_ocl5bu$_0 = true;
-    this.isCastingShadow = false;
-  }
-  BillboardMesh.prototype.addQuad_mr3yw4$ = function (center, size, rotation, texCenter, texSize, color) {
-    if (rotation === void 0)
-      rotation = 0.0;
-    if (texCenter === void 0)
-      texCenter = BillboardMesh$Companion_getInstance().TEX_CENTER;
-    if (texSize === void 0)
-      texSize = BillboardMesh$Companion_getInstance().TEX_SIZE_FULL;
-    if (color === void 0)
-      color = Color$Companion_getInstance().WHITE;
-    var idx = this.appendQuad_dvoqdw$_0();
-    this.updateQuad_lszk0i$(idx, center, size, rotation, texCenter, texSize, color);
-    this.addQuadIndex_za3lpa$(idx);
-    if (this.drawOrder !== BillboardMesh$DrawOrder$AS_IS_getInstance()) {
-      this.indexList_x8xrqv$_0.add_11rb$(idx);
-    }};
-  BillboardMesh.prototype.updateQuad_lszk0i$ = function (index, center, size, rotation, texCenter, texSize, color) {
-    if (rotation === void 0)
-      rotation = 0.0;
-    if (texCenter === void 0)
-      texCenter = BillboardMesh$Companion_getInstance().TEX_CENTER;
-    if (texSize === void 0)
-      texSize = BillboardMesh$Companion_getInstance().TEX_SIZE_FULL;
-    if (color === void 0)
-      color = Color$Companion_getInstance().WHITE;
-    if (this.isWithGeometryShader_ocl5bu$_0) {
-      this.billboardIt_p0c58j$_0.vertex.index = index;
-      this.billboardIt_p0c58j$_0.vertex.position.set_czzhiu$(center);
-      this.billboardIt_p0c58j$_0.vertex.texCoord.set_czzhjp$(texCenter);
-      this.billboardIt_p0c58j$_0.vertex.color.set_d7aj7k$(color);
-      this.billboardIt_p0c58j$_0.extents.set_dleff0$(size.x * 0.5, size.y * 0.5);
-      this.billboardIt_p0c58j$_0.texExtents.set_dleff0$(texSize.x * 0.5, texSize.y * 0.5);
-      this.billboardIt_p0c58j$_0.rotation.f = rotation * package$math.DEG_2_RAD;
-    } else {
-      for (var i = 0; i <= 3; i++) {
-        this.billboardIt_p0c58j$_0.vertex.index = (index * 4 | 0) + i | 0;
-        this.billboardIt_p0c58j$_0.vertex.position.set_czzhiu$(center);
-        this.billboardIt_p0c58j$_0.vertex.texCoord.set_czzhjp$(texCenter);
-        this.billboardIt_p0c58j$_0.vertex.color.set_d7aj7k$(color);
-        this.billboardIt_p0c58j$_0.extents.set_dleff0$(size.x * 0.5, size.y * 0.5).mul_czzhjp$(BillboardMesh$Companion_getInstance().SZ_EXT_SIGNS_0.get_za3lpa$(i));
-        this.billboardIt_p0c58j$_0.texExtents.set_dleff0$(texSize.x * 0.5, texSize.y * 0.5).mul_czzhjp$(BillboardMesh$Companion_getInstance().TEX_EXT_SIGNS_0.get_za3lpa$(i));
-        this.billboardIt_p0c58j$_0.rotation.f = rotation * package$math.DEG_2_RAD;
-      }
-    }
-    this.geometry.hasChanged = true;
-  };
-  BillboardMesh.prototype.clearIndices = function () {
-    this.geometry.indices.clear();
-  };
-  BillboardMesh.prototype.addQuadIndex_za3lpa$ = function (quadIdx) {
-    if (this.isWithGeometryShader_ocl5bu$_0) {
-      this.geometry.addIndex_za3lpa$(quadIdx);
-    } else {
-      var idx = quadIdx * 4 | 0;
-      this.geometry.addIndex_za3lpa$(idx);
-      this.geometry.addIndex_za3lpa$(idx + 1 | 0);
-      this.geometry.addIndex_za3lpa$(idx + 2 | 0);
-      this.geometry.addIndex_za3lpa$(idx + 3 | 0);
-      this.geometry.addIndex_za3lpa$(idx + 2 | 0);
-      this.geometry.addIndex_za3lpa$(idx + 1 | 0);
-    }
-  };
-  BillboardMesh.prototype.appendQuad_dvoqdw$_0 = function () {
-    var tmp$;
-    if (this.isWithGeometryShader_ocl5bu$_0) {
-      var $this = this.geometry;
-      var tmp$_0, tmp$_1, tmp$_2;
-      $this.checkBufferSizes_za3lpa$();
-      tmp$_0 = $this.vertexSizeF;
-      for (var i = 1; i <= tmp$_0; i++) {
-        $this.dataF.plusAssign_mx4ult$(0.0);
-      }
-      tmp$_1 = $this.vertexSizeI;
-      for (var i_0 = 1; i_0 <= tmp$_1; i_0++) {
-        $this.dataI.plusAssign_za3lpa$(0);
-      }
-      $this.vertexIt.index = (tmp$_2 = $this.numVertices, $this.numVertices = tmp$_2 + 1 | 0, tmp$_2);
-      $this.bounds.add_czzhiu$($this.vertexIt.position);
-      $this.hasChanged = true;
-      tmp$ = $this.numVertices - 1 | 0;
-    } else {
-      var $this_0 = this.geometry;
-      var tmp$_3, tmp$_4, tmp$_5;
-      $this_0.checkBufferSizes_za3lpa$();
-      tmp$_3 = $this_0.vertexSizeF;
-      for (var i_1 = 1; i_1 <= tmp$_3; i_1++) {
-        $this_0.dataF.plusAssign_mx4ult$(0.0);
-      }
-      tmp$_4 = $this_0.vertexSizeI;
-      for (var i_2 = 1; i_2 <= tmp$_4; i_2++) {
-        $this_0.dataI.plusAssign_za3lpa$(0);
-      }
-      $this_0.vertexIt.index = (tmp$_5 = $this_0.numVertices, $this_0.numVertices = tmp$_5 + 1 | 0, tmp$_5);
-      $this_0.bounds.add_czzhiu$($this_0.vertexIt.position);
-      $this_0.hasChanged = true;
-      $this_0.numVertices - 1 | 0;
-      var $this_1 = this.geometry;
-      var tmp$_6, tmp$_7, tmp$_8;
-      $this_1.checkBufferSizes_za3lpa$();
-      tmp$_6 = $this_1.vertexSizeF;
-      for (var i_3 = 1; i_3 <= tmp$_6; i_3++) {
-        $this_1.dataF.plusAssign_mx4ult$(0.0);
-      }
-      tmp$_7 = $this_1.vertexSizeI;
-      for (var i_4 = 1; i_4 <= tmp$_7; i_4++) {
-        $this_1.dataI.plusAssign_za3lpa$(0);
-      }
-      $this_1.vertexIt.index = (tmp$_8 = $this_1.numVertices, $this_1.numVertices = tmp$_8 + 1 | 0, tmp$_8);
-      $this_1.bounds.add_czzhiu$($this_1.vertexIt.position);
-      $this_1.hasChanged = true;
-      $this_1.numVertices - 1 | 0;
-      var $this_2 = this.geometry;
-      var tmp$_9, tmp$_10, tmp$_11;
-      $this_2.checkBufferSizes_za3lpa$();
-      tmp$_9 = $this_2.vertexSizeF;
-      for (var i_5 = 1; i_5 <= tmp$_9; i_5++) {
-        $this_2.dataF.plusAssign_mx4ult$(0.0);
-      }
-      tmp$_10 = $this_2.vertexSizeI;
-      for (var i_6 = 1; i_6 <= tmp$_10; i_6++) {
-        $this_2.dataI.plusAssign_za3lpa$(0);
-      }
-      $this_2.vertexIt.index = (tmp$_11 = $this_2.numVertices, $this_2.numVertices = tmp$_11 + 1 | 0, tmp$_11);
-      $this_2.bounds.add_czzhiu$($this_2.vertexIt.position);
-      $this_2.hasChanged = true;
-      $this_2.numVertices - 1 | 0;
-      var $this_3 = this.geometry;
-      var tmp$_12, tmp$_13, tmp$_14;
-      $this_3.checkBufferSizes_za3lpa$();
-      tmp$_12 = $this_3.vertexSizeF;
-      for (var i_7 = 1; i_7 <= tmp$_12; i_7++) {
-        $this_3.dataF.plusAssign_mx4ult$(0.0);
-      }
-      tmp$_13 = $this_3.vertexSizeI;
-      for (var i_8 = 1; i_8 <= tmp$_13; i_8++) {
-        $this_3.dataI.plusAssign_za3lpa$(0);
-      }
-      $this_3.vertexIt.index = (tmp$_14 = $this_3.numVertices, $this_3.numVertices = tmp$_14 + 1 | 0, tmp$_14);
-      $this_3.bounds.add_czzhiu$($this_3.vertexIt.position);
-      $this_3.hasChanged = true;
-      tmp$ = ($this_3.numVertices - 1 | 0) / 4 | 0;
-    }
-    return tmp$;
-  };
-  BillboardMesh.prototype.preRender_aemszp$ = function (ctx) {
-    if (this.drawOrder !== BillboardMesh$DrawOrder$AS_IS_getInstance()) {
-      this.sortElems_2mujwh$_0();
-    }Mesh.prototype.preRender_aemszp$.call(this, ctx);
-  };
-  BillboardMesh.prototype.convertToQuadMesh_enmrf$_0 = function () {
-    var tmp$;
-    var tmpData = new IndexedVertexList(this.geometry.vertexAttributes);
-    var $this = this.geometry;
-    var tmp$_0;
-    tmp$_0 = $this.numVertices;
-    for (var i = 0; i < tmp$_0; i++) {
-      $this.vertexIt.index = i;
-      var ptVertex = $this.vertexIt;
-      for (var i_0 = 0; i_0 <= 3; i_0++) {
-        var tmp$_1, tmp$_2, tmp$_3;
-        tmpData.checkBufferSizes_za3lpa$();
-        tmp$_1 = tmpData.vertexSizeF;
-        for (var i_1 = 1; i_1 <= tmp$_1; i_1++) {
-          tmpData.dataF.plusAssign_mx4ult$(0.0);
-        }
-        tmp$_2 = tmpData.vertexSizeI;
-        for (var i_2 = 1; i_2 <= tmp$_2; i_2++) {
-          tmpData.dataI.plusAssign_za3lpa$(0);
-        }
-        tmpData.vertexIt.index = (tmp$_3 = tmpData.numVertices, tmpData.numVertices = tmp$_3 + 1 | 0, tmp$_3);
-        var $receiver = tmpData.vertexIt;
-        var tmp$_4, tmp$_5;
-        $receiver.set_fs4kvg$(ptVertex);
-        (tmp$_4 = $receiver.getVec2fAttribute_nm2vx5$(BillboardMesh$Companion_getInstance().ATTR_EXTENTS)) != null ? tmp$_4.mul_czzhjp$(BillboardMesh$Companion_getInstance().SZ_EXT_SIGNS_0.get_za3lpa$(i_0)) : null;
-        (tmp$_5 = $receiver.getVec2fAttribute_nm2vx5$(BillboardMesh$Companion_getInstance().ATTR_TEX_EXTENTS)) != null ? tmp$_5.mul_czzhjp$(BillboardMesh$Companion_getInstance().TEX_EXT_SIGNS_0.get_za3lpa$(i_0)) : null;
-        tmpData.bounds.add_czzhiu$(tmpData.vertexIt.position);
-        tmpData.hasChanged = true;
-        tmpData.numVertices - 1 | 0;
-      }
-    }
-    tmp$ = this.geometry.numIndices;
-    for (var i_3 = 0; i_3 < tmp$; i_3++) {
-      var idx = this.geometry.indices.get_za3lpa$(i_3) * 4 | 0;
-      tmpData.addIndex_za3lpa$(idx);
-      tmpData.addIndex_za3lpa$(idx + 1 | 0);
-      tmpData.addIndex_za3lpa$(idx + 2 | 0);
-      tmpData.addIndex_za3lpa$(idx + 3 | 0);
-      tmpData.addIndex_za3lpa$(idx + 2 | 0);
-      tmpData.addIndex_za3lpa$(idx + 1 | 0);
-    }
-    this.geometry.clear();
-    this.geometry.addGeometry_r7nl2o$(tmpData);
-  };
-  function BillboardMesh$sortElems$lambda(closure$vertCnt, closure$v, closure$camPos, closure$s) {
-    return function (idx) {
-      closure$v.index = Kotlin.imul(idx, closure$vertCnt);
-      return closure$v.position.sqrDistance_czzhiu$(closure$camPos) * closure$s;
-    };
-  }
-  BillboardMesh.prototype.sortElems_2mujwh$_0 = function () {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-    tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.globalPos : null;
-    if (tmp$_1 == null) {
-      return;
-    }var camPos = tmp$_1;
-    if (this.isWithGeometryShader_ocl5bu$_0) {
-      tmp$_2 = 1;
-    } else {
-      tmp$_2 = 4;
-    }
-    var vertCnt = tmp$_2;
-    if (this.indexList_x8xrqv$_0.size !== (this.geometry.numVertices / vertCnt | 0)) {
-      this.indexList_x8xrqv$_0.clear();
-      addAll(this.indexList_x8xrqv$_0, until(0, this.geometry.numVertices / vertCnt | 0));
-    }var s = this.drawOrder === BillboardMesh$DrawOrder$FAR_FIRST_getInstance() ? -1 : 1;
-    var v = this.geometry.vertexIt;
-    var $receiver = this.indexList_x8xrqv$_0;
-    if ($receiver.size > 1) {
-      sortWith($receiver, new Comparator$ObjectLiteral_3(compareBy$lambda_3(BillboardMesh$sortElems$lambda(vertCnt, v, camPos, s))));
-    }this.geometry.indices.clear();
-    tmp$_3 = this.indexList_x8xrqv$_0;
-    for (var i = 0; i !== tmp$_3.size; ++i) {
-      this.addQuadIndex_za3lpa$(this.indexList_x8xrqv$_0.get_za3lpa$(i));
-    }
-    this.geometry.hasChanged = true;
-  };
-  function BillboardMesh$BillboardInstance($outer) {
-    this.$outer = $outer;
-    this.vertex = this.$outer.geometry.get_za3lpa$(0);
-    this.rotation = ensureNotNull(this.vertex.getFloatAttribute_nm2vx5$(BillboardMesh$Companion_getInstance().ATTR_ROTATION));
-    this.extents = ensureNotNull(this.vertex.getVec2fAttribute_nm2vx5$(BillboardMesh$Companion_getInstance().ATTR_EXTENTS));
-    this.texExtents = ensureNotNull(this.vertex.getVec2fAttribute_nm2vx5$(BillboardMesh$Companion_getInstance().ATTR_TEX_EXTENTS));
-  }
-  BillboardMesh$BillboardInstance.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'BillboardInstance',
-    interfaces: []
-  };
-  function BillboardMesh$DrawOrder(name, ordinal) {
-    Enum.call(this);
-    this.name$ = name;
-    this.ordinal$ = ordinal;
-  }
-  function BillboardMesh$DrawOrder_initFields() {
-    BillboardMesh$DrawOrder_initFields = function () {
-    };
-    BillboardMesh$DrawOrder$AS_IS_instance = new BillboardMesh$DrawOrder('AS_IS', 0);
-    BillboardMesh$DrawOrder$FAR_FIRST_instance = new BillboardMesh$DrawOrder('FAR_FIRST', 1);
-    BillboardMesh$DrawOrder$NEAR_FIRST_instance = new BillboardMesh$DrawOrder('NEAR_FIRST', 2);
-  }
-  var BillboardMesh$DrawOrder$AS_IS_instance;
-  function BillboardMesh$DrawOrder$AS_IS_getInstance() {
-    BillboardMesh$DrawOrder_initFields();
-    return BillboardMesh$DrawOrder$AS_IS_instance;
-  }
-  var BillboardMesh$DrawOrder$FAR_FIRST_instance;
-  function BillboardMesh$DrawOrder$FAR_FIRST_getInstance() {
-    BillboardMesh$DrawOrder_initFields();
-    return BillboardMesh$DrawOrder$FAR_FIRST_instance;
-  }
-  var BillboardMesh$DrawOrder$NEAR_FIRST_instance;
-  function BillboardMesh$DrawOrder$NEAR_FIRST_getInstance() {
-    BillboardMesh$DrawOrder_initFields();
-    return BillboardMesh$DrawOrder$NEAR_FIRST_instance;
-  }
-  BillboardMesh$DrawOrder.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DrawOrder',
-    interfaces: [Enum]
-  };
-  function BillboardMesh$DrawOrder$values() {
-    return [BillboardMesh$DrawOrder$AS_IS_getInstance(), BillboardMesh$DrawOrder$FAR_FIRST_getInstance(), BillboardMesh$DrawOrder$NEAR_FIRST_getInstance()];
-  }
-  BillboardMesh$DrawOrder.values = BillboardMesh$DrawOrder$values;
-  function BillboardMesh$DrawOrder$valueOf(name) {
-    switch (name) {
-      case 'AS_IS':
-        return BillboardMesh$DrawOrder$AS_IS_getInstance();
-      case 'FAR_FIRST':
-        return BillboardMesh$DrawOrder$FAR_FIRST_getInstance();
-      case 'NEAR_FIRST':
-        return BillboardMesh$DrawOrder$NEAR_FIRST_getInstance();
-      default:throwISE('No enum constant de.fabmax.kool.scene.BillboardMesh.DrawOrder.' + name);
-    }
-  }
-  BillboardMesh$DrawOrder.valueOf_61zpoe$ = BillboardMesh$DrawOrder$valueOf;
-  function BillboardMesh$Companion() {
-    BillboardMesh$Companion_instance = this;
-    this.ATTR_EXTENTS = new Attribute('aExtents', GlslType$VEC_2F_getInstance());
-    this.ATTR_TEX_EXTENTS = new Attribute('aTexExtents', GlslType$VEC_2F_getInstance());
-    this.ATTR_ROTATION = new Attribute('aRotation', GlslType$FLOAT_getInstance());
-    this.TEX_SIZE_FULL = new Vec2f(1.0, 1.0);
-    this.TEX_CENTER = new Vec2f(0.5, 0.5);
-    this.SZ_EXT_SIGNS_0 = listOf([new Vec2f(-1.0, -1.0), new Vec2f(1.0, -1.0), new Vec2f(-1.0, 1.0), new Vec2f(1.0, 1.0)]);
-    this.TEX_EXT_SIGNS_0 = listOf([new Vec2f(-1.0, 1.0), new Vec2f(1.0, 1.0), new Vec2f(-1.0, -1.0), new Vec2f(1.0, -1.0)]);
-  }
-  BillboardMesh$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var BillboardMesh$Companion_instance = null;
-  function BillboardMesh$Companion_getInstance() {
-    if (BillboardMesh$Companion_instance === null) {
-      new BillboardMesh$Companion();
-    }return BillboardMesh$Companion_instance;
-  }
-  BillboardMesh.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'BillboardMesh',
-    interfaces: [Mesh]
-  };
   function Camera(name) {
     if (name === void 0)
       name = 'camera';
@@ -19142,18 +16626,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.globalRange_4hi0xu$_0 = globalRange;
     }
   });
-  Camera.prototype.updateCamera_aemszp$ = function (ctx) {
-    this.aspectRatio = ctx.viewport.aspectRatio;
+  Camera.prototype.updateCamera_eazsrs$ = function (ctx, viewport) {
+    this.aspectRatio = viewport.aspectRatio;
     this.updateViewMatrix();
     this.updateProjectionMatrix();
-    ctx.mvpState.viewMatrix.set_d4zu6l$(this.view);
     if (this.isApplyProjCorrection) {
-      ctx.mvpState.projMatrix.set_d4zu6l$(ctx.projCorrectionMatrix.mul_u47j3u$(this.proj, this.projCorrected_2lfajw$_0));
-    } else {
-      ctx.mvpState.projMatrix.set_d4zu6l$(this.proj);
-    }
-    ctx.mvpState.update_aemszp$(ctx);
-    this.mvp.set_d4zu6l$(ctx.mvpState.mvpMatrix);
+      ctx.projCorrectionMatrix.mul_u47j3u$(this.proj, this.projCorrected_2lfajw$_0);
+      this.proj.set_d4zu6l$(this.projCorrected_2lfajw$_0);
+    }this.proj.mul_u47j3u$(this.view, this.mvp);
     this.mvp.invert_23yxad$(this.invMvp);
   };
   Camera.prototype.updateViewMatrix = function () {
@@ -19255,19 +16735,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.near = near;
     this.far = far;
   };
-  OrthographicCamera.prototype.updateCamera_aemszp$ = function (ctx) {
+  OrthographicCamera.prototype.updateCamera_eazsrs$ = function (ctx, viewport) {
     if (this.isClipToViewport) {
       this.left = 0.0;
-      this.right = ctx.viewport.width;
+      this.right = viewport.width;
       this.bottom = 0.0;
-      this.top = ctx.viewport.height;
+      this.top = viewport.height;
     } else if (this.isKeepAspectRatio) {
       var h = this.top - this.bottom;
-      var w = ctx.viewport.aspectRatio * h;
+      var w = viewport.aspectRatio * h;
       var xCenter = this.left + (this.right - this.left) * 0.5;
       this.left = xCenter - w * 0.5;
       this.right = xCenter + w * 0.5;
-    }Camera.prototype.updateCamera_aemszp$.call(this, ctx);
+    }Camera.prototype.updateCamera_eazsrs$.call(this, ctx, viewport);
   };
   OrthographicCamera.prototype.updateProjectionMatrix = function () {
     if (this.left !== this.right && this.bottom !== this.top && this.near !== this.far) {
@@ -19379,14 +16859,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'FrustumPlane',
     interfaces: []
   };
-  function Comparator$ObjectLiteral_4(closure$comparison) {
+  function Comparator$ObjectLiteral_0(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_4.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_0.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_4.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_4 = wrapFunction(function () {
+  Comparator$ObjectLiteral_0.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  var compareBy$lambda_0 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -19419,46 +16899,30 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return this.intChildren.size;
     }
   });
-  Group.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
-    var tmp$;
-    Node.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
-    tmp$ = this.intChildren;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.intChildren.get_za3lpa$(i).scene = newScene;
-    }
-  };
-  Group.prototype.preRender_aemszp$ = function (ctx) {
+  Group.prototype.update_oco14p$ = function (renderPass, ctx) {
     var tmp$;
     this.childrenBounds.clear();
     tmp$ = this.intChildren;
     for (var i = 0; i !== tmp$.size; ++i) {
-      this.intChildren.get_za3lpa$(i).preRender_aemszp$(ctx);
+      this.intChildren.get_za3lpa$(i).update_oco14p$(renderPass, ctx);
       this.childrenBounds.add_ea4od8$(this.intChildren.get_za3lpa$(i).bounds);
     }
     this.setLocalBounds();
-    Node.prototype.preRender_aemszp$.call(this, ctx);
+    Node.prototype.update_oco14p$.call(this, renderPass, ctx);
   };
   Group.prototype.setLocalBounds = function () {
     this.bounds.set_ea4od8$(this.childrenBounds);
   };
-  Group.prototype.render_aemszp$ = function (ctx) {
+  Group.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
     var tmp$;
-    Node.prototype.render_aemszp$.call(this, ctx);
+    Node.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
     if (this.isRendered) {
       tmp$ = this.intChildren;
       for (var i = 0; i !== tmp$.size; ++i) {
-        if (ctx.renderPass !== RenderPass$SHADOW_getInstance() || this.intChildren.get_za3lpa$(i).isCastingShadow) {
-          this.intChildren.get_za3lpa$(i).render_aemszp$(ctx);
+        if (renderPass.type !== RenderPass$Type$SHADOW_getInstance() || this.intChildren.get_za3lpa$(i).isCastingShadow) {
+          this.intChildren.get_za3lpa$(i).collectDrawCommands_oco14p$(renderPass, ctx);
         }}
     }};
-  Group.prototype.postRender_aemszp$ = function (ctx) {
-    var tmp$;
-    tmp$ = this.intChildren;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.intChildren.get_za3lpa$(i).postRender_aemszp$(ctx);
-    }
-    Node.prototype.postRender_aemszp$.call(this, ctx);
-  };
   Group.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
     Node.prototype.dispose_aemszp$.call(this, ctx);
@@ -19507,7 +16971,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Group.prototype.sortChildrenBy_mq7kdd$ = function (selector) {
     var $receiver = this.intChildren;
     if ($receiver.size > 1) {
-      sortWith($receiver, new Comparator$ObjectLiteral_4(compareBy$lambda_4(selector)));
+      sortWith($receiver, new Comparator$ObjectLiteral_0(compareBy$lambda_0(selector)));
     }};
   Group.prototype.removeNode_f1kmr1$ = function (node) {
     if (this.intChildren.remove_11rb$(node)) {
@@ -19540,8 +17004,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'Group',
     interfaces: [Node]
   };
-  function Lighting(scene) {
-    this.scene = scene;
+  function Lighting() {
     this.lights = mutableListOf([(new Light()).setDirectional_czzhiu$(Vec3f_init(-1.0)).setColor_y83vuj$(Color$Companion_getInstance().WHITE, 1.0)]);
   }
   Lighting.prototype.singleLight_q9zcvo$ = function (block) {
@@ -20103,16 +17566,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       ctx.disposePipeline_i7l2g2$(tmp$);
     }this.pipeline_fj0dqa$_0 = null;
   };
-  Mesh.prototype.render_aemszp$ = function (ctx) {
-    var tmp$, tmp$_0;
-    Node.prototype.render_aemszp$.call(this, ctx);
+  Mesh.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
+    Node.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
     if (!this.isRendered) {
       return;
     }if (this.geometry.hasChanged && !this.geometry.isBatchUpdate) {
       if (this.geometry.isRebuildBoundsOnSync) {
         this.geometry.rebuildBounds();
       }this.rayTest.onMeshDataChanged_f1jspk$(this);
-    }(tmp$_0 = (tmp$ = this.scene) != null ? tmp$.drawQueue : null) != null ? tmp$_0.addMesh_sbx4mf$(this, ctx) : null;
+    }renderPass.drawQueue.addMesh_sbx4mf$(this, ctx);
   };
   Mesh.$metadata$ = {
     kind: Kind_CLASS,
@@ -20231,12 +17693,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     interfaces: []
   };
   function Node(name) {
+    Node$Companion_getInstance();
     if (name === void 0)
       name = null;
     this.name = name;
-    this.onPreRender = ArrayList_init_0();
-    this.onRender = ArrayList_init_0();
-    this.onPostRender = ArrayList_init_0();
+    this.onUpdate = ArrayList_init_0();
+    this.onCollectDrawCommands = ArrayList_init_0();
     this.onDispose = ArrayList_init_0();
     this.onHoverEnter = ArrayList_init_0();
     this.onHover = ArrayList_init_0();
@@ -20246,8 +17708,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.globalRadius_3g00fw$_0 = 0.0;
     this.globalCenterMut = MutableVec3f_init();
     this.globalExtentMut = MutableVec3f_init();
+    this.modelMat = new Mat4d();
+    this.modelMatDirty = false;
+    this.modelMatInvLazy_yq9j4d$_0 = new Mat4d();
     this.parent_302581$_0 = null;
-    this.scene_lkcnox$_0 = null;
     this.isVisible_mqrc8j$_0 = true;
     this.isCastingShadow = true;
     this.isPickable_b77vbo$_0 = true;
@@ -20272,31 +17736,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.globalRadius_3g00fw$_0 = globalRadius;
     }
   });
+  Object.defineProperty(Node.prototype, 'modelMatInv', {
+    get: function () {
+      return this.checkModelMatInv_vk7bqf$_0();
+    }
+  });
   Object.defineProperty(Node.prototype, 'parent', {
     get: function () {
       return this.parent_302581$_0;
     },
-    set: function (value) {
-      if (value !== this.parent_302581$_0) {
-        this.onParentChanged_etw0z0$(this.parent_302581$_0, value);
-        this.parent_302581$_0 = value;
-        var tmp$;
-        var p = this.parent;
-        while (p != null && !(p == null || Kotlin.isType(p, Scene))) {
-          p = p.parent;
-        }
-        this.scene = (tmp$ = p) == null || Kotlin.isType(tmp$, Scene) ? tmp$ : throwCCE();
-      }}
-  });
-  Object.defineProperty(Node.prototype, 'scene', {
-    get: function () {
-      return this.scene_lkcnox$_0;
-    },
-    set: function (value) {
-      if (value !== this.scene_lkcnox$_0) {
-        this.onSceneChanged_9srkog$(this.scene_lkcnox$_0, value);
-        this.scene_lkcnox$_0 = value;
-      }}
+    set: function (parent) {
+      this.parent_302581$_0 = parent;
+    }
   });
   Object.defineProperty(Node.prototype, 'isVisible', {
     get: function () {
@@ -20322,35 +17773,33 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.isFrustumChecked_un4x7a$_0 = isFrustumChecked;
     }
   });
-  Node.prototype.preRender_aemszp$ = function (ctx) {
+  Node.prototype.update_oco14p$ = function (renderPass, ctx) {
     var tmp$;
-    tmp$ = this.onPreRender;
+    tmp$ = this.onUpdate;
     for (var i = 0; i !== tmp$.size; ++i) {
-      this.onPreRender.get_za3lpa$(i)(this, ctx);
+      this.onUpdate.get_za3lpa$(i)(this, renderPass, ctx);
     }
+    this.updateModelMat_oco14p$(renderPass, ctx);
     this.globalCenterMut.set_czzhiu$(this.bounds.center);
     this.globalExtentMut.set_czzhiu$(this.bounds.max);
-    ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalCenterMut);
-    ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalExtentMut);
+    this.modelMat.transform_w1lst9$(this.globalCenterMut);
+    this.modelMat.transform_w1lst9$(this.globalExtentMut);
     this.globalRadius = this.globalCenter.distance_czzhiu$(this.globalExtentMut);
   };
-  Node.prototype.render_aemszp$ = function (ctx) {
-    var tmp$;
-    this.isRendered = this.checkIsVisible_aemszp$(ctx);
-    if (this.isRendered) {
-      if (!this.onRender.isEmpty()) {
-        tmp$ = this.onRender;
-        for (var i = 0; i !== tmp$.size; ++i) {
-          this.onRender.get_za3lpa$(i)(this, ctx);
-        }
-      }}};
-  Node.prototype.postRender_aemszp$ = function (ctx) {
-    var tmp$;
-    tmp$ = this.onPostRender;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.onPostRender.get_za3lpa$(i)(this, ctx);
-    }
+  Node.prototype.updateModelMat_oco14p$ = function (renderPass, ctx) {
+    var tmp$, tmp$_0;
+    this.modelMat.set_d4zu6l$((tmp$_0 = (tmp$ = this.parent) != null ? tmp$.modelMat : null) != null ? tmp$_0 : Node$Companion_getInstance().MODEL_MAT_IDENTITY_0);
+    this.modelMatDirty = true;
   };
+  Node.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
+    var tmp$;
+    this.isRendered = this.checkIsVisible_6otzq7$(renderPass.camera, ctx);
+    if (this.isRendered) {
+      tmp$ = this.onCollectDrawCommands;
+      for (var i = 0; i !== tmp$.size; ++i) {
+        this.onCollectDrawCommands.get_za3lpa$(i)(this, renderPass, ctx);
+      }
+    }};
   Node.prototype.dispose_aemszp$ = function (ctx) {
     var tmp$;
     tmp$ = this.onDispose;
@@ -20359,8 +17808,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   };
   Node.prototype.toGlobalCoords_w1lst9$$default = function (vec, w) {
-    var tmp$;
-    (tmp$ = this.parent) != null ? tmp$.toGlobalCoords_w1lst9$(vec, w) : null;
+    this.modelMat.transform_w1lst9$(vec, w);
     return vec;
   };
   Node.prototype.toGlobalCoords_w1lst9$ = function (vec, w, callback$default) {
@@ -20369,8 +17817,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return callback$default ? callback$default(vec, w) : this.toGlobalCoords_w1lst9$$default(vec, w);
   };
   Node.prototype.toGlobalCoords_j7uy7i$$default = function (vec, w) {
-    var tmp$;
-    (tmp$ = this.parent) != null ? tmp$.toGlobalCoords_j7uy7i$(vec, w) : null;
+    this.modelMat.transform_j7uy7i$(vec, w);
     return vec;
   };
   Node.prototype.toGlobalCoords_j7uy7i$ = function (vec, w, callback$default) {
@@ -20379,8 +17826,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return callback$default ? callback$default(vec, w) : this.toGlobalCoords_j7uy7i$$default(vec, w);
   };
   Node.prototype.toLocalCoords_w1lst9$$default = function (vec, w) {
-    var tmp$;
-    (tmp$ = this.parent) != null ? tmp$.toLocalCoords_w1lst9$(vec, w) : null;
+    this.modelMatInv.transform_w1lst9$(vec, w);
     return vec;
   };
   Node.prototype.toLocalCoords_w1lst9$ = function (vec, w, callback$default) {
@@ -20389,8 +17835,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     return callback$default ? callback$default(vec, w) : this.toLocalCoords_w1lst9$$default(vec, w);
   };
   Node.prototype.toLocalCoords_j7uy7i$$default = function (vec, w) {
-    var tmp$;
-    (tmp$ = this.parent) != null ? tmp$.toLocalCoords_j7uy7i$(vec, w) : null;
+    this.modelMatInv.transform_j7uy7i$(vec, w);
     return vec;
   };
   Node.prototype.toLocalCoords_j7uy7i$ = function (vec, w, callback$default) {
@@ -20405,12 +17850,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return this;
     }return null;
   };
-  Node.prototype.checkIsVisible_aemszp$ = function (ctx) {
-    var tmp$, tmp$_0, tmp$_1;
+  Node.prototype.checkIsVisible_6otzq7$ = function (cam, ctx) {
     if (!this.isVisible) {
       return false;
     } else if (this.isFrustumChecked && !this.bounds.isEmpty) {
-      return (tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.isInFrustum_f1kmr1$(this) : null) != null ? tmp$_1 : true;
+      return cam.isInFrustum_f1kmr1$(this);
     }return true;
   };
   Node.prototype.findParentOfType_287e2$ = defineInlineFunction('kool.de.fabmax.kool.scene.Node.findParentOfType_287e2$', wrapFunction(function () {
@@ -20424,19 +17868,36 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return isT(tmp$ = p) ? tmp$ : throwCCE();
     };
   }));
-  Node.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
+  Node.prototype.checkModelMatInv_vk7bqf$_0 = function () {
+    if (this.modelMatDirty) {
+      this.modelMat.invert_23yxad$(this.modelMatInvLazy_yq9j4d$_0);
+      this.modelMatDirty = false;
+    }return this.modelMatInvLazy_yq9j4d$_0;
   };
-  Node.prototype.onParentChanged_etw0z0$ = function (oldParent, newParent) {
+  function Node$Companion() {
+    Node$Companion_instance = this;
+    this.MODEL_MAT_IDENTITY_0 = new Mat4d();
+  }
+  Node$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
   };
+  var Node$Companion_instance = null;
+  function Node$Companion_getInstance() {
+    if (Node$Companion_instance === null) {
+      new Node$Companion();
+    }return Node$Companion_instance;
+  }
   Node.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'Node',
     interfaces: [Disposable]
   };
-  function orbitInputTransform(name, block) {
+  function orbitInputTransform($receiver, name, block) {
     if (name === void 0)
       name = null;
-    var sit = new OrbitInputTransform(name);
+    var sit = new OrbitInputTransform($receiver, name);
     block(sit);
     return sit;
   }
@@ -20448,9 +17909,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   function defaultCamTransform($receiver) {
-    $receiver.unaryPlus_uv0sim$(orbitInputTransform(void 0, defaultCamTransform$lambda($receiver)));
+    $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, defaultCamTransform$lambda($receiver)));
   }
-  function OrbitInputTransform(name) {
+  function OrbitInputTransform(scene, name) {
     if (name === void 0)
       name = null;
     TransformGroup.call(this, name);
@@ -20493,7 +17954,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.smoothness = 0.5;
     this.panPlane_eoagge$_0.p.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
     this.panPlane_eoagge$_0.n.set_czzhiu$(Vec3f$Companion_getInstance().Y_AXIS);
-    this.onPreRender.add_11rb$(OrbitInputTransform_init$lambda(this));
+    scene.registerDragHandler_y44tw7$(this);
+    this.onUpdate.add_11rb$(OrbitInputTransform_init$lambda(this));
   }
   Object.defineProperty(OrbitInputTransform.prototype, 'zoom', {
     get: function () {
@@ -20575,13 +18037,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.set_d4zu6l$(this.mouseTransform_3g2ewq$_0);
     }
   };
-  OrbitInputTransform.prototype.doCamTransform_ppkoa$_0 = function (ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5, tmp$_6;
-    tmp$ = this.scene;
-    if (tmp$ == null) {
-      return;
-    }var scene = tmp$;
-    if (this.panMethod.computePanPoint_9h8rqb$(this.pointerHit_a6l7qh$_0, scene, this.ptrPos_jb68ux$_0, ctx)) {
+  OrbitInputTransform.prototype.doCamTransform_kff6gu$_0 = function (renderPass, ctx) {
+    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3, tmp$_4, tmp$_5;
+    if (this.panMethod.computePanPoint_467c2i$(this.pointerHit_a6l7qh$_0, renderPass, this.ptrPos_jb68ux$_0, ctx)) {
       if (this.dragStart_84bd5l$_0) {
         this.dragStart_84bd5l$_0 = false;
         this.pointerHitStart_dvxvk5$_0.set_czzhiu$(this.pointerHit_a6l7qh$_0);
@@ -20598,13 +18056,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         }
         var s = clamp$result;
         this.tmpVec1_ioqh9p$_0.set_czzhiu$(this.pointerHitStart_dvxvk5$_0).subtract_czzhiu$(this.pointerHit_a6l7qh$_0).scale_mx4ult$(s);
-        (tmp$_0 = this.parent) != null ? tmp$_0.toLocalCoords_w1lst9$(this.tmpVec1_ioqh9p$_0, 0.0) : null;
+        (tmp$ = this.parent) != null ? tmp$.toLocalCoords_w1lst9$(this.tmpVec1_ioqh9p$_0, 0.0) : null;
         var tLen = this.tmpVec1_ioqh9p$_0.length();
-        if (tLen > scene.camera.globalRange * 0.5) {
-          this.tmpVec1_ioqh9p$_0.scale_mx4ult$(scene.camera.globalRange * 0.5 / tLen);
+        if (tLen > renderPass.camera.globalRange * 0.5) {
+          this.tmpVec1_ioqh9p$_0.scale_mx4ult$(renderPass.camera.globalRange * 0.5 / tLen);
         }this.add_1k1qf7$_0(this.translation, this.tmpVec1_ioqh9p$_0);
       }} else {
-      this.pointerHit_a6l7qh$_0.set_czzhiu$(scene.camera.globalLookAt);
+      this.pointerHit_a6l7qh$_0.set_czzhiu$(renderPass.camera.globalLookAt);
     }
     var $receiver_0 = this.deltaScroll_dymhuq$_0;
     var eps;
@@ -20613,22 +18071,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.zoom = this.zoom * (1.0 - this.deltaScroll_dymhuq$_0 / 10.0);
       this.deltaScroll_dymhuq$_0 = 0.0;
     }if (this.dragMethod_errtco$_0 === OrbitInputTransform$DragMethod$ROTATE_getInstance()) {
-      tmp$_3 = this.verticalRotation;
-      tmp$_2 = this.deltaPos_l16i4v$_0.x / 3;
+      tmp$_2 = this.verticalRotation;
+      tmp$_1 = this.deltaPos_l16i4v$_0.x / 3;
       if (this.invertRotX) {
-        tmp$_1 = -1.0;
+        tmp$_0 = -1.0;
       } else {
-        tmp$_1 = 1.0;
+        tmp$_0 = 1.0;
       }
-      this.verticalRotation = tmp$_3 - tmp$_2 * tmp$_1;
-      tmp$_6 = this.horizontalRotation;
-      tmp$_5 = this.deltaPos_l16i4v$_0.y / 3;
+      this.verticalRotation = tmp$_2 - tmp$_1 * tmp$_0;
+      tmp$_5 = this.horizontalRotation;
+      tmp$_4 = this.deltaPos_l16i4v$_0.y / 3;
       if (this.invertRotY) {
-        tmp$_4 = -1.0;
+        tmp$_3 = -1.0;
       } else {
-        tmp$_4 = 1.0;
+        tmp$_3 = 1.0;
       }
-      this.horizontalRotation = tmp$_6 - tmp$_5 * tmp$_4;
+      this.horizontalRotation = tmp$_5 - tmp$_4 * tmp$_3;
       var $receiver_1 = this.horizontalRotation;
       var min = this.minHorizontalRot;
       var max = this.maxHorizontalRot;
@@ -20651,16 +18109,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     eps_0 = package$math.FUZZY_EQ_D;
     var $receiver_2 = oldZ - z;
     if (!(Math_0.abs($receiver_2) <= eps_0) && this.zoomMethod === OrbitInputTransform$ZoomMethod$ZOOM_TRANSLATE_getInstance()) {
-      this.computeZoomTranslationPerspective_v829wb$(scene, oldZ, z);
+      this.computeZoomTranslationPerspective_axn3gs$(renderPass.camera, oldZ, z);
     }this.vertRotAnimator.animate_mx4ult$(ctx.deltaT);
     this.horiRotAnimator.animate_mx4ult$(ctx.deltaT);
     this.updateTransform();
   };
-  OrbitInputTransform.prototype.computeZoomTranslationPerspective_v829wb$ = function (scene, oldZoom, newZoom) {
+  OrbitInputTransform.prototype.computeZoomTranslationPerspective_axn3gs$ = function (camera, oldZoom, newZoom) {
     var tmp$;
     var s = newZoom / oldZoom;
-    scene.camera.globalPos.subtract_2gj7b4$(this.pointerHit_a6l7qh$_0, this.tmpVec1_ioqh9p$_0).scale_mx4ult$(s).add_czzhiu$(this.pointerHit_a6l7qh$_0);
-    scene.camera.globalPos.subtract_2gj7b4$(scene.camera.globalLookAt, this.tmpVec2_ioqh8u$_0).scale_mx4ult$(s).add_czzhiu$(scene.camera.globalLookAt);
+    camera.globalPos.subtract_2gj7b4$(this.pointerHit_a6l7qh$_0, this.tmpVec1_ioqh9p$_0).scale_mx4ult$(s).add_czzhiu$(this.pointerHit_a6l7qh$_0);
+    camera.globalPos.subtract_2gj7b4$(camera.globalLookAt, this.tmpVec2_ioqh8u$_0).scale_mx4ult$(s).add_czzhiu$(camera.globalLookAt);
     this.tmpVec1_ioqh9p$_0.subtract_czzhiu$(this.tmpVec2_ioqh8u$_0);
     (tmp$ = this.parent) != null ? tmp$.toLocalCoords_w1lst9$(this.tmpVec1_ioqh9p$_0, 0.0) : null;
     this.add_1k1qf7$_0(this.translation, this.tmpVec1_ioqh9p$_0);
@@ -20673,14 +18131,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.horizontalRotation = this.horiRotAnimator.actual;
     this.zoom = this.zoomAnimator.actual;
   };
-  OrbitInputTransform.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
-    TransformGroup.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
-    oldScene != null ? (oldScene.removeDragHandler_y44tw7$(this), Unit) : null;
-    newScene != null ? (newScene.registerDragHandler_y44tw7$(this), Unit) : null;
-  };
   OrbitInputTransform.prototype.handleDrag_urvnay$ = function (dragPtrs, scene, ctx) {
     var tmp$;
-    if (!dragPtrs.isEmpty() && !dragPtrs.get_za3lpa$(0).isConsumed_za3lpa$() && dragPtrs.get_za3lpa$(0).isInViewport_n4xpoe$(scene.viewport, ctx)) {
+    if (!dragPtrs.isEmpty() && !dragPtrs.get_za3lpa$(0).isConsumed_za3lpa$() && dragPtrs.get_za3lpa$(0).isInViewport_n4xpoe$(scene.mainRenderPass.viewport, ctx)) {
       if (dragPtrs.get_za3lpa$(0).buttonEventMask !== 0 || dragPtrs.get_za3lpa$(0).buttonMask !== this.prevButtonMask_ajfzw$_0) {
         if (dragPtrs.get_za3lpa$(0).isLeftButtonDown)
           tmp$ = this.leftDragMethod;
@@ -20796,8 +18249,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   OrbitInputTransform$ZoomMethod.valueOf_61zpoe$ = OrbitInputTransform$ZoomMethod$valueOf;
   function OrbitInputTransform_init$lambda(this$OrbitInputTransform) {
-    return function ($receiver, ctx) {
-      this$OrbitInputTransform.doCamTransform_ppkoa$_0(ctx);
+    return function ($receiver, rp, ctx) {
+      this$OrbitInputTransform.doCamTransform_kff6gu$_0(rp, ctx);
       return Unit;
     };
   }
@@ -20818,10 +18271,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.panPlane = new Plane();
     this.pointerRay_0 = new Ray();
   }
-  CameraOrthogonalPan.prototype.computePanPoint_9h8rqb$ = function (result, scene, ptrPos, ctx) {
-    this.panPlane.p.set_czzhiu$(scene.camera.globalLookAt);
-    this.panPlane.n.set_czzhiu$(scene.camera.globalLookDir);
-    return scene.camera.computePickRay_evt2sh$(this.pointerRay_0, ptrPos.x, ptrPos.y, scene.viewport, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
+  CameraOrthogonalPan.prototype.computePanPoint_467c2i$ = function (result, renderPass, ptrPos, ctx) {
+    this.panPlane.p.set_czzhiu$(renderPass.camera.globalLookAt);
+    this.panPlane.n.set_czzhiu$(renderPass.camera.globalLookDir);
+    return renderPass.camera.computePickRay_evt2sh$(this.pointerRay_0, ptrPos.x, ptrPos.y, renderPass.viewport, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
   };
   CameraOrthogonalPan.$metadata$ = {
     kind: Kind_CLASS,
@@ -20834,9 +18287,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.pointerRay_0 = new Ray();
     this.panPlane.n.set_czzhiu$(planeNormal);
   }
-  FixedPlanePan.prototype.computePanPoint_9h8rqb$ = function (result, scene, ptrPos, ctx) {
-    this.panPlane.p.set_czzhiu$(scene.camera.globalLookAt);
-    return scene.camera.computePickRay_evt2sh$(this.pointerRay_0, ptrPos.x, ptrPos.y, scene.viewport, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
+  FixedPlanePan.prototype.computePanPoint_467c2i$ = function (result, renderPass, ptrPos, ctx) {
+    this.panPlane.p.set_czzhiu$(renderPass.camera.globalLookAt);
+    return renderPass.camera.computePickRay_evt2sh$(this.pointerRay_0, ptrPos.x, ptrPos.y, renderPass.viewport, ctx) && this.panPlane.intersectionPoint_m2314x$(result, this.pointerRay_0);
   };
   FixedPlanePan.$metadata$ = {
     kind: Kind_CLASS,
@@ -20917,19 +18370,17 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (name === void 0)
       name = null;
     Group.call(this, name);
-    this.onRenderScene = ArrayList_init_0();
-    this.clearMask = 0;
+    this.lighting = new Lighting();
     this.camera = new PerspectiveCamera();
-    this.lighting = new Lighting(this);
-    this.viewport_1xny3r$_0 = new KoolContext$Viewport(0, 0, 0, 0);
-    this.drawQueue = null;
+    this.mainRenderPass = new ScreenRenderPass(this);
+    this.offscreenPasses = ArrayList_init_0();
+    this.onRenderScene = ArrayList_init_0();
     this.isPickingEnabled = true;
     this.rayTest_odjp91$_0 = new RayTest();
     this.hoverNode_ab2f3d$_0 = null;
     this.dragPtrs_mbcqtw$_0 = ArrayList_init_0();
     this.dragHandlers_ipew8g$_0 = ArrayList_init_0();
     this.disposables_mcwga4$_0 = ArrayList_init_0();
-    this.scene = this;
   }
   Object.defineProperty(Scene.prototype, 'isFrustumChecked', {
     get: function () {
@@ -20938,37 +18389,32 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     set: function (f) {
     }
   });
-  Object.defineProperty(Scene.prototype, 'viewport', {
-    get: function () {
-      return this.viewport_1xny3r$_0;
-    },
-    set: function (viewport) {
-      this.viewport_1xny3r$_0 = viewport;
-    }
-  });
   Scene.prototype.renderScene_aemszp$ = function (ctx) {
-    var tmp$;
+    var tmp$, tmp$_0;
     tmp$ = this.onRenderScene;
     for (var i = 0; i !== tmp$.size; ++i) {
       this.onRenderScene.get_za3lpa$(i)(this, ctx);
     }
-    this.viewport = ctx.viewport;
-    this.camera.updateCamera_aemszp$(ctx);
-    this.preRender_aemszp$(ctx);
-    this.render_aemszp$(ctx);
-    this.postRender_aemszp$(ctx);
+    this.mainRenderPass.update_aemszp$(ctx);
+    tmp$_0 = reversed(get_indices(this.offscreenPasses)).iterator();
+    while (tmp$_0.hasNext()) {
+      var i_0 = tmp$_0.next();
+      this.offscreenPasses.get_za3lpa$(i_0).update_aemszp$(ctx);
+      this.offscreenPasses.get_za3lpa$(i_0).collectDrawCommands_aemszp$(ctx);
+    }
+    this.mainRenderPass.collectDrawCommands_aemszp$(ctx);
   };
   Scene.prototype.processInput_aemszp$ = function (ctx) {
     this.handleInput_gqm22e$_0(ctx);
   };
-  Scene.prototype.preRender_aemszp$ = function (ctx) {
+  Scene.prototype.update_oco14p$ = function (renderPass, ctx) {
     var tmp$;
     tmp$ = this.disposables_mcwga4$_0;
     for (var i = 0; i !== tmp$.size; ++i) {
       this.disposables_mcwga4$_0.get_za3lpa$(i).dispose_aemszp$(ctx);
     }
     this.disposables_mcwga4$_0.clear();
-    Group.prototype.preRender_aemszp$.call(this, ctx);
+    Group.prototype.update_oco14p$.call(this, renderPass, ctx);
   };
   Scene.prototype.dispose_ipew3$ = function (disposable) {
     this.disposables_mcwga4$_0.add_11rb$(disposable);
@@ -20981,6 +18427,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       element.dispose_aemszp$(ctx);
     }
     this.disposables_mcwga4$_0.clear();
+    this.mainRenderPass.dispose_aemszp$(ctx);
+    var tmp$_0;
+    tmp$_0 = this.offscreenPasses.iterator();
+    while (tmp$_0.hasNext()) {
+      var element_0 = tmp$_0.next();
+      element_0.dispose_aemszp$(ctx);
+    }
     Group.prototype.dispose_aemszp$.call(this, ctx);
   };
   Scene.prototype.registerDragHandler_y44tw7$ = function (handler) {
@@ -20991,7 +18444,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dragHandlers_ipew8g$_0.remove_11rb$(handler);
   };
   Scene.prototype.computeRay_wswg9$ = function (pointer, ctx, result) {
-    return this.camera.computePickRay_9t2ms2$(result, pointer, this.viewport, ctx);
+    return this.camera.computePickRay_9t2ms2$(result, pointer, this.mainRenderPass.viewport, ctx);
   };
   Scene.prototype.handleInput_gqm22e$_0 = function (ctx) {
     var tmp$, tmp$_0, tmp$_1;
@@ -21000,7 +18453,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var ptr = ctx.inputMgr.pointerState.primaryPointer;
     if (!this.isPickingEnabled || !ptr.isValid || ptr.isConsumed_za3lpa$()) {
       return;
-    }if (ptr.isInViewport_n4xpoe$(this.viewport, ctx) && this.camera.initRayTes_xfyfmo$(this.rayTest_odjp91$_0, ptr, this.viewport, ctx)) {
+    }if (ptr.isInViewport_n4xpoe$(this.mainRenderPass.viewport, ctx) && this.camera.initRayTes_xfyfmo$(this.rayTest_odjp91$_0, ptr, this.mainRenderPass.viewport, ctx)) {
       this.rayTest_jljx4v$(this.rayTest_odjp91$_0);
       if (this.rayTest_odjp91$_0.isHit) {
         hovered = this.rayTest_odjp91$_0.hitNode;
@@ -21029,7 +18482,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     tmp$ = ctx.inputMgr.pointerState.pointers;
     for (var i = 0; i !== tmp$.length; ++i) {
       var ptr = ctx.inputMgr.pointerState.pointers[i];
-      if (ptr.isValid && ptr.isInViewport_n4xpoe$(this.viewport, ctx) && (ptr.buttonMask !== 0 || ptr.buttonEventMask !== 0 || ptr.deltaScroll !== 0.0)) {
+      if (ptr.isValid && ptr.isInViewport_n4xpoe$(this.mainRenderPass.viewport, ctx) && (ptr.buttonMask !== 0 || ptr.buttonEventMask !== 0 || ptr.deltaScroll !== 0.0)) {
         this.dragPtrs_mbcqtw$_0.add_11rb$(ptr);
       }}
     tmp$_0 = reversed(get_indices(this.dragHandlers_ipew8g$_0)).iterator();
@@ -21078,23 +18531,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_2.onCreated.add_11rb$(Skybox_init$lambda$lambda_0(this, $receiver_2));
     this.pipelineLoader = $receiver_2;
   }
-  function Skybox$HdrTestNode(inColor, graph) {
-    ShaderNode.call(this, 'hdrTest', graph);
-    this.inColor = inColor;
-    this.outColor = new ShaderNodeIoVar(new ModelVar4f('hdrTest_out'), this);
-  }
-  Skybox$HdrTestNode.prototype.setup_llmhyc$ = function (shaderGraph) {
-    ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
-    this.dependsOn_7qvs0d$(this.inColor);
-  };
-  Skybox$HdrTestNode.prototype.generateCode_626509$ = function (generator) {
-    generator.appendMain_61zpoe$(trimIndent('\n' + '                vec3 testRgb = vec3(log(length(' + this.inColor.ref3f() + ')) / log(10.0) / 6.0);' + '\n' + '                ' + this.outColor.declare() + ' = vec4(testRgb, 1.0);' + '\n' + '                '));
-  };
-  Skybox$HdrTestNode.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'HdrTestNode',
-    interfaces: [ShaderNode]
-  };
   function Skybox$SkyboxPosNode(mvp, inPos, graph) {
     ShaderNode.call(this, 'skyboxPos', graph, ShaderStage$VERTEX_SHADER_getInstance().mask);
     this.mvp = mvp;
@@ -21403,14 +18839,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.isDirty = true;
     this.isIdentity = false;
   };
-  TransformGroup.prototype.preRender_aemszp$ = function (ctx) {
-    var wasIdentity = this.isIdentity;
-    if (!wasIdentity) {
-      ctx.mvpState.modelMatrix.push();
-      ctx.mvpState.modelMatrix.mul_d4zu6l$(this.transform);
-      ctx.mvpState.update_aemszp$(ctx);
-    }Group.prototype.preRender_aemszp$.call(this, ctx);
-    if (!this.bounds.isEmpty && !wasIdentity) {
+  TransformGroup.prototype.update_oco14p$ = function (renderPass, ctx) {
+    Group.prototype.update_oco14p$.call(this, renderPass, ctx);
+    if (!this.bounds.isEmpty && !this.isIdentity) {
       this.tmpBounds_m1h34u$_0.clear();
       this.tmpBounds_m1h34u$_0.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_xv9rzf$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.min.y, this.bounds.min.z), 1.0));
       this.tmpBounds_m1h34u$_0.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_xv9rzf$_0.set_y2kzbl$(this.bounds.min.x, this.bounds.min.y, this.bounds.max.z), 1.0));
@@ -21421,45 +18852,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.tmpBounds_m1h34u$_0.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_xv9rzf$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.max.y, this.bounds.min.z), 1.0));
       this.tmpBounds_m1h34u$_0.add_czzhiu$(this.transform.transform_w1lst9$(this.tmpTransformVec_xv9rzf$_0.set_y2kzbl$(this.bounds.max.x, this.bounds.max.y, this.bounds.max.z), 1.0));
       this.bounds.set_ea4od8$(this.tmpBounds_m1h34u$_0);
-    }if (!wasIdentity) {
-      ctx.mvpState.modelMatrix.pop();
-      ctx.mvpState.update_aemszp$(ctx);
     }};
-  TransformGroup.prototype.render_aemszp$ = function (ctx) {
-    if (this.isVisible) {
-      var wasIdentity = this.isIdentity;
-      if (!wasIdentity) {
-        ctx.mvpState.modelMatrix.push();
-        ctx.mvpState.modelMatrix.mul_d4zu6l$(this.transform);
-        ctx.mvpState.update_aemszp$(ctx);
-      }Group.prototype.render_aemszp$.call(this, ctx);
-      if (!wasIdentity) {
-        ctx.mvpState.modelMatrix.pop();
-        ctx.mvpState.update_aemszp$(ctx);
-      }}};
-  TransformGroup.prototype.toGlobalCoords_w1lst9$$default = function (vec, w) {
-    if (!this.isIdentity) {
-      this.transform.transform_w1lst9$(vec, w);
-    }return this.toGlobalCoords_w1lst9$(vec, w, Group.prototype.toGlobalCoords_w1lst9$$default.bind(this));
-  };
-  TransformGroup.prototype.toGlobalCoords_j7uy7i$$default = function (vec, w) {
-    if (!this.isIdentity) {
-      this.transform.transform_j7uy7i$(vec, w);
-    }return this.toGlobalCoords_j7uy7i$(vec, w, Group.prototype.toGlobalCoords_j7uy7i$$default.bind(this));
-  };
-  TransformGroup.prototype.toLocalCoords_w1lst9$$default = function (vec, w) {
-    this.toLocalCoords_w1lst9$(vec, w, Group.prototype.toLocalCoords_w1lst9$$default.bind(this));
-    if (!this.isIdentity) {
-      this.checkInverse();
-      this.invTransform.transform_w1lst9$(vec, w);
-    }return vec;
-  };
-  TransformGroup.prototype.toLocalCoords_j7uy7i$$default = function (vec, w) {
-    this.toLocalCoords_j7uy7i$(vec, w, Group.prototype.toLocalCoords_j7uy7i$$default.bind(this));
-    if (!this.isIdentity) {
-      this.checkInverse();
-      this.invTransform.transform_j7uy7i$(vec, w);
-    }return vec;
+  TransformGroup.prototype.updateModelMat_oco14p$ = function (renderPass, ctx) {
+    Group.prototype.updateModelMat_oco14p$.call(this, renderPass, ctx);
+    this.modelMat.mul_d4zu6l$(this.transform);
   };
   TransformGroup.prototype.rayTest_jljx4v$ = function (test) {
     if (!this.isIdentity) {
@@ -21864,7 +19260,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   function DrawerMenu_init$lambda$lambda$lambda$lambda(closure$initFont, this$) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       if (closure$initFont.v) {
         closure$initFont.v = false;
         this$.font.setCustom_11rb$(titleFont(this$, ctx));
@@ -21879,7 +19275,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.text = closure$title;
       $receiver.textColor.setCustom_11rb$(this$.theme.accentColor);
       var initFont = {v: true};
-      $receiver.onPreRender.add_11rb$(DrawerMenu_init$lambda$lambda$lambda$lambda(initFont, $receiver));
+      $receiver.onUpdate.add_11rb$(DrawerMenu_init$lambda$lambda$lambda$lambda(initFont, $receiver));
       return Unit;
     };
   }
@@ -22434,7 +19830,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   }
   Alignment.valueOf_61zpoe$ = Alignment$valueOf;
-  function ScrollHandler(scrollTarget, name) {
+  function ScrollHandler(scene, scrollTarget, name) {
     if (name === void 0)
       name = toString(scrollTarget.name) + '-scroll';
     UiComponent.call(this, name, scrollTarget.root);
@@ -22453,12 +19849,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.layoutSpec.setSize_4ujscr$(this.scrollTarget.layoutSpec.width, this.scrollTarget.layoutSpec.height, this.scrollTarget.layoutSpec.depth);
     this.scrollPosY_ted4vc$_0.stiffness = 300.0;
     this.scrollPosYGuard_vhhi7b$_0.stiffness = 500.0;
+    scene.registerDragHandler_y44tw7$(this);
   }
-  ScrollHandler.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
-    UiComponent.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
-    oldScene != null ? (oldScene.removeDragHandler_y44tw7$(this), Unit) : null;
-    newScene != null ? (newScene.registerDragHandler_y44tw7$(this), Unit) : null;
-  };
   ScrollHandler.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newScrollHandlerUi_dz938y$(this);
   };
@@ -22702,7 +20094,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.startDrag_0 = false;
     this.startDragValue_0 = 0.0;
     this.hitPlane_0.n.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS);
-    this.onHover.add_11rb$(Slider_init$lambda(this));
+    this.onHover.add_11rb$(Slider_init$lambda(this, root));
   }
   Object.defineProperty(Slider.prototype, 'min', {
     get: function () {
@@ -22781,13 +20173,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   Slider.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newSliderUi_l85jm8$(this);
   };
-  function Slider_init$lambda(this$Slider) {
+  function Slider_init$lambda(this$Slider, closure$root) {
     return function ($receiver, ptr, rt, f) {
-      var tmp$;
       var ptX = rt.hitPositionLocal.x - this$Slider.componentBounds.min.x;
       var ptY = rt.hitPositionLocal.y - this$Slider.componentBounds.min.y;
       if (ptr.isLeftButtonEvent && ptr.isLeftButtonDown && this$Slider.isOverKnob_0(ptX, ptY)) {
-        (tmp$ = $receiver.scene) != null ? (tmp$.registerDragHandler_y44tw7$(this$Slider), Unit) : null;
+        closure$root.scene.registerDragHandler_y44tw7$(this$Slider);
         this$Slider.startDrag_0 = true;
       }return Unit;
     };
@@ -22866,13 +20257,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function TextField(name, root) {
     Label.call(this, name, root);
     this.editText = new EditableText();
-    this.onPreRender.add_11rb$(TextField_init$lambda(this));
+    this.onUpdate.add_11rb$(TextField_init$lambda(this));
   }
   TextField.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.newTextFieldUi_p39bdq$(this);
   };
   function TextField_init$lambda(this$TextField) {
-    return function ($receiver, ctx) {
+    return function ($receiver, f, ctx) {
       var tmp$;
       if (!ctx.inputMgr.keyEvents.isEmpty()) {
         tmp$ = ctx.inputMgr.keyEvents.iterator();
@@ -23354,11 +20745,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return this.root.uiDpi;
     }
   });
-  UiComponent.prototype.onParentChanged_etw0z0$ = function (oldParent, newParent) {
-    if (Kotlin.isType(newParent, UiComponent)) {
-      this.alpha = newParent.alpha;
-    }TransformGroup.prototype.onParentChanged_etw0z0$.call(this, oldParent, newParent);
-  };
+  UiComponent.prototype.addNode_xtids1$$default = function (node, index) {
+    this.addNode_xtids1$(node, index, TransformGroup.prototype.addNode_xtids1$$default.bind(this));
+    if (Kotlin.isType(node, UiComponent)) {
+      node.alpha = this.alpha;
+    }};
   UiComponent.prototype.setupBuilder_84rojv$ = function (builder) {
     builder.clear();
     builder.identity();
@@ -23384,7 +20775,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.ui.prop.updateComponentAlpha();
     this.requestUiUpdate();
   };
-  UiComponent.prototype.update_aemszp$ = function (ctx) {
+  UiComponent.prototype.updateComponent_aemszp$ = function (ctx) {
     var tmp$;
     if (this.isThemeUpdate_yv706e$_0) {
       this.isThemeUpdate_yv706e$_0 = false;
@@ -23439,10 +20830,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   UiComponent.prototype.createThemeUi_aemszp$ = function (ctx) {
     return this.root.theme.componentUi(this);
   };
-  UiComponent.prototype.render_aemszp$ = function (ctx) {
+  UiComponent.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
     if (this.isVisible && this.alpha > 0.0 && !this.bounds.isEmpty) {
       this.ui.prop.onRender_aemszp$(ctx);
-      TransformGroup.prototype.render_aemszp$.call(this, ctx);
+      TransformGroup.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
     }};
   UiComponent.prototype.doLayout_sq5703$ = function (layoutBounds, ctx) {
     var tmp$;
@@ -23459,8 +20850,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         test.setHit_ulhqnp$(this, test.hitPosition);
       }}};
   UiComponent.prototype.computeLocalPickRay_wswg9$ = function (pointer, ctx, result) {
-    var tmp$, tmp$_0;
-    var success = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.computeRay_wswg9$(pointer, ctx, result) : null) != null ? tmp$_0 : false;
+    var success = this.root.scene.computeRay_wswg9$(pointer, ctx, result);
     if (success) {
       this.toLocalCoords_w1lst9$(result.origin);
       this.toLocalCoords_w1lst9$(result.direction, 0.0).norm();
@@ -23540,16 +20930,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.childComponents_65igag$_0.get_za3lpa$(i).alpha = this.alpha;
     }
   };
-  UiContainer.prototype.update_aemszp$ = function (ctx) {
+  UiContainer.prototype.updateComponent_aemszp$ = function (ctx) {
     var tmp$, tmp$_0;
     if (this.isScrollDirty) {
       this.isScrollDirty = false;
       (tmp$ = this.scrollHandler_xer21f$_0) != null ? (tmp$.requestUiUpdate(), Unit) : null;
       this.updateTransform();
-    }UiComponent.prototype.update_aemszp$.call(this, ctx);
+    }UiComponent.prototype.updateComponent_aemszp$.call(this, ctx);
     tmp$_0 = this.childComponents_65igag$_0;
     for (var i = 0; i !== tmp$_0.size; ++i) {
-      this.childComponents_65igag$_0.get_za3lpa$(i).update_aemszp$(ctx);
+      this.childComponents_65igag$_0.get_za3lpa$(i).updateComponent_aemszp$(ctx);
     }
   };
   UiContainer.prototype.doLayout_sq5703$ = function (layoutBounds, ctx) {
@@ -23691,10 +21081,10 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'UiContainer',
     interfaces: [UiComponent]
   };
-  function embeddedUi(width, height, contentHeight, dpi, block) {
+  function embeddedUi($receiver, width, height, contentHeight, dpi, block) {
     if (dpi === void 0)
       dpi = 300.0;
-    var ui = new UiRoot(dpi);
+    var ui = new UiRoot($receiver, dpi);
     ui.contentHeight = contentHeight;
     ui.globalWidth = width;
     ui.globalHeight = height;
@@ -23722,14 +21112,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_0.far = 1000.0;
     $receiver.camera = $receiver_0;
     if (overlay) {
-      $receiver.clearMask = 2;
-    }$receiver.unaryPlus_uv0sim$(embeddedUi(1.0, 1.0, null, dpi, uiScene$lambda$lambda(block)));
+      $receiver.mainRenderPass.clearColor = null;
+    }$receiver.unaryPlus_uv0sim$(embeddedUi($receiver, 1.0, 1.0, null, dpi, uiScene$lambda$lambda(block)));
     return $receiver;
   }
-  function UiRoot(uiDpi, name) {
+  function UiRoot(scene, uiDpi, name) {
     if (name === void 0)
       name = 'UiRoot';
     Node.call(this, name);
+    this.scene = scene;
     this.uiDpi = uiDpi;
     this.globalWidth_rlfw80$_0 = 1.0;
     this.globalHeight_5sxs8p$_0 = 1.0;
@@ -23806,10 +21197,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       return this.content.bounds;
     }
   });
-  UiRoot.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
-    Node.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
-    this.content.scene = newScene;
-  };
   UiRoot.prototype.setGlobalSize_y2kzbl$ = function (width, height, depth) {
     this.isFillViewport = false;
     this.globalWidth = width;
@@ -23819,12 +21206,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   UiRoot.prototype.requestLayout = function () {
     this.isLayoutNeeded_0 = true;
   };
-  UiRoot.prototype.preRender_aemszp$ = function (ctx) {
-    var tmp$, tmp$_0;
-    tmp$_0 = (tmp$ = this.scene) != null ? tmp$.viewport : null;
-    if (tmp$_0 == null) {
-      return;
-    }var viewport = tmp$_0;
+  UiRoot.prototype.update_oco14p$ = function (renderPass, ctx) {
+    var viewport = this.scene.mainRenderPass.viewport;
     if (this.isFillViewport && (this.globalWidth !== viewport.width || this.globalHeight !== viewport.height)) {
       this.globalWidth = viewport.width;
       this.globalHeight = viewport.height;
@@ -23837,17 +21220,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }var contentBounds = (new BoundingBox()).set_w8lrqs$(0.0, 0.0, 0.0, this.globalWidth / contentScale, this.globalHeight / contentScale, this.globalDepth / contentScale);
       this.content.contentScale = contentScale;
       this.content.doLayout_sq5703$(contentBounds, ctx);
-    }this.content.preRender_aemszp$(ctx);
-    Node.prototype.preRender_aemszp$.call(this, ctx);
-    this.content.update_aemszp$(ctx);
+    }this.content.update_oco14p$(renderPass, ctx);
+    Node.prototype.update_oco14p$.call(this, renderPass, ctx);
+    this.content.updateComponent_aemszp$(ctx);
   };
-  UiRoot.prototype.render_aemszp$ = function (ctx) {
-    Node.prototype.render_aemszp$.call(this, ctx);
-    this.content.render_aemszp$(ctx);
-  };
-  UiRoot.prototype.postRender_aemszp$ = function (ctx) {
-    this.content.postRender_aemszp$(ctx);
-    Node.prototype.postRender_aemszp$.call(this, ctx);
+  UiRoot.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
+    Node.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
+    this.content.collectDrawCommands_oco14p$(renderPass, ctx);
   };
   UiRoot.prototype.dispose_aemszp$ = function (ctx) {
     Node.prototype.dispose_aemszp$.call(this, ctx);
@@ -25877,14 +23256,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     MutableColor.call($this, color.r, color.g, color.b, color.a);
     return $this;
   }
-  function Comparator$ObjectLiteral_5(closure$comparison) {
+  function Comparator$ObjectLiteral_1(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_5.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_1.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_5.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_5 = wrapFunction(function () {
+  Comparator$ObjectLiteral_1.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  var compareBy$lambda_1 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -25908,7 +23287,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     if (colors.length < 2) {
       throw KoolException_init('ColorGradient requires at least two colors');
     }if (colors.length > 1) {
-      sortWith_0(colors, new Comparator$ObjectLiteral_5(compareBy$lambda_5(ColorGradient_init$lambda)));
+      sortWith_0(colors, new Comparator$ObjectLiteral_1(compareBy$lambda_1(ColorGradient_init$lambda)));
     }var mi = first_0(colors).first;
     var mx = last_0(colors).first;
     var pi = 0;
@@ -26095,8 +23474,8 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   }
   function DebugOverlay_init$lambda$lambda$lambda$lambda(this$) {
-    return function ($receiver, c) {
-      this$.text = toString_1(c.fps, 1) + ' fps';
+    return function ($receiver, f, ctx) {
+      this$.text = toString_1(ctx.fps, 1) + ' fps';
       return Unit;
     };
   }
@@ -26109,12 +23488,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.text = '';
       $receiver.font.setCustom_11rb$(UiTheme$Companion_getInstance().DARK_SIMPLE.standardFont_oei9ky$($receiver.dpi, closure$ctx));
       $receiver.textColor.setCustom_11rb$($receiver.root.theme.accentColor);
-      $receiver.onPreRender.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda($receiver));
+      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda($receiver));
       return Unit;
     };
   }
   function DebugOverlay_init$lambda$lambda$lambda$lambda_0(closure$ctx, closure$i, this$) {
-    return function ($receiver, it) {
+    return function ($receiver, f, f_0) {
       this$.text = closure$ctx.getSysInfos().get_za3lpa$(closure$i);
       return Unit;
     };
@@ -26126,18 +23505,18 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       $receiver.text = '';
-      var $receiver_0 = $receiver.onPreRender;
+      var $receiver_0 = $receiver.onUpdate;
       var element = DebugOverlay_init$lambda$lambda$lambda$lambda_0(closure$ctx, closure$i, $receiver);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
   function DebugOverlay_init$lambda$lambda$lambda$lambda_1(closure$lastWndW, closure$lastWndH, this$) {
-    return function ($receiver, c) {
-      if (c.windowWidth !== closure$lastWndW.v || c.windowHeight !== closure$lastWndH.v) {
-        closure$lastWndW.v = c.windowWidth;
-        closure$lastWndH.v = c.windowHeight;
-        this$.text = 'Viewport: ' + c.windowWidth + 'x' + c.windowHeight;
+    return function ($receiver, f, ctx) {
+      if (ctx.windowWidth !== closure$lastWndW.v || ctx.windowHeight !== closure$lastWndH.v) {
+        closure$lastWndW.v = ctx.windowWidth;
+        closure$lastWndH.v = ctx.windowHeight;
+        this$.text = 'Viewport: ' + ctx.windowWidth + 'x' + ctx.windowHeight;
       }return Unit;
     };
   }
@@ -26149,22 +23528,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var lastWndW = {v: -1};
       var lastWndH = {v: -1};
-      $receiver.onPreRender.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_1(lastWndW, lastWndH, $receiver));
+      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_1(lastWndW, lastWndH, $receiver));
       return Unit;
     };
   }
   function DebugOverlay_init$lambda$lambda$lambda$lambda_2(closure$updateT, this$) {
-    return function ($receiver, c) {
-      closure$updateT.v -= c.deltaT;
+    return function ($receiver, f, ctx) {
+      closure$updateT.v -= ctx.deltaT;
       if (closure$updateT.v < 0) {
         closure$updateT.v += 1.0;
-        var hh = '' + toString(numberToInt(c.time / 3600.0));
+        var hh = '' + toString(numberToInt(ctx.time / 3600.0));
         if (hh.length === 1) {
           hh = '0' + hh;
-        }var mm = '' + toString(numberToInt(c.time % 3600.0 / 60.0));
+        }var mm = '' + toString(numberToInt(ctx.time % 3600.0 / 60.0));
         if (mm.length === 1) {
           mm = '0' + mm;
-        }var ss = '' + toString(numberToInt(c.time % 60.0));
+        }var ss = '' + toString(numberToInt(ctx.time % 60.0));
         if (ss.length === 1) {
           ss = '0' + ss;
         }this$.text = 'Up: ' + hh + ':' + mm + '.' + ss;
@@ -26179,14 +23558,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       $receiver.text = 'Up: 00:00.00';
       var updateT = {v: 1.0};
-      $receiver.onPreRender.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_2(updateT, $receiver));
+      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_2(updateT, $receiver));
       return Unit;
     };
   }
   function DebugOverlay_init$lambda$lambda$lambda$lambda_3(closure$last, closure$lastMem, this$) {
-    return function ($receiver, c) {
-      var num = c.engineStats.textureAllocations.size;
-      var mem = c.engineStats.totalTextureSize.toNumber();
+    return function ($receiver, f, ctx) {
+      var num = ctx.engineStats.textureAllocations.size;
+      var mem = ctx.engineStats.totalTextureSize.toNumber();
       if (num !== closure$last.v || mem !== closure$lastMem.v) {
         closure$last.v = num;
         closure$lastMem.v = mem;
@@ -26202,14 +23581,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
       var lastMem = {v: -1.0};
-      $receiver.onPreRender.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_3(last, lastMem, $receiver));
+      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_3(last, lastMem, $receiver));
       return Unit;
     };
   }
   function DebugOverlay_init$lambda$lambda$lambda$lambda_4(closure$last, closure$lastMem, this$) {
-    return function ($receiver, c) {
-      var num = c.engineStats.bufferAllocations.size;
-      var mem = c.engineStats.totalBufferSize.toNumber();
+    return function ($receiver, f, ctx) {
+      var num = ctx.engineStats.bufferAllocations.size;
+      var mem = ctx.engineStats.totalBufferSize.toNumber();
       if (num !== closure$last.v || mem !== closure$lastMem.v) {
         closure$last.v = num;
         closure$lastMem.v = mem;
@@ -26225,14 +23604,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var last = {v: -1};
       var lastMem = {v: -1.0};
-      $receiver.onPreRender.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_4(last, lastMem, $receiver));
+      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_4(last, lastMem, $receiver));
       return Unit;
     };
   }
   function DebugOverlay_init$lambda$lambda$lambda$lambda_5(closure$lastInstances, closure$lastPipelines, this$) {
-    return function ($receiver, c) {
-      var numPipelines = c.engineStats.pipelines.size;
-      var numDrawCmds = c.engineStats.numDrawCommands;
+    return function ($receiver, f, ctx) {
+      var numPipelines = ctx.engineStats.pipelines.size;
+      var numDrawCmds = ctx.engineStats.numDrawCommands;
       if (numDrawCmds !== closure$lastInstances.v || numPipelines !== closure$lastPipelines.v) {
         closure$lastPipelines.v = numPipelines;
         closure$lastInstances.v = numDrawCmds;
@@ -26248,13 +23627,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var lastPipelines = {v: -1};
       var lastInstances = {v: -1};
-      $receiver.onPreRender.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_5(lastInstances, lastPipelines, $receiver));
+      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_5(lastInstances, lastPipelines, $receiver));
       return Unit;
     };
   }
   function DebugOverlay_init$lambda$lambda$lambda$lambda_6(closure$lastPrimitives, this$) {
-    return function ($receiver, c) {
-      var numPrimitives = c.engineStats.numPrimitives;
+    return function ($receiver, f, ctx) {
+      var numPrimitives = ctx.engineStats.numPrimitives;
       if (numPrimitives !== closure$lastPrimitives.v) {
         closure$lastPrimitives.v = numPrimitives;
         this$.text = numPrimitives.toString() + ' Primitives';
@@ -26268,7 +23647,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.padding = new Margin(zero(), zero(), dps(4.0, true), dps(4.0, true));
       $receiver.textAlignment = new Gravity(Alignment$END_getInstance(), Alignment$CENTER_getInstance());
       var lastPrimitives = {v: -1};
-      $receiver.onPreRender.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_6(lastPrimitives, $receiver));
+      $receiver.onUpdate.add_11rb$(DebugOverlay_init$lambda$lambda$lambda$lambda_6(lastPrimitives, $receiver));
       return Unit;
     };
   }
@@ -26344,7 +23723,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.graphMesh.geometry.usage = Usage$DYNAMIC_getInstance();
     this.graphMesh.pipelineLoader = new UiShader();
   }
-  DeltaTGraph.prototype.render_aemszp$ = function (ctx) {
+  DeltaTGraph.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
     var color = Color$Companion_getInstance().WHITE;
     if (this.prevDeltaT > 0.05) {
       color = Color$Companion_getInstance().RED;
@@ -26368,7 +23747,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.graphVertex.position.y = y0 + h;
     this.setCurrentBarColor_d7aj7k$(Color$Companion_getInstance().MAGENTA);
     this.graphGeom.hasChanged = true;
-    UiComponent.prototype.render_aemszp$.call(this, ctx);
+    UiComponent.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
   };
   DeltaTGraph.prototype.setCurrentBarColor_d7aj7k$ = function (color) {
     this.graphVertex.index = this.graphIdx;
@@ -27138,14 +24517,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
   }
   Usage.valueOf_61zpoe$ = Usage$valueOf;
-  function Comparator$ObjectLiteral_6(closure$comparison) {
+  function Comparator$ObjectLiteral_2(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_6.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_2.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_6.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_6 = wrapFunction(function () {
+  Comparator$ObjectLiteral_2.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  var compareBy$lambda_2 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -27182,67 +24561,53 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver.add_11rb$(element);
     var $receiver_0 = this.lods_0;
     if ($receiver_0.size > 1) {
-      sortWith($receiver_0, new Comparator$ObjectLiteral_6(compareBy$lambda_6(InstancedLodController$addLod$lambda)));
+      sortWith($receiver_0, new Comparator$ObjectLiteral_2(compareBy$lambda_2(InstancedLodController$addLod$lambda)));
     }lodMesh.parent = this;
   };
-  InstancedLodController.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
-    var tmp$;
-    Node.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
-    tmp$ = this.lods_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.lods_0.get_za3lpa$(i).mesh.scene = newScene;
-    }
-  };
-  function InstancedLodController$preRender$lambda(it) {
+  function InstancedLodController$update$lambda(it) {
     return it.camDistance;
   }
-  InstancedLodController.prototype.preRender_aemszp$ = function (ctx) {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2;
+  InstancedLodController.prototype.update_oco14p$ = function (renderPass, ctx) {
+    var tmp$, tmp$_0, tmp$_1;
+    Node.prototype.update_oco14p$.call(this, renderPass, ctx);
     tmp$ = this.lods_0;
     for (var i = 0; i !== tmp$.size; ++i) {
       this.lods_0.get_za3lpa$(i).instances.clear();
     }
-    var cam = (tmp$_0 = this.scene) != null ? tmp$_0.camera : null;
-    if (cam != null) {
-      tmp$_1 = this.instances;
-      for (var i_0 = 0; i_0 !== tmp$_1.size; ++i_0) {
-        var inst = this.instances.get_za3lpa$(i_0);
-        inst.preRender_6otzq7$(cam, ctx);
-        if (inst.isInFrustum) {
-          for (var j = get_lastIndex(this.lods_0); j >= 0; j--) {
-            if (j === 0 || inst.camDistance > this.lods_0.get_za3lpa$(j - 1 | 0).maxDistance) {
-              this.lods_0.get_za3lpa$(j).instances.add_11rb$(inst);
-              break;
-            }}
-        }}
-    }tmp$_2 = this.lods_0;
-    for (var i_1 = 0; i_1 !== tmp$_2.size; ++i_1) {
+    var cam = renderPass.camera;
+    tmp$_0 = this.instances;
+    for (var i_0 = 0; i_0 !== tmp$_0.size; ++i_0) {
+      var inst = this.instances.get_za3lpa$(i_0);
+      inst.update_l2cg23$(this, cam, ctx);
+      if (inst.isInFrustum) {
+        for (var j = get_lastIndex(this.lods_0); j >= 0; j--) {
+          if (j === 0 || inst.camDistance > this.lods_0.get_za3lpa$(j - 1 | 0).maxDistance) {
+            this.lods_0.get_za3lpa$(j).instances.add_11rb$(inst);
+            break;
+          }}
+      }}
+    tmp$_1 = this.lods_0;
+    for (var i_1 = 0; i_1 !== tmp$_1.size; ++i_1) {
       var lod = this.lods_0.get_za3lpa$(i_1);
       if (lod.instances.size > lod.maxInstances) {
         var $receiver = lod.instances;
         if ($receiver.size > 1) {
-          sortWith($receiver, new Comparator$ObjectLiteral_6(compareBy$lambda_6(InstancedLodController$preRender$lambda)));
+          sortWith($receiver, new Comparator$ObjectLiteral_2(compareBy$lambda_2(InstancedLodController$update$lambda)));
         }while (lod.instances.size > lod.maxInstances) {
           var rmInst = lod.instances.removeAt_za3lpa$(get_lastIndex(lod.instances));
           if (i_1 < get_lastIndex(this.lods_0)) {
             this.lods_0.get_za3lpa$(i_1 + 1 | 0).instances.add_11rb$(rmInst);
           }}
       }lod.updateInstances_2shagh$(i_1, ctx);
-      lod.mesh.preRender_aemszp$(ctx);
+      lod.mesh.update_oco14p$(renderPass, ctx);
     }
   };
-  InstancedLodController.prototype.render_aemszp$ = function (ctx) {
+  InstancedLodController.prototype.collectDrawCommands_oco14p$ = function (renderPass, ctx) {
     var tmp$;
+    Node.prototype.collectDrawCommands_oco14p$.call(this, renderPass, ctx);
     tmp$ = this.lods_0;
     for (var i = 0; i !== tmp$.size; ++i) {
-      this.lods_0.get_za3lpa$(i).mesh.render_aemszp$(ctx);
-    }
-  };
-  InstancedLodController.prototype.postRender_aemszp$ = function (ctx) {
-    var tmp$;
-    tmp$ = this.lods_0;
-    for (var i = 0; i !== tmp$.size; ++i) {
-      this.lods_0.get_za3lpa$(i).mesh.postRender_aemszp$(ctx);
+      this.lods_0.get_za3lpa$(i).mesh.collectDrawCommands_oco14p$(renderPass, ctx);
     }
   };
   InstancedLodController.prototype.dispose_aemszp$ = function (ctx) {
@@ -27288,12 +24653,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.globalRadius_jgtua1$_0 = 0.0;
     this.camDistance_n2u3ce$_0 = 0.0;
     this.isInFrustum_77t0d9$_0 = false;
-    this.globalCenterMut = MutableVec3f_init();
-    this.globalExtentMut = MutableVec3f_init();
+    this.globalCenterMut_46d76q$_0 = MutableVec3f_init();
+    this.globalExtentMut_q2k453$_0 = MutableVec3f_init();
   }
   Object.defineProperty(InstancedLodController$Instance.prototype, 'globalCenter', {
     get: function () {
-      return this.globalCenterMut;
+      return this.globalCenterMut_46d76q$_0;
     }
   });
   Object.defineProperty(InstancedLodController$Instance.prototype, 'globalRadius', {
@@ -27320,16 +24685,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.isInFrustum_77t0d9$_0 = isInFrustum;
     }
   });
-  InstancedLodController$Instance.prototype.preRender_6otzq7$ = function (cam, ctx) {
-    this.globalCenterMut.set_czzhiu$(this.center);
-    this.globalExtentMut.set_czzhiu$(this.center).x = this.globalExtentMut.set_czzhiu$(this.center).x + this.radius;
-    this.instanceModelMat.transform_w1lst9$(this.globalCenterMut);
-    this.instanceModelMat.transform_w1lst9$(this.globalExtentMut);
-    ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalCenterMut);
-    ctx.mvpState.modelMatrix.transform_w1lst9$(this.globalExtentMut);
-    this.globalRadius = this.globalCenterMut.distance_czzhiu$(this.globalExtentMut);
-    this.isInFrustum = cam.isInFrustum_2qa7tb$(this.globalCenterMut, this.globalRadius);
-    this.camDistance = cam.globalPos.distance_czzhiu$(this.globalCenterMut);
+  InstancedLodController$Instance.prototype.update_l2cg23$ = function (lodCtrl, cam, ctx) {
+    this.globalCenterMut_46d76q$_0.set_czzhiu$(this.center);
+    this.globalExtentMut_q2k453$_0.set_czzhiu$(this.center).x = this.globalExtentMut_q2k453$_0.set_czzhiu$(this.center).x + this.radius;
+    this.instanceModelMat.transform_w1lst9$(this.globalCenterMut_46d76q$_0);
+    this.instanceModelMat.transform_w1lst9$(this.globalExtentMut_q2k453$_0);
+    lodCtrl.modelMat.transform_w1lst9$(this.globalCenterMut_46d76q$_0);
+    lodCtrl.modelMat.transform_w1lst9$(this.globalExtentMut_q2k453$_0);
+    this.globalRadius = this.globalCenterMut_46d76q$_0.distance_czzhiu$(this.globalExtentMut_q2k453$_0);
+    this.isInFrustum = cam.isInFrustum_2qa7tb$(this.globalCenterMut_46d76q$_0, this.globalRadius);
+    this.camDistance = cam.globalPos.distance_czzhiu$(this.globalCenterMut_46d76q$_0);
   };
   InstancedLodController$Instance.prototype.addInstanceData_bgc5cs$ = function (lod, instanceList, ctx) {
     instanceList.checkBufferSize_za3lpa$();
@@ -29502,420 +26867,41 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'OcTree',
     interfaces: [MutableCollection, SpatialTree]
   };
-  function Comparator$ObjectLiteral_7(closure$comparison) {
-    this.closure$comparison = closure$comparison;
-  }
-  Comparator$ObjectLiteral_7.prototype.compare = function (a, b) {
-    return this.closure$comparison(a, b);
-  };
-  Comparator$ObjectLiteral_7.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_7 = wrapFunction(function () {
-    var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
-    return function (closure$selector) {
-      return function (a, b) {
-        var selector = closure$selector;
-        return compareValues(selector(a), selector(b));
-      };
-    };
-  });
-  function ParticleSystem(particleTex, maxParticles, name) {
-    ParticleSystem$Companion_getInstance();
-    if (maxParticles === void 0)
-      maxParticles = 10000;
-    if (name === void 0)
-      name = null;
-    Node.call(this);
-    this.maxParticles = maxParticles;
-    this.mesh_0 = new BillboardMesh(name);
-    var array = Array_0(this.maxParticles);
+  function BrdfLutPass(parentScene) {
+    OffscreenRenderPass2D.call(this, new Group(), 512, 512, 1, TexFormat$RG_F16_getInstance());
+    this.parentScene_0 = parentScene;
     var tmp$;
-    tmp$ = array.length - 1 | 0;
-    for (var i = 0; i <= tmp$; i++) {
-      array[i] = new ParticleSystem$Particle(this, i, ParticleSystem$Companion_getInstance().TYPE_DEAD_0);
-    }
-    this.particles_0 = array;
-    this.sortedIndices_0 = ArrayList_init_0();
-    this.numParticles_m4cuf7$_0 = 0;
-    this.drawOrder = BillboardMesh$DrawOrder$FAR_FIRST_getInstance();
-    this.isDepthMask = true;
-    this.mesh_0.parent = this;
-    this.mesh_0.drawOrder = BillboardMesh$DrawOrder$AS_IS_getInstance();
-    this.isFrustumChecked = false;
-    this.mesh_0.isFrustumChecked = false;
-    var $receiver = this.particles_0;
-    var tmp$_0;
-    for (tmp$_0 = 0; tmp$_0 !== $receiver.length; ++tmp$_0) {
-      var element = $receiver[tmp$_0];
-      this.mesh_0.addQuad_mr3yw4$(element.position, element.size);
-    }
-  }
-  Object.defineProperty(ParticleSystem.prototype, 'numParticles', {
-    get: function () {
-      return this.numParticles_m4cuf7$_0;
-    },
-    set: function (numParticles) {
-      this.numParticles_m4cuf7$_0 = numParticles;
-    }
-  });
-  ParticleSystem.prototype.spawnParticle_1rs1w0$ = function (type) {
-    var tmp$;
-    if (this.numParticles === this.maxParticles) {
-      var $this = package$util.Log;
-      var level = Log$Level.WARN;
-      var tag = Kotlin.getKClassFromExpression(this).simpleName;
-      if (level.level >= $this.level.level) {
-        $this.printer(level, tag, 'Maximum number of particles reached');
-      }return null;
-    }var p = this.particles_0[tmp$ = this.numParticles, this.numParticles = tmp$ + 1 | 0, tmp$];
-    p.replaceBy_1rs1w0$(type);
-    return p;
-  };
-  ParticleSystem.prototype.onSceneChanged_9srkog$ = function (oldScene, newScene) {
-    Node.prototype.onSceneChanged_9srkog$.call(this, oldScene, newScene);
-    this.mesh_0.scene = newScene;
-  };
-  ParticleSystem.prototype.preRender_aemszp$ = function (ctx) {
-    var tmp$;
-    Node.prototype.preRender_aemszp$.call(this, ctx);
-    tmp$ = this.numParticles;
-    for (var i = 0; i < tmp$; i++) {
-      this.update_0(this.particles_0[i], ctx);
-    }
-    if (this.drawOrder !== BillboardMesh$DrawOrder$AS_IS_getInstance()) {
-      this.zSortParticles_0();
-    }this.mesh_0.preRender_aemszp$(ctx);
-  };
-  ParticleSystem.prototype.render_aemszp$ = function (ctx) {
-    Node.prototype.render_aemszp$.call(this, ctx);
-    this.isRendered;
-  };
-  ParticleSystem.prototype.postRender_aemszp$ = function (ctx) {
-    Node.prototype.postRender_aemszp$.call(this, ctx);
-    this.mesh_0.postRender_aemszp$(ctx);
-  };
-  ParticleSystem.prototype.dispose_aemszp$ = function (ctx) {
-    Node.prototype.dispose_aemszp$.call(this, ctx);
-    this.mesh_0.dispose_aemszp$(ctx);
-  };
-  function ParticleSystem$zSortParticles$lambda(this$ParticleSystem, closure$camPos, closure$s) {
-    return function (idx) {
-      return this$ParticleSystem.particles_0[idx.listIndex].position.sqrDistance_czzhiu$(closure$camPos) * closure$s;
-    };
-  }
-  ParticleSystem.prototype.zSortParticles_0 = function () {
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
-    tmp$_1 = (tmp$_0 = (tmp$ = this.scene) != null ? tmp$.camera : null) != null ? tmp$_0.globalPos : null;
-    if (tmp$_1 == null) {
-      return;
-    }var camPos = tmp$_1;
-    this.setupSortList_0();
-    var s = this.drawOrder === BillboardMesh$DrawOrder$FAR_FIRST_getInstance() ? -1 : 1;
-    var $receiver = this.sortedIndices_0;
-    if ($receiver.size > 1) {
-      sortWith($receiver, new Comparator$ObjectLiteral_7(compareBy$lambda_7(ParticleSystem$zSortParticles$lambda(this, camPos, s))));
-    }this.mesh_0.clearIndices();
-    tmp$_2 = this.sortedIndices_0;
-    for (var i = 0; i !== tmp$_2.size; ++i) {
-      var idx = this.sortedIndices_0.get_za3lpa$(i);
-      this.mesh_0.addQuadIndex_za3lpa$(idx.meshIndex);
-      this.particles_0[idx.listIndex].drawIndex_8be2vx$ = i;
-    }
-    this.mesh_0.geometry.hasChanged = true;
-    tmp$_3 = this.numParticles;
-    for (var i_0 = 0; i_0 < tmp$_3; i_0++) {
-      var drawIdx = this.particles_0[i_0].drawIndex_8be2vx$;
-      if (drawIdx !== i_0) {
-        this.particles_0[i_0].swap_7b27wf$(this.particles_0[drawIdx]);
-      }}
-  };
-  ParticleSystem.prototype.setupSortList_0 = function () {
-    var tmp$, tmp$_0, tmp$_1;
-    if (this.sortedIndices_0.size < this.numParticles) {
-      tmp$ = this.numParticles - this.sortedIndices_0.size | 0;
-      for (var i = 1; i <= tmp$; i++) {
-        this.sortedIndices_0.add_11rb$(new ParticleSystem$ParticleIndex(0, 0));
-      }
-    } else if (this.sortedIndices_0.size > this.numParticles) {
-      tmp$_0 = this.sortedIndices_0.size - this.numParticles | 0;
-      for (var i_0 = 1; i_0 <= tmp$_0; i_0++) {
-        this.sortedIndices_0.removeAt_za3lpa$(get_lastIndex(this.sortedIndices_0));
-      }
-    }tmp$_1 = this.numParticles;
-    for (var i_1 = 0; i_1 < tmp$_1; i_1++) {
-      this.sortedIndices_0.get_za3lpa$(i_1).listIndex = i_1;
-      this.sortedIndices_0.get_za3lpa$(i_1).meshIndex = this.particles_0[i_1].meshIndex;
-    }
-  };
-  ParticleSystem.prototype.update_0 = function ($receiver, ctx) {
-    $receiver.type.update($receiver, ctx);
-    $receiver.lifeTime += ctx.deltaT;
-    $receiver.position.x = $receiver.position.x + $receiver.velocity.x * ctx.deltaT;
-    $receiver.position.y = $receiver.position.y + $receiver.velocity.y * ctx.deltaT;
-    $receiver.position.z = $receiver.position.z + $receiver.velocity.z * ctx.deltaT;
-    $receiver.rotation += $receiver.angularVelocity * ctx.deltaT;
-    this.mesh_0.updateQuad_lszk0i$($receiver.meshIndex, $receiver.position, $receiver.size, $receiver.rotation, $receiver.type.texCenter, $receiver.type.texSize, $receiver.color);
-    if ($receiver.lifeTime > $receiver.type.maxLifeTime) {
-      $receiver.die();
-    }};
-  function ParticleSystem$ParticleIndex(meshIndex, listIndex) {
-    this.meshIndex = meshIndex;
-    this.listIndex = listIndex;
-  }
-  ParticleSystem$ParticleIndex.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ParticleIndex',
-    interfaces: []
-  };
-  ParticleSystem$ParticleIndex.prototype.component1 = function () {
-    return this.meshIndex;
-  };
-  ParticleSystem$ParticleIndex.prototype.component2 = function () {
-    return this.listIndex;
-  };
-  ParticleSystem$ParticleIndex.prototype.copy_vux9f0$ = function (meshIndex, listIndex) {
-    return new ParticleSystem$ParticleIndex(meshIndex === void 0 ? this.meshIndex : meshIndex, listIndex === void 0 ? this.listIndex : listIndex);
-  };
-  ParticleSystem$ParticleIndex.prototype.toString = function () {
-    return 'ParticleIndex(meshIndex=' + Kotlin.toString(this.meshIndex) + (', listIndex=' + Kotlin.toString(this.listIndex)) + ')';
-  };
-  ParticleSystem$ParticleIndex.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.meshIndex) | 0;
-    result = result * 31 + Kotlin.hashCode(this.listIndex) | 0;
-    return result;
-  };
-  ParticleSystem$ParticleIndex.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.meshIndex, other.meshIndex) && Kotlin.equals(this.listIndex, other.listIndex)))));
-  };
-  function ParticleSystem$Type(name, texCenter, texSize, maxLifeTime, init, update) {
-    if (maxLifeTime === void 0)
-      maxLifeTime = kotlin_js_internal_FloatCompanionObject.MAX_VALUE;
-    if (update === void 0)
-      update = ParticleSystem$ParticleSystem$Type_init$lambda;
-    this.name = name;
-    this.texCenter = texCenter;
-    this.texSize = texSize;
-    this.maxLifeTime = maxLifeTime;
-    this.init = init;
-    this.update = update;
-  }
-  function ParticleSystem$ParticleSystem$Type_init$lambda($receiver, it) {
-    return Unit;
-  }
-  ParticleSystem$Type.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Type',
-    interfaces: []
-  };
-  ParticleSystem$Type.prototype.component1 = function () {
-    return this.name;
-  };
-  ParticleSystem$Type.prototype.component2 = function () {
-    return this.texCenter;
-  };
-  ParticleSystem$Type.prototype.component3 = function () {
-    return this.texSize;
-  };
-  ParticleSystem$Type.prototype.component4 = function () {
-    return this.maxLifeTime;
-  };
-  ParticleSystem$Type.prototype.component5 = function () {
-    return this.init;
-  };
-  ParticleSystem$Type.prototype.component6 = function () {
-    return this.update;
-  };
-  ParticleSystem$Type.prototype.copy_6s5un6$ = function (name, texCenter, texSize, maxLifeTime, init, update) {
-    return new ParticleSystem$Type(name === void 0 ? this.name : name, texCenter === void 0 ? this.texCenter : texCenter, texSize === void 0 ? this.texSize : texSize, maxLifeTime === void 0 ? this.maxLifeTime : maxLifeTime, init === void 0 ? this.init : init, update === void 0 ? this.update : update);
-  };
-  ParticleSystem$Type.prototype.toString = function () {
-    return 'Type(name=' + Kotlin.toString(this.name) + (', texCenter=' + Kotlin.toString(this.texCenter)) + (', texSize=' + Kotlin.toString(this.texSize)) + (', maxLifeTime=' + Kotlin.toString(this.maxLifeTime)) + (', init=' + Kotlin.toString(this.init)) + (', update=' + Kotlin.toString(this.update)) + ')';
-  };
-  ParticleSystem$Type.prototype.hashCode = function () {
-    var result = 0;
-    result = result * 31 + Kotlin.hashCode(this.name) | 0;
-    result = result * 31 + Kotlin.hashCode(this.texCenter) | 0;
-    result = result * 31 + Kotlin.hashCode(this.texSize) | 0;
-    result = result * 31 + Kotlin.hashCode(this.maxLifeTime) | 0;
-    result = result * 31 + Kotlin.hashCode(this.init) | 0;
-    result = result * 31 + Kotlin.hashCode(this.update) | 0;
-    return result;
-  };
-  ParticleSystem$Type.prototype.equals = function (other) {
-    return this === other || (other !== null && (typeof other === 'object' && (Object.getPrototypeOf(this) === Object.getPrototypeOf(other) && (Kotlin.equals(this.name, other.name) && Kotlin.equals(this.texCenter, other.texCenter) && Kotlin.equals(this.texSize, other.texSize) && Kotlin.equals(this.maxLifeTime, other.maxLifeTime) && Kotlin.equals(this.init, other.init) && Kotlin.equals(this.update, other.update)))));
-  };
-  function ParticleSystem$Particle($outer, index, type) {
-    this.$outer = $outer;
-    this.type_admc1e$_0 = type;
-    this.meshIndex_6bf8ux$_0 = index;
-    this.drawIndex_8be2vx$ = 0;
-    this.lifeTime = 0.0;
-    this.position = MutableVec3f_init();
-    this.size = MutableVec2f_init();
-    this.rotation = 0.0;
-    this.color = MutableColor_init_0(Color$Companion_getInstance().WHITE);
-    this.velocity = MutableVec3f_init();
-    this.angularVelocity = 0.0;
-  }
-  Object.defineProperty(ParticleSystem$Particle.prototype, 'type', {
-    get: function () {
-      return this.type_admc1e$_0;
-    },
-    set: function (type) {
-      this.type_admc1e$_0 = type;
-    }
-  });
-  Object.defineProperty(ParticleSystem$Particle.prototype, 'meshIndex', {
-    get: function () {
-      return this.meshIndex_6bf8ux$_0;
-    },
-    set: function (meshIndex) {
-      this.meshIndex_6bf8ux$_0 = meshIndex;
-    }
-  });
-  ParticleSystem$Particle.prototype.die = function () {
-    var tmp$;
-    this.replaceBy_1rs1w0$(ParticleSystem$Companion_getInstance().TYPE_DEAD_0);
-    if (this.$outer.numParticles > 1) {
-      this.swap_7b27wf$(this.$outer.particles_0[this.$outer.numParticles - 1 | 0]);
-    }tmp$ = this.$outer.numParticles;
-    this.$outer.numParticles = tmp$ - 1 | 0;
-  };
-  ParticleSystem$Particle.prototype.replaceBy_1rs1w0$ = function (newType) {
-    this.type = newType;
-    newType.init(this);
-    this.$outer.mesh_0.updateQuad_lszk0i$(this.meshIndex, this.position, this.size, this.rotation, this.type.texCenter, this.type.texSize, this.color);
-  };
-  ParticleSystem$Particle.prototype.swap_7b27wf$ = function (other) {
-    var $receiver = other.type;
-    other.type = this.type;
-    this.type = $receiver;
-    var $receiver_0 = other.meshIndex;
-    other.meshIndex = this.meshIndex;
-    this.meshIndex = $receiver_0;
-    var $receiver_1 = other.drawIndex_8be2vx$;
-    other.drawIndex_8be2vx$ = this.drawIndex_8be2vx$;
-    this.drawIndex_8be2vx$ = $receiver_1;
-    var $receiver_2 = other.lifeTime;
-    other.lifeTime = this.lifeTime;
-    this.lifeTime = $receiver_2;
-    this.swap_0(this.position, other.position);
-    this.swap_1(this.size, other.size);
-    var $receiver_3 = other.rotation;
-    other.rotation = this.rotation;
-    this.rotation = $receiver_3;
-    this.swap_2(this.color, other.color);
-    this.swap_0(this.velocity, other.velocity);
-    var $receiver_4 = other.angularVelocity;
-    other.angularVelocity = this.angularVelocity;
-    this.angularVelocity = $receiver_4;
-  };
-  ParticleSystem$Particle.prototype.swap_1 = function ($receiver, other) {
-    var $receiver_0 = other.x;
-    other.x = $receiver.x;
-    $receiver.x = $receiver_0;
-    var $receiver_1 = other.y;
-    other.y = $receiver.y;
-    $receiver.y = $receiver_1;
-  };
-  ParticleSystem$Particle.prototype.swap_0 = function ($receiver, other) {
-    var $receiver_0 = other.x;
-    other.x = $receiver.x;
-    $receiver.x = $receiver_0;
-    var $receiver_1 = other.y;
-    other.y = $receiver.y;
-    $receiver.y = $receiver_1;
-    var $receiver_2 = other.z;
-    other.z = $receiver.z;
-    $receiver.z = $receiver_2;
-  };
-  ParticleSystem$Particle.prototype.swap_2 = function ($receiver, other) {
-    var $receiver_0 = other.r;
-    other.r = $receiver.r;
-    $receiver.r = $receiver_0;
-    var $receiver_1 = other.g;
-    other.g = $receiver.g;
-    $receiver.g = $receiver_1;
-    var $receiver_2 = other.b;
-    other.b = $receiver.b;
-    $receiver.b = $receiver_2;
-    var $receiver_3 = other.a;
-    other.a = $receiver.a;
-    $receiver.a = $receiver_3;
-  };
-  ParticleSystem$Particle.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'Particle',
-    interfaces: []
-  };
-  function ParticleSystem$Companion() {
-    ParticleSystem$Companion_instance = this;
-    this.TYPE_DEAD_0 = new ParticleSystem$Type('dead', Vec2f$Companion_getInstance().ZERO, Vec2f$Companion_getInstance().ZERO, void 0, ParticleSystem$Companion$TYPE_DEAD$lambda);
-  }
-  function ParticleSystem$Companion$TYPE_DEAD$lambda($receiver) {
-    $receiver.lifeTime = 0.0;
-    $receiver.position.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
-    $receiver.size.set_czzhjp$(Vec2f$Companion_getInstance().ZERO);
-    $receiver.rotation = 0.0;
-    $receiver.color.set_d7aj7k$(Color$Companion_getInstance().WHITE);
-    $receiver.velocity.set_czzhiu$(Vec3f$Companion_getInstance().ZERO);
-    $receiver.angularVelocity = 0.0;
-    return Unit;
-  }
-  ParticleSystem$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var ParticleSystem$Companion_instance = null;
-  function ParticleSystem$Companion_getInstance() {
-    if (ParticleSystem$Companion_instance === null) {
-      new ParticleSystem$Companion();
-    }return ParticleSystem$Companion_instance;
-  }
-  ParticleSystem.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'ParticleSystem',
-    interfaces: [Node]
-  };
-  function BrdfLutPass() {
-    this.offscreenPass = null;
-    var $receiver = new OffscreenPass2d(512, 512, 1, TexFormat$RG_F16_getInstance());
-    $receiver.isSingleShot = true;
-    var $receiver_0 = new Scene(null);
-    var $receiver_1 = new OrthographicCamera();
-    $receiver_1.isApplyProjCorrection = false;
-    $receiver_1.isKeepAspectRatio = false;
-    $receiver_1.left = 0.0;
-    $receiver_1.right = 1.0;
-    $receiver_1.top = 1.0;
-    $receiver_1.bottom = 0.0;
-    $receiver_0.camera = $receiver_1;
+    this.clearColor = null;
+    this.isFinished = true;
+    var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
+    var $receiver_0 = new OrthographicCamera();
+    $receiver_0.isApplyProjCorrection = false;
+    $receiver_0.isKeepAspectRatio = false;
+    $receiver_0.left = 0.0;
+    $receiver_0.right = 1.0;
+    $receiver_0.top = 1.0;
+    $receiver_0.bottom = 0.0;
+    this.camera = $receiver_0;
     var mesh = new Mesh(new IndexedVertexList(listOf([Attribute$Companion_getInstance().POSITIONS, Attribute$Companion_getInstance().TEXTURE_COORDS])), null);
-    mesh.generate_v2sixm$(BrdfLutPass_init$lambda$lambda$lambda$lambda);
-    var $receiver_2 = new ShaderModel('BRDF LUT');
+    mesh.generate_v2sixm$(BrdfLutPass_init$lambda$lambda$lambda);
+    var $receiver_1 = new ShaderModel('BRDF LUT');
     var ifTexCoords = {v: null};
-    var $receiver_3 = new ShaderModel$VertexStageBuilder($receiver_2);
-    ifTexCoords.v = $receiver_3.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_3.attrTexCoords().output);
-    $receiver_3.positionOutput = $receiver_3.simpleVertexPositionNode().outPosition;
-    var $receiver_4 = new ShaderModel$FragmentStageBuilder($receiver_2);
-    var $receiver_5 = $receiver_4.addNode_u9w9by$(new BrdfLutPass$BrdfLutNode($receiver_4.stage));
-    $receiver_5.inTexCoords = ifTexCoords.v.output;
-    var lutNd = $receiver_5;
-    $receiver_4.colorOutput = lutNd.outColor;
-    var model = $receiver_2;
-    mesh.pipelineLoader = new ModeledShader$VertexColor(model);
-    $receiver_0.unaryPlus_uv0sim$(mesh);
-    $receiver.scene = $receiver_0;
-    this.offscreenPass = $receiver;
+    var $receiver_2 = new ShaderModel$VertexStageBuilder($receiver_1);
+    ifTexCoords.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifTexCoords', $receiver_2.attrTexCoords().output);
+    $receiver_2.positionOutput = $receiver_2.simpleVertexPositionNode().outPosition;
+    var $receiver_3 = new ShaderModel$FragmentStageBuilder($receiver_1);
+    var $receiver_4 = $receiver_3.addNode_u9w9by$(new BrdfLutPass$BrdfLutNode($receiver_3.stage));
+    $receiver_4.inTexCoords = ifTexCoords.v.output;
+    var lutNd = $receiver_4;
+    $receiver_3.colorOutput = lutNd.outColor;
+    var model = $receiver_1;
+    mesh.pipelineLoader = new ModeledShader(model);
+    $receiver.unaryPlus_uv0sim$(mesh);
+    this.parentScene_0.offscreenPasses.add_11rb$(this);
   }
-  Object.defineProperty(BrdfLutPass.prototype, 'brdfLut', {
-    get: function () {
-      return this.offscreenPass.impl.texture;
-    }
-  });
   BrdfLutPass.prototype.dispose_aemszp$ = function (ctx) {
-    this.offscreenPass.dispose_aemszp$(ctx);
+    this.drawNode.dispose_aemszp$(ctx);
+    OffscreenRenderPass2D.prototype.dispose_aemszp$.call(this, ctx);
   };
   function BrdfLutPass$BrdfLutNode(graph) {
     ShaderNode.call(this, 'brdfLut', graph);
@@ -29929,14 +26915,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   BrdfLutPass$BrdfLutNode.prototype.generateCode_626509$ = function (generator) {
     ShaderNode.prototype.generateCode_626509$.call(this, generator);
     generator.appendFunction_puj7f4$('brdfLut', '\n                float RadicalInverse_VdC(uint bits) {\n                    bits = (bits << 16u) | (bits >> 16u);\n                    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);\n                    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);\n                    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);\n                    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);\n                    return float(bits) * 2.3283064365386963e-10; // / 0x100000000\n                }\n                \n                vec2 Hammersley(uint i, uint N) {\n                    return vec2(float(i)/float(N), RadicalInverse_VdC(i));\n                }\n                \n                vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness) {\n                    float a = roughness*roughness;\n                    \n                    float phi = 2.0 * 3.141592653589793 * Xi.x;\n                    float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));\n                    float sinTheta = sqrt(1.0 - cosTheta*cosTheta);\n                    \n                    // from spherical coordinates to cartesian coordinates\n                    vec3 H;\n                    H.x = cos(phi) * sinTheta;\n                    H.y = sin(phi) * sinTheta;\n                    H.z = cosTheta;\n                    \n                    // from tangent-space vector to world-space sample vector\n                    vec3 up = abs(N.z) < 0.9999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\n                    vec3 tangent = normalize(cross(up, N));\n                    vec3 bitangent = cross(N, tangent);\n                    \n                    vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;\n                    return normalize(sampleVec);\n                }\n                \n                float GeometrySchlickGGX(float NdotV, float roughness) {\n                    float a = roughness;\n                    float k = (a * a) / 2.0;\n                \n                    float nom   = NdotV;\n                    float denom = NdotV * (1.0 - k) + k;\n                \n                    return nom / denom;\n                }\n                \n                float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {\n                    float NdotV = max(dot(N, V), 0.0);\n                    float NdotL = max(dot(N, L), 0.0);\n                    float ggx2 = GeometrySchlickGGX(NdotV, roughness);\n                    float ggx1 = GeometrySchlickGGX(NdotL, roughness);\n                \n                    return ggx1 * ggx2;\n                }\n                \n                vec2 IntegrateBRDF(float NdotV, float roughness) {\n                    vec3 V;\n                    V.x = sqrt(1.0 - NdotV*NdotV);\n                    V.y = 0.0;\n                    V.z = NdotV;\n                \n                    float A = 0.0;\n                    float B = 0.0;\n                \n                    vec3 N = vec3(0.0, 0.0, 1.0);\n                \n                    const uint SAMPLE_COUNT = 1024u;\n                    for(uint i = 0u; i < SAMPLE_COUNT; ++i) {\n                        vec2 Xi = Hammersley(i, SAMPLE_COUNT);\n                        vec3 H  = ImportanceSampleGGX(Xi, N, roughness);\n                        vec3 L  = normalize(2.0 * dot(V, H) * H - V);\n                \n                        float NdotL = max(L.z, 0.0);\n                        float NdotH = max(H.z, 0.0);\n                        float VdotH = max(dot(V, H), 0.0);\n                \n                        if(NdotL > 0.0) {\n                            float G = GeometrySmith(N, V, L, roughness);\n                            float G_Vis = (G * VdotH) / (NdotH * NdotV);\n                            float Fc = pow(1.0 - VdotH, 5.0);\n                \n                            A += (1.0 - Fc) * G_Vis;\n                            B += Fc * G_Vis;\n                        }\n                    }\n                    A /= float(SAMPLE_COUNT);\n                    B /= float(SAMPLE_COUNT);\n                    return vec2(A, B);\n                }\n            ');
-    generator.appendMain_61zpoe$('\n' + '                vec2 integratedBRDF = IntegrateBRDF(' + this.inTexCoords.ref2f() + '.x, ' + this.inTexCoords.ref2f() + '.y);' + '\n' + '                ' + this.outColor.declare() + ' = vec4(integratedBRDF, 0.0, 1.0);' + '\n' + '                //' + this.outColor.declare() + ' = vec4(1.0, 0.0, 0.0, 1.0);' + '\n' + '            ');
+    generator.appendMain_61zpoe$('\n' + '                vec2 integratedBRDF = IntegrateBRDF(' + this.inTexCoords.ref2f() + '.x, ' + this.inTexCoords.ref2f() + '.y);' + '\n' + '                ' + this.outColor.declare() + ' = vec4(integratedBRDF, 0.0, 1.0);' + '\n' + '            ');
   };
   BrdfLutPass$BrdfLutNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'BrdfLutNode',
     interfaces: [ShaderNode]
   };
-  function BrdfLutPass_init$lambda$lambda$lambda$lambda($receiver) {
+  function BrdfLutPass_init$lambda$lambda$lambda($receiver) {
     var $receiver_0 = $receiver.rectProps.defaults();
     $receiver_0.size.set_dleff0$(1.0, 1.0);
     $receiver_0.generateTexCoords_mx4ult$();
@@ -29946,44 +26932,40 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   BrdfLutPass.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'BrdfLutPass',
-    interfaces: []
+    interfaces: [OffscreenRenderPass2D]
   };
-  function IrradianceMapPass(hdriTexture) {
-    this.offscreenPass = null;
+  function IrradianceMapPass(parentScene, hdriTexture) {
+    OffscreenRenderPassCube.call(this, new Group(), 32, 32, 1, TexFormat$RGBA_F16_getInstance());
+    this.parentScene_0 = parentScene;
     this.hdriTexture_pfz36s$_0 = hdriTexture;
     this.irrMapShader_0 = null;
-    var $receiver = new OffscreenPassCube(32, 32, 1, TexFormat$RGBA_F16_getInstance());
-    $receiver.isSingleShot = true;
-    var $receiver_0 = new Scene(null);
+    var tmp$;
+    this.clearColor = null;
+    this.isFinished = true;
+    var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
-    mesh.generate_v2sixm$(IrradianceMapPass_init$lambda$lambda$lambda$lambda);
+    mesh.generate_v2sixm$(IrradianceMapPass_init$lambda$lambda$lambda);
     var texName = 'colorTex';
-    var $receiver_1 = new ShaderModel('Irradiance Convolution Sampler');
+    var $receiver_0 = new ShaderModel('Irradiance Convolution Sampler');
     var ifLocalPos = {v: null};
-    var $receiver_2 = new ShaderModel$VertexStageBuilder($receiver_1);
-    ifLocalPos.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifLocalPos', $receiver_2.attrPositions().output);
-    $receiver_2.positionOutput = $receiver_2.simpleVertexPositionNode().outPosition;
-    var $receiver_3 = new ShaderModel$FragmentStageBuilder($receiver_1);
-    var tex = $receiver_3.textureNode_61zpoe$(texName);
-    var $receiver_4 = $receiver_3.addNode_u9w9by$(new IrradianceMapPass$ConvoluteIrradianceNode(tex, $receiver_3.stage));
-    $receiver_4.inLocalPos = ifLocalPos.v.output;
-    var convNd = $receiver_4;
-    $receiver_3.colorOutput = convNd.outColor;
-    var model = $receiver_1;
-    var $receiver_5 = new ModeledShader$TextureColor(texName, model);
-    $receiver_5.onSetup.add_11rb$(IrradianceMapPass_init$lambda$lambda$lambda$lambda$lambda);
-    $receiver_5.onCreated.add_11rb$(IrradianceMapPass_init$lambda$lambda$lambda$lambda$lambda_0(hdriTexture, $receiver_5));
-    this.irrMapShader_0 = $receiver_5;
+    var $receiver_1 = new ShaderModel$VertexStageBuilder($receiver_0);
+    ifLocalPos.v = $receiver_1.stageInterfaceNode_wtmwsg$('ifLocalPos', $receiver_1.attrPositions().output);
+    $receiver_1.positionOutput = $receiver_1.simpleVertexPositionNode().outPosition;
+    var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver_0);
+    var tex = $receiver_2.textureNode_61zpoe$(texName);
+    var $receiver_3 = $receiver_2.addNode_u9w9by$(new IrradianceMapPass$ConvoluteIrradianceNode(tex, $receiver_2.stage));
+    $receiver_3.inLocalPos = ifLocalPos.v.output;
+    var convNd = $receiver_3;
+    $receiver_2.colorOutput = convNd.outColor;
+    var model = $receiver_0;
+    var $receiver_4 = new ModeledShader$TextureColor(texName, model);
+    $receiver_4.onSetup.add_11rb$(IrradianceMapPass_init$lambda$lambda$lambda$lambda);
+    $receiver_4.onCreated.add_11rb$(IrradianceMapPass_init$lambda$lambda$lambda$lambda_0(hdriTexture, $receiver_4));
+    this.irrMapShader_0 = $receiver_4;
     mesh.pipelineLoader = this.irrMapShader_0;
-    $receiver_0.unaryPlus_uv0sim$(mesh);
-    $receiver.scene = $receiver_0;
-    this.offscreenPass = $receiver;
+    $receiver.unaryPlus_uv0sim$(mesh);
+    this.update();
   }
-  Object.defineProperty(IrradianceMapPass.prototype, 'irradianceMap', {
-    get: function () {
-      return this.offscreenPass.impl.texture;
-    }
-  });
   Object.defineProperty(IrradianceMapPass.prototype, 'hdriTexture', {
     get: function () {
       return this.hdriTexture_pfz36s$_0;
@@ -29994,14 +26976,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.hdriTexture_pfz36s$_0 = value;
     }
   });
-  IrradianceMapPass.prototype.update_aemszp$ = function (ctx) {
-    this.offscreenPass.frameIdx = 0;
-    var $receiver = ctx.offscreenPasses;
-    var element = this.offscreenPass;
-    $receiver.add_11rb$(element);
-  };
+  IrradianceMapPass.prototype.update = function () {
+    if (!this.parentScene_0.offscreenPasses.contains_11rb$(this)) {
+      this.parentScene_0.offscreenPasses.add_11rb$(this);
+    }};
   IrradianceMapPass.prototype.dispose_aemszp$ = function (ctx) {
-    this.offscreenPass.dispose_aemszp$(ctx);
+    this.drawNode.dispose_aemszp$(ctx);
+    OffscreenRenderPassCube.prototype.dispose_aemszp$.call(this, ctx);
   };
   function IrradianceMapPass$ConvoluteIrradianceNode(texture, graph) {
     ShaderNode.call(this, 'convIrradiance', graph);
@@ -30027,16 +27008,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'ConvoluteIrradianceNode',
     interfaces: [ShaderNode]
   };
-  function IrradianceMapPass_init$lambda$lambda$lambda$lambda($receiver) {
+  function IrradianceMapPass_init$lambda$lambda$lambda($receiver) {
     $receiver.cubeProps.defaults().centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
-  function IrradianceMapPass_init$lambda$lambda$lambda$lambda$lambda(it) {
+  function IrradianceMapPass_init$lambda$lambda$lambda$lambda(it) {
     it.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
     return Unit;
   }
-  function IrradianceMapPass_init$lambda$lambda$lambda$lambda$lambda_0(closure$hdriTexture, this$) {
+  function IrradianceMapPass_init$lambda$lambda$lambda$lambda_0(closure$hdriTexture, this$) {
     return function (it) {
       this$.textureSampler.texture = closure$hdriTexture;
       return Unit;
@@ -30045,47 +27026,44 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   IrradianceMapPass.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'IrradianceMapPass',
-    interfaces: []
+    interfaces: [OffscreenRenderPassCube]
   };
-  function ReflectionMapPass(hdriTexture) {
-    this.offscreenPass = null;
+  function ReflectionMapPass(parentScene, hdriTexture) {
+    OffscreenRenderPassCube.call(this, new Group(), 256, 256, 7, TexFormat$RGBA_F16_getInstance());
+    this.parentScene = parentScene;
     this.hdriTexture_ojxf39$_0 = hdriTexture;
+    this.mipIdx_0 = 0;
     this.uRoughness_0 = Uniform1f_init(0.5, 'uRoughness');
     this.reflMapShader_0 = null;
-    var $receiver = new OffscreenPassCube(256, 256, 7, TexFormat$RGBA_F16_getInstance());
-    $receiver.onSetup = ReflectionMapPass_init$lambda$lambda($receiver, this);
-    var $receiver_0 = new Scene(null);
+    var tmp$;
+    this.clearColor = null;
+    var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
     var mesh = new Mesh(new IndexedVertexList(listOf_0(Attribute$Companion_getInstance().POSITIONS)), null);
-    mesh.generate_v2sixm$(ReflectionMapPass_init$lambda$lambda$lambda$lambda);
+    mesh.isFrustumChecked = false;
+    mesh.generate_v2sixm$(ReflectionMapPass_init$lambda$lambda$lambda);
     var texName = 'colorTex';
-    var $receiver_1 = new ShaderModel('Reflectance Convolution Sampler');
+    var $receiver_0 = new ShaderModel('Reflectance Convolution Sampler');
     var ifLocalPos = {v: null};
-    var $receiver_2 = new ShaderModel$VertexStageBuilder($receiver_1);
-    ifLocalPos.v = $receiver_2.stageInterfaceNode_wtmwsg$('ifLocalPos', $receiver_2.attrPositions().output);
-    $receiver_2.positionOutput = $receiver_2.simpleVertexPositionNode().outPosition;
-    var $receiver_3 = new ShaderModel$FragmentStageBuilder($receiver_1);
-    var roughness = $receiver_3.pushConstantNode1f_978i2u$(this.uRoughness_0);
-    var tex = $receiver_3.textureNode_61zpoe$(texName);
-    var $receiver_4 = $receiver_3.addNode_u9w9by$(new ReflectionMapPass$ConvoluteReflectionNode(tex, $receiver_3.stage));
-    $receiver_4.inLocalPos = ifLocalPos.v.output;
-    $receiver_4.inRoughness = roughness.output;
-    var convNd = $receiver_4;
-    $receiver_3.colorOutput = convNd.outColor;
-    var model = $receiver_1;
-    var $receiver_5 = new ModeledShader$TextureColor(texName, model);
-    $receiver_5.onSetup.add_11rb$(ReflectionMapPass_init$lambda$lambda$lambda$lambda$lambda);
-    $receiver_5.onCreated.add_11rb$(ReflectionMapPass_init$lambda$lambda$lambda$lambda$lambda_0(hdriTexture, $receiver_5));
-    this.reflMapShader_0 = $receiver_5;
+    var $receiver_1 = new ShaderModel$VertexStageBuilder($receiver_0);
+    ifLocalPos.v = $receiver_1.stageInterfaceNode_wtmwsg$('ifLocalPos', $receiver_1.attrPositions().output);
+    $receiver_1.positionOutput = $receiver_1.simpleVertexPositionNode().outPosition;
+    var $receiver_2 = new ShaderModel$FragmentStageBuilder($receiver_0);
+    var roughness = $receiver_2.pushConstantNode1f_978i2u$(this.uRoughness_0);
+    var tex = $receiver_2.textureNode_61zpoe$(texName);
+    var $receiver_3 = $receiver_2.addNode_u9w9by$(new ReflectionMapPass$ConvoluteReflectionNode(tex, $receiver_2.stage));
+    $receiver_3.inLocalPos = ifLocalPos.v.output;
+    $receiver_3.inRoughness = roughness.output;
+    var convNd = $receiver_3;
+    $receiver_2.colorOutput = convNd.outColor;
+    var model = $receiver_0;
+    var $receiver_4 = new ModeledShader$TextureColor(texName, model);
+    $receiver_4.onSetup.add_11rb$(ReflectionMapPass_init$lambda$lambda$lambda$lambda);
+    $receiver_4.onCreated.add_11rb$(ReflectionMapPass_init$lambda$lambda$lambda$lambda_0(hdriTexture, $receiver_4));
+    this.reflMapShader_0 = $receiver_4;
     mesh.pipelineLoader = this.reflMapShader_0;
-    $receiver_0.unaryPlus_uv0sim$(mesh);
-    $receiver.scene = $receiver_0;
-    this.offscreenPass = $receiver;
+    $receiver.unaryPlus_uv0sim$(mesh);
+    this.update();
   }
-  Object.defineProperty(ReflectionMapPass.prototype, 'reflectionMap', {
-    get: function () {
-      return this.offscreenPass.impl.texture;
-    }
-  });
   Object.defineProperty(ReflectionMapPass.prototype, 'hdriTexture', {
     get: function () {
       return this.hdriTexture_ojxf39$_0;
@@ -30096,14 +27074,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       this.hdriTexture_ojxf39$_0 = value;
     }
   });
-  ReflectionMapPass.prototype.update_aemszp$ = function (ctx) {
-    this.offscreenPass.frameIdx = 0;
-    var $receiver = ctx.offscreenPasses;
-    var element = this.offscreenPass;
-    $receiver.add_11rb$(element);
+  ReflectionMapPass.prototype.collectDrawCommands_aemszp$ = function (ctx) {
+    this.uRoughness_0.value = this.mipIdx_0 / (this.mipLevels - 1 | 0);
+    this.targetMipLevel = this.mipIdx_0;
+    if ((this.mipIdx_0 = this.mipIdx_0 + 1 | 0, this.mipIdx_0) >= this.mipLevels) {
+      this.isFinished = true;
+    }OffscreenRenderPassCube.prototype.collectDrawCommands_aemszp$.call(this, ctx);
   };
+  ReflectionMapPass.prototype.update = function () {
+    this.mipIdx_0 = 0;
+    this.isFinished = false;
+    if (!this.parentScene.offscreenPasses.contains_11rb$(this)) {
+      this.parentScene.offscreenPasses.add_11rb$(this);
+    }};
   ReflectionMapPass.prototype.dispose_aemszp$ = function (ctx) {
-    this.offscreenPass.dispose_aemszp$(ctx);
+    this.drawNode.dispose_aemszp$(ctx);
+    OffscreenRenderPassCube.prototype.dispose_aemszp$.call(this, ctx);
   };
   function ReflectionMapPass$ConvoluteReflectionNode(texture, graph) {
     ShaderNode.call(this, 'convIrradiance', graph);
@@ -30129,29 +27115,16 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'ConvoluteReflectionNode',
     interfaces: [ShaderNode]
   };
-  function ReflectionMapPass_init$lambda$lambda(this$, this$ReflectionMapPass) {
-    return function (ctx) {
-      if (this$.frameIdx >= this$.mipLevels) {
-        var $receiver = ctx.offscreenPasses;
-        var element = this$;
-        $receiver.remove_11rb$(element);
-      } else {
-        this$ReflectionMapPass.uRoughness_0.value = this$.frameIdx / (this$.mipLevels - 1 | 0);
-        this$.targetMipLevel = this$.frameIdx;
-      }
-      return Unit;
-    };
-  }
-  function ReflectionMapPass_init$lambda$lambda$lambda$lambda($receiver) {
+  function ReflectionMapPass_init$lambda$lambda$lambda($receiver) {
     $receiver.cubeProps.defaults().centered();
     $receiver.cube_lhbb6w$($receiver.cubeProps);
     return Unit;
   }
-  function ReflectionMapPass_init$lambda$lambda$lambda$lambda$lambda(it) {
+  function ReflectionMapPass_init$lambda$lambda$lambda$lambda(it) {
     it.cullMethod = CullMethod$CULL_FRONT_FACES_getInstance();
     return Unit;
   }
-  function ReflectionMapPass_init$lambda$lambda$lambda$lambda$lambda_0(closure$hdriTexture, this$) {
+  function ReflectionMapPass_init$lambda$lambda$lambda$lambda_0(closure$hdriTexture, this$) {
     return function (it) {
       this$.textureSampler.texture = closure$hdriTexture;
       return Unit;
@@ -30160,7 +27133,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ReflectionMapPass.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ReflectionMapPass',
-    interfaces: []
+    interfaces: [OffscreenRenderPassCube]
   };
   function PerfTimer() {
     this.tStart_0 = 0.0;
@@ -30250,19 +27223,19 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }return ret;
     };
   }));
-  function Comparator$ObjectLiteral_8(closure$comparison) {
+  function Comparator$ObjectLiteral_3(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_8.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_3.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_8.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  Comparator$ObjectLiteral_3.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
   function PriorityQueue(comparator) {
     if (comparator === void 0)
       comparator = null;
     this.comparator_0 = null;
     this.elements_0 = ArrayList_init_0();
-    this.comparator_0 = comparator != null ? comparator : new Comparator$ObjectLiteral_8(PriorityQueue_init$lambda);
+    this.comparator_0 = comparator != null ? comparator : new Comparator$ObjectLiteral_3(PriorityQueue_init$lambda);
   }
   Object.defineProperty(PriorityQueue.prototype, 'size', {
     get: function () {
@@ -32728,22 +29701,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function ShadowMapPass(scene, light, mapSize) {
     if (mapSize === void 0)
       mapSize = 1024;
-    this.scene = scene;
+    OffscreenRenderPass2D.call(this, scene, mapSize, mapSize);
     this.light = light;
-    this.offscreenPass = new OffscreenPass2d(mapSize, mapSize);
+    this.shadowPipelines_0 = LinkedHashMap_init();
+    this.type = RenderPass$Type$SHADOW_getInstance();
+    this.isUpdateDrawNode = false;
     var $receiver = new PerspectiveCamera();
     $receiver.clipNear = 1.0;
     $receiver.clipFar = 100.0;
     $receiver.isApplyProjCorrection = false;
-    this.shadowCam = $receiver;
-    this.tempCam_0 = this.shadowCam;
-    this.shadowPipelines_0 = LinkedHashMap_init();
-    this.offscreenPass.drawQueues.get_za3lpa$(0).meshFilter = ShadowMapPass_init$lambda;
-    this.offscreenPass.scene = this.scene;
-    this.offscreenPass.isMainPass = false;
-    this.offscreenPass.beforeRender.add_11rb$(ShadowMapPass_init$lambda_0(this));
-    this.offscreenPass.afterRender.add_11rb$(ShadowMapPass_init$lambda_1(this));
+    var shadowCam = $receiver;
+    this.camera = shadowCam;
+    this.onBeforeCollectDrawCommands.add_11rb$(ShadowMapPass_init$lambda(shadowCam, this));
+    this.onAfterCollectDrawCommands.add_11rb$(ShadowMapPass_init$lambda_0(this));
   }
+  ShadowMapPass.prototype.collectDrawCommands_aemszp$ = function (ctx) {
+    if (this.light.type === Light$Type$SPOT_getInstance()) {
+      OffscreenRenderPass2D.prototype.collectDrawCommands_aemszp$.call(this, ctx);
+    } else {
+      this.drawQueue.clear();
+      this.light.lightMvpMat.setIdentity();
+    }
+  };
   ShadowMapPass.prototype.getShadowPipeline_0 = function (actualMesh, ctx) {
     var $receiver = this.shadowPipelines_0;
     var key = actualMesh.geometry.attributeHash;
@@ -32763,38 +29742,26 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     }
     return tmp$;
   };
-  ShadowMapPass.prototype.dispose_aemszp$ = function (ctx) {
-    this.offscreenPass.dispose_aemszp$(ctx);
-  };
-  function ShadowMapPass_init$lambda(it) {
-    return it.isCastingShadow;
-  }
-  function ShadowMapPass_init$lambda_0(this$ShadowMapPass) {
+  function ShadowMapPass_init$lambda(closure$shadowCam, this$ShadowMapPass) {
     return function (ctx) {
-      this$ShadowMapPass.tempCam_0 = this$ShadowMapPass.scene.camera;
-      this$ShadowMapPass.shadowCam.position.set_czzhiu$(this$ShadowMapPass.light.position);
-      this$ShadowMapPass.shadowCam.lookAt.set_czzhiu$(this$ShadowMapPass.light.position).add_czzhiu$(this$ShadowMapPass.light.direction);
-      this$ShadowMapPass.shadowCam.fovY = this$ShadowMapPass.light.spotAngle;
-      this$ShadowMapPass.scene.camera = this$ShadowMapPass.shadowCam;
-      this$ShadowMapPass.shadowCam.updateCamera_aemszp$(ctx);
-      ctx.depthBiasMatrix.mul_u47j3u$(ctx.mvpState.mvpMatrix, this$ShadowMapPass.light.lightMvpMat);
+      var $receiver = closure$shadowCam;
+      var this$ShadowMapPass_0 = this$ShadowMapPass;
+      $receiver.position.set_czzhiu$(this$ShadowMapPass_0.light.position);
+      $receiver.lookAt.set_czzhiu$(this$ShadowMapPass_0.light.position).add_czzhiu$(this$ShadowMapPass_0.light.direction);
+      $receiver.fovY = this$ShadowMapPass_0.light.spotAngle;
+      closure$shadowCam.updateCamera_eazsrs$(ctx, this$ShadowMapPass.viewport);
+      ctx.depthBiasMatrix.mul_u47j3u$(this$ShadowMapPass.camera.mvp, this$ShadowMapPass.light.lightMvpMat);
       return Unit;
     };
   }
-  function ShadowMapPass_init$lambda_1(this$ShadowMapPass) {
+  function ShadowMapPass_init$lambda_0(this$ShadowMapPass) {
     return function (ctx) {
-      this$ShadowMapPass.scene.camera = this$ShadowMapPass.tempCam_0;
-      if (this$ShadowMapPass.light.type !== Light$Type$SPOT_getInstance()) {
-        this$ShadowMapPass.offscreenPass.drawQueues.get_za3lpa$(0).clear();
-        this$ShadowMapPass.light.lightMvpMat.setIdentity();
-      } else {
-        var $receiver = this$ShadowMapPass.offscreenPass.drawQueues.get_za3lpa$(0).commands;
-        var tmp$;
-        tmp$ = $receiver.iterator();
-        while (tmp$.hasNext()) {
-          var element = tmp$.next();
-          element.pipeline = this$ShadowMapPass.getShadowPipeline_0(element.mesh, ctx);
-        }
+      var $receiver = this$ShadowMapPass.drawQueue.commands;
+      var tmp$;
+      tmp$ = $receiver.iterator();
+      while (tmp$.hasNext()) {
+        var element = tmp$.next();
+        element.pipeline = this$ShadowMapPass.getShadowPipeline_0(element.mesh, ctx);
       }
       return Unit;
     };
@@ -32802,7 +29769,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   ShadowMapPass.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'ShadowMapPass',
-    interfaces: []
+    interfaces: [OffscreenRenderPass2D]
   };
   function pointKdTree(points, bucketSz) {
     if (bucketSz === void 0)
@@ -33284,14 +30251,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'SpatialTree',
     interfaces: [Collection]
   };
-  function Comparator$ObjectLiteral_9(closure$comparison) {
+  function Comparator$ObjectLiteral_4(closure$comparison) {
     this.closure$comparison = closure$comparison;
   }
-  Comparator$ObjectLiteral_9.prototype.compare = function (a, b) {
+  Comparator$ObjectLiteral_4.prototype.compare = function (a, b) {
     return this.closure$comparison(a, b);
   };
-  Comparator$ObjectLiteral_9.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
-  var compareBy$lambda_8 = wrapFunction(function () {
+  Comparator$ObjectLiteral_4.$metadata$ = {kind: Kind_CLASS, interfaces: [Comparator]};
+  var compareBy$lambda_3 = wrapFunction(function () {
     var compareValues = Kotlin.kotlin.comparisons.compareValues_s00gnj$;
     return function (closure$selector) {
       return function (a, b) {
@@ -33470,7 +30437,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.radiusSqr_9tgcx0$_0 = 9.9999998E17;
     this.result = ArrayList_init_0();
     this.maxDistance_1d7gth$_0 = 0.0;
-    this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_9(compareBy$lambda_8(KNearestTraverser$items$lambda)));
+    this.items_3hjtdu$_0 = new PriorityQueue(new Comparator$ObjectLiteral_4(compareBy$lambda_3(KNearestTraverser$items$lambda)));
     this.itemRecycler_b63bes$_0 = new ObjectPool(KNearestTraverser$itemRecycler$lambda);
     this.childLists_142w3h$_0 = new ChildNodesWithDistance(KNearestTraverser$childLists$lambda(this));
   }
@@ -33819,7 +30786,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   function ChildNodesWithDistance(childDist) {
     this.childDist = childDist;
     this.childListRecycler = new ObjectPool(ChildNodesWithDistance$childListRecycler$lambda);
-    this.childComparator = new Comparator$ObjectLiteral_9(compareBy$lambda_8(ChildNodesWithDistance$childComparator$lambda));
+    this.childComparator = new Comparator$ObjectLiteral_4(compareBy$lambda_3(ChildNodesWithDistance$childComparator$lambda));
   }
   ChildNodesWithDistance.prototype.use_5wl3jr$ = defineInlineFunction('kool.de.fabmax.kool.util.ChildNodesWithDistance.use_5wl3jr$', wrapFunction(function () {
     var ChildNodesWithDistance$ChildNodesWithDistance$Child_init = _.de.fabmax.kool.util.ChildNodesWithDistance.Child;
@@ -35175,127 +32142,46 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'AudioGenerator',
     interfaces: []
   };
-  function loadPngS16ElevationMap(basePath, meta, assetMgr) {
-    return new DelayedElevationMap(basePath, meta);
-  }
-  function DelayedElevationMap(basePath, meta) {
-    this.meta_r4vgl6$_0 = meta;
-    this.isAvailable_uzeklm$_0 = false;
-    this.loadedHeightMap_0 = null;
-    ElevationMapLoader$Companion_getInstance().instance.loadHeightMap_2u7zf8$(basePath + '/' + this.meta.name, DelayedElevationMap_init$lambda(this));
-  }
-  Object.defineProperty(DelayedElevationMap.prototype, 'meta', {
-    get: function () {
-      return this.meta_r4vgl6$_0;
-    }
-  });
-  Object.defineProperty(DelayedElevationMap.prototype, 'west', {
-    get: function () {
-      return this.meta.west;
-    }
-  });
-  Object.defineProperty(DelayedElevationMap.prototype, 'east', {
-    get: function () {
-      return this.meta.east;
-    }
-  });
-  Object.defineProperty(DelayedElevationMap.prototype, 'south', {
-    get: function () {
-      return this.meta.south;
-    }
-  });
-  Object.defineProperty(DelayedElevationMap.prototype, 'north', {
-    get: function () {
-      return this.meta.north;
-    }
-  });
-  Object.defineProperty(DelayedElevationMap.prototype, 'isAvailable', {
-    get: function () {
-      return this.isAvailable_uzeklm$_0;
-    },
-    set: function (isAvailable) {
-      this.isAvailable_uzeklm$_0 = isAvailable;
-    }
-  });
-  DelayedElevationMap.prototype.getElevationAt_lu1900$ = function (lat, lon) {
-    var tmp$, tmp$_0;
-    return (tmp$_0 = (tmp$ = this.loadedHeightMap_0) != null ? tmp$.getElevationAt_lu1900$(lat, lon) : null) != null ? tmp$_0 : 0.0;
-  };
-  DelayedElevationMap.prototype.getNormalAt_bwm9xi$ = function (lat, lon, result) {
-    var tmp$, tmp$_0;
-    return (tmp$_0 = (tmp$ = this.loadedHeightMap_0) != null ? tmp$.getNormalAt_bwm9xi$(lat, lon, result) : null) != null ? tmp$_0 : result.set_czzhiu$(Vec3f$Companion_getInstance().Z_AXIS);
-  };
-  function DelayedElevationMap_init$lambda(this$DelayedElevationMap) {
-    return function (data) {
-      if (data != null) {
-        this$DelayedElevationMap.loadedHeightMap_0 = new ElevationMapS16(data, this$DelayedElevationMap.meta);
-      }this$DelayedElevationMap.isAvailable = true;
-      return Unit;
-    };
-  }
-  DelayedElevationMap.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'DelayedElevationMap',
-    interfaces: [BoundedElevationMap]
-  };
-  function ElevationMapLoader() {
-    ElevationMapLoader$Companion_getInstance();
-    var tmp$, tmp$_0;
-    this.canvas_0 = Kotlin.isType(tmp$ = document.createElement('canvas'), HTMLCanvasElement) ? tmp$ : throwCCE();
-    this.canvasCtx_0 = null;
-    this.canvas_0.width = 900;
-    this.canvas_0.height = 900;
-    this.canvasCtx_0 = Kotlin.isType(tmp$_0 = this.canvas_0.getContext('2d'), CanvasRenderingContext2D) ? tmp$_0 : throwCCE();
-  }
-  function ElevationMapLoader$loadHeightMap$lambda(closure$onLoaded) {
-    return function (f, f_0, f_1, f_2, f_3) {
-      closure$onLoaded(null);
-      return true;
-    };
-  }
-  function ElevationMapLoader$loadHeightMap$lambda_0(this$ElevationMapLoader, closure$img, closure$onLoaded) {
-    return function (it) {
-      this$ElevationMapLoader.canvasCtx_0.drawImage(closure$img, 0.0, 0.0);
-      var array = new Int16Array(810000);
-      var data = this$ElevationMapLoader.canvasCtx_0.getImageData(0.0, 0.0, 900.0, 900.0).data;
-      for (var i = 0; i < 3240000; i++) {
-        var r = data[i * 4 | 0];
-        var g = data[(i * 4 | 0) + 1 | 0];
-        var h = toShort(r << 8 | g);
-        array[i] = h;
-      }
-      closure$onLoaded(array);
-      return true;
-    };
-  }
-  ElevationMapLoader.prototype.loadHeightMap_2u7zf8$ = function (path, onLoaded) {
+  function LoadedTexture(ctx, texture, estimatedSize) {
+    LoadedTexture$Companion_getInstance();
+    this.ctx = ctx;
+    this.texture = texture;
     var tmp$;
-    var img = Kotlin.isType(tmp$ = document.createElement('img'), HTMLImageElement) ? tmp$ : throwCCE();
-    img.src = path;
-    img.crossOrigin = '';
-    img.onerror = ElevationMapLoader$loadHeightMap$lambda(onLoaded);
-    img.onload = ElevationMapLoader$loadHeightMap$lambda_0(this, img, onLoaded);
-  };
-  function ElevationMapLoader$Companion() {
-    ElevationMapLoader$Companion_instance = this;
-    this.MAP_WIDTH = 900;
-    this.MAP_HEIGHT = 900;
-    this.instance = new ElevationMapLoader();
+    this.texId = (tmp$ = LoadedTexture$Companion_getInstance().nextTexId_0, LoadedTexture$Companion_getInstance().nextTexId_0 = tmp$.inc(), tmp$);
+    this.isDestroyed_ychkxm$_0 = false;
+    this.ctx.engineStats.textureAllocated_yhmem3$(this.texId, estimatedSize);
   }
-  ElevationMapLoader$Companion.$metadata$ = {
+  Object.defineProperty(LoadedTexture.prototype, 'isDestroyed', {
+    get: function () {
+      return this.isDestroyed_ychkxm$_0;
+    },
+    set: function (isDestroyed) {
+      this.isDestroyed_ychkxm$_0 = isDestroyed;
+    }
+  });
+  LoadedTexture.prototype.dispose = function () {
+    this.isDestroyed = true;
+    this.ctx.gl_8be2vx$.deleteTexture(this.texture);
+    this.ctx.engineStats.textureDeleted_s8cxhz$(this.texId);
+  };
+  function LoadedTexture$Companion() {
+    LoadedTexture$Companion_instance = this;
+    this.nextTexId_0 = L1;
+  }
+  LoadedTexture$Companion.$metadata$ = {
     kind: Kind_OBJECT,
     simpleName: 'Companion',
     interfaces: []
   };
-  var ElevationMapLoader$Companion_instance = null;
-  function ElevationMapLoader$Companion_getInstance() {
-    if (ElevationMapLoader$Companion_instance === null) {
-      new ElevationMapLoader$Companion();
-    }return ElevationMapLoader$Companion_instance;
+  var LoadedTexture$Companion_instance = null;
+  function LoadedTexture$Companion_getInstance() {
+    if (LoadedTexture$Companion_instance === null) {
+      new LoadedTexture$Companion();
+    }return LoadedTexture$Companion_instance;
   }
-  ElevationMapLoader.$metadata$ = {
+  LoadedTexture.$metadata$ = {
     kind: Kind_CLASS,
-    simpleName: 'ElevationMapLoader',
+    simpleName: 'LoadedTexture',
     interfaces: []
   };
   function OffscreenPass2dImpl(offscreenPass) {
@@ -35342,20 +32228,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.depthTexture.dispose();
   };
   OffscreenPass2dImpl.prototype.draw_44a5h0$ = function (ctx) {
-    var tmp$;
     if (!this.isSetup_0) {
       this.setup_0(ctx);
-    }Kotlin.isType(tmp$ = this.texture, OffscreenPass2dImpl$OffscreenTexture) ? tmp$ : throwCCE();
-    var mipLevel = this.offscreenPass.targetMipLevel;
+    }var mipLevel = this.offscreenPass.targetMipLevel;
     var width = this.offscreenPass.mipWidth_za3lpa$(mipLevel);
     var height = this.offscreenPass.mipHeight_za3lpa$(mipLevel);
     var clearColor = this.offscreenPass.clearColor;
+    var clearMask_0 = clearMask(this.offscreenPass);
     var fboIdx = mipLevel < 0 ? 0 : mipLevel;
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
     ctx.gl_8be2vx$.viewport(0, 0, width, height);
-    ctx.gl_8be2vx$.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-    ctx.gl_8be2vx$.clear(WebGLRenderingContext.COLOR_BUFFER_BIT | WebGLRenderingContext.DEPTH_BUFFER_BIT);
-    ctx.queueRenderer_8be2vx$.renderQueue_21v2u5$(this.offscreenPass.drawQueues.get_za3lpa$(0));
+    if (clearColor != null) {
+      ctx.gl_8be2vx$.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    }if (clearMask_0 !== 0) {
+      ctx.gl_8be2vx$.clear(clearMask_0);
+    }ctx.queueRenderer_8be2vx$.renderQueue_21v2u5$(this.offscreenPass.drawQueue);
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
   };
   function OffscreenPass2dImpl$OffscreenTexture($outer) {
@@ -35472,12 +32359,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     var fboIdx = mipLevel < 0 ? 0 : mipLevel;
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, this.fbos_0.get_za3lpa$(fboIdx));
     ctx.gl_8be2vx$.viewport(0, 0, width, height);
-    ctx.gl_8be2vx$.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    if (clearColor != null) {
+      ctx.gl_8be2vx$.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    }var clearMask_0 = clearMask(this.offscreenPass);
     for (var i = 0; i < 6; i++) {
       ctx.gl_8be2vx$.framebufferTexture2D(WebGLRenderingContext.FRAMEBUFFER, WebGLRenderingContext.COLOR_ATTACHMENT0, WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X + i | 0, this.texture.offscreenTex, fboIdx);
-      ctx.gl_8be2vx$.clear(WebGLRenderingContext.COLOR_BUFFER_BIT | WebGLRenderingContext.DEPTH_BUFFER_BIT);
-      var view = OffscreenPassCubeImpl$Companion_getInstance().VIEWS_0[i];
-      var queue = this.offscreenPass.drawQueues.get_za3lpa$(view.index);
+      if (clearMask_0 !== 0) {
+        ctx.gl_8be2vx$.clear(clearMask_0);
+      }var view = OffscreenPassCubeImpl$Companion_getInstance().VIEWS_0[i];
+      var queue = this.offscreenPass.drawQueues[view.index];
       ctx.queueRenderer_8be2vx$.renderQueue_21v2u5$(queue);
     }
     ctx.gl_8be2vx$.bindFramebuffer(WebGLRenderingContext.FRAMEBUFFER, null);
@@ -35492,22 +32382,22 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       init$break: do {
         switch (i) {
           case 0:
-            init$result = OffscreenPassCube$ViewDirection$RIGHT_getInstance();
+            init$result = OffscreenRenderPassCube$ViewDirection$RIGHT_getInstance();
             break init$break;
           case 1:
-            init$result = OffscreenPassCube$ViewDirection$LEFT_getInstance();
+            init$result = OffscreenRenderPassCube$ViewDirection$LEFT_getInstance();
             break init$break;
           case 2:
-            init$result = OffscreenPassCube$ViewDirection$UP_getInstance();
+            init$result = OffscreenRenderPassCube$ViewDirection$UP_getInstance();
             break init$break;
           case 3:
-            init$result = OffscreenPassCube$ViewDirection$DOWN_getInstance();
+            init$result = OffscreenRenderPassCube$ViewDirection$DOWN_getInstance();
             break init$break;
           case 4:
-            init$result = OffscreenPassCube$ViewDirection$FRONT_getInstance();
+            init$result = OffscreenRenderPassCube$ViewDirection$FRONT_getInstance();
             break init$break;
           case 5:
-            init$result = OffscreenPassCube$ViewDirection$BACK_getInstance();
+            init$result = OffscreenRenderPassCube$ViewDirection$BACK_getInstance();
             break init$break;
           default:throw IllegalStateException_init_0();
         }
@@ -35560,48 +32450,14 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     simpleName: 'OffscreenPassCubeImpl',
     interfaces: []
   };
-  function LoadedTexture(ctx, texture, estimatedSize) {
-    LoadedTexture$Companion_getInstance();
-    this.ctx = ctx;
-    this.texture = texture;
-    var tmp$;
-    this.texId = (tmp$ = LoadedTexture$Companion_getInstance().nextTexId_0, LoadedTexture$Companion_getInstance().nextTexId_0 = tmp$.inc(), tmp$);
-    this.isDestroyed_ychkxm$_0 = false;
-    this.ctx.engineStats.textureAllocated_yhmem3$(this.texId, estimatedSize);
+  function clearMask($receiver) {
+    var mask = 0;
+    if ($receiver.clearDepth) {
+      mask = WebGLRenderingContext.DEPTH_BUFFER_BIT;
+    }if ($receiver.clearColor != null) {
+      mask = mask | WebGLRenderingContext.COLOR_BUFFER_BIT;
+    }return mask;
   }
-  Object.defineProperty(LoadedTexture.prototype, 'isDestroyed', {
-    get: function () {
-      return this.isDestroyed_ychkxm$_0;
-    },
-    set: function (isDestroyed) {
-      this.isDestroyed_ychkxm$_0 = isDestroyed;
-    }
-  });
-  LoadedTexture.prototype.dispose = function () {
-    this.isDestroyed = true;
-    this.ctx.gl_8be2vx$.deleteTexture(this.texture);
-    this.ctx.engineStats.textureDeleted_s8cxhz$(this.texId);
-  };
-  function LoadedTexture$Companion() {
-    LoadedTexture$Companion_instance = this;
-    this.nextTexId_0 = L1;
-  }
-  LoadedTexture$Companion.$metadata$ = {
-    kind: Kind_OBJECT,
-    simpleName: 'Companion',
-    interfaces: []
-  };
-  var LoadedTexture$Companion_instance = null;
-  function LoadedTexture$Companion_getInstance() {
-    if (LoadedTexture$Companion_instance === null) {
-      new LoadedTexture$Companion();
-    }return LoadedTexture$Companion_instance;
-  }
-  LoadedTexture.$metadata$ = {
-    kind: Kind_CLASS,
-    simpleName: 'LoadedTexture',
-    interfaces: []
-  };
   function PlatformAttributeProps(attribute) {
     this.nSlots = 0;
     this.attribSize = 0;
@@ -36555,34 +33411,54 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.gl_8be2vx$.finish();
     window.requestAnimationFrame(JsContext$renderFrame$lambda(this));
   };
+  function JsContext$draw$lambda(it) {
+    return it.isFinished;
+  }
   JsContext.prototype.draw_0 = function () {
     var tmp$;
     if (!this.disposablePipelines.isEmpty()) {
       this.queueRenderer_8be2vx$.disposePipelines_z4np8a$(this.disposablePipelines);
       this.disposablePipelines.clear();
     }this.engineStats.resetPerFrameCounts();
-    tmp$ = this.offscreenPasses.size;
-    for (var i = 0; i < tmp$; i++) {
-      this.drawOffscreen_0(this.offscreenPasses.get_za3lpa$(i));
-    }
-    this.gl_8be2vx$.viewport(this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height);
-    this.gl_8be2vx$.clearColor(this.clearColor.r, this.clearColor.g, this.clearColor.b, this.clearColor.a);
-    this.gl_8be2vx$.clear(WebGLRenderingContext.DEPTH_BUFFER_BIT | WebGLRenderingContext.COLOR_BUFFER_BIT);
-    this.queueRenderer_8be2vx$.renderQueue_21v2u5$(this.drawQueue);
-    if (!this.afterRenderActions_8be2vx$.isEmpty()) {
+    tmp$ = this.scenes;
+    for (var i = 0; i !== tmp$.size; ++i) {
       var tmp$_0;
-      tmp$_0 = this.afterRenderActions_8be2vx$.iterator();
-      while (tmp$_0.hasNext()) {
-        var element = tmp$_0.next();
+      var scene = this.scenes.get_za3lpa$(i);
+      var removeFlag = false;
+      tmp$_0 = scene.offscreenPasses.size;
+      for (var j = 0; j < tmp$_0; j++) {
+        this.drawOffscreen_0(scene.offscreenPasses.get_za3lpa$(j));
+        removeFlag = removeFlag || scene.offscreenPasses.get_za3lpa$(j).isFinished;
+      }
+      if (removeFlag) {
+        removeAll(scene.offscreenPasses, JsContext$draw$lambda);
+      }this.gl_8be2vx$.viewport(this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height);
+      var $receiver = scene.mainRenderPass;
+      var tmp$_1;
+      var clearMask = {v: 0};
+      if ((tmp$_1 = $receiver.clearColor) != null) {
+        clearMask.v = WebGLRenderingContext.COLOR_BUFFER_BIT;
+        this.gl_8be2vx$.clearColor(tmp$_1.r, tmp$_1.g, tmp$_1.b, tmp$_1.a);
+      }if ($receiver.clearDepth) {
+        clearMask.v = clearMask.v | WebGLRenderingContext.DEPTH_BUFFER_BIT;
+      }if (clearMask.v !== 0) {
+        this.gl_8be2vx$.clear(clearMask.v);
+      }this.queueRenderer_8be2vx$.renderQueue_21v2u5$($receiver.drawQueue);
+    }
+    if (!this.afterRenderActions_8be2vx$.isEmpty()) {
+      var tmp$_2;
+      tmp$_2 = this.afterRenderActions_8be2vx$.iterator();
+      while (tmp$_2.hasNext()) {
+        var element = tmp$_2.next();
         element();
       }
       this.afterRenderActions_8be2vx$.clear();
     }};
   JsContext.prototype.drawOffscreen_0 = function (offscreenPass) {
-    if (Kotlin.isType(offscreenPass, OffscreenPass2d))
-      offscreenPass.impl.draw_44a5h0$(this);
-    else if (Kotlin.isType(offscreenPass, OffscreenPassCube))
-      offscreenPass.impl.draw_44a5h0$(this);
+    if (Kotlin.isType(offscreenPass, OffscreenRenderPass2D))
+      offscreenPass.impl_8be2vx$.draw_44a5h0$(this);
+    else if (Kotlin.isType(offscreenPass, OffscreenRenderPassCube))
+      offscreenPass.impl_8be2vx$.draw_44a5h0$(this);
     else
       throw IllegalArgumentException_init('Offscreen pass type not implemented: ' + offscreenPass);
   };
@@ -37162,7 +34038,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
         else if (Kotlin.isType(element_0, CubeMapSampler))
           this.mapCubeMap_0(element_0);
         else {
-          throw new NotImplementedError('An operation is not implemented: ' + element_0.toString());
+          throw new NotImplementedError_init('An operation is not implemented: ' + element_0.toString());
         }
       }
     }
@@ -37480,7 +34356,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else if (Kotlin.isType(uniform, Uniform1i))
       tmp$ = new MappedUniform1i(uniform, location);
     else {
-      throw new NotImplementedError('An operation is not implemented: ' + 'Uniform type mapping not implemented');
+      throw new NotImplementedError_init('An operation is not implemented: ' + 'Uniform type mapping not implemented');
     }
     return tmp$;
   };
@@ -38010,7 +34886,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
           else if (Kotlin.isType(element_0, CubeMapSampler))
             srcBuilder.append_61zpoe$(this.generateCubeMapSampler_0(element_0));
           else {
-            throw new NotImplementedError('An operation is not implemented: ' + ('Descriptor type not implemented: ' + element_0));
+            throw new NotImplementedError_init('An operation is not implemented: ' + ('Descriptor type not implemented: ' + element_0));
           }
         }}
     }
@@ -38137,7 +35013,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     else if (Kotlin.isType($receiver, Uniform1i))
       tmp$ = 'int ' + $receiver.name;
     else {
-      throw new NotImplementedError('An operation is not implemented: ' + ('Uniform type name not implemented: ' + $receiver));
+      throw new NotImplementedError_init('An operation is not implemented: ' + ('Uniform type name not implemented: ' + $receiver));
     }
     return tmp$;
   };
@@ -38844,13 +35720,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$kool.InputManager = InputManager;
   KoolContext.Viewport = KoolContext$Viewport;
   package$kool.KoolContext = KoolContext;
-  Object.defineProperty(RenderPass, 'SHADOW', {
-    get: RenderPass$SHADOW_getInstance
-  });
-  Object.defineProperty(RenderPass, 'SCREEN', {
-    get: RenderPass$SCREEN_getInstance
-  });
-  package$kool.RenderPass = RenderPass;
   package$kool.KoolException_init_61zpoe$ = KoolException_init;
   package$kool.KoolException = KoolException;
   var package$math = package$kool.math || (package$kool.math = {});
@@ -39078,64 +35947,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: Wave$Companion_getInstance
   });
   package$audio.Wave = Wave;
-  var package$globe = package$modules.globe || (package$modules.globe = {});
-  var package$elevation = package$globe.elevation || (package$globe.elevation = {});
-  package$elevation.BoundedElevationMap = BoundedElevationMap;
-  package$elevation.ElevationMapProvider = ElevationMapProvider;
-  package$elevation.ElevationMap = ElevationMap;
-  package$elevation.NullElevationMap = NullElevationMap;
-  Object.defineProperty(ElevationMapMeta, 'Companion', {
-    get: ElevationMapMeta$Companion_getInstance
-  });
-  Object.defineProperty(ElevationMapMeta, '$serializer', {
-    get: ElevationMapMeta$$serializer_getInstance
-  });
-  package$elevation.ElevationMapMeta_init_xz4r7n$ = ElevationMapMeta_init;
-  package$elevation.ElevationMapMeta = ElevationMapMeta;
-  Object.defineProperty(ElevationMapMetaHierarchy, 'Companion', {
-    get: ElevationMapMetaHierarchy$Companion_getInstance
-  });
-  Object.defineProperty(ElevationMapMetaHierarchy, '$serializer', {
-    get: ElevationMapMetaHierarchy$$serializer_getInstance
-  });
-  package$elevation.ElevationMapMetaHierarchy_init_jfa9i3$ = ElevationMapMetaHierarchy_init;
-  package$elevation.ElevationMapMetaHierarchy = ElevationMapMetaHierarchy;
-  package$elevation.loadElevationMap_jn660e$ = loadElevationMap;
-  package$elevation.ElevationMapHierarchy = ElevationMapHierarchy;
-  Object.defineProperty(ElevationMapS16, 'Companion', {
-    get: ElevationMapS16$Companion_getInstance
-  });
-  package$elevation.ElevationMapS16 = ElevationMapS16;
-  Object.defineProperty(ElevationMapSet, 'Companion', {
-    get: ElevationMapSet$Companion_getInstance
-  });
-  package$elevation.ElevationMapSet = ElevationMapSet;
-  package$elevation.LoadedMapCache = LoadedMapCache;
-  Object.defineProperty(Globe, 'Companion', {
-    get: Globe$Companion_getInstance
-  });
-  package$globe.Globe = Globe;
-  package$globe.GlobeCamHandler = GlobeCamHandler;
-  package$globe.TileFrame = TileFrame;
-  package$globe.TileManager = TileManager;
-  TileMesh.AttributionInfo = TileMesh$AttributionInfo;
-  Object.defineProperty(TileMesh, 'Companion', {
-    get: TileMesh$Companion_getInstance
-  });
-  package$globe.TileMesh = TileMesh;
-  package$globe.TileMeshGenerator = TileMeshGenerator;
-  Object.defineProperty(GridTileMeshGenerator, 'Companion', {
-    get: GridTileMeshGenerator$Companion_getInstance
-  });
-  package$globe.GridTileMeshGenerator = GridTileMeshGenerator;
-  Object.defineProperty(TileName, 'Companion', {
-    get: TileName$Companion_getInstance
-  });
-  package$globe.TileName = TileName;
-  package$globe.TileShaderProvider = TileShaderProvider;
-  package$globe.TileShader = TileShader;
-  package$globe.TexImageTileShaderProvider = TexImageTileShaderProvider;
-  package$globe.OsmTexImageTileShaderProvider = OsmTexImageTileShaderProvider;
   HalfEdgeMesh.EdgeHandler = HalfEdgeMesh$EdgeHandler;
   HalfEdgeMesh.HalfEdgeVertex = HalfEdgeMesh$HalfEdgeVertex;
   HalfEdgeMesh.HalfEdge = HalfEdgeMesh$HalfEdge;
@@ -39165,29 +35976,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$simplification.terminateOnFaceCountRel_14dthe$ = terminateOnFaceCountRel;
   package$simplification.terminateOnFaceCountAbs_za3lpa$ = terminateOnFaceCountAbs;
   package$simplification.terminateOnError_14dthe$ = terminateOnError;
-  package$kool.MvpState = MvpState;
-  package$kool.OffscreenPass = OffscreenPass;
-  package$kool.OffscreenPass2d = OffscreenPass2d;
-  Object.defineProperty(OffscreenPassCube$ViewDirection, 'FRONT', {
-    get: OffscreenPassCube$ViewDirection$FRONT_getInstance
-  });
-  Object.defineProperty(OffscreenPassCube$ViewDirection, 'BACK', {
-    get: OffscreenPassCube$ViewDirection$BACK_getInstance
-  });
-  Object.defineProperty(OffscreenPassCube$ViewDirection, 'LEFT', {
-    get: OffscreenPassCube$ViewDirection$LEFT_getInstance
-  });
-  Object.defineProperty(OffscreenPassCube$ViewDirection, 'RIGHT', {
-    get: OffscreenPassCube$ViewDirection$RIGHT_getInstance
-  });
-  Object.defineProperty(OffscreenPassCube$ViewDirection, 'UP', {
-    get: OffscreenPassCube$ViewDirection$UP_getInstance
-  });
-  Object.defineProperty(OffscreenPassCube$ViewDirection, 'DOWN', {
-    get: OffscreenPassCube$ViewDirection$DOWN_getInstance
-  });
-  OffscreenPassCube.ViewDirection = OffscreenPassCube$ViewDirection;
-  package$kool.OffscreenPassCube = OffscreenPassCube;
   Object.defineProperty(GlslType, 'FLOAT', {
     get: GlslType$FLOAT_getInstance
   });
@@ -39247,6 +36035,28 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: DescriptorType$UNIFORM_BUFFER_getInstance
   });
   package$pipeline.DescriptorType = DescriptorType;
+  package$pipeline.OffscreenRenderPass = OffscreenRenderPass;
+  package$pipeline.OffscreenRenderPass2D = OffscreenRenderPass2D;
+  Object.defineProperty(OffscreenRenderPassCube$ViewDirection, 'FRONT', {
+    get: OffscreenRenderPassCube$ViewDirection$FRONT_getInstance
+  });
+  Object.defineProperty(OffscreenRenderPassCube$ViewDirection, 'BACK', {
+    get: OffscreenRenderPassCube$ViewDirection$BACK_getInstance
+  });
+  Object.defineProperty(OffscreenRenderPassCube$ViewDirection, 'LEFT', {
+    get: OffscreenRenderPassCube$ViewDirection$LEFT_getInstance
+  });
+  Object.defineProperty(OffscreenRenderPassCube$ViewDirection, 'RIGHT', {
+    get: OffscreenRenderPassCube$ViewDirection$RIGHT_getInstance
+  });
+  Object.defineProperty(OffscreenRenderPassCube$ViewDirection, 'UP', {
+    get: OffscreenRenderPassCube$ViewDirection$UP_getInstance
+  });
+  Object.defineProperty(OffscreenRenderPassCube$ViewDirection, 'DOWN', {
+    get: OffscreenRenderPassCube$ViewDirection$DOWN_getInstance
+  });
+  OffscreenRenderPassCube.ViewDirection = OffscreenRenderPassCube$ViewDirection;
+  package$pipeline.OffscreenRenderPassCube = OffscreenRenderPassCube;
   Pipeline.BuildContext = Pipeline$BuildContext;
   Pipeline.Builder = Pipeline$Builder;
   Object.defineProperty(Pipeline, 'Companion', {
@@ -39288,6 +36098,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$pipeline.CullMethod = CullMethod;
   PushConstantRange.Builder = PushConstantRange$Builder;
   package$pipeline.PushConstantRange = PushConstantRange;
+  Object.defineProperty(RenderPass$Type, 'COLOR', {
+    get: RenderPass$Type$COLOR_getInstance
+  });
+  Object.defineProperty(RenderPass$Type, 'SHADOW', {
+    get: RenderPass$Type$SHADOW_getInstance
+  });
+  RenderPass.Type = RenderPass$Type;
+  package$pipeline.RenderPass = RenderPass;
+  package$pipeline.ScreenRenderPass = ScreenRenderPass;
   var package$shadermodel = package$pipeline.shadermodel || (package$pipeline.shadermodel = {});
   package$shadermodel.CodeGenerator = CodeGenerator;
   package$shadermodel.LightNode = LightNode;
@@ -39398,12 +36217,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   });
   PbrShader.PbrConfig = PbrShader$PbrConfig;
   package$shading.PbrShader = PbrShader;
+  package$shading.phongShader_avt1hd$ = phongShader;
   Object.defineProperty(PhongShader, 'Companion', {
     get: PhongShader$Companion_getInstance
   });
   PhongShader.PhongConfig = PhongShader$PhongConfig;
   package$shading.PhongShader = PhongShader;
-  package$shading.phongShader_avt1hd$ = phongShader;
   package$shading.Shader = Shader;
   package$pipeline.Std140Layout = Std140Layout;
   Object.defineProperty(TexFormat, 'R', {
@@ -39527,20 +36346,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$animation.RotationKey = RotationKey;
   package$animation.PositionKey = PositionKey;
   package$animation.ScalingKey = ScalingKey;
-  Object.defineProperty(BillboardMesh$DrawOrder, 'AS_IS', {
-    get: BillboardMesh$DrawOrder$AS_IS_getInstance
-  });
-  Object.defineProperty(BillboardMesh$DrawOrder, 'FAR_FIRST', {
-    get: BillboardMesh$DrawOrder$FAR_FIRST_getInstance
-  });
-  Object.defineProperty(BillboardMesh$DrawOrder, 'NEAR_FIRST', {
-    get: BillboardMesh$DrawOrder$NEAR_FIRST_getInstance
-  });
-  BillboardMesh.DrawOrder = BillboardMesh$DrawOrder;
-  Object.defineProperty(BillboardMesh, 'Companion', {
-    get: BillboardMesh$Companion_getInstance
-  });
-  package$scene.BillboardMesh = BillboardMesh;
   package$scene.Camera = Camera;
   package$scene.OrthographicCamera = OrthographicCamera;
   package$scene.PerspectiveCamera = PerspectiveCamera;
@@ -39572,8 +36377,11 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: MeshRayTest$Companion_getInstance
   });
   package$scene.MeshRayTest = MeshRayTest;
+  Object.defineProperty(Node, 'Companion', {
+    get: Node$Companion_getInstance
+  });
   package$scene.Node = Node;
-  package$scene.orbitInputTransform_iiyuln$ = orbitInputTransform;
+  package$scene.orbitInputTransform_uj7ww7$ = orbitInputTransform;
   package$scene.defaultCamTransform_v4keia$ = defaultCamTransform;
   Object.defineProperty(OrbitInputTransform$DragMethod, 'NONE', {
     get: OrbitInputTransform$DragMethod$NONE_getInstance
@@ -39682,7 +36490,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$ui.ToggleButtonUi = ToggleButtonUi;
   package$ui.UiComponent = UiComponent;
   package$ui.UiContainer = UiContainer;
-  package$ui.embeddedUi_y4avn7$ = embeddedUi;
+  package$ui.embeddedUi_4gy91$ = embeddedUi;
   package$ui.uiScene_m9o5w1$ = uiScene;
   package$ui.UiRoot = UiRoot;
   Object.defineProperty(UiShader, 'Companion', {
@@ -39842,12 +36650,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: OcTree$Companion_getInstance
   });
   package$util.OcTree = OcTree;
-  ParticleSystem.Type = ParticleSystem$Type;
-  ParticleSystem.Particle = ParticleSystem$Particle;
-  Object.defineProperty(ParticleSystem, 'Companion', {
-    get: ParticleSystem$Companion_getInstance
-  });
-  package$util.ParticleSystem = ParticleSystem;
   var package$pbrMapGen = package$util.pbrMapGen || (package$util.pbrMapGen = {});
   package$pbrMapGen.BrdfLutPass = BrdfLutPass;
   package$pbrMapGen.IrradianceMapPass = IrradianceMapPass;
@@ -40024,16 +36826,15 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     get: JsImpl_getInstance
   });
   package$audio.AudioGenerator = AudioGenerator;
-  package$elevation.loadPngS16ElevationMap_jn660e$ = loadPngS16ElevationMap;
-  package$kool.OffscreenPass2dImpl = OffscreenPass2dImpl;
-  Object.defineProperty(OffscreenPassCubeImpl, 'Companion', {
-    get: OffscreenPassCubeImpl$Companion_getInstance
-  });
-  package$kool.OffscreenPassCubeImpl = OffscreenPassCubeImpl;
   Object.defineProperty(LoadedTexture, 'Companion', {
     get: LoadedTexture$Companion_getInstance
   });
   package$pipeline.LoadedTexture = LoadedTexture;
+  package$pipeline.OffscreenPass2dImpl = OffscreenPass2dImpl;
+  Object.defineProperty(OffscreenPassCubeImpl, 'Companion', {
+    get: OffscreenPassCubeImpl$Companion_getInstance
+  });
+  package$pipeline.OffscreenPassCubeImpl = OffscreenPassCubeImpl;
   package$pipeline.PlatformAttributeProps = PlatformAttributeProps;
   package$pipeline.ShaderCode = ShaderCode;
   var package$platform = package$kool.platform || (package$kool.platform = {});
@@ -40103,13 +36904,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$util.createUint32Buffer_za3lpa$ = createUint32Buffer;
   package$util.createFloat32Buffer_za3lpa$ = createFloat32Buffer;
   package$util.createMixedBuffer_za3lpa$ = createMixedBuffer;
-  NullElevationMap.prototype.getElevationAt_yvo9jy$ = ElevationMapProvider.prototype.getElevationAt_yvo9jy$;
-  ElevationMapMeta$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  ElevationMapMetaHierarchy$$serializer.prototype.patch_mynpiu$ = GeneratedSerializer.prototype.patch_mynpiu$;
-  ElevationMapHierarchy.prototype.getElevationAt_yvo9jy$ = ElevationMapProvider.prototype.getElevationAt_yvo9jy$;
-  Object.defineProperty(ElevationMapS16.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
-  Object.defineProperty(ElevationMapS16.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
-  ElevationMapS16.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;
   ListEdgeHandler.prototype.distinctTriangleEdges = HalfEdgeMesh$EdgeHandler.prototype.distinctTriangleEdges;
   OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMin_hm1yd1$ = ItemAdapter.prototype.getMin_hm1yd1$;
   OcTreeEdgeHandler$Companion$HalfEdgeAdapter.prototype.getMax_hm1yd1$ = ItemAdapter.prototype.getMax_hm1yd1$;
@@ -40158,9 +36952,6 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   NearestToRayTraverser$rayDistance$ObjectLiteral.prototype.itemSqrDistanceToRay_t0er6w$ = RayDistance.prototype.itemSqrDistanceToRay_t0er6w$;
   NearestEdgeToRayTraverser_init$ObjectLiteral.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
   TriangleHitTraverser_init$ObjectLiteral.prototype.nodeSqrDistanceToRay_4lohg5$ = RayDistance.prototype.nodeSqrDistanceToRay_4lohg5$;
-  Object.defineProperty(DelayedElevationMap.prototype, 'centerLat', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLat'));
-  Object.defineProperty(DelayedElevationMap.prototype, 'centerLon', Object.getOwnPropertyDescriptor(BoundedElevationMap.prototype, 'centerLon'));
-  DelayedElevationMap.prototype.contains_lu1900$ = BoundedElevationMap.prototype.contains_lu1900$;
   ShaderGeneratorImplWebGl$CodeGen.prototype.sampleTexture2d_buzeal$ = CodeGenerator.prototype.sampleTexture2d_buzeal$;
   ShaderGeneratorImplWebGl$CodeGen.prototype.sampleTextureCube_buzeal$ = CodeGenerator.prototype.sampleTextureCube_buzeal$;
   GenericBuffer.prototype.removeAt_za3lpa$ = Buffer.prototype.removeAt_za3lpa$;

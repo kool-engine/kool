@@ -1,6 +1,6 @@
 package de.fabmax.kool.drawqueue
 
-import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.RenderPass
@@ -16,10 +16,14 @@ class DrawCommand(val renderPass: RenderPass) {
     val projMat = Mat4f()
     val mvpMat = Mat4f()
 
-    fun captureMvp(ctx: KoolContext) {
-        modelMat.set(ctx.mvpState.modelMatrix)
-        viewMat.set(ctx.mvpState.viewMatrix)
-        projMat.set(ctx.mvpState.projMatrix)
-        mvpMat.set(ctx.mvpState.mvpMatrix)
+    private val mvpMatD = Mat4d()
+
+    fun captureMatrices() {
+        modelMat.set(mesh.modelMat)
+        viewMat.set(renderPass.camera.view)
+        projMat.set(renderPass.camera.proj)
+
+        renderPass.camera.mvp.mul(mesh.modelMat, mvpMatD)
+        mvpMat.set(mvpMatD)
     }
 }
