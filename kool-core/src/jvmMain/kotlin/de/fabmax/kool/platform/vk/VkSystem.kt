@@ -1,13 +1,14 @@
 package de.fabmax.kool.platform.vk
 
-import de.fabmax.kool.platform.Lwjgl3ContextVk
+import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.platform.VkRenderBackend
 import de.fabmax.kool.platform.vk.pipeline.PipelineManager
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW.glfwGetFramebufferSize
 import org.lwjgl.glfw.GLFW.glfwWaitEvents
 import org.lwjgl.vulkan.VK10.vkDeviceWaitIdle
 
-class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjgl3ContextVk) : VkResource() {
+class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, backend: VkRenderBackend, val ctx: Lwjgl3Context) : VkResource() {
 
     val window: GlfwWindow
 
@@ -25,7 +26,7 @@ class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjg
     var swapChain: SwapChain? = null
 
     init {
-        window = GlfwWindow(this, ctx.windowWidth, ctx.windowHeight)
+        window = GlfwWindow(this, backend.windowWidth, backend.windowHeight)
         instance = Instance(this)
         window.createSurface()
 

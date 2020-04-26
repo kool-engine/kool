@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.platform.Lwjgl3ContextVk
+import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.platform.vk.util.OffscreenRenderPass
 import de.fabmax.kool.platform.vk.util.vkFormat
@@ -25,8 +25,8 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
     }
 
     actual fun dispose(ctx: KoolContext) {
-        ctx as Lwjgl3ContextVk
-        ctx.vkSystem.renderLoop.runDelayed(3) {
+        ctx as Lwjgl3Context
+        ctx.runDelayed(3) {
             renderPass?.destroyNow()
             texture.dispose()
             depthTexture.dispose()
@@ -67,8 +67,8 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         private set
 
     actual fun dispose(ctx: KoolContext) {
-        ctx as Lwjgl3ContextVk
-        ctx.vkSystem.renderLoop.runDelayed(3) {
+        ctx as Lwjgl3Context
+        ctx.runDelayed(3) {
             renderPass?.destroyNow()
             texture.dispose()
         }

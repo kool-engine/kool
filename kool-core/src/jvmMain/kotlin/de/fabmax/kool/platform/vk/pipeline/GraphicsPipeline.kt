@@ -13,7 +13,7 @@ import org.lwjgl.vulkan.VkPushConstantRange
 import java.nio.ByteBuffer
 
 class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSamples: Int, val dynamicViewPort: Boolean,
-                       val pipeline: Pipeline, val nImages: Int, val descriptorSetPoolSize: Int = 100) : VkResource() {
+                       val pipeline: Pipeline, val nImages: Int, val descriptorSetPoolSize: Int = 500) : VkResource() {
 
     val descriptorSetLayout: Long
     val descriptorPool: Long

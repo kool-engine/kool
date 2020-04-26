@@ -15,11 +15,7 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
     private var currentFrame = 0
     private var framebufferResized = false
 
-    //lateinit var commandBuffers: CommandBuffers
-
     private var frameCnt = 0
-
-    private val delayedRunnables = mutableListOf<DelayedRunnable>()
 
     init {
         memStack {
@@ -45,10 +41,6 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
         }
     }
 
-    fun runDelayed(nFrames: Int, r: () -> Unit) {
-        delayedRunnables += DelayedRunnable(frameCnt + nFrames, r)
-    }
-
     fun run() {
         logI { "Entering render loop" }
         while (!glfwWindowShouldClose(sys.window.glfwWindow)) {
@@ -61,15 +53,6 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
     fun drawFrame() {
         val swapChain = sys.swapChain ?: return
 
-        if (delayedRunnables.isNotEmpty()) {
-            for (i in delayedRunnables.indices.reversed()) {
-                val r = delayedRunnables[i]
-                if (frameCnt >= r.execOnFrame) {
-                    r.r()
-                    delayedRunnables.removeAt(i)
-                }
-            }
-        }
         memStack {
             val fence = longs(inFlightFences[currentFrame])
             vkWaitForFences(sys.device.vkDevice, fence, true, -1L)
@@ -127,8 +110,6 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
             vkDestroyFence(sys.device.vkDevice, inFlightFences[i], null)
         }
     }
-
-    private data class DelayedRunnable(val execOnFrame: Int, val r: () -> Unit)
 
     companion object {
         const val MAX_FRAMES_IN_FLIGHT = 2

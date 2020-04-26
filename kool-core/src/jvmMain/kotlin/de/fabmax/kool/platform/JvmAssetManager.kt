@@ -2,7 +2,6 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.vk.TextureLoader
 import de.fabmax.kool.util.CharMap
 import de.fabmax.kool.util.FontProps
 import de.fabmax.kool.util.logE
@@ -11,7 +10,7 @@ import java.io.*
 import java.util.zip.GZIPInputStream
 import javax.imageio.ImageIO
 
-class JvmAssetManager internal constructor(props: Lwjgl3ContextVk.InitProps, val ctx: KoolContext) : AssetManager(props.assetsBaseDir) {
+class JvmAssetManager internal constructor(props: Lwjgl3Context.InitProps, val ctx: KoolContext) : AssetManager(props.assetsBaseDir) {
 
     private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT, props, this)
 
@@ -92,13 +91,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3ContextVk.InitProps, val
         val tex = Texture(props) { it.loadTextureData(assetPath) }
         launch {
             val data = loadTextureData(assetPath) as BufferedTextureData
-            val sys = (ctx as Lwjgl3ContextVk).vkSystem
-            ctx.runOnGpuThread {
-                tex.loadedTexture = TextureLoader.loadTexture(sys, props, data)
-                tex.loadingState = Texture.LoadingState.LOADED
-                sys.device.addDependingResource(tex.loadedTexture!!)
-                recv(tex)
-            }
+            (ctx as Lwjgl3Context).renderBackend.loadTex2d(tex, data, recv)
         }
     }
 
@@ -107,13 +100,7 @@ class JvmAssetManager internal constructor(props: Lwjgl3ContextVk.InitProps, val
         val tex = CubeMapTexture(props) { it.loadCubeMapTextureData(ft, bk, lt, rt, up, dn) }
         launch {
             val data = loadCubeMapTextureData(ft, bk, lt, rt, up, dn)
-            val sys = (ctx as Lwjgl3ContextVk).vkSystem
-            ctx.runOnGpuThread {
-                tex.loadedTexture = TextureLoader.loadCubeMap(sys, props, data)
-                tex.loadingState = Texture.LoadingState.LOADED
-                sys.device.addDependingResource(tex.loadedTexture!!)
-                recv(tex)
-            }
+            (ctx as Lwjgl3Context).renderBackend.loadTexCube(tex, data, recv)
         }
     }
 

@@ -1,81 +1,60 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.DesktopImpl
-import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
 import de.fabmax.kool.drawqueue.DrawCommand
+import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec4d
-import de.fabmax.kool.pipeline.OffscreenRenderPass
-import de.fabmax.kool.pipeline.OffscreenRenderPass2D
-import de.fabmax.kool.pipeline.OffscreenRenderPassCube
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
+import de.fabmax.kool.platform.vk.RenderPass
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBufferImpl
-import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkClearValue
 import org.lwjgl.vulkan.VkCommandBuffer
-import java.awt.Desktop
-import java.net.URI
 import java.util.*
-import java.util.concurrent.CompletableFuture
 
+class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : RenderBackend {
+    override val apiName: String
+    override val deviceName: String
 
-/**
- * @author fabmax
- */
-class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
-    override val assetMgr = JvmAssetManager(props, this)
-
-    override val shaderGenerator = ShaderGeneratorImplVk()
-
-    override var windowWidth = props.width
+    override var windowWidth = 0
         private set
-    override var windowHeight = props.height
+    override var windowHeight = 0
         private set
+    override var windowViewport = KoolContext.Viewport(0, 0, 0, 0)
+        private set
+    override val glfwWindowHandle: Long
+
+    override val projCorrectionMatrix = Mat4d()
+    override val depthBiasMatrix = Mat4d()
 
     private val vkScene = KoolVkScene()
-    internal val vkSystem: VkSystem
-
-    private val gpuThreadRunnables = mutableListOf<GpuThreadRunnable>()
-
-    private object SysInfo : ArrayList<String>() {
-        fun set(api: String, dev: String) {
-            clear()
-            add(api)
-            add(dev)
-            add("")
-            update()
-        }
-
-        fun update() {
-            val rt = Runtime.getRuntime()
-            val freeMem = rt.freeMemory()
-            val totalMem = rt.totalMemory()
-            set(2, "Heap: ${(totalMem - freeMem) / 1024 / 1024} / ${totalMem / 1024 / 1024} MB")
-        }
-    }
+    private val vkSystem: VkSystem
 
     init {
-        viewport = Viewport(0, 0, windowWidth, windowHeight)
-        vkSystem = VkSystem(VkSetup().apply { isValidating = true }, vkScene, this)
-        SysInfo.set("Vulkan ${vkSystem.physicalDevice.apiVersion}", vkSystem.physicalDevice.deviceName)
+        windowWidth = props.width
+        windowHeight = props.height
+        windowViewport = KoolContext.Viewport(0, 0, windowWidth, windowHeight)
+
+        vkSystem = VkSystem(VkSetup().apply { isValidating = true }, vkScene, this, ctx)
+        apiName = "Vulkan ${vkSystem.physicalDevice.apiVersion}"
+        deviceName = vkSystem.physicalDevice.deviceName
+
+        glfwWindowHandle = vkSystem.window.glfwWindow
 
         vkSystem.window.onResize += object : GlfwWindow.OnWindowResizeListener {
             override fun onResize(window: GlfwWindow, newWidth: Int, newHeight: Int) {
                 windowWidth = newWidth
                 windowHeight = newHeight
-                viewport = Viewport(0, 0, windowWidth, windowHeight)
+                windowViewport = KoolContext.Viewport(0, 0, windowWidth, windowHeight)
             }
         }
-        setupInput(vkSystem.window.glfwWindow)
 
-        screenDpi = DesktopImpl.primaryMonitor.dpi
-
-        // maps camera projection matrices to Vulkan coordinates
+        // maps camera projection matrices to Vulkan screen coordinates
         projCorrectionMatrix.apply {
             setRow(0, Vec4d(1.0, 0.0, 0.0, 0.0))
             setRow(1, Vec4d(0.0, -1.0, 0.0, 0.0))
@@ -91,109 +70,31 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
         }
     }
 
-    override fun openUrl(url: String)  = Desktop.getDesktop().browse(URI(url))
-
-    override fun run() {
-        var prevTime = System.nanoTime()
-        while (!glfwWindowShouldClose(vkSystem.window.glfwWindow)) {
-            SysInfo.update()
-            glfwPollEvents()
-
-            synchronized(gpuThreadRunnables) {
-                if (gpuThreadRunnables.isNotEmpty()) {
-                    for (r in gpuThreadRunnables) {
-                        r.r()
-                        r.future.complete(null)
-                    }
-                    gpuThreadRunnables.clear()
-                }
-            }
-
-            // determine time delta
-            val time = System.nanoTime()
-            val dt = (time - prevTime) / 1e9
-            prevTime = time
-
-            // render engine content (fills the draw queue)
-            render(dt)
-
-            // fixme: this is way to complicated, tighter integration of Vulkan stuff needed
-            // drawQueue now contains actual draw commands
-            // command buffer will be set up in onDrawFrame, called as a call back from render loop
-
-            engineStats.resetPerFrameCounts()
-            vkSystem.renderLoop.drawFrame()
+    override fun loadTex2d(tex: Texture, data: BufferedTextureData, recv: (Texture) -> Unit) {
+        ctx.runOnGpuThread {
+            tex.loadedTexture = TextureLoader.loadTexture(vkSystem, tex.props, data)
+            tex.loadingState = Texture.LoadingState.LOADED
+            vkSystem.device.addDependingResource(tex.loadedTexture!!)
+            recv(tex)
         }
+    }
+
+    override fun loadTexCube(tex: CubeMapTexture, data: CubeMapTextureData, recv: (CubeMapTexture) -> Unit) {
+        ctx.runOnGpuThread {
+            tex.loadedTexture = TextureLoader.loadCubeMap(vkSystem, tex.props, data)
+            tex.loadingState = Texture.LoadingState.LOADED
+            vkSystem.device.addDependingResource(tex.loadedTexture!!)
+            recv(tex)
+        }
+    }
+
+    override fun drawFrame(ctx: Lwjgl3Context) {
+        vkSystem.renderLoop.drawFrame()
+    }
+
+    override fun destroy(ctx: Lwjgl3Context) {
         vkDeviceWaitIdle(vkSystem.device.vkDevice)
-        destroy()
-    }
-
-    override fun destroy() {
         vkSystem.destroy()
-    }
-
-    override fun getSysInfos(): List<String> = SysInfo
-
-    // fixme: use Coroutine stuff instead
-    fun runOnGpuThread(action: () -> Unit): CompletableFuture<Void> {
-        synchronized(gpuThreadRunnables) {
-            val r = GpuThreadRunnable(action)
-            gpuThreadRunnables += r
-            return r.future
-        }
-    }
-
-    private fun setupInput(window: Long) {
-        // install window callbacks
-        glfwSetWindowPosCallback(window) { _, x, y ->
-            screenDpi = getResolutionAt(x, y)
-        }
-
-        // install mouse callbacks
-        glfwSetMouseButtonCallback(window) { _, btn, act, _ ->
-            inputMgr.handleMouseButtonState(btn, act == GLFW_PRESS)
-        }
-        glfwSetCursorPosCallback(window) { _, x, y ->
-            inputMgr.handleMouseMove(x.toFloat(), y.toFloat())
-        }
-        glfwSetCursorEnterCallback(window) { _, entered ->
-            if (!entered) {
-                inputMgr.handleMouseExit()
-            }
-        }
-        glfwSetScrollCallback(window) { _, _, yOff ->
-            inputMgr.handleMouseScroll(yOff.toFloat())
-        }
-
-        // install keyboard callbacks
-        glfwSetKeyCallback(window) { _, key, _, action, mods ->
-            val event = when (action) {
-                GLFW_PRESS -> InputManager.KEY_EV_DOWN
-                GLFW_REPEAT -> InputManager.KEY_EV_DOWN or InputManager.KEY_EV_REPEATED
-                GLFW_RELEASE -> InputManager.KEY_EV_UP
-                else -> -1
-            }
-            if (event != -1) {
-                val keyCode = KEY_CODE_MAP[key] ?: key
-                var keyMod = 0
-                if (mods and GLFW_MOD_ALT != 0) {
-                    keyMod = keyMod or InputManager.KEY_MOD_ALT
-                }
-                if (mods and GLFW_MOD_CONTROL != 0) {
-                    keyMod = keyMod or InputManager.KEY_MOD_CTRL
-                }
-                if (mods and GLFW_MOD_SHIFT != 0) {
-                    keyMod = keyMod or InputManager.KEY_MOD_SHIFT
-                }
-                if (mods and GLFW_MOD_SUPER != 0) {
-                    keyMod = keyMod or InputManager.KEY_MOD_SUPER
-                }
-                inputMgr.keyEvent(keyCode, keyMod, event)
-            }
-        }
-        glfwSetCharCallback(window) { _, codepoint ->
-            inputMgr.charTyped(codepoint.toChar())
-        }
     }
 
     private inner class KoolVkScene: VkScene {
@@ -235,7 +136,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
              * calls, so you may be forced to split work up into multiple submits.
              */
 
-            if (disposablePipelines.isNotEmpty()) {
+            if (ctx.disposablePipelines.isNotEmpty()) {
                 disposePipelines()
             }
 
@@ -255,7 +156,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                 // fixme: submit individual render passes instead of merging command queues
                 val mergeQueue = mutableListOf<DrawCommand>()
                 var clearColor: Color? = null
-                for (scene in scenes) {
+                for (scene in ctx.scenes) {
                     var removeFlag = false
                     for (i in 0 until scene.offscreenPasses.size) {
                         renderOffscreen(commandBuffer, scene.offscreenPasses[i])
@@ -298,7 +199,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
         }
 
         private fun disposePipelines() {
-            disposablePipelines.forEach { pipeline ->
+            ctx.disposablePipelines.forEach { pipeline ->
                 val delMesh = meshMap.remove(pipeline.pipelineInstanceId)
                 val delPipeline = sys.pipelineManager.getPipeline(pipeline)
 
@@ -311,7 +212,7 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                     // todo: dispose entire pipeline if no instances left
                 }
             }
-            disposablePipelines.clear()
+            ctx.disposablePipelines.clear()
         }
 
         private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: List<DrawCommand>, imageIndex: Int,
@@ -378,8 +279,8 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
                                 pipeline.pipelineLayout, 0, longs(descriptorSet.getDescriptorSet(imageIndex)), null)
                         vkCmdDrawIndexed(commandBuffer, model.numIndices, instanceCnt, 0, 0, 0)
 
-                        engineStats.addDrawCommandCount(1)
-                        engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * instanceCnt)
+                        ctx.engineStats.addDrawCommandCount(1)
+                        ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * instanceCnt)
                     }
                 }
             }
@@ -485,75 +386,9 @@ class Lwjgl3ContextVk(props: InitProps) : KoolContext() {
         }
     }
 
-    private class GpuThreadRunnable(val r: () -> Unit) {
-        val future = CompletableFuture<Void>()
-    }
-
     companion object {
         private val cubeRenderPassViews = Array(7) {
             i -> OffscreenRenderPassCube.ViewDirection.values()[i % OffscreenRenderPassCube.ViewDirection.values().size]
         }
-
-        val KEY_CODE_MAP: Map<Int, Int> = mutableMapOf(
-                GLFW_KEY_LEFT_CONTROL to InputManager.KEY_CTRL_LEFT,
-                GLFW_KEY_RIGHT_CONTROL to InputManager.KEY_CTRL_RIGHT,
-                GLFW_KEY_LEFT_SHIFT to InputManager.KEY_SHIFT_LEFT,
-                GLFW_KEY_RIGHT_SHIFT to InputManager.KEY_SHIFT_RIGHT,
-                GLFW_KEY_LEFT_ALT to InputManager.KEY_ALT_LEFT,
-                GLFW_KEY_RIGHT_ALT to InputManager.KEY_ALT_RIGHT,
-                GLFW_KEY_LEFT_SUPER to InputManager.KEY_SUPER_LEFT,
-                GLFW_KEY_RIGHT_SUPER to InputManager.KEY_SUPER_RIGHT,
-                GLFW_KEY_ESCAPE to InputManager.KEY_ESC,
-                GLFW_KEY_MENU to InputManager.KEY_MENU,
-                GLFW_KEY_ENTER to InputManager.KEY_ENTER,
-                GLFW_KEY_KP_ENTER to InputManager.KEY_NP_ENTER,
-                GLFW_KEY_KP_DIVIDE to InputManager.KEY_NP_DIV,
-                GLFW_KEY_KP_MULTIPLY to InputManager.KEY_NP_MUL,
-                GLFW_KEY_KP_ADD to InputManager.KEY_NP_PLUS,
-                GLFW_KEY_KP_SUBTRACT to InputManager.KEY_NP_MINUS,
-                GLFW_KEY_BACKSPACE to InputManager.KEY_BACKSPACE,
-                GLFW_KEY_TAB to InputManager.KEY_TAB,
-                GLFW_KEY_DELETE to InputManager.KEY_DEL,
-                GLFW_KEY_INSERT to InputManager.KEY_INSERT,
-                GLFW_KEY_HOME to InputManager.KEY_HOME,
-                GLFW_KEY_END to InputManager.KEY_END,
-                GLFW_KEY_PAGE_UP to InputManager.KEY_PAGE_UP,
-                GLFW_KEY_PAGE_DOWN to InputManager.KEY_PAGE_DOWN,
-                GLFW_KEY_LEFT to InputManager.KEY_CURSOR_LEFT,
-                GLFW_KEY_RIGHT to InputManager.KEY_CURSOR_RIGHT,
-                GLFW_KEY_UP to InputManager.KEY_CURSOR_UP,
-                GLFW_KEY_DOWN to InputManager.KEY_CURSOR_DOWN,
-                GLFW_KEY_F1 to InputManager.KEY_F1,
-                GLFW_KEY_F2 to InputManager.KEY_F2,
-                GLFW_KEY_F3 to InputManager.KEY_F3,
-                GLFW_KEY_F4 to InputManager.KEY_F4,
-                GLFW_KEY_F5 to InputManager.KEY_F5,
-                GLFW_KEY_F6 to InputManager.KEY_F6,
-                GLFW_KEY_F7 to InputManager.KEY_F7,
-                GLFW_KEY_F8 to InputManager.KEY_F8,
-                GLFW_KEY_F9 to InputManager.KEY_F9,
-                GLFW_KEY_F10 to InputManager.KEY_F10,
-                GLFW_KEY_F11 to InputManager.KEY_F11,
-                GLFW_KEY_F12 to InputManager.KEY_F12
-        )
-    }
-
-    class InitProps(init: InitProps.() -> Unit = {}) {
-        var width = 1200
-        var height = 800
-        var title = "Kool"
-        var monitor = 0L
-        var share = 0L
-
-        var msaaSamples = 8
-
-        var assetsBaseDir = "./assets"
-
-        val extraFonts = mutableListOf<String>()
-
-        init {
-            init()
-        }
     }
 }
-

@@ -22,7 +22,7 @@ abstract class KoolContext {
     val inputMgr = InputManager()
     val engineStats = EngineStats()
 
-    var viewport = Viewport(0, 0, 0, 0)
+    open var viewport = Viewport(0, 0, 0, 0)
         protected set
 
     val projCorrectionMatrix = Mat4d()
@@ -58,7 +58,7 @@ abstract class KoolContext {
     val scenes: MutableList<Scene> = mutableListOf()
 
     private val delayedCallbacks = mutableListOf<DelayedCallback>()
-    protected val disposablePipelines = mutableListOf<Pipeline>()
+    internal val disposablePipelines = mutableListOf<Pipeline>()
 
     private val frameTimes = DoubleArray(25) { 0.017 }
 
@@ -73,7 +73,7 @@ abstract class KoolContext {
 
     abstract fun getSysInfos(): List<String>
 
-    fun delay(frames: Int, callback: (KoolContext) -> Unit) {
+    fun runDelayed(frames: Int, callback: (KoolContext) -> Unit) {
         delayedCallbacks += DelayedCallback(frameIdx + frames, callback)
     }
 
@@ -83,11 +83,11 @@ abstract class KoolContext {
 
     protected fun render(dt: Double) {
         if (delayedCallbacks.isNotEmpty()) {
-            val it = delayedCallbacks.iterator()
-            for (callback in it) {
+            for (i in delayedCallbacks.indices.reversed()) {
+                val callback = delayedCallbacks[i]
                 if (callback.callOnFrame <= frameIdx) {
                     callback.callback(this)
-                    it.remove()
+                    delayedCallbacks.removeAt(i)
                 }
             }
         }
