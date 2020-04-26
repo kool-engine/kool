@@ -1,9 +1,10 @@
-package de.fabmax.kool.pipeline
+package de.fabmax.kool.platform.webgl
 
+import de.fabmax.kool.pipeline.LoadedTexture
 import de.fabmax.kool.platform.JsContext
 import org.khronos.webgl.WebGLTexture
 
-actual class LoadedTexture(val ctx: JsContext, val texture: WebGLTexture?, estimatedSize: Int) {
+class LoadedTextureWebGl(val ctx: JsContext, val texture: WebGLTexture?, estimatedSize: Int) : LoadedTexture {
 
     val texId = nextTexId++
     var isDestroyed = false
@@ -13,7 +14,7 @@ actual class LoadedTexture(val ctx: JsContext, val texture: WebGLTexture?, estim
         ctx.engineStats.textureAllocated(texId, estimatedSize)
     }
 
-    actual fun dispose() {
+    override fun dispose() {
         isDestroyed = true
         ctx.gl.deleteTexture(texture)
         ctx.engineStats.textureDeleted(texId)

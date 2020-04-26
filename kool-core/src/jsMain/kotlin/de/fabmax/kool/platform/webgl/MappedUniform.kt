@@ -189,7 +189,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
 
         }
         if (texture.loadingState == Texture.LoadingState.LOADED) {
-            val tex = texture.loadedTexture!!
+            val tex = texture.loadedTexture as LoadedTextureWebGl
             gl.activeTexture(texUnit + arrayIdx)
             gl.bindTexture(target, tex.texture)
             return true
@@ -200,7 +200,7 @@ abstract class MappedUniformTex(val texUnit: Int, val target: Int) : MappedUnifo
 
     companion object {
         // todo: integrate texture manager
-        private val loadedTextures = mutableMapOf<TextureData, LoadedTexture>()
+        private val loadedTextures = mutableMapOf<TextureData, LoadedTextureWebGl>()
 
         protected fun getLoadedTex(texData: TextureData, props: TextureProps, ctx: JsContext): LoadedTexture {
             loadedTextures.values.removeAll { it.isDestroyed }

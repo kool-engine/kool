@@ -1,4 +1,4 @@
-package de.fabmax.kool.platform
+package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolException
@@ -6,8 +6,8 @@ import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.vk.*
-import de.fabmax.kool.platform.vk.RenderPass
+import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.platform.RenderBackend
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MixedBufferImpl
@@ -32,8 +32,10 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     override val projCorrectionMatrix = Mat4d()
     override val depthBiasMatrix = Mat4d()
 
+    override val shaderGenerator = ShaderGeneratorImplVk()
+
+    val vkSystem: VkSystem
     private val vkScene = KoolVkScene()
-    private val vkSystem: VkSystem
 
     init {
         windowWidth = props.width
@@ -71,21 +73,29 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
     }
 
     override fun loadTex2d(tex: Texture, data: BufferedTextureData, recv: (Texture) -> Unit) {
-        ctx.runOnGpuThread {
+        ctx.runOnMainThread {
             tex.loadedTexture = TextureLoader.loadTexture(vkSystem, tex.props, data)
             tex.loadingState = Texture.LoadingState.LOADED
-            vkSystem.device.addDependingResource(tex.loadedTexture!!)
+            vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
             recv(tex)
         }
     }
 
     override fun loadTexCube(tex: CubeMapTexture, data: CubeMapTextureData, recv: (CubeMapTexture) -> Unit) {
-        ctx.runOnGpuThread {
+        ctx.runOnMainThread {
             tex.loadedTexture = TextureLoader.loadCubeMap(vkSystem, tex.props, data)
             tex.loadingState = Texture.LoadingState.LOADED
-            vkSystem.device.addDependingResource(tex.loadedTexture!!)
+            vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
             recv(tex)
         }
+    }
+
+    override fun createOffscreenPass2d(parentPass: OffscreenPass2dImpl): OffscreenPass2dImpl.BackendImpl {
+        return OffscreenPass2dVk(parentPass)
+    }
+
+    override fun createOffscreenPassCube(parentPass: OffscreenPassCubeImpl): OffscreenPassCubeImpl.BackendImpl {
+        return OffscreenPassCubeVk(parentPass)
     }
 
     override fun drawFrame(ctx: Lwjgl3Context) {
@@ -313,7 +323,9 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
 
         private fun MemoryStack.renderOffscreen2d(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPass2D) {
-            val rp = offscreenPass.impl.getRenderPass(sys)
+            offscreenPass.impl.draw(ctx)
+            val backendImpl = offscreenPass.impl.backendImpl as OffscreenPass2dVk
+            val rp = backendImpl.renderPass!!
             val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearDepth, offscreenPass.clearColor)
 
             vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
@@ -323,22 +335,24 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
 
         private fun MemoryStack.renderOffscreenCube(commandBuffer: VkCommandBuffer, offscreenPass: OffscreenRenderPassCube) {
-            val rp = offscreenPass.impl.getRenderPass(sys)
+            offscreenPass.impl.draw(ctx)
+            val backendImpl = offscreenPass.impl.backendImpl as OffscreenPassCubeVk
+            val rp = backendImpl.renderPass!!
             val renderPassInfo = renderPassBeginInfo(rp, rp.frameBuffer, offscreenPass.clearDepth, offscreenPass.clearColor)
 
-            offscreenPass.impl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+            backendImpl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
             // fixme: for some reason (timing / sync) last view is not copied sometimes? super duper fix: render last view twice
             for (view in cubeRenderPassViews) {
                 vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
                 setViewport(commandBuffer, 0, 0, offscreenPass.mipWidth(offscreenPass.targetMipLevel), offscreenPass.mipHeight(offscreenPass.targetMipLevel))
                 renderDrawQueue(commandBuffer, offscreenPass.drawQueues[view.index].commands, view.index, rp, 6, true)
                 vkCmdEndRenderPass(commandBuffer)
-                offscreenPass.impl.copyView(commandBuffer, view)
+                backendImpl.copyView(commandBuffer, view)
             }
             if (offscreenPass.mipLevels > 1 && offscreenPass.targetMipLevel < 0) {
-                offscreenPass.impl.generateMipmaps(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                backendImpl.generateMipmaps(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
             } else {
-                offscreenPass.impl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                backendImpl.transitionTexLayout(commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
             }
         }
     }

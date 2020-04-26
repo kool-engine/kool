@@ -12,17 +12,6 @@ import java.awt.image.DataBufferByte
 class ImageTextureData(image: BufferedImage) :
         BufferedTextureData(image.toBuffer(), image.width, image.height, image.format) {
 
-//    fun onLoad(texture: Texture, target: Int, ctx: KoolContext) {
-//        val res = texture.res ?: throw KoolException("Texture wasn't created")
-//        val limit = buffer!!.limit
-//        val pos = buffer!!.position
-//        buffer!!.flip()
-//        glTexImage2D(target, 0, format.glFormat, width, height, 0, format.glFormat, GL_UNSIGNED_BYTE, buffer)
-//        buffer!!.limit = limit
-//        buffer!!.position = pos
-//        ctx.memoryMgr.memoryAllocated(res, buffer!!.position)
-//    }
-
     companion object {
         private val BufferedImage.format: TexFormat get() {
             val alpha = transparency == Transparency.TRANSLUCENT || transparency == Transparency.BITMASK

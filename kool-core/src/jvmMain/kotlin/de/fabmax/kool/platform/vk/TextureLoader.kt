@@ -14,7 +14,7 @@ import kotlin.math.log2
 import kotlin.math.max
 
 object TextureLoader {
-    fun loadCubeMap(sys: VkSystem, props: TextureProps, cubeImg: CubeMapTextureData) : LoadedTexture {
+    fun loadCubeMap(sys: VkSystem, props: TextureProps, cubeImg: CubeMapTextureData) : LoadedTextureVk {
         val width = cubeImg.width
         val height = cubeImg.height
         val dstFmt = checkFormat(cubeImg.format)
@@ -58,10 +58,10 @@ object TextureLoader {
                 textureImage.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE)
 
         val sampler = createSampler(sys, props, textureImage)
-        return LoadedTexture(sys, dstFmt, textureImage, textureImageView, sampler)
+        return LoadedTextureVk(sys, dstFmt, textureImage, textureImageView, sampler)
     }
 
-    fun loadTexture(sys: VkSystem, props: TextureProps, img: BufferedTextureData) : LoadedTexture {
+    fun loadTexture(sys: VkSystem, props: TextureProps, img: BufferedTextureData) : LoadedTextureVk {
         val width = img.width
         val height = img.height
         val dstFmt = checkFormat(img.format)
@@ -98,7 +98,7 @@ object TextureLoader {
         val textureImageView = ImageView(sys, textureImage, VK_IMAGE_ASPECT_COLOR_BIT)
 
         val sampler = createSampler(sys, props, textureImage)
-        return LoadedTexture(sys, dstFmt, textureImage, textureImageView, sampler)
+        return LoadedTextureVk(sys, dstFmt, textureImage, textureImageView, sampler)
     }
 
     private fun FilterMethod.vkFilterMethod(): Int {

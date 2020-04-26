@@ -31,7 +31,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 object TextureLoader {
-    fun loadTexture(ctx: JsContext, props: TextureProps, data: TextureData) : LoadedTexture {
+    fun loadTexture(ctx: JsContext, props: TextureProps, data: TextureData) : LoadedTextureWebGl {
         return when (data) {
             is BufferedTextureData -> loadTexture2d(ctx, props, data)
             is ImageTextureData -> loadTexture2d(ctx, props, data)
@@ -40,7 +40,7 @@ object TextureLoader {
         }
     }
 
-    private fun loadTextureCube(ctx: JsContext, props: TextureProps, img: CubeMapTextureData) : LoadedTexture {
+    private fun loadTextureCube(ctx: JsContext, props: TextureProps, img: CubeMapTextureData) : LoadedTextureWebGl {
         val gl = ctx.gl
         val tex = gl.createTexture()
         gl.bindTexture(TEXTURE_CUBE_MAP, tex)
@@ -57,10 +57,10 @@ object TextureLoader {
 
         val mipLevels = floor(log2(max(img.width, img.height).toDouble())).toInt() + 1
         val estSize = Texture.estimatedTexSize(img.right.width, img.right.height, img.format.pxSize, 6, mipLevels)
-        return LoadedTexture(ctx, tex, estSize)
+        return LoadedTextureWebGl(ctx, tex, estSize)
     }
 
-    private fun loadTexture2d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTexture {
+    private fun loadTexture2d(ctx: JsContext, props: TextureProps, img: TextureData) : LoadedTextureWebGl {
         val gl = ctx.gl
         // fixme: is there a way to find out if the image has an alpha channel and set the texture format accordingly?
         val tex = gl.createTexture()
@@ -82,7 +82,7 @@ object TextureLoader {
 
         val mipLevels = floor(log2(max(img.width, img.height).toDouble())).toInt() + 1
         val estSize = Texture.estimatedTexSize(img.width, img.height, img.format.pxSize, 1, mipLevels)
-        return LoadedTexture(ctx, tex, estSize)
+        return LoadedTextureWebGl(ctx, tex, estSize)
     }
 
     private fun FilterMethod.glMinFilterMethod(mipMapping: Boolean): Int {

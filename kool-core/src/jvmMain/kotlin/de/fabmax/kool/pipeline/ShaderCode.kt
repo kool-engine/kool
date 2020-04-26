@@ -8,15 +8,33 @@ import de.fabmax.kool.util.Log
 import org.lwjgl.vulkan.VK10
 import java.io.FileNotFoundException
 
-actual class ShaderCode(val stages: List<ShaderStage>) {
-    constructor(vararg stages: ShaderStage): this(stages.asList())
+actual class ShaderCode private constructor(private val vkCode: VkCode?, private val glCode: GlCode?) {
 
-    actual val longHash: ULong
+    constructor(vararg stages: ShaderStage): this(VkCode(stages.asList()), null)
+    constructor(vkCode: VkCode): this(vkCode, null)
+    constructor(glCode: GlCode): this(null, glCode)
 
-    init {
-        var hash = 0UL
-        stages.forEach { hash = (hash * 71023UL) xor it.longHash }
-        longHash = hash
+    actual val longHash: ULong = vkCode?.longHash ?: glCode!!.longHash
+
+    val vkStages: List<ShaderStage>
+        get() = vkCode!!.stages
+
+    val glVertexSrc: String
+        get() = glCode!!.vertexSrc
+    val glFragmentSrc: String
+        get() = glCode!!.fragmentSrc
+
+    class GlCode(val vertexSrc: String, val fragmentSrc: String) {
+        val longHash = (vertexSrc.hashCode().toULong() shl 32) + fragmentSrc.hashCode().toULong()
+    }
+
+    class VkCode(val stages: List<ShaderStage>) {
+        val longHash : ULong
+        init {
+            var hash = 0UL
+            stages.forEach { hash = (hash * 71023UL) xor it.longHash }
+            longHash = hash
+        }
     }
 
     companion object {

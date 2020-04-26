@@ -1,5 +1,5 @@
 package de.fabmax.kool.pipeline
 
-expect class LoadedTexture {
+interface LoadedTexture {
     fun dispose()
 }

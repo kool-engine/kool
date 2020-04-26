@@ -3,6 +3,8 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.DesktopImpl
 import de.fabmax.kool.InputManager
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.platform.gl.GlRenderBackend
+import de.fabmax.kool.platform.vk.VkRenderBackend
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
 import java.net.URI
@@ -15,9 +17,10 @@ import java.util.concurrent.CompletableFuture
 class Lwjgl3Context(props: InitProps) : KoolContext() {
     override val assetMgr = JvmAssetManager(props, this)
 
-    override val shaderGenerator = ShaderGeneratorImplVk()
-
     internal val renderBackend: RenderBackend
+
+    override val shaderGenerator
+        get() = renderBackend.shaderGenerator
 
     override val windowWidth: Int
         get() = renderBackend.windowWidth
@@ -25,9 +28,9 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         get() = renderBackend.windowHeight
     override var viewport: Viewport
         get() = renderBackend.windowViewport
-        set(value) {}
+        set(_) {}
 
-    private val mainThreadRunnables = mutableListOf<Lwjgl3Context.GpuThreadRunnable>()
+    private val mainThreadRunnables = mutableListOf<GpuThreadRunnable>()
 
     private object SysInfo : ArrayList<String>() {
         fun set(api: String, dev: String) {
@@ -48,7 +51,12 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     }
 
     init {
-        renderBackend = VkRenderBackend(props, this)
+        renderBackend = if (props.renderBackend == RenderBackendMode.VULKAN) {
+            VkRenderBackend(props, this)
+        } else {
+            GlRenderBackend(props, this)
+        }
+
         projCorrectionMatrix.set(renderBackend.projCorrectionMatrix)
         depthBiasMatrix.set(renderBackend.depthBiasMatrix)
 
@@ -99,7 +107,7 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     override fun getSysInfos(): List<String> = SysInfo
 
     // fixme: use Coroutine stuff instead
-    fun runOnGpuThread(action: () -> Unit): CompletableFuture<Void> {
+    fun runOnMainThread(action: () -> Unit): CompletableFuture<Void> {
         synchronized(mainThreadRunnables) {
             val r = GpuThreadRunnable(action)
             mainThreadRunnables += r
@@ -216,6 +224,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         var monitor = 0L
         var share = 0L
 
+        var renderBackend = RenderBackendMode.OPEN_GL
+
         var msaaSamples = 8
 
         var assetsBaseDir = "./assets"
@@ -225,6 +235,11 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
         init {
             init()
         }
+    }
+
+    enum class RenderBackendMode {
+        VULKAN,
+        OPEN_GL
     }
 }
 

@@ -68,8 +68,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         }
 
         val extAnisotropic = gl.getExtension("EXT_texture_filter_anisotropic") ?:
-        gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
-        gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
+                gl.getExtension("MOZ_EXT_texture_filter_anisotropic") ?:
+                gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic")
         if (extAnisotropic != null) {
             glCapabilities.maxAnisotropy = gl.getParameter(extAnisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as Int
             glCapabilities.glTextureMaxAnisotropyExt = extAnisotropic.TEXTURE_MAX_ANISOTROPY_EXT
@@ -251,22 +251,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
                 scene.offscreenPasses.removeAll { it.isFinished }
             }
 
-            gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
-            scene.mainRenderPass.apply {
-                var clearMask = 0
-                clearColor?.let {
-                    clearMask = WebGLRenderingContext.COLOR_BUFFER_BIT
-                    gl.clearColor(it.r, it.g, it.b, it.a)
-                }
-                if (clearDepth) {
-                    clearMask = clearMask or WebGLRenderingContext.DEPTH_BUFFER_BIT
-                }
-                if (clearMask != 0) {
-                    gl.clear(clearMask)
-                }
-
-                queueRenderer.renderQueue(drawQueue)
-            }
+            queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)
         }
 
         if (afterRenderActions.isNotEmpty()) {

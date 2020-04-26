@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.platform.VkRenderBackend
 import de.fabmax.kool.platform.vk.pipeline.PipelineManager
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW.glfwGetFramebufferSize

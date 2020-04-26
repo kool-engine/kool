@@ -52,7 +52,7 @@ class DebugOverlay(ctx: KoolContext, position: Position = Position.UPPER_RIGHT) 
                 }
 
                 val height = 150 + ctx.getSysInfos().size * 18f
-                val width = 150f
+                val width = 180f
 
                 when (position) {
                     Position.UPPER_LEFT -> layoutSpec.setOrigin(zero(), dps(-height, true), zero())

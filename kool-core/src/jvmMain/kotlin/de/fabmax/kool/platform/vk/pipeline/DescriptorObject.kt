@@ -2,16 +2,14 @@ package de.fabmax.kool.platform.vk.pipeline
 
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.platform.vk.Buffer
-import de.fabmax.kool.platform.vk.VkSystem
-import de.fabmax.kool.platform.vk.callocVkDescriptorBufferInfoN
-import de.fabmax.kool.platform.vk.callocVkDescriptorImageInfoN
+import de.fabmax.kool.platform.vk.*
 import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10
+import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkWriteDescriptorSet
 
 abstract class DescriptorObject(val binding: Int, val descriptor: Descriptor) {
@@ -66,7 +64,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 }
 
 class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: Descriptor) : DescriptorObject(binding, desc) {
-    private var boundTex: LoadedTexture? = null
+    private var boundTex: LoadedTextureVk? = null
 
     private val loadingTextures = mutableListOf<LoadingTex>()
 
@@ -83,19 +81,19 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
             val imageInfo = callocVkDescriptorImageInfoN(sampler.arraySize) {
                 for (i in 0 until sampler.arraySize) {
                     this[i].apply {
-                        val vkTex = sampler.textures[i]?.loadedTexture
-                        imageLayout(VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                        val vkTex = sampler.textures[i]?.loadedTexture as LoadedTextureVk?
+                        imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                         imageView(vkTex?.textureImageView?.vkImageView ?: 0L)
                         sampler(vkTex?.sampler ?: 0L)
                     }
                 }
             }
             vkWriteDescriptorSet
-                    .sType(VK10.VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
+                    .sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET)
                     .dstSet(dstSet)
                     .dstBinding(binding)
                     .dstArrayElement(0)
-                    .descriptorType(VK10.VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+                    .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
                     .descriptorCount(sampler.arraySize)
                     .pImageInfo(imageInfo)
         }
@@ -129,7 +127,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                 }
 
                 if (tex.loadingState == Texture.LoadingState.LOADED && boundTex != tex.loadedTexture) {
-                    boundTex = tex.loadedTexture
+                    boundTex = tex.loadedTexture as LoadedTextureVk
                     isDescriptorSetUpdateRequired = true
                 }
 
@@ -165,12 +163,12 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
     companion object {
         // todo: integrate texture manager
-        private val loadedTextures = mutableMapOf<TextureData, LoadedTexture>()
+        private val loadedTextures = mutableMapOf<TextureData, LoadedTextureVk>()
 
-        private fun getLoadedTex(tex: Texture, texData: TextureData, sys: VkSystem): LoadedTexture {
+        private fun getLoadedTex(tex: Texture, texData: TextureData, sys: VkSystem): LoadedTextureVk {
             loadedTextures.values.removeIf { it.isDestroyed }
             return loadedTextures.computeIfAbsent(texData) { k ->
-                val loaded = LoadedTexture.fromTexData(sys, tex.props, k)
+                val loaded = LoadedTextureVk.fromTexData(sys, tex.props, k)
                 sys.device.addDependingResource(loaded)
                 loaded
             }

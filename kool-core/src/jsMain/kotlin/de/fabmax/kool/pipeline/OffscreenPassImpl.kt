@@ -9,13 +9,12 @@ import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_COMPARE_
 import de.fabmax.kool.platform.WebGL2RenderingContext.Companion.TEXTURE_WRAP_R
 import de.fabmax.kool.platform.glInternalFormat
 import de.fabmax.kool.platform.pxSize
+import de.fabmax.kool.platform.webgl.LoadedTextureWebGl
 import org.khronos.webgl.WebGLFramebuffer
 import org.khronos.webgl.WebGLRenderbuffer
 import org.khronos.webgl.WebGLRenderingContext.Companion.CLAMP_TO_EDGE
 import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_ATTACHMENT0
-import org.khronos.webgl.WebGLRenderingContext.Companion.COLOR_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_ATTACHMENT
-import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_BUFFER_BIT
 import org.khronos.webgl.WebGLRenderingContext.Companion.FRAMEBUFFER
 import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
 import org.khronos.webgl.WebGLRenderingContext.Companion.LINEAR
@@ -85,16 +84,9 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
         val mipLevel = offscreenPass.targetMipLevel
         val width = offscreenPass.mipWidth(mipLevel)
         val height = offscreenPass.mipHeight(mipLevel)
-        val clearColor = offscreenPass.clearColor
-        val clearMask = offscreenPass.clearMask()
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
         ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[fboIdx])
-        ctx.gl.viewport(0, 0, width, height)
-        clearColor?.let { ctx.gl.clearColor(it.r, it.g, it.b, it.a) }
-        if (clearMask != 0) {
-            ctx.gl.clear(clearMask)
-        }
         ctx.queueRenderer.renderQueue(offscreenPass.drawQueue)
         ctx.gl.bindFramebuffer(FRAMEBUFFER, null)
     }
@@ -119,7 +111,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
             gl.texParameteri(TEXTURE_2D, TEXTURE_MAG_FILTER, LINEAR)
 
             val estSize = estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 1, offscreenPass.mipLevels)
-            loadedTexture = LoadedTexture(ctx, offscreenTex, estSize)
+            loadedTexture = LoadedTextureWebGl(ctx, offscreenTex, estSize)
             loadingState = LoadingState.LOADED
         }
     }
@@ -146,7 +138,7 @@ actual class OffscreenPass2dImpl actual constructor(val offscreenPass: Offscreen
             gl.texParameteri(TEXTURE_2D, TEXTURE_COMPARE_FUNC, LESS)
 
             val estSize = estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 1, offscreenPass.mipLevels)
-            loadedTexture = LoadedTexture(ctx, offscreenDepthTex, estSize)
+            loadedTexture = LoadedTextureWebGl(ctx, offscreenDepthTex, estSize)
             loadingState = LoadingState.LOADED
         }
     }
@@ -201,19 +193,13 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
         val clearColor = offscreenPass.clearColor
         val fboIdx = if (mipLevel < 0) 0 else mipLevel
 
+        offscreenPass.viewport = KoolContext.Viewport(0, 0, width, height)
         ctx.gl.bindFramebuffer(FRAMEBUFFER, fbos[fboIdx])
-        ctx.gl.viewport(0, 0, width, height)
-        clearColor?.let { ctx.gl.clearColor(it.r, it.g, it.b, it.a) }
-        val clearMask = offscreenPass.clearMask()
 
         for (i in 0 until 6) {
-            ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + i, texture.offscreenTex, fboIdx)
-            if (clearMask != 0) {
-                ctx.gl.clear(clearMask)
-            }
-
             val view = VIEWS[i]
             val queue = offscreenPass.drawQueues[view.index]
+            ctx.gl.framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_CUBE_MAP_POSITIVE_X + i, texture.offscreenTex, fboIdx)
             ctx.queueRenderer.renderQueue(queue)
         }
 
@@ -258,19 +244,8 @@ actual class OffscreenPassCubeImpl actual constructor(val offscreenPass: Offscre
             gl.texParameteri(TEXTURE_CUBE_MAP, TEXTURE_MAG_FILTER, LINEAR)
 
             val estSize = estimatedTexSize(width, height, offscreenPass.colorFormat.pxSize, 6, offscreenPass.mipLevels)
-            loadedTexture = LoadedTexture(ctx, offscreenTex, estSize)
+            loadedTexture = LoadedTextureWebGl(ctx, offscreenTex, estSize)
             loadingState = LoadingState.LOADED
         }
     }
-}
-
-private fun RenderPass.clearMask(): Int {
-    var mask = 0
-    if (clearDepth) {
-        mask = DEPTH_BUFFER_BIT
-    }
-    if (clearColor != null) {
-        mask = mask or COLOR_BUFFER_BIT
-    }
-    return mask
 }

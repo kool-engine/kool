@@ -1,30 +1,18 @@
-package de.fabmax.kool.platform.webgl
+package de.fabmax.kool.platform.gl
 
 import de.fabmax.kool.drawqueue.DrawQueue
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.WebGL2RenderingContext
-import org.khronos.webgl.WebGLRenderingContext
-import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
-import org.khronos.webgl.WebGLRenderingContext.Companion.BACK
-import org.khronos.webgl.WebGLRenderingContext.Companion.CULL_FACE
-import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_TEST
-import org.khronos.webgl.WebGLRenderingContext.Companion.FRONT
-import org.khronos.webgl.WebGLRenderingContext.Companion.GEQUAL
-import org.khronos.webgl.WebGLRenderingContext.Companion.GREATER
-import org.khronos.webgl.WebGLRenderingContext.Companion.LEQUAL
-import org.khronos.webgl.WebGLRenderingContext.Companion.LESS
+import de.fabmax.kool.platform.Lwjgl3Context
+import org.lwjgl.opengl.GL11.*
+import org.lwjgl.opengl.GL31.glDrawElementsInstanced
 
-class QueueRendererWebGl(val ctx: JsContext) {
-
-    private val gl: WebGL2RenderingContext
-        get() = ctx.gl
+class QueueRendererGl(val backend: GlRenderBackend, val ctx: Lwjgl3Context) {
 
     private val glAttribs = GlAttribs()
-    private val shaderMgr = ShaderManager(ctx)
+    private val shaderMgr = ShaderManager(backend, ctx)
 
     fun disposePipelines(pipelines: List<Pipeline>) {
         pipelines.forEach {
@@ -34,11 +22,11 @@ class QueueRendererWebGl(val ctx: JsContext) {
 
     fun renderQueue(queue: DrawQueue) {
         queue.renderPass.apply {
-            ctx.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height)
-            clearColor?.let { ctx.gl.clearColor(it.r, it.g, it.b, it.a) }
+            glViewport(viewport.x, viewport.y, viewport.width, viewport.height)
+            clearColor?.let { glClearColor(it.r, it.g, it.b, it.a) }
             val clearMask = clearMask()
             if (clearMask != 0) {
-                ctx.gl.clear(clearMask)
+                glClear(clearMask)
             }
         }
 
@@ -51,10 +39,10 @@ class QueueRendererWebGl(val ctx: JsContext) {
                         if (it.primitiveType != 0 && it.indexType != 0) {
                             val insts = cmd.mesh.instances
                             if (insts == null) {
-                                gl.drawElements(it.primitiveType, it.numIndices, it.indexType, 0)
+                                glDrawElements(it.primitiveType, it.numIndices, it.indexType, 0)
                                 ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives)
                             } else {
-                                gl.drawElementsInstanced(it.primitiveType, it.numIndices, it.indexType, 0, insts.numInstances)
+                                glDrawElementsInstanced(it.primitiveType, it.numIndices, it.indexType, 0, insts.numInstances)
                                 ctx.engineStats.addPrimitiveCount(cmd.mesh.geometry.numPrimitives * insts.numInstances)
                             }
                             ctx.engineStats.addDrawCommandCount(1)
@@ -66,8 +54,8 @@ class QueueRendererWebGl(val ctx: JsContext) {
     }
 
     private inner class GlAttribs {
-        var depthTest: DepthCompareOp? = null
-        var cullMethod: CullMethod? = null
+        var actDepthTest: DepthCompareOp? = null
+        var actCullMethod: CullMethod? = null
         var lineWidth = 0f
 
         fun setupPipelineAttribs(pipeline: Pipeline) {
@@ -75,55 +63,55 @@ class QueueRendererWebGl(val ctx: JsContext) {
             setCullMethod(pipeline.cullMethod)
             if (lineWidth != pipeline.lineWidth) {
                 lineWidth = pipeline.lineWidth
-                gl.lineWidth(pipeline.lineWidth)
+                glLineWidth(pipeline.lineWidth)
             }
         }
 
         private fun setCullMethod(cullMethod: CullMethod) {
-            if (this.cullMethod != cullMethod) {
-                this.cullMethod = cullMethod
+            if (this.actCullMethod != cullMethod) {
+                this.actCullMethod = cullMethod
                 when (cullMethod) {
                     CullMethod.DEFAULT -> {
-                        gl.enable(CULL_FACE)
-                        gl.cullFace(BACK)
+                        glEnable(GL_CULL_FACE)
+                        glCullFace(GL_BACK)
                     }
                     CullMethod.CULL_BACK_FACES -> {
-                        gl.enable(CULL_FACE)
-                        gl.cullFace(BACK)
+                        glEnable(GL_CULL_FACE)
+                        glCullFace(GL_BACK)
                     }
                     CullMethod.CULL_FRONT_FACES -> {
-                        gl.enable(CULL_FACE)
-                        gl.cullFace(FRONT)
+                        glEnable(GL_CULL_FACE)
+                        glCullFace(GL_FRONT)
                     }
-                    CullMethod.NO_CULLING -> gl.disable(CULL_FACE)
+                    CullMethod.NO_CULLING -> glDisable(GL_CULL_FACE)
                 }
             }
         }
 
         private fun setDepthTest(depthCompareOp: DepthCompareOp) {
-            if (depthTest != depthCompareOp) {
-                depthTest = depthCompareOp
+            if (actDepthTest != depthCompareOp) {
+                actDepthTest = depthCompareOp
                 when (depthCompareOp) {
-                    DepthCompareOp.DISABLED -> gl.disable(DEPTH_TEST)
+                    DepthCompareOp.DISABLED -> glDisable(GL_DEPTH_TEST)
                     DepthCompareOp.ALWAYS -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(ALWAYS)
+                        glEnable(GL_DEPTH_TEST)
+                        glDepthFunc(GL_ALWAYS)
                     }
                     DepthCompareOp.LESS -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(LESS)
+                        glEnable(GL_DEPTH_TEST)
+                        glDepthFunc(GL_LESS)
                     }
                     DepthCompareOp.LESS_EQUAL -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(LEQUAL)
+                        glEnable(GL_DEPTH_TEST)
+                        glDepthFunc(GL_LEQUAL)
                     }
                     DepthCompareOp.GREATER -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(GREATER)
+                        glEnable(GL_DEPTH_TEST)
+                        glDepthFunc(GL_GREATER)
                     }
                     DepthCompareOp.GREATER_EQUAL -> {
-                        gl.enable(DEPTH_TEST)
-                        gl.depthFunc(GEQUAL)
+                        glEnable(GL_DEPTH_TEST)
+                        glDepthFunc(GL_GEQUAL)
                     }
                 }
             }
@@ -133,10 +121,10 @@ class QueueRendererWebGl(val ctx: JsContext) {
     private fun RenderPass.clearMask(): Int {
         var mask = 0
         if (clearDepth) {
-            mask = WebGLRenderingContext.DEPTH_BUFFER_BIT
+            mask = GL_DEPTH_BUFFER_BIT
         }
         if (clearColor != null) {
-            mask = mask or WebGLRenderingContext.COLOR_BUFFER_BIT
+            mask = mask or GL_COLOR_BUFFER_BIT
         }
         return mask
     }
