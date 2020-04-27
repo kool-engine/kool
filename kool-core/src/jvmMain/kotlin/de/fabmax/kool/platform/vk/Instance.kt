@@ -11,7 +11,7 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
-class Instance(val sys: VkSystem) : VkResource() {
+class Instance(val sys: VkSystem, appName: String) : VkResource() {
 
     val vkInstance: VkInstance
     private var debugMessenger = 0L
@@ -35,9 +35,9 @@ class Instance(val sys: VkSystem) : VkResource() {
 
             val appInfo = callocVkApplicationInfo {
                 sType(VK_STRUCTURE_TYPE_APPLICATION_INFO)
-                pApplicationName(UTF8("Hello Triangle"))
+                pApplicationName(UTF8(appName))
                 applicationVersion(VK_MAKE_VERSION(1, 0, 0))
-                pEngineName(UTF8("No Engine"))
+                pEngineName(UTF8("Kool"))
                 engineVersion(VK_MAKE_VERSION(1, 0, 0))
                 apiVersion(VK_API_VERSION_1_0)
             }

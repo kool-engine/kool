@@ -42,7 +42,10 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         windowHeight = props.height
         windowViewport = KoolContext.Viewport(0, 0, windowWidth, windowHeight)
 
-        vkSystem = VkSystem(VkSetup().apply { isValidating = true }, vkScene, this, ctx)
+        val vkSetup = VkSetup().apply {
+            isValidating = true
+        }
+        vkSystem = VkSystem(props, vkSetup, vkScene, this, ctx)
         apiName = "Vulkan ${vkSystem.physicalDevice.apiVersion}"
         deviceName = vkSystem.physicalDevice.deviceName
 

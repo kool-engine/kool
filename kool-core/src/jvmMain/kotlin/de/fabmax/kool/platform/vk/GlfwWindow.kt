@@ -4,7 +4,6 @@ import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWVulkan
-import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.KHRSurface
 
 class GlfwWindow(val sys: VkSystem, var width: Int = 800, var height: Int = 600) : VkResource() {
@@ -23,7 +22,7 @@ class GlfwWindow(val sys: VkSystem, var width: Int = 800, var height: Int = 600)
 
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API)
 
-        glfwWindow = GLFW.glfwCreateWindow(width, height, "Vulkan", MemoryUtil.NULL, MemoryUtil.NULL)
+        glfwWindow = GLFW.glfwCreateWindow(width, height, sys.props.title, sys.props.monitor, sys.props.share)
         GLFW.glfwSetFramebufferSizeCallback(glfwWindow) { _, width, height ->
             this.width = width
             this.height = height

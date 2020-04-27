@@ -7,7 +7,7 @@ import org.lwjgl.glfw.GLFW.glfwGetFramebufferSize
 import org.lwjgl.glfw.GLFW.glfwWaitEvents
 import org.lwjgl.vulkan.VK10.vkDeviceWaitIdle
 
-class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, backend: VkRenderBackend, val ctx: Lwjgl3Context) : VkResource() {
+class VkSystem(val props: Lwjgl3Context.InitProps, val setup: VkSetup = VkSetup(), val scene: VkScene, backend: VkRenderBackend, val ctx: Lwjgl3Context) : VkResource() {
 
     val window: GlfwWindow
 
@@ -26,7 +26,7 @@ class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, backend: VkRe
 
     init {
         window = GlfwWindow(this, backend.windowWidth, backend.windowHeight)
-        instance = Instance(this)
+        instance = Instance(this, props.title)
         window.createSurface()
 
         physicalDevice = PhysicalDevice(this)
@@ -34,14 +34,11 @@ class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, backend: VkRe
         memManager = MemoryManager(this)
         commandPool = CommandPool(this, device.graphicsQueue)
         transferCommandPool = CommandPool(this, device.transferQueue)
-        //transferCommandPool = commandPool
 
         scene.onLoad(this)
 
         renderLoop = RenderLoop(this)
         recreateSwapChain()
-
-        //memManager.printMemoryStats()
     }
 
     fun run() {

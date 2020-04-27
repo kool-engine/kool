@@ -20,9 +20,9 @@ them via the hamburger button in the upper left corner):
 
 Code for all demos is available in kool-demo sub-project.
 
-Together with Vulkan support I implemented a new, much more flexible shader generator. Shaders are composed of nodes
-quite similar to Unity's Shader Graph (however it's completely code-based, no fancy editor). Shader code is
-generated and compiled from the node-based model on-the-fly for each backend.
+Support for Vulkan based rendering is quite recent. Together with Vulkan support I implemented a new, much more
+flexible shader generator. Shaders are composed of nodes quite similar to Unity's Shader Graph (however it's completely 
+code-based, no fancy editor). Shader code is generated and compiled from the node-based model on-the-fly for each backend.
 
 In order to add support for Vulkan, I had to drastically change some parts of the engine and this is an
 ongoing process. Hence, stuff is a still a bit messy but things are getting better.
@@ -40,7 +40,7 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 
 ## A Hello World Example
 
-Getting a simple scene on the screen is quite simple:
+Getting a basic scene on the screen is quite simple:
 ```kotlin
 fun main() {
     val ctx = createDefaultContext()
