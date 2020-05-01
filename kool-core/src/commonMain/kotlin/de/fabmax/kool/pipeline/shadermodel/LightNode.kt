@@ -126,7 +126,7 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
                     onUpdate = { _, cmd ->
                         cmd.renderPass.lighting?.let {
                             for (i in 0 until min(maxLights, it.lights.size)) {
-                                uLightMvps.value[i].set(it.lights[i].lightMvpMat)
+                                uLightMvps.value[i].set(it.lights[i].lightViewProjMat)
                             }
                         }
                     }
@@ -194,11 +194,10 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
             """)
             for (lightI in 0 until maxLights) {
                 generator.appendMain("""
-                    if (${uPositions.name}[$lightI].w == float(${Light.Type.SPOT.encoded})) {
-                        shadowProjPos = ifPosLightSpace[$lightI];
-                        shadowProjPos.z = shadowProjPos.z + ${inDepthOffset.ref1f()};
-                        shadowOffset = vec2(float(fract(shadowProjPos.x * shadowMapSize * 0.5) > 0.25), float(fract(shadowProjPos.y * shadowMapSize * 0.5) > 0.25));
-                        shadowFacs[$lightI] = 0.0;
+                    shadowProjPos = ifPosLightSpace[$lightI];
+                    shadowProjPos.z = shadowProjPos.z + ${inDepthOffset.ref1f()};
+                    shadowOffset = vec2(float(fract(shadowProjPos.x * shadowMapSize * 0.5) > 0.25), float(fract(shadowProjPos.y * shadowMapSize * 0.5) > 0.25));
+                    shadowFacs[$lightI] = 0.0;
                 """)
 
                 // dithered pcf shadow map sampling
@@ -210,8 +209,7 @@ class ShadowedLightNode(vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph, ma
                     nSamples++
                 }
                 generator.appendMain("""
-                        shadowFacs[$lightI] *= float(${1f / nSamples});
-                    } else { shadowFacs[$lightI] = 1.0; }
+                    shadowFacs[$lightI] *= float(${1f / nSamples});
                 """)
             }
         }

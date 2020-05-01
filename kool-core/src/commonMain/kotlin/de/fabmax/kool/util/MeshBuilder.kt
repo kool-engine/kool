@@ -777,6 +777,10 @@ class RectProps {
     val texCoordLowerLeft = MutableVec2f()
     val texCoordLowerRight = MutableVec2f()
 
+    init {
+        generateTexCoords(1f)
+    }
+
     fun fixNegativeSize() {
         if (size.x < 0) {
             origin.x += size.x
@@ -802,7 +806,7 @@ class RectProps {
         cornerSteps = 8
         origin.set(Vec3f.ZERO)
         size.set(1f, 1f)
-        zeroTexCoords()
+        generateTexCoords(1f)
         return this
     }
 }

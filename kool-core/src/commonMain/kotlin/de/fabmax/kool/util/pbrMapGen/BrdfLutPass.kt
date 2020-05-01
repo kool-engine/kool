@@ -7,10 +7,7 @@ import de.fabmax.kool.pipeline.OffscreenRenderPass2D
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.ModeledShader
-import de.fabmax.kool.scene.Group
-import de.fabmax.kool.scene.OrthographicCamera
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.mesh
+import de.fabmax.kool.scene.*
 import kotlin.math.PI
 
 
@@ -24,7 +21,7 @@ class BrdfLutPass(private val parentScene: Scene) : OffscreenRenderPass2D(Group(
 
         (drawNode as Group).apply {
             camera = OrthographicCamera().apply {
-                isApplyProjCorrection = false
+                projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
                 isKeepAspectRatio = false
                 left = 0f
                 right = 1f

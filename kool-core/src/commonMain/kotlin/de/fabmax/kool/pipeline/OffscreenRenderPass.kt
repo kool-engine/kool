@@ -11,7 +11,7 @@ abstract class OffscreenRenderPass(drawNode: Node, val texWidth: Int, val texHei
     var targetMipLevel = -1
     var isFinished = false
 
-    override var camera: Camera = PerspectiveCamera()
+    override var camera: Camera = PerspectiveCamera().apply { projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN }
 
     init {
         viewport = KoolContext.Viewport(0, 0, texWidth, texHeight)
@@ -95,7 +95,7 @@ open class OffscreenRenderPassCube(drawNode: Node, texWidth: Int, texHeight: Int
             cam.fovY = 90f
             cam.clipNear = 0.1f
             cam.clipFar = 10f
-            cam.isApplyProjCorrection = false
+            cam.projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
         }
 
         onSetupView = { viewDir, _ ->

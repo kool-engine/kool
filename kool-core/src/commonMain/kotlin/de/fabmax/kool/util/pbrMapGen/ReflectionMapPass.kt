@@ -13,7 +13,7 @@ import kotlin.math.PI
 class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : OffscreenRenderPassCube(Group(), 256, 256, 7, TexFormat.RGBA_F16) {
     var hdriTexture = hdriTexture
         set(value) {
-            reflMapShader?.textureSampler?.texture = value
+            reflMapShader?.texture = value
             field = value
         }
 
@@ -49,9 +49,8 @@ class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : Offscree
                         colorOutput = convNd.outColor
                     }
                 }
-                reflMapShader = ModeledShader.TextureColor(texName, model).apply {
+                reflMapShader = ModeledShader.TextureColor(hdriTexture, texName, model).apply {
                     onSetup += { it.cullMethod = CullMethod.CULL_FRONT_FACES }
-                    onCreated += { textureSampler.texture = hdriTexture }
                 }
                 pipelineLoader = reflMapShader
             }

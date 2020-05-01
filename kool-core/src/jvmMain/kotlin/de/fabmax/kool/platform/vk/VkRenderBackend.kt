@@ -29,7 +29,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         private set
     override val glfwWindowHandle: Long
 
-    override val projCorrectionMatrix = Mat4d()
+    override val projCorrectionMatrixScreen = Mat4d()
+    override val projCorrectionMatrixOffscreen = Mat4d()
     override val depthBiasMatrix = Mat4d()
 
     override val shaderGenerator = ShaderGeneratorImplVk()
@@ -60,9 +61,16 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
 
         // maps camera projection matrices to Vulkan screen coordinates
-        projCorrectionMatrix.apply {
+        projCorrectionMatrixScreen.apply {
             setRow(0, Vec4d(1.0, 0.0, 0.0, 0.0))
             setRow(1, Vec4d(0.0, -1.0, 0.0, 0.0))
+            setRow(2, Vec4d(0.0, 0.0, 0.5, 0.5))
+            setRow(3, Vec4d(0.0, 0.0, 0.0, 1.0))
+        }
+
+        projCorrectionMatrixOffscreen.apply {
+            setRow(0, Vec4d(1.0, 0.0, 0.0, 0.0))
+            setRow(1, Vec4d(0.0, 1.0, 0.0, 0.0))
             setRow(2, Vec4d(0.0, 0.0, 0.5, 0.5))
             setRow(3, Vec4d(0.0, 0.0, 0.0, 1.0))
         }

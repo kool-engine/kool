@@ -45,7 +45,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val lazyInvViewProj = LazyMatrix { viewProj.invert(it) }
     val invViewProj: Mat4d get() = lazyInvViewProj.get()
 
-    var isApplyProjCorrection = true
+    var projCorrectionMode = ProjCorrectionMode.ONSCREEN
 
     private val projCorrected = Mat4d()
 
@@ -59,8 +59,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
         updateViewMatrix()
         updateProjectionMatrix()
 
-        if (isApplyProjCorrection) {
-            ctx.projCorrectionMatrix.mul(proj, projCorrected)
+        if (projCorrectionMode == ProjCorrectionMode.ONSCREEN) {
+            ctx.projCorrectionMatrixScreen.mul(proj, projCorrected)
+            proj.set(projCorrected)
+        } else if (projCorrectionMode == ProjCorrectionMode.OFFSCREEN) {
+            ctx.projCorrectionMatrixOffscreen.mul(proj, projCorrected)
             proj.set(projCorrected)
         }
 
@@ -144,7 +147,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         result.z = (1 + result.z) * 0.5f
 
         // fixme: rather hacky solution for inverted y-viewport direction in Vulkan
-        if (ctx.projCorrectionMatrix[1, 1] > 0) {
+        if (ctx.projCorrectionMatrixScreen[1, 1] > 0) {
             result.y = ctx.windowHeight - result.y
         }
 
@@ -155,7 +158,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         val x = screen.x - viewport.x
 
         // fixme: rather hacky solution for inverted y-viewport direction in Vulkan
-        val y = if (ctx.projCorrectionMatrix[1, 1] < 0) {
+        val y = if (ctx.projCorrectionMatrixScreen[1, 1] < 0) {
             screen.y - viewport.y.toFloat()
         } else {
             (ctx.windowHeight - screen.y) - viewport.y
@@ -180,6 +183,12 @@ abstract class Camera(name: String = "camera") : Node(name) {
             }
             return mat
         }
+    }
+
+    enum class ProjCorrectionMode {
+        NONE,
+        ONSCREEN,
+        OFFSCREEN
     }
 }
 

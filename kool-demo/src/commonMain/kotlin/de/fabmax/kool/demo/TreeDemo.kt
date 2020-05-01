@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.Uniform1f
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
+import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -47,12 +48,20 @@ fun treeScene(ctx: KoolContext): List<Scene> {
         val spotLightPos = Vec3f(10f, 15f, 10f)
         lighting.lights.apply {
             clear()
+//            add(Light()
+//                    .setSpot(spotLightPos, spotLightPos.scale(-1f, MutableVec3f()).norm(), 45f)
+//                    .setColor(Color.YELLOW.mix(Color.WHITE, 0.6f), 1000f))
+//            add(Light()
+//                    .setDirectional(dirLighDirection.norm(MutableVec3f()))
+//                    .setColor(Color.LIGHT_BLUE.mix(Color.WHITE, 0.5f), 1f))
+
             add(Light()
-                    .setSpot(spotLightPos, spotLightPos.scale(-1f, MutableVec3f()).norm(), 45f)
-                    .setColor(Color.YELLOW.mix(Color.WHITE, 0.6f), 1000f))
+                    .setDirectional(spotLightPos.scale(-1f, MutableVec3f()).norm())
+                    .setColor(Color.YELLOW.mix(Color.WHITE, 0.6f), 2f))
+
             add(Light()
                     .setDirectional(dirLighDirection.norm(MutableVec3f()))
-                    .setColor(Color.LIGHT_BLUE.mix(Color.WHITE, 0.5f), 1f))
+                    .setColor(Color.LIGHT_BLUE.mix(Color.WHITE, 0.5f), 2f))
         }
 
         // fixme: shadow mapping is still a mess
@@ -61,8 +70,8 @@ fun treeScene(ctx: KoolContext): List<Scene> {
         // moreover the shadow night node expects a shadow map for every light, since we use two lights, two are needed
         // although the second won't actually be used (therefore we make it super small, way too much overhead anyway)
         val shadowMaps = mutableListOf(
-                ShadowMapPass(this, lighting.lights[0], 2048),
-                ShadowMapPass(this, lighting.lights[1], 32)
+                ShadowMapPass(this, lighting.lights[0], 2048).apply { clipNear = 0f; clipFar = 10f },
+                ShadowMapPass(this, lighting.lights[1], 2048).apply { clipNear = 0f; clipFar = 10f }
         )
         shadowMaps.forEach { offscreenPasses += it }
         onDispose += {
@@ -70,6 +79,27 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 offscreenPasses -= it
                 it.dispose(ctx)
             }
+        }
+
+        +textureMesh {
+            generate {
+                rect {
+                    size.set(2f, 2f)
+                    origin.set(3f, 4.2f, 0f)
+                }
+            }
+            pipelineLoader = ModeledShader.TextureColor(shadowMaps[0].depthTexture)
+            isCastingShadow = false
+        }
+        +textureMesh {
+            generate {
+                rect {
+                    size.set(2f, 2f)
+                    origin.set(3f, 2f, 0f)
+                }
+            }
+            pipelineLoader = ModeledShader.TextureColor(shadowMaps[1].depthTexture)
+            isCastingShadow = false
         }
 
         +makeTreeGroundGrid(10, shadowMaps)
@@ -90,7 +120,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 isAmbientOcclusionMapped = true
                 isRoughnessMapped = true
                 isReceivingShadows = true
-                maxLights = 2
+                maxLights = lighting.lights.size
             }
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_baseColor.jpg") }
@@ -136,7 +166,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             val pbrCfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isReceivingShadows = true
-                maxLights = 2
+                maxLights = lighting.lights.size
             }
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 albedoMap = Texture { it.loadTextureData("leaf.png") }
@@ -187,6 +217,18 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 }
             }
         }
+
+//        camera = OrthographicCamera().apply {
+//            position.set(Vec3f.ZERO)
+//            lookAt.set(-0.48507124f, -0.7276069f, -0.48507124f)
+//            left =   -108.76188f
+//            right =  64.1743f
+//            bottom = -71.18083f
+//            top =    42.534977f
+//            near =   -15.084982f
+//            far =    120.434074f
+//        }
+
     }
     scenes += treeScene
 

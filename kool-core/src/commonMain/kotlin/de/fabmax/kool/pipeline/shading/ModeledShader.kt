@@ -44,11 +44,18 @@ open class ModeledShader(val model: ShaderModel) : Shader(), PipelineFactory {
 
     class VertexColor(model: ShaderModel = vertexColorModel()) : ModeledShader(model)
 
-    class TextureColor(private val texName: String = "colorTex", model: ShaderModel = textureColorModel(texName)) : ModeledShader(model) {
-        lateinit var textureSampler: TextureSampler
+    class TextureColor(texture: Texture? = null, private val texName: String = "colorTex", model: ShaderModel = textureColorModel(texName)) : ModeledShader(model) {
+        private var textureSampler: TextureSampler? = null
+
+        var texture: Texture? = texture
+            set(value) {
+                field = value
+                textureSampler?.texture = value
+            }
 
         override fun onPipelineCreated(pipeline: Pipeline) {
-            textureSampler = model.findNode<TextureNode>(texName)!!.sampler
+            textureSampler = model.findNode<TextureNode>(texName)?.sampler
+            textureSampler?.let { it.texture = texture }
             super.onPipelineCreated(pipeline)
         }
     }

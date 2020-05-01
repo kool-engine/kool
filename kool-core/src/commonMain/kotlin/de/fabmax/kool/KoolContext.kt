@@ -25,7 +25,8 @@ abstract class KoolContext {
     open var viewport = Viewport(0, 0, 0, 0)
         protected set
 
-    val projCorrectionMatrix = Mat4d()
+    val projCorrectionMatrixScreen = Mat4d()
+    val projCorrectionMatrixOffscreen = Mat4d()
     val depthBiasMatrix = Mat4d().translate(0.5, 0.5, 0.5).scale(0.5, 0.5, 0.5)
 
     val onRender: MutableList<(KoolContext) -> Unit> = mutableListOf()

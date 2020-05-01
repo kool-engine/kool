@@ -15,7 +15,8 @@ interface RenderBackend {
     val windowViewport: KoolContext.Viewport
     val glfwWindowHandle: Long
 
-    val projCorrectionMatrix: Mat4d
+    val projCorrectionMatrixScreen: Mat4d
+    val projCorrectionMatrixOffscreen: Mat4d
     val depthBiasMatrix: Mat4d
 
     val shaderGenerator: ShaderGenerator
