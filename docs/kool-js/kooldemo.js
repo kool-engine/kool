@@ -76,11 +76,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var LineMesh = $module$kool.de.fabmax.kool.scene.LineMesh;
   var ModeledShader$StaticColor = $module$kool.de.fabmax.kool.pipeline.shading.ModeledShader.StaticColor;
   var ShadowMapPass = $module$kool.de.fabmax.kool.util.ShadowMapPass;
+  var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
   var Math_0 = Math;
   var math_0 = $module$kool.de.fabmax.kool.math;
   var transformGroup = $module$kool.de.fabmax.kool.scene.transformGroup_zaezuq$;
   var group = $module$kool.de.fabmax.kool.scene.group_2ylazs$;
-  var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
   var IndexedVertexList_init = $module$kool.de.fabmax.kool.util.IndexedVertexList;
   var Mesh_init = $module$kool.de.fabmax.kool.scene.Mesh;
   var IrradianceMapPass = $module$kool.de.fabmax.kool.util.pbrMapGen.IrradianceMapPass;
@@ -105,6 +105,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var LinkedHashSet_init = Kotlin.kotlin.collections.LinkedHashSet_init_287e2$;
   var util = $module$kool.de.fabmax.kool.util;
   var Log$Level = $module$kool.de.fabmax.kool.util.Log.Level;
+  var CascadedShadowMap = $module$kool.de.fabmax.kool.util.CascadedShadowMap;
   var PushConstantNode1f = $module$kool.de.fabmax.kool.pipeline.shadermodel.PushConstantNode1f;
   var CullMethod = $module$kool.de.fabmax.kool.pipeline.CullMethod;
   var numberToInt = Kotlin.numberToInt;
@@ -113,6 +114,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var ShaderNodeIoVar = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderNodeIoVar;
   var ModelVar1fConst = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar1fConst;
   var ModelVar3f = $module$kool.de.fabmax.kool.pipeline.shadermodel.ModelVar3f;
+  var addAll_0 = Kotlin.kotlin.collections.addAll_ye1y7v$;
   var now = $module$kool.de.fabmax.kool.now;
   var ShaderStage = $module$kool.de.fabmax.kool.pipeline.ShaderStage;
   var wrapFunction = Kotlin.wrapFunction;
@@ -597,7 +599,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     $receiver_0.positionOutput = $receiver_0.vertexPositionNode_ze33is$($receiver_0.attrPositions().output, mvpMat).outPosition;
     var $receiver_1 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
     var mvpFrag = mvpNode.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
-    var lightNode = $receiver_1.defaultLightNode_za3lpa$();
+    var lightNode = $receiver_1.multiLightNode_za3lpa$();
     var albedo = ifColors.v.output;
     var normal = ifNormals.v.output;
     var $receiver_2 = $receiver_1.phongMaterialNode_8rwtp1$(albedo, normal, ifFragPos.v.output, mvpFrag.outCamPos, lightNode);
@@ -904,6 +906,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.bunnyMesh_0 = null;
     this.groundMesh_0 = null;
     this.modelShader_0 = null;
+    var tmp$;
     this.initMainScene_0(ctx);
     var $receiver_0 = this.scenes;
     var element = this.mainScene_0;
@@ -911,11 +914,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var $receiver_1 = this.scenes;
     var element_0 = this.menu_0(ctx);
     $receiver_1.add_11rb$(element_0);
-    var tmp$;
-    tmp$ = this.lights_0.iterator();
-    while (tmp$.hasNext()) {
-      var element_1 = tmp$.next();
-      var pass = new ShadowMapPass(this.mainScene_0, element_1.light);
+    tmp$ = this.lights_0;
+    for (var i = 0; i !== tmp$.size; ++i) {
+      var pass = new ShadowMapPass(this.mainScene_0, i);
       this.depthPasses_0.add_11rb$(pass);
       this.mainScene_0.offscreenPasses.add_11rb$(pass);
     }
@@ -993,61 +994,26 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     this.updateModelRoughness_0();
     this.updateLighting_0();
   };
-  function MultiLightDemo$applyPbrShaderBunny$lambda$lambda$lambda(this$, this$MultiLightDemo) {
-    return function (it) {
-      var tmp$;
-      if ((tmp$ = this$.depthMaps) != null) {
-        var tmp$_0, tmp$_0_0;
-        var index = 0;
-        tmp$_0 = this$MultiLightDemo.depthPasses_0.iterator();
-        while (tmp$_0.hasNext()) {
-          var item = tmp$_0.next();
-          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-          if (i < tmp$.length) {
-            tmp$[i] = item.depthTexture;
-          }}
-      }return Unit;
-    };
-  }
   MultiLightDemo.prototype.applyPbrShaderBunny_0 = function () {
     var tmp$;
     if ((tmp$ = this.bunnyMesh_0) != null) {
       var $receiver = new PbrShader$PbrConfig();
       $receiver.albedoSource = Albedo.STATIC_ALBEDO;
-      $receiver.isReceivingShadows = true;
+      $receiver.maxLights = this.depthPasses_0.size;
+      addAll($receiver.shadowMaps, this.depthPasses_0);
+      $receiver.metallic = 0.0;
       var cfg = $receiver;
-      var $receiver_0 = new PbrShader(cfg);
-      $receiver_0.metallic = 0.0;
-      $receiver_0.onCreated.add_11rb$(MultiLightDemo$applyPbrShaderBunny$lambda$lambda$lambda($receiver_0, this));
-      this.modelShader_0 = $receiver_0;
+      this.modelShader_0 = new PbrShader(cfg);
       tmp$.pipelineLoader = this.modelShader_0;
     }};
-  function MultiLightDemo$applyPhongShaderBunny$lambda$lambda$lambda(this$, this$MultiLightDemo) {
-    return function (it) {
-      var tmp$;
-      if ((tmp$ = this$.depthMaps) != null) {
-        var tmp$_0, tmp$_0_0;
-        var index = 0;
-        tmp$_0 = this$MultiLightDemo.depthPasses_0.iterator();
-        while (tmp$_0.hasNext()) {
-          var item = tmp$_0.next();
-          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-          if (i < tmp$.length) {
-            tmp$[i] = item.depthTexture;
-          }}
-      }return Unit;
-    };
-  }
   MultiLightDemo.prototype.applyPhongShaderBunny_0 = function () {
     var tmp$;
     if ((tmp$ = this.bunnyMesh_0) != null) {
       var $receiver = new PhongShader$PhongConfig();
       $receiver.albedoSource = Albedo.STATIC_ALBEDO;
-      $receiver.isReceivingShadows = true;
+      addAll($receiver.shadowMaps, this.depthPasses_0);
       var cfg = $receiver;
-      var $receiver_0 = new PhongShader(cfg);
-      $receiver_0.onCreated.add_11rb$(MultiLightDemo$applyPhongShaderBunny$lambda$lambda$lambda($receiver_0, this));
-      this.modelShader_0 = $receiver_0;
+      this.modelShader_0 = new PhongShader(cfg);
       tmp$.pipelineLoader = this.modelShader_0;
     }};
   function Coroutine$MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
@@ -1202,22 +1168,6 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_3(this$, this$MultiLightDemo) {
-    return function (it) {
-      var tmp$;
-      if ((tmp$ = this$.depthMaps) != null) {
-        var tmp$_0, tmp$_0_0;
-        var index = 0;
-        tmp$_0 = this$MultiLightDemo.depthPasses_0.iterator();
-        while (tmp$_0.hasNext()) {
-          var item = tmp$_0.next();
-          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-          if (i < tmp$.length) {
-            tmp$[i] = item.depthTexture;
-          }}
-      }return Unit;
-    };
-  }
   MultiLightDemo.prototype.applyPbrShaderGround_0 = function () {
     var tmp$;
     if ((tmp$ = this.groundMesh_0) != null) {
@@ -1225,15 +1175,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver.isNormalMapped = true;
       $receiver.isRoughnessMapped = true;
-      $receiver.isReceivingShadows = true;
+      addAll($receiver.shadowMaps, this.depthPasses_0);
+      $receiver.albedoMap = new Texture(void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda);
+      $receiver.normalMap = new Texture(void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0);
+      $receiver.roughnessMap = new Texture(void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1);
+      $receiver.metallic = 0.0;
       var cfg = $receiver;
       var $receiver_0 = new PbrShader(cfg);
-      $receiver_0.albedoMap = new Texture(void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda);
-      $receiver_0.normalMap = new Texture(void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_0);
-      $receiver_0.roughnessMap = new Texture(void 0, MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_1);
-      $receiver_0.metallic = 0.0;
       tmp$.onDispose.add_11rb$(MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_2($receiver_0));
-      $receiver_0.onCreated.add_11rb$(MultiLightDemo$applyPbrShaderGround$lambda$lambda$lambda_3($receiver_0, this));
       tmp$.pipelineLoader = $receiver_0;
     }};
   function Coroutine$MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
@@ -1339,36 +1288,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_2(this$, this$MultiLightDemo) {
-    return function (it) {
-      var tmp$;
-      if ((tmp$ = this$.depthMaps) != null) {
-        var tmp$_0, tmp$_0_0;
-        var index = 0;
-        tmp$_0 = this$MultiLightDemo.depthPasses_0.iterator();
-        while (tmp$_0.hasNext()) {
-          var item = tmp$_0.next();
-          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-          if (i < tmp$.length) {
-            tmp$[i] = item.depthTexture;
-          }}
-      }return Unit;
-    };
-  }
   MultiLightDemo.prototype.applyPhongShaderGround_0 = function () {
     var tmp$;
     if ((tmp$ = this.groundMesh_0) != null) {
       var $receiver = new PhongShader$PhongConfig();
       $receiver.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver.isNormalMapped = true;
-      $receiver.isReceivingShadows = true;
+      addAll($receiver.shadowMaps, this.depthPasses_0);
+      $receiver.albedoMap = new Texture(void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda);
+      $receiver.normalMap = new Texture(void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0);
+      $receiver.shininess = 100.0;
       var cfg = $receiver;
       var $receiver_0 = new PhongShader(cfg);
-      $receiver_0.albedoMap = new Texture(void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda);
-      $receiver_0.normalMap = new Texture(void 0, MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_0);
-      $receiver_0.shininess = 10.0;
       tmp$.onDispose.add_11rb$(MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_1($receiver_0));
-      $receiver_0.onCreated.add_11rb$(MultiLightDemo$applyPhongShaderGround$lambda$lambda$lambda_2($receiver_0, this));
       tmp$.pipelineLoader = $receiver_0;
     }};
   MultiLightDemo.prototype.updateModelColor_0 = function () {
@@ -2036,10 +1968,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       tmp$ = $receiver_0.iterator();
       while (tmp$.hasNext()) {
         var element = tmp$.next();
-        var this$MultiLightDemo_0 = this$MultiLightDemo;
-        var closure$ctx_0 = closure$ctx;
-        this$MultiLightDemo_0.mainScene_0.offscreenPasses.remove_11rb$(element);
-        element.dispose_aemszp$(closure$ctx_0);
+        element.dispose_ndt2pc$(this$MultiLightDemo.mainScene_0, closure$ctx);
       }
       return Unit;
     };
@@ -5607,10 +5536,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       tmp$ = $receiver_0.iterator();
       while (tmp$.hasNext()) {
         var element = tmp$.next();
-        var this$_0 = this$;
-        var closure$ctx_0 = closure$ctx;
-        this$_0.offscreenPasses.remove_11rb$(element);
-        element.dispose_aemszp$(closure$ctx_0);
+        element.dispose_ndt2pc$(this$, closure$ctx);
       }
       return Unit;
     };
@@ -5830,32 +5756,22 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda$lambda$lambda_4(this$, closure$shadowMaps, closure$uWindSpeed, closure$uWindStrength) {
+  function treeScene$lambda$lambda$lambda$lambda_4(this$, closure$uWindSpeed, closure$uWindStrength) {
     return function (it) {
-      var tmp$, tmp$_0, tmp$_1;
-      if ((tmp$ = this$.depthMaps) != null) {
-        var tmp$_2, tmp$_0_0;
-        var index = 0;
-        tmp$_2 = closure$shadowMaps.iterator();
-        while (tmp$_2.hasNext()) {
-          var item = tmp$_2.next();
-          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-          if (i < tmp$.length) {
-            tmp$[i] = item.depthTexture;
-          }}
-      }var tmp$_3 = closure$uWindSpeed;
+      var tmp$, tmp$_0;
+      var tmp$_1 = closure$uWindSpeed;
       var $this = this$.model;
       var name = 'windAnim';
       var stage;
       var findNode_3klnlw$result;
       findNode_3klnlw$break: do {
         stage = ShaderStage.ALL;
-        var tmp$_4;
-        tmp$_4 = $this.stages.values.iterator();
-        while (tmp$_4.hasNext()) {
-          var element = tmp$_4.next();
+        var tmp$_2;
+        tmp$_2 = $this.stages.values.iterator();
+        while (tmp$_2.hasNext()) {
+          var element = tmp$_2.next();
           if ((element.stage.mask & stage.mask) !== 0) {
-            var tmp$_0_1;
+            var tmp$_0_0;
             var $receiver = element.nodes;
             var firstOrNull$result;
             firstOrNull$break: do {
@@ -5870,7 +5786,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
               firstOrNull$result = null;
             }
              while (false);
-            var node = (tmp$_0_1 = firstOrNull$result) == null || Kotlin.isType(tmp$_0_1, PushConstantNode1f) ? tmp$_0_1 : throwCCE();
+            var node = (tmp$_0_0 = firstOrNull$result) == null || Kotlin.isType(tmp$_0_0, PushConstantNode1f) ? tmp$_0_0 : throwCCE();
             if (node != null) {
               findNode_3klnlw$result = node;
               break findNode_3klnlw$break;
@@ -5878,20 +5794,20 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         findNode_3klnlw$result = null;
       }
        while (false);
-      tmp$_3.v = (tmp$_0 = findNode_3klnlw$result) != null ? tmp$_0.uniform : null;
-      var tmp$_5 = closure$uWindStrength;
+      tmp$_1.v = (tmp$ = findNode_3klnlw$result) != null ? tmp$.uniform : null;
+      var tmp$_3 = closure$uWindStrength;
       var $this_0 = this$.model;
       var name_0 = 'windStrength';
       var stage_0;
       var findNode_3klnlw$result_0;
       findNode_3klnlw$break: do {
         stage_0 = ShaderStage.ALL;
-        var tmp$_6;
-        tmp$_6 = $this_0.stages.values.iterator();
-        while (tmp$_6.hasNext()) {
-          var element_1 = tmp$_6.next();
+        var tmp$_4;
+        tmp$_4 = $this_0.stages.values.iterator();
+        while (tmp$_4.hasNext()) {
+          var element_1 = tmp$_4.next();
           if ((element_1.stage.mask & stage_0.mask) !== 0) {
-            var tmp$_0_2;
+            var tmp$_0_1;
             var $receiver_0 = element_1.nodes;
             var firstOrNull$result_0;
             firstOrNull$break: do {
@@ -5906,7 +5822,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
               firstOrNull$result_0 = null;
             }
              while (false);
-            var node_0 = (tmp$_0_2 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_0_2, PushConstantNode1f) ? tmp$_0_2 : throwCCE();
+            var node_0 = (tmp$_0_1 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_0_1, PushConstantNode1f) ? tmp$_0_1 : throwCCE();
             if (node_0 != null) {
               findNode_3klnlw$result_0 = node_0;
               break findNode_3klnlw$break;
@@ -5914,7 +5830,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         findNode_3klnlw$result_0 = null;
       }
        while (false);
-      tmp$_5.v = (tmp$_1 = findNode_3klnlw$result_0) != null ? tmp$_1.uniform : null;
+      tmp$_3.v = (tmp$_0 = findNode_3klnlw$result_0) != null ? tmp$_0.uniform : null;
       return Unit;
     };
   }
@@ -5927,28 +5843,28 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_0(closure$treeGen, closure$shadowMaps, closure$windSpeed, closure$windAnimationPos, closure$windStrength) {
+  function treeScene$lambda$lambda_0(closure$treeGen, this$, closure$shadowMaps, closure$windSpeed, closure$windAnimationPos, closure$windStrength) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda(closure$treeGen));
       var uWindSpeed = {v: null};
       var uWindStrength = {v: null};
       var $receiver_0 = new PbrShader$PbrConfig();
+      var this$_0 = this$;
+      var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver_0.isNormalMapped = true;
       $receiver_0.isAmbientOcclusionMapped = true;
       $receiver_0.isRoughnessMapped = true;
-      $receiver_0.isReceivingShadows = true;
-      $receiver_0.maxLights = 2;
+      $receiver_0.maxLights = this$_0.lighting.lights.size;
+      $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
-      var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda);
       $receiver_1.ambientOcclusionMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_0);
       $receiver_1.normalMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_1);
       $receiver_1.roughnessMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_2);
-      $receiver_1.ambient = new Color(0.15, 0.15, 0.15);
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_3($receiver_1));
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1, closure$shadowMaps_0, uWindSpeed, uWindStrength));
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_4($receiver_1, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
       var $receiver_2 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_0(closure$windSpeed, closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
@@ -6028,32 +5944,22 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     it.cullMethod = CullMethod.NO_CULLING;
     return Unit;
   }
-  function treeScene$lambda$lambda$lambda$lambda_8(this$, closure$shadowMaps, closure$uWindSpeed, closure$uWindStrength) {
+  function treeScene$lambda$lambda$lambda$lambda_8(this$, closure$uWindSpeed, closure$uWindStrength) {
     return function (it) {
-      var tmp$, tmp$_0, tmp$_1;
-      if ((tmp$ = this$.depthMaps) != null) {
-        var tmp$_2, tmp$_0_0;
-        var index = 0;
-        tmp$_2 = closure$shadowMaps.iterator();
-        while (tmp$_2.hasNext()) {
-          var item = tmp$_2.next();
-          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-          if (i < tmp$.length) {
-            tmp$[i] = item.depthTexture;
-          }}
-      }var tmp$_3 = closure$uWindSpeed;
+      var tmp$, tmp$_0;
+      var tmp$_1 = closure$uWindSpeed;
       var $this = this$.model;
       var name = 'windAnim';
       var stage;
       var findNode_3klnlw$result;
       findNode_3klnlw$break: do {
         stage = ShaderStage.ALL;
-        var tmp$_4;
-        tmp$_4 = $this.stages.values.iterator();
-        while (tmp$_4.hasNext()) {
-          var element = tmp$_4.next();
+        var tmp$_2;
+        tmp$_2 = $this.stages.values.iterator();
+        while (tmp$_2.hasNext()) {
+          var element = tmp$_2.next();
           if ((element.stage.mask & stage.mask) !== 0) {
-            var tmp$_0_1;
+            var tmp$_0_0;
             var $receiver = element.nodes;
             var firstOrNull$result;
             firstOrNull$break: do {
@@ -6068,7 +5974,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
               firstOrNull$result = null;
             }
              while (false);
-            var node = (tmp$_0_1 = firstOrNull$result) == null || Kotlin.isType(tmp$_0_1, PushConstantNode1f) ? tmp$_0_1 : throwCCE();
+            var node = (tmp$_0_0 = firstOrNull$result) == null || Kotlin.isType(tmp$_0_0, PushConstantNode1f) ? tmp$_0_0 : throwCCE();
             if (node != null) {
               findNode_3klnlw$result = node;
               break findNode_3klnlw$break;
@@ -6076,20 +5982,20 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         findNode_3klnlw$result = null;
       }
        while (false);
-      tmp$_3.v = (tmp$_0 = findNode_3klnlw$result) != null ? tmp$_0.uniform : null;
-      var tmp$_5 = closure$uWindStrength;
+      tmp$_1.v = (tmp$ = findNode_3klnlw$result) != null ? tmp$.uniform : null;
+      var tmp$_3 = closure$uWindStrength;
       var $this_0 = this$.model;
       var name_0 = 'windStrength';
       var stage_0;
       var findNode_3klnlw$result_0;
       findNode_3klnlw$break: do {
         stage_0 = ShaderStage.ALL;
-        var tmp$_6;
-        tmp$_6 = $this_0.stages.values.iterator();
-        while (tmp$_6.hasNext()) {
-          var element_1 = tmp$_6.next();
+        var tmp$_4;
+        tmp$_4 = $this_0.stages.values.iterator();
+        while (tmp$_4.hasNext()) {
+          var element_1 = tmp$_4.next();
           if ((element_1.stage.mask & stage_0.mask) !== 0) {
-            var tmp$_0_2;
+            var tmp$_0_1;
             var $receiver_0 = element_1.nodes;
             var firstOrNull$result_0;
             firstOrNull$break: do {
@@ -6104,7 +6010,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
               firstOrNull$result_0 = null;
             }
              while (false);
-            var node_0 = (tmp$_0_2 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_0_2, PushConstantNode1f) ? tmp$_0_2 : throwCCE();
+            var node_0 = (tmp$_0_1 = firstOrNull$result_0) == null || Kotlin.isType(tmp$_0_1, PushConstantNode1f) ? tmp$_0_1 : throwCCE();
             if (node_0 != null) {
               findNode_3klnlw$result_0 = node_0;
               break findNode_3klnlw$break;
@@ -6112,7 +6018,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
         findNode_3klnlw$result_0 = null;
       }
        while (false);
-      tmp$_5.v = (tmp$_1 = findNode_3klnlw$result_0) != null ? tmp$_1.uniform : null;
+      tmp$_3.v = (tmp$_0 = findNode_3klnlw$result_0) != null ? tmp$_0.uniform : null;
       return Unit;
     };
   }
@@ -6124,24 +6030,24 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function treeScene$lambda$lambda_1(closure$treeGen, closure$shadowMaps, closure$windAnimationPos, closure$windStrength) {
+  function treeScene$lambda$lambda_1(closure$treeGen, this$, closure$shadowMaps, closure$windAnimationPos, closure$windStrength) {
     return function ($receiver) {
       $receiver.generate_v2sixm$(treeScene$lambda$lambda$lambda_1(closure$treeGen));
       var uWindSpeed = {v: null};
       var uWindStrength = {v: null};
       var $receiver_0 = new PbrShader$PbrConfig();
+      var this$_0 = this$;
+      var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
-      $receiver_0.isReceivingShadows = true;
-      $receiver_0.maxLights = 2;
+      $receiver_0.maxLights = this$_0.lighting.lights.size;
+      $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg, treePbrModel(pbrCfg));
-      var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_1.albedoMap = new Texture(void 0, treeScene$lambda$lambda$lambda$lambda_5);
       $receiver_1.roughness = 0.5;
-      $receiver_1.ambient = new Color(0.15, 0.15, 0.15);
       $receiver.onDispose.add_11rb$(treeScene$lambda$lambda$lambda$lambda_6($receiver_1));
       $receiver_1.onSetup.add_11rb$(treeScene$lambda$lambda$lambda$lambda_7);
-      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_8($receiver_1, closure$shadowMaps_0, uWindSpeed, uWindStrength));
+      $receiver_1.onCreated.add_11rb$(treeScene$lambda$lambda$lambda$lambda_8($receiver_1, uWindSpeed, uWindStrength));
       $receiver.pipelineLoader = $receiver_1;
       var $receiver_2 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_2(closure$windAnimationPos, uWindSpeed, closure$windStrength, uWindStrength);
@@ -6158,13 +6064,15 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function treeScene$lambda$lambda_2(this$, closure$autoRotate) {
     return function ($receiver) {
+      var tmp$;
       $receiver.unaryPlus_uv0sim$(this$.camera);
       $receiver.minZoom = 1.0;
-      $receiver.maxZoom = 25.0;
+      $receiver.maxZoom = 100.0;
       $receiver.zoomMethod = OrbitInputTransform$ZoomMethod.ZOOM_CENTER;
       $receiver.zoom = 6.0;
       $receiver.setMouseRotation_dleff0$(0.0, -10.0);
       $receiver.setMouseTranslation_y2kzbl$(0.0, 2.0, 0.0);
+      (Kotlin.isType(tmp$ = this$.camera, PerspectiveCamera) ? tmp$ : throwCCE()).clipFar = 150.0;
       var $receiver_0 = $receiver.onUpdate;
       var element = treeScene$lambda$lambda$lambda_3(closure$autoRotate, $receiver);
       $receiver_0.add_11rb$(element);
@@ -6571,7 +6479,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     treeGen.generate_za3lpa$();
     var trunkMesh = {v: null};
     var leafMesh = {v: null};
-    var autoRotate = {v: true};
+    var autoRotate = {v: false};
     var windSpeed = {v: 2.5};
     var windAnimationPos = {v: 0.0};
     var windStrength = {v: 1.0};
@@ -6580,19 +6488,19 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var spotLightPos = new Vec3f(10.0, 15.0, 10.0);
     var $receiver_0 = $receiver.lighting.lights;
     $receiver_0.clear();
-    $receiver_0.add_11rb$((new Light()).setSpot_nve3wz$(spotLightPos, spotLightPos.scale_749b8l$(-1.0, MutableVec3f_init()).norm(), 45.0).setColor_y83vuj$(Color.Companion.YELLOW.mix_y83vuj$(Color.Companion.WHITE, 0.6), 1000.0));
-    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(dirLighDirection.norm_5s4mqq$(MutableVec3f_init())).setColor_y83vuj$(Color.Companion.LIGHT_BLUE.mix_y83vuj$(Color.Companion.WHITE, 0.5), 1.0));
-    var shadowMaps = mutableListOf([new ShadowMapPass($receiver, $receiver.lighting.lights.get_za3lpa$(0), 2048), new ShadowMapPass($receiver, $receiver.lighting.lights.get_za3lpa$(1), 32)]);
+    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(spotLightPos.scale_749b8l$(-1.0, MutableVec3f_init()).norm()).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 3.0));
+    $receiver_0.add_11rb$((new Light()).setDirectional_czzhiu$(dirLighDirection.norm_5s4mqq$(MutableVec3f_init())).setColor_y83vuj$(Color.Companion.MD_AMBER.mix_y83vuj$(Color.Companion.WHITE, 0.6).toLinear(), 0.5));
+    var shadowMaps = mutableListOf([new CascadedShadowMap($receiver, 0, void 0, 2048)]);
     var tmp$;
     tmp$ = shadowMaps.iterator();
     while (tmp$.hasNext()) {
       var element = tmp$.next();
-      $receiver.offscreenPasses.add_11rb$(element);
+      addAll_0($receiver.offscreenPasses, element.cascades);
     }
     $receiver.onDispose.add_11rb$(treeScene$lambda$lambda(shadowMaps, $receiver, ctx));
     $receiver.unaryPlus_uv0sim$(makeTreeGroundGrid(10, shadowMaps));
-    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda_0(treeGen, shadowMaps, windSpeed, windAnimationPos, windStrength));
-    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_1(treeGen, shadowMaps, windAnimationPos, windStrength));
+    trunkMesh.v = textureMesh(void 0, true, treeScene$lambda$lambda_0(treeGen, $receiver, shadowMaps, windSpeed, windAnimationPos, windStrength));
+    leafMesh.v = textureMesh(void 0, void 0, treeScene$lambda$lambda_1(treeGen, $receiver, shadowMaps, windAnimationPos, windStrength));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(trunkMesh.v));
     $receiver.unaryPlus_uv0sim$(ensureNotNull(leafMesh.v));
     $receiver.unaryPlus_uv0sim$(orbitInputTransform($receiver, void 0, treeScene$lambda$lambda_2($receiver, autoRotate)));
@@ -6629,9 +6537,9 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     var ifFragPos = {v: null};
     var ifTexCoords = {v: null};
     var mvp = {v: null};
-    var shadowedLightNode = {v: null};
+    var shadowMapNodes = ArrayList_init();
     var $receiver_0 = new ShaderModel$ShaderModel$VertexStageBuilder_init($receiver);
-    var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+    var tmp$, tmp$_0, tmp$_1, tmp$_2;
     mvp.v = $receiver_0.mvpNode();
     var nrm = $receiver_0.transformNode_vid4wo$($receiver_0.attrNormals().output, mvp.v.outModelMat, 0.0);
     ifNormals.v = $receiver_0.stageInterfaceNode_wtmwsg$('ifNormals', nrm.output);
@@ -6672,17 +6580,30 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       tmp$_2 = null;
     }
     ifTangents.v = tmp$_2;
-    if (cfg.isReceivingShadows) {
-      tmp$_3 = $receiver_0.shadowedLightNode_jciouo$(worldPos, mvp.v.outModelMat, 'depthMap', cfg.maxLights);
-    } else {
-      tmp$_3 = null;
-    }
-    shadowedLightNode.v = tmp$_3;
-    $receiver_0.positionOutput = $receiver_0.vertexPositionNode_ze33is$(worldPos, mvp.v.outMvpMat).outPosition;
+    var clipPos = $receiver_0.vertexPositionNode_ze33is$(worldPos, mvp.v.outMvpMat).outPosition;
+    var tmp$_3, tmp$_0_0;
+    var index = 0;
+    tmp$_3 = cfg.shadowMaps.iterator();
+    while (tmp$_3.hasNext()) {
+      var item = tmp$_3.next();
+      var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
+      if (Kotlin.isType(item, CascadedShadowMap)) {
+        var element = $receiver_0.cascadedShadowMapNode_3t76e5$(item, 'depthMap_' + i, clipPos, worldPos, mvp.v.outModelMat);
+        shadowMapNodes.add_11rb$(element);
+      } else if (Kotlin.isType(item, ShadowMapPass)) {
+        var element_0 = $receiver_0.simpleShadowMapNode_5a10fw$(item, 'depthMap_' + i, worldPos, mvp.v.outModelMat);
+        shadowMapNodes.add_11rb$(element_0);
+      }}
+    $receiver_0.positionOutput = clipPos;
     var $receiver_3 = new ShaderModel$ShaderModel$FragmentStageBuilder_init($receiver);
-    var tmp$_4, tmp$_5;
     var mvpFrag = mvp.v.addToStage_llmhyc$($receiver.fragmentStageGraph);
-    var lightNode = (tmp$_5 = (tmp$_4 = shadowedLightNode.v) != null ? tmp$_4.fragmentNode : null) != null ? tmp$_5 : $receiver_3.defaultLightNode_za3lpa$(cfg.maxLights);
+    var lightNode = $receiver_3.multiLightNode_za3lpa$(cfg.maxLights);
+    var tmp$_4;
+    tmp$_4 = shadowMapNodes.iterator();
+    while (tmp$_4.hasNext()) {
+      var element_1 = tmp$_4.next();
+      lightNode.inShaodwFacs[element_1.lightIndex] = element_1.outShadowFac;
+    }
     var reflMap;
     var brdfLut;
     var irrSampler;
@@ -6698,46 +6619,46 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     }
     var $receiver_4 = $receiver_3.pbrMaterialNode_od0lt5$(lightNode, reflMap, brdfLut);
     var closure$irrSampler = irrSampler;
-    var tmp$_6, tmp$_7, tmp$_8, tmp$_9, tmp$_10;
+    var tmp$_5, tmp$_6, tmp$_7, tmp$_8, tmp$_9;
     $receiver_4.inFragPos = ifFragPos.v.output;
     $receiver_4.inCamPos = mvpFrag.outCamPos;
-    $receiver_4.inIrradiance = (tmp$_6 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_6 : $receiver_3.pushConstantNodeColor_61zpoe$('uAmbient').output;
+    $receiver_4.inIrradiance = (tmp$_5 = closure$irrSampler != null ? closure$irrSampler.outColor : null) != null ? tmp$_5 : $receiver_3.pushConstantNodeColor_61zpoe$('uAmbient').output;
     switch (cfg.albedoSource.name) {
       case 'VERTEX_ALBEDO':
-        tmp$_7 = ensureNotNull(ifColors.v).output;
+        tmp$_6 = ensureNotNull(ifColors.v).output;
         break;
       case 'STATIC_ALBEDO':
-        tmp$_7 = $receiver_3.pushConstantNodeColor_61zpoe$('uAlbedo').output;
+        tmp$_6 = $receiver_3.pushConstantNodeColor_61zpoe$('uAlbedo').output;
         break;
       case 'TEXTURE_ALBEDO':
         var albedoSampler = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAlbedo'), ensureNotNull(ifTexCoords.v).output, false);
         var albedoLin = $receiver_3.gammaNode_r20yfm$(albedoSampler.outColor);
-        tmp$_7 = albedoLin.outColor;
+        tmp$_6 = albedoLin.outColor;
         break;
-      default:tmp$_7 = Kotlin.noWhenBranchMatched();
+      default:tmp$_6 = Kotlin.noWhenBranchMatched();
         break;
     }
-    $receiver_4.inAlbedo = tmp$_7;
+    $receiver_4.inAlbedo = tmp$_6;
     if (cfg.isNormalMapped && ifTangents.v != null) {
       var bumpNormal = $receiver_3.normalMapNode_j8913i$($receiver_3.textureNode_61zpoe$('tNormal'), ensureNotNull(ifTexCoords.v).output, ifNormals.v.output, ifTangents.v.output);
       bumpNormal.inStrength = new ShaderNodeIoVar(new ModelVar1fConst(cfg.normalStrength));
-      tmp$_8 = bumpNormal.outNormal;
+      tmp$_7 = bumpNormal.outNormal;
     } else {
-      tmp$_8 = ifNormals.v.output;
+      tmp$_7 = ifNormals.v.output;
     }
-    $receiver_4.inNormal = tmp$_8;
+    $receiver_4.inNormal = tmp$_7;
     if (cfg.isMetallicMapped) {
-      tmp$_9 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tMetallic'), ensureNotNull(ifTexCoords.v).output, false).outColor;
+      tmp$_8 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tMetallic'), ensureNotNull(ifTexCoords.v).output, false).outColor;
     } else {
-      tmp$_9 = $receiver_3.pushConstantNode1f_61zpoe$('uMetallic').output;
+      tmp$_8 = $receiver_3.pushConstantNode1f_61zpoe$('uMetallic').output;
     }
-    $receiver_4.inMetallic = tmp$_9;
+    $receiver_4.inMetallic = tmp$_8;
     if (cfg.isRoughnessMapped) {
-      tmp$_10 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tRoughness'), ensureNotNull(ifTexCoords.v).output, false).outColor;
+      tmp$_9 = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tRoughness'), ensureNotNull(ifTexCoords.v).output, false).outColor;
     } else {
-      tmp$_10 = $receiver_3.pushConstantNode1f_61zpoe$('uRoughness').output;
+      tmp$_9 = $receiver_3.pushConstantNode1f_61zpoe$('uRoughness').output;
     }
-    $receiver_4.inRoughness = tmp$_10;
+    $receiver_4.inRoughness = tmp$_9;
     if (cfg.isAmbientOcclusionMapped) {
       $receiver_4.inAmbientOccl = $receiver_3.textureSamplerNode_ce41yx$($receiver_3.textureNode_61zpoe$('tAmbOccl'), ensureNotNull(ifTexCoords.v).output, false).outColor;
     }var mat = $receiver_4;
@@ -7016,23 +6937,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     else
       return instance.doResume(null);
   }
-  function makeTreeGroundGrid$lambda$lambda$lambda_4(this$, closure$shadowMaps) {
-    return function (it) {
-      var tmp$;
-      if ((tmp$ = this$.depthMaps) != null) {
-        var tmp$_0, tmp$_0_0;
-        var index = 0;
-        tmp$_0 = closure$shadowMaps.iterator();
-        while (tmp$_0.hasNext()) {
-          var item = tmp$_0.next();
-          var i = checkIndexOverflow((tmp$_0_0 = index, index = tmp$_0_0 + 1 | 0, tmp$_0_0));
-          if (i < tmp$.length) {
-            tmp$[i] = item.depthTexture;
-          }}
-      }return Unit;
-    };
-  }
-  function makeTreeGroundGrid$lambda$lambda$lambda_5(this$) {
+  function makeTreeGroundGrid$lambda$lambda$lambda_4(this$) {
     return function ($receiver, it) {
       var tmp$, tmp$_0, tmp$_1, tmp$_2, tmp$_3;
       (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
@@ -7048,23 +6953,22 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.isCastingShadow = false;
       $receiver.generate_v2sixm$(makeTreeGroundGrid$lambda$lambda(closure$groundExt));
       var $receiver_0 = new PbrShader$PbrConfig();
+      var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_0.albedoSource = Albedo.TEXTURE_ALBEDO;
       $receiver_0.isNormalMapped = true;
       $receiver_0.isAmbientOcclusionMapped = true;
       $receiver_0.isRoughnessMapped = true;
       $receiver_0.isDisplacementMapped = true;
-      $receiver_0.isReceivingShadows = true;
       $receiver_0.maxLights = 2;
+      $receiver_0.shadowMaps.addAll_brywnq$(closure$shadowMaps_0);
       var pbrCfg = $receiver_0;
       var $receiver_1 = new PbrShader(pbrCfg);
-      var closure$shadowMaps_0 = closure$shadowMaps;
       $receiver_1.albedoMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda);
       $receiver_1.normalMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_0);
       $receiver_1.roughnessMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_1);
       $receiver_1.ambientOcclusionMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_2);
       $receiver_1.displacementMap = new Texture(void 0, makeTreeGroundGrid$lambda$lambda$lambda_3);
-      $receiver_1.onCreated.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_4($receiver_1, closure$shadowMaps_0));
-      $receiver.onDispose.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_5($receiver_1));
+      $receiver.onDispose.add_11rb$(makeTreeGroundGrid$lambda$lambda$lambda_4($receiver_1));
       $receiver.pipelineLoader = $receiver_1;
       return Unit;
     };
