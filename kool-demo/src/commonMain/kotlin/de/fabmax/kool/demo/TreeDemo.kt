@@ -37,7 +37,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     var trunkMesh: Mesh? = null
     var leafMesh: Mesh? = null
 
-    var autoRotate = false
+    var autoRotate = true
     var windSpeed = 2.5f
     var windAnimationPos = 0f
     var windStrength = 1f
@@ -97,6 +97,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
 
                 onDispose += {
                     albedoMap?.dispose()
+                    ambientOcclusionMap?.dispose()
                     normalMap?.dispose()
                     roughnessMap?.dispose()
                 }

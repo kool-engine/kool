@@ -5749,10 +5749,11 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function treeScene$lambda$lambda$lambda$lambda_3(this$) {
     return function ($receiver, it) {
-      var tmp$, tmp$_0, tmp$_1;
+      var tmp$, tmp$_0, tmp$_1, tmp$_2;
       (tmp$ = this$.albedoMap) != null ? (tmp$.dispose(), Unit) : null;
-      (tmp$_0 = this$.normalMap) != null ? (tmp$_0.dispose(), Unit) : null;
-      (tmp$_1 = this$.roughnessMap) != null ? (tmp$_1.dispose(), Unit) : null;
+      (tmp$_0 = this$.ambientOcclusionMap) != null ? (tmp$_0.dispose(), Unit) : null;
+      (tmp$_1 = this$.normalMap) != null ? (tmp$_1.dispose(), Unit) : null;
+      (tmp$_2 = this$.roughnessMap) != null ? (tmp$_2.dispose(), Unit) : null;
       return Unit;
     };
   }
@@ -6479,7 +6480,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     treeGen.generate_za3lpa$();
     var trunkMesh = {v: null};
     var leafMesh = {v: null};
-    var autoRotate = {v: false};
+    var autoRotate = {v: true};
     var windSpeed = {v: 2.5};
     var windAnimationPos = {v: 0.0};
     var windStrength = {v: 1.0};

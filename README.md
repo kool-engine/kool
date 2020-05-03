@@ -161,7 +161,7 @@ dependencies {
 
 The new render pipeline still lacks a lot of features the old OpenGL-only one already included; hence 
 first step should be to get these working again:
-- (Cascaded) shadow mapping for non spot light types
+- Shadow mapping for point lights
 - A vertex shader node for skeletal animations
 
 There are also a few new features on my wish list:
