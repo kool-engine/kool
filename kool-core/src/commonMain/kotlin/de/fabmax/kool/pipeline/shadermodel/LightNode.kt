@@ -1,11 +1,9 @@
 package de.fabmax.kool.pipeline.shadermodel
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.drawqueue.DrawCommand
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toRad
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.Uniform1i
+import de.fabmax.kool.pipeline.Uniform4fv
 import de.fabmax.kool.scene.Light
 import kotlin.math.PI
 import kotlin.math.cos
@@ -104,87 +102,4 @@ class MultiLightNode(shaderGraph: ShaderGraph, val maxLights: Int = 4) : LightNo
     override fun callVec3GetRadiance(idx: String, fragToLight: String, innerAngle: String): String {
         return "(light_getRadiance($idx, $fragToLight, $innerAngle) * ${name}_shadowFacs[$idx])"
     }
-}
-
-class ShadowMapNode(lightIndex: Int, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) {
-    var depthTexture: TextureNode? = null
-
-    val uShadowMapVP = UniformMat4f("shadowMapVP_${vertexGraph.nextNodeId}")
-
-    var inDepthOffset: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar1fConst(-0.01f))
-    var inPosition: ShaderNodeIoVar = ShaderNodeIoVar(ModelVar3fConst(Vec3f.ZERO))
-    var inModelMat: ShaderNodeIoVar? = null
-
-    private val ifPosLightSpace = StageInterfaceNode("posLightSpace_${vertexGraph.nextNodeId}", vertexGraph, fragmentGraph)
-
-    init {
-        vertexGraph.addNode(ifPosLightSpace.vertexNode)
-        fragmentGraph.addNode(ifPosLightSpace.fragmentNode)
-    }
-
-    val vertexNode = object : ShaderNode("shadowMap_${vertexGraph.nextNodeId}", vertexGraph, ShaderStage.VERTEX_SHADER.mask) {
-        val outPosLightSpace = ShaderNodeIoVar(ModelVar4f("shadowMap_${vertexGraph.nextNodeId}_posLightSpace"), this)
-
-        init {
-            ifPosLightSpace.input = outPosLightSpace
-        }
-
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            val inModel = inModelMat ?: throw KoolException("Model matrix input not set")
-            dependsOn(inPosition, inModel)
-
-            shaderGraph.descriptorSet.apply {
-                uniformBuffer(name, shaderGraph.stage) {
-                    +{ uShadowMapVP }
-                    onUpdate = { _, cmd ->
-                        cmd.renderPass.lighting?.let {
-                            if (lightIndex < it.lights.size) {
-                                uShadowMapVP.value.set(it.lights[lightIndex].lightViewProjMat)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        override fun generateCode(generator: CodeGenerator) {
-            val modelMat = inModelMat?.variable ?: throw KoolException("Model matrix input not set")
-            generator.appendMain("${outPosLightSpace.declare()} = ${uShadowMapVP.name} * (${modelMat.refAsType(GlslType.MAT_4F)} * vec4(${inPosition.ref3f()}, 1.0));")
-        }
-    }
-
-    val fragmentNode: ShaderNode = object : ShaderNode("shadowMap_${fragmentGraph.nextNodeId}", fragmentGraph, ShaderStage.FRAGMENT_SHADER.mask) {
-        override fun setup(shaderGraph: ShaderGraph) {
-            super.setup(shaderGraph)
-            val depthTex = depthTexture ?: throw KoolException("Depth texture input not set")
-            dependsOn(depthTex)
-        }
-
-        override fun generateCode(generator: CodeGenerator) {
-            val depthTex = depthTexture ?: throw KoolException("Depth texture input not set")
-
-            generator.appendMain("""
-                float ${name}_size = float(textureSize(${depthTex.name}, 0).x);
-                float ${name}_scale = 1.0 / float(${name}_size);
-                vec4 ${name}_pos = ${ifPosLightSpace.output.ref4f()};
-                ${name}_pos.z += ${inDepthOffset.ref1f()};
-                vec2 ${name}_offset = vec2(float(fract(${name}_pos.x * ${name}_size * 0.5) > 0.25),
-                                           float(fract(${name}_pos.y * ${name}_size * 0.5) > 0.25));
-                ${outShadowFac.declare()} = 0.0;
-            """)
-
-            // dithered pcf shadow map sampling
-            // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
-            var nSamples = 0
-            listOf(Vec2f(-1.5f, 0.5f), Vec2f(0.5f, 0.5f), Vec2f(-1.5f, -1.5f), Vec2f(0.5f, -1.5f)).forEach { off ->
-                val projCoord = "vec4(${name}_pos.xy + (${name}_offset + vec2(${off.x}, ${off.y})) * ${name}_scale * ${name}_pos.w, ${name}_pos.z, ${name}_pos.w)"
-                generator.appendMain("${outShadowFac.name} += ${generator.sampleTexture2dDepth(depthTex.name, projCoord)};")
-                nSamples++
-            }
-            generator.appendMain("${outShadowFac.name} *= ${1f / nSamples};")
-        }
-    }
-
-    val outShadowFac = ShaderNodeIoVar(ModelVar1f("${fragmentNode.name}_shadowFac"), fragmentNode)
 }

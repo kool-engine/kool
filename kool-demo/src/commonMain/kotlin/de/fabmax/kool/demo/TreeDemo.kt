@@ -8,7 +8,6 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.Uniform1f
 import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.pipeline.shading.Albedo
-import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.pipeline.shading.PbrShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.ui.*
@@ -38,7 +37,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
     var trunkMesh: Mesh? = null
     var leafMesh: Mesh? = null
 
-    var autoRotate = true
+    var autoRotate = false
     var windSpeed = 2.5f
     var windAnimationPos = 0f
     var windStrength = 1f
@@ -48,58 +47,26 @@ fun treeScene(ctx: KoolContext): List<Scene> {
         val spotLightPos = Vec3f(10f, 15f, 10f)
         lighting.lights.apply {
             clear()
-//            add(Light()
-//                    .setSpot(spotLightPos, spotLightPos.scale(-1f, MutableVec3f()).norm(), 45f)
-//                    .setColor(Color.YELLOW.mix(Color.WHITE, 0.6f), 1000f))
-//            add(Light()
-//                    .setDirectional(dirLighDirection.norm(MutableVec3f()))
-//                    .setColor(Color.LIGHT_BLUE.mix(Color.WHITE, 0.5f), 1f))
-
             add(Light()
                     .setDirectional(spotLightPos.scale(-1f, MutableVec3f()).norm())
-                    .setColor(Color.YELLOW.mix(Color.WHITE, 0.6f), 2f))
+                    //.setColor(Color.RED, 3f))
+                    .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 3f))
 
             add(Light()
                     .setDirectional(dirLighDirection.norm(MutableVec3f()))
-                    .setColor(Color.LIGHT_BLUE.mix(Color.WHITE, 0.5f), 2f))
+                    //.setColor(Color.GREEN, 3f))
+                    .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 0.5f))
         }
 
-        // fixme: shadow mapping is still a mess
-        // currently only sport lights are supported, this scene would usually use a directional (sun) light
-        // we emulate that by using as large sport light
-        // moreover the shadow night node expects a shadow map for every light, since we use two lights, two are needed
-        // although the second won't actually be used (therefore we make it super small, way too much overhead anyway)
         val shadowMaps = mutableListOf(
-                ShadowMapPass(this, lighting.lights[0], 2048).apply { clipNear = 0f; clipFar = 10f },
-                ShadowMapPass(this, lighting.lights[1], 2048).apply { clipNear = 0f; clipFar = 10f }
+                CascadedShadowMap(this, 0, mapSize = 2048)
+                //CascadedShadowMap(this, 1, mapSize = 2048)
         )
-        shadowMaps.forEach { offscreenPasses += it }
+        shadowMaps.forEach { offscreenPasses += it.cascades }
         onDispose += {
             shadowMaps.forEach {
-                offscreenPasses -= it
-                it.dispose(ctx)
+                it.dispose(this@scene, ctx)
             }
-        }
-
-        +textureMesh {
-            generate {
-                rect {
-                    size.set(2f, 2f)
-                    origin.set(3f, 4.2f, 0f)
-                }
-            }
-            pipelineLoader = ModeledShader.TextureColor(shadowMaps[0].depthTexture)
-            isCastingShadow = false
-        }
-        +textureMesh {
-            generate {
-                rect {
-                    size.set(2f, 2f)
-                    origin.set(3f, 2f, 0f)
-                }
-            }
-            pipelineLoader = ModeledShader.TextureColor(shadowMaps[1].depthTexture)
-            isCastingShadow = false
         }
 
         +makeTreeGroundGrid(10, shadowMaps)
@@ -119,18 +86,14 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 isNormalMapped = true
                 isAmbientOcclusionMapped = true
                 isRoughnessMapped = true
-                isReceivingShadows = true
                 maxLights = lighting.lights.size
+                this.shadowMaps.addAll(shadowMaps)
             }
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_baseColor.jpg") }
                 ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_ambientOcclusion.jpg") }
                 normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg") }
                 roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_roughness.jpg") }
-                ambient = Color(0.15f, 0.15f, 0.15f)
-                shadowMaps.forEachIndexed { i, pass ->
-                    setDepthMap(i, pass.depthTexture)
-                }
 
                 onDispose += {
                     albedoMap?.dispose()
@@ -161,16 +124,12 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             var uWindStrength: Uniform1f? = null
             val pbrCfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
-                isReceivingShadows = true
                 maxLights = lighting.lights.size
+                this.shadowMaps.addAll(shadowMaps)
             }
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
                 albedoMap = Texture { it.loadTextureData("leaf.png") }
                 roughness = 0.5f
-                ambient = Color(0.15f, 0.15f, 0.15f)
-                shadowMaps.forEachIndexed { i, pass ->
-                    setDepthMap(i, pass.depthTexture)
-                }
 
                 onDispose += {
                     albedoMap!!.dispose()
@@ -196,12 +155,14 @@ fun treeScene(ctx: KoolContext): List<Scene> {
         +orbitInputTransform {
             +camera
             minZoom = 1.0
-            maxZoom = 25.0
+            maxZoom = 100.0
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
             zoom = 6.0
 
             setMouseRotation(0f, -10f)
             setMouseTranslation(0f, 2f, 0f)
+
+            (camera as PerspectiveCamera).apply { clipFar = 150f }
 
             onUpdate += { _, ctx ->
                 if (autoRotate) {
@@ -209,18 +170,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 }
             }
         }
-
-//        camera = OrthographicCamera().apply {
-//            position.set(Vec3f.ZERO)
-//            lookAt.set(-0.48507124f, -0.7276069f, -0.48507124f)
-//            left =   -108.76188f
-//            right =  64.1743f
-//            bottom = -71.18083f
-//            top =    42.534977f
-//            near =   -15.084982f
-//            far =    120.434074f
-//        }
-
     }
     scenes += treeScene
 
@@ -520,21 +469,21 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             null
         }
 
-        if (cfg.isReceivingShadows) {
-            for (i in 0 until cfg.maxLights) {
-                shadowMapNodes += shadowMapNode(i, "depthMap_$i", worldPos, mvp.outModelMat)
+        val clipPos = vertexPositionNode(worldPos, mvp.outMvpMat).outPosition
+
+        cfg.shadowMaps.forEachIndexed { i, map ->
+            when (map) {
+                is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, mvp.outModelMat)
+                is ShadowMapPass -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, mvp.outModelMat)
             }
         }
-
-        positionOutput = vertexPositionNode(worldPos, mvp.outMvpMat).outPosition
+        positionOutput = clipPos
     }
     fragmentStage {
         val mvpFrag = mvp.addToStage(fragmentStageGraph)
         val lightNode = multiLightNode(cfg.maxLights)
-        if (cfg.isReceivingShadows) {
-            for (i in 0 until cfg.maxLights) {
-                lightNode.inShaodwFacs[i] = shadowMapNodes[i].outShadowFac
-            }
+        shadowMapNodes.forEach {
+            lightNode.inShaodwFacs[it.lightIndex] = it.outShadowFac
         }
 
         val reflMap: CubeMapNode?
@@ -593,7 +542,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
     }
 }
 
-private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Node {
+private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<CascadedShadowMap>): Node {
     val groundExt = cells / 2
 
     return textureMesh(isNormalMapped = true) {
@@ -626,9 +575,8 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Nod
             isAmbientOcclusionMapped = true
             isRoughnessMapped = true
             isDisplacementMapped = true
-
-            isReceivingShadows = true
             maxLights = 2
+            this.shadowMaps.addAll(shadowMaps)
         }
         pipelineLoader = PbrShader(pbrCfg).apply {
             albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg") }
@@ -636,9 +584,6 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Nod
             roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg") }
             ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg") }
             displacementMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg") }
-            shadowMaps.forEachIndexed { i, pass ->
-                setDepthMap(i, pass.depthTexture)
-            }
 
             onDispose += {
                 albedoMap?.dispose()

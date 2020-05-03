@@ -2,7 +2,9 @@ package de.fabmax.kool.pipeline.shadermodel
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.MeshInstanceList
+import de.fabmax.kool.util.ShadowMapPass
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -204,17 +206,38 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun premultipliedMvpNode() = addNode(UniformBufferPremultipliedMvp(stage))
 
-        fun shadowMapNode(lightIndex: Int, depthMapName: String, inVertexPos: ShaderNodeIoVar? = null, inModelMat: ShaderNodeIoVar? = null): ShadowMapNode {
-            val shadowMapNode = ShadowMapNode(lightIndex, vertexStageGraph, fragmentStageGraph)
+        fun simpleShadowMapNode(shadowMap: ShadowMapPass, depthMapName: String, inVertexPos: ShaderNodeIoVar? = null, inModelMat: ShaderNodeIoVar? = null): SimpleShadowMapNode {
+            val shadowMapNode = SimpleShadowMapNode(shadowMap, vertexStageGraph, fragmentStageGraph)
             addNode(shadowMapNode.vertexNode)
             fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
 
             val depthMap = TextureNode(fragmentStageGraph, depthMapName).apply { isDepthTexture = true }
             fragmentStageGraph.addNode(depthMap)
 
-            inVertexPos?.let { shadowMapNode.inPosition = inVertexPos }
-            inModelMat?.let { shadowMapNode.inModelMat = inModelMat }
-            shadowMapNode.depthTexture = depthMap
+            inVertexPos?.let { shadowMapNode.inPosition = it }
+            inModelMat?.let { shadowMapNode.inModelMat = it }
+            shadowMapNode.depthMap = depthMap
+
+            return shadowMapNode
+        }
+
+        fun cascadedShadowMapNode(cascadedShadowMap: CascadedShadowMap, depthMapName: String,
+                                  inClipPos: ShaderNodeIoVar? = null, inVertexPos: ShaderNodeIoVar? = null,
+                                  inModelMat: ShaderNodeIoVar? = null): CascadedShadowMapNode {
+            val shadowMapNode = CascadedShadowMapNode(cascadedShadowMap, vertexStageGraph, fragmentStageGraph)
+            addNode(shadowMapNode.vertexNode)
+            fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
+
+            val depthMap = TextureNode(fragmentStageGraph, depthMapName).apply {
+                isDepthTexture = true
+                arraySize = cascadedShadowMap.numCascades
+            }
+            fragmentStageGraph.addNode(depthMap)
+
+            inVertexPos?.let { shadowMapNode.inPosition = it }
+            inModelMat?.let { shadowMapNode.inModelMat = it }
+            inClipPos?.let { shadowMapNode.inClipPosition = it }
+            shadowMapNode.depthMap = depthMap
 
             return shadowMapNode
         }

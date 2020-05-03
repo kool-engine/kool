@@ -7,14 +7,16 @@ import de.fabmax.kool.pipeline.PushConstantRange
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.util.Color
 
-class ShaderInterfaceIoVar(val location: Int, val variable: ModelVar)
+class ShaderInterfaceIoVar(val location: Int, val variable: ModelVar, val locationInc: Int = 1)
 
 open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
     val descriptorSet = DescriptorSetLayout.Builder()
     val pushConstants = PushConstantRange.Builder()
 
     val inputs = mutableListOf<ShaderInterfaceIoVar>()
-    val outputs = mutableListOf<ShaderInterfaceIoVar>()
+    private val mutOutputs = mutableListOf<ShaderInterfaceIoVar>()
+    val outputs: List<ShaderInterfaceIoVar>
+        get() = mutOutputs
 
     protected val mutNodes = mutableListOf<ShaderNode>()
     val nodes: List<ShaderNode> get() = mutNodes
@@ -24,6 +26,13 @@ open class ShaderGraph(val model: ShaderModel, val stage: ShaderStage) {
 
     inline fun <reified T: ShaderNode> findNode(name: String): T? {
         return nodes.find { it.name == name && it is T } as T?
+    }
+
+    fun addStageOutput(output: ModelVar, locationInc: Int = 1): ShaderInterfaceIoVar {
+        val location = mutOutputs.sumBy { it.locationInc }
+        val ifVar = ShaderInterfaceIoVar(location, output, locationInc)
+        mutOutputs += ifVar
+        return ifVar
     }
 
     fun addNode(node: ShaderNode) {

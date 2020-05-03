@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.util.Color
@@ -25,8 +24,6 @@ class Light {
     val direction = MutableVec3f(1f)
     val position = MutableVec3f()
     var spotAngle = 60f
-
-    val lightViewProjMat = Mat4d()
 
     fun setColor(color: Color, intensity: Float): Light {
         this.color.set(color)

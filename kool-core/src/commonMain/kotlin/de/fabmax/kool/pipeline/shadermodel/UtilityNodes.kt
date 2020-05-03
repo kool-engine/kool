@@ -318,14 +318,13 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
     var output = ShaderNodeIoVar(ModelVar1f(name))
         private set
 
-    private var layout = 0
+    private lateinit var ifVar: ShaderInterfaceIoVar
 
     val vertexNode = object : ShaderNode(name, vertexGraph, ShaderStage.VERTEX_SHADER.mask) {
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
             dependsOn(input)
-            layout = shaderGraph.outputs.size
-            shaderGraph.outputs += ShaderInterfaceIoVar(layout, output.variable)
+            ifVar = shaderGraph.addStageOutput(output.variable)
         }
 
         override fun generateCode(generator: CodeGenerator) {
@@ -336,7 +335,7 @@ class StageInterfaceNode(val name: String, vertexGraph: ShaderGraph, fragmentGra
     val fragmentNode = object : ShaderNode(name, fragmentGraph, ShaderStage.FRAGMENT_SHADER.mask) {
         override fun setup(shaderGraph: ShaderGraph) {
             super.setup(shaderGraph)
-            shaderGraph.inputs += ShaderInterfaceIoVar(layout, output.variable)
+            shaderGraph.inputs += ifVar
         }
     }
 }

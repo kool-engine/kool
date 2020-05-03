@@ -2,7 +2,10 @@ package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.ShadowMapPass
 
 fun pbrShader(cfgBlock: PbrShader.PbrConfig.() -> Unit): PbrShader {
     val cfg = PbrShader.PbrConfig()
@@ -12,8 +15,8 @@ fun pbrShader(cfgBlock: PbrShader.PbrConfig.() -> Unit): PbrShader {
 
 class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
 
-    private val isReceivingShadow = cfg.isReceivingShadows
-    private val lightCount = if(cfg.isReceivingShadows) { cfg.maxLights } else { 0 }
+    private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
+    private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
     // Simple material props
     private var uRoughness: PushConstantNode1f? = null
@@ -85,14 +88,13 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
     // Lighting props
     private var uAmbient: PushConstantNodeColor? = null
-    private var depthSamplers = Array<TextureSampler?>(lightCount) { null }
+    private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
 
     var ambient = Color(0.03f, 0.03f, 0.03f, 1f)
         set(value) {
             field = value
             uAmbient?.uniform?.value?.set(value)
         }
-    private val depthMaps = Array<Texture?>(lightCount) { null }
 
     // Image based lighting maps
     private var irradianceMapSampler: CubeMapSampler? = null
@@ -115,13 +117,6 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             brdfLutSampler?.texture = value
         }
 
-    fun setDepthMap(lightIndex: Int, depthMap: Texture?) {
-        if (lightIndex < lightCount) {
-            depthMaps[lightIndex] = depthMap
-            depthSamplers[lightIndex]?.texture = depthMap
-        }
-    }
-
     override fun onPipelineCreated(pipeline: Pipeline) {
         uMetallic = model.findNode("uMetallic")
         uMetallic?.let { it.uniform.value = metallic }
@@ -134,10 +129,10 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         uAmbient?.uniform?.value?.set(ambient)
 
         if (isReceivingShadow) {
-            for (i in 0 until lightCount) {
+            for (i in depthSamplers.indices) {
                 val sampler = model.findNode<TextureNode>("depthMap_$i")?.sampler
-                sampler?.texture = depthMaps[i]
-                depthSamplers += sampler
+                depthSamplers[i] = sampler
+                shadowMaps[i].setupSampler(sampler)
             }
         }
 
@@ -222,21 +217,21 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
 
-                if (cfg.isReceivingShadows) {
-                    for (i in 0 until cfg.maxLights) {
-                        shadowMapNodes += shadowMapNode(i, "depthMap_$i", worldPos, modelMat)
+                val clipPos = vertexPositionNode(worldPos, mvpMat).outPosition
+
+                cfg.shadowMaps.forEachIndexed { i, map ->
+                    when (map) {
+                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, modelMat)
+                        is ShadowMapPass -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, modelMat)
                     }
                 }
-
-                positionOutput = vertexPositionNode(worldPos, mvpMat).outPosition
+                positionOutput = clipPos
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
                 val lightNode = multiLightNode(cfg.maxLights)
-                if (cfg.isReceivingShadows) {
-                    for (i in 0 until cfg.maxLights) {
-                        lightNode.inShaodwFacs[i] = shadowMapNodes[i].outShadowFac
-                    }
+                shadowMapNodes.forEach {
+                    lightNode.inShaodwFacs[it.lightIndex] = it.outShadowFac
                 }
 
                 val reflMap: CubeMapNode?
@@ -309,7 +304,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var isImageBasedLighting = false
 
         var maxLights = 4
-        var isReceivingShadows = false
+        val shadowMaps = mutableListOf<ShadowMap>()
 
         var isInstanced = false
 

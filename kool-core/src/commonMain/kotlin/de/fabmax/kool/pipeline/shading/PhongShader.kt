@@ -4,7 +4,10 @@ import de.fabmax.kool.pipeline.Pipeline
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.TextureSampler
 import de.fabmax.kool.pipeline.shadermodel.*
+import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.ShadowMapPass
 
 fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
     val cfg = PhongShader.PhongConfig()
@@ -14,8 +17,8 @@ fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
 
 class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
 
-    private val isReceivingShadow = cfg.isReceivingShadows
-    private val lightCount = if(cfg.isReceivingShadows) { cfg.maxLights } else { 0 }
+    private val shadowMaps = Array(cfg.shadowMaps.size) { cfg.shadowMaps[it] }
+    private val isReceivingShadow = cfg.shadowMaps.isNotEmpty()
 
     private var uShininess: PushConstantNode1f? = null
     private var uSpecularIntensity: PushConstantNode1f? = null
@@ -51,15 +54,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
             normalSampler?.texture = value
         }
 
-    private var depthSamplers = Array<TextureSampler?>(lightCount) { null }
-    private val depthMaps = Array<Texture?>(lightCount) { null }
-
-    fun setDepthMap(lightIndex: Int, depthMap: Texture?) {
-        if (lightIndex < lightCount) {
-            depthMaps[lightIndex] = depthMap
-            depthSamplers[lightIndex]?.texture = depthMap
-        }
-    }
+    private val depthSamplers = Array<TextureSampler?>(shadowMaps.size) { null }
 
     override fun onPipelineCreated(pipeline: Pipeline) {
         uShininess = model.findNode("uShininess")
@@ -76,10 +71,10 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
         normalSampler?.let { it.texture = normalMap }
 
         if (isReceivingShadow) {
-            for (i in 0 until lightCount) {
+            for (i in depthSamplers.indices) {
                 val sampler = model.findNode<TextureNode>("depthMap_$i")?.sampler
-                sampler?.texture = depthMaps[i]
-                depthSamplers += sampler
+                depthSamplers[i] = sampler
+                shadowMaps[i].setupSampler(sampler)
             }
         }
 
@@ -131,21 +126,21 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 val worldPos = transformNode(attrPositions().output, modelMat, 1f).output
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
-                if (cfg.isReceivingShadows) {
-                    for (i in 0 until cfg.maxLights) {
-                        shadowMapNodes += shadowMapNode(i, "depthMap_$i", worldPos, modelMat)
+                val clipPos = vertexPositionNode(worldPos, mvpMat).outPosition
+
+                cfg.shadowMaps.forEachIndexed { i, map ->
+                    when (map) {
+                        is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, modelMat)
+                        is ShadowMapPass -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, modelMat)
                     }
                 }
-
-                positionOutput = vertexPositionNode(attrPositions().output, mvpMat).outPosition
+                positionOutput = clipPos
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
                 val lightNode = multiLightNode(cfg.maxLights)
-                if (cfg.isReceivingShadows) {
-                    for (i in 0 until cfg.maxLights) {
-                        lightNode.inShaodwFacs[i] = shadowMapNodes[i].outShadowFac
-                    }
+                shadowMapNodes.forEach {
+                    lightNode.inShaodwFacs[it.lightIndex] = it.outShadowFac
                 }
 
                 val albedo = when (cfg.albedoSource) {
@@ -182,7 +177,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
         var specularIntensity = 1f
 
         var maxLights = 4
-        var isReceivingShadows = false
+        val shadowMaps = mutableListOf<ShadowMap>()
 
         var isInstanced = false
 

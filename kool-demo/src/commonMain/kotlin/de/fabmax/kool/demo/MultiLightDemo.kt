@@ -28,7 +28,7 @@ class MultiLightDemo(ctx: KoolContext) {
             LightMesh(Color.MD_RED),
             LightMesh(Color.MD_AMBER),
             LightMesh(Color.MD_GREEN))
-    private val depthPasses = mutableListOf<ShadowMapPass>()
+    private val depthPasses = mutableListOf<ShadowMap>()
 
     private var lightCount = 4
     private var lightPower = 500f
@@ -51,16 +51,15 @@ class MultiLightDemo(ctx: KoolContext) {
         scenes += mainScene
         scenes += menu(ctx)
 
-        lights.forEach {
-            val pass = ShadowMapPass(mainScene, it.light)
+        for (i in lights.indices) {
+            val pass = ShadowMapPass(mainScene, i)
             depthPasses += pass
             mainScene.offscreenPasses += pass
         }
 
         mainScene.onDispose += {
             depthPasses.forEach {
-                mainScene.offscreenPasses -= it
-                it.dispose(ctx)
+                it.dispose(mainScene, ctx)
             }
         }
     }
@@ -126,13 +125,11 @@ class MultiLightDemo(ctx: KoolContext) {
         bunnyMesh?.apply {
             val cfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.STATIC_ALBEDO
-                isReceivingShadows = true
                 maxLights = depthPasses.size
-            }
-            modelShader = PbrShader(cfg).apply {
+                shadowMaps += depthPasses
                 metallic = 0f
-                depthPasses.forEachIndexed { i, pass -> setDepthMap(i, pass.depthTexture) }
             }
+            modelShader = PbrShader(cfg)
             pipelineLoader = modelShader
         }
     }
@@ -141,12 +138,10 @@ class MultiLightDemo(ctx: KoolContext) {
         bunnyMesh?.apply {
             val cfg = PhongShader.PhongConfig().apply {
                 albedoSource = Albedo.STATIC_ALBEDO
-                isReceivingShadows = true
+                shadowMaps += depthPasses
             }
 
-            modelShader = PhongShader(cfg).apply {
-                depthPasses.forEachIndexed { i, pass -> setDepthMap(i, pass.depthTexture) }
-            }
+            modelShader = PhongShader(cfg)
             pipelineLoader = modelShader
         }
     }
@@ -157,16 +152,15 @@ class MultiLightDemo(ctx: KoolContext) {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isNormalMapped = true
                 isRoughnessMapped = true
-                isReceivingShadows = true
-            }
+                shadowMaps += depthPasses
 
-            pipelineLoader = PbrShader(cfg).apply {
                 albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
                 normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
                 roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg") }
                 metallic = 0f
-                depthPasses.forEachIndexed { i, pass -> setDepthMap(i, pass.depthTexture) }
+            }
 
+            pipelineLoader = PbrShader(cfg).apply {
                 onDispose += {
                     albedoMap!!.dispose()
                     normalMap!!.dispose()
@@ -181,15 +175,14 @@ class MultiLightDemo(ctx: KoolContext) {
             val cfg = PhongShader.PhongConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isNormalMapped = true
-                isReceivingShadows = true
+                shadowMaps += depthPasses
+
+                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
+                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
+                shininess = 100f
             }
 
             pipelineLoader = PhongShader(cfg).apply {
-                albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
-                normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
-                shininess = 10f
-                depthPasses.forEachIndexed { i, pass -> setDepthMap(i, pass.depthTexture) }
-
                 onDispose += {
                     albedoMap!!.dispose()
                     normalMap!!.dispose()
