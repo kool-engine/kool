@@ -200,27 +200,24 @@ class ShaderModel(val modelInfo: String = "") {
             return ifNode
         }
 
-        fun shadowedLightNode(inVertexPos: ShaderNodeIoVar? = null, inModelMat: ShaderNodeIoVar? = null, depthMapName: String = "depthMap", maxLights: Int = 4): ShadowedLightNode {
-            val lightNode = ShadowedLightNode(vertexStageGraph, fragmentStageGraph, maxLights)
-            addNode(lightNode.vertexNode)
-            fragmentStageGraph.addNode(lightNode.fragmentNode)
-
-            inVertexPos?.let { lightNode.inPosition = inVertexPos }
-            inModelMat?.let { lightNode.inModelMat = inModelMat }
-
-            val texNode = TextureNode(fragmentStageGraph, depthMapName).apply {
-                arraySize = maxLights
-                isDepthTexture = true
-            }
-            fragmentStageGraph.addNode(texNode)
-            lightNode.depthTextures = texNode
-
-            return lightNode
-        }
-
         fun mvpNode() = addNode(UniformBufferMvp(stage))
 
         fun premultipliedMvpNode() = addNode(UniformBufferPremultipliedMvp(stage))
+
+        fun shadowMapNode(lightIndex: Int, depthMapName: String, inVertexPos: ShaderNodeIoVar? = null, inModelMat: ShaderNodeIoVar? = null): ShadowMapNode {
+            val shadowMapNode = ShadowMapNode(lightIndex, vertexStageGraph, fragmentStageGraph)
+            addNode(shadowMapNode.vertexNode)
+            fragmentStageGraph.addNode(shadowMapNode.fragmentNode)
+
+            val depthMap = TextureNode(fragmentStageGraph, depthMapName).apply { isDepthTexture = true }
+            fragmentStageGraph.addNode(depthMap)
+
+            inVertexPos?.let { shadowMapNode.inPosition = inVertexPos }
+            inModelMat?.let { shadowMapNode.inModelMat = inModelMat }
+            shadowMapNode.depthTexture = depthMap
+
+            return shadowMapNode
+        }
 
         fun simpleVertexPositionNode() = vertexPositionNode(attrPositions().output, premultipliedMvpNode().outMvpMat)
 
@@ -245,7 +242,7 @@ class ShaderModel(val modelInfo: String = "") {
             get() = fragmentStageGraph.colorOutput
             set(value) { fragmentStageGraph.colorOutput = value }
 
-        fun defaultLightNode(maxLights: Int = 4) = addNode(MultiLightNode(stage, maxLights))
+        fun multiLightNode(maxLights: Int = 4) = addNode(MultiLightNode(stage, maxLights))
 
         fun unlitMaterialNode(albedo: ShaderNodeIoVar? = null): UnlitMaterialNode {
             val mat = addNode(UnlitMaterialNode(stage))

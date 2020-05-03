@@ -12,6 +12,9 @@ fun pbrShader(cfgBlock: PbrShader.PbrConfig.() -> Unit): PbrShader {
 
 class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrModel(cfg)) : ModeledShader(model) {
 
+    private val isReceivingShadow = cfg.isReceivingShadows
+    private val lightCount = if(cfg.isReceivingShadows) { cfg.maxLights } else { 0 }
+
     // Simple material props
     private var uRoughness: PushConstantNode1f? = null
     private var uMetallic: PushConstantNode1f? = null
@@ -82,15 +85,14 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
     // Lighting props
     private var uAmbient: PushConstantNodeColor? = null
-    private var depthSampler: TextureSampler? = null
+    private var depthSamplers = Array<TextureSampler?>(lightCount) { null }
 
     var ambient = Color(0.03f, 0.03f, 0.03f, 1f)
         set(value) {
             field = value
             uAmbient?.uniform?.value?.set(value)
         }
-    val depthMaps: Array<Texture?>?
-        get() = depthSampler?.textures
+    private val depthMaps = Array<Texture?>(lightCount) { null }
 
     // Image based lighting maps
     private var irradianceMapSampler: CubeMapSampler? = null
@@ -113,6 +115,13 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             brdfLutSampler?.texture = value
         }
 
+    fun setDepthMap(lightIndex: Int, depthMap: Texture?) {
+        if (lightIndex < lightCount) {
+            depthMaps[lightIndex] = depthMap
+            depthSamplers[lightIndex]?.texture = depthMap
+        }
+    }
+
     override fun onPipelineCreated(pipeline: Pipeline) {
         uMetallic = model.findNode("uMetallic")
         uMetallic?.let { it.uniform.value = metallic }
@@ -123,7 +132,14 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
         uAmbient = model.findNode("uAmbient")
         uAmbient?.uniform?.value?.set(ambient)
-        depthSampler = model.findNode<TextureNode>("depthMap")?.sampler
+
+        if (isReceivingShadow) {
+            for (i in 0 until lightCount) {
+                val sampler = model.findNode<TextureNode>("depthMap_$i")?.sampler
+                sampler?.texture = depthMaps[i]
+                depthSamplers += sampler
+            }
+        }
 
         irradianceMapSampler = model.findNode<CubeMapNode>("irradianceMap")?.sampler
         irradianceMapSampler?.let { it.texture = irradianceMap }
@@ -158,7 +174,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             val ifFragPos: StageInterfaceNode
             val ifTexCoords: StageInterfaceNode?
             val mvpNode: UniformBufferMvp
-            val shadowedLightNode: ShadowedLightNode?
+            val shadowMapNodes = mutableListOf<ShadowMapNode>()
 
             vertexStage {
                 val modelMat: ShaderNodeIoVar
@@ -206,17 +222,22 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     null
                 }
 
-                shadowedLightNode = if (cfg.isReceivingShadows) {
-                    shadowedLightNode(worldPos, modelMat, "depthMap", cfg.maxLights)
-                } else {
-                    null
+                if (cfg.isReceivingShadows) {
+                    for (i in 0 until cfg.maxLights) {
+                        shadowMapNodes += shadowMapNode(i, "depthMap_$i", worldPos, modelMat)
+                    }
                 }
 
                 positionOutput = vertexPositionNode(worldPos, mvpMat).outPosition
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
-                val lightNode = shadowedLightNode?.fragmentNode ?: defaultLightNode(cfg.maxLights)
+                val lightNode = multiLightNode(cfg.maxLights)
+                if (cfg.isReceivingShadows) {
+                    for (i in 0 until cfg.maxLights) {
+                        lightNode.inShaodwFacs[i] = shadowMapNodes[i].outShadowFac
+                    }
+                }
 
                 val reflMap: CubeMapNode?
                 val brdfLut: TextureNode?

@@ -128,6 +128,9 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_normal.jpg") }
                 roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/bark_pine/Bark_Pine_roughness.jpg") }
                 ambient = Color(0.15f, 0.15f, 0.15f)
+                shadowMaps.forEachIndexed { i, pass ->
+                    setDepthMap(i, pass.depthTexture)
+                }
 
                 onDispose += {
                     albedoMap?.dispose()
@@ -135,13 +138,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     roughnessMap?.dispose()
                 }
                 onCreated += {
-                    depthMaps?.let { maps ->
-                        shadowMaps.forEachIndexed { i, pass ->
-                            if (i < maps.size) {
-                                maps[i] = pass.depthTexture
-                            }
-                        }
-                    }
                     uWindSpeed = model.findNode<PushConstantNode1f>("windAnim")?.uniform
                     uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
@@ -172,6 +168,9 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                 albedoMap = Texture { it.loadTextureData("leaf.png") }
                 roughness = 0.5f
                 ambient = Color(0.15f, 0.15f, 0.15f)
+                shadowMaps.forEachIndexed { i, pass ->
+                    setDepthMap(i, pass.depthTexture)
+                }
 
                 onDispose += {
                     albedoMap!!.dispose()
@@ -180,13 +179,6 @@ fun treeScene(ctx: KoolContext): List<Scene> {
                     it.cullMethod = CullMethod.NO_CULLING
                 }
                 onCreated += {
-                    depthMaps?.let { maps ->
-                        shadowMaps.forEachIndexed { i, pass ->
-                            if (i < maps.size) {
-                                maps[i] = pass.depthTexture
-                            }
-                        }
-                    }
                     uWindSpeed = model.findNode<PushConstantNode1f>("windAnim")?.uniform
                     uWindStrength = model.findNode<PushConstantNode1f>("windStrength")?.uniform
                 }
@@ -485,7 +477,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
     val ifFragPos: StageInterfaceNode
     val ifTexCoords: StageInterfaceNode?
     val mvp: UniformBufferMvp
-    val shadowedLightNode: ShadowedLightNode?
+    val shadowMapNodes = mutableListOf<ShadowMapNode>()
 
     vertexStage {
         mvp = mvpNode()
@@ -528,17 +520,22 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
             null
         }
 
-        shadowedLightNode = if (cfg.isReceivingShadows) {
-            shadowedLightNode(worldPos, mvp.outModelMat, "depthMap", cfg.maxLights)
-        } else {
-            null
+        if (cfg.isReceivingShadows) {
+            for (i in 0 until cfg.maxLights) {
+                shadowMapNodes += shadowMapNode(i, "depthMap_$i", worldPos, mvp.outModelMat)
+            }
         }
 
         positionOutput = vertexPositionNode(worldPos, mvp.outMvpMat).outPosition
     }
     fragmentStage {
         val mvpFrag = mvp.addToStage(fragmentStageGraph)
-        val lightNode = shadowedLightNode?.fragmentNode ?: defaultLightNode(cfg.maxLights)
+        val lightNode = multiLightNode(cfg.maxLights)
+        if (cfg.isReceivingShadows) {
+            for (i in 0 until cfg.maxLights) {
+                lightNode.inShaodwFacs[i] = shadowMapNodes[i].outShadowFac
+            }
+        }
 
         val reflMap: CubeMapNode?
         val brdfLut: TextureNode?
@@ -639,15 +636,8 @@ private fun makeTreeGroundGrid(cells: Int, shadowMaps: List<ShadowMapPass>): Nod
             roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_rough_2k.jpg") }
             ambientOcclusionMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_AO_2k.jpg") }
             displacementMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg") }
-
-            onCreated += {
-                depthMaps?.let { maps ->
-                    shadowMaps.forEachIndexed { i, pass ->
-                        if (i < maps.size) {
-                            maps[i] = pass.depthTexture
-                        }
-                    }
-                }
+            shadowMaps.forEachIndexed { i, pass ->
+                setDepthMap(i, pass.depthTexture)
             }
 
             onDispose += {

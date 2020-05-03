@@ -148,7 +148,7 @@ class InstanceDemo(ctx: KoolContext) {
         }
         fragmentStage {
             val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
-            val lightNode = defaultLightNode()
+            val lightNode = multiLightNode()
             val albedo = ifColors.output
             val normal = ifNormals.output
             val phongMat = phongMaterialNode(albedo, normal, ifFragPos.output, mvpFrag.outCamPos, lightNode).apply {

@@ -127,19 +127,11 @@ class MultiLightDemo(ctx: KoolContext) {
             val cfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.STATIC_ALBEDO
                 isReceivingShadows = true
+                maxLights = depthPasses.size
             }
             modelShader = PbrShader(cfg).apply {
                 metallic = 0f
-
-                onCreated += {
-                    depthMaps?.let { maps ->
-                        depthPasses.forEachIndexed { i, pass ->
-                            if (i < maps.size) {
-                                maps[i] = pass.depthTexture
-                            }
-                        }
-                    }
-                }
+                depthPasses.forEachIndexed { i, pass -> setDepthMap(i, pass.depthTexture) }
             }
             pipelineLoader = modelShader
         }
@@ -153,15 +145,7 @@ class MultiLightDemo(ctx: KoolContext) {
             }
 
             modelShader = PhongShader(cfg).apply {
-                onCreated += {
-                    depthMaps?.let { maps ->
-                        depthPasses.forEachIndexed { i, pass ->
-                            if (i < maps.size) {
-                                maps[i] = pass.depthTexture
-                            }
-                        }
-                    }
-                }
+                depthPasses.forEachIndexed { i, pass -> setDepthMap(i, pass.depthTexture) }
             }
             pipelineLoader = modelShader
         }
@@ -181,21 +165,12 @@ class MultiLightDemo(ctx: KoolContext) {
                 normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
                 roughnessMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_REFL_2K.jpg") }
                 metallic = 0f
+                depthPasses.forEachIndexed { i, pass -> setDepthMap(i, pass.depthTexture) }
 
                 onDispose += {
                     albedoMap!!.dispose()
                     normalMap!!.dispose()
                     roughnessMap!!.dispose()
-                }
-
-                onCreated += {
-                    depthMaps?.let { maps ->
-                        depthPasses.forEachIndexed { i, pass ->
-                            if (i < maps.size) {
-                                maps[i] = pass.depthTexture
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -213,20 +188,11 @@ class MultiLightDemo(ctx: KoolContext) {
                 albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
                 normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
                 shininess = 10f
+                depthPasses.forEachIndexed { i, pass -> setDepthMap(i, pass.depthTexture) }
 
                 onDispose += {
                     albedoMap!!.dispose()
                     normalMap!!.dispose()
-                }
-
-                onCreated += {
-                    depthMaps?.let { maps ->
-                        depthPasses.forEachIndexed { i, pass ->
-                            if (i < maps.size) {
-                                maps[i] = pass.depthTexture
-                            }
-                        }
-                    }
                 }
             }
         }

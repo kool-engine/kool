@@ -14,6 +14,9 @@ fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
 
 class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = defaultPhongModel(cfg)) : ModeledShader(model) {
 
+    private val isReceivingShadow = cfg.isReceivingShadows
+    private val lightCount = if(cfg.isReceivingShadows) { cfg.maxLights } else { 0 }
+
     private var uShininess: PushConstantNode1f? = null
     private var uSpecularIntensity: PushConstantNode1f? = null
 
@@ -48,9 +51,15 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
             normalSampler?.texture = value
         }
 
-    private var depthSampler: TextureSampler? = null
-    val depthMaps: Array<Texture?>?
-        get() = depthSampler?.textures
+    private var depthSamplers = Array<TextureSampler?>(lightCount) { null }
+    private val depthMaps = Array<Texture?>(lightCount) { null }
+
+    fun setDepthMap(lightIndex: Int, depthMap: Texture?) {
+        if (lightIndex < lightCount) {
+            depthMaps[lightIndex] = depthMap
+            depthSamplers[lightIndex]?.texture = depthMap
+        }
+    }
 
     override fun onPipelineCreated(pipeline: Pipeline) {
         uShininess = model.findNode("uShininess")
@@ -66,7 +75,13 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
         normalSampler = model.findNode<TextureNode>("tNormal")?.sampler
         normalSampler?.let { it.texture = normalMap }
 
-        depthSampler = model.findNode<TextureNode>("depthMap")?.sampler
+        if (isReceivingShadow) {
+            for (i in 0 until lightCount) {
+                val sampler = model.findNode<TextureNode>("depthMap_$i")?.sampler
+                sampler?.texture = depthMaps[i]
+                depthSamplers += sampler
+            }
+        }
 
         super.onPipelineCreated(pipeline)
     }
@@ -79,7 +94,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
             val ifTangents: StageInterfaceNode?
             val ifFragPos: StageInterfaceNode
             val mvpNode: UniformBufferMvp
-            val shadowedLightNode: ShadowedLightNode?
+            val shadowMapNodes = mutableListOf<ShadowMapNode>()
 
             vertexStage {
                 val modelMat: ShaderNodeIoVar
@@ -116,17 +131,22 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 val worldPos = transformNode(attrPositions().output, modelMat, 1f).output
                 ifFragPos = stageInterfaceNode("ifFragPos", worldPos)
 
-                shadowedLightNode = if (cfg.isReceivingShadows) {
-                    shadowedLightNode(attrPositions().output, modelMat, "depthMap", cfg.maxLights)
-                } else {
-                    null
+                if (cfg.isReceivingShadows) {
+                    for (i in 0 until cfg.maxLights) {
+                        shadowMapNodes += shadowMapNode(i, "depthMap_$i", worldPos, modelMat)
+                    }
                 }
 
                 positionOutput = vertexPositionNode(attrPositions().output, mvpMat).outPosition
             }
             fragmentStage {
                 val mvpFrag = mvpNode.addToStage(fragmentStageGraph)
-                val lightNode = shadowedLightNode?.fragmentNode ?: defaultLightNode(cfg.maxLights)
+                val lightNode = multiLightNode(cfg.maxLights)
+                if (cfg.isReceivingShadows) {
+                    for (i in 0 until cfg.maxLights) {
+                        lightNode.inShaodwFacs[i] = shadowMapNodes[i].outShadowFac
+                    }
+                }
 
                 val albedo = when (cfg.albedoSource) {
                     Albedo.VERTEX_ALBEDO -> ifColors!!.output
