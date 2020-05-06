@@ -55,19 +55,13 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             add(Light()
                     .setDirectional(dirLighDirection.norm(MutableVec3f()))
                     //.setColor(Color.GREEN, 3f))
-                    .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 0.5f))
+                    .setColor(Color.MD_AMBER.mix(Color.WHITE, 0.6f).toLinear(), 0.25f))
         }
 
         val shadowMaps = mutableListOf(
                 CascadedShadowMap(this, 0, mapSize = 2048)
                 //CascadedShadowMap(this, 1, mapSize = 2048)
         )
-        shadowMaps.forEach { offscreenPasses += it.cascades }
-        onDispose += {
-            shadowMaps.forEach {
-                it.dispose(this@scene, ctx)
-            }
-        }
 
         +makeTreeGroundGrid(10, shadowMaps)
 
@@ -126,6 +120,7 @@ fun treeScene(ctx: KoolContext): List<Scene> {
             val pbrCfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 maxLights = lighting.lights.size
+                flipBacksideNormals = true
                 this.shadowMaps.addAll(shadowMaps)
             }
             pipelineLoader = PbrShader(pbrCfg, treePbrModel(pbrCfg)).apply {
@@ -475,7 +470,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
         cfg.shadowMaps.forEachIndexed { i, map ->
             when (map) {
                 is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, mvp.outModelMat)
-                is ShadowMapPass -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, mvp.outModelMat)
+                is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, mvp.outModelMat)
             }
         }
         positionOutput = clipPos
@@ -503,6 +498,7 @@ private fun treePbrModel(cfg: PbrShader.PbrConfig) = ShaderModel("treePbrModel()
         }
 
         val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
+            flipBacksideNormals = cfg.flipBacksideNormals
             inFragPos = ifFragPos.output
             inCamPos = mvpFrag.outCamPos
 

@@ -57,7 +57,7 @@ abstract class RenderPass(val drawNode: Node) {
 
     enum class Type {
         COLOR,
-        SHADOW
+        DEPTH
     }
 }
 

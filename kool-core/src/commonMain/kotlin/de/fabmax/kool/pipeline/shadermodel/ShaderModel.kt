@@ -4,7 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.MeshInstanceList
-import de.fabmax.kool.util.ShadowMapPass
+import de.fabmax.kool.util.SimpleShadowMap
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -206,7 +206,7 @@ class ShaderModel(val modelInfo: String = "") {
 
         fun premultipliedMvpNode() = addNode(UniformBufferPremultipliedMvp(stage))
 
-        fun simpleShadowMapNode(shadowMap: ShadowMapPass, depthMapName: String, inVertexPos: ShaderNodeIoVar? = null, inModelMat: ShaderNodeIoVar? = null): SimpleShadowMapNode {
+        fun simpleShadowMapNode(shadowMap: SimpleShadowMap, depthMapName: String, inVertexPos: ShaderNodeIoVar? = null, inModelMat: ShaderNodeIoVar? = null): SimpleShadowMapNode {
             val shadowMapNode = SimpleShadowMapNode(shadowMap, vertexStageGraph, fragmentStageGraph)
             addNode(shadowMapNode.vertexNode)
             fragmentStageGraph.addNode(shadowMapNode.fragmentNode)

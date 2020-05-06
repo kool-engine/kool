@@ -62,7 +62,7 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) : 
 
     fun update() {
         if (this !in parentScene.offscreenPasses) {
-            parentScene.offscreenPasses += this
+            parentScene.addOffscreenPass(this)
         }
     }
 

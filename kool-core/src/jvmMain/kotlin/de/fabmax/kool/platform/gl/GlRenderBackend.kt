@@ -115,7 +115,7 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 removeFlag = removeFlag || scene.offscreenPasses[j].isFinished
             }
             if (removeFlag) {
-                scene.offscreenPasses.removeAll { it.isFinished }
+                scene.removeFinishedOffscreenPasses()
             }
 
             queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)

@@ -53,7 +53,7 @@ class BrdfLutPass(private val parentScene: Scene) : OffscreenRenderPass2D(Group(
             }
         }
 
-        parentScene.offscreenPasses += this
+        parentScene.addOffscreenPass(this)
     }
 
     override fun dispose(ctx: KoolContext) {

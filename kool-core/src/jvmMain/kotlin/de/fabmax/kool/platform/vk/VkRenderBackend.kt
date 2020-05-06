@@ -185,7 +185,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                     }
 
                     if (removeFlag) {
-                        scene.offscreenPasses.removeIf { it.isFinished }
+                        scene.removeFinishedOffscreenPasses()
                     }
 
                     mergeQueue += scene.mainRenderPass.drawQueue.commands

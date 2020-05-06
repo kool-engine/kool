@@ -57,7 +57,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
 
         if (webGlCtx != null) {
             gl = webGlCtx as WebGL2RenderingContext
-            sysInfo += "WebGL 2"
+            sysInfo += "WebGL 2.0"
 
             glCapabilities.maxTexUnits = gl.getParameter(MAX_TEXTURE_IMAGE_UNITS).asDynamic()
             glCapabilities.hasFloatTextures = gl.getExtension("EXT_color_buffer_float") != null
@@ -248,7 +248,7 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
                 removeFlag = removeFlag || scene.offscreenPasses[j].isFinished
             }
             if (removeFlag) {
-                scene.offscreenPasses.removeAll { it.isFinished }
+                scene.removeFinishedOffscreenPasses()
             }
 
             queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)

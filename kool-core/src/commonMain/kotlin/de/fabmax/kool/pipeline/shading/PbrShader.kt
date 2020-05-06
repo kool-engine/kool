@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.ShadowMapPass
+import de.fabmax.kool.util.SimpleShadowMap
 
 fun pbrShader(cfgBlock: PbrShader.PbrConfig.() -> Unit): PbrShader {
     val cfg = PbrShader.PbrConfig()
@@ -222,7 +222,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {
                         is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, modelMat)
-                        is ShadowMapPass -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, modelMat)
+                        is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, modelMat)
                     }
                 }
                 positionOutput = clipPos
@@ -250,6 +250,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                 }
 
                 val mat = pbrMaterialNode(lightNode, reflMap, brdfLut).apply {
+                    flipBacksideNormals = cfg.flipBacksideNormals
                     inFragPos = ifFragPos.output
                     inCamPos = mvpFrag.outCamPos
 
@@ -305,6 +306,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()
+        var flipBacksideNormals = false
 
         var isInstanced = false
 

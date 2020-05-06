@@ -22,10 +22,13 @@ open class Scene(name: String? = null) : Group(name) {
     val lighting = Lighting()
     var camera: Camera = PerspectiveCamera()
 
-    val mainRenderPass = ScreenRenderPass(this)
-    val offscreenPasses = mutableListOf<OffscreenRenderPass>()
-
     val onRenderScene: MutableList<Scene.(KoolContext) -> Unit> = mutableListOf()
+
+    val mainRenderPass = ScreenRenderPass(this)
+
+    private val mutOffscreenPasses = mutableListOf<OffscreenRenderPass>()
+    val offscreenPasses: List<OffscreenRenderPass>
+        get() = mutOffscreenPasses
 
     override var isFrustumChecked: Boolean
         // frustum check is force disabled for Scenes
@@ -40,6 +43,20 @@ open class Scene(name: String? = null) : Group(name) {
     private val dragHandlers: MutableList<DragHandler> = mutableListOf()
 
     private val disposables = mutableListOf<Disposable>()
+
+    fun addOffscreenPass(pass: OffscreenRenderPass) {
+        if (pass !in offscreenPasses) {
+            mutOffscreenPasses += pass
+        }
+    }
+
+    fun removeOffscreenPass(pass: OffscreenRenderPass) {
+        mutOffscreenPasses -= pass
+    }
+
+    internal fun removeFinishedOffscreenPasses() {
+        mutOffscreenPasses.removeAll { it.isFinished }
+    }
 
     fun renderScene(ctx: KoolContext) {
         for (i in onRenderScene.indices) {
@@ -76,7 +93,9 @@ open class Scene(name: String? = null) : Group(name) {
         disposables.clear()
 
         mainRenderPass.dispose(ctx)
-        offscreenPasses.forEach { it.dispose(ctx) }
+        for (i in offscreenPasses.indices.reversed()) {
+            offscreenPasses[i].dispose(ctx)
+        }
 
         super.dispose(ctx)
     }

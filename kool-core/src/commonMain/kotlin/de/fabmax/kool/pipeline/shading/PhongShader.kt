@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.shadermodel.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
-import de.fabmax.kool.util.ShadowMapPass
+import de.fabmax.kool.util.SimpleShadowMap
 
 fun phongShader(cfgBlock: PhongShader.PhongConfig.() -> Unit): PhongShader {
     val cfg = PhongShader.PhongConfig()
@@ -131,7 +131,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 cfg.shadowMaps.forEachIndexed { i, map ->
                     when (map) {
                         is CascadedShadowMap -> shadowMapNodes += cascadedShadowMapNode(map, "depthMap_$i", clipPos, worldPos, modelMat)
-                        is ShadowMapPass -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, modelMat)
+                        is SimpleShadowMap -> shadowMapNodes += simpleShadowMapNode(map, "depthMap_$i", worldPos, modelMat)
                     }
                 }
                 positionOutput = clipPos
@@ -159,6 +159,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
                 }
 
                 val phongMat = phongMaterialNode(albedo, normal, ifFragPos.output, mvpFrag.outCamPos, lightNode).apply {
+                    flipBacksideNormals = cfg.flipBacksideNormals
                     inShininess = pushConstantNode1f("uShininess").output
                     inSpecularIntensity = pushConstantNode1f("uSpecularIntensity").output
                 }
@@ -178,6 +179,7 @@ class PhongShader(cfg: PhongConfig = PhongConfig(), model: ShaderModel = default
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()
+        var flipBacksideNormals = false
 
         var isInstanced = false
 

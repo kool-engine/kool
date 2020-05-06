@@ -4,27 +4,21 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.pipeline.OffscreenRenderPass2D
-import de.fabmax.kool.pipeline.Pipeline
+import de.fabmax.kool.pipeline.DepthMapPass
 import de.fabmax.kool.pipeline.TextureSampler
-import de.fabmax.kool.pipeline.shadermodel.*
-import de.fabmax.kool.pipeline.shading.ModeledShader
 import de.fabmax.kool.scene.*
 import kotlin.math.pow
 
 interface ShadowMap {
     fun setupSampler(sampler: TextureSampler?)
-    fun dispose(scene: Scene, ctx: KoolContext)
 }
 
-class ShadowMapPass(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024) : OffscreenRenderPass2D(scene, mapSize, mapSize), ShadowMap {
-    private val shadowPipelines = mutableMapOf<Long, Pipeline>()
+class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024) : DepthMapPass(scene, mapSize), ShadowMap {
+
+    val lightViewProjMat = Mat4d()
 
     var clipNear = 1f
     var clipFar = 100f
-
-    val lightViewProjMat = Mat4d()
 
     private val viewMat = Mat4d()
     private val nearSceneCamPlane = FrustumPlane()
@@ -32,9 +26,8 @@ class ShadowMapPass(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024) 
     private val sceneFrustumBounds = BoundingBox()
 
     init {
-        type = Type.SHADOW
         isUpdateDrawNode = false
-        clearColor = Color.BLACK
+        scene.addOffscreenPass(this)
 
         onBeforeCollectDrawCommands += { ctx ->
             if (lightIndex < scene.lighting.lights.size) {
@@ -44,18 +37,11 @@ class ShadowMapPass(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024) 
                 ctx.depthBiasMatrix.mul(camera.viewProj, lightViewProjMat)
             }
         }
-
-        onAfterCollectDrawCommands += { ctx ->
-            // replace regular object shaders by cheaper shadow versions
-            drawQueue.commands.forEach {
-                it.pipeline = getShadowPipeline(it.mesh, ctx)
-            }
-        }
     }
 
-    override fun dispose(scene: Scene, ctx: KoolContext) {
-        scene.offscreenPasses -= this
-        dispose(ctx)
+    override fun dispose(ctx: KoolContext) {
+        scene.removeOffscreenPass(this)
+        super.dispose(ctx)
     }
 
     override fun setupSampler(sampler: TextureSampler?) {
@@ -129,17 +115,6 @@ class ShadowMapPass(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024) 
         add(far.lowerLeft)
         add(far.lowerRight)
     }
-
-    private fun getShadowPipeline(actualMesh: Mesh, ctx: KoolContext): Pipeline? {
-        return shadowPipelines.getOrPut(actualMesh.geometry.attributeHash) {
-            // create a minimal dummy shader for each attribute set
-            val shadowShader = ModeledShader(ShaderModel("shadow shader").apply {
-                vertexStage { positionOutput = simpleVertexPositionNode().outPosition }
-                fragmentStage { colorOutput = ShaderNodeIoVar(ModelVar4fConst(Vec4f(1f, 1f, 1f, 1f))) }
-            })
-            shadowShader.createPipeline(actualMesh, Pipeline.Builder(), ctx)
-        }
-    }
 }
 
 class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int = 3, mapSize: Int = 1024) : ShadowMap {
@@ -150,7 +125,7 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int 
     }
     var maxRange = 100f
 
-    val cascades = Array(numCascades) { ShadowMapPass(scene, lightIndex, mapSize) }
+    val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize) }
     val clipSpaceRanges = FloatArray(numCascades)
 
     init {
@@ -174,10 +149,6 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int 
                 sampler.textures[i] = cascade.depthTexture
             }
         }
-    }
-
-    override fun dispose(scene: Scene, ctx: KoolContext) {
-        cascades.forEach { it.dispose(scene, ctx) }
     }
 
     class MapRange(var near: Float, var far: Float)

@@ -28,7 +28,7 @@ class MultiLightDemo(ctx: KoolContext) {
             LightMesh(Color.MD_RED),
             LightMesh(Color.MD_AMBER),
             LightMesh(Color.MD_GREEN))
-    private val depthPasses = mutableListOf<ShadowMap>()
+    private val shadowMaps = mutableListOf<ShadowMap>()
 
     private var lightCount = 4
     private var lightPower = 500f
@@ -52,15 +52,7 @@ class MultiLightDemo(ctx: KoolContext) {
         scenes += menu(ctx)
 
         for (i in lights.indices) {
-            val pass = ShadowMapPass(mainScene, i)
-            depthPasses += pass
-            mainScene.offscreenPasses += pass
-        }
-
-        mainScene.onDispose += {
-            depthPasses.forEach {
-                it.dispose(mainScene, ctx)
-            }
+            shadowMaps += SimpleShadowMap(mainScene, i)
         }
     }
 
@@ -125,8 +117,8 @@ class MultiLightDemo(ctx: KoolContext) {
         bunnyMesh?.apply {
             val cfg = PbrShader.PbrConfig().apply {
                 albedoSource = Albedo.STATIC_ALBEDO
-                maxLights = depthPasses.size
-                shadowMaps += depthPasses
+                maxLights = this@MultiLightDemo.shadowMaps.size
+                shadowMaps += this@MultiLightDemo.shadowMaps
                 metallic = 0f
             }
             modelShader = PbrShader(cfg)
@@ -138,7 +130,7 @@ class MultiLightDemo(ctx: KoolContext) {
         bunnyMesh?.apply {
             val cfg = PhongShader.PhongConfig().apply {
                 albedoSource = Albedo.STATIC_ALBEDO
-                shadowMaps += depthPasses
+                shadowMaps += this@MultiLightDemo.shadowMaps
             }
 
             modelShader = PhongShader(cfg)
@@ -152,7 +144,7 @@ class MultiLightDemo(ctx: KoolContext) {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isNormalMapped = true
                 isRoughnessMapped = true
-                shadowMaps += depthPasses
+                shadowMaps += this@MultiLightDemo.shadowMaps
 
                 albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
                 normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }
@@ -175,7 +167,7 @@ class MultiLightDemo(ctx: KoolContext) {
             val cfg = PhongShader.PhongConfig().apply {
                 albedoSource = Albedo.TEXTURE_ALBEDO
                 isNormalMapped = true
-                shadowMaps += depthPasses
+                shadowMaps += this@MultiLightDemo.shadowMaps
 
                 albedoMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_COL_2K.jpg") }
                 normalMap = Texture { it.loadTextureData("${Demo.pbrBasePath}/woodfloor/WoodFlooringMahoganyAfricanSanded001_NRM_2K.jpg") }

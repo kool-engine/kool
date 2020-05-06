@@ -72,7 +72,7 @@ class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : Offscree
         mipIdx = 0
         isFinished = false
         if (this !in parentScene.offscreenPasses) {
-            parentScene.offscreenPasses += this
+            parentScene.addOffscreenPass(this)
         }
     }
 

@@ -5,7 +5,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.CascadedShadowMap
-import de.fabmax.kool.util.ShadowMapPass
+import de.fabmax.kool.util.SimpleShadowMap
 
 abstract class ShadowMapNode {
     var lightIndex = 0
@@ -14,7 +14,7 @@ abstract class ShadowMapNode {
     abstract val outShadowFac: ShaderNodeIoVar
 }
 
-class SimpleShadowMapNode(shadowMap: ShadowMapPass, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) : ShadowMapNode() {
+class SimpleShadowMapNode(shadowMap: SimpleShadowMap, vertexGraph: ShaderGraph, fragmentGraph: ShaderGraph) : ShadowMapNode() {
     private val ifPosLightSpace = StageInterfaceNode("posLightSpace_${vertexGraph.nextNodeId}", vertexGraph, fragmentGraph)
 
     val uShadowMapVP = UniformMat4f("shadowMapVP_${vertexGraph.nextNodeId}")
