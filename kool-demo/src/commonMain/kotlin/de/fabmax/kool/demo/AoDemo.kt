@@ -34,7 +34,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
     val mainScene: Scene
     val menu: Scene
 
-    private var autoRotate = true
+    private var autoRotate = false
     private var spotLight = true
     private val noAoMap = Texture { BufferedTextureData.singleColor(Color.WHITE) }
 
@@ -114,12 +114,73 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
 
             +textureMesh("ground", isNormalMapped = true) {
                 generate {
-                    rotate(90f, Vec3f.NEG_X_AXIS)
-                    color = Color.WHITE
-                    rect {
-                        size.set(12f, 12f)
-                        origin.set(size.x, size.y, 0f).scale(-0.5f)
-                        generateTexCoords(1.5f)
+                    // generate a cube (as set of rects for better control over tex coords)
+                    val texScale = 0.13f
+
+                    // top
+                    withTransform {
+                        rotate(90f, Vec3f.NEG_X_AXIS)
+                        rect {
+                            size.set(12f, 12f)
+                            origin.set(size.x, size.y, 0f).scale(-0.5f)
+                            setUvs(0.05f, 0f, size.x * texScale, size.y * texScale)
+                        }
+                    }
+
+                    // bottom
+                    withTransform {
+                        translate(0f, -0.25f, 0f)
+                        rotate(90f, Vec3f.X_AXIS)
+                        rect {
+                            size.set(12f, 12f)
+                            origin.set(size.x, size.y, 0f).scale(-0.5f)
+                            setUvs(0.05f, 0f, size.x * texScale, size.y * texScale)
+                        }
+                    }
+
+                    // left
+                    withTransform {
+                        translate(-6f, -0.125f, 0f)
+                        rotate(90f, Vec3f.NEG_Y_AXIS)
+                        rotate(90f, Vec3f.Z_AXIS)
+                        rect {
+                            size.set(0.25f, 12f)
+                            origin.set(size.x, size.y, 0f).scale(-0.5f)
+                            setUvs(0.05f - size.x * texScale, 0f, size.x * texScale, size.y * texScale)
+                        }
+                    }
+
+                    // right
+                    withTransform {
+                        translate(6f, -0.125f, 0f)
+                        rotate(90f, Vec3f.Y_AXIS)
+                        rotate(90f, Vec3f.Z_AXIS)
+                        rect {
+                            size.set(0.25f, 12f)
+                            origin.set(size.x, size.y, 0f).scale(-0.5f)
+                            setUvs(0.05f + 12 * texScale, 0f, size.x * texScale, size.y * texScale)
+                        }
+                    }
+
+                    // front
+                    withTransform {
+                        translate(0f, -0.125f, 6f)
+                        rect {
+                            size.set(12f, 0.25f)
+                            origin.set(size.x, size.y, 0f).scale(-0.5f)
+                            setUvs(0.05f, 12f * texScale, size.x * texScale, size.y * texScale)
+                        }
+                    }
+
+                    // back
+                    withTransform {
+                        translate(0f, -0.125f, -6f)
+                        rotate(180f, Vec3f.X_AXIS)
+                        rect {
+                            size.set(12f, 0.25f)
+                            origin.set(size.x, size.y, 0f).scale(-0.5f)
+                            setUvs(0.05f, -0.25f * texScale, size.x * texScale, size.y * texScale)
+                        }
                     }
                 }
 
@@ -162,6 +223,13 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
             loadingAssets.hdriMap = tex
         }
         ctx.loadModel("teapot.kmfz") { loadingAssets.teapotMesh = it }
+    }
+
+    private fun RectProps.setUvs(u: Float, v: Float, width: Float, height: Float) {
+        texCoordUpperLeft.set(u, v)
+        texCoordUpperRight.set(u + width, v)
+        texCoordLowerLeft.set(u, v + height)
+        texCoordLowerRight.set(u + width, v + height)
     }
 
     private fun updateLighting() {

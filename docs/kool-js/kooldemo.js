@@ -169,7 +169,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo(ctx) {
     this.mainScene = null;
     this.menu = null;
-    this.autoRotate_0 = true;
+    this.autoRotate_0 = false;
     this.spotLight_0 = true;
     this.noAoMap_0 = new Texture(void 0, AmbientOcclusionDemo$noAoMap$lambda);
     this.aoHelper_em3h7u$_0 = this.aoHelper_em3h7u$_0;
@@ -262,15 +262,71 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_2($receiver) {
-    $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
-    $receiver.color = Color.Companion.WHITE;
-    var $receiver_0 = $receiver.rectProps.defaults();
-    $receiver_0.size.set_dleff0$(12.0, 12.0);
-    $receiver_0.origin.set_y2kzbl$($receiver_0.size.x, $receiver_0.size.y, 0.0).scale_mx4ult$(-0.5);
-    $receiver_0.generateTexCoords_mx4ult$(1.5);
-    $receiver.rect_e5k3t5$($receiver.rectProps);
-    return Unit;
+  function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AmbientOcclusionDemo) {
+    return function ($receiver) {
+      var texScale = 0.13;
+      $receiver.transform.push();
+      var this$AmbientOcclusionDemo_0 = this$AmbientOcclusionDemo;
+      $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
+      var $receiver_0 = $receiver.rectProps.defaults();
+      $receiver_0.size.set_dleff0$(12.0, 12.0);
+      $receiver_0.origin.set_y2kzbl$($receiver_0.size.x, $receiver_0.size.y, 0.0).scale_mx4ult$(-0.5);
+      this$AmbientOcclusionDemo_0.setUvs_0($receiver_0, 0.05, 0.0, $receiver_0.size.x * texScale, $receiver_0.size.y * texScale);
+      $receiver.rect_e5k3t5$($receiver.rectProps);
+      $receiver.transform.pop();
+      $receiver.transform.push();
+      var this$AmbientOcclusionDemo_1 = this$AmbientOcclusionDemo;
+      $receiver.translate_y2kzbl$(0.0, -0.25, 0.0);
+      $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.X_AXIS);
+      var $receiver_1 = $receiver.rectProps.defaults();
+      $receiver_1.size.set_dleff0$(12.0, 12.0);
+      $receiver_1.origin.set_y2kzbl$($receiver_1.size.x, $receiver_1.size.y, 0.0).scale_mx4ult$(-0.5);
+      this$AmbientOcclusionDemo_1.setUvs_0($receiver_1, 0.05, 0.0, $receiver_1.size.x * texScale, $receiver_1.size.y * texScale);
+      $receiver.rect_e5k3t5$($receiver.rectProps);
+      $receiver.transform.pop();
+      $receiver.transform.push();
+      var this$AmbientOcclusionDemo_2 = this$AmbientOcclusionDemo;
+      $receiver.translate_y2kzbl$(-6.0, -0.125, 0.0);
+      $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_Y_AXIS);
+      $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
+      var $receiver_2 = $receiver.rectProps.defaults();
+      $receiver_2.size.set_dleff0$(0.25, 12.0);
+      $receiver_2.origin.set_y2kzbl$($receiver_2.size.x, $receiver_2.size.y, 0.0).scale_mx4ult$(-0.5);
+      this$AmbientOcclusionDemo_2.setUvs_0($receiver_2, 0.05 - $receiver_2.size.x * texScale, 0.0, $receiver_2.size.x * texScale, $receiver_2.size.y * texScale);
+      $receiver.rect_e5k3t5$($receiver.rectProps);
+      $receiver.transform.pop();
+      $receiver.transform.push();
+      var this$AmbientOcclusionDemo_3 = this$AmbientOcclusionDemo;
+      $receiver.translate_y2kzbl$(6.0, -0.125, 0.0);
+      $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.Y_AXIS);
+      $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
+      var $receiver_3 = $receiver.rectProps.defaults();
+      $receiver_3.size.set_dleff0$(0.25, 12.0);
+      $receiver_3.origin.set_y2kzbl$($receiver_3.size.x, $receiver_3.size.y, 0.0).scale_mx4ult$(-0.5);
+      this$AmbientOcclusionDemo_3.setUvs_0($receiver_3, 0.05 + 12 * texScale, 0.0, $receiver_3.size.x * texScale, $receiver_3.size.y * texScale);
+      $receiver.rect_e5k3t5$($receiver.rectProps);
+      $receiver.transform.pop();
+      $receiver.transform.push();
+      var this$AmbientOcclusionDemo_4 = this$AmbientOcclusionDemo;
+      $receiver.translate_y2kzbl$(0.0, -0.125, 6.0);
+      var $receiver_4 = $receiver.rectProps.defaults();
+      $receiver_4.size.set_dleff0$(12.0, 0.25);
+      $receiver_4.origin.set_y2kzbl$($receiver_4.size.x, $receiver_4.size.y, 0.0).scale_mx4ult$(-0.5);
+      this$AmbientOcclusionDemo_4.setUvs_0($receiver_4, 0.05, 12.0 * texScale, $receiver_4.size.x * texScale, $receiver_4.size.y * texScale);
+      $receiver.rect_e5k3t5$($receiver.rectProps);
+      $receiver.transform.pop();
+      $receiver.transform.push();
+      var this$AmbientOcclusionDemo_5 = this$AmbientOcclusionDemo;
+      $receiver.translate_y2kzbl$(0.0, -0.125, -6.0);
+      $receiver.rotate_ad55pp$(180.0, Vec3f.Companion.X_AXIS);
+      var $receiver_5 = $receiver.rectProps.defaults();
+      $receiver_5.size.set_dleff0$(12.0, 0.25);
+      $receiver_5.origin.set_y2kzbl$($receiver_5.size.x, $receiver_5.size.y, 0.0).scale_mx4ult$(-0.5);
+      this$AmbientOcclusionDemo_5.setUvs_0($receiver_5, 0.05, -0.25 * texScale, $receiver_5.size.x * texScale, $receiver_5.size.y * texScale);
+      $receiver.rect_e5k3t5$($receiver.rectProps);
+      $receiver.transform.pop();
+      return Unit;
+    };
   }
   function Coroutine$AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda$lambda($receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
@@ -496,7 +552,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda_1(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass) {
     return function ($receiver) {
-      $receiver.generate_v2sixm$(AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_2);
+      $receiver.generate_v2sixm$(AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AmbientOcclusionDemo));
       var shader = pbrShader(AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_3(this$AmbientOcclusionDemo, closure$irrMapPass, closure$reflMapPass, closure$brdfLutPass));
       $receiver.pipelineLoader = shader;
       var $receiver_0 = $receiver.onUpdate;
@@ -538,6 +594,12 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
     ctx.assetMgr.loadAndPrepareTexture_hd4f6p$(Demo$Companion_getInstance().envMapBasePath + '/mossy_forest_1k.rgbe.png', hdriTexProps, AmbientOcclusionDemo$makeMainScene$lambda$lambda_1(loadingAssets));
     this.loadModel_0(ctx, 'teapot.kmfz', AmbientOcclusionDemo$makeMainScene$lambda$lambda_2(loadingAssets));
     return $receiver;
+  };
+  AmbientOcclusionDemo.prototype.setUvs_0 = function ($receiver, u, v, width, height) {
+    $receiver.texCoordUpperLeft.set_dleff0$(u, v);
+    $receiver.texCoordUpperRight.set_dleff0$(u + width, v);
+    $receiver.texCoordLowerLeft.set_dleff0$(u, v + height);
+    $receiver.texCoordLowerRight.set_dleff0$(u + width, v + height);
   };
   function AmbientOcclusionDemo$updateLighting$lambda($receiver) {
     var p = new Vec3f(6.0, 10.0, -6.0);
