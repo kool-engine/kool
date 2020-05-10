@@ -120,6 +120,7 @@ class DrawerMenu(width: SizeSpec, title: String?, name: String, root: UiRoot) : 
                     rect {
                         origin.set(hx, -ph / 2f, 0f)
                         size.set(w, ph)
+                        zeroTexCoords()
                     }
                 }
                 rect {

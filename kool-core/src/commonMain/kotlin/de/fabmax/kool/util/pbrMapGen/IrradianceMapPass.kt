@@ -26,9 +26,6 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) : 
     init {
         clearColor = null
 
-        // this pass only needs to be rendered once, set isFinished = true to immediately remove it after first render
-        isFinished = true
-
         (drawNode as Group).apply {
             +mesh(listOf(Attribute.POSITIONS)) {
                 generate {
@@ -58,12 +55,19 @@ class IrradianceMapPass(private val parentScene: Scene, hdriTexture: Texture) : 
         }
 
         update()
+
+        // this pass only needs to be rendered once, remove it immediately after first render
+        onAfterCollectDrawCommands += {
+            parentScene.removeOffscreenPass(this)
+        }
+
+        parentScene.onDispose += { ctx ->
+            this@IrradianceMapPass.dispose(ctx)
+        }
     }
 
     fun update() {
-        if (this !in parentScene.offscreenPasses) {
-            parentScene.addOffscreenPass(this)
-        }
+        parentScene.addOffscreenPass(this)
     }
 
     override fun dispose(ctx: KoolContext) {

@@ -30,26 +30,16 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
     private val newScenes = mutableListOf<Scene>()
     private val currentScenes = mutableListOf<Scene>()
 
-    private val defaultScene = DemoEntry("PBR/IBL Demo") { addAll(pbrDemoScene(it)) }
+    private val defaultScene = DemoEntry("PBR / IBL") { addAll(pbrDemoScene(it)) }
 
     private val demos = mutableMapOf(
-            "pbrDemo" to DemoEntry("PBR/IBL Demo") { addAll(pbrDemoScene(it)) },
-            "multiLightDemo" to DemoEntry("Multi Light Demo") { addAll(multiLightDemo(it)) },
-            "simplificationDemo" to DemoEntry("Simplification Demo") { addAll(simplificationDemo(it)) },
-            "treeDemo" to DemoEntry("Tree Demo") { addAll(treeScene(it)) },
-            "instanceDemo" to DemoEntry("Instanced Demo") { addAll(instanceDemo(it)) },
+            "pbrDemo" to DemoEntry("PBR / IBL") { addAll(pbrDemoScene(it)) },
+            "multiLightDemo" to DemoEntry("Multi Light") { addAll(multiLightDemo(it)) },
+            "aoDemo" to DemoEntry("Ambient Occlusion") { addAll(aoDemo(it)) },
+            "treeDemo" to DemoEntry("Procedural Tree") { addAll(treeScene(it)) },
+            "simplificationDemo" to DemoEntry("Simplification") { addAll(simplificationDemo(it)) },
+            "instanceDemo" to DemoEntry("Instanced Drawing") { addAll(instanceDemo(it)) },
             "helloWorldDemo" to DemoEntry("Hello World", true) { add(helloWorldScene()) }
-
-            // todo: port old demos...
-//            "simpleDemo" to DemoEntry("Simple Demo") { add(uiDemoScene()) },
-//            "multiDemo" to DemoEntry("Split Viewport Demo") { addAll(multiScene(it)) },
-//            "pointDemo" to DemoEntry("Point Tree Demo") { add(pointScene()) },
-//            "synthieDemo" to DemoEntry("Synthie Demo") { addAll(synthieScene(it)) },
-//            "globeDemo" to DemoEntry("Globe Demo") { addAll(globeScene(it)) },
-//            "modelDemo" to DemoEntry("Model Demo") { add(modelScene(it)) },
-//            "instancedDemo" to DemoEntry("Instanced Demo") { add(instancedDemo(it)) },
-//            "reflectionDemo" to DemoEntry("Reflection Demo") { addAll(reflectionDemo(it)) },
-//            "particleDemo" to DemoEntry("Particle Demo") { addAll(particleDemo(it)) }
     )
 
     init {
@@ -132,6 +122,9 @@ class Demo(ctx: KoolContext, startScene: String? = null) {
 
     companion object {
         val demoProps = mutableMapOf<String, Any>()
+
+        val envMapBasePath: String
+            get() = getProperty("pbrDemo.envMaps", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri")
 
         val pbrBasePath: String
             get() = getProperty("pbrDemo.materials", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/materials")

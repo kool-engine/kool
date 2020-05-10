@@ -109,8 +109,10 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
 
-            for (j in 0 until scene.offscreenPasses.size) {
-                drawOffscreen(scene.offscreenPasses[j])
+            for (j in scene.offscreenPasses.indices) {
+                if (scene.offscreenPasses[j].isEnabled) {
+                    drawOffscreen(scene.offscreenPasses[j])
+                }
             }
 
             queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)

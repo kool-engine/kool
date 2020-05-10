@@ -208,6 +208,7 @@ open class ScrollHandlerUi(val scrollHandler: ScrollHandler) : ComponentUi {
                 size.set(track.size.x, track.size.y)
                 cornerRadius = min(track.size.x, track.size.y)/ 2f
                 cornerSteps = 4
+                zeroTexCoords()
             }
         }
         if (!handle.isEmpty) {
@@ -217,6 +218,7 @@ open class ScrollHandlerUi(val scrollHandler: ScrollHandler) : ComponentUi {
                 size.set(handle.size.x, handle.size.y)
                 cornerRadius = min(handle.size.x, handle.size.y)/ 2f
                 cornerSteps = 4
+                zeroTexCoords()
             }
         }
     }

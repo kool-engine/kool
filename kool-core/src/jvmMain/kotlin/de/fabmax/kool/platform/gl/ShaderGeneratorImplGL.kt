@@ -54,9 +54,6 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
             precision highp sampler2DShadow;
             ${model.infoStr()}
             
-            // make orientation of gl_FragCoord the same as in Vulkan
-            layout(origin_upper_left) in vec4 gl_FragCoord; 
-            
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.FRAGMENT_SHADER)}
             // inputs ${model.fragmentStageGraph.generateStageInputs()}
             // outputs
@@ -173,6 +170,8 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
     private class CodeGen : CodeGenerator {
         val functions = mutableMapOf<String, String>()
         val mainCode = mutableListOf<String>()
+
+        override val clipSpaceOrientation = CodeGenerator.ClipSpaceOrientation.Y_UP
 
         override fun appendFunction(name: String, glslCode: String) {
             functions[name] = glslCode

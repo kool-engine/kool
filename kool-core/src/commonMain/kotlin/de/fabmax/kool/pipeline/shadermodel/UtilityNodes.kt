@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.shadermodel
 
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.util.Color
@@ -91,6 +92,32 @@ class EquiRectSamplerNode(val texture: TextureNode, graph: ShaderGraph, val prem
         if (premultiply) {
             generator.appendMain("${outColor.ref3f()} *= ${outColor.ref4f()}.a;")
         }
+    }
+}
+
+class AoMapSampleNode(val aoMap: TextureNode, graph: ShaderGraph) : ShaderNode("aoMapSampleNode_${graph.nextNodeId}", graph) {
+    var inViewport = ShaderNodeIoVar(ModelVar4fConst(Vec4f.ZERO))
+
+    val outAo = ShaderNodeIoVar(ModelVar1f("${name}_outAo"), this)
+
+    override fun setup(shaderGraph: ShaderGraph) {
+        dependsOn(aoMap)
+        super.setup(shaderGraph)
+    }
+
+    override fun generateCode(generator: CodeGenerator) {
+        val invertY = if (generator.clipSpaceOrientation == CodeGenerator.ClipSpaceOrientation.Y_UP) {
+            "aoMapSamplePos.y = 1.0 - aoMapSamplePos.y;"
+        } else {
+            ""
+        }
+        generator.appendMain("""
+                vec2 aoMapSamplePos = gl_FragCoord.xy - ${inViewport.ref2f()};
+                aoMapSamplePos.x /= $inViewport.z;
+                aoMapSamplePos.y /= $inViewport.w;
+                $invertY
+                ${outAo.declare()} = ${generator.sampleTexture2d(aoMap.name, "aoMapSamplePos")}.r;
+            """)
     }
 }
 

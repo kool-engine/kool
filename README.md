@@ -9,6 +9,9 @@ them via the hamburger button in the upper left corner):
 - [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
   [this](https://learnopengl.com/PBR/Theory) awesome article series).
+- [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=aoDemo): Hemisphere kernel based
+  SSAO as described in [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
+  Chapman (also shamelessly recreated his demo scene).
 - [Multi Light Shadow Mapping](https://fabmax.github.io/kool/kool-js/?demo=multiLightDemo): A simple PBR shaded
   model with up to four spot lights and dynamic shadows.
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo): Interactive mesh
@@ -33,9 +36,10 @@ ongoing process. Hence, stuff is a still a bit messy but things are getting bett
 - All new Vulkan rendering backend (on JVM)
 - Support for physical based rendering (with metallic workflow) and image-based lighting
 - Normal, roughness, metallic, ambient occlusion and Displacement mapping
+- Screen-space ambient occlusion
 - HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
 - Lighting with multiple point, spot and directional lights
-- Shadow mapping for multiple light sources (spot lights only for now)
+- Shadow mapping for multiple light sources (only spot and directional lights for now)
 - A small GUI framework for simple in-game menus / controls
 
 ## A Hello World Example

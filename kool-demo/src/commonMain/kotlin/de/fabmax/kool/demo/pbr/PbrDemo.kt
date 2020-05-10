@@ -43,6 +43,12 @@ class PbrDemo(val ctx: KoolContext) {
 
     private val pbrContentCycler = Cycler(listOf(PbrMaterialContent(), ColorGridContent(), RoughnesMetalGridContent()))
 
+    private var autoRotate = true
+        set(value) {
+            field = value
+            pbrContentCycler.forEach { it.autoRotate = value }
+        }
+
     init {
         val nextHdriKeyListener = ctx.inputMgr.registerKeyListener(InputManager.KEY_CURSOR_LEFT, "Next environment map", { it.isPressed }) {
             hdriCycler.next()
@@ -75,7 +81,11 @@ class PbrDemo(val ctx: KoolContext) {
         +orbitInputTransform {
             +camera
             // let the camera slowly rotate around vertical axis
-            onUpdate += { _, ctx -> verticalRotation += ctx.deltaT * 2f }
+            onUpdate += { _, ctx ->
+                if (autoRotate) {
+                    verticalRotation += ctx.deltaT * 2f
+                }
+            }
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
             zoom = 20.0
         }
@@ -107,8 +117,8 @@ class PbrDemo(val ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-480f), zero())
-            layoutSpec.setSize(dps(250f), dps(360f), full())
+            layoutSpec.setOrigin(dps(-370f), dps(-510f), zero())
+            layoutSpec.setSize(dps(250f), dps(390f), full())
 
             // environment map selection
             var y = -35f
@@ -150,6 +160,15 @@ class PbrDemo(val ctx: KoolContext) {
                 onClick += { _, _, _ ->
                     envLabel.text = hdriCycler.next().name
                     updateHdri(hdriCycler.index)
+                }
+            }
+            y -= 30f
+            +toggleButton("Auto Rotate") {
+                layoutSpec.setOrigin(pcs(8f), dps(y), zero())
+                layoutSpec.setSize(pcs(84f), dps(35f), full())
+                isEnabled = autoRotate
+                onStateChange += {
+                    autoRotate = isEnabled
                 }
             }
 
@@ -290,6 +309,7 @@ class PbrDemo(val ctx: KoolContext) {
     abstract class PbrContent(val name: String) {
         var content: TransformGroup? = null
         var ui: UiContainer? = null
+        var autoRotate = true
 
         fun show() {
             content?.isVisible = true
@@ -313,12 +333,12 @@ class PbrDemo(val ctx: KoolContext) {
                 magFilter = FilterMethod.NEAREST,
                 mipMapping = true)
 
-        private val hdriPath = Demo.getProperty("pbrDemo.envMaps", "https://fabmax-kool-pbr.s3.eu-central-1.amazonaws.com/hdri")
         private val hdriTextures = listOf(
-                EnvironmentMap("${hdriPath}/circus_arena_1k.rgbe.png", "Circus"),
-                EnvironmentMap("${hdriPath}/newport_loft.rgbe.png", "Loft"),
-                EnvironmentMap("${hdriPath}/spruit_sunrise_1k.rgbe.png", "Sunrise"),
-                EnvironmentMap("${hdriPath}/shanghai_bund_1k.rgbe.png", "Shanghai")
+                EnvironmentMap("${Demo.envMapBasePath}/circus_arena_1k.rgbe.png", "Circus"),
+                EnvironmentMap("${Demo.envMapBasePath}/newport_loft.rgbe.png", "Loft"),
+                EnvironmentMap("${Demo.envMapBasePath}/spruit_sunrise_1k.rgbe.png", "Sunrise"),
+                EnvironmentMap("${Demo.envMapBasePath}/shanghai_bund_1k.rgbe.png", "Shanghai"),
+                EnvironmentMap("${Demo.envMapBasePath}/mossy_forest_1k.rgbe.png", "Mossy Forest")
         )
 
         private const val lightStrength = 250f

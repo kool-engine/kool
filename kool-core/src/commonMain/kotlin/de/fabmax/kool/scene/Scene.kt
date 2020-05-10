@@ -74,11 +74,9 @@ open class Scene(name: String? = null) : Group(name) {
 
         for (i in offscreenPasses.indices) {
             val pass = offscreenPasses[i]
-            pass.update(ctx)
-            pass.collectDrawCommands(ctx)
-            if (pass.isFinished) {
-                // offscreen pass is finished, schedule it for removal (will be removed on start of next frame)
-                removeOffscreenPass(pass)
+            if (pass.isEnabled) {
+                pass.update(ctx)
+                pass.collectDrawCommands(ctx)
             }
         }
         mainRenderPass.collectDrawCommands(ctx)

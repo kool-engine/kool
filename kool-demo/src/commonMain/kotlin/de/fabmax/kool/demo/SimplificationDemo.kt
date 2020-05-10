@@ -52,6 +52,7 @@ class SimplificationDemo(ctx: KoolContext) {
 
         loadModel("bunny.kmfz", 1f, Vec3f(0f, -3f, 0f), ctx)
         loadModel("cow.kmfz", 1f, Vec3f.ZERO, ctx)
+        loadModel("teapot.kmfz", 1f, Vec3f.ZERO, ctx)
 
 
         simplificationScene = mainScene(ctx)
@@ -153,8 +154,8 @@ class SimplificationDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-450f), dps(-670f), zero())
-            layoutSpec.setSize(dps(330f), dps(550f), full())
+            layoutSpec.setOrigin(dps(-450f), dps(-705f), zero())
+            layoutSpec.setSize(dps(330f), dps(585f), full())
 
             var y = -40f
             +label("lights") {
@@ -173,6 +174,17 @@ class SimplificationDemo(ctx: KoolContext) {
 
                 onClick += { _,_,_ ->
                     srcModel = models["cow.kmfz"] ?: srcModel
+                    simplify()
+                }
+            }
+            y -= 35f
+            +button("Teapot") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+                textAlignment = Gravity(Alignment.START, Alignment.CENTER)
+
+                onClick += { _,_,_ ->
+                    srcModel = models["teapot.kmfz"] ?: srcModel
                     simplify()
                 }
             }

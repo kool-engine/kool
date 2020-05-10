@@ -16,9 +16,6 @@ class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2D(Group(), 512, 512,
     init {
         clearColor = null
 
-        // this pass only needs to be rendered once, set isFinished = true to immediately remove it after first render
-        isFinished = true
-
         (drawNode as Group).apply {
             camera = OrthographicCamera().apply {
                 projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN
@@ -54,6 +51,15 @@ class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2D(Group(), 512, 512,
         }
 
         parentScene.addOffscreenPass(this)
+
+        // this pass only needs to be rendered once, remove it immediately after first render
+        onAfterCollectDrawCommands += {
+            parentScene.removeOffscreenPass(this)
+        }
+
+        parentScene.onDispose += { ctx ->
+            this@BrdfLutPass.dispose(ctx)
+        }
     }
 
     override fun dispose(ctx: KoolContext) {

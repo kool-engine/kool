@@ -161,6 +161,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
                 size.set(slider.knobPosition.x - x + trackH, trackH)
                 cornerRadius = trackH / 2f
                 cornerSteps = 4
+                zeroTexCoords()
             }
         }
         if (slider.value < slider.max) {
@@ -170,6 +171,7 @@ open class SliderUi(val slider: Slider, val baseUi: ComponentUi) : ComponentUi b
                 size.set(slider.trackWidth - slider.knobPosition.x + x + trackH, trackH)
                 cornerRadius = trackH / 2f
                 cornerSteps = 4
+                zeroTexCoords()
             }
         }
         meshBuilder.color = slider.knobColor.apply()

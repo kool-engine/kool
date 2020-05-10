@@ -100,6 +100,7 @@ open class ToggleButtonUi(val tb: ToggleButton, baseUi: ComponentUi) : ButtonUi(
             size.set(trackW, trackH)
             cornerRadius = trackH / 2f
             cornerSteps = 4
+            zeroTexCoords()
         }
 
         val anim = knobAnimator.value.value

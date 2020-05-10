@@ -9,7 +9,7 @@ import de.fabmax.kool.scene.PerspectiveCamera
 
 abstract class OffscreenRenderPass(drawNode: Node, val texWidth: Int, val texHeight: Int, val mipLevels: Int, val colorFormat: TexFormat) : RenderPass(drawNode) {
     var targetMipLevel = -1
-    var isFinished = false
+    var isEnabled = true
 
     override var camera: Camera = PerspectiveCamera().apply { projCorrectionMode = Camera.ProjCorrectionMode.OFFSCREEN }
 

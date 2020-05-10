@@ -205,6 +205,8 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         val functions = mutableMapOf<String, String>()
         val mainCode = mutableListOf<String>()
 
+        override val clipSpaceOrientation = CodeGenerator.ClipSpaceOrientation.Y_DOWN
+
         override fun appendFunction(name: String, glslCode: String) {
             functions[name] = glslCode
         }

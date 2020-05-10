@@ -445,7 +445,12 @@ class MultiLightDemo(ctx: KoolContext) {
     }
 
     private fun updateLighting() {
-        lights.forEach { it.disable(mainScene.lighting) }
+        lights.forEachIndexed { i, light ->
+            if (i < shadowMaps.size) {
+                shadowMaps[i].isShadowMapEnabled = false
+            }
+            light.disable(mainScene.lighting)
+        }
 
         var pos = 0f
         val step = 360f / lightCount
@@ -453,6 +458,9 @@ class MultiLightDemo(ctx: KoolContext) {
             lights[i].setup(pos)
             lights[i].enable(mainScene.lighting)
             pos += step
+            if (i < shadowMaps.size) {
+                shadowMaps[i].isShadowMapEnabled = true
+            }
         }
 
         lights.forEach { it.updateVisibility() }

@@ -178,7 +178,9 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 var clearColor: Color? = null
                 for (scene in ctx.scenes) {
                     for (i in scene.offscreenPasses.indices) {
-                        renderOffscreen(commandBuffer, scene.offscreenPasses[i])
+                        if (scene.offscreenPasses[i].isEnabled) {
+                            renderOffscreen(commandBuffer, scene.offscreenPasses[i])
+                        }
                     }
 
                     mergeQueue += scene.mainRenderPass.drawQueue.commands

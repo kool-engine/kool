@@ -57,20 +57,23 @@ class ReflectionMapPass(val parentScene: Scene, hdriTexture: Texture) : Offscree
         }
 
         update()
+
+        parentScene.onDispose += { ctx ->
+            this@ReflectionMapPass.dispose(ctx)
+        }
     }
 
     override fun collectDrawCommands(ctx: KoolContext) {
         uRoughness.value = mipIdx.toFloat() / (mipLevels - 1)
         targetMipLevel = mipIdx
         if (++mipIdx >= mipLevels) {
-            isFinished = true
+            parentScene.removeOffscreenPass(this)
         }
         super.collectDrawCommands(ctx)
     }
 
     fun update() {
         mipIdx = 0
-        isFinished = false
         if (this !in parentScene.offscreenPasses) {
             parentScene.addOffscreenPass(this)
         }

@@ -117,6 +117,7 @@ open class TextFieldUi(val textField: TextField, baseUi: ComponentUi) : LabelUi(
                 meshBuilder.rect {
                     origin.set(caretX, y, 0f)
                     size.set(selectionX - caretX, (font?.charMap?.fontProps?.sizePts ?: 0f) * 1.2f)
+                    zeroTexCoords()
                 }
             }
 

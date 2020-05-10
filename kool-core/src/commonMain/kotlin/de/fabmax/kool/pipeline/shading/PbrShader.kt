@@ -117,6 +117,14 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
             brdfLutSampler?.texture = value
         }
 
+    // Screen space ambient occlusion map
+    private var ssaoSampler: TextureSampler? = null
+    var scrSpcAmbientOcclusionMap: Texture? = cfg.scrSpcAmbientOcclusionMap
+        set(value) {
+            field = value
+            ssaoSampler?.texture = value
+        }
+
     override fun onPipelineCreated(pipeline: Pipeline) {
         uMetallic = model.findNode("uMetallic")
         uMetallic?.let { it.uniform.value = metallic }
@@ -142,6 +150,9 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         reflectionMapSampler?.let { it.texture = reflectionMap }
         brdfLutSampler = model.findNode<TextureNode>("brdfLut")?.sampler
         brdfLutSampler?.let { it.texture = brdfLut }
+
+        ssaoSampler = model.findNode<TextureNode>("ssaoMap")?.sampler
+        ssaoSampler?.let { it.texture = scrSpcAmbientOcclusionMap }
 
         albedoSampler = model.findNode<TextureNode>("tAlbedo")?.sampler
         albedoSampler?.let { it.texture = albedoMap }
@@ -282,9 +293,23 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
                     } else {
                         pushConstantNode1f("uRoughness").output
                     }
+
+                    var aoFactor = ShaderNodeIoVar(ModelVar1fConst(1f))
                     if (cfg.isAmbientOcclusionMapped) {
-                        inAmbientOccl = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output, false).outColor
+                        aoFactor = textureSamplerNode(textureNode("tAmbOccl"), ifTexCoords!!.output, false).outColor
                     }
+                    if (cfg.isScrSpcAmbientOcclusion) {
+                        val aoMap = textureNode("ssaoMap")
+                        val aoNode = addNode(AoMapSampleNode(aoMap, graph))
+                        aoNode.inViewport = mvpNode.outViewport
+
+                        aoFactor = if (!cfg.isAmbientOcclusionMapped) {
+                            aoNode.outAo
+                        } else {
+                            multiplyNode(aoFactor, aoNode.outAo).output
+                        }
+                    }
+                    inAmbientOccl = aoFactor
                 }
                 val hdrToLdr = hdrToLdrNode(mat.outColor)
                 colorOutput = hdrToLdr.outColor
@@ -303,6 +328,7 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var normalStrength = 1f
 
         var isImageBasedLighting = false
+        var isScrSpcAmbientOcclusion = false
 
         var maxLights = 4
         val shadowMaps = mutableListOf<ShadowMap>()
@@ -325,6 +351,8 @@ class PbrShader(cfg: PbrConfig = PbrConfig(), model: ShaderModel = defaultPbrMod
         var irradianceMap: CubeMapTexture? = null
         var reflectionMap: CubeMapTexture? = null
         var brdfLut: Texture? = null
+
+        var scrSpcAmbientOcclusionMap: Texture? = null
 
         fun requiresTexCoords(): Boolean {
             return albedoSource == Albedo.TEXTURE_ALBEDO ||

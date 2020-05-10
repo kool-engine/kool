@@ -10,6 +10,7 @@ import de.fabmax.kool.platform.WebGL2RenderingContext
 import org.khronos.webgl.WebGLRenderingContext
 import org.khronos.webgl.WebGLRenderingContext.Companion.ALWAYS
 import org.khronos.webgl.WebGLRenderingContext.Companion.BACK
+import org.khronos.webgl.WebGLRenderingContext.Companion.BLEND
 import org.khronos.webgl.WebGLRenderingContext.Companion.CULL_FACE
 import org.khronos.webgl.WebGLRenderingContext.Companion.DEPTH_TEST
 import org.khronos.webgl.WebGLRenderingContext.Companion.FRONT
@@ -39,6 +40,12 @@ class QueueRendererWebGl(val ctx: JsContext) {
             val clearMask = clearMask()
             if (clearMask != 0) {
                 ctx.gl.clear(clearMask)
+            }
+
+            if (colorBlend) {
+                ctx.gl.enable(BLEND)
+            } else {
+                ctx.gl.disable(BLEND)
             }
         }
 

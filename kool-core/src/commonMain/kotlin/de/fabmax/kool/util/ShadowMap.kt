@@ -10,6 +10,7 @@ import de.fabmax.kool.scene.*
 import kotlin.math.pow
 
 interface ShadowMap {
+    var isShadowMapEnabled: Boolean
     fun setupSampler(sampler: TextureSampler?)
 }
 
@@ -24,6 +25,10 @@ class SimpleShadowMap(val scene: Scene, val lightIndex: Int, mapSize: Int = 1024
     private val nearSceneCamPlane = FrustumPlane()
     private val farSceneCamPlane = FrustumPlane()
     private val sceneFrustumBounds = BoundingBox()
+
+    override var isShadowMapEnabled: Boolean
+        get() = isEnabled
+        set(value) { isEnabled = value }
 
     init {
         isUpdateDrawNode = false
@@ -127,6 +132,10 @@ class CascadedShadowMap(scene: Scene, val lightIndex: Int, val numCascades: Int 
 
     val cascades = Array(numCascades) { SimpleShadowMap(scene, lightIndex, mapSize) }
     val clipSpaceRanges = FloatArray(numCascades)
+
+    override var isShadowMapEnabled: Boolean
+        get() = cascades[0].isEnabled
+        set(value) { cascades.forEach { it.isEnabled = value } }
 
     init {
         val farPlane = FrustumPlane()
