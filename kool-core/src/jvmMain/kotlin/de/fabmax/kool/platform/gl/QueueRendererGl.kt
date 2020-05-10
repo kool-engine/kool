@@ -9,7 +9,7 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.opengl.GL31.glDrawElementsInstanced
 
-class QueueRendererGl(val backend: GlRenderBackend, val ctx: Lwjgl3Context) {
+class QueueRendererGl(backend: GlRenderBackend, val ctx: Lwjgl3Context) {
 
     private val glAttribs = GlAttribs()
     private val shaderMgr = ShaderManager(backend, ctx)

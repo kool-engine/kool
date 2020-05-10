@@ -53,7 +53,7 @@ class PhongMaterialNode(val lightNode: LightNode, graph: ShaderGraph) : ShaderNo
                 vec3 radiance = ${lightNode.callVec3GetRadiance("i", "phongMat_l", inSpotInnerAngle.ref1f())};
                 phongMat_l = normalize(phongMat_l);
                 
-                ${ if (flipBacksideNormals) "if (dot(phongMat_n, phongMat_l) < 0) { phongMat_n *= -1.0; }" else "" }
+                ${ if (flipBacksideNormals) "if (dot(phongMat_n, phongMat_l) < 0.0) { phongMat_n *= -1.0; }" else "" }
         
                 float phongMat_cosTheta = clamp(dot(phongMat_n, phongMat_l), 0.0, 1.0);
                 vec3 phongMat_r = reflect(phongMat_l, phongMat_n);
@@ -170,7 +170,7 @@ class PbrMaterialNode(val lightNode: LightNode, val reflectionMap: CubeMapNode?,
                 vec3 H = normalize(V + L);
                 vec3 radiance = ${lightNode.callVec3GetRadiance("i", "fragToLight", inSpotInnerAngle.ref1f())};
         
-                ${ if (flipBacksideNormals) "if (dot(N, L) < 0) { N *= -1.0; }" else "" }
+                ${ if (flipBacksideNormals) "if (dot(N, L) < 0.0) { N *= -1.0; }" else "" }
         
                 // cook-torrance BRDF
                 float NDF = DistributionGGX(N, H, rough); 

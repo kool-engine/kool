@@ -171,6 +171,5 @@ first step should be to get these working again:
 There are also a few new features on my wish list:
 - New rendering backend for WebGPU (should actually be quite simple)
 - Loading of glTF models
-- Screen-space ambient occlusion
 - Screen-space reflections
 - Optional deferred rendering

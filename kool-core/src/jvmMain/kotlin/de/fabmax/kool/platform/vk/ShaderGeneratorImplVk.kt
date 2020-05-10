@@ -114,7 +114,6 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             }
         }
 
-        val pushConstants = pipeline.pushConstantRanges.filter { it.stages.contains(stage) }
         var offset = 0
         pipeline.pushConstantRanges.forEach { pcr ->
             if (pcr.stages.contains(stage)) {
