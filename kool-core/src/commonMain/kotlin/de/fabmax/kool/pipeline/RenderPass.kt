@@ -10,6 +10,7 @@ import de.fabmax.kool.util.Color
 
 abstract class RenderPass(val drawNode: Node) {
 
+    var name: String? = null
     var type = Type.COLOR
     var viewport = KoolContext.Viewport(0, 0, 0, 0)
     abstract val camera: Camera
@@ -20,6 +21,7 @@ abstract class RenderPass(val drawNode: Node) {
 
     var clearDepth = true
     var clearColor: Color? = Color(0.15f, 0.15f, 0.15f, 1f)
+    var colorBlend = true
 
     var drawQueue = DrawQueue(this)
         protected set

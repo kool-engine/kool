@@ -33,15 +33,17 @@ class UniformBufferPremultipliedMvp(graph: ShaderGraph) : ShaderNode("UboPremult
 }
 
 class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
-    val uModelMat = UniformMat4f("modelMat")
-    val uViewMat = UniformMat4f("viewMat")
-    val uProjMat = UniformMat4f("projMat")
-    val uCamPos = Uniform4f("camPos")
+    val uModelMat = UniformMat4f("uModelMat")
+    val uViewMat = UniformMat4f("uViewMat")
+    val uProjMat = UniformMat4f("uProjMat")
+    val uCamPos = Uniform4f("uCamPos")
+    val uViewport = Uniform4f("uViewport")
 
     val outModelMat = ShaderNodeIoVar(ModelVarMat4f(uModelMat.name), this)
     val outViewMat = ShaderNodeIoVar(ModelVarMat4f(uViewMat.name), this)
     val outProjMat = ShaderNodeIoVar(ModelVarMat4f(uProjMat.name), this)
     val outCamPos = ShaderNodeIoVar(ModelVar4f(uCamPos.name), this)
+    val outViewport = ShaderNodeIoVar(ModelVar4f(uViewport.name), this)
     val outMvpMat = ShaderNodeIoVar(ModelVarMat4f("uMvp_outMvp"), this)
 
     private val visibleIn = mutableSetOf(graph.stage)
@@ -62,12 +64,16 @@ class UniformBufferMvp(graph: ShaderGraph) : ShaderNode("UboMvp", graph) {
                 +{ uViewMat }
                 +{ uProjMat }
                 +{ uCamPos }
+                +{ uViewport }
                 onUpdate = { _, cmd ->
                     uModelMat.value.set(cmd.modelMat)
                     uViewMat.value.set(cmd.viewMat)
                     uProjMat.value.set(cmd.projMat)
 
                     uCamPos.value.set(cmd.renderPass.camera.globalPos, 1f)
+                    cmd.renderPass.viewport.let {
+                        uViewport.value.set(it.x.toFloat(), it.y.toFloat(), it.width.toFloat(), it.height.toFloat())
+                    }
                 }
             }
         }

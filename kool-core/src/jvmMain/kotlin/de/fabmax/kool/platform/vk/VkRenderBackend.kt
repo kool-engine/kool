@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.vk
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec4d
@@ -178,14 +177,8 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                 val mergeQueue = mutableListOf<DrawCommand>()
                 var clearColor: Color? = null
                 for (scene in ctx.scenes) {
-                    var removeFlag = false
-                    for (i in 0 until scene.offscreenPasses.size) {
+                    for (i in scene.offscreenPasses.indices) {
                         renderOffscreen(commandBuffer, scene.offscreenPasses[i])
-                        removeFlag = removeFlag || scene.offscreenPasses[i].isFinished
-                    }
-
-                    if (removeFlag) {
-                        scene.removeFinishedOffscreenPasses()
                     }
 
                     mergeQueue += scene.mainRenderPass.drawQueue.commands
@@ -237,13 +230,13 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
 
         private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: List<DrawCommand>, imageIndex: Int,
-                                                renderPass: RenderPass, nImages: Int, dynVp: Boolean) {
+                                                renderPass: VkRenderPass, nImages: Int, dynVp: Boolean) {
             var prevPipeline = 0UL
             drawQueue.forEach { cmd ->
-                if (!cmd.mesh.geometry.isEmpty()) {
-                    val pipelineCfg = cmd.pipeline ?: throw KoolException("Mesh pipeline not set")
+                val pipelineCfg = cmd.pipeline
+                if (!cmd.mesh.geometry.isEmpty() && pipelineCfg != null) {
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {
-                        sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, renderPass, dynVp)
+                        sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, cmd.renderPass, renderPass, dynVp)
                     }
                     val pipeline = sys.pipelineManager.getPipeline(pipelineCfg, renderPass.vkRenderPass)
                     if (pipelineCfg.pipelineHash != prevPipeline) {
@@ -280,9 +273,13 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
                             actionQueue += DelayAction(0) { cmd.mesh.instances?.hasChanged = false }
                         }
 
+                        var offset = 0
                         pipelineCfg.pushConstantRanges.forEach {
+                            it.onUpdate?.invoke(it, cmd)
                             val flags = it.stages.fold(0) { f, stage -> f or stage.bitValue() }
-                            vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, 0, (it.toBuffer() as MixedBufferImpl).buffer)
+                            val pushBuffer = (it.toBuffer() as MixedBufferImpl).buffer
+                            vkCmdPushConstants(commandBuffer, pipeline.pipelineLayout, flags, offset, pushBuffer)
+                            offset += it.size
                         }
 
                         val instanceCnt: Int
@@ -368,7 +365,7 @@ class VkRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         }
     }
 
-    private fun MemoryStack.renderPassBeginInfo(renderPass: RenderPass, frameBuffer: Long, clearDepth: Boolean, clearColor: Color?) =
+    private fun MemoryStack.renderPassBeginInfo(renderPass: VkRenderPass, frameBuffer: Long, clearDepth: Boolean, clearColor: Color?) =
             callocVkRenderPassBeginInfo {
                 sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
                 renderPass(renderPass.vkRenderPass)

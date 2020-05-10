@@ -67,18 +67,19 @@ class SimpleShadowMapNode(shadowMap: SimpleShadowMap, vertexGraph: ShaderGraph, 
         override fun generateCode(generator: CodeGenerator) {
             val depthTex = depthMap ?: throw KoolException("Depth map input not set")
 
+            // dithered pcf shadow map sampling
+            // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
+
             generator.appendMain("""
                 float ${name}_size = float(textureSize(${depthTex.name}, 0).x);
                 float ${name}_scale = 1.0 / float(${name}_size);
                 vec4 ${name}_pos = ${ifPosLightSpace.output.ref4f()};
                 ${name}_pos.z += ${inDepthOffset.ref1f()};
-                vec2 ${name}_offset = vec2(float(fract(${name}_pos.x * ${name}_size * 5.0) > 0.5),
-                                           float(fract(${name}_pos.y * ${name}_size * 5.0) > 0.5));
+                vec2 ${name}_offset = vec2(float(fract(gl_FragCoord.x * 0.5) > 0.25),
+                                           float(fract(gl_FragCoord.y * 0.5) > 0.25));
                 ${outShadowFac.declare()} = 0.0;
             """)
 
-            // dithered pcf shadow map sampling
-            // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
             var nSamples = 0
             val samplePattern = listOf(
                     Vec2f(-1.5f, 0.5f),
@@ -170,22 +171,24 @@ class CascadedShadowMapNode(shadowMap: CascadedShadowMap, vertexGraph: ShaderGra
         override fun generateCode(generator: CodeGenerator) {
             val depthTex = depthMap ?: throw KoolException("Depth map input not set")
 
+            // dithered pcf shadow map sampling
+            // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
+
             val shadowFacFun = StringBuilder()
             shadowFacFun.append("""
                 float cascadedShadowFac(sampler2DShadow shadowTex, vec4 projPos, float depthOffset) {
                     float texSize = float(textureSize(shadowTex, 0).x);
                     float texScale = 1.0 / float(texSize);
                     projPos.z += depthOffset;
-                    vec2 offset = vec2(float(fract(projPos.x * texSize * 5.0) > 0.5),
-                                       float(fract(projPos.y * texSize * 5.0) > 0.5));
+                    vec2 offset = vec2(float(fract(gl_FragCoord.x * 0.5) > 0.25),
+                                       float(fract(gl_FragCoord.y * 0.5) > 0.25));
                     float shadowFac = 0.0;
                     if (projPos.z >= 1.0) {
                         shadowFac = 1.0;
                     } else {
                         shadowFac = ${generator.sampleTexture2dDepth("shadowTex", "projPos")};
             """)
-            // dithered pcf shadow map sampling
-            // https://developer.nvidia.com/gpugems/gpugems/part-ii-lighting-and-shadows/chapter-11-shadow-map-antialiasing
+
             var nSamples = 0
             val samplePattern = listOf(
                     Vec2f(-1.5f, 0.5f),

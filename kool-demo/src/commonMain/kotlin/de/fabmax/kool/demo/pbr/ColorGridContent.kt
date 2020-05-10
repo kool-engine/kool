@@ -108,7 +108,7 @@ class ColorGridContent : PbrDemo.PbrContent("Color Grid") {
             for (x in 0 until nCols) {
                 +mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS)) {
                     generate {
-                        sphere {
+                        uvSphere {
                             steps = 100
                             center.set((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
                             radius = 1.5f

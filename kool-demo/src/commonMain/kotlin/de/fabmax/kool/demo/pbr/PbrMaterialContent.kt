@@ -131,7 +131,7 @@ class PbrMaterialContent : PbrDemo.PbrContent("PBR Material") {
                     texCoord.x *= 4
                     texCoord.y *= 2
                 }
-                sphere {
+                uvSphere {
                     steps = 700
                     radius = 7f
                 }

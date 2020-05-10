@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.*
 import kotlin.math.PI
 
 
-class BrdfLutPass(private val parentScene: Scene) : OffscreenRenderPass2D(Group(), 512, 512, 1, TexFormat.RG_F16) {
+class BrdfLutPass(parentScene: Scene) : OffscreenRenderPass2D(Group(), 512, 512, 1, TexFormat.RG_F16) {
 
     init {
         clearColor = null

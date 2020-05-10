@@ -17,6 +17,7 @@ class Skybox(val environmentMap: CubeMapTexture, texLod: Float = 0f) : Mesh(Inde
             }
         }
         isFrustumChecked = false
+        isCastingShadow = false
 
         val texName = "envMap"
         val model = ShaderModel("Skybox Shader").apply {

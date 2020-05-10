@@ -28,6 +28,12 @@ class QueueRendererGl(val backend: GlRenderBackend, val ctx: Lwjgl3Context) {
             if (clearMask != 0) {
                 glClear(clearMask)
             }
+
+            if (colorBlend) {
+                glEnable(GL_BLEND)
+            } else {
+                glDisable(GL_BLEND)
+            }
         }
 
         for (cmd in queue.commands) {

@@ -17,7 +17,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     val up = MutableVec3f(Vec3f.Y_AXIS)
 
     var aspectRatio = 1.0f
-        protected set
+    var useViewportAspectRatio = true
 
     val globalPos: Vec3f get() = globalPosMut
     val globalLookAt: Vec3f get() = globalLookAtMut
@@ -35,6 +35,9 @@ abstract class Camera(name: String = "camera") : Node(name) {
 
     val proj = Mat4d()
     val view = Mat4d()
+
+    private val lazyInvProj = LazyMatrix { proj.invert(it) }
+    val invProj: Mat4d get() = lazyInvProj.get()
 
     private val lazyInvView = LazyMatrix { view.invert(it) }
     val invView: Mat4d get() = lazyInvView.get()
@@ -54,7 +57,9 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec4 = MutableVec4f()
 
     open fun updateCamera(ctx: KoolContext, viewport: KoolContext.Viewport) {
-        aspectRatio = viewport.aspectRatio
+        if (useViewportAspectRatio) {
+            aspectRatio = viewport.aspectRatio
+        }
 
         updateViewMatrix()
         updateProjectionMatrix()
@@ -67,6 +72,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
             proj.set(projCorrected)
         }
 
+        lazyInvProj.isDirty = true
         lazyViewProj.isDirty = true
         lazyInvViewProj.isDirty = true
     }

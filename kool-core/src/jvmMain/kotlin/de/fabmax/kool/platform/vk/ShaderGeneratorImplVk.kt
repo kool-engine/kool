@@ -87,7 +87,7 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
             layout(location=0) out vec4 fragStage_outColor;
             // functions
             ${codeGen.generateFunctions()}
-            
+
             void main() {
                 ${codeGen.generateMain()}
                 fragStage_outColor = ${model.fragmentStageGraph.colorOutput.variable.ref4f()};
@@ -115,14 +115,16 @@ class ShaderGeneratorImplVk : ShaderGenerator() {
         }
 
         val pushConstants = pipeline.pushConstantRanges.filter { it.stages.contains(stage) }
-        if (pushConstants.isNotEmpty()) {
-            pipeline.pushConstantRanges.forEach { pcr ->
+        var offset = 0
+        pipeline.pushConstantRanges.forEach { pcr ->
+            if (pcr.stages.contains(stage)) {
                 srcBuilder.appendln(8, "layout(push_constant) uniform ${pcr.name} {")
                 pcr.pushConstants.forEach { u ->
                     srcBuilder.appendln(12, "${u.declare()};")
                 }
                 srcBuilder.appendln(8, "}${pcr.instanceName ?: ""};")
             }
+            offset += pcr.size
         }
         return srcBuilder.toString()
     }

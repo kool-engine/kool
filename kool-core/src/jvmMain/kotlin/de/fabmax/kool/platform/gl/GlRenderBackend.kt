@@ -109,13 +109,8 @@ class GlRenderBackend(props: Lwjgl3Context.InitProps, val ctx: Lwjgl3Context) : 
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
 
-            var removeFlag = false
             for (j in 0 until scene.offscreenPasses.size) {
                 drawOffscreen(scene.offscreenPasses[j])
-                removeFlag = removeFlag || scene.offscreenPasses[j].isFinished
-            }
-            if (removeFlag) {
-                scene.removeFinishedOffscreenPasses()
             }
 
             queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)

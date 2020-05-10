@@ -3,10 +3,9 @@ package de.fabmax.kool.platform.vk
 import de.fabmax.kool.util.logD
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkFormatProperties
 
 class OnScreenRenderPass(swapChain: SwapChain) :
-        RenderPass(swapChain.sys, swapChain.extent.width(), swapChain.extent.height(), swapChain.imageFormat) {
+        VkRenderPass(swapChain.sys, swapChain.extent.width(), swapChain.extent.height(), swapChain.imageFormat) {
 
     override val vkRenderPass: Long
 

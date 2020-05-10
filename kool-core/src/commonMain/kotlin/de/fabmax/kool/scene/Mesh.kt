@@ -43,6 +43,8 @@ fun textureMesh(name: String? = null, isNormalMapped: Boolean = false, generate:
  */
 open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(name) {
 
+    val id = instanceId++
+
     var instances: MeshInstanceList? = null
 
     var pipelineLoader: PipelineFactory? = null
@@ -105,5 +107,9 @@ open class Mesh(var geometry: IndexedVertexList, name: String? = null) : Node(na
             rayTest.onMeshDataChanged(this)
         }
         renderPass.drawQueue.addMesh(this, ctx)
+    }
+
+    companion object {
+        private var instanceId = 1L
     }
 }

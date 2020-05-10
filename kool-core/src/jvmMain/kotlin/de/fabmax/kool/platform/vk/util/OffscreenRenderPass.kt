@@ -6,7 +6,7 @@ import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 
 class OffscreenRenderPass(sys: VkSystem, maxWidth: Int, maxHeight: Int, val isCopied: Boolean, texFormat: Int, private val depthCopmpareOp: Int = VK_COMPARE_OP_LESS) :
-        RenderPass(sys, maxWidth, maxHeight, texFormat) {
+        VkRenderPass(sys, maxWidth, maxHeight, texFormat) {
 
     override val vkRenderPass: Long
 

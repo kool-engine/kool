@@ -53,7 +53,10 @@ class ShaderGeneratorImplGL : ShaderGenerator() {
             precision highp float;
             precision highp sampler2DShadow;
             ${model.infoStr()}
-
+            
+            // make orientation of gl_FragCoord the same as in Vulkan
+            layout(origin_upper_left) in vec4 gl_FragCoord; 
+            
             // descriptor layout / uniforms ${generateDescriptorBindings(pipeline, ShaderStage.FRAGMENT_SHADER)}
             // inputs ${model.fragmentStageGraph.generateStageInputs()}
             // outputs

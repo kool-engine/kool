@@ -27,6 +27,7 @@ open class Scene(name: String? = null) : Group(name) {
     val mainRenderPass = ScreenRenderPass(this)
 
     private val mutOffscreenPasses = mutableListOf<OffscreenRenderPass>()
+    private val remOffscreenPasses = mutableListOf<OffscreenRenderPass>()
     val offscreenPasses: List<OffscreenRenderPass>
         get() = mutOffscreenPasses
 
@@ -51,23 +52,34 @@ open class Scene(name: String? = null) : Group(name) {
     }
 
     fun removeOffscreenPass(pass: OffscreenRenderPass) {
-        mutOffscreenPasses -= pass
+        remOffscreenPasses += pass
     }
 
-    internal fun removeFinishedOffscreenPasses() {
-        mutOffscreenPasses.removeAll { it.isFinished }
+    private fun removeOffscreenPasses() {
+        if (remOffscreenPasses.isNotEmpty()) {
+            mutOffscreenPasses.removeAll(remOffscreenPasses)
+            remOffscreenPasses.clear()
+        }
     }
 
     fun renderScene(ctx: KoolContext) {
+        // remove all offscreen passes that were scheduled for removal in last frame
+        removeOffscreenPasses()
+
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)
         }
 
         mainRenderPass.update(ctx)
 
-        for (i in offscreenPasses.indices.reversed()) {
-            offscreenPasses[i].update(ctx)
-            offscreenPasses[i].collectDrawCommands(ctx)
+        for (i in offscreenPasses.indices) {
+            val pass = offscreenPasses[i]
+            pass.update(ctx)
+            pass.collectDrawCommands(ctx)
+            if (pass.isFinished) {
+                // offscreen pass is finished, schedule it for removal (will be removed on start of next frame)
+                removeOffscreenPass(pass)
+            }
         }
         mainRenderPass.collectDrawCommands(ctx)
     }
@@ -93,9 +105,11 @@ open class Scene(name: String? = null) : Group(name) {
         disposables.clear()
 
         mainRenderPass.dispose(ctx)
-        for (i in offscreenPasses.indices.reversed()) {
+        for (i in offscreenPasses.indices) {
             offscreenPasses[i].dispose(ctx)
         }
+        remOffscreenPasses.clear()
+        mutOffscreenPasses.clear()
 
         super.dispose(ctx)
     }

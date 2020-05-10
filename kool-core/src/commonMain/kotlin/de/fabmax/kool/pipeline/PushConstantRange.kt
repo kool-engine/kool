@@ -18,10 +18,9 @@ class PushConstantRange private constructor(builder: Builder, val longHash: ULon
      */
     val size = layout.size
 
-    // fixme: push constants can be all kinds of types, not only floats...
     private val buffer = createMixedBuffer(size)
 
-    val onUpdate: ((PushConstantRange, DrawCommand) -> Unit) ? = builder.onUpdate
+    val onUpdate: ((PushConstantRange, DrawCommand) -> Unit)? = builder.onUpdate
 
     fun toBuffer(): MixedBuffer {
         layout.putTo(buffer)
@@ -35,7 +34,7 @@ class PushConstantRange private constructor(builder: Builder, val longHash: ULon
         val stages = mutableSetOf<ShaderStage>()
 
         val pushConstants = mutableListOf<() -> Uniform<*>>()
-        var onUpdate: ((PushConstantRange, DrawCommand) -> Unit) ? = null
+        var onUpdate: ((PushConstantRange, DrawCommand) -> Unit)? = null
 
         operator fun (() -> Uniform<*>).unaryPlus() {
             pushConstants.add(this)

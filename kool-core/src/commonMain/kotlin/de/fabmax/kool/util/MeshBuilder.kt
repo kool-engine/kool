@@ -1,5 +1,6 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.Attribute
 import kotlin.math.*
@@ -125,12 +126,12 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    inline fun sphere(props: SphereProps.() -> Unit) {
+    inline fun uvSphere(props: SphereProps.() -> Unit) {
         sphereProps.defaults().props()
-        sphere(sphereProps)
+        uvSphere(sphereProps)
     }
 
-    fun sphere(props: SphereProps) {
+    fun uvSphere(props: SphereProps) {
         val steps = max(props.steps / 2, 4)
         var prevIndices = IntArray(steps * 2 + 1)
         var rowIndices = IntArray(steps * 2 + 1)
@@ -280,7 +281,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         // insert geometry
         val nrm = MutableVec3f()
         val pos = MutableVec3f()
-        val i0 = geometry.numIndices
+        val i0 = geometry.numVertices
         for (v in uvVerts) {
             nrm.set(v.first).norm()
             pos.set(nrm).scale(props.radius).add(props.center)
@@ -288,7 +289,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
             vertex(pos, nrm, uv)
         }
         for (i in faces.indices step 3) {
-            geometry.addTriIndices(faces[i0 + i], faces[i0 + 1 + i], faces[i0 + 2 + i])
+            geometry.addTriIndices(i0 + faces[i], i0 + faces[1 + i], i0 + faces[2 + i])
         }
     }
 
@@ -635,6 +636,25 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
+    fun geometry(geometry: IndexedVertexList, keepVertexColor: Boolean = false) {
+        if (geometry.primitiveType == PrimitiveType.TRIANGLES) {
+            val i0 = this.geometry.numVertices
+            val beforeColor = color
+            geometry.forEach {
+                if (keepVertexColor) {
+                    color = it.color
+                }
+                vertex(it.position, it.normal, it.texCoord)
+            }
+            for (i in 0 until geometry.numIndices) {
+                this.geometry.addIndex(i0 + geometry.indices[i])
+            }
+            color = beforeColor
+        } else {
+            throw KoolException("Only triangle geometry can be added")
+        }
+    }
+
     inline fun text(font: Font, fontSizeUnits: Float = 0f, block: TextProps.() -> Unit) {
         val props = textProps ?: TextProps(font).apply { textProps = this}
         props.defaults()
@@ -799,6 +819,24 @@ class RectProps {
         texCoordUpperRight.set(scale, 0f)
         texCoordLowerLeft.set(0f, scale)
         texCoordLowerRight.set(scale, scale)
+    }
+
+    fun mirrorTexCoordsX() {
+        val xul = texCoordUpperLeft.x
+        val xll = texCoordLowerLeft.x
+        texCoordUpperLeft.x = texCoordUpperRight.x
+        texCoordUpperRight.x = xul
+        texCoordLowerLeft.x = texCoordLowerRight.x
+        texCoordLowerRight.x = xll
+    }
+
+    fun mirrorTexCoordsY() {
+        val yul = texCoordUpperLeft.y
+        val yur = texCoordUpperRight.y
+        texCoordUpperLeft.y = texCoordLowerLeft.y
+        texCoordLowerLeft.y = yul
+        texCoordUpperRight.y = texCoordLowerRight.y
+        texCoordLowerRight.y = yur
     }
 
     fun defaults(): RectProps {

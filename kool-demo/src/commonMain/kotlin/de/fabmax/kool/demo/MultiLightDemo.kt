@@ -475,7 +475,7 @@ class MultiLightDemo(ctx: KoolContext) {
             val lightMesh = colorMesh {
                 isCastingShadow = false
                 generate {
-                    sphere {
+                    uvSphere {
                         radius = 0.1f
                     }
                     rotate(90f, Vec3f.Z_AXIS)

@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.shadermodel
 
+import de.fabmax.kool.drawqueue.DrawCommand
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.CascadedShadowMap
@@ -37,18 +38,32 @@ class ShaderModel(val modelInfo: String = "") {
         stages.values.forEach { it.setup() }
 
         setupAttributes(mesh, buildCtx)
-        val descBuilder = DescriptorSetLayout.Builder()
+
+        // merge all defined push constants into a single push constant range
         val pushBuilder = PushConstantRange.Builder()
+        val pushUpdateFuns = mutableListOf<((PushConstantRange, DrawCommand) -> Unit)>()
+
+        val descBuilder = DescriptorSetLayout.Builder()
+
         stages.values.forEach { stage ->
             descBuilder.descriptors += stage.descriptorSet.descriptors
+
             pushBuilder.pushConstants += stage.pushConstants.pushConstants
             pushBuilder.stages += stage.pushConstants.stages
+            stage.pushConstants.onUpdate?.let { pushUpdateFuns += it }
         }
         if (descBuilder.descriptors.isNotEmpty()) {
             buildCtx.descriptorSetLayouts += descBuilder
         }
         if (pushBuilder.pushConstants.isNotEmpty()) {
             buildCtx.pushConstantRanges += pushBuilder
+            if (pushUpdateFuns.isNotEmpty()) {
+                pushBuilder.onUpdate = { rng, cmd ->
+                    for (i in pushUpdateFuns.indices) {
+                        pushUpdateFuns[i](rng, cmd)
+                    }
+                }
+            }
         }
     }
 

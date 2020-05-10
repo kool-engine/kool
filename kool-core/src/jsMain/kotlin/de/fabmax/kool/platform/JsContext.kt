@@ -242,13 +242,8 @@ class JsContext internal constructor(val props: InitProps) : KoolContext() {
         for (i in scenes.indices) {
             val scene = scenes[i]
 
-            var removeFlag = false
-            for (j in 0 until scene.offscreenPasses.size) {
+            for (j in scene.offscreenPasses.indices) {
                 drawOffscreen(scene.offscreenPasses[j])
-                removeFlag = removeFlag || scene.offscreenPasses[j].isFinished
-            }
-            if (removeFlag) {
-                scene.removeFinishedOffscreenPasses()
             }
 
             queueRenderer.renderQueue(scene.mainRenderPass.drawQueue)

@@ -2,7 +2,6 @@ package de.fabmax.kool.platform.vk.pipeline
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.vk.*
-import de.fabmax.kool.platform.vk.RenderPass
 import de.fabmax.kool.platform.vk.util.bitValue
 import de.fabmax.kool.util.PrimitiveType
 import de.fabmax.kool.util.logD
@@ -12,7 +11,7 @@ import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo
 import org.lwjgl.vulkan.VkPushConstantRange
 import java.nio.ByteBuffer
 
-class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSamples: Int, val dynamicViewPort: Boolean,
+class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vkRenderPass: VkRenderPass, val msaaSamples: Int, val dynamicViewPort: Boolean,
                        val pipeline: Pipeline, val nImages: Int, val descriptorSetPoolSize: Int = 500) : VkResource() {
 
     val descriptorSetLayout: Long
@@ -98,15 +97,15 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
                 // actual viewport size is set on render
                 x(0f)
                 y(0f)
-                width(renderPass.maxWidth.toFloat())
-                height(renderPass.maxHeight.toFloat())
+                width(vkRenderPass.maxWidth.toFloat())
+                height(vkRenderPass.maxHeight.toFloat())
                 minDepth(0f)
                 maxDepth(1f)
             }
 
             val scissor = callocVkRect2DN(1) {
                 offset { it.set(0, 0) }
-                extent { it.width(renderPass.maxWidth); it.height(renderPass.maxHeight) }
+                extent { it.width(vkRenderPass.maxWidth); it.height(vkRenderPass.maxHeight) }
             }
 
             viewportState = callocVkPipelineViewportStateCreateInfo {
@@ -139,7 +138,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
                     CullMethod.CULL_FRONT_FACES -> VK_CULL_MODE_FRONT_BIT
                     CullMethod.NO_CULLING -> VK_CULL_MODE_NONE
                 })
-                frontFace(renderPass.triFrontDirection)
+                frontFace(vkRenderPass.triFrontDirection)
                 depthBiasEnable(false)
                 depthBiasConstantFactor(0f)
                 depthBiasClamp(0f)
@@ -161,7 +160,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
             val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(1) {
                 colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
                 // pre-multiplied alpha
-                blendEnable(true)
+                blendEnable(koolRenderPass.colorBlend)
                 srcColorBlendFactor(VK_BLEND_FACTOR_ONE)
                 dstColorBlendFactor(VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA)
                 colorBlendOp(VK_BLEND_OP_ADD)
@@ -199,9 +198,12 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
 
             val pushConstantRanges: VkPushConstantRange.Buffer? = if (pipeline.pushConstantRanges.isEmpty()) { null } else {
                 callocVkPushConstantRangeN(pipeline.pushConstantRanges.size) {
+                    var offset = 0
                     pipeline.pushConstantRanges.forEachIndexed { i, pushConstantRange ->
                         this[i].stageFlags(pushConstantRange.stages.fold(0) { f, stage -> f or stage.bitValue() })
+                                .offset(offset)
                                 .size(pushConstantRange.size)
+                        offset += pushConstantRange.size
                     }
                 }
             }
@@ -227,7 +229,7 @@ class GraphicsPipeline(val sys: VkSystem, val renderPass: RenderPass, val msaaSa
                 pDepthStencilState(depthStencil)
                 pColorBlendState(colorBlending)
                 layout(pipelineLayout)
-                renderPass(renderPass.vkRenderPass)
+                renderPass(vkRenderPass.vkRenderPass)
                 subpass(0)
                 basePipelineHandle(VK_NULL_HANDLE)
                 basePipelineIndex(-1)

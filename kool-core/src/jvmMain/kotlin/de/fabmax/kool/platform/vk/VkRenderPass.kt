@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.TexFormat
 import org.lwjgl.vulkan.VK10
 
-abstract class RenderPass(val sys: VkSystem, val maxWidth: Int, val maxHeight: Int, val colorFormat: Int) : VkResource() {
+abstract class VkRenderPass(val sys: VkSystem, val maxWidth: Int, val maxHeight: Int, val colorFormat: Int) : VkResource() {
 
     var triFrontDirection = VK10.VK_FRONT_FACE_COUNTER_CLOCKWISE
 

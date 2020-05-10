@@ -219,8 +219,8 @@ class Lwjgl3Context(props: InitProps) : KoolContext() {
     }
 
     class InitProps(init: InitProps.() -> Unit = {}) {
-        var width = 1200
-        var height = 800
+        var width = 1600
+        var height = 900
         var title = "Kool"
         var monitor = 0L
         var share = 0L
