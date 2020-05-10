@@ -34,7 +34,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
     val mainScene: Scene
     val menu: Scene
 
-    private var autoRotate = false
+    private var autoRotate = true
     private var spotLight = true
     private val noAoMap = Texture { BufferedTextureData.singleColor(Color.WHITE) }
 
@@ -115,7 +115,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
             +textureMesh("ground", isNormalMapped = true) {
                 generate {
                     // generate a cube (as set of rects for better control over tex coords)
-                    val texScale = 0.13f
+                    val texScale = 0.1955f
 
                     // top
                     withTransform {
@@ -123,7 +123,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                         rect {
                             size.set(12f, 12f)
                             origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.05f, 0f, size.x * texScale, size.y * texScale)
+                            setUvs(0.06f, 0f, size.x * texScale, size.y * texScale)
                         }
                     }
 
@@ -134,7 +134,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                         rect {
                             size.set(12f, 12f)
                             origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.05f, 0f, size.x * texScale, size.y * texScale)
+                            setUvs(0.06f, 0f, size.x * texScale, size.y * texScale)
                         }
                     }
 
@@ -146,7 +146,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                         rect {
                             size.set(0.25f, 12f)
                             origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.05f - size.x * texScale, 0f, size.x * texScale, size.y * texScale)
+                            setUvs(0.06f - size.x * texScale, 0f, size.x * texScale, size.y * texScale)
                         }
                     }
 
@@ -154,11 +154,11 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                     withTransform {
                         translate(6f, -0.125f, 0f)
                         rotate(90f, Vec3f.Y_AXIS)
-                        rotate(90f, Vec3f.Z_AXIS)
+                        rotate(-90f, Vec3f.Z_AXIS)
                         rect {
                             size.set(0.25f, 12f)
                             origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.05f + 12 * texScale, 0f, size.x * texScale, size.y * texScale)
+                            setUvs(0.06f + 12 * texScale, 0f, size.x * texScale, size.y * texScale)
                         }
                     }
 
@@ -168,7 +168,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                         rect {
                             size.set(12f, 0.25f)
                             origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.05f, 12f * texScale, size.x * texScale, size.y * texScale)
+                            setUvs(0.06f, 12f * texScale, size.x * texScale, size.y * texScale)
                         }
                     }
 
@@ -179,7 +179,7 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                         rect {
                             size.set(12f, 0.25f)
                             origin.set(size.x, size.y, 0f).scale(-0.5f)
-                            setUvs(0.05f, -0.25f * texScale, size.x * texScale, size.y * texScale)
+                            setUvs(0.06f, -0.25f * texScale, size.x * texScale, size.y * texScale)
                         }
                     }
                 }

@@ -169,7 +169,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo(ctx) {
     this.mainScene = null;
     this.menu = null;
-    this.autoRotate_0 = false;
+    this.autoRotate_0 = true;
     this.spotLight_0 = true;
     this.noAoMap_0 = new Texture(void 0, AmbientOcclusionDemo$noAoMap$lambda);
     this.aoHelper_em3h7u$_0 = this.aoHelper_em3h7u$_0;
@@ -264,14 +264,14 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   }
   function AmbientOcclusionDemo$makeMainScene$lambda$lambda$lambda$lambda_2(this$AmbientOcclusionDemo) {
     return function ($receiver) {
-      var texScale = 0.13;
+      var texScale = 0.1955;
       $receiver.transform.push();
       var this$AmbientOcclusionDemo_0 = this$AmbientOcclusionDemo;
       $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.NEG_X_AXIS);
       var $receiver_0 = $receiver.rectProps.defaults();
       $receiver_0.size.set_dleff0$(12.0, 12.0);
       $receiver_0.origin.set_y2kzbl$($receiver_0.size.x, $receiver_0.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_0.setUvs_0($receiver_0, 0.05, 0.0, $receiver_0.size.x * texScale, $receiver_0.size.y * texScale);
+      this$AmbientOcclusionDemo_0.setUvs_0($receiver_0, 0.06, 0.0, $receiver_0.size.x * texScale, $receiver_0.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
@@ -281,7 +281,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var $receiver_1 = $receiver.rectProps.defaults();
       $receiver_1.size.set_dleff0$(12.0, 12.0);
       $receiver_1.origin.set_y2kzbl$($receiver_1.size.x, $receiver_1.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_1.setUvs_0($receiver_1, 0.05, 0.0, $receiver_1.size.x * texScale, $receiver_1.size.y * texScale);
+      this$AmbientOcclusionDemo_1.setUvs_0($receiver_1, 0.06, 0.0, $receiver_1.size.x * texScale, $receiver_1.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
@@ -292,18 +292,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var $receiver_2 = $receiver.rectProps.defaults();
       $receiver_2.size.set_dleff0$(0.25, 12.0);
       $receiver_2.origin.set_y2kzbl$($receiver_2.size.x, $receiver_2.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_2.setUvs_0($receiver_2, 0.05 - $receiver_2.size.x * texScale, 0.0, $receiver_2.size.x * texScale, $receiver_2.size.y * texScale);
+      this$AmbientOcclusionDemo_2.setUvs_0($receiver_2, 0.06 - $receiver_2.size.x * texScale, 0.0, $receiver_2.size.x * texScale, $receiver_2.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
       var this$AmbientOcclusionDemo_3 = this$AmbientOcclusionDemo;
       $receiver.translate_y2kzbl$(6.0, -0.125, 0.0);
       $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.Y_AXIS);
-      $receiver.rotate_ad55pp$(90.0, Vec3f.Companion.Z_AXIS);
+      $receiver.rotate_ad55pp$(-90.0, Vec3f.Companion.Z_AXIS);
       var $receiver_3 = $receiver.rectProps.defaults();
       $receiver_3.size.set_dleff0$(0.25, 12.0);
       $receiver_3.origin.set_y2kzbl$($receiver_3.size.x, $receiver_3.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_3.setUvs_0($receiver_3, 0.05 + 12 * texScale, 0.0, $receiver_3.size.x * texScale, $receiver_3.size.y * texScale);
+      this$AmbientOcclusionDemo_3.setUvs_0($receiver_3, 0.06 + 12 * texScale, 0.0, $receiver_3.size.x * texScale, $receiver_3.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
@@ -312,7 +312,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var $receiver_4 = $receiver.rectProps.defaults();
       $receiver_4.size.set_dleff0$(12.0, 0.25);
       $receiver_4.origin.set_y2kzbl$($receiver_4.size.x, $receiver_4.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_4.setUvs_0($receiver_4, 0.05, 12.0 * texScale, $receiver_4.size.x * texScale, $receiver_4.size.y * texScale);
+      this$AmbientOcclusionDemo_4.setUvs_0($receiver_4, 0.06, 12.0 * texScale, $receiver_4.size.x * texScale, $receiver_4.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       $receiver.transform.push();
@@ -322,7 +322,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       var $receiver_5 = $receiver.rectProps.defaults();
       $receiver_5.size.set_dleff0$(12.0, 0.25);
       $receiver_5.origin.set_y2kzbl$($receiver_5.size.x, $receiver_5.size.y, 0.0).scale_mx4ult$(-0.5);
-      this$AmbientOcclusionDemo_5.setUvs_0($receiver_5, 0.05, -0.25 * texScale, $receiver_5.size.x * texScale, $receiver_5.size.y * texScale);
+      this$AmbientOcclusionDemo_5.setUvs_0($receiver_5, 0.06, -0.25 * texScale, $receiver_5.size.x * texScale, $receiver_5.size.y * texScale);
       $receiver.rect_e5k3t5$($receiver.rectProps);
       $receiver.transform.pop();
       return Unit;

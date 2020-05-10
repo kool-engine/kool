@@ -78,7 +78,7 @@ class AoDenoisePass(aoPass: AmbientOcclusionPass) : OffscreenRenderPass2D(Group(
                 for (int x = 0; x < blurSize; x++) {
                     for (int y = 0; y < blurSize; y++) {
                         vec2 offset = (hlim + vec2(float(x), float(y))) * texelSize;
-                        result += texture(${noisyAo.name}, ${inScreenPos.ref2f()} + offset).r;
+                        result += ${generator.sampleTexture2d(noisyAo.name, "${inScreenPos.ref2f()} + offset")}.r;
                     }
                 }
                 result /= float(blurSize * blurSize);
