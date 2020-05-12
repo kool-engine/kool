@@ -96,7 +96,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var joinTo = Kotlin.kotlin.collections.joinTo_gcc71v$;
   var MutableMap = Kotlin.kotlin.collections.MutableMap;
   var lastIndexOf = Kotlin.kotlin.text.lastIndexOf_8eortd$;
-  var StringBuilder = Kotlin.kotlin.text.StringBuilder;
+  var shuffled = Kotlin.kotlin.collections.shuffled_7wnvza$;
   var toInt_0 = Kotlin.kotlin.text.toInt_6ic1pp$;
   var NumberFormatException = Kotlin.kotlin.NumberFormatException;
   var first_0 = Kotlin.kotlin.collections.first_us0mfu$;
@@ -135,6 +135,7 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   var async = $module$kotlinx_coroutines_core.kotlinx.coroutines.async_pda6u4$;
   var trimIndent = Kotlin.kotlin.text.trimIndent_pdl1vz$;
   var lines = Kotlin.kotlin.text.lines_gw00vp$;
+  var StringBuilder = Kotlin.kotlin.text.StringBuilder;
   LocalRawAssetRef.prototype = Object.create(AssetRef.prototype);
   LocalRawAssetRef.prototype.constructor = LocalRawAssetRef;
   HttpRawAssetRef.prototype = Object.create(AssetRef.prototype);
@@ -23032,10 +23033,13 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     };
   });
   function AmbientOcclusionPass(screenCam, depthPass) {
+    AmbientOcclusionPass$Companion_getInstance();
     OffscreenRenderPass2D.call(this, new Group(), depthPass.texWidth, depthPass.texHeight, void 0, TexFormat$R_getInstance());
     this.radius = 1.0;
     this.intensity = 1.5;
     this.bias = 0.0;
+    this.kernelSz_vjv56x$_0 = 32;
+    this.aoNode_0 = null;
     var tmp$;
     var $receiver = Kotlin.isType(tmp$ = this.drawNode, Group) ? tmp$ : throwCCE();
     var $receiver_0 = new OrthographicCamera();
@@ -23064,7 +23068,46 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     $receiver_4.onCreated.add_11rb$(AmbientOcclusionPass_init$lambda$lambda$lambda$lambda(depthPass, model, this));
     mesh.pipelineLoader = $receiver_4;
     $receiver.unaryPlus_uv0sim$(mesh);
+    this.rand_0 = new Random(17);
   }
+  Object.defineProperty(AmbientOcclusionPass.prototype, 'kernelSz', {
+    get: function () {
+      return this.kernelSz_vjv56x$_0;
+    },
+    set: function (value) {
+      this.kernelSz_vjv56x$_0 = value;
+      this.generateKernel_0(value);
+    }
+  });
+  AmbientOcclusionPass.prototype.generateKernel_0 = function (nKernels) {
+    var tmp$;
+    if ((tmp$ = this.aoNode_0) != null) {
+      var tmp$_0, tmp$_1, tmp$_2, tmp$_3;
+      var i = 0;
+      var seqI = 0;
+      while (i < nKernels) {
+        var k = new MutableVec3f(this.halton_0((tmp$_0 = seqI, seqI = tmp$_0 + 1 | 0, tmp$_0), 2) * 2 - 1, this.halton_0((tmp$_1 = seqI, seqI = tmp$_1 + 1 | 0, tmp$_1), 2) * 2 - 1, this.halton_0((tmp$_2 = seqI, seqI = tmp$_2 + 1 | 0, tmp$_2), 2) * -1);
+        if (k.length() < 1.0) {
+          var iNorm = i / nKernels;
+          var scale = this.lerp_0(0.1, 1.0, iNorm * iNorm);
+          tmp$.uKernel.value[tmp$_3 = i, i = tmp$_3 + 1 | 0, tmp$_3] = k.norm().scale_mx4ult$(scale);
+        }}
+      tmp$.uKernelN.value = nKernels;
+    }};
+  AmbientOcclusionPass.prototype.halton_0 = function (index, base) {
+    var i = index;
+    var f = 1.0;
+    var r = 0.0;
+    while (i > 0) {
+      f /= base;
+      r += f * (i % base);
+      i = i / base | 0;
+    }
+    return r;
+  };
+  AmbientOcclusionPass.prototype.lerp_0 = function (a, b, f) {
+    return a + f * (b - a);
+  };
   function Coroutine$AmbientOcclusionPass$makeNoiseTexture$lambda(closure$data_0, $receiver_0, it_0, controller, continuation_0) {
     CoroutineImpl.call(this, continuation_0);
     this.$controller = controller;
@@ -23111,11 +23154,21 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   AmbientOcclusionPass.prototype.makeNoiseTexture_0 = function () {
     var buf = createUint8Buffer(64);
-    var rand = new Random(1337);
+    var $receiver = until(0, 16);
+    var destination = ArrayList_init(collectionSizeOrDefault($receiver, 10));
+    var tmp$;
+    tmp$ = $receiver.iterator();
+    while (tmp$.hasNext()) {
+      var item = tmp$.next();
+      destination.add_11rb$(math.PI * item / 8);
+    }
+    var rotAngles = shuffled(destination);
     for (var i = 0; i < 16; i++) {
-      var rot = (new MutableVec3f(rand.randomF_dleff0$(-1.0, 1.0), rand.randomF_dleff0$(-1.0, 1.0), 0.0)).norm();
-      buf.set_6t1wet$((i * 4 | 0) + 0 | 0, toByte(numberToInt((rot.x * 0.5 + 0.5) * 255)));
-      buf.set_6t1wet$((i * 4 | 0) + 1 | 0, toByte(numberToInt((rot.y * 0.5 + 0.5) * 255)));
+      var ang = rotAngles.get_za3lpa$(i);
+      var x = Math_0.cos(ang);
+      var y = Math_0.sin(ang);
+      buf.set_6t1wet$((i * 4 | 0) + 0 | 0, toByte(numberToInt((x * 0.5 + 0.5) * 255)));
+      buf.set_6t1wet$((i * 4 | 0) + 1 | 0, toByte(numberToInt((y * 0.5 + 0.5) * 255)));
       buf.set_6t1wet$((i * 4 | 0) + 2 | 0, 0);
       buf.set_6t1wet$((i * 4 | 0) + 3 | 0, 1);
     }
@@ -23129,10 +23182,12 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   };
   function AmbientOcclusionPass$AoNode($outer, cam, depthTex, noiseTex, graph) {
     this.$outer = $outer;
-    ShaderNode.call(this, 'depthRecon', graph);
+    ShaderNode.call(this, 'aoNode', graph);
     this.cam = cam;
     this.depthTex = depthTex;
     this.noiseTex = noiseTex;
+    this.uKernel = new Uniform3fv('uKernel', 128);
+    this.uKernelN = new Uniform1i('uKernelN');
     this.uProj = new UniformMat4f('uProj');
     this.uInvProj = new UniformMat4f('uInvProj');
     this.uNoiseScale = new Uniform2f('uNoiseScale');
@@ -23144,35 +23199,45 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   }
   function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda(this$AoNode) {
     return function () {
-      return this$AoNode.uProj;
+      return this$AoNode.uKernel;
     };
   }
   function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_0(this$AoNode) {
     return function () {
-      return this$AoNode.uInvProj;
+      return this$AoNode.uProj;
     };
   }
   function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_1(this$AoNode) {
     return function () {
-      return this$AoNode.uNoiseScale;
+      return this$AoNode.uInvProj;
     };
   }
   function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_2(this$AoNode) {
     return function () {
-      return this$AoNode.uRadius;
+      return this$AoNode.uNoiseScale;
     };
   }
   function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_3(this$AoNode) {
     return function () {
-      return this$AoNode.uIntensity;
+      return this$AoNode.uRadius;
     };
   }
   function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_4(this$AoNode) {
     return function () {
+      return this$AoNode.uIntensity;
+    };
+  }
+  function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_5(this$AoNode) {
+    return function () {
       return this$AoNode.uBias;
     };
   }
-  function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_5(this$AoNode, this$AmbientOcclusionPass) {
+  function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_6(this$AoNode) {
+    return function () {
+      return this$AoNode.uKernelN;
+    };
+  }
+  function AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_7(this$AoNode, this$AmbientOcclusionPass) {
     return function (f, f_0) {
       this$AoNode.uProj.value.set_d4zu6l$(this$AoNode.cam.proj);
       this$AoNode.uInvProj.value.set_d4zu6l$(this$AoNode.cam.invProj);
@@ -23191,7 +23256,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       $receiver.unaryPlus_wq3w46$(AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_2(this$AoNode));
       $receiver.unaryPlus_wq3w46$(AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_3(this$AoNode));
       $receiver.unaryPlus_wq3w46$(AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_4(this$AoNode));
-      $receiver.onUpdate = AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_5(this$AoNode, this$AmbientOcclusionPass);
+      $receiver.unaryPlus_wq3w46$(AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_5(this$AoNode));
+      $receiver.unaryPlus_wq3w46$(AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_6(this$AoNode));
+      $receiver.onUpdate = AmbientOcclusionPass$AoNode$setup$lambda$lambda$lambda_7(this$AoNode, this$AmbientOcclusionPass);
       return Unit;
     };
   }
@@ -23200,41 +23267,35 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
     this.dependsOn_lhtstx$(this.noiseTex);
     this.dependsOn_7qvs0d$(this.inScreenPos);
     ShaderNode.prototype.setup_llmhyc$.call(this, shaderGraph);
+    this.$outer.generateKernel_0(64);
     var $receiver = shaderGraph.descriptorSet;
     this.$outer;
     var this$AmbientOcclusionPass = this.$outer;
     $receiver.uniformBuffer_2ydyu8$(this.name, [shaderGraph.stage], AmbientOcclusionPass$AoNode$setup$lambda$lambda(this, this$AmbientOcclusionPass));
   };
   AmbientOcclusionPass$AoNode.prototype.generateCode_626509$ = function (generator) {
-    var nKernels = 64;
-    var rand = new Random(17);
-    var kernelText = new StringBuilder('const vec3 aoKernels[64] = vec3[64](');
-    var kernels = ArrayList_init_0();
-    while (kernels.size < nKernels) {
-      var k = new MutableVec3f(rand.randomF_dleff0$(-1.0, 1.0), rand.randomF_dleff0$(-1.0, 1.0), rand.randomF_dleff0$(-1.0, 0.0));
-      if (k.length() < 1.0) {
-        kernels.add_11rb$(k);
-      }}
-    for (var i = 0; i < nKernels; i++) {
-      var iNorm = i / nKernels;
-      var scale = this.lerp_0(0.1, 1.0, iNorm * iNorm);
-      var kernel = kernels.get_za3lpa$(i).norm().scale_mx4ult$(scale);
-      kernelText.append_61zpoe$('vec3(' + kernel.x + ', ' + kernel.y + ', ' + kernel.z + ')');
-      if (i < (nKernels - 1 | 0)) {
-        kernelText.append_61zpoe$(',\n');
-      }}
-    kernelText.append_61zpoe$(');');
-    generator.appendFunction_puj7f4$('aoKernels', kernelText.toString());
-    generator.appendMain_61zpoe$('\n' + '                vec4 projPos = vec4(' + this.inScreenPos.ref2f() + ' * 2.0 - vec2(1.0), 1.0, 1.0);' + '\n' + '                vec4 viewPos = ' + this.uInvProj.name + ' * projPos;' + '\n' + '                ' + '\n' + '                vec4 nrmDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, this.inScreenPos.ref2f()) + ';' + '\n' + '                vec3 origin = viewPos.xyz / viewPos.w;' + '\n' + '                origin *= (nrmDepth.w / origin.z);' + '\n' + '                ' + '\n' + '                // compute kernel rotation' + '\n' + '                vec2 noiseCoord = ' + this.inScreenPos.ref2f() + ' * ' + this.uNoiseScale.name + ';' + '\n' + '                vec3 normal = normalize(nrmDepth.xyz * 2.0 - 1.0);' + '\n' + '                vec3 rotVec = ' + generator.sampleTexture2d_buzeal$(this.noiseTex.name, 'noiseCoord') + '.xyz * 2.0 - 1.0;' + '\n' + '                vec3 tangent = normalize(rotVec - normal * dot(rotVec, normal));' + '\n' + '                vec3 bitangent = cross(normal, tangent);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, normal);' + '\n' + '                ' + '\n' + '                float occlusion = 0.0;' + '\n' + '                for (int i = 0; i < ' + nKernels + '; i++) {' + '\n' + '                    vec3 kernel = tbn * aoKernels[i];' + '\n' + '                    vec3 samplePos = origin + kernel * uRadius;' + '\n' + '                    ' + '\n' + '                    vec4 sampleProj = uProj * vec4(samplePos, 1.0);' + '\n' + '                    sampleProj.xyz /= sampleProj.w;' + '\n' + '                    sampleProj.xy = sampleProj.xy * 0.5 + 0.5;' + '\n' + '                    ' + '\n' + '                    float sampleDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, 'sampleProj.xy') + '.w;' + '\n' + '                    ' + '\n' + '                    float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs(origin.z - sampleDepth) / (4.0 * uRadius));' + '\n' + '                    occlusion += (sampleDepth < samplePos.z - uBias ? 1.0 : 0.0) * rangeCheck;' + '\n' + '                }' + '\n' + '                occlusion /= float(' + nKernels + ');' + '\n' + '                float occlFac = clamp(1.0 - occlusion * uIntensity, 0.0, 1.0);' + '\n' + '                ' + '\n' + '                ' + this.outColor.declare() + ' = vec4(occlFac, occlFac, occlFac, 1.0);' + '\n' + '            ');
-  };
-  AmbientOcclusionPass$AoNode.prototype.lerp_0 = function (a, b, f) {
-    return a + f * (b - a);
+    generator.appendMain_61zpoe$('\n' + '                vec4 projPos = vec4(' + this.inScreenPos.ref2f() + ' * 2.0 - vec2(1.0), 1.0, 1.0);' + '\n' + '                vec4 viewPos = ' + this.uInvProj.name + ' * projPos;' + '\n' + '                ' + '\n' + '                vec4 nrmDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, this.inScreenPos.ref2f()) + ';' + '\n' + '                vec3 origin = viewPos.xyz / viewPos.w;' + '\n' + '                origin *= (nrmDepth.w / origin.z);' + '\n' + '                ' + '\n' + '                // compute kernel rotation' + '\n' + '                vec2 noiseCoord = ' + this.inScreenPos.ref2f() + ' * ' + this.uNoiseScale.name + ';' + '\n' + '                vec3 normal = normalize(nrmDepth.xyz * 2.0 - 1.0);' + '\n' + '                vec3 rotVec = ' + generator.sampleTexture2d_buzeal$(this.noiseTex.name, 'noiseCoord') + '.xyz * 2.0 - 1.0;' + '\n' + '                vec3 tangent = normalize(rotVec - normal * dot(rotVec, normal));' + '\n' + '                vec3 bitangent = cross(normal, tangent);' + '\n' + '                mat3 tbn = mat3(tangent, bitangent, normal);' + '\n' + '                ' + '\n' + '                float occlusion = 0.0;' + '\n' + '                for (int i = 0; i < uKernelN; i++) {' + '\n' + '                    vec3 kernel = tbn * uKernel[i];' + '\n' + '                    vec3 samplePos = origin + kernel * uRadius;' + '\n' + '                    ' + '\n' + '                    vec4 sampleProj = uProj * vec4(samplePos, 1.0);' + '\n' + '                    sampleProj.xyz /= sampleProj.w;' + '\n' + '                    sampleProj.xy = sampleProj.xy * 0.5 + 0.5;' + '\n' + '                    ' + '\n' + '                    float sampleDepth = ' + generator.sampleTexture2d_buzeal$(this.depthTex.name, 'sampleProj.xy') + '.w;' + '\n' + '                    ' + '\n' + '                    float rangeCheck = 1.0 - smoothstep(0.0, 1.0, abs(origin.z - sampleDepth) / (4.0 * uRadius));' + '\n' + '                    occlusion += (sampleDepth < samplePos.z - uBias ? 1.0 : 0.0) * rangeCheck;' + '\n' + '                }' + '\n' + '                occlusion /= float(uKernelN);' + '\n' + '                float occlFac = clamp(1.0 - occlusion * uIntensity, 0.0, 1.0);' + '\n' + '                ' + '\n' + '                ' + this.outColor.declare() + ' = vec4(occlFac, occlFac, occlFac, 1.0);' + '\n' + '            ');
   };
   AmbientOcclusionPass$AoNode.$metadata$ = {
     kind: Kind_CLASS,
     simpleName: 'AoNode',
     interfaces: [ShaderNode]
   };
+  function AmbientOcclusionPass$Companion() {
+    AmbientOcclusionPass$Companion_instance = this;
+    this.MAX_KERNEL_SIZE = 128;
+  }
+  AmbientOcclusionPass$Companion.$metadata$ = {
+    kind: Kind_OBJECT,
+    simpleName: 'Companion',
+    interfaces: []
+  };
+  var AmbientOcclusionPass$Companion_instance = null;
+  function AmbientOcclusionPass$Companion_getInstance() {
+    if (AmbientOcclusionPass$Companion_instance === null) {
+      new AmbientOcclusionPass$Companion();
+    }return AmbientOcclusionPass$Companion_instance;
+  }
   function AmbientOcclusionPass_init$lambda$lambda$lambda($receiver) {
     $receiver.rectProps.defaults().size.set_dleff0$(1.0, 1.0);
     $receiver.rect_e5k3t5$($receiver.rectProps);
@@ -23312,6 +23373,42 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
       }
        while (false);
       ensureNotNull(findNode_3klnlw$result_0).sampler.texture = this$AmbientOcclusionPass.makeNoiseTexture_0();
+      var tmp$_5 = this$AmbientOcclusionPass;
+      var $this_1 = closure$model;
+      var stage_1;
+      var findNode_3klnlw$result_1;
+      findNode_3klnlw$break: do {
+        stage_1 = ShaderStage.ALL;
+        var tmp$_6;
+        tmp$_6 = $this_1.stages.values.iterator();
+        while (tmp$_6.hasNext()) {
+          var element_3 = tmp$_6.next();
+          if ((element_3.stage.mask & stage_1.mask) !== 0) {
+            var tmp$_7;
+            var $receiver_1 = element_3.nodes;
+            var firstOrNull$result_1;
+            firstOrNull$break: do {
+              var tmp$_8;
+              tmp$_8 = $receiver_1.iterator();
+              while (tmp$_8.hasNext()) {
+                var element_4 = tmp$_8.next();
+                if (equals(element_4.name, 'aoNode') && Kotlin.isType(element_4, AmbientOcclusionPass$AoNode)) {
+                  firstOrNull$result_1 = element_4;
+                  break firstOrNull$break;
+                }}
+              firstOrNull$result_1 = null;
+            }
+             while (false);
+            var node_1 = (tmp$_7 = firstOrNull$result_1) == null || Kotlin.isType(tmp$_7, AmbientOcclusionPass$AoNode) ? tmp$_7 : throwCCE();
+            if (node_1 != null) {
+              findNode_3klnlw$result_1 = node_1;
+              break findNode_3klnlw$break;
+            }}}
+        findNode_3klnlw$result_1 = null;
+      }
+       while (false);
+      tmp$_5.aoNode_0 = ensureNotNull(findNode_3klnlw$result_1);
+      this$AmbientOcclusionPass.generateKernel_0(this$AmbientOcclusionPass.kernelSz);
       return Unit;
     };
   }
@@ -38085,6 +38182,9 @@ define(['exports', 'kotlin', 'kotlinx-coroutines-core', 'kotlinx-serialization-k
   package$util.SpringDamperDouble = SpringDamperDouble;
   var package$aoMapGen = package$util.aoMapGen || (package$util.aoMapGen = {});
   package$aoMapGen.AmbientOcclusionHelper = AmbientOcclusionHelper;
+  Object.defineProperty(AmbientOcclusionPass, 'Companion', {
+    get: AmbientOcclusionPass$Companion_getInstance
+  });
   package$aoMapGen.AmbientOcclusionPass = AmbientOcclusionPass;
   package$aoMapGen.AoDenoisePass = AoDenoisePass;
   package$util.BoundingBox_init_4lfkt4$ = BoundingBox_init;

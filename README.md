@@ -9,9 +9,9 @@ them via the hamburger button in the upper left corner):
 - [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbrDemo): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
   [this](https://learnopengl.com/PBR/Theory) awesome article series).
-- [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=aoDemo): Hemisphere kernel based
-  SSAO as described in [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
-  Chapman (also shamelessly recreated his demo scene).
+- [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=aoDemo): Roughly based on
+  [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
+  Chapman with slightly optimized sampling (also shamelessly recreated his demo scene).
 - [Multi Light Shadow Mapping](https://fabmax.github.io/kool/kool-js/?demo=multiLightDemo): A simple PBR shaded
   model with up to four spot lights and dynamic shadows.
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplificationDemo): Interactive mesh

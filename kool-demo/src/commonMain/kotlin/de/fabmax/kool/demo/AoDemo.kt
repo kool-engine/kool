@@ -23,6 +23,7 @@ import de.fabmax.kool.util.pbrMapGen.ReflectionMapPass
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
+import kotlin.math.roundToInt
 
 fun aoDemo(ctx: KoolContext): List<Scene> {
     val aoDemo = AmbientOcclusionDemo(ctx)
@@ -279,8 +280,8 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
 
         +container("menu container") {
             ui.setCustom(SimpleComponentUi(this))
-            layoutSpec.setOrigin(dps(-370f), dps(-565f), zero())
-            layoutSpec.setSize(dps(250f), dps(445f), full())
+            layoutSpec.setOrigin(dps(-370f), dps(-635f), zero())
+            layoutSpec.setSize(dps(250f), dps(515f), full())
 
             // light setup
             var y = -40f
@@ -367,6 +368,26 @@ class AmbientOcclusionDemo(ctx: KoolContext) {
                 onValueChanged += {
                     biasVal.text = value.toString(2)
                     aoHelper.aoPass.bias = value
+                }
+            }
+            y -= 35f
+            +label("Kernel Size:") {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+            }
+            val kernelSzVal = label(aoHelper.aoPass.kernelSz.toString()) {
+                layoutSpec.setOrigin(pcs(75f), dps(y), zero())
+                layoutSpec.setSize(pcs(25f), dps(35f), full())
+                textAlignment = Gravity(Alignment.END, Alignment.CENTER)
+            }
+            +kernelSzVal
+            y -= 35f
+            +slider("kernelSlider", 4f, 128f, aoHelper.aoPass.kernelSz.toFloat()) {
+                layoutSpec.setOrigin(pcs(0f), dps(y), zero())
+                layoutSpec.setSize(pcs(100f), dps(35f), full())
+                onValueChanged += {
+                    aoHelper.aoPass.kernelSz = value.roundToInt()
+                    kernelSzVal.text = aoHelper.aoPass.kernelSz.toString()
                 }
             }
 

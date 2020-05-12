@@ -52,6 +52,7 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   var math = $module$kool.de.fabmax.kool.math;
   var addAll = Kotlin.kotlin.collections.addAll_ipc267$;
   var Scene_init = $module$kool.de.fabmax.kool.scene.Scene;
+  var roundToInt = Kotlin.kotlin.math.roundToInt_yrwdxr$;
   var ShaderModel$ShaderModel$VertexStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.VertexStageBuilder;
   var ShaderModel$ShaderModel$FragmentStageBuilder_init = $module$kool.de.fabmax.kool.pipeline.shadermodel.ShaderModel.FragmentStageBuilder;
   var createDefaultContext = $module$kool.de.fabmax.kool.createDefaultContext;
@@ -808,7 +809,40 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_15(closure$y, closure$smallFont, this$) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_15(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      return Unit;
+    };
+  }
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_16(closure$y) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(75.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(25.0), dps(35.0), full());
+      $receiver.textAlignment = new Gravity(Alignment.END, Alignment.CENTER);
+      return Unit;
+    };
+  }
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, closure$kernelSzVal) {
+    return function ($receiver, it) {
+      2;
+      this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz = roundToInt($receiver.value);
+      closure$kernelSzVal.text = this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz.toString();
+      return Unit;
+    };
+  }
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_17(closure$y, this$AmbientOcclusionDemo, closure$kernelSzVal) {
+    return function ($receiver) {
+      $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(35.0), full());
+      var $receiver_0 = $receiver.onValueChanged;
+      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo, closure$kernelSzVal);
+      $receiver_0.add_11rb$(element);
+      return Unit;
+    };
+  }
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_18(closure$y, closure$smallFont, this$) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
@@ -818,37 +852,37 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo) {
     return function ($receiver) {
       this$AmbientOcclusionDemo.autoRotate_0 = $receiver.isEnabled;
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_16(closure$y, this$AmbientOcclusionDemo) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(closure$y, this$AmbientOcclusionDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$AmbientOcclusionDemo.autoRotate_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_5(this$AmbientOcclusionDemo);
+      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_7(this$AmbientOcclusionDemo) {
     return function ($receiver) {
       this$AmbientOcclusionDemo.spotLight_0 = $receiver.isEnabled;
       this$AmbientOcclusionDemo.updateLighting_0();
       return Unit;
     };
   }
-  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_17(closure$y, this$AmbientOcclusionDemo) {
+  function AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(closure$y, this$AmbientOcclusionDemo) {
     return function ($receiver) {
       $receiver.layoutSpec.setOrigin_4ujscr$(pcs(0.0), dps(closure$y.v), zero());
       $receiver.layoutSpec.setSize_4ujscr$(pcs(100.0), dps(30.0), full());
       $receiver.isEnabled = this$AmbientOcclusionDemo.spotLight_0;
       var $receiver_0 = $receiver.onStateChange;
-      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_6(this$AmbientOcclusionDemo);
+      var element = AmbientOcclusionDemo$menu$lambda$lambda$lambda$lambda_7(this$AmbientOcclusionDemo);
       $receiver_0.add_11rb$(element);
       return Unit;
     };
@@ -856,8 +890,8 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
   function AmbientOcclusionDemo$menu$lambda$lambda_1(closure$smallFont, this$, this$AmbientOcclusionDemo, closure$aoMap) {
     return function ($receiver) {
       $receiver.ui.setCustom_11rb$(new SimpleComponentUi($receiver));
-      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-565.0), zero());
-      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(445.0), full());
+      $receiver.layoutSpec.setOrigin_4ujscr$(dps(-370.0), dps(-635.0), zero());
+      $receiver.layoutSpec.setSize_4ujscr$(dps(250.0), dps(515.0), full());
       var y = {v: -40.0};
       $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Ambient Occulsion', AmbientOcclusionDemo$menu$lambda$lambda$lambda_3(y, closure$smallFont, this$)));
       y.v -= 35.0;
@@ -882,12 +916,18 @@ define(['exports', 'kotlin', 'kool'], function (_, Kotlin, $module$kool) {
       $receiver.unaryPlus_uv0sim$(biasVal);
       y.v -= 35.0;
       $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('biasSlider', -0.5, 0.5, this$AmbientOcclusionDemo.aoHelper_0.aoPass.bias, AmbientOcclusionDemo$menu$lambda$lambda$lambda_14(y, biasVal, this$AmbientOcclusionDemo)));
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Kernel Size:', AmbientOcclusionDemo$menu$lambda$lambda$lambda_15(y)));
+      var kernelSzVal = this$.label_tokfmu$(this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz.toString(), AmbientOcclusionDemo$menu$lambda$lambda$lambda_16(y));
+      $receiver.unaryPlus_uv0sim$(kernelSzVal);
+      y.v -= 35.0;
+      $receiver.unaryPlus_uv0sim$(this$.slider_91a1dk$('kernelSlider', 4.0, 128.0, this$AmbientOcclusionDemo.aoHelper_0.aoPass.kernelSz, AmbientOcclusionDemo$menu$lambda$lambda$lambda_17(y, this$AmbientOcclusionDemo, kernelSzVal)));
       y.v -= 40.0;
-      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', AmbientOcclusionDemo$menu$lambda$lambda$lambda_15(y, closure$smallFont, this$)));
+      $receiver.unaryPlus_uv0sim$(this$.label_tokfmu$('Scene', AmbientOcclusionDemo$menu$lambda$lambda$lambda_18(y, closure$smallFont, this$)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', AmbientOcclusionDemo$menu$lambda$lambda$lambda_16(y, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Auto Rotate', AmbientOcclusionDemo$menu$lambda$lambda$lambda_19(y, this$AmbientOcclusionDemo)));
       y.v -= 35.0;
-      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Spot Light', AmbientOcclusionDemo$menu$lambda$lambda$lambda_17(y, this$AmbientOcclusionDemo)));
+      $receiver.unaryPlus_uv0sim$(this$.toggleButton_6j87po$('Spot Light', AmbientOcclusionDemo$menu$lambda$lambda$lambda_20(y, this$AmbientOcclusionDemo)));
       return Unit;
     };
   }
